@@ -23,11 +23,12 @@ local scopeinfo = scopeinfo or {}
 local _instance = _instance or {}
 
 -- load modules
-local io    = require("base/io")
-local os    = require("base/os")
-local path  = require("base/path")
-local table = require("base/table")
-local utils = require("base/utils")
+local io         = require("base/io")
+local os         = require("base/os")
+local path       = require("base/path")
+local table      = require("base/table")
+local utils      = require("base/utils")
+local deprecated = require("base/deprecated")
 
 -- new an instance
 function _instance.new(kind, info, opt)
@@ -62,12 +63,12 @@ function _instance:_api_handle(name, values)
     local interp = self:interpreter()
     if interp then
 
-        -- remove repeat first for each slice with deleted item (__del_xxx)
+        -- remove repeat first for each slice with deleted item (__remove_xxx)
         if self._DEDUPLICATE and not table.is_dictionary(values) then
             local policy = interp:deduplication_policy(name)
             if policy ~= false then
                 local unique_func = policy == "toleft" and table.reverse_unique or table.unique
-                values = unique_func(values, function (v) return type(v) == "string" and v:startswith("__del_") end)
+                values = unique_func(values, function (v) return type(v) == "string" and v:startswith("__remove_") end)
             end
         end
 
@@ -376,7 +377,7 @@ function _instance:_api_add_paths(name, ...)
     self:_api_save_sourceinfo_to_scope(scope, name, paths)
 end
 
--- remove the api paths to the scope info
+-- remove the api paths to the scope info (deprecated)
 function _instance:_api_del_paths(name, ...)
 
     -- get the scope info
@@ -388,17 +389,48 @@ function _instance:_api_del_paths(name, ...)
     -- expand values
     values = table.join(...)
 
+    -- it has been marked as deprecated
+    deprecated.add("remove_" .. name .. "(%s)", "del_" .. name .. "(%s)", table.concat(values, ", "), table.concat(values, ", "))
+
     -- translate paths
     local paths = interp:_api_translate_paths(values, "del_" .. name, 5)
 
     -- mark these paths as deleted
     local paths_deleted = {}
     for _, pathname in ipairs(paths) do
-        table.insert(paths_deleted, "__del_" .. pathname)
+        table.insert(paths_deleted, "__remove_" .. pathname)
     end
 
     -- save values
     scope[name] = self:_api_handle(name, table.join2(table.wrap(scope[name]), paths_deleted))
+
+    -- save api source info, e.g. call api() in sourcefile:linenumber
+    self:_api_save_sourceinfo_to_scope(scope, name, paths)
+end
+
+-- remove the api paths to the scope info
+function _instance:_api_remove_paths(name, ...)
+
+    -- get the scope info
+    local scope = self._INFO
+
+    -- get interpreter
+    local interp = self:interpreter()
+
+    -- expand values
+    values = table.join(...)
+
+    -- translate paths
+    local paths = interp:_api_translate_paths(values, "remove_" .. name, 5)
+
+    -- mark these paths as removed
+    local paths_removed = {}
+    for _, pathname in ipairs(paths) do
+        table.insert(paths_removed, "__remove_" .. pathname)
+    end
+
+    -- save values
+    scope[name] = self:_api_handle(name, table.join2(table.wrap(scope[name]), paths_removed))
 
     -- save api source info, e.g. call api() in sourcefile:linenumber
     self:_api_save_sourceinfo_to_scope(scope, name, paths)
@@ -506,12 +538,12 @@ function _instance:apival_add(name, ...)
     end
 end
 
--- remove the api values to the scope info
+-- remove the api values to the scope info (deprecated)
 function _instance:apival_del(name, ...)
     if type(name) == "string" then
         local api_type = self:_api_type("del_" .. name)
         if api_type then
-            local del_xxx = self["_api_del_" .. api_type]
+            local del_xxx = self["_api_remove_" .. api_type]
             if del_xxx then
                 del_xxx(self, name, ...)
             else
@@ -519,6 +551,26 @@ function _instance:apival_del(name, ...)
             end
         else
             os.raise("unknown api(%s) for %s:del(%s, ...)", name, self:kind(), name)
+        end
+    elseif name ~= nil then
+        -- TODO
+        os.raise("cannot support to remove a dictionary!")
+    end
+end
+
+-- remove the api values to the scope info
+function _instance:apival_remove(name, ...)
+    if type(name) == "string" then
+        local api_type = self:_api_type("remove_" .. name)
+        if api_type then
+            local remove_xxx = self["_api_remove_" .. api_type]
+            if remove_xxx then
+                remove_xxx(self, name, ...)
+            else
+                os.raise("unknown apitype(%s) for %s:remove(%s, ...)", api_type, self:kind(), name)
+            end
+        else
+            os.raise("unknown api(%s) for %s:remove(%s, ...)", name, self:kind(), name)
         end
     elseif name ~= nil then
         -- TODO

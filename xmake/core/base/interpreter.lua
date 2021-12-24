@@ -22,13 +22,14 @@
 local interpreter = interpreter or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local table     = require("base/table")
-local utils     = require("base/utils")
-local string    = require("base/string")
-local scopeinfo = require("base/scopeinfo")
-local sandbox   = require("sandbox/sandbox")
+local os         = require("base/os")
+local path       = require("base/path")
+local table      = require("base/table")
+local utils      = require("base/utils")
+local string     = require("base/string")
+local scopeinfo  = require("base/scopeinfo")
+local deprecated = require("base/deprecated")
+local sandbox    = require("sandbox/sandbox")
 
 -- traceback
 function interpreter._traceback(errors)
@@ -160,8 +161,6 @@ end
 
 -- register scope end: scopename_end()
 function interpreter:_api_register_scope_end(...)
-
-    -- check
     assert(self and self._PUBLIC and self._PRIVATE)
 
     -- done
@@ -191,8 +190,6 @@ end
 
 -- register scope api: xxx_apiname()
 function interpreter:_api_register_scope_api(scope_kind, action, apifunc, ...)
-
-    -- check
     assert(self and self._PUBLIC and self._PRIVATE)
     assert(apifunc)
 
@@ -226,8 +223,6 @@ end
 
 -- register api: xxx_values()
 function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
-
-    -- check
     assert(self and self._PUBLIC and self._PRIVATE)
     assert(action and apifunc)
 
@@ -257,7 +252,7 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
         assert(scope)
 
         -- set values (set, on, before, after ...)? mark as "override"
-        if apiname and (action ~= "add" and action ~= "del") then
+        if apiname and (action ~= "add" and action ~= "del" and action ~= "remove") then
             scope["__override_" .. apiname] = true
         end
 
@@ -372,8 +367,6 @@ end
 
 -- get api function within scope
 function interpreter:_api_within_scope(scope_kind, apiname)
-
-    -- the private
     local priv = self._PRIVATE
     assert(priv)
 
@@ -394,8 +387,6 @@ end
 
 -- set api function within scope
 function interpreter:_api_within_scope_set(scope_kind, apiname, apifunc)
-
-    -- the private
     local priv = self._PRIVATE
     assert(priv)
 
@@ -416,8 +407,6 @@ end
 
 -- clear results
 function interpreter:_clear()
-
-    -- check
     assert(self and self._PRIVATE)
 
     -- clear it
@@ -427,8 +416,6 @@ end
 
 -- filter values
 function interpreter:_filter(values, level)
-
-    -- check
     assert(self and values ~= nil)
 
     -- return values directly if no filter
@@ -482,8 +469,6 @@ end
 
 -- handle scope data
 function interpreter:_handle(scope, deduplicate, enable_filter)
-
-    -- check
     assert(scope)
 
     -- remove repeat values and unwrap it
@@ -498,12 +483,12 @@ function interpreter:_handle(scope, deduplicate, enable_filter)
             values = self:_filter(values)
         end
 
-        -- remove repeat first for each slice with deleted item (__del_xxx)
+        -- remove repeat first for each slice with removed item (__remove_xxx)
         if deduplicate and not table.is_dictionary(values) then
             local policy = self:deduplication_policy(name)
             if policy ~= false then
                 local unique_func = policy == "toleft" and table.reverse_unique or table.unique
-                values = unique_func(values, function (v) return type(v) == "string" and v:startswith("__del_") end)
+                values = unique_func(values, function (v) return type(v) == "string" and v:startswith("__remove_") end)
             end
         end
 
@@ -518,8 +503,6 @@ end
 
 -- make results
 function interpreter:_make(scope_kind, deduplicate, enable_filter)
-
-    -- check
     assert(self and self._PRIVATE)
 
     -- the scopes
@@ -719,8 +702,6 @@ end
 -- @param opt   {on_load_data = function (data) return data end}
 --
 function interpreter:load(file, opt)
-
-    -- check
     assert(self and self._PUBLIC and self._PRIVATE and file)
 
     -- load the script
@@ -847,8 +828,6 @@ end
 
 -- get apis
 function interpreter:apis(scope_kind)
-
-    -- check
     assert(self and self._PRIVATE)
 
     -- get apis from the given scope kind
@@ -889,8 +868,6 @@ end
 -- }
 --
 function interpreter:api_register(scope_kind, name, func)
-
-    -- check
     assert(self and self._PUBLIC and self._PRIVATE)
     assert(name and func)
 
@@ -924,11 +901,7 @@ end
 
 -- register api for builtin
 function interpreter:api_register_builtin(name, func)
-
-    -- check
     assert(self and self._PUBLIC and func)
-
-    -- register it
     self._PUBLIC[name] = func
 end
 
@@ -973,9 +946,6 @@ end
 -- }
 --
 function interpreter:api_register_scope(...)
-
-    -- check
-    assert(self)
 
     -- define implementation
     local implementation = function (self, scopes, scope_kind, scope_name, scope_info)
@@ -1259,9 +1229,6 @@ end
 -- register api for set_dictionary
 function interpreter:api_register_set_dictionary(scope_kind, ...)
 
-    -- check
-    assert(self)
-
     -- define implementation
     local implementation = function (self, scope, name, dict_or_key, value, extra_config)
 
@@ -1288,9 +1255,6 @@ end
 
 -- register api for add_dictionary
 function interpreter:api_register_add_dictionary(scope_kind, ...)
-
-    -- check
-    assert(self)
 
     -- define implementation
     local implementation = function (self, scope, name, dict_or_key, value, extra_config)
@@ -1320,9 +1284,6 @@ end
 
 -- register api for set_paths
 function interpreter:api_register_set_paths(scope_kind, ...)
-
-    -- check
-    assert(self)
 
     -- define implementation
     local implementation = function (self, scope, name, ...)
@@ -1360,11 +1321,8 @@ function interpreter:api_register_set_paths(scope_kind, ...)
     self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
 end
 
--- register api for del_paths
+-- register api for del_paths (deprecated)
 function interpreter:api_register_del_paths(scope_kind, ...)
-
-    -- check
-    assert(self)
 
     -- define implementation
     local implementation = function (self, scope, name, ...)
@@ -1373,10 +1331,13 @@ function interpreter:api_register_del_paths(scope_kind, ...)
         local values = table.join(...)
         local paths = self:_api_translate_paths(values, "del_" .. name)
 
+        -- it has been marked as deprecated
+        deprecated.add("remove_" .. name .. "(%s)", "del_" .. name .. "(%s)", table.concat(values, ", "), table.concat(values, ", "))
+
         -- mark these paths as deleted
         local paths_deleted = {}
         for _, pathname in ipairs(paths) do
-            table.insert(paths_deleted, "__del_" .. pathname)
+            table.insert(paths_deleted, "__remove_" .. pathname)
         end
 
         -- save values
@@ -1390,11 +1351,35 @@ function interpreter:api_register_del_paths(scope_kind, ...)
     self:_api_register_xxx_values(scope_kind, "del", implementation, ...)
 end
 
+-- register api for remove_paths
+function interpreter:api_register_remove_paths(scope_kind, ...)
+
+    -- define implementation
+    local implementation = function (self, scope, name, ...)
+
+        -- translate paths
+        local values = table.join(...)
+        local paths = self:_api_translate_paths(values, "remove_" .. name)
+
+        -- mark these paths as removed
+        local paths_removed = {}
+        for _, pathname in ipairs(paths) do
+            table.insert(paths_removed, "__remove_" .. pathname)
+        end
+
+        -- save values
+        scope[name] = table.join2(scope[name] or {}, paths_removed)
+
+        -- save api source info, e.g. call api() in sourcefile:linenumber
+        self:_save_sourceinfo_to_scope(scope, name, paths)
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "remove", implementation, ...)
+end
+
 -- register api for add_paths
 function interpreter:api_register_add_paths(scope_kind, ...)
-
-    -- check
-    assert(self)
 
     -- define implementation
     local implementation = function (self, scope, name, ...)
@@ -1509,7 +1494,7 @@ function interpreter:api_define(apis)
 
                 -- get function prefix
                 local prefix = nil
-                for _, name in ipairs({"set", "add", "del", "on", "before", "after"}) do
+                for _, name in ipairs({"set", "add", "del", "remove", "on", "before", "after"}) do
                     if funcname:startswith(name .. "_") then
                         prefix = name
                         break
@@ -1734,27 +1719,18 @@ end
 
 -- get api function
 function interpreter:api_func(apiname)
-
-    -- check
     assert(self and self._PUBLIC and apiname)
-
-    -- get api function
     return self._PUBLIC[apiname]
 end
 
 -- call api
 function interpreter:api_call(apiname, ...)
-
-    -- check
     assert(self and apiname)
 
-    -- get api function
     local apifunc = self:api_func(apiname)
     if not apifunc then
         os.raise("call %s() failed, this api not found!", apiname)
     end
-
-    -- call api function
     return apifunc(...)
 end
 

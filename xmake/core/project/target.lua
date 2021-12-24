@@ -387,9 +387,15 @@ function _instance:add(name, ...)
     self:_invalidate(name)
 end
 
--- remove the value to the target info
+-- remove the value to the target info (deprecated)
 function _instance:del(name, ...)
     self._INFO:apival_del(name, ...)
+    self:_invalidate(name)
+end
+
+-- remove the value to the target info
+function _instance:remove(name, ...)
+    self._INFO:apival_remove(name, ...)
     self:_invalidate(name)
 end
 
@@ -1267,24 +1273,25 @@ function _instance:sourcefiles()
     local i = 1
     local count = 0
     local sourcefiles = {}
-    local sourcefiles_deleted = {}
+    local sourcefiles_removed = {}
     local sourcefiles_inserted = {}
-    local deleted_count = 0
+    local removed_count = 0
     local targetcache = memcache.cache("core.project.target")
     for _, file in ipairs(table.wrap(files)) do
 
-        -- mark as deleted files?
-        local deleted = false
-        if file:startswith("__del_") then
-            file = file:sub(7)
-            deleted = true
+        -- mark as removed files?
+        local removed = false
+        local prefix = "__remove_"
+        if file:startswith(prefix) then
+            file = file:sub(#prefix + 1)
+            removed = true
         end
 
         -- find source files and try to cache the matching results of os.match across targets
         -- @see https://github.com/xmake-io/xmake/issues/1353
         local results = targetcache:get2("sourcefiles", file)
         if not results then
-            if deleted then
+            if removed then
                 results = {file}
             else
                 results = os.files(file)
@@ -1311,7 +1318,7 @@ function _instance:sourcefiles()
         end
         if #results == 0 then
             local sourceinfo = (self:get("__sourceinfo_files") or {})[file] or {}
-            utils.warning("cannot match %s(%s).%s_files(\"%s\") at %s:%d", self:type(), self:name(), (deleted and "del" or "add"), file, sourceinfo.file or "", sourceinfo.line or -1)
+            utils.warning("cannot match %s(%s).%s_files(\"%s\") at %s:%d", self:type(), self:name(), (removed and "remove" or "add"), file, sourceinfo.file or "", sourceinfo.line or -1)
         end
 
         -- process source files
@@ -1322,10 +1329,10 @@ function _instance:sourcefiles()
                 sourcefile = path.relative(sourcefile, os.projectdir())
             end
 
-            -- add or delete it
-            if deleted then
-                deleted_count = deleted_count + 1
-                table.insert(sourcefiles_deleted, sourcefile)
+            -- add or remove it
+            if removed then
+                removed_count = removed_count + 1
+                table.insert(sourcefiles_removed, sourcefile)
             elseif not sourcefiles_inserted[sourcefile] then
                 table.insert(sourcefiles, sourcefile)
                 sourcefiles_inserted[sourcefile] = true
@@ -1333,21 +1340,20 @@ function _instance:sourcefiles()
         end
     end
 
-    -- remove all deleted source files
-    if deleted_count > 0 then
-        for i = #sourcefiles, 1, -1 do
-            local sourcefile = sourcefiles[i]
-            for _, deletefile in ipairs(sourcefiles_deleted) do
-                local pattern = path.translate(deletefile:gsub("|.*$", ""))
+    -- remove all source files which need be removed
+    if removed_count > 0 then
+        table.remove_if(sourcefiles, function (i, sourcefile)
+            for _, removed_file in ipairs(sourcefiles_removed) do
+                local pattern = path.translate(removed_file:gsub("|.*$", ""))
                 if pattern:sub(1, 2):find('%.[/\\]') then
                     pattern = pattern:sub(3)
                 end
                 pattern = path.pattern(pattern)
                 if sourcefile:match(pattern) then
-                    table.remove(sourcefiles, i)
+                    return true
                 end
             end
-        end
+        end)
     end
     self._SOURCEFILES = sourcefiles
 
@@ -1442,7 +1448,17 @@ function _instance:headerfiles(outputdir, only_deprecated)
     -- get the source paths and destinate paths
     local srcheaders = {}
     local dstheaders = {}
+    local srcheaders_removed = {}
+    local removed_count = 0
     for _, header in ipairs(table.wrap(headers)) do
+
+        -- mark as removed files?
+        local removed = false
+        local prefix = "__remove_"
+        if header:startswith(prefix) then
+            header = header:sub(#prefix + 1)
+            removed = true
+        end
 
         -- get the root directory
         local rootdir, count = header:gsub("|.*$", ""):gsub("%(.*%)$", "")
@@ -1450,50 +1466,58 @@ function _instance:headerfiles(outputdir, only_deprecated)
             rootdir = nil
         end
 
-        -- remove '(' and ')'
+        -- remove '(' and ')' first
         local srcpaths = header:gsub("[%(%)]", "")
         if srcpaths then
 
             -- get the source paths
             srcpaths = os.match(srcpaths)
             if srcpaths then
+                if removed then
+                    removed_count = removed_count + #srcpaths
+                    table.join2(srcheaders_removed, srcpaths)
+                else
+                    -- add the source headers
+                    table.join2(srcheaders, srcpaths)
 
-                -- add the source headers
-                table.join2(srcheaders, srcpaths)
-
-                -- get the destinate directories if the install directory exists
-                if headerdir then
-
-                    -- get the prefix directory
-                    local prefixdir = (extrainfo[header] or {}).prefixdir
-
-                    -- add the destinate headers
-                    for _, srcpath in ipairs(srcpaths) do
-
-                        -- get the destinate directory
-                        local dstdir = headerdir
-                        if prefixdir then
-                            dstdir = path.join(dstdir, prefixdir)
+                    -- get the destinate directories if the install directory exists
+                    if headerdir then
+                        local prefixdir = (extrainfo[header] or {}).prefixdir
+                        for _, srcpath in ipairs(srcpaths) do
+                            local dstdir = headerdir
+                            if prefixdir then
+                                dstdir = path.join(dstdir, prefixdir)
+                            end
+                            local dstheader = nil
+                            if rootdir then
+                                dstheader = path.absolute(path.relative(srcpath, rootdir), dstdir)
+                            else
+                                dstheader = path.join(dstdir, path.filename(srcpath))
+                            end
+                            table.insert(dstheaders, dstheader)
                         end
-
-                        -- the destinate header
-                        local dstheader = nil
-                        if rootdir then
-                            dstheader = path.absolute(path.relative(srcpath, rootdir), dstdir)
-                        else
-                            dstheader = path.join(dstdir, path.filename(srcpath))
-                        end
-                        assert(dstheader)
-
-                        -- add it
-                        table.insert(dstheaders, dstheader)
                     end
                 end
             end
         end
     end
 
-    -- ok?
+    -- remove all header files which need be removed
+    if removed_count > 0 then
+        table.remove_if(srcheaders, function (i, srcheader)
+            for _, removed_file in ipairs(srcheaders_removed) do
+                local pattern = path.translate(removed_file:gsub("|.*$", ""))
+                if pattern:sub(1, 2):find('%.[/\\]') then
+                    pattern = pattern:sub(3)
+                end
+                pattern = path.pattern(pattern)
+                if srcheader:match(pattern) then
+                    table.remove(dstheaders, i)
+                    return true
+                end
+            end
+        end)
+    end
     return srcheaders, dstheaders
 end
 
@@ -2034,8 +2058,11 @@ function target.apis()
         ,   "target.add_cleanfiles"
         ,   "target.add_configfiles"
         ,   "target.add_installfiles"
-            -- target.del_xxx
+            -- target.del_xxx (deprecated)
         ,   "target.del_files"
+            -- target.remove_xxx
+        ,   "target.remove_files"
+        ,   "target.remove_headerfiles"
         }
     ,   dictionary =
         {

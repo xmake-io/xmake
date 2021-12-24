@@ -31,7 +31,6 @@ local rule                      = require("project/rule")
 local config                    = require("project/config")
 local platform                  = require("platform/platform")
 local deprecated                = require("base/deprecated")
-local deprecated_interpreter    = require("base/deprecated/interpreter")
 
 -- add_headers for target
 function deprecated_project._api_target_add_headers(interp)
