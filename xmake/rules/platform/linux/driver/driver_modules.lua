@@ -130,6 +130,10 @@ module_exit(hello_exit);
                 arch = "arm"
             elseif target:is_arch("arm64", "arm64-v8a") then
                 arch = "arm64"
+            elseif target:is_arch("mips") then
+                arch = "mips"
+            elseif target:is_arch("ppc", "powerpc") then
+                arch = "powerpc"
             end
             assert(arch, "unknown arch(%s)!", target:arch())
             local cc = target:tool("cc")
@@ -211,6 +215,10 @@ function load(target)
         archsubdir = path.join(sdkdir, "arch", "arm")
     elseif target:is_arch("arm64", "arm64-v8a") then
         archsubdir = path.join(sdkdir, "arch", "arm64")
+    elseif target:is_arch("mips") then
+        archsubdir = path.join(sdkdir, "arch", "mips")
+    elseif target:is_arch("ppc", "powerpc") then
+        archsubdir = path.join(sdkdir, "arch", "powerpc")
     else
         raise("rule(platform.linux.driver): unsupported arch(%s)!", target:arch())
     end
