@@ -133,6 +133,11 @@ function _add_target_shared(cmakelists, target)
     cmakelists:print("set_target_properties(%s PROPERTIES LIBRARY_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path(target:targetdir()))
 end
 
+-- add target: headeronly
+function _add_target_headeronly(cmakelists, target)
+    cmakelists:print("add_library(%s INTERFACE)", target:name())
+end
+
 -- add target dependencies
 function _add_target_dependencies(cmakelists, target)
     local deps = target:get("deps")
@@ -658,6 +663,10 @@ function _add_target(cmakelists, target)
         _add_target_static(cmakelists, target)
     elseif targetkind == "shared" then
         _add_target_shared(cmakelists, target)
+    elseif targetkind == 'headeronly' then
+        _add_target_headeronly(cmakelists, target)
+        _add_target_include_directories(cmakelists, target)
+        return
     else
         raise("unknown target kind %s", target:kind())
     end
