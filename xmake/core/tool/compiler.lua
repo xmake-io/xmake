@@ -93,7 +93,6 @@ end
 -- load compiler tool
 function compiler._load_tool(sourcekind, target)
 
-    print(sourcekind, target:name())
     -- get program from target
     local program, toolname, toolchain_info
     if target and target.tool then
