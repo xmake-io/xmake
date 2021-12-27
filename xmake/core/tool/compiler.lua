@@ -93,6 +93,7 @@ end
 -- load compiler tool
 function compiler._load_tool(sourcekind, target)
 
+    print(sourcekind, target:name())
     -- get program from target
     local program, toolname, toolchain_info
     if target and target.tool then
@@ -111,6 +112,9 @@ end
 
 -- load the compiler from the given source kind
 function compiler.load(sourcekind, target)
+    if not sourcekind then
+        return nil, "unknown source kind!"
+    end
 
     -- load compiler tool first (with cache)
     local compiler_tool, program_or_errors = compiler._load_tool(sourcekind, target)
