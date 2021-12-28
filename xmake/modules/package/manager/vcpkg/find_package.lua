@@ -26,6 +26,42 @@ import("core.project.config")
 import("core.project.target")
 import("detect.sdks.find_vcpkgdir")
 import("package.manager.vcpkg.configurations")
+import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
+
+-- we iterate over each pkgconfig file to extract the required data
+function _find_package_from_pkgconfig(pkgconfig_files, opt)
+    opt = opt or {}
+    local foundpc = false
+    local result = {includedirs = {}, linkdirs = {}, links = {}}
+    for _, pkgconfig_file in ipairs(pkgconfig_files) do
+        local pkgconfig_dir = path.join(opt.installdir, path.directory(pkgconfig_file))
+        local pkgconfig_name = path.basename(pkgconfig_file)
+        local pcresult = find_package_from_pkgconfig(pkgconfig_name, {configdirs = pkgconfig_dir, linkdirs = opt.linkdirs})
+
+        -- the pkgconfig file has been parse successfully
+        if pcresult then
+            for _, includedir in ipairs(pcresult.includedirs) do
+                table.insert(result.includedirs, includedir)
+            end
+            for _, linkdir in ipairs(pcresult.linkdirs) do
+                table.insert(result.linkdirs, linkdir)
+            end
+            for _, link in ipairs(pcresult.links) do
+                table.insert(result.links, link)
+            end
+            -- version should be the same if a pacman package contains multiples .pc
+            result.version = pcresult.version
+            foundpc = true
+        end
+    end
+
+    if foundpc == true then
+        result.includedirs = table.unique(result.includedirs)
+        result.linkdirs = table.unique(result.linkdirs)
+        result.links = table.reverse_unique(result.links)
+        return result
+    end
+end
 
 function _find_package(vcpkgdir, name, opt)
 
@@ -65,12 +101,18 @@ function _find_package(vcpkgdir, name, opt)
 
     -- save includedirs, linkdirs and links
     local result = nil
+    local pkgconfig_files = {}
     local info = io.readfile(infofile)
     if info then
         for _, line in ipairs(info:split('\n')) do
             line = line:trim()
             if plat == "windows" then
                 line = line:lower()
+            end
+
+            -- get pkgconfig files
+            if line:find(triplet .. (mode == "debug" and "/debug" or "") .. "/lib/pkgconfig/", 1, true) and line:endswith(".pc") then
+                table.insert(pkgconfig_files, line)
             end
 
             -- get includedirs
@@ -103,6 +145,14 @@ function _find_package(vcpkgdir, name, opt)
                     table.insert(result.libfiles, path.join(installdir, path.directory(line), path.filename(line)))
                 end
             end
+        end
+    end
+
+    -- find result from pkgconfig first
+    if #pkgconfig_files > 0 then
+        local pkgconfig_result = _find_package_from_pkgconfig(pkgconfig_files, {installdir = installdir, linkdirs = result and result.linkdirs})
+        if pkgconfig_result then
+            result = pkgconfig_result
         end
     end
 
