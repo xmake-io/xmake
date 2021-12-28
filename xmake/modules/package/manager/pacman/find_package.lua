@@ -75,7 +75,7 @@ function _find_package_from_list(list, name, pacman, opt)
     end
     result.includedirs = table.unique(result.includedirs)
     result.linkdirs = table.unique(result.linkdirs)
-    result.links = table.unique(result.links)
+    result.links = table.reverse_unique(result.links)
 
     -- use pacman package version as version
     local version = try { function() return os.iorunv(pacman.program, {"-Q", name}) end }
@@ -115,17 +115,14 @@ function main(name, opt)
 
     -- parse package files list
     local linkdirs = {}
-    local has_includes = false
     local pkgconfig_files = {}
     for _, line in ipairs(list:split('\n', {plain = true})) do
         line = line:trim():split('%s+')[2]
         if line:find("/pkgconfig/", 1, true) and line:endswith(".pc") then
-            pkgconfig_files[path.basename(line)] = line
+            table.insert(pkgconfig_files, line)
         end
         if line:endswith(".so") or line:endswith(".a") or line:endswith(".lib") then
             table.insert(linkdirs, path.directory(line))
-        elseif line:find("/include/", 1, true) and (line:endswith(".h") or line:endswith(".hpp")) then
-            has_includes = true
         end
     end
     linkdirs = table.unique(linkdirs)
@@ -133,7 +130,7 @@ function main(name, opt)
     -- we iterate over each pkgconfig file to extract the required data
     local foundpc = false
     local result = {includedirs = {}, linkdirs = {}, links = {}}
-    for _, pkgconfig_file in pairs(pkgconfig_files) do
+    for _, pkgconfig_file in ipairs(pkgconfig_files) do
         local pkgconfig_dir = path.directory(pkgconfig_file)
         local pkgconfig_name = path.basename(pkgconfig_file)
         local pcresult = find_package_from_pkgconfig(pkgconfig_name, {configdirs = pkgconfig_dir, linkdirs = linkdirs})
@@ -158,7 +155,7 @@ function main(name, opt)
     if foundpc == true then
         result.includedirs = table.unique(result.includedirs)
         result.linkdirs = table.unique(result.linkdirs)
-        result.links = table.unique(result.links)
+        result.links = table.reverse_unique(result.links)
     else
         -- if there is no .pc, we parse the package content to obtain the data we want
         result = _find_package_from_list(list, name, pacman, opt)
