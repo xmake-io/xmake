@@ -147,7 +147,7 @@ module_exit(hello_exit);
                 if line:endswith("stub.c") then
                     for _, cflag in ipairs(line:split("%s+")) do
                         if cflag:startswith("-f") or cflag:startswith("-m")
-                        or (cflag:startswith("-W") and not cflag:startswith("-Wp,-MMD,"))
+                        or (cflag:startswith("-W") and not cflag:startswith("-Wp,-MMD,") and not cflag:startswith("-Wp,-MD,"))
                         or (cflag:startswith("-D") and not cflag:startswith("-DKBUILD_")) then
                             cflags = cflags or {}
                             table.insert(cflags, cflag)
