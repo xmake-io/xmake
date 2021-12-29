@@ -127,7 +127,7 @@ function _get_ldflags_from_packagedeps(package, opt)
 end
 
 -- get the build environments
-function buildenvs(package)
+function buildenvs(package, opt)
     local envs = {}
     opt = opt or {}
     if package:is_plat(os.host()) then
@@ -232,7 +232,7 @@ function generate(package, configs, opt)
     end
 
     -- do configure
-    os.vrunv("meson", argv, {envs = opt.envs or buildenvs(package)})
+    os.vrunv("meson", argv, {envs = opt.envs or buildenvs(package, opt)})
 end
 
 -- build package
