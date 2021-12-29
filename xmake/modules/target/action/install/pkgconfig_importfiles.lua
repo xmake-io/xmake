@@ -42,7 +42,9 @@ function main(target, opt)
     -- get libs
     local libs = ""
     for _, linkdir in ipairs(linkdirs) do
-        libs = libs .. "-L" .. linkdir
+        if linkdir ~= path.join(installdir, "lib") then
+            libs = libs .. " -L" .. (linkdir:gsub("\\", "/"))
+        end
     end
     libs = libs .. " -L${libdir}"
     if not target:is_headeronly() then
@@ -54,7 +56,9 @@ function main(target, opt)
     -- get cflags
     local cflags = ""
     for _, includedir in ipairs(includedirs) do
-        cflags = cflags .. "-I" .. includedir
+        if includedir ~= path.join(installdir, "include") then
+            cflags = cflags .. " -I" .. (includedir:gsub("\\", "/"))
+        end
     end
     cflags = cflags .. " -I${includedir}"
 
@@ -64,7 +68,7 @@ function main(target, opt)
     -- generate a *.pc file
     local file = io.open(pcfile, 'w')
     if file then
-        file:print("prefix=%s", installdir)
+        file:print("prefix=%s", installdir:gsub("\\", "/"))
         file:print("exec_prefix=${prefix}")
         file:print("libdir=${exec_prefix}/lib")
         file:print("includedir=${prefix}/include")

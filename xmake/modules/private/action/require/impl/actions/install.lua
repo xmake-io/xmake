@@ -55,8 +55,11 @@ function _patch_pkgconfig(package)
 
     -- get libs
     local libs = ""
+    local installdir = package:installdir()
     for _, linkdir in ipairs(fetchinfo.linkdirs) do
-        libs = libs .. " -L" .. linkdir
+        if linkdir ~= path.join(installdir, "lib") then
+            libs = libs .. " -L" .. (linkdir:gsub("\\", "/"))
+        end
     end
     libs = libs .. " -L${libdir}"
     for _, link in ipairs(fetchinfo.links) do
@@ -69,14 +72,16 @@ function _patch_pkgconfig(package)
     -- cflags
     local cflags = ""
     for _, includedir in ipairs(fetchinfo.includedirs) do
-        cflags = cflags .. " -I" .. includedir
+        if includedir ~= path.join(installdir, "include") then
+            cflags = cflags .. " -I" .. (includedir:gsub("\\", "/"))
+        end
     end
     cflags = cflags .. " -I${includedir}"
 
     -- patch a *.pc file
     local file = io.open(pcfile, 'w')
     if file then
-        file:print("prefix=%s", package:installdir())
+        file:print("prefix=%s", installdir:gsub("\\", "/"))
         file:print("exec_prefix=${prefix}")
         file:print("libdir=${exec_prefix}/lib")
         file:print("includedir=${prefix}/include")
