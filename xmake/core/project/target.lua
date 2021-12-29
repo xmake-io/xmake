@@ -273,6 +273,11 @@ function _instance:_invalidate(name)
     end
 end
 
+-- is loaded?
+function _instance:_is_loaded()
+    return self._LOADED
+end
+
 -- get the target info
 --
 -- e.g.
@@ -649,7 +654,7 @@ end
 
 -- get target deps
 function _instance:deps()
-    if not self._LOADED then
+    if not self:_is_loaded() then
         os.raise("please call target:deps() or target:dep() in after_load()!")
     end
     return self._DEPS
@@ -657,7 +662,7 @@ end
 
 -- get target ordered deps
 function _instance:orderdeps()
-    if not self._LOADED then
+    if not self:_is_loaded() then
         os.raise("please call target:orderdeps() in after_load()!")
     end
     return self._ORDERDEPS
@@ -1941,6 +1946,9 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
+    if not self:_is_loaded() then
+        os.raise("we cannot get tool(%s) before target(%s) is loaded, maybe it is called on_load() now.", toolkind, self:name())
+    end
     return toolchain.tool(self:toolchains(), toolkind, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
                                                         before_get = function()
         -- get program from set_toolchain/set_tools (deprecated)

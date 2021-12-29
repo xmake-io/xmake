@@ -192,6 +192,9 @@ function load(target)
     -- we need only need binary kind, because we will rewrite on_link
     target:set("kind", "binary")
     target:set("extension", ".ko")
+end
+
+function config(target)
 
     -- get and save linux-headers sdk
     local linux_headers = _get_linux_headers_sdk(target)
