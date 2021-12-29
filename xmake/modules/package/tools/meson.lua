@@ -25,6 +25,7 @@ import("core.tool.toolchain")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("package.tools.ninja")
+import("lib.detect.find_tool")
 
 -- get build directory
 function _get_buildir(package, opt)
@@ -153,6 +154,10 @@ function buildenvs(package)
         envs.SHFLAGS   = table.concat(shflags, ' ')
         if package:is_plat("windows") then
             envs = os.joinenvs(envs, _get_msvc_runenvs(package))
+            local pkgconf = find_tool("pkgconf")
+            if pkgconf then
+                envs.PKG_CONFIG = pkgconf.program
+            end
         end
     else
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
