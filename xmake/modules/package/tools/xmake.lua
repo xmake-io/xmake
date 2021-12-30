@@ -74,6 +74,13 @@ function _get_configs(package, configs)
         if toolchain_name then
             table.insert(configs, "--toolchain=" .. toolchain_name)
         end
+        local names = {"ld", "sh", "ar", "cc", "cxx"}
+        for _, name in ipairs(names) do
+            local value = get_config(name)
+            if value ~= nil then
+                table.insert(configs, "--" .. name .. "=" .. tostring(value))
+            end
+        end
     else
         local names = {"ndk", "ndk_sdkver", "vs", "mingw", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
         for _, name in ipairs(names) do
