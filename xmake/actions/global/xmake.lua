@@ -49,6 +49,7 @@ task("global")
                                                                 return import("core.theme.theme.names")()
                                                             end}
                 ,   {nil, "debugger",       "kv", "auto"    , "The debugger program path."                                }
+                ,   {nil, "ccache",         "kv", nil       , "Enable or disable the c/c++ compiler cache."               }
                 ,   {category = "Build Configuration"}
                 ,   {nil, "build_warning",  "kv", nil       , "Enable the warnings output by default when building."      }
                 ,   {nil, "cachedir",       "kv", nil       , "The global cache directory."                               }
