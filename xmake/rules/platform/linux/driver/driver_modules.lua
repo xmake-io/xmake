@@ -157,11 +157,13 @@ module_exit(hello_exit);
                 local ldflags = line:match("%-ld (.+) %-o ") or line:match("ld (.+) %-o ")
                 if ldflags then
                     local ko = ldflags:find("-T ", 1, true)
-                    for _, ldflag in ipairs(ldflags:split("%s+")) do
-                        if ko then
-                            if ldflag:startswith("--build-id=") or ldflag:startswith("-T ") then
-                                break
+                    for _, ldflag in ipairs(os.argv(ldflags)) do
+                        if ldflag:endswith(".lds") then
+                            if not path.is_absolute(ldflag) then
+                                ldflag = path.absolute(ldflag, sdkdir)
                             end
+                        end
+                        if ko then
                             -- e.g. aarch64-linux-gnu-ld -r -EL  -maarch64elf --build-id=sha1  -T scripts/module.lds -o hello.ko hello.o hello.mod.o
                             ldflags_ko = ldflags_ko or {}
                             table.insert(ldflags_ko, ldflag)
@@ -268,14 +270,12 @@ function link(target, opt)
         progress.show(opt.progress, "${color.build.object}linking.$(mode) %s", targetfile)
 
         -- get module scripts
-        local modpost, ldscriptfile
+        local modpost
         local linux_headers = target:data("linux.driver.linux_headers")
         if linux_headers then
             modpost = path.join(linux_headers.sdkdir, "scripts", "mod", "modpost")
-            ldscriptfile = path.join(linux_headers.sdkdir, "scripts", "module.lds")
         end
         assert(modpost and os.isfile(modpost), "scripts/mod/modpost not found!")
-        assert(ldscriptfile and os.isfile(ldscriptfile), "scripts/module.lds not found!")
 
         -- get ld
         local ld = target:tool("ld")
@@ -331,7 +331,7 @@ function link(target, opt)
             table.join2(argv, ldflags_ko)
         end
         local targetfile_o = target:objectfile(targetfile)
-        table.join2(argv, "--build-id=sha1", "-T", ldscriptfile, "-o", targetfile, targetfile_o, targetfile_mod_o)
+        table.join2(argv, "-o", targetfile, targetfile_o, targetfile_mod_o)
         os.mkdir(path.directory(targetfile))
         os.vrunv(ld, argv)
 
