@@ -126,7 +126,7 @@ module_init(hello_init);
 module_exit(hello_exit);
         ]])
         local argv = {"-C", sdkdir, "V=1", "M=" .. tmpdir, "modules"}
-        if target:is_plat("cross") then
+        if not target:is_plat(os.subhost()) then
             -- e.g.	$(MAKE) -C $(KERN_DIR) V=1 ARCH=arm64 CROSS_COMPILE=/mnt/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu- M=$(PWD) modules
             local arch
             if target:is_arch("arm", "armv7") then
