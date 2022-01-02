@@ -99,8 +99,11 @@ function _get_cflags_from_make(target, sdkdir)
         local make = assert(find_tool("make"), "make not found!")
         local tmpdir = os.tmpfile() .. ".dir"
         local makefile = path.join(tmpdir, "Makefile")
-        local stubfile = path.join(tmpdir, "stub.c")
-        io.writefile(makefile, "obj-m := stub.o")
+        local stubfile = path.join(tmpdir, "src/stub.c")
+        local foofile  = path.join(tmpdir, "src/foo.c")
+        io.writefile(makefile, [[obj-m := stub.o
+stub-objs := src/stub.o src/foo.o]])
+        io.writefile(foofile, "")
         io.writefile(stubfile, [[
 #include <linux/init.h>
 #include <linux/module.h>
