@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 
@@ -304,7 +305,18 @@ function main(opt)
         if not vcvarsall then
             -- find vs from some logical drives paths
             paths = {}
-            for _, logical_drive in ipairs(winos.logical_drives()) do
+            local logical_drives = winos.logical_drives()
+            -- we attempt to find vs from wdk directory
+            -- wdk: E:\Program Files\Windows Kits\10
+            -- vcvarsall: E:\Program Files\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build
+            local wdk = config.get("wdk")
+            if wdk and os.isdir(wdk) then
+                local p = wdk:find("Program Files")
+                if p then
+                    table.insert(logical_drives, wdk:sub(1, p - 1))
+                end
+            end
+            for _, logical_drive in ipairs(logical_drives) do
                 if os.isdir(path.join(logical_drive, "Program Files (x86)")) then
                     table.insert(paths, path.join(logical_drive, "Program Files (x86)", "Microsoft Visual Studio", vsvers[version], "*", "VC", "Auxiliary", "Build"))
                     table.insert(paths, path.join(logical_drive, "Program Files (x86)", "Microsoft Visual Studio " .. version, "VC"))
