@@ -32,6 +32,9 @@ rule("qt.moc")
         if not os.isexec(moc) and qt.libexecdir then
             moc = path.join(qt.libexecdir, is_host("windows") and "moc.exe" or "moc")
         end
+        if not os.isexec(moc) and qt.libexecdir_host then
+            moc = path.join(qt.libexecdir_host, is_host("windows") and "moc.exe" or "moc")
+        end
         assert(moc and os.isexec(moc), "moc not found!")
 
         -- get c++ source file for moc

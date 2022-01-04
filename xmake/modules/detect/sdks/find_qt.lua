@@ -35,7 +35,7 @@ function _find_sdkdir(sdkdir, sdkver)
         table.insert(subdirs, path.join(sdkver or "*", is_arch("x86_64") and "gcc_64" or "gcc_32", "bin"))
         table.insert(subdirs, path.join(sdkver or "*", is_arch("x86_64") and "clang_64" or "clang_32", "bin"))
     elseif is_plat("macosx") then
-        table.insert(subdirs, path.join(sdkver or "*", "macos", "bin")) -- for Qt 6.x
+        table.insert(subdirs, path.join(sdkver or "*", "macos", "bin")) -- for Qt 6.2
         table.insert(subdirs, path.join(sdkver or "*", is_arch("x86_64") and "clang_64" or "clang_32", "bin"))
     elseif is_plat("iphoneos") then
         table.insert(subdirs, path.join(sdkver or "*", "ios", "bin"))
@@ -123,11 +123,7 @@ end
 
 -- find qmake
 function _find_qmake(sdkdir, sdkver)
-
-    -- find qt directory
     sdkdir = _find_sdkdir(sdkdir, sdkver)
-
-    -- get the bin directory
     local qmake = find_tool("qmake", {paths = sdkdir and path.join(sdkdir, "bin")})
     if qmake then
         return qmake.program
@@ -178,7 +174,26 @@ function _find_qt(sdkdir, sdkver)
     local pluginsdir = qtenvs.QT_INSTALL_PLUGINS
     local includedir = qtenvs.QT_INSTALL_HEADERS
     local mkspecsdir = qtenvs.QMAKE_MKSPECS or path.join(qtenvs.QT_INSTALL_ARCHDATA, "mkspecs")
-    return {sdkdir = sdkdir, bindir = bindir, libexecdir = libexecdir, libdir = libdir, includedir = includedir, qmldir = qmldir, pluginsdir = pluginsdir, mkspecsdir = mkspecsdir, sdkver = sdkver}
+    -- for 6.2
+    local bindir_host
+    if libexecdir and is_plat("android", "iphoneos") then
+        local rootdir = path.directory(path.directory(bindir))
+        if is_host("macosx") then
+            bindir_host = path.join(rootdir, "macos", "bin")
+        else
+            -- TODO
+        end
+    end
+    local libexecdir_host
+    if libexecdir and is_plat("android", "iphoneos") then
+        local rootdir = path.directory(path.directory(libexecdir))
+        if is_host("macosx") then
+            libexecdir_host = path.join(rootdir, "macos", "libexec")
+        else
+            -- TODO
+        end
+    end
+    return {sdkdir = sdkdir, bindir = bindir, bindir_host = bindir_host, libexecdir = libexecdir, libexecdir_host = libexecdir_host, libdir = libdir, includedir = includedir, qmldir = qmldir, pluginsdir = pluginsdir, mkspecsdir = mkspecsdir, sdkver = sdkver}
 end
 
 -- find qt sdk toolchains

@@ -29,6 +29,9 @@ rule("qt.qrc")
         if not os.isexec(rcc) and qt.libexecdir then
             rcc = path.join(qt.libexecdir, is_host("windows") and "rcc.exe" or "rcc")
         end
+        if not os.isexec(rcc) and qt.libexecdir_host then
+            rcc = path.join(qt.libexecdir_host, is_host("windows") and "rcc.exe" or "rcc")
+        end
         assert(os.isexec(rcc), "rcc not found!")
 
         -- save rcc

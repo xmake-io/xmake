@@ -71,6 +71,9 @@ function main(target, opt)
 
     -- get androiddeployqt
     local androiddeployqt = path.join(qt.bindir, "androiddeployqt" .. (is_host("windows") and ".exe" or ""))
+    if not os.isexec(androiddeployqt) and qt.bindir_host then
+        androiddeployqt = path.join(qt.bindir_host, "androiddeployqt" .. (is_host("windows") and ".exe" or ""))
+    end
     assert(os.isexec(androiddeployqt), "androiddeployqt not found!")
 
     -- get working directory
