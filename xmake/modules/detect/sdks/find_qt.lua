@@ -35,7 +35,10 @@ function _find_sdkdir(sdkdir, sdkver)
         table.insert(subdirs, path.join(sdkver or "*", is_arch("x86_64") and "gcc_64" or "gcc_32", "bin"))
         table.insert(subdirs, path.join(sdkver or "*", is_arch("x86_64") and "clang_64" or "clang_32", "bin"))
     elseif is_plat("macosx") then
+        table.insert(subdirs, path.join(sdkver or "*", "macos", "bin")) -- for Qt 6.x
         table.insert(subdirs, path.join(sdkver or "*", is_arch("x86_64") and "clang_64" or "clang_32", "bin"))
+    elseif is_plat("iphoneos") then
+        table.insert(subdirs, path.join(sdkver or "*", "ios", "bin"))
     elseif is_plat("windows") then
         local vs = config.get("vs")
         if vs then
