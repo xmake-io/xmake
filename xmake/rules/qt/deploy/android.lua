@@ -158,9 +158,14 @@ function main(target, opt)
         if os.isexec(qmlimportscanner) then
             settings_file:print('   "qml-importscanner-binary": "%s",', qmlimportscanner)
         end
-        -- TODO
-        -- settings_file:print('    "android-min-sdk-version": "23",')
-        -- settings_file:print('    "android-target-sdk-version": "30",')
+        local minsdkversion = target:values("qt.android.minsdkversion")
+        if minsdkversion then
+            settings_file:print('    "android-min-sdk-version": "%s",', tostring(minsdkversion))
+        end
+        local targetsdkversion = target:values("qt.android.targetsdkversion")
+        if targetsdkversion then
+            settings_file:print('    "android-target-sdk-version": "%s",', tostring(targetsdkversion))
+        end
         settings_file:print('   "useLLVM": true,')
         if qt_sdkver and qt_sdkver:ge("5.14") then
             -- @see https://codereview.qt-project.org/c/qt-creator/qt-creator/+/287145
