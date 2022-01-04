@@ -162,6 +162,14 @@ function main(target, opt)
         settings_file:print('   "ndk-host": "%s",', ndk_host)
         settings_file:print('   "target-architecture": "%s",', target_arch)
         settings_file:print('   "qml-root-path": "%s",', _escape_path(os.projectdir()))
+        -- for 6.2.x
+        local qmlimportscanner = path.join(qt.libexecdir, "qmlimportscanner" .. (is_host("windows") and "moc.exe" or "moc"))
+        if not os.isexec(qmlimportscanner) and qt.libexecdir_host then
+            qmlimportscanner = path.join(qt.libexecdir_host, "qmlimportscanner" .. (is_host("windows") and "moc.exe" or "moc"))
+        end
+        if os.isexec(qmlimportscanner) then
+            settings_file:print('   "qml-importscanner-binary": "%s",', qmlimportscanner)
+        end
         if android_srcs then
             settings_file:print('   "android-package-source-directory": "%s",', _escape_path(android_srcs))
             --settings_file:print('   "android-extra-libs":"c:/libs",')
