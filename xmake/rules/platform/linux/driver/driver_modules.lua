@@ -117,6 +117,10 @@ module_exit(hello_exit);
                         or (cflag:startswith("-W") and not cflag:startswith("-Wp,-MMD,") and not cflag:startswith("-Wp,-MD,"))
                         or (cflag:startswith("-D") and not cflag:find("KBUILD_MODNAME=") and not cflag:find("KBUILD_BASENAME=")) then
                             has_cflag = true
+                            local macro = cflag:match("%-D\"(.+)\"") -- -D"KBUILD_XXX=xxx"
+                            if macro then
+                                cflag = "-D" .. macro
+                            end
                         elseif cflag == "-I" or cflag == "-isystem" or cflag == "-include" then
                             include_cflag = cflag
                         elseif cflag:startswith("-I") or include_cflag then
