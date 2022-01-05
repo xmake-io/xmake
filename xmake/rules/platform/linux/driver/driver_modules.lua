@@ -115,7 +115,7 @@ module_exit(hello_exit);
                         local has_cflag = false
                         if cflag:startswith("-f") or cflag:startswith("-m")
                         or (cflag:startswith("-W") and not cflag:startswith("-Wp,-MMD,") and not cflag:startswith("-Wp,-MD,"))
-                        or (cflag:startswith("-D") and not cflag:find("KBUILD_MODNAME=") not cflag:find("KBUILD_BASENAME=")) then
+                        or (cflag:startswith("-D") and not cflag:find("KBUILD_MODNAME=") and not cflag:find("KBUILD_BASENAME=")) then
                             has_cflag = true
                         elseif cflag == "-I" or cflag == "-isystem" or cflag == "-include" then
                             include_cflag = cflag
