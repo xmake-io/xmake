@@ -51,44 +51,6 @@ function _get_linux_headers_sdk(target)
     return {version = version, sdkdir = linux_headersdir, includedir = includedir}
 end
 
--- get c system search include directory of gcc
---
--- e.g. gcc -E -Wp,-v -xc /dev/null
---
--- ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
--- ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/10/include-fixed"
--- ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/10/../../../../x86_64-linux-gnu/include"
--- #include "..." search starts here:
--- #include <...> search starts here:
--- /usr/lib/gcc/x86_64-linux-gnu/10/include        <-- we need get it
--- /usr/local/include
--- /usr/include/x86_64-linux-gnu
--- /usr/include
--- End of search list.
-function _get_gcc_includedir(target)
-    local key = "gcc.includedir." .. target:plat() .. target:arch()
-    local includedir = memcache.get("linux.driver", key)
-    if includedir == nil then
-        local gcc, toolname = target:tool("cc")
-        assert(toolname, "gcc")
-
-        local _, result = try {function () return os.iorunv(gcc, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
-        if result then
-            for _, line in ipairs(result:split("\n", {plain = true})) do
-                line = line:trim()
-                if os.isdir(line) then
-                    includedir = line
-                    break
-                elseif line:startswith("End") then
-                    break
-                end
-            end
-        end
-        memcache.set("linux.driver", key, includedir or false)
-    end
-    return includedir or nil
-end
-
 -- get cflags from make
 function _get_cflags_from_make(target, sdkdir)
     local key = target:plat() .. target:arch()
@@ -148,10 +110,32 @@ module_exit(hello_exit);
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
                 if line:endswith("stub.c") then
+                    local include_cflag = false
                     for _, cflag in ipairs(line:split("%s+")) do
+                        local has_cflag = false
                         if cflag:startswith("-f") or cflag:startswith("-m")
                         or (cflag:startswith("-W") and not cflag:startswith("-Wp,-MMD,") and not cflag:startswith("-Wp,-MD,"))
                         or (cflag:startswith("-D") and not cflag:startswith("-DKBUILD_")) then
+                            has_cflag = true
+                        elseif cflag == "-I" or cflag == "-isystem" or cflag == "-include" then
+                            include_cflag = cflag
+                        elseif cflag:startswith("-I") or include_cflag then
+                            local includedir = cflag
+                            if cflag:startswith("-I") then
+                                includedir = cflag:sub(3)
+                            end
+                            if not path.is_absolute(includedir) then
+                                includedir = path.absolute(includedir, sdkdir)
+                            end
+                            if cflag:startswith("-I") then
+                                cflag = "-I" .. includedir
+                            else
+                                cflag = include_cflag .. " " .. includedir
+                            end
+                            has_cflag = true
+                            include_cflag = nil
+                        end
+                        if has_cflag then
                             cflags = cflags or {}
                             table.insert(cflags, cflag)
                         end
@@ -213,37 +197,6 @@ function config(target)
         assert(not target:rule(rulename), "target(%s) is linux driver module, it need not rule(%s)!", target:name(), rulename)
     end
 
-    -- add includedirs
-    local sdkdir = linux_headers.sdkdir
-    local includedir = linux_headers.includedir
-    local archsubdir
-    if target:is_arch("x86_64", "i386") then
-        archsubdir = path.join(sdkdir, "arch", "x86")
-    elseif target:is_arch("arm", "armv7") then
-        archsubdir = path.join(sdkdir, "arch", "arm")
-    elseif target:is_arch("arm64", "arm64-v8a") then
-        archsubdir = path.join(sdkdir, "arch", "arm64")
-    elseif target:is_arch("mips") then
-        archsubdir = path.join(sdkdir, "arch", "mips")
-    elseif target:is_arch("ppc", "ppc64", "powerpc", "powerpc64") then
-        archsubdir = path.join(sdkdir, "arch", "powerpc")
-    else
-        raise("rule(platform.linux.driver): unsupported arch(%s)!", target:arch())
-    end
-    assert(archsubdir, "unknown arch(%s) for linux driver modules!", target:arch())
-    local gcc_includedir = _get_gcc_includedir(target)
-    if gcc_includedir then
-        target:add("sysincludedirs", gcc_includedir)
-    end
-    target:add("includedirs", path.join(archsubdir, "include"))
-    target:add("includedirs", path.join(archsubdir, "include", "generated"))
-    target:add("includedirs", includedir)
-    target:add("includedirs", path.join(archsubdir, "include", "uapi"))
-    target:add("includedirs", path.join(archsubdir, "include", "generated", "uapi"))
-    target:add("includedirs", path.join(includedir, "uapi"))
-    target:add("includedirs", path.join(includedir, "generated", "uapi"))
-    target:add("cflags", "-include " .. path.join(includedir, "linux", "kconfig.h"), {force = true})
-    target:add("cflags", "-include " .. path.join(includedir, "linux", "compiler_types.h"), {force = true})
     -- we need disable includedirs from add_packages("linux-headers")
     if target:pkg("linux-headers") then
         target:pkg("linux-headers"):set("includedirs", nil)
@@ -255,7 +208,7 @@ function config(target)
     for _, sourcefile in ipairs(target:sourcefiles()) do
         target:fileconfig_set(sourcefile, {defines = "KBUILD_BASENAME=\"" .. path.basename(sourcefile) .. "\""})
     end
-    local cflags, ldflags_o, ldflags_ko = _get_cflags_from_make(target, sdkdir)
+    local cflags, ldflags_o, ldflags_ko = _get_cflags_from_make(target, linux_headers.sdkdir)
     if cflags then
         target:add("cflags", cflags, {force = true})
         target:data_set("linux.driver.ldflags_o", ldflags_o)
