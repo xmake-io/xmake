@@ -252,6 +252,9 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     target:set("pcheader", nil)
     target:set("pcxxheader", nil)
 
+    -- save languages
+    targetinfo.languages = table.wrap(target:get("languages"))
+
     -- save symbols
     targetinfo.symbols = target:get("symbols")
 

@@ -241,6 +241,15 @@ function _make_configurations(vcxprojfile, vsinfo, target)
             if target.kind == "binary" then
                 vcxprojfile:print("<LinkIncremental>true</LinkIncremental>")
             end
+
+            -- handle ExternalIncludePath (should we handle IncludePath here too?)
+            local externaldirs = {}
+            for _, flag in ipairs(targetinfo.commonflags) do
+                flag:gsub("[%-/]external:I(.*)", function (dir) table.insert(externaldirs, dir) end)
+            end
+            if #externaldirs > 0 then
+                vcxprojfile:print("<ExternalIncludePath>%s;</ExternalIncludePath>", table.concat(externaldirs, ";"))
+            end
         vcxprojfile:leave("</PropertyGroup>")
     end
     
@@ -320,6 +329,15 @@ function _make_source_options(vcxprojfile, flags, condition)
         vcxprojfile:print("<ExternalTemplatesDiagnostics%s>false</ExternalTemplatesDiagnostics>", condition)
     end
 
+    -- make DisableSpecificWarnings
+    local disabledwarnings = {}
+    for _, flag in ipairs(flags) do
+        flag:gsub("[%-/]wd(%d+)", function (warn) table.insert(disabledwarnings, warn) end)
+    end
+    if #disabledwarnings > 0 then
+        vcxprojfile:print("<DisableSpecificWarnings>%s;%%(DisableSpecificWarnings)</DisableSpecificWarnings>", table.concat(disabledwarnings, ";"))
+    end
+
     -- make PreprocessorDefinitions
     local defstr = ""
     for _, flag in ipairs(flags) do
@@ -380,7 +398,11 @@ function _make_source_options(vcxprojfile, flags, condition)
 
     -- make AdditionalOptions
     local additional_flags = {}
-    local excludes = {"Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "W4", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd", "fp", "I", "D", "Gm-", "Gm", "MP", "external:W0", "external:W1", "external:W2", "external:W3", "external:W4", "external:templates-", "external:templates" }
+    local excludes = {
+        "Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "W4", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", 
+        "Fd", "fp", "I", "D", "Gm-", "Gm", "MP", "external:W0", "external:W1", "external:W2", "external:W3", "external:W4", "external:templates-?", "external:I",
+        "std:c11", "std:c17", "std:c%+%+11", "std:c%+%+14", "std:c%+%+17", "std:c%+%+20", "std:c%+%+latest", "nologo", "wd(%d+)"
+    }
     for _, flag in ipairs(flags) do
         local excluded = false
         for _, exclude in ipairs(excludes) do
@@ -437,7 +459,7 @@ function _make_custom_commands(vcxprojfile, target)
 end
 
 -- make common item
-function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
+function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
 
     -- enter ItemDefinitionGroup
     vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
@@ -458,22 +480,54 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
 
         -- make linker flags
         local flags = {}
-        for _, flag in ipairs(_make_linkflags(targetinfo, vcxprojdir)) do
+        local excludes = {
+            "nologo", "machine:%w+", "pdb:.+%.pdb", "debug"
+        }   
+        local libdirs = {}
+        local links = {}
+        for _, flag in ipairs(_make_linkflags(targetinfo, target.project_dir)) do
 
             local flag_lower = flag:lower()
 
             -- remove "-subsystem:windows"
             if flag_lower:find("[%-/]subsystem:windows") then
                 subsystem = "Windows"
-            -- remove "-machine:[x86|x64]", "-pdb:*.pdb" and "-debug"
-            elseif not flag_lower:find("[%-/]machine:%w+") and not flag_lower:find("[%-/]pdb:.+%.pdb") and not flag_lower:find("[%-/]debug") then
-                table.insert(flags, flag)
+            elseif flag_lower:find("[%-/]libpath") then
+                -- link dir
+                flag:gsub("[%-/]libpath:(.*)", function (dir) table.insert(libdirs, dir) end)
+            elseif flag_lower:find("[^%-/].+%.lib") then
+                -- link file
+                table.insert(links, flag)
+            else
+                local excluded = false
+                for _, exclude in ipairs(excludes) do
+                    if flag:find("[%-/]" .. exclude) then
+                        excluded = true
+                        break
+                    end
+                end
+                if not excluded then
+                    table.insert(flags, flag)
+                end
             end
+
         end
-        flags = os.args(flags)
+
+        -- make AdditionalLibraryDirectories
+        if #libdirs > 0 then
+            vcxprojfile:print("<AdditionalLibraryDirectories>%s;%%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>", table.concat(libdirs, ";"))
+        end
+
+        -- make AdditionalDependencies
+        if #links > 0 then
+            vcxprojfile:print("<AdditionalDependencies>%s;%%(AdditionalDependencies)</AdditionalDependencies>", table.concat(links, ";"))
+        end
 
         -- make AdditionalOptions
-        vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
+        if #flags > 0 then
+            flags = os.args(flags)
+            vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
+        end
 
         -- generate debug infomation?
         if linkerkinds[targetinfo.targetkind] == "Link" then
@@ -506,6 +560,49 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
         -- make source options
         _make_source_options(vcxprojfile, targetinfo.commonflags)
 
+        -- add c and c++ standard
+        local clangflags = {
+            c11       = "stdc11",
+            c17       = "stdc17",
+            clatest   = "stdc17",
+            gnu11     = "stdc11",
+            gnu17     = "stdc17",
+            gnulatest = "stdc17",
+        }
+
+        local cxxlangflags = {
+            cxx11     = "stdcpp11",
+            cxx14     = "stdcpp14",
+            cxx17     = "stdcpp17",
+            cxx1z     = "stdcpp17",
+            cxx20     = "stdcpp20",
+            cxx2a     = "stdcpplatest",
+            cxxlatest = "stdcpplatest",
+            gnuxx11   = "stdcpp11",
+            gnuxx14   = "stdcpp14",
+            gnuxx17   = "stdcpp17",
+            gnuxx1z   = "stdcpp20",
+            gnux20    = "stdcpp20",
+            gnux2a    = "stdcpplatest",
+        }
+
+        local cstandard
+        local cxxstandard
+        for _, lang in pairs(targetinfo.languages) do
+            if cxxlangflags[lang] then
+                cxxstandard = cxxlangflags[lang]
+            elseif clangflags[lang] then
+                cstandard = clangflags[lang]
+            end
+        end
+
+        if cxxstandard then
+            vcxprojfile:print("<LanguageStandard>%s</LanguageStandard>", cxxstandard)
+        end
+
+        if cstandard then
+            vcxprojfile:print("<LanguageStandard_C>%s</LanguageStandard_C>", cstandard)
+        end
 
         -- use c or c++ precompiled header
         local pcheader = target.pcxxheader or target.pcheader
@@ -516,7 +613,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
             vcxprojfile:print("<PrecompiledHeaderFile>%s</PrecompiledHeaderFile>", path.filename(pcheader))
             local pcoutputfile = targetinfo.pcxxoutputfile or targetinfo.pcoutputfile
             if pcoutputfile then
-                vcxprojfile:print("<PrecompiledHeaderOutputFile>%s</PrecompiledHeaderOutputFile>", path.relative(path.absolute(pcoutputfile), vcxprojdir))
+                vcxprojfile:print("<PrecompiledHeaderOutputFile>%s</PrecompiledHeaderOutputFile>", path.relative(path.absolute(pcoutputfile), target.project_dir))
             end
             vcxprojfile:print("<ForcedIncludeFiles>%s;%%(ForcedIncludeFiles)</ForcedIncludeFiles>", path.filename(pcheader))
         end
@@ -530,8 +627,8 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
     vcxprojfile:leave("</ItemDefinitionGroup>")
 end
 
--- make common items
-function _make_common_items(vcxprojfile, vsinfo, target)
+-- build common items (doesn't print anything)
+function _build_common_items(vsinfo, target)
 
     -- for each mode and arch
     for _, targetinfo in ipairs(target.info) do
@@ -590,7 +687,14 @@ function _make_common_items(vcxprojfile, vsinfo, target)
             sourceflags[sourcefile] = otherflags
         end
         targetinfo.sourceflags = sourceflags
+    end
+end
 
+-- make common items
+function _make_common_items(vcxprojfile, vsinfo, target)
+
+    -- for each mode and arch
+    for _, targetinfo in ipairs(target.info) do
         -- make common item
         _make_common_item(vcxprojfile, vsinfo, target, targetinfo, target.project_dir)
     end
@@ -842,6 +946,9 @@ function make(vsinfo, target)
 
     -- the vcxproj directory
     local vcxprojdir = target.project_dir
+
+    -- build common flags
+    _build_common_items(vsinfo, target)
 
     -- open vcxproj file
     local vcxprojpath = path.join(vcxprojdir, targetname .. ".vcxproj")
