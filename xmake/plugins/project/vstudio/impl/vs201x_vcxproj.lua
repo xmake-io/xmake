@@ -248,7 +248,7 @@ function _make_configurations(vcxprojfile, vsinfo, target)
                 flag:gsub("[%-/]external:I(.*)", function (dir) table.insert(externaldirs, dir) end)
             end
             if #externaldirs > 0 then
-                vcxprojfile:print("<ExternalIncludePath>%s;</ExternalIncludePath>", table.concat(externaldirs, ";"))
+                vcxprojfile:print("<ExternalIncludePath>%s;$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>", table.concat(externaldirs, ";"))
             end
         vcxprojfile:leave("</PropertyGroup>")
     end
