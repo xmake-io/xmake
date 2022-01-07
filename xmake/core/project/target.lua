@@ -1068,8 +1068,7 @@ function _instance:filename()
             plat = self:plat(), arch = self:arch(),
             prefixname = prefixname,
             suffixname = suffixname,
-            extension = extension,
-            format = self:linker():format(targetkind)})
+            extension = extension})
     end
     return filename
 end

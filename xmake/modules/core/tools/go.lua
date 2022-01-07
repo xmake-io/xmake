@@ -25,18 +25,12 @@ import("core.project.project")
 
 -- init it
 function init(self)
-
-    -- init arflags
     self:set("gcarflags", "grc")
-
-    -- init the file formats
-    self:set("formats", { static = "$(name).a" })
 end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    local maps =
-    {
+    local maps = {
         none = "-N"
     }
     return maps[level]
@@ -44,15 +38,10 @@ end
 
 -- make the symbol flag
 function nf_symbol(self, level, target, mapkind)
-
-    -- only for compiler
     if mapkind ~= "object" then
         return
     end
-
-    -- the maps
-    local maps =
-    {
+    local maps = {
         debug = "-E"
     }
     return maps[level]
@@ -60,8 +49,7 @@ end
 
 -- make the strip flag
 function nf_strip(self, level)
-    local maps =
-    {
+    local maps = {
         debug = "-s"
     ,   all   = "-s"
     }

@@ -442,13 +442,5 @@ function builder:map_flags(name, values, opt)
     end
 end
 
--- get the format of the given target kind
-function builder:format(targetkind)
-    local formats = self:get("formats")
-    if formats then
-        return formats[targetkind]
-    end
-end
-
 -- return module
 return builder
