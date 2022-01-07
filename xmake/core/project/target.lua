@@ -166,6 +166,7 @@ function _instance:_load_after()
 
     -- leave the environments of the target packages
     os.setenvs(oldenvs)
+    self._LOADED_AFTER = true
     return true
 end
 
@@ -1946,8 +1947,9 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
-    if not self:_is_loaded() then
-        os.raise("we cannot get tool(%s) before target(%s) is loaded, maybe it is called on_load() now.", toolkind, self:name())
+    -- we cannot get tool in on_load, because target:toolchains() has been not checked in configuration stage.
+    if not self._LOADED_AFTER then
+        os.raise("we cannot get tool(%s) before target(%s) is loaded, maybe it is called on_load(), please call it in on_config().", toolkind, self:name())
     end
     return toolchain.tool(self:toolchains(), toolkind, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
                                                         before_get = function()

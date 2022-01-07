@@ -21,7 +21,7 @@
 -- define rule: c++.build.modules
 rule("c++.build.modules")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
-    after_load(function (target)
+    on_config(function (target)
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
         -- @see https://github.com/xmake-io/xmake/issues/1858
         local target_with_modules
@@ -38,12 +38,11 @@ rule("c++.build.modules")
             --
             -- maybe we will have a more fine-grained configuration strategy to disable it in the future.
             target:set("policy", "build.across_targets_in_parallel", false)
-            local _, toolname = target:tool("cxx")
-            if toolname:find("clang", 1, true) then
+            if target:has_tool("cxx", "clang", "clangxx") then
                 import("build_modules.clang").load_parent(target, opt)
-            elseif toolname:find("gcc", 1, true) then
+            elseif target:has_tool("cxx", "gcc", "gxx") then
                 import("build_modules.gcc").load_parent(target, opt)
-            elseif toolname == "cl" then
+            elseif target:has_tool("cxx", "cl") then
                 import("build_modules.msvc").load_parent(target, opt)
             else
                 raise("compiler(%s): does not support c++ module!", toolname)
@@ -51,12 +50,11 @@ rule("c++.build.modules")
         end
     end)
     before_build_files(function (target, batchjobs, sourcebatch, opt)
-        local _, toolname = target:tool("cxx")
-        if toolname:find("clang", 1, true) then
+        if target:has_tool("cxx", "clang", "clangxx") then
             import("build_modules.clang").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
-        elseif toolname:find("gcc", 1, true) then
+        elseif target:has_tool("cxx", "gcc", "gxx") then
             import("build_modules.gcc").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
-        elseif toolname == "cl" then
+        elseif target:has_tool("cxx", "cl") then
             import("build_modules.msvc").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
         else
             raise("compiler(%s): does not support c++ module!", toolname)

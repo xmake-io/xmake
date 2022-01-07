@@ -22,8 +22,7 @@
 rule("platform.windows.def")
     set_extensions(".def")
     on_config("windows", function (target)
-        local _, toolname = target:tool("ld")
-        if toolname == "link" then
+        if target:has_tool("ld", "link") then
             for _, sourcebatch in pairs(target:sourcebatches()) do
                 if sourcebatch.rulename == "platform.windows.def" then
                     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
