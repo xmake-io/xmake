@@ -29,7 +29,7 @@ toolchain("armclang")
     set_toolset("cxx", "armclang")
     set_toolset("ld", "armlink")
     set_toolset("ar", "armar")
-    set_toolset("as", "armasm")
+    set_toolset("as", "armclang")
 
     on_check(function (toolchain)
         import("lib.detect.find_tool")
@@ -47,7 +47,8 @@ toolchain("armclang")
         if arch then
             toolchain:add("cxflags", "-target=arm-arm-none-eabi")
             toolchain:add("cxflags", "-mcpu=" .. arch:lower())
-            toolchain:add("asflags", "--cpu " .. arch)
+            toolchain:add("asflags", "-target=arm-arm-none-eabi")
+            toolchain:add("asflags", "-mcpu=" .. arch:lower())
             toolchain:add("ldflags", "--cpu " .. arch)
         end
     end)
