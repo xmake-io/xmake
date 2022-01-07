@@ -103,6 +103,14 @@ rule("vala.build")
                 table.insert(argv, headerfile)
             end
         end
+        local vapidir = target:data("vala.vapidir")
+        if vapidir then
+            table.insert(argv, "--vapidir=" .. vapidir)
+        end
+        local valaflags = target:data("vala.flags")
+        if valaflags then
+            table.join2(argv, valaflags)
+        end
         table.insert(argv, sourcefile_vala)
         batchcmds:vrunv(valac.program, argv)
         batchcmds:compile(sourcefile_c, objectfile)
