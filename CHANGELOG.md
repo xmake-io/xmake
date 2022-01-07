@@ -12,6 +12,7 @@
 ### Changes
 
 * [#1923](https://github.com/xmake-io/xmake/issues/1923): Improve to build linux driver, support set custom linux-headers path
+* [#1962](https://github.com/xmake-io/xmake/issues/1962): Improve armclang toolchain to support to build asm
 
 ### Bugs fixed
 
@@ -1191,6 +1192,7 @@
 ### 改进
 
 * [#1923](https://github.com/xmake-io/xmake/issues/1923): 改进构建 linux 驱动，支持设置自定义 linux-headers 路径
+* [#1962](https://github.com/xmake-io/xmake/issues/1962): 改进 armclang 工具链去支持构建 asm
 
 ### Bugs 修复
 
