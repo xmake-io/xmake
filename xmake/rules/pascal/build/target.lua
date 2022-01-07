@@ -24,15 +24,13 @@ import("core.base.hashset")
 import("core.theme.theme")
 import("core.tool.compiler")
 import("core.project.depend")
+import("utils.progress")
 
 -- build the source files
 function build_sourcefiles(target, sourcebatch, opt)
 
     -- is verbose?
     local verbose = option.get("verbose")
-
-    -- get progress range
-    local progress = assert(opt.progress, "no progress!")
 
     -- get the target file
     local targetfile = target:targetfile()
@@ -60,20 +58,12 @@ function build_sourcefiles(target, sourcebatch, opt)
     end
 
     -- trace progress into
-    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
-    if verbose then
-        cprint("${dim color.build.target}linking.$(mode) %s", path.filename(targetfile))
-    else
-        cprint("${color.build.target}linking.$(mode) %s", path.filename(targetfile))
-    end
+    progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", path.filename(targetfile))
 
     -- trace verbose info
     if verbose then
         print(compinst:buildcmd(sourcefiles, targetfile, {target = target, compflags = compflags}))
     end
-
-    -- flush io buffer to update progress info
-    io.flush()
 
     -- compile it
     dependinfo.files = {}
