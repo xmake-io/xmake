@@ -554,8 +554,12 @@ end
 
 -- do build for make
 function _build_for_make(package, configs, opt)
+    local argv = {}
+    if opt.target then
+        table.insert(argv, opt.target)
+    end        
     local jobs = _get_parallel_njobs(opt)
-    local argv = {"-j" .. jobs}
+    table.insert(argv, "-j" .. jobs)
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
     end
@@ -618,8 +622,12 @@ end
 
 -- do install for make
 function _install_for_make(package, configs, opt)
+    local argv = {}
+    if opt.target then
+        table.insert(argv, opt.target)
+    end        
     local jobs = _get_parallel_njobs(opt)
-    local argv = {"-j" .. jobs}
+    table.insert(argv, "-j" .. jobs)
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
     end
