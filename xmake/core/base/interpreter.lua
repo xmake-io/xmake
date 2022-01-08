@@ -1059,6 +1059,9 @@ function interpreter:api_register_set_values(scope_kind, ...)
             extra_config = nil
         end
 
+        -- expand values
+        values = table.join(table.unpack(values))
+
         -- save values
         if #values > 0 then
             scope[name] = values
@@ -1095,6 +1098,9 @@ function interpreter:api_register_add_values(scope_kind, ...)
         else
             extra_config = nil
         end
+
+        -- expand values
+        values = table.join(table.unpack(values))
 
         -- save values
         scope[name] = table.join2(scope[name] or {}, values)
