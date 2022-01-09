@@ -43,26 +43,24 @@ toolchain("armclang")
     end)
 
     on_load(function (toolchain)
-        local arch         = toolchain:arch()
-        local arch_lower   = arch:lower()
-        local arch_replace = ""
-        local arch_target  = ""
-
-        -- convert for ldflag
-        if arch_lower:startswith("cortex-m") then 
-            arch_replace = arch_lower:replace("cortex-m", "Cortex-M", {plain=true})
-            arch_target  = "arm-arm-none-eabi"
-        end
-        if arch_lower:startswith("cortex-a") then 
-            arch_replace = arch_lower:replace("cortex-a", "Cortex-A", {plain=true})
-            arch_target  = "aarch64-arm-none-eabi"
-        end
-
-        if arch_lower then
+        local arch = toolchain:arch()
+        if arch then
+            local arch_cpu     = arch:lower()
+            local arch_cpu_ld  = ""
+            local arch_target  = ""
+            if arch_cpu:startswith("cortex-m") then
+                arch_cpu_ld = arch_cpu:replace("cortex-m", "Cortex-M", {plain = true})
+                arch_target  = "arm-arm-none-eabi"
+            end
+            if arch_cpu:startswith("cortex-a") then
+                arch_cpu_ld = arch_cpu:replace("cortex-a", "Cortex-A", {plain = true})
+                arch_target  = "aarch64-arm-none-eabi"
+            end
             toolchain:add("cxflags", "-target=" .. arch_target)
-            toolchain:add("cxflags", "-mcpu="   .. arch_lower)
+            toolchain:add("cxflags", "-mcpu="   .. arch_cpu)
             toolchain:add("asflags", "-target=" .. arch_target)
-            toolchain:add("asflags", "-mcpu="   .. arch_lower)
-            toolchain:add("ldflags", "--cpu "   .. arch_replace)
+            toolchain:add("asflags", "-mcpu="   .. arch_cpu)
+            toolchain:add("ldflags", "--cpu "   .. arch_cpu_ld)
         end
     end)
+
