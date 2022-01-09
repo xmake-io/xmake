@@ -43,12 +43,45 @@ toolchain("armclang")
     end)
 
     on_load(function (toolchain)
-        local arch = toolchain:arch()
-        if arch then
-            toolchain:add("cxflags", "-target=arm-arm-none-eabi")
-            toolchain:add("cxflags", "-mcpu=" .. arch:lower())
-            toolchain:add("asflags", "-target=arm-arm-none-eabi")
-            toolchain:add("asflags", "-mcpu=" .. arch:lower())
-            toolchain:add("ldflags", "--cpu " .. arch)
+        -- replace function
+        -- this function from https://blog.csdn.net/gouki04/article/details/88559872
+        string.replace = function(s, pattern, repl)
+            local i,j = string.find(s, pattern, 1, true)
+            if i and j then
+                local ret = {}
+                local start = 1
+                while i and j do 
+                    table.insert(ret, string.sub(s, start, i-1))
+                    table.insert(ret, repl)
+                    start = j + 1
+                    i,j = string.find(s, pattern, start , true )
+                end
+                table.insert(ret, string.sub(s, start))
+                return table.concat(ret)
+            end 
+            return s
+        end
+
+        local arch         = toolchain:arch()
+        local arch_lower   = arch:lower()
+        local arch_replace = string.replace(arch_lower, "plus", "+")
+        local arch_target  = ""
+
+        -- convert for ldflag
+        if arch_lower:startswith("cortex-m") then 
+            arch_replace = string.replace(arch_replace, "cortex-m", "Cortex-M")
+            arch_target  = "arm-arm-none-eabi"
+        end
+        if arch_lower:startswith("cortex-a") then 
+            arch_replace = string.replace(arch_replace, "cortex-a", "Cortex-A")
+            arch_target  = "aarch64-arm-none-eabi"
+        end
+
+        if arch_lower then
+            toolchain:add("cxflags", "-target=" .. arch_target)
+            toolchain:add("cxflags", "-mcpu=" .. arch_lower)
+            toolchain:add("asflags", "-target=" .. arch_target)
+            toolchain:add("asflags", "-mcpu=" .. arch_lower)
+            toolchain:add("ldflags", "--cpu " .. arch_replace)
         end
     end)
