@@ -28,7 +28,12 @@ function build(package, configs, opt)
     local buildir = opt.buildir or os.curdir()
     local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
     local ninja = assert(find_tool("ninja"), "ninja not found!")
-    local argv = {"-C", buildir}
+    local argv = {}
+    if opt.target then
+        table.insert(argv, opt.target)
+    end        
+    table.insert(argv, "-C")
+    table.insert(argv, buildir)
     if option.get("verbose") then
         table.insert(argv, "-v")
     end
