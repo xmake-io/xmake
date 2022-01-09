@@ -64,16 +64,16 @@ toolchain("armclang")
 
         local arch         = toolchain:arch()
         local arch_lower   = arch:lower()
-        local arch_replace = string.replace(arch_lower, "plus", "+")
+        local arch_replace = ""
         local arch_target  = ""
 
         -- convert for ldflag
         if arch_lower:startswith("cortex-m") then 
-            arch_replace = string.replace(arch_replace, "cortex-m", "Cortex-M")
+            arch_replace = string.replace(arch_lower, "cortex-m", "Cortex-M")
             arch_target  = "arm-arm-none-eabi"
         end
         if arch_lower:startswith("cortex-a") then 
-            arch_replace = string.replace(arch_replace, "cortex-a", "Cortex-A")
+            arch_replace = string.replace(arch_lower, "cortex-a", "Cortex-A")
             arch_target  = "aarch64-arm-none-eabi"
         end
 
