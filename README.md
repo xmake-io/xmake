@@ -7,13 +7,13 @@
 
   <div>
     <a href="https://github.com/xmake-io/xmake/actions?query=workflow%3AWindows">
-      <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/Windows/dev.svg?style=flat-square&logo=windows" alt="github-ci" />
+      <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/Windows/master.svg?style=flat-square&logo=windows" alt="github-ci" />
     </a>
     <a href="https://github.com/xmake-io/xmake/actions?query=workflow%3ALinux">
-      <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/Linux/dev.svg?style=flat-square&logo=linux" alt="github-ci" />
+      <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/Linux/master.svg?style=flat-square&logo=linux" alt="github-ci" />
     </a>
     <a href="https://github.com/xmake-io/xmake/actions?query=workflow%3AmacOS">
-      <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/macOS/dev.svg?style=flat-square&logo=apple" alt="github-ci" />
+      <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/macOS/master.svg?style=flat-square&logo=apple" alt="github-ci" />
     </a>
     <a href="https://github.com/xmake-io/xmake/releases">
       <img src="https://img.shields.io/github/release/xmake-io/xmake.svg?style=flat-square" alt="Github All Releases" />
@@ -60,9 +60,17 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 
 ## Introduction ([中文](/README_zh.md))
 
-xmake is a lightweight cross-platform build utility based on Lua. It uses xmake.lua to maintain project builds. Compared with makefile/CMakeLists.txt, the configuration syntax is more concise and intuitive. It is very friendly to novices and can quickly get started in a short time. Let users focus more on actual project development.
+Xmake is a lightweight cross-platform build utility based on Lua.
 
-It can compile the project directly like Make/Ninja, or generate project files like CMake/Meson, and it also has a built-in package management system to help users solve the integrated use of C/C++ dependent libraries.
+It is very lightweight and has no dependencies because it has a built-in Lua runtime.
+
+It uses xmake.lua to maintain project builds and its configuration syntax is very simple and readable.
+
+We can use it to build project directly like Make/Ninja, or generate project files like CMake/Meson, and it also has a built-in package management system to help users solve the integrated use of C/C++ dependent libraries.
+
+```
+Xmake = Build backend + Project Generator + Package Manager
+```
 
 If you want to know more, please refer to: [Documents](https://xmake.io/#/getting_started), [Github](https://github.com/xmake-io/xmake) and [Gitee](https://gitee.com/tboox/xmake) and also welcome to join our [community](https://xmake.io/#/about/contact).
 
@@ -177,6 +185,19 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * Clib (clib::clibs/bytes@0.0.4)
 * Dub (dub::log 0.4.3)
 * Portage on Gentoo/Linux (portage::libhandy)
+* Nimble for nimlang (nimble::zip >1.3)
+* Cargo for rust (cargo::base64 0.13.0)
+
+### Package management features
+
+* The official repository provides nearly 500+ packages, one-click compilation on all platforms
+* Full platform package support, support for cross-compiled dependent package integration
+* Support package virtual environment, `xrepo env shell`
+* Precompiled package acceleration for windows
+* Support self-built package repositories, private repository deployment
+* Third-party package repository support, such as: vcpkg, conan, conda, etc.
+* Support to pull using remote toolchain automatically
+* Support to lock package dependency
 
 ## Supported platforms
 
@@ -199,7 +220,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 ```bash
 $ xmake show -l toolchains
 xcode         Xcode IDE
-vs            VisualStudio IDE
+msvc          Microsoft Visual C/C++ Compiler
 yasm          The Yasm Modular Assembler
 clang         A C language family frontend for LLVM
 go            Go Programming Language Compiler
@@ -222,7 +243,13 @@ tinycc        Tiny C Compiler
 emcc          A toolchain for compiling to asm.js and WebAssembly
 icc           Intel C/C++ Compiler
 ifort         Intel Fortran Compiler
-muslcc        The musl-based cross-compilation toolchains
+muslcc        The musl-based cross-compilation toolchain
+fpc           Free Pascal Programming Language Compiler
+wasi          WASI-enabled WebAssembly C/C++ toolchain
+nim           Nim Programming Language Compiler
+circle        A new C++20 compiler
+armcc         ARM Compiler Version 5 of Keil MDK
+armclang      ARM Compiler Version 6 of Keil MDK
 ```
 
 ## Supported Languages
@@ -239,26 +266,24 @@ muslcc        The musl-based cross-compilation toolchains
 * Cuda
 * Zig
 * Vala
+* Pascal
+* Nim
 
-## Support Features
+## Supported Features
 
-* Simple project configuration syntax
-* Direct build support, without relying on any third-party back-end make tools
-* Support cross platform
-* Support cross compilation
-* Multi-task parallel compilation support
-* C++20 Module-TS support
-* Support cross-platform C/C++ dependency packages
-* Support self-built distributed package repositories
-* Support the installation of cloud pre-compiled packages
-* Support third-party package repositories, such as: vcpkg, conan, conda, etc.
-* Support multi-language mixed compilation
-* Flexible lua scripts, rich extension modules
-* Support for generating vsproj/cmake/makefile/compile_commands files
+* The configuration grammar is simple and easy to use
+* Quick installation, without any dependencies
+* One-click compilation for all platforms
+* Support cross compilation, intelligent analysis of cross tool chain information
+* Extremely fast, multi-task parallel compilation support
+* C++20 Module support
+* Support cross-platform C/C++ dependency package quick integration, built-in package manager
+* Multi-language mixed compilation support
+* Rich plug-in support, providing various project generators, such as: vs/makefile/cmakelists/compile_commands to generate plugins
 * REPL interactive execution support
-* Incremental compilation support, automatic analysis of header dependency files
-* Fast switching toolchains
-* Automatic pull toolchain and dependency package integration
+* Incremental compilation support, automatic analysis of header files
+* Quick switching and customization support of tool chain
+* A large number of expansion modules support
 
 ## Supported Projects
 
@@ -270,8 +295,14 @@ muslcc        The musl-based cross-compilation toolchains
 * WDK Driver (umdf/kmdf/wdm)
 * WinSDK Application
 * MFC Application
-* iOS/MacOS Application
+* iOS/MacOS Application (Support .metal)
 * Framework and Bundle Program (iOS/MacOS)
+* SWIG Modules (Lua, python, ...)
+* Luarocks Modules
+* Protobuf Program
+* Lex/yacc program
+* C++20 Modules
+* Linux Kernel Driver Modules
 
 ## More Examples
 
@@ -431,11 +462,11 @@ target("test")
 
 ## Plugins
 
-#### Generate IDE project file plugin（makefile, vs2002 - vs2019 .. ）
+#### Generate IDE project file plugin（makefile, vs2002 - vs2022 .. ）
 
 ```bash
-$ xmake project -k vsxmake -m "debug;release" # New vsproj generator (Recommended)
-$ xmake project -k vs -m "debug;release"
+$ xmake project -k vsxmake -m "debug,release" # New vsproj generator (Recommended)
+$ xmake project -k vs -m "debug,release"
 $ xmake project -k cmake
 $ xmake project -k ninja
 $ xmake project -k compile_commands
@@ -477,13 +508,17 @@ Please download and install more other plugins from the plugins repository [xmak
 
 * [xmake.vim](https://github.com/luzhlon/xmake.vim) (third-party, thanks [@luzhlon](https://github.com/luzhlon))
 
+* [xmake-visualstudio](https://github.com/HelloWorld886/xmake-visualstudio) (third-party, thanks [@HelloWorld886](https://github.com/HelloWorld886))
+
+* [xmake-qtcreator](https://github.com/Arthapz/xmake-project-manager) (third-party, thanks [@Arthapz](https://github.com/Arthapz))
+
 ### XMake Gradle Plugin (JNI)
 
 We can uses [xmake-gradle](https://github.com/xmake-io/xmake-gradle) plugin to compile JNI library in gradle.
 
 ```
 plugins {
-  id 'org.tboox.gradle-xmake-plugin' version '1.1.4'
+  id 'org.tboox.gradle-xmake-plugin' version '1.1.5'
 }
 
 android {

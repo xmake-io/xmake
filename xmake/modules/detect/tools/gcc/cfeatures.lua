@@ -29,9 +29,16 @@ function main()
 
     -- init conditions
     local gcc_minver = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 304"
+    local gcc10_c17  = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 1000 && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201710L"
     local gcc46_c11  = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 406 && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201000L"
     local gcc34_c99  = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 304 && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L"
     local gcc_c90    = gcc_minver
+
+    -- set language standard supports
+    _set("c_std_89", gcc46_c90)
+    _set("c_std_99", gcc34_c99)
+    _set("c_std_11", gcc46_c11)
+    _set("c_std_17", gcc46_c17)
 
     -- set features
     _set("c_static_assert",       gcc46_c11) -- GNU 4.7 correctly sets __STDC_VERSION__ to 201112L, but GNU 4.6 sets it to 201000L

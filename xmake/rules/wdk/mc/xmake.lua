@@ -28,7 +28,7 @@ rule("wdk.mc")
     set_extensions(".mc")
 
     -- before load
-    before_load(function (target)
+    on_load(function (target)
 
         -- imports
         import("core.project.config")
@@ -57,7 +57,7 @@ rule("wdk.mc")
         import("core.base.option")
         import("core.theme.theme")
         import("core.project.depend")
-        import("private.utils.progress")
+        import("utils.progress")
 
         -- get mc
         local mc = target:data("wdk.mc")

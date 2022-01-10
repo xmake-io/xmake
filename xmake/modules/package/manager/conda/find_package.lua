@@ -52,7 +52,7 @@ end
 -- find package using the conda package manager
 --
 -- @param name  the package name
--- @param opt   the options, e.g. {verbose = true, version = "1.12.0")
+-- @param opt   the options, e.g. {verbose = true, require_version = "1.12.0")
 --
 function main(name, opt)
 
@@ -124,7 +124,7 @@ function main(name, opt)
             result.linkdirs = result.linkdirs or {}
             result.libfiles = result.libfiles or {}
             table.insert(result.linkdirs, path.join(packagedir, path.directory(line)))
-            table.insert(result.links, target.linkname(path.filename(line)))
+            table.insert(result.links, target.linkname(path.filename(line), {plat = opt.plat}))
             table.insert(result.libfiles, path.join(packagedir, path.directory(line), path.filename(line)))
         end
 

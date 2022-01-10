@@ -25,7 +25,7 @@ language("rust")
     set_targetkinds {binary = "rcld", static = "rcar", shared = "rcsh"}
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
     set_langkinds {rust = "rc"}
-    set_mixingkinds("rc")
+    set_mixingkinds("rc", "cc", "cxx")
 
     on_load("load")
     on_check_main("check_main")
@@ -39,23 +39,58 @@ language("rust")
         }
     ,   binary = {
             "config.linkdirs"
+        ,   "config.frameworkdirs"
         ,   "target.linkdirs"
+        ,   "target.frameworkdirs"
         ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
         ,   "toolchain.linkdirs"
+        ,   "toolchain.frameworkdirs"
         ,   "toolchain.rpathdirs"
+        ,   "config.frameworks"
+        ,   "target.frameworks"
+        ,   "toolchain.frameworks"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "toolchain.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "toolchain.syslinks"
         }
     ,   shared = {
             "config.linkdirs"
+        ,   "config.frameworkdirs"
         ,   "target.linkdirs"
+        ,   "target.frameworkdirs"
+        ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
         ,   "toolchain.linkdirs"
+        ,   "toolchain.frameworkdirs"
+        ,   "toolchain.rpathdirs"
+        ,   "config.frameworks"
+        ,   "target.frameworks"
+        ,   "toolchain.frameworks"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "toolchain.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "toolchain.syslinks"
         }
     ,   static = {
-            "target.strip"
+            "config.linkdirs"
+        ,   "config.frameworkdirs"
+        ,   "target.linkdirs"
+        ,   "target.frameworkdirs"
+        ,   "target.strip"
         ,   "target.symbols"
+        ,   "toolchain.linkdirs"
+        ,   "toolchain.frameworkdirs"
+        ,   "config.frameworks"
+        ,   "target.frameworks"
+        ,   "toolchain.frameworks"
         }
     }
 

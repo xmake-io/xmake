@@ -90,7 +90,7 @@ local vsinfo =
     ,   project_version     = "17"
     ,   filters_version     = "4.0"
     ,   solution_version    = "12"
-    ,   toolset_version     = "v142"
+    ,   toolset_version     = "v143"
     ,   sdk_version         = "10.0.19041.0"
     }
 }

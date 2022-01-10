@@ -2,7 +2,7 @@
 set_project("xmake")
 
 -- version
-set_version("2.5.6", {build = "%Y%m%d%H%M"})
+set_version("2.6.2", {build = "%Y%m%d%H%M"})
 
 -- set xmake min version
 set_xmakever("2.2.3")
@@ -39,6 +39,14 @@ end
 if is_mode("coverage") then
     add_ldflags("-coverage", "-fprofile-arcs", "-ftest-coverage")
 end
+
+-- the runtime option
+option("runtime")
+    set_showmenu(true)
+    set_default("lua")
+    set_description("Use luajit or lua runtime")
+    set_values("luajit", "lua")
+option_end()
 
 -- the readline option
 option("readline")
@@ -80,7 +88,7 @@ if is_plat("windows") then
 end
 
 -- add projects
-includes("src/lua-cjson", "src/lcurses", "src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo")
+includes("src/lua-cjson", "src/lcurses", "src/sv","src/luajit", "src/lua", "src/tbox", "src/xmake", "src/demo")
 if is_plat("windows") then
     includes("src/pdcurses")
 end

@@ -26,7 +26,7 @@ import("core.project.config")
 function _add_iclenv(toolchain, name)
 
     -- get iclvarsall
-    local iclvarsall = config.get("__iclvarsall")
+    local iclvarsall = toolchain:config("varsall")
     if not iclvarsall then
         return
     end
@@ -58,14 +58,12 @@ function _load_intel_on_windows(toolchain)
         toolchain:set("toolset", "ld",  "link.exe")
         toolchain:set("toolset", "sh",  "link.exe")
         toolchain:set("toolset", "ar",  "link.exe")
-        toolchain:set("toolset", "ex",  "lib.exe")
     else
         toolchain:set("toolset", "cc", "icc")
         toolchain:set("toolset", "cxx", "icpc", "icc")
         toolchain:set("toolset", "ld", "icpc", "icc")
         toolchain:set("toolset", "sh", "icpc", "icc")
         toolchain:set("toolset", "ar", "ar")
-        toolchain:set("toolset", "ex", "ar")
         toolchain:set("toolset", "strip", "strip")
         toolchain:set("toolset", "as", "icc")
     end
@@ -86,7 +84,6 @@ function _load_intel_on_linux(toolchain)
     toolchain:set("toolset", "ld", "icpc", "icc")
     toolchain:set("toolset", "sh", "icpc", "icc")
     toolchain:set("toolset", "ar", "ar")
-    toolchain:set("toolset", "ex", "ar")
     toolchain:set("toolset", "strip", "strip")
     toolchain:set("toolset", "as", "icc")
 
@@ -102,6 +99,13 @@ function _load_intel_on_linux(toolchain)
         toolchain:add("asflags", march)
         toolchain:add("ldflags", march)
         toolchain:add("shflags", march)
+    end
+
+    -- get icc environments
+    local iccenv = toolchain:config("iccenv")
+    if iccenv then
+        local ldname = is_host("macosx") and "DYLD_LIBRARY_PATH" or "LD_LIBRARY_PATH"
+        toolchain:add("runenvs", ldname, iccenv.libdir)
     end
 end
 

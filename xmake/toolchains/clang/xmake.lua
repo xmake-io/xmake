@@ -18,37 +18,28 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
 toolchain("clang")
 
-    -- set homepage
     set_homepage("https://clang.llvm.org/")
     set_description("A C language family frontend for LLVM")
 
-    -- mark as standalone toolchain
     set_kind("standalone")
 
-    -- set toolset
     set_toolset("cc", "clang")
     set_toolset("cxx", "clang", "clang++")
     set_toolset("ld", "clang++", "clang")
     set_toolset("sh", "clang++", "clang")
     set_toolset("ar", "ar")
-    set_toolset("ex", "ar")
     set_toolset("strip", "strip")
     set_toolset("mm", "clang")
     set_toolset("mxx", "clang", "clang++")
     set_toolset("as", "clang")
 
-    -- check toolchain
     on_check(function (toolchain)
         return import("lib.detect.find_tool")("clang")
     end)
 
-    -- on load
     on_load(function (toolchain)
-
-        -- add march flags
         local march
         if toolchain:is_arch("x86_64", "x64") then
             march = "-m64"

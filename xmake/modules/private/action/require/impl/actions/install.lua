@@ -55,8 +55,11 @@ function _patch_pkgconfig(package)
 
     -- get libs
     local libs = ""
+    local installdir = package:installdir()
     for _, linkdir in ipairs(fetchinfo.linkdirs) do
-        libs = libs .. "-L" .. linkdir
+        if linkdir ~= path.join(installdir, "lib") then
+            libs = libs .. " -L" .. (linkdir:gsub("\\", "/"))
+        end
     end
     libs = libs .. " -L${libdir}"
     for _, link in ipairs(fetchinfo.links) do
@@ -69,14 +72,16 @@ function _patch_pkgconfig(package)
     -- cflags
     local cflags = ""
     for _, includedir in ipairs(fetchinfo.includedirs) do
-        cflags = cflags .. "-I" .. includedir
+        if includedir ~= path.join(installdir, "include") then
+            cflags = cflags .. " -I" .. (includedir:gsub("\\", "/"))
+        end
     end
     cflags = cflags .. " -I${includedir}"
 
     -- patch a *.pc file
     local file = io.open(pcfile, 'w')
     if file then
-        file:print("prefix=%s", package:installdir())
+        file:print("prefix=%s", installdir:gsub("\\", "/"))
         file:print("exec_prefix=${prefix}")
         file:print("libdir=${exec_prefix}/lib")
         file:print("includedir=${prefix}/include")
@@ -88,6 +93,32 @@ function _patch_pkgconfig(package)
         file:print("Libs.private: ")
         file:print("Cflags: %s", cflags)
         file:close()
+    end
+end
+
+-- fix paths for the precompiled package
+-- @see https://github.com/xmake-io/xmake/issues/1671
+function _fix_paths_for_precompiled_package(package)
+    local filepaths = {path.join(package:installdir(), "**.cmake|include/**")}
+    for _, filepath in ipairs(filepaths) do
+        for _, file in ipairs(os.files(filepath)) do
+            io.gsub(file, "(\"(.-)\")", function(_, value)
+                if value:find(package:buildhash(), 1, true) and value:find(package:name(), 1, true) then
+                    local result
+                    local splitinfo = value:split(package:buildhash(), {plain = true})
+                    if #splitinfo == 2 then
+                        result = path.join(package:installdir(), splitinfo[2])
+                    elseif #splitinfo == 1 then
+                        result = package:installdir()
+                    end
+                    if result then
+                        result = result:gsub("\\", "/")
+                        vprint("fix path: %s in %s", result, path.filename(file))
+                        return "\"" .. result .. "\""
+                    end
+                end
+            end)
+        end
     end
 end
 
@@ -111,7 +142,10 @@ function main(package)
 
     -- enter the working directory
     local oldir = nil
-    if #package:urls() > 0 then
+    local sourcedir = package:sourcedir()
+    if sourcedir then
+        oldir = os.cd(sourcedir)
+    elseif #package:urls() > 0 then
         -- only one root directory? skip it
         local filedirs = os.filedirs(path.join(workdir, "source", "*"))
         if #filedirs == 1 and os.isdir(filedirs[1]) then
@@ -196,6 +230,11 @@ function main(package)
             -- this package is installed now
             if installed_now then
 
+                -- fix paths for the precompiled package
+                if package:is_plat("windows") and not package:is_built() and not package:is_system() then
+                    _fix_paths_for_precompiled_package(package)
+                end
+
                 -- patch pkg-config files for package
                 _patch_pkgconfig(package)
 
@@ -247,7 +286,16 @@ function main(package)
                 -- failed
                 if not package:requireinfo().optional then
                     if os.isfile(errorfile) then
-                        print("if you want to get verbose errors, please see:")
+                        if errors then
+                            print("")
+                            for idx, line in ipairs(errors:split("\n")) do
+                                print(line)
+                                if idx > 16 then
+                                    break
+                                end
+                            end
+                        end
+                        cprint("if you want to get more verbose errors, please see:")
                         cprint("  -> ${bright}%s", errorfile)
                     end
                     raise("install failed!")

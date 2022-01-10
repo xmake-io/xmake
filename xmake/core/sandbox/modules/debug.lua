@@ -24,18 +24,19 @@ local table = require("base/table")
 -- define module
 local sandbox_debug = sandbox_debug or table.join(debug)
 
-sandbox_debug.rawget   = rawget
-sandbox_debug.rawset   = rawset
-sandbox_debug.rawequal = rawequal
-sandbox_debug.rawlen   = rawlen
-sandbox_debug.require  = require
+sandbox_debug.rawget         = rawget
+sandbox_debug.rawset         = rawset
+sandbox_debug.rawequal       = rawequal
+sandbox_debug.rawlen         = rawlen
+sandbox_debug.require        = require
+sandbox_debug.collectgarbage = collectgarbage
+
 function sandbox_debug.global(key)
     if key == nil then
         return _G
     end
     return _G[key]
 end
-
 
 -- return module
 return sandbox_debug

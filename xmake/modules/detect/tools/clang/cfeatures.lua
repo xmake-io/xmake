@@ -33,10 +33,18 @@ function main()
     _g.features = cfeatures()
 
     -- init conditions
+    -- clang -std=c11 -dM -E - < /dev/null | grep __STDC_VERSION__
     local clang_minver = "((__clang_major__ * 100) + __clang_minor__) >= 304"
+    local c17          = clang_minver .. " && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201710L"
     local c11          = clang_minver .. " && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L"
     local c99          = clang_minver .. " && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L"
     local c90          = clang_minver
+
+    -- set language standard supports
+    _set("c_std_89", c90)
+    _set("c_std_99", c99)
+    _set("c_std_11", c11)
+    _set("c_std_17", c17)
 
     -- set features
     _set("c_static_assert",       c11)

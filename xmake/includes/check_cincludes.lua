@@ -28,10 +28,15 @@
 function check_cincludes(definition, includes, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
+    save_scope()
     option(optname)
         add_cincludes(includes)
+        if opt.includedirs then
+            add_includedirs(opt.includedirs)
+        end
         add_defines(definition)
     option_end()
+    restore_scope()
     add_options(optname)
 end
 
@@ -40,15 +45,27 @@ end
 -- e.g.
 --
 -- configvar_check_cincludes("HAS_STRING_H", "string.h")
+-- configvar_check_cincludes("HAS_STRING_H", "string.h", {default = 0})
 -- configvar_check_cincludes("HAS_STRING_AND_STDIO_H", {"string.h", "stdio.h"})
 --
 function configvar_check_cincludes(definition, includes, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
-    local defname, defval = unpack(definition:split('='))
+    local defname, defval = table.unpack(definition:split('='))
+    save_scope()
     option(optname)
         add_cincludes(includes)
-        set_configvar(defname, defval or 1)
+        if opt.includedirs then
+            add_includedirs(opt.includedirs)
+        end
+        if opt.default == nil then
+            set_configvar(defname, defval or 1, {quote = opt.quote})
+        end
     option_end()
-    add_options(optname)
+    restore_scope()
+    if opt.default == nil then
+        add_options(optname)
+    else
+        set_configvar(defname, has_config(optname) and (defval or 1) or opt.default, {quote = opt.quote})
+    end
 end

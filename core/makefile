@@ -298,6 +298,14 @@ base_LIBNAMES 	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o
 base_LIBNAMES 	+= m dl pthread
 endif
 
+# get branch and commit
+ifeq ($(BRANCH),)
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
+endif
+ifeq ($(COMMIT),)
+COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null)
+endif
+
 # check jit compiler
 ifeq ($(PLAT),linux)
 luajit_JIT :=$(shell if [ -f "/etc/redhat-release" ]; then echo "nojit"; else echo "jit"; fi )
@@ -360,6 +368,8 @@ config : .null
 	@$(ECHO) "    small:\t\t"$(SMALL)
 	@$(ECHO) "    ccache:\t\t"$(CCACHE)
 	@$(ECHO) "    distcc:\t\t"$(DISTCC)
+	@$(ECHO) "    branch:\t\t"$(BRANCH)
+	@$(ECHO) "    commit:\t\t"$(COMMIT)
 	@$(ECHO) "    luajit:\t\t"$(luajit_JIT)
 	@$(ECHO) ""
 	@$(ECHO) "packages:"
@@ -368,6 +378,7 @@ config : .null
 	@$(ECHO) "directories:"
 	@$(ECHO) "    install:\t\t"$(abspath $(INSTALL))
 	@$(ECHO) "    package:\t\t"$(PACKAGE)
+	@$(ECHO) "    backend:\t\t"$(RUNTIME)
 	@$(ECHO) ""
 	@$(ECHO) "toolchains:"
 	@$(ECHO) "    bin:\t\t"$(BIN)
@@ -392,6 +403,10 @@ config : .null
 	@$(ECHO) "# project"								>> .config.mak
 	@$(ECHO) "PRO_DIR ="$(PRO_DIR)						>> .config.mak
 	@$(ECHO) "export PRO_DIR"							>> .config.mak
+	@$(ECHO) "BRANCH ="$(BRANCH)						>> .config.mak
+	@$(ECHO) "export BRANCH"							>> .config.mak
+	@$(ECHO) "COMMIT ="$(COMMIT)						>> .config.mak
+	@$(ECHO) "export COMMIT"							>> .config.mak
 	@$(ECHO) ""											>> .config.mak
 	@$(ECHO) "# profile"								>> .config.mak
 	@$(ECHO) "PROF ="$(PROF)							>> .config.mak
@@ -458,6 +473,10 @@ config : .null
 	@$(ECHO) "export SH4"								>> .config.mak
 	@$(ECHO) "export MIPS"								>> .config.mak
 	@$(ECHO) "export SPARC"								>> .config.mak
+	@$(ECHO) ""											>> .config.mak
+	@$(ECHO) "# backend"								>> .config.mak
+	@$(ECHO) "RUNTIME ="$(RUNTIME)						>> .config.mak
+	@$(ECHO) "export RUNTIME"							>> .config.mak
 	@$(ECHO) ""											>> .config.mak
 	@$(ECHO) "# demo"									>> .config.mak
 	@$(ECHO) "DEMO ="$(DEMO)							>> .config.mak

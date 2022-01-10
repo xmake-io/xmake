@@ -59,7 +59,7 @@ end
 -- find package using the conan package manager
 --
 -- @param name  the package name
--- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
+-- @param opt   the options, e.g. {verbose = true)
 --
 function main(name, opt)
 

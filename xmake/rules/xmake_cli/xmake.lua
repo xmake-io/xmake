@@ -20,7 +20,7 @@
 
 -- define rule: xmake cli program
 rule("xmake.cli")
-    before_load(function (target)
+    on_load(function (target)
         target:set("kind", "binary")
         assert(target:pkg("libxmake"), 'please add_packages("libxmake") to target(%s) first!', target:name())
     end)

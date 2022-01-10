@@ -46,7 +46,7 @@ task("require")
                                                          "    $ xmake require --clean",
                                                          "    $ xmake require --clean zlib tbox pcr*"                          }
                 ,   {'f', "force",      "k",  nil,       "Force to reinstall all package dependencies."                        }
-                ,   {'j', "jobs",       "kv", tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2)),
+                ,   {'j', "jobs",       "kv", tostring(os.default_njob()),
                                                          "Set the number of parallel compilation jobs."                        }
                 ,   {nil, "linkjobs",   "kv", nil,       "Set the number of parallel link jobs."                               }
                 ,   {nil, "shallow",    "k",  nil,       "Does not install dependent packages."                                }
@@ -72,6 +72,7 @@ task("require")
                 ,   {'s', "search",     "k",  nil,       "Search for the given packages from repositories.",
                                                          "e.g.",
                                                          "    $ xmake require --search tbox"                                   }
+                ,   {nil, "upgrade",    "k",  nil,       "Upgrade the installed packages."                                     }
                 ,   {nil, "uninstall",  "k",  nil,       "Uninstall the installed packages.",
                                                          "e.g.",
                                                          "    $ xmake require --uninstall",

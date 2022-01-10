@@ -28,6 +28,7 @@
 function check_features(definition, features, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
+    save_scope()
     option(optname)
         add_features(features)
         add_defines(definition)
@@ -44,6 +45,7 @@ function check_features(definition, features, opt)
             add_cxxflags(opt.cxxflags)
         end
     option_end()
+    restore_scope()
     add_options(optname)
 end
 
@@ -52,15 +54,19 @@ end
 -- e.g.
 --
 -- configvar_check_features("HAS_CONSTEXPR", "cxx_constexpr")
+-- configvar_check_features("HAS_CONSTEXPR", "cxx_constexpr", {default = 0})
 -- configvar_check_features("HAS_CONSEXPR_AND_STATIC_ASSERT", {"cxx_constexpr", "c_static_assert"}, {languages = "c++11"})
 --
 function configvar_check_features(definition, features, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
-    local defname, defval = unpack(definition:split('='))
+    local defname, defval = table.unpack(definition:split('='))
+    save_scope()
     option(optname)
         add_features(features)
-        set_configvar(defname, defval or 1)
+        if opt.default == nil then
+            set_configvar(defname, defval or 1, {quote = opt.quote})
+        end
         if opt.languages then
             set_languages(opt.languages)
         end
@@ -74,5 +80,10 @@ function configvar_check_features(definition, features, opt)
             add_cxxflags(opt.cxxflags)
         end
     option_end()
-    add_options(optname)
+    restore_scope()
+    if opt.default == nil then
+        add_options(optname)
+    else
+        set_configvar(defname, has_config(optname) and (defval or 1) or opt.default, {quote = opt.quote})
+    end
 end

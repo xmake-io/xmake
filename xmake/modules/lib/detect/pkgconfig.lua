@@ -24,7 +24,15 @@ import("core.project.target")
 import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_library")
-import("detect.tools.find_pkg_config")
+import("lib.detect.find_tool")
+
+-- get pkgconfig
+function _get_pkgconfig()
+    local pkgconfig = find_tool("pkg-config") or find_tool("pkgconf")
+    if pkgconfig then
+        return pkgconfig.program
+    end
+end
 
 -- get version
 --
@@ -34,7 +42,7 @@ import("detect.tools.find_pkg_config")
 function version(name, opt)
 
     -- attempt to add search paths from pkg-config
-    local pkgconfig = find_pkg_config()
+    local pkgconfig = _get_pkgconfig()
     if not pkgconfig then
         return
     end
@@ -46,7 +54,7 @@ function version(name, opt)
     local configdirs_old = os.getenv("PKG_CONFIG_PATH")
     local configdirs = table.wrap(opt.configdirs)
     if #configdirs > 0 then
-        os.setenv("PKG_CONFIG_PATH", unpack(configdirs))
+        os.setenv("PKG_CONFIG_PATH", table.unpack(configdirs))
     end
 
     -- get version
@@ -73,7 +81,7 @@ end
 function variables(name, variables, opt)
 
     -- attempt to add search paths from pkg-config
-    local pkgconfig = find_pkg_config()
+    local pkgconfig = _get_pkgconfig()
     if not pkgconfig then
         return
     end
@@ -85,7 +93,7 @@ function variables(name, variables, opt)
     local configdirs_old = os.getenv("PKG_CONFIG_PATH")
     local configdirs = table.wrap(opt.configdirs)
     if #configdirs > 0 then
-        os.setenv("PKG_CONFIG_PATH", unpack(configdirs))
+        os.setenv("PKG_CONFIG_PATH", table.unpack(configdirs))
     end
 
     -- get variable value
@@ -125,7 +133,7 @@ end
 function libinfo(name, opt)
 
     -- attempt to add search paths from pkg-config
-    local pkgconfig = find_pkg_config()
+    local pkgconfig = _get_pkgconfig()
     if not pkgconfig then
         return
     end

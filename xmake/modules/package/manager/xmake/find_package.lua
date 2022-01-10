@@ -38,7 +38,11 @@ function _find_package_from_repo(name, opt)
 
     -- find the manifest file of package, e.g. ~/.xmake/packages/z/zlib/1.1.12/ed41d5327fad3fc06fe376b4a94f62ef/manifest.txt
     local packagedirs = {}
-    table.insert(packagedirs, path.join(package.installdir(), name:lower():sub(1, 1), name:lower(), opt.require_version, opt.buildhash))
+    if opt.installdir then
+        table.insert(packagedirs, opt.installdir)
+    else
+        table.insert(packagedirs, path.join(package.installdir(), name:lower():sub(1, 1), name:lower(), opt.require_version, opt.buildhash))
+    end
     local manifest_file = find_file("manifest.txt", packagedirs)
     if not manifest_file then
         return
@@ -73,39 +77,35 @@ function _find_package_from_repo(name, opt)
     local links = {}
     local linkdirs = {}
     local libfiles = {}
-    for _, linkdir in ipairs(vars.linkdirs) do
-        table.insert(linkdirs, path.join(installdir, linkdir))
-    end
     if vars.links then
         table.join2(links, vars.links)
-    end
-    if not vars.linkdirs or not vars.links then
+    else
+        -- we scan links automatically
         local found = false
-        for _, file in ipairs(os.files(path.join(installdir, "lib", "*"))) do
-            if file:endswith(".lib") or file:endswith(".a") then
-                found = true
-                if not vars.linkdirs then
-                    table.insert(linkdirs, path.directory(file))
-                end
-                if not vars.links then
-                    table.insert(links, target.linkname(path.filename(file)))
+        for _, libdir in ipairs(vars.linkdirs or "lib") do
+            for _, file in ipairs(os.files(path.join(installdir, libdir, "*"))) do
+                if file:endswith(".lib") or file:endswith(".a") then
+                    found = true
+                    table.insert(links, target.linkname(path.filename(file), {plat = opt.plat}))
+                    table.insert(libfiles, file)
                 end
             end
-        end
-        if not found then
-            for _, file in ipairs(os.files(path.join(installdir, "lib", "*"))) do
-                if file:endswith(".so") or file:endswith(".dylib") then
-                    if not vars.linkdirs then
-                        table.insert(linkdirs, path.directory(file))
-                    end
-                    if not vars.links then
-                        table.insert(links, target.linkname(path.filename(file)))
+            if not found then
+                for _, file in ipairs(os.files(path.join(installdir, "lib", "*"))) do
+                    if file:endswith(".so") or file:match(".+%.so%..+$") or file:endswith(".dylib") then -- maybe symlink to libxxx.so.1
+                        table.insert(links, target.linkname(path.filename(file), {plat = opt.plat}))
+                        table.insert(libfiles, file)
                     end
                 end
             end
         end
     end
-    if opt.plat == "windows" then
+    if #links > 0 then
+        for _, libdir in ipairs(vars.linkdirs or "lib") do
+            table.insert(linkdirs, path.join(installdir, libdir))
+        end
+    end
+    if opt.plat == "windows" or opt.plat == "mingw" then
         for _, file in ipairs(os.files(path.join(installdir, "lib", "*.dll"))) do
             result.shared = true
             table.insert(libfiles, file)
@@ -128,7 +128,7 @@ function _find_package_from_repo(name, opt)
 
     -- find library
     for _, link in ipairs(links) do
-        local libinfo = find_library(link, linkdirs)
+        local libinfo = find_library(link, linkdirs, {plat = opt.plat})
         if libinfo then
             if libinfo.kind == "shared" then
                 result.shared = true
@@ -145,7 +145,7 @@ function _find_package_from_repo(name, opt)
         result.links = table.unique(result.links)
     end
     if result.libfiles then
-        result.libfiles = table.join(result.libfiles, libfiles)
+        result.libfiles = table.unique(table.join(result.libfiles, libfiles))
     end
 
     -- inherit the other prefix variables
@@ -245,7 +245,7 @@ function _find_package_from_packagedirs(name, opt)
     -- find library
     local result = nil
     for _, link in ipairs(packageinfo:get("links")) do
-        local libinfo = find_library(link, linkdirs)
+        local libinfo = find_library(link, linkdirs, {plat = opt.plat})
         if libinfo then
             result          = result or {}
             result.links    = table.join(result.links or {}, libinfo.link)

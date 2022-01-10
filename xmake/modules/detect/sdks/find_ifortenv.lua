@@ -102,6 +102,12 @@ function _find_intel_on_windows(opt)
     -- find ifortvars_bat.bat
     local paths = {"$(env IFORT_COMPILER20)"}
     local ifortvars_bat = find_file("bin/ifortvars.bat", paths)
+    -- look for setvars.bat which is new in 2021
+    if not ifortvars_bat then
+        paths = {"$(env IFORT_COMPILER21)"}
+        ifortvars_bat = find_file("../../../setvars.bat", paths)
+    end
+
     if ifortvars_bat then
 
         -- load ifortvars_bat
@@ -116,12 +122,28 @@ end
 -- find intel fortran envirnoment on linux
 function _find_intel_on_linux(opt)
 
-    -- attempt to find the sdk directory
     local paths = {"/opt/intel/bin", "/usr/local/bin", "/usr/bin"}
     local ifort = find_file("ifort", paths)
     if ifort then
-        local sdkdir = path.directory(path.directory(ifort))
-        return {sdkdir = sdkdir, bindir = path.directory(ifort), path.join(sdkdir, "include"), libdir = path.join(sdkdir, "lib")}
+        local bindir = path.directory(ifort)
+        local sdkdir = path.directory(bindir)
+        return {sdkdir = sdkdir, bindir = bindir, libdir = path.join(sdkdir, "lib")}
+    end
+
+    -- find it from oneapi sdk directory
+    local oneapi_rootdirs = {"~/intel/oneapi/compiler", "/opt/intel/oneapi/compiler"}
+    local arch = os.arch() == "x86_64" and "intel64" or "ia32"
+    paths = {}
+    for _, rootdir in ipairs(oneapi_rootdirs) do
+        table.insert(paths, path.join(rootdir, "*", is_host("macosx") and "mac" or "linux", "bin", arch))
+    end
+    if #paths > 0 then
+        local ifort = find_file("ifort", paths)
+        if ifort then
+            local bindir = path.directory(ifort)
+            local sdkdir = path.directory(path.directory(bindir))
+            return {sdkdir = sdkdir, bindir = bindir, libdir = path.join(sdkdir, "compiler", "lib", arch)}
+        end
     end
 end
 

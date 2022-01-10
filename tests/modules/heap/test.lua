@@ -1,6 +1,9 @@
 import("core.base.heap")
 
 function test_cdataheap(t)
+    if not xmake.luajit() then
+        return
+    end
     local h = heap.cdataheap{
         size = 100,
         ctype = [[

@@ -420,8 +420,8 @@ function builder:get(name)
 end
 
 -- has flags?
-function builder:has_flags(flags, flagkind)
-    return self:_tool():has_flags(flags, flagkind)
+function builder:has_flags(flags, flagkind, opt)
+    return self:_tool():has_flags(flags, flagkind, opt)
 end
 
 -- map flags from name and values, e.g. linkdirs, links, defines
@@ -439,14 +439,6 @@ function builder:map_flags(name, values, opt)
     end
     if #flags > 0 then
         return flags
-    end
-end
-
--- get the format of the given target kind
-function builder:format(targetkind)
-    local formats = self:get("formats")
-    if formats then
-        return formats[targetkind]
     end
 end
 

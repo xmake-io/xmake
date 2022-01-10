@@ -27,7 +27,7 @@ rule("c code")
     end)
     on_build_file(function (target, sourcefile, opt)
         import("core.theme.theme")
-        import("private.utils.progress")
+        import("utils.progress")
         progress.show(opt.progress, "compiling.$(mode) %s", sourcefile)
         local objectfile_o = os.tmpfile() .. ".o"
         local sourcefile_c = os.tmpfile() .. ".c"

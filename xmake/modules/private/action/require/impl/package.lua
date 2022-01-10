@@ -23,13 +23,15 @@ import("core.base.semver")
 import("core.base.option")
 import("core.base.global")
 import("core.base.hashset")
-import("private.utils.progress")
+import("utils.progress")
 import("core.cache.memcache")
 import("core.project.project")
+import("core.project.config")
 import("core.tool.toolchain")
 import("core.package.package", {alias = "core_package"})
 import("devel.git")
 import("private.action.require.impl.repository")
+import("private.action.require.impl.utils.requirekey", {alias = "_get_requirekey"})
 
 -- get memcache
 function _memcache()
@@ -150,8 +152,23 @@ function _load_require(require_str, requires_extra, parentinfo)
 
     -- require packge in the current host platform
     if require_extra.host then
-        require_extra.plat = os.host()
-        require_extra.arch = os.arch()
+        if is_subhost(core_package.targetplat()) and os.subarch() == core_package.targetarch() then
+            -- we need pass plat/arch to avoid repeat installation
+            -- @see https://github.com/xmake-io/xmake/issues/1579
+        else
+            require_extra.plat = os.subhost()
+            require_extra.arch = os.subarch()
+        end
+    end
+
+    -- check require options
+    local extra_options = hashset.of("plat", "arch", "kind", "host", "targetos",
+    "alias", "group", "system", "option", "default", "optional", "debug",
+    "verify", "external", "private", "build", "configs", "version")
+    for name, value in pairs(require_extra) do
+        if not extra_options:has(name) then
+            wprint("add_requires(\"%s\") has unknown option: {%s=%s}!", require_str, name, tostring(value))
+        end
     end
 
     -- init required item
@@ -193,10 +210,38 @@ function _load_package_from_project(packagename)
 end
 
 -- load package package from repositories
-function _load_package_from_repository(packagename, reponame)
-    local packagedir, repo = repository.packagedir(packagename, reponame)
+function _load_package_from_repository(packagename, opt)
+    local packagedir, repo = repository.packagedir(packagename, opt)
     if packagedir then
         return core_package.load_from_repository(packagename, repo, packagedir)
+    end
+end
+
+-- has locked requires?
+function _has_locked_requires(opt)
+    opt = opt or {}
+    if not option.get("upgrade") or opt.force then
+        return project.policy("package.requires_lock") and os.isfile(project.requireslock())
+    end
+end
+
+-- get locked requires
+function _get_locked_requires(requirekey, opt)
+    opt = opt or {}
+    local requireslock = _memcache():get("requireslock")
+    if requireslock == nil or opt.force then
+        if _has_locked_requires(opt) then
+            requireslock = io.load(project.requireslock())
+        end
+        _memcache():set("requireslock", requireslock or false)
+    end
+    if requireslock then
+        local plat = config.plat() or os.subhost()
+        local arch = config.arch() or os.subarch()
+        local key = plat .. "|" .. arch
+        if requireslock[key] then
+            return requireslock[key][requirekey], requireslock.__meta__.version
+        end
     end
 end
 
@@ -209,13 +254,34 @@ end
 --
 -- orderdeps: c -> b -> a
 --
-function _sort_packagedeps(package, onlylink)
+function _sort_packagedeps(package)
     -- we must use native deps list instead of package:deps() to generate correct linkdeps
     local orderdeps = {}
     for _, dep in ipairs(package:plaindeps()) do
-        if dep and (onlylink ~= true or (dep:is_library() and not dep:is_private())) then
-            table.join2(orderdeps, _sort_packagedeps(dep, onlylink))
+        if dep then
+            table.join2(orderdeps, _sort_packagedeps(dep))
             table.insert(orderdeps, dep)
+        end
+    end
+    return orderdeps
+end
+
+-- sort link deps
+--
+-- e.g.
+--
+-- a.deps = b
+-- b.deps = c
+--
+-- orderdeps: a -> b -> c
+--
+function _sort_linkdeps(package)
+    -- we must use native deps list instead of package:deps() to generate correct linkdeps
+    local orderdeps = {}
+    for _, dep in ipairs(package:plaindeps()) do
+        if dep and dep:is_library() and not dep:is_private() then
+            table.insert(orderdeps, dep)
+            table.join2(orderdeps, _sort_linkdeps(dep))
         end
     end
     return orderdeps
@@ -246,10 +312,22 @@ function _add_package_configurations(package)
 end
 
 -- select package version
-function _select_package_version(package, requireinfo)
+function _select_package_version(package, requireinfo, locked_requireinfo)
 
-    -- exists urls? otherwise be phony package (only as package group)
-    if #package:urls() > 0 then
+    -- get it from the locked requireinfo
+    if locked_requireinfo then
+        local version = locked_requireinfo.version
+        local source = "version"
+        if locked_requireinfo.branch then
+            source = "branch"
+        elseif locked_requireinfo.tag then
+            source = "tag"
+        end
+        return version, source
+    end
+
+    -- if not phony package (only as package group)
+    if not requireinfo.group then
 
         -- has git url?
         local has_giturl = false
@@ -270,14 +348,19 @@ function _select_package_version(package, requireinfo)
             -- @see https://github.com/xmake-io/xmake/issues/930
             -- https://github.com/xmake-io/xmake/issues/1009
             version = require_version
-            source = "versions"
+            source = "version"
         elseif #package:versions() > 0 then -- select version?
             version, source = try { function () return semver.select(require_version, package:versions()) end }
         end
-        if not version and has_giturl and not require_version:find('.', 1, true) then -- select branch?
-            version, source = require_version ~= "latest" and require_version or "master", "branches"
+        if not version and has_giturl and not semver.is_valid(require_version) then -- select branch?
+            version, source = require_version ~= "latest" and require_version or "master", "branch"
         end
-        if not version then
+        -- local source package? we use a phony version
+        if not version and require_version == "latest" and #package:urls() == 0 then
+            version = "latest"
+            source = "version"
+        end
+        if not version and not package:is_thirdparty() then
             raise("package(%s): version(%s) not found!", package:name(), require_version)
         end
         return version, source
@@ -477,26 +560,17 @@ end
 
 -- get package key
 function _get_packagekey(packagename, requireinfo, version)
-    local key = packagename .. "/" .. (version or requireinfo.version)
-    if requireinfo.plat then
-        key = key .. "/" .. requireinfo.plat
-    end
-    if requireinfo.arch then
-        key = key .. "/" .. requireinfo.arch
-    end
-    if requireinfo.label then
-        key = key .. "/" .. requireinfo.label
-    end
-    local configs = requireinfo.configs
-    if configs then
-        local configs_order = {}
-        for k, v in pairs(configs) do
-            table.insert(configs_order, k .. "=" .. tostring(v))
-        end
-        table.sort(configs_order)
-        key = key .. ":" .. string.serialize(configs_order, true)
-    end
-    return key
+    return _get_requirekey(requireinfo, {name = packagename,
+                                         plat = requireinfo.plat,
+                                         arch = requireinfo.arch,
+                                         version = version or requireinfo.version})
+end
+
+-- get locked package key
+function _get_packagelock_key(requireinfo)
+    local requirestr  = requireinfo.originstr
+    local key         = _get_requirekey(requireinfo, {hash = true})
+    return string.format("%s#%s", requirestr, key)
 end
 
 -- inherit some builtin configs of parent package if these config values are not default value
@@ -519,9 +593,6 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
         end
         if parentinfo.arch then
             requireinfo.arch = parentinfo.arch
-        end
-        if parentinfo.private ~= nil then
-            requireinfo.private = parentinfo.private
         end
         requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
         requireinfo_configs.vs_runtime = requireinfo_configs.vs_runtime or parentinfo_configs.vs_runtime
@@ -610,6 +681,13 @@ function _load_package(packagename, requireinfo, opt)
         requireinfo.label = splitinfo[2]
     end
 
+    -- save requirekey
+    local requirekey = _get_packagelock_key(requireinfo)
+    requireinfo.requirekey = requirekey
+
+    -- get locked requireinfo
+    local locked_requireinfo = get_locked_requireinfo(requireinfo)
+
     -- load package from project first
     local package
     if os.isfile(os.projectfile()) then
@@ -619,7 +697,8 @@ function _load_package(packagename, requireinfo, opt)
     -- load package from repositories
     local from_repo = false
     if not package then
-        package = _load_package_from_repository(packagename, requireinfo.reponame)
+        package = _load_package_from_repository(packagename, {
+            name = requireinfo.reponame, locked_repo = locked_requireinfo and locked_requireinfo.repo})
         if package then
             from_repo = true
         end
@@ -652,7 +731,7 @@ function _load_package(packagename, requireinfo, opt)
     _finish_requireinfo(requireinfo, package)
 
     -- select package version
-    local version, source = _select_package_version(package, requireinfo)
+    local version, source = _select_package_version(package, requireinfo, locked_requireinfo)
     if version then
         package:version_set(version, source)
     end
@@ -760,7 +839,7 @@ function _load_packages(requires, opt)
                     package._DEPS = packagedeps
                     package._PLAINDEPS = plaindeps
                     package._ORDERDEPS = table.unique(_sort_packagedeps(package))
-                    package._LINKDEPS = table.unique(_sort_packagedeps(package, true))
+                    package._LINKDEPS = table.reverse_unique(_sort_linkdeps(package))
                 end
             end
 
@@ -889,7 +968,7 @@ function get_configs_str(package)
             if type(v) == "boolean" then
                 table.insert(configs, k .. ":" .. (v and "y" or "n"))
             else
-                table.insert(configs, k .. ":" .. v)
+                table.insert(configs, k .. ":" .. string.serialize(v, {strip = true, indent = false}))
             end
         end
     end
@@ -898,11 +977,24 @@ function get_configs_str(package)
         table.insert(configs, "from:" .. parents_str)
     end
     local configs_str = #configs > 0 and "[" .. table.concat(configs, ", ") .. "]" or ""
-    local limitwidth = os.getwinsize().width * 2 / 3
+    local limitwidth = math.floor(os.getwinsize().width * 2 / 3)
     if #configs_str > limitwidth then
         configs_str = configs_str:sub(1, limitwidth) .. " ..)"
     end
     return configs_str
+end
+
+-- get locked requireinfo
+function get_locked_requireinfo(requireinfo, opt)
+    local requirekey = requireinfo.requirekey
+    local locked_requireinfo, requireslock_version
+    if _has_locked_requires(opt) and requirekey then
+        locked_requireinfo, requireslock_version = _get_locked_requires(requirekey, opt)
+        if requireslock_version and semver.compare(project.requireslock_version(), requireslock_version) < 0 then
+            locked_requireinfo = nil
+        end
+    end
+    return locked_requireinfo, requireslock_version
 end
 
 -- load requires

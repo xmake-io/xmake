@@ -25,7 +25,7 @@ import("private.tools.vstool")
 
 -- init it
 function init(self)
-    if winos.version():gt("winxp") then
+    if self:has_flags("-nologo", "mrcflags") then
         -- fix vs2008 on xp, e.g. fatal error RC1106: invalid option: -ologo
         self:set("mrcflags", "-nologo")
     end

@@ -51,6 +51,11 @@
 // buffer size for prompt
 #define LUA_PROMPT_BUFSIZE 4096
 
+// for lua5.4
+#ifndef LUA_QL
+#   define LUA_QL(x)    "'" x "'"
+#endif
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
@@ -253,7 +258,7 @@ static tb_int_t xm_sandbox_loadline(lua_State* lua, tb_int_t top)
          * stack: arg1(sandbox_scope) scriptbuffer(top) -> ...
          * after: arg1(sandbox_scope) scriptbuffer scriptfunc(top) -> ...
          */
-        status = luaL_loadbuffer(lua, lua_tostring(lua, -1), lua_strlen(lua, -1), "=stdin");
+        status = luaL_loadbuffer(lua, lua_tostring(lua, -1), (size_t)lua_strlen(lua, -1), "=stdin");
 
         // complete?
         if (!xm_sandbox_incomplete(lua, status)) break;
@@ -318,8 +323,17 @@ tb_int_t xm_sandbox_interactive(lua_State* lua)
              *
              * stack: arg1(top) scriptfunc arg1(sandbox_scope) -> ...
              */
+#ifdef USE_LUAJIT
             lua_pushvalue(lua, 1);
             lua_setfenv(lua, -2);
+#else
+            // stack: arg1(top) scriptfunc $interactive_setfenv scriptfunc arg1(sandbox_scope) -> ...
+            lua_getfield(lua, 1, "$interactive_setfenv");
+            lua_pushvalue(lua, -2);
+            lua_pushvalue(lua, 1);
+            if (lua_pcall(lua, 2, 0, 0) != 0)
+                tb_printl(lua_pushfstring(lua, "error calling " LUA_QL("$interactive_setfenv") " (%s)", lua_tostring(lua, -1)));
+#endif
 
             /* run script
              *

@@ -19,7 +19,6 @@
 --
 
 -- imports
-import("core.base.cli")
 import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_file")
@@ -47,7 +46,7 @@ function _get_configs(artifacts_dir, buildir)
     -- add extra user configs
     local tryconfigs = config.get("tryconfigs")
     if tryconfigs then
-        for _, opt in ipairs(cli.parse(tryconfigs)) do
+        for _, opt in ipairs(os.argv(tryconfigs)) do
             table.insert(configs, tostring(opt))
         end
     end

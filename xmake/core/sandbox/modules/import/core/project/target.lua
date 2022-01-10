@@ -26,13 +26,13 @@ local target    = require("project/target")
 local raise     = require("sandbox/modules/raise")
 
 -- get the filename from the given name and kind
-function sandbox_core_project_target.filename(name, kind)
-    return target.filename(name, kind)
+function sandbox_core_project_target.filename(name, kind, opt)
+    return target.filename(name, kind, opt)
 end
 
 -- get the link name of the target file
-function sandbox_core_project_target.linkname(filename)
-    return target.linkname(filename)
+function sandbox_core_project_target.linkname(filename, opt)
+    return target.linkname(filename, opt)
 end
 
 -- return module

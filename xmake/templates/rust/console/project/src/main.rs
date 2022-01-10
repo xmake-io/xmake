@@ -1,4 +1,3 @@
-fn main()
-{
+fn main() {
     println!("hello xmake!");
 }

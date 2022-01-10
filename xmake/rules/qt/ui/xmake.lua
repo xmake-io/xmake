@@ -29,6 +29,9 @@ rule("qt.ui")
         if not os.isexec(uic) and qt.libexecdir then
             uic = path.join(qt.libexecdir, is_host("windows") and "uic.exe" or "uic")
         end
+        if not os.isexec(uic) and qt.libexecdir_host then
+            uic = path.join(qt.libexecdir_host, is_host("windows") and "uic.exe" or "uic")
+        end
         assert(uic and os.isexec(uic), "uic not found!")
 
         -- add includedirs, @note we need create this directory first to suppress warning (file not found).

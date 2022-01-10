@@ -55,6 +55,11 @@ function main(opt)
         program = find_program("7za", opt)
     end
 
+    -- find it from msys/mingw, it is only a shell script
+    if not program and is_subhost("msys") then
+        program = find_program("sh 7z", opt)
+    end
+
     -- find program version
     local version = nil
     if program and opt and opt.version then

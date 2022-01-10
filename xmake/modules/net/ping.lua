@@ -88,7 +88,7 @@ function main(hosts, opt)
                 end
 
                 -- trace
-                vprint("pinging for the host(%s) ... %d ms", host, timeval)
+                vprint("pinging for the host(%s) ... %d ms", host, math.floor(timeval))
             end
         end
     end, {total = #hosts})

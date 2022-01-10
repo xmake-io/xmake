@@ -120,7 +120,7 @@ tb_int_t xm_io_stdfile(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // get std type
-    tb_long_t type = lua_tointeger(lua, 1);
+    tb_long_t type = (tb_long_t)lua_tointeger(lua, 1);
 
     /* push a new stdfile
      *

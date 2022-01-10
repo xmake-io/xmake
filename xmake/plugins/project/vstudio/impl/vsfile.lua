@@ -97,7 +97,7 @@ end
 function open(filepath, mode)
 
     -- open it
-    local file = io.open(filepath, mode)
+    local file = io.open(filepath, mode, {encoding = "utf8bom"})
 
     -- hook print, printf and write
     file._print_impl  = file.print

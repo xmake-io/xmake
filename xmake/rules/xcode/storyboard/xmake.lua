@@ -32,7 +32,7 @@ rule("xcode.storyboard")
         import("core.theme.theme")
         import("core.project.depend")
         import("core.tool.toolchain")
-        import("private.utils.progress")
+        import("utils.progress")
 
         -- get xcode sdk directory
         local xcode_sdkdir = assert(get_config("xcode"), "xcode not found!")

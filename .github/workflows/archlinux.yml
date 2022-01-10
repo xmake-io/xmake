@@ -9,9 +9,12 @@ on:
 jobs:
   build:
 
-    container: archlinux:latest
+    container: archlinux:base-devel
     runs-on: ubuntu-latest
 
+    concurrency:
+        group: ${{ github.head_ref }}-Archlinux
+        cancel-in-progress: true
     steps:
       - name: Prepare build tools
         run: |

@@ -32,6 +32,7 @@ import("utils.archive")
 function _checkout(package, resource_name, resource_url, resource_revision)
 
     -- trace
+    resource_url = proxy.mirror(resource_url) or resource_url
     vprint("cloning resource(%s: %s) to %s-%s ..", resource_name, resource_revision, package:name(), package:version_str())
 
     -- get the resource directory
@@ -62,7 +63,7 @@ function _checkout(package, resource_name, resource_url, resource_revision)
     local longpaths = package:policy("platform.longpaths")
 
     -- clone whole history and tags
-    git.clone(proxy.mirror(resource_url) or resource_url, {longpaths = longpaths, outputdir = resourcedir})
+    git.clone(resource_url, {longpaths = longpaths, outputdir = resourcedir})
 
     -- attempt to checkout the given version
     git.checkout(resource_revision, {repodir = resourcedir})
@@ -77,6 +78,7 @@ end
 function _download(package, resource_name, resource_url, resource_hash)
 
     -- trace
+    resource_url = proxy.mirror(resource_url) or resource_url
     vprint("downloading resource(%s: %s) to %s-%s ..", resource_name, resource_url, package:name(), package:version_str())
 
     -- get the resource file
@@ -103,7 +105,7 @@ function _download(package, resource_name, resource_url, resource_hash)
             -- we can use local resource from the search directories directly if network is too slow
             os.cp(localfile, resource_file)
         elseif resource_url:find(string.ipattern("https-://")) or resource_url:find(string.ipattern("ftps-://")) then
-            http.download(proxy.mirror(resource_url) or resource_url, resource_file)
+            http.download(resource_url, resource_file)
         else
             raise("invalid resource url(%s)", resource_url)
         end

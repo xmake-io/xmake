@@ -15,6 +15,11 @@ prefix 		:=$(PREFIX)
 endif
 endif
 
+# use luajit or lua backend
+ifeq ($(RUNTIME),)
+RUNTIME 	:=lua
+endif
+
 # the temporary directory
 ifeq ($(TMPDIR),)
 TMP_DIR 	:=$(if $(TMP_DIR),$(TMP_DIR),/tmp)
@@ -94,7 +99,7 @@ xrepo_bin_install   :=$(destdir)/bin/xrepo
 build:
 	@echo compiling xmake-core ...
 	@if [ -f core/.config.mak ]; then rm core/.config.mak; fi
-	+@$(MAKE) -C core --no-print-directory f DEBUG=$(debug)
+	+@$(MAKE) -C core --no-print-directory f DEBUG=$(debug) RUNTIME=$(RUNTIME)
 	+@$(MAKE) -C core --no-print-directory c
 	+@$(MAKE) -C core --no-print-directory
 
@@ -112,7 +117,8 @@ install:
 	@if [ ! -d $(destdir)/bin ]; then mkdir -p $(destdir)/bin; fi
 	@# install the xmake directory
 	@cp -r xmake/* $(xmake_dir_install)
-	@# install the xmake core file
+	@# install the xmake core file, @note we need remove old binary first on mac M1, otherwise it will be killed
+	@if [ -f $(xmake_core_install) ]; then rm $(xmake_core_install); fi
 	@cp -p $(xmake_core) $(xmake_core_install)
 	@chmod 755 $(xmake_core_install)
 	@# install the xrepo bin file

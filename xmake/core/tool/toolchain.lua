@@ -131,7 +131,7 @@ function _instance:get(name)
         return value
     end
 
-    -- lazy loading platform
+    -- lazy loading toolchain
     self:_load()
 
     -- get other platform info
@@ -185,6 +185,7 @@ end
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
     -- ensure to do load for initializing toolset first
+    -- @note we cannot call self:check() here, because it can only be called on config
     self:_load()
     local toolpaths = self:get("toolset." .. toolkind)
     if toolpaths then
@@ -210,7 +211,7 @@ end
 -- get the bin directory
 function _instance:bindir()
     local bindir = self:config("bindir") or config.get("bin") or self:info():get("bindir")
-    if not bindir and self:cross() and self:sdkdir() and os.isdir(path.join(self:sdkdir(), "bin")) then
+    if not bindir and self:is_cross() and self:sdkdir() and os.isdir(path.join(self:sdkdir(), "bin")) then
         bindir = path.join(self:sdkdir(), "bin")
     end
     return bindir
@@ -338,7 +339,6 @@ function _instance:_description(toolkind)
             ld         = "the linker",
             sh         = "the shared library linker",
             ar         = "the static library archiver",
-            ex         = "the static library extractor",
             mrc        = "the windows resource compiler",
             strip      = "the symbols stripper",
             dsymutil   = "the symbols generator",
@@ -369,6 +369,10 @@ function _instance:_description(toolkind)
             cu         = "the cuda compiler",
             culd       = "the cuda linker",
             cuccbin    = "the cuda host c++ compiler",
+            nc         = "the nim compiler",
+            ncld       = "the nim linker",
+            ncsh       = "the nim shared library linker",
+            ncar       = "the nim static library archiver"
         }
         self._DESCRIPTIONS = descriptions
     end

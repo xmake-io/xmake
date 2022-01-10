@@ -1,0 +1,13 @@
+export module foo;
+import bar;
+import cat;
+
+export namespace foo {
+    int add(int a, int b) {
+        return bar::add(a, b);
+    }
+    int sub(int a, int b) {
+        return cat::sub(a, b);
+    }
+}
+

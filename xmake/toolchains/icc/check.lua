@@ -28,7 +28,8 @@ import("lib.detect.find_tool")
 function _check_intel_on_windows(toolchain)
 
     -- have been checked?
-    if config.get("__iclvarsall") then
+    local varsall = toolchain:config("varsall")
+    if varsall then
         return true
     end
 
@@ -38,18 +39,11 @@ function _check_intel_on_windows(toolchain)
         local iclvarsall = iccenv.iclvars
         local iclenv = iclvarsall[toolchain:arch()]
         if iclenv and iclenv.PATH and iclenv.INCLUDE and iclenv.LIB then
-
-            -- save iclvars
-            config.set("__iclvarsall", iclvarsall)
-
-            -- check compiler
-            local program = nil
             local tool = find_tool("icl.exe", {force = true, envs = iclenv, version = true})
             if tool then
-                program = tool.program
-            end
-            if program then
                 cprint("checking for Intel C/C++ Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
+                toolchain:config_set("varsall", iclvarsall)
+                toolchain:configs_save()
                 return true
             end
         end
@@ -58,7 +52,23 @@ end
 
 -- check intel on linux
 function _check_intel_on_linux(toolchain)
-    return find_tool("icc")
+    local iccenv = toolchain:config("iccenv")
+    if iccenv then
+        return true
+    end
+    iccenv = find_iccenv()
+    if iccenv then
+        local ldname = is_host("macosx") and "DYLD_LIBRARY_PATH" or "LD_LIBRARY_PATH"
+        local tool = find_tool("icc", {force = true, envs = {[ldname] = iccenv.libdir}, paths = iccenv.bindir})
+        if tool then
+            cprint("checking for Intel C/C++ Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
+            toolchain:config_set("iccenv", iccenv)
+            toolchain:config_set("bindir", iccenv.bindir)
+            toolchain:configs_save()
+            return true
+        end
+        return true
+    end
 end
 
 -- main entry

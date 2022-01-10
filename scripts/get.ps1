@@ -11,6 +11,7 @@ param (
 )
 
 & {
+    $LastRelease = "v2.6.2"
     $ErrorActionPreference = 'Stop'
 
     function writeErrorTip($msg) {
@@ -30,9 +31,9 @@ param (
     }
 
     if ($IsLinux -or $IsMacOS) {
-        writeErrorTip 'Install on *nix is not supported, try ' 
+        writeErrorTip 'Install on *nix is not supported, try '
         writeErrorTip '(Use curl) "bash <(curl -fsSL https://raw.githubusercontent.com/xmake-io/xmake/master/scripts/get.sh)"'
-        writeErrorTip 'or' 
+        writeErrorTip 'or'
         writeErrorTip '(Use wget) "bash <(wget https://raw.githubusercontent.com/xmake-io/xmake/master/scripts/get.sh -O -)"'
         throw 'Unsupported platform'
     }
@@ -90,7 +91,7 @@ param (
         $url = if ($v -is [version]) {
             "https://github.com/xmake-io/xmake/releases/download/v$v/xmake-v$v.$winarch.exe"
         } else {
-            "https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?branch=$v&pr=false&job=Image%3A+Visual+Studio+2017%3B+Platform%3A+$arch"
+            "https://github.com/xmake-io/xmake/releases/download/$LastRelease/xmake-$v.$winarch.exe"
         }
         Write-Host "Start downloading $url .."
         try {
@@ -145,9 +146,9 @@ param (
                 writeErrorTip "Please try again as administrator"
                 return
             }
-            
+
             if ($content) {
-                $content = [System.Text.RegularExpressions.Regex]::Replace($content, "\n*(# PowerShell parameter completion shim for xmake)?\s*Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock\s*{.+?\n}\s*", "`n", [System.Text.RegularExpressions.RegexOptions]::Singleline) 
+                $content = [System.Text.RegularExpressions.Regex]::Replace($content, "\n*(# PowerShell parameter completion shim for xmake)?\s*Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock\s*{.+?\n}\s*", "`n", [System.Text.RegularExpressions.RegexOptions]::Singleline)
             }
             try {
                 $appendcontent = (Invoke-Webrequest 'https://xmake.io/assets/scripts/pscompletions.text' -UseBasicParsing).Content
@@ -156,7 +157,7 @@ param (
                 writeErrorTip 'Check your network or... the news of S3 break'
                 return
             }
-            Set-Content $file "$content`n$appendcontent" -NoNewline
+            Set-Content $file "$content`n# >>> xmake >>>`n$appendcontent`n# <<< xmake <<<`n" -NoNewline
             . $file
             Write-Host "Tab completion installed"
         }

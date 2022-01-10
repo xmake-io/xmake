@@ -45,6 +45,14 @@ which can be obtained at:
   * HOMEPAGE:
     * http://luajit.org/
 
+This product depends on 'Lua', The Lua Programing Language,
+which can be obtained at:
+
+  * LICENSE:
+    * https://www.lua.org/license.html (MIT License)
+  * HOMEPAGE:
+    * http://lua.org/
+
 This product depends on 'tbox', The Treasure Box Library,
 which can be obtained at:
 

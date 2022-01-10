@@ -49,7 +49,7 @@ os.SYSERR_NOT_PERM    = 1
 os.SYSERR_NOT_FILEDIR = 2
 
 -- copy single file or directory
-function os._cp(src, dst, rootdir)
+function os._cp(src, dst, rootdir, opt)
 
     -- check
     assert(src and dst)
@@ -65,7 +65,7 @@ function os._cp(src, dst, rootdir)
     end
 
     -- is file?
-    if os.isfile(src) then
+    if os.isfile(src) or os.islink(src) then
 
         -- the destination is directory? append the filename
         if os.isdir(dst) or path.islastsep(dst) then
@@ -76,9 +76,17 @@ function os._cp(src, dst, rootdir)
             end
         end
 
-        -- copy file
-        if not os.cpfile(src, dst) then
-            return false, string.format("cannot copy file %s to %s, %s", src, dst, os.strerror())
+        -- link file if reserve symlink
+        if opt and opt.symlink and os.islink(src) then
+            local reallink = os.readlink(src)
+            if not os.link(reallink, dst) then
+                return false, string.format("cannot link %s(%s) to %s, %s", src, reallink, dst, os.strerror())
+            end
+        else
+            -- copy file
+            if not os.cpfile(src, dst) then
+                return false, string.format("cannot copy file %s to %s, %s", src, dst, os.strerror())
+            end
         end
     -- is directory?
     elseif os.isdir(src) then
@@ -243,7 +251,7 @@ end
 -- @see https://github.com/xmake-io/xmake-repo/pull/489
 -- https://stackoverflow.com/questions/34491244/environment-variable-is-too-large-on-windows-10
 --
-function os._remove_repeat_pathenv(value)
+function os._deduplicate_pathenv(value)
     if value and #value > 4096 then
         local itemset = {}
         local results = {}
@@ -369,7 +377,7 @@ end
 
 -- match directories
 --
--- @note only return {} without count to simplify code, e.g. unpack(os.dirs(""))
+-- @note only return {} without count to simplify code, e.g. table.unpack(os.dirs(""))
 --
 function os.dirs(pattern, callback)
     return (os.match(pattern, 'd', callback))
@@ -386,7 +394,7 @@ function os.filedirs(pattern, callback)
 end
 
 -- copy files or directories and we can reserve the source directory structure
--- e.g. os.cp("src/**.h", "/tmp/", {rootdir = "src"})
+-- e.g. os.cp("src/**.h", "/tmp/", {rootdir = "src", symlink = true})
 function os.cp(srcpath, dstpath, opt)
 
     -- check arguments
@@ -405,10 +413,10 @@ function os.cp(srcpath, dstpath, opt)
     -- copy files or directories
     local srcpathes = os._match_wildcard_pathes(srcpath)
     if type(srcpathes) == "string" then
-        return os._cp(srcpathes, dstpath, rootdir)
+        return os._cp(srcpathes, dstpath, rootdir, opt)
     else
         for _, _srcpath in ipairs(srcpathes) do
-            local ok, errors = os._cp(_srcpath, dstpath, rootdir)
+            local ok, errors = os._cp(_srcpath, dstpath, rootdir, opt)
             if not ok then
                 return false, errors
             end
@@ -723,7 +731,7 @@ function os.execv(program, argv, opt)
             end
             -- we try to fix too long value before running process
             if type(v) == "string" and #v > 4096 and os.host() == "windows" then
-                v = os._remove_repeat_pathenv(v)
+                v = os._deduplicate_pathenv(v)
             end
             envars[k] = v
         end
@@ -753,8 +761,6 @@ function os.execv(program, argv, opt)
         -- cannot execute process
         return nil, os.strerror()
     end
-
-    -- ok?
     return ok
 end
 
@@ -1227,6 +1233,21 @@ end
 -- get cpu info
 function os.cpuinfo(name)
     return require("base/cpu").info(name)
+end
+
+-- get the default parallel jobs number
+function os.default_njob()
+    local njob = math.ceil(os.cpuinfo().ncpu * 3 / 2)
+    if os.host() == "windows" and njob > 128 then
+        njob = 128
+    end
+    if njob > 512 then
+        njob = 512
+    end
+    if njob < 1 then
+        njob = 1
+    end
+    return njob
 end
 
 -- read the content of symlink

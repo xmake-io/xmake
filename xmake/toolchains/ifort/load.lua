@@ -26,7 +26,7 @@ import("core.project.config")
 function _add_ifortenv(toolchain, name)
 
     -- get ifortvarsall
-    local ifortvarsall = config.get("__ifortvarsall")
+    local ifortvarsall = toolchain:config("varsall")
     if not ifortvarsall then
         return
     end
@@ -56,7 +56,6 @@ function _load_intel_on_windows(toolchain)
     toolchain:set("toolset", "fcld",  "ifort.exe")
     toolchain:set("toolset", "fcsh",  "ifort.exe")
     toolchain:set("toolset", "ar",  "link.exe")
-    toolchain:set("toolset", "ex",  "lib.exe")
 
     -- add ifort environments
     _add_ifortenv(toolchain, "PATH")
@@ -85,6 +84,13 @@ function _load_intel_on_linux(toolchain)
         toolchain:add("fcflags", march)
         toolchain:add("fcldflags", march)
         toolchain:add("fcshflags", march)
+    end
+
+    -- get ifort environments
+    local ifortenv = toolchain:config("ifortenv")
+    if ifortenv then
+        local ldname = is_host("macosx") and "DYLD_LIBRARY_PATH" or "LD_LIBRARY_PATH"
+        toolchain:add("runenvs", ldname, ifortenv.libdir)
     end
 end
 

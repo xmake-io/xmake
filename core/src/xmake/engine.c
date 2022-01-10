@@ -187,6 +187,7 @@ tb_int_t xm_winos_logical_drives(lua_State* lua);
 tb_int_t xm_winos_registry_query(lua_State* lua);
 tb_int_t xm_winos_registry_keys(lua_State* lua);
 tb_int_t xm_winos_registry_values(lua_State* lua);
+tb_int_t xm_winos_short_path(lua_State* lua);
 #endif
 
 // the string functions
@@ -220,6 +221,19 @@ tb_int_t xm_semver_parse(lua_State* lua);
 tb_int_t xm_semver_compare(lua_State* lua);
 tb_int_t xm_semver_satisfies(lua_State* lua);
 tb_int_t xm_semver_select(lua_State* lua);
+
+// the libc functions
+tb_int_t xm_libc_malloc(lua_State* lua);
+tb_int_t xm_libc_free(lua_State* lua);
+tb_int_t xm_libc_memcpy(lua_State* lua);
+tb_int_t xm_libc_memset(lua_State* lua);
+tb_int_t xm_libc_strndup(lua_State* lua);
+tb_int_t xm_libc_dataptr(lua_State* lua);
+tb_int_t xm_libc_byteof(lua_State* lua);
+tb_int_t xm_libc_setbyte(lua_State* lua);
+
+// the tty functions
+tb_int_t xm_tty_term_mode(lua_State* lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses
@@ -291,6 +305,7 @@ static luaL_Reg const g_winos_functions[] =
 ,   { "registry_query",      xm_winos_registry_query    }
 ,   { "registry_keys",       xm_winos_registry_keys     }
 ,   { "registry_values",     xm_winos_registry_values   }
+,   { "short_path",          xm_winos_short_path        }
 ,   { tb_null,               tb_null                    }
 };
 #endif
@@ -409,6 +424,27 @@ static luaL_Reg const g_semver_functions[] =
 ,   { "compare",        xm_semver_compare   }
 ,   { "satisfies",      xm_semver_satisfies }
 ,   { "select",         xm_semver_select    }
+,   { tb_null,          tb_null             }
+};
+
+// the libc functions
+static luaL_Reg const g_libc_functions[] =
+{
+    { "malloc",         xm_libc_malloc      }
+,   { "free",           xm_libc_free        }
+,   { "memcpy",         xm_libc_memcpy      }
+,   { "memset",         xm_libc_memset      }
+,   { "strndup",        xm_libc_strndup     }
+,   { "dataptr",        xm_libc_dataptr     }
+,   { "byteof",         xm_libc_byteof      }
+,   { "setbyte",        xm_libc_setbyte     }
+,   { tb_null,          tb_null             }
+};
+
+// the tty functions
+static luaL_Reg const g_tty_functions[] =
+{
+    { "term_mode",      xm_tty_term_mode    }
 ,   { tb_null,          tb_null             }
 };
 
@@ -586,7 +622,7 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
             tb_size_t i;
             tb_file_info_t info;
             tb_char_t scriptpath[TB_PATH_MAXN];
-            tb_char_t const* subdirs[] = {"", sharedir};
+            tb_char_t const* subdirs[] = {".", sharedir};
             for (i = 0; i < tb_arrayn(subdirs); i++)
             {
                 // get program directory
@@ -814,45 +850,51 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         tb_strlcpy(engine->name, name, sizeof(engine->name));
 
         // init lua
-        engine->lua = lua_open();
+        engine->lua = luaL_newstate();
         tb_assert_and_check_break(engine->lua);
 
         // open lua libraries
         luaL_openlibs(engine->lua);
 
         // bind os functions
-        luaL_register(engine->lua, "os", g_os_functions);
+        xm_lua_register(engine->lua, "os", g_os_functions);
 
         // bind io functions
-        luaL_register(engine->lua, "io", g_io_functions);
+        xm_lua_register(engine->lua, "io", g_io_functions);
 
         // bind path functions
-        luaL_register(engine->lua, "path", g_path_functions);
+        xm_lua_register(engine->lua, "path", g_path_functions);
 
         // bind hash functions
-        luaL_register(engine->lua, "hash", g_hash_functions);
+        xm_lua_register(engine->lua, "hash", g_hash_functions);
 
         // bind string functions
-        luaL_register(engine->lua, "string", g_string_functions);
+        xm_lua_register(engine->lua, "string", g_string_functions);
 
         // bind process functions
-        luaL_register(engine->lua, "process", g_process_functions);
+        xm_lua_register(engine->lua, "process", g_process_functions);
 
         // bind sandbox functions
-        luaL_register(engine->lua, "sandbox", g_sandbox_functions);
+        xm_lua_register(engine->lua, "sandbox", g_sandbox_functions);
 
         // bind windows functions
 #ifdef TB_CONFIG_OS_WINDOWS
-        luaL_register(engine->lua, "winos", g_winos_functions);
+        xm_lua_register(engine->lua, "winos", g_winos_functions);
 #endif
 
 #ifdef XM_CONFIG_API_HAVE_READLINE
         // bind readline functions
-        luaL_register(engine->lua, "readline", g_readline_functions);
+        xm_lua_register(engine->lua, "readline", g_readline_functions);
 #endif
 
         // bind semver functions
-        luaL_register(engine->lua, "semver", g_semver_functions);
+        xm_lua_register(engine->lua, "semver", g_semver_functions);
+
+        // bind libc functions
+        xm_lua_register(engine->lua, "libc", g_libc_functions);
+
+        // bind tty functions
+        xm_lua_register(engine->lua, "tty", g_tty_functions);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
         // bind curses
@@ -879,7 +921,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
         // init version string
         tb_char_t version_cstr[256] = {0};
-        tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u+%llu", version->major, version->minor, version->alter, version->build);
+        if (tb_strcmp(XM_CONFIG_VERSION_BRANCH, "") && tb_strcmp(XM_CONFIG_VERSION_COMMIT, ""))
+            tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u+%s.%s", version->major, version->minor, version->alter, XM_CONFIG_VERSION_BRANCH, XM_CONFIG_VERSION_COMMIT);
+        else tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u+%llu", version->major, version->minor, version->alter, version->build);
         lua_pushstring(engine->lua, version_cstr);
         lua_setglobal(engine->lua, "_VERSION");
 
@@ -891,6 +935,14 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         // init engine name
         lua_pushstring(engine->lua, name? name : "xmake");
         lua_setglobal(engine->lua, "_NAME");
+
+        // use luajit as runtime?
+#ifdef USE_LUAJIT
+        lua_pushboolean(engine->lua, tb_true);
+#else
+        lua_pushboolean(engine->lua, tb_false);
+#endif
+        lua_setglobal(engine->lua, "_LUAJIT");
 
         // init namespace: xmake
         lua_newtable(engine->lua);
@@ -1024,7 +1076,7 @@ tb_void_t xm_engine_register(xm_engine_ref_t self, tb_char_t const* module, luaL
     // do register
     lua_pushstring(engine->lua, module);
     lua_newtable(engine->lua);
-    luaL_register(engine->lua, tb_null, funcs);
+    xm_lua_register(engine->lua, tb_null, funcs);
     lua_rawset(engine->lua, -3);
 }
 tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv, xm_engine_lni_initalizer_cb_t lni_initalizer)

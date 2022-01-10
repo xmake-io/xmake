@@ -28,7 +28,7 @@ import("core.theme.theme")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("core.language.language")
-import("private.utils.progress", {alias = "progress_utils"})
+import("utils.progress", {alias = "progress_utils"})
 
 -- define module
 local batchcmds = batchcmds or object { _init = {"_TARGET", "_CMDS", "_DEPS", "_tip"}}
@@ -117,6 +117,14 @@ function _runcmd_mkdir(cmd, opt)
     end
 end
 
+-- run command: os.cd
+function _runcmd_cd(cmd, opt)
+    local dir = cmd.dir
+    if not opt.dryrun then
+        os.cd(dir)
+    end
+end
+
 -- run command: os.rm
 function _runcmd_rm(cmd, opt)
     local filepath = cmd.filepath
@@ -128,21 +136,21 @@ end
 -- run command: os.cp
 function _runcmd_cp(cmd, opt)
     if not opt.dryrun then
-        os.cp(opt.srcpath, opt.dstpath, opt.opt)
+        os.cp(cmd.srcpath, cmd.dstpath, opt.opt)
     end
 end
 
 -- run command: os.mv
 function _runcmd_mv(cmd, opt)
     if not opt.dryrun then
-        os.mv(opt.srcpath, opt.dstpath, opt.opt)
+        os.mv(cmd.srcpath, cmd.dstpath, opt.opt)
     end
 end
 
 -- run command: os.ln
 function _runcmd_ln(cmd, opt)
     if not opt.dryrun then
-        os.ln(opt.srcpath, opt.dstpath, opt.opt)
+        os.ln(cmd.srcpath, cmd.dstpath, opt.opt)
     end
 end
 
@@ -158,6 +166,7 @@ function _runcmd(cmd, opt)
             vrunv = _runcmd_vrunv,
             execv = _runcmd_execv,
             mkdir = _runcmd_mkdir,
+            cd    = _runcmd_cd,
             rm    = _runcmd_rm,
             cp    = _runcmd_cp,
             mv    = _runcmd_mv,
@@ -266,6 +275,11 @@ end
 -- add command: os.ln
 function batchcmds:ln(srcpath, dstpath, opt)
     table.insert(self:cmds(), {kind = "ln", srcpath = srcpath, dstpath = dstpath, opt = opt})
+end
+
+-- add command: os.cd
+function batchcmds:cd(dir, opt)
+    table.insert(self:cmds(), {kind = "cd", dir = dir, opt = opt})
 end
 
 -- add command: show

@@ -20,6 +20,7 @@
 
 -- imports
 import("private.tools.vstool")
+import("core.base.hashset")
 
 -- init it
 --
@@ -28,11 +29,7 @@ import("private.tools.vstool")
 function init(self)
 
     -- init asflags
-    if self:program():find("64") then
-        self:set("asflags", "-nologo")
-    else
-        self:set("asflags", "-nologo", "-Gd")
-    end
+    self:set("asflags", "-nologo")
 
     -- init flags map
     self:set("mapflags",
@@ -57,10 +54,25 @@ function init(self)
     })
 end
 
+-- make the symbol flags
+function nf_symbols(self, levels, target)
+    local flags = nil
+    local values = hashset.from(levels)
+    if values:has("debug") then
+        flags = {}
+        if values:has("edit") then
+            table.insert(flags, "-ZI")
+        elseif values:has("embed") then
+            table.insert(flags, "-Z7")
+        else
+            table.insert(flags, "-Zi")
+        end
+    end
+    return flags
+end
+
 -- make the warning flag
 function nf_warning(self, level)
-
-    -- the maps
     local maps =
     {
         none         = "-w"
@@ -70,8 +82,6 @@ function nf_warning(self, level)
     ,   everything   = "-W3"
     ,   error        = "-WX"
     }
-
-    -- make it
     return maps[level]
 end
 
@@ -97,6 +107,21 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
+    -- we need to set the default -Gd option for the x86 architecture,
+    -- if the other calling convention flags are not set
+    --
+    -- we can't directly remove -Gd. This is not only for backward compatibility,
+    -- but also to simplify mixed compilation with c programs.
+    --
+    -- although this may affect some performance,
+    -- it only takes effect under x86 asm, so there will be no major performance issues.
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/1779
+    --
+    if not self:program():find("64", 1, true) and
+        not table.contains(flags, "-Gc", "/Gc", "-GZ", "/GZ") then
+        table.insert(flags, "-Gd")
+    end
     return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
 end
 

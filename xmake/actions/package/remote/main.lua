@@ -24,7 +24,19 @@ import("core.base.task")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
-import("lib.luajit.bit")
+import("core.base.bit")
+
+-- get link deps
+function _get_linkdeps(target)
+    local linkdeps = {}
+    for _, depname in ipairs(target:get("deps")) do
+        local dep = project.target(depname)
+        if not ((target:is_binary() or target:is_shared()) and dep:is_static()) then
+            table.insert(linkdeps, dep:name())
+        end
+    end
+    return linkdeps
+end
 
 -- package remote
 function _package_remote(target)
@@ -41,13 +53,12 @@ function _package_remote(target)
     -- generate xmake.lua
     local file = io.open(path.join(packagedir, "xmake.lua"), "w")
     if file then
-        local deps = {}
-        for _, dep in ipairs(target:orderdeps()) do
-            table.insert(deps, dep:name())
-        end
+        local deps = _get_linkdeps(target)
         file:print("package(\"%s\")", packagename)
         if target:is_binary() then
             file:print("    set_kind(\"binary\")")
+        elseif target:is_headeronly() then
+            file:print("    set_kind(\"library\", {headeronly = true})")
         end
         local homepage = option.get("homepage")
         if homepage then
@@ -93,9 +104,10 @@ function _package_target(target)
     if not target:is_phony() then
         local scripts =
         {
-            binary = _package_remote
-        ,   static = _package_remote
-        ,   shared = _package_remote
+            binary     = _package_remote
+        ,   static     = _package_remote
+        ,   shared     = _package_remote
+        ,   headeronly = _package_remote
         }
         local kind = target:kind()
         assert(scripts[kind], "this target(%s) with kind(%s) can not be packaged!", target:name(), kind)

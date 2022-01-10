@@ -94,6 +94,9 @@ function _find_mingw(sdkdir, bindir, cross)
 
     -- find cross toolchain
     local toolchain = find_cross_toolchain(sdkdir or bindir, {bindir = bindir, cross = cross})
+    if not toolchain then -- fallback, e.g. gcc.exe without cross
+        toolchain = find_cross_toolchain(sdkdir or bindir, {bindir = bindir})
+    end
     if toolchain then
         return {sdkdir = toolchain.sdkdir, bindir = toolchain.bindir, cross = toolchain.cross}
     end

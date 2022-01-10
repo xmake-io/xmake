@@ -60,7 +60,7 @@ tb_int_t xm_process_openv(lua_State* lua)
     tb_check_return_val(shellname, 0);
 
     // get the arguments count
-    tb_long_t argn = lua_objlen(lua, 2);
+    tb_long_t argn = (tb_long_t)lua_objlen(lua, 2);
     tb_check_return_val(argn >= 0, 0);
 
     // get arguments
@@ -85,7 +85,7 @@ tb_int_t xm_process_openv(lua_State* lua)
         else
         {
             // error
-            lua_pushfstring(lua, "invalid argv[%ld] type(%s) for process.openv", argi, luaL_typename(lua, -1));
+            lua_pushfstring(lua, "invalid argv[%d] type(%s) for process.openv", (tb_int_t)argi, luaL_typename(lua, -1));
             lua_error(lua);
         }
 
@@ -98,7 +98,7 @@ tb_int_t xm_process_openv(lua_State* lua)
 
     // get option arguments
     tb_size_t          envn = 0;
-    tb_char_t const*   envs[256] = {0};
+    tb_char_t const*   envs[1024] = {0};
     tb_char_t const*   inpath  = tb_null;
     tb_char_t const*   outpath = tb_null;
     tb_char_t const*   errpath = tb_null;
@@ -220,14 +220,14 @@ tb_int_t xm_process_openv(lua_State* lua)
                     else
                     {
                         // error
-                        lua_pushfstring(lua, "envs is too large(%lu > %d) for process.openv", envn, tb_arrayn(envs) - 1);
+                        lua_pushfstring(lua, "envs is too large(%d > %d) for process.openv", (tb_int_t)envn, tb_arrayn(envs) - 1);
                         lua_error(lua);
                     }
                 }
                 else
                 {
                     // error
-                    lua_pushfstring(lua, "invalid envs[%ld] type(%s) for process.openv", i, luaL_typename(lua, -1));
+                    lua_pushfstring(lua, "invalid envs[%d] type(%s) for process.openv", (tb_int_t)i, luaL_typename(lua, -1));
                     lua_error(lua);
                 }
 

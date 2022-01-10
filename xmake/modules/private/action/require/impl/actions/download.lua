@@ -70,13 +70,13 @@ function _checkout(package, url, sourcedir, url_alias)
     if package:branch() then
 
         -- only shadow clone this branch
-        git.clone(proxy.mirror(url) or url, {depth = 1, recursive = true, longpaths = longpaths, branch = package:branch(), outputdir = packagedir})
+        git.clone(url, {depth = 1, recursive = true, longpaths = longpaths, branch = package:branch(), outputdir = packagedir})
 
     -- download package from revision or tag?
     else
 
         -- clone whole history and tags
-        git.clone(proxy.mirror(url) or url, {longpaths = longpaths, outputdir = packagedir})
+        git.clone(url, {longpaths = longpaths, outputdir = packagedir})
 
         -- attempt to checkout the given version
         local revision = package:revision(url_alias) or package:tag() or package:version_str()
@@ -139,7 +139,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
                 -- we can use local package from the search directories directly if network is too slow
                 os.cp(localfile, packagefile)
             else
-                http.download(proxy.mirror(url) or url, packagefile)
+                http.download(url, packagefile)
             end
         end
 
@@ -151,15 +151,20 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
 
     -- extract package file
     os.rm(sourcedir .. ".tmp")
+    local extension = archive.extension(packagefile)
     if archive.extract(packagefile, sourcedir .. ".tmp", {excludes = url_excludes}) then
         -- move to source directory
         os.rm(sourcedir)
         os.mv(sourcedir .. ".tmp", sourcedir)
-    else
+    elseif extension and extension ~= "" then
         -- create an empty source directory if do not extract package file
         os.tryrm(sourcedir)
         os.mkdir(sourcedir)
-        raise("cannot extract %s", packagefile)
+        raise("cannot extract %s, maybe missing extractor or invalid package file!", packagefile)
+    else
+        -- if it is not archive file, we need only create empty source file and use package:originfile()
+        os.tryrm(sourcedir)
+        os.mkdir(sourcedir)
     end
 
     -- save original file path
@@ -224,7 +229,13 @@ function main(package)
         -- filter url
         url = filter.handle(url, package)
 
+        -- use proxy url?
+        if not os.isfile(url) then
+            url = proxy.mirror(url) or url
+        end
+
         -- download url
+        local allerrors = {}
         ok = try
         {
             function ()
@@ -243,8 +254,12 @@ function main(package)
                 function (errors)
 
                     -- show or save the last errors
-                    if errors and (option.get("verbose") or option.get("diagnosis")) then
-                        cprint("${dim color.error}error: ${clear}%s", errors)
+                    if errors then
+                        if (option.get("verbose") or option.get("diagnosis")) then
+                            cprint("${dim color.error}error: ${clear}%s", errors)
+                        else
+                            table.insert(allerrors, errors)
+                        end
                     end
 
                     -- trace
@@ -270,7 +285,11 @@ function main(package)
                             cprint("  ${bright}- %s", table.concat(searchnames:to_array(), ", "))
                             cprint("and we can run `xmake g --pkg_searchdirs=/xxx` to set the search directories.")
                         end
-                        raise("download failed!")
+                        if #allerrors then
+                            raise(table.concat(allerrors, "\n"))
+                        else
+                            raise("download failed!")
+                        end
                     end
                 end
             }

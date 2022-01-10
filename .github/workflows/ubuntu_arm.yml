@@ -9,6 +9,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    concurrency:
+        group: ${{ github.head_ref }}-UbuntuArm
+        cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
         with:

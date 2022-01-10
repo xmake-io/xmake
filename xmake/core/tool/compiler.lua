@@ -74,6 +74,22 @@ function compiler:_add_flags_from_compiler(flags, targetkind)
     end
 end
 
+-- add flags from the sourcefile config
+function compiler:_add_flags_from_fileconfig(flags, target, sourcefile, fileconfig)
+
+    -- add flags from the current compiler
+    local add_sourceflags = self:_tool().add_sourceflags
+    if add_sourceflags then
+        local flag = add_sourceflags(self:_tool(), sourcefile, fileconfig, target, self:_targetkind())
+        if flag and flag ~= "" then
+            table.join2(flags, flag)
+        end
+    end
+
+    -- add flags from the common argument option
+    self:_add_flags_from_argument(flags, target, fileconfig)
+end
+
 -- load compiler tool
 function compiler._load_tool(sourcekind, target)
 
@@ -95,6 +111,9 @@ end
 
 -- load the compiler from the given source kind
 function compiler.load(sourcekind, target)
+    if not sourcekind then
+        return nil, "unknown source kind!"
+    end
 
     -- load compiler tool first (with cache)
     local compiler_tool, program_or_errors = compiler._load_tool(sourcekind, target)
@@ -262,29 +281,13 @@ function compiler:compcmd(sourcefiles, objectfile, opt)
     return os.args(table.join(self:compargv(sourcefiles, objectfile, opt)))
 end
 
--- add flags from the sourcefile config
-function builder:_add_flags_from_fileconfig(flags, target, sourcefile, fileconfig)
-
-    -- add flags from the current compiler
-    local add_sourceflags = self:_tool().add_sourceflags
-    if add_sourceflags then
-        local flag = add_sourceflags(self:_tool(), sourcefile, fileconfig, target, self:_targetkind())
-        if flag and flag ~= "" then
-            table.join2(flags, flag)
-        end
-    end
-
-    -- add flags from the common argument option
-    self:_add_flags_from_argument(flags, target, fileconfig)
-end
-
 -- get the compling flags
 --
 -- @param opt   the argument options (contain all the compiler attributes of target),
 --              e.g.
 --              {target = ..., targetkind = "static", configs = {defines = "", cxflags = "", includedirs = ""}}
 --
--- @return      flags string, flags list
+-- @return      flags list
 --
 function compiler:compflags(opt)
 

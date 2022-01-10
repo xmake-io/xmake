@@ -77,7 +77,11 @@ function _sourcecode(snippets, opt)
 
     -- add includes
     local sourcecode = ""
-    for _, include in ipairs(opt.includes) do
+    local includes = table.wrap(opt.includes)
+    if opt.tryrun and opt.output then
+        table.insert(includes, "stdio.h")
+    end
+    for _, include in ipairs(includes) do
         sourcecode = format("%s\n#include <%s>", sourcecode, include)
     end
     sourcecode = sourcecode .. "\n"
@@ -88,11 +92,13 @@ function _sourcecode(snippets, opt)
     end
     sourcecode = sourcecode .. "\n"
 
-    -- add snippets
-    for _, snippet in pairs(snippets) do
-        sourcecode = sourcecode .. "\n" .. snippet
+    -- add snippets (build only)
+    if not opt.tryrun then
+        for _, snippet in pairs(snippets) do
+            sourcecode = sourcecode .. "\n" .. snippet
+        end
+        sourcecode = sourcecode .. "\n"
     end
-    sourcecode = sourcecode .. "\n"
 
     -- enter main function
     sourcecode = sourcecode .. "int main(int argc, char** argv)\n{\n"
@@ -102,10 +108,19 @@ function _sourcecode(snippets, opt)
         sourcecode = format("%s\n    %s;", sourcecode, _funccode(funcinfo))
     end
 
-    -- leave main function
-    sourcecode = sourcecode .. "\n    return 0;\n}\n"
-
-    -- done
+    -- add snippets (tryrun)
+    if opt.tryrun then
+        for _, snippet in pairs(snippets) do
+            sourcecode = sourcecode .. "\n" .. snippet
+        end
+        if opt.output then
+            sourcecode = sourcecode .. "\nfflush(stdout);\n"
+        end
+        sourcecode = sourcecode .. "\n}\n" -- we need return exit code in snippet
+    else
+        -- leave main function
+        sourcecode = sourcecode .. "\n    return 0;\n}\n"
+    end
     return sourcecode
 end
 
@@ -116,7 +131,8 @@ end
 --                  e.g.
 --                  { verbose = false, target = [target|option], sourcekind = "[cc|cxx]"
 --                  , types = {"wchar_t", "char*"}, includes = "stdio.h", funcs = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}
---                  , configs = {defines = "xx", cxflags = ""}}
+--                  , configs = {defines = "xx", cxflags = ""}
+--                  , tryrun = true, output = true}
 --
 -- funcs:
 --      sigsetjmp
@@ -127,9 +143,9 @@ end
 -- @return          true or false
 --
 -- @code
--- local ok = check_cxsnippets("void test() {}")
--- local ok = check_cxsnippets({"void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
--- local ok = check_cxsnippets({snippet_name = "void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
+-- local ok, output_or_errors = check_cxsnippets("void test() {}")
+-- local ok, output_or_errors = check_cxsnippets({"void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
+-- local ok, output_or_errors = check_cxsnippets({snippet_name = "void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
 -- @endcode
 --
 function main(snippets, opt)
@@ -189,18 +205,29 @@ function main(snippets, opt)
     -- @note cannot cache result, all conditions will be changed
     -- attempt to compile it
     local errors = nil
-    local ok = try
+    local ok, output = try
     {
         function ()
             if option.get("diagnosis") then
                 cprint("${dim}> %s", compiler.compcmd(sourcefile, objectfile, opt))
             end
             compiler.compile(sourcefile, objectfile, opt)
-            if #links > 0 then
+            if #links > 0 or opt.tryrun then
                 if option.get("diagnosis") then
                     cprint("${dim}> %s", linker.linkcmd("binary", {"cc", "cxx"}, objectfile, binaryfile, opt))
                 end
                 linker.link("binary", {"cc", "cxx"}, objectfile, binaryfile, opt)
+            end
+            if opt.tryrun then
+                if opt.output then
+                    local output = os.iorun(binaryfile)
+                    if output then
+                        output = output:trim()
+                    end
+                    return true, output
+                else
+                    os.vrun(binaryfile)
+                end
             end
             return true
         end,
@@ -238,6 +265,6 @@ function main(snippets, opt)
     if errors and option.get("diagnosis") and #tostring(errors) > 0 then
         cprint("${color.warning}checkinfo:${clear dim} %s", errors)
     end
-    return ok
+    return ok, ok and output or errors
 end
 

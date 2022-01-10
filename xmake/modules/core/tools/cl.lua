@@ -26,19 +26,13 @@ import("core.project.project")
 import("core.language.language")
 import("private.tools.vstool")
 import("private.tools.cl.parse_include")
-import("private.utils.progress")
+import("utils.progress")
 
 -- init it
 function init(self)
 
     -- init cxflags
     self:set("cxflags", "-nologo")
-
-    -- we need show full file path to goto error position if xmake is called in vstudio
-    -- https://github.com/xmake-io/xmake/issues/1049
-    if os.getenv("XMAKE_IN_VSTUDIO") then
-        self:add("cxflags", "-FC")
-    end
 
     -- init flags map
     self:set("mapflags",
@@ -62,6 +56,8 @@ function init(self)
     ,   ["-W2"]                     = "-W2"
     ,   ["-W3"]                     = "-W3"
     ,   ["-Werror"]                 = "-WX"
+    ,   ["-Wswitch"]                = "-we4062"
+    ,   ["-Wswitch-enum"]           = "-we4061"
     ,   ["%-Wno%-error=.*"]         = ""
     ,   ["%-fno%-.*"]               = ""
 
@@ -116,7 +112,7 @@ function nf_symbols(self, levels, target)
             end
 
             -- check and add symbol output file
-            local pdbflags = "-Fd" .. path.join(symboldir, "compile." .. path.filename(symbolfile))
+            local pdbflags = "-Fd" .. (target:is_static() and symbolfile or path.join(symboldir, "compile." .. path.filename(symbolfile)))
             if self:has_flags({"-FS", "-Fd" .. os.nuldev() .. ".pdb"}, "cxflags", { flagskey = "-FS -Fd" }) then
                 pdbflags = {"-FS", pdbflags}
             end
@@ -197,12 +193,14 @@ function nf_language(self, stdname)
         _g.cmaps =
         {
             -- stdc
-            c99   = "-TP" -- compile as c++ files because older msvc only support c89
-        ,   gnu99 = "-TP"
-        ,   c11   = {"-std:c11", "-TP"}
-        ,   gnu11 = {"-std:c11", "-TP"}
-        ,   c17   = {"-std:c17", "-TP"}
-        ,   gnu17 = {"-std:c17", "-TP"}
+            c99       = "-TP" -- compile as c++ files because older msvc only support c89
+        ,   gnu99     = "-TP"
+        ,   c11       = {"-std:c11", "-TP"}
+        ,   gnu11     = {"-std:c11", "-TP"}
+        ,   c17       = {"-std:c17", "-TP"}
+        ,   gnu17     = {"-std:c17", "-TP"}
+        ,   clatest   = {"-std:c17", "-std:c11"}
+        ,   gnulatest = {"-std:c17", "-std:c11"}
         }
     end
 
@@ -222,6 +220,8 @@ function nf_language(self, stdname)
         ,   gnuxx20     = {"-std:c++20", "-std:c++latest"}
         ,   cxx2a       = {"-std:c++20", "-std:c++latest"}
         ,   gnuxx2a     = {"-std:c++20", "-std:c++latest"}
+        ,   cxxlatest   = "-std:c++latest"
+        ,   gnuxxlatest = "-std:c++latest"
         }
         local cxxmaps2 = {}
         for k, v in pairs(_g.cxxmaps) do
@@ -237,13 +237,17 @@ function nf_language(self, stdname)
     end
 
     -- map it
-    local flags = maps[stdname]
-    if flags then
-        for _, flag in ipairs(table.wrap(flags)) do
-            if self:has_flags(flag, "cxflags") then
-                return flag
+    local result = maps[stdname]
+    if type(result) == "table" then
+        for _, v in ipairs(result) do
+            if self:has_flags(v, "cxflags") then
+                result = v
+                maps[stdname] = result
+                return result
             end
         end
+    else
+        return result
     end
 end
 
@@ -266,13 +270,17 @@ end
 function nf_sysincludedir(self, dir)
     local has_external_includedir = _g._HAS_EXTERNAL_INCLUDEDIR
     if has_external_includedir == nil then
-        if self:has_flags({"-experimental:external", "-external:W0", "-external:I" .. os.args(path.translate(dir))}, "cxflags", {flagskey = "cl_external_includedir"}) then
-            has_external_includedir = true
+        if self:has_flags({"-external:W0", "-external:I" .. os.args(path.translate(dir))}, "cxflags", {flagskey = "cl_external_includedir"}) then
+            has_external_includedir = 2 -- full support
+        elseif self:has_flags({"-experimental:external", "-external:W0", "-external:I" .. os.args(path.translate(dir))}, "cxflags", {flagskey = "cl_external_includedir_experimental"}) then
+            has_external_includedir = 1 -- experimental support
         end
-        has_external_includedir = has_external_includedir or false
+        has_external_includedir = has_external_includedir or 0
         _g._HAS_EXTERNAL_INCLUDEDIR = has_external_includedir
     end
-    if has_external_includedir then
+    if has_external_includedir >= 2 then
+        return {"-external:W0", "-external:I" .. path.translate(dir)}
+    elseif has_external_includedir >= 1 then
         return {"-experimental:external", "-external:W0", "-external:I" .. path.translate(dir)}
     else
         return nf_includedir(self, dir)
@@ -371,6 +379,15 @@ function _has_source_dependencies(self)
     return has_source_dependencies
 end
 
+function _is_in_vstudio()
+    local is_in_vstudio = _g._IS_IN_VSTUDIO
+    if is_in_vstudio == nil then
+        is_in_vstudio = os.getenv("XMAKE_IN_VSTUDIO") or false
+        _g._IS_IN_VSTUDIO = is_in_vstudio
+    end
+    return is_in_vstudio
+end
+
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags, opt)
 
@@ -403,12 +420,23 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
             -- generate includes file
             local compflags = flags
+
             if dependinfo then
                 if _has_source_dependencies(self) then
                     depfile = os.tmpfile()
                     compflags = table.join(flags, "/sourceDependencies", depfile)
                 else
                     compflags = table.join(flags, "-showIncludes")
+                end
+            end
+
+            -- we need show full file path to goto error position if xmake is called in vstudio
+            -- https://github.com/xmake-io/xmake/issues/1049
+            if _is_in_vstudio() then
+                if compflags == flags then
+                    compflags = table.join(flags, "-FC")
+                else
+                    table.join2(compflags, "-FC")
                 end
             end
 
@@ -444,7 +472,10 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                         end
                     end
                 end
-                os.raise(results)
+                if not option.get("verbose") then
+                    results = results .. "\n  ${yellow}> in ${bright}" .. sourcefile
+                end
+                raise(results)
             end
         },
         finally
@@ -466,7 +497,10 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                             end
                         end
                         if #lines > 0 then
-                            local warnings = table.concat(table.slice(lines, 1, (#lines > 8 and 8 or #lines)), "\r\n")
+                            if not option.get("diagnosis") then
+                                lines = table.slice(lines, 1, (#lines > 16 and 16 or #lines))
+                            end
+                            local warnings = table.concat(lines, "\r\n")
                             if progress.showing_without_scroll() then
                                 print("")
                             end
@@ -488,4 +522,3 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         end
     end
 end
-

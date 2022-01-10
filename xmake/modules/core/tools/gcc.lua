@@ -27,7 +27,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.language.language")
 import("private.tools.ccache")
-import("private.utils.progress")
+import("utils.progress")
 
 -- init it
 function init(self)
@@ -42,7 +42,11 @@ function init(self)
     self:set("shflags", "-shared")
 
     -- add -fPIC for shared
-    if not is_plat("windows", "mingw") then
+    --
+    -- we need check it for clang/gcc with window target
+    -- @see https://github.com/xmake-io/xmake/issues/1392
+    --
+    if not is_plat("windows", "mingw") and self:has_flags("-fPIC", "cxflags") then
         self:add("shflags", "-fPIC")
         self:add("shared.cxflags", "-fPIC")
     end
@@ -72,13 +76,13 @@ function init(self)
 end
 
 -- make the strip flag
-function nf_strip(self, level)
+function nf_strip(self, level, target)
     local maps =
     {
         debug = "-Wl,-S"
     ,   all   = "-s"
     }
-    if is_plat("macosx") or is_plat("iphoneos") then
+    if target:is_plat("macosx") or target:is_plat("iphoneos") then
         maps.all   = "-Wl,-x"
     end
     return maps[level]
@@ -113,8 +117,8 @@ function nf_warning(self, level)
     ,   less       = "-Wall"
     ,   more       = "-Wall"
     ,   all        = "-Wall"
-    ,   allextra   = "-Wall -Wextra"
-    ,   everything = "-Wall -Wextra -Weffc++"
+    ,   allextra   = {"-Wall", "-Wextra"}
+    ,   everything = self:kind() == "cxx" and {"-Wall", "-Wextra", "-Weffc++"} or {"-Wall", "-Wextra"}
     ,   error      = "-Werror"
     }
     return maps[level]
@@ -180,6 +184,8 @@ function nf_language(self, stdname)
         ,   gnu11       = "-std=gnu11"
         ,   c17         = "-std=c17"
         ,   gnu17       = "-std=gnu17"
+        ,   clatest     = {"-std=c17", "-std=c11", "-std=c99", "-std=c89", "-ansi"}
+        ,   gnulatest   = {"-std=gnu17", "-std=gnu11", "-std=gnu99", "-std=gnu89", "-ansi"}
         }
     end
 
@@ -197,10 +203,12 @@ function nf_language(self, stdname)
         ,   gnuxx17      = "-std=gnu++17"
         ,   cxx1z        = "-std=c++1z"
         ,   gnuxx1z      = "-std=gnu++1z"
-        ,   cxx20        = "-std=c++2a"
-        ,   gnuxx20      = "-std=gnu++2a"
+        ,   cxx20        = {"-std=c++20", "-std=c++2a"}
+        ,   gnuxx20      = {"-std=gnu++20", "-std=c++2a"}
         ,   cxx2a        = "-std=c++2a"
         ,   gnuxx2a      = "-std=gnu++2a"
+        ,   cxxlatest    = {"-std=c++20", "-std=c++2a", "-std=c++17", "-std=c++14", "-std=c++11", "-std=c++1z", "-std=c++98"}
+        ,   gnuxxlatest  = {"-std=gnu++20", "-std=gnu++2a", "-std=gnu++17", "-std=gnu++14", "-std=gnu++11", "-std=c++1z", "-std=gnu++98"}
         }
         local cxxmaps2 = {}
         for k, v in pairs(_g.cxxmaps) do
@@ -216,9 +224,18 @@ function nf_language(self, stdname)
     elseif self:kind() == "sc" then
         maps = {}
     end
-
-    -- make it
-    return maps[stdname]
+    local result = maps[stdname]
+    if type(result) == "table" then
+        for _, v in ipairs(result) do
+            if self:has_flags(v, "cxflags") then
+                result = v
+                maps[stdname] = result
+                return result
+            end
+        end
+    else
+        return result
+    end
 end
 
 -- make the define flag
@@ -276,7 +293,7 @@ end
 
 -- make the frameworkdir flag
 function nf_frameworkdir(self, frameworkdir)
-    return {"-F", path.translate(frameworkdir)}
+    return {"-F" .. path.translate(frameworkdir)}
 end
 
 -- make the c precompiled header flag
@@ -334,7 +351,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
     if targetkind == "shared" and is_plat("mingw") then
-        table.insert(flags_extra, "-Wl,--out-implib," .. path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib"))
+        table.insert(flags_extra, "-Wl,--out-implib," .. path.join(path.directory(targetfile), path.basename(targetfile) .. ".dll.a"))
     end
 
     -- init arguments
@@ -408,7 +425,6 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
-
     -- precompiled header?
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then
@@ -478,7 +494,12 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 end
 
                 -- raise compiling errors
-                raise(#lines > 0 and table.concat(lines, "\n") or "")
+                local results = #lines > 0 and table.concat(lines, "\n") or ""
+                if not option.get("verbose") then
+                    results = results .. "\n  ${yellow}> in ${bright}" .. sourcefile
+                end
+                raise(results)
+
             end
         },
         finally
@@ -488,7 +509,10 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 if ok and errdata and #errdata > 0 and (option.get("diagnosis") or option.get("warning") or global.get("build_warning")) then
                     local lines = errdata:split('\n', {plain = true})
                     if #lines > 0 then
-                        local warnings = table.concat(table.slice(lines, 1, (#lines > 8 and 8 or #lines)), "\n")
+                        if not option.get("diagnosis") then
+                            lines = table.slice(lines, 1, (#lines > 16 and 16 or #lines))
+                        end
+                        local warnings = table.concat(lines, "\n")
                         if progress.showing_without_scroll() then
                             print("")
                         end

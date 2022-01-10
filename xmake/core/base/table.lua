@@ -21,9 +21,50 @@
 -- define module: table
 local table = table or {}
 
--- import jit function
-table.clear = require("table.clear")
-table.new   = require("table.new")
+-- clear table
+if not table.clear then
+    if xmake._LUAJIT then
+        table.clear = require("table.clear")
+    else
+        function table.clear(t)
+            for k, v in pairs(t) do
+                t[k] = nil
+            end
+        end
+    end
+end
+
+-- new table
+if not table.new then
+    if xmake._LUAJIT then
+        table.new = require("table.new")
+    else
+        function table.new(narray, nhash)
+            -- TODO
+            return {}
+        end
+    end
+end
+
+-- get array length
+if not table.getn then
+    function table.getn(t)
+        return #t
+    end
+end
+
+-- get array max integer key for lua5.4
+if not table.maxn then
+    function table.maxn(t)
+        local max = 0
+        for k, _ in pairs(t) do
+            if type(k) == "number" and k > max then
+                max = k
+            end
+        end
+        return max
+    end
+end
 
 -- move values of table(a1) to table(a2)
 --
@@ -186,13 +227,55 @@ function table.is_dictionary(dict)
     return type(dict) == "table" and dict[1] == nil
 end
 
+-- does contain the given values in table?
+-- contains arg1 or arg2 ...
+function table.contains(t, arg1, arg2, ...)
+    local found = false
+    if arg2 == nil then -- only one value
+        if table.is_array(t) then
+            for _, v in ipairs(t) do
+                if v == arg1 then
+                    found = true
+                    break
+                end
+            end
+        else
+            for _, v in pairs(t) do
+                if v == arg1 then
+                    found = true
+                    break
+                end
+            end
+        end
+    else
+        local values = {}
+        local args = table.pack(arg1, arg2, ...)
+        for _, arg in ipairs(args) do
+            values[arg] = true
+        end
+        if table.is_array(t) then
+            for _, v in ipairs(t) do
+                if values[v] then
+                    found = true
+                    break
+                end
+            end
+        else
+            for _, v in pairs(t) do
+                if values[v] then
+                    found = true
+                    break
+                end
+            end
+        end
+    end
+    return found
+end
+
 -- read data from iterator, push them to an array
 -- usage: table.to_array(ipairs("a", "b")) -> {{1,"a",n=2},{2,"b",n=2}},2
 -- usage: table.to_array(io.lines("file")) -> {"line 1","line 2", ... , "line n"},n
 function table.to_array(iterator, state, var)
-
-    assert(iterator)
-
     local result = {}
     local count = 0
     while true do
@@ -240,23 +323,44 @@ end
 
 -- remove repeat from the given array
 function table.unique(array, barrier)
-
     if table.is_array(array) then
         if table.getn(array) ~= 1 then
             local exists = {}
             local unique = {}
             for _, v in ipairs(array) do
-
                 -- exists barrier? clear the current existed items
                 if barrier and barrier(v) then
                     exists = {}
                 end
-
                 -- add unique item
                 if not exists[v] then
-                    -- v will not be nil
                     exists[v] = true
                     table.insert(unique, v)
+                end
+            end
+            array = unique
+        end
+    end
+    return array
+end
+
+-- reverse to remove repeat from the given array
+function table.reverse_unique(array, barrier)
+    if table.is_array(array) then
+        if table.getn(array) ~= 1 then
+            local exists = {}
+            local unique = {}
+            local n = #array
+            for i = 1, n do
+                local v = array[n - i + 1]
+                -- exists barrier? clear the current existed items
+                if barrier and barrier(v) then
+                    exists = {}
+                end
+                -- add unique item
+                if not exists[v] then
+                    exists[v] = true
+                    table.insert(unique, 1, v)
                 end
             end
             array = unique
@@ -271,18 +375,15 @@ function table.pack(...)
     return { n = select("#", ...), ... }
 end
 
--- unpack table values
--- polyfill of lua 5.2, @see https://www.lua.org/manual/5.2/manual.html#pdf-table.unpack
-table.unpack = unpack
+-- table.unpack table values
+-- polyfill of lua 5.2, @see https://www.lua.org/manual/5.2/manual.html#pdf-unpack
+table.unpack = table.unpack or unpack
 
 -- get keys of a table
-function table.keys(tab)
-
-    assert(tab)
-
+function table.keys(tbl)
     local keyset = {}
     local n = 0
-    for k, _ in pairs(tab) do
+    for k, _ in pairs(tbl) do
         n = n + 1
         keyset[n] = k
     end
@@ -290,20 +391,32 @@ function table.keys(tab)
 end
 
 -- get order keys of a table
-function table.orderkeys(tab)
-    local keys = table.keys(tab)
+function table.orderkeys(tbl)
+    local keys = table.keys(tbl)
     table.sort(keys)
     return keys
 end
 
+-- order key/value iterator
+--
+-- for k, v in table.orderpairs(t) do
+--   TODO
+-- end
+function table.orderpairs(t)
+    local orderkeys = table.orderkeys(t)
+    local i = 1
+    return function (t, k)
+        k = orderkeys[i]
+        i = i + 1
+        return k, t[k]
+    end, t, nil
+end
+
 -- get values of a table
-function table.values(tab)
-
-    assert(tab)
-
+function table.values(tbl)
     local valueset = {}
     local n = 0
-    for _, v in pairs(tab) do
+    for _, v in pairs(tbl) do
         n = n + 1
         valueset[n] = v
     end
@@ -311,24 +424,16 @@ function table.values(tab)
 end
 
 -- map values to a new table
-function table.map(tab, mapper)
-
-    assert(tab)
-    assert(mapper)
-
-    local newtab = {}
-    for k, v in pairs(tab) do
-        newtab[k] = mapper(k, v)
+function table.map(tbl, mapper)
+    local newtbl = {}
+    for k, v in pairs(tbl) do
+        newtbl[k] = mapper(k, v)
     end
-    return newtab
+    return newtbl
 end
 
 -- map values to a new array
 function table.imap(arr, mapper)
-
-    assert(arr)
-    assert(mapper)
-
     local newarr = {}
     for k, v in ipairs(arr) do
         table.insert(newarr, mapper(k, v))
@@ -338,15 +443,90 @@ end
 
 -- reverse table values
 function table.reverse(arr)
-
-    assert(arr)
-
     local revarr = {}
     local l = #arr
     for i = 1, l do
         revarr[i] = arr[l - i + 1]
     end
     return revarr
+end
+
+-- remove values if predicate is matched
+function table.remove_if(tbl, pred)
+    if table.is_array(tbl) then
+        for i = #tbl, 1, -1 do
+            if pred(i, tbl[i]) then
+                table.remove(tbl, i)
+            end
+        end
+    else
+        for k, v in pairs(tbl) do
+            if pred(k, v) then
+                tbl[k] = nil
+            end
+        end
+    end
+    return tbl
+end
+
+-- return indices or keys for the given value
+function table.find(tbl, value)
+    local result
+    if table.is_array(tbl) then
+        for i, v in ipairs(tbl) do
+            if v == value then
+                result = result or {}
+                table.insert(result, i)
+            end
+        end
+    else
+        for k, v in pairs(tbl) do
+            if v == value then
+                result = result or {}
+                table.insert(result, k)
+            end
+        end
+    end
+    return result
+end
+
+-- return indices or keys if predicate is matched
+function table.find_if(tbl, pred)
+    local result
+    if table.is_array(tbl) then
+        for i, v in ipairs(tbl) do
+            if pred(i, v) then
+                result = result or {}
+                table.insert(result, i)
+            end
+        end
+    else
+        for k, v in pairs(tbl) do
+            if pred(k, v) then
+                result = result or {}
+                table.insert(result, k)
+            end
+        end
+    end
+    return result
+end
+
+-- return first index for the given value
+function table.find_first(tbl, value)
+    for i, v in ipairs(tbl) do
+        if v == value then
+            return i
+        end
+    end
+end
+
+-- return first index if predicate is matched
+function table.find_first_if(tbl, pred)
+    for i, v in ipairs(tbl) do
+        if pred(i, v) then
+            return i
+        end
+    end
 end
 
 -- return module: table

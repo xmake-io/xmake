@@ -18,79 +18,61 @@
 -- @file        xmake.lua
 --
 
--- define task
 task("global")
-
-    -- set category
     set_category("action")
-
-    -- on run
     on_run("main")
-
-    -- set menu
     set_menu {
-                -- usage
-                usage = "xmake global|g [options] [target]"
-
-                -- description
-            ,   description = "Configure the global options for xmake."
-
-                -- xmake g
-            ,   shortname = 'g'
-
-                -- options
-            ,   options =
-                {
-                    {'c', "clean",          "k" , nil       , "Clean the cached configure and configure all again."       }
-                ,   {nil, "menu",           "k" , nil       , "Configure with a menu-driven user interface."              }
-                ,   {category = "."}
-                ,   {nil, "theme",          "kv", "default" , "The theme name."
-                                                           , values = function ()
-                                                                return import("core.theme.theme.names")()
-                                                            end}
-                ,   {nil, "debugger",       "kv", "auto"    , "The debugger program path."                                }
-                ,   {category = "Build Configuration"}
-                ,   {nil, "build_warning",  "kv", nil       , "Enable the warnings output by default when building."      }
-                ,   {nil, "cachedir",       "kv", nil       , "The global cache directory."                               }
+                usage = "xmake global|g [options] [target]",
+                description = "Configure the global options for xmake.",
+                shortname = 'g',
+                options = {
+                    {'c', "clean",          "k" , nil       , "Clean the cached configure and configure all again."       },
+                    {nil, "menu",           "k" , nil       , "Configure with a menu-driven user interface."              },
+                    {category = "."},
+                    {nil, "theme",          "kv", "default" , "The theme name."
+                                                          , values = function ()
+                                                               return import("core.theme.theme.names")()
+                                                           end},
+                    {nil, "debugger",       "kv", "auto"    , "The debugger program path."                                },
+                    {nil, "ccache",         "kv", nil       , "Enable or disable the c/c++ compiler cache."               },
+                    {category = "Build Configuration"},
+                    {nil, "build_warning",  "kv", nil       , "Enable the warnings output by default when building."      },
+                    {nil, "cachedir",       "kv", nil       , "The global cache directory."                               },
 
                     -- network configuration
-                ,   {category = "Network Configuration"}
-                ,   {nil, "network",        "kv", "public"  , "Set the network mode."
-                                                            , values = {"public", "private"}                              }
-                ,   {'x', "proxy",          "kv", nil       , "Use proxy on given port. [protocol://]host[:port]"
-                                                            , "    e.g."
-                                                            , "    - xmake g --proxy='http://host:port'"
-                                                            , "    - xmake g --proxy='https://host:port'"
-                                                            , "    - xmake g --proxy='socks5://host:port'"                }
-                ,   {nil, "proxy_hosts",    "kv", nil       , "Only enable proxy for the given hosts list, it will enable all if be unset,"
-                                                            , "and we can pass match pattern to list:"
-                                                            , "    e.g."
-                                                            , "    - xmake g --proxy_hosts='github.com,gitlab.*,*.xmake.io'"}
-                ,   {nil, "proxy_pac",      "kv", "pac.lua" , "Set the auto proxy configuration file."
-                                                            , "    e.g."
-                                                            , "    - xmake g --proxy_pac=pac.lua (in $(globaldir) or absolute path)"
-                                                            , "    - function main(url, host)"
-                                                            , "          if host == 'github.com' then"
-                                                            , "               return true"
-                                                            , "          end"
-                                                            , "      end"}
+                    {category = "Network Configuration"},
+                    {nil, "network",        "kv", "public"  , "Set the network mode."
+                                                           , values = {"public", "private"}                               },
+                    {'x', "proxy",          "kv", nil       , "Use proxy on given port. [protocol://]host[:port]"
+                                                           , "    e.g."
+                                                           , "    - xmake g --proxy='http://host:port'"
+                                                           , "    - xmake g --proxy='https://host:port'"
+                                                           , "    - xmake g --proxy='socks5://host:port'"                },
+                    {nil, "proxy_hosts",    "kv", nil       , "Only enable proxy for the given hosts list, it will enable all if be unset,"
+                                                           , "and we can pass match pattern to list:"
+                                                           , "    e.g."
+                                                           , "    - xmake g --proxy_hosts='github.com,gitlab.*,*.xmake.io'"},
+                    {nil, "proxy_pac",      "kv", "pac.lua" , "Set the auto proxy configuration file."
+                                                           , "    e.g."
+                                                           , "    - xmake g --proxy_pac=pac.lua (in $(globaldir) or absolute path)"
+                                                           , "    - function main(url, host)"
+                                                           , "          if host == 'github.com' then"
+                                                           , "               return true"
+                                                           , "          end"
+                                                           , "      end"},
 
                     -- package configuration
-                ,   {category = "Package Configuration"}
-                ,   {nil, "pkg_searchdirs", "kv", nil       , "The search directories of the remote package."
-                                                            , "    e.g."
-                                                            , "    - xmake g --pkg_searchdirs=/dir1" .. path.envsep() .. "/dir2"}
-                ,   {nil, "pkg_installdir", "kv", nil       , "The install root directory of the remote package."         }
+                    {category = "Package Configuration"},
+                    {nil, "pkg_searchdirs", "kv", nil      , "The search directories of the remote package."
+                                                           , "    e.g."
+                                                           , "    - xmake g --pkg_searchdirs=/dir1" .. path.envsep() .. "/dir2"},
+                    {nil, "pkg_installdir", "kv", nil      , "The install root directory of the remote package."},
 
                     -- show platform menu options
-                ,   {category = "Platform Configuration"}
-                ,   function ()
-
-                        -- import platform menu
-                        import("core.platform.menu")
-
-                        -- get global menu options
-                        return menu.options("global")
+                    {category = "Platform Configuration"},
+                    function ()
+                       import("core.platform.menu")
+                       return menu.options("global")
                     end
                 }
             }

@@ -25,56 +25,34 @@ import("core.project.project")
 
 -- init it
 function init(self)
-
-    -- init arflags
     self:set("gcarflags", "grc")
-
-    -- init the file formats
-    self:set("formats", { static = "$(name).a" })
 end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-
-    -- the maps
-    local maps =
-    {
+    local maps = {
         none = "-N"
     }
-
-    -- make it
     return maps[level]
 end
 
 -- make the symbol flag
 function nf_symbol(self, level, target, mapkind)
-
-    -- only for compiler
     if mapkind ~= "object" then
         return
     end
-
-    -- the maps
-    local maps =
-    {
+    local maps = {
         debug = "-E"
     }
-
-    -- make it
     return maps[level]
 end
 
 -- make the strip flag
 function nf_strip(self, level)
-
-    -- the maps
-    local maps =
-    {
+    local maps = {
         debug = "-s"
     ,   all   = "-s"
     }
-
-    -- make it
     return maps[level]
 end
 
@@ -95,8 +73,6 @@ end
 
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
-
-    -- make it
     if targetkind == "static" then
         return self:program(), table.join("tool", "pack", flags, targetfile, objectfiles)
     else
@@ -106,11 +82,7 @@ end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags)
-
-    -- ensure the target directory
     os.mkdir(path.directory(targetfile))
-
-    -- link it
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
     os.runv(program, argv, {envs = self:runenvs()})
 end
@@ -122,11 +94,7 @@ end
 
 -- compile the source file
 function compile(self, sourcefiles, objectfile, dependinfo, flags)
-
-    -- ensure the object directory
     os.mkdir(path.directory(objectfile))
-
-    -- compile it
     local program, argv = compargv(self, sourcefiles, objectfile, flags)
     os.runv(program, argv, {envs = self:runenvs()})
 end

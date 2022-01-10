@@ -67,7 +67,7 @@ function _instance:write(data, opt)
         return -1, errors
     end
 
-    -- data is bytes? unpack the raw address
+    -- data is bytes? table.unpack the raw address
     local datasize = #data
     if type(data) == "table" and data.caddr then
         datasize = data:size()

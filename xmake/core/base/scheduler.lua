@@ -31,7 +31,7 @@ local poller    = require("base/poller")
 local timer     = require("base/timer")
 local hashset   = require("base/hashset")
 local coroutine = require("base/coroutine")
-local bit       = require("bit")
+local bit       = require("base/bit")
 
 -- new a coroutine instance
 function _coroutine.new(name, thread)
@@ -302,6 +302,7 @@ function scheduler:_co_groups_resume()
     local co_groups = self._CO_GROUPS
     if co_groups then
         local co_groups_waiting = self._CO_GROUPS_WAITING
+        local co_resumed_list = {}
         for name, co_group in pairs(co_groups) do
 
             -- get coroutine and limit in waiting group
@@ -326,10 +327,15 @@ function scheduler:_co_groups_resume()
                 if count >= limit and co_waiting and co_waiting:is_suspended() then
                     resumed_count = resumed_count + 1
                     self._CO_GROUPS_WAITING[name] = nil
-                    local ok, errors = self:co_resume(co_waiting)
-                    if not ok then
-                        return -1, errors
-                    end
+                    table.insert(co_resumed_list, co_waiting)
+                end
+            end
+        end
+        if #co_resumed_list > 0 then
+            for _, co_waiting in ipairs(co_resumed_list) do
+                local ok, errors = self:co_resume(co_waiting)
+                if not ok then
+                    return -1, errors
                 end
             end
         end

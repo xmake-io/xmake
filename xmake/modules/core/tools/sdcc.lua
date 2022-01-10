@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.global")
-import("private.utils.progress")
+import("utils.progress")
 
 -- init it
 function init(self)
@@ -68,23 +68,17 @@ end
 
 -- make the warning flag
 function nf_warning(self, level)
-
-    -- the maps
     local maps =
     {
         none       = "--less-pedantic"
     ,   less       = "--less-pedantic"
     ,   error      = "-Werror"
     }
-
-    -- make it
     return maps[level]
 end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-
-    -- the maps
     local maps =
     {
         none       = ""
@@ -94,19 +88,14 @@ function nf_optimize(self, level)
     ,   smallest   = "--opt-code-size"
     ,   aggressive = "--opt-code-speed"
     }
-
-    -- make it
     return maps[level]
 end
 
 -- make the language flag
 function nf_language(self, stdname)
-
-    -- the stdc maps
     if _g.cmaps == nil then
         _g.cmaps =
         {
-            -- stdc
             ansi        = "--std-c89"
         ,   c89         = "--std-c89"
         ,   gnu89       = "--std-sdcc89"
@@ -116,9 +105,23 @@ function nf_language(self, stdname)
         ,   gnu11       = "--std-sdcc11"
         ,   c20         = "--std-c2x"
         ,   gnu20       = "--std-sdcc2x"
+        ,   clatest     = {"--std-c2x", "--std-c11", "--std-c99", "--std-c89"}
+        ,   gnulatest   = {"--std-sdcc2x", "--std-sdcc11", "--std-sdcc99", "--std-sdcc89"}
         }
     end
-    return _g.cmaps[stdname]
+    local maps = _g.cmaps
+    local result = maps[stdname]
+    if type(result) == "table" then
+        for _, v in ipairs(result) do
+            if self:has_flags(v, "cxflags") then
+                result = v
+                maps[stdname] = result
+                return result
+            end
+        end
+    else
+        return result
+    end
 end
 
 -- make the define flag
@@ -163,11 +166,7 @@ end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags)
-
-    -- ensure the target directory
     os.mkdir(path.directory(targetfile))
-
-    -- link it
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 

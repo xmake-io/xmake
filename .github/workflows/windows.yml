@@ -10,11 +10,14 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, windows-2016]
+        os: [windows-2019, windows-2022]
         arch: [x64, x86]
 
     runs-on: ${{ matrix.os }}
 
+    concurrency:
+        group: ${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.arch }}-Windows
+        cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
         with:
@@ -31,6 +34,17 @@ jobs:
           compiler: dmd-latest
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
+
+      # Force xmake to a specific folder (for cache)
+      - name: Set xmake package cache path
+        run: echo "XMAKE_PKG_CACHEDIR=$(pwd)/xmake-cache" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      # Cache xmake dependencies
+      - name: Retrieve xmake cache for packages
+        uses: actions/cache@v2
+        with:
+          path: xmake-cache
+          key: ${{ matrix.os }}-${{ matrix.arch }}
 
       - name: Prepare
         run: |
@@ -54,6 +68,7 @@ jobs:
           Copy-Item ./core/build/xmake.exe ./xmake
           Copy-Item ./scripts/xrepo.bat ./xmake
           Copy-Item ./scripts/xrepo.ps1 ./xmake
+          $Env:XMAKE_MAIN_REPO = "https://github.com/xmake-io/xmake-repo.git"
           $Env:XMAKE_PROGRAM_DIR = $(Resolve-Path ./xmake)
           Set-Item -Path Env:Path -Value ($Env:XMAKE_PROGRAM_DIR + ";" + $Env:Path)
           xrepo --version
@@ -76,10 +91,10 @@ jobs:
           Expand-Archive ./7zip.zip -DestinationPath ./7zip
           Copy-Item ./7zip/7z.exe ./winenv/bin
           Copy-Item ./7zip/7z.dll ./winenv/bin
-          Invoke-WebRequest "https://curl.se/windows/dl-7.75.0_3/curl-7.75.0_3-win32-mingw.zip" -UseBasicParsing -OutFile .\curl.zip
+          Invoke-WebRequest "https://curl.se/windows/dl-7.78.0_2/curl-7.78.0_2-win32-mingw.zip" -UseBasicParsing -OutFile .\curl.zip
           Expand-Archive ./curl.zip -DestinationPath ./curl
-          Copy-Item ./curl/curl-7.75.0-win32-mingw/bin/curl.exe ./winenv/bin
-          Copy-Item ./curl/curl-7.75.0-win32-mingw/bin/curl-ca-bundle.crt ./winenv/bin
+          Copy-Item ./curl/curl-7.78.0-win32-mingw/bin/curl.exe ./winenv/bin
+          Copy-Item ./curl/curl-7.78.0-win32-mingw/bin/curl-ca-bundle.crt ./winenv/bin
           $version = (Get-Command xmake/xmake.exe).FileVersionInfo
           ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /D${{ matrix.arch }} .\scripts\installer.nsi
           (New-Item ./artifacts/${{env.RELEASE_NAME}} -ItemType Directory).FullName

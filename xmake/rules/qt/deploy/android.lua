@@ -25,7 +25,7 @@ import("core.base.semver")
 import("core.project.config")
 import("core.project.depend")
 import("core.tool.toolchain")
-import("private.utils.progress")
+import("utils.progress")
 
 -- escape path
 function _escape_path(p)
@@ -71,6 +71,9 @@ function main(target, opt)
 
     -- get androiddeployqt
     local androiddeployqt = path.join(qt.bindir, "androiddeployqt" .. (is_host("windows") and ".exe" or ""))
+    if not os.isexec(androiddeployqt) and qt.bindir_host then
+        androiddeployqt = path.join(qt.bindir_host, "androiddeployqt" .. (is_host("windows") and ".exe" or ""))
+    end
     assert(os.isexec(androiddeployqt), "androiddeployqt not found!")
 
     -- get working directory
@@ -120,18 +123,6 @@ function main(target, opt)
         os.cp(target:targetfile(), path.join(android_buildir, "libs", target_arch, path.filename(target:targetfile())))
     end
 
-    -- get the android srcs directory, e.g. android-build/java/res/values
-    local android_srcs
-    if qt_sdkver and qt_sdkver:ge("5.14") then
-        -- @note we need patch values/res/strings.xml for Qt 5.14.0
-        local valuesdir = path.join(android_buildir, "java", "res", "values")
-        if not os.isdir(valuesdir) then
-            os.mkdir(valuesdir)
-        end
-        os.cp(path.join(qt.sdkdir, "src", "android", "java", "res", "values", "*"), valuesdir)
-        android_srcs = path.join(android_buildir, "java")
-    end
-
     -- get stdcpp path
     local stdcpp_path = path.join(ndk, "sources/cxx-stl/llvm-libc++/libs", target_arch, "libc++_shared.so")
     if qt_sdkver and qt_sdkver:ge("5.14") then
@@ -159,9 +150,21 @@ function main(target, opt)
         settings_file:print('   "ndk-host": "%s",', ndk_host)
         settings_file:print('   "target-architecture": "%s",', target_arch)
         settings_file:print('   "qml-root-path": "%s",', _escape_path(os.projectdir()))
-        if android_srcs then
-            settings_file:print('   "android-package-source-directory": "%s",', _escape_path(android_srcs))
-            --settings_file:print('   "android-extra-libs":"c:/libs",')
+        -- for 6.2.x
+        local qmlimportscanner = path.join(qt.libexecdir, "qmlimportscanner" .. (is_host("windows") and ".exe" or ""))
+        if not os.isexec(qmlimportscanner) and qt.libexecdir_host then
+            qmlimportscanner = path.join(qt.libexecdir_host, "qmlimportscanner" .. (is_host("windows") and ".exe" or ""))
+        end
+        if os.isexec(qmlimportscanner) then
+            settings_file:print('   "qml-importscanner-binary": "%s",', qmlimportscanner)
+        end
+        local minsdkversion = target:values("qt.android.minsdkversion")
+        if minsdkversion then
+            settings_file:print('    "android-min-sdk-version": "%s",', tostring(minsdkversion))
+        end
+        local targetsdkversion = target:values("qt.android.targetsdkversion")
+        if targetsdkversion then
+            settings_file:print('    "android-target-sdk-version": "%s",', tostring(targetsdkversion))
         end
         settings_file:print('   "useLLVM": true,')
         if qt_sdkver and qt_sdkver:ge("5.14") then
@@ -194,7 +197,6 @@ function main(target, opt)
     -- do deploy
     local argv = {"--input", android_deployment_settings,
                   "--output", android_buildir,
-                  "--android-platform", android_platform,
                   "--jdk", java_home,
                   "--gradle", "--no-gdbserver"}
     if option.get("verbose") and option.get("diagnosis") then

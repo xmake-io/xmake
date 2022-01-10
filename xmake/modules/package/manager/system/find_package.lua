@@ -26,6 +26,72 @@ import("lib.detect.pkgconfig")
 import("detect.sdks.find_xcode")
 import("core.project.config")
 
+-- find package
+function _find_package(name, links, linkdirs, includedirs, opt)
+
+    -- find library
+    local result = nil
+    for _, link in ipairs(links) do
+        local libinfo = find_library(link, linkdirs, {plat = opt.plat})
+        if libinfo then
+            result          = result or {}
+            result.links    = table.join(result.links or {}, libinfo.link)
+            result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
+        end
+    end
+
+    -- find includes
+    if opt.includes then
+        for _, include in ipairs(opt.includes) do
+            local includedir = find_path(include, includedirs)
+            if includedir then
+                result             = result or {}
+                result.includedirs = table.join(result.includedirs or {}, includedir)
+            end
+        end
+        for _, include in ipairs({name .. "/" .. name .. ".h", name .. ".h"}) do
+            local includedir = find_path(include, includedirs)
+            if includedir then
+                result             = result or {}
+                result.includedirs = table.join(result.includedirs or {}, includedir)
+                break
+            end
+        end
+    elseif result and result.links and opt.includedirs then
+        result.includedirs = opt.includedirs
+    end
+    return result
+end
+
+-- find package from the environment variables
+-- @see https://github.com/xmake-io/xmake/issues/1776
+--
+function _find_package_from_envs(name, links, opt)
+
+    -- add default search includedirs on pc host
+    local includedirs = table.wrap(opt.includedirs)
+    if #includedirs == 0 then
+        if opt.plat == "windows" then
+            table.insert(includedirs, "$(env INCLUDE)")
+        else
+            table.insert(includedirs, "$(env CPATH)")
+            table.insert(includedirs, "$(env C_INCLUDE_PATH)")
+            table.insert(includedirs, "$(env CPLUS_INCLUDE_PATH)")
+        end
+    end
+
+    -- add default search linkdirs on pc host
+    local linkdirs = table.wrap(opt.linkdirs)
+    if #linkdirs == 0 then
+        if opt.plat == "windows" then
+            table.insert(linkdirs, "$(env LIB)")
+        else
+            table.insert(linkdirs, "$(env LIBRARY_PATH)")
+        end
+    end
+    return _find_package(name, links, linkdirs, includedirs, opt)
+end
+
 -- find package from the unix-like system directories
 function _find_package_from_unixdirs(name, links, opt)
 
@@ -56,39 +122,7 @@ function _find_package_from_unixdirs(name, links, opt)
             end
         end
     end
-
-    -- find library
-    local result = nil
-    for _, link in ipairs(links) do
-        local libinfo = find_library(link, linkdirs)
-        if libinfo then
-            result          = result or {}
-            result.links    = table.join(result.links or {}, libinfo.link)
-            result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
-        end
-    end
-
-    -- find includes
-    if opt.includes then
-        for _, include in ipairs(opt.includes) do
-            local includedir = find_path(include, includedirs)
-            if includedir then
-                result             = result or {}
-                result.includedirs = table.join(result.includedirs or {}, includedir)
-            end
-        end
-        for _, include in ipairs({name .. "/" .. name .. ".h", name .. ".h"}) do
-            local includedir = find_path(include, includedirs)
-            if includedir then
-                result             = result or {}
-                result.includedirs = table.join(result.includedirs or {}, includedir)
-                break
-            end
-        end
-    elseif result and result.links and opt.includedirs then
-        result.includedirs = opt.includedirs
-    end
-    return result
+    return _find_package(name, links, linkdirs, includedirs, opt)
 end
 
 -- find package from the xcode directories
@@ -166,6 +200,7 @@ function main(name, opt)
         if opt.plat ~= "windows" then
             table.insert(finders, _find_package_from_unixdirs)
         end
+        table.insert(finders, _find_package_from_envs)
     end
     if opt.plat == "macosx" or opt.plat == "iphoneos" or opt.plat == "watchos" then
         table.insert(finders, _find_package_from_xcodedirs)

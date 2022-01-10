@@ -34,7 +34,7 @@ rule("cuda.gencodes")
     --                                    if no available device is found, no `-gencode` flags will be added
     --                                    @seealso xmake/modules/lib/detect/find_cudadevices
     --
-    before_load(function (target)
+    on_config(function (target)
 
         -- imports
         import("core.platform.platform")
@@ -47,14 +47,14 @@ rule("cuda.gencodes")
         local known_r_archs = hashset.of(20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, 80)
 
         local function nf_cugencode(archs)
-            if type(archs) ~= 'string' then
+            if type(archs) ~= "string" then
                 return nil
             end
             archs = archs:trim():lower()
-            if archs == 'native' then
+            if archs == "native" then
                 local device = find_cudadevices({ skip_compute_mode_prohibited = true, order_by_flops = true })[1]
                 if device then
-                    return nf_cugencode('sm_' .. device.major .. device.minor)
+                    return nf_cugencode("sm_" .. device.major .. device.minor)
                 end
                 return nil
             end
@@ -68,13 +68,13 @@ rule("cuda.gencodes")
                 end
                 local arch = tonumber(value:sub(#prefix + 1)) or tonumber(value:sub(#prefix + 2))
                 if arch == nil then
-                    raise("Unknown architecture: " .. value)
+                    raise("unknown architecture: " .. value)
                 end
                 if not know_list:has(arch) then
                     if arch <= table.maxn(know_list:data()) then
-                        raise("Unknown architecture: " .. prefix .. "_" .. arch)
+                        raise("unknown architecture: " .. prefix .. "_" .. arch)
                     else
-                        utils.warning("Unknown architecture: " .. prefix .. "_" .. arch)
+                        utils.warning("unknown architecture: " .. prefix .. "_" .. arch)
                     end
                 end
                 return arch
@@ -82,20 +82,20 @@ rule("cuda.gencodes")
 
             for _, v in ipairs(archs:split(',')) do
                 local arch = v:trim()
-                local temp_r_arch = parse_arch(arch, 'sm', known_r_archs)
+                local temp_r_arch = parse_arch(arch, "sm", known_r_archs)
                 if temp_r_arch then
                     table.insert(r_archs, temp_r_arch)
                 end
 
-                local temp_v_arch = parse_arch(arch, 'compute', known_v_archs)
+                local temp_v_arch = parse_arch(arch, "compute", known_v_archs)
                 if temp_v_arch then
                     if v_arch ~= nil then
-                        raise("More than one virtual architecture is defined in one gpu gencode option: compute_" .. v_arch .. " and compute_" .. temp_v_arch)
+                        raise("more than one virtual architecture is defined in one gpu gencode option: compute_" .. v_arch .. " and compute_" .. temp_v_arch)
                     end
                     v_arch = temp_v_arch
                 end
                 if not (temp_r_arch or temp_v_arch) then
-                    raise("Unknown architecture: " .. arch)
+                    raise("unknown architecture: " .. arch)
                 end
             end
 
@@ -105,27 +105,28 @@ rule("cuda.gencodes")
 
             if #r_archs == 0 then
                 return {
-                    clang = '--cuda-gpu-arch=sm_' .. v_arch
-                ,   nvcc = '-gencode arch=compute_' .. v_arch .. ',code=compute_' .. v_arch }
+                    clang = "--cuda-gpu-arch=sm_" .. v_arch,
+                    nvcc = "-gencode arch=compute_" .. v_arch .. ",code=compute_" .. v_arch
+                }
             end
 
             if v_arch then
                 table.insert(r_archs, v_arch)
             else
-                v_arch = math.min(unpack(r_archs))
+                v_arch = math.min(table.unpack(r_archs))
             end
             r_archs = table.unique(r_archs)
 
             local clang_flags = {}
             for _, r_arch in ipairs(r_archs) do
-                table.insert(clang_flags, '--cuda-gpu-arch=sm_' .. r_arch)
+                table.insert(clang_flags, "--cuda-gpu-arch=sm_" .. r_arch)
             end
 
             local nvcc_flags = nil
             if #r_archs == 1 then
-                nvcc_flags = '-gencode arch=compute_' .. v_arch .. ',code=sm_' .. r_archs[1]
+                nvcc_flags = "-gencode arch=compute_" .. v_arch .. ",code=sm_" .. r_archs[1]
             else
-                nvcc_flags = '-gencode arch=compute_' .. v_arch .. ',code=[sm_' .. table.concat(r_archs, ',sm_') .. ']'
+                nvcc_flags = "-gencode arch=compute_" .. v_arch .. ",code=[sm_" .. table.concat(r_archs, ",sm_") .. "]"
             end
 
             return { clang = clang_flags, nvcc = nvcc_flags }
@@ -138,13 +139,12 @@ rule("cuda.gencodes")
         for _, v in ipairs(cugencodes) do
             local flag = nf_cugencode(v)
             if flag then
-                local tool, toolname = platform.tool("cu")
-                if (toolname or path.basename(tool)) == "nvcc" then
-                    target:add('cuflags', flag.nvcc)
+                if target:has_tool("cu", "nvcc") then
+                    target:add("cuflags", flag.nvcc)
                 else
-                    target:add('cuflags', flag.clang)
+                    target:add("cuflags", flag.clang)
                 end
-                target:add('culdflags', flag.nvcc)
+                target:add("culdflags", flag.nvcc)
             end
         end
     end)

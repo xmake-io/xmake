@@ -19,7 +19,7 @@
 --
 
 rule("luarocks.module")
-    before_load(function (target)
+    on_load(function (target)
 
         -- imports
         import("core.cache.detectcache")

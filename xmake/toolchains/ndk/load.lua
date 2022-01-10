@@ -89,7 +89,6 @@ function main(toolchain)
     toolchain:set("toolset", "ld", "clang++", "clang", cross .. "g++", cross .. "gcc")
     toolchain:set("toolset", "sh", "clang++", "clang", cross .. "g++", cross .. "gcc")
     toolchain:set("toolset", "ar", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ar") or (cross .. "ar"), "llvm-ar")
-    toolchain:set("toolset", "ex", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ar") or (cross .. "ar"), "llvm-ar")
     toolchain:set("toolset", "ranlib", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ranlib") or (cross .. "ranlib"))
     toolchain:set("toolset", "strip", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "strip") or (cross .. "strip"))
 
@@ -167,8 +166,10 @@ function main(toolchain)
         local ndk_sysroot = toolchain:config("ndk_sysroot")
         if ndk_sysroot and os.isdir(ndk_sysroot) then
             local triple = _get_triple(arch)
-            toolchain:add("cxflags", "-D__ANDROID_API__=" .. ndk_sdkver)
-            toolchain:add("asflags", "-D__ANDROID_API__=" .. ndk_sdkver)
+            if ndkver and tonumber(ndkver) < 22 then
+                toolchain:add("cxflags", "-D__ANDROID_API__=" .. ndk_sdkver)
+                toolchain:add("asflags", "-D__ANDROID_API__=" .. ndk_sdkver)
+            end
             toolchain:add("cflags",  "--sysroot=" .. ndk_sysroot)
             toolchain:add("cxxflags","--sysroot=" .. ndk_sysroot)
             toolchain:add("asflags", "--sysroot=" .. ndk_sysroot)

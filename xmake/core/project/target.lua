@@ -23,7 +23,7 @@ local target    = target or {}
 local _instance = _instance or {}
 
 -- load modules
-local bit             = require("bit")
+local bit             = require("base/bit")
 local os              = require("base/os")
 local path            = require("base/path")
 local utils           = require("base/utils")
@@ -82,6 +82,11 @@ function _instance:_load_rule(ruleinst, suffix)
         else
             cache[key] = {true}
         end
+
+        -- before_load has been deprecated
+        if on_load and suffix == "before" then
+            deprecated.add(ruleinst:name() .. ".on_load", ruleinst:name() .. ".before_load")
+        end
     end
 
     -- save cache
@@ -105,17 +110,6 @@ function _instance:_load_rules(suffix)
     return true
 end
 
--- do before_load target and rules
-function _instance:_load_before()
-
-    -- do before_load with target rules
-    local ok, errors = self:_load_rules("before")
-    if not ok then
-        return false, errors
-    end
-    return true
-end
-
 -- do load target and rules
 function _instance:_load()
 
@@ -133,6 +127,19 @@ function _instance:_load()
             return false, errors
         end
     end
+
+    -- mark as loaded
+    self._LOADED = true
+    return true
+end
+
+-- do before_load for rules
+-- @note it's deprecated, please use on_load instead of before_load
+function _instance:_load_before()
+    local ok, errors = self:_load_rules("before")
+    if not ok then
+        return false, errors
+    end
     return true
 end
 
@@ -142,6 +149,15 @@ function _instance:_load_after()
     -- enter the environments of the target packages
     local oldenvs = os.addenvs(self:pkgenvs())
 
+    -- do load for target
+    local after_load = self:script("load_after")
+    if after_load then
+        local ok, errors = sandbox.load(after_load, self)
+        if not ok then
+            return false, errors
+        end
+    end
+
     -- do after_load with target rules
     local ok, errors = self:_load_rules("after")
     if not ok then
@@ -150,6 +166,7 @@ function _instance:_load_after()
 
     -- leave the environments of the target packages
     os.setenvs(oldenvs)
+    self._LOADED_AFTER = true
     return true
 end
 
@@ -255,6 +272,11 @@ function _instance:_invalidate(name)
     if name == "files" then
         self._SOURCEFILES = nil
     end
+end
+
+-- is loaded?
+function _instance:_is_loaded()
+    return self._LOADED
 end
 
 -- get the target info
@@ -371,15 +393,26 @@ function _instance:add(name, ...)
     self:_invalidate(name)
 end
 
--- remove the value to the target info
+-- remove the value to the target info (deprecated)
 function _instance:del(name, ...)
     self._INFO:apival_del(name, ...)
+    self:_invalidate(name)
+end
+
+-- remove the value to the target info
+function _instance:remove(name, ...)
+    self._INFO:apival_remove(name, ...)
     self:_invalidate(name)
 end
 
 -- get the extra configuration
 function _instance:extraconf(name, item, key)
     return self._INFO:extraconf(name, item, key)
+end
+
+-- set the extra configuration
+function _instance:extraconf_set(name, item, key, value)
+    self._INFO:extraconf_set(name, item, key, value)
 end
 
 -- get user private data
@@ -566,21 +599,35 @@ function _instance:basename()
     return self:get("basename") or self:name()
 end
 
+-- get the target compiler
+function _instance:compiler(sourcekind)
+    local compilerinst = self:_memcache():get("compiler")
+    if not compilerinst then
+        if not sourcekind then
+            os.raise("please pass sourcekind to the first argument of target:compiler(), e.g. cc, cxx, as")
+        end
+        local instance, errors = compiler.load(sourcekind, self)
+        if not instance then
+            os.raise(errors)
+        end
+        compilerinst = instance
+        self:_memcache():set("compiler", compilerinst)
+    end
+    return compilerinst
+end
+
 -- get the target linker
 function _instance:linker()
-
-    -- get it from cache first
-    if self._LINKER then
-        return self._LINKER
+    local linkerinst = self:_memcache():get("linker")
+    if not linkerinst then
+        local instance, errors = linker.load(self:kind(), self:sourcekinds(), self)
+        if not instance then
+            os.raise(errors)
+        end
+        linkerinst = instance
+        self:_memcache():set("linker", linkerinst)
     end
-
-    -- get the linker instance
-    local instance, errors = linker.load(self:kind(), self:sourcekinds(), self)
-    if not instance then
-        os.raise(errors)
-    end
-    self._LINKER = instance
-    return instance
+    return linkerinst
 end
 
 -- make linking command for this target
@@ -608,11 +655,17 @@ end
 
 -- get target deps
 function _instance:deps()
+    if not self:_is_loaded() then
+        os.raise("please call target:deps() or target:dep() in after_load()!")
+    end
     return self._DEPS
 end
 
 -- get target ordered deps
 function _instance:orderdeps()
+    if not self:_is_loaded() then
+        os.raise("please call target:orderdeps() in after_load()!")
+    end
     return self._ORDERDEPS
 end
 
@@ -654,9 +707,19 @@ function _instance:is_static()
     return self:kind() == "static"
 end
 
+-- is object files target?
+function _instance:is_object()
+    return self:kind() == "object"
+end
+
+-- is headeronly target?
+function _instance:is_headeronly()
+    return self:kind() == "headeronly"
+end
+
 -- is library target?
 function _instance:is_library()
-    return self:is_static() or self:is_shared()
+    return self:is_static() or self:is_shared() or self:is_headeronly()
 end
 
 -- is default target?
@@ -707,7 +770,7 @@ function _instance:orderopts(opt)
 
         -- load options if be enabled
         orderopts = {}
-        for _, name in ipairs(table.wrap(self:get("options"))) do
+        for _, name in ipairs(table.wrap(self:get("options", opt))) do
             local opt_ = nil
             if config.get(name) then opt_ = option.load(name) end
             if opt_ then
@@ -716,7 +779,7 @@ function _instance:orderopts(opt)
         end
 
         -- load options from packages if no require info, be compatible with the option package in (*.pkg)
-        for _, name in ipairs(table.wrap(self:get("packages"))) do
+        for _, name in ipairs(table.wrap(self:get("packages", opt))) do
             if not project_package.load(name) then
                 local opt_ = nil
                 if config.get(name) then opt_ = option.load(name) end
@@ -989,13 +1052,13 @@ end
 -- get the target file name
 function _instance:filename()
 
-    -- only compile objects? no target file
-    local targetkind = self:kind()
-    if targetkind == "object" then
+    -- no target file?
+    if self:is_object() or self:is_phony() or self:is_headeronly() then
         return
     end
 
     -- make the target file name and attempt to use the format of linker first
+    local targetkind = self:targetkind()
     local filename = self:get("filename")
     if not filename then
         local prefixname = self:get("prefixname")
@@ -1005,8 +1068,7 @@ function _instance:filename()
             plat = self:plat(), arch = self:arch(),
             prefixname = prefixname,
             suffixname = suffixname,
-            extension = extension,
-            format = self:linker():format(targetkind)})
+            extension = extension})
     end
     return filename
 end
@@ -1116,11 +1178,15 @@ function _instance:filerules(sourcefile)
     if not key2rules then
         key2rules = {}
         for _, r in pairs(table.wrap(self:rules())) do
-            for _, sourcekind in ipairs(table.wrap(r:get("sourcekinds"))) do
+            -- we can also get sourcekinds from add_rules("xxx", {sourcekinds = "cxx"})
+            local rule_sourcekinds = self:extraconf("rules", r:name(), "sourcekinds") or r:get("sourcekinds")
+            for _, sourcekind in ipairs(table.wrap(rule_sourcekinds)) do
                 key2rules[sourcekind] = key2rules[sourcekind] or {}
                 table.insert(key2rules[sourcekind], r)
             end
-            for _, extension in ipairs(table.wrap(r:get("extensions"))) do
+            -- we can also get extensions from add_rules("xxx", {extensions = ".cpp"})
+            local rule_extensions = self:extraconf("rules", r:name(), "extensions") or r:get("extensions")
+            for _, extension in ipairs(table.wrap(rule_extensions)) do
                 extension = extension:lower()
                 key2rules[extension] = key2rules[extension] or {}
                 table.insert(key2rules[extension], r)
@@ -1130,13 +1196,26 @@ function _instance:filerules(sourcefile)
     end
 
     -- get target rules from the given sourcekind or extension
+    --
+    -- @note we prefer to use rules with extension because we need to be able to
+    -- override the language code rules set by set_sourcekinds
+    --
+    -- e.g. set_extensions(".bpf.c") will override c++ rules
+    --
+    local rules_override = {}
     local filename = path.filename(sourcefile):lower()
     for _, r in ipairs(table.wrap(key2rules[path.extension(filename, 2)] or
                                   key2rules[path.extension(filename)] or
                                   key2rules[self:sourcekind_of(filename)])) do
-        table.insert(rules, r)
+        if self:extraconf("rules", r:name(), "override") then
+            table.insert(rules_override, r)
+        else
+            table.insert(rules, r)
+        end
     end
-    return rules
+
+    -- we will use overrided rules first, e.g. add_rules("xxx", {override = true})
+    return #rules_override > 0 and rules_override or rules
 end
 
 -- get the config info of the given source file
@@ -1150,21 +1229,21 @@ function _instance:fileconfig(sourcefile)
 
             -- match source files
             local results = os.match(filepath)
-            if #results == 0 then
+            if #results == 0 and not fileconfig.always_added then
                 local sourceinfo = (self:get("__sourceinfo_files") or {})[filepath] or {}
                 utils.warning("cannot match %s(%s).add_files(\"%s\") at %s:%d", self:type(), self:name(), filepath, sourceinfo.file or "", sourceinfo.line or -1)
             end
 
             -- process source files
             for _, file in ipairs(results) do
-
-                -- convert to the relative path
                 if path.is_absolute(file) then
                     file = path.relative(file, os.projectdir())
                 end
-
-                -- save it
                 filesconfig[file] = fileconfig
+            end
+            -- we also need support always_added, @see https://github.com/xmake-io/xmake/issues/1634
+            if #results == 0 and fileconfig.always_added then
+                filesconfig[filepath] = fileconfig
             end
         end
         self._FILESCONFIG = filesconfig
@@ -1176,14 +1255,8 @@ end
 
 -- set the config info to the given source file
 function _instance:fileconfig_set(sourcefile, info)
-
-    -- get files config
     local filesconfig = self._FILESCONFIG or {}
-
-    -- set config info
     filesconfig[sourcefile] = info
-
-    -- update files config
     self._FILESCONFIG = filesconfig
 end
 
@@ -1205,24 +1278,25 @@ function _instance:sourcefiles()
     local i = 1
     local count = 0
     local sourcefiles = {}
-    local sourcefiles_deleted = {}
+    local sourcefiles_removed = {}
     local sourcefiles_inserted = {}
-    local deleted_count = 0
+    local removed_count = 0
     local targetcache = memcache.cache("core.project.target")
     for _, file in ipairs(table.wrap(files)) do
 
-        -- mark as deleted files?
-        local deleted = false
-        if file:startswith("__del_") then
-            file = file:sub(7)
-            deleted = true
+        -- mark as removed files?
+        local removed = false
+        local prefix = "__remove_"
+        if file:startswith(prefix) then
+            file = file:sub(#prefix + 1)
+            removed = true
         end
 
         -- find source files and try to cache the matching results of os.match across targets
         -- @see https://github.com/xmake-io/xmake/issues/1353
         local results = targetcache:get2("sourcefiles", file)
         if not results then
-            if deleted then
+            if removed then
                 results = {file}
             else
                 results = os.files(file)
@@ -1249,7 +1323,7 @@ function _instance:sourcefiles()
         end
         if #results == 0 then
             local sourceinfo = (self:get("__sourceinfo_files") or {})[file] or {}
-            utils.warning("cannot match %s(%s).%s_files(\"%s\") at %s:%d", self:type(), self:name(), (deleted and "del" or "add"), file, sourceinfo.file or "", sourceinfo.line or -1)
+            utils.warning("cannot match %s(%s).%s_files(\"%s\") at %s:%d", self:type(), self:name(), (removed and "remove" or "add"), file, sourceinfo.file or "", sourceinfo.line or -1)
         end
 
         -- process source files
@@ -1260,10 +1334,10 @@ function _instance:sourcefiles()
                 sourcefile = path.relative(sourcefile, os.projectdir())
             end
 
-            -- add or delete it
-            if deleted then
-                deleted_count = deleted_count + 1
-                table.insert(sourcefiles_deleted, sourcefile)
+            -- add or remove it
+            if removed then
+                removed_count = removed_count + 1
+                table.insert(sourcefiles_removed, sourcefile)
             elseif not sourcefiles_inserted[sourcefile] then
                 table.insert(sourcefiles, sourcefile)
                 sourcefiles_inserted[sourcefile] = true
@@ -1271,21 +1345,20 @@ function _instance:sourcefiles()
         end
     end
 
-    -- remove all deleted source files
-    if deleted_count > 0 then
-        for i = #sourcefiles, 1, -1 do
-            local sourcefile = sourcefiles[i]
-            for _, deletefile in ipairs(sourcefiles_deleted) do
-                local pattern = path.translate(deletefile:gsub("|.*$", ""))
+    -- remove all source files which need be removed
+    if removed_count > 0 then
+        table.remove_if(sourcefiles, function (i, sourcefile)
+            for _, removed_file in ipairs(sourcefiles_removed) do
+                local pattern = path.translate(removed_file:gsub("|.*$", ""))
                 if pattern:sub(1, 2):find('%.[/\\]') then
                     pattern = pattern:sub(3)
                 end
                 pattern = path.pattern(pattern)
                 if sourcefile:match(pattern) then
-                    table.remove(sourcefiles, i)
+                    return true
                 end
             end
-        end
+        end)
     end
     self._SOURCEFILES = sourcefiles
 
@@ -1323,20 +1396,20 @@ function _instance:objectfiles()
 
     -- some object files may be repeat and appear link errors if multi-batches exists, so we need remove all repeat object files
     -- e.g. add_files("src/*.c", {rules = {"rule1", "rule2"}})
-    local remove_repeat = batchcount > 1
+    local deduplicate = batchcount > 1
 
     -- get object files from all dependent targets (object kind)
     if self:orderdeps() then
         for _, dep in ipairs(self:orderdeps()) do
             if dep:kind() == "object" then
                 table.join2(objectfiles, dep:objectfiles())
-                remove_repeat = true
+                deduplicate = true
             end
         end
     end
 
     -- remove repeat object files
-    if remove_repeat then
+    if deduplicate then
         objectfiles = table.unique(objectfiles)
     end
 
@@ -1380,7 +1453,17 @@ function _instance:headerfiles(outputdir, only_deprecated)
     -- get the source paths and destinate paths
     local srcheaders = {}
     local dstheaders = {}
+    local srcheaders_removed = {}
+    local removed_count = 0
     for _, header in ipairs(table.wrap(headers)) do
+
+        -- mark as removed files?
+        local removed = false
+        local prefix = "__remove_"
+        if header:startswith(prefix) then
+            header = header:sub(#prefix + 1)
+            removed = true
+        end
 
         -- get the root directory
         local rootdir, count = header:gsub("|.*$", ""):gsub("%(.*%)$", "")
@@ -1388,50 +1471,60 @@ function _instance:headerfiles(outputdir, only_deprecated)
             rootdir = nil
         end
 
-        -- remove '(' and ')'
+        -- remove '(' and ')' first
         local srcpaths = header:gsub("[%(%)]", "")
         if srcpaths then
 
             -- get the source paths
             srcpaths = os.match(srcpaths)
             if srcpaths then
+                if removed then
+                    removed_count = removed_count + #srcpaths
+                    table.join2(srcheaders_removed, srcpaths)
+                else
+                    -- add the source headers
+                    table.join2(srcheaders, srcpaths)
 
-                -- add the source headers
-                table.join2(srcheaders, srcpaths)
-
-                -- get the destinate directories if the install directory exists
-                if headerdir then
-
-                    -- get the prefix directory
-                    local prefixdir = (extrainfo[header] or {}).prefixdir
-
-                    -- add the destinate headers
-                    for _, srcpath in ipairs(srcpaths) do
-
-                        -- get the destinate directory
-                        local dstdir = headerdir
-                        if prefixdir then
-                            dstdir = path.join(dstdir, prefixdir)
+                    -- get the destinate directories if the install directory exists
+                    if headerdir then
+                        local prefixdir = (extrainfo[header] or {}).prefixdir
+                        for _, srcpath in ipairs(srcpaths) do
+                            local dstdir = headerdir
+                            if prefixdir then
+                                dstdir = path.join(dstdir, prefixdir)
+                            end
+                            local dstheader = nil
+                            if rootdir then
+                                dstheader = path.absolute(path.relative(srcpath, rootdir), dstdir)
+                            else
+                                dstheader = path.join(dstdir, path.filename(srcpath))
+                            end
+                            table.insert(dstheaders, dstheader)
                         end
-
-                        -- the destinate header
-                        local dstheader = nil
-                        if rootdir then
-                            dstheader = path.absolute(path.relative(srcpath, rootdir), dstdir)
-                        else
-                            dstheader = path.join(dstdir, path.filename(srcpath))
-                        end
-                        assert(dstheader)
-
-                        -- add it
-                        table.insert(dstheaders, dstheader)
                     end
                 end
             end
         end
     end
 
-    -- ok?
+    -- remove all header files which need be removed
+    if removed_count > 0 then
+        table.remove_if(srcheaders, function (i, srcheader)
+            for _, removed_file in ipairs(srcheaders_removed) do
+                local pattern = path.translate(removed_file:gsub("|.*$", ""))
+                if pattern:sub(1, 2):find('%.[/\\]') then
+                    pattern = pattern:sub(3)
+                end
+                pattern = path.pattern(pattern)
+                if srcheader:match(pattern) then
+                    if i <= #dstheaders then
+                        table.remove(dstheaders, i)
+                    end
+                    return true
+                end
+            end
+        end)
+    end
     return srcheaders, dstheaders
 end
 
@@ -1560,10 +1653,19 @@ function _instance:sourcekinds()
     local sourcekinds = self._SOURCEKINDS
     if not sourcekinds then
         sourcekinds = {}
-        for _, sourcefile in pairs(self:sourcefiles()) do
-            local sourcekind = self:sourcekind_of(sourcefile)
+        for _, sourcebatch in pairs(self:sourcebatches()) do
+            local sourcekind = sourcebatch.sourcekind
             if sourcekind then
                 table.insert(sourcekinds, sourcekind)
+            end
+        end
+        -- if the source file is added dynamically, we may not be able to get the sourcekinds,
+        -- so we can only continue to get it from the rule
+        -- https://github.com/xmake-io/xmake/issues/1622#issuecomment-927726697
+        for _, ruleinst in ipairs(self:orderules()) do
+            local rule_sourcekinds = ruleinst:get("sourcekinds")
+            if rule_sourcekinds then
+                table.insert(sourcekinds, rule_sourcekinds)
             end
         end
         sourcekinds = table.unique(sourcekinds)
@@ -1630,11 +1732,7 @@ function _instance:sourcebatches()
             end
         end
     end
-
-    -- cache it
     self._SOURCEBATCHES = sourcebatches
-
-    -- ok?
     return sourcebatches, modified
 end
 
@@ -1848,6 +1946,10 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
+    -- we cannot get tool in on_load, because target:toolchains() has been not checked in configuration stage.
+    if not self._LOADED_AFTER then
+        os.raise("we cannot get tool(%s) before target(%s) is loaded, maybe it is called on_load(), please call it in on_config().", toolkind, self:name())
+    end
     return toolchain.tool(self:toolchains(), toolkind, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
                                                         before_get = function()
         -- get program from set_toolchain/set_tools (deprecated)
@@ -1881,6 +1983,24 @@ function _instance:toolconfig(name)
             end
         end
     end})
+end
+
+-- has the given tool for the current target?
+--
+-- e.g.
+--
+-- if target:has_tool("cc", "clang", "gcc") then
+--    ...
+-- end
+function _instance:has_tool(toolkind, ...)
+    local _, toolname = self:tool(toolkind)
+    if toolname then
+        for _, v in ipairs(table.join(...)) do
+            if v and toolname:find("^" .. v:gsub("%-", "%%-") .. "$") then
+                return true
+            end
+        end
+    end
 end
 
 -- get target apis
@@ -1951,8 +2071,11 @@ function target.apis()
         ,   "target.add_cleanfiles"
         ,   "target.add_configfiles"
         ,   "target.add_installfiles"
-            -- target.del_xxx
+            -- target.del_xxx (deprecated)
         ,   "target.del_files"
+            -- target.remove_xxx
+        ,   "target.remove_files"
+        ,   "target.remove_headerfiles"
         }
     ,   dictionary =
         {
@@ -1986,6 +2109,7 @@ function target.apis()
         ,   "target.before_uninstall"
             -- target.after_xxx
         ,   "target.after_run"
+        ,   "target.after_load"
         ,   "target.after_link"
         ,   "target.after_build"
         ,   "target.after_build_file"
@@ -2007,7 +2131,7 @@ function target.filename(targetname, targetkind, opt)
 
     -- make filename by format
     local filename = targetname
-    local format = opt.format or platform.format(targetkind, opt.plat, opt.arch)
+    local format = opt.format or platform.format(targetkind, opt.plat, opt.arch) or "$(name)"
     if format then
         local splitinfo = format:split("$(name)", {plain = true, strict = true})
         local prefixname = splitinfo[1] or ""
@@ -2033,18 +2157,23 @@ function target.filename(targetname, targetkind, opt)
 end
 
 -- get the link name of the target file
-function target.linkname(filename)
-    local linkname, count = filename:gsub(target.filename("__pattern__", "static"):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
-    if count == 0 then
-        linkname, count = filename:gsub(target.filename("__pattern__", "shared"):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
+function target.linkname(filename, opt)
+    -- for implib/mingw, e.g. libxxx.dll.a
+    opt = opt or {}
+    if filename:startswith("lib") and filename:endswith(".dll.a") then
+        return filename:sub(4, #filename - 6)
     end
+    -- for macOS, libxxx.tbd
+    if filename:startswith("lib") and filename:endswith(".tbd") then
+        return filename:sub(4, #filename - 4)
+    end
+    local linkname, count = filename:gsub(target.filename("__pattern__", "static", {plat = opt.plat}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
     if count == 0 then
-        -- for the mingw/cross platform, it is compatible with the libxxx.a and xxx.lib
-        local formats = {static = "lib$(name).a", shared = "lib$(name).so"}
-        linkname, count = filename:gsub(target.filename("__pattern__", "static", {format = formats["static"]}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
-        if count == 0 then
-            linkname, count = filename:gsub(target.filename("__pattern__", "shared", {format = formats["shared"]}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
-        end
+        linkname, count = filename:gsub(target.filename("__pattern__", "shared", {plat = opt.plat}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
+    end
+    -- in order to be compatible with mingw/windows library with .lib
+    if count == 0 and opt.plat == "mingw" then
+        linkname, count = filename:gsub(target.filename("__pattern__", "static", {plat = "windows"}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
     end
     return count > 0 and linkname or nil
 end

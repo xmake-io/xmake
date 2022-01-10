@@ -32,6 +32,7 @@ end
 -- http://www.visualstudio.com/en-us/news/vs2015-preview-vs.aspx
 -- http://blogs.msdn.com/b/vcblog/archive/2015/04/29/c-11-14-17-features-in-vs-2015-rc.aspx
 -- http://blogs.msdn.com/b/vcblog/archive/2015/06/19/c-11-14-17-features-in-vs-2015-rtm.aspx
+-- https://docs.microsoft.com/en-us/cpp/overview/visual-cpp-language-conformance?view=msvc-160
 --
 -- porting from Modules/Compiler/MSVC-CXX-FeatureTests.cmake
 --
@@ -49,6 +50,15 @@ function main()
     local msvc_2013   = "_MSC_VER >= 1800"
     local msvc_2015   = "_MSC_VER >= 1900"
     local msvc_2017   = "_MSC_VER >= 1910"
+    local msvc_2019   = "_MSC_VER >= 1920"
+    local msvc_2022   = "_MSC_VER >= 1930"
+
+    -- set language standard supports
+    _set("cxx_std_98", msvc_2005)
+    _set("cxx_std_11", msvc_2015)
+    _set("cxx_std_14", msvc_2017)
+    _set("cxx_std_17", msvc_2019)
+    _set("cxx_std_20", msvc_2022)
 
     -- VS version 15 (not 2015) introduces support for aggregate initializers.
     _set("cxx_aggregate_default_initializers", "_MSC_FULL_VER >= 190024406")

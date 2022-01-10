@@ -316,7 +316,8 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
 
     -- merge configuration from the given import file
     local importfile = option.get("import")
-    if importfile and os.isfile(importfile) then
+    if importfile then
+        assert(os.isfile(importfile), "%s not found!", importfile)
         if config.load(importfile) then
             options_changed = true
         end

@@ -26,7 +26,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.language.language")
 import("private.tools.ccache")
-import("private.utils.progress")
+import("utils.progress")
 
 -- init it
 function init(self)
@@ -59,7 +59,7 @@ function nf_symbol(self, level, target)
     -- debug? generate *.pdb file
     local flags = nil
     if level == "debug" then
-        flags = "-g -lineinfo"
+        flags = {"-g", "-lineinfo"}
         if is_plat("windows") then
             local host_flags = nil
             local symbolfile = nil
@@ -82,11 +82,10 @@ function nf_symbol(self, level, target)
             else
                 host_flags = "-Zi"
             end
-            flags = flags .. ' -Xcompiler "' .. host_flags .. '"'
+            table.insert(flags, "-Xcompiler")
+            table.insert(flags, host_flags)
         end
     end
-
-    -- none
     return flags
 end
 
@@ -178,6 +177,8 @@ function nf_language(self, stdname)
             cxx03       = "--std c++03"
         ,   cxx11       = "--std c++11"
         ,   cxx14       = "--std c++14"
+        ,   cxx17       = "--std c++17"
+        ,   cxxlatest   = {"--std c++17", "--std c++14", "--std c++11", "--std c++03"}
         }
         local cxxmaps2 = {}
         for k, v in pairs(_g.cxxmaps) do
@@ -185,7 +186,18 @@ function nf_language(self, stdname)
         end
         table.join2(_g.cxxmaps, cxxmaps2)
     end
-    return _g.cxxmaps[stdname]
+    local maps = _g.cxxmaps
+    local result = maps[stdname]
+    if type(result) == "table" then
+        for _, v in ipairs(result) do
+            if self:has_flags(v, "cxflags") then
+                result = v
+                maps[stdname] = result
+                break
+            end
+        end
+    end
+    return result
 end
 
 -- make the define flag
@@ -200,7 +212,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return {"-I", dir}
+    return {"-I" .. path.translate(dir)}
 end
 
 -- make the sysincludedir flag
@@ -220,7 +232,7 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return {"-L", dir}
+    return {"-L" .. path.translate(dir)}
 end
 
 -- make the rpathdir flag
@@ -258,9 +270,9 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
     end
 
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
-    if targetkind == "shared" and config.plat() == "mingw" then
+    if targetkind == "shared" and is_plat("mingw") then
         table.insert(flags_extra, "-Xlinker")
-        table.insert(flags_extra, "-Wl,--out-implib," .. path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib"))
+        table.insert(flags_extra, "-Wl,--out-implib," .. path.join(path.directory(targetfile), path.basename(targetfile) .. ".dll.a"))
     end
 
     -- make link args

@@ -20,7 +20,6 @@
 
 -- install files
 function _install_files(target)
-
     local srcfiles, dstfiles = target:installfiles()
     if srcfiles and dstfiles then
         local i = 1
@@ -47,12 +46,10 @@ function main(target, opt)
     print("installing %s to %s ..", target:name(), installdir)
 
     -- call script
-    if not target:is_phony() then
-        local install_style = target:is_plat("windows", "mingw") and "windows" or "unix"
-        local script = import(install_style, {anonymous = true})["install_" .. target:kind()]
-        if script then
-            script(target, opt)
-        end
+    local install_style = target:is_plat("windows", "mingw") and "windows" or "unix"
+    local script = import(install_style, {anonymous = true})["install_" .. target:kind()]
+    if script then
+        script(target, opt)
     end
 
     -- install other files

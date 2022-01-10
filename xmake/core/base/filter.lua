@@ -171,15 +171,21 @@ function filter:handle(value)
     value = value:gsub("%%([%$%(%)%%])", function (ch) return escape_table1[ch] end)
 
     -- filter the builtin variables
-    return (value:gsub("%$%((.-)%)", function (variable)
-
+    local values = {}
+    local variables = {}
+    value:gsub("%$%((.-)%)", function (variable)
+        table.insert(variables, variable)
+    end)
+    -- we cannot call self:get() in gsub, because it will trigger "attempt to yield a c-call boundary"
+    for _, variable in ipairs(variables) do
         -- escape "%$", "%(", "%)", "%%" to "$", "(", ")", "%"
-        variable = variable:gsub("[\001\002\003\004]", function (ch) return escape_table2[ch] end)
-
-        -- get variable value
-        return self:get(variable) or ""
-
-    end):gsub("[\001\002\003\004]", function (ch) return escape_table2[ch] end))
+        local name = variable:gsub("[\001\002\003\004]", function (ch) return escape_table2[ch] end)
+        values[variable] = self:get(name) or ""
+    end
+    value = value:gsub("%$%((.-)%)", function (variable)
+        return values[variable]
+    end)
+    return value:gsub("[\001\002\003\004]", function (ch) return escape_table2[ch] end)
 end
 
 -- return module: filter

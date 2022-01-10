@@ -24,10 +24,8 @@ function main(target, opt)
     -- check
     opt = opt or {}
     assert(target:is_library(), 'pkgconfig_importfiles: only support for library target(%s)!', target:name())
-
-    -- only for unix platform
     local installdir = target:installdir()
-    if target:is_plat("windows") or not installdir then
+    if not installdir then
         return
     end
 
@@ -35,26 +33,32 @@ function main(target, opt)
     local pcfile = path.join(installdir, opt and opt.libdir or "lib", "pkgconfig", opt.filename or (target:basename() .. ".pc"))
 
     -- get includedirs
-    local includedirs = opt.includedirs or {path.join(installdir, "include")}
+    local includedirs = opt.includedirs
 
     -- get links and linkdirs
     local links = opt.links or target:basename()
-    local linkdirs = opt.linkdirs or {path.join(installdir, "lib")}
+    local linkdirs = opt.linkdirs
 
     -- get libs
     local libs = ""
     for _, linkdir in ipairs(linkdirs) do
-        libs = libs .. "-L" .. linkdir
+        if linkdir ~= path.join(installdir, "lib") then
+            libs = libs .. " -L" .. (linkdir:gsub("\\", "/"))
+        end
     end
     libs = libs .. " -L${libdir}"
-    for _, link in ipairs(links) do
-        libs = libs .. " -l" .. link
+    if not target:is_headeronly() then
+        for _, link in ipairs(links) do
+            libs = libs .. " -l" .. link
+        end
     end
 
     -- get cflags
     local cflags = ""
     for _, includedir in ipairs(includedirs) do
-        cflags = cflags .. "-I" .. includedir
+        if includedir ~= path.join(installdir, "include") then
+            cflags = cflags .. " -I" .. (includedir:gsub("\\", "/"))
+        end
     end
     cflags = cflags .. " -I${includedir}"
 
@@ -64,7 +68,7 @@ function main(target, opt)
     -- generate a *.pc file
     local file = io.open(pcfile, 'w')
     if file then
-        file:print("prefix=%s", installdir)
+        file:print("prefix=%s", installdir:gsub("\\", "/"))
         file:print("exec_prefix=${prefix}")
         file:print("libdir=${exec_prefix}/lib")
         file:print("includedir=${prefix}/include")
@@ -76,7 +80,6 @@ function main(target, opt)
             file:print("Version: %s", version)
         end
         file:print("Libs: %s", libs)
-        file:print("Libs.private: ")
         file:print("Cflags: %s", cflags)
         file:close()
     end

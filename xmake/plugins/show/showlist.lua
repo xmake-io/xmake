@@ -28,7 +28,7 @@ function main(values)
     local row = {}
     for _, value in ipairs(values) do
         table.insert(row, value)
-        if #row > 5 then
+        if #row > 2 then
             table.insert(tbl, row)
             row = {}
         end

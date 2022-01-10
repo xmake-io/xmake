@@ -31,7 +31,7 @@ rule("utils.merge.object")
         import("core.base.option")
         import("core.theme.theme")
         import("core.project.depend")
-        import("private.utils.progress")
+        import("utils.progress")
 
         -- get object file
         local objectfile = target:objectfile(sourcefile_obj)

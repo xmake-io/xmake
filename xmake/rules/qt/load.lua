@@ -36,7 +36,11 @@ function _link(linkdirs, framework, qt_sdkver)
         elseif is_plat("android") or is_plat("linux") then
             debug_suffix = ""
         end
-        framework = "Qt" .. qt_sdkver:major() .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
+        if qt_sdkver:ge("5.0") then
+            framework = "Qt" .. qt_sdkver:major() .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
+        else -- for qt4.x, e.g. QtGui4.lib
+            framework = "Qt" .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "") .. qt_sdkver:major()
+        end
         if is_plat("android") then --> -lQt5Core_armeabi/-lQt5CoreDebug_armeabi for 5.14.x
             local libinfo = find_library(framework .. "_" .. config.arch(), linkdirs)
             if libinfo and libinfo.link then
@@ -77,10 +81,10 @@ function _add_plugins(target, plugins)
     for name, plugin in pairs(plugins) do
         target:values_add("qt.plugins", name)
         if plugin.links then
-            target:values_add("qt.links", unpack(table.wrap(plugin.links)))
+            target:values_add("qt.links", table.unpack(table.wrap(plugin.links)))
         end
         if plugin.linkdirs then
-            target:values_add("qt.linkdirs", unpack(table.wrap(plugin.linkdirs)))
+            target:values_add("qt.linkdirs", table.unpack(table.wrap(plugin.linkdirs)))
         end
     end
 end

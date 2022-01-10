@@ -24,7 +24,7 @@ import("core.tool.toolchain")
 import("core.base.option")
 import("core.base.hashset")
 import("core.project.depend")
-import("private.utils.progress")
+import("utils.progress")
 
 -- export all symbols for dynamic library
 function main (target, opt)
@@ -56,8 +56,9 @@ function main (target, opt)
             local objectsymbols = try { function () return os.iorunv(dumpbin.program, {"/symbols", "/nologo", objectfile}) end }
             if objectsymbols then
                 for _, line in ipairs(objectsymbols:split('\n', {plain = true})) do
+                    -- https://docs.microsoft.com/en-us/cpp/build/reference/symbols
                     -- 008 00000000 SECT3  notype ()    External     | add
-                    if line:find("External") then
+                    if line:find("External") and not line:find("UNDEF") then
                         local symbol = line:match(".*External%s+| (.*)")
                         if symbol then
                             symbol = symbol:split('%s')[1]

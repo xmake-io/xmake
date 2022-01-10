@@ -22,6 +22,7 @@
 local main = main or {}
 
 -- load modules
+local env           = require("base/compat/env")
 local os            = require("base/os")
 local log           = require("base/log")
 local path          = require("base/path")
@@ -43,7 +44,7 @@ local profiler      = require("base/profiler")
 -- init the option menu
 local menu =
 {
-    title = "${bright}xmake v" .. _VERSION .. ", A cross-platform build utility based on Lua${clear}"
+    title = "${bright}xmake v" .. _VERSION .. ", A cross-platform build utility based on " .. (xmake._LUAJIT and "LuaJIT" or "Lua") .. "${clear}"
 ,   copyright = "Copyright (C) 2015-present Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}"
 
     -- the tasks: xmake [task]
@@ -217,7 +218,7 @@ function main.entry()
     end
 
     -- load theme
-    local theme_inst = theme.load(global.get("theme")) or theme.load("default")
+    local theme_inst = theme.load(os.getenv("XMAKE_THEME") or global.get("theme")) or theme.load("default")
     if theme_inst then
         colors.theme_set(theme_inst)
     end

@@ -25,7 +25,7 @@ import("core.project.config")
 import("core.project.depend")
 import("core.tool.toolchain")
 import("lib.detect.find_path")
-import("private.utils.progress")
+import("utils.progress")
 
 -- save Info.plist
 function _save_info_plist(target, info_plist_file)

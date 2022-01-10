@@ -65,9 +65,15 @@ Notes:
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef USE_LUAJIT
 #include "luajit.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#else
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+#endif
 
 #include <curses.h>
 #include <signal.h>
@@ -330,7 +336,11 @@ static chtype lc_checkch(lua_State *L, int index)
     if (lua_type(L, index) == LUA_TSTRING)
         return *lua_tostring(L, index);
 
+#ifdef USE_LUAJIT
     luaL_typerror(L, index, "chtype");
+#else
+    // TODO
+#endif
     /* never executes */
     return (chtype)0;
 }
@@ -599,6 +609,12 @@ static void register_curses_constants(lua_State *L)
     CC(KEY_COPY)        CC(KEY_CREATE)      CC(KEY_END)
     CC(KEY_EXIT)        CC(KEY_FIND)        CC(KEY_HELP)
     CC(KEY_MARK)        CC(KEY_MESSAGE)
+#ifdef PDCURSES
+    // https://github.com/xmake-io/xmake/issues/1610#issuecomment-971149885
+    CC(KEY_C2)          CC(KEY_A2)          CC(KEY_B1)
+    CC(KEY_B3)
+#endif
+
 #if !defined(XCURSES)
 #ifndef NOMOUSE
     CC(KEY_MOUSE)
@@ -2421,8 +2437,11 @@ int xm_curses_register (lua_State *L)
     lua_pushliteral(L, "__index");
     lua_pushvalue(L, -2);               /* push metatable */
     lua_rawset(L, -3);                  /* metatable.__index = metatable */
+#if 0
     luaL_openlib(L, NULL, windowlib, 0);
-
+#else
+    luaL_setfuncs(L, windowlib, 0);
+#endif
     lua_pop(L, 1);                      /* remove metatable from stack */
 
     /*
@@ -2432,8 +2451,11 @@ int xm_curses_register (lua_State *L)
     lua_pushliteral(L, "__index");
     lua_pushvalue(L, -2);               /* push metatable */
     lua_rawset(L, -3);                  /* metatable.__index = metatable */
+#if 0
     luaL_openlib(L, NULL, chstrlib, 0);
-
+#else
+    luaL_setfuncs(L, chstrlib, 0);
+#endif
     lua_pop(L, 1);                      /* remove metatable from stack */
 
 
@@ -2441,7 +2463,11 @@ int xm_curses_register (lua_State *L)
     ** create global table with curses methods/variables/constants
     */
     lua_newtable(L);
+#if 0
     luaL_register(L, NULL, curseslib);
+#else
+    luaL_setfuncs(L, curseslib, 0);
+#endif
 
     lua_pushstring(L, "init");
     lua_pushvalue(L, -2);

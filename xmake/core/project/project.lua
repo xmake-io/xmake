@@ -215,13 +215,22 @@ end
 --
 -- orderdeps: c -> b -> a
 --
-function project._load_deps(instance, instances, deps, orderdeps)
-
-    -- get dep instances
+function project._load_deps(instance, instances, deps, orderdeps, depspath)
     for _, dep in ipairs(table.wrap(instance:get("deps"))) do
         local depinst = instances[dep]
         if depinst then
-            project._load_deps(depinst, instances, deps, orderdeps)
+            local depspath_sub
+            if depspath then
+                for idx, name in ipairs(depspath) do
+                    if name == dep then
+                        local circular_deps = table.slice(depspath, idx)
+                        table.insert(circular_deps, dep)
+                        os.raise("circular dependency(%s) detected!", table.concat(circular_deps, ", "))
+                    end
+                end
+                depspath_sub = table.join(depspath, dep)
+            end
+            project._load_deps(depinst, instances, deps, orderdeps, depspath_sub)
             if not deps[dep] then
                 deps[dep] = depinst
                 table.insert(orderdeps, depinst)
@@ -231,7 +240,7 @@ function project._load_deps(instance, instances, deps, orderdeps)
 end
 
 -- load scope from the project file
-function project._load_scope(scope_kind, remove_repeat, enable_filter)
+function project._load_scope(scope_kind, deduplicate, enable_filter)
 
     -- enter the project directory
     local oldir, errors = os.cd(os.projectdir())
@@ -243,7 +252,7 @@ function project._load_scope(scope_kind, remove_repeat, enable_filter)
     local interp = project.interpreter()
 
     -- load scope
-    local results, errors = interp:make(scope_kind, remove_repeat, enable_filter)
+    local results, errors = interp:make(scope_kind, deduplicate, enable_filter)
     if not results then
         return nil, errors
     end
@@ -316,7 +325,7 @@ function project._load_rules()
     for _, instance in pairs(instances)  do
         instance._DEPS      = instance._DEPS or {}
         instance._ORDERDEPS = instance._ORDERDEPS or {}
-        project._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS)
+        project._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS, {instance:name()})
     end
     return rules
 end
@@ -342,29 +351,6 @@ function project._load_toolchains()
         toolchains[toolchain_name] = toolchain_info
     end
     return toolchains
-end
-
--- load target
-function project._load_target(t, requires)
-
-    -- do before_load() for target and all rules
-    local ok, errors = t:_load_before()
-    if not ok then
-        return false, errors
-    end
-
-    -- do on_load() for target and all rules
-    ok, errors = t:_load()
-    if not ok then
-        return false, errors
-    end
-
-    -- do after_load() for target and all rules
-    ok, errors = t:_load_after()
-    if not ok then
-        return false, errors
-    end
-    return true
 end
 
 -- load targets
@@ -399,11 +385,6 @@ function project._load_targets()
 
     -- load and attach target deps, rules and packages
     for _, t in pairs(targets) do
-
-        -- load deps
-        t._DEPS      = t._DEPS or {}
-        t._ORDERDEPS = t._ORDERDEPS or {}
-        project._load_deps(t, targets, t._DEPS, t._ORDERDEPS)
 
         -- load rules from target and language
         --
@@ -449,6 +430,24 @@ function project._load_targets()
                 return nil, nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
         end
+
+        -- @note it's deprecated, please use on_load instead of before_load
+        ok, errors = t:_load_before()
+        if not ok then
+            return nil, nil, errors
+        end
+
+        -- we need call on_load() before building deps/rules,
+        -- so we can use `target:add("deps", "xxx")` to add deps in on_load
+        ok, errors = t:_load()
+        if not ok then
+            return nil, nil, errors
+        end
+
+        -- load deps
+        t._DEPS      = t._DEPS or {}
+        t._ORDERDEPS = t._ORDERDEPS or {}
+        project._load_deps(t, targets, t._DEPS, t._ORDERDEPS, {t:name()})
     end
 
     -- sort targets for all deps
@@ -458,18 +457,12 @@ function project._load_targets()
         project._sort_targets(targets, ordertargets, targetrefs, t)
     end
 
-    -- do load for each target
-    local ok = false
+    -- do after_load() for targets
     for _, t in ipairs(ordertargets) do
-        ok, errors = project._load_target(t, requires)
+        ok, errors = t:_load_after()
         if not ok then
-            break
+            return nil, nil, errors
         end
-    end
-
-    -- do load failed?
-    if not ok then
-        return nil, nil, errors
     end
     return targets, ordertargets
 end
@@ -547,10 +540,8 @@ function project._load_options(disable_filter)
     for _, opt in pairs(options) do
         opt._DEPS      = opt._DEPS or {}
         opt._ORDERDEPS = opt._ORDERDEPS or {}
-        project._load_deps(opt, options, opt._DEPS, opt._ORDERDEPS)
+        project._load_deps(opt, options, opt._DEPS, opt._ORDERDEPS, {opt:name()})
     end
-
-    -- ok?
     return options
 end
 
@@ -735,6 +726,15 @@ function project.interpreter()
 
     -- define apis for project
     interp:api_define(project.apis())
+
+    -- we need to be able to precisely control the direction of deduplication of different types of values.
+    -- the default is to de-duplicate from left to right, but like links/syslinks need to be de-duplicated from right to left.
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/1903
+    --
+    interp:deduplication_policy_set("links", "toleft")
+    interp:deduplication_policy_set("syslinks", "toleft")
+    interp:deduplication_policy_set("frameworks", "toleft")
 
     -- register api: deprecated
     deprecated_project.api_register(interp)
@@ -1014,6 +1014,16 @@ function project.requireconfs_str()
     return requireconfs_str, requireconfs_extra
 end
 
+-- get requires lockfile
+function project.requireslock()
+    return path.join(project.directory(), "xmake-requires.lock")
+end
+
+-- get the format version of requires lockfile
+function project.requireslock_version()
+    return "1.0"
+end
+
 -- get the given rule
 function project.rule(name)
     return project.rules()[name]
@@ -1082,7 +1092,15 @@ end
 
 -- get the mtimes
 function project.mtimes()
-    return project.interpreter():mtimes()
+    local mtimes = project._MTIMES
+    if not mtimes then
+        mtimes = project.interpreter():mtimes()
+        for _, rcfile in ipairs(project.rcfiles()) do
+            mtimes[rcfile] = os.mtime(rcfile)
+        end
+        project._MTIMES = mtimes
+    end
+    return mtimes
 end
 
 -- get the project menu

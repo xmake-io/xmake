@@ -78,7 +78,7 @@ tb_int_t xm_io_socket_sendto(lua_State* lua)
     if (!data || !size)
     {
         lua_pushinteger(lua, -1);
-        lua_pushfstring(lua, "invalid data(%p) and size(%zu)!", data, size);
+        lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
         return 2;
     }
 

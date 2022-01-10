@@ -30,7 +30,7 @@ import("package.tools.ninja")
 
 -- get the number of parallel jobs
 function _get_parallel_njobs(opt)
-    return opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    return opt.jobs or option.get("jobs") or tostring(os.default_njob())
 end
 
 -- translate paths
@@ -272,10 +272,13 @@ function _get_configs_for_windows(package, configs, opt)
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebugDLL")
     end
     if vs_runtime then
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG="/' .. vs_runtime .. '"')
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE="/' .. vs_runtime .. '"')
-        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. '"')
-        table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. '"')
+        -- CMake default MSVC flags as of 3.21.2
+        local default_debug_flags = "/Zi /Ob0 /Od /RTC1"
+        local default_release_flags = "/O2 /Ob2 /DNDEBUG"
+        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG=/' .. vs_runtime .. ' ' .. default_debug_flags)
+        table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE=/' .. vs_runtime .. ' ' .. default_release_flags)
+        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG=/' .. vs_runtime .. ' ' .. default_debug_flags)
+        table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE=/' .. vs_runtime .. ' ' .. default_release_flags)
     end
     _get_configs_for_generic(package, configs, opt)
 end
@@ -295,6 +298,12 @@ function _get_configs_for_android(package, configs, opt)
         end
         if ndk_cxxstl then
             table.insert(configs, "-DANDROID_STL=" .. ndk_cxxstl)
+        end
+        if is_host("windows") then
+            local make = path.join(ndk, "prebuilt", "windows-x86_64", "bin", "make.exe")
+            if os.isfile(make) then
+                table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. make)
+            end
         end
     end
     _get_configs_for_generic(package, configs, opt)
@@ -363,6 +372,16 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.CMAKE_OSX_SYSROOT = ""
     -- Avoid cmake to add the flags -search_paths_first and -headerpad_max_install_names on macOS
     envs.HAVE_FLAG_SEARCH_PATHS_FIRST = "0"
+    -- CMAKE_MAKE_PROGRAM may be required for some CMakeLists.txt (libcurl)
+    if is_subhost("windows") then
+        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
+        envs.CMAKE_MAKE_PROGRAM = path.join(mingw, "bin", "mingw32-make.exe")
+    end
+
+    if opt.cmake_generator == "Ninja" then
+        envs.CMAKE_MAKE_PROGRAM = "ninja"
+    end
+
     for k, v in pairs(envs) do
         table.insert(configs, "-D" .. k .. "=" .. v)
     end
@@ -535,8 +554,12 @@ end
 
 -- do build for make
 function _build_for_make(package, configs, opt)
+    local argv = {}
+    if opt.target then
+        table.insert(argv, opt.target)
+    end        
     local jobs = _get_parallel_njobs(opt)
-    local argv = {"-j" .. jobs}
+    table.insert(argv, "-j" .. jobs)
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
     end
@@ -546,6 +569,16 @@ function _build_for_make(package, configs, opt)
         local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
         local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
         os.vrunv(mingw_make, argv)
+    elseif package:is_plat("android") and is_host("windows") then
+        local make
+        local ndk = get_config("ndk")
+        if ndk then
+            make = path.join(ndk, "prebuilt", "windows-x86_64", "bin", "make.exe")
+        end
+        if not make or not os.isfile(make) then
+            make = "make"
+        end
+        os.vrunv(make, argv)
     else
         os.vrunv("make", argv)
     end
@@ -602,6 +635,17 @@ function _install_for_make(package, configs, opt)
         local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
         os.vrunv(mingw_make, argv)
         os.vrunv(mingw_make, {"install"})
+    elseif package:is_plat("android") and is_host("windows") then
+        local make
+        local ndk = get_config("ndk")
+        if ndk then
+            make = path.join(ndk, "prebuilt", "windows-x86_64", "bin", "make.exe")
+        end
+        if not make or not os.isfile(make) then
+            make = "make"
+        end
+        os.vrunv(make, argv)
+        os.vrunv(make, {"install"})
     else
         os.vrunv("make", argv)
         os.vrunv("make", {"install"})
@@ -629,7 +673,7 @@ function build(package, configs, opt)
     opt = opt or {}
 
     -- enter build directory
-    local buildir = opt.buildir or "build_" .. hash.uuid4():split('%-')[1]
+    local buildir = opt.buildir or package:buildir()
     os.mkdir(path.join(buildir, "install"))
     local oldir = os.cd(buildir)
 
@@ -688,7 +732,7 @@ function install(package, configs, opt)
     opt = opt or {}
 
     -- enter build directory
-    local buildir = opt.buildir or "build_" .. hash.uuid4():split('%-')[1]
+    local buildir = opt.buildir or package:buildir()
     os.mkdir(path.join(buildir, "install"))
     local oldir = os.cd(buildir)
 
@@ -733,4 +777,3 @@ function install(package, configs, opt)
     end
     os.cd(oldir)
 end
-

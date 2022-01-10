@@ -23,8 +23,7 @@
 rule("platform.windows.manifest")
     set_extensions(".manifest")
     on_config("windows", function (target)
-        local _, toolname = target:tool("ld")
-        if toolname == "link" then
+        if target:has_tool("ld", "link") then
             local manifest = false
             for _, sourcebatch in pairs(target:sourcebatches()) do
                 if sourcebatch.rulename == "platform.windows.manifest" then

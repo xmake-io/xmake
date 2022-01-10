@@ -1,8 +1,7 @@
-export module hello;
-
+module;
 #include <cstdio>
 
-using namespace std;
+export module hello;
 
 export namespace hello {
     void say(const char* str) {

@@ -34,7 +34,15 @@ xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._PROJECT_FILE     = "xmake.lua"
 xmake._WORKING_DIR      = os.curdir()
 xmake._FEATURES         = _FEATURES
+xmake._LUAJIT           = _LUAJIT
 
+-- In order to be compatible with updates from lower versions of engine core
+-- @see https://github.com/xmake-io/xmake/issues/1694#issuecomment-925507210
+if xmake._LUAJIT == nil then
+    xmake._LUAJIT = true
+end
+
+-- load the given lua file
 function _loadfile_impl(filepath, mode, opt)
 
     -- init options
@@ -112,8 +120,8 @@ function loadfile(filepath, mode, opt)
     return script, errors
 end
 
--- init package path
-table.insert(package.loaders, 2, function(v)
+-- init package path, package.searchers for lua5.4
+table.insert(package.loaders or package.searchers, 2, function(v)
     local filepath = xmake._PROGRAM_DIR .. "/core/" .. v .. ".lua"
     local script, serr = _loadfile_impl(filepath)
     if not script then

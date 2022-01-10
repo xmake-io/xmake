@@ -7,14 +7,14 @@ PRO_NAME 			= xmake
 PRO_VERSION_MAJOR 	= 2
 
 # the project minor version
-PRO_VERSION_MINOR 	= 5
+PRO_VERSION_MINOR 	= 6
 
 # the project alter version
-PRO_VERSION_ALTER 	= 6
+PRO_VERSION_ALTER 	= 2
 
 # the project prefix
 PRO_PREFIX 			= XM_
 
 # the package names
-PKG_NAMES 			= tbox luajit base
+PKG_NAMES 			= tbox luajit lua base
 

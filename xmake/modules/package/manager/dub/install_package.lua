@@ -26,7 +26,7 @@ import("lib.detect.find_tool")
 -- install package
 --
 -- @param name  the package name, e.g. dub::log
--- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = , require_version = "x.x.x", buildhash = "xxxxxx"}
+-- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = , require_version = "x.x.x"}
 --
 -- @return      true or false
 --

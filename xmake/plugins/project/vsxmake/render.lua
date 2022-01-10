@@ -18,7 +18,7 @@
 -- @file        render.lua
 --
 
-function _fill(opt, parmas)
+function _fill(opt, params)
     return function(match)
         local imp = match:match("^Import%((.+)%)$")
         if imp then
@@ -28,7 +28,7 @@ function _fill(opt, parmas)
             local args = path.filename(func):match("%((.+)%)$"):split(",")
             return _render(func, opt, args)
         end
-        return opt.paramsprovider(match, parmas) or "<Not Provided>"
+        return opt.paramsprovider(match, params) or "<Not Provided>"
     end
 end
 

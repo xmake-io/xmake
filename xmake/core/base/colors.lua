@@ -164,7 +164,7 @@ function colors.rainbow24(index, seed, freq, spread)
     local blue  = math.sin(freq * index + 4 * math.pi / 3) * 127 + 128
 
     -- make code
-    return string.format("%d;%d;%d", red, green, blue)
+    return string.format("%d;%d;%d", math.floor(red), math.floor(green), math.floor(blue))
 end
 
 -- make rainbow color256 code by the index of characters (16-256)
@@ -184,7 +184,7 @@ function colors.rainbow256(index, seed, freq, spread)
     index  = seed + index / spread
 
     -- make color code
-    local code = (freq * index) % 240 + 18
+    local code = math.floor((freq * index) % 240 + 18)
 
     -- make code
     return string.format("#%d", code)
@@ -337,6 +337,8 @@ function colors.translate(str, opt)
                         -- unknown code, regard as plain text
                         table.insert(text_buffer, block)
                     end
+                elseif not opt.ignore_unknown then
+                    table.insert(text_buffer, block)
                 end
             end
 

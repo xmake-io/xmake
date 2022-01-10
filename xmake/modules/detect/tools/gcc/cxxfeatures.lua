@@ -28,13 +28,17 @@ end
 --
 -- http://gcc.gnu.org/projects/cxx0x.html
 -- http://gcc.gnu.org/projects/cxx1y.html
+-- https://gcc.gnu.org/projects/cxx-status.html
 --
 -- porting from Modules/Compiler/GNU-CXX-FeatureTests.cmake
 --
 function main()
 
     -- init conditions
+    -- gcc -x c++ -std=c++20 -dM -E - < /dev/null | grep __cplusplus
     local gcc_minver        = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 404"
+    local gcc90_cxx20       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 900 && __cplusplus >= 202002L"
+    local gcc70_cxx17       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 700 && __cplusplus >= 201703L"
     local gcc50_cxx14       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 500 && __cplusplus >= 201402L"
     local gcc49_cxx14       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 409 && __cplusplus > 201103L"
     local gcc481_cxx11      = "((__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) >= 40801) && __cplusplus >= 201103L"
@@ -45,6 +49,13 @@ function main()
     local gcc45_cxx11       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 405 && " .. gcc_cxx0x_defined
     local gcc44_cxx11       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 404 && " .. gcc_cxx0x_defined
     local gcc43_cxx11       = gcc_minver .. " && " .. gcc_cxx0x_defined
+
+    -- set language standard supports
+    _set("cxx_std_98", gcc_minver)
+    _set("cxx_std_11", gcc43_cxx11)
+    _set("cxx_std_14", gcc49_cxx14)
+    _set("cxx_std_17", gcc70_cxx17)
+    _set("cxx_std_20", gcc90_cxx20)
 
     -- set features
     _set("cxx_variable_templates",             gcc50_cxx14)
@@ -150,6 +161,60 @@ function main()
     _set("cxx_func_identifier", gcc_minver .. " && " .. gcc_cxx0x_defined)
     _set("cxx_variadic_macros", gcc_minver .. " && " .. gcc_cxx0x_defined)
     _set("cxx_template_template_parameters", gcc_minver .. " && __cplusplus")
+
+    -- c++17 language features with predefined macros
+    -- https://en.cppreference.com/w/cpp/feature_test
+    local features_cxx17 = {
+        "__cpp_aggregate_bases",
+        "__cpp_aligned_new",
+        "__cpp_capture_star_this",
+        "__cpp_constexpr",
+        "__cpp_deduction_guides",
+        "__cpp_enumerator_attributes",
+        "__cpp_fold_expressions",
+        "__cpp_guaranteed_copy_elision",
+        "__cpp_hex_float",
+        "__cpp_if_constexpr",
+        "__cpp_inheriting_constructors",
+        "__cpp_inline_variables",
+        "__cpp_namespace_attributes",
+        "__cpp_noexcept_function_type",
+        "__cpp_nontype_template_args",
+        "__cpp_nontype_template_parameter_auto",
+        "__cpp_range_based_for",
+        "__cpp_static_assert",
+        "__cpp_structured_bindings",
+        "__cpp_template_template_args",
+        "__cpp_variadic_using"}
+    for _, feature in ipairs(features_cxx17) do
+        _set((feature:gsub("__cpp", "cxx")), "__cplusplus && defined(" .. feature .. ")")
+    end
+
+    -- c++20 language features with predefined macros
+    -- https://en.cppreference.com/w/cpp/feature_test
+    local features_cxx20 = {
+        "__cpp_aggregate_paren_init",
+        "__cpp_char8_t",
+        "__cpp_concepts",
+        "__cpp_conditional_explicit",
+        "__cpp_consteval",
+        "__cpp_constexpr",
+        "__cpp_constexpr_dynamic_alloc",
+        "__cpp_constexpr_in_decltype",
+        "__cpp_constinit",
+        "__cpp_deduction_guides",
+        "__cpp_designated_initializers",
+        "__cpp_generic_lambdas",
+        "__cpp_impl_coroutine",
+        "__cpp_impl_destroying_delete",
+        "__cpp_impl_three_way_comparison",
+        "__cpp_init_captures",
+        "__cpp_modules",
+        "__cpp_nontype_template_args",
+        "__cpp_using_enum"}
+    for _, feature in ipairs(features_cxx20) do
+        _set((feature:gsub("__cpp", "cxx")), "__cplusplus && defined(" .. feature .. ")")
+    end
 
     -- get features
     return _g.features

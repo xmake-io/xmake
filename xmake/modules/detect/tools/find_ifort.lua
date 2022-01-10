@@ -36,7 +36,6 @@ import("lib.detect.find_programver")
 -- @endcode
 --
 function main(opt)
-
     opt = opt or {}
     if is_host("windows") then
         -- find program

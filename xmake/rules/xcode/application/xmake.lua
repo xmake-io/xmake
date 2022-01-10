@@ -21,11 +21,24 @@
 -- define rule: xcode application
 rule("xcode.application")
 
-    -- support add_files("Info.plist", "*.storyboard", "*.xcassets")
-    add_deps("xcode.info_plist", "xcode.storyboard", "xcode.xcassets")
+    -- support add_files("Info.plist", "*.storyboard", "*.xcassets", "*.metal")
+    add_deps("xcode.info_plist", "xcode.storyboard", "xcode.xcassets", "xcode.metal")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load("load")
+    on_load("load")
+
+    -- depend xcode.framework? we need disable `build.across_targets_in_parallel` policy
+    after_load(function (target)
+        local across_targets_in_parallel
+        for _, dep in ipairs(target:orderdeps()) do
+            if dep:rule("xcode.framework") then
+                across_targets_in_parallel = false
+            end
+        end
+        if across_targets_in_parallel ~= nil then
+            target:set("policy", "build.across_targets_in_parallel", across_targets_in_parallel)
+        end
+    end)
 
     -- build *.app
     after_build("build")

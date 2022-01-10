@@ -5,6 +5,9 @@
 .xmake/
 build/
 
+# gcc cache
+gcm.cache
+
 # for VS Code
 .vscode/
 
@@ -47,3 +50,12 @@ compile_commands.json
 /scripts/rpmbuild/SRPMS/*
 
 !/xmake/actions/build/
+
+# for linux driver
+*.o
+*.ko
+*.mod
+.*.cmd
+*.mod.c
+Module.symvers
+modules.order

@@ -15,7 +15,7 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      OpportunityLiu
+-- @author      OpportunityLiu, ruki
 -- @file        serialize.lua
 --
 
@@ -24,6 +24,7 @@ local serialize  = serialize or {}
 local stub       = serialize._stub or {}
 serialize._stub  = stub
 serialize._dump  = serialize._dump or string._dump or string.dump
+serialize._BCTAG = xmake._LUAJIT and "\27LJ" or "\27Lua"
 
 -- load modules
 local math      = require("base/math")
@@ -123,7 +124,8 @@ function serialize._maketable(obj, opt, level, pathsegs, reftab)
         local sformat = opt.indentstr and "[%q] = %s" or "[%q]=%s"
         local nformat = opt.indentstr and "[%s] = %s" or "[%s]=%s"
         local keywords = serialize._keywords()
-        for k, v in pairs(serialized) do
+        local makepairs = opt.orderkeys and table.orderpairs or pairs
+        for k, v in makepairs(serialized) do
             local format
             -- serialize key
             if type(k) == "string" then
@@ -169,7 +171,7 @@ function serialize._resolvefunction(root, fenv, bytecode)
     if type(bytecode) ~= "string" then
         return nil, string.format("invalid bytecode (string expected, got %s)", type(bytecode))
     end
-    if not bytecode:startswith("\27LJ") then
+    if not bytecode:startswith(serialize._BCTAG) then
         return nil, "cannot load incompatible bytecode"
     end
 
@@ -235,7 +237,12 @@ function serialize._make(obj, opt)
     -- call make* by type
     if type(obj) == "string" then
         return serialize._makestring(obj, opt)
-    elseif type(obj) == "boolean" or type(obj) == "nil" or type(obj) == "number" then
+    elseif type(obj) == "boolean" or type(obj) == "nil" then
+        return serialize._makedefault(obj, opt)
+    elseif type(obj) == "number" then
+        if math.isnan(obj) then -- fix nan for lua 5.3, -nan(ind)
+            return "nan"
+        end
         return serialize._makedefault(obj, opt)
     elseif type(obj) == "table" then
         return serialize._maketable(obj, opt)
@@ -316,7 +323,7 @@ function serialize.save(obj, opt)
     end
 
     -- binary mode
-    local func, lerr = loadstring("return " .. result, "=")
+    local func, lerr = load("return " .. result, "=")
     if lerr ~= nil then
         return nil, lerr
     end
@@ -424,7 +431,7 @@ function serialize._load(str)
 
     -- load table as script
     local result = nil
-    local binary = str:startswith("\27LJ")
+    local binary = str:startswith(serialize._BCTAG)
     if not binary then
         str = "return " .. str
     end

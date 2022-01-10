@@ -60,11 +60,19 @@
 
 ## 简介
 
-xmake 是一个基于 Lua 的轻量级跨平台构建工具，使用 xmake.lua 维护项目构建，相比 makefile/CMakeLists.txt，配置语法更加简洁直观，对新手非常友好，短时间内就能快速入门，能够让用户把更多的精力集中在实际的项目开发上。
+Xmake 是一个基于 Lua 的轻量级跨平台构建工具。
 
-虽然，简单易用是 xmake 的一大特色，但 xmake 的功能也是非常强大的，既能够像 Make/Ninja 那样可以直接编译项目，也可以像 CMake/Meson 那样生成工程文件，还有内置的包管理系统来帮助用户解决 C/C++依赖库的集成使用问题。
+它非常的轻量，没有任何依赖，因为它内置了 Lua 运行时。
 
-目前，xmake主要用于C/C++项目的构建，但是同时也支持其他native语言的构建，可以实现跟C/C++进行混合编译，同时编译速度也是非常的快，可以跟Ninja持平。
+它使用 xmake.lua 维护项目构建，相比 makefile/CMakeLists.txt，配置语法更加简洁直观，对新手非常友好，短时间内就能快速入门，能够让用户把更多的精力集中在实际的项目开发上。
+
+我们能够使用它像 Make/Ninja 那样可以直接编译项目，也可以像 CMake/Meson 那样生成工程文件，另外它还有内置的包管理系统来帮助用户解决 C/C++ 依赖库的集成使用问题。
+
+目前，Xmake 主要用于 C/C++ 项目的构建，但是同时也支持其他 native 语言的构建，可以实现跟 C/C++ 进行混合编译，同时编译速度也是非常的快，可以跟 Ninja 持平。
+
+```
+Xmake = Build backend + Project Generator + Package Manager
+```
 
 如果你想要了解更多，请参考：[在线文档](https://xmake.io/#/zh-cn/getting_started), [Github](https://github.com/xmake-io/xmake)以及[Gitee](https://gitee.com/tboox/xmake)，同时也欢迎加入我们的 [社区](https://xmake.io/#/zh-ch/about/contact).
 
@@ -185,6 +193,20 @@ $ xmake f --menu
 * Apt on ubuntu/debian (apt::zlib1g-dev)
 * Clib (clib::clibs/bytes@0.0.4)
 * Dub (dub::log 0.4.3)
+* Portage on Gentoo/Linux (portage::libhandy)
+* Nimble for nimlang (nimble::zip >1.3)
+* Cargo for rust (cargo::base64 0.13.0)
+
+### 包管理特性
+
+* 官方仓库提供近 500+ 常用包，真正做到全平台一键下载集成编译
+* 全平台包支持，支持交叉编译的依赖包集成
+* 支持包虚拟环境管理和加载，`xrepo env shell`
+* Windows 云端预编译包加速
+* 支持自建包仓库，私有仓库部署
+* 第三方包仓库支持，提供更加丰富的包源，例如：vcpkg, conan, conda 等等
+* 支持自动拉取使用云端工具链
+* 支持包依赖锁定
 
 ## 支持平台
 
@@ -207,7 +229,7 @@ $ xmake f --menu
 ```bash
 $ xmake show -l toolchains
 xcode         Xcode IDE
-vs            VisualStudio IDE
+msvc          Microsoft Visual C/C++ Compiler
 yasm          The Yasm Modular Assembler
 clang         A C language family frontend for LLVM
 go            Go Programming Language Compiler
@@ -230,7 +252,13 @@ tinycc        Tiny C Compiler
 emcc          A toolchain for compiling to asm.js and WebAssembly
 icc           Intel C/C++ Compiler
 ifort         Intel Fortran Compiler
-muslcc        The musl-based cross-compilation toolchains
+muslcc        The musl-based cross-compilation toolchain
+fpc           Free Pascal Programming Language Compiler
+wasi          WASI-enabled WebAssembly C/C++ toolchain
+nim           Nim Programming Language Compiler
+circle        A new C++20 compiler
+armcc         ARM Compiler Version 5 of Keil MDK
+armclang      ARM Compiler Version 6 of Keil MDK
 ```
 
 ## 支持语言
@@ -246,38 +274,43 @@ muslcc        The musl-based cross-compilation toolchains
 * Cuda
 * Zig
 * Vala
+* Pascal
+* Nim
 
 ## 支持特性
 
-* 简洁的配置语法
-* 直接构建支持，不依赖任何第三方后端 make 工具
-* 跨平台支持，不同平台可方便快速地切换
-* 交叉编译支持，智能分析交叉工具链信息
-* 多任务并行编译支持
-* C++20 Module-TS 支持
-* 支持跨平台的 C/C++ 依赖包快速集成
-* 自建分布式包仓库，支持安装云端预编译包
-* 第三方包仓库支持，例如：vcpkg, conan, conda 等等
+* 语法简单易上手
+* 快速安装，无任何依赖
+* 全平台一键编译
+* 支持交叉编译，智能分析交叉工具链信息
+* 极速，多任务并行编译支持
+* C++20 Module 支持
+* 支持跨平台的 C/C++ 依赖包快速集成，内置包管理器
 * 多语言混合编译支持
-* 灵活的 lua 脚本，丰富的扩展模块，可实现高度定制化
-* 丰富的插件支持，内置 vs/cmake/makefile/compile_commands 等生成插件
+* 丰富的插件支持，提供各种工程生成器，例如：vs/makefile/cmakelists/compile_commands 生成插件
 * REPL 交互式执行支持
 * 增量编译支持，头文件依赖自动分析
 * 工具链的快速切换、定制化支持
-* 自动拉取工具链以及依赖包的快速整合
+* 丰富的扩展模块支持
 
 ## 工程类型
 
 * 静态库程序
 * 动态库类型
 * 控制台程序
-* Cuda程序
-* Qt应用程序
-* WDK驱动程序
-* WinSDK应用程序
-* MFC应用程序
-* iOS/MacOS应用程序
+* Cuda 程序
+* Qt 应用程序
+* WDK Windows 驱动程序
+* WinSDK 应用程序
+* MFC 应用程序
+* iOS/MacOS 应用程序（支持.metal）
 * Framework和Bundle程序（iOS/MacOS）
+* SWIG 模块 (Lua, python, ...)
+* Luarocks 模块
+* Protobuf 程序
+* Lex/yacc 程序
+* C++20 模块
+* Linux 内核驱动模块
 
 ## 更多例子
 
@@ -437,11 +470,11 @@ target("test")
 
 ## 插件
 
-#### 生成IDE工程文件插件（makefile, vs2002 - vs2019, ...）
+#### 生成IDE工程文件插件（makefile, vs2002 - vs2022, ...）
 
 ```bash
-$ xmake project -k vsxmake -m "debug;release" # 新版vs工程生成插件（推荐）
-$ xmake project -k vs -m "debug;release"
+$ xmake project -k vsxmake -m "debug,release" # 新版vs工程生成插件（推荐）
+$ xmake project -k vs -m "debug,release"
 $ xmake project -k cmake
 $ xmake project -k ninja
 $ xmake project -k compile_commands
@@ -483,13 +516,17 @@ $ xmake l
 
 * [xmake.vim](https://github.com/luzhlon/xmake.vim) (third-party, thanks [@luzhlon](https://github.com/luzhlon))
 
+* [xmake-visualstudio](https://github.com/HelloWorld886/xmake-visualstudio) (third-party, thanks [@HelloWorld886](https://github.com/HelloWorld886))
+
+* [xmake-qtcreator](https://github.com/Arthapz/xmake-project-manager) (third-party, thanks [@Arthapz](https://github.com/Arthapz))
+
 ### XMake Gradle插件 (JNI)
 
 我们也可以在Gradle中使用[xmake-gradle](https://github.com/xmake-io/xmake-gradle)插件来集成编译JNI库
 
 ```
 plugins {
-  id 'org.tboox.gradle-xmake-plugin' version '1.1.4'
+  id 'org.tboox.gradle-xmake-plugin' version '1.1.5'
 }
 
 android {

@@ -27,7 +27,7 @@ rule("win.sdk.resource")
 rule("win.sdk.application")
 
     -- before load
-    before_load(function (target)
+    on_load(function (target)
         target:set("kind", "binary")
     end)
 

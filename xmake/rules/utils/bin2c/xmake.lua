@@ -20,10 +20,17 @@
 
 rule("utils.bin2c")
     set_extensions(".bin")
+    on_load(function (target)
+        local headerdir = path.join(target:autogendir(), "rules", "utils", "bin2c")
+        if not os.isdir(headerdir) then
+            os.mkdir(headerdir)
+        end
+        target:add("includedirs", headerdir)
+    end)
     before_buildcmd_file(function (target, batchcmds, sourcefile_bin, opt)
 
         -- get header file
-        local headerdir = path.join(target:autogendir(), "rules", "c++", "bin2c")
+        local headerdir = path.join(target:autogendir(), "rules", "utils", "bin2c")
         local headerfile = path.join(headerdir, path.filename(sourcefile_bin) .. ".h")
         target:add("includedirs", headerdir)
 
@@ -36,7 +43,7 @@ rule("utils.bin2c")
             table.insert(argv, "-w")
             table.insert(argv, tostring(linewidth))
         end
-        batchcmds:vrunv(os.programfile(), argv)
+        batchcmds:vrunv(os.programfile(), argv, {envs = {XMAKE_SKIP_HISTORY = "y"}})
 
         -- add deps
         batchcmds:add_depfiles(sourcefile_bin)

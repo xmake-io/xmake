@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.base.hashset")
 import("vstudio.impl.vsinfo", { rootdir = path.directory(os.scriptdir()) })
 import("render")
@@ -167,9 +168,22 @@ function _writefileifneeded(file, content)
         dprint("skipped file %s since the file has the same content", path.relative(file))
         return
     end
-    io.writefile(file, content)
+    -- we need utf8 with bom encoding for unicode
+    -- @see https://github.com/xmake-io/xmake/issues/1689
+    io.writefile(file, content, {encoding = "utf8bom"})
 end
 
+-- save plugin arguments for `plugin.vsxmake.autoupdate`
+-- @see https://github.com/xmake-io/xmake/issues/1895
+function _save_plugin_arguments()
+    local vsxmake_cache = localcache.cache("vsxmake")
+    for _, name in ipairs({"kind", "modes", "archs", "outputdir"}) do
+        vsxmake_cache:set(name, option.get(name))
+    end
+    vsxmake_cache:save()
+end
+
+-- clear configuration cache
 function _clear_cacheconf()
     config.clear()
     config.save()
@@ -188,7 +202,7 @@ function make(version)
         version = tonumber(config.get("vs"))
         if not version then
             return function(outputdir)
-                raise("invalid vs version, run `xmake f --vs=201x`")
+                raise("invalid vs version, run `xmake f --vs=20xx`")
             end
         end
     end
@@ -233,5 +247,8 @@ function make(version)
 
         -- clear config and local cache
         _clear_cacheconf()
+
+        -- save plugin arguments for autoupdate
+        _save_plugin_arguments()
     end
 end

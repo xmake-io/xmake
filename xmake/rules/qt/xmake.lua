@@ -87,7 +87,20 @@ rule("qt.widgetapp")
     end)
 
     on_config(function (target)
-        import("load")(target, {gui = true, frameworks = {"QtGui", "QtWidgets", "QtCore"}})
+        
+        -- get qt sdk version
+        local qt = target:data("qt")
+        local qt_sdkver = nil
+        if qt.sdkver then
+            import("core.base.semver")
+            qt_sdkver = semver.new(qt.sdkver)
+        end
+
+        local frameworks = {"QtGui", "QtWidgets", "QtCore"}
+        if qt_sdkver and qt_sdkver:lt("5.0") then
+            frameworks = {"QtGui", "QtCore"} -- qt4.x has not QtWidgets, it is in QtGui
+        end
+        import("load")(target, {gui = true, frameworks = frameworks})
     end)
 
     -- deploy application
@@ -124,9 +137,12 @@ rule("qt.widgetapp_static")
             QtPlatformSupport = "QtPlatformCompositorSupport"
         end
 
-        -- laod some basic plugins and frameworks
+        -- load some basic plugins and frameworks
         local plugins = {}
         local frameworks = {"QtGui", "QtWidgets", "QtCore"}
+        if qt_sdkver and qt_sdkver:lt("5.0") then
+            frameworks = {"QtGui", "QtCore"} -- qt4.x has not QtWidgets, it is in QtGui
+        end
         if target:is_plat("macosx") then
             plugins.QCocoaIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qcocoa", "cups"}}
             table.join2(frameworks, QtPlatformSupport, "QtWidgets")
@@ -195,7 +211,7 @@ rule("qt.quickapp_static")
             QtPlatformSupport = "QtPlatformCompositorSupport"
         end
 
-        -- laod some basic plugins and frameworks
+        -- load some basic plugins and frameworks
         local plugins = {}
         local frameworks = {"QtGui", "QtQuick", "QtQml", "QtQmlModels", "QtCore", "QtNetwork"}
         if target:is_plat("macosx") then

@@ -25,6 +25,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.package.repository")
 import("devel.git")
+import("net.proxy")
 import("private.async.runjobs")
 import("private.action.require.impl.environment")
 
@@ -45,7 +46,8 @@ function _add(name, url, branch, is_global)
 
     -- clone repository
     if not os.isdir(url) then
-        git.clone(url, {verbose = option.get("verbose"), branch = branch or "master", outputdir = repodir})
+        local remoteurl = proxy.mirror(url) or url
+        git.clone(remoteurl, {verbose = option.get("verbose"), branch = branch or "master", outputdir = repodir})
     end
 
     -- trace
@@ -117,7 +119,8 @@ function _update()
                     vprint("cloning repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
 
                     -- clone it
-                    git.clone(repo:url(), {verbose = option.get("verbose"), branch = repo:branch() or "master", outputdir = repodir})
+                    local remoteurl = proxy.mirror(repo:url()) or repo:url()
+                    git.clone(remoteurl, {verbose = option.get("verbose"), branch = repo:branch() or "master", outputdir = repodir})
 
                     -- mark as updated
                     io.save(path.join(repodir, "updated"), {})

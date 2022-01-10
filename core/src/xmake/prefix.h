@@ -32,9 +32,15 @@
 #   define LUA_API extern "C"
 #   define LUALIB_API	LUA_API
 #endif
-#include "luajit.h"
-#include "lualib.h"
-#include "lauxlib.h"
+#ifdef USE_LUAJIT
+#   include "luajit.h"
+#   include "lualib.h"
+#   include "lauxlib.h"
+#else
+#   include "lua.h"
+#   include "lualib.h"
+#   include "lauxlib.h"
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private interfaces
@@ -107,6 +113,22 @@ static __tb_inline__ tb_pointer_t xm_lua_topointer(lua_State* lua, tb_int_t idx)
     return lua_touserdata(lua, idx);
 }
 #endif
+
+static __tb_inline__ tb_void_t xm_lua_register(lua_State *lua, tb_char_t const* libname, luaL_Reg const* l)
+{
+#if LUA_VERSION_NUM >= 504
+    lua_getglobal(lua, libname);
+    if (lua_isnil(lua, -1))
+    {
+        lua_pop(lua, 1);
+        lua_newtable(lua);
+    }
+    luaL_setfuncs(lua, l, 0);
+    lua_setglobal(lua, libname);
+#else
+    luaL_register(lua, libname, l);
+#endif
+}
 
 #endif
 

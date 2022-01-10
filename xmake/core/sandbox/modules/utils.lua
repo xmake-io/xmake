@@ -55,10 +55,10 @@ function sandbox_utils._print(...)
     end
 
     -- print multi-variables with raw lua action
-    utils._print(unpack(args))
+    utils._print(table.unpack(args))
 
     -- write to the log file
-    log:printv(unpack(args))
+    log:printv(table.unpack(args))
 end
 
 -- print format string with newline
@@ -75,7 +75,7 @@ function sandbox_utils.print(format, ...)
         {
             function ()
                 -- attempt to format message
-                local message = vformat(format, unpack(args))
+                local message = vformat(format, table.unpack(args))
 
                 -- trace
                 utils._print(message)
@@ -87,7 +87,7 @@ function sandbox_utils.print(format, ...)
             {
                 function (errors)
                     -- print multi-variables with raw lua action
-                    sandbox_utils._print(format, unpack(args))
+                    sandbox_utils._print(format, table.unpack(args))
                 end
             }
         }

@@ -27,7 +27,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("core.theme.theme")
-import("private.utils.progress")
+import("utils.progress")
 import("build")
 import("build_files")
 import("cleaner")
@@ -92,6 +92,16 @@ function _do_project_rules(scriptname, opt)
     end
 end
 
+-- do build
+function _do_build(targetname, group_pattern)
+    local sourcefiles = option.get("files")
+    if sourcefiles then
+        build_files(targetname, group_pattern, sourcefiles)
+    else
+        build(targetname, group_pattern)
+    end
+end
+
 -- main
 function main()
 
@@ -106,10 +116,14 @@ function main()
     -- lock the whole project
     project.lock()
 
-    -- get the target name
-    local targetname = option.get("target")
-
     -- config it first
+    local targetname
+    local group_pattern = option.get("group")
+    if group_pattern then
+        group_pattern = "^" .. path.pattern(group_pattern) .. "$"
+    else
+        targetname = option.get("target")
+    end
     task.run("config", {target = targetname}, {disable_dump = true})
 
     -- enter project directory
@@ -126,12 +140,7 @@ function main()
             _do_project_rules("build_before")
 
             -- do build
-            local sourcefiles = option.get("files")
-            if sourcefiles then
-                build_files(targetname, sourcefiles)
-            else
-                build(targetname)
-            end
+            _do_build(targetname, group_pattern)
         end,
 
         catch
@@ -144,6 +153,8 @@ function main()
                 -- raise
                 if errors then
                     raise(errors)
+                elseif group_pattern then
+                    raise("build targets with group(%s) failed!", group_pattern)
                 elseif targetname then
                     raise("build target: %s failed!", targetname)
                 else

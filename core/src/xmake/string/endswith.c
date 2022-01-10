@@ -48,7 +48,6 @@ tb_int_t xm_string_endswith(lua_State* lua)
     // string:endswith(suffix)?
     lua_pushboolean(lua, string_size >= suffix_size && !tb_strcmp(string + string_size - suffix_size, suffix));
 
-
     // ok
     return 1;
 }

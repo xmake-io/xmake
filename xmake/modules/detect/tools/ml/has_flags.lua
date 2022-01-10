@@ -61,12 +61,21 @@ function _check_try_running(flags, opt)
     -- make an stub source file
     local sourcefile = path.join(os.tmpdir(), "detect", "ml_has_flags.asm")
     if not os.isfile(sourcefile) then
-        io.writefile(sourcefile, ".code\nend")
+        io.writefile(sourcefile, [[
+ifndef X64
+.686p
+.model flat, C
+endif
+.code
+end]])
     end
 
     -- check it
     local errors = nil
     return try  {   function ()
+                        if opt.program:find("ml64", 1, true) then
+                            table.insert(flags, "-DX64")
+                        end
                         local _, errs = os.iorunv(opt.program, table.join("-c", "-nologo", flags, "-Fo" .. os.nuldev(), sourcefile), {envs = opt.envs})
                         if errs and #errs:trim() > 0 then
                             return false, errs

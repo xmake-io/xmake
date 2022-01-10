@@ -37,7 +37,6 @@ toolchain("emcc")
     set_toolset("ld", "em++" .. suffix, "emcc" .. suffix)
     set_toolset("sh", "em++" .. suffix, "emcc" .. suffix)
     set_toolset("ar", "emar" .. suffix)
-    set_toolset("ex", "emar" .. suffix)
     set_toolset("as", "emcc" .. suffix)
 
     -- check toolchain

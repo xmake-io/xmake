@@ -32,7 +32,7 @@ rule("xcode.info_plist")
         import("core.theme.theme")
         import("core.project.depend")
         import("core.tool.toolchain")
-        import("private.utils.progress")
+        import("utils.progress")
 
         -- check
         assert(path.filename(sourcefile) == "Info.plist", "we only support Info.plist file!")

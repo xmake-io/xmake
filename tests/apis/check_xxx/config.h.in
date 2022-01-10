@@ -1,6 +1,5 @@
 ${define HAS_STRING_H}
 ${define HAS_STRING_AND_STDIO_H}
-${define HAS_WCHAR}
 ${define HAS_WCHAR_AND_FLOAT}
 ${define HAS_PTHREAD}
 ${define HAS_STATIC_ASSERT}
@@ -8,3 +7,20 @@ ${define HAS_SETJMP}
 ${define HAS_CONSTEXPR}
 ${define HAS_CONSEXPR_AND_STATIC_ASSERT}
 ${define HAS_SSE2}
+${define HAS_LONG_8}
+${define HAS_CXX_STD_98}
+${define HAS_CXX_STD_11}
+${define HAS_CXX_STD_14}
+${define HAS_CXX_STD_17}
+${define HAS_CXX_STD_20}
+${define HAS_C_STD_89}
+${define HAS_C_STD_99}
+${define HAS_C_STD_11}
+${define HAS_C_STD_17}
+${define HAS_GCC}
+${define HAS_CXX20}
+${define NO_GCC}
+${define PTR_SIZE}
+${define HAVE_VISIBILITY}
+${define CUSTOM_ASSERT}
+#define HAS_WCHAR ${default HAS_WCHAR 0}

@@ -115,7 +115,16 @@ xmake_C_FILES 			+= \
 						readline/readline \
 						readline/history_list \
 						readline/add_history \
-						readline/clear_history
+						readline/clear_history \
+						libc/malloc \
+						libc/free \
+						libc/memset \
+						libc/memcpy \
+						libc/dataptr \
+						libc/byteof \
+						libc/setbyte \
+						libc/strndup \
+						tty/term_mode
 
 iswin =
 ifeq ($(PLAT),windows)
@@ -137,7 +146,8 @@ xmake_C_FILES 			+= \
 						winos/logical_drives \
 						winos/registry_keys \
 						winos/registry_values \
-						winos/registry_query
+						winos/registry_query \
+						winos/short_path
 endif
 
 # flags
@@ -149,9 +159,17 @@ xmake_CXFLAGS 	   	    += $(if $(findstring curses,$(base_LIBNAMES)),-DXM_CONFIG
 xmake_INC_DIRS 		    += \
 						../tbox/tbox/src \
 						../tbox/inc/$(PLAT) \
-						../luajit/luajit/src \
                         ../sv/sv/include
-
+ifeq ($(RUNTIME),luajit)
+xmake_INC_DIRS 			+= ../luajit/luajit/src
+xmake_CXFLAGS 			+= -DUSE_LUAJIT
+endif
+ifeq ($(RUNTIME),lua)
+xmake_INC_DIRS 			+= ../lua/lua
+xmake_CXFLAGS 			+= -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_3
+endif
+xmake_CXFLAGS 			+= -DXM_CONFIG_VERSION_BRANCH="\"$(BRANCH)\""
+xmake_CXFLAGS 			+= -DXM_CONFIG_VERSION_COMMIT="\"$(COMMIT)\""
 
 # suffix
 include $(PRO_DIR)/suffix.mak

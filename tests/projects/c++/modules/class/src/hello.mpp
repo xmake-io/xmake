@@ -5,7 +5,6 @@ export namespace hello {
     public:
         say(int data);
         void hello();
-    
     private:
         int data_;
     };

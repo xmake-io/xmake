@@ -8,6 +8,7 @@ if has_config("foo") then
     set_configvar("FOO_ENABLE", 1)
     set_configvar("FOO_ENABLE2", false)
     set_configvar("FOO_STRING", get_config("foo"))
+    set_configvar("FOO_DEFINE", get_config("foo"), {quote = false})
 end
 
 option("foo2")

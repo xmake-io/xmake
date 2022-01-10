@@ -102,6 +102,11 @@ function _find_intel_on_windows(opt)
     -- find iclvars_bat.bat
     local paths = {"$(env ICPP_COMPILER20)"}
     local iclvars_bat = find_file("bin/iclvars.bat", paths)
+    -- look for setvars.bat which is new in 2021
+    if not iclvars_bat then
+        paths = {"$(env ICPP_COMPILER21)"}
+        iclvars_bat = find_file("../../../setvars.bat", paths)
+    end
     if iclvars_bat then
 
         -- load iclvars_bat
@@ -122,6 +127,22 @@ function _find_intel_on_linux(opt)
     if icc then
         local sdkdir = path.directory(path.directory(icc))
         return {sdkdir = sdkdir, bindir = path.directory(icc), path.join(sdkdir, "include"), libdir = path.join(sdkdir, "lib")}
+    end
+
+    -- find it from oneapi sdk directory
+    local oneapi_rootdirs = {"~/intel/oneapi/compiler", "/opt/intel/oneapi/compiler"}
+    local arch = os.arch() == "x86_64" and "intel64" or "ia32"
+    paths = {}
+    for _, rootdir in ipairs(oneapi_rootdirs) do
+        table.insert(paths, path.join(rootdir, "*", is_host("macosx") and "mac" or "linux", "bin", arch))
+    end
+    if #paths > 0 then
+        local icc = find_file("icc", paths)
+        if icc then
+            local bindir = path.directory(icc)
+            local sdkdir = path.directory(path.directory(bindir))
+            return {sdkdir = sdkdir, bindir = bindir, libdir = path.join(sdkdir, "compiler", "lib", arch)}
+        end
     end
 end
 

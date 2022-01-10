@@ -23,9 +23,10 @@ import("core.base.bytes")
 import("core.base.option")
 
 local options = {
-    {'w', "linewidth",  "kv", nil, "Set the line width"},
-    {'i', "binarypath", "kv", nil, "Set the binary file path."},
-    {'o', "outputpath", "kv", nil, "Set the output file path."}
+    {'w', "linewidth",  "kv", nil,   "Set the line width"},
+    {nil, "nozeroend",  "k",  false, "Disable to patch zero terminating character"},
+    {'i', "binarypath", "kv", nil,   "Set the binary file path."},
+    {'o', "outputpath", "kv", nil,   "Set the output file path."}
 }
 
 function _do_dump(binarydata, outputfile, opt)
@@ -84,7 +85,9 @@ function _do_bin2c(binarypath, outputpath, opt)
     local binarydata = bytes(io.readfile(binarypath, {encoding = "binary"}))
     local outputfile = io.open(outputpath, 'w')
     if outputfile then
-        binarydata = binarydata .. bytes('\0')
+        if not opt.nozeroend then
+            binarydata = binarydata .. bytes('\0')
+        end
         _do_dump(binarydata, outputfile, opt)
         outputfile:close()
     end

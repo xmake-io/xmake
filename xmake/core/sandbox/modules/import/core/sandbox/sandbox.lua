@@ -93,6 +93,7 @@ function sandbox_core_sandbox.interactive()
     public_scope["$interactive_dump"] = sandbox_core_sandbox._interactive_dump
     public_scope["$interactive_prompt"] = colors.translate("${color.interactive.prompt}${text.interactive.prompt} ")
     public_scope["$interactive_prompt2"] = colors.translate("${color.interactive.prompt2}${text.interactive.prompt2} ")
+    public_scope["$interactive_setfenv"] = setfenv
 
     -- disable scheduler
     scheduler:enable(false)

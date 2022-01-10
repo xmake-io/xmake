@@ -72,8 +72,12 @@ function main(name)
         cprint("    ${color.dump.string}sourcebatch${clear}(%s): with rule(%s)", sourcebatch.sourcekind, sourcebatch.rulename)
         for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
             cprint("      -> %s", sourcefile)
-            cprint("         ${dim}-> %s", sourcebatch.objectfiles[idx])
-            cprint("         ${dim}-> %s", sourcebatch.dependfiles[idx])
+            if sourcebatch.objectfiles then
+                cprint("         ${dim}-> %s", sourcebatch.objectfiles[idx])
+            end
+            if sourcebatch.dependfiles then
+                cprint("         ${dim}-> %s", sourcebatch.dependfiles[idx])
+            end
         end
     end
 end

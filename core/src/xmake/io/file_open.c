@@ -231,6 +231,11 @@ tb_int_t xm_io_file_open(lua_State* lua)
     else xm_io_return_error(lua, "invalid open mode!");
     tb_assert_and_check_return_val(encoding != XM_IO_FILE_ENCODING_UNKNOWN, 0);
 
+    // write data with utf bom? e.g. utf8bom, utf16lebom, utf16bom
+    tb_bool_t utfbom = tb_false;
+    if (tb_strstr(modestr, "bom"))
+        utfbom = tb_true;
+
     // open file
     tb_bool_t       open_ok = tb_false;
     tb_stream_ref_t file_ref = tb_null;
@@ -293,6 +298,7 @@ tb_int_t xm_io_file_open(lua_State* lua)
     file->mode       = mode;
     file->type       = XM_IO_FILE_TYPE_FILE;
     file->encoding   = encoding;
+    file->utfbom     = utfbom;
 
     // init the read/write line cache buffer
     tb_buffer_init(&file->rcache);

@@ -69,7 +69,7 @@ tb_int_t xm_io_pipe_read(lua_State* lua)
     if (size <= 0)
     {
         lua_pushinteger(lua, -1);
-        lua_pushfstring(lua, "invalid size(%ld)!", size);
+        lua_pushfstring(lua, "invalid size(%d)!", (tb_int_t)size);
         return 2;
     }
 

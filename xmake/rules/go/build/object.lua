@@ -21,19 +21,13 @@
 -- imports
 import("core.base.option")
 import("core.base.hashset")
-import("core.theme.theme")
 import("core.tool.compiler")
 import("core.project.depend")
+import("utils.progress")
 
 -- build the source files
 function main(target, sourcebatch, opt)
-
-    -- is verbose?
-    local verbose = option.get("verbose")
-
-    -- get progress range
-    local progress = assert(opt.progress, "no progress!")
-
+    
     -- get source files and kind
     local sourcefiles = sourcebatch.sourcefiles
     local sourcekind  = sourcebatch.sourcekind
@@ -72,18 +66,11 @@ function main(target, sourcebatch, opt)
 
     -- trace progress info
     for index, sourcefile in ipairs(sourcefiles) do
-        local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
-        if verbose then
-            cprint(progress_prefix .. "${dim color.build.object}compiling.$(mode) %s", progress, sourcefile)
-        else
-            cprint(progress_prefix .. "${color.build.object}compiling.$(mode) %s", progress, sourcefile)
-        end
+        progress.show(opt.progress, "${color.build.object}compiling.$(mode) %s", sourcefile)
     end
 
     -- trace verbose info
-    if verbose then
-        print(compinst:compcmd(sourcefiles, objectfile, {compflags = compflags}))
-    end
+    vprint(compinst:compcmd(sourcefiles, objectfile, {compflags = compflags}))
 
     -- compile it
     dependinfo.files = {}

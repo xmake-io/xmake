@@ -79,12 +79,7 @@ function main(name, opt)
     end
     _g._checking = nil
 
-    -- no features?
     result = result or {}
-
-    -- save result to cache
     results[key] = result
-
-    -- ok?
     return result
 end

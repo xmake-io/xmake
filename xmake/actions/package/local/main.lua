@@ -24,7 +24,7 @@ import("core.base.task")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
-import("lib.luajit.bit")
+import("core.base.bit")
 
 -- get link deps
 function _get_linkdeps(target)
@@ -32,7 +32,6 @@ function _get_linkdeps(target)
     for _, depname in ipairs(target:get("deps")) do
         local dep = project.target(depname)
         if not ((target:is_binary() or target:is_shared()) and dep:is_static()) then
-            table.join2(linkdeps, _get_linkdeps(dep))
             table.insert(linkdeps, dep:name())
         end
     end
@@ -156,18 +155,84 @@ function _package_library(target)
         end
         file:print("")
         file:print([[
+    add_configs("shared", {description = "Build shared library.", default = %s, type = "boolean", readonly = true})
+
     on_load(function (package)
         package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
     end)
 
     on_fetch(function (package)
         local result = {}
+        local libfiledir = (package:config("shared") and package:is_plat("windows", "mingw")) and "bin" or "lib"
         result.links = "%s"
         result.linkdirs = package:installdir("lib")
         result.includedirs = package:installdir("include")
+        result.libfiles = path.join(package:installdir(libfiledir), "%s")
         return result
-    end)]], target:linkname(),
+    end)]], target:is_shared() and "true" or "false",
+            target:linkname(),
             path.filename(targetfile))
+        file:close()
+    end
+
+    -- show tips
+    print("package(%s): %s generated", packagename, packagedir)
+end
+
+-- package headeronly library
+function _package_headeronly(target)
+
+    -- get the output directory
+    local outputdir   = option.get("outputdir") or config.buildir()
+    local packagename = target:name():lower()
+    if #packagename > 1 and bit.band(packagename:byte(2), 0xc0) == 0x80 then
+        wprint("package(%s): cannot generate package, becauese it contains unicode characters!", packagename)
+        return
+    end
+    local packagedir  = path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
+    local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
+
+    -- copy headers
+    local srcheaders, dstheaders = target:headerfiles(headerdir)
+    if srcheaders and dstheaders then
+        local i = 1
+        for _, srcheader in ipairs(srcheaders) do
+            local dstheader = dstheaders[i]
+            if dstheader then
+                os.vcp(srcheader, dstheader)
+            end
+            i = i + 1
+        end
+    end
+
+    -- generate xmake.lua
+    local file = io.open(path.join(packagedir, "xmake.lua"), "w")
+    if file then
+        local deps = _get_linkdeps(target)
+        file:print("package(\"%s\")", packagename)
+        local homepage = option.get("homepage")
+        if homepage then
+            file:print("    set_homepage(\"%s\")", homepage)
+        end
+        local description = option.get("description") or ("The " .. packagename .. " package")
+        file:print("    set_description(\"%s\")", description)
+        if target:license() then
+            file:print("    set_license(\"%s\")", target:license())
+        end
+        if #deps > 0 then
+            file:print("    add_deps(\"%s\")", table.concat(deps, "\", \""))
+        end
+        file:print("")
+        file:print([[
+    on_load(function (package)
+        package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
+    end)
+
+    on_fetch(function (package)
+        local result = {}
+        result.includedirs = package:installdir("include")
+        return result
+    end)]])
         file:close()
     end
 
@@ -180,9 +245,10 @@ function _do_package_target(target)
     if not target:is_phony() then
         local scripts =
         {
-            binary = _package_binary
-        ,   static = _package_library
-        ,   shared = _package_library
+            binary     = _package_binary
+        ,   static     = _package_library
+        ,   shared     = _package_library
+        ,   headeronly = _package_headeronly
         }
         local kind = target:kind()
         assert(scripts[kind], "this target(%s) with kind(%s) can not be packaged!", target:name(), kind)

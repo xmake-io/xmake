@@ -70,6 +70,15 @@ function sandbox_winos.registry_values(keypath)
     return values
 end
 
+-- get short path
+function sandbox_winos.short_path(long_path)
+    local short_path, errors = winos.short_path(long_path)
+    if not short_path then
+        raise(errors)
+    end
+    return short_path
+end
+
 -- return module
 return sandbox_winos
 

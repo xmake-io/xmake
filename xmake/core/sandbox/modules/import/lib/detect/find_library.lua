@@ -38,7 +38,7 @@ local find_file         = import("lib.detect.find_file")
 -- @param paths     the search paths
 -- @param opt       the options, e.g. {kind = "static/shared", suffixes = {"/aa", "/bb"}}
 --
--- @return          {kind = "static", link = "crypto", linkdir = "/usr/local/lib", filename = "libcrypto.a"}
+-- @return          {kind = "static", link = "crypto", linkdir = "/usr/local/lib", filename = "libcrypto.a", plat = ..}
 --
 -- @code
 --
@@ -54,24 +54,26 @@ function sandbox_lib_detect_find_library.main(names, paths, opt)
         return
     end
 
-    -- init options
-    opt = opt or {}
-
-    -- init kinds
-    local kinds = opt.kind or {"static", "shared"}
-
     -- find library file from the given paths
+    opt = opt or {}
+    local kinds = opt.kind or {"static", "shared"}
     for _, name in ipairs(table.wrap(names)) do
         for _, kind in ipairs(table.wrap(kinds)) do
-            local filepath = find_file(target.filename(name, kind), paths, opt)
-            if not filepath then
-                -- for the mingw/cross platform, it is compatible with the libxxx.a and xxx.lib
-                local formats = {static = "lib$(name).a", shared = "lib$(name).so"}
-                filepath = find_file(target.filename(name, kind, {format = formats[kind]}), paths, opt)
+            local filepath = find_file(target.filename(name, kind, {plat = opt.plat}), paths, opt)
+            if opt.plat == "mingw" then
+                if not filepath and kind == "shared" then
+                    -- for implib/mingw, e.g. libxxx.dll.a
+                    filepath = find_file(target.filename(name, kind, {plat = opt.plat}) .. ".a", paths, opt)
+                end
+                if not filepath then
+                    -- in order to be compatible with mingw/windows library with .lib
+                    filepath = find_file(target.filename(name, kind, {plat = "windows"}), paths, opt)
+                end
             end
             if filepath then
                 local filename = path.filename(filepath)
-                return {kind = kind, filename = filename, linkdir = path.directory(filepath), link = target.linkname(filename)}
+                local linkname = target.linkname(filename, {plat = opt.plat})
+                return {kind = kind, filename = filename, linkdir = path.directory(filepath), link = linkname}
             end
         end
     end

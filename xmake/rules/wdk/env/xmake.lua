@@ -22,7 +22,7 @@
 rule("wdk.env")
 
     -- before load
-    before_load(function (target)
+    on_load(function (target)
 
         -- imports
         import("os.winver", {alias = "os_winver"})

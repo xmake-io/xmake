@@ -68,7 +68,7 @@ function _api_add_cfunc(interp, module, alias, links, includes, func)
     end
 
     -- save the current scope
-    local scope = interp:scope_save()
+    interp:api_builtin_save_scope()
 
     -- check option
     interp:api_call("option", name)
@@ -78,7 +78,7 @@ function _api_add_cfunc(interp, module, alias, links, includes, func)
     if includes then interp:api_call("add_cincludes", includes) end
 
     -- restore the current scope
-    interp:scope_restore(scope)
+    interp:api_builtin_restore_scope()
 
     -- add this option
     interp:api_call("add_options", name)
@@ -120,7 +120,7 @@ function _api_add_cxxfunc(interp, module, alias, links, includes, func)
     end
 
     -- save the current scope
-    local scope = interp:scope_save()
+    interp:api_builtin_save_scope()
 
     -- check option
     interp:api_call("option", name)
@@ -130,7 +130,7 @@ function _api_add_cxxfunc(interp, module, alias, links, includes, func)
     if includes then interp:api_call("add_cxxincludes", includes) end
 
     -- restore the current scope
-    interp:scope_restore(scope)
+    interp:api_builtin_restore_scope()
 
     -- add this option
     interp:api_call("add_options", name)

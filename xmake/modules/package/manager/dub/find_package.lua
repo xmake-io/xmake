@@ -30,7 +30,7 @@ import("lib.detect.find_file")
 -- find package using the dub package manager
 --
 -- @param name  the package name
--- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
+-- @param opt   the options, e.g. {verbose = true, require_version = "1.12.x")
 --
 function main(name, opt)
 
@@ -67,7 +67,7 @@ function main(name, opt)
         if pkgdir then
             local links = {}
             for _, libraryfile in ipairs(os.files(path.join(pkgdir, libpattern))) do
-                table.insert(links, target.linkname(path.filename(libraryfile)))
+                table.insert(links, target.linkname(path.filename(libraryfile), {plat = opt.plat}))
             end
             local includedirs = {}
             local dubjson = path.join(pkgdir, "dub.json")
