@@ -414,13 +414,13 @@ function _instance:add(name, ...)
     self:_invalidate()
 end
 
--- remove the value to the option info
+-- remove the value to the option info (deprecated)
 function _instance:del(name, ...)
     self._INFO:apival_del(name, ...)
     self:_invalidate()
 end
 
--- remove the value to the option info (deprecated)
+-- remove the value to the option info
 function _instance:remove(name, ...)
     self._INFO:apival_remove(name, ...)
     self:_invalidate()
@@ -452,6 +452,11 @@ end
 -- get the option name
 function _instance:name()
     return self._NAME
+end
+
+-- get the option description
+function _instance:description()
+    return self:get("description") or ("The " .. self:name() .. " option")
 end
 
 -- get the cache key

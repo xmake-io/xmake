@@ -1161,15 +1161,15 @@ function project.menu()
 
                 -- append it
                 local longname = name
-                local descriptions = opt:get("description")
-                if descriptions then
+                local description = opt:description()
+                if description then
 
                     -- define menu option
-                    local menu_options = {nil, longname, "kv", default, descriptions}
+                    local menu_options = {nil, longname, "kv", default, description}
 
                     -- handle set_description("xx", "xx")
-                    if type(descriptions) == "table" then
-                        for i, description in ipairs(descriptions) do
+                    if type(description) == "table" then
+                        for i, description in ipairs(description) do
                             menu_options[4 + i] = description
                         end
                     end
