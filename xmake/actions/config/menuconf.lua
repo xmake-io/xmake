@@ -323,7 +323,7 @@ function app:_project_configs(cache)
         local kind = (type(default) == "string") and "string" or "boolean"
 
         -- get description
-        local description = opt:get("description")
+        local description = opt:description()
 
         -- get source info
         local sourceinfo = (opt:get("__sourceinfo_description") or {})[type(description) == "table" and description[1] or description]
