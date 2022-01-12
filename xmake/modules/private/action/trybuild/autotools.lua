@@ -221,8 +221,10 @@ function build()
     if not os.isfile("configure") then
         if os.isfile("autogen.sh") then
             os.vexecv("sh", {"./autogen.sh"})
-        elseif os.isfile("configure.ac") then
-            os.vexecv("sh", {"autoreconf", "--install", "--symlink"})
+        elseif os.isfile("configure.ac") or os.isfile("configure.in") then
+            local autoreconf = find_tool("autoreconf")
+            assert(autoreconf, "autoreconf not found!")
+            os.vexecv("sh", {autoreconf.program, "--install", "--symlink"})
         end
     end
 
