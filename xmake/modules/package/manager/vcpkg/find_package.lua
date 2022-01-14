@@ -79,10 +79,11 @@ function _find_package(vcpkgdir, name, opt)
     arch = configurations.arch(arch)
 
     -- get the vcpkg info directories
-    local infodirs = {
-        path.join(opt.installdir, "vcpkg_installed", "vcpkg", "info"),
-        path.join(vcpkgdir, "installed", "vcpkg", "info")
-    }
+    local infodirs = {}
+	if opt.installdir then
+        table.join2(infodirs, path.join(opt.installdir, "vcpkg_installed", "vcpkg", "info"))
+	end
+    table.join2(infodirs, path.join(vcpkgdir, "installed", "vcpkg", "info"))
 
     -- find the package info file, e.g. zlib_1.2.11-3_x86-windows[-static].list
     local triplet = arch .. "-" .. plat

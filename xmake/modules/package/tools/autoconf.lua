@@ -325,8 +325,10 @@ function configure(package, configs, opt)
     if not os.isfile("configure") then
         if os.isfile("autogen.sh") then
             os.vrunv("sh", {"./autogen.sh"}, {envs = autogen_envs(package, opt)})
-        elseif os.isfile("configure.ac") then
-            os.vrunv("sh", {"autoreconf", "--install", "--symlink"}, {envs = autogen_envs(package, opt)})
+        elseif os.isfile("configure.ac") or os.isfile("configure.in") then
+            local autoreconf = find_tool("autoreconf")
+            assert(autoreconf, "autoreconf not found!")
+            os.vrunv("sh", {autoreconf.program, "--install", "--symlink"}, {envs = autogen_envs(package, opt)})
         end
     end
 

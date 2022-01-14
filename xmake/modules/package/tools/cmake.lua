@@ -593,7 +593,16 @@ end
 -- do build for cmake/build
 function _build_for_cmakebuild(package, configs, opt)
     local cmake = assert(find_tool("cmake"), "cmake not found!")
-    os.vrunv(cmake.program, {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
+    local argv = {"--build", os.curdir()}
+    if opt.config then
+        table.insert(argv, "--config")
+        table.insert(argv, opt.config)
+    end
+    if opt.target then
+        table.insert(argv, "--target")
+        table.insert(argv, opt.target)
+    end
+    os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package)})
 end
 
 -- do install for msvc
@@ -662,7 +671,12 @@ end
 function _install_for_cmakebuild(package, configs, opt)
     opt = opt or {}
     local cmake = assert(find_tool("cmake"), "cmake not found!")
-    os.vrunv(cmake.program, {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
+    local argv = {"--build", os.curdir()}
+    if opt.config then
+        table.insert(argv, "--config")
+        table.insert(argv, opt.config)
+    end
+    os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package)})
     os.vrunv(cmake.program, {"--install", os.curdir()})
 end
 

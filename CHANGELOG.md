@@ -13,6 +13,8 @@
 
 * [#1923](https://github.com/xmake-io/xmake/issues/1923): Improve to build linux driver, support set custom linux-headers path
 * [#1962](https://github.com/xmake-io/xmake/issues/1962): Improve armclang toolchain to support to build asm
+* [#1959](https://github.com/xmake-io/xmake/pull/1959): Improve vstudio project generator
+* [#1969](https://github.com/xmake-io/xmake/issues/1969): Add default option description
 
 ### Bugs fixed
 
@@ -1193,6 +1195,8 @@
 
 * [#1923](https://github.com/xmake-io/xmake/issues/1923): 改进构建 linux 驱动，支持设置自定义 linux-headers 路径
 * [#1962](https://github.com/xmake-io/xmake/issues/1962): 改进 armclang 工具链去支持构建 asm
+* [#1959](https://github.com/xmake-io/xmake/pull/1959): 改进 vstudio 工程生成器
+* [#1969](https://github.com/xmake-io/xmake/issues/1969): 添加默认的 option 描述
 
 ### Bugs 修复
 
