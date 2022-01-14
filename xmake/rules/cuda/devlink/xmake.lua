@@ -41,9 +41,10 @@ rule("cuda.build.devlink")
             return
         end
 
-        -- only for binary/shared
+        -- only for binary/shared on non-windows platforms
+        -- https://github.com/xmake-io/xmake/issues/1976
         local targetkind = target:kind()
-        if targetkind ~= "binary" and targetkind ~= "shared" then
+        if target:values("cuda.build.devlink") != true and not target:is_plat("windows") and targetkind ~= "binary" and targetkind ~= "shared" then
             return
         end
 
