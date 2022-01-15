@@ -9,6 +9,7 @@
 * [#1939](https://github.com/xmake-io/xmake/issues/1939): Add `remove_files`, `remove_headerfiles` and mark `del_files` as deprecated
 * Made on_config as the official api for rule/target
 * Add riscv32/64 support
+* [#1970](https://github.com/xmake-io/xmake/issues/1970): Add CMake wrapper for Xrepo C and C++ package manager.
 
 ### Changes
 
@@ -1192,6 +1193,7 @@
 * [#1939](https://github.com/xmake-io/xmake/issues/1939): 添加 `remove_files`, `remove_headerfiles` 并且标记 `del_files` 作为废弃接口
 * 将 on_config 作为正式的公开接口，用于 target 和 rule
 * 添加 riscv32/64 支持
+* [#1970](https://github.com/xmake-io/xmake/issues/1970): 添加 CMake wrapper 支持在 CMakelists 中去调用 xrepo 集成 C/C++ 包
 
 ### 改进
 
