@@ -37,14 +37,14 @@ rule("cuda.build.devlink")
         import("utils.progress")
 
         -- disable devlink?
-        if target:values("cuda.build.devlink") == false then
+        local devlink = target:values("cuda.build.devlink")
+        if devlink == false then
             return
         end
 
         -- only for binary/shared on non-windows platforms
         -- https://github.com/xmake-io/xmake/issues/1976
-        local targetkind = target:kind()
-        if target:values("cuda.build.devlink") != true and not target:is_plat("windows") and targetkind ~= "binary" and targetkind ~= "shared" then
+        if not (devlink == true or target:is_plat("windows") or target:is_binary() or target:is_shared()) then
             return
         end
 
@@ -55,7 +55,7 @@ rule("cuda.build.devlink")
         local culdflags = {"-dlink"}
 
         -- add shared flag
-        if targetkind == "shared" then
+        if target:is_shared() then
             table.insert(culdflags, "-shared")
         end
 
