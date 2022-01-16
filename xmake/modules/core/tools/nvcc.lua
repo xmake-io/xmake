@@ -352,7 +352,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 local lines = errors:split("\n", {plain = true})
                 local start = 0
                 for index, line in ipairs(lines) do
-                    if line:find("error:", 1, true) or line:find("错误：", 1, true) then
+                    if line:find("error:", 1, true) or line:find("错误：", 1, true) or line:match("ptxas fatal%s*:") or line:match("error %a+[0-9]+%s*:") then
                         start = index
                         break
                     end
@@ -362,6 +362,9 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 if start > 0 or not option.get("verbose") then
                     if start == 0 then start = 1 end
                     errors = table.concat(table.slice(lines, start, start + ((#lines - start > 16) and 16 or (#lines - start))), "\n")
+                end
+                if not option.get("verbose") then
+                    errors = errors .. "\n  ${yellow}> in ${bright}" .. sourcefile
                 end
 
                 -- raise compiling errors
