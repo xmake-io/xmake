@@ -59,7 +59,17 @@ task("global")
                                                            , "          if host == 'github.com' then"
                                                            , "               return true"
                                                            , "          end"
-                                                           , "      end"},
+                                                           , "      end"
+                                                           , ""
+                                                           , "Builtin pac files:"
+                                                           , function ()
+                                                                local description = {}
+                                                                local pacfiles = os.files(path.join(os.programdir(), "scripts", "pac", "*.lua"))
+                                                                for _, pacfile in ipairs(pacfiles) do
+                                                                    table.insert(description, "    - " .. path.filename(pacfile))
+                                                                end
+                                                                return description
+                                                             end},
 
                     -- package configuration
                     {category = "Package Configuration"},
