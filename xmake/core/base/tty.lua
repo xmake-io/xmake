@@ -402,12 +402,14 @@ end
 --
 function tty.term_mode(stdtype, newmode)
     local oldmode = 0
-    if stdtype == "stdin" then
-        oldmode = tty._term_mode(1, newmode)
-    elseif stdtype == "stdout" then
-        oldmode = tty._term_mode(2, newmode)
-    elseif stdtype == "stderr" then
-        oldmode = tty._term_mode(3, newmode)
+    if tty._term_mode then
+        if stdtype == "stdin" then
+            oldmode = tty._term_mode(1, newmode)
+        elseif stdtype == "stdout" then
+            oldmode = tty._term_mode(2, newmode)
+        elseif stdtype == "stderr" then
+            oldmode = tty._term_mode(3, newmode)
+        end
     end
     return oldmode
 end

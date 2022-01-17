@@ -60,6 +60,9 @@ function _proxy_pac()
             end
             if not pacfile and not path.is_absolute(pac) then
                 pacfile = path.join(global.directory(), pac)
+                if not os.isfile(pacfile) and os.isfile(path.join(os.programdir(), "scripts", "pac", pac)) then
+                    pacfile = path.join(os.programdir(), "scripts", "pac", pac)
+                end
             end
         end
         if pacfile and os.isfile(pacfile) then

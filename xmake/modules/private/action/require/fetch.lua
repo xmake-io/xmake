@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.hashset")
+import("core.base.json")
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
 import("core.tool.linker")
@@ -86,6 +87,8 @@ function main(requires_raw)
         end
         if #flags > 0 then
             print(os.args(flags))
+        elseif fetchmodes and fetchmodes:has("json") then
+            print(json.encode(fetchinfos))
         else
             print(fetchinfos)
         end

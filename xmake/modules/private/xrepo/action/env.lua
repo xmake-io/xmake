@@ -431,14 +431,21 @@ end
 -- main entry
 function main()
     if option.get("list") then
-        print("%s:", _get_envsdir())
-        local count = 0
-        for _, envfile in ipairs(os.files(path.join(_get_envsdir(), "*.lua"))) do
-            local envname = path.basename(envfile)
-            print("  - %s", envname)
-            count = count + 1
+        local envname = option.get("program")
+        if envname then
+            local envfile = path.join(_get_envsdir(), envname .. ".lua")
+            print("%s:", envfile)
+            io.cat(envfile)
+        else
+            print("%s:", _get_envsdir())
+            local count = 0
+            for _, envfile in ipairs(os.files(path.join(_get_envsdir(), "*.lua"))) do
+                local envname = path.basename(envfile)
+                print("  - %s", envname)
+                count = count + 1
+            end
+            print("envs(%d) found!", count)
         end
-        print("envs(%d) found!", count)
     elseif option.get("add") then
         local envfile = assert(option.get("program"), "please set environment config file!")
         if os.isfile(envfile) then

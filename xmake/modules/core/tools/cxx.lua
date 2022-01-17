@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        gxx.lua
+-- @file        cxx.lua
 --
 
 -- inherit gcc
