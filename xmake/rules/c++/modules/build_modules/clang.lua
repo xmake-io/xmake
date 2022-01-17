@@ -89,7 +89,7 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     local sourcefiles_total = #sourcebatch.sourcefiles
     for i = 1, sourcefiles_total do
         local sourcefile = sourcebatch.sourcefiles[i]
-        local moduledep = assert(moduledeps_files[sourcefile], "moduledep(%s) not found!", sourcefile)
+        local moduledep = moduledeps_files[sourcefile] or {}
         moduledep.job = batchjobs:newjob(sourcefile, function (index, total)
 
             -- compile module files to *.pcm
@@ -100,6 +100,14 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
             opt2.objectfile = modulefiles[i]
             opt2.dependfile = target:dependfile(opt2.objectfile)
             opt2.sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+            if moduledep["deps"] then
+                for _, modulefile in ipairs(modulefiles) do
+                    local found = modulefile:find(moduledep["name"])
+                    if found == nil then
+                        target:add("cxxflags", "-fmodule-file=" .. modulefile, {force = true})
+                    end
+                end
+            end
             objectbuilder.build_object(target, sourcefile, opt2)
 
             -- compile *.pcm to object files
@@ -136,4 +144,3 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
         end
     end
 end
-

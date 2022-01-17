@@ -84,15 +84,16 @@ function load(target, sourcebatch, opt)
     generate(target, sourcebatch, opt)
 
     -- load deps
-    local moduledeps
+    local moduledeps = moduledeps or {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = _get_dependfile_of_modulesource(target, sourcefile)
         if os.isfile(dependfile) then
             local data = io.load(dependfile)
             if data then
-                local moduleinfo = data.moduleinfo
-                moduledeps = moduledeps or {}
-                moduledeps[moduleinfo.name] = moduleinfo
+                if data.moduleinfo then
+                    local moduleinfo = data.moduleinfo
+                    moduledeps[moduleinfo.name] = moduleinfo
+                end
             end
         end
     end
