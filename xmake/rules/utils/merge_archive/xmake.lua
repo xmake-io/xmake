@@ -20,16 +20,28 @@
 
 rule("utils.merge.archive")
     set_extensions(".a", ".lib")
-    on_build_files("merge_archive")
+    on_build_files(function (target, sourcebatch, opt)
+        if sourcebatch.sourcefiles then
+            target:data_set("merge_archive.sourcefiles", sourcebatch.sourcefiles)
+        end
+    end)
     after_link(function (target, opt)
-        if target:policy("build.merge_archive") and target:is_static() then
+        if not target:is_static() then
+            return
+        end
+        local sourcefiles = target:data("merge_archive.sourcefiles")
+        if target:policy("build.merge_archive") or sourcefiles then
             import("utils.archive.merge_staticlib")
             import("core.project.depend")
             import("utils.progress")
             local libraryfiles = {}
-            for _, dep in ipairs(target:orderdeps()) do
-                if dep:is_static() then
-                    table.insert(libraryfiles, dep:targetfile())
+            if sourcefiles then
+                table.join2(libraryfiles, sourcefiles)
+            else
+                for _, dep in ipairs(target:orderdeps()) do
+                    if dep:is_static() then
+                        table.insert(libraryfiles, dep:targetfile())
+                    end
                 end
             end
             if #libraryfiles > 0 then
