@@ -22,6 +22,7 @@
 ### Bugs fixed
 
 * [#1875](https://github.com/xmake-io/xmake/issues/1875): Fix deploy android qt apk issue
+* [#1973](https://github.com/xmake-io/xmake/issues/1973): Fix merge static archive
 
 ## v2.6.2
 
@@ -1207,6 +1208,7 @@
 ### Bugs 修复
 
 * [#1875](https://github.com/xmake-io/xmake/issues/1875): 修复部署生成 Android Qt 程序包失败问题
+* [#1973](https://github.com/xmake-io/xmake/issues/1973): 修复合并静态库
 
 ## v2.6.2
 
