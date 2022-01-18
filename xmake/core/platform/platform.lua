@@ -524,7 +524,7 @@ function platform.toolchains()
             if dirs then
                 for _, dir in ipairs(dirs) do
                     if os.isfile(path.join(dir, "xmake.lua")) then
-                        table.insert(toolchains, path.basename(dir))
+                        table.insert(toolchains, path.filename(dir))
                     end
                 end
             end
