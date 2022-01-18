@@ -18,25 +18,31 @@
 -- @file        xmake.lua
 --
 
-toolchain("clang")
+-- define toolchain
+function toolchain_clang(version)
+local suffix = ""
+if version then
+    suffix = suffix .. "-" .. version
+end
+toolchain("clang" .. suffix)
 
     set_homepage("https://clang.llvm.org/")
-    set_description("A C language family frontend for LLVM")
+    set_description("A C language family frontend for LLVM" .. (version and (" (" .. version .. ")") or ""))
 
     set_kind("standalone")
 
-    set_toolset("cc", "clang")
-    set_toolset("cxx", "clang", "clang++")
-    set_toolset("ld", "clang++", "clang")
-    set_toolset("sh", "clang++", "clang")
+    set_toolset("cc", "clang" .. suffix)
+    set_toolset("cxx", "clang", "clang++" .. suffix)
+    set_toolset("ld", "clang++", "clang" .. suffix)
+    set_toolset("sh", "clang++", "clang" .. suffix)
     set_toolset("ar", "ar")
     set_toolset("strip", "strip")
-    set_toolset("mm", "clang")
-    set_toolset("mxx", "clang", "clang++")
-    set_toolset("as", "clang")
+    set_toolset("mm", "clang" .. suffix)
+    set_toolset("mxx", "clang" .. suffix, "clang++" .. suffix)
+    set_toolset("as", "clang" .. suffix)
 
     on_check(function (toolchain)
-        return import("lib.detect.find_tool")("clang")
+        return import("lib.detect.find_tool")("clang" .. suffix)
     end)
 
     on_load(function (toolchain)
@@ -54,3 +60,5 @@ toolchain("clang")
             toolchain:add("shflags", march)
         end
     end)
+end
+toolchain_clang()

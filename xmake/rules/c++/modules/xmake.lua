@@ -45,6 +45,7 @@ rule("c++.build.modules")
             elseif target:has_tool("cxx", "cl") then
                 import("build_modules.msvc").load_parent(target, opt)
             else
+                local _, toolname = target:tool("cxx")
                 raise("compiler(%s): does not support c++ module!", toolname)
             end
         end
@@ -57,6 +58,7 @@ rule("c++.build.modules")
         elseif target:has_tool("cxx", "cl") then
             import("build_modules.msvc").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
         else
+            local _, toolname = target:tool("cxx")
             raise("compiler(%s): does not support c++ module!", toolname)
         end
     end, {batch = true})
