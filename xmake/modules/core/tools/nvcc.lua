@@ -349,11 +349,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
 
                 -- use nvcc/stdout as errors first from os.iorunv()
                 if type(errors) == "table" then
-                    local errs = errors.stdout or ""
-                    if #errs:trim() == 0 then
-                        errs = errors.stderr or ""
-                    end
-                    errors = errs
+                    errors = (errors.stdout or "") .. (errors.stderr or "")
                 else
                     errors = tostring(errors)
                 end
