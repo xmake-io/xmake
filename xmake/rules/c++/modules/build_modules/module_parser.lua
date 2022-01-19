@@ -91,8 +91,10 @@ function load(target, sourcebatch, opt)
             local data = io.load(dependfile)
             if data then
                 local moduleinfo = data.moduleinfo
-                moduledeps = moduledeps or {}
-                moduledeps[moduleinfo.name] = moduleinfo
+                if moduleinfo then
+                    moduledeps = moduledeps or {}
+                    moduledeps[moduleinfo.name] = moduleinfo
+                end
             end
         end
     end
