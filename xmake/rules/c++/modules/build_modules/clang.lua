@@ -66,16 +66,13 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     local cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
 
     -- we need patch objectfiles to sourcebatch for linking module objects
-    local modulefiles = {}
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local modulefile = path.join(cachedir, path.basename(sourcefile) .. ".pcm")
         local objectfile = target:objectfile(sourcefile)
         table.insert(sourcebatch.objectfiles, objectfile)
         table.insert(sourcebatch.dependfiles, target:dependfile(objectfile))
-        table.insert(modulefiles, modulefile)
     end
 
     -- load moduledeps
@@ -86,10 +83,18 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
 
     -- compile module files to object files
     local count = 0
+    local modulefiles = {}
     local sourcefiles_total = #sourcebatch.sourcefiles
     for i = 1, sourcefiles_total do
         local sourcefile = sourcebatch.sourcefiles[i]
         local moduledep = moduledeps_files[sourcefile] or {}
+
+        -- make module file path, @note we need process submodule name, e.g. module.submodule.mpp -> module.submodule.pcm
+        -- @see https://github.com/xmake-io/xmake/pull/1982
+        local modulefile = path.join(cachedir, (moduledep.name or path.basename(sourcefile)) .. ".pcm")
+        table.insert(modulefiles, modulefile)
+
+        -- make build job
         moduledep.job = batchjobs:newjob(sourcefile, function (index, total)
 
             -- compile module files to *.pcm
@@ -100,14 +105,6 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
             opt2.objectfile = modulefiles[i]
             opt2.dependfile = target:dependfile(opt2.objectfile)
             opt2.sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
-            if moduledep["deps"] then
-                for _, modulefile in ipairs(modulefiles) do
-                    local found = modulefile:find(moduledep["name"])
-                    if found == nil then
-                        target:add("cxxflags", "-fmodule-file=" .. modulefile, {force = true})
-                    end
-                end
-            end
             objectbuilder.build_object(target, sourcefile, opt2)
 
             -- compile *.pcm to object files
