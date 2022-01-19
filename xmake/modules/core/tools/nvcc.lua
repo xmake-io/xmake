@@ -347,8 +347,18 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 -- try removing the old object file for forcing to rebuild this source file
                 os.tryrm(objectfile)
 
+                -- use nvcc/stdout as errors first from os.iorunv()
+                if type(errors) == "table" then
+                    local errs = errors.stdout or ""
+                    if #errs:trim() == 0 then
+                        errs = errors.stderr or ""
+                    end
+                    errors = errs
+                else
+                    errors = tostring(errors)
+                end
+
                 -- find the start line of error
-                errors = tostring(errors)
                 local lines = errors:split("\n", {plain = true})
                 local start = 0
                 for index, line in ipairs(lines) do
