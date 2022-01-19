@@ -30,6 +30,7 @@
 
 * [#1902](https://github.com/xmake-io/xmake/issues/1902): Support to build linux kernel driver modules
 * [#1913](https://github.com/xmake-io/xmake/issues/1913): Build and run targets with given group pattern
+* [#1982](https://github.com/xmake-io/xmake/pull/1982): Fix build c++20 submodules for clang
 
 ### Change
 
@@ -1209,6 +1210,7 @@
 
 * [#1875](https://github.com/xmake-io/xmake/issues/1875): 修复部署生成 Android Qt 程序包失败问题
 * [#1973](https://github.com/xmake-io/xmake/issues/1973): 修复合并静态库
+* [#1982](https://github.com/xmake-io/xmake/pull/1982): 修复 clang 下对 c++20 子模块的依赖构建
 
 ## v2.6.2
 
