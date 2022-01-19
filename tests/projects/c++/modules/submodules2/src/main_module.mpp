@@ -1,0 +1,9 @@
+export module main_module;
+
+import main_module.module1;
+import main_module.module2;
+
+export void hello() {
+    hello1();
+    hello2();
+}

@@ -1,0 +1,3 @@
+export module main_module.module2
+
+export void hello2(void);;
