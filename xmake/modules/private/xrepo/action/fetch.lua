@@ -41,6 +41,7 @@ function menu_options()
                                        "    - xrepo fetch --configs=\"vs_runtime='MD'\" zlib",
                                        "    - xrepo fetch --configs=\"regex=true,thread=true\" boost"},
         {},
+        {nil, "toolchain",  "kv", nil, "Set the toolchain name."             },
         {nil, "deps",       "k",  nil, "Fetch packages with dependencies."   },
         {nil, "cflags",     "k",  nil, "Fetch cflags of the given packages." },
         {nil, "ldflags",    "k",  nil, "Fetch ldflags of the given packages."},
@@ -103,6 +104,9 @@ function _fetch_packages(packages)
     if option.get("arch") then
         table.insert(config_argv, "-a")
         table.insert(config_argv, option.get("arch"))
+    end
+    if option.get("toolchain") then
+        table.insert(config_argv, "--toolchain=" .. option.get("toolchain"))
     end
     local mode  = option.get("mode")
     if mode then
