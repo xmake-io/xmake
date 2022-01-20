@@ -61,7 +61,7 @@ function _scan_package(packagedir)
             end
             print("")
             if manifest and manifest.configs then
-                print("    -> %s", string.serialize(manifest.configs, true))
+                print("    -> %s", string.serialize(manifest.configs, {orderkeys = true, indent = false, strip = true}))
             end
         end
     end
