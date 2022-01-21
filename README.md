@@ -552,6 +552,18 @@ $ ./gradlew app:assembleDebug
 > Task :app:assembleDebug
 ```
 
+## CI Integration
+
+### GitHub Action
+
+We can use [github-action-setup-xmake](https://github.com/xmake-io/github-action-setup-xmake) to setup Xmake in Github Action.
+
+```
+uses: xmake-io/github-action-setup-xmake@v1
+with:
+  xmake-version: latest
+```
+
 ## Technical Support
 
 We also provide paid technical support to help users quickly solve related problems. For details, please click the image link below:

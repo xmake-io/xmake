@@ -560,6 +560,18 @@ $ ./gradlew app:assembleDebug
 > Task :app:assembleDebug
 ```
 
+## CI 集成
+
+### GitHub Action
+
+我们可以使用 [github-action-setup-xmake](https://github.com/xmake-io/github-action-setup-xmake) 在 Github Action 上实现跨平台安装集成 Xmake。
+
+```
+uses: xmake-io/github-action-setup-xmake@v1
+with:
+  xmake-version: latest
+```
+
 ## 技术支持
 
 我们也提供付费的技术支持来为帮助用户快速解决相关问题，具体详情请点击下面的图片链接：
