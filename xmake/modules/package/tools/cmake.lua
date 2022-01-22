@@ -280,6 +280,9 @@ function _get_configs_for_windows(package, configs, opt)
         table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG=/' .. vs_runtime .. ' ' .. default_debug_flags)
         table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE=/' .. vs_runtime .. ' ' .. default_release_flags)
     end
+    if not opt._configs_str:find("CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY") then
+        table.insert(configs, "-DCMAKE_COMPILE_PDB_OUTPUT_DIRECTORY=pdb")
+    end
     _get_configs_for_generic(package, configs, opt)
 end
 
@@ -626,6 +629,11 @@ function _install_for_msvc(package, configs, opt)
         os.trycp("**.dll", package:installdir("bin"))
         os.trycp("**.lib", package:installdir("lib"))
         os.trycp("**.exp", package:installdir("lib"))
+        if package:config("shared") or not package:is_library() then
+            os.trycp("**.pdb", package:installdir("bin"))
+        else
+            os.trycp("**.pdb", package:installdir("lib"))
+        end
     end
 end
 
@@ -787,6 +795,13 @@ function install(package, configs, opt)
             _install_for_msvc(package, configs, opt)
         else
             _install_for_make(package, configs, opt)
+        end
+    end
+    if package:is_plat("windows") and os.isdir("pdb") then
+        if package:config("shared") or not package:is_library() then
+            os.trycp("pdb/**.pdb", package:installdir("bin"))
+        else
+            os.trycp("pdb/**.pdb", package:installdir("lib"))
         end
     end
     os.cd(oldir)
