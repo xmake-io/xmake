@@ -326,45 +326,41 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         return version, source
     end
 
-    -- if not phony package (only as package group)
-    if not requireinfo.group then
-
-        -- has git url?
-        local has_giturl = false
-        for _, url in ipairs(package:urls()) do
-            if git.checkurl(url) then
-                has_giturl = true
-                break
-            end
+    -- has git url?
+    local has_giturl = false
+    for _, url in ipairs(package:urls()) do
+        if git.checkurl(url) then
+            has_giturl = true
+            break
         end
-
-        -- select package version
-        local source = nil
-        local version = nil
-        local require_version = requireinfo.version
-        local require_verify  = requireinfo.verify
-        if (not package:get("versions") or require_verify == false) and semver.is_valid(require_version) then
-            -- no version list in package() or need not verify sha256sum? try selecting this version directly
-            -- @see https://github.com/xmake-io/xmake/issues/930
-            -- https://github.com/xmake-io/xmake/issues/1009
-            version = require_version
-            source = "version"
-        elseif #package:versions() > 0 then -- select version?
-            version, source = try { function () return semver.select(require_version, package:versions()) end }
-        end
-        if not version and has_giturl and not semver.is_valid(require_version) then -- select branch?
-            version, source = require_version ~= "latest" and require_version or "master", "branch"
-        end
-        -- local source package? we use a phony version
-        if not version and require_version == "latest" and #package:urls() == 0 then
-            version = "latest"
-            source = "version"
-        end
-        if not version and not package:is_thirdparty() then
-            raise("package(%s): version(%s) not found!", package:name(), require_version)
-        end
-        return version, source
     end
+
+    -- select package version
+    local source = nil
+    local version = nil
+    local require_version = requireinfo.version
+    local require_verify  = requireinfo.verify
+    if (not package:get("versions") or require_verify == false) and semver.is_valid(require_version) then
+        -- no version list in package() or need not verify sha256sum? try selecting this version directly
+        -- @see https://github.com/xmake-io/xmake/issues/930
+        -- https://github.com/xmake-io/xmake/issues/1009
+        version = require_version
+        source = "version"
+    elseif #package:versions() > 0 then -- select version?
+        version, source = try { function () return semver.select(require_version, package:versions()) end }
+    end
+    if not version and has_giturl and not semver.is_valid(require_version) then -- select branch?
+        version, source = require_version ~= "latest" and require_version or "master", "branch"
+    end
+    -- local source package? we use a phony version
+    if not version and require_version == "latest" and #package:urls() == 0 then
+        version = "latest"
+        source = "version"
+    end
+    if not version and not package:is_thirdparty() then
+        raise("package(%s): version(%s) not found!", package:name(), require_version)
+    end
+    return version, source
 end
 
 -- check the configurations of packages
