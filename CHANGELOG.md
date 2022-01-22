@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.6.3
+
 ### New features
 
 * [#1298](https://github.com/xmake-io/xmake/issues/1928): Support vcpkg manifest mode and select version for package/install
@@ -1188,6 +1190,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.6.3
 
 ### 新特性
 
