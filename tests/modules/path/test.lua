@@ -25,3 +25,11 @@ function test_splitenv_unix(t)
     t:are_equal(path.splitenv('a%tag:b%%tag%%'), {'a','b'})
     t:are_equal(path.splitenv('a%tag:b:%tag:'), {'a','b'})
 end
+
+function test_extension(t)
+    t:are_equal(path.extension("1.1/abc"), "")
+    t:are_equal(path.extension("1.1\\abc"), "")
+    t:are_equal(path.extension("foo.so"), ".so")
+    t:are_equal(path.extension("/home/foo.so"), ".so")
+    t:are_equal(path.extension("\\home\\foo.so"), ".so")
+end

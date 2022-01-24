@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Bugs fixed
+
+* [#2005](https://github.com/xmake-io/xmake/issues/2005): Fix path.extension
+
 ## v2.6.3
 
 ### New features
@@ -1190,6 +1194,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs 修复
+
+* [#2005](https://github.com/xmake-io/xmake/issues/2005): Fix path.extension
 
 ## v2.6.3
 

@@ -72,10 +72,14 @@ end
 function path.extension(p, level)
     local i = p:lastof(".", true)
     if i then
-        if level and level > 1 then
-            return path.extension(p:sub(1, i - 1), level - 1) .. p:sub(i)
+        local ext = p:sub(i)
+        if ext:find("[/\\]") then
+            return ""
         end
-        return p:sub(i)
+        if level and level > 1 then
+            return path.extension(p:sub(1, i - 1), level - 1) .. ext
+        end
+        return ext
     else
         return ""
     end
