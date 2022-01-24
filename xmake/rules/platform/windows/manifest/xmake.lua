@@ -28,13 +28,13 @@ rule("platform.windows.manifest")
             for _, sourcebatch in pairs(target:sourcebatches()) do
                 if sourcebatch.rulename == "platform.windows.manifest" then
                     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                        target:add("ldflags", "/ManifestFile:" .. path.translate(sourcefile), {force = true})
+                        target:add("ldflags", "/ManifestInput:" .. path.translate(sourcefile), {force = true})
                         manifest = true
                     end
                 end
             end
             if manifest then
-                target:add("ldflags", "/manifest", {force = true})
+                target:add("ldflags", "/manifest:embed", {force = true})
             end
         end
     end)
