@@ -52,7 +52,14 @@ rule("cuda.gencodes")
             end
             archs = archs:trim():lower()
             if archs == "native" then
-                local device = find_cudadevices({ skip_compute_mode_prohibited = true, order_by_flops = true })[1]
+                local cuda_envs
+                for _, toolchain_inst in ipairs(target:toolchains()) do
+                    if toolchain_inst:name() == "cuda" then
+                        cuda_envs = toolchain_inst:runenvs()
+                        break
+                    end
+                end
+                local device = find_cudadevices({skip_compute_mode_prohibited = true, order_by_flops = true, envs = cuda_envs})[1]
                 if device then
                     return nf_cugencode("sm_" .. device.major .. device.minor)
                 end
