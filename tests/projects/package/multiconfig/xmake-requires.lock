@@ -6,26 +6,26 @@
         ["zlib#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
-            version = "1.2.11"
+            version = "v1.2.11"
         },
         ["zlib~debug#55833b12"] = {
             repo = {
                 branch = "master",
-                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
-            version = "1.2.11"
+            version = "v1.2.11"
         },
         ["zlib~shared#b6ab42cb"] = {
             repo = {
                 branch = "master",
-                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
-            version = "1.2.11"
+            version = "v1.2.11"
         }
     },
     ["windows|x64"] = {
