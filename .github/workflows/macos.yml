@@ -68,8 +68,8 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: artifacts/xmake.tar.gz
-          asset_name: xmake-master.tar.gz
+          file: artifacts/xmake.zip
+          asset_name: xmake-master.zip
           tag: ${{ steps.previoustag.outputs.tag }}
           overwrite: true
 
