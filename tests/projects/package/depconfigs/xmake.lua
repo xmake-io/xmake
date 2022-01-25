@@ -14,7 +14,7 @@ target("test")
         if target:pkg("libpng") then
             local found
             for _, linkdir in ipairs(target:pkg("libpng"):get("linkdirs")) do
-                if linkdir:find("zlib[/\\]1%.2%.10") then
+                if linkdir:find("zlib[/\\]v1%.2%.10") then
                     found = true
                 end
             end
