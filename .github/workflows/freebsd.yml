@@ -20,10 +20,11 @@ jobs:
           submodules: true
 
       - name: Tests
-        uses: vmactions/freebsd-vm@v0.1.5
+        uses: vmactions/freebsd-vm@v0.1.6
         with:
           usesh: true
           mem: 4096
+          copyback: false
           prepare: pkg install -y curl unzip gmake llvm gsed bash perl5
           run: |
             gmake -j4
