@@ -17,6 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          # WyriHaximus/github-action-get-previous-tag@master need it
+          fetch-depth: 0
           submodules: true
       - name: Prepare local xmake
         run: cp -rf . ../xmake-source
