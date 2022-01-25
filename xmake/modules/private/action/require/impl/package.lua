@@ -217,6 +217,17 @@ function _load_package_from_repository(packagename, opt)
     end
 end
 
+-- load package package from base
+function _load_package_from_base(package, basename, opt)
+    local package_base = _load_package_from_project(basename)
+    if not package_base then
+        package_base = _load_package_from_repository(basename, opt)
+    end
+    if package_base then
+        package._BASE = package_base
+    end
+end
+
 -- has locked requires?
 function _has_locked_requires(opt)
     opt = opt or {}
@@ -698,6 +709,12 @@ function _load_package(packagename, requireinfo, opt)
         if package then
             from_repo = true
         end
+    end
+
+    -- load base package
+    if package and package:get("base") then
+        _load_package_from_base(package, package:get("base", {
+            name = requireinfo.reponame, locked_repo = locked_requireinfo and locked_requireinfo.repo}))
     end
 
     -- load package from system

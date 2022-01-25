@@ -68,11 +68,17 @@ function _instance:type()
     return "package"
 end
 
--- get the package configure
-function _instance:get(name)
+-- get the base package
+function _instance:base()
+    return self._BASE
+end
 
-    -- get it from info first
+-- get the package configuration
+function _instance:get(name)
     local value = self._INFO:get(name)
+    if value == nil and self:base() then
+        value = self:base():get(name)
+    end
     if value ~= nil then
         return value
     end
@@ -90,7 +96,11 @@ end
 
 -- get the extra configuration
 function _instance:extraconf(name, item, key)
-    return self._INFO:extraconf(name, item, key)
+    local conf = self._INFO:extraconf(name, item, key)
+    if conf == nil and self:base() then
+        conf = self:base():extraconf(name, item, key)
+    end
+    return conf
 end
 
 -- set the extra configuration
@@ -1811,6 +1821,7 @@ function package.apis()
         ,   "package.set_kind"
         ,   "package.set_plat" -- deprecated
         ,   "package.set_arch" -- deprecated
+        ,   "package.set_base"
         ,   "package.set_license"
         ,   "package.set_homepage"
         ,   "package.set_description"

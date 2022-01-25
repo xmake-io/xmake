@@ -6,7 +6,7 @@
         ["autoconf#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "4498f11267de5112199152ab030ed139c985ad5a",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "2.71"
@@ -14,7 +14,7 @@
         ["automake#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "1.16.4"
@@ -22,15 +22,15 @@
         ["cmake#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "4498f11267de5112199152ab030ed139c985ad5a",
+                commit = "d3260ca0867f8b26aa2a72818bca3e6113a4fc42",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
-            version = "3.21.0"
+            version = "3.22.1"
         },
         ["gmp#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "89ac4c1e2d360bc3a8c3f4cdedf4ee683701de74",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "6.2.1"
@@ -38,7 +38,7 @@
         ["libisl 0.22#67114504"] = {
             repo = {
                 branch = "master",
-                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "0.22"
@@ -46,7 +46,7 @@
         ["libogg#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "v1.3.4"
@@ -54,7 +54,7 @@
         ["libplist#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "2.2.0"
@@ -62,7 +62,7 @@
         ["libtool#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                commit = "dd4abbd658b9897c9e1dcacf2e4bdeeb02d05860",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "2.4.6"
@@ -70,7 +70,7 @@
         ["m4#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "89ac4c1e2d360bc3a8c3f4cdedf4ee683701de74",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "1.4.19"
@@ -78,7 +78,7 @@
         ["muslcc#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "20210202"
@@ -86,7 +86,7 @@
         ["pkg-config#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "89ac4c1e2d360bc3a8c3f4cdedf4ee683701de74",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "0.29.2"
@@ -94,20 +94,20 @@
         ["zlib#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
-            version = "1.2.11"
+            version = "v1.2.11"
         }
     },
     ["windows|x64"] = {
         ["cmake#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "8e8c5e4d1c7e8b047b23333594d23b4b85163aed",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
-            version = "3.21.0"
+            version = "3.22.1"
         },
         ["libogg#31fecfc4"] = {
             repo = {
@@ -120,7 +120,7 @@
         ["make#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "2b1cb74b289ae3221241985db4401a495c42fde3",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "4.3"
@@ -128,7 +128,7 @@
         ["muslcc#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "2b1cb74b289ae3221241985db4401a495c42fde3",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "20210202"
@@ -136,10 +136,10 @@
         ["zlib#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "2b1cb74b289ae3221241985db4401a495c42fde3",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
-            version = "1.2.11"
+            version = "v1.2.11"
         }
     }
 }
