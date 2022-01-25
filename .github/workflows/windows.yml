@@ -150,6 +150,16 @@ jobs:
           tag: ${{ steps.previoustag.outputs.tag }}
           overwrite: true
 
+      - name: Upload artifacts to lastest release
+        if: github.ref == 'refs/heads/master'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: artifacts/${{env.RELEASE_NAME}}/archive.zip
+          asset_name: xmake-${{ env.GITHUB_REF_SLUG }}.${{ env.RELEASE_NAME }}.zip
+          tag: ${{ steps.previoustag.outputs.tag }}
+          overwrite: true
+
         # publish release
       - name: Publish
         if: github.event.action == 'published'
