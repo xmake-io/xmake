@@ -42,6 +42,9 @@ function menu_options()
                                        "    - xrepo fetch --configs=\"regex=true,thread=true\" boost"},
         {},
         {nil, "toolchain",  "kv", nil, "Set the toolchain name."             },
+        {nil, "includes",      "kv", nil, "Includes extra lua configuration files.",
+                                       "e.g.",
+                                       "    - xrepo fetch -p cross --toolchain=mytool --includes='toolchain1.lua" .. path.envsep() .. "toolchain2.lua'"},
         {nil, "deps",       "k",  nil, "Fetch packages with dependencies."   },
         {nil, "cflags",     "k",  nil, "Fetch cflags of the given packages." },
         {nil, "ldflags",    "k",  nil, "Fetch ldflags of the given packages."},
@@ -118,7 +121,8 @@ function _fetch_packages(packages)
         table.insert(config_argv, "-k")
         table.insert(config_argv, kind)
     end
-    os.vrunv("xmake", config_argv)
+    local envs = {XMAKE_RCFILES = option.get("includes")}
+    os.vrunv("xmake", config_argv, {envs = envs})
 
     -- do fetch
     local require_argv = {"require", "--fetch"}
@@ -173,7 +177,7 @@ function _fetch_packages(packages)
         table.insert(require_argv, "--extra=" .. extra_str)
     end
     table.join2(require_argv, packages)
-    os.vexecv("xmake", require_argv)
+    os.vexecv("xmake", require_argv, {envs = envs})
 end
 
 -- main entry
