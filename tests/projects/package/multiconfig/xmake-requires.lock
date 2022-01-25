@@ -27,5 +27,31 @@
             },
             version = "1.2.11"
         }
+    },
+    ["windows|x64"] = {
+        ["zlib#31fecfc4"] = {
+            repo = {
+                branch = "master",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
+                url = "https://gitee.com/tboox/xmake-repo.git"
+            },
+            version = "v1.2.11"
+        },
+        ["zlib~debug#55833b12"] = {
+            repo = {
+                branch = "master",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
+                url = "https://gitee.com/tboox/xmake-repo.git"
+            },
+            version = "v1.2.11"
+        },
+        ["zlib~shared#b6ab42cb"] = {
+            repo = {
+                branch = "master",
+                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
+                url = "https://gitee.com/tboox/xmake-repo.git"
+            },
+            version = "v1.2.11"
+        }
     }
 }
