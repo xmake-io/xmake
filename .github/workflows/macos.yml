@@ -63,6 +63,11 @@ jobs:
           name: xmake-latest.zip
           path: artifacts/xmake.zip
 
+        # upload artifacts to latest release
+      - name: Get Previous tag
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@master
+
       - name: Upload artifacts to lastest release
         if: github.ref == 'refs/heads/master'
         uses: svenstaro/upload-release-action@v2
