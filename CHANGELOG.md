@@ -2,9 +2,14 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#2011](https://github.com/xmake-io/xmake/issues/2011): Support to inherit base package
+
 ### Bugs fixed
 
 * [#2005](https://github.com/xmake-io/xmake/issues/2005): Fix path.extension
+* [#2008](https://github.com/xmake-io/xmake/issues/2008): Fix windows manifest
 
 ## v2.6.3
 
@@ -1195,9 +1200,14 @@
 
 ## master (开发中)
 
+### 新特性
+
+* [#2011](https://github.com/xmake-io/xmake/issues/2011): 支持继承和局部修改官方包，例如对现有的包更换 urls 和 versions
+
 ### Bugs 修复
 
-* [#2005](https://github.com/xmake-io/xmake/issues/2005): Fix path.extension
+* [#2005](https://github.com/xmake-io/xmake/issues/2005): 修复 path.extension
+* [#2008](https://github.com/xmake-io/xmake/issues/2008): 修复 windows manifest 文件编译
 
 ## v2.6.3
 
