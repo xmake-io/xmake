@@ -191,6 +191,9 @@ function _instance:_copiedfiles(filetype, outputdir, pathfilter)
         if count == 0 then
             rootdir = nil
         end
+        if rootdir and rootdir:trim() == "" then
+            rootdir = nil
+        end
 
         -- remove '(' and ')'
         local srcpaths = copiedfile:gsub("[%(%)]", "")
