@@ -28,9 +28,15 @@ function _merge_for_ar(target, program, outputfile, libraryfiles, opt)
     if target:is_plat("macosx", "iphoneos", "watchos", "appletvos") then
         os.vrunv("libtool", table.join("-static", "-o", outputfile, libraryfiles))
     else
+        -- we can't generate directly to outputfile,
+        -- because on windows/ndk, llvm-ar.exe may fail to write with no permission, even though it's a writable temp file.
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/1973
+        local archivefile = target:autogenfile((hash.uuid(outputfile):gsub("%-", ""))) .. ".a"
+        os.mkdir(path.directory(archivefile))
         local tmpfile = os.tmpfile()
         local mrifile = io.open(tmpfile, "w")
-        mrifile:print("create %s", outputfile)
+        mrifile:print("create %s", archivefile)
         for _, libraryfile in ipairs(libraryfiles) do
             mrifile:print("addlib %s", libraryfile)
         end
@@ -38,7 +44,9 @@ function _merge_for_ar(target, program, outputfile, libraryfiles, opt)
         mrifile:print("end")
         mrifile:close()
         os.vrunv(program, {"-M"}, {stdin = tmpfile})
+        os.cp(archivefile, outputfile)
         os.rm(tmpfile)
+        os.rm(archivefile)
     end
 end
 
