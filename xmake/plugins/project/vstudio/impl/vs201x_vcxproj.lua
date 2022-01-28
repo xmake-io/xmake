@@ -838,7 +838,6 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
     -- add source file
     sourcefile = path.relative(path.absolute(sourcefile), target.project_dir)
     for _, info in ipairs(sourceinfo) do
-        print("spec", info)
 
         -- enter it
         local nodename = (info.sourcekind == "as" and "CustomBuild" or (info.sourcekind == "mrc" and "ResourceCompile" or "ClCompile"))
