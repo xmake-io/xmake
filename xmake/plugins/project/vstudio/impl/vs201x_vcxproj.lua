@@ -252,12 +252,13 @@ function _make_configurations(vcxprojfile, vsinfo, target)
             end
         vcxprojfile:leave("</PropertyGroup>")
     end
-    
+
     -- make Debugger
     for _, targetinfo in ipairs(target.info) do
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Label=\"Debugger\">", targetinfo.mode, targetinfo.arch)
             vcxprojfile:print("<LocalDebuggerWorkingDirectory>%s</LocalDebuggerWorkingDirectory>", _make_dirs(targetinfo.rundir, target.project_dir))
-            vcxprojfile:print("<LocalDebuggerEnvironment>%s;$(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>", targetinfo.runenvs)
+            -- @note we use writef to avoid escape $() in runenvs, e.g. $([System.Environment]::Get ..)
+            vcxprojfile:writef("<LocalDebuggerEnvironment>%s;%%(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>\n", targetinfo.runenvs)
         vcxprojfile:leave("</PropertyGroup>")
     end
 end
@@ -399,7 +400,7 @@ function _make_source_options(vcxprojfile, flags, condition)
     -- make AdditionalOptions
     local additional_flags = {}
     local excludes = {
-        "Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "W4", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", 
+        "Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "W4", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP",
         "Fd", "fp", "I", "D", "Gm-", "Gm", "MP", "external:W0", "external:W1", "external:W2", "external:W3", "external:W4", "external:templates-?", "external:I",
         "std:c11", "std:c17", "std:c%+%+11", "std:c%+%+14", "std:c%+%+17", "std:c%+%+20", "std:c%+%+latest", "nologo", "wd(%d+)"
     }
@@ -482,7 +483,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
         local flags = {}
         local excludes = {
             "nologo", "machine:%w+", "pdb:.+%.pdb", "debug"
-        }   
+        }
         local libdirs = {}
         local links = {}
         for _, flag in ipairs(_make_linkflags(targetinfo, target.project_dir)) do
@@ -709,7 +710,7 @@ end
 function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourceinfo)
 
     -- get object file and source kind
-    local sourcekind = nil
+    local sourcekind
     for _, info in ipairs(sourceinfo) do
         sourcekind = info.sourcekind
         break
@@ -736,11 +737,21 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
         elseif sourcekind == "mrc" then
             for _, info in ipairs(sourceinfo) do
                 local objectfile = path.relative(path.absolute(info.objectfile), target.project_dir)
-                vcxprojfile:print("<ResourceOutputFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ResourceOutputFileName>", info.mode, info.arch, objectfile)
+                vcxprojfile:print("<ResourceOutputFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ResourceOutputFileName>",
+                    info.mode, info.arch, objectfile)
             end
 
         -- for *.c/cpp files
         else
+
+            -- we need use different object directory
+            -- @see https://github.com/xmake-io/xmake/issues/2016
+            --[[
+            for _, info in ipairs(sourceinfo) do
+                local objectfile = path.relative(path.absolute(info.objectfile), target.project_dir)
+                vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>",
+                    info.mode, info.arch, objectfile)
+            end]]
 
             -- init items
             local items =
@@ -827,10 +838,12 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
     -- add source file
     sourcefile = path.relative(path.absolute(sourcefile), target.project_dir)
     for _, info in ipairs(sourceinfo) do
+        print("spec", info)
 
         -- enter it
         local nodename = (info.sourcekind == "as" and "CustomBuild" or (info.sourcekind == "mrc" and "ResourceCompile" or "ClCompile"))
-        vcxprojfile:enter("<%s Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Include=\"%s\">", nodename, info.mode, info.arch, sourcefile)
+        vcxprojfile:enter("<%s Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Include=\"%s\">",
+            nodename, info.mode, info.arch, sourcefile)
 
         -- for *.asm files
         local objectfile = path.relative(path.absolute(info.objectfile), target.project_dir)
@@ -843,10 +856,18 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
 
         -- for *.rc files
         elseif sourcekind == "mrc" then
-            vcxprojfile:print("<ResourceOutputFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ResourceOutputFileName>",info.mode,info.arch,objectfile)
+            vcxprojfile:print("<ResourceOutputFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ResourceOutputFileName>",
+                info.mode,info.arch,objectfile)
 
         -- for *.c/cpp files
         else
+
+            -- we need use different object directory
+            -- @see https://github.com/xmake-io/xmake/issues/2016
+            --[[
+            vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>",
+                info.mode, info.arch, objectfile)
+            ]]
 
             -- disable the precompiled header if sourcekind ~= headerkind
             local pcheader = target.pcxxheader or target.pcheader

@@ -190,9 +190,9 @@ function _make_targetinfo(mode, arch, target)
     end
     for k, v in pairs(addrunenvs) do
         if k:upper() == "PATH" then
-            runenvs[k] = format("%s;$([System.Environment]::GetEnvironmentVariable('%s'))", _make_dirs(v), k)
+            runenvs[k] = _make_dirs(v) .. "$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
-            runenvs[k] = format("%s;$([System.Environment]::GetEnvironmentVariable('%s'))", path.joinenv(v), k)
+            runenvs[k] = path.joinenv(v) .. "$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
         end
     end
     for k, v in pairs(setrunenvs) do
