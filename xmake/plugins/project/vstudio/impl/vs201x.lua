@@ -555,7 +555,7 @@ function make(outputdir, vsinfo)
                     -- make target with the given mode and arch
                     targets[targetname] = targets[targetname] or {}
                     local _target = targets[targetname]
-                                    
+
                     -- the vcxproj directory
                     _target.project_dir = path.join(vsinfo.solution_dir, targetname)
 
