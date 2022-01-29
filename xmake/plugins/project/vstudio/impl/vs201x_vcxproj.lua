@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.hashset")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
@@ -744,14 +745,24 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
         -- for *.c/cpp files
         else
 
-            -- we need use different object directory
+            -- we need use different object directory and allow parallel building
+            --
             -- @see https://github.com/xmake-io/xmake/issues/2016
-            --[[
+            -- https://github.com/xmake-io/xmake/issues/1062
             for _, info in ipairs(sourceinfo) do
-                local objectfile = path.relative(path.absolute(info.objectfile), target.project_dir)
-                vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>",
-                    info.mode, info.arch, objectfile)
-            end]]
+                local objectname = path.filename(info.objectfile)
+                local targetinfo = info.targetinfo
+                if not targetinfo.objectnames then
+                    targetinfo.objectnames = hashset:new()
+                end
+                if targetinfo.objectnames:has(objectname) then
+                    local objectfile = path.relative(path.absolute(info.objectfile), target.project_dir)
+                    vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>",
+                        info.mode, info.arch, objectfile)
+                else
+                    targetinfo.objectnames:insert(objectname)
+                end
+            end
 
             -- init items
             local items =
@@ -856,17 +867,26 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
         -- for *.rc files
         elseif sourcekind == "mrc" then
             vcxprojfile:print("<ResourceOutputFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ResourceOutputFileName>",
-                info.mode,info.arch,objectfile)
+                info.mode, info.arch, objectfile)
 
         -- for *.c/cpp files
         else
-
-            -- we need use different object directory
+           -- we need use different object directory and allow parallel building
+            --
             -- @see https://github.com/xmake-io/xmake/issues/2016
-            --[[
-            vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>",
-                info.mode, info.arch, objectfile)
-            ]]
+            -- https://github.com/xmake-io/xmake/issues/1062
+            local objectname = path.filename(objectfile)
+            local targetinfo = info.targetinfo
+            if not targetinfo.objectnames then
+                targetinfo.objectnames = hashset:new()
+            end
+            local targetinfo = info.targetinfo
+            if targetinfo.objectnames:has(objectname) then
+                vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>",
+                    info.mode, info.arch, objectfile)
+            else
+                targetinfo.objectnames:insert(objectname)
+            end
 
             -- disable the precompiled header if sourcekind ~= headerkind
             local pcheader = target.pcxxheader or target.pcheader
@@ -926,7 +946,7 @@ function _make_source_files(vcxprojfile, vsinfo, target)
                         local objectfile    = objectfiles[idx]
                         local flags         = targetinfo.sourceflags[sourcefile]
                         sourceinfos[sourcefile] = sourceinfos[sourcefile] or {}
-                        table.insert(sourceinfos[sourcefile], {mode = targetinfo.mode, arch = targetinfo.arch, sourcekind = sourcekind, objectfile = objectfile, flags = flags, compargv = targetinfo.compargvs[sourcefile]})
+                        table.insert(sourceinfos[sourcefile], {targetinfo = targetinfo, mode = targetinfo.mode, arch = targetinfo.arch, sourcekind = sourcekind, objectfile = objectfile, flags = flags, compargv = targetinfo.compargvs[sourcefile]})
                     end
                 end
             end
