@@ -11,6 +11,7 @@
 
 * [#2005](https://github.com/xmake-io/xmake/issues/2005): Fix path.extension
 * [#2008](https://github.com/xmake-io/xmake/issues/2008): Fix windows manifest
+* [#2016](https://github.com/xmake-io/xmake/issues/2016): Fix object filename confict for vs project generator
 
 ## v2.6.3
 
@@ -1210,6 +1211,7 @@
 
 * [#2005](https://github.com/xmake-io/xmake/issues/2005): 修复 path.extension
 * [#2008](https://github.com/xmake-io/xmake/issues/2008): 修复 windows manifest 文件编译
+* [#2016](https://github.com/xmake-io/xmake/issues/2016): 修复 vs project generator 里，对象文件名冲突导致的编译失败
 
 ## v2.6.3
 
