@@ -81,6 +81,11 @@ function _find_package_from_list(list, name, pacman, opt)
     local version = try { function() return os.iorunv(pacman.program, {"-Q", name}) end }
     if version then
         version = version:trim():split('%s+')[2]
+        -- we need strip "1:" prefix, @see https://github.com/xmake-io/xmake/issues/2020
+        -- e.g. vulkan-headers 1:1.3.204-1
+        if version:startswith("1:") then
+            version = version:split(':')[2]
+        end
         result.version = version:split('-')[1]
     else
         result = nil
