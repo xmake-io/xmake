@@ -242,7 +242,10 @@ function main(package)
 
                 -- download package
                 local sourcedir = "source"
-                if git.checkurl(url) then
+                local script = package:script("download")
+                if script then
+                    script(package, {sourcedir = sourcedir, url = url, url_alias = url_alias, url_excludes = url_excludes})
+                elseif git.checkurl(url) then
                     _checkout(package, url, sourcedir, url_alias)
                 else
                     _download(package, url, sourcedir, url_alias, url_excludes)

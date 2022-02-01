@@ -1841,6 +1841,7 @@ function package.apis()
             -- package.on_xxx
             "package.on_load"
         ,   "package.on_fetch"
+        ,   "package.on_download"
         ,   "package.on_install"
         ,   "package.on_test"
         }
