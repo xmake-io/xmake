@@ -61,7 +61,7 @@ rule("qt.qrc")
         local outdata = os.iorunv(rcc, {"-name", path.basename(sourcefile_qrc), sourcefile_qrc, "-list"})
         
         -- add resources files to batch
-        for file in outdata:gmatch("([^\n]*)\n?") do
+        for _, file in ipairs(outdata:split("\n")) do
             batchcmds:add_depfiles(file)
         end
 
