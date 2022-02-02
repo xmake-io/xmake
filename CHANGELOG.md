@@ -7,6 +7,7 @@
 * [#2011](https://github.com/xmake-io/xmake/issues/2011): Support to inherit base package
 * Support to build and run xmake on sparc, alpha, powerpc, s390x and sh4
 * Add on_download for package()
+* [#2021](https://github.com/xmake-io/xmake/issues/2021): Support Swift for linux and windows
 
 ### Bugs fixed
 
@@ -1208,6 +1209,7 @@
 * [#2011](https://github.com/xmake-io/xmake/issues/2011): 支持继承和局部修改官方包，例如对现有的包更换 urls 和 versions
 * 支持在 sparc, alpha, powerpc, s390x 和 sh4 上编译运行 xmake
 * 为 package() 添加 on_download 自定义下载
+* [#2021](https://github.com/xmake-io/xmake/issues/2021): 支持 Linux/Windows 下构建 Swift 程序
 
 ### Bugs 修复
 

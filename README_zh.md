@@ -239,6 +239,7 @@ sdcc          Small Device C Compiler
 cuda          CUDA Toolkit
 ndk           Android NDK
 rust          Rust Programming Language Compiler
+swift         Swift Programming Language Compiler
 llvm          A collection of modular and reusable compiler and toolchain technologies
 cross         Common cross compilation toolchain
 nasm          NASM Assembler
