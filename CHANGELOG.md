@@ -8,6 +8,7 @@
 * Support to build and run xmake on sparc, alpha, powerpc, s390x and sh4
 * Add on_download for package()
 * [#2021](https://github.com/xmake-io/xmake/issues/2021): Support Swift for linux and windows
+* [#2024](https://github.com/xmake-io/xmake/issues/2024): Add asn1c support
 
 ### Bugs fixed
 
@@ -1210,6 +1211,7 @@
 * 支持在 sparc, alpha, powerpc, s390x 和 sh4 上编译运行 xmake
 * 为 package() 添加 on_download 自定义下载
 * [#2021](https://github.com/xmake-io/xmake/issues/2021): 支持 Linux/Windows 下构建 Swift 程序
+* [#2024](https://github.com/xmake-io/xmake/issues/2024): 添加 asn1c 支持
 
 ### Bugs 修复
 
