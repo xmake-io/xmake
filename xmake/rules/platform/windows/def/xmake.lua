@@ -22,12 +22,15 @@
 rule("platform.windows.def")
     set_extensions(".def")
     on_config("windows", function (target)
-        if target:has_tool("ld", "link") then
-            for _, sourcebatch in pairs(target:sourcebatches()) do
-                if sourcebatch.rulename == "platform.windows.def" then
-                    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                        target:add("shflags", "/def:" .. path.translate(sourcefile), {force = true})
-                    end
+        if not target:is_shared() then
+            return
+        end
+        if target:has_tool("sh", "link") then
+            local sourcebatch = target:sourcebatches()["platform.windows.def"]
+            if sourcebatch then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    target:add("shflags", "/def:" .. path.translate(sourcefile), {force = true})
+                    break;
                 end
             end
         end

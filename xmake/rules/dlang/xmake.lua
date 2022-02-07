@@ -38,3 +38,7 @@ rule("dlang")
     -- we attempt to extract symbols to the independent file and
     -- strip self-target binary if `set_symbols("debug")` and `set_strip("all")` are enabled
     add_deps("utils.symbols.extract")
+
+    -- add linker rules
+    add_deps("linker.version_scripts")
+

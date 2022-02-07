@@ -38,3 +38,10 @@ rule("asm")
     -- we attempt to extract symbols to the independent file and
     -- strip self-target binary if `set_symbols("debug")` and `set_strip("all")` are enabled
     add_deps("utils.symbols.extract")
+
+    -- add platform rules
+    add_deps("platform.windows")
+
+    -- add linker rules
+    add_deps("linker.link_scripts", "linker.version_scripts")
+
