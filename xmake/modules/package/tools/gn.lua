@@ -48,12 +48,29 @@ function _get_configs(package, configs, opt)
         local xcode = toolchain.load("xcode", {plat = package:plat(), arch = package:arch()})
         configs.xcode_sysroot = xcode:config("xcode_sysroot")
     end
+    if package:is_plat("linux") then
+        configs.target_os = "linux"
+    elseif package:is_plat("macosx") then
+        configs.target_os = "mac"
+    elseif package:is_plat("windows") then
+        configs.target_os = "win"
+    elseif package:is_plat("iphoneos") then
+        configs.target_os = "ios"
+    elseif package:is_plat("android") then
+        configs.target_os = "android"
+    end
     if package:is_arch("x86", "i386") then
         configs.target_cpu = "x86"
     elseif package:is_arch("x64", "x86_64") then
         configs.target_cpu = "x64"
     elseif package:is_arch("arm64", "arm64-v8a") then
         configs.target_cpu = "arm64"
+    elseif package:is_arch("arm.*") then
+        configs.target_cpu = "arm"
+    end
+    configs.is_debug = package:is_debug()
+    if not package:is_debug() then
+        configs.symbol_level = 0
     end
     return configs
 end
