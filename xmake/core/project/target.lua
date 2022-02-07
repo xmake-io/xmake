@@ -1473,6 +1473,9 @@ function _instance:headerfiles(outputdir, only_deprecated)
         if count == 0 then
             rootdir = nil
         end
+        if rootdir and rootdir:trim() == "" then
+            rootdir = nil
+        end
 
         -- remove '(' and ')' first
         local srcpaths = header:gsub("[%(%)]", "")
@@ -1848,6 +1851,9 @@ function _instance:configheader(outputdir)
     -- get the root directory
     local rootdir, count = configheader:gsub("|.*$", ""):gsub("%(.*%)$", "")
     if count == 0 then
+        rootdir = nil
+    end
+    if rootdir and rootdir:trim() == "" then
         rootdir = nil
     end
 
