@@ -40,5 +40,5 @@ rule("dlang")
     add_deps("utils.symbols.extract")
 
     -- add linker rules
-    add_deps("linker.version_scripts")
+    add_deps("linker")
 

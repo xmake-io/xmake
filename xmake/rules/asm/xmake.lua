@@ -43,5 +43,5 @@ rule("asm")
     add_deps("platform.windows")
 
     -- add linker rules
-    add_deps("linker.link_scripts", "linker.version_scripts")
+    add_deps("linker")
 

@@ -9,5 +9,9 @@ target("test")
 target("foo")
     set_kind("shared")
     add_files("src/foo.c")
-    add_files("src/foo.map")
+    if is_plat("windows") then
+        add_files("src/foo.def")
+    else
+        add_files("src/foo.map")
+    end
 
