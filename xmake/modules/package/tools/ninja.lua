@@ -31,7 +31,7 @@ function build(package, configs, opt)
     local argv = {}
     if opt.target then
         table.insert(argv, opt.target)
-    end        
+    end
     table.insert(argv, "-C")
     table.insert(argv, buildir)
     if option.get("verbose") then

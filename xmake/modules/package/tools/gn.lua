@@ -36,6 +36,25 @@ end
 
 -- get configs
 function _get_configs(package, configs, opt)
+    configs = configs or {}
+    if not package:is_plat("windows") then
+        configs.cc  = package:build_getenv("cc")
+        configs.cxx = package:build_getenv("cxx")
+    else
+        configs.extra_cflags  = {(package:config("vs_runtime"):startswith("MT") and "/MT" or "/MD")}
+    end
+    if package:is_plat("macosx") then
+        configs.extra_ldflags = {"-lstdc++"}
+        local xcode = toolchain.load("xcode", {plat = package:plat(), arch = package:arch()})
+        configs.xcode_sysroot = xcode:config("xcode_sysroot")
+    end
+    if package:is_arch("x86", "i386") then
+        configs.target_cpu = "x86"
+    elseif package:is_arch("x64", "x86_64") then
+        configs.target_cpu = "x64"
+    elseif package:is_arch("arm64", "arm64-v8a") then
+        configs.target_cpu = "arm64"
+    end
     return configs
 end
 
