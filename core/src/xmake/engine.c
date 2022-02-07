@@ -36,12 +36,15 @@
 #elif defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_IOS)
 #   include <unistd.h>
 #   include <mach-o/dyld.h>
+#   include <signal.h>
 #elif defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD) || defined(TB_CONFIG_OS_ANDROID)
 #   include <unistd.h>
+#   include <signal.h>
 #endif
 #ifdef TB_CONFIG_OS_BSD
-#  include <sys/types.h>
-#  include <sys/sysctl.h>
+#   include <sys/types.h>
+#   include <sys/sysctl.h>
+#   include <signal.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -448,6 +451,9 @@ static luaL_Reg const g_tty_functions[] =
 ,   { tb_null,          tb_null             }
 };
 
+// the lua global instance for signal handler
+static lua_State* g_lua = tb_null;
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
@@ -492,16 +498,14 @@ static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb
 
     // _ARGV = table_new
     lua_setglobal(engine->lua, "_ARGV");
-
-    // ok
     return tb_true;
 }
+
 static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path, tb_size_t maxn)
 {
     // check
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
 
-    // done
     tb_bool_t ok = tb_false;
     do
     {
@@ -563,16 +567,14 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
         lua_pushstring(engine->lua, path);
         lua_setglobal(engine->lua, "_PROGRAM_FILE");
     }
-
-    // ok?
     return ok;
 }
+
 static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t* path, tb_size_t maxn, tb_char_t const* programfile)
 {
     // check
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
 
-    // done
     tb_bool_t ok = tb_false;
     do
     {
@@ -652,12 +654,12 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
     // ok?
     return ok;
 }
+
 static tb_bool_t xm_engine_get_project_directory(xm_engine_t* engine, tb_char_t* path, tb_size_t maxn)
 {
     // check
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
 
-    // done
     tb_bool_t ok = tb_false;
     do
     {
@@ -688,6 +690,7 @@ static tb_bool_t xm_engine_get_project_directory(xm_engine_t* engine, tb_char_t*
     // ok?
     return ok;
 }
+
 static tb_void_t xm_engine_init_host(xm_engine_t* engine)
 {
     // check
@@ -733,6 +736,7 @@ static tb_void_t xm_engine_init_host(xm_engine_t* engine)
     lua_pushstring(engine->lua, subhost? subhost : "unknown");
     lua_setglobal(engine->lua, "_SUBHOST");
 }
+
 static tb_void_t xm_engine_init_arch(xm_engine_t* engine)
 {
     // check
@@ -803,6 +807,7 @@ static tb_void_t xm_engine_init_arch(xm_engine_t* engine)
     lua_pushstring(engine->lua, subarch);
     lua_setglobal(engine->lua, "_SUBARCH");
 }
+
 static tb_void_t xm_engine_init_features(xm_engine_t* engine)
 {
     // check
@@ -830,6 +835,51 @@ static tb_void_t xm_engine_init_features(xm_engine_t* engine)
     lua_settable(engine->lua, -3);
 
     lua_setglobal(engine->lua, "_FEATURES");
+}
+
+#if defined(TB_CONFIG_OS_WINDOWS)
+static BOOL WINAPI xm_engine_signal_handler(tb_int_t signo)
+{
+    if (signo == CTRL_C_EVENT)
+    {
+        tb_trace_i("signal: %d", signo);
+        tb_abort();
+    }
+    return TRUE;
+}
+#elif defined(SIGINT)
+static tb_void_t xm_engine_signal_handler(tb_int_t signo)
+{
+    if (signo == SIGINT)
+    {
+        tb_trace_i("signal: %d", signo);
+#if 0
+        lua_getfield(lua, 1, "debug");
+        lua_pushvalue(lua, -2);
+        lua_pushvalue(lua, 1);
+        if (lua_pcall(lua, 2, 0, 0) != 0)
+        {
+            tb_printl(lua_pushfstring(lua, "error calling " LUA_QL("$interactive_setfenv") " (%s)", lua_tostring(lua, -1)));
+        }
+#endif
+        tb_abort();
+    }
+}
+#endif
+
+static tb_void_t xm_engine_init_signal(xm_engine_t* engine)
+{
+    // we enable it to catch the current lua stack in ctrl-c signal handler if XMAKE_PROFILE=stuck
+    tb_char_t data[64] = {0};
+    if (!tb_environment_first("XMAKE_PROFILE", data, sizeof(data)) || tb_strcmp(data, "stuck"))
+        return ;
+
+    g_lua = engine->lua;
+#if defined(TB_CONFIG_OS_WINDOWS)
+    SetConsoleCtrlHandler(xm_engine_signal_handler, TRUE);
+#elif defined(SIGINT)
+    signal(SIGINT, xm_engine_signal_handler);
+#endif
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -914,6 +964,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
         // init features
         xm_engine_init_features(engine);
+
+        // init signal
+        xm_engine_init_signal(engine);
 
         // get version
         tb_version_t const* version = xm_version();
