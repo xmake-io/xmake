@@ -4,7 +4,9 @@ target("test")
     add_deps("foo")
     set_kind("binary")
     add_files("src/main.c")
-    add_files("src/main.lds")
+    if is_plat("linux") and is_arch("x86_64") then
+        add_files("src/main.lds")
+    end
 
 target("foo")
     set_kind("shared")
