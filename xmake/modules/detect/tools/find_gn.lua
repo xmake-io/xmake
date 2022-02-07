@@ -42,6 +42,9 @@ function main(opt)
 
     -- find program
     local program = find_program(opt.program or "gn", opt)
+    if not program and is_host("windows") then
+        program = find_program("gn.bat", opt)
+    end
 
     -- find program version
     local version = nil
