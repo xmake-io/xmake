@@ -192,7 +192,7 @@ function _instance:_copiedfiles(filetype, outputdir, pathfilter)
             rootdir = nil
         end
         if rootdir and rootdir:trim() == "" then
-            rootdir = nil
+            rootdir = "."
         end
 
         -- remove '(' and ')'
@@ -1474,7 +1474,7 @@ function _instance:headerfiles(outputdir, only_deprecated)
             rootdir = nil
         end
         if rootdir and rootdir:trim() == "" then
-            rootdir = nil
+            rootdir = "."
         end
 
         -- remove '(' and ')' first
@@ -1854,7 +1854,7 @@ function _instance:configheader(outputdir)
         rootdir = nil
     end
     if rootdir and rootdir:trim() == "" then
-        rootdir = nil
+        rootdir = "."
     end
 
     -- remove '(' and ')'
