@@ -64,3 +64,7 @@ rule("c++")
 
     -- add platform rules
     add_deps("platform.windows")
+
+    -- add linker rules
+    add_deps("linker")
+

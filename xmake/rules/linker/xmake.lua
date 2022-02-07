@@ -18,21 +18,7 @@
 -- @file        xmake.lua
 --
 
--- add *.def for windows/dll
-rule("platform.windows.def")
-    set_extensions(".def")
-    on_config("windows", function (target)
-        if not target:is_shared() then
-            return
-        end
-        if target:has_tool("sh", "link") then
-            local sourcebatch = target:sourcebatches()["platform.windows.def"]
-            if sourcebatch then
-                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                    target:add("shflags", "/def:" .. path.translate(sourcefile), {force = true})
-                    break;
-                end
-            end
-        end
-    end)
+rule("linker")
+    add_deps("linker.link_scripts")
+    add_deps("linker.version_scripts")
 

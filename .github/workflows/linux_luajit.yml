@@ -29,6 +29,10 @@ jobs:
           source ~/.xmake/profile
           xmake --version
 
+      - name: Prepare
+        run: |
+          sudo apt install -y build-essential llvm
+
       - name: Tests
         run: |
           xmake lua -v -D tests/run.lua

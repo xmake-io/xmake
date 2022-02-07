@@ -27,6 +27,10 @@ jobs:
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
+      - name: Prepare
+        run: |
+          sudo apt install -y ruby ruby-dev rubygems build-essential llvm
+
       - name: Tests
         run: |
           xmake lua -v -D tests/run.lua
@@ -34,7 +38,6 @@ jobs:
 
       - name: Artifact
         run: |
-          sudo apt install -y ruby ruby-dev rubygems build-essential
           sudo gem install --no-document fpm
           scripts/makepkg deb
       - uses: actions/upload-artifact@v2

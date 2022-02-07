@@ -9,6 +9,7 @@
 * Add on_download for package()
 * [#2021](https://github.com/xmake-io/xmake/issues/2021): Support Swift for linux and windows
 * [#2024](https://github.com/xmake-io/xmake/issues/2024): Add asn1c support
+* [#2031](https://github.com/xmake-io/xmake/issues/2031): Support linker scripts and version scripts for add_files
 
 ### Bugs fixed
 
@@ -1212,6 +1213,7 @@
 * 为 package() 添加 on_download 自定义下载
 * [#2021](https://github.com/xmake-io/xmake/issues/2021): 支持 Linux/Windows 下构建 Swift 程序
 * [#2024](https://github.com/xmake-io/xmake/issues/2024): 添加 asn1c 支持
+* [#2031](https://github.com/xmake-io/xmake/issues/2031): 为 add_files 增加 linker scripts 和 version scripts 支持
 
 ### Bugs 修复
 

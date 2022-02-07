@@ -23,14 +23,17 @@
 rule("platform.windows.manifest")
     set_extensions(".manifest")
     on_config("windows", function (target)
+        if not target:is_binary() then
+            return
+        end
         if target:has_tool("ld", "link") then
             local manifest = false
-            for _, sourcebatch in pairs(target:sourcebatches()) do
-                if sourcebatch.rulename == "platform.windows.manifest" then
-                    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                        target:add("ldflags", "/ManifestInput:" .. path.translate(sourcefile), {force = true})
-                        manifest = true
-                    end
+            local sourcebatch = target:sourcebatches()["platform.windows.manifest"]
+            if sourcebatch then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    target:add("ldflags", "/ManifestInput:" .. path.translate(sourcefile), {force = true})
+                    manifest = true
+                    break
                 end
             end
             if manifest then
