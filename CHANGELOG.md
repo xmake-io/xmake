@@ -10,6 +10,7 @@
 * [#2021](https://github.com/xmake-io/xmake/issues/2021): Support Swift for linux and windows
 * [#2024](https://github.com/xmake-io/xmake/issues/2024): Add asn1c support
 * [#2031](https://github.com/xmake-io/xmake/issues/2031): Support linker scripts and version scripts for add_files
+* [#2033](https://github.com/xmake-io/xmake/issues/2033): Catch ctrl-c to get current backtrace for debugging stuck
 
 ### Bugs fixed
 
@@ -1214,6 +1215,7 @@
 * [#2021](https://github.com/xmake-io/xmake/issues/2021): 支持 Linux/Windows 下构建 Swift 程序
 * [#2024](https://github.com/xmake-io/xmake/issues/2024): 添加 asn1c 支持
 * [#2031](https://github.com/xmake-io/xmake/issues/2031): 为 add_files 增加 linker scripts 和 version scripts 支持
+* [#2033](https://github.com/xmake-io/xmake/issues/2033): 捕获 ctrl-c 去打印当前运行栈，用于调试分析卡死问题
 
 ### Bugs 修复
 
