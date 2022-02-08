@@ -335,9 +335,10 @@ function _get_configs_for_appleos(package, configs, opt)
             envs.CMAKE_OSX_SYSROOT = "iphonesimulator"
         end
     end
-    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
-    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
-    envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY   = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE   = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_FRAMEWORK = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM   = "NEVER"
     -- avoid install bundle targets
     envs.CMAKE_MACOSX_BUNDLE       = "NO"
     for k, v in pairs(envs) do
@@ -366,10 +367,11 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
     envs.CMAKE_SYSTEM_NAME         = "Windows"
     -- avoid find and add system include/library path
+    -- @see https://github.com/xmake-io/xmake/issues/2037
     envs.CMAKE_FIND_ROOT_PATH      = sdkdir
     envs.CMAKE_SYSROOT             = sdkdir
-    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
-    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
     -- avoid add -isysroot on macOS
     envs.CMAKE_OSX_SYSROOT = ""
@@ -410,10 +412,11 @@ function _get_configs_for_cross(package, configs, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
     envs.CMAKE_SYSTEM_NAME         = "Linux"
     -- avoid find and add system include/library path
+    -- @see https://github.com/xmake-io/xmake/issues/2037
     envs.CMAKE_FIND_ROOT_PATH      = sdkdir
     envs.CMAKE_SYSROOT             = sdkdir
-    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
-    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
     -- avoid add -isysroot on macOS
     envs.CMAKE_OSX_SYSROOT = ""
