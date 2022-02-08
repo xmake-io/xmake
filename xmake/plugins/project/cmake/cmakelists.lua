@@ -50,6 +50,16 @@ function _get_unix_path(filepath)
     return (path.translate(filepath):gsub('\\', '/'))
 end
 
+-- get unix path relative to the cmake path
+-- @see https://github.com/xmake-io/xmake/issues/2026
+function _get_unix_path_relative_to_cmake(filepath)
+    filepath = _get_unix_path(filepath)
+    if filepath and not path.is_absolute(filepath) then
+        filepath = "${CMAKE_SOURCE_DIR}/" .. filepath
+    end
+    return filepath
+end
+
 -- get configs from target
 function _get_configs_from_target(target, name)
     local values = {}
@@ -116,21 +126,21 @@ end
 function _add_target_binary(cmakelists, target)
     cmakelists:print("add_executable(%s \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
-    cmakelists:print("set_target_properties(%s PROPERTIES RUNTIME_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path(target:targetdir()))
+    cmakelists:print("set_target_properties(%s PROPERTIES RUNTIME_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path_relative_to_cmake(target:targetdir()))
 end
 
 -- add target: static
 function _add_target_static(cmakelists, target)
     cmakelists:print("add_library(%s STATIC \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
-    cmakelists:print("set_target_properties(%s PROPERTIES ARCHIVE_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path(target:targetdir()))
+    cmakelists:print("set_target_properties(%s PROPERTIES ARCHIVE_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path_relative_to_cmake(target:targetdir()))
 end
 
 -- add target: shared
 function _add_target_shared(cmakelists, target)
     cmakelists:print("add_library(%s SHARED \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
-    cmakelists:print("set_target_properties(%s PROPERTIES LIBRARY_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path(target:targetdir()))
+    cmakelists:print("set_target_properties(%s PROPERTIES LIBRARY_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path_relative_to_cmake(target:targetdir()))
 end
 
 -- add target: headeronly
