@@ -72,6 +72,7 @@ function menu_options()
         {nil, "packages",      "vs", nil, "The packages list.",
                                        "e.g.",
                                        "    - xrepo install zlib boost",
+                                       "    - xrepo install /tmp/zlib.lua",
                                        "    - xrepo install -p iphoneos -a arm64 \"zlib >=1.2.0\"",
                                        "    - xrepo install -p android [--ndk=/xxx] -m debug \"pcre2 10.x\"",
                                        "    - xrepo install -p mingw [--mingw=/xxx] -k shared zlib",
