@@ -268,6 +268,23 @@ function os._deduplicate_pathenv(value)
     return value
 end
 
+-- trace process for profile(stuck,trace)?
+function os._is_tracing_process()
+    local is_tracing = os._IS_TRACING_PROCESS
+    if is_tracing == nil then
+        local profile = os.getenv("XMAKE_PROFILE")
+        if profile then
+            profile = profile:trim()
+            if profile == "trace" or profile == "stuck" then
+                is_tracing = true
+            end
+        end
+        is_tracing = is_tracing or false
+        os._IS_TRACING_PROCESS = is_tracing
+    end
+    return is_tracing
+end
+
 -- match files or directories
 --
 -- @param pattern   the search pattern
@@ -748,6 +765,11 @@ function os.execv(program, argv, opt)
     local ok = -1
     local proc = process.openv(filename, argv or {}, openopt)
     if proc ~= nil then
+
+        -- trace process
+        if os._is_tracing_process() then
+            utils.cprint("%s: ${color.dump.string}%s %s${clear}", proc, filename, argv and os.args(argv) or "")
+        end
 
         -- wait process
         local waitok, status = proc:wait(-1)
