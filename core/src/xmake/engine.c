@@ -699,8 +699,7 @@ static tb_void_t xm_engine_dump_traceback(lua_State* lua)
     lua_getfield(lua, -1, "traceback");
     lua_replace(lua, -2);
     lua_pushvalue(lua, 1);
-    lua_pushinteger(lua, 2);
-    lua_call(lua, 2, 1);
+    lua_call(lua, 1, 1);
     tb_trace_i("%s", lua_tostring(lua, -1));
 }
 #endif
