@@ -148,19 +148,20 @@ function profiler:stop()
    end
 end
 
--- get profiler mode
+-- get profiler mode, e.g. perf, trace
 function profiler:mode()
     local mode = self._MODE
-    if not mode then
-        mode = os.getenv("XMAKE_PROFILE")
+    if mode == nil then
+        mode = os.getenv("XMAKE_PROFILE") or false
         self._MODE = mode
     end
-    return mode
+    return mode or nil
 end
 
 -- profiler is enabled?
 function profiler:enabled()
-    return self:mode() ~= nil
+    local mode = self:mode()
+    return mode ~= nil and (mode == "trace" or mode == "perf")
 end
 
 -- return module
