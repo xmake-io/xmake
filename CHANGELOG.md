@@ -12,6 +12,10 @@
 * [#2031](https://github.com/xmake-io/xmake/issues/2031): Support linker scripts and version scripts for add_files
 * [#2033](https://github.com/xmake-io/xmake/issues/2033): Catch ctrl-c to get current backtrace for debugging stuck
 
+### Changes
+
+* [#2036](https://github.com/xmake-io/xmake/issues/2036): Improve xrepo to install packages from configuration file, e.g. `xrepo install xxx.lua`
+
 ### Bugs fixed
 
 * [#2005](https://github.com/xmake-io/xmake/issues/2005): Fix path.extension
@@ -1216,6 +1220,10 @@
 * [#2024](https://github.com/xmake-io/xmake/issues/2024): 添加 asn1c 支持
 * [#2031](https://github.com/xmake-io/xmake/issues/2031): 为 add_files 增加 linker scripts 和 version scripts 支持
 * [#2033](https://github.com/xmake-io/xmake/issues/2033): 捕获 ctrl-c 去打印当前运行栈，用于调试分析卡死问题
+
+### 改进
+
+* [#2036](https://github.com/xmake-io/xmake/issues/2036): 改进 xrepo 支持从配置文件批量安装包，例如：`xrepo install xxx.lua`
 
 ### Bugs 修复
 

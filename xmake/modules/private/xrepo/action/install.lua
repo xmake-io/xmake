@@ -107,6 +107,21 @@ function _install_packages(packages)
         os.cd(workdir)
     end
 
+    -- is package configuration file? e.g. xrepo install xxx.lua
+    --
+    -- xxx.lua
+    --   add_requires("libpng", {system = false})
+    --   add_requireconfs("libpng.*", {configs = {shared = true}})
+    local filemode = false
+    if type(packages) == "string" or #packages == 1 then
+        local packagefile = table.unwrap(packages)
+        if type(packagefile) == "string" and packagefile:endswith(".lua") and os.isfile(packagefile) then
+            assert(os.isfile("xmake.lua"), "xmake.lua not found!")
+            os.cp(packagefile, "xmake.lua")
+            filemode = true
+        end
+    end
+
     -- disable xmake-stats
     os.setenv("XMAKE_STATS", "false")
 
@@ -224,7 +239,9 @@ function _install_packages(packages)
         local extra_str = string.serialize(extra, {indent = false, strip = true})
         table.insert(require_argv, "--extra=" .. extra_str)
     end
-    table.join2(require_argv, packages)
+    if not filemode then
+        table.join2(require_argv, packages)
+    end
     os.vexecv("xmake", require_argv, {envs = envs})
 end
 
