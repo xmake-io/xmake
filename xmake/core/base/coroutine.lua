@@ -31,8 +31,6 @@ coroutine._resume  = coroutine._resume or coroutine.resume
 
 -- resume coroutine
 function coroutine.resume(co, ...)
-
-    -- resume it
     local ok, results = coroutine._resume(co, ...)
     if not ok then
 
@@ -47,12 +45,8 @@ function coroutine.resume(co, ...)
                 errors = results:sub(pos + 1)
             end
         end
-
-        -- failed
         return false, errors
     end
-
-    -- ok
     return true, results
 end
 

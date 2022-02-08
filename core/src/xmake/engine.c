@@ -691,6 +691,41 @@ static tb_bool_t xm_engine_get_project_directory(xm_engine_t* engine, tb_char_t*
     return ok;
 }
 
+#if defined(TB_CONFIG_OS_WINDOWS) || defined(SIGINT)
+static tb_void_t xm_engine_dump_traceback(lua_State* lua)
+{
+    // @note it's not safe, but it doesn't matter, we're just trying to get the stack backtrace for debugging
+    lua_getglobal(lua, "debug");
+    lua_getfield(lua, -1, "traceback");
+    lua_replace(lua, -2);
+    lua_pushvalue(lua, 1);
+    lua_pushinteger(lua, 2);
+    lua_call(lua, 2, 1);
+    tb_trace_i("%s", lua_tostring(lua, -1));
+}
+#endif
+
+#if defined(TB_CONFIG_OS_WINDOWS)
+static BOOL WINAPI xm_engine_signal_handler(DWORD signo)
+{
+    if (signo == CTRL_C_EVENT && g_lua)
+    {
+        xm_engine_dump_traceback(g_lua);
+        tb_abort();
+    }
+    return TRUE;
+}
+#elif defined(SIGINT)
+static tb_void_t xm_engine_signal_handler(tb_int_t signo)
+{
+    if (signo == SIGINT && g_lua)
+    {
+        xm_engine_dump_traceback(g_lua);
+        tb_abort();
+    }
+}
+#endif
+
 static tb_void_t xm_engine_init_host(xm_engine_t* engine)
 {
     // check
@@ -836,36 +871,6 @@ static tb_void_t xm_engine_init_features(xm_engine_t* engine)
 
     lua_setglobal(engine->lua, "_FEATURES");
 }
-
-#if defined(TB_CONFIG_OS_WINDOWS)
-static BOOL WINAPI xm_engine_signal_handler(tb_int_t signo)
-{
-    if (signo == CTRL_C_EVENT)
-    {
-        tb_trace_i("signal: %d", signo);
-        tb_abort();
-    }
-    return TRUE;
-}
-#elif defined(SIGINT)
-static tb_void_t xm_engine_signal_handler(tb_int_t signo)
-{
-    if (signo == SIGINT)
-    {
-        tb_trace_i("signal: %d", signo);
-#if 0
-        lua_getfield(lua, 1, "debug");
-        lua_pushvalue(lua, -2);
-        lua_pushvalue(lua, 1);
-        if (lua_pcall(lua, 2, 0, 0) != 0)
-        {
-            tb_printl(lua_pushfstring(lua, "error calling " LUA_QL("$interactive_setfenv") " (%s)", lua_tostring(lua, -1)));
-        }
-#endif
-        tb_abort();
-    }
-}
-#endif
 
 static tb_void_t xm_engine_init_signal(xm_engine_t* engine)
 {
