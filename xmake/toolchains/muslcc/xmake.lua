@@ -18,17 +18,13 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
 toolchain("muslcc")
-
-    -- set homepage
     set_homepage("https://musl.cc/")
     set_description("The musl-based cross-compilation toolchains")
 
     -- mark as cross-compilation toolchain
     set_kind("cross")
 
-    -- on load
     on_load(function (toolchain)
 
         -- load basic configuration of cross toolchain

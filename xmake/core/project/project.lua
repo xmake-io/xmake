@@ -628,6 +628,22 @@ function project._toolchains()
         if not toolchains then
             os.raise(errors)
         end
+        -- load toolchains from data file from "package.tools.xmake" module
+        local toolchain_datafiles = os.getenv("XMAKE_TOOLCHAIN_DATAFILES")
+        if toolchain_datafiles then
+            toolchain_datafiles = path.splitenv(toolchain_datafiles)
+            if toolchain_datafiles and #toolchain_datafiles > 0 then
+                for _, toolchain_datafile in ipairs(toolchain_datafiles) do
+                    local toolchain_inst, errors = toolchain.load_fromfile(toolchain_datafile)
+                    if toolchain_inst then
+                        -- @note we use this passed toolchain configuration first if this toolchain has been defined in current project
+                        toolchains[toolchain_inst:name()] = toolchain_inst
+                    else
+                        os.raise(errors)
+                    end
+                end
+            end
+        end
         project._memcache():set("toolchains", toolchains)
     end
     return toolchains

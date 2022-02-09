@@ -29,6 +29,7 @@ local utils          = require("base/utils")
 local table          = require("base/table")
 local global         = require("base/global")
 local option         = require("base/option")
+local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local config         = require("project/config")
 local memcache       = require("cache/memcache")
@@ -38,13 +39,14 @@ local sandbox        = require("sandbox/sandbox")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
-function _instance.new(name, info, cachekey, configs)
-    local instance     = table.inherit(_instance)
-    instance._NAME     = name
-    instance._INFO     = info
-    instance._CACHE    = toolchain._localcache()
-    instance._CACHEKEY = cachekey
-    instance._CONFIGS  = instance._CACHE:get(cachekey) or {}
+function _instance.new(name, info, cachekey, is_builtin, configs)
+    local instance       = table.inherit(_instance)
+    instance._NAME       = name
+    instance._INFO       = info
+    instance._IS_BUILTIN = is_builtin
+    instance._CACHE      = toolchain._localcache()
+    instance._CACHEKEY   = cachekey
+    instance._CONFIGS    = instance._CACHE:get(cachekey) or {}
     for k, v in pairs(configs) do
         instance._CONFIGS[k] = v
     end
@@ -160,6 +162,11 @@ end
 -- is global toolchain for whole platform
 function _instance:is_global()
     return self:config("__global")
+end
+
+-- is builtin toolchain? it's not from local project
+function _instance:is_builtin()
+    return self._IS_BUILTIN
 end
 
 -- get the run environments
@@ -290,6 +297,11 @@ function _instance:packages()
         self._PACKAGES = packages or false
     end
     return packages or nil
+end
+
+-- save toolchain to file
+function _instance:savefile(filepath)
+    return io.save(filepath, {name = self:name(), info = self:info():info(), cachekey = self:cachekey(), configs = self._CONFIGS})
 end
 
 -- on check (builtin)
@@ -603,7 +615,7 @@ function toolchain.load(name, opt)
     end
 
     -- save instance to the cache
-    instance = _instance.new(name, result, cachekey, opt)
+    instance = _instance.new(name, result, cachekey, true, opt)
     cache:set(cachekey, instance)
     return instance
 end
@@ -630,10 +642,30 @@ function toolchain.load_withinfo(name, info, opt)
     end
 
     -- save instance to the cache
-    instance = _instance.new(name, info, cachekey, opt)
+    instance = _instance.new(name, info, cachekey, false, opt)
     cache:set(cachekey, instance)
     return instance
 end
+
+-- load toolchain from file
+function toolchain.load_fromfile(filepath, opt)
+    local fileinfo, errors = io.load(filepath)
+    if not fileinfo then
+        return nil, errors
+    end
+    if not fileinfo.name or not fileinfo.info then
+        return nil, string.format("%s is invalid toolchain info file!", filepath)
+    end
+    opt = table.join(opt or {}, fileinfo.configs)
+    opt.cachekey = fileinfo.cachekey
+    local scope_opt = {interpreter = toolchain._interpreter(), deduplicate = true, enable_filter = true}
+    local info = scopeinfo.new("toolchain", fileinfo.info, scope_opt)
+    local instance = toolchain.load_withinfo(fileinfo.name, info, opt)
+    -- we need skip check
+    instance._CHECKED = true
+    return instance
+end
+
 
 -- get the program and name of the given tool kind
 function toolchain.tool(toolchains, toolkind, opt)
