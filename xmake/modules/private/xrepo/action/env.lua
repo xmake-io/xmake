@@ -298,10 +298,8 @@ function _package_getenvs(opt)
         packages = boundenv or option.get("program")
     end
     if os.isfile(os.projectfile()) or has_envfile then
-        if not os.isfile(os.projectfile()) then
-            _enter_project({enteronly = true})
-        end
         if has_envfile then
+            _enter_project({enteronly = true})
             table.insert(project.rcfiles(), boundenv)
         end
         task.run("config", {target = "all"}, {disable_dump = true})
