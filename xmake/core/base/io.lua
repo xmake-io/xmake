@@ -601,66 +601,41 @@ end
 
 -- save object the the given filepath
 function io.save(filepath, object, opt)
-
-    -- check
     assert(filepath and object)
 
-    -- init option
     opt = opt or {}
-
-    -- open the file
     local file, err = io.open(filepath, "wb", opt)
     if err then
-        -- error
         return false, err
     end
 
-    -- save object to file
     local ok, errors = file:save(object, opt)
-    -- close file
     file:close()
     if not ok then
-        -- error
         return false, string.format("save %s failed, %s!", filepath, errors)
     end
-
-    -- ok
     return true
 end
 
 -- load object from the given file
 function io.load(filepath, opt)
-
-    -- check
     assert(filepath)
 
-    -- init option
     opt = opt or {}
-
-    -- open the file
     local file, err = io.open(filepath, "rb", opt)
     if err then
-        -- error
         return nil, err
     end
-
-    -- load object
     local result, errors = file:load()
-
-    -- close file
     file:close()
-
-    -- ok?
     return result, errors
 end
 
 -- gsub the given file and return replaced data
 function io.gsub(filepath, pattern, replace, opt)
 
-    -- init option
-    opt = opt or {}
-
     -- read all data from file
+    opt = opt or {}
     local data, errors = io.readfile(filepath, opt)
     if not data then return nil, 0, errors end
 

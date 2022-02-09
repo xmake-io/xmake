@@ -138,25 +138,29 @@ function _get_package_requireinfo(packagename)
     end
 end
 
--- get the build environments
-function buildenvs(package, opt)
+-- get package toolchains envs
+function _get_package_toolchains_envs(package, opt)
     opt = opt or {}
     local envs = {}
-    -- pass toolchains
     local toolchains = package:config("toolchains")
     if toolchains then
+
+        -- pass toolchains name and their package configurations
         local toolchain_packages = {}
+        local toolchains_custom = {}
         for _, name in ipairs(toolchains) do
             local toolchain_inst = toolchain.load(name, {plat = package:plat(), arch = package:arch()})
             if toolchain_inst then
                 table.join2(toolchain_packages, toolchain_inst:config("packages"))
+                if not toolchain_inst:is_builtin() then
+                    table.insert(toolchains_custom, toolchain_inst)
+                end
             end
         end
         local rcfile_path = os.tmpfile() .. ".lua"
         local rcfile = io.open(rcfile_path, 'w')
         if #toolchain_packages > 0 then
             for _, packagename in ipairs(toolchain_packages) do
-                -- pass package configurations, {configs = {}}
                 local requireinfo = _get_package_requireinfo(packagename)
                 if requireinfo then
                     requireinfo.originstr = nil
@@ -171,8 +175,18 @@ function buildenvs(package, opt)
         envs.XMAKE_RCFILES = {}
         table.insert(envs.XMAKE_RCFILES, rcfile_path)
         table.join2(envs.XMAKE_RCFILES, os.getenv("XMAKE_RCFILES"))
+
+        -- pass custom toolchains definition in project
+        for _, toolchain_inst in ipairs(toolchains_custom) do
+            print("pass", toolchain_inst:name())
+        end
     end
     return envs
+end
+
+-- get the build environments
+function buildenvs(package, opt)
+    return _get_package_toolchains_envs(package, opt)
 end
 
 -- install package
