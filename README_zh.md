@@ -57,6 +57,15 @@
 <a href="https://opencollective.com/xmake#sponsors" target="_blank"><img src="https://opencollective.com/xmake/sponsors.svg?width=890"></a>
 <a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=600"></a>
 
+## 技术支持
+
+你也可以考虑通过 [[Github 的赞助计划](https://github.com/sponsors/waruqi)] 赞助我们来获取额外的技术支持服务，然后你就能获取 [xmake-io/technical-support](https://github.com/xmake-io/technical-support) 仓库的访问权限，获取更多技术咨询相关的信息。
+
+你能够获取到以下技术支持：
+
+- [x] 更高优先级的 Issues 问题处理
+- [x] 一对一技术咨询服务
+
 ## 简介
 
 Xmake 是一个基于 Lua 的轻量级跨平台构建工具。
@@ -572,16 +581,6 @@ uses: xmake-io/github-action-setup-xmake@v1
 with:
   xmake-version: latest
 ```
-
-## 技术支持
-
-我们也提供付费的技术支持来为帮助用户快速解决相关问题，具体详情请点击下面的图片链接：
-
-<a href="https://xscode.com/waruqi/xmake">
-<img src="https://tboox.org/assets/img/xmake-xscode.png" width="650px" />
-</a>
-
-或者你也可以考虑赞助我们也获取技术支持服务，[[成为赞助商](https://xmake.io/#/zh-cn/about/sponsor)]
 
 ## 谁在使用 Xmake?
 

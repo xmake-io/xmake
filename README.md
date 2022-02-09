@@ -50,12 +50,22 @@
   <i>Modern C/C++ build tools, Simple, Fast, Powerful dependency package integration</i><br/>
 </div>
 
-## Supporting the project
+## Support this project
 
 Support this project by [becoming a sponsor](https://xmake.io/#/about/sponsor). Your logo will show up here with a link to your website. 🙏
 
 <a href="https://opencollective.com/xmake#sponsors" target="_blank"><img src="https://opencollective.com/xmake/sponsors.svg?width=890"></a>
 <a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
+
+## Technical Support
+
+You can also consider sponsoring us to get extra technical support services via [[Github sponsor program](https://github.com/sponsors/waruqi)],
+then you can get access to [xmake-io/technical-support](https://github.com/xmake-io/technical-support) repository to get more consulting related information.
+
+You will get:
+
+- [x] Handling Issues with higher priority
+- [x] One-to-one technical consulting service
 
 ## Introduction ([中文](/README_zh.md))
 
@@ -564,16 +574,6 @@ uses: xmake-io/github-action-setup-xmake@v1
 with:
   xmake-version: latest
 ```
-
-## Technical Support
-
-We also provide paid technical support to help users quickly solve related problems. For details, please click the image link below:
-
-<a href="https://xscode.com/waruqi/xmake">
-<img src="https://tboox.org/assets/img/xmake-xscode.png" width="650px" />
-</a>
-
-Or you can also consider sponsoring us to get technical support services, [[Become a sponsor](https://xmake.io/#/about/sponsor)]
 
 ## Who is using Xmake?
 
