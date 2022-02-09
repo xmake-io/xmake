@@ -301,7 +301,7 @@ end
 
 -- save toolchain to file
 function _instance:savefile(filepath)
-    return io.save(filepath, self:info():info())
+    return io.save(filepath, {name = self:name(), info = self:info():info(), configs = self._CONFIGS})
 end
 
 -- on check (builtin)
@@ -648,14 +648,18 @@ function toolchain.load_withinfo(name, info, opt)
 end
 
 -- load toolchain from file
-function toolchain.load_fromfile(name, filepath, opt)
+function toolchain.load_fromfile(filepath, opt)
     local fileinfo, errors = io.load(filepath)
     if not fileinfo then
         return nil, errors
     end
+    if not fileinfo.name or not fileinfo.info then
+        return nil, string.format("%s is invalid toolchain info file!", filepath)
+    end
+    opt = opt or {}
     local scope_opt = {interpreter = toolchain._interpreter(), deduplicate = true, enable_filter = true}
-    local info = scopeinfo.new("toolchain", fileinfo, scope_opt)
-    return toolchain.load_withinfo(name, info, opt)
+    local info = scopeinfo.new("toolchain", fileinfo.info, scope_opt)
+    return toolchain.load_withinfo(fileinfo.name, info, table.join(opt, fileinfo.configs))
 end
 
 
