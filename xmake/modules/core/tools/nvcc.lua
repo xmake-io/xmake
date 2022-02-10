@@ -286,6 +286,16 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.runv(program, argv, {envs = self:runenvs()})
 end
 
+-- support `-MD -MF depfile.d`?
+function _has_flags_md_mf(self)
+    local has_md_mf = _g._HAS_MD_MF
+    if has_md_mf == nil then
+       has_md_mf = self:has_flags({"-MD", "-MF", os.nuldev()}, "cuflags", { flagskey = "-MD -MF" }) or false
+        _g._HAS_MD_MF = has_md_mf
+    end
+    return has_md_mf
+end
+
 -- support `-MMD -MF depfile.d`? some old gcc does not support it at same time
 function _has_flags_mmd_mf(self)
     local has_mmd_mf = _g._HAS_MMD_MF
@@ -294,6 +304,16 @@ function _has_flags_mmd_mf(self)
         _g._HAS_MMD_MF = has_mmd_mf
     end
     return has_mmd_mf
+end
+
+-- support `-M -o depfile.d`?
+function _has_flags_m(self)
+    local has_m = _g._HAS_M
+    if not has_md_mf and has_m == nil then
+        has_m = self:has_flags("-M", "cuflags", { flagskey = "-M" }) or false
+        _g._HAS_M = has_m
+    end
+    return has_m
 end
 
 -- support `-MM -o depfile.d`?
@@ -329,8 +349,15 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 if _has_flags_mmd_mf(self) then
                     compflags = table.join(compflags, "-MMD", "-MF", depfile)
                 elseif _has_flags_mm(self) then
-                    -- since -MD is not supported, run nvcc twice
+                    -- since -MMD is not supported, run nvcc twice
                     local program, argv = compargv(self, sourcefile, depfile, table.join(flags, "-MM"))
+                    os.runv(program, argv, {envs = self:runenvs()})
+                elseif _has_flags_md_mf(self) then
+                    -- on windows only -MD and -M are supported
+                    compflags = table.join(compflags, "-MD", "-MF", depfile)
+                elseif _has_flags_m(self) then
+                    -- since -MD is not supported, run nvcc twice
+                    local program, argv = compargv(self, sourcefile, depfile, table.join(flags, "-M"))
                     os.runv(program, argv, {envs = self:runenvs()})
                 end
             end
