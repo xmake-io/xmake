@@ -91,7 +91,6 @@ end
 
 -- clear cache
 function _clear_cache()
-    localcache.clear("config")
     localcache.clear("detect")
     localcache.clear("option")
     localcache.clear("package")
