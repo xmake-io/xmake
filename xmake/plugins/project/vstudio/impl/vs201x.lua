@@ -91,11 +91,14 @@ end
 
 -- clear cache
 function _clear_cache()
-    localcache.clear("config")
     localcache.clear("detect")
     localcache.clear("option")
     localcache.clear("package")
     localcache.clear("toolchain")
+
+    -- force recheck
+    localcache.set("config", "recheck", true)
+
     localcache.save()
 end
 
@@ -499,7 +502,6 @@ function make(outputdir, vsinfo)
 
     -- load targets
     local targets = {}
-    local configdata = io.readfile(config.filepath())
     for mode_idx, mode in ipairs(vsinfo.modes) do
         for arch_idx, arch in ipairs(vsinfo.archs) do
 
@@ -521,7 +523,6 @@ function make(outputdir, vsinfo)
 
                 -- clear cache
                 memcache.clear()
-                localcache.clear("config")
                 localcache.clear("detect")
                 localcache.clear("option")
                 localcache.clear("package")
@@ -591,11 +592,6 @@ function make(outputdir, vsinfo)
 
     -- clear local cache
     _clear_cache()
-
-    -- restore previous config data
-    if configdata then
-        io.writefile(config.filepath(), configdata)
-    end
 
     -- leave project directory
     os.cd(oldir)
