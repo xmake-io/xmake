@@ -316,9 +316,9 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     end
     for k, v in pairs(addrunenvs) do
         if k:upper() == "PATH" then
-            runenvs[k] = _make_dirs(v, vcxprojdir) .. "$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
+            runenvs[k] = _make_dirs(v, vcxprojdir) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
-            runenvs[k] = path.joinenv(v) .. "$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
+            runenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
         end
     end
     for k, v in pairs(setrunenvs) do
