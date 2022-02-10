@@ -64,6 +64,7 @@ then you can get access to [xmake-io/technical-support](https://github.com/xmake
 
 - [x] Handling Issues with higher priority
 - [x] One-to-one technical consulting service
+- [x] Review your xmake.lua and provide suggestions for improvement
 
 ## Introduction ([中文](/README_zh.md))
 
