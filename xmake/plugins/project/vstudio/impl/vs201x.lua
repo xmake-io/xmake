@@ -89,10 +89,8 @@ function _make_dirs(dir, vcxprojdir)
     return path.joinenv(r)
 end
 
--- clear cache configuration
-function _clear_cacheconf()
-    config.clear()
-    config.save()
+-- clear cache
+function _clear_cache()
     localcache.clear("config")
     localcache.clear("detect")
     localcache.clear("option")
@@ -501,6 +499,7 @@ function make(outputdir, vsinfo)
 
     -- load targets
     local targets = {}
+    local configdata = io.readfile(config.filepath())
     for mode_idx, mode in ipairs(vsinfo.modes) do
         for arch_idx, arch in ipairs(vsinfo.archs) do
 
@@ -590,8 +589,13 @@ function make(outputdir, vsinfo)
         vs201x_vcxproj_filters.make(vsinfo, target)
     end
 
-    -- clear config and local cache
-    _clear_cacheconf()
+    -- clear local cache
+    _clear_cache()
+
+    -- restore previous config data
+    if configdata then
+        io.writefile(config.filepath(), configdata)
+    end
 
     -- leave project directory
     os.cd(oldir)
