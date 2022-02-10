@@ -96,6 +96,10 @@ function _clear_cache()
     localcache.clear("option")
     localcache.clear("package")
     localcache.clear("toolchain")
+
+    -- force recheck
+    localcache.set("config", "recheck", true)
+
     localcache.save()
 end
 
@@ -314,9 +318,9 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     end
     for k, v in pairs(addrunenvs) do
         if k:upper() == "PATH" then
-            runenvs[k] = _make_dirs(v, vcxprojdir) .. "$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
+            runenvs[k] = _make_dirs(v, vcxprojdir) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
-            runenvs[k] = path.joinenv(v) .. "$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
+            runenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
         end
     end
     for k, v in pairs(setrunenvs) do
@@ -499,7 +503,6 @@ function make(outputdir, vsinfo)
 
     -- load targets
     local targets = {}
-    local configdata = io.readfile(config.filepath())
     for mode_idx, mode in ipairs(vsinfo.modes) do
         for arch_idx, arch in ipairs(vsinfo.archs) do
 
@@ -591,11 +594,6 @@ function make(outputdir, vsinfo)
 
     -- clear local cache
     _clear_cache()
-
-    -- restore previous config data
-    if configdata then
-        io.writefile(config.filepath(), configdata)
-    end
 
     -- leave project directory
     os.cd(oldir)
