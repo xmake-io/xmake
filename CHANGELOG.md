@@ -15,6 +15,7 @@
 ### Changes
 
 * [#2036](https://github.com/xmake-io/xmake/issues/2036): Improve xrepo to install packages from configuration file, e.g. `xrepo install xxx.lua`
+* [#2039](https://github.com/xmake-io/xmake/issues/2039): Improve filter directory for vs generator
 
 ### Bugs fixed
 
@@ -1224,6 +1225,7 @@
 ### 改进
 
 * [#2036](https://github.com/xmake-io/xmake/issues/2036): 改进 xrepo 支持从配置文件批量安装包，例如：`xrepo install xxx.lua`
+* [#2039](https://github.com/xmake-io/xmake/issues/2039): 改进 vs generator 的 filter 目录展示
 
 ### Bugs 修复
 
