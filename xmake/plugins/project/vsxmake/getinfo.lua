@@ -68,6 +68,17 @@ function _vs_arch(arch)
     return arch
 end
 
+-- strip dot directories, e.g. ..\..\.. => ..
+-- @see https://github.com/xmake-io/xmake/issues/2039
+function _strip_dotdirs(dir)
+    local count
+    dir, count = dir:gsub("%.%.[\\/]%.%.", "..")
+    if count > 0 then
+        dir = _strip_dotdirs(dir)
+    end
+    return dir
+end
+
 function _make_dirs(dir)
     if dir == nil then
         return ""
@@ -464,6 +475,8 @@ function main(outputdir, vsinfo)
         target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, root) end)
         for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
             local dir = path.directory(f)
+            -- @see https://github.com/xmake-io/xmake/issues/2039
+            dir = _strip_dotdirs(dir)
             target._paths[f] =
             {
                 path = _escape(f),
