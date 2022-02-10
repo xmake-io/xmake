@@ -562,6 +562,7 @@ function main(requires, opt)
     local packages_install = {}
     local packages_download = {}
     local packages_unsupported = {}
+    local packages_not_found = {}
     for _, instance in ipairs(packages) do
         if package.should_install(instance) then
             if instance:is_supported() then
@@ -572,14 +573,28 @@ function main(requires, opt)
             elseif not instance:is_optional() then
                 table.insert(packages_unsupported, instance)
             end
+        -- @see https://github.com/xmake-io/xmake/issues/2050
+        elseif not instance:exists() and not instance:is_optional() then
+            local requireinfo = instance:requireinfo()
+            if requireinfo and requireinfo.system then
+                table.insert(packages_not_found, instance)
+            end
         end
     end
 
     -- exists unsupported packages?
     if #packages_unsupported > 0 then
-        -- show tips
         cprint("${bright color.warning}note: ${clear}the following packages are unsupported for $(plat)/$(arch)!")
         for _, instance in ipairs(packages_unsupported) do
+            print("  -> %s %s", instance:displayname(), instance:version_str() or "")
+        end
+        raise()
+    end
+
+    -- exists not found packages?
+    if #packages_not_found > 0 then
+        cprint("${bright color.warning}note: ${clear}the following packages are not found for $(plat)/$(arch)!")
+        for _, instance in ipairs(packages_not_found) do
             print("  -> %s %s", instance:displayname(), instance:version_str() or "")
         end
         raise()
