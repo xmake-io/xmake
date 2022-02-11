@@ -103,7 +103,7 @@ function _add_project(cmakelists)
         if project_version then
             project_info = project_info .. " VERSION " .. project_version
         end
-        cmakelists:print("project(%s%s LANGUAGES C CXX ASM)", project_name, project_info)
+        cmakelists:print("project(%s%s LANGUAGES C CXX ASM CUDA)", project_name, project_info)
     end
     cmakelists:print("")
 end
@@ -162,19 +162,26 @@ end
 
 -- add target sources
 function _add_target_sources(cmakelists, target)
+    local has_cuda = false
     cmakelists:print("target_sources(%s PRIVATE", target:name())
     for _, sourcebatch in pairs(target:sourcebatches()) do
         local sourcekind = sourcebatch.sourcekind
-        if sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" then
+        if sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "cu" then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 cmakelists:print("    " .. _get_unix_path(sourcefile))
             end
+        end
+        if sourcekind == "cu" then
+            has_cuda = true
         end
     end
     for _, headerfile in ipairs(target:headerfiles()) do
         cmakelists:print("    " .. _get_unix_path(headerfile))
     end
     cmakelists:print(")")
+    if has_cuda then
+        cmakelists:print("set_target_properties(%s PROPERTIES CUDA_SEPARABLE_COMPILATION ON)", target:name())
+    end
 end
 
 -- add target precompilied header
