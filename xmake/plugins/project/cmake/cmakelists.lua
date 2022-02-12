@@ -34,8 +34,8 @@ function _get_cmake_minver()
         if cmake and cmake.version then
             cmake_minver = semver.new(cmake.version)
         end
-        if not cmake_minver or cmake_minver:gt("3.13.0") then
-            cmake_minver = semver.new("3.13.0")
+        if not cmake_minver or cmake_minver:gt("3.15.0") then
+            cmake_minver = semver.new("3.15.0")
         end
         _g.cmake_minver = cmake_minver
     end
@@ -47,7 +47,8 @@ function _get_unix_path(filepath)
     if path.is_absolute(filepath) and filepath:startswith(os.projectdir()) then
         filepath = path.relative(filepath, os.projectdir())
     end
-    return (path.translate(filepath):gsub('\\', '/'))
+    filepath = path.translate(filepath):gsub('\\', '/')
+    return os.args(filepath)
 end
 
 -- get unix path relative to the cmake path
@@ -57,7 +58,24 @@ function _get_unix_path_relative_to_cmake(filepath)
     if filepath and not path.is_absolute(filepath) then
         filepath = "${CMAKE_SOURCE_DIR}/" .. filepath
     end
-    return filepath
+    return os.args(filepath)
+end
+
+-- get enabled languages from targets
+function _get_project_languages(targets)
+    local languages = {}
+    for _, target in pairs(targets) do
+        for _, sourcebatch in pairs(target:sourcebatches()) do
+            local sourcekind = sourcebatch.sourcekind
+            if     sourcekind == "cc"  then table.insert(languages, "C")
+            elseif sourcekind == "cxx" then table.insert(languages, "CXX")
+            elseif sourcekind == "as"  then table.insert(languages, "ASM")
+            elseif sourcekind == "cu"  then table.insert(languages, "CUDA")
+            end
+        end
+    end
+    languages = table.unique(languages)
+    return languages
 end
 
 -- get configs from target
@@ -77,7 +95,7 @@ function _get_configs_from_target(target, name)
 end
 
 -- add project info
-function _add_project(cmakelists)
+function _add_project(cmakelists, languages)
 
     local cmake_version = _get_cmake_minver()
     cmakelists:print([[# this is the build file for project %s
@@ -103,7 +121,11 @@ function _add_project(cmakelists)
         if project_version then
             project_info = project_info .. " VERSION " .. project_version
         end
-        cmakelists:print("project(%s%s LANGUAGES C CXX ASM CUDA)", project_name, project_info)
+        if languages then
+            cmakelists:print("project(%s%s LANGUAGES %s)", project_name, project_info, table.concat(languages, " "))
+        else
+            cmakelists:print("project(%s%s)", project_name, project_info)
+        end
     end
     cmakelists:print("")
 end
@@ -181,6 +203,10 @@ function _add_target_sources(cmakelists, target)
     cmakelists:print(")")
     if has_cuda then
         cmakelists:print("set_target_properties(%s PROPERTIES CUDA_SEPARABLE_COMPILATION ON)", target:name())
+        local devlink = target:values("cuda.build.devlink")
+        if devlink ~= nil then
+            cmakelists:print("set_target_properties(%s PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS %s)", target:name(), devlink and "ON" or "OFF")
+        end
     end
 end
 
@@ -422,17 +448,18 @@ function _add_target_vs_runtime(cmakelists, target)
     local cmake_minver = _get_cmake_minver()
     if cmake_minver:ge("3.15.0") then
         local vs_runtime = target:get("runtimes")
-        if vs_runtime then
-            cmakelists:print("if(MSVC)")
-            if vs_runtime:startswith("MT") then
-                vs_runtime = "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-            elseif vs_runtime:startswith("MD") then
-                vs_runtime = "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
-            end
-            cmakelists:print('    set_property(TARGET %s PROPERTY', target:name())
-            cmakelists:print('        MSVC_RUNTIME_LIBRARY "%s")', vs_runtime)
-            cmakelists:print("endif()")
+        if not vs_runtime then
+            vs_runtime = "MT"
         end
+        cmakelists:print("if(MSVC)")
+        if vs_runtime:startswith("MT") then
+            vs_runtime = "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+        elseif vs_runtime:startswith("MD") then
+            vs_runtime = "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
+        end
+        cmakelists:print('    set_property(TARGET %s PROPERTY', target:name())
+        cmakelists:print('        MSVC_RUNTIME_LIBRARY "%s")', vs_runtime)
+        cmakelists:print("endif()")
     end
 end
 
@@ -747,7 +774,7 @@ end
 function _generate_cmakelists(cmakelists)
 
     -- add project info
-    _add_project(cmakelists)
+    _add_project(cmakelists, _get_project_languages(project.targets()))
 
     -- add targets
     for _, target in pairs(project.targets()) do
