@@ -20,27 +20,39 @@
 
 -- imports
 import("lib.detect.find_file")
+import("lib.detect.find_programver")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
 import("core.cache.detectcache")
 
 -- find cuda sdk directory
-function _find_sdkdir()
+function _find_sdkdir(version)
 
     -- init the search directories
     local paths = {}
-    if os.host() == "macosx" then
-        table.insert(paths, "/Developer/NVIDIA/CUDA/bin")
-        table.insert(paths, "/Developer/NVIDIA/CUDA*/bin")
-    elseif os.host() == "windows" then
-        table.insert(paths, "$(env CUDA_PATH)/bin")
+    if version then
+        if os.host() == "macosx" then
+            table.insert(paths, format("/Developer/NVIDIA/CUDA-%s/bin", version))
+        elseif os.host() == "windows" then
+            table.insert(paths, format("C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v%s\\bin", version))
+        else
+            table.insert(paths, format("/usr/local/cuda-%s/bin", version))
+        end
     else
-        -- find from default symbol link dir
-        table.insert(paths, "/usr/local/cuda/bin")
-        table.insert(paths, "/usr/local/cuda*/bin")
+        if os.host() == "macosx" then
+            table.insert(paths, "/Developer/NVIDIA/CUDA/bin")
+            table.insert(paths, "/Developer/NVIDIA/CUDA*/bin")
+        elseif os.host() == "windows" then
+            table.insert(paths, "$(env CUDA_PATH)/bin")
+            table.insert(paths, "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\*\\bin")
+        else
+            -- find from default symbol link dir
+            table.insert(paths, "/usr/local/cuda/bin")
+            table.insert(paths, "/usr/local/cuda*/bin")
+        end
+        table.insert(paths, "$(env PATH)")
     end
-    table.insert(paths, "$(env PATH)")
 
     -- attempt to find nvcc
     local nvcc = find_file(os.host() == "windows" and "nvcc.exe" or "nvcc", paths)
@@ -49,12 +61,25 @@ function _find_sdkdir()
     end
 end
 
+-- find cuda msbuild extensions
+function _find_msbuildextensionsdir(sdkdir)
+    local props = find_file("CUDA *.props", {path.join(sdkdir, "extras", "visual_studio_integration", "MSBuildExtensions")})
+    if props then
+        return path.directory(props)
+    end
+end
+
 -- find cuda sdk toolchains
 function _find_cuda(sdkdir)
 
+    -- check sdkdir
+    if sdkdir and not os.isdir(sdkdir) and not sdkdir:match("^[%d*]+%.[%d*]+$") then
+        raise("invalid cuda version/location: " .. sdkdir)
+    end
+
     -- find cuda directory
     if not sdkdir or not os.isdir(sdkdir) then
-        sdkdir = _find_sdkdir()
+        sdkdir = _find_sdkdir(sdkdir)
     end
 
     -- not found?
@@ -84,13 +109,26 @@ function _find_cuda(sdkdir)
     -- get includedirs
     local includedirs = {path.join(sdkdir, "include")}
 
+    -- get version
+    local version = find_programver(path.join(bindir, "nvcc"), {parse = "release (%d+%.%d+),"})
+    
+    -- find msbuildextensionsdir on windows
+    local msbuildextensionsdir
+    if is_plat("windows") then
+        msbuildextensionsdir = _find_msbuildextensionsdir(sdkdir)
+    end
+
     -- get toolchains
-    return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs}
+    local result = {sdkdir = sdkdir, bindir = bindir, version = version, linkdirs = linkdirs, includedirs = includedirs}
+    if msbuildextensionsdir then
+        result.msbuildextensionsdir = msbuildextensionsdir
+    end
+    return result
 end
 
 -- find cuda sdk toolchains
 --
--- @param sdkdir    the cuda sdk directory
+-- @param sdkdir    the cuda sdk directory or version
 -- @param opt       the argument options
 --
 -- @return          the cuda sdk toolchains. e.g. {sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
@@ -98,6 +136,8 @@ end
 -- @code
 --
 -- local toolchains = find_cuda("/Developer/NVIDIA/CUDA-9.1")
+-- local toolchains = find_cuda("9.1")
+-- local toolchains = find_cuda("9.*")
 --
 -- @endcode
 --
