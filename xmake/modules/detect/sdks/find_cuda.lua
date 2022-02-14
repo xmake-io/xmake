@@ -78,8 +78,14 @@ function _find_cuda(sdkdir)
     end
 
     -- find cuda directory
-    if not sdkdir or not os.isdir(sdkdir) then
-        sdkdir = _find_sdkdir(sdkdir)
+    if not sdkdir then
+        sdkdir = _find_sdkdir()
+    elseif sdkdir:match("^[%d*]+%.[%d*]+$") then
+        local cudaversion = sdkdir
+        sdkdir = _find_sdkdir(cudaversion)
+        if not sdkdir then
+            raise("cuda version %s not found!", cudaversion)
+        end
     end
 
     -- not found?
