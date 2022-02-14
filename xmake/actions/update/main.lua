@@ -317,7 +317,7 @@ function _initialize_shell()
             if os.isfile(target) then
                 file = io.readfile(target)
                 file = file:gsub("# >>> xmake >>>.-# <<< xmake <<<", "")
-                if file ~= "" then
+                if file ~= "" and not file:endswith("\n") then
                     file = file .. "\n"
                 end
             end
