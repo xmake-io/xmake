@@ -29,6 +29,9 @@ function _check_vsenv(toolchain)
 
     -- have been checked?
     local vs = toolchain:config("vs") or config.get("vs")
+    if vs then
+        vs = tostring(vs)
+    end
     local vcvars = toolchain:config("vcvars")
     if vs and vcvars then
         return vs
