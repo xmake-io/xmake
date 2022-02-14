@@ -40,7 +40,8 @@ task("update")
                 {
                     {nil, "uninstall",   "k",   nil,    "Uninstall the current xmake program."                     }
                 ,   {                                                                                              }
-                ,   {'s', "scriptonly",  "k",   nil,    "Update script only"                                       }
+                ,   {'s', "scriptonly",  "k",   nil,    "Update scripts only."                                     }
+                ,   {'i', "init",        "k",   nil,    "Initialize xmake for shell interaction."                  }
                 ,   {'f', "force",       "k",   nil,    "Force to update and reinstall the given version."         }
                 ,   {nil, "xmakever",    "v",   nil,    "The given xmake version, or a git source (and branch). ",
                                                         "e.g.",

@@ -106,6 +106,30 @@ end
 
 -- do uninstall
 function _uninstall()
+
+    -- remove shell profile
+    local profiles = {}
+    if is_host("windows") then
+        for _, shell in ipairs({"pwsh", "powershell"}) do
+            for _, type in ipairs({"AllUsersAllHosts", "CurrentUserAllHosts", "CurrentUserCurrentHost"}) do
+                local outdata, errdata = os.iorunv(shell, {"-c", "Write-Output $PROFILE." .. type})
+                if outdata then
+                    table.insert(profiles, outdata:trim())
+                end
+            end
+        end
+    else
+        for _, filename in ipairs({".zshrc", ".bashrc", ".kshrc", ".bash_profile", ".profile"}) do
+            table.insert(profiles, path.join(os.getenv("HOME"), filename))
+        end
+    end
+    for _, profile in ipairs(profiles) do
+        if os.isfile(profile) then
+            io.gsub(profile, "# >>> xmake >>>.-# <<< xmake <<<", "")
+        end
+    end
+
+    -- remove program
     if is_host("windows") then
         local uninstaller = path.join(os.programdir(), "uninstall.exe")
         if os.isfile(uninstaller) then
@@ -257,6 +281,65 @@ function _install_script(sourcedir)
     end
 end
 
+-- initialize shells
+function _initialize_shell()
+
+    local target, command, profile
+    if is_host("windows") then
+        local psshell = os.iorun("pwsh -v") and "pwsh" or "powershell"
+        local outdata, errdata = os.iorunv(psshell, {"-c", "Write-Output $PROFILE.CurrentUserAllHosts"})
+        if outdata then
+            target = outdata:trim()
+            command = "if (Test-Path -Path \"%s\" -PathType Leaf) {\n    . \"%s\"\n}"
+            profile = path.join(os.programdir(), "scripts", "profile-win.ps1")
+        else
+            raise("failed to get profile location from powershell!")
+        end
+    else
+        local shell = os.shell()
+        local filename = ".profile"
+        if shell:endswith("bash") then filename = (is_host("macosx") and ".bash_profile" or ".bashrc")
+        elseif shell:endswith("zsh") then filename = ".zshrc"
+        elseif shell:endswith("ksh") then filename = ".kshrc"
+        end
+        target = path.join(os.getenv("HOME"), filename)
+        command = "[[ -s \"%s\" ]] && source \"%s\""
+        profile = path.join(os.programdir(), "scripts", "profile-unix.sh")
+    end
+
+    -- trace
+    cprintf("\r${yellow}  => ${clear}installing shell integration to %s .. ", target)
+
+    local ok = try
+    {
+        function ()
+            local file = ""
+            if os.isfile(target) then
+                file = io.readfile(target)
+                file = file:gsub("# >>> xmake >>>.-# <<< xmake <<<", "")
+                if file ~= "" then
+                    file = file .. "\n"
+                end
+            end
+            file = file .. "# >>> xmake >>>\n" .. format(command, profile, profile) .. "\n# <<< xmake <<<"
+            io.writefile(target, file)
+            return true
+        end,
+        catch
+        {
+            function (errors)
+                vprint(errors)
+            end
+        }
+    }
+    -- trace
+    if ok then
+        cprint("${color.success}${text.success}")
+    else
+        cprint("${color.failure}${text.failure}")
+    end
+end
+
 function _check_repo(sourcedir)
     -- this file will exists for long time
     if not os.isfile(path.join(sourcedir, "xmake/core/_xmake_main.lua")) then
@@ -295,6 +378,12 @@ function main()
 
         -- trace
         cprint("${color.success}uninstall ok!")
+        return
+    end
+
+    -- initialize for shell interaction
+    if option.get("init") then
+        _initialize_shell()
         return
     end
 
