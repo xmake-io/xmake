@@ -351,11 +351,10 @@ function main(outputdir, vsinfo)
     vsinfo.projectdir = project.directory()
     vsinfo.sln_projectfile = path.relative(project.rootfile(), vsinfo.solution_dir)
     local projectfile = path.filename(project.rootfile())
-    vsinfo.slnfile = path.filename(project.directory())
+    vsinfo.slnfile = project.name() or path.filename(project.directory())
     -- write only if not default
     if projectfile ~= "xmake.lua" then
         vsinfo.projectfile = projectfile
-        vsinfo.slnfile = path.basename(projectfile)
     end
 
     vsinfo.xmake_info = format("xmake version %s", xmake.version())
