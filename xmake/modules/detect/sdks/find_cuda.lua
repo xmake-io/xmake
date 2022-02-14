@@ -32,18 +32,19 @@ function _find_sdkdir(version)
     -- init the search directories
     local paths = {}
     if version then
-        if os.host() == "macosx" then
+        if is_host("macosx") then
             table.insert(paths, format("/Developer/NVIDIA/CUDA-%s/bin", version))
-        elseif os.host() == "windows" then
+        elseif is_host("windows") then
+            table.insert(paths, format("$(env CUDA_PATH_V%s)/bin", version:gsub("%.", "_")))
             table.insert(paths, format("C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v%s\\bin", version))
         else
             table.insert(paths, format("/usr/local/cuda-%s/bin", version))
         end
     else
-        if os.host() == "macosx" then
+        if is_host("macosx") then
             table.insert(paths, "/Developer/NVIDIA/CUDA/bin")
             table.insert(paths, "/Developer/NVIDIA/CUDA*/bin")
-        elseif os.host() == "windows" then
+        elseif is_host("windows") then
             table.insert(paths, "$(env CUDA_PATH)/bin")
             table.insert(paths, "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\*\\bin")
         else
@@ -55,7 +56,7 @@ function _find_sdkdir(version)
     end
 
     -- attempt to find nvcc
-    local nvcc = find_file(os.host() == "windows" and "nvcc.exe" or "nvcc", paths)
+    local nvcc = find_file(is_host("windows") and "nvcc.exe" or "nvcc", paths)
     if nvcc then
         return path.directory(path.directory(nvcc))
     end
@@ -101,10 +102,10 @@ function _find_cuda(sdkdir)
 
     -- get linkdirs
     local linkdirs = {}
-    if is_plat("windows") then
+    if is_host("windows") then
         local subdir = is_arch("x64") and "x64" or "Win32"
         table.insert(linkdirs, path.join(sdkdir, "lib", subdir))
-    elseif is_plat("linux") and is_arch("x86_64") then
+    elseif is_host("linux") and is_arch("x86_64") then
         table.insert(linkdirs, path.join(sdkdir, "lib64", "stubs"))
         table.insert(linkdirs, path.join(sdkdir, "lib64"))
     else
@@ -120,16 +121,12 @@ function _find_cuda(sdkdir)
     
     -- find msbuildextensionsdir on windows
     local msbuildextensionsdir
-    if is_plat("windows") then
+    if is_host("windows") then
         msbuildextensionsdir = _find_msbuildextensionsdir(sdkdir)
     end
 
     -- get toolchains
-    local result = {sdkdir = sdkdir, bindir = bindir, version = version, linkdirs = linkdirs, includedirs = includedirs}
-    if msbuildextensionsdir then
-        result.msbuildextensionsdir = msbuildextensionsdir
-    end
-    return result
+    return {sdkdir = sdkdir, bindir = bindir, version = version, linkdirs = linkdirs, includedirs = includedirs, msbuildextensionsdir = msbuildextensionsdir}
 end
 
 -- find cuda sdk toolchains
