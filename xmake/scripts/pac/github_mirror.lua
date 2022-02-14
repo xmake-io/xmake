@@ -2,7 +2,7 @@ import("net.fasturl")
 
 function mirror(url)
     local configs = {}
-    local proxyurls = {"github.com.cnpmjs.org", "hub.fastgit.org"}
+    local proxyurls = {"hub.fastgit.xyz"}
     fasturl.add(proxyurls)
     proxyurls = fasturl.sort(proxyurls)
     if #proxyurls > 0 then
