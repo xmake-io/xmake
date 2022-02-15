@@ -84,6 +84,16 @@
         <ConfigurationType>StaticLibrary</ConfigurationType>
       </PropertyGroup>
     </When>
+    <When Condition="'$(XmakeKind)' == 'phony'">
+      <PropertyGroup>
+        <ConfigurationType>Unknown</ConfigurationType>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(XmakeKind)' == 'headeronly'">
+      <PropertyGroup>
+        <ConfigurationType>Unknown</ConfigurationType>
+      </PropertyGroup>
+    </When>
   </Choose>
 
   <ItemDefinitionGroup>

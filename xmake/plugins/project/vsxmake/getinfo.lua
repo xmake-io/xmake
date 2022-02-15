@@ -174,6 +174,9 @@ function _make_targetinfo(mode, arch, target)
         -- fix c++17 to cxx17 for Xmake.props
         targetinfo.languages = targetinfo.languages:replace("c++", "cxx", {plain = true})
     end
+    if target:is_phony() or target:is_headeronly() then
+        return targetinfo
+    end
 
     -- save subsystem
     local linkflags = linker.linkflags(target:kind(), target:sourcekinds(), {target = target})
@@ -237,8 +240,6 @@ function _make_targetinfo(mode, arch, target)
         local ver = semver.new(nvcc.version)
         targetinfo.cudaver = ver:major() .. "." .. ver:minor()
     end
-
-    -- ok
     return targetinfo
 end
 
@@ -434,34 +435,31 @@ function main(outputdir, vsinfo)
 
             -- save targets
             for targetname, target in pairs(project.targets()) do
-                if not target:is_phony() then
+                -- make target with the given mode and arch
+                targets[targetname] = targets[targetname] or {}
+                local _target = targets[targetname]
 
-                    -- make target with the given mode and arch
-                    targets[targetname] = targets[targetname] or {}
-                    local _target = targets[targetname]
+                -- init target info
+                _target.target = targetname
+                _target.vcxprojdir = path.join(vsinfo.solution_dir, targetname)
+                _target.target_id = hash.uuid4(targetname)
+                _target.kind = target:kind()
+                _target.scriptdir = path.relative(target:scriptdir(), _target.vcxprojdir)
+                _target.projectdir = path.relative(project.directory(), _target.vcxprojdir)
+                local targetdir = target:get("targetdir")
+                if targetdir then _target.targetdir = path.relative(targetdir, _target.vcxprojdir) end
+                _target._targets = _target._targets or {}
+                _target._targets[mode] = _target._targets[mode] or {}
+                local targetinfo = _make_targetinfo(mode, arch, target)
+                _target._targets[mode][arch] = targetinfo
+                _target.sdkver = targetinfo.sdkver
 
-                    -- init target info
-                    _target.target = targetname
-                    _target.vcxprojdir = path.join(vsinfo.solution_dir, targetname)
-                    _target.target_id = hash.uuid4(targetname)
-                    _target.kind = target:kind()
-                    _target.scriptdir = path.relative(target:scriptdir(), _target.vcxprojdir)
-                    _target.projectdir = path.relative(project.directory(), _target.vcxprojdir)
-                    local targetdir = target:get("targetdir")
-                    if targetdir then _target.targetdir = path.relative(targetdir, _target.vcxprojdir) end
-                    _target._targets = _target._targets or {}
-                    _target._targets[mode] = _target._targets[mode] or {}
-                    local targetinfo = _make_targetinfo(mode, arch, target)
-                    _target._targets[mode][arch] = targetinfo
-                    _target.sdkver = targetinfo.sdkver
+                -- save all sourcefiles and headerfiles
+                _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
+                _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
-                    -- save all sourcefiles and headerfiles
-                    _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
-                    _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
-
-                    -- save deps
-                    _target.deps = table.unique(table.join(_target.deps or {}, table.keys(target:deps()), nil))
-                end
+                -- save deps
+                _target.deps = table.unique(table.join(_target.deps or {}, table.keys(target:deps()), nil))
             end
         end
     end
@@ -504,19 +502,17 @@ function main(outputdir, vsinfo)
     -- @see https://github.com/xmake-io/xmake/issues/1249
     local targetnames = {}
     for targetname, target in pairs(project.targets()) do
-        if not target:is_phony() then
-            if target:get("default") == true then
+        if target:get("default") == true then
+            table.insert(targetnames, 1, targetname)
+        elseif target:is_binary() then
+            local first_target = targetnames[1] and project.target(targetnames[1])
+            if not first_target or first_target:is_default() then
                 table.insert(targetnames, 1, targetname)
-            elseif target:is_binary() then
-                local first_target = targetnames[1] and project.target(targetnames[1])
-                if not first_target or first_target:is_default() then
-                    table.insert(targetnames, 1, targetname)
-                else
-                    table.insert(targetnames, targetname)
-                end
             else
                 table.insert(targetnames, targetname)
             end
+        else
+            table.insert(targetnames, targetname)
         end
     end
     vsinfo.targets = targetnames
