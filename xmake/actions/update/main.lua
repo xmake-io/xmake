@@ -113,9 +113,12 @@ function _uninstall()
     if is_host("windows") then
         for _, shell in ipairs({"pwsh", "powershell"}) do
             for _, type in ipairs({"AllUsersAllHosts", "CurrentUserAllHosts", "CurrentUserCurrentHost"}) do
-                local outdata, errdata = os.iorunv(shell, {"-c", "Write-Output $PROFILE." .. type})
-                if outdata then
-                    table.insert(profiles, outdata:trim())
+                local psshell = find_tool(shell)
+                if psshell then
+                    local outdata, errdata = try {function () return os.iorunv(shell, {"-c", "Write-Output $PROFILE." .. type}) end}
+                    if outdata then
+                        table.insert(profiles, outdata:trim())
+                    end
                 end
             end
         end
@@ -287,9 +290,8 @@ function _initialize_shell()
 
     local target, command, profile
     if is_host("windows") then
-        local pwsh = find_tool("pwsh")
-        local psshell = pwsh and "pwsh" or "powershell"
-        local outdata, errdata = os.iorunv(psshell, {"-c", "Write-Output $PROFILE.CurrentUserAllHosts"})
+        local psshell = find_tool("pwsh") or find_tool("powershell")
+        local outdata, errdata = try {function () return os.iorunv(psshell.program, {"-c", "Write-Output $PROFILE.CurrentUserAllHosts"}) end}
         if outdata then
             target = outdata:trim()
             command = "if (Test-Path -Path \"%s\" -PathType Leaf) {\n    . \"%s\"\n}"
