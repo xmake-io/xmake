@@ -261,6 +261,9 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
 
     -- save target kind
     targetinfo.targetkind = target:kind()
+    if target:is_phony() or target:is_headeronly() then
+        return targetinfo
+    end
 
     -- save target file
     targetinfo.targetfile = target:targetfile()
@@ -357,8 +360,6 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
 
     -- save custom commands
     targetinfo.commands = _make_custom_commands(target)
-
-    -- ok
     return targetinfo
 end
 
@@ -550,33 +551,31 @@ function make(outputdir, vsinfo)
 
             -- save targets
             for targetname, target in pairs(project.targets()) do
-                if not target:is_phony() then
 
-                    -- make target with the given mode and arch
-                    targets[targetname] = targets[targetname] or {}
-                    local _target = targets[targetname]
+                -- make target with the given mode and arch
+                targets[targetname] = targets[targetname] or {}
+                local _target = targets[targetname]
 
-                    -- the vcxproj directory
-                    _target.project_dir = path.join(vsinfo.solution_dir, targetname)
+                -- the vcxproj directory
+                _target.project_dir = path.join(vsinfo.solution_dir, targetname)
 
-                    -- save c/c++ precompiled header
-                    _target.pcheader   = target:pcheaderfile("c")     -- header.h
-                    _target.pcxxheader = target:pcheaderfile("cxx")   -- header.[hpp|inl]
+                -- save c/c++ precompiled header
+                _target.pcheader   = target:pcheaderfile("c")     -- header.h
+                _target.pcxxheader = target:pcheaderfile("cxx")   -- header.[hpp|inl]
 
-                    -- init target info
-                    _target.name = targetname
-                    _target.kind = target:kind()
-                    _target.scriptdir = target:scriptdir()
-                    _target.info = _target.info or {}
-                    table.insert(_target.info, _make_targetinfo(mode, arch, target, _target.project_dir))
+                -- init target info
+                _target.name = targetname
+                _target.kind = target:kind()
+                _target.scriptdir = target:scriptdir()
+                _target.info = _target.info or {}
+                table.insert(_target.info, _make_targetinfo(mode, arch, target, _target.project_dir))
 
-                    -- save all sourcefiles and headerfiles
-                    _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
-                    _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
+                -- save all sourcefiles and headerfiles
+                _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
+                _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
-                    -- make target headers
-                    _make_targetheaders(mode, arch, target, mode_idx == #vsinfo.modes and arch_idx == 2)
-                end
+                -- make target headers
+                _make_targetheaders(mode, arch, target, mode_idx == #vsinfo.modes and arch_idx == 2)
             end
         end
     end

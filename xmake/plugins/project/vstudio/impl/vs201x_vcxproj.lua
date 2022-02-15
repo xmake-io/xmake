@@ -205,7 +205,7 @@ function _make_configurations(vcxprojfile, vsinfo, target)
     -- make Configuration
     for _, targetinfo in ipairs(target.info) do
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Label=\"Configuration\">", targetinfo.mode, targetinfo.arch)
-            vcxprojfile:print("<ConfigurationType>%s</ConfigurationType>", assert(configuration_types[target.kind]))
+            vcxprojfile:print("<ConfigurationType>%s</ConfigurationType>", configuration_types[target.kind] or "Unknown")
             vcxprojfile:print("<PlatformToolset>%s</PlatformToolset>", _get_toolset_ver(targetinfo, vsinfo))
             vcxprojfile:print("<CharacterSet>%s</CharacterSet>", targetinfo.unicode and "Unicode" or "MultiByte")
             if targetinfo.usemfc then
@@ -230,6 +230,9 @@ function _make_configurations(vcxprojfile, vsinfo, target)
 
     -- make UserMacros
     vcxprojfile:print("<PropertyGroup Label=\"UserMacros\" />")
+    if not configuration_types[target.kind] then
+        return
+    end
 
     -- make OutputDirectory and IntermediateDirectory
     for _, targetinfo in ipairs(target.info) do
@@ -463,9 +466,6 @@ end
 -- make common item
 function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
 
-    -- enter ItemDefinitionGroup
-    vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
-
     -- init the linker kinds
     local linkerkinds =
     {
@@ -473,6 +473,12 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
     ,   static = "Lib"
     ,   shared = "Link"
     }
+    if not linkerkinds[targetinfo.targetkind] then
+        return
+    end
+
+    -- enter ItemDefinitionGroup
+    vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
 
     -- for linker?
     vcxprojfile:enter("<%s>", linkerkinds[targetinfo.targetkind])
