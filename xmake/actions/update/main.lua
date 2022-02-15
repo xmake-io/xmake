@@ -115,7 +115,7 @@ function _uninstall()
             for _, type in ipairs({"AllUsersAllHosts", "CurrentUserAllHosts", "CurrentUserCurrentHost"}) do
                 local psshell = find_tool(shell)
                 if psshell then
-                    local outdata, errdata = try {function () return os.iorunv(shell, {"-c", "Write-Output $PROFILE." .. type}) end}
+                    local outdata, errdata = try {function () return os.iorunv(psshell.program, {"-c", "Write-Output $PROFILE." .. type}) end}
                     if outdata then
                         table.insert(profiles, outdata:trim())
                     end
