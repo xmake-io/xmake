@@ -1,8 +1,16 @@
-#import "test.h"
-#import <Foundation/Foundation.h>
+#include "test.h"
 
 int add(int a, int b)
 {
-    NSLog(@"add(%d, %d)", a, b);
     return a + b;
 }
+
+@implementation Test
+
+- (void)hello {
+    NSLog(@"hello xmake!");
+}
+
+@end
+
+

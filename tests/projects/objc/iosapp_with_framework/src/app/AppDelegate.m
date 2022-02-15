@@ -18,8 +18,9 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
-    int c = add(1, 2);
-    NSLog(@"result: %d", c);
+    NSLog(@"add(1, 2): %d", add(1, 2));
+    Test* t = [[Test alloc] init];
+    [t hello];
     return YES;
 }
 
