@@ -226,26 +226,15 @@ end
 
 -- get the script directory
 function sandbox_os.scriptdir()
-
-    -- get the current sandbox instance
     local instance = sandbox.instance()
-    assert(instance)
-
-    -- the root directory for this sandbox script
     local rootdir = instance:rootdir()
     assert(rootdir)
-
-    -- ok
     return rootdir
 end
 
 -- quietly run command
 function sandbox_os.run(cmd, ...)
-
-    -- make command
     cmd = vformat(cmd, ...)
-
-    -- run it
     local ok, errors = os.run(cmd)
     if not ok then
         os.raise(errors)
@@ -254,11 +243,7 @@ end
 
 -- quietly run command with arguments list
 function sandbox_os.runv(program, argv, opt)
-
-    -- make program
     program = vformat(program)
-
-    -- run it
     local ok, errors = os.runv(program, argv, opt)
     if not ok then
         os.raise(errors)
@@ -267,25 +252,17 @@ end
 
 -- quietly run command and echo verbose info if [-v|--verbose] option is enabled
 function sandbox_os.vrun(cmd, ...)
-
-    -- echo command
     if option.get("verbose") then
         print(vformat(cmd, ...))
     end
-
-    -- run it
     (option.get("verbose") and sandbox_os.exec or sandbox_os.run)(cmd, ...)
 end
 
 -- quietly run command with arguments list and echo verbose info if [-v|--verbose] option is enabled
 function sandbox_os.vrunv(program, argv, opt)
-
-    -- echo command
     if option.get("verbose") then
         print(vformat(program) .. " " .. sandbox_os.args(argv))
     end
-
-    -- run it
     if not (opt and opt.dryrun) then
         (option.get("verbose") and sandbox_os.execv or sandbox_os.runv)(program, argv, opt)
     end
@@ -293,11 +270,7 @@ end
 
 -- run command and return output and error data
 function sandbox_os.iorun(cmd, ...)
-
-    -- make command
     cmd = vformat(cmd, ...)
-
-    -- run it
     local ok, outdata, errdata, errors = os.iorun(cmd)
     if not ok then
         if not errors then
@@ -308,18 +281,12 @@ function sandbox_os.iorun(cmd, ...)
         end
         os.raise({errors = errors, stderr = errdata, stdout = outdata})
     end
-
-    -- ok
     return outdata, errdata
 end
 
 -- run command and return output and error data
 function sandbox_os.iorunv(program, argv, opt)
-
-    -- make program
     program = vformat(program)
-
-    -- run it
     local ok, outdata, errdata, errors = os.iorunv(program, argv, opt)
     if not ok then
         if not errors then
@@ -330,18 +297,12 @@ function sandbox_os.iorunv(program, argv, opt)
         end
         os.raise({errors = errors, stderr = errdata, stdout = outdata})
     end
-
-    -- ok
     return outdata, errdata
 end
 
 -- execute command
 function sandbox_os.exec(cmd, ...)
-
-    -- make command
     cmd = vformat(cmd, ...)
-
-    -- run it
     local ok, errors = os.exec(cmd)
     if ok ~= 0 then
         if ok ~= nil then
