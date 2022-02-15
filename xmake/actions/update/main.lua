@@ -34,6 +34,7 @@ import("private.action.require.impl.environment")
 import("private.action.update.fetch_version")
 import("utils.archive")
 import("lib.detect.find_file")
+import("lib.detect.find_tool")
 
 -- the installer filename for windows
 local win_installer_name = "xmake-installer.exe"
@@ -286,7 +287,8 @@ function _initialize_shell()
 
     local target, command, profile
     if is_host("windows") then
-        local psshell = os.iorun("pwsh -v") and "pwsh" or "powershell"
+        local pwsh = find_tool("pwsh")
+        local psshell = pwsh and "pwsh" or "powershell"
         local outdata, errdata = os.iorunv(psshell, {"-c", "Write-Output $PROFILE.CurrentUserAllHosts"})
         if outdata then
             target = outdata:trim()
@@ -296,13 +298,12 @@ function _initialize_shell()
             raise("failed to get profile location from powershell!")
         end
     else
+        target = "~/.profile"
         local shell = os.shell()
-        local filename = ".profile"
-        if shell:endswith("bash") then filename = (is_host("macosx") and ".bash_profile" or ".bashrc")
-        elseif shell:endswith("zsh") then filename = ".zshrc"
-        elseif shell:endswith("ksh") then filename = ".kshrc"
+        if shell:endswith("bash") then target = (is_host("macosx") and "~/.bash_profile" or "~/.bashrc")
+        elseif shell:endswith("zsh") then target = "~/.zshrc"
+        elseif shell:endswith("ksh") then target = "~/.kshrc"
         end
-        target = path.join(os.getenv("HOME"), filename)
         command = "[[ -s \"%s\" ]] && source \"%s\""
         profile = path.join(os.programdir(), "scripts", "profile-unix.sh")
     end
@@ -382,7 +383,7 @@ function main()
     end
 
     -- initialize for shell interaction
-    if option.get("init") then
+    if option.get("integrate") then
         _initialize_shell()
         return
     end
