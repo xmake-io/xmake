@@ -34,6 +34,7 @@ import("private.action.require.impl.environment")
 import("private.action.update.fetch_version")
 import("utils.archive")
 import("lib.detect.find_file")
+import("lib.detect.find_tool")
 
 -- the installer filename for windows
 local win_installer_name = "xmake-installer.exe"
@@ -106,6 +107,33 @@ end
 
 -- do uninstall
 function _uninstall()
+
+    -- remove shell profile
+    local profiles = {}
+    if is_host("windows") then
+        for _, shell in ipairs({"pwsh", "powershell"}) do
+            for _, type in ipairs({"AllUsersAllHosts", "CurrentUserAllHosts", "CurrentUserCurrentHost"}) do
+                local psshell = find_tool(shell)
+                if psshell then
+                    local outdata, errdata = try {function () return os.iorunv(psshell.program, {"-c", "Write-Output $PROFILE." .. type}) end}
+                    if outdata then
+                        table.insert(profiles, outdata:trim())
+                    end
+                end
+            end
+        end
+    else
+        for _, filename in ipairs({".zshrc", ".bashrc", ".kshrc", ".bash_profile", ".profile"}) do
+            table.insert(profiles, path.join(os.getenv("HOME"), filename))
+        end
+    end
+    for _, profile in ipairs(profiles) do
+        if os.isfile(profile) then
+            io.gsub(profile, "# >>> xmake >>>.-# <<< xmake <<<", "")
+        end
+    end
+
+    -- remove program
     if is_host("windows") then
         local uninstaller = path.join(os.programdir(), "uninstall.exe")
         if os.isfile(uninstaller) then
@@ -257,6 +285,64 @@ function _install_script(sourcedir)
     end
 end
 
+-- initialize shells
+function _initialize_shell()
+
+    local target, command, profile
+    if is_host("windows") then
+        local psshell = find_tool("pwsh") or find_tool("powershell")
+        local outdata, errdata = try {function () return os.iorunv(psshell.program, {"-c", "Write-Output $PROFILE.CurrentUserAllHosts"}) end}
+        if outdata then
+            target = outdata:trim()
+            command = "if (Test-Path -Path \"%s\" -PathType Leaf) {\n    . \"%s\"\n}"
+            profile = path.join(os.programdir(), "scripts", "profile-win.ps1")
+        else
+            raise("failed to get profile location from powershell!")
+        end
+    else
+        target = "~/.profile"
+        local shell = os.shell()
+        if shell:endswith("bash") then target = (is_host("macosx") and "~/.bash_profile" or "~/.bashrc")
+        elseif shell:endswith("zsh") then target = "~/.zshrc"
+        elseif shell:endswith("ksh") then target = "~/.kshrc"
+        end
+        command = "[[ -s \"%s\" ]] && source \"%s\""
+        profile = path.join(os.programdir(), "scripts", "profile-unix.sh")
+    end
+
+    -- trace
+    cprintf("\r${yellow}  => ${clear}installing shell integration to %s .. ", target)
+
+    local ok = try
+    {
+        function ()
+            local file = ""
+            if os.isfile(target) then
+                file = io.readfile(target)
+                file = file:gsub("# >>> xmake >>>.-# <<< xmake <<<", "")
+                if file ~= "" and not file:endswith("\n") then
+                    file = file .. "\n"
+                end
+            end
+            file = file .. "# >>> xmake >>>\n" .. format(command, profile, profile) .. "\n# <<< xmake <<<"
+            io.writefile(target, file)
+            return true
+        end,
+        catch
+        {
+            function (errors)
+                vprint(errors)
+            end
+        }
+    }
+    -- trace
+    if ok then
+        cprint("${color.success}${text.success}")
+    else
+        cprint("${color.failure}${text.failure}")
+    end
+end
+
 function _check_repo(sourcedir)
     -- this file will exists for long time
     if not os.isfile(path.join(sourcedir, "xmake/core/_xmake_main.lua")) then
@@ -295,6 +381,12 @@ function main()
 
         -- trace
         cprint("${color.success}uninstall ok!")
+        return
+    end
+
+    -- initialize for shell interaction
+    if option.get("integrate") then
+        _initialize_shell()
         return
     end
 
