@@ -98,6 +98,27 @@ end
 -- install packages
 function _install_packages(packages)
 
+    -- is package configuration file? e.g. xrepo install xxx.lua
+    --
+    -- xxx.lua
+    --   add_requires("libpng", {system = false})
+    --   add_requireconfs("libpng.*", {configs = {shared = true}})
+    local filemode = false
+    local rcfiles = {}
+    if type(packages) == "string" or #packages == 1 then
+        local packagefile = table.unwrap(packages)
+        if type(packagefile) == "string" and packagefile:endswith(".lua") and os.isfile(packagefile) then
+            table.insert(rcfiles, path.absolute(packagefile))
+            filemode = true
+        end
+    end
+
+    -- add includes to rcfiles
+    local includes = option.get("includes")
+    if includes then
+        table.join2(rcfiles, path.splitenv(includes))
+    end
+
     -- enter working project directory
     local workdir = path.join(os.tmpdir(), "xrepo", "working")
     if not os.isdir(workdir) then
@@ -106,21 +127,6 @@ function _install_packages(packages)
         os.vrunv("xmake", {"create", "-P", "."})
     else
         os.cd(workdir)
-    end
-
-    -- is package configuration file? e.g. xrepo install xxx.lua
-    --
-    -- xxx.lua
-    --   add_requires("libpng", {system = false})
-    --   add_requireconfs("libpng.*", {configs = {shared = true}})
-    local filemode = false
-    if type(packages) == "string" or #packages == 1 then
-        local packagefile = table.unwrap(packages)
-        if type(packagefile) == "string" and packagefile:endswith(".lua") and os.isfile(packagefile) then
-            assert(os.isfile("xmake.lua"), "xmake.lua not found!")
-            os.cp(packagefile, "xmake.lua")
-            filemode = true
-        end
     end
 
     -- disable xmake-stats
@@ -187,7 +193,10 @@ function _install_packages(packages)
     if option.get("target_minver") then
         table.insert(config_argv, "--target_minver=" .. option.get("target_minver"))
     end
-    local envs = {XMAKE_RCFILES = option.get("includes")}
+    local envs = {}
+    if #rcfiles > 0 then
+        envs.XMAKE_RCFILES = path.joinenv(rcfiles)
+    end
     os.vrunv("xmake", config_argv, {envs = envs})
 
     -- do install
