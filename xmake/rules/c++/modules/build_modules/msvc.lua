@@ -43,7 +43,7 @@ function load_parent(target, opt)
             local sourcebatches = dep:sourcebatches()
             if sourcebatches and sourcebatches["c++.build.modules"] then
                 local cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
-                target:add("cxxflags", "/ifcSearchDir " .. os.args(cachedir), {force = true})
+                target:add("cxxflags", {"/ifcSearchDir", cachedir}, {force = true, expand = false})
             end
         end
     end
@@ -129,7 +129,7 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
         local moduledep = assert(moduledeps_files[sourcefile], "moduledep(%s) not found!", sourcefile)
         moduledep.job = batchjobs:newjob(sourcefile, function (index, total)
             local opt2 = table.join(opt, {configs = {force = {cxxflags = {interfaceflag,
-                outputflag .. " " .. os.args(modulefiles[i]), "/TP"}}}})
+                    {outputflag, modulefiles[i]}, "/TP"}}}})
             opt2.progress   = (index * 100) / total
             opt2.objectfile = sourcebatch.objectfiles[i]
             opt2.dependfile = sourcebatch.dependfiles[i]
@@ -149,7 +149,7 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     -- add module flags
     target:add("cxxflags", modulesflag)
     if cachedir then
-        target:add("cxxflags", "/ifcSearchDir " .. os.args(cachedir))
+        target:add("cxxflags", {"/ifcSearchDir", cachedir}, {expand = false})
     end
     if stdifcdirflag then
         for _, toolchain_inst in ipairs(target:toolchains()) do

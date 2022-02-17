@@ -1060,7 +1060,9 @@ function interpreter:api_register_set_values(scope_kind, ...)
         end
 
         -- expand values
-        values = table.join(table.unpack(values))
+        if not extra_config or extra_config.expand ~= false then
+            values = table.join(table.unpack(values))
+        end
 
         -- save values
         if #values > 0 then
@@ -1100,7 +1102,9 @@ function interpreter:api_register_add_values(scope_kind, ...)
         end
 
         -- expand values
-        values = table.join(table.unpack(values))
+        if not extra_config or extra_config.expand ~= false then
+            values = table.join(table.unpack(values))
+        end
 
         -- save values
         scope[name] = table.join2(scope[name] or {}, values)

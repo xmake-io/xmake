@@ -136,12 +136,16 @@ function builder:_add_flags_from_flagkind(flags, target, flagkind, opt)
             local flagconf = extraconf[flag]
             if flagconf and flagconf.force then
                 table.join2(flags, flag)
+        print("111")
             else
                 table.join2(flags, self:_mapflags(flag, flagkind, target))
+        print("222")
+        utils.dump(self:_mapflags(flag, flagkind, target))
             end
         end
     else
         table.join2(flags, self:_mapflags(targetflags, flagkind, target))
+        print("xxxx")
     end
 end
 
@@ -213,11 +217,13 @@ function builder:_add_flags_from_target(flags, target)
             self:_inherit_flags_from_targetdeps(targetflags, target)
         end
 
+        utils.dump(targetflags)
         -- add the target flags
         for _, flagkind in ipairs(self:_flagkinds()) do
             self:_add_flags_from_flagkind(targetflags, target, flagkind)
         end
         cache[key] = targetflags
+        utils.dump(targetflags)
     end
     table.join2(flags, targetflags)
 end

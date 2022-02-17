@@ -114,7 +114,9 @@ function _instance:_api_set_values(name, ...)
     end
 
     -- expand values
-    values = table.join(table.unpack(values))
+    if not extra_config or extra_config.expand ~= false then
+        values = table.join(table.unpack(values))
+    end
 
     -- handle values
     local handled_values = self:_api_handle(name, values)
@@ -153,7 +155,9 @@ function _instance:_api_add_values(name, ...)
     end
 
     -- expand values
-    values = table.join(table.unpack(values))
+    if not extra_config or extra_config.expand ~= false then
+        values = table.join(table.unpack(values))
+    end
 
     -- save values
     scope[name] = self:_api_handle(name, table.join2(table.wrap(scope[name]), values))
