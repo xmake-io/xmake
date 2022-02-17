@@ -38,6 +38,7 @@
   <ItemGroup>
 #Import(File.c)#
 #Import(File.cxx)#
+#Import(File.mpp)#
 #Import(File.cu)#
   </ItemGroup>
   <ItemGroup>
