@@ -43,7 +43,7 @@ function load_parent(target, opt)
             local sourcebatches = dep:sourcebatches()
             if sourcebatches and sourcebatches["c++.build.modules"] then
                 local cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
-                target:add("cxxflags", {"/ifcSearchDir", cachedir}, {force = true, expand = false})
+                target:add("cxxflags", {"/ifcSearchDir", os.args(cachedir)}, {force = true, expand = true})
             end
         end
     end
@@ -128,8 +128,10 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
         local sourcefile = sourcebatch.sourcefiles[i]
         local moduledep = assert(moduledeps_files[sourcefile], "moduledep(%s) not found!", sourcefile)
         moduledep.job = batchjobs:newjob(sourcefile, function (index, total)
-            local opt2 = table.join(opt, {configs = {force = {cxxflags = {interfaceflag,
-                    {outputflag, modulefiles[i]}, "/TP"}}}})
+            local opt2 = table.join(opt, {configs = {force = {cxxflags = {
+                    interfaceflag,
+                    {outputflag, modulefiles[i]},
+                    "/TP"}}}})
             opt2.progress   = (index * 100) / total
             opt2.objectfile = sourcebatch.objectfiles[i]
             opt2.dependfile = sourcebatch.dependfiles[i]
@@ -140,7 +142,7 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
             count = count + 1
             if count == sourcefiles_total and not cachedir then
                 for _, modulefile in ipairs(modulefiles) do
-                    target:add("cxxflags", referenceflag .. " " .. os.args(modulefile))
+                    target:add("cxxflags", {referenceflag, os.args(modulefile)}, {force = true, expand = false})
                 end
             end
         end)
@@ -149,7 +151,7 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     -- add module flags
     target:add("cxxflags", modulesflag)
     if cachedir then
-        target:add("cxxflags", {"/ifcSearchDir", cachedir}, {expand = false})
+        target:add("cxxflags", {"/ifcSearchDir", os.args(cachedir)}, {force = true, expand = false})
     end
     if stdifcdirflag then
         for _, toolchain_inst in ipairs(target:toolchains()) do
@@ -158,7 +160,7 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
                 if vcvars.VCInstallDir and vcvars.VCToolsVersion then
                     local stdifcdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "ifc", target:is_arch("x64") and "x64" or "x86")
                     if os.isdir(stdifcdir) then
-                        target:add("cxxflags", stdifcdirflag .. " " .. winos.short_path(stdifcdir))
+                        target:add("cxxflags", {stdifcdirflag, winos.short_path(stdifcdir)}, {force = true, expand = false})
                     end
                 end
                 break

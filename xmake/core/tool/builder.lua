@@ -58,11 +58,13 @@ function builder:_mapflag(flag, flagkind, mapflags, auto_ignore_flags)
         return flag_mapped
     end
 
-    -- find and replace it using pattern
-    for k, v in pairs(mapflags) do
-        local flag_mapped, count = flag:gsub("^" .. k .. "$", function (w) return v end)
-        if flag_mapped and count ~= 0 then
-            return #flag_mapped ~= 0 and flag_mapped
+    -- find and replace it using pattern, maybe flag is table, e.g. {"-I", "/xxx"}
+    if type(flag) == "string" then
+        for k, v in pairs(mapflags) do
+            local flag_mapped, count = flag:gsub("^" .. k .. "$", function (w) return v end)
+            if flag_mapped and count ~= 0 then
+                return #flag_mapped ~= 0 and flag_mapped
+            end
         end
     end
 
@@ -70,7 +72,7 @@ function builder:_mapflag(flag, flagkind, mapflags, auto_ignore_flags)
     if auto_ignore_flags == false or self:has_flags(flag, flagkind) then
         return flag
     else
-        utils.warning("add_%s(\"%s\") is ignored, please pass `{force = true}` or call `set_policy(\"check.auto_ignore_flags\", false)` if you want to set it.", flagkind, flag)
+        utils.warning("add_%s(\"%s\") is ignored, please pass `{force = true}` or call `set_policy(\"check.auto_ignore_flags\", false)` if you want to set it.", flagkind, os.args(flag))
     end
 end
 
@@ -132,20 +134,17 @@ function builder:_add_flags_from_flagkind(flags, target, flagkind, opt)
     local extraconf   = target:extraconf(flagkind)
     if extraconf then
         for _, flag in ipairs(table.wrap(targetflags)) do
-            -- force to add flags?
+            -- @note we need join the single flag with shallow mode, aboid expand table values
+            -- e.g. add_cflags({"-I", "/tmp/xxx foo"}, {force = true, expand = false})
             local flagconf = extraconf[flag]
             if flagconf and flagconf.force then
-                table.join2(flags, flag)
-        print("111")
+                table.shallow_join2(flags, flag)
             else
-                table.join2(flags, self:_mapflags(flag, flagkind, target))
-        print("222")
-        utils.dump(self:_mapflags(flag, flagkind, target))
+                table.shallow_join2(flags, self:_mapflag(flag, flagkind, target))
             end
         end
     else
         table.join2(flags, self:_mapflags(targetflags, flagkind, target))
-        print("xxxx")
     end
 end
 
@@ -217,13 +216,11 @@ function builder:_add_flags_from_target(flags, target)
             self:_inherit_flags_from_targetdeps(targetflags, target)
         end
 
-        utils.dump(targetflags)
         -- add the target flags
         for _, flagkind in ipairs(self:_flagkinds()) do
             self:_add_flags_from_flagkind(targetflags, target, flagkind)
         end
         cache[key] = targetflags
-        utils.dump(targetflags)
     end
     table.join2(flags, targetflags)
 end
