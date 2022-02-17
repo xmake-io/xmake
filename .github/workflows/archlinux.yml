@@ -16,13 +16,13 @@ jobs:
         group: ${{ github.head_ref }}-Archlinux
         cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-
       - name: Prepare build tools
         run: |
           pacman -Sy --noconfirm --needed git base-devel perl make unzip
+
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
 
       - name: prepare local xmake
         run: |
