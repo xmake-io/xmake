@@ -123,6 +123,9 @@ function _buildparams(info, target, default)
         elseif args.filecxx then
             local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".cpp", ".cc", ".cxx"}))
+        elseif args.filempp then
+            local files = info._targets[target].sourcefiles
+            table.insert(r, _filter_files(files, {".mpp", ".mxx", ".cppm", ".ixx"}))
         elseif args.filecu then
             local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".cu"}))

@@ -112,11 +112,14 @@ function nf_symbols(self, levels, target)
             end
 
             -- check and add symbol output file
-            local pdbflags = "-Fd" .. (target:is_static() and symbolfile or path.join(symboldir, "compile." .. path.filename(symbolfile)))
+            --
+            -- @note we need use `{}` to wrap it to avoid expand it
+            -- https://github.com/xmake-io/xmake/issues/2061#issuecomment-1042590085
+            local pdbflags = {"-Fd" .. (target:is_static() and symbolfile or path.join(symboldir, "compile." .. path.filename(symbolfile)))}
             if self:has_flags({"-FS", "-Fd" .. os.nuldev() .. ".pdb"}, "cxflags", { flagskey = "-FS -Fd" }) then
-                pdbflags = {"-FS", pdbflags}
+                table.insert(pdbflags, 1, "-FS")
             end
-            table.join2(flags, pdbflags)
+            table.insert(flags, pdbflags)
         end
     end
     return flags

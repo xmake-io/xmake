@@ -120,6 +120,24 @@ function table.join2(self, ...)
     return self
 end
 
+-- shallow join all objects, it will not expand all table values
+function table.shallow_join(...)
+    local result = {}
+    for _, t in ipairs({...}) do
+        table.insert(result, t)
+    end
+    return result
+end
+
+
+-- shallow join all objects, it will not expand all table values
+function table.shallow_join2(self, ...)
+    for _, t in ipairs({...}) do
+        table.insert(self, t)
+    end
+    return self
+end
+
 -- swap items in array
 function table.swap(array, i, j)
     local val = array[i]
