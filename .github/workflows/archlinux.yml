@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    container: archlinux:base-devel-20211003.0.35663
+    container: archlinux:base-devel
     runs-on: ubuntu-latest
 
     concurrency:
