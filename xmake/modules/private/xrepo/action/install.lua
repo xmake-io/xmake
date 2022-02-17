@@ -102,10 +102,10 @@ function _install_packages(packages)
     local workdir = path.join(os.tmpdir(), "xrepo", "working")
     if not os.isdir(workdir) then
         os.mkdir(workdir)
-        os.cd(workdir)
+        old_dir = os.cd(workdir)
         os.vrunv("xmake", {"create", "-P", "."})
     else
-        os.cd(workdir)
+        old_dir = os.cd(workdir)
     end
 
     -- is package configuration file? e.g. xrepo install xxx.lua
@@ -116,10 +116,19 @@ function _install_packages(packages)
     local filemode = false
     if type(packages) == "string" or #packages == 1 then
         local packagefile = table.unwrap(packages)
+        if not packagefile:startswith("/") then
+            packagefile = path.join(old_dir, packagefile)
+        end
         if type(packagefile) == "string" and packagefile:endswith(".lua") and os.isfile(packagefile) then
             assert(os.isfile("xmake.lua"), "xmake.lua not found!")
+            os.cp("xmake.lua", "xmake.lua.bak")
             os.cp(packagefile, "xmake.lua")
             filemode = true
+        end
+        if not filemode then
+            if os.isfile("xmake.lua.bak") then
+                os.cp("xmake.lua.bak", "xmake.lua")
+            end
         end
     end
 
