@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Prepare build tools
         run: |
-          pacman -Sy --noconfirm --needed git base-devel perl make unzip
+          pacman -Sy --noconfirm --needed glibc git base-devel perl make unzip
 
       - uses: actions/checkout@v2
         with:
