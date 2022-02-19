@@ -77,8 +77,7 @@ end
 
 -- make the strip flag
 function nf_strip(self, level, target)
-    local maps =
-    {
+    local maps = {
         debug = "-Wl,-S"
     ,   all   = "-s"
     }

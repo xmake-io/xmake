@@ -36,10 +36,9 @@ end
 
 -- make the strip flag
 function nf_strip(self, level)
-    local maps =
-    {
-        debug       = "--strip"
-    ,   all         = "--strip"
+    local maps = {
+        debug  = "--strip"
+    ,   all    = "--strip"
     }
     return maps[level]
 end

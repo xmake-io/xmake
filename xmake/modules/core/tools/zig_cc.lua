@@ -21,3 +21,12 @@
 -- inherit gcc
 inherit("gcc")
 
+-- make the strip flag
+function nf_strip(self, level, target)
+    local maps = {
+        debug = "-Wl,-S"
+    ,   all   = "-s"
+    }
+    return maps[level]
+end
+
