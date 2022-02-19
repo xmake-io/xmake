@@ -52,8 +52,7 @@ function init(self)
     end
 
     -- init flags map
-    self:set("mapflags",
-    {
+    self:set("mapflags", {
         -- warnings
         ["-W1"] = "-Wall"
     ,   ["-W2"] = "-Wall"
@@ -68,8 +67,7 @@ function init(self)
 
     -- for macho target
     if is_plat("macosx") or is_plat("iphoneos") then
-        self:add("mapflags",
-        {
+        self:add("mapflags", {
             ["-s"] = "-Wl,-x"
         })
     end
@@ -94,8 +92,7 @@ function nf_symbol(self, level)
     if language.sourcekinds()[kind] then
         local maps = _g.symbol_maps
         if not maps then
-            maps =
-            {
+            maps = {
                 debug  = "-g"
             ,   hidden = "-fvisibility=hidden"
             }
@@ -110,8 +107,7 @@ end
 
 -- make the warning flag
 function nf_warning(self, level)
-    local maps =
-    {
+    local maps = {
         none       = "-w"
     ,   less       = "-Wall"
     ,   more       = "-Wall"
@@ -125,8 +121,7 @@ end
 
 -- make the fp-model flag
 function nf_fpmodel(self, level)
-    local maps =
-    {
+    local maps = {
         precise    = "" --default
     ,   fast       = "-ffast-math"
     ,   strict     = {"-frounding-math", "-ftrapping-math"}
@@ -138,8 +133,7 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    local maps =
-    {
+    local maps = {
         none       = "-O0"
     ,   fast       = "-O1"
     ,   faster     = "-O2"
@@ -152,8 +146,7 @@ end
 
 -- make the vector extension flag
 function nf_vectorext(self, extension)
-    local maps =
-    {
+    local maps = {
         mmx   = "-mmmx"
     ,   sse   = "-msse"
     ,   sse2  = "-msse2"
@@ -171,8 +164,7 @@ function nf_language(self, stdname)
 
     -- the stdc maps
     if _g.cmaps == nil then
-        _g.cmaps =
-        {
+        _g.cmaps = {
             -- stdc
             ansi        = "-ansi"
         ,   c89         = "-std=c89"
@@ -190,8 +182,7 @@ function nf_language(self, stdname)
 
     -- the stdc++ maps
     if _g.cxxmaps == nil then
-        _g.cxxmaps =
-        {
+        _g.cxxmaps = {
             cxx98        = "-std=c++98"
         ,   gnuxx98      = "-std=gnu++98"
         ,   cxx11        = "-std=c++11"
