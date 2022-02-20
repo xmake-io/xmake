@@ -106,7 +106,9 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     file:print("@echo off")
     -- @note we need get utf8 output from cmd.exe
     -- because some %PATH% and other envs maybe contains unicode characters
-    file:print("chcp 65001")
+	if winos.version():gt("winxp") then
+    	file:print("chcp 65001")
+	end
     -- fix error caused by the new vsDevCmd.bat of vs2019
     -- @see https://github.com/xmake-io/xmake/issues/549
     if vsver and tonumber(vsver) >= 16 then
