@@ -21,12 +21,40 @@
 -- imports
 import("core.sandbox.module")
 
--- find tool name from the given program
-function _find(program)
+-- find the the whole name
+function _find_with_whole_name(program)
 
     -- attempt to find it directly first
     if module.find("detect.tools.find_" .. program) then
         return program
+    end
+
+    -- find the the whole name with spaces, e.g. "zig cc" -> zig_cc
+    local partnames = {}
+    local names = path.filename(program):lower():split("%s")
+    for _, name in ipairs(names) do
+        -- remove suffix: ".exe", e.g. "zig.exe cc"
+        name = name:gsub("%.%w+", "")
+        -- "zig c++" -> zig_cxx
+        name = name:gsub("%+", "x")
+        -- skip -arguments
+        if not name:startswith("-") then
+            table.insert(partnames, name)
+        end
+    end
+    local toolname = table.concat(partnames, "_")
+    if module.find("detect.tools.find_" .. toolname) then
+        return toolname
+    end
+end
+
+-- find tool name from the given program
+function _find(program)
+
+    -- find whole name first
+    local toolname = _find_with_whole_name(program)
+    if toolname then
+        return toolname
     end
 
     -- get file name first
@@ -43,7 +71,7 @@ function _find(program)
 
     -- remove suffix: ".xxx"
     name = name:gsub("%.%w+", "")
-    local toolname = name:gsub("[%+%-]", function (ch) return (ch == "+" and "x" or "_") end)
+    toolname = name:gsub("[%+%-]", function (ch) return (ch == "+" and "x" or "_") end)
     if module.find("detect.tools.find_" .. toolname) then
         return toolname
     end
@@ -57,24 +85,6 @@ function _find(program)
         name = partnames[#partnames]
     end
     toolname = name:gsub("%+", "x")
-    if module.find("detect.tools.find_" .. toolname) then
-        return toolname
-    end
-
-    -- try the the whole name with spaces, e.g. "zig cc" -> zig_cc
-    partnames = {}
-    names = path.filename(program):lower():split("%s")
-    for _, name in ipairs(names) do
-        -- remove suffix: ".exe", e.g. "zig.exe cc"
-        name = name:gsub("%.%w+", "")
-        -- "zig c++" -> zig_cxx
-        name = name:gsub("%+", "x")
-        -- skip -arguments
-        if not name:startswith("-") then
-            table.insert(partnames, name)
-        end
-    end
-    toolname = table.concat(partnames, "_")
     if module.find("detect.tools.find_" .. toolname) then
         return toolname
     end

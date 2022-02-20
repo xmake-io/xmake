@@ -19,5 +19,3 @@
 --
 
 inherit("zig_cc")
-
-
