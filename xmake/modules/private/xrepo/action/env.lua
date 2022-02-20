@@ -446,16 +446,15 @@ function main()
                 end
             end
         else
-            print("%s:", _get_envsdir())
+            print("%s (builtin):", _get_envsdir_builtin())
             local count = 0
-            for _, envfile in ipairs(os.files(path.join(_get_envsdir(), "*.lua"))) do
+            for _, envfile in ipairs(os.files(path.join(_get_envsdir_builtin(), "*.lua"))) do
                 local envname = path.basename(envfile)
                 print("  - %s", envname)
                 count = count + 1
             end
-            print("%s (builtin):", _get_envsdir_builtin())
-            local count = 0
-            for _, envfile in ipairs(os.files(path.join(_get_envsdir_builtin(), "*.lua"))) do
+            print("%s:", _get_envsdir())
+            for _, envfile in ipairs(os.files(path.join(_get_envsdir(), "*.lua"))) do
                 local envname = path.basename(envfile)
                 print("  - %s", envname)
                 count = count + 1
