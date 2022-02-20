@@ -198,13 +198,20 @@ function _get_envsdir()
     return path.join(global.directory(), "envs")
 end
 
+-- get builtin environment directory
+function _get_envsdir_builtin()
+    return path.join(os.programdir(), "scripts", "xrepo", "envs")
+end
+
 -- get bound environment or packages
 function _get_boundenv(opt)
     local bind = (opt and opt.bind) or option.get("bind")
     if bind then
-        local envfile = path.join(_get_envsdir(), bind .. ".lua")
-        if envfile and os.isfile(envfile) then
-            return envfile
+        for _, envsdir in ipairs({_get_envsdir(), _get_envsdir_builtin()}) do
+            local envfile = path.join(envsdir, bind .. ".lua")
+            if envfile and os.isfile(envfile) then
+                return envfile
+            end
         end
     end
     return bind
@@ -431,13 +438,24 @@ function main()
     if option.get("list") then
         local envname = option.get("program")
         if envname then
-            local envfile = path.join(_get_envsdir(), envname .. ".lua")
-            print("%s:", envfile)
-            io.cat(envfile)
+            for _, envsdir in ipairs({_get_envsdir(), _get_envsdir_builtin()}) do
+                local envfile = path.join(envsdir, envname .. ".lua")
+                if os.isfile(envfile) then
+                    print("%s:", envfile)
+                    io.cat(envfile)
+                end
+            end
         else
             print("%s:", _get_envsdir())
             local count = 0
             for _, envfile in ipairs(os.files(path.join(_get_envsdir(), "*.lua"))) do
+                local envname = path.basename(envfile)
+                print("  - %s", envname)
+                count = count + 1
+            end
+            print("%s (builtin):", _get_envsdir_builtin())
+            local count = 0
+            for _, envfile in ipairs(os.files(path.join(_get_envsdir_builtin(), "*.lua"))) do
                 local envname = path.basename(envfile)
                 print("  - %s", envname)
                 count = count + 1
