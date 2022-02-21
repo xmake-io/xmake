@@ -1,1 +1,1 @@
-add_requires("llvm-mingw")
+add_requires("mingw-w64")
