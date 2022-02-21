@@ -470,8 +470,11 @@ function main()
         local envname = assert(option.get("program"), "please set environment config name!")
         os.rm(path.join(_get_envsdir(), envname .. ".lua"))
     else
-        local envs = _package_getenvs()
         local program = option.get("program")
+        if program and program == "shell" then
+            utils.warning("The shell was not integrated with xmake. Some features might be missing. Please switch to your default shell, and run `xmake update --integrate` to integrate the shell.")
+        end
+        local envs = _package_getenvs()
         if program and not option.get("show") then
             if envs and envs.PATH then
                 os.setenv("PATH", envs.PATH)
