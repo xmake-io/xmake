@@ -27,7 +27,8 @@ local io = require("base/io")
 -- save metatable and builtin functions
 tty._term_mode = tty._term_mode or tty.term_mode
 
--- @see http://www.termsys.demon.co.uk/vtansi.htm
+-- @see https://www2.ccs.neu.edu/research/gpc/VonaUtils/vona/terminal/vtansi.htm
+-- http://www.termsys.demon.co.uk/vtansi.htm
 
 -- write control characters
 function tty._iowrite(...)
