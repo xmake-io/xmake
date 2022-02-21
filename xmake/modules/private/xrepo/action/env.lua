@@ -472,7 +472,7 @@ function main()
     else
         local program = option.get("program")
         if program and program == "shell" then
-            utils.warning("The shell was not integrated with xmake. Some features might be missing. Please switch to your default shell, and run `xmake update --integrate` to integrate the shell.")
+            wprint("The shell was not integrated with xmake. Some features might be missing. Please switch to your default shell, and run `xmake update --integrate` to integrate the shell.")
         end
         local envs = _package_getenvs()
         if program and not option.get("show") then
