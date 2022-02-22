@@ -49,9 +49,14 @@ end
 function install(package, configs, opt)
     opt = opt or {}
     local buildir = opt.buildir or os.curdir()
-    local njob = tostring(os.default_njob())
+    local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
     local ninja = assert(find_tool("ninja"), "ninja not found!")
-    local argv = {"install", "-C", buildir}
+    local argv = {"install"}
+    if opt.target then
+        table.insert(argv, opt.target)
+    end
+    table.insert(argv, "-C")
+    table.insert(argv, buildir)
     if option.get("verbose") then
         table.insert(argv, "-v")
     end
