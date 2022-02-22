@@ -597,6 +597,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
         local cstandard
         local cxxstandard
         for _, lang in pairs(targetinfo.languages) do
+            lang = lang:replace("c++", "cxx", {plain = true})
             if cxxlangflags[lang] then
                 cxxstandard = cxxlangflags[lang]
             elseif clangflags[lang] then
