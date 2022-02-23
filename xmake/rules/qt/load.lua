@@ -304,7 +304,12 @@ function main(target, opt)
         target:add("syslinks", "ws2_32", "gdi32", "ole32", "advapi32", "shell32", "user32", "opengl32", "imm32", "winmm", "iphlpapi")
     elseif target:is_plat("mingw") then
         target:set("frameworks", nil)
-        _add_includedirs(target, qt.includedir)
+        -- we need fix it, because gcc maybe does not work on latest mingw when `-isystem D:\a\_temp\msys64\mingw64\include` is passed.
+        -- and qt.includedir will be this path value when Qt sdk directory just is `D:\a\_temp\msys64\mingw64`
+        -- @see https://github.com/msys2/MINGW-packages/issues/10761#issuecomment-1044302523
+        if qt.includedir and os.isdir(qt.includedir) then
+            _add_includedirs(target, qt.includedir)
+        end
         _add_includedirs(target, path.join(qt.mkspecsdir, "win32-g++"))
         target:add("linkdirs", qt.libdir)
         target:add("syslinks", "mingw32", "ws2_32", "gdi32", "ole32", "advapi32", "shell32", "user32", "iphlpapi")
