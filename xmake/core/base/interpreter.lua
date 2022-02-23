@@ -1469,7 +1469,7 @@ function interpreter:api_define(apis)
     for apitype, apifuncs in pairs(apis) do
         for _, apifunc in ipairs(apifuncs) do
 
-            -- is {"apifunc", apiscipt}?
+            -- is {"apifunc", apiscript}?
             local apiscript = nil
             if type(apifunc) == "table" then
 
