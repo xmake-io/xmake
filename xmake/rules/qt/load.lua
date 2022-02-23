@@ -136,6 +136,10 @@ function main(target, opt)
         -- @see https://github.com/xmake-io/xmake/issues/1183
         if qt_sdkver:ge("6.0") then
             target:add("languages", "c++17")
+            -- @see https://github.com/xmake-io/xmake/issues/2071
+            if target:is_plat("windows") then
+                target:add("cxxflags", "/Zc:__cplusplus")
+            end
         else
             target:add("languages", "c++11")
         end
