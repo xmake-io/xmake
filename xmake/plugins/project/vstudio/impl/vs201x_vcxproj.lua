@@ -26,6 +26,7 @@ import("core.project.project")
 import("core.language.language")
 import("core.tool.toolchain")
 import("private.utils.batchcmds")
+import("detect.sdks.find_cuda")
 import("vsfile")
 
 function _make_dirs(dir, vcxprojdir)
@@ -38,6 +39,22 @@ function _make_dirs(dir, vcxprojdir)
         dir = path.relative(path.absolute(dir), vcxprojdir)
     end
     return dir
+end
+
+-- check for CUDA
+function _check_cuda(target)
+    local sourcekinds = target:sourcekinds()
+    if table.contains(sourcekinds, "cu") then
+        return
+    end
+    local cuda = find_cuda()
+    if cuda then
+        if cuda.msbuildextensionsdir and cuda.version and os.isfile(path.join(cuda.msbuildextensionsdir, format("CUDA %s.props", cuda.version))) then
+            return cuda
+        else
+            os.raise("The Visual Studio Integration for CUDA %s is not found. Please check your CUDA installation.", cuda.version)
+        end
+    end
 end
 
 -- get toolset version
@@ -159,9 +176,13 @@ function _make_header(vcxprojfile, vsinfo)
 end
 
 -- make tailer
-function _make_tailer(vcxprojfile, vsinfo)
+function _make_tailer(vcxprojfile, vsinfo, target)
     vcxprojfile:print("<Import Project=\"%$(VCTargetsPath)\\Microsoft.Cpp.targets\" />")
     vcxprojfile:enter("<ImportGroup Label=\"ExtensionTargets\">")
+    local cuda = _check_cuda(target)
+    if cuda then
+        vcxprojfile:print("<Import Project=\"%s\" />", path.join(cuda.msbuildextensionsdir, format("CUDA %s.targets", cuda.version)))
+    end
     vcxprojfile:leave("</ImportGroup>")
     vcxprojfile:leave("</Project>")
 end
@@ -219,6 +240,10 @@ function _make_configurations(vcxprojfile, vsinfo, target)
 
     -- make ExtensionSettings
     vcxprojfile:enter("<ImportGroup Label=\"ExtensionSettings\">")
+    local cuda = _check_cuda(target)
+    if cuda then
+        vcxprojfile:print("<Import Project=\"%s\" />", path.join(cuda.msbuildextensionsdir, format("CUDA %s.props", cuda.version)))
+    end
     vcxprojfile:leave("</ImportGroup>")
 
     -- make PropertySheets
@@ -562,7 +587,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
 
     vcxprojfile:leave("</%s>", linkerkinds[targetinfo.targetkind])
 
-    -- for compiler?
+    -- for C/C++ compiler?
     vcxprojfile:enter("<ClCompile>")
 
         -- make source options
@@ -628,6 +653,17 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
         end
 
     vcxprojfile:leave("</ClCompile>")
+    
+    -- for CUDA compiler?
+    local cuda = _check_cuda(target)
+    if cuda then
+        vcxprojfile:enter("<CudaCompile>")
+
+        -- architecture
+        vcxprojfile:print("<TargetMachinePlatform>%s</TargetMachinePlatform>", targetinfo.mode:endswith("64") and "64" or "32")
+
+        vcxprojfile:leave("</CudaCompile>")
+    end
 
     -- make custom commands
     _make_custom_commands(vcxprojfile, targetinfo)
@@ -725,7 +761,12 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
     end
 
     -- enter it
-    local nodename = (sourcekind == "as" and "CustomBuild" or (sourcekind == "mrc" and "ResourceCompile" or "ClCompile"))
+    local nodename
+    if     sourcekind == "as"  then nodename = "CustomBuild" 
+    elseif sourcekind == "mrc" then nodename = "ResourceCompile" 
+    elseif sourcekind == "cu"  then nodename = "CudaCompile"
+    elseif sourcekind == "cc" or sourcekind == "cxx" then nodename = "ClCompile"
+    end
     sourcefile = path.relative(path.absolute(sourcefile), target.project_dir)
     vcxprojfile:enter("<%s Include=\"%s\">", nodename, sourcefile)
 
@@ -749,7 +790,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
                     info.mode, info.arch, objectfile)
             end
 
-        -- for *.c/cpp files
+        -- for *.c/cpp/cu files
         else
 
             -- we need use different object directory and allow parallel building
@@ -858,7 +899,12 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
     for _, info in ipairs(sourceinfo) do
 
         -- enter it
-        local nodename = (info.sourcekind == "as" and "CustomBuild" or (info.sourcekind == "mrc" and "ResourceCompile" or "ClCompile"))
+        local nodename
+        if     info.sourcekind == "as"  then nodename = "CustomBuild" 
+        elseif info.sourcekind == "mrc" then nodename = "ResourceCompile" 
+        elseif info.sourcekind == "cu"  then nodename = "CudaCompile"
+        elseif info.sourcekind == "cc" or info.sourcekind == "cxx" then nodename = "ClCompile"
+        end
         vcxprojfile:enter("<%s Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Include=\"%s\">",
             nodename, info.mode, info.arch, sourcefile)
 
@@ -872,11 +918,11 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
             vcxprojfile:print("<Command>%s</Command>", compcmd)
 
         -- for *.rc files
-        elseif sourcekind == "mrc" then
+        elseif info.sourcekind == "mrc" then
             vcxprojfile:print("<ResourceOutputFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ResourceOutputFileName>",
                 info.mode, info.arch, objectfile)
 
-        -- for *.c/cpp files
+        -- for *.c/cpp/cu files
         else
            -- we need use different object directory and allow parallel building
             --
@@ -888,6 +934,7 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
                 targetinfo.objectnames = hashset:new()
             end
             local targetinfo = info.targetinfo
+            local outputnode = (info.sourcekind == "cu" and "CompileOut" or "ObjectFileName")
             if targetinfo.objectnames:has(objectname) then
                 vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>",
                     info.mode, info.arch, objectfile)
@@ -897,7 +944,7 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
 
             -- disable the precompiled header if sourcekind ~= headerkind
             local pcheader = target.pcxxheader or target.pcheader
-            if pcheader and language.sourcekind_of(sourcefile) ~= (target.pcxxheader and "cxx" or "cc") then
+            if pcheader and info.sourcekind ~= "cu" and language.sourcekind_of(sourcefile) ~= (target.pcxxheader and "cxx" or "cc") then
                 vcxprojfile:print("<PrecompiledHeader>NotUsing</PrecompiledHeader>")
             end
             vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", os.args(info.flags))
@@ -1017,7 +1064,7 @@ function make(vsinfo, target)
     _make_source_files(vcxprojfile, vsinfo, target)
 
     -- make tailer
-    _make_tailer(vcxprojfile, vsinfo)
+    _make_tailer(vcxprojfile, vsinfo, target)
 
     -- exit solution file
     vcxprojfile:close()
