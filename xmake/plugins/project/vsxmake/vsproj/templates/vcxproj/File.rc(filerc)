@@ -1,1 +1,1 @@
-    <ResourceCompile Include="$(XmakeProjectDir)\#path#" />
+    <ResourceCompile Include="#path#" />

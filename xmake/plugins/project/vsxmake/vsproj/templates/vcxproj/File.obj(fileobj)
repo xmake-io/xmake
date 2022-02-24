@@ -1,1 +1,1 @@
-    <Object Include="$(XmakeProjectDir)\#path#" />
+    <Object Include="#path#" />
