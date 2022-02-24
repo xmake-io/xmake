@@ -140,7 +140,7 @@ function _install_packages(packages)
     os.setenv("XMAKE_STATS", "false")
 
     -- do configure first
-    local config_argv = {"f", "-c"}
+    local config_argv = {"f", "-c", "--require=n"}
     if option.get("verbose") then
         table.insert(config_argv, "-v")
     end
@@ -204,12 +204,7 @@ function _install_packages(packages)
     if #rcfiles > 0 then
         envs.XMAKE_RCFILES = path.joinenv(rcfiles)
     end
-    if packagefile then
-        -- https://github.com/xmake-io/xmake/issues/2084
-        os.execv("xmake", config_argv, {envs = envs})
-    else
-        os.vrunv("xmake", config_argv, {envs = envs})
-    end
+    os.vrunv("xmake", config_argv, {envs = envs})
 
     -- do install
     local require_argv = {"require"}
@@ -257,12 +252,13 @@ function _install_packages(packages)
             raise(errors)
         end
     end
-    if extra then
-        local extra_str = string.serialize(extra, {indent = false, strip = true})
-        table.insert(require_argv, "--extra=" .. extra_str)
-    end
     if not packagefile then
+        -- avoid to override extra configs in add_requires/xmake.lua
         table.join2(require_argv, packages)
+        if extra then
+            local extra_str = string.serialize(extra, {indent = false, strip = true})
+            table.insert(require_argv, "--extra=" .. extra_str)
+        end
     end
     os.vexecv("xmake", require_argv, {envs = envs})
 end

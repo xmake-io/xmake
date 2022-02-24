@@ -122,7 +122,7 @@ function _fetch_packages(packages)
     end
 
     -- do configure first
-    local config_argv = {"f", "-c"}
+    local config_argv = {"f", "-c", "--require=n"}
     if option.get("verbose") then
         table.insert(config_argv, "-v")
     end
@@ -204,11 +204,12 @@ function _fetch_packages(packages)
             raise(errors)
         end
     end
-    if extra then
-        local extra_str = string.serialize(extra, {indent = false, strip = true})
-        table.insert(require_argv, "--extra=" .. extra_str)
-    end
     if not packagefile then
+        -- avoid to override extra configs in add_requires/xmake.lua
+        if extra then
+            local extra_str = string.serialize(extra, {indent = false, strip = true})
+            table.insert(require_argv, "--extra=" .. extra_str)
+        end
         table.join2(require_argv, packages)
     end
     os.vexecv("xmake", require_argv, {envs = envs})
