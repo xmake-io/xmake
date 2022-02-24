@@ -1,1 +1,1 @@
-    <ClInclude Include="$(XmakeProjectDir)\#path#" />
+    <ClInclude Include="#path#" />

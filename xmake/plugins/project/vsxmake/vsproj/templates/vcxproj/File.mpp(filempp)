@@ -1,1 +1,1 @@
-    <None Include="$(XmakeProjectDir)\#path#" />
+    <None Include="#path#" />

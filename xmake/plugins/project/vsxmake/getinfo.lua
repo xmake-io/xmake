@@ -472,11 +472,13 @@ function main(outputdir, vsinfo)
         target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, root) end)
         for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
             local dir = path.directory(f)
+            local escaped_f = _escape(f)
             -- @see https://github.com/xmake-io/xmake/issues/2039
             dir = _strip_dotdirs(dir)
             target._paths[f] =
             {
-                path = _escape(f),
+                -- @see https://github.com/xmake-io/xmake/issues/2077
+                path = path.is_absolute(escaped_f) and escaped_f or "$(XmakeProjectDir)\\" .. escaped_f,
                 dir = _escape(dir)
             }
             while dir ~= "." do
