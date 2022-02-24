@@ -21,7 +21,7 @@
 -- define toolchain
 toolchain("cross")
 
-    -- set descrption
+    -- set description
     set_description("Common cross compilation toolchain")
 
     -- mark as cross-compilation toolchain
