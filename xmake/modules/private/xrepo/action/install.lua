@@ -197,7 +197,12 @@ function _install_packages(packages)
     if #rcfiles > 0 then
         envs.XMAKE_RCFILES = path.joinenv(rcfiles)
     end
-    os.vrunv("xmake", config_argv, {envs = envs})
+    if filemode then
+        -- https://github.com/xmake-io/xmake/issues/2084
+        os.execv("xmake", config_argv, {envs = envs})
+    else
+        os.vrunv("xmake", config_argv, {envs = envs})
+    end
 
     -- do install
     local require_argv = {"require"}
