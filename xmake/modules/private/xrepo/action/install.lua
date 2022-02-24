@@ -254,11 +254,11 @@ function _install_packages(packages)
     end
     if not packagefile then
         -- avoid to override extra configs in add_requires/xmake.lua
-        table.join2(require_argv, packages)
         if extra then
             local extra_str = string.serialize(extra, {indent = false, strip = true})
             table.insert(require_argv, "--extra=" .. extra_str)
         end
+        table.join2(require_argv, packages)
     end
     os.vexecv("xmake", require_argv, {envs = envs})
 end
