@@ -88,30 +88,37 @@ function _fetch_packages(packages)
     -- xxx.lua
     --   add_requires("libpng", {system = false})
     --   add_requireconfs("libpng.*", {configs = {shared = true}})
-    local filemode = false
-    local rcfiles = {}
+    local packagefile
     if type(packages) == "string" or #packages == 1 then
-        local packagefile = table.unwrap(packages)
-        if type(packagefile) == "string" and packagefile:endswith(".lua") and os.isfile(packagefile) then
-            table.insert(rcfiles, path.absolute(packagefile))
-            filemode = true
+        local filepath = table.unwrap(packages)
+        if type(filepath) == "string" and filepath:endswith(".lua") and os.isfile(filepath) then
+            packagefile = path.absolute(filepath)
         end
     end
 
     -- add includes to rcfiles
+    local rcfiles = {}
     local includes = option.get("includes")
     if includes then
         table.join2(rcfiles, path.splitenv(includes))
     end
 
     -- enter working project directory
-    local workdir = path.join(os.tmpdir(), "xrepo", "working")
+    local subdir = "working"
+    if packagefile then
+        subdir = subdir .. "-" .. hash.uuid(packagefile):split('-')[1]
+    end
+    local workdir = path.join(os.tmpdir(), "xrepo", subdir)
     if not os.isdir(workdir) then
         os.mkdir(workdir)
         os.cd(workdir)
         os.vrunv("xmake", {"create", "-P", "."})
     else
         os.cd(workdir)
+    end
+    if packagefile then
+        assert(os.isfile("xmake.lua"), "xmake.lua not found!")
+        os.cp(packagefile, "xmake.lua")
     end
 
     -- do configure first
@@ -201,7 +208,7 @@ function _fetch_packages(packages)
         local extra_str = string.serialize(extra, {indent = false, strip = true})
         table.insert(require_argv, "--extra=" .. extra_str)
     end
-    if not filemode then
+    if not packagefile then
         table.join2(require_argv, packages)
     end
     os.vexecv("xmake", require_argv, {envs = envs})
