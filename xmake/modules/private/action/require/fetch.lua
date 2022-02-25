@@ -51,6 +51,7 @@ function main(requires_raw)
     local nodeps = not (fetchmodes and fetchmodes:has("deps"))
     for _, instance in irpairs(package.load_packages(requires, {requires_extra = requires_extra, nodeps = nodeps})) do
         local fetchinfo = instance:fetch({external = (fetchmodes and fetchmodes:has("external") or false)})
+        fetchinfo.name = instance:name()
         if fetchinfo then
             table.insert(fetchinfos, fetchinfo)
         end
