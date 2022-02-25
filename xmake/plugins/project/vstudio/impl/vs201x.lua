@@ -274,6 +274,9 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     -- save sourcebatches
     targetinfo.sourcebatches = target:sourcebatches()
 
+    -- save sourcekinds
+    targetinfo.sourcekinds = target:sourcekinds()
+
     -- save target dir
     targetinfo.targetdir = target:targetdir()
 
@@ -289,7 +292,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
         if sourcekind then
             for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local compflags = compiler.compflags(sourcefile, {target = target})
-                if not firstcompflags and (sourcekind == "cc" or sourcekind == "cxx") then
+                if not firstcompflags and (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "cu") then
                     firstcompflags = compflags
                 end
                 targetinfo.compflags[sourcefile] = compflags
@@ -301,6 +304,15 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     -- save linker flags
     local linkflags = linker.linkflags(target:kind(), target:sourcekinds(), {target = target})
     targetinfo.linkflags = linkflags
+
+    if table.contains(target:sourcekinds(), "cu") then
+        -- save cuda linker flags
+        local linkinst = linker.load("gpucode", "cu", {target = target})
+        targetinfo.culinkflags = linkinst:linkflags({target = target})
+
+        -- save cuda devlink status
+        targetinfo.cudevlink = target:values("cuda.build.devlink")
+    end
 
     -- save execution dir (when executed from VS)
     targetinfo.rundir = target:rundir()
