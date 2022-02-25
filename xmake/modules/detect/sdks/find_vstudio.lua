@@ -22,6 +22,7 @@
 import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
+import("core.cache.global_detectcache")
 
 -- init vc variables
 local vcvars = {"path",
@@ -189,26 +190,11 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     variables.lib     = nil
     variables.include = nil
     variables.libpath = nil
-
-    -- ok
     return variables
 end
 
--- find vstudio environment
---
--- @param opt   the options, e.g. {vcvars_ver = 14.0, sdkver = "10.0.15063.0"}
---
--- @return      { 2008 = {version = "9.0", vcvarsall = {x86 = {path = .., lib = .., include = ..}}}
---              , 2017 = {version = "15.0", vcvarsall = {x64 = {path = .., lib = ..}}}}
---
-function main(opt)
-
-    -- only for windows
-    if not is_host("windows") then
-        return
-    end
-
-    -- init options
+-- find vstudio for msvc
+function _find_vstudio(opt)
     opt = opt or {}
 
     -- find the single current MSVC/VS from environment variables
@@ -340,4 +326,57 @@ function main(opt)
         end
     end
     return results
+end
+
+-- get last mtime of vstudio
+function _get_last_mtime(vstudio)
+    local mtime = -1
+    for _, msvc in pairs(vstudio) do
+        local vcvarsall_bat = msvc.vcvarsall_bat
+        if vcvarsall_bat and os.isfile(vcvarsall_bat) then
+            local t = os.mtime(vcvarsall_bat)
+            if t > mtime then
+                mtime = t
+            end
+        else
+            mtime = -1
+            break
+        end
+    end
+    return mtime
+end
+
+-- find vstudio environment
+--
+-- @param opt   the options, e.g. {vcvars_ver = 14.0, sdkver = "10.0.15063.0"}
+--
+-- @return      { 2008 = {version = "9.0", vcvarsall = {x86 = {path = .., lib = .., include = ..}}}
+--              , 2017 = {version = "15.0", vcvarsall = {x64 = {path = .., lib = ..}}}}
+--
+function main(opt)
+
+    -- only for windows
+    if not is_host("windows") then
+        return
+    end
+
+    -- attempt to get it from the global cache first
+    local vstudio = global_detectcache:get2("vstudio", "msvc")
+    if vstudio then
+        local mtime = _get_last_mtime(vstudio)
+        local mtimeprev = global_detectcache:get2("vstudio", "mtime")
+        if mtime and mtimeprev and mtime > 0 and mtimeprev > 0 and mtime == mtimeprev then
+            return vstudio
+        end
+    end
+
+    -- find and cache result
+    vstudio = _find_vstudio(opt)
+    if vstudio then
+        local mtime = _get_last_mtime(vstudio)
+        global_detectcache:set2("vstudio", "msvc", vstudio)
+        global_detectcache:set2("vstudio", "mtime", mtime)
+        global_detectcache:save()
+    end
+    return vstudio
 end
