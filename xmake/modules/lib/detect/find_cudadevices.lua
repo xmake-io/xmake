@@ -131,6 +131,11 @@ function _find_devices(verbose, envs)
     {
         function ()
             local args = { sourcefile, "-run", "-o", outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }
+            if is_arch("x86") then
+                table.insert(args, "-m32")
+            elseif is_arch("x64") then
+                table.insert(args, "-m64")
+            end
             return os.iorunv(nvcc.program, args, {envs = envs})
         end,
         catch
