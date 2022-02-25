@@ -118,7 +118,7 @@ function _exclude_flags(flags, excludes)
     for _, flag in ipairs(flags) do
         local excluded = false
         for _, exclude in ipairs(excludes) do
-            if flag:find("[%-/]" .. exclude) then
+            if flag:find("^[%-/]" .. exclude) then
                 excluded = true
                 break
             end
@@ -502,7 +502,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
             vcxprojfile:print("<Optimization%s>O1</Optimization>", condition)
         elseif flagstr:find("[%-/]O2") then
             vcxprojfile:print("<Optimization%s>O2</Optimization>", condition)
-        elseif flagstr:find("[%-/]Ox") then
+        elseif flagstr:find("[%-/]O3") or flagstr:find("[%-/]Ox") then
             vcxprojfile:print("<Optimization%s>O3</Optimization>", condition)
         end
 
@@ -562,11 +562,14 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
         end
         if arch then
             if not code then
-                code = arch:gsub("sm", "compute")
+                code = arch
+                arch = arch:gsub("sm", "compute")
+                table.insert(gencodes, arch .. "," .. arch)
             end
             table.insert(gencodes, arch .. "," .. code)
         end
         if #gencodes > 0 then
+            gencodes = table.unique(gencodes)
             vcxprojfile:print("<CodeGeneration%s>%s</CodeGeneration>", condition, table.concat(gencodes, ";"))
         end
     end
@@ -623,7 +626,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
 
     -- make AdditionalOptions
     local excludes = {
-        "Od", "O1", "O2", "Ox", "W1", "W2", "W3", "W4", "Wall", "I", "D", "L", "l", "m", "%-machine", "gencode", "arch", "code", "cudart", "G", "use_fast_math", "rdc", "%-keep", "%-keep%-dir"
+        "Od", "O1", "O2", "O3", "Ox", "W1", "W2", "W3", "W4", "Wall", "I", "D", "L", "l", "m", "%-machine", "gencode", "arch", "code", "cudart", "G", "use_fast_math", "rdc", "%-keep", "%-keep%-dir"
     }
     local additional_flags = _exclude_flags(flags, excludes)
     if #additional_flags > 0 then
