@@ -467,7 +467,7 @@ function main(outputdir, vsinfo)
     for _, target in pairs(targets) do
         target._paths = {}
         local dirs = {}
-        local root = project.directory()
+        local root = target.scriptdir or project.directory()
         target.sourcefiles = table.imap(target.sourcefiles, function(_, v) return path.relative(v, root) end)
         target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, root) end)
         for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
