@@ -620,8 +620,18 @@ function _instance:installdir(...)
         end
         self._INSTALLDIR = installdir
     end
-    local dir = path.join(installdir, ...)
-    if not os.isdir(dir) then
+    local dirs = table.pack(...)
+    local opt = dirs[dirs.n]
+    if table.is_dictionary(opt) then
+        table.remove(dirs)
+    else
+        opt = nil
+    end
+    local dir = path.join(installdir, table.unpack(dirs))
+    if opt and opt.readonly then
+        return dir
+    end
+    if not os.isdir(dir)then
         os.mkdir(dir)
     end
     return dir
@@ -634,7 +644,7 @@ end
 
 -- get the references info of this package
 function _instance:references()
-    local references_file = path.join(self:installdir(), "references.txt")
+    local references_file = path.join(self:installdir({readonly = true}), "references.txt")
     if os.isfile(references_file) then
         local references, errors = io.load(references_file)
         if not references then
@@ -646,7 +656,7 @@ end
 
 -- get the manifest file of this package
 function _instance:manifest_file()
-    return path.join(self:installdir(), "manifest.txt")
+    return path.join(self:installdir({readonly = true}), "manifest.txt")
 end
 
 -- load the manifest file of this package
@@ -756,7 +766,7 @@ end
 
 -- enter the package environments
 function _instance:envs_enter()
-    local installdir = self:installdir()
+    local installdir = self:installdir({readonly = true})
     for name, values in pairs(self:envs()) do
         if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
             for _, value in ipairs(values) do
@@ -1316,7 +1326,7 @@ function _instance:find_tool(name, opt)
     opt = opt or {}
     self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
     return self._find_tool(name, {cachekey = opt.cachekey or "fetch_package_system",
-                                  installdir = self:installdir(),
+                                  installdir = self:installdir({readonly = true}),
                                   version = true, -- we alway check version
                                   require_version = opt.require_version,
                                   norun = opt.norun,
@@ -1333,7 +1343,7 @@ function _instance:find_package(name, opt)
     end
     return self._find_package(name, {
                               force = opt.force,
-                              installdir = self:installdir(),
+                              installdir = self:installdir({readonly = true}),
                               version = true, -- we alway check version
                               require_version = opt.require_version,
                               mode = self:mode(),
