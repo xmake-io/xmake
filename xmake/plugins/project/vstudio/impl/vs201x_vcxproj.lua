@@ -130,6 +130,14 @@ function _exclude_flags(flags, excludes)
     return newflags
 end
 
+-- try split from nvcc -code flag
+--   e.g. nvcc -arch=compute_86 -code=\"sm_86,compute_86\"
+--        nvcc -gencode arch=compute_86,code=[sm_86,compute_86]
+function _split_gpucodes(flag)
+    flag = flag:gsub("[%[\"]?(.-)[%]\"]?", "%1")
+    return flag:split(",")
+end
+
 -- make compiling command
 function _make_compcmd(compargv, sourcefile, objectfile, vcxprojdir)
     local argv = {}
@@ -414,7 +422,7 @@ function _make_source_options_cl(vcxprojfile, flags, condition)
     -- make PreprocessorDefinitions
     local defstr = ""
     for _, flag in ipairs(flags) do
-        flag:gsub("[%-/]D(.*)",
+        flag:gsub("^[%-/]D(.*)",
             function (def)
                 defstr = defstr .. vsutils.escape(def) .. ";"
             end
@@ -454,10 +462,10 @@ function _make_source_options_cl(vcxprojfile, flags, condition)
     end
 
     -- make AdditionalIncludeDirectories
-    if flagstr:find("[%-/]I") then
+    if flagstr:find("^[%-/]I") then
         local dirs = {}
         for _, flag in ipairs(flags) do
-            flag:gsub("[%-/]I(.*)", function (dir) table.insert(dirs, vsutils.escape(dir)) end)
+            flag:gsub("^[%-/]I(.*)", function (dir) table.insert(dirs, vsutils.escape(dir)) end)
         end
         if #dirs > 0 then
             vcxprojfile:print("<AdditionalIncludeDirectories%s>%s</AdditionalIncludeDirectories>", condition, table.concat(dirs, ";"))
@@ -488,7 +496,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
     condition = (opt and opt.condition) or ""
 
     -- combine successive commands
-    flags = _combine_flags(flags, {"%-gencode$", "%-arch$", "%-code$", "%-%-machine$", "%-rdc$", "%-cudart$", "%-%-keep%-dir$"})
+    flags = _combine_flags(flags, {"^%-gencode$", "^%-arch$", "^%-code$", "^%-%-machine$", "^%-rdc$", "^%-cudart$", "^%-%-keep%-dir$"})
 
     -- get flags string
     local flagstr = os.args(flags)
@@ -517,7 +525,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
         -- make Defines
         local defstr = ""
         for _, flag in ipairs(flags) do
-            flag:gsub("[%-/]D(.*)",
+            flag:gsub("^[%-/]D(.*)",
                 function (def)
                     defstr = defstr .. vsutils.escape(def) .. ";"
                 end
@@ -527,10 +535,10 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
         vcxprojfile:print("<Defines%s>%s</Defines>", condition, defstr)
 
         -- make Include
-        if flagstr:find("[%-/]I") then
+        if flagstr:find("^[%-/]I") then
             local dirs = {}
             for _, flag in ipairs(flags) do
-                flag:gsub("[%-/]I(.*)", function (dir) table.insert(dirs, vsutils.escape(dir)) end)
+                flag:gsub("^[%-/]I(.*)", function (dir) table.insert(dirs, vsutils.escape(dir)) end)
             end
             if #dirs > 0 then
                 vcxprojfile:print("<Include%s>%s</Include>", condition, table.concat(dirs, ";"))
@@ -542,31 +550,58 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
     -- make TargetMachinePlatform
     local machinebitwidth
     for _, flag in ipairs(flags) do
-        flag:gsub("%-m(.+)", function (value) machinebitwidth = value end)
-        flag:gsub("%-%-machine[ =](.+)", function (value) machinebitwidth = value end)
+        flag:gsub("^%-m(.+)", function (value) machinebitwidth = value end)
+        flag:gsub("^%-%-machine[ =](.+)", function (value) machinebitwidth = value end)
     end
     if machinebitwidth and (machinebitwidth == "32" or machinebitwidth == "64") then
         vcxprojfile:print("<TargetMachinePlatform%s>%s</TargetMachinePlatform>", condition, machinebitwidth)
     end
 
     -- make CodeGeneration
-    if flagstr:find("%-gencode[ =]arch=(.+),code=(.+)") or flagstr:find("%-arch") or flagstr:find("%-code") then
-        local arch, code
+    local gpucode_patterns = {
+        "^%-gencode[ =]arch=(.+),code=(.+)",
+        "^%-%-generate%-code[ =]arch=(.+),code=(.+)",
+        "^%-arch",
+        "^%-%-gpu%-architecture",
+        "^%-code",
+        "^%-%-gpu%-code"
+    }
+    local has_gpucode = false
+    for _, pattern in ipairs(gpucode_patterns) do
+        if flagstr:find(pattern) then
+            has_gpucode = true
+            break
+        end
+    end
+    if has_gpucode then
+        local arch
+        local codes = {}
         local gencodes = {}
         for _, flag in ipairs(flags) do
-            flag:gsub("%-gencode[ =]arch=(.+),code=(.+)$", function (garch, gcode)
-                table.insert(gencodes, garch:gsub("\"", "") .. "," .. gcode:gsub("\"", ""))
+            flag:gsub("%-gencode[ =]arch=(.+),code=(.+)$", function (garch, gcodes)
+                for _, gcode in ipairs(_split_gpucodes(gcodes)) do
+                    table.insert(gencodes, garch .. "," .. gcode)
+                end
             end)
-            flag:gsub("^%-arch[ =](.+)", function (garch) arch = garch:gsub("\"", "") end)
-            flag:gsub("^%-code[ =](.+)", function (gcode) code = gcode:gsub("\"", "") end)
+            flag:gsub("^%-%-generate%-code[ =]arch=(.+),code=(.+)", function (garch, gcodes)
+                for _, gcode in ipairs(_split_gpucodes(gcodes)) do
+                    table.insert(gencodes, garch .. "," .. gcode)
+                end
+            end)
+            flag:gsub("^%-arch[ =](.+)", function (garch) arch = garch end)
+            flag:gsub("^%-%-gpu%-architecture[ =](.+)", function (garch) arch = garch end)
+            flag:gsub("^%-code[ =](.+)", function (gcodes) table.join2(codes, _split_gpucodes(gcodes)) end)
+            flag:gsub("^%-%-gpu%-code[ =](.+)", function (gcodes) table.join2(codes, _split_gpucodes(gcodes)) end)
         end
         if arch then
-            if not code then
-                code = arch
+            if #codes == 0 then
+                table.insert(codes, arch)
                 arch = arch:gsub("sm", "compute")
                 table.insert(gencodes, arch .. "," .. arch)
             end
-            table.insert(gencodes, arch .. "," .. code)
+            for _, code in ipairs(codes) do
+                table.insert(gencodes, arch .. "," .. code)
+            end
         end
         if #gencodes > 0 then
             gencodes = table.unique(gencodes)
