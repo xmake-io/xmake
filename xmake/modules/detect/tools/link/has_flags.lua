@@ -19,7 +19,7 @@
 --
 
 -- imports
-import("core.cache.detectcache")
+import("core.cache.global_detectcache")
 import("lib.detect.find_tool")
 
 -- try running
@@ -30,30 +30,15 @@ end
 
 -- attempt to check it from the argument list
 function _check_from_arglist(flags, opt)
-
-    -- only one flag?
-    if #flags > 1 then
-        return
-    end
-
-    -- make cache key
     local key = "detect.tools.link.has_flags"
-
-    -- make allflags key
     local flagskey = opt.program .. "_" .. (opt.programver or "")
-
-    -- get all allflags from argument list
-    local allflags = detectcache:get2(key, flagskey)
+    local allflags = global_detectcache:get2(key, flagskey)
     if not allflags then
-
-        -- get argument list
         allflags = {}
         local arglist = nil
-        try
-        {
+        try {
             function () os.runv(opt.program, {"-?"}, {envs = opt.envs}) end,
-            catch
-            {
+            catch {
                 function (errors) arglist = errors end
             }
         }
@@ -62,12 +47,11 @@ function _check_from_arglist(flags, opt)
                 allflags[arg:gsub("/", "-"):lower()] = true
             end
         end
-
-        -- save cache
-        detectcache:set2(key, flagskey, allflags)
-        detectcache:save()
+        global_detectcache:set2(key, flagskey, allflags)
+        global_detectcache:save()
     end
-    return allflags[flags[1]:gsub("/", "-"):lower()]
+    local flag = flags[1]:gsub("/", "-"):lower()
+    return allflags[flag]
 end
 
 -- try running to check flags

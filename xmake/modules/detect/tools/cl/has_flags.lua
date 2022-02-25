@@ -19,28 +19,15 @@
 --
 
 -- imports
-import("core.cache.detectcache")
 import("core.language.language")
+import("core.cache.global_detectcache")
 
 -- attempt to check it from the argument list
 function _check_from_arglist(flags, opt)
-
-    -- only one flag?
-    if #flags > 1 then
-        return
-    end
-
-    -- make cache key
     local key = "detect.tools.cl.has_flags"
-
-    -- make allflags key
     local flagskey = opt.program .. "_" .. (opt.programver or "")
-
-    -- get all allflags from argument list
-    local allflags = detectcache:get2(key, flagskey)
+    local allflags = global_detectcache:get2(key, flagskey)
     if not allflags then
-
-        -- get argument list
         allflags = {}
         local arglist = os.iorunv(opt.program, {"-?"}, {envs = opt.envs})
         if arglist then
@@ -48,12 +35,14 @@ function _check_from_arglist(flags, opt)
                 allflags[arg:gsub("/", "-")] = true
             end
         end
-
-        -- save cache
-        detectcache:set2(key, flagskey, allflags)
-        detectcache:save()
+        global_detectcache:set2(key, flagskey, allflags)
+        global_detectcache:save()
     end
-    return allflags[flags[1]:gsub("/", "-")]
+    local flag = flags[1]:gsub("/", "-")
+    if flag:startswith("-D") or flag:startswith("-I") then
+        return true
+    end
+    return allflags[flag]
 end
 
 -- get extension
