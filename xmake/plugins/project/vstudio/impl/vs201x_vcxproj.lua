@@ -29,6 +29,31 @@ import("private.utils.batchcmds")
 import("detect.sdks.find_cuda")
 import("vsfile")
 
+-- escape special chars in msbuild file
+function _escape(str)
+    if not str then
+        return nil
+    end
+
+    local map =
+    {
+         ["%"] = "%25" -- Referencing metadata
+    ,    ["$"] = "%24" -- Referencing properties
+    ,    ["@"] = "%40" -- Referencing item lists
+    ,    ["'"] = "%27" -- Conditions and other expressions
+    ,    [";"] = "%3B" -- List separator
+    ,    ["?"] = "%3F" -- Wildcard character for file names in Include and Exclude attributes
+    ,    ["*"] = "%2A" -- Wildcard character for use in file names in Include and Exclude attributes
+    -- html entities
+    ,    ["\""] = "&quot;"
+    ,    ["<"] = "&lt;"
+    ,    [">"] = "&gt;"
+    ,    ["&"] = "&amp;"
+    }
+
+    return (string.gsub(str, "[%%%$@';%?%*\"<>&]", function (c) return assert(map[c]) end))
+end
+
 function _make_dirs(dir, vcxprojdir)
     dir = dir:trim()
     if #dir == 0 then
@@ -123,7 +148,7 @@ function _exclude_flags(flags, excludes)
             end
         end
         if not excluded then
-            table.insert(newflags, flag)
+            table.insert(newflags, _escape(flag))
         end
     end
     return newflags
@@ -415,7 +440,7 @@ function _make_source_options_cl(vcxprojfile, flags, condition)
     for _, flag in ipairs(flags) do
         flag:gsub("[%-/]D(.*)",
             function (def)
-                defstr = defstr .. def .. ";"
+                defstr = defstr .. _escape(def) .. ";"
             end
         )
     end
@@ -456,7 +481,7 @@ function _make_source_options_cl(vcxprojfile, flags, condition)
     if flagstr:find("[%-/]I") then
         local dirs = {}
         for _, flag in ipairs(flags) do
-            flag:gsub("[%-/]I(.*)", function (dir) table.insert(dirs, dir) end)
+            flag:gsub("[%-/]I(.*)", function (dir) table.insert(dirs, _escape(dir)) end)
         end
         if #dirs > 0 then
             vcxprojfile:print("<AdditionalIncludeDirectories%s>%s</AdditionalIncludeDirectories>", condition, table.concat(dirs, ";"))
@@ -518,7 +543,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
         for _, flag in ipairs(flags) do
             flag:gsub("%-D(.*)",
                 function (def)
-                    defstr = defstr .. def .. ";"
+                    defstr = defstr .. _escape(def) .. ";"
                 end
             )
         end
@@ -529,7 +554,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
         if flagstr:find("%-I") then
             local dirs = {}
             for _, flag in ipairs(flags) do
-                flag:gsub("%-I(.*)", function (dir) table.insert(dirs, dir) end)
+                flag:gsub("%-I(.*)", function (dir) table.insert(dirs, _escape(dir)) end)
             end
             if #dirs > 0 then
                 vcxprojfile:print("<Include%s>%s</Include>", condition, table.concat(dirs, ";"))
@@ -707,7 +732,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
                 subsystem = "Windows"
             elseif flag_lower:find("[%-/]libpath") then
                 -- link dir
-                flag:gsub("[%-/]libpath:(.*)", function (dir) table.insert(libdirs, dir) end)
+                flag:gsub("[%-/]libpath:(.*)", function (dir) table.insert(libdirs, _escape(dir)) end)
             elseif flag_lower:find("[^%-/].+%.lib") then
                 -- link file
                 table.insert(links, flag)
@@ -739,7 +764,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
         -- make AdditionalOptions
         if #flags > 0 then
             flags = os.args(flags)
-            vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
+            vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", _escape(flags))
         end
 
         -- generate debug infomation?
@@ -824,12 +849,12 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
 
             -- make precompiled header and outputfile
             vcxprojfile:print("<PrecompiledHeader>Use</PrecompiledHeader>")
-            vcxprojfile:print("<PrecompiledHeaderFile>%s</PrecompiledHeaderFile>", path.filename(pcheader))
+            vcxprojfile:print("<PrecompiledHeaderFile>%s</PrecompiledHeaderFile>", _escape(path.filename(pcheader)))
             local pcoutputfile = targetinfo.pcxxoutputfile or targetinfo.pcoutputfile
             if pcoutputfile then
-                vcxprojfile:print("<PrecompiledHeaderOutputFile>%s</PrecompiledHeaderOutputFile>", path.relative(path.absolute(pcoutputfile), target.project_dir))
+                vcxprojfile:print("<PrecompiledHeaderOutputFile>%s</PrecompiledHeaderOutputFile>", _escape(path.relative(path.absolute(pcoutputfile), target.project_dir)))
             end
-            vcxprojfile:print("<ForcedIncludeFiles>%s;%%(ForcedIncludeFiles)</ForcedIncludeFiles>", path.filename(pcheader))
+            vcxprojfile:print("<ForcedIncludeFiles>%s;%%(ForcedIncludeFiles)</ForcedIncludeFiles>", _escape(path.filename(pcheader)))
         end
 
     vcxprojfile:leave("</ClCompile>")
