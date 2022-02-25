@@ -517,7 +517,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
         -- make Defines
         local defstr = ""
         for _, flag in ipairs(flags) do
-            flag:gsub("%-D(.*)",
+            flag:gsub("[%-/]D(.*)",
                 function (def)
                     defstr = defstr .. vsutils.escape(def) .. ";"
                 end
@@ -527,10 +527,10 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
         vcxprojfile:print("<Defines%s>%s</Defines>", condition, defstr)
 
         -- make Include
-        if flagstr:find("%-I") then
+        if flagstr:find("[%-/]I") then
             local dirs = {}
             for _, flag in ipairs(flags) do
-                flag:gsub("%-I(.*)", function (dir) table.insert(dirs, vsutils.escape(dir)) end)
+                flag:gsub("[%-/]I(.*)", function (dir) table.insert(dirs, vsutils.escape(dir)) end)
             end
             if #dirs > 0 then
                 vcxprojfile:print("<Include%s>%s</Include>", condition, table.concat(dirs, ";"))
