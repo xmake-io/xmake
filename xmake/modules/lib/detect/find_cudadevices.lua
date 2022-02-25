@@ -113,7 +113,7 @@ function _parse_result(lines, verbose)
 end
 
 -- find devices
-function _find_devices(verbose, envs)
+function _find_devices(verbose, opt)
 
     -- find nvcc
     local nvcc = assert(find_tool("nvcc"), "nvcc not found")
@@ -131,12 +131,12 @@ function _find_devices(verbose, envs)
     {
         function ()
             local args = { sourcefile, "-run", "-o", outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }
-            if is_arch("x86") then
+            if opt.arch == "x86" then
                 table.insert(args, "-m32")
-            elseif is_arch("x64") then
+            elseif opt.arch == "x64" or opt.arch == "x86_64" then
                 table.insert(args, "-m64")
             end
-            return os.iorunv(nvcc.program, args, {envs = envs})
+            return os.iorunv(nvcc.program, args, {envs = opt.envs})
         end,
         catch
         {
@@ -192,7 +192,7 @@ function _get_devices(opt)
     end
 
     local verbose = opt.verbose or option.get("verbose") or option.get("diagnosis")
-    local devices = _find_devices(verbose, opt.envs)
+    local devices = _find_devices(verbose, opt)
     if devices then
         cachedata = { succeed = true, data = devices }
     else
