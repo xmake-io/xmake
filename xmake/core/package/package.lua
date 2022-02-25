@@ -1111,6 +1111,12 @@ function _instance:buildhash()
                     str = str .. "_" .. table.concat(hashs, "_")
                 end
             end
+            local toolchains = self:config("toolchains")
+            if opt.toolchains ~= false and toolchains then
+                toolchains = table.copy(table.wrap(toolchains))
+                table.sort(toolchains)
+                str = str .. "_" .. table.concat(toolchains, "_")
+            end
             return hash.uuid4(str):gsub('-', ''):lower()
         end
         local function _get_installdir(...)
@@ -1127,7 +1133,7 @@ function _instance:buildhash()
         if self:config("pic") then
             local configs = table.copy(self:configs())
             configs.pic = nil
-            buildhash = _get_buildhash(configs, {sourcehash = false})
+            buildhash = _get_buildhash(configs, {sourcehash = false, toolchains = false})
             if not os.isdir(_get_installdir(buildhash)) then
                 buildhash = nil
             end
@@ -1136,7 +1142,16 @@ function _instance:buildhash()
         -- we need to be compatible with the hash value string for the previous xmake version
         -- without sourcehash (< 2.5.2)
         if not buildhash then
-            buildhash = _get_buildhash(self:configs(), {sourcehash = false})
+            buildhash = _get_buildhash(self:configs(), {sourcehash = false, toolchains = false})
+            if not os.isdir(_get_installdir(buildhash)) then
+                buildhash = nil
+            end
+        end
+
+        -- we need to be compatible with the previous xmake version
+        -- without toolchains (< 2.6.4)
+        if not buildhash then
+            buildhash = _get_buildhash(self:configs(), {toolchains = false})
             if not os.isdir(_get_installdir(buildhash)) then
                 buildhash = nil
             end
