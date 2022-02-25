@@ -59,7 +59,7 @@ rule("cuda.gencodes")
                         break
                     end
                 end
-                local device = find_cudadevices({skip_compute_mode_prohibited = true, order_by_flops = true, envs = cuda_envs})[1]
+                local device = find_cudadevices({skip_compute_mode_prohibited = true, order_by_flops = true, envs = cuda_envs, plat = target:plat(), arch = target:arch()})[1]
                 if device then
                     return nf_cugencode("sm_" .. device.major .. device.minor)
                 end
