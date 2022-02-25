@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.global")
 import("core.theme.theme")
+import("core.cache.global_detectcache")
 import("menuconf", {alias = "menuconf_show"})
 
 -- main
@@ -67,6 +68,12 @@ function main()
 
     -- save it
     global.save()
+
+    -- clear detect cache
+    if option.get("clean") then
+        global_detectcache:clear()
+        global_detectcache:save()
+    end
 
     -- dump it
     global.dump()

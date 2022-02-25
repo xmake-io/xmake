@@ -20,7 +20,7 @@
 
 -- imports
 import("lib.detect.find_tool")
-import("core.cache.globalcache")
+import("core.cache.global_detectcache")
 
 -- get mobile provision name
 function _get_mobile_provision_name(provision)
@@ -46,9 +46,9 @@ end
 
 -- get codesign identities
 function codesign_identities()
-    local identities = globalcache.get("codesign", "identities")
-    local lastime = globalcache.get("codesign", "lastime")
-    if lastime and os.time() - lastime > 3 * 24 * 3600 then -- > 3 days
+    local identities = global_detectcache:get2("codesign", "identities")
+    local lastime = global_detectcache:get2("codesign", "lastime")
+    if type(lastime) == "number" and os.time() - lastime > 3 * 24 * 3600 then -- > 3 days
         identities = nil
     end
     if identities == nil then
@@ -72,18 +72,18 @@ function codesign_identities()
                 end
             end
         end
-        globalcache.set("codesign", "identities", identities or false)
-        globalcache.set("codesign", "lastime", os.time())
-        globalcache.save("codesign")
+        global_detectcache:set2("codesign", "identities", identities or false)
+        global_detectcache:set2("codesign", "lastime", os.time())
+        global_detectcache:save()
     end
     return identities or nil
 end
 
 -- get provision profiles only for mobile
 function mobile_provisions()
-    local mobile_provisions = globalcache.get("codesign", "mobile_provisions")
-    local lastime = globalcache.get("codesign", "lastime")
-    if lastime and os.time() - lastime > 3 * 24 * 3600 then -- > 3 days
+    local mobile_provisions = global_detectcache:get2("codesign", "mobile_provisions")
+    local lastime = global_detectcache:get2("codesign", "lastime")
+    if type(lastime) == "number" and os.time() - lastime > 3 * 24 * 3600 then -- > 3 days
         mobile_provisions = nil
     end
     if mobile_provisions == nil then
@@ -98,9 +98,9 @@ function mobile_provisions()
                 end
             end
         end
-        globalcache.set("codesign", "mobile_provisions", mobile_provisions or false)
-        globalcache.set("codesign", "lastime", os.time())
-        globalcache.save("codesign")
+        global_detectcache:set2("codesign", "mobile_provisions", mobile_provisions or false)
+        global_detectcache:set2("codesign", "lastime", os.time())
+        global_detectcache:save()
     end
     return mobile_provisions or nil
 end
