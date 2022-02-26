@@ -294,8 +294,8 @@ function _initialize_shell()
         local outdata, errdata = try {function () return os.iorunv(psshell.program, {"-c", "Write-Output $PROFILE.CurrentUserAllHosts"}) end}
         if outdata then
             target = outdata:trim()
-            command = "if (Test-Path -Path \"%s\" -PathType Leaf) {\n    . \"%s\"\n}"
             profile = path.join(os.programdir(), "scripts", "profile-win.ps1")
+            command = format("if (Test-Path -Path \"%s\" -PathType Leaf) {\n    . \"%s\"\n}", profile, profile)
         else
             raise("failed to get profile location from powershell!")
         end
@@ -306,8 +306,9 @@ function _initialize_shell()
         elseif shell:endswith("zsh") then target = "~/.zshrc"
         elseif shell:endswith("ksh") then target = "~/.kshrc"
         end
-        command = "[[ -s \"%s\" ]] && source \"%s\""
         profile = path.join(os.programdir(), "scripts", "profile-unix.sh")
+        command = format("export XMAKE_ROOTDIR=\"%s\"\nexport PATH=\"$XMAKE_ROOTDIR:$PATH\"\n", path.directory(os.programfile()))
+        command = command .. format("[[ -s \"%s\" ]] && source \"%s\"", profile, profile)
     end
 
     -- trace
@@ -324,7 +325,7 @@ function _initialize_shell()
                     file = file .. "\n"
                 end
             end
-            file = file .. "# >>> xmake >>>\n" .. format(command, profile, profile) .. "\n# <<< xmake <<<"
+            file = file .. "# >>> xmake >>>\n" .. command .. "\n# <<< xmake <<<"
             io.writefile(target, file)
             return true
         end,

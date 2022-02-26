@@ -122,6 +122,15 @@ function _check_try_running(flags, opt, islinker)
         end
     end
 
+    -- add architecture flags if cross compiling
+    if not is_arch(os.arch()) then
+        if is_arch(".+64.*") then
+            table.insert(args, 1, "-m64")
+        else
+            table.insert(args, 1, "-m32")
+        end
+    end
+
     -- check flags
     return _try_running(opt.program, table.join(flags, args), opt)
 end
