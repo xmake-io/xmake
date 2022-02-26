@@ -444,6 +444,7 @@ function main(outputdir, vsinfo)
                 _target.vcxprojdir = path.join(vsinfo.solution_dir, targetname)
                 _target.target_id = hash.uuid4(targetname)
                 _target.kind = target:kind()
+                _target.absscriptdir = target:scriptdir()
                 _target.scriptdir = path.relative(target:scriptdir(), _target.vcxprojdir)
                 _target.projectdir = path.relative(project.directory(), _target.vcxprojdir)
                 local targetdir = target:get("targetdir")
@@ -467,7 +468,7 @@ function main(outputdir, vsinfo)
     for _, target in pairs(targets) do
         target._paths = {}
         local dirs = {}
-        local root = target.scriptdir or project.directory()
+        local root = target.absscriptdir or project.directory()
         target.sourcefiles = table.imap(target.sourcefiles, function(_, v) return path.relative(v, root) end)
         target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, root) end)
         for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
