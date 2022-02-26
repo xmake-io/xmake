@@ -26,7 +26,9 @@ import("core.project.project")
 import("core.language.language")
 import("core.tool.toolchain")
 import("private.utils.batchcmds")
+import("detect.sdks.find_cuda")
 import("vsfile")
+import("vsutils")
 
 function _make_dirs(dir, vcxprojdir)
     dir = dir:trim()
@@ -38,6 +40,24 @@ function _make_dirs(dir, vcxprojdir)
         dir = path.relative(path.absolute(dir), vcxprojdir)
     end
     return dir
+end
+
+-- check for CUDA
+function _check_cuda(target)
+    local cuda
+    for _, targetinfo in ipairs(target.info) do
+        if table.contains(targetinfo.sourcekinds, "cu") then
+            cuda = find_cuda()
+            break
+        end
+    end
+    if cuda then
+        if cuda.msbuildextensionsdir and cuda.version and os.isfile(path.join(cuda.msbuildextensionsdir, format("CUDA %s.props", cuda.version))) then
+            return cuda
+        else
+            os.raise("The Visual Studio Integration for CUDA %s is not found. Please check your CUDA installation.", cuda.version)
+        end
+    end
 end
 
 -- get toolset version
@@ -68,6 +88,54 @@ function _get_platform_sdkver(target, vsinfo)
         end
     end
     return sdkver or vsinfo.sdk_version
+end
+
+-- combine two successive flags
+function _combine_flags(flags, patterns)
+    local newflags = {}
+    local temparg
+    for _, arg in ipairs(flags) do
+        if temparg then
+            table.insert(newflags, temparg .. " " .. arg)
+            temparg = nil
+        else
+            for _, pattern in ipairs(patterns) do
+                if arg:match(pattern) then
+                    temparg = arg
+                end
+            end
+            if not temparg then
+                table.insert(newflags, arg)
+            end
+        end
+    end
+    return newflags
+end
+
+-- exclude patterns from flags
+function _exclude_flags(flags, excludes)
+    local newflags = {}
+    for _, flag in ipairs(flags) do
+        local excluded = false
+        for _, exclude in ipairs(excludes) do
+            if flag:find("^[%-/]" .. exclude) then
+                excluded = true
+                break
+            end
+        end
+        if not excluded then
+            table.insert(newflags, vsutils.escape(flag))
+        end
+    end
+    return newflags
+end
+
+-- try split from nvcc -code flag
+--   e.g. nvcc -arch=compute_86 -code=\"sm_86,compute_86\"
+--        nvcc -gencode arch=compute_86,code=[sm_86,compute_86]
+function _split_gpucodes(flag)
+    flag = flag:gsub("[%[\"]?(.-)[%]\"]?", "%1")
+    return flag:split(",")
 end
 
 -- make compiling command
@@ -159,9 +227,13 @@ function _make_header(vcxprojfile, vsinfo)
 end
 
 -- make tailer
-function _make_tailer(vcxprojfile, vsinfo)
+function _make_tailer(vcxprojfile, vsinfo, target)
     vcxprojfile:print("<Import Project=\"%$(VCTargetsPath)\\Microsoft.Cpp.targets\" />")
     vcxprojfile:enter("<ImportGroup Label=\"ExtensionTargets\">")
+    local cuda = _check_cuda(target)
+    if cuda then
+        vcxprojfile:print("<Import Project=\"%s\" />", path.join(cuda.msbuildextensionsdir, format("CUDA %s.targets", cuda.version)))
+    end
     vcxprojfile:leave("</ImportGroup>")
     vcxprojfile:leave("</Project>")
 end
@@ -219,6 +291,10 @@ function _make_configurations(vcxprojfile, vsinfo, target)
 
     -- make ExtensionSettings
     vcxprojfile:enter("<ImportGroup Label=\"ExtensionSettings\">")
+    local cuda = _check_cuda(target)
+    if cuda then
+        vcxprojfile:print("<Import Project=\"%s\" />", path.join(cuda.msbuildextensionsdir, format("CUDA %s.props", cuda.version)))
+    end
     vcxprojfile:leave("</ImportGroup>")
 
     -- make PropertySheets
@@ -248,7 +324,7 @@ function _make_configurations(vcxprojfile, vsinfo, target)
 
             -- handle ExternalIncludePath (should we handle IncludePath here too?)
             local externaldirs = {}
-            for _, flag in ipairs(targetinfo.commonflags) do
+            for _, flag in ipairs(targetinfo.commonflags.cl) do
                 flag:gsub("[%-/]external:I(.*)", function (dir) table.insert(externaldirs, dir) end)
             end
             if #externaldirs > 0 then
@@ -267,8 +343,8 @@ function _make_configurations(vcxprojfile, vsinfo, target)
     end
 end
 
--- make source options
-function _make_source_options(vcxprojfile, flags, condition)
+-- make source options for cl
+function _make_source_options_cl(vcxprojfile, flags, condition)
 
     -- exists condition?
     condition = condition or ""
@@ -346,9 +422,9 @@ function _make_source_options(vcxprojfile, flags, condition)
     -- make PreprocessorDefinitions
     local defstr = ""
     for _, flag in ipairs(flags) do
-        flag:gsub("[%-/]D(.*)",
+        flag:gsub("^[%-/]D(.*)",
             function (def)
-                defstr = defstr .. def .. ";"
+                defstr = defstr .. vsutils.escape(def) .. ";"
             end
         )
     end
@@ -389,7 +465,7 @@ function _make_source_options(vcxprojfile, flags, condition)
     if flagstr:find("[%-/]I") then
         local dirs = {}
         for _, flag in ipairs(flags) do
-            flag:gsub("[%-/]I(.*)", function (dir) table.insert(dirs, dir) end)
+            flag:gsub("^[%-/]I(.*)", function (dir) table.insert(dirs, vsutils.escape(dir)) end)
         end
         if #dirs > 0 then
             vcxprojfile:print("<AdditionalIncludeDirectories%s>%s</AdditionalIncludeDirectories>", condition, table.concat(dirs, ";"))
@@ -402,24 +478,192 @@ function _make_source_options(vcxprojfile, flags, condition)
     end
 
     -- make AdditionalOptions
-    local additional_flags = {}
     local excludes = {
         "Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "W4", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP",
         "Fd", "fp", "I", "D", "Gm-", "Gm", "MP", "external:W0", "external:W1", "external:W2", "external:W3", "external:W4", "external:templates-?", "external:I",
         "std:c11", "std:c17", "std:c%+%+11", "std:c%+%+14", "std:c%+%+17", "std:c%+%+20", "std:c%+%+latest", "nologo", "wd(%d+)"
     }
-    for _, flag in ipairs(flags) do
-        local excluded = false
-        for _, exclude in ipairs(excludes) do
-            if flag:find("[%-/]" .. exclude) then
-                excluded = true
-                break
+    local additional_flags = _exclude_flags(flags, excludes)
+    if #additional_flags > 0 then
+        vcxprojfile:print("<AdditionalOptions%s>%s %%(AdditionalOptions)</AdditionalOptions>", condition, os.args(additional_flags))
+    end
+end
+
+-- make source options for cuda
+function _make_source_options_cuda(vcxprojfile, flags, opt)
+
+    -- exists condition?
+    condition = (opt and opt.condition) or ""
+
+    -- combine successive commands
+    flags = _combine_flags(flags, {"^%-gencode$", "^%-arch$", "^%-code$", "^%-%-machine$", "^%-rdc$", "^%-cudart$", "^%-%-keep%-dir$"})
+
+    -- get flags string
+    local flagstr = os.args(flags)
+
+    if not (opt and opt.link) then
+
+        -- make Optimization
+        if flagstr:find("[%-/]Od") then
+            vcxprojfile:print("<Optimization%s>Od</Optimization>", condition)
+        elseif flagstr:find("[%-/]O1") then
+            vcxprojfile:print("<Optimization%s>O1</Optimization>", condition)
+        elseif flagstr:find("[%-/]O2") then
+            vcxprojfile:print("<Optimization%s>O2</Optimization>", condition)
+        elseif flagstr:find("[%-/]O3") or flagstr:find("[%-/]Ox") then
+            vcxprojfile:print("<Optimization%s>O3</Optimization>", condition)
+        end
+
+        -- make Warning
+        if flagstr:find("[%-/]W[1234]") then
+            local wlevel = flagstr:find("[%-/](W[1234])")
+            vcxprojfile:print("<Warning%s>%s</Warning>", condition, wlevel)
+        elseif flagstr:find("[%-/]Wall") then
+            vcxprojfile:print("<Warning%s>Wall</Warning>", condition)
+        end
+
+        -- make Defines
+        local defstr = ""
+        for _, flag in ipairs(flags) do
+            flag:gsub("^[%-/]D(.*)",
+                function (def)
+                    defstr = defstr .. vsutils.escape(def) .. ";"
+                end
+            )
+        end
+        defstr = defstr .. "%%(Defines)"
+        vcxprojfile:print("<Defines%s>%s</Defines>", condition, defstr)
+
+        -- make Include
+        if flagstr:find("[%-/]I") then
+            local dirs = {}
+            for _, flag in ipairs(flags) do
+                flag:gsub("^[%-/]I(.*)", function (dir) table.insert(dirs, vsutils.escape(dir)) end)
+            end
+            if #dirs > 0 then
+                vcxprojfile:print("<Include%s>%s</Include>", condition, table.concat(dirs, ";"))
             end
         end
-        if not excluded then
-            table.insert(additional_flags, flag)
+
+    end
+
+    -- make TargetMachinePlatform
+    local machinebitwidth
+    for _, flag in ipairs(flags) do
+        flag:gsub("^%-m(.+)", function (value) machinebitwidth = value end)
+        flag:gsub("^%-%-machine[ =](.+)", function (value) machinebitwidth = value end)
+    end
+    if machinebitwidth and (machinebitwidth == "32" or machinebitwidth == "64") then
+        vcxprojfile:print("<TargetMachinePlatform%s>%s</TargetMachinePlatform>", condition, machinebitwidth)
+    end
+
+    -- make CodeGeneration
+    local gpucode_patterns = {
+        "^%-gencode[ =]arch=(.+),code=(.+)",
+        "^%-%-generate%-code[ =]arch=(.+),code=(.+)",
+        "^%-arch",
+        "^%-%-gpu%-architecture",
+        "^%-code",
+        "^%-%-gpu%-code"
+    }
+    local has_gpucode = false
+    for _, pattern in ipairs(gpucode_patterns) do
+        if flagstr:find(pattern) then
+            has_gpucode = true
+            break
         end
     end
+    if has_gpucode then
+        local arch
+        local codes = {}
+        local gencodes = {}
+        for _, flag in ipairs(flags) do
+            flag:gsub("%-gencode[ =]arch=(.+),code=(.+)$", function (garch, gcodes)
+                for _, gcode in ipairs(_split_gpucodes(gcodes)) do
+                    table.insert(gencodes, garch .. "," .. gcode)
+                end
+            end)
+            flag:gsub("^%-%-generate%-code[ =]arch=(.+),code=(.+)", function (garch, gcodes)
+                for _, gcode in ipairs(_split_gpucodes(gcodes)) do
+                    table.insert(gencodes, garch .. "," .. gcode)
+                end
+            end)
+            flag:gsub("^%-arch[ =](.+)", function (garch) arch = garch end)
+            flag:gsub("^%-%-gpu%-architecture[ =](.+)", function (garch) arch = garch end)
+            flag:gsub("^%-code[ =](.+)", function (gcodes) table.join2(codes, _split_gpucodes(gcodes)) end)
+            flag:gsub("^%-%-gpu%-code[ =](.+)", function (gcodes) table.join2(codes, _split_gpucodes(gcodes)) end)
+        end
+        if arch then
+            if #codes == 0 then
+                table.insert(codes, arch)
+                arch = arch:gsub("sm", "compute")
+                table.insert(gencodes, arch .. "," .. arch)
+            end
+            for _, code in ipairs(codes) do
+                table.insert(gencodes, arch .. "," .. code)
+            end
+        end
+        if #gencodes > 0 then
+            gencodes = table.unique(gencodes)
+            vcxprojfile:print("<CodeGeneration%s>%s</CodeGeneration>", condition, table.concat(gencodes, ";"))
+        end
+    end
+
+    if not (opt and opt.link) then
+            
+        -- make CudaRuntime
+        local cudart
+        local cudaruntime = {
+            none = "None",
+            static = "Static",
+            shared = "Shared"
+        }
+        for _, flag in ipairs(flags) do
+            flag:gsub("%-cudart[ =](.+)", function (value) cudart = value end)
+        end
+        if cudart and cudaruntime[cudart] then
+            vcxprojfile:print("<CudaRuntime%s>%s</CudaRuntime>", condition, cudaruntime[cudart])
+        end
+        
+        -- handle GPU debug info
+        if flagstr:find("%-G") then
+            vcxprojfile:print("<GPUDebugInfo%s>true</GPUDebugInfo>", condition)
+        end
+
+        -- handle fast math
+        if flagstr:find("%-use_fast_math") then
+            vcxprojfile:print("<FastMath%s>true</FastMath>", condition)
+        end
+        
+        -- handle relocatable device code
+        local rdc
+        for _, flag in ipairs(flags) do
+            flag:gsub("%-rdc[ =](.+)", function (value) rdc = value end)
+        end
+        if rdc then
+            vcxprojfile:print("<GenerateRelocatableDeviceCode%s>%s</GenerateRelocatableDeviceCode>", condition, rdc)
+        end
+
+        -- handle keep preprocessed files or directories
+        if flagstr:find("%-%-keep") then
+            vcxprojfile:print("<Keep%s>true</Keep>", condition)
+        end
+        if flagstr:find("%-%-keep%-dir") then
+            local dirs = {}
+            for _, flag in ipairs(flags) do
+                flag:gsub("%-%-keep%-dir[ =](.*)", function (dir) table.insert(dirs, dir) end)
+            end
+            if #dirs > 0 then
+                vcxprojfile:print("<KeepDir%s>%s</KeepDir>", condition, table.concat(dirs, ";"))
+            end
+        end
+    end
+
+    -- make AdditionalOptions
+    local excludes = {
+        "Od", "O1", "O2", "O3", "Ox", "W1", "W2", "W3", "W4", "Wall", "I", "D", "L", "l", "m", "%-machine", "gencode", "arch", "code", "cudart", "G", "use_fast_math", "rdc", "%-keep", "%-keep%-dir"
+    }
+    local additional_flags = _exclude_flags(flags, excludes)
     if #additional_flags > 0 then
         vcxprojfile:print("<AdditionalOptions%s>%s %%(AdditionalOptions)</AdditionalOptions>", condition, os.args(additional_flags))
     end
@@ -502,7 +746,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
                 subsystem = "Windows"
             elseif flag_lower:find("[%-/]libpath") then
                 -- link dir
-                flag:gsub("[%-/]libpath:(.*)", function (dir) table.insert(libdirs, dir) end)
+                flag:gsub("[%-/]libpath:(.*)", function (dir) table.insert(libdirs, vsutils.escape(dir)) end)
             elseif flag_lower:find("[^%-/].+%.lib") then
                 -- link file
                 table.insert(links, flag)
@@ -534,7 +778,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
         -- make AdditionalOptions
         if #flags > 0 then
             flags = os.args(flags)
-            vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
+            vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", vsutils.escape(flags))
         end
 
         -- generate debug infomation?
@@ -562,11 +806,11 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
 
     vcxprojfile:leave("</%s>", linkerkinds[targetinfo.targetkind])
 
-    -- for compiler?
+    -- for C/C++ compiler?
     vcxprojfile:enter("<ClCompile>")
 
         -- make source options
-        _make_source_options(vcxprojfile, targetinfo.commonflags)
+        _make_source_options_cl(vcxprojfile, targetinfo.commonflags.cl)
 
         -- add c and c++ standard
         local clangflags = {
@@ -619,15 +863,39 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
 
             -- make precompiled header and outputfile
             vcxprojfile:print("<PrecompiledHeader>Use</PrecompiledHeader>")
-            vcxprojfile:print("<PrecompiledHeaderFile>%s</PrecompiledHeaderFile>", path.filename(pcheader))
+            vcxprojfile:print("<PrecompiledHeaderFile>%s</PrecompiledHeaderFile>", vsutils.escape(path.filename(pcheader)))
             local pcoutputfile = targetinfo.pcxxoutputfile or targetinfo.pcoutputfile
             if pcoutputfile then
-                vcxprojfile:print("<PrecompiledHeaderOutputFile>%s</PrecompiledHeaderOutputFile>", path.relative(path.absolute(pcoutputfile), target.project_dir))
+                vcxprojfile:print("<PrecompiledHeaderOutputFile>%s</PrecompiledHeaderOutputFile>", vsutils.escape(path.relative(path.absolute(pcoutputfile), target.project_dir)))
             end
-            vcxprojfile:print("<ForcedIncludeFiles>%s;%%(ForcedIncludeFiles)</ForcedIncludeFiles>", path.filename(pcheader))
+            vcxprojfile:print("<ForcedIncludeFiles>%s;%%(ForcedIncludeFiles)</ForcedIncludeFiles>", vsutils.escape(path.filename(pcheader)))
         end
 
     vcxprojfile:leave("</ClCompile>")
+    
+    local cuda = _check_cuda(target)
+    if cuda then
+        -- for CUDA linker?
+        vcxprojfile:enter("<CudaLink>")
+
+        -- make cuda link flags
+        _make_source_options_cuda(vcxprojfile, targetinfo.culinkflags, {link = true})
+
+        -- make devlink
+        if targetinfo.cudevlink then
+            vcxprojfile:print("<PerformDeviceLink>%s</PerformDeviceLink>", targetinfo.cudevlink)
+        end
+
+        vcxprojfile:leave("</CudaLink>")
+
+        -- for CUDA compiler?
+        vcxprojfile:enter("<CudaCompile>")
+
+        -- make source options
+        _make_source_options_cuda(vcxprojfile, targetinfo.commonflags.cuda)
+
+        vcxprojfile:leave("</CudaCompile>")
+    end
 
     -- make custom commands
     _make_custom_commands(vcxprojfile, targetinfo)
@@ -643,9 +911,9 @@ function _build_common_items(vsinfo, target)
     for _, targetinfo in ipairs(target.info) do
 
         -- make source flags
-        local flags_stats = {}
-        local files_count = 0
-        local first_flags = nil
+        local flags_stats = {cl = {}, cuda = {}}
+        local files_count = {cl = 0, cuda = 0}
+        local first_flags = {}
         targetinfo.sourceflags = {}
         for _, sourcebatch in pairs(targetinfo.sourcebatches) do
             local sourcekind = sourcebatch.sourcekind
@@ -657,17 +925,39 @@ function _build_common_items(vsinfo, target)
 
                     -- no common flags for asm
                     if sourcekind ~= "as" then
-                        for _, flag in ipairs(flags) do
-                            flags_stats[flag] = (flags_stats[flag] or 0) + 1
+                        for _, flag in ipairs(table.unique(flags)) do
+                            flags_stats.cl[flag] = (flags_stats.cl[flag] or 0) + 1
                         end
 
                         -- update files count
-                        files_count = files_count + 1
+                        files_count.cl = files_count.cl + 1
 
                         -- save first flags
-                        if first_flags == nil then
-                            first_flags = flags
+                        if first_flags.cl == nil then
+                            first_flags.cl = flags
                         end
+                    end
+
+                    -- save source flags
+                    targetinfo.sourceflags[sourcefile] = flags
+                end
+            elseif sourcekind == "cu" then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+
+                    -- make compiler flags
+                    local flags = _make_compflags(sourcefile, targetinfo, target.project_dir)
+
+                    -- count flags
+                    for _, flag in ipairs(table.unique(flags)) do
+                        flags_stats.cuda[flag] = (flags_stats.cuda[flag] or 0) + 1
+                    end
+
+                    -- update files count
+                    files_count.cuda = files_count.cuda + 1
+
+                    -- save first flags
+                    if first_flags.cuda == nil then
+                        first_flags.cuda = flags
                     end
 
                     -- save source flags
@@ -677,23 +967,42 @@ function _build_common_items(vsinfo, target)
         end
 
         -- make common flags
-        targetinfo.commonflags = {}
-        for _, flag in ipairs(first_flags) do
-            if flags_stats[flag] >= files_count then
-                table.insert(targetinfo.commonflags, flag)
+        targetinfo.commonflags = {cl = {}, cuda = {}}
+        for _, comp in ipairs({"cl", "cuda"}) do
+            for _, flag in ipairs(first_flags[comp]) do
+                if flags_stats[comp][flag] >= files_count[comp] then
+                    table.insert(targetinfo.commonflags[comp], flag)
+                end
             end
         end
 
         -- remove common flags from source flags
         local sourceflags = {}
-        for sourcefile, flags in pairs(targetinfo.sourceflags) do
-            local otherflags = {}
-            for _, flag in ipairs(flags) do
-                if flags_stats[flag] < files_count then
-                    table.insert(otherflags, flag)
+        for _, sourcebatch in pairs(targetinfo.sourcebatches) do
+            local sourcekind = sourcebatch.sourcekind
+            if (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "mrc") then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    local flags = targetinfo.sourceflags[sourcefile]
+                    local otherflags = {}
+                    for _, flag in ipairs(flags) do
+                        if flags_stats.cl[flag] < files_count.cl then
+                            table.insert(otherflags, flag)
+                        end
+                    end
+                    sourceflags[sourcefile] = otherflags
+                end
+            elseif sourcekind == "cu" then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    local flags = targetinfo.sourceflags[sourcefile]
+                    local otherflags = {}
+                    for _, flag in ipairs(flags) do
+                        if flags_stats.cuda[flag] < files_count.cuda then
+                            table.insert(otherflags, flag)
+                        end
+                    end
+                    sourceflags[sourcefile] = otherflags
                 end
             end
-            sourceflags[sourcefile] = otherflags
         end
         targetinfo.sourceflags = sourceflags
     end
@@ -725,7 +1034,12 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
     end
 
     -- enter it
-    local nodename = (sourcekind == "as" and "CustomBuild" or (sourcekind == "mrc" and "ResourceCompile" or "ClCompile"))
+    local nodename
+    if     sourcekind == "as"  then nodename = "CustomBuild" 
+    elseif sourcekind == "mrc" then nodename = "ResourceCompile" 
+    elseif sourcekind == "cu"  then nodename = "CudaCompile"
+    elseif sourcekind == "cc" or sourcekind == "cxx" then nodename = "ClCompile"
+    end
     sourcefile = path.relative(path.absolute(sourcefile), target.project_dir)
     vcxprojfile:enter("<%s Include=\"%s\">", nodename, sourcefile)
 
@@ -749,7 +1063,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
                     info.mode, info.arch, objectfile)
             end
 
-        -- for *.c/cpp files
+        -- for *.c/cpp/cu files
         else
 
             -- we need use different object directory and allow parallel building
@@ -763,9 +1077,10 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
                     targetinfo.objectnames = hashset:new()
                 end
                 if targetinfo.objectnames:has(objectname) then
+                    local outputnode = (sourcekind == "cu" and "CompileOut" or "ObjectFileName")
                     local objectfile = path.relative(path.absolute(info.objectfile), target.project_dir)
-                    vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>",
-                        info.mode, info.arch, objectfile)
+                    vcxprojfile:print("<%s Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</%s>",
+                        outputnode, info.mode, info.arch, objectfile, outputnode)
                 else
                     targetinfo.objectnames:insert(objectname)
                 end
@@ -809,7 +1124,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
                     -- disable the precompiled header if sourcekind ~= headerkind
                     local pcheader = target.pcxxheader or target.pcheader
                     local pcheader_disable = false
-                    if pcheader and language.sourcekind_of(sourcefile) ~= (target.pcxxheader and "cxx" or "cc") then
+                    if sourcekind == "cu" or (pcheader and language.sourcekind_of(sourcefile) ~= (target.pcxxheader and "cxx" or "cc")) then
                         pcheader_disable = true
                     end
 
@@ -858,7 +1173,12 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
     for _, info in ipairs(sourceinfo) do
 
         -- enter it
-        local nodename = (info.sourcekind == "as" and "CustomBuild" or (info.sourcekind == "mrc" and "ResourceCompile" or "ClCompile"))
+        local nodename
+        if     info.sourcekind == "as"  then nodename = "CustomBuild" 
+        elseif info.sourcekind == "mrc" then nodename = "ResourceCompile" 
+        elseif info.sourcekind == "cu"  then nodename = "CudaCompile"
+        elseif info.sourcekind == "cc" or info.sourcekind == "cxx" then nodename = "ClCompile"
+        end
         vcxprojfile:enter("<%s Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Include=\"%s\">",
             nodename, info.mode, info.arch, sourcefile)
 
@@ -872,11 +1192,11 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
             vcxprojfile:print("<Command>%s</Command>", compcmd)
 
         -- for *.rc files
-        elseif sourcekind == "mrc" then
+        elseif info.sourcekind == "mrc" then
             vcxprojfile:print("<ResourceOutputFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ResourceOutputFileName>",
                 info.mode, info.arch, objectfile)
 
-        -- for *.c/cpp files
+        -- for *.c/cpp/cu files
         else
            -- we need use different object directory and allow parallel building
             --
@@ -888,16 +1208,17 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
                 targetinfo.objectnames = hashset:new()
             end
             local targetinfo = info.targetinfo
+            local outputnode = (info.sourcekind == "cu" and "CompileOut" or "ObjectFileName")
             if targetinfo.objectnames:has(objectname) then
-                vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>",
-                    info.mode, info.arch, objectfile)
+                vcxprojfile:print("<%s Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</%s>",
+                    outputnode, info.mode, info.arch, objectfile, outputnode)
             else
                 targetinfo.objectnames:insert(objectname)
             end
 
             -- disable the precompiled header if sourcekind ~= headerkind
             local pcheader = target.pcxxheader or target.pcheader
-            if pcheader and language.sourcekind_of(sourcefile) ~= (target.pcxxheader and "cxx" or "cc") then
+            if pcheader and info.sourcekind ~= "cu" and language.sourcekind_of(sourcefile) ~= (target.pcxxheader and "cxx" or "cc") then
                 vcxprojfile:print("<PrecompiledHeader>NotUsing</PrecompiledHeader>")
             end
             vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", os.args(info.flags))
@@ -947,7 +1268,7 @@ function _make_source_files(vcxprojfile, vsinfo, target)
         for _, targetinfo in ipairs(target.info) do
             for _, sourcebatch in pairs(targetinfo.sourcebatches) do
                 local sourcekind = sourcebatch.sourcekind
-                if (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "mrc") then
+                if (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "mrc" or sourcekind == "cu") then
                     local objectfiles = sourcebatch.objectfiles
                     for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
                         local objectfile    = objectfiles[idx]
@@ -1017,7 +1338,7 @@ function make(vsinfo, target)
     _make_source_files(vcxprojfile, vsinfo, target)
 
     -- make tailer
-    _make_tailer(vcxprojfile, vsinfo)
+    _make_tailer(vcxprojfile, vsinfo, target)
 
     -- exit solution file
     vcxprojfile:close()

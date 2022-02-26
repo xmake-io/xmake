@@ -30,6 +30,7 @@ import("core.tool.toolchain")
 import("vs201x_solution")
 import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
+import("vsutils")
 import("core.cache.memcache")
 import("core.cache.localcache")
 import("private.action.require.install", {alias = "install_requires"})
@@ -37,31 +38,6 @@ import("private.action.run.make_runenvs")
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("private.utils.batchcmds")
-
--- escape special chars in msbuild file
-function _escape(str)
-    if not str then
-        return nil
-    end
-
-    local map =
-    {
-         ["%"] = "%25" -- Referencing metadata
-    ,    ["$"] = "%24" -- Referencing properties
-    ,    ["@"] = "%40" -- Referencing item lists
-    ,    ["'"] = "%27" -- Conditions and other expressions
-    ,    [";"] = "%3B" -- List separator
-    ,    ["?"] = "%3F" -- Wildcard character for file names in Include and Exclude attributes
-    ,    ["*"] = "%2A" -- Wildcard character for use in file names in Include and Exclude attributes
-    -- html entities
-    ,    ["\""] = "&quot;"
-    ,    ["<"] = "&lt;"
-    ,    [">"] = "&gt;"
-    ,    ["&"] = "&amp;"
-    }
-
-    return (string.gsub(str, "[%%%$@';%?%*\"<>&]", function (c) return assert(map[c]) end))
-end
 
 function _make_dirs(dir, vcxprojdir)
     if dir == nil then
@@ -74,11 +50,11 @@ function _make_dirs(dir, vcxprojdir)
         end
         if path.is_absolute(dir) then
             if dir:startswith(project.directory()) then
-                return _escape(path.relative(dir, vcxprojdir))
+                return vsutils.escape(path.relative(dir, vcxprojdir))
             end
-            return _escape(dir)
+            return vsutils.escape(dir)
         else
-            return _escape(path.relative(path.absolute(dir), vcxprojdir))
+            return vsutils.escape(path.relative(path.absolute(dir), vcxprojdir))
         end
     end
     local r = {}
@@ -274,6 +250,9 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     -- save sourcebatches
     targetinfo.sourcebatches = target:sourcebatches()
 
+    -- save sourcekinds
+    targetinfo.sourcekinds = target:sourcekinds()
+
     -- save target dir
     targetinfo.targetdir = target:targetdir()
 
@@ -289,7 +268,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
         if sourcekind then
             for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local compflags = compiler.compflags(sourcefile, {target = target})
-                if not firstcompflags and (sourcekind == "cc" or sourcekind == "cxx") then
+                if not firstcompflags and (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "cu") then
                     firstcompflags = compflags
                 end
                 targetinfo.compflags[sourcefile] = compflags
@@ -301,6 +280,15 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     -- save linker flags
     local linkflags = linker.linkflags(target:kind(), target:sourcekinds(), {target = target})
     targetinfo.linkflags = linkflags
+
+    if table.contains(target:sourcekinds(), "cu") then
+        -- save cuda linker flags
+        local linkinst = linker.load("gpucode", "cu", {target = target})
+        targetinfo.culinkflags = linkinst:linkflags({target = target})
+
+        -- save cuda devlink status
+        targetinfo.cudevlink = target:values("cuda.build.devlink")
+    end
 
     -- save execution dir (when executed from VS)
     targetinfo.rundir = target:rundir()

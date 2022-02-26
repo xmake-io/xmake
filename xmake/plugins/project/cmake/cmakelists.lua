@@ -65,8 +65,7 @@ end
 function _get_project_languages(targets)
     local languages = {}
     for _, target in pairs(targets) do
-        for _, sourcebatch in pairs(target:sourcebatches()) do
-            local sourcekind = sourcebatch.sourcekind
+        for _, sourcekind in ipairs(target:sourcekinds()) do
             if     sourcekind == "cc"  then table.insert(languages, "C")
             elseif sourcekind == "cxx" then table.insert(languages, "CXX")
             elseif sourcekind == "as"  then table.insert(languages, "ASM")

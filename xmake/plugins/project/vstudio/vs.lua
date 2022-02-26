@@ -22,15 +22,16 @@
 import("impl.vs200x")
 import("impl.vs201x")
 import("impl.vsinfo")
+import("core.tool.toolchain")
 import("core.project.config")
 
 -- make factory
 function make(version)
 
     if not version then
-        version = tonumber(config.get("vs"))
+        version = tonumber(toolchain.load("msvc"):config("vs") or config.get("vs"))
         if not version then
-            return function(outputdir)
+            return function (outputdir)
                 raise("invalid vs version, run `xmake f --vs=201x`")
             end
         end
@@ -39,13 +40,13 @@ function make(version)
     -- get vs version info
     local info = vsinfo(version)
     if version < 2010 then
-        return function(outputdir)
+        return function (outputdir)
             vprint("using project kind vs%d", version)
             vs200x.make(outputdir, info)
         end
     else
-        return function(outputdir)
-            utils.warning("please use the new vs project generator, .e.g xmake project -k vsxmake")
+        return function (outputdir)
+            wprint("please use the new vs project generator, .e.g xmake project -k vsxmake")
             vprint("using project kind vs%d", version)
             vs201x.make(outputdir, info)
         end
