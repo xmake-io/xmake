@@ -462,7 +462,7 @@ function _make_source_options_cl(vcxprojfile, flags, condition)
     end
 
     -- make AdditionalIncludeDirectories
-    if flagstr:find("^[%-/]I") then
+    if flagstr:find("[%-/]I") then
         local dirs = {}
         for _, flag in ipairs(flags) do
             flag:gsub("^[%-/]I(.*)", function (dir) table.insert(dirs, vsutils.escape(dir)) end)
@@ -535,7 +535,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
         vcxprojfile:print("<Defines%s>%s</Defines>", condition, defstr)
 
         -- make Include
-        if flagstr:find("^[%-/]I") then
+        if flagstr:find("[%-/]I") then
             local dirs = {}
             for _, flag in ipairs(flags) do
                 flag:gsub("^[%-/]I(.*)", function (dir) table.insert(dirs, vsutils.escape(dir)) end)
