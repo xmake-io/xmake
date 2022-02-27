@@ -57,61 +57,81 @@ end
 
 -- erases from the current cursor position to the end of the current line.
 function tty.erase_line_to_end()
-    tty._iowrite("\x1b[K")
+    if tty.has_vtansi() then
+        tty._iowrite("\x1b[K")
+    end
     return tty
 end
 
 -- erases from the current cursor position to the start of the current line.
 function tty.erase_line_to_start()
-    tty._iowrite("\x1b[1K")
+    if tty.has_vtansi() then
+        tty._iowrite("\x1b[1K")
+    end
     return tty
 end
 
 -- erases the entire current line
 function tty.erase_line()
-    tty._iowrite("\x1b[2K")
+    if tty.has_vtansi() then
+        tty._iowrite("\x1b[2K")
+    end
     return tty
 end
 
 -- erases the screen from the current line down to the bottom of the screen.
 function tty.erase_down()
-    tty._iowrite("\x1b[J")
+    if tty.has_vtansi() then
+        tty._iowrite("\x1b[J")
+    end
     return tty
 end
 
 -- erases the screen from the current line up to the top of the screen.
 function tty.erase_up()
-    tty._iowrite("\x1b[1J")
+    if tty.has_vtansi() then
+        tty._iowrite("\x1b[1J")
+    end
     return tty
 end
 
 -- erases the screen with the background colour and moves the cursor to home.
 function tty.erase_screen()
-    tty._iowrite("\x1b[2J")
+    if tty.has_vtansi() then
+        tty._iowrite("\x1b[2J")
+    end
     return tty
 end
 
 -- save current cursor position.
 function tty.cursor_save()
-    tty._iowrite("\x1b[s")
+    if tty.has_vtansi() then
+        tty._iowrite("\x1b[s")
+    end
     return tty
 end
 
 -- restores cursor position after a save cursor.
 function tty.cursor_restore()
-    tty._iowrite("\x1b[u")
+    if tty.has_vtansi() then
+        tty._iowrite("\x1b[u")
+    end
     return tty
 end
 
 -- save current cursor position and color attrs
 function tty.cursor_and_attrs_save()
-    tty._iowrite("\x1b7")
+    if tty.has_vtansi() then
+        tty._iowrite("\x1b7")
+    end
     return tty
 end
 
 -- restores cursor position and color attrs after a save cursor.
 function tty.cursor_and_attrs_restore()
-    tty._iowrite("\x1b8")
+    if tty.has_vtansi() then
+        tty._iowrite("\x1b8")
+    end
     return tty
 end
 
@@ -256,6 +276,11 @@ function tty.has_emoji()
         tty._HAS_EMOJI = has_emoji or false
     end
     return has_emoji
+end
+
+-- has vtansi?
+function tty.has_vtansi()
+    return tty.has_color8()
 end
 
 -- has 8 colors?
