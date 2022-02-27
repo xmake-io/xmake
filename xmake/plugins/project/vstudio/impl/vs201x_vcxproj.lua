@@ -559,12 +559,12 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
 
     -- make CodeGeneration
     local gpucode_patterns = {
-        "^%-gencode[ =]arch=(.+),code=(.+)",
-        "^%-%-generate%-code[ =]arch=(.+),code=(.+)",
-        "^%-arch",
-        "^%-%-gpu%-architecture",
-        "^%-code",
-        "^%-%-gpu%-code"
+        "%-gencode[ =]arch=(.+),code=(.+)",
+        "%-%-generate%-code[ =]arch=(.+),code=(.+)",
+        "%-arch",
+        "%-%-gpu%-architecture",
+        "%-code",
+        "%-%-gpu%-code"
     }
     local has_gpucode = false
     for _, pattern in ipairs(gpucode_patterns) do
@@ -578,7 +578,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
         local codes = {}
         local gencodes = {}
         for _, flag in ipairs(flags) do
-            flag:gsub("%-gencode[ =]arch=(.+),code=(.+)$", function (garch, gcodes)
+            flag:gsub("^%-gencode[ =]arch=(.+),code=(.+)$", function (garch, gcodes)
                 for _, gcode in ipairs(_split_gpucodes(gcodes)) do
                     table.insert(gencodes, garch .. "," .. gcode)
                 end
