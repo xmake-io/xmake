@@ -20,6 +20,7 @@
 * [#2039](https://github.com/xmake-io/xmake/issues/2039): Improve filter directory for vs generator
 * [#2025](https://github.com/xmake-io/xmake/issues/2025): Support phony and headeronly target for vs generator
 * Improve to find vstudio and codesign speed
+* [#2077](https://github.com/xmake-io/xmake/issues/2077): Improve vs project generator to support cuda
 
 ### Bugs fixed
 
@@ -1234,6 +1235,7 @@
 * [#2039](https://github.com/xmake-io/xmake/issues/2039): 改进 vs generator 的 filter 目录展示
 * [#2025](https://github.com/xmake-io/xmake/issues/2025): 支持为 phony 和 headeronly 目标生成 vs 工程
 * 优化 vs 和 codesign 的探测速度
+* [#2077](https://github.com/xmake-io/xmake/issues/2077): 改进 vs 工程生成器去支持 cuda
 
 ### Bugs 修复
 
