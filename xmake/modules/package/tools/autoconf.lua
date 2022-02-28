@@ -103,7 +103,7 @@ function _get_configs(package, configs)
                 x86_64 = "x86_64-w64-mingw32"
             }
             table.insert(configs, "--host=" .. (triples[package:arch()] or triples.i386))
-        elseif package:is_plat("cross") then
+        elseif package:is_plat("cross") and package:targetos() then
             local host = package:arch()
             if package:is_arch("arm64") then
                 host = "aarch64"
