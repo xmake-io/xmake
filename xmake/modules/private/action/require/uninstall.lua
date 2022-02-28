@@ -50,7 +50,8 @@ function main(requires_raw)
         print("uninstall: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
     end
     if not packages or #packages == 0 then
-        cprint("${bright}packages(%s) not found, maybe they don’t exactly match the configuration.", table.concat(requires_raw, ", "))
+        cprint("${bright}packages(%s) not found, maybe they don’t exactly match the configuration"
+            , requires_raw and table.concat(requires_raw, ", ") or "")
         if os.getenv("XREPO_WORKING") then
             print("please attempt to remove them with `-f/--configs=` option, e.g.")
             print("    - xrepo remove -f \"name=value, ...\" package")
