@@ -116,7 +116,7 @@ function _remove_packages(packages)
     end
 
     -- do configure first
-    local config_argv = {"f", "-c"}
+    local config_argv = {"f", "-c", "--require=n"}
     if option.get("verbose") then
         table.insert(config_argv, "-v")
     end
