@@ -133,7 +133,7 @@ function _install_packages(packages)
     end
     if packagefile then
         assert(os.isfile("xmake.lua"), "xmake.lua not found!")
-        os.cp(packagefile, "xmake.lua")
+        io.writefile("xmake.lua", "includes(\"" .. packagefile .. "\")\n" .. io.readfile("xmake.lua"))
     end
 
     -- disable xmake-stats
