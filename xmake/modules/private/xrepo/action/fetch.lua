@@ -118,7 +118,7 @@ function _fetch_packages(packages)
     end
     if packagefile then
         assert(os.isfile("xmake.lua"), "xmake.lua not found!")
-        io.writefile("xmake.lua", ('includes("%s")\ntarget("test", {kind = "phony"})'):format((packagefile:gsub("\\", "/")))
+        io.writefile("xmake.lua", ('includes("%s")\ntarget("test", {kind = "phony"})'):format((packagefile:gsub("\\", "/"))))
     end
 
     -- do configure first
