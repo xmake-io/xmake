@@ -40,9 +40,10 @@ function menu_options()
                                        "e.g.",
                                        "    - xrepo fetch --configs=\"vs_runtime='MD'\" zlib",
                                        "    - xrepo fetch --configs=\"regex=true,thread=true\" boost"},
+        {nil, "system",     "k", "false", "Only fetch package on current system."},
         {},
         {nil, "toolchain",  "kv", nil, "Set the toolchain name."             },
-        {nil, "includes",      "kv", nil, "Includes extra lua configuration files.",
+        {nil, "includes",   "kv", nil, "Includes extra lua configuration files.",
                                        "e.g.",
                                        "    - xrepo fetch -p cross --toolchain=mytool --includes='toolchain1.lua" .. path.envsep() .. "toolchain2.lua'"},
         {nil, "deps",       "k",  nil, "Fetch packages with dependencies."   },
@@ -186,7 +187,7 @@ function _fetch_packages(packages)
     if #fetchmodes > 0 then
         table.insert(require_argv, "--fetch_modes=" .. table.concat(fetchmodes, ','))
     end
-    local extra = {system = false}
+    local extra = {system = option.get("system")}
     if mode == "debug" then
         extra.debug = true
     end
