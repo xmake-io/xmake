@@ -186,15 +186,16 @@ function _save_plugin_arguments()
     vsxmake_cache:save()
 end
 
--- clear configuration cache
-function _clear_cacheconf()
-    config.clear()
-    config.save()
-    localcache.clear("config")
+-- clear cache
+function _clear_cache()
     localcache.clear("detect")
     localcache.clear("option")
     localcache.clear("package")
     localcache.clear("toolchain")
+
+    -- force recheck
+    localcache.set("config", "recheck", true)
+
     localcache.save()
 end
 
@@ -249,7 +250,7 @@ function make(version)
         end
 
         -- clear config and local cache
-        _clear_cacheconf()
+        _clear_cache()
 
         -- save plugin arguments for autoupdate
         _save_plugin_arguments()

@@ -408,7 +408,6 @@ function main(outputdir, vsinfo)
 
             -- clear cache
             memcache.clear()
-            localcache.clear("config")
             localcache.clear("detect")
             localcache.clear("option")
             localcache.clear("package")
