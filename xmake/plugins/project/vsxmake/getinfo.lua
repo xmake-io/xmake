@@ -468,11 +468,12 @@ function main(outputdir, vsinfo)
     for _, target in pairs(targets) do
         target._paths = {}
         local dirs = {}
-        local root = target.absscriptdir or project.directory()
-        target.sourcefiles = table.imap(target.sourcefiles, function(_, v) return path.relative(v, root) end)
-        target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, root) end)
+        local projectdir = project.directory()
+        local root = target.absscriptdir or projectdir
+        target.sourcefiles = table.imap(target.sourcefiles, function(_, v) return path.relative(v, projectdir) end)
+        target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, projectdir) end)
         for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
-            local dir = path.directory(f)
+            local dir = path.directory(path.relative(f, root))
             local escaped_f = _escape(f)
             -- @see https://github.com/xmake-io/xmake/issues/2039
             dir = _strip_dotdirs(dir)
