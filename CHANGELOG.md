@@ -1225,6 +1225,7 @@
 * [#2024](https://github.com/xmake-io/xmake/issues/2024): 添加 asn1c 支持
 * [#2031](https://github.com/xmake-io/xmake/issues/2031): 为 add_files 增加 linker scripts 和 version scripts 支持
 * [#2033](https://github.com/xmake-io/xmake/issues/2033): 捕获 ctrl-c 去打印当前运行栈，用于调试分析卡死问题
+* [#2070](https://github.com/xmake-io/xmake/issues/2070): 添加一些内置的 xrepo env 环境配置
 * [#2059](https://github.com/xmake-io/xmake/pull/2059): 添加 `xmake update --integrate` 命令去整合 shell* [#2070](https://github.com/xmake-io/xmake/issues/2070): 添加一些内置的 xrepo env 环境配置
 
 ### 改进
