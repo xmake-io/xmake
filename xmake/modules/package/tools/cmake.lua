@@ -503,7 +503,8 @@ function _get_configs(package, configs, opt)
         _get_configs_for_appleos(package, configs, opt)
     elseif package:is_plat("mingw") then
         _get_configs_for_mingw(package, configs, opt)
-    elseif not package:is_plat(os.subhost()) then
+    elseif not package:is_plat(os.subhost()) or
+        package:config("toolchains") then -- we need pass toolchains
         _get_configs_for_cross(package, configs, opt)
     else
         _get_configs_for_generic(package, configs, opt)

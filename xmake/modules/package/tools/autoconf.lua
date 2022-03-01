@@ -156,7 +156,7 @@ function buildenvs(package, opt)
     opt = opt or {}
     local envs = {}
     local cppflags = {}
-    if package:is_plat(os.subhost()) then
+    if package:is_plat(os.subhost()) and not package:config("toolchains") then
         local cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
         local cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
         local asflags  = table.copy(table.wrap(package:config("asflags")))
@@ -258,7 +258,7 @@ function buildenvs(package, opt)
                 envs.CPP      = _translate_windows_bin_path(envs.CPP)
                 envs.RANLIB   = _translate_windows_bin_path(envs.RANLIB)
             end
-        elseif package:is_plat("cross") then
+        elseif package:is_plat("cross") or package:has_tool("ar", "ar") then
             -- only for cross-toolchain
             envs.CXX = package:build_getenv("cxx")
             if not envs.ARFLAGS or envs.ARFLAGS == "" then

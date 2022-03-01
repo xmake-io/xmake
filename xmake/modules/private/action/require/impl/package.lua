@@ -460,7 +460,7 @@ function _init_requireinfo(requireinfo, package, opt)
     if opt.is_toplevel then
         requireinfo.is_toplevel = true
         if not package:is_headeronly() then
-            if package:is_cross() and package:is_library() then
+            if package:is_library() then
                 requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains") or get_config("toolchain")
             end
             requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or project.get("target.runtimes") or get_config("vs_runtime")
