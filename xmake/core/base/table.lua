@@ -324,18 +324,12 @@ end
 
 -- wrap object to table
 function table.wrap(object)
-
-    -- no object?
     if nil == object then
         return {}
     end
-
-    -- wrap it if not table
     if type(object) ~= "table" then
         return {object}
     end
-
-    -- ok
     return object
 end
 

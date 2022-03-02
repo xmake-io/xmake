@@ -61,7 +61,7 @@ rule("utils.symbols.export_list")
         elseif target:is_plat("macosx", "iphoneos", "watchos", "appletvos") then
             exportkind = "apple"
             exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.exp")
-            target:add("shflags", {"-Wl,-exported_symbols_list", exportfile}, {force = true})--, expand = false})
+            target:add("shflags", {"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})
         elseif target:has_tool("ld", "gcc", "gxx", "clang", "clangxx") or
                target:has_tool("sh", "gcc", "gxx", "clang", "clangxx") then
             exportkind = "ver"
