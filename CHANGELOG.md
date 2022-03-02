@@ -14,6 +14,7 @@
 * [#2059](https://github.com/xmake-io/xmake/pull/2059): Add `xmake update --integrate` to integrate for shell
 * [#2070](https://github.com/xmake-io/xmake/issues/2070): Add built-in xrepo environments
 * [#2117](https://github.com/xmake-io/xmake/pull/2117): Support to pass toolchains to package for other platforms
+* [#2121](https://github.com/xmake-io/xmake/issues/2121): Support to export the given symbols list
 
 ### Changes
 
@@ -1230,6 +1231,7 @@
 * [#2059](https://github.com/xmake-io/xmake/pull/2059): 添加 `xmake update --integrate` 命令去整合 shell
 * [#2070](https://github.com/xmake-io/xmake/issues/2070): 添加一些内置的 xrepo env 环境配置
 * [#2117](https://github.com/xmake-io/xmake/pull/2117): 支持为任意平台传递工具链到包
+* [#2121](https://github.com/xmake-io/xmake/issues/2121): 支持导出指定的符号列表，可用于减少动态库的大小
 
 ### 改进
 
