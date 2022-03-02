@@ -1066,7 +1066,7 @@ function interpreter:api_register_set_values(scope_kind, ...)
         if extra_config and extra_config.expand == false then
             for _, value in ipairs(values) do
                 if type(value) == "table" then
-                    setmetatable(value, {})
+                    value.__object__ = true
                 end
             end
         else
@@ -1118,7 +1118,7 @@ function interpreter:api_register_add_values(scope_kind, ...)
         if extra_config and extra_config.expand == false then
             for _, value in ipairs(values) do
                 if type(value) == "table" then
-                    setmetatable(value, {})
+                    value.__object__ = true
                 end
             end
         else

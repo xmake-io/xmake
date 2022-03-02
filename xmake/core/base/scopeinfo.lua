@@ -120,7 +120,7 @@ function _instance:_api_set_values(name, ...)
     if extra_config and extra_config.expand == false then
         for _, value in ipairs(values) do
             if type(value) == "table" then
-                setmetatable(value, {})
+                value.__object__ = true
             end
         end
     else
@@ -171,7 +171,7 @@ function _instance:_api_add_values(name, ...)
     if extra_config and extra_config.expand == false then
         for _, value in ipairs(values) do
             if type(value) == "table" then
-                setmetatable(value, {})
+                value.__object__ = true
             end
         end
     else

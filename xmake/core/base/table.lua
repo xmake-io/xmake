@@ -165,9 +165,9 @@ end
 
 -- copy the table to self
 function table.copy2(self, copied)
-    assert(type(copied) == "table")
     table.clear(self)
-    for k, v in pairs(copied) do
+    copied = copied or {}
+    for k, v in pairs(table.wrap(copied)) do
         self[k] = v
     end
 end
@@ -310,7 +310,7 @@ end
 
 -- unwrap object if be only one
 function table.unwrap(object)
-    if type(object) == "table" and not getmetatable(object) then
+    if type(object) == "table" and not object.__object__ then
         if #object == 1 then
             return object[1]
         end
@@ -323,7 +323,7 @@ function table.wrap(object)
     if nil == object then
         return {}
     end
-    if type(object) ~= "table" or getmetatable(object) then -- maybe object, we need wrap it too
+    if type(object) ~= "table" or object.__object__ then
         return {object}
     end
     return object
