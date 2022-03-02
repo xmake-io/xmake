@@ -310,7 +310,7 @@ end
 
 -- unwrap object if be only one
 function table.unwrap(object)
-    if type(object) == "table" then
+    if type(object) == "table" and not getmetatable(object) then
         if #object == 1 then
             return object[1]
         end

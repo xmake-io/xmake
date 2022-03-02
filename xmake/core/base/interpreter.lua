@@ -1059,8 +1059,18 @@ function interpreter:api_register_set_values(scope_kind, ...)
             extra_config = nil
         end
 
-        -- expand values
-        if not extra_config or extra_config.expand ~= false then
+        -- @note we need mark table value as meta object to avoid wrap/unwrap
+        -- if these values cannot be expanded, especially when there is only one value
+        --
+        -- e.g. set_shflags({"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})
+        if extra_config and extra_config.expand == false then
+            for _, value in ipairs(values) do
+                if type(value) == "table" then
+                    setmetatable(value, {})
+                end
+            end
+        else
+            -- expand values
             values = table.join(table.unpack(values))
         end
 
@@ -1101,8 +1111,18 @@ function interpreter:api_register_add_values(scope_kind, ...)
             extra_config = nil
         end
 
-        -- expand values
-        if not extra_config or extra_config.expand ~= false then
+        -- @note we need mark table value as meta object to avoid wrap/unwrap
+        -- if these values cannot be expanded, especially when there is only one value
+        --
+        -- e.g. add_shflags({"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})
+        if extra_config and extra_config.expand == false then
+            for _, value in ipairs(values) do
+                if type(value) == "table" then
+                    setmetatable(value, {})
+                end
+            end
+        else
+            -- expand values
             values = table.join(table.unpack(values))
         end
 

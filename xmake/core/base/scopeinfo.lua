@@ -113,8 +113,18 @@ function _instance:_api_set_values(name, ...)
         extra_config = nil
     end
 
-    -- expand values
-    if not extra_config or extra_config.expand ~= false then
+    -- @note we need mark table value as meta object to avoid wrap/unwrap
+    -- if these values cannot be expanded, especially when there is only one value
+    --
+    -- e.g. target:set("shflags", {"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})
+    if extra_config and extra_config.expand == false then
+        for _, value in ipairs(values) do
+            if type(value) == "table" then
+                setmetatable(value, {})
+            end
+        end
+    else
+        -- expand values
         values = table.join(table.unpack(values))
     end
 
@@ -154,6 +164,10 @@ function _instance:_api_add_values(name, ...)
         extra_config = nil
     end
 
+    -- @note we need mark table value as meta object to avoid wrap/unwrap
+    -- if these values cannot be expanded, especially when there is only one value
+    --
+    -- e.g. target:add("shflags", {"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})
     if extra_config and extra_config.expand == false then
         for _, value in ipairs(values) do
             if type(value) == "table" then
