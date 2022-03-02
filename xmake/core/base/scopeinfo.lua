@@ -154,8 +154,14 @@ function _instance:_api_add_values(name, ...)
         extra_config = nil
     end
 
-    -- expand values
-    if not extra_config or extra_config.expand ~= false then
+    if extra_config and extra_config.expand == false then
+        for _, value in ipairs(values) do
+            if type(value) == "table" then
+                setmetatable(value, {})
+            end
+        end
+    else
+        -- expand values
         values = table.join(table.unpack(values))
     end
 
