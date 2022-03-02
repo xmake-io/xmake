@@ -308,25 +308,35 @@ function table.to_array(iterator, state, var)
     return result, count
 end
 
--- unwrap object if be only one
-function table.unwrap(object)
-    if type(object) == "table" and not object.__object__ then
-        if #object == 1 then
-            return object[1]
+-- unwrap array if be only one value
+function table.unwrap(array)
+    if type(array) == "table" and not array.__wraplocked__ then
+        if #array == 1 then
+            return array[1]
         end
     end
-    return object
+    return array
 end
 
--- wrap object to table
-function table.wrap(object)
-    if nil == object then
+-- wrap value to array
+function table.wrap(value)
+    if nil == value then
         return {}
     end
-    if type(object) ~= "table" or object.__object__ then
-        return {object}
+    if type(value) ~= "table" or value.__wraplocked__ then
+        return {value}
     end
-    return object
+    return value
+end
+
+-- lock table value to avoid unwrap
+--
+-- a = {1}, wrap(a): {1}, unwrap(a): 1
+-- a = wraplock({1}), wrap(a): {a}, unwrap(a): a
+function table.wraplock(value)
+    if type(value) == "table" then
+        value.__wraplocked__ = true
+    end
 end
 
 -- remove repeat from the given array

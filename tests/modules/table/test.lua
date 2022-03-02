@@ -16,7 +16,7 @@ function test_wrap(t)
     t:are_equal(table.wrap({}), {})
     t:are_equal(table.wrap({1}), {1})
     t:are_equal(table.wrap({{}}), {{}})
-    local a = {1, __object__ = true}
+    local a = table.wraplock({1})
     t:are_equal(table.wrap({a}), {a})
 end
 
@@ -26,6 +26,6 @@ function test_unwrap(t)
     t:are_equal(table.unwrap({}), {})
     t:are_equal(table.unwrap({1}), 1)
     t:are_equal(table.unwrap({{}}), {})
-    local a = {1, __object__ = true}
+    local a = table.wraplock({1})
     t:are_equal(table.unwrap(a), a)
 end
