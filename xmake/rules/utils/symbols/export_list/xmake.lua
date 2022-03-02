@@ -32,8 +32,8 @@ rule("utils.symbols.export_list")
             target:add("shflags", "/def:" .. exportfile, {force = true})
         elseif target:is_plat("macosx", "iphoneos", "watchos", "appletvos") then
             exportkind = "apple"
-            exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.txt")
-            target:add("shflags", {"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})
+            exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.exp")
+            target:add("shflags", {"-Wl,-exported_symbols_list", exportfile}, {force = true})--, expand = false})
         elseif target:has_tool("ld", "gcc", "gxx", "clang", "clangxx") or
                target:has_tool("sh", "gcc", "gxx", "clang", "clangxx") then
             exportkind = "ver"
@@ -58,7 +58,14 @@ rule("utils.symbols.export_list")
         *;
 };]]):format(table.concat(exportsymbols, ";\n        ") .. ";"))
             elseif exportkind == "apple" then
-                io.writefile(exportfile, table.concat(exportsymbols, "\n"))
+                local file = io.open(exportfile, 'w')
+                for _, symbol in ipairs(exportsymbols) do
+                    if not symbol:startswith("_") then
+                        symbol = "_" .. symbol
+                    end
+                    file:print("%s", symbol)
+                end
+                file:close()
             elseif exportkind == "def" then
                 local file = io.open(exportfile, 'w')
                 file:print("EXPORTS")
