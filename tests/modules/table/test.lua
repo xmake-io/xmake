@@ -9,3 +9,23 @@ function test_find_if(t)
     t:are_equal(table.find({1, 2, 4, 4, 5, 6}, 4), {3, 4})
     t:are_equal(table.find_first({1, 2, 3, 4, 5, 6}, 4), 4)
 end
+
+function test_wrap(t)
+    t:are_equal(table.wrap(1), {1})
+    t:are_equal(table.wrap(nil), {})
+    t:are_equal(table.wrap({}), {})
+    t:are_equal(table.wrap({1}), {1})
+    t:are_equal(table.wrap({{}}), {{}})
+    local a = table.wraplock({1})
+    t:are_equal(table.wrap({a}), {a})
+end
+
+function test_unwrap(t)
+    t:are_equal(table.unwrap(1), 1)
+    t:are_equal(table.unwrap(nil), nil)
+    t:are_equal(table.unwrap({}), {})
+    t:are_equal(table.unwrap({1}), 1)
+    t:are_equal(table.unwrap({{}}), {})
+    local a = table.wraplock({1})
+    t:are_equal(table.unwrap(a), a)
+end

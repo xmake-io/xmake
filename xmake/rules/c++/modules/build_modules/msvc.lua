@@ -43,7 +43,7 @@ function load_parent(target, opt)
             local sourcebatches = dep:sourcebatches()
             if sourcebatches and sourcebatches["c++.build.modules"] then
                 local cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
-                target:add("cxxflags", {"/ifcSearchDir", cachedir}, {force = true, expand = true})
+                target:add("cxxflags", {"/ifcSearchDir", cachedir}, {force = true, expand = false})
             end
         end
     end
