@@ -38,15 +38,12 @@ function init(self)
 end
 
 -- make the strip flag
-function nf_strip(self, level)
-    local maps =
-    {
+function nf_strip(self, level, target)
+    local maps = {
         debug = "-S"
     ,   all   = "-s"
     }
-
-    local plat = config.plat()
-    if plat == "macosx" or plat == "iphoneos" then
+    if target:is_plat("macosx", "iphoneos") then
         maps.all   = "-Wl,-x"
         maps.debug = "-Wl,-S"
     end
@@ -80,11 +77,7 @@ end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags)
-
-    -- ensure the target directory
     os.mkdir(path.directory(targetfile))
-
-    -- link it
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 

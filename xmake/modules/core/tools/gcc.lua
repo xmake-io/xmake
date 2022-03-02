@@ -79,8 +79,8 @@ function nf_strip(self, level, target)
         debug = "-Wl,-S"
     ,   all   = "-s"
     }
-    if target:is_plat("macosx") or target:is_plat("iphoneos") then
-        maps.all   = "-Wl,-x"
+    if target:is_plat("macosx", "iphoneos") then
+        maps.all = "-Wl,-x"
     end
     return maps[level]
 end
