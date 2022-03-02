@@ -7,6 +7,12 @@ target("foo")
         "add",
         "sub"}})
 
+target("foo2")
+    set_kind("shared")
+    add_files("src/foo.c")
+    add_files("src/foo.export.txt")
+    add_rules("utils.symbols.export_list")
+
 target("test")
     set_kind("binary")
     add_deps("foo")

@@ -19,12 +19,40 @@
 --
 
 -- export the given symbols list
+--
+--@code
+--  target("foo")
+--    set_kind("shared")
+--    add_files("src/foo.c")
+--    add_rules("utils.symbols.export_list", {symbols = {
+--      "add",
+--      "sub"}})
+--
+--  target("foo2")
+--    set_kind("shared")
+--    add_files("src/foo.c")
+--    add_files("src/foo.export.txt")
+--    add_rules("utils.symbols.export_list")
+--
 rule("utils.symbols.export_list")
+    set_extensions(".export.txt")
     on_config(function (target)
         assert(target:is_shared(), 'rule("utils.symbols.export_list"): only for shared target(%s)!', target:name())
         local exportfile
         local exportkind
         local exportsymbols = target:extraconf("rules", "utils.symbols.export_list", "symbols")
+        if not exportsymbols then
+            local sourcebatch = target:sourcebatches()["utils.symbols.export_list"]
+            if sourcebatch then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    local list = io.readfile(sourcefile)
+                    if list then
+                        exportsymbols = list:split("\n")
+                    end
+                    break
+                end
+            end
+        end
         assert(exportsymbols and #exportsymbols > 0, 'rule("utils.symbols.export_list"): no exported symbols!')
         if target:has_tool("ld", "link") then
             exportkind = "def"
