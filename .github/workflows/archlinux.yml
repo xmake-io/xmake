@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-        group: ${{ github.head_ref }}-Archlinux
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Archlinux
         cancel-in-progress: true
     steps:
       - name: Prepare build tools
