@@ -12,7 +12,7 @@ jobs:
     runs-on: macos-10.15
 
     concurrency:
-        group: ${{ github.head_ref }}-FreeBSD
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-FreeBSD
         cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2

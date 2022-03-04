@@ -12,7 +12,7 @@ jobs:
     runs-on: macos-latest
 
     concurrency:
-        group: ${{ github.head_ref }}-macOS
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-macOS
         cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2

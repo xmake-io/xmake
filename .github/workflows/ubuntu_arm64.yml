@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-        group: ${{ github.head_ref }}-UbuntuArm64
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-UbuntuArm64
         cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
