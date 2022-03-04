@@ -664,6 +664,10 @@ end
 
 -- select to use precompiled artifacts?
 function _select_artifacts(package, artifacts_manifest)
+    -- the precompile policy is disabled?
+    if package:policy("package.precompiled") == false then
+        return
+    end
     local artifacts_info
     if package:is_plat("windows") then -- for msvc
         artifacts_info = _select_artifacts_for_msvc(package, artifacts_manifest)

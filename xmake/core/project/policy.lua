@@ -48,7 +48,9 @@ function policy.policies()
             -- we need enable longpaths when building target or installing package
             ["platform.longpaths"]               = {description = "Enable long paths when building target or installing package on windows.", default = false, type = "boolean"},
             -- lock required packages
-            ["package.requires_lock"]            = {description = "Enable xmake-requires.lock to lock required packages.", default = false, type = "boolean"}
+            ["package.requires_lock"]            = {description = "Enable xmake-requires.lock to lock required packages.", default = false, type = "boolean"},
+            -- enable the precompiled packages, it will be enabled by default
+            ["package.precompiled"]              = {description = "Enable precompiled packages.", default = true, type = "boolean"}
         }
         policy._POLICIES = policies
     end
