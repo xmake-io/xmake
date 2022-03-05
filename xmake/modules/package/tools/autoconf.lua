@@ -265,6 +265,20 @@ function buildenvs(package, opt)
                 envs.ARFLAGS = "-cr"
             end
         end
+
+        -- fix autoconf cannot use clang/clang++ as linker
+        --
+        -- @see
+        -- https://github.com/xmake-io/xmake-repo/pull/1043
+        -- https://github.com/libexpat/libexpat/issues/312
+        local ld = envs.LD
+        if ld and package:has_tool("ld", "clangxx", "clang") then
+            local dir = path.directory(ld)
+            local name = path.filename(ld)
+            name = name:gsub("clang%+%+", "ld")
+            name = name:gsub("clang", "ld")
+            envs.LD = dir and path.join(dir, name) or name
+        end
     end
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
