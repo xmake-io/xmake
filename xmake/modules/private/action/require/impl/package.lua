@@ -461,9 +461,15 @@ function _init_requireinfo(requireinfo, package, opt)
         requireinfo.is_toplevel = true
         if not package:is_headeronly() then
             if package:is_library() then
-                requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains") or get_config("toolchain")
+                requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains")
+                if package:policy("package.inherit_external_configs") then
+                    requireinfo.configs.toolchains = requireinfo.configs.toolchains or get_config("toolchain")
+                end
             end
-            requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or project.get("target.runtimes") or get_config("vs_runtime")
+            requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or project.get("target.runtimes")
+            if package:policy("package.inherit_external_configs") then
+                requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or get_config("vs_runtime")
+            end
         end
     end
 end

@@ -50,7 +50,9 @@ function policy.policies()
             -- lock required packages
             ["package.requires_lock"]            = {description = "Enable xmake-requires.lock to lock required packages.", default = false, type = "boolean"},
             -- enable the precompiled packages, it will be enabled by default
-            ["package.precompiled"]              = {description = "Enable precompiled packages.", default = true, type = "boolean"}
+            ["package.precompiled"]              = {description = "Enable precompiled packages.", default = true, type = "boolean"},
+            -- inherit the configs from the external command arguments, e.g. toolchains, `xmake f --toolchain=`
+            ["package.inherit_external_configs"] = {description = "Inherit the configs from the external command arguments.", default = true, type = "boolean"}
         }
         policy._POLICIES = policies
     end
