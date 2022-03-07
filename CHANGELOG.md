@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.6.4
+
 ### New features
 
 * [#2011](https://github.com/xmake-io/xmake/issues/2011): Support to inherit base package
@@ -1218,6 +1220,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.6.4
 
 ### 新特性
 
