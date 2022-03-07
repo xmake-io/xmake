@@ -20,12 +20,12 @@ PRE 				:= $(if $(findstring x86_64,$(BUILD_ARCH)),x86_64-w64-mingw32-,i686-w64-
 PRE_				:= $(if $(BIN),$(BIN)/$(PRE),$(PRE))
 
 # tool
-CC					= $(PRE_)gcc
-LD					= $(PRE_)gcc
-AR					= $(PRE_)ar
-STRIP				= $(PRE_)strip
-RANLIB				= $(PRE_)ranlib
-AS					= $(CC)
+CC					:= $(if $(CC),$(CC),$(PRE_)gcc)
+LD					:= $(if $(CC),$(CC),$(PRE_)gcc) # we do not use ld directly
+AR					:= $(if $(AR),$(AR),$(PRE_)ar)
+STRIP				:= $(if $(STRIP),$(STRIP),$(PRE_)strip)
+RANLIB				:= $(if $(RANLIB),$(RANLIB),$(PRE_)ranlib)
+AS					:= $(CC)
 RM					= rm -f
 RMDIR				= rm -rf
 CP					= cp
