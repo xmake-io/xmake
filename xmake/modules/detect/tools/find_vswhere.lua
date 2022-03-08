@@ -51,6 +51,7 @@ function main(opt)
     opt.command = opt.command or "-?"
     opt.paths   = opt.paths or
     {
+        "$(env VSINSTALLERDIR)",
         "$(env ProgramFiles%(x86%))\\Microsoft Visual Studio\\Installer",
         "$(env ProgramFiles)\\Microsoft Visual Studio\\Installer"
     }
