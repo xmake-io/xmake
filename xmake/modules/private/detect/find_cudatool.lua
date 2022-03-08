@@ -45,15 +45,16 @@ function main(toolname, parse, opt)
     opt       = opt or {}
     opt.parse = opt.parse or parse
 
-    -- always keep consistency with cuda cache 
+    local program = nil
+
+    -- always keep consistency with cuda cache
     local toolchains = find_cuda()
     if toolchains and toolchains.bindir then
         program = find_program(path.join(toolchains.bindir, opt.program or toolname), opt)
     end
 
     -- not found? attempt to find program only
-    local program = nil
-    if opt.program then
+    if not program then
         program = find_program(opt.program or toolname, opt)
     end
 
