@@ -45,9 +45,8 @@ function main(toolname, parse, opt)
     opt       = opt or {}
     opt.parse = opt.parse or parse
 
-    local program = nil
-
     -- always keep consistency with cuda cache
+    local program
     local toolchains = find_cuda()
     if toolchains and toolchains.bindir then
         program = find_program(path.join(toolchains.bindir, opt.program or toolname), opt)
@@ -63,7 +62,5 @@ function main(toolname, parse, opt)
     if program and opt.version then
         version = find_programver(program, opt)
     end
-
-    -- ok?
     return program, version
 end
