@@ -70,10 +70,7 @@ end
 
 -- join path
 function path.join(p, ...)
-    for _, name in ipairs({...}) do
-        p = p .. "/" .. name
-    end
-    return path.translate(p)
+    return path.translate(p .. path.sep() .. table.concat({...}, path.sep()))
 end
 
 -- split path by the separator
