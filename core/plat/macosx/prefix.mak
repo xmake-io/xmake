@@ -54,18 +54,11 @@ MKDIR				= mkdir -p
 MAKE				= make -r
 
 # cxflags: .c/.cc/.cpp files
-CXFLAGS_RELEASE		= -fvisibility=hidden
+CXFLAGS_RELEASE		= -Oz -fvisibility=hidden -fvisibility-inlines-hidden -flto
 CXFLAGS_DEBUG		= -g -D__tb_debug__
-CXFLAGS				= -m$(BITS) -c -Wall -Werror -Wno-error=deprecated-declarations -Qunused-arguments -mssse3
+CXFLAGS				= -m$(BITS) -c -Wall -Werror -Wno-error=deprecated-declarations -Qunused-arguments
 CXFLAGS-I			= -I
 CXFLAGS-o			= -o
-
-# opti
-ifeq ($(SMALL),y)
-CXFLAGS_RELEASE		+= -Os
-else
-CXFLAGS_RELEASE		+= -O3
-endif
 
 # prof
 ifeq ($(PROF),y)
@@ -91,7 +84,7 @@ CCFLAGS				= \
 					-D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600
 
 # mxflags: .m/.mm files
-MXFLAGS_RELEASE		= -fvisibility=hidden
+MXFLAGS_RELEASE		= -Oz -fvisibility=hidden -fvisibility-inlines-hidden -flto
 MXFLAGS_DEBUG		= -g -D__tb_debug__
 MXFLAGS				= \
 					-m$(BITS) -c -Wall -Werror -Wno-error=deprecated-declarations -Qunused-arguments \
@@ -129,7 +122,7 @@ MMFLAGS				=
 
 # ldflags
 LDFLAGS_ARCH		:= $(if $(findstring arm64,$(BUILD_ARCH)),,-pagezero_size 10000 -image_base 100000000)
-LDFLAGS_RELEASE		=
+LDFLAGS_RELEASE		= -flto
 LDFLAGS_DEBUG		=
 LDFLAGS				= -m$(BITS) -all_load $(LDFLAGS_ARCH) -mmacosx-version-min=10.7
 LDFLAGS-L			= -L
