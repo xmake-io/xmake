@@ -2,6 +2,11 @@
 
 ## master (unreleased)
 
+### Changes
+
+* [#2137](https://github.com/xmake-io/xmake/pull/2137): Improve path module
+* Reduce 50% xmake binary size on macOS
+
 ## v2.6.4
 
 ### New features
@@ -1220,6 +1225,11 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#2137](https://github.com/xmake-io/xmake/pull/2137): 改进 path 模块
+* macOS 下，减少 50% 的 Xmake 二进制文件大小
 
 ## v2.6.4
 
