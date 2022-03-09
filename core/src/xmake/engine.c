@@ -173,6 +173,7 @@ tb_int_t xm_io_poller_wait(lua_State* lua);
 tb_int_t xm_path_relative(lua_State* lua);
 tb_int_t xm_path_absolute(lua_State* lua);
 tb_int_t xm_path_translate(lua_State* lua);
+tb_int_t xm_path_directory(lua_State* lua);
 tb_int_t xm_path_is_absolute(lua_State* lua);
 
 // the hash functions
@@ -366,6 +367,7 @@ static luaL_Reg const g_path_functions[] =
     { "relative",       xm_path_relative    }
 ,   { "absolute",       xm_path_absolute    }
 ,   { "translate",      xm_path_translate   }
+,   { "directory",      xm_path_directory   }
 ,   { "is_absolute",    xm_path_is_absolute }
 ,   { tb_null,          tb_null             }
 };

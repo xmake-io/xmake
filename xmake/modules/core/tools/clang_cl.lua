@@ -166,8 +166,7 @@ end
 function compile(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
-    -- @note this path here has been normalized, we can quickly find it by the unique path separator prompt
-    os.mkdir(path.directory(objectfile, path.sep()))
+    os.mkdir(path.directory(objectfile))
 
     -- compile it
     local outdata = try

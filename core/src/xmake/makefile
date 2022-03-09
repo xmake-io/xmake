@@ -92,6 +92,7 @@ xmake_C_FILES 			+= \
 						path/relative \
 						path/absolute \
 						path/translate \
+						path/directory \
 						path/is_absolute \
 						hash/uuid4 \
 						hash/sha256 \

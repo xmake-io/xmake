@@ -48,7 +48,5 @@ tb_int_t xm_path_relative(lua_State* lua)
     // done path:relative(root)
     tb_char_t data[TB_PATH_MAXN];
     lua_pushstring(lua, tb_path_relative_to(root, path, data, sizeof(data) - 1));
-
-    // ok
     return 1;
 }

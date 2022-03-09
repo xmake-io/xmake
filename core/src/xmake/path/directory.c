@@ -15,14 +15,14 @@
  * Copyright (C) 2015-present, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        absolute.c
+ * @file        directory.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "absolute"
+#define TB_TRACE_MODULE_NAME                "directory"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_path_absolute(lua_State* lua)
+tb_int_t xm_path_directory(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
@@ -42,11 +42,10 @@ tb_int_t xm_path_absolute(lua_State* lua)
     tb_char_t const* path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
-    // get the root
-    tb_char_t const* root = luaL_optstring(lua, 2, tb_null);
-
-    // do path:absolute(root)
+    // do path:directory()
     tb_char_t data[TB_PATH_MAXN];
-    lua_pushstring(lua, tb_path_absolute_to(root, path, data, sizeof(data) - 1));
+    tb_char_t const* dir = tb_path_directory(path, data, sizeof(data));
+    if (dir) lua_pushstring(lua, dir);
+    else lua_pushnil(lua);
     return 1;
 }

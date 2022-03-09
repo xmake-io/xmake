@@ -35,7 +35,6 @@ function test_extension(t)
 end
 
 function test_directory(t)
-    --[[
     t:are_equal(path.directory(""), nil)
     t:are_equal(path.directory("."), nil)
     if is_host("windows") then
@@ -49,7 +48,7 @@ function test_directory(t)
         t:are_equal(path.directory("/tmp/xxx"), "/tmp")
         t:are_equal(path.directory("/tmp/xxx/"), "/tmp")
         t:are_equal(path.directory("/"), nil)
-    end]]
+    end
 end
 
 function test_absolute(t)
