@@ -115,10 +115,12 @@ function theme.load(name)
 
     -- find the theme script path
     local scriptpath = nil
-    for _, dir in ipairs(theme.directories()) do
-        scriptpath = path.join(dir, name, "xmake.lua")
-        if os.isfile(scriptpath) then
-            break
+    if name then
+        for _, dir in ipairs(theme.directories()) do
+            scriptpath = path.join(dir, name, "xmake.lua")
+            if os.isfile(scriptpath) then
+                break
+            end
         end
     end
 
