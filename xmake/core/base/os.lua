@@ -364,7 +364,7 @@ function os.match(pattern, mode, callback)
     if startpos then
         rootdir = rootdir:sub(1, startpos - 1)
     end
-    rootdir = path.directory(rootdir .. "_")
+    rootdir = path.directory(rootdir .. "_") -- patch '_' to avoid getting incorrect directory for `/foo/*`
 
     -- compute the recursion level
     --
