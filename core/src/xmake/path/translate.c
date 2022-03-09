@@ -42,12 +42,23 @@ tb_int_t xm_path_translate(lua_State* lua)
     tb_char_t const* path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
+    // get the option argument, e.g. {reduce_dot2 = true}
+    tb_bool_t reduce_dot2 = tb_false;
+    if (lua_istable(lua, 2))
+    {
+        lua_pushstring(lua, "reduce_dot2");
+        lua_gettable(lua, 2);
+        if (lua_toboolean(lua, -1))
+            reduce_dot2 = tb_true;
+        lua_pop(lua, 1);
+    }
+
     // copy path
     tb_char_t data[TB_PATH_MAXN];
     tb_strlcpy(data, path, sizeof(data));
 
     // do path:translate()
-    tb_size_t size = tb_path_translate(data, 0, sizeof(data) - 1);
+    tb_size_t size = tb_path_translate(data, 0, sizeof(data) - 1, reduce_dot2);
     if (size) lua_pushlstring(lua, data, (size_t)size);
     else lua_pushnil(lua);
     return 1;
