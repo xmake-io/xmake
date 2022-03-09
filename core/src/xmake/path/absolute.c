@@ -45,10 +45,8 @@ tb_int_t xm_path_absolute(lua_State* lua)
     // get the root
     tb_char_t const* root = luaL_optstring(lua, 2, tb_null);
 
-    // done path:absolute(root)
+    // do path:absolute(root)
     tb_char_t data[TB_PATH_MAXN];
     lua_pushstring(lua, tb_path_absolute_to(root, path, data, sizeof(data) - 1));
-
-    // ok
     return 1;
 }

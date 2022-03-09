@@ -15,14 +15,14 @@
  * Copyright (C) 2015-present, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        translate.c
+ * @file        directory.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "translate"
+#define TB_TRACE_MODULE_NAME                "directory"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -33,31 +33,19 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_path_translate(lua_State* lua)
+tb_int_t xm_path_directory(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the path
-    size_t           path_size = 0;
-    tb_char_t const* path = luaL_checklstring(lua, 1, &path_size);
+    tb_char_t const* path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
-    // get the option argument, e.g. {reduce_dot2 = true}
-    tb_bool_t reduce_dot2 = tb_false;
-    if (lua_istable(lua, 2))
-    {
-        lua_pushstring(lua, "reduce_dot2");
-        lua_gettable(lua, 2);
-        if (lua_toboolean(lua, -1))
-            reduce_dot2 = tb_true;
-        lua_pop(lua, 1);
-    }
-
-    // do path:translate()
+    // do path:directory()
     tb_char_t data[TB_PATH_MAXN];
-    tb_size_t size = tb_path_translate_to(path, (tb_size_t)path_size, data, sizeof(data), reduce_dot2);
-    if (size) lua_pushlstring(lua, data, (size_t)size);
+    tb_char_t const* dir = tb_path_directory(path, data, sizeof(data));
+    if (dir) lua_pushstring(lua, dir);
     else lua_pushnil(lua);
     return 1;
 }
