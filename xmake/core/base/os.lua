@@ -364,7 +364,7 @@ function os.match(pattern, mode, callback)
     if startpos then
         rootdir = rootdir:sub(1, startpos - 1)
     end
-    rootdir = path.translate(rootdir)
+    rootdir = path.directory(rootdir .. "_")
 
     -- compute the recursion level
     --

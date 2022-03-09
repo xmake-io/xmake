@@ -37,6 +37,7 @@ end
 function test_directory(t)
     t:are_equal(path.directory(""), nil)
     t:are_equal(path.directory("."), nil)
+    t:are_equal(path.directory("foo"), ".")
     if is_host("windows") then
         t:are_equal(path.directory("c:"), nil)
         t:are_equal(path.directory("c:\\"), nil)
