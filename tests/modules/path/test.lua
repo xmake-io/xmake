@@ -90,34 +90,40 @@ function test_translate(t)
     t:are_equal(path.translate(""), nil)
     t:are_equal(path.translate("."), ".")
     t:are_equal(path.translate(".."), "..")
-    t:are_equal(path.translate("././.", {normalize = true}), ".")
-    t:are_equal(path.translate("../foo/..", {normalize = true}), "..")
-    t:are_equal(path.translate("../foo/bar/../..", {normalize = true}), "..")
     if is_host("windows") then
         t:are_equal(path.translate("c:"), "c:")
         t:are_equal(path.translate("c:\\"), "c:")
         t:are_equal(path.translate("c:\\foo\\\\\\"), "c:\\foo")
         t:are_equal(path.translate("c:\\foo\\..\\.."), "c:\\foo\\..\\..")
-        t:are_equal(path.translate("c:\\foo\\.\\.\\", {normalize = true}), "c:\\foo")
-        t:are_equal(path.translate("c:\\foo\\bar\\.\\..\\xyz", {normalize = true}), "c:\\foo\\xyz")
-        t:are_equal(path.translate("c:\\foo\\.\\..", {normalize = true}), "c:")
-        t:are_equal(path.translate("../..", {normalize = true}), "..\\..")
-        t:are_equal(path.translate("../foo/bar/..", {normalize = true}), "..\\foo")
-        t:are_equal(path.translate("../foo/bar/../../..", {normalize = true}), "..\\..")
     else
         t:are_equal(path.translate("/"), "/");
         t:are_equal(path.translate("////"), "/");
         t:are_equal(path.translate("/foo//////"), "/foo");
         t:are_equal(path.translate("/foo/../.."), "/foo/../..");
         t:are_equal(path.translate("/foo/../../"), "/foo/../..");
-        t:are_equal(path.translate("/foo/././", {normalize = true}), "/foo");
-        t:are_equal(path.translate("/./././", {normalize = true}), "/");
-        t:are_equal(path.translate("/foo/bar/.//..//xyz", {normalize = true}), "/foo/xyz");
-        t:are_equal(path.translate("/foo/../..", {normalize = true}), "/");
-        t:are_equal(path.translate("/foo/bar../..", {normalize = true}), "/foo");
-        t:are_equal(path.translate("../..", {normalize = true}), "../..");
-        t:are_equal(path.translate("../foo/bar/..", {normalize = true}), "../foo");
-        t:are_equal(path.translate("../foo/bar/../../..", {normalize = true}), "../..");
+    end
+end
+
+function test_normalize(t)
+    t:are_equal(path.normalize("././."), ".")
+    t:are_equal(path.normalize("../foo/.."), "..")
+    t:are_equal(path.normalize("../foo/bar/../.."), "..")
+    if is_host("windows") then
+        t:are_equal(path.normalize("c:\\foo\\.\\.\\"), "c:\\foo")
+        t:are_equal(path.normalize("c:\\foo\\bar\\.\\..\\xyz"), "c:\\foo\\xyz")
+        t:are_equal(path.normalize("c:\\foo\\.\\.."), "c:")
+        t:are_equal(path.normalize("../.."), "..\\..")
+        t:are_equal(path.normalize("../foo/bar/.."), "..\\foo")
+        t:are_equal(path.normalize("../foo/bar/../../.."), "..\\..")
+    else
+        t:are_equal(path.normalize("/foo/././"), "/foo");
+        t:are_equal(path.normalize("/./././"), "/");
+        t:are_equal(path.normalize("/foo/bar/.//..//xyz"), "/foo/xyz");
+        t:are_equal(path.normalize("/foo/../.."), "/");
+        t:are_equal(path.normalize("/foo/bar../.."), "/foo");
+        t:are_equal(path.normalize("../.."), "../..");
+        t:are_equal(path.normalize("../foo/bar/.."), "../foo");
+        t:are_equal(path.normalize("../foo/bar/../../.."), "../..");
     end
 end
 

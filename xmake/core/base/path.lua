@@ -24,6 +24,20 @@ local path = path or {}
 -- load modules
 local string = require("base/string")
 
+-- path.translate:
+-- - transform the path separator
+-- - expand the user directory with the prefix: ~
+-- - remove tail separator
+-- - reduce the repeat path separator, "////" => "/"
+--
+-- path.normalize:
+-- - reduce "././" => "."
+-- - reduce "/xxx/.." => "/"
+--
+function path.normalize(p)
+    return path.translate(p, {normalize = true})
+end
+
 -- get the filename of the path
 function path.filename(p, sep)
     local i =  0
