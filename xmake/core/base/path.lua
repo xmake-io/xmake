@@ -70,6 +70,11 @@ end
 
 -- join path
 function path.join(p, ...)
+    print("p", p)
+    for _, name in ipairs({...}) do
+        print("1: ", name)
+        --p = p .. "/" .. name
+    end
     return path.translate(p .. path.sep() .. table.concat({...}, path.sep()))
 end
 
