@@ -932,7 +932,7 @@ end
 
 -- this package should be install?
 function should_install(package)
-    if package:exists() then
+    if package:is_template() or package:exists() then
         return false
     end
     -- we need not install it if this package need only be fetched

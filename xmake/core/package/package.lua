@@ -421,6 +421,11 @@ function _instance:is_library()
     return self:kind() == nil or self:kind() == "library"
 end
 
+-- is template package?
+function _instance:is_template()
+    return self:kind() == "template"
+end
+
 -- is header only?
 function _instance:is_headeronly()
     return self:is_library() and self:extraconf("kind", "library", "headeronly")

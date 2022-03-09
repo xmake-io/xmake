@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#2138](https://github.com/xmake-io/xmake/issues/2138): Support template package
+
 ### Changes
 
 * [#2137](https://github.com/xmake-io/xmake/pull/2137): Improve path module
@@ -1225,6 +1229,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#2138](https://github.com/xmake-io/xmake/issues/2138): 支持模板包
 
 ### 改进
 
