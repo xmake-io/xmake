@@ -43,20 +43,20 @@ tb_int_t xm_path_translate(lua_State* lua)
     tb_char_t const* path = luaL_checklstring(lua, 1, &path_size);
     tb_check_return_val(path, 0);
 
-    // get the option argument, e.g. {reduce_dot2 = true}
-    tb_bool_t reduce_dot2 = tb_false;
+    // get the option argument, e.g. {normalize = true}
+    tb_bool_t normalize = tb_false;
     if (lua_istable(lua, 2))
     {
-        lua_pushstring(lua, "reduce_dot2");
+        lua_pushstring(lua, "normalize");
         lua_gettable(lua, 2);
         if (lua_toboolean(lua, -1))
-            reduce_dot2 = tb_true;
+            normalize = tb_true;
         lua_pop(lua, 1);
     }
 
     // do path:translate()
     tb_char_t data[TB_PATH_MAXN];
-    tb_size_t size = tb_path_translate_to(path, (tb_size_t)path_size, data, sizeof(data), reduce_dot2);
+    tb_size_t size = tb_path_translate_to(path, (tb_size_t)path_size, data, sizeof(data), normalize);
     if (size) lua_pushlstring(lua, data, (size_t)size);
     else lua_pushnil(lua);
     return 1;
