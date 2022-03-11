@@ -40,6 +40,9 @@ end
 -- install for classic mode
 function _install_for_classic(vcpkg, name, opt)
 
+    -- get configs
+    local configs = opt.configs or {}
+
     -- get arch, plat and mode
     local arch = opt.arch
     local plat = opt.plat
@@ -51,9 +54,9 @@ function _install_for_classic(vcpkg, name, opt)
 
     -- init triplet
     local triplet = arch .. "-" .. plat
-    if opt.plat == "windows" and opt.shared ~= true then
+    if opt.plat == "windows" and configs.shared ~= true then
         triplet = triplet .. "-static"
-        if opt.vs_runtime and opt.vs_runtime:startswith("MD") then
+        if configs.vs_runtime and configs.vs_runtime:startswith("MD") then
             triplet = triplet .. "-md"
         end
     end
@@ -82,9 +85,9 @@ function _install_for_manifest(vcpkg, name, opt)
     end
     arch = configurations.arch(arch)
     local triplet = arch .. "-" .. plat
-    if opt.plat == "windows" and opt.shared ~= true then
+    if opt.plat == "windows" and configs.shared ~= true then
         triplet = triplet .. "-static"
-        if opt.vs_runtime and opt.vs_runtime:startswith("MD") then
+        if configs.vs_runtime and configs.vs_runtime:startswith("MD") then
             triplet = triplet .. "-md"
         end
     end
