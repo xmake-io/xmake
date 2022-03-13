@@ -57,7 +57,7 @@ rule("utils.glsl2spv")
         assert(glslangValidator or glslc, "glslangValidator or glslc not found!")
 
         -- glsl to spv
-        local targetenv = target:extraconf("rules", "utils.glsl2spv", "env") or "vulkan1.0"
+        local targetenv = target:extraconf("rules", "utils.glsl2spv", "targetenv") or "vulkan1.0"
         local outputdir = target:extraconf("rules", "utils.glsl2spv", "outputdir") or path.join(target:autogendir(), "rules", "utils", "glsl2spv")
         local spvfilepath = path.join(outputdir, path.filename(sourcefile_glsl) .. ".spv")
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.glsl2spv %s", sourcefile_glsl)
