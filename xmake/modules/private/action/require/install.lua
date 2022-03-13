@@ -84,8 +84,6 @@ function main(requires_raw)
     environment.enter()
     local packages = install_packages(requires, {requires_extra = requires_extra})
     if packages then
-
-        -- check missing packages
         _check_missing_packages(packages)
     end
     environment.leave()

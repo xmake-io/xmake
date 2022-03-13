@@ -94,39 +94,21 @@ function _update()
         -- pull all repositories
         local pulled = {}
         for _, repo in ipairs(repos) do
-
-            -- the repository directory
             local repodir = repo:directory()
-
-            -- remove repeat and only pull the first repository
             if not pulled[repodir] then
                 if os.isdir(repodir) then
-
-                    -- update the local repository with the remote url
+                    -- only update the local repository with the remote url
                     if not os.isdir(repo:url()) then
-
-                        -- trace
                         vprint("pulling repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
-
-                        -- pull it
                         git.pull({verbose = option.get("verbose"), branch = repo:branch() or "master", repodir = repodir})
-
-                        -- mark as updated
                         io.save(path.join(repodir, "updated"), {})
                     end
                 else
-                    -- trace
                     vprint("cloning repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
-
-                    -- clone it
                     local remoteurl = proxy.mirror(repo:url()) or repo:url()
                     git.clone(remoteurl, {verbose = option.get("verbose"), branch = repo:branch() or "master", outputdir = repodir})
-
-                    -- mark as updated
                     io.save(path.join(repodir, "updated"), {})
                 end
-
-                -- pull this repository ok
                 pulled[repodir] = true
             end
         end

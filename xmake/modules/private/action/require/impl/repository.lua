@@ -115,16 +115,18 @@ end
 function pulled()
     if global.get("network") ~= "private" then
         for _, repo in ipairs(repositories()) do
-            -- repository not found? or xmake has been re-installed
-            local repodir = repo:directory()
-            local updatefile = path.join(repodir, "updated")
-            if not os.isfile(updatefile) or (os.isfile(updatefile) and os.mtime(os.programfile()) > os.mtime(updatefile)) then
-                -- fix broken empty directory
-                -- @see https://github.com/xmake-io/xmake/issues/2159
-                if os.isdir(repodir) and os.emptydir(repodir) then
-                    os.tryrm(repodir)
+            if not os.isdir(repo:url()) then
+                -- repository not found? or xmake has been re-installed
+                local repodir = repo:directory()
+                local updatefile = path.join(repodir, "updated")
+                if not os.isfile(updatefile) or (os.isfile(updatefile) and os.mtime(os.programfile()) > os.mtime(updatefile)) then
+                    -- fix broken empty directory
+                    -- @see https://github.com/xmake-io/xmake/issues/2159
+                    if os.isdir(repodir) and os.emptydir(repodir) then
+                        os.tryrm(repodir)
+                    end
+                    return false
                 end
-                return false
             end
         end
     end

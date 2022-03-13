@@ -20,8 +20,12 @@
 
 -- imports
 import("core.base.option")
+import("core.base.task")
+import("lib.detect.find_tool")
 import("private.async.runjobs")
 import("private.action.require.impl.package")
+import("private.action.require.impl.repository")
+import("private.action.require.impl.environment")
 import("private.action.require.impl.register_packages")
 import("private.action.require.impl.utils.get_requires")
 
@@ -33,6 +37,20 @@ function main(requires_raw)
     local requires, requires_extra = get_requires(requires_raw)
     if not requires or #requires == 0 then
         return
+    end
+
+    -- find git
+    environment.enter()
+    local git = find_tool("git")
+    environment.leave()
+
+    -- pull all repositories first if not exists
+    --
+    -- attempt to install git from the builtin-packages first if git not found
+    --
+    if git and (not repository.pulled() or option.get("upgrade")) then
+        print("repo update")
+        task.run("repo", {update = true})
     end
 
     -- install packages
