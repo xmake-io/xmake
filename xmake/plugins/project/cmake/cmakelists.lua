@@ -544,25 +544,36 @@ function _get_command_string(cmd)
     local kind = cmd.kind
     local opt = cmd.opt
     if cmd.program then
-        local command = os.args(table.join(cmd.program, cmd.argv))
+        -- @see https://github.com/xmake-io/xmake/discussions/2156
+        local argv = {}
+        for _, v in ipairs(table.join(cmd.program, cmd.argv)) do
+            if path.is_absolute(v) then
+                v = _get_unix_path(v)
+            end
+            table.insert(argv, v)
+        end
+        local command = os.args(argv)
         if opt and opt.curdir then
-            command = "${CMAKE_COMMAND} -E chdir \"" .. opt.curdir .. "\" " .. command
+            command = "${CMAKE_COMMAND} -E chdir " .. _get_unix_path(opt.curdir) .. " " .. command
         end
         return command
     elseif kind == "cp" then
         if os.isdir(cmd.srcpath) then
-            return string.format("${CMAKE_COMMAND} -E copy_directory %s %s", cmd.srcpath, cmd.dstpath)
+            return string.format("${CMAKE_COMMAND} -E copy_directory %s %s",
+                _get_unix_path(cmd.srcpath), _get_unix_path(cmd.dstpath))
         else
-            return string.format("${CMAKE_COMMAND} -E copy %s %s", cmd.srcpath, cmd.dstpath)
+            return string.format("${CMAKE_COMMAND} -E copy %s %s",
+                _get_unix_path(cmd.srcpath), _get_unix_path(cmd.dstpath))
         end
     elseif kind == "rm" then
-        return string.format("${CMAKE_COMMAND} -E rm -rf %s", cmd.filepath)
+        return string.format("${CMAKE_COMMAND} -E rm -rf %s", _get_unix_path(cmd.filepath))
     elseif kind == "mv" then
-        return string.format("${CMAKE_COMMAND} -E rename %s %s", cmd.srcpath, cmd.dstpath)
+        return string.format("${CMAKE_COMMAND} -E rename %s %s",
+            _get_unix_path(cmd.srcpath), _get_unix_path(cmd.dstpath))
     elseif kind == "cd" then
-        return string.format("cd %s", cmd.dir)
+        return string.format("cd %s", _get_unix_path(cmd.dir))
     elseif kind == "mkdir" then
-        return string.format("${CMAKE_COMMAND} -E make_directory %s", cmd.dir)
+        return string.format("${CMAKE_COMMAND} -E make_directory %s", _get_unix_path(cmd.dir))
     elseif kind == "show" then
         return string.format("echo %s", cmd.showtext)
     end
