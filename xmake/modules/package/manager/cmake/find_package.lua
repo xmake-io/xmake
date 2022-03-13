@@ -56,7 +56,7 @@ function _find_package(cmake, name, opt)
     local moduledirs = configs.moduledirs or opt.moduledirs
     if moduledirs then
         for _, moduledir in ipairs(moduledirs) do
-            cmakefile:print("add_cmake_modules(%s)", moduledir)
+            cmakefile:print("list(APPEND CMAKE_MODULE_PATH \"%s\")", (moduledir:gsub("\\", "/")))
         end
     end
     -- e.g. set(Boost_USE_STATIC_LIB ON)
