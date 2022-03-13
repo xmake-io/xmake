@@ -548,32 +548,32 @@ function _get_command_string(cmd)
         local argv = {}
         for _, v in ipairs(table.join(cmd.program, cmd.argv)) do
             if path.is_absolute(v) then
-                v = _get_unix_path(v)
+                v = _get_unix_path_relative_to_cmake(v)
             end
             table.insert(argv, v)
         end
         local command = os.args(argv)
         if opt and opt.curdir then
-            command = "${CMAKE_COMMAND} -E chdir " .. _get_unix_path(opt.curdir) .. " " .. command
+            command = "${CMAKE_COMMAND} -E chdir " .. _get_unix_path_relative_to_cmake(opt.curdir) .. " " .. command
         end
         return command
     elseif kind == "cp" then
         if os.isdir(cmd.srcpath) then
             return string.format("${CMAKE_COMMAND} -E copy_directory %s %s",
-                _get_unix_path(cmd.srcpath), _get_unix_path(cmd.dstpath))
+                _get_unix_path_relative_to_cmake(cmd.srcpath), _get_unix_path_relative_to_cmake(cmd.dstpath))
         else
             return string.format("${CMAKE_COMMAND} -E copy %s %s",
-                _get_unix_path(cmd.srcpath), _get_unix_path(cmd.dstpath))
+                _get_unix_path_relative_to_cmake(cmd.srcpath), _get_unix_path_relative_to_cmake(cmd.dstpath))
         end
     elseif kind == "rm" then
-        return string.format("${CMAKE_COMMAND} -E rm -rf %s", _get_unix_path(cmd.filepath))
+        return string.format("${CMAKE_COMMAND} -E rm -rf %s", _get_unix_path_relative_to_cmake(cmd.filepath))
     elseif kind == "mv" then
         return string.format("${CMAKE_COMMAND} -E rename %s %s",
-            _get_unix_path(cmd.srcpath), _get_unix_path(cmd.dstpath))
+            _get_unix_path_relative_to_cmake(cmd.srcpath), _get_unix_path_relative_to_cmake(cmd.dstpath))
     elseif kind == "cd" then
-        return string.format("cd %s", _get_unix_path(cmd.dir))
+        return string.format("cd %s", _get_unix_path_relative_to_cmake(cmd.dir))
     elseif kind == "mkdir" then
-        return string.format("${CMAKE_COMMAND} -E make_directory %s", _get_unix_path(cmd.dir))
+        return string.format("${CMAKE_COMMAND} -E make_directory %s", _get_unix_path_relative_to_cmake(cmd.dir))
     elseif kind == "show" then
         return string.format("echo %s", cmd.showtext)
     end
