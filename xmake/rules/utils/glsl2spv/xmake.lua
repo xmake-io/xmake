@@ -34,7 +34,7 @@
 --
 --
 rule("utils.glsl2spv")
-    set_extensions(".vert", ".frag", ".tesc", ".tese", ".geom", ".comp", ".glsl")
+    set_extensions(".vert", ".tesc", ".tese", ".geom", ".comp", ".frag", ".comp", ".mesh", ".task", ".rgen", ".rint", ".rahit", ".rchit", ".rmiss", ".rcall", ".glsl")
     on_load(function (target)
         local is_bin2c = target:extraconf("rules", "utils.glsl2spv", "bin2c")
         if is_bin2c then
@@ -57,14 +57,15 @@ rule("utils.glsl2spv")
         assert(glslangValidator or glslc, "glslangValidator or glslc not found!")
 
         -- glsl to spv
+        local targetenv = target:extraconf("rules", "utils.glsl2spv", "targetenv") or "vulkan1.0"
         local outputdir = target:extraconf("rules", "utils.glsl2spv", "outputdir") or path.join(target:autogendir(), "rules", "utils", "glsl2spv")
         local spvfilepath = path.join(outputdir, path.filename(sourcefile_glsl) .. ".spv")
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.glsl2spv %s", sourcefile_glsl)
         batchcmds:mkdir(outputdir)
         if glslangValidator then
-            batchcmds:vrunv(glslangValidator.program, {"-V", "-o", spvfilepath, sourcefile_glsl})
+            batchcmds:vrunv(glslangValidator.program, {"--target-env", targetenv, "-o", spvfilepath, sourcefile_glsl})
         else
-            batchcmds:vrunv(glslc.program, {"-o", spvfilepath, sourcefile_glsl})
+            batchcmds:vrunv(glslc.program, {"--target-env", targetenv, "-o", spvfilepath, sourcefile_glsl})
         end
 
         -- do bin2c
