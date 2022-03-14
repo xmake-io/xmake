@@ -72,9 +72,25 @@ end
 -- export packages
 function _export_packages(packages)
 
+    -- is package configuration file? e.g. xrepo export xxx.lua
+    --
+    -- xxx.lua
+    --   add_requires("libpng", {system = false})
+    --   add_requireconfs("libpng.*", {configs = {shared = true}})
+    local packagefile
+    if type(packages) == "string" or #packages == 1 then
+        local filepath = table.unwrap(packages)
+        if type(filepath) == "string" and filepath:endswith(".lua") and os.isfile(filepath) then
+            packagefile = path.absolute(filepath)
+        end
+    end
+
     -- enter working project directory
-    local oldir = os.curdir()
-    local workdir = path.join(os.tmpdir(), "xrepo", "working")
+    local subdir = "working"
+    if packagefile then
+        subdir = subdir .. "-" .. hash.uuid(packagefile):split('-')[1]
+    end
+    local workdir = path.join(os.tmpdir(), "xrepo", subdir)
     if not os.isdir(workdir) then
         os.mkdir(workdir)
         os.cd(workdir)
@@ -82,9 +98,13 @@ function _export_packages(packages)
     else
         os.cd(workdir)
     end
+    if packagefile then
+        assert(os.isfile("xmake.lua"), "xmake.lua not found!")
+        io.writefile("xmake.lua", ('includes("%s")\ntarget("test", {kind = "phony"})'):format((packagefile:gsub("\\", "/"))))
+    end
 
     -- do configure first
-    local config_argv = {"f", "-c"}
+    local config_argv = {"f", "-c", "--require=n"}
     if option.get("verbose") then
         table.insert(config_argv, "-v")
     end
@@ -150,11 +170,13 @@ function _export_packages(packages)
             raise(errors)
         end
     end
-    if extra then
-        local extra_str = string.serialize(extra, {indent = false, strip = true})
-        table.insert(require_argv, "--extra=" .. extra_str)
+    if not packagefile then
+        if extra then
+            local extra_str = string.serialize(extra, {indent = false, strip = true})
+            table.insert(require_argv, "--extra=" .. extra_str)
+        end
+        table.join2(require_argv, packages)
     end
-    table.join2(require_argv, packages)
     os.vexecv("xmake", require_argv)
 end
 
