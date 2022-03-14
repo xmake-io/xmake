@@ -42,6 +42,7 @@ function menu_options()
                                        "    - xrepo export -f \"vs_runtime='MD'\" zlib",
                                        "    - xrepo export -f \"regex=true,thread=true\" boost"},
         {},
+        {nil, "toolchain",  "kv", nil, "Set the toolchain name."             },
         {nil, "shallow",    "k",  nil, "Does not export dependent packages."},
         {'o', "packagedir", "kv", "packages","Set the exported packages directory."},
         {nil, "packages",   "vs", nil, "The packages list.",
@@ -118,6 +119,9 @@ function _export_packages(packages)
     if option.get("arch") then
         table.insert(config_argv, "-a")
         table.insert(config_argv, option.get("arch"))
+    end
+    if option.get("toolchain") then
+        table.insert(config_argv, "--toolchain=" .. option.get("toolchain"))
     end
     local mode  = option.get("mode")
     if mode then
