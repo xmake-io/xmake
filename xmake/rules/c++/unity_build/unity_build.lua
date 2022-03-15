@@ -83,24 +83,25 @@ function main(target, sourcebatch)
     local sourcefiles = {}
     local objectfiles = {}
     local dependfiles = {}
-    local sourcedir = path.join(target:autogendir({root = true}), "unity_build")
+    local sourcedir = path.join(target:autogendir({root = true}), target:plat(), "unity_build")
     for idx, sourcefile in pairs(sourcebatch.sourcefiles) do
         local sourcefile_unity
         local objectfile = sourcebatch.objectfiles[idx]
         local dependfile = sourcebatch.dependfiles[idx]
         local fileconfig = target:fileconfig(sourcefile)
         if fileconfig and fileconfig.unity_group then
-            sourcefile_unity = path.join(sourcedir, "unity_" .. fileconfig.unity_group .. path.extension(sourcefile))
+            sourcefile_unity = path.join(sourcedir, "unity_group_" .. fileconfig.unity_group .. path.extension(sourcefile))
         elseif (fileconfig and fileconfig.unity_ignored) or (batchsize and batchsize <= 1) then
             -- we do not add these files to unity file
             table.insert(sourcefiles, sourcefile)
             table.insert(objectfiles, objectfile)
             table.insert(dependfiles, dependfile)
         else
-            if batchsize and count > batchsize then
+            if batchsize and count >= batchsize then
                 id = id + 1
+                count = 0
             end
-            sourcefile_unity = path.join(sourcedir, "unity_" .. hash.uuid(tostring(id)):split("-", {plain = true})[1] .. path.extension(sourcefile))
+            sourcefile_unity = path.join(sourcedir, "unity_" .. tostring(id) .. path.extension(sourcefile))
             count = count + 1
         end
         if sourcefile_unity then
