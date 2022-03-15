@@ -90,7 +90,7 @@ function main(target, sourcebatch)
         local dependfile = sourcebatch.dependfiles[idx]
         local fileconfig = target:fileconfig(sourcefile)
         if fileconfig and fileconfig.unity_group then
-            sourcefile_unity = path.join(sourcedir, "unity_" .. fileconfig.unity_group .. path.extension(sourcefile))
+            sourcefile_unity = path.join(sourcedir, "unity_group_" .. fileconfig.unity_group .. path.extension(sourcefile))
         elseif (fileconfig and fileconfig.unity_ignored) or (batchsize and batchsize <= 1) then
             -- we do not add these files to unity file
             table.insert(sourcefiles, sourcefile)
