@@ -98,7 +98,7 @@ end
 
 -- fix paths for the precompiled package
 -- @see https://github.com/xmake-io/xmake/issues/1671
-function _fix_paths_for_precompiled_package(package)
+function _fix_paths_for_precompiled_package_windows(package)
     local filepaths = {path.join(package:installdir(), "**.cmake|include/**")}
     for _, filepath in ipairs(filepaths) do
         for _, file in ipairs(os.files(filepath)) do
@@ -121,6 +121,31 @@ function _fix_paths_for_precompiled_package(package)
         end
     end
 end
+
+function _fix_paths_for_precompiled_package_linux(package)
+    -- Replace path before "/.xmake/packages/" with prefix in installdir.
+    -- It's possible for a package to contain paths to another package. Thus
+    -- This function does not match against buildhash.
+    local match_pattern = "/.xmake/packages/"
+    local prefix = package:installdir():split(match_pattern, {plain = true})[1]
+
+    local filepaths = {path.join(package:installdir(), "**.cmake|include/**")}
+    for _, filepath in ipairs(filepaths) do
+        for _, file in ipairs(os.files(filepath)) do
+            io.gsub(file, "(\"(.-)\")", function(_, value)
+                if value:find(match_pattern, 1, true) then
+                    local splitinfo = value:split(match_pattern, {plain = true})
+                    if #splitinfo == 2 then
+                        local result = path.join(prefix, match_pattern, splitinfo[2])
+                        vprint("fix path: %s => %s in %s", splitinfo[1], prefix, file)
+                        return '"' .. result .. '"'
+                    end
+                end
+            end)
+        end
+    end
+end
+
 
 -- check package toolchains
 function _check_package_toolchains(package)
@@ -231,8 +256,12 @@ function main(package)
             if installed_now then
 
                 -- fix paths for the precompiled package
-                if package:is_plat("windows") and not package:is_built() and not package:is_system() then
-                    _fix_paths_for_precompiled_package(package)
+                if not package:is_built() and not package:is_system() then
+                    if package:is_plat("windows") then
+                        _fix_paths_for_precompiled_package_windows(package)
+                    elseif package:is_plat("linux") then
+                        _fix_paths_for_precompiled_package_linux(package)
+                    end
                 end
 
                 -- patch pkg-config files for package
