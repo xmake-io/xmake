@@ -86,6 +86,7 @@ function _export_packages(packages)
         end
     end
 
+    local oldir = os.curdir()
     -- enter working project directory
     local subdir = "working"
     if packagefile then
