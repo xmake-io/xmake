@@ -1378,7 +1378,7 @@ end
 
 -- fetch the local package info
 --
--- @param opt   the fetch option, e.g. {force = true, external = false}
+-- @param opt   the fetch option, e.g. {force = true, external = false, system = true}
 --
 -- @return {packageinfo}, fetchfrom (e.g. xmake/system)
 --
@@ -1389,7 +1389,7 @@ function _instance:fetch(opt)
 
     -- attempt to get it from cache
     local fetchinfo = self._FETCHINFO
-    if not opt.force and opt.external == nil and fetchinfo then
+    if not opt.force and opt.external == nil and opt.system == nil and fetchinfo then
         return fetchinfo
     end
 
