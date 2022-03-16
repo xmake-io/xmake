@@ -100,11 +100,11 @@ end
 -- fix paths for the precompiled package
 -- @see https://github.com/xmake-io/xmake/issues/1671
 function _fix_paths_for_precompiled_package(package)
-    -- Matches to path like (string inside brackets is matched):
+    -- Match to path like (string insides brackets is matched):
     --     /home/user/.xmake[/pacakges/f/foo/9adc96bd69124211aad7dd58a36f02ce/]v1.0
-    -- Replaces path string before "packages" with local pacakge install
+    -- Replace path string before "packages" with local pacakge install
     -- directory.
-    -- Note: It's possible that package A references files package B, thus we
+    -- Note: It's possible that package A references files in package B, thus we
     -- need to match against all possible package install paths.
     local buildhash_pattern = string.rep('%x', 32)
     local match_pattern = "[\\/]packages[\\/]%w[\\/][^\\/]+[\\/][^\\/]+[\\/]" .. buildhash_pattern .. "[\\/]"
