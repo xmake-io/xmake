@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.global")
 import("core.base.option")
 import("core.base.tty")
 import("core.project.target")
@@ -98,47 +99,37 @@ end
 
 -- fix paths for the precompiled package
 -- @see https://github.com/xmake-io/xmake/issues/1671
-function _fix_paths_for_precompiled_package_windows(package)
+function _fix_paths_for_precompiled_package(package)
+    local buildhash_pattern = string.rep('%x', 32)
+    -- Matches to path like (string inside brackets is matched):
+    --     /home/user/.xmake[/pacakges/f/foo/9adc96bd69124211aad7dd58a36f02ce/]v1.0
+    -- Replaces path string before "packages" with global configured directory.
+    local match_pattern = "[\\/]packages[\\/]%w[\\/][^\\/]+[\\/][^\\/]+[\\/]" .. buildhash_pattern .. "[\\/]"
+    local prefix = global.directory()
+
     local filepaths = {path.join(package:installdir(), "**.cmake|include/**")}
     for _, filepath in ipairs(filepaths) do
         for _, file in ipairs(os.files(filepath)) do
             io.gsub(file, "(\"(.-)\")", function(_, value)
-                if value:find(package:buildhash(), 1, true) and value:find(package:name(), 1, true) then
+                local mat = value:match(match_pattern)
+                if mat then
                     local result
-                    local splitinfo = value:split(package:buildhash(), {plain = true})
+                    local splitinfo = value:split(mat, {plain = true})
                     if #splitinfo == 2 then
-                        result = path.join(package:installdir(), splitinfo[2])
+                        result = path.join(prefix, mat, splitinfo[2])
                     elseif #splitinfo == 1 then
-                        result = package:installdir()
+                        if value:sub(1, #mat) == mat then
+                            -- path begins with matched pattern: [/packages/f/foo/buildhash/]v1.0
+                            result = path.join(prefix, value)
+                        else
+                            -- path ends with matched pattern: /home/user[/packages/f/foo/buildhash/]
+                            result = path.join(prefix, mat)
+                        end
                     end
                     if result then
                         result = result:gsub("\\", "/")
                         vprint("fix path: %s in %s", result, path.filename(file))
                         return "\"" .. result .. "\""
-                    end
-                end
-            end)
-        end
-    end
-end
-
-function _fix_paths_for_precompiled_package_linux(package)
-    -- Replace path before "/.xmake/packages/" with prefix in installdir.
-    -- It's possible for a package to contain paths to another package. Thus
-    -- This function does not match against buildhash.
-    local match_pattern = "/.xmake/packages/"
-    local prefix = package:installdir():split(match_pattern, {plain = true})[1]
-
-    local filepaths = {path.join(package:installdir(), "**.cmake|include/**")}
-    for _, filepath in ipairs(filepaths) do
-        for _, file in ipairs(os.files(filepath)) do
-            io.gsub(file, "(\"(.-)\")", function(_, value)
-                if value:find(match_pattern, 1, true) then
-                    local splitinfo = value:split(match_pattern, {plain = true})
-                    if #splitinfo == 2 then
-                        local result = path.join(prefix, match_pattern, splitinfo[2])
-                        vprint("fix path: %s => %s in %s", splitinfo[1], prefix, file)
-                        return '"' .. result .. '"'
                     end
                 end
             end)
@@ -257,11 +248,7 @@ function main(package)
 
                 -- fix paths for the precompiled package
                 if not package:is_built() and not package:is_system() then
-                    if package:is_plat("windows") then
-                        _fix_paths_for_precompiled_package_windows(package)
-                    elseif package:is_plat("linux") then
-                        _fix_paths_for_precompiled_package_linux(package)
-                    end
+                    _fix_paths_for_precompiled_package(package)
                 end
 
                 -- patch pkg-config files for package
