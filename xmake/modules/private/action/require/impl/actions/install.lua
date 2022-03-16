@@ -19,9 +19,9 @@
 --
 
 -- imports
-import("core.base.global")
 import("core.base.option")
 import("core.base.tty")
+import("core.package.package", {alias = "core_package"})
 import("core.project.target")
 import("lib.detect.find_file")
 import("private.action.require.impl.actions.test")
@@ -100,12 +100,15 @@ end
 -- fix paths for the precompiled package
 -- @see https://github.com/xmake-io/xmake/issues/1671
 function _fix_paths_for_precompiled_package(package)
-    local buildhash_pattern = string.rep('%x', 32)
     -- Matches to path like (string inside brackets is matched):
     --     /home/user/.xmake[/pacakges/f/foo/9adc96bd69124211aad7dd58a36f02ce/]v1.0
-    -- Replaces path string before "packages" with global configured directory.
+    -- Replaces path string before "packages" with local pacakge install
+    -- directory.
+    -- Note: It's possible that package A references files package B, thus we
+    -- need to match against all possible package install paths.
+    local buildhash_pattern = string.rep('%x', 32)
     local match_pattern = "[\\/]packages[\\/]%w[\\/][^\\/]+[\\/][^\\/]+[\\/]" .. buildhash_pattern .. "[\\/]"
-    local prefix = global.directory()
+    local prefix = path.directory(core_package.installdir())
 
     local filepaths = {path.join(package:installdir(), "**.cmake|include/**")}
     for _, filepath in ipairs(filepaths) do
