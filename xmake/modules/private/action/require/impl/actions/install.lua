@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.tty")
+import("core.package.package", {alias = "core_package"})
 import("core.project.target")
 import("lib.detect.find_file")
 import("private.action.require.impl.actions.test")
@@ -99,17 +100,34 @@ end
 -- fix paths for the precompiled package
 -- @see https://github.com/xmake-io/xmake/issues/1671
 function _fix_paths_for_precompiled_package(package)
+    -- Match to path like (string insides brackets is matched):
+    --     /home/user/.xmake[/packages/f/foo/9adc96bd69124211aad7dd58a36f02ce/]v1.0
+    -- Replace path string before "packages" with local package install
+    -- directory.
+    -- Note: It's possible that package A references files in package B, thus we
+    -- need to match against all possible package install paths.
+    local buildhash_pattern = string.rep('%x', 32)
+    local match_pattern = "[\\/]packages[\\/]%w[\\/][^\\/]+[\\/][^\\/]+[\\/]" .. buildhash_pattern .. "[\\/]"
+    local prefix = path.directory(core_package.installdir())
+
     local filepaths = {path.join(package:installdir(), "**.cmake|include/**")}
     for _, filepath in ipairs(filepaths) do
         for _, file in ipairs(os.files(filepath)) do
             io.gsub(file, "(\"(.-)\")", function(_, value)
-                if value:find(package:buildhash(), 1, true) and value:find(package:name(), 1, true) then
+                local mat = value:match(match_pattern)
+                if mat then
                     local result
-                    local splitinfo = value:split(package:buildhash(), {plain = true})
+                    local splitinfo = value:split(mat, {plain = true})
                     if #splitinfo == 2 then
-                        result = path.join(package:installdir(), splitinfo[2])
+                        result = path.join(prefix, mat, splitinfo[2])
                     elseif #splitinfo == 1 then
-                        result = package:installdir()
+                        if value:startswith(mat) then
+                            -- path begins with matched pattern: [/packages/f/foo/buildhash/]v1.0
+                            result = path.join(prefix, value)
+                        else
+                            -- path ends with matched pattern: /home/user[/packages/f/foo/buildhash/]
+                            result = path.join(prefix, mat)
+                        end
                     end
                     if result then
                         result = result:gsub("\\", "/")
@@ -121,6 +139,7 @@ function _fix_paths_for_precompiled_package(package)
         end
     end
 end
+
 
 -- check package toolchains
 function _check_package_toolchains(package)
@@ -231,7 +250,7 @@ function main(package)
             if installed_now then
 
                 -- fix paths for the precompiled package
-                if package:is_plat("windows") and not package:is_built() and not package:is_system() then
+                if not package:is_built() and not package:is_system() then
                     _fix_paths_for_precompiled_package(package)
                 end
 
