@@ -48,8 +48,11 @@ function _find_mingwdir(sdkdir)
         if not sdkdir then
             local pathenv = os.getenv("PATH")
             if pathenv then
+                local buildhash_pattern = string.rep('%x', 32)
+                local match_pattern = "[\\/]packages[\\/]%w[\\/][^\\/]+[\\/][^\\/]+[\\/]" .. buildhash_pattern .. "[\\/]bin"
                 for _, p in ipairs(path.splitenv(pathenv)) do
-                    if p:find(string.ipattern("mingw[%w%-%_%+]*[\\/]bin")) and path.filename(p) == "bin" and os.isdir(p) then
+                    if (p:find(match_pattern) or p:find(string.ipattern("mingw[%w%-%_%+]*[\\/]bin"))) and
+                        path.filename(p) == "bin" and os.isdir(p) then
                         sdkdir = path.directory(p)
                         break
                     end

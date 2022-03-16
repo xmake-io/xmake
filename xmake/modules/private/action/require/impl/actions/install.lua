@@ -109,7 +109,6 @@ function _fix_paths_for_precompiled_package(package)
     local buildhash_pattern = string.rep('%x', 32)
     local match_pattern = "[\\/]packages[\\/]%w[\\/][^\\/]+[\\/][^\\/]+[\\/]" .. buildhash_pattern .. "[\\/]"
     local prefix = path.directory(core_package.installdir())
-
     local filepaths = {path.join(package:installdir(), "**.cmake|include/**")}
     for _, filepath in ipairs(filepaths) do
         for _, file in ipairs(os.files(filepath)) do
