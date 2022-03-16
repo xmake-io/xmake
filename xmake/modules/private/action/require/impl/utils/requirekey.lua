@@ -37,6 +37,9 @@ function main(requireinfo, opt)
     if requireinfo.label then
         key = key .. "/" .. requireinfo.label
     end
+    if requireinfo.system ~= nil then
+        key = key .. "/" .. (requireinfo.system and "system" or "remote")
+    end
     if key:startswith("/") then
         key = key:sub(2)
     end
