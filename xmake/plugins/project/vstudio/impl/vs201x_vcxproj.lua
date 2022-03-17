@@ -923,8 +923,8 @@ function _build_common_items(vsinfo, target)
                     -- make compiler flags
                     local flags = _make_compflags(sourcefile, targetinfo, target.project_dir)
 
-                    -- no common flags for asm
-                    if sourcekind ~= "as" then
+                    -- no common flags for asm/rc
+                    if sourcekind ~= "as" and sourcekind ~= "mrc" then
                         for _, flag in ipairs(table.unique(flags)) do
                             flags_stats.cl[flag] = (flags_stats.cl[flag] or 0) + 1
                         end
