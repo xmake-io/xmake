@@ -417,7 +417,11 @@ function _get_configs_for_cross(package, configs, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
-    envs.CMAKE_SYSTEM_NAME         = "Linux"
+    -- we need not set it as cross compilation if we just pass toolchain
+    -- https://github.com/xmake-io/xmake/issues/2170
+    if not package:is_plat(os.subhost()) then
+        envs.CMAKE_SYSTEM_NAME     = "Linux"
+    end
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
     envs.CMAKE_FIND_ROOT_PATH      = sdkdir
