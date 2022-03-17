@@ -35,7 +35,7 @@ toolchain("gcc" .. suffix)
 
     -- set toolset
     set_toolset("cc", "gcc" .. suffix)
-    set_toolset("cxx", "gcc" .. suffix, "g++" .. suffix)
+    set_toolset("cxx", "g++" .. suffix, "gcc" .. suffix)
     set_toolset("ld", "g++" .. suffix, "gcc" .. suffix)
     set_toolset("sh", "g++" .. suffix, "gcc" .. suffix)
     set_toolset("ar", "ar")

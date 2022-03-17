@@ -32,7 +32,7 @@ toolchain("clang" .. suffix)
     set_kind("standalone")
 
     set_toolset("cc", "clang" .. suffix)
-    set_toolset("cxx", "clang" .. suffix, "clang++" .. suffix)
+    set_toolset("cxx", "clang++" .. suffix, "clang" .. suffix)
     set_toolset("ld", "clang++" .. suffix, "clang" .. suffix)
     set_toolset("sh", "clang++" .. suffix, "clang" .. suffix)
     set_toolset("ar", "ar")

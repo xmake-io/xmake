@@ -222,6 +222,11 @@ end
 
 -- get configs for generic
 function _get_configs_for_generic(package, configs, opt)
+    if package:config("toolchains") then
+        table.insert(configs, "-DCMAKE_C_COMPILER=" .. _translate_bin_path(package:build_getenv("cc")))
+        table.insert(configs, "-DCMAKE_CXX_COMPILER=" .. _translate_bin_path(package:build_getenv("cxx")))
+    end
+
     local cflags = _get_cflags(package, opt)
     if cflags then
         table.insert(configs, "-DCMAKE_C_FLAGS=" .. cflags)
@@ -420,6 +425,9 @@ function _get_configs_for_cross(package, configs, opt)
     -- we need not set it as cross compilation if we just pass toolchain
     -- https://github.com/xmake-io/xmake/issues/2170
     if not package:is_plat(os.subhost()) then
+        -- This will make cmake set CMAKE_CROSSCOMPILING to true. https://cmake.org/cmake/help/latest/variable/CMAKE_CROSSCOMPILING.html
+        -- Note: cmake try_run won't run compiled executable on build host when cross compiling. https://cmake.org/cmake/help/latest/command/try_run.html
+        -- This may lead to build failure.
         envs.CMAKE_SYSTEM_NAME     = "Linux"
     end
     -- avoid find and add system include/library path
@@ -515,8 +523,7 @@ function _get_configs(package, configs, opt)
         _get_configs_for_appleos(package, configs, opt)
     elseif package:is_plat("mingw") then
         _get_configs_for_mingw(package, configs, opt)
-    elseif not package:is_plat(os.subhost()) or
-        package:config("toolchains") then -- we need pass toolchains
+    elseif not package:is_plat(os.subhost()) then
         _get_configs_for_cross(package, configs, opt)
     else
         _get_configs_for_generic(package, configs, opt)
