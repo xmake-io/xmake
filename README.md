@@ -106,7 +106,7 @@ Invoke-Expression (Invoke-Webrequest 'https://xmake.io/psget.text' -UseBasicPars
 
 #### Other installation ways
 
-If you don't want to use script to install xmake, you can also click [Installation Guide] (https://xmake.io/#/guide/installation) to get other installation ways.
+If you don't want to use script to install xmake, you can also click [Installation Guide](https://xmake.io/#/guide/installation) to get other installation ways.
 
 ## Simple description
 
