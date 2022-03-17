@@ -272,12 +272,21 @@ function buildenvs(package, opt)
         -- https://github.com/xmake-io/xmake-repo/pull/1043
         -- https://github.com/libexpat/libexpat/issues/312
         local ld = envs.LD
+        local cxx = envs.CXX
         if ld and package:has_tool("ld", "clangxx", "clang") then
             local dir = path.directory(ld)
             local name = path.filename(ld)
             name = name:gsub("clang%+%+", "ld")
             name = name:gsub("clang", "ld")
             envs.LD = dir and path.join(dir, name) or name
+        end
+        -- we need use clang++ as cxx, autoconf will use it as linker
+        -- https://github.com/xmake-io/xmake/issues/2170
+        if cxx and package:has_tool("cxx", "clang") then
+            local dir = path.directory(cxx)
+            local name = path.filename(cxx)
+            name = name:gsub("clang$", "clang++")
+            envs.CXX = dir and path.join(dir, name) or name
         end
     end
     local ACLOCAL_PATH = {}
