@@ -980,7 +980,12 @@ function _build_common_items(vsinfo, target)
         local sourceflags = {}
         for _, sourcebatch in pairs(targetinfo.sourcebatches) do
             local sourcekind = sourcebatch.sourcekind
-            if (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "mrc") then
+            if (sourcekind == "as" or sourcekind == "mrc") then
+                -- no common flags for as/mrc files
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    sourceflags[sourcefile] = targetinfo.sourceflags[sourcefile]
+                end
+            elseif (sourcekind == "cc" or sourcekind == "cxx") then
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     local flags = targetinfo.sourceflags[sourcefile]
                     local otherflags = {}
