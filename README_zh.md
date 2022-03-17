@@ -111,6 +111,10 @@ bash <(wget https://xmake.io/shget.text -O -)
 Invoke-Expression (Invoke-Webrequest 'https://xmake.io/psget.text' -UseBasicParsing).Content
 ```
 
+#### 其他安装方式
+
+如果不想使用脚本安装，也可以点击查看 [安装文档](https://xmake.io/#/zh-cn/guide/installation)，了解其他安装方法。
+
 ## 简单的工程描述
 
 <img src="https://xmake.io/assets/img/index/showcode1.png" width="340px" />

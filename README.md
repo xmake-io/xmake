@@ -104,6 +104,10 @@ bash <(wget https://xmake.io/shget.text -O -)
 Invoke-Expression (Invoke-Webrequest 'https://xmake.io/psget.text' -UseBasicParsing).Content
 ```
 
+#### Other installation ways
+
+If you don't want to use script to install xmake, you can also click [Installation Guide] (https://xmake.io/#/guide/installation) to get other installation ways.
+
 ## Simple description
 
 <img src="https://xmake.io/assets/img/index/showcode1.png" width="340px" />
