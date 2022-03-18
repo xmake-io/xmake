@@ -273,6 +273,15 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
                 end
                 targetinfo.compflags[sourcefile] = compflags
                 targetinfo.compargvs[sourcefile] = table.join(compiler.compargv("__sourcefile__", "__objectfile__", {sourcekind = sourcekind, target = target}))
+
+                -- detect manifest
+                -- @see https://github.com/xmake-io/xmake/issues/2176
+                if sourcekind == "mrc" and os.isfile(sourcefile) then
+                    local resoucedata = io.readfile(sourcefile)
+                    if resoucedata and resoucedata:find("RT_MANIFEST") then
+                        targetinfo.manifest_embed = false
+                    end
+                end
             end
         end
     end

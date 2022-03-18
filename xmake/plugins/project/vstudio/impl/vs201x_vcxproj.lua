@@ -322,6 +322,10 @@ function _make_configurations(vcxprojfile, vsinfo, target)
                 vcxprojfile:print("<LinkIncremental>true</LinkIncremental>")
             end
 
+            if targetinfo.manifest_embed ~= nil then
+                vcxprojfile:print("<EmbedManifest>%s</EmbedManifest>", targetinfo.manifest_embed)
+            end
+
             -- handle ExternalIncludePath (should we handle IncludePath here too?)
             local externaldirs = {}
             for _, flag in ipairs(targetinfo.commonflags.cl) do
