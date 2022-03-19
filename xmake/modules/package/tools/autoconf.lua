@@ -282,10 +282,12 @@ function buildenvs(package, opt)
         end
         -- we need use clang++ as cxx, autoconf will use it as linker
         -- https://github.com/xmake-io/xmake/issues/2170
-        if cxx and package:has_tool("cxx", "clang") then
+        if cxx and package:has_tool("cxx", "clang", "gcc") then
             local dir = path.directory(cxx)
             local name = path.filename(cxx)
             name = name:gsub("clang$", "clang++")
+            name = name:gsub("clang%-", "clang++-")
+            name = name:gsub("gcc%-", "g++-")
             envs.CXX = dir and path.join(dir, name) or name
         end
     end
