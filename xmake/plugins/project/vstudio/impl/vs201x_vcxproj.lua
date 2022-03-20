@@ -493,6 +493,39 @@ function _make_source_options_cl(vcxprojfile, flags, condition)
     end
 end
 
+-- make source options for cl
+function _make_resource_options_cl(vcxprojfile, flags, condition)
+
+    -- exists condition?
+    condition = condition or ""
+
+    -- get flags string
+    local flagstr = os.args(flags)
+    
+    -- make PreprocessorDefinitions
+    local defstr = ""
+    for _, flag in ipairs(flags) do
+        flag:gsub("^[%-/]D(.*)",
+            function (def)
+                defstr = defstr .. vsutils.escape(def) .. ";"
+            end
+        )
+    end
+    defstr = defstr .. "%%(PreprocessorDefinitions)"
+    vcxprojfile:print("<PreprocessorDefinitions%s>%s</PreprocessorDefinitions>", condition, defstr)
+
+    -- make AdditionalIncludeDirectories
+    if flagstr:find("[%-/]I") then
+        local dirs = {}
+        for _, flag in ipairs(flags) do
+            flag:gsub("^[%-/]I(.*)", function (dir) table.insert(dirs, vsutils.escape(dir)) end)
+        end
+        if #dirs > 0 then
+            vcxprojfile:print("<AdditionalIncludeDirectories%s>%s</AdditionalIncludeDirectories>", condition, table.concat(dirs, ";"))
+        end
+    end
+end
+
 -- make source options for cuda
 function _make_source_options_cuda(vcxprojfile, flags, opt)
 
@@ -876,6 +909,12 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
         end
 
     vcxprojfile:leave("</ClCompile>")
+    
+    vcxprojfile:enter("<ResourceCompile>")
+        -- make resource options
+        _make_resource_options_cl(vcxprojfile, targetinfo.commonflags.cl)
+    
+    vcxprojfile:leave("</ResourceCompile>")
     
     local cuda = _check_cuda(target)
     if cuda then
