@@ -287,6 +287,7 @@ function buildenvs(package, opt)
             local name = path.filename(cxx)
             name = name:gsub("clang$", "clang++")
             name = name:gsub("clang%-", "clang++-")
+            name = name:gsub("gcc$", "g++")
             name = name:gsub("gcc%-", "g++-")
             envs.CXX = dir and path.join(dir, name) or name
         end
