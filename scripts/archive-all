@@ -25,6 +25,7 @@ cd $tmpdir/repo || exit
 cp -r ./core $tmpdir/xmake
 cp -r ./xmake $tmpdir/xmake/xmake
 cp ./scripts/*.sh $tmpdir/xmake/scripts
+cp -r ./scripts/man $tmpdir/xmake/scripts
 cp -r ./scripts/debian $tmpdir/xmake/scripts
 cp ./*.md $tmpdir/xmake
 cp makefile $tmpdir/xmake
