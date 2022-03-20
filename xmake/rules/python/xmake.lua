@@ -22,7 +22,7 @@
 rule("python.library")
     on_load(function (target)
         target:set("kind", "shared")
-        target:set("prefixname", "_")
+        target:set("prefixname", "")
         local soabi = target:extraconf("rules", "python.library", "soabi")
         if soabi then
             import("lib.detect.find_tool")
