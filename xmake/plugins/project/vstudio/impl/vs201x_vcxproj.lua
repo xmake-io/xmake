@@ -494,10 +494,7 @@ function _make_source_options_cl(vcxprojfile, flags, condition)
 end
 
 -- make source options for cl
-function _make_resource_options_cl(vcxprojfile, flags, condition)
-
-    -- exists condition?
-    condition = condition or ""
+function _make_resource_options_cl(vcxprojfile, flags)
 
     -- get flags string
     local flagstr = os.args(flags)
@@ -512,7 +509,7 @@ function _make_resource_options_cl(vcxprojfile, flags, condition)
         )
     end
     defstr = defstr .. "%%(PreprocessorDefinitions)"
-    vcxprojfile:print("<PreprocessorDefinitions%s>%s</PreprocessorDefinitions>", condition, defstr)
+    vcxprojfile:print("<PreprocessorDefinitions>%s</PreprocessorDefinitions>", defstr)
 
     -- make AdditionalIncludeDirectories
     if flagstr:find("[%-/]I") then
@@ -521,7 +518,7 @@ function _make_resource_options_cl(vcxprojfile, flags, condition)
             flag:gsub("^[%-/]I(.*)", function (dir) table.insert(dirs, vsutils.escape(dir)) end)
         end
         if #dirs > 0 then
-            vcxprojfile:print("<AdditionalIncludeDirectories%s>%s</AdditionalIncludeDirectories>", condition, table.concat(dirs, ";"))
+            vcxprojfile:print("<AdditionalIncludeDirectories>%s</AdditionalIncludeDirectories>", table.concat(dirs, ";"))
         end
     end
 end
