@@ -18,6 +18,6 @@ target("lcurses")
     end
 
     -- suppress error: ld: archive has no table of contents file liblcurses.a
-    if is_plat("iphoneos") then
+    if is_plat("iphoneos", "macosx") then
         add_arflags("-s", {force = true})
     end
