@@ -628,7 +628,7 @@ function _install_for_msvc(package, configs, opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
     local runenvs = _get_msvc_runenvs(package)
     local msbuild = assert(find_tool("msbuild", {envs = runenvs}), "msbuild not found!")
-    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild",
+    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "/nr:false",
         (jobs ~= nil and format("-m:%d", jobs) or "-m"),
         "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
         "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})

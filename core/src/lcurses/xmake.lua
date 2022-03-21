@@ -16,3 +16,8 @@ target("lcurses")
     else
         add_options("curses")
     end
+
+    -- suppress error: ld: archive has no table of contents file liblcurses.a
+    if is_plat("iphoneos") then
+        add_arflags("-s", {force = true})
+    end
