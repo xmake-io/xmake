@@ -10,6 +10,7 @@
 
 * [#2137](https://github.com/xmake-io/xmake/pull/2137): Improve path module
 * Reduce 50% xmake binary size on macOS
+* Improve tools/autoconf,cmake to support toolchain switching.
 
 ## v2.6.4
 
@@ -1238,6 +1239,7 @@
 
 * [#2137](https://github.com/xmake-io/xmake/pull/2137): 改进 path 模块
 * macOS 下，减少 50% 的 Xmake 二进制文件大小
+* 改进 tools/autoconf,cmake 去更好地支持工具链切换
 
 ## v2.6.4
 
