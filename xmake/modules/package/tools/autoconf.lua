@@ -266,22 +266,29 @@ function buildenvs(package, opt)
             end
         end
 
-        -- fix autoconf cannot use clang/clang++ as linker
+        -- we should use ld as linker
         --
         -- @see
         -- https://github.com/xmake-io/xmake-repo/pull/1043
         -- https://github.com/libexpat/libexpat/issues/312
+        -- https://github.com/xmake-io/xmake/issues/2195
         local ld = envs.LD
-        local cxx = envs.CXX
-        if ld and package:has_tool("ld", "clangxx", "clang") then
+        if ld and package:has_tool("ld", "clang", "clangxx", "gcc", "gxx") then
             local dir = path.directory(ld)
             local name = path.filename(ld)
-            name = name:gsub("clang%+%+", "ld")
-            name = name:gsub("clang", "ld")
+            name = name:gsub("clang%+%+$", "ld")
+            name = name:gsub("clang%+%+%-%d+", "ld")
+            name = name:gsub("clang$", "ld")
+            name = name:gsub("clang%-%d+", "ld")
+            name = name:gsub("gcc$", "ld")
+            name = name:gsub("gcc-%d+", "ld")
+            name = name:gsub("g%+%+$", "ld")
+            name = name:gsub("g%+%+%-%d+", "ld")
             envs.LD = dir and path.join(dir, name) or name
         end
         -- we need use clang++ as cxx, autoconf will use it as linker
         -- https://github.com/xmake-io/xmake/issues/2170
+        local cxx = envs.CXX
         if cxx and package:has_tool("cxx", "clang", "gcc") then
             local dir = path.directory(cxx)
             local name = path.filename(cxx)
