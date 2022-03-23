@@ -421,6 +421,10 @@ function _get_configs_for_cross(package, configs, opt)
     -- https://github.com/xmake-io/xmake/issues/2170
     if not package:is_plat(os.subhost()) then
         envs.CMAKE_SYSTEM_NAME     = "Linux"
+    else
+        if package:config("pic") ~= false then
+            table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+        end
     end
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
