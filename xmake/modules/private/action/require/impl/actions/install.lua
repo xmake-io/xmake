@@ -115,7 +115,7 @@ function _fix_path_for_file(file, search_pattern)
 
     io.gsub(file, search_pattern, function(whole_value, value)
         local mat = value:match(package_pattern)
-        if mat == nil then
+        if not mat then
             return nil
         end
 
@@ -155,13 +155,17 @@ function _fix_paths_for_precompiled_package(package)
         {
             -- Fix path for pkg-config .pc files.
             -- 1. prefix is just a variable name. We rely on variable name convention.
-            -- 2. A package may references another package with absolute path.
+            -- 2. A package may reference another package with absolute path.
             --    For example: glog.pc with gflags and unwind enabled contains something like following:
             --        Libs: -L/absolute/path/to/gflags/lib -L/absolute/path/to/libunwind/lib ...
             --    So searching for only prefix is not enough.
-            --    Note this does not work if prefix to package pattern contains spaces.
+            -- 3. If path contains spaces, it should be double quoted.
+            --    If not quoted, spaces should be backslash escaped, which we do
+            --    not support fix for now.
+            --    For pkg-config behavior for spaces in path, refer to
+            --    https://github.com/golang/go/issues/16455#issuecomment-255900404
             file_pattern = {"lib/pkgconfig/**.pc", "share/pkgconfig/**.pc"},
-            search_pattern = {"(prefix%s*=%s*(.-)\n)", "(%s-I%s*(%S+))", "(%s-L%s*(%S+))", "(%s-l(%S+))"},
+            search_pattern = {"(prefix%s*=%s*(.-)\n)", "(%s-I%s*(%S+))", "(%s-L%s*(%S+))", '("(.-)")'},
         },
     }
     for _, pat in ipairs(patterns) do
