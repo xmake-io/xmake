@@ -29,6 +29,9 @@ function main(toolchain)
     local xcode_sdkver  = toolchain:config("xcode_sdkver")
     local xcode_sysroot = toolchain:config("xcode_sysroot")
 
+    -- is simulator?
+    local simulator = toolchain:is_arch("x86_64", "i386")
+
     -- init target minimal version
     local target_minver = toolchain:config("target_minver")
     if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "i386") then
