@@ -52,7 +52,12 @@ end
 -- translate bin path
 function _translate_bin_path(bin_path)
     if is_host("windows") and bin_path then
-        return bin_path:gsub("\\", "/") .. ".exe"
+        bin_path = bin_path:gsub("\\", "/")
+        if not bin_path:find(string.ipattern("%.exe$")) and
+           not bin_path:find(string.ipattern("%.cmd$")) and
+           not bin_path:find(string.ipattern("%.bat$")) then
+            bin_path = bin_path .. ".exe"
+        end
     end
     return bin_path
 end
