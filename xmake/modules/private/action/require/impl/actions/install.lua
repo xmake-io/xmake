@@ -165,7 +165,7 @@ function _fix_paths_for_precompiled_package(package)
             --    For pkg-config behavior for spaces in path, refer to
             --    https://github.com/golang/go/issues/16455#issuecomment-255900404
             file_pattern = {"lib/pkgconfig/**.pc", "share/pkgconfig/**.pc"},
-            search_pattern = {"(prefix%s*=%s*(.-)\n)", "(%s-I%s*(%S+))", "(%s-L%s*(%S+))", '("(.-)")'},
+            search_pattern = {"(prefix%s*=%s*(.-)\n)", "(%-[I|L]%s*(%S+))", '("(.-)")'},
         },
     }
     for _, pat in ipairs(patterns) do
