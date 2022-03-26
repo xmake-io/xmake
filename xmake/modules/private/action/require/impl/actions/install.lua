@@ -148,8 +148,12 @@ end
 function _fix_paths_for_precompiled_package(package)
     local patterns = {
         {
-            -- Search for double quoted string for substitution.
-            file_pattern = {"**.cmake", "include/**"},
+            -- Fix path for cmake files.
+            -- "|include/**" means exclude all files under include directory.
+            -- Their are quite a few search paths used by cmake, so just look
+            -- for all ".cmake" files for most reliable result.
+            -- https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-search-procedure
+            file_pattern = {"**.cmake|include/**"},
             search_pattern = {'("(.-)")'},
         },
         {
