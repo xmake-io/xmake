@@ -1921,6 +1921,19 @@ function _instance:pcoutputfile(langkind)
     end
 end
 
+-- get the given toolchain
+function _instance:toolchain(name)
+    local toolchains_map = self:_memcache():get("toolchains_map")
+    if toolchains_map == nil then
+        toolchains_map = {}
+        for _, toolchain_inst in ipairs(self:toolchains()) do
+            toolchains_map[toolchain_inst:name()] = toolchain_inst
+        end
+        self:_memcache():set("toolchains_map", toolchains_map)
+    end
+    return toolchains_map[name]
+end
+
 -- get the toolchains
 function _instance:toolchains()
     local toolchains = self:_memcache():get("toolchains")

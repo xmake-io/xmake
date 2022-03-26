@@ -854,6 +854,19 @@ function _instance:build_envs(lazy_loading)
     return build_envs
 end
 
+-- get the given toolchain
+function _instance:toolchain(name)
+    local toolchains_map = self._TOOLCHAINS_MAP
+    if toolchains_map == nil then
+        toolchains_map = {}
+        for _, toolchain_inst in ipairs(self:toolchains()) do
+            toolchains_map[toolchain_inst:name()] = toolchain_inst
+        end
+        self._TOOLCHAINS_MAP = toolchains_map
+    end
+    return toolchains_map[name]
+end
+
 -- get toolchains
 function _instance:toolchains()
     local toolchains = self._TOOLCHAINS

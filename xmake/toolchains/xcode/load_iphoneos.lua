@@ -30,7 +30,7 @@ function main(toolchain)
     local xcode_sysroot = toolchain:config("xcode_sysroot")
 
     -- is simulator?
-    local simulator = toolchain:is_arch("x86_64", "i386")
+    local simulator = toolchain:config("appledev") == "simulator"
 
     -- init target minimal version
     local target_minver = toolchain:config("target_minver")

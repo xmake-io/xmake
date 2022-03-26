@@ -91,12 +91,13 @@ function _find_arch(plat, arch)
             arch = project.default_arch(plat)
         end
         if not arch then
+            local appledev = config.get("appledev")
             if plat == "android" then
                 arch = "armeabi-v7a"
             elseif plat == "iphoneos" or plat == "appletvos" then
-                arch = "arm64"
+                arch = appledev == "simulator" and os.arch() or "arm64"
             elseif plat == "watchos" then
-                arch = "armv7k"
+                arch = appledev == "simulator" and os.arch() or "armv7k"
             elseif plat == "wasm" then
                 arch = "wasm32"
             elseif plat == "mingw" then

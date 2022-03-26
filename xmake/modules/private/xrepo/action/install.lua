@@ -64,6 +64,7 @@ function menu_options()
         {nil, "xcode",         "kv", nil, "The Xcode Application Directory"  },
         {nil, "xcode_sdkver",  "kv", nil, "The SDK Version for Xcode"        },
         {nil, "target_minver", "kv", nil, "The Target Minimal Version"       },
+        {nil, "appledev",      "kv", nil, "The Apple Device Type"            },
         {category = "Other Configuration"                                    },
         {nil, "force",         "k",  nil, "Force to reinstall all package dependencies."},
         {nil, "shallow",       "k",  nil, "Does not install dependent packages."},
@@ -199,6 +200,9 @@ function _install_packages(packages)
     end
     if option.get("target_minver") then
         table.insert(config_argv, "--target_minver=" .. option.get("target_minver"))
+    end
+    if option.get("appledev") then
+        table.insert(config_argv, "--appledev=" .. option.get("appledev"))
     end
     local envs = {}
     if #rcfiles > 0 then

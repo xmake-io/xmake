@@ -59,19 +59,30 @@ function main(toolchain)
         end
     end
 
+    -- get apple device
+    local simulator
+    local appledev = toolchain:config("appledev") or config.get("appledev")
+    if appledev and appledev == "simulator" then
+        simulator = true
+        appledev = "simulator"
+    elseif not toolchain:is_plat("macosx") and toolchain:is_arch("i386", "x86_64") then
+        simulator = true
+        appledev = "simulator"
+    end
+
     -- save xcode sysroot directory
     local xcode_sysroot
     if xcode.sdkdir and xcode_sdkver then
         if toolchain:is_plat("macosx") then
             xcode_sysroot = xcode.sdkdir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
         elseif toolchain:is_plat("iphoneos") then
-            local platname = toolchain:is_arch("i386", "x86_64") and "iPhoneSimulator" or "iPhoneOS"
+            local platname = simulator and "iPhoneSimulator" or "iPhoneOS"
             xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
         elseif toolchain:is_plat("watchos") then
-            local platname = toolchain:is_arch("i386", "x86_64") and "WatchSimulator" or "WatchOS"
+            local platname = simulator and "WatchSimulator" or "WatchOS"
             xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
         elseif toolchain:is_plat("appletvos") then
-            local platname = toolchain:is_arch("i386", "x86_64") and "AppleTVSimulator" or "AppleTVOS"
+            local platname = simulator and "AppleTVSimulator" or "AppleTVOS"
             xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
         end
     end
@@ -102,6 +113,7 @@ function main(toolchain)
     toolchain:config_set("xcode", xcode.sdkdir)
     toolchain:config_set("xcode_sdkver", xcode_sdkver)
     toolchain:config_set("target_minver", target_minver)
+    toolchain:config_set("appledev", appledev)
     toolchain:configs_save()
     cprint("checking for SDK version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), xcode_sdkver)
     cprint("checking for Minimal target version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), target_minver)
