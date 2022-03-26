@@ -97,44 +97,89 @@ function _patch_pkgconfig(package)
     end
 end
 
--- fix paths for the precompiled package
--- @see https://github.com/xmake-io/xmake/issues/1671
-function _fix_paths_for_precompiled_package(package)
+function _fix_path_for_file(file, search_pattern)
     -- Match to path like (string insides brackets is matched):
-    --     /home/user/.xmake[/packages/f/foo/9adc96bd69124211aad7dd58a36f02ce/]v1.0
+    --     /home/user/.xmake[/packages/f/foo/9adc96bd69124211aad7dd58a36f02ce]/v1.0
     -- Replace path string before "packages" with local package install
     -- directory.
     -- Note: It's possible that package A references files in package B, thus we
     -- need to match against all possible package install paths.
+    --
+    -- search_pattern should contain a whole and a sub capture.
+    -- The sub capture will be replaced with local install path.
+    -- The whole capture is to make the search more precise and less likely to
+    -- match non package path.
     local buildhash_pattern = string.rep('%x', 32)
-    local match_pattern = "[\\/]packages[\\/]%w[\\/][^\\/]+[\\/][^\\/]+[\\/]" .. buildhash_pattern .. "[\\/]"
+    local package_pattern = "[\\/]packages[\\/]%w[\\/][^\\/]+[\\/][^\\/]+[\\/]" .. buildhash_pattern
     local prefix = path.directory(core_package.installdir())
-    local filepaths = {path.join(package:installdir(), "**.cmake|include/**")}
-    for _, filepath in ipairs(filepaths) do
-        for _, file in ipairs(os.files(filepath)) do
-            io.gsub(file, "(\"(.-)\")", function(_, value)
-                local mat = value:match(match_pattern)
-                if mat then
-                    local result
-                    local splitinfo = value:split(mat, {plain = true})
-                    if #splitinfo == 2 then
-                        result = path.join(prefix, mat, splitinfo[2])
-                    elseif #splitinfo == 1 then
-                        if value:startswith(mat) then
-                            -- path begins with matched pattern: [/packages/f/foo/buildhash/]v1.0
-                            result = path.join(prefix, value)
-                        else
-                            -- path ends with matched pattern: /home/user[/packages/f/foo/buildhash/]
-                            result = path.join(prefix, mat)
-                        end
-                    end
-                    if result then
-                        result = result:gsub("\\", "/")
-                        vprint("fix path: %s in %s", result, path.filename(file))
-                        return "\"" .. result .. "\""
-                    end
+
+    io.gsub(file, search_pattern, function(whole_value, value)
+        local mat = value:match(package_pattern)
+        if not mat then
+            return nil
+        end
+
+        local result
+        local splitinfo = value:split(mat, {plain = true})
+        if #splitinfo == 2 then
+            -- /home/user[/packages/f/foo/buildhash]/v1.0
+            result = path.join(prefix, mat, splitinfo[2])
+        elseif #splitinfo == 1 then
+            if value:startswith(mat) then
+                -- path begins with matched pattern: [/packages/f/foo/buildhash]/v1.0
+                result = path.join(prefix, value)
+            else
+                -- path ends with matched pattern: /home/user[/packages/f/foo/buildhash]
+                result = path.join(prefix, mat)
+            end
+        else
+            vprint("fix path split got more than 2 parts, something wrong?", whole_value)
+        end
+        if result then
+            result = result:gsub("\\", "/")
+            vprint("fix path: %s in %s", whole_value, file)
+            return whole_value:replace(value, result, {plain = true})
+        end
+    end)
+end
+
+-- fix paths for the precompiled package
+-- @see https://github.com/xmake-io/xmake/issues/1671
+function _fix_paths_for_precompiled_package(package)
+    local patterns = {
+        {
+            -- Fix path for cmake files.
+            -- "|include/**" means exclude all files under include directory.
+            -- Their are quite a few search paths used by cmake, so just look
+            -- for all ".cmake" files for most reliable result.
+            -- https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-search-procedure
+            file_pattern = {"**.cmake|include/**"},
+            search_pattern = {'("(.-)")'},
+        },
+        {
+            -- Fix path for pkg-config .pc files.
+            -- 1. `varname=value` defines a variable, which may contain path.
+            -- 2. A package may reference another package with absolute path.
+            --    For example: glog.pc with gflags and unwind enabled contains something like following:
+            --        Libs: -L/absolute/path/to/gflags/lib -L /absolute/path/to/libunwind/lib ...
+            --    So searching for only prefix is not enough.
+            -- 3. If path contains spaces, it should be double quoted.
+            --    If not quoted, spaces should be backslash escaped, which we do
+            --    not fix for now.
+            --    For pkg-config behavior for spaces in path, refer to
+            --    https://github.com/golang/go/issues/16455#issuecomment-255900404
+            file_pattern = {"lib/pkgconfig/**.pc", "share/pkgconfig/**.pc"},
+            search_pattern = {"([%w_]+%s*=%s*(.-)\n)", "(%-[I|L]%s*(%S+))", '("(.-)")'},
+        },
+    }
+    for _, pat in ipairs(patterns) do
+        for _, filepat in ipairs(pat.file_pattern) do
+            local filepattern = path.join(package:installdir(), filepat)
+            for _, file in ipairs(os.files(filepattern)) do
+                for _, search_pattern in ipairs(pat.search_pattern) do
+                    _fix_path_for_file(file, search_pattern)
                 end
-            end)
+            end
         end
     end
 end
