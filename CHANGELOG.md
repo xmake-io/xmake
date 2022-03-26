@@ -5,6 +5,7 @@
 ### New features
 
 * [#2138](https://github.com/xmake-io/xmake/issues/2138): Support template package
+* [#2185](https://github.com/xmake-io/xmake/issues/2185): Add `--appledev=simulator` to improve apple simulator support
 
 ### Changes
 
@@ -1234,6 +1235,7 @@
 ### 新特性
 
 * [#2138](https://github.com/xmake-io/xmake/issues/2138): 支持模板包
+* [#2185](https://github.com/xmake-io/xmake/issues/2185): 添加 `--appledev=simulator` 去改进 Apple 模拟器目标编译支持
 
 ### 改进
 
