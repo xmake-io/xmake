@@ -18,32 +18,23 @@
 -- @file        xmake.lua
 --
 
--- define platform
 platform("iphoneos")
-
-    -- set os
     set_os("ios")
-
-    -- set hosts
     set_hosts("macosx")
 
-    -- set archs
     if os.arch() == "arm64" then -- on apple m1 device
         set_archs("arm64", "x86_64")
     else
         set_archs("arm64", "armv7", "armv7s", "i386", "x86_64")
     end
 
-    -- set formats
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
     set_formats("shared", "lib$(name).dylib")
     set_formats("symbol", "$(name).dSYM")
 
-    -- set toolchains
     set_toolchains("envs", "xcode")
 
-    -- set menu
     set_menu {
                 config =
                 {
@@ -54,6 +45,8 @@ platform("iphoneos")
                 ,   {nil, "xcode_codesign_identity", "kv", "auto",       "The Codesign Identity for Xcode"   }
                 ,   {nil, "xcode_mobile_provision",  "kv", "auto",       "The Mobile Provision for Xcode"    }
                 ,   {nil, "target_minver",           "kv", "auto",       "The Target Minimal Version"        }
+                ,   {nil, "appledev",                "kv", nil,          "The Apple Device Type",
+                                                                         values = {"simulator", "iphone", "watchtv", "appletv"}}
                 }
 
             ,   global =
