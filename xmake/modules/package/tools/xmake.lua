@@ -52,8 +52,12 @@ function _get_configs(package, configs)
         if vs_runtime then
             table.insert(configs, "--vs_runtime=" .. vs_runtime)
         end
-    end
-    if package:is_plat("cross") then
+    elseif package:is_plat("iphoneos", "watchos", "appletvos") then
+        local appledev = package:config("appledev")
+        if appledev then
+            table.insert(configs, "--appledev=" .. appledev)
+        end
+    elseif package:is_plat("cross") then
         local cross = _get_config_from_toolchains(package, "cross") or get_config("cross")
         if cross then
             table.insert(configs, "--cross=" .. cross)
