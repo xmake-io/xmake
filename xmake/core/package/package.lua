@@ -292,6 +292,12 @@ function _instance:artifacts_set(artifacts_info)
                     envs[k] = v
                 end
             end
+            -- save the remote install directory to fix the install path in .cmake/.pc files for precompiled artifacts
+            --
+            -- @see https://github.com/xmake-io/xmake/issues/2210
+            --
+            manifest.artifacts = manifest.artifacts or {}
+            manifest.artifacts.remotedir = manifest.artifacts.installdir
         end)
         self._IS_PRECOMPILED = true
     end
@@ -729,6 +735,17 @@ function _instance:manifest_save()
         manifest.repo.url    = repo:url()
         manifest.repo.branch = repo:branch()
         manifest.repo.commit = repo:commit()
+    end
+
+    -- save artifacts information to fix the install path in .cmake/.pc files for precompiled artifacts
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/2210
+    --
+    manifest.artifacts = {}
+    manifest.artifacts.installdir = self:installdir()
+    local current_manifest = self:manifest_load()
+    if current_manifest and current_manifest.artifacts then
+        manifest.artifacts.remotedir = current_manifest.artifacts.remotedir
     end
 
     -- save manifest
