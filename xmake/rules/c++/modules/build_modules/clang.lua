@@ -58,7 +58,7 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     end
     assert(modulesflag, "compiler(clang): does not support c++ module!")
 
-    -- get the module cache directory, @note we must same cache directory for each targets
+    -- get the module cache directory, @note we must use same cache directory for each targets
     -- @see https://github.com/xmake-io/xmake/issues/2194
     --
     local cachedir = path.join(config.buildir(), ".gens", "rules", "modules", "cache")
