@@ -20,6 +20,7 @@
 
 -- imports
 import("core.tool.compiler")
+import("core.project.config")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("module_parser")
 
@@ -38,15 +39,10 @@ function load_parent(target, opt)
     -- add module flags
     target:add("cxxflags", modulesflag)
 
-    -- the module cache directory
-    for _, dep in ipairs(target:orderdeps()) do
-        local sourcebatches = dep:sourcebatches()
-        if sourcebatches and sourcebatches["c++.build.modules"] then
-            local cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
-            target:add("cxxflags", "-fmodules-cache-path=" .. cachedir, {force = true})
-            target:add("cxxflags", "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir, {force = true})
-        end
-    end
+    -- add the module cache directory
+    local cachedir = path.join(config.buildir(), ".gens", "rules", "modules", "cache")
+    target:add("cxxflags", "-fmodules-cache-path=" .. cachedir, {force = true})
+    target:add("cxxflags", "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir, {force = true})
 end
 
 -- build module files
@@ -62,8 +58,10 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     end
     assert(modulesflag, "compiler(clang): does not support c++ module!")
 
-    -- the module cache directory
-    local cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
+    -- get the module cache directory, @note we must same cache directory for each targets
+    -- @see https://github.com/xmake-io/xmake/issues/2194
+    --
+    local cachedir = path.join(config.buildir(), ".gens", "rules", "modules", "cache")
 
     -- we need patch objectfiles to sourcebatch for linking module objects
     sourcebatch.sourcekind = "cxx"
