@@ -32,6 +32,10 @@ import("lib.detect.find_file")
 -- @param opt   the options, e.g. {verbose = true, require_version = "1.12.x")
 --
 function main(name, opt)
+    
+    -- Rust packages like actix-web will produce a file named actix_web-<...>
+    name = name:gsub("-", "_")
+
     local frameworkdirs
     local frameworks
     local librarydir = path.join(opt.installdir, "lib")
