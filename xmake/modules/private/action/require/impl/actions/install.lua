@@ -97,10 +97,12 @@ function _patch_pkgconfig(package)
     end
 end
 
+-- Match to path like (string insides brackets is matched):
+--     /home/user/.xmake/packages[/f/foo/9adc96bd69124211aad7dd58a36f02ce]/v1.0
+local _PACKAGE_BUILDHASH_VERSION_PATTERN = "[\\/]%w[\\/][^\\/]+[\\/][^\\/]+[\\/]" .. string.rep('%x', 32)
+
 function _fix_path_for_file(file, search_pattern)
-    -- Match to path like (string insides brackets is matched):
-    --     /home/user/.xmake[/packages/f/foo/9adc96bd69124211aad7dd58a36f02ce]/v1.0
-    -- Replace path string before "packages" with local package install
+    -- Replace path string before package pattern with local package install
     -- directory.
     -- Note: It's possible that package A references files in package B, thus we
     -- need to match against all possible package install paths.
@@ -109,12 +111,10 @@ function _fix_path_for_file(file, search_pattern)
     -- The sub capture will be replaced with local install path.
     -- The whole capture is to make the search more precise and less likely to
     -- match non package path.
-    local buildhash_pattern = string.rep('%x', 32)
-    local package_pattern = "[\\/]packages[\\/]%w[\\/][^\\/]+[\\/][^\\/]+[\\/]" .. buildhash_pattern
-    local prefix = path.directory(core_package.installdir())
+    local prefix = core_package.installdir()
 
     io.gsub(file, search_pattern, function(whole_value, value)
-        local mat = value:match(package_pattern)
+        local mat = value:match(_PACKAGE_BUILDHASH_VERSION_PATTERN)
         if not mat then
             return nil
         end
@@ -122,14 +122,14 @@ function _fix_path_for_file(file, search_pattern)
         local result
         local splitinfo = value:split(mat, {plain = true})
         if #splitinfo == 2 then
-            -- /home/user[/packages/f/foo/buildhash]/v1.0
+            -- /home/user/packages[/f/foo/buildhash]/v1.0
             result = path.join(prefix, mat, splitinfo[2])
         elseif #splitinfo == 1 then
             if value:startswith(mat) then
-                -- path begins with matched pattern: [/packages/f/foo/buildhash]/v1.0
+                -- path begins with matched pattern: [/f/foo/buildhash]/v1.0
                 result = path.join(prefix, value)
             else
-                -- path ends with matched pattern: /home/user[/packages/f/foo/buildhash]
+                -- path ends with matched pattern: /home/user/packages[/f/foo/buildhash]
                 result = path.join(prefix, mat)
             end
         else
@@ -172,12 +172,40 @@ function _fix_paths_for_precompiled_package(package)
             search_pattern = {"([%w_]+%s*=%s*(.-)\n)", "(%-[I|L]%s*(%S+))", '("(.-)")'},
         },
     }
+
+    -- If artifact contains installdir where it's built (remotedir), extract
+    -- path prefix and do plain replace with local install dir.
+    local remotedir
+    local manifest = package:manifest_load()
+    if manifest and manifest.artifacts then
+        remotedir = manifest.artifacts.remotedir
+    end
+
+    local remote_prefix
+    local local_prefix
+    if remotedir then
+        local idx = remotedir:find(_PACKAGE_BUILDHASH_VERSION_PATTERN)
+        if idx then
+            remote_prefix = remotedir:sub(1, idx)
+            local_prefix = core_package.installdir()
+            if not local_prefix:endswith(path.sep()) then
+                local_prefix = local_prefix .. path.sep()
+            end
+        else
+            cprint("WARNING no package buildhash pattern found in artifacts remotedir: %s", remotedir)
+        end
+    end
+
     for _, pat in ipairs(patterns) do
         for _, filepat in ipairs(pat.file_pattern) do
             local filepattern = path.join(package:installdir(), filepat)
             for _, file in ipairs(os.files(filepattern)) do
-                for _, search_pattern in ipairs(pat.search_pattern) do
-                    _fix_path_for_file(file, search_pattern)
+                if remote_prefix then
+                    io.replace(file, remote_prefix, local_prefix, {plain = true})
+                else
+                    for _, search_pattern in ipairs(pat.search_pattern) do
+                        _fix_path_for_file(file, search_pattern)
+                    end
                 end
             end
         end
