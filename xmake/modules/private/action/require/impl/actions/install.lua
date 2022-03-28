@@ -99,7 +99,7 @@ end
 
 -- Match to path like (string insides brackets is matched):
 --     /home/user/.xmake/packages[/f/foo/9adc96bd69124211aad7dd58a36f02ce]/v1.0
-local _PACKAGE_BUILDHASH_VERSION_PATTERN = "[\\/]%w[\\/][^\\/]+[\\/][^\\/]+[\\/]" .. string.rep('%x', 32)
+local _PACKAGE_BUILDHASH_VERSION_PATTERN = "[\\/]%w[\\/][^\\/]+[\\/]" .. string.rep('%x', 32) 
 
 function _fix_path_for_file(file, search_pattern)
     -- Replace path string before package pattern with local package install
