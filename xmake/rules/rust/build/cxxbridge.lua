@@ -23,7 +23,7 @@ import("core.base.option")
 import("lib.detect.find_tool")
 
 function main(target, batchcmds, sourcefile, opt)
-    local cxxbridge = assert(find_tool("cxxbridge"), "cxxbridge not found, please run `cargo install cxxbridge` to install it first!")
+    local cxxbridge = assert(find_tool("cxxbridge"), "cxxbridge not found, please run `cargo install cxxbridge-cmd` to install it first!")
 
     -- get c/c++ source file for cxxbridge
     local headerfile = path.join(target:autogendir(), "rules", "cxxbridge", path.basename(sourcefile) .. ".rs.h")
