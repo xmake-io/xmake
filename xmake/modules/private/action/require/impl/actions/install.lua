@@ -98,8 +98,8 @@ function _patch_pkgconfig(package)
 end
 
 -- Match to path like (string insides brackets is matched):
---     /home/user/.xmake/packages[/f/foo/9adc96bd69124211aad7dd58a36f02ce]/v1.0
-local _PACKAGE_BUILDHASH_VERSION_PATTERN = "[\\/]%w[\\/][^\\/]+[\\/]" .. string.rep('%x', 32) 
+--     /home/user/.xmake/packages[/f/foo/v0.1.0/9adc96bd69124211aad7dd58a36f02ce]/lib
+local _PACKAGE_VERSION_BUILDHASH_PATTERN = "[\\/]%w[\\/][^\\/]+[\\/][^\\/]+[\\/]" .. string.rep('%x', 32)
 
 function _fix_path_for_file(file, search_pattern)
     -- Replace path string before package pattern with local package install
@@ -114,7 +114,7 @@ function _fix_path_for_file(file, search_pattern)
     local prefix = core_package.installdir()
 
     io.gsub(file, search_pattern, function(whole_value, value)
-        local mat = value:match(_PACKAGE_BUILDHASH_VERSION_PATTERN)
+        local mat = value:match(_PACKAGE_VERSION_BUILDHASH_PATTERN)
         if not mat then
             return nil
         end
@@ -184,7 +184,7 @@ function _fix_paths_for_precompiled_package(package)
     local remote_prefix
     local local_prefix
     if remotedir then
-        local idx = remotedir:find(_PACKAGE_BUILDHASH_VERSION_PATTERN)
+        local idx = remotedir:find(_PACKAGE_VERSION_BUILDHASH_PATTERN)
         if idx then
             remote_prefix = remotedir:sub(1, idx)
             local_prefix = core_package.installdir()
