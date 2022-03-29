@@ -192,7 +192,7 @@ function _fix_paths_for_precompiled_package(package)
                 local_prefix = local_prefix .. path.sep()
             end
         else
-            cprint("WARNING no package buildhash pattern found in artifacts remotedir: %s", remotedir)
+            wprint("no package buildhash pattern found in artifacts remotedir: %s", remotedir)
         end
     end
 
