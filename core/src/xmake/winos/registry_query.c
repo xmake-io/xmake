@@ -172,7 +172,8 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
             }
         }
 
-        if (tb_wtoa(valuename_w, value, valuesize + 1) == (tb_size_t)-1)
+        tb_size_t value_n = tb_wtoa(valuename_w, value, valuesize + 1);
+        if (value_n == (tb_size_t)-1)
         {
             lua_pushnil(lua);
             lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);
@@ -184,7 +185,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
         {
         case REG_SZ:
         case REG_EXPAND_SZ:
-            lua_pushstring(lua, value);
+            lua_pushlstring(lua, value, value_n);
             ok = tb_true;
             break;
         case REG_DWORD:
