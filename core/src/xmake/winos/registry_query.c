@@ -61,6 +61,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
     HKEY        keynew = tb_null;
     tb_char_t*  value = tb_null;
     tb_wchar_t* value_w = tb_null;
+    tb_size_t value_n = (tb_size_t)-1;
     do
     {
         // get registry rootkey
@@ -136,6 +137,14 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
                 lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);
                 break;
             }
+            
+            value_n = tb_wtoa(valuename_w, value, valuesize + 1);
+            if (value_n == (tb_size_t)-1)
+            {
+                lua_pushnil(lua);
+                lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);
+                break;
+            }
         }
         else
         {
@@ -170,14 +179,14 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
                 lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);
                 break;
             }
-        }
 
-        tb_size_t value_n = tb_wtoa(valuename_w, value, valuesize + 1);
-        if (value_n == (tb_size_t)-1)
-        {
-            lua_pushnil(lua);
-            lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);
-            break;
+            value_n = tb_wtoa(valuename_w, value, valuesize + 1);
+            if (value_n == (tb_size_t)-1)
+            {
+                lua_pushnil(lua);
+                lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);
+                break;
+            }
         }
 
         // save result
