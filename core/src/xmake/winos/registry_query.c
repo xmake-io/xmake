@@ -159,7 +159,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
             // make value buffer
             value = (tb_char_t*)tb_malloc0(valuesize + 1);
             tb_assert_and_check_break(value);
-            value_w = (tb_wchar_t*)tb_malloc0(sizeof() * (valuesize + 1));
+            value_w = (tb_wchar_t*)tb_malloc0(sizeof(tb_wchar_t) * (valuesize + 1));
             tb_assert_and_check_break(value_w);
 
             // get value result
