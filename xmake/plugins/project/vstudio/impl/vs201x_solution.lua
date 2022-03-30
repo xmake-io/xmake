@@ -72,7 +72,7 @@ function _make_projects(slnfile, vsinfo)
         local group_path = target:get("group")
         if group_path then
             for _, group_name in ipairs(path.split(group_path)) do
-                groups[group_name] = hash.uuid4(group_name)
+                groups[group_name] = hash.uuid4("group." .. group_name)
             end
         end
     end
@@ -126,14 +126,14 @@ function _make_global(slnfile, vsinfo)
         if group_path then
             -- target -> group
             local group_name = path.filename(group_path)
-            slnfile:print("{%s} = {%s}", hash.uuid4(targetname), hash.uuid4(group_name))
+            slnfile:print("{%s} = {%s}", hash.uuid4(targetname), hash.uuid4("group." .. group_name))
             -- group -> group -> ...
             local group_names = path.split(group_path)
             for idx, group_name in ipairs(group_names) do
                 local key = group_name .. (group_name_sub or "")
                 local group_name_sub = group_names[idx + 1]
                 if group_name_sub and not subgroups[key] then
-                    slnfile:print("{%s} = {%s}", hash.uuid4(group_name_sub), hash.uuid4(group_name))
+                    slnfile:print("{%s} = {%s}", hash.uuid4(group_name_sub), hash.uuid4("group." .. group_name))
                     subgroups[key] = true
                 end
             end
