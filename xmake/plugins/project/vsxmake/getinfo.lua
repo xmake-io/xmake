@@ -304,7 +304,7 @@ function _make_vsinfo_groups()
                 for idx, name in ipairs(group_names) do
                     local group = groups["group." .. name] or {}
                     group.group = name
-                    group.group_id = hash.uuid4(name)
+                    group.group_id = hash.uuid4("group." .. name)
                     if idx > 1 then
                         group_deps["group_dep." .. name] = {current_id = group.group_id, parent_id = hash.uuid4(group_names[idx - 1])}
                     end
