@@ -61,7 +61,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
     HKEY        keynew = tb_null;
     tb_char_t*  value = tb_null;
     tb_wchar_t* value_w = tb_null;
-    tb_size_t value_n = (tb_size_t)-1;
+    tb_size_t   value_n = (tb_size_t)-1;
     do
     {
         // get registry rootkey
