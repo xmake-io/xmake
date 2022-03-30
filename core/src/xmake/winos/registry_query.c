@@ -138,7 +138,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
                 break;
             }
             
-            value_n = tb_wtoa(valuename_w, value, valuesize + 1);
+            value_n = tb_wtoa(value, valuename_w, valuesize + 1);
             if (value_n == (tb_size_t)-1)
             {
                 lua_pushnil(lua);
@@ -180,7 +180,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
                 break;
             }
 
-            value_n = tb_wtoa(valuename_w, value, valuesize + 1);
+            value_n = tb_wtoa(value, valuename_w, valuesize + 1);
             if (value_n == (tb_size_t)-1)
             {
                 lua_pushnil(lua);
