@@ -300,6 +300,9 @@ Section "Add to PATH" InstallPath
     ; Write the installation path into the $PATH environment variable
     WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1;$InstDir"
   ${EndIf}
+  
+  ; make sure windows knows about the change
+   SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
 
 SectionEnd
 
