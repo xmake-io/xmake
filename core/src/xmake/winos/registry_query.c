@@ -34,7 +34,7 @@
  * types
  */
 // the RegGetValueW func type
-typedef BOOL (WINAPI* xm_RegGetValueW_t)(HKEY hkey, LPCSTR lpSubKey, LPCSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
+typedef BOOL (WINAPI* xm_RegGetValueW_t)(HKEY hkey, LPCWSTR lpSubKey, LPCWSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
