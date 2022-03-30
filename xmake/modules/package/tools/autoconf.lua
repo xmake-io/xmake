@@ -261,7 +261,12 @@ function buildenvs(package, opt)
         elseif package:is_plat("cross") or package:has_tool("ar", "ar") then
             -- only for cross-toolchain
             envs.CXX = package:build_getenv("cxx")
-            if not envs.ARFLAGS or envs.ARFLAGS == "" then
+            local ar = envs.AR
+            if ar then
+                ar = path.filename(ar)
+            end
+            -- only for cross-xxx-ar, @see https://github.com/xmake-io/xmake-repo/pull/1119
+            if ar and ar:find('-', 1, true) and (not envs.ARFLAGS or envs.ARFLAGS == "") then
                 envs.ARFLAGS = "-cr"
             end
         end
