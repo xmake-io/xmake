@@ -87,6 +87,11 @@ function sandbox_lib_detect_find_program._check(program, opt)
     end
     if sandbox_lib_detect_find_program._do_check(findname, opt) then
         return program
+    -- check "zig c++" without ".exe"
+    -- https://github.com/xmake-io/xmake/issues/2232
+    elseif findname ~= program and path.filename(program):find(" ", 1, true) and
+        sandbox_lib_detect_find_program._do_check(program, opt) then
+        return program
     end
 end
 
