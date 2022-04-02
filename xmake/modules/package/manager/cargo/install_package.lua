@@ -52,8 +52,12 @@ function main(name, opt)
         require_version = "*"
     end
 
-    -- build dependencies
-    local sourcedir = path.join(opt.cachedir, "source")
+    -- @note we cannot use local cachedir as sourcedir, because it maybe will conflict with the parent root Cargo.toml
+    -- @see https://github.com/rust-lang/cargo/issues/10534
+    -- local sourcedir = path.join(opt.cachedir, "source")
+    local sourcedir = path.join(os.tmpfile({ramdisk = true}) .. ".dir", "cargo", "source")
+
+    -- generate Cargo.toml
     local cargotoml = path.join(sourcedir, "Cargo.toml")
     os.tryrm(sourcedir)
     if configs.cargo_toml then
