@@ -1,5 +1,5 @@
 add_rules("mode.release", "mode.debug")
-add_requires("cargo::test", {configs = {tomlfile = path.join(os.projectdir(), "Cargo.toml")}})
+add_requires("cargo::test", {configs = {cargo_toml = path.join(os.projectdir(), "Cargo.toml")}})
 
 target("test")
     set_kind("binary")

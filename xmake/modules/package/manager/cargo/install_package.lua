@@ -29,6 +29,7 @@ import("lib.detect.find_tool")
 -- add_requires("cargo::base64")
 -- add_requires("cargo::base64 0.13.0")
 -- add_requires("cargo::flate2 1.0.17", {configs = {features = {"zlib"}, ["default-features"] = false}})
+-- add_requires("cargo::xxx", {configs = {cargo_toml = path.join(os.projectdir(), "Cargo.toml")}})
 --
 -- @param name  the package name, e.g. cargo::base64
 -- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = , require_version = "x.x.x"}
@@ -55,21 +56,26 @@ function main(name, opt)
     local sourcedir = path.join(opt.cachedir, "source")
     local cargotoml = path.join(sourcedir, "Cargo.toml")
     os.tryrm(sourcedir)
-    local tomlfile = io.open(cargotoml, "w")
-    tomlfile:print("[package]")
-    tomlfile:print("name = \"cargodeps\"")
-    tomlfile:print("version = \"0.1.0\"")
-    tomlfile:print("edition = \"2018\"")
-    tomlfile:print("")
-    tomlfile:print("[dependencies]")
-    local features = configs.features
-    if features then
-        features = table.wrap(features)
-        tomlfile:print("%s = {version = \"%s\", features = [\"%s\"], default-features = %s}", name, require_version, table.concat(features, "\", \""), configs.default_features)
+    if configs.cargo_toml then
+        assert(os.isfile(configs.cargo_toml), "%s not found!", configs.cargo_toml)
+        os.cp(configs.cargo_toml, cargotoml)
     else
-        tomlfile:print("%s = \"%s\"", name, require_version)
+        local tomlfile = io.open(cargotoml, "w")
+        tomlfile:print("[package]")
+        tomlfile:print("name = \"cargodeps\"")
+        tomlfile:print("version = \"0.1.0\"")
+        tomlfile:print("edition = \"2018\"")
+        tomlfile:print("")
+        tomlfile:print("[dependencies]")
+        local features = configs.features
+        if features then
+            features = table.wrap(features)
+            tomlfile:print("%s = {version = \"%s\", features = [\"%s\"], default-features = %s}", name, require_version, table.concat(features, "\", \""), configs.default_features)
+        else
+            tomlfile:print("%s = \"%s\"", name, require_version)
+        end
+        tomlfile:close()
     end
-    tomlfile:close()
 
     -- generate main.rs
     io.writefile(path.join(sourcedir, "src", "main.rs"), [[

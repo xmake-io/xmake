@@ -21,10 +21,43 @@
 -- imports
 import("core.base.option")
 import("core.base.semver")
+import("core.base.hashset")
 import("core.project.config")
 import("core.project.target")
 import("lib.detect.find_tool")
 import("lib.detect.find_file")
+
+-- get the name set of libraries
+function _get_names_of_libraries(name, configs)
+    local names = hashset.new()
+    if configs.cargo_toml then
+        local dependencies = false
+        local cargo_file = io.open(configs.cargo_toml)
+        for line in cargo_file:lines() do
+            line = line:trim()
+            if not dependencies and line == "[dependencies]" then
+                dependencies = true
+            elseif dependencies then
+                if not line:startswith("[") then
+                    local splitinfo = line:split("=", {plain = true})
+                    if splitinfo and #splitinfo > 1 then
+                        name = splitinfo[1]:trim()
+                        if #name > 0 then
+                            names:insert("lib" .. name:gsub("-", "_"))
+                        end
+                    end
+                else
+                    break
+                end
+            end
+        end
+        cargo_file:close()
+    else
+        -- rust packages like actix-web will produce a file named actix_web-<...>
+        names:insert("lib" .. name:gsub("-", "_"))
+    end
+    return names
+end
 
 -- find package using the cargo package manager
 --
@@ -33,8 +66,13 @@ import("lib.detect.find_file")
 --
 function main(name, opt)
 
-    -- Rust packages like actix-web will produce a file named actix_web-<...>
-    name = name:gsub("-", "_")
+    -- get configs
+    opt = opt or {}
+    local configs = opt.configs or {}
+
+    -- get names of libraries
+    local names = _get_names_of_libraries(name, configs)
+    assert(not names:empty())
 
     local frameworkdirs
     local frameworks
@@ -42,19 +80,19 @@ function main(name, opt)
     local libfiles = os.files(path.join(librarydir, "*.rlib"))
     for _, libraryfile in ipairs(libfiles) do
         local filename = path.filename(libraryfile)
-        if filename:startswith("lib" .. name .. "-") then
+        local libraryname = filename:split('-', {plain = true})[1]
+        if names:has(libraryname) then
             frameworkdirs = frameworkdirs or {}
             frameworks = frameworks or {}
             table.insert(frameworkdirs, librarydir)
             table.insert(frameworks, libraryfile)
-            break
         end
     end
     local result
     if frameworks and frameworkdirs then
         result = result or {}
         result.libfiles = libfiles
-        result.frameworkdirs = frameworkdirs
+        result.frameworkdirs = frameworkdirs and table.unique(frameworkdirs) or nil
         result.frameworks = frameworks
         result.version = opt.require_version
     end
