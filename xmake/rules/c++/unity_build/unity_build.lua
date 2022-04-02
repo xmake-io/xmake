@@ -110,6 +110,9 @@ function main(target, sourcebatch)
                 sourceinfo = {}
                 sourceinfo.objectfile = target:objectfile(sourcefile_unity)
                 sourceinfo.dependfile = target:dependfile(sourceinfo.objectfile)
+                sourceinfo.sourcefile1 = sourcefile
+                sourceinfo.objectfile1 = objectfile
+                sourceinfo.dependfile1 = dependfile
                 unity_batch[sourcefile_unity] = sourceinfo
             end
             sourceinfo.sourcefiles = sourceinfo.sourcefiles or {}
@@ -125,9 +128,9 @@ function main(target, sourcebatch)
             table.insert(objectfiles, sourceinfo.objectfile)
             table.insert(dependfiles, sourceinfo.dependfile)
         else
-            table.insert(sourcefiles, sourceinfo.sourcefiles[1])
-            table.insert(objectfiles, sourceinfo.objectfile)
-            table.insert(dependfiles, sourceinfo.dependfile)
+            table.insert(sourcefiles, sourceinfo.sourcefile1)
+            table.insert(objectfiles, sourceinfo.objectfile1)
+            table.insert(dependfiles, sourceinfo.dependfile1)
         end
     end
     sourcebatch.sourcefiles = sourcefiles
