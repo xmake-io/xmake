@@ -24,5 +24,6 @@ function main()
     {
         features         = {description = "set the features of dependency."},
         default_features = {description = "enables or disables any defaults provided by the dependency.", default = true},
+        cargo_toml       = {description = "set Cargo.toml file path"}
     }
 end

@@ -6,6 +6,7 @@
 
 * [#2138](https://github.com/xmake-io/xmake/issues/2138): Support template package
 * [#2185](https://github.com/xmake-io/xmake/issues/2185): Add `--appledev=simulator` to improve apple simulator support
+* [#2227](https://github.com/xmake-io/xmake/issues/2227): Improve cargo package with Cargo.toml file
 
 ### Changes
 
@@ -1237,6 +1238,7 @@
 
 * [#2138](https://github.com/xmake-io/xmake/issues/2138): 支持模板包
 * [#2185](https://github.com/xmake-io/xmake/issues/2185): 添加 `--appledev=simulator` 去改进 Apple 模拟器目标编译支持
+* [#2227](https://github.com/xmake-io/xmake/issues/2227): 改进 cargo 包，支持指定 Cargo.toml 文件
 
 ### 改进
 

@@ -1,0 +1,9 @@
+[package]
+name = "test"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+base64 = "0.13.0"
+flate2 = {version = "1.0.17", features = ["zlib"]}
+
