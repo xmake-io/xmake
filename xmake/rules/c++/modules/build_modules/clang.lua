@@ -74,10 +74,7 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     end
 
     -- load moduledeps
-    local moduledeps = module_parser.load(target, sourcebatch, opt)
-
-    -- build moduledeps
-    local moduledeps_files = module_parser.build(moduledeps)
+    local moduledeps, moduledeps_files = module_parser.load(target, sourcebatch, opt)
 
     -- compile module files to object files
     local count = 0
@@ -85,15 +82,15 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     local sourcefiles_total = #sourcebatch.sourcefiles
     for i = 1, sourcefiles_total do
         local sourcefile = sourcebatch.sourcefiles[i]
-        local moduledep = moduledeps_files[sourcefile] or {}
+        local moduleinfo = moduledeps_files[sourcefile] or {}
 
         -- make module file path, @note we need process submodule name, e.g. module.submodule.mpp -> module.submodule.pcm
         -- @see https://github.com/xmake-io/xmake/pull/1982
-        local modulefile = path.join(cachedir, (moduledep.name or path.basename(sourcefile)) .. ".pcm")
+        local modulefile = path.join(cachedir, (moduleinfo.name or path.basename(sourcefile)) .. ".pcm")
         table.insert(modulefiles, modulefile)
 
         -- make build job
-        moduledep.job = batchjobs:newjob(sourcefile, function (index, total)
+        moduleinfo.job = batchjobs:newjob(sourcefile, function (index, total)
 
             -- compile module files to *.pcm
             local opt2 = table.join(opt, {configs = {force = {cxxflags = {modulesflag,
@@ -128,14 +125,5 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     end
 
     -- build batchjobs
-    local rootjob = opt.rootjob
-    for _, moduledep in pairs(moduledeps) do
-        if moduledep.parents then
-            for _, parent in ipairs(moduledep.parents) do
-                batchjobs:add(moduledep.job, parent.job)
-            end
-        else
-           batchjobs:add(moduledep.job, rootjob)
-        end
-    end
+    module_parser.build_batchjobs(moduledeps, batchjobs, opt.rootjob)
 end
