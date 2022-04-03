@@ -37,7 +37,7 @@ target("test2")
     set_configvar("module", "test2")
     set_configdir("$(buildir)/config2")
     add_configfiles("test.c.in", {filename = "mytest.c"})
-    add_configfiles("config2.h.in", {variables = {hello = "xmake2"}, pattern = "@(.-)@", prefixdir = "header"})
+    add_configfiles("config2.h.in", {variables = {hello = "xmake2"}, pattern = "@([^\n]-)@", prefixdir = "header"})
     add_configfiles("*.man", {onlycopy = true, prefixdir = "man"})
     add_includedirs("$(buildir)/config2/header")
 

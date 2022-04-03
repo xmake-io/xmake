@@ -214,7 +214,7 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
         end
 
         -- replace all variables
-        local pattern = fileinfo.pattern or "%${(.-)}"
+        local pattern = fileinfo.pattern or "%${([^\n]-)}"
         io.gsub(dstfile_tmp, "(" .. pattern .. ")", function(_, variable)
 
             -- get variable name
