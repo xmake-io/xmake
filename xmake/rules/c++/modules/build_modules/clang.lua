@@ -120,7 +120,6 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
                     target:add("cxxflags", "-fmodule-file=" .. modulefile, {force = true})
                 end
             end
-
         end)
     end
 

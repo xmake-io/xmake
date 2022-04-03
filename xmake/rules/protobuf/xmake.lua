@@ -24,6 +24,10 @@ rule("protobuf.cpp")
     before_buildcmd_file(function (target, batchcmds, sourcefile_proto, opt)
         return import("proto").buildcmd(target, batchcmds, sourcefile_proto, opt, "cxx")
     end)
+    before_build_files(function (target, batchjobs, sourcebatch, opt)
+        return import("proto").build_batchjobs(target, batchjobs, sourcebatch, opt, "cxx")
+    end, {batch = true})
+
 
 -- define rule: protobuf.c
 rule("protobuf.c")
@@ -31,3 +35,8 @@ rule("protobuf.c")
     before_buildcmd_file(function (target, batchcmds, sourcefile_proto, opt)
         return import("proto").buildcmd(target, batchcmds, sourcefile_proto, opt, "cc")
     end)
+    before_build_files(function (target, batchjobs, sourcebatch, opt)
+        return import("proto").build_batchjobs(target, batchjobs, sourcebatch, opt, "cc")
+    end, {batch = true})
+
+

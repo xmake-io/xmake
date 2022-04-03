@@ -19,7 +19,10 @@
 --
 
 -- imports
+import("core.base.option")
 import("lib.detect.find_tool")
+import("private.utils.batchcmds")
+import("module_parser")
 
 -- get protoc
 function _get_protoc(target, sourcekind)
@@ -84,5 +87,40 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
     batchcmds:add_depfiles(sourcefile_proto)
     batchcmds:set_depmtime(os.mtime(objectfile))
     batchcmds:set_depcache(target:dependfile(objectfile))
+end
+
+-- build batch jobs
+function build_batchjobs(target, batchjobs, sourcebatch, opt, sourcekind)
+
+    -- get the root directory of protobuf
+    local proto_rootdir
+    if #sourcebatch.sourcefiles > 0 then
+        local sourcefile = sourcebatch.sourcefiles[1]
+        local fileconfig = target:fileconfig(sourcefile)
+        if fileconfig then
+            proto_rootdir = fileconfig.proto_rootdir
+        end
+    end
+
+    -- load moduledeps
+    opt = opt or {}
+    local moduledeps, moduledeps_files = module_parser.load(target, sourcebatch, table.join(opt, {proto_rootdir = proto_rootdir}))
+
+    -- generate jobs
+    local sourcefiles_total = #sourcebatch.sourcefiles
+    for i = 1, sourcefiles_total do
+        local sourcefile = sourcebatch.sourcefiles[i]
+        local moduleinfo = moduledeps_files[sourcefile] or {}
+
+        -- make build job
+        moduleinfo.job = batchjobs:newjob(sourcefile, function (index, total)
+            local batchcmds_ = batchcmds.new({target = target})
+            buildcmd(target, batchcmds_, sourcefile, {progress = (index * 100) / total}, sourcekind)
+            batchcmds_:runcmds({dryrun = option.get("dry-run")})
+        end)
+    end
+
+    -- build batchjobs
+    module_parser.build_batchjobs(moduledeps, batchjobs, opt.rootjob)
 end
 
