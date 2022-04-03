@@ -23,7 +23,7 @@ import("core.base.object")
 import("core.base.hashset")
 
 -- define module
-local jobpool = jobpool or object {_init = {"_size", "_rootjob", "_leafjobs"}}
+local jobpool = jobpool or object {_init = {"_size", "_rootjob", "_leafjobs", "_poprefs"}}
 
 -- get jobs size
 function jobpool:size()
@@ -128,13 +128,16 @@ function jobpool:pop()
             end
         end
 
-        -- is group node?
-        if job.group then
+        -- is group node or referenced node (it has been popped once) ?
+        local poprefs = self._poprefs
+        local jobkey = tostring(job)
+        if job.group or poprefs[jobkey] then
             -- pop the next real job
             return self:pop()
         else
             -- pop this job
             self._size = self._size - 1
+            poprefs[jobkey] = true
             return job, priority
         end
     end
@@ -214,5 +217,5 @@ end
 
 -- new a jobpool
 function new()
-    return jobpool {0, {name = "root"}, {}}
+    return jobpool {0, {name = "root"}, {}, {}}
 end

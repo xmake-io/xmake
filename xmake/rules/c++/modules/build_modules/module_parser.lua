@@ -20,6 +20,7 @@
 
 -- imports
 import("core.project.depend")
+import("core.base.hashset")
 
 -- get depend file of module source file
 function _get_dependfile_of_modulesource(target, sourcefile)
@@ -70,6 +71,22 @@ function _generate_moduledeps(target, sourcefile, opt)
     end, {dependfile = dependfile, files = {sourcefile}})
 end
 
+-- build batch jobs with deps
+function _build_batchjobs_with_deps(moduledeps, batchjobs, rootjob, jobrefs, moduleinfo)
+    local targetjob_ref = jobrefs[moduleinfo.name]
+    if targetjob_ref then
+        batchjobs:add(targetjob_ref, rootjob)
+    else
+        local modulejob = batchjobs:add(moduleinfo.job, rootjob)
+        if modulejob then
+            jobrefs[moduleinfo.name] = modulejob
+            for _, depname in ipairs(moduleinfo.deps) do
+                _build_batchjobs_with_deps(moduledeps, batchjobs, modulejob, jobrefs, moduledeps[depname])
+            end
+        end
+    end
+end
+
 -- generate module deps
 function generate(target, sourcebatch, opt)
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -98,23 +115,32 @@ function load(target, sourcebatch, opt)
             end
         end
     end
-    return moduledeps
+
+    -- get moduledeps with file map
+    local moduledeps_files = {}
+    for _, moduleinfo in pairs(moduledeps) do
+        moduledeps_files[moduleinfo.file] = moduleinfo
+    end
+    return moduledeps, moduledeps_files
 end
 
--- build module deps
-function build(moduledeps)
-    local moduledeps_files = {}
-    for _, moduledep in pairs(moduledeps) do
-        if moduledep.deps then
-            for _, depname in ipairs(moduledep.deps) do
-                local dep = moduledeps[depname]
-                if dep then
-                    dep.parents = dep.parents or {}
-                    table.insert(dep.parents, moduledep)
-                end
-            end
+-- build batch jobs
+function build_batchjobs(moduledeps, batchjobs, rootjob)
+    local depset = hashset.new()
+    for _, moduleinfo in pairs(moduledeps) do
+        assert(moduleinfo.job)
+        for _, depname in ipairs(moduleinfo.deps) do
+            depset:insert(depname)
         end
-        moduledeps_files[moduledep.file] = moduledep
     end
-    return moduledeps_files
+    local moduledeps_root = {}
+    for _, moduleinfo in pairs(moduledeps) do
+        if not depset:has(moduleinfo.name) then
+            table.insert(moduledeps_root, moduleinfo)
+        end
+    end
+    local jobrefs = {}
+    for _, moduleinfo in pairs(moduledeps_root) do
+        _build_batchjobs_with_deps(moduledeps, batchjobs, rootjob, jobrefs, moduleinfo)
+    end
 end
