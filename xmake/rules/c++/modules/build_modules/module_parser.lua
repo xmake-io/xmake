@@ -81,7 +81,10 @@ function _build_batchjobs_with_deps(moduledeps, batchjobs, rootjob, jobrefs, mod
         if modulejob then
             jobrefs[moduleinfo.name] = modulejob
             for _, depname in ipairs(moduleinfo.deps) do
-                _build_batchjobs_with_deps(moduledeps, batchjobs, modulejob, jobrefs, moduledeps[depname])
+                local dep = moduledeps[depname]
+                if dep then -- maybe nil, e.g. `import <string>;`
+                    _build_batchjobs_with_deps(moduledeps, batchjobs, modulejob, jobrefs, dep)
+                end
             end
         end
     end
