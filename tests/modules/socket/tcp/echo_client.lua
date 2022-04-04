@@ -2,7 +2,7 @@ import("core.base.socket")
 
 function main()
     local addr = "127.0.0.1"
-    local port = 9001
+    local port = 9091
     print("connect %s:%d ..", addr, port)
     local sock = socket.connect(addr, port)
     if sock then

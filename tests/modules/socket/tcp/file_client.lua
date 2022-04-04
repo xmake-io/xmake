@@ -3,7 +3,7 @@ import("core.base.bytes")
 
 function main()
     local addr = "127.0.0.1"
-    local port = 9090
+    local port = 9092
     print("connect %s:%d ..", addr, port)
     local sock = socket.connect(addr, port)
     print("%s: connected!", sock)

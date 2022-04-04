@@ -55,7 +55,7 @@ function main(count)
     count = count and tonumber(count) or 1
     scheduler.co_group_begin("test", function ()
         for i = 1, count do
-            scheduler.co_start(_session, "127.0.0.1", 9001)
+            scheduler.co_start(_session, "127.0.0.1", 9091)
         end
     end)
     scheduler.co_group_wait("test")

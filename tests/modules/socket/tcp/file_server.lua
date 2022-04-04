@@ -3,7 +3,7 @@ import("core.base.socket")
 function main(filepath)
 
     local addr = "127.0.0.1"
-    local port = 9090
+    local port = 9092
     local sock = socket.bind(addr, port)
     sock:listen(20)
     print("%s: listening %s:%d ..", sock, addr, port)
