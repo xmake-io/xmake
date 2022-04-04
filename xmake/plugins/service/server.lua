@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.object")
+import("core.base.socket")
 
 -- define module
 local server = server or object()
@@ -33,12 +34,31 @@ function server:super()
     return self._super
 end
 
+-- get the listen address
+function server:addr()
+    return "127.0.0.1"
+end
+
+-- get the listen port
+function server:port()
+    return 90091
+end
+
 -- run main loop
 function server:runloop()
+    local sock_clients = {}
+    local sock = socket.bind(self:addr(), self:port())
+    sock:listen(100)
+    print("%s: listening %s:%d ..", sock, self:addr(), self:port())
     while true do
-        print("hello xmake!")
-        os.sleep(1000)
+        local sock_client = sock:accept()
+        if sock_client then
+            scheduler.co_start(function (sock)
+                print("%s: accepted", sock_client)
+            end, sock_client)
+        end
     end
+    sock:close()
 end
 
 function main()
