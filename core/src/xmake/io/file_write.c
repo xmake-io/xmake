@@ -36,7 +36,7 @@
 static tb_void_t xm_io_file_write_file_utfbom(xm_io_file_t* file)
 {
     // check
-    tb_assert(file && data && xm_io_file_is_file(file) && file->file_ref);
+    tb_assert(file && xm_io_file_is_file(file) && file->file_ref);
 
     // write bom
     switch (file->encoding)

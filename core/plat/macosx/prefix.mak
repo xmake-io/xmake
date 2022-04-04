@@ -53,8 +53,8 @@ CPDIR				= cp -r
 MKDIR				= mkdir -p
 MAKE				= make -r
 
-# cxflags: .c/.cc/.cpp files
-CXFLAGS_RELEASE		= -Oz -fvisibility=hidden -fvisibility-inlines-hidden -flto
+# cxflags: .c/.cc/.cpp files, @note luajit cannot use -Oz, because it will panic
+CXFLAGS_RELEASE		= -Os -fvisibility=hidden -fvisibility-inlines-hidden -flto
 CXFLAGS_DEBUG		= -g -D__tb_debug__
 CXFLAGS				= -m$(BITS) -c -Wall -Werror -Wno-error=deprecated-declarations -Qunused-arguments
 CXFLAGS-I			= -I
@@ -84,7 +84,7 @@ CCFLAGS				= \
 					-D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600
 
 # mxflags: .m/.mm files
-MXFLAGS_RELEASE		= -Oz -fvisibility=hidden -fvisibility-inlines-hidden -flto
+MXFLAGS_RELEASE		= -Os -fvisibility=hidden -fvisibility-inlines-hidden -flto
 MXFLAGS_DEBUG		= -g -D__tb_debug__
 MXFLAGS				= \
 					-m$(BITS) -c -Wall -Werror -Wno-error=deprecated-declarations -Qunused-arguments \
