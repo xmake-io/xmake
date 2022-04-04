@@ -20,38 +20,17 @@
 
 -- imports
 import("core.base.option")
-import("service")
+import("core.base.scheduler")
+import("remote_build_server")
 
-function _start_service(opt)
-    opt = opt or {}
-    if opt.daemon then
-        os.execv(os.programfile(), {"lua", path.join(os.scriptdir(), "service.lua")}, {detach = true})
-    else
-        service()
-    end
-end
-
-function _restart_service()
-end
-
-function _show_service_logs()
-end
-
-function _show_service_status()
+function _start_remote_build_server()
+    remote_build_server():runloop()
 end
 
 function main()
-    cprint("${color.warning}It's experimental feature, still in development!")
-    if option.get("start") then
-        _start_service({daemon = true})
-    elseif option.get("restart") then
-        _restart_service()
-    elseif option.get("logs") then
-        _show_service_logs()
-    elseif option.get("status") then
-        _show_service_status()
-    else
-        _start_service()
+    local starters = {_start_remote_build_server}
+    for _, start_server in ipairs(starters) do
+        scheduler.co_start(start_server)
     end
 end
 

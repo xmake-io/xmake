@@ -18,27 +18,16 @@
 -- @file        service.lua
 --
 
--- define task
 task("service")
-
-    -- set category
     set_category("plugin")
-
-    -- on run
     on_run("main")
 
-    -- set menu
-    set_menu {
-                -- usage
-                usage = "xmake service [options]"
-
-                -- description
-            ,   description = "Start service for remote or distributed compilation and etc. ${color.warning}(Experimental, still in development)"
-
-                -- options
-            ,   options =
-                {
-                    {'d', "daemon", "k",  nil,       "Run service as daemon."                                      }
-                ,   {nil, "status", "k",  nil,       "Show service status if the daemon service has been started." }
-                }
-    }
+    set_menu {usage = "xmake service [options]",
+              description = "Start service for remote or distributed compilation and etc. ${color.warning}(Experimental, still in development)",
+              options = {
+                {nil, "start",   "k",  nil, "Start daemon service."                                       },
+                {nil, "restart", "k",  nil, "Restart daemon service."                                     },
+                {nil, "stop" ,   "k",  nil, "Stop daemon service."                                        },
+                {nil, "logs",    "k",  nil, "Show service logs if the daemon service has been started."   },
+                {nil, "status",  "k",  nil, "Show service status if the daemon service has been started." }
+             }}

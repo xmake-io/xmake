@@ -19,39 +19,24 @@
 --
 
 -- imports
-import("core.base.option")
-import("service")
+import(".server")
 
-function _start_service(opt)
-    opt = opt or {}
-    if opt.daemon then
-        os.execv(os.programfile(), {"lua", path.join(os.scriptdir(), "service.lua")}, {detach = true})
-    else
-        service()
-    end
+-- define module
+local remote_build_server = remote_build_server or server()
+
+-- init server
+function remote_build_server:init()
+    self:super():init(self)
 end
 
-function _restart_service()
-end
-
-function _show_service_logs()
-end
-
-function _show_service_status()
+-- run main loop
+function remote_build_server:runloop()
+    self:super():runloop(self)
 end
 
 function main()
-    cprint("${color.warning}It's experimental feature, still in development!")
-    if option.get("start") then
-        _start_service({daemon = true})
-    elseif option.get("restart") then
-        _restart_service()
-    elseif option.get("logs") then
-        _show_service_logs()
-    elseif option.get("status") then
-        _show_service_status()
-    else
-        _start_service()
-    end
+    local instance = remote_build_server()
+    instance._super = remote_build_server
+    instance:init()
+    return instance
 end
-
