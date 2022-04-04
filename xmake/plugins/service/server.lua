@@ -29,9 +29,9 @@ local server = server or object()
 function server:init()
 end
 
--- get super
-function server:super()
-    return self._super
+-- set handler
+function server:handler_set(handler)
+    self._HANDLER = handler
 end
 
 -- get the listen address
@@ -46,24 +46,33 @@ end
 
 -- run main loop
 function server:runloop()
-    local sock_clients = {}
+    assert(self._HANDLER, "no handler found!")
     local sock = socket.bind(self:addr(), self:port())
     sock:listen(100)
-    print("%s: listening %s:%d ..", sock, self:addr(), self:port())
+    print("%s: listening %s:%d ..", self, self:addr(), self:port())
     while true do
         local sock_client = sock:accept()
         if sock_client then
             scheduler.co_start(function (sock)
-                print("%s: accepted", sock_client)
+                self._HANDLER(self, sock)
+                sock:close()
             end, sock_client)
         end
     end
     sock:close()
 end
 
+-- get class
+function server:class()
+    return server
+end
+
+function server:__tostring()
+    return "<server>"
+end
+
 function main()
     local instance = server()
-    instance._super = server
     instance:init()
     return instance
 end

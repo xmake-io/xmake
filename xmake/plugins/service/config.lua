@@ -15,38 +15,40 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        main.lua
+-- @file        config.lua
 --
 
 -- imports
-import(".server")
+import("core.base.object")
 
 -- define module
-local remote_build_server = remote_build_server or server()
-local super = remote_build_server:class()
+local config = config or object()
 
--- init server
-function remote_build_server:init()
-    super.init(self)
-    super.handler_set(self, self.handler)
+-- init config
+function config:init()
 end
 
--- the server handler
-function remote_build_server:handler(sock)
-    print("on handler")
+-- get the listen address
+function config:addr()
+    return "127.0.0.1"
+end
+
+-- get the listen port
+function config:port()
+    return 90091
 end
 
 -- get class
-function remote_build_server:class()
-    return remote_build_server
+function config:class()
+    return config
 end
 
-function remote_build_server:__tostring()
-    return "<remote_build_server>"
+function config:__tostring()
+    return "<config>"
 end
 
 function main()
-    local instance = remote_build_server()
+    local instance = config()
     instance:init()
     return instance
 end
