@@ -52,17 +52,20 @@ function main(name, opt)
         require_version = "*"
     end
 
-    -- @note we cannot use local cachedir as sourcedir, because it maybe will conflict with the parent root Cargo.toml
-    -- @see https://github.com/rust-lang/cargo/issues/10534
-    -- local sourcedir = path.join(opt.cachedir, "source")
-    local sourcedir = path.join(os.tmpfile({ramdisk = true}) .. ".dir", "cargo", "source")
-
     -- generate Cargo.toml
+    local sourcedir = path.join(opt.cachedir, "source")
     local cargotoml = path.join(sourcedir, "Cargo.toml")
     os.tryrm(sourcedir)
     if configs.cargo_toml then
         assert(os.isfile(configs.cargo_toml), "%s not found!", configs.cargo_toml)
         os.cp(configs.cargo_toml, cargotoml)
+        -- we need add `[workspace]` to prevent cargo from searching up for a parent.
+        -- https://github.com/rust-lang/cargo/issues/10534#issuecomment-1087631050
+        local tomlfile = io.open(cargotoml, "a")
+        tomlfile:print("")
+        tomlfile:print("[workspace]")
+        tomlfile:print("")
+        tomlfile:close()
     else
         local tomlfile = io.open(cargotoml, "w")
         tomlfile:print("[package]")
@@ -71,6 +74,10 @@ function main(name, opt)
         tomlfile:print("edition = \"2018\"")
         tomlfile:print("")
         tomlfile:print("[dependencies]")
+        tomlfile:print("")
+        tomlfile:print("[workspace]")
+        tomlfile:print("")
+
         local features = configs.features
         if features then
             features = table.wrap(features)
