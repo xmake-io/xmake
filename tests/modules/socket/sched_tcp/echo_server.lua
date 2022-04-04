@@ -45,8 +45,8 @@ function _listen(addr, port)
         if sock_client then
             print("%s: accepted", sock_client)
             table.insert(sock_clients, sock_client)
-            sock_client:ctrl(socket.CTRL_SET_SENDBUFF, 100000 * 20)
-            sock_client:ctrl(socket.CTRL_SET_RECVBUFF, 100000 * 20)
+            sock_client:ctrl(socket.CTRL_SET_SENDBUFF, 6000000)
+            sock_client:ctrl(socket.CTRL_SET_RECVBUFF, 6000000)
             scheduler.co_start(_session_recv, sock_client)
             scheduler.co_start(_session_send, sock_client)
         end
