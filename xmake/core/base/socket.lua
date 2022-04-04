@@ -45,6 +45,10 @@ socket.EV_SEND = 2
 socket.EV_CONN = socket.EV_SEND
 socket.EV_ACPT = socket.EV_RECV
 
+-- the socket control code
+socket.CTRL_SET_RECVBUFF = 2
+socket.CTRL_SET_SENDBUFF = 4
+
 -- new a socket
 function _instance.new(socktype, family, sock)
     local instance   = table.inherit(_instance)
@@ -90,6 +94,23 @@ function _instance:rawfd()
         errors = string.format("%s: %s", self, errors)
     end
     return result, errors
+end
+
+-- control socket
+function _instance:ctrl(code, value)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- control it
+    local ok, errors = io.socket_ctrl(self:cdata(), code, value)
+    if not ok and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return ok, errors
 end
 
 -- bind socket

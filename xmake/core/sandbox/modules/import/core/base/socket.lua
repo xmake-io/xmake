@@ -43,6 +43,10 @@ sandbox_core_base_socket.EV_SEND = socket.EV_SEND
 sandbox_core_base_socket.EV_CONN = socket.EV_CONN
 sandbox_core_base_socket.EV_ACPT = socket.EV_ACPT
 
+-- export the socket control code
+sandbox_core_base_socket.CTRL_SET_RECVBUFF = socket.CTRL_SET_RECVBUFF
+sandbox_core_base_socket.CTRL_SET_SENDBUFF = socket.CTRL_SET_SENDBUFF
+
 -- wrap socket
 function _socket_wrap(sock)
 
@@ -67,6 +71,15 @@ function sandbox_core_base_socket_instance.wait(sock, events, timeout)
         raise(errors)
     end
     return events
+end
+
+-- control socket
+function sandbox_core_base_socket_instance.ctrl(sock, code, value)
+    local ok, errors = sock:_ctrl(code, value)
+    if not ok and errors then
+        raise(errors)
+    end
+    return ok
 end
 
 -- bind socket

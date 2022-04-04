@@ -42,6 +42,8 @@ function _session(addr, port)
     if sock then
         print("%s: connected!", sock)
         table.insert(socks, sock)
+        sock:ctrl(socket.CTRL_SET_SENDBUFF, 100000 * 20)
+        sock:ctrl(socket.CTRL_SET_RECVBUFF, 100000 * 20)
         scheduler.co_group_begin("test", function ()
             scheduler.co_start(_session_recv, sock)
             scheduler.co_start(_session_send, sock)

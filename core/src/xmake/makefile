@@ -70,6 +70,7 @@ xmake_C_FILES 			+= \
 						io/poller_spank \
 						io/poller_support \
 						io/socket_open \
+						io/socket_ctrl \
 						io/socket_rawfd \
 						io/socket_wait \
 						io/socket_bind \

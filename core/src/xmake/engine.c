@@ -142,6 +142,7 @@ tb_int_t xm_io_socket_open(lua_State* lua);
 tb_int_t xm_io_socket_rawfd(lua_State* lua);
 tb_int_t xm_io_socket_wait(lua_State* lua);
 tb_int_t xm_io_socket_bind(lua_State* lua);
+tb_int_t xm_io_socket_ctrl(lua_State* lua);
 tb_int_t xm_io_socket_listen(lua_State* lua);
 tb_int_t xm_io_socket_accept(lua_State* lua);
 tb_int_t xm_io_socket_connect(lua_State* lua);
@@ -336,6 +337,7 @@ static luaL_Reg const g_io_functions[] =
 ,   { "socket_rawfd",       xm_io_socket_rawfd     }
 ,   { "socket_wait",        xm_io_socket_wait      }
 ,   { "socket_bind",        xm_io_socket_bind      }
+,   { "socket_ctrl",        xm_io_socket_ctrl      }
 ,   { "socket_listen",      xm_io_socket_listen    }
 ,   { "socket_accept",      xm_io_socket_accept    }
 ,   { "socket_connect",     xm_io_socket_connect   }
