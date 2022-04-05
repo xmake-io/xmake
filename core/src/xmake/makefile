@@ -44,8 +44,8 @@ xmake_C_FILES 			+= \
 						os/strerror \
 						os/filesize \
 						os/getwinsize \
-						os/getuid \
-						os/getgid \
+						os/uid \
+						os/gid \
 						os/getpid \
 						os/getown \
 						io/stdfile \

@@ -31,8 +31,8 @@ local string    = require("base/string")
 local process   = require("base/process")
 
 -- save original interfaces
-os._getuid      = os._getuid or os.getuid or os.uid -- for old core
-os._getgid      = os._getgid or os.getgid or os.gid
+os._uid      = os._uid or os.uid
+os._gid      = os._gid or os.gid
 os._getpid      = os._getpid or os.getpid
 os._exit        = os._exit or os.exit
 os._mkdir       = os._mkdir or os.mkdir
@@ -610,7 +610,7 @@ function os.tmpdir(opt)
     local subdir = os._TMPSUBDIR
     if not subdir then
         local name = "." .. xmake._NAME
-        subdir = path.join((os._FAKEROOT and (name .. "fake") or name) .. (os.getuid().euid or ""), os.date("%y%m%d"))
+        subdir = path.join((os._FAKEROOT and (name .. "fake") or name) .. (os.uid().euid or ""), os.date("%y%m%d"))
         os._TMPSUBDIR = subdir
     end
 
@@ -975,19 +975,19 @@ function os.nuldev(input)
 end
 
 -- get uid
-function os.getuid(...)
+function os.uid(...)
     os._UID = {}
-    if os._getuid then
-        os._UID = os._getuid(...) or {}
+    if os._uid then
+        os._UID = os._uid(...) or {}
     end
     return os._UID
 end
 
 -- get gid
-function os.getgid(...)
+function os.gid(...)
     os._GID = {}
-    if os._getgid then
-        os._GID = os._getgid(...) or {}
+    if os._gid then
+        os._GID = os._gid(...) or {}
     end
     return os._GID
 end
@@ -1004,7 +1004,7 @@ end
 
 -- check the current command is running as root
 function os.isroot()
-    return os.getuid().euid == 0
+    return os.uid().euid == 0
 end
 
 -- is case-insensitive filesystem?
