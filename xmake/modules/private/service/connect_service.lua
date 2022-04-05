@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.socket")
 import("core.base.scheduler")
 import("private.service.config")
+import("private.service.client.remote_build_client")
 
 function _get_address()
     local addr, port
@@ -39,17 +40,21 @@ function _get_address()
     return addr, port
 end
 
-function _session(addr, port)
-    print("connect %s:%d ..", addr, port)
+function _connect(addr, port)
+    local client = remote_build_client()
+    local statusfile = client:statusfile()
     local sock = socket.connect(addr, port)
+    print("%s: connect %s:%d ..", client, addr, port)
     if sock then
-        print("%s: connected!", sock)
+        print("%s: connected!", client)
+        io.save(statusfile, {addr = addr, port = port})
     else
-        print("connect %s:%d failed", addr, port)
+        print("%s: connect %s:%d failed", client, addr, port)
+        os.tryrm(statusfile)
     end
 end
 
 function main()
-    scheduler.co_start(_session, _get_address())
+    scheduler.co_start(_connect, _get_address())
 end
 

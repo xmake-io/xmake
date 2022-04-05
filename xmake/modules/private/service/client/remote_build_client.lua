@@ -15,26 +15,33 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        show_status.lua
+-- @file        remote_build_client.lua
 --
 
 -- imports
-import("core.base.option")
-import("core.base.socket")
-import("core.base.scheduler")
 import("private.service.config")
-import("private.service.client.remote_build_client")
+import("private.service.client.client")
 
-function main()
-    local client = remote_build_client()
-    local status = client:status()
-    if status then
-        print("%s: connected", client)
-        print(status)
-    else
-        print("%s: disconnected", client)
-    end
+-- define module
+local remote_build_client = remote_build_client or client()
+local super = remote_build_client:class()
+
+-- init client
+function remote_build_client:init()
+    super.init(self)
 end
 
+-- get class
+function remote_build_client:class()
+    return remote_build_client
+end
 
+function remote_build_client:__tostring()
+    return "<remote_build_client>"
+end
 
+function main()
+    local instance = remote_build_client()
+    instance:init()
+    return instance
+end

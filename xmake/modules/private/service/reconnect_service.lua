@@ -19,10 +19,11 @@
 --
 
 -- imports
-import("core.base.option")
-import("private.service.service")
+import("private.service.connect_service")
+import("private.service.disconnect_service")
 
 function main()
-    -- TODO
+    disconnect_service();
+    connect_service();
 end
 

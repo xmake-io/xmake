@@ -20,9 +20,16 @@
 
 -- imports
 import("core.base.option")
-import("private.service.service")
+import("core.base.socket")
+import("core.base.scheduler")
+import("private.service.config")
+import("private.service.client.remote_build_client")
 
 function main()
-    -- TODO
+    local client = remote_build_client()
+    local statusfile = client:statusfile()
+    os.tryrm(statusfile)
+    print("%s: disconnected!", client)
 end
+
 
