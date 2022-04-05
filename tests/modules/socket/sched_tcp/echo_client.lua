@@ -36,7 +36,6 @@ end
 
 local socks = {}
 function _session(addr, port)
-
     print("connect %s:%d ..", addr, port)
     local sock = socket.connect(addr, port)
     if sock then

@@ -21,6 +21,7 @@
 -- imports
 import("core.base.object")
 import("core.base.socket")
+import("core.base.scheduler")
 
 -- define module
 local server = server or object()

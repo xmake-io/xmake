@@ -25,7 +25,15 @@ import("private.service.service")
 function main(opt)
     opt = opt or {}
     if opt.daemon then
-        os.execv(os.programfile(), {"lua", "private.service.service"}, {detach = true})
+        local argv = {"lua"}
+        if option.get("verbose") then
+            table.insert(argv, "-v")
+        end
+        if option.get("diagnosis") then
+            table.insert(argv, "-D")
+        end
+        table.insert(argv, "private.service.service")
+        os.execv(os.programfile(), argv, {detach = true})
     else
         service()
     end

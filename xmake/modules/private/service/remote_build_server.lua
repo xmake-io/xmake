@@ -29,7 +29,8 @@ local super = remote_build_server:class()
 -- init server
 function remote_build_server:init()
     super.init(self)
-    super.listen_set(self, config.get("remote_build.server.listen"))
+    local listen = assert(config.get("remote_build.server.listen"), "config(remote_build.server.listen): not found!")
+    super.listen_set(self, listen)
     super.handler_set(self, self.handler)
 end
 
