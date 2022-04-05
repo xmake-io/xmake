@@ -22,7 +22,21 @@
 import("core.base.option")
 import("private.service.remote_build_server")
 
-function main()
-    print(remote_build_server():workdir())
+function _stop_remote_build_server(...)
+    local pidfile = remote_build_server(...):pidfile()
+    if pidfile and os.isfile(pidfile) then
+        local pid = io.readfile(pidfile)
+        if pid then
+            pid = pid:trim()
+            print("stop pid: %s", pid)
+        end
+    end
+end
+
+function main(...)
+    local stoppers = {_stop_remote_build_server}
+    for _, stop_server in ipairs(stoppers) do
+        stop_server(...)
+    end
 end
 
