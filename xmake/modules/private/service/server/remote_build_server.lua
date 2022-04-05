@@ -38,7 +38,7 @@ function remote_build_server:init(daemon)
 end
 
 -- the server handler
-function remote_build_server:handler(sock)
+function remote_build_server:handler(msg)
     print("on handler")
 end
 

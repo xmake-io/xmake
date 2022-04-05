@@ -86,7 +86,7 @@ function server:runloop()
         local sock_client = sock:accept()
         if sock_client then
             scheduler.co_start(function (sock)
-                self._HANDLER(self, sock)
+                self:_handle_session(sock)
                 sock:close()
             end, sock_client)
         end
@@ -115,6 +115,33 @@ function server:workdir()
     return os.tmpfile(tostring(self)) .. ".dir"
 end
 
+-- handle session
+function server:_handle_session(sock)
+    print("%s: %s session connected", self, sock)
+    local real = 0
+    local recv = 0
+    local data = nil
+    local wait = false
+    local results = {}
+    while true do
+        real, data = sock:recv(8192)
+        print(real, data)
+        if real > 0 then
+            recv = recv + real
+            wait = false
+        elseif real == 0 and not wait then
+            if sock:wait(socket.EV_RECV, -1) == socket.EV_RECV then
+                wait = true
+            else
+                break
+            end
+        else
+            break
+        end
+    end
+    print("%s: %s session end", self, sock)
+end
+
 function server:__tostring()
     return "<server>"
 end
@@ -124,3 +151,4 @@ function main()
     instance:init()
     return instance
 end
+
