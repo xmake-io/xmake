@@ -74,6 +74,9 @@ function server:runloop()
         raise("%s: has been started!", self)
     end
 
+    -- save the current pid for stopping service
+    io.writefile(self:pidfile(), os.getpid())
+
     -- run loop
     local sock = socket.bind(self:addr(), self:port())
     sock:listen(100)

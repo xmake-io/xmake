@@ -28,8 +28,16 @@ function _stop_remote_build_server(...)
         local pid = io.readfile(pidfile)
         if pid then
             pid = pid:trim()
-            print("stop pid: %s", pid)
+            try { function ()
+                if is_host("windows") then
+                    os.run("taskkill /f /t /pid %s", pid)
+                else
+                    os.run("kill -9 %s", pid)
+                end
+                print("remote_build_server[%s]: stopped", pid)
+            end}
         end
+        os.rm(pidfile)
     end
 end
 
