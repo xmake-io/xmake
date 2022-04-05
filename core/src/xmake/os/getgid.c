@@ -15,14 +15,14 @@
  * Copyright (C) 2015-present, TBOOX Open Source Group.
  *
  * @author      TitanSnow
- * @file        uid.c
+ * @file        getgid.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "uid"
+#define TB_TRACE_MODULE_NAME                "getgid"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -39,84 +39,84 @@
  */
 #ifndef TB_CONFIG_OS_WINDOWS
 
-// get & set uid
-tb_int_t xm_os_uid(lua_State* lua)
+// get & set gid
+tb_int_t xm_os_getgid(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_int_t ruidset = -1;
-    tb_int_t euidset = -1;
+    tb_int_t rgidset = -1;
+    tb_int_t egidset = -1;
     tb_int_t argc = lua_gettop(lua);
     if (argc == 1)
     {
         if (lua_istable(lua, 1))
         {
-            // os.uid({["ruid"] = ruid, ["euid"] = euid})
-            lua_getfield(lua, 1, "ruid");
-            lua_getfield(lua, 1, "euid");
+            // os.getgid({["rgid"] = rgid, ["egid"] = egid})
+            lua_getfield(lua, 1, "rgid");
+            lua_getfield(lua, 1, "egid");
             if (!lua_isnil(lua, -1))
             {
                 if (!lua_isnumber(lua, -1))
                 {
-                    lua_pushfstring(lua, "invalid field type(%s) in `euid` for os.uid", luaL_typename(lua, -1));
+                    lua_pushfstring(lua, "invalid field type(%s) in `egid` for os.getgid", luaL_typename(lua, -1));
                     lua_error(lua);
                     return 0;
                 }
-                euidset = (tb_int_t)lua_tonumber(lua, -1);
+                egidset = (tb_int_t)lua_tonumber(lua, -1);
             }
             lua_pop(lua, 1);
             if (!lua_isnil(lua, -1))
             {
                 if (!lua_isnumber(lua, -1))
                 {
-                    lua_pushfstring(lua, "invalid field type(%s) in `ruid` for os.uid", luaL_typename(lua, -1));
+                    lua_pushfstring(lua, "invalid field type(%s) in `rgid` for os.getgid", luaL_typename(lua, -1));
                     lua_error(lua);
                     return 0;
                 }
-                ruidset = (tb_int_t)lua_tonumber(lua, -1);
+                rgidset = (tb_int_t)lua_tonumber(lua, -1);
             }
             lua_pop(lua, 1);
         }
         else if (lua_isnumber(lua, 1))
         {
-            // os.uid(uid)
-            ruidset = euidset = (tb_int_t)lua_tonumber(lua, 1);
+            // os.getgid(gid)
+            rgidset = egidset = (tb_int_t)lua_tonumber(lua, 1);
         }
         else
         {
-            lua_pushfstring(lua, "invalid argument type(%s) for os.uid", luaL_typename(lua, 1));
+            lua_pushfstring(lua, "invalid argument type(%s) for os.getgid", luaL_typename(lua, 1));
             lua_error(lua);
             return 0;
         }
     }
     else if (argc == 2)
     {
-        // os.uid(ruid, euid)
+        // os.getgid(rgid, egid)
         if (!lua_isnil(lua, 1))
         {
             if (!lua_isnumber(lua, 1))
             {
-                lua_pushfstring(lua, "invalid argument type(%s) for os.uid", luaL_typename(lua, 1));
+                lua_pushfstring(lua, "invalid argument type(%s) for os.getgid", luaL_typename(lua, 1));
                 lua_error(lua);
                 return 0;
             }
-            ruidset = (tb_int_t)lua_tonumber(lua, 1);
+            rgidset = (tb_int_t)lua_tonumber(lua, 1);
         }
         if (!lua_isnil(lua, 2))
         {
             if (!lua_isnumber(lua, 2))
             {
-                lua_pushfstring(lua, "invalid argument type(%s) for os.uid", luaL_typename(lua, 2));
+                lua_pushfstring(lua, "invalid argument type(%s) for os.getgid", luaL_typename(lua, 2));
                 lua_error(lua);
                 return 0;
             }
-            euidset = (tb_int_t)lua_tonumber(lua, 2);
+            egidset = (tb_int_t)lua_tonumber(lua, 2);
         }
     }
     else if (argc != 0)
     {
-        lua_pushstring(lua, "invalid argument count for os.uid");
+        lua_pushstring(lua, "invalid argument count for os.getgid");
         lua_error(lua);
         return 0;
     }
@@ -124,24 +124,24 @@ tb_int_t xm_os_uid(lua_State* lua)
     // store return value
     lua_newtable(lua);
 
-    if (ruidset != -1 || euidset != -1)
+    if (rgidset != -1 || egidset != -1)
     {
-        // set ruid & euid
+        // set rgid & egid
         lua_pushstring(lua, "errno");
-        lua_pushinteger(lua, setreuid(ruidset, euidset) != 0 ? errno : 0);
+        lua_pushinteger(lua, setregid(rgidset, egidset) != 0 ? errno : 0);
         lua_settable(lua, -3);
     }
 
-    // get uid & euid
-    uid_t uid  = getuid();
-    uid_t euid = geteuid();
+    // get gid & egid
+    gid_t gid  = getgid();
+    gid_t egid = getegid();
 
     // push
-    lua_pushstring(lua, "ruid");
-    lua_pushinteger(lua, uid);
+    lua_pushstring(lua, "rgid");
+    lua_pushinteger(lua, gid);
     lua_settable(lua, -3);
-    lua_pushstring(lua, "euid");
-    lua_pushinteger(lua, euid);
+    lua_pushstring(lua, "egid");
+    lua_pushinteger(lua, egid);
     lua_settable(lua, -3);
 
     // ok

@@ -113,8 +113,8 @@ tb_int_t xm_os_syserror(lua_State* lua);
 tb_int_t xm_os_strerror(lua_State* lua);
 tb_int_t xm_os_getwinsize(lua_State* lua);
 #ifndef TB_CONFIG_OS_WINDOWS
-tb_int_t xm_os_uid(lua_State* lua);
-tb_int_t xm_os_gid(lua_State* lua);
+tb_int_t xm_os_getuid(lua_State* lua);
+tb_int_t xm_os_getgid(lua_State* lua);
 tb_int_t xm_os_getown(lua_State* lua);
 #endif
 
@@ -290,8 +290,8 @@ static luaL_Reg const g_os_functions[] =
 ,   { "filesize",       xm_os_filesize  }
 ,   { "getwinsize",     xm_os_getwinsize}
 #ifndef TB_CONFIG_OS_WINDOWS
-,   { "uid",            xm_os_uid       }
-,   { "gid",            xm_os_gid       }
+,   { "uid",            xm_os_getuid    }
+,   { "gid",            xm_os_getgid    }
 ,   { "getown",         xm_os_getown    }
 #endif
 ,   { tb_null,          tb_null         }
