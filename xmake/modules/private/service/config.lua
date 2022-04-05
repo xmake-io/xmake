@@ -31,6 +31,9 @@ function _generate_configfile()
             server = {
                 listen = "127.0.0.1:90091"
             }
+            client = {
+                connect = "127.0.0.1:90091"
+            }
         }
     }
     io.save(filepath, configs, {orderkeys = true})
