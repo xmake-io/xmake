@@ -67,6 +67,15 @@ end
 -- run main loop
 function server:runloop()
     assert(self._HANDLER, "no handler found!")
+
+    -- ensure only one server process
+    local lockfile = os.tmpfile(tostring(self)) .. ".lock"
+    local lock = io.openlock(lockfile)
+    if not lock:trylock() then
+        raise("%s: has been started!", self)
+    end
+
+    -- run loop
     local sock = socket.bind(self:addr(), self:port())
     sock:listen(100)
     print("%s: listening %s:%d ..", self, self:addr(), self:port())
