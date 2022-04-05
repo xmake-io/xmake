@@ -46,6 +46,7 @@ xmake_C_FILES 			+= \
 						os/getwinsize \
 						os/getuid \
 						os/getgid \
+						os/getpid \
 						os/getown \
 						io/stdfile \
 						io/file_size \

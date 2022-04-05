@@ -75,6 +75,7 @@ sandbox_os.programfile  = os.programfile
 sandbox_os.projectdir   = os.projectdir
 sandbox_os.projectfile  = os.projectfile
 sandbox_os.getwinsize   = os.getwinsize
+sandbox_os.getpid       = os.getpid
 
 -- syserror code
 sandbox_os.SYSERR_UNKNOWN     = os.SYSERR_UNKNOWN

@@ -33,6 +33,7 @@ local process   = require("base/process")
 -- save original interfaces
 os._getuid      = os._getuid or os.getuid or os.uid -- for old core
 os._getgid      = os._getgid or os.getgid or os.gid
+os._getpid      = os._getpid or os.getpid
 os._exit        = os._exit or os.exit
 os._mkdir       = os._mkdir or os.mkdir
 os._rmdir       = os._rmdir or os.rmdir
@@ -989,6 +990,16 @@ function os.getgid(...)
         os._GID = os._getgid(...) or {}
     end
     return os._GID
+end
+
+-- get pid
+function os.getpid(...)
+    local pid = os._PID
+    if pid == nil then
+        pid = os._getpid()
+        os._PID = pid
+    end
+    return pid
 end
 
 -- check the current command is running as root
