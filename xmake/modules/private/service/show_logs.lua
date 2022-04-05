@@ -20,8 +20,25 @@
 
 -- imports
 import("core.base.option")
-import("private.service.service")
+import("private.service.config")
 
 function main()
+    local log
+    local logfile = config.get("logfile")
+    while not log do
+        if os.isfile(logfile) then
+            log = io.open(logfile, "r")
+            break
+        end
+        os.sleep(1000)
+    end
+    while true do
+        local line = log:read("l")
+        if line and #line > 0 then
+            print(line)
+        else
+            os.sleep(500)
+        end
+    end
 end
 
