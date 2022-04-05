@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("private.service.config")
 import("private.service.server")
 
 -- define module
@@ -28,6 +29,7 @@ local super = remote_build_server:class()
 -- init server
 function remote_build_server:init()
     super.init(self)
+    super.listen_set(self, config.get("remote_build.server.listen"))
     super.handler_set(self, self.handler)
 end
 

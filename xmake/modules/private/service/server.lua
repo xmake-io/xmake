@@ -34,14 +34,27 @@ function server:handler_set(handler)
     self._HANDLER = handler
 end
 
+-- set the given listen address
+function server:listen_set(listen)
+    local splitinfo = listen:split(':', {plain = true})
+    if #splitinfo == 2 then
+        self._ADDR = splitinfo[1]
+        self._PORT = splitinfo[2]
+    else
+        self._ADDR = "127.0.0.1"
+        self._PORT = splitinfo[1]
+    end
+    assert(self._ADDR and self._PORT, "invalid listen address!")
+end
+
 -- get the listen address
 function server:addr()
-    return "127.0.0.1"
+    return self._ADDR
 end
 
 -- get the listen port
 function server:port()
-    return 90091
+    return self._PORT
 end
 
 -- run main loop

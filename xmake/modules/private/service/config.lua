@@ -30,7 +30,7 @@ function _generate_configfile()
         remote_build = {
             server = {
                 listen = "127.0.0.1:90091"
-            }
+            },
             client = {
                 connect = "127.0.0.1:90091"
             }
@@ -47,6 +47,20 @@ end
 -- get all configs
 function configs()
     return _g.configs
+end
+
+-- get the given config, e.g. config.get("remote_build.server.listen")
+function get(name)
+    local value = configs()
+    for _, key in ipairs(name:split('.', {plain = true})) do
+        if type(value) == "table" then
+            value = value[key]
+        else
+            value = nil
+            break
+        end
+    end
+    return value
 end
 
 -- load config
