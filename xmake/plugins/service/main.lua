@@ -20,38 +20,38 @@
 
 -- imports
 import("core.base.option")
-import("service")
-
-function _start_service(opt)
-    opt = opt or {}
-    if opt.daemon then
-        os.execv(os.programfile(), {"lua", path.join(os.scriptdir(), "service.lua")}, {detach = true})
-    else
-        service()
-    end
-end
-
-function _restart_service()
-end
-
-function _show_service_logs()
-end
-
-function _show_service_status()
-end
+import("private.service.start_service")
+import("private.service.restart_service")
+import("private.service.stop_service")
+import("private.service.connect_service")
+import("private.service.reconnect_service")
+import("private.service.disconnect_service")
+import("private.service.import_config")
+import("private.service.show_logs")
+import("private.service.show_status")
 
 function main()
     cprint("${color.warning}It's experimental feature, still in development!")
     if option.get("start") then
-        _start_service({daemon = true})
+        start_service({daemon = true})
     elseif option.get("restart") then
-        _restart_service()
+        restart_service()
+    elseif option.get("stop") then
+        stop_service()
+    elseif option.get("connect") then
+        connect_service()
+    elseif option.get("reconnect") then
+        reconnect_service()
+    elseif option.get("disconnect") then
+        disconnect_service()
+    elseif option.get("config") then
+        import_config()
     elseif option.get("logs") then
-        _show_service_logs()
+        show_logs()
     elseif option.get("status") then
-        _show_service_status()
+        show_status()
     else
-        _start_service()
+        start_service()
     end
 end
 

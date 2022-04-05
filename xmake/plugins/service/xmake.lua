@@ -25,9 +25,15 @@ task("service")
     set_menu {usage = "xmake service [options]",
               description = "Start service for remote or distributed compilation and etc. ${color.warning}(Experimental, still in development)",
               options = {
-                {nil, "start",   "k",  nil, "Start daemon service."                                       },
-                {nil, "restart", "k",  nil, "Restart daemon service."                                     },
-                {nil, "stop" ,   "k",  nil, "Stop daemon service."                                        },
-                {nil, "logs",    "k",  nil, "Show service logs if the daemon service has been started."   },
-                {nil, "status",  "k",  nil, "Show service status if the daemon service has been started." }
+                {nil, "start",      "k",  nil, "Start daemon service."                                       },
+                {nil, "restart",    "k",  nil, "Restart daemon service."                                     },
+                {nil, "stop" ,      "k",  nil, "Stop daemon service."                                        },
+                {nil, "connect" ,   "k",  nil, "Connect the remote daemon service."                          },
+                {nil, "reconnect",  "k",  nil, "Reconnect the remote daemon service."                        },
+                {nil, "disconnect", "k",  nil, "Disconnect the remote daemon service."                       },
+                {nil, "config",     "kv", nil, "Import the configuration file. (default: ~/.xmake/service/config.lua)",
+                                               "e.g.",
+                                               "    - xmake service --config=/tmp/config.lua"                },
+                {nil, "logs",       "k",  nil, "Show service logs if the daemon service has been started."   },
+                {nil, "status",     "k",  nil, "Show service status if the daemon service has been started." }
              }}
