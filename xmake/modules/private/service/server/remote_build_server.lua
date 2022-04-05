@@ -20,7 +20,7 @@
 
 -- imports
 import("private.service.config")
-import("private.service.server")
+import("private.service.server.server")
 
 -- define module
 local remote_build_server = remote_build_server or server()

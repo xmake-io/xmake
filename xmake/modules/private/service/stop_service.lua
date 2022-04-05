@@ -20,7 +20,7 @@
 
 -- imports
 import("core.base.option")
-import("private.service.remote_build_server")
+import("private.service.server.remote_build_server")
 
 function _stop_remote_build_server(...)
     local pidfile = remote_build_server(...):pidfile()

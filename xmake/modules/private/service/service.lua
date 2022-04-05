@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.scheduler")
-import("private.service.remote_build_server")
+import("private.service.server.remote_build_server")
 
 function _start_remote_build_server(...)
     remote_build_server(...):runloop()
