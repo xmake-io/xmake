@@ -19,36 +19,40 @@
 --
 
 -- imports
-import("core.base.object")
+import("core.base.global")
 
--- define module
-local config = config or object()
-
--- init config
-function config:init()
+-- generate a default config file
+function _generate_configfile()
+    local filepath = configfile()
+    assert(not _g.configs and not os.isfile(filepath))
+    local configs = {
+        logfile = path.join(global.directory(), "service", "logs.txt"),
+        remote_build = {
+            server = {
+                listen = "127.0.0.1:90091"
+            }
+        }
+    }
+    io.save(filepath, configs, {orderkeys = true})
 end
 
--- get the listen address
-function config:addr()
-    return "127.0.0.1"
+-- get config file path
+function configfile()
+    return path.join(global.directory(), "service.conf")
 end
 
--- get the listen port
-function config:port()
-    return 90091
+-- get all configs
+function configs()
+    return _g.configs
 end
 
--- get class
-function config:class()
-    return config
-end
-
-function config:__tostring()
-    return "<config>"
-end
-
-function main()
-    local instance = config()
-    instance:init()
-    return instance
+-- load config
+function load()
+    assert(not _g.configs, "config has been loaded!")
+    local filepath = configfile()
+    if not os.isfile(filepath) then
+        _generate_configfile()
+    end
+    assert(os.isfile(filepath), "%s not found!", filepath)
+    _g.configs = io.load(filepath)
 end

@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("private.service.config")
 import("private.service.start_service")
 import("private.service.restart_service")
 import("private.service.stop_service")
@@ -32,6 +33,7 @@ import("private.service.show_status")
 
 function main()
     cprint("${color.warning}It's experimental feature, still in development!")
+    config.load()
     if option.get("start") then
         start_service({daemon = true})
     elseif option.get("restart") then

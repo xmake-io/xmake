@@ -31,7 +31,7 @@ task("service")
                 {nil, "connect" ,   "k",  nil, "Connect the remote daemon service."                          },
                 {nil, "reconnect",  "k",  nil, "Reconnect the remote daemon service."                        },
                 {nil, "disconnect", "k",  nil, "Disconnect the remote daemon service."                       },
-                {nil, "config",     "kv", nil, "Import the configuration file. (default: ~/.xmake/service/config.lua)",
+                {nil, "config",     "kv", nil, "Import the configuration file. (default: ~/.xmake/service.conf)",
                                                "e.g.",
                                                "    - xmake service --config=/tmp/config.lua"                },
                 {nil, "logs",       "k",  nil, "Show service logs if the daemon service has been started."   },
