@@ -69,8 +69,7 @@ function server:runloop()
     assert(self._HANDLER, "no handler found!")
 
     -- ensure only one server process
-    local lockfile = os.tmpfile(tostring(self)) .. ".lock"
-    local lock = io.openlock(lockfile)
+    local lock = io.openlock(self:lockfile())
     if not lock:trylock() then
         raise("%s: has been started!", self)
     end
@@ -96,6 +95,21 @@ end
 -- get class
 function server:class()
     return server
+end
+
+-- get pid file
+function server:pidfile()
+    return path.join(self:workdir(), "server.pid")
+end
+
+-- get lock file
+function server:lockfile()
+    return path.join(self:workdir(), "server.lock")
+end
+
+-- get working directory
+function server:workdir()
+    return os.tmpfile(tostring(self)) .. ".dir"
 end
 
 function server:__tostring()

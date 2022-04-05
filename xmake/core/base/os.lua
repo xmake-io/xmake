@@ -975,25 +975,19 @@ end
 
 -- get uid
 function os.uid(...)
-    -- get uid
     os._UID = {}
     if os._uid then
         os._UID = os._uid(...) or {}
     end
-
-    -- ok?
     return os._UID
 end
 
 -- get gid
 function os.gid(...)
-    -- get gid
     os._GID = {}
     if os._gid then
         os._GID = os._gid(...) or {}
     end
-
-    -- ok?
     return os._GID
 end
 

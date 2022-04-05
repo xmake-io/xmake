@@ -20,9 +20,9 @@
 
 -- imports
 import("core.base.option")
-import("private.service.service")
+import("private.service.remote_build_server")
 
 function main()
-    -- TODO
+    print(remote_build_server():workdir())
 end
 
