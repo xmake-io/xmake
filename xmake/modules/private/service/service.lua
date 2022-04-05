@@ -23,14 +23,14 @@ import("core.base.option")
 import("core.base.scheduler")
 import("private.service.remote_build_server")
 
-function _start_remote_build_server()
-    remote_build_server():runloop()
+function _start_remote_build_server(...)
+    remote_build_server(...):runloop()
 end
 
-function main()
+function main(...)
     local starters = {_start_remote_build_server}
     for _, start_server in ipairs(starters) do
-        scheduler.co_start(start_server)
+        scheduler.co_start(start_server, ...)
     end
 end
 

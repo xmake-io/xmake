@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("private.service.config")
 import("private.service.service")
 
 function main(opt)
@@ -33,7 +34,15 @@ function main(opt)
             table.insert(argv, "-D")
         end
         table.insert(argv, "private.service.service")
-        os.execv(os.programfile(), argv, {detach = true})
+        table.insert(argv, "--daemon")
+        local logfile = config.get("logfile")
+        if logfile then
+            local logdir = path.directory(logfile)
+            if not os.isdir(logdir) then
+                os.mkdir(logdir)
+            end
+        end
+        os.execv(os.programfile(), argv, {detach = true, stdout = logfile, stderr = logfile})
     else
         service()
     end

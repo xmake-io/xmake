@@ -27,7 +27,13 @@ import("core.base.scheduler")
 local server = server or object()
 
 -- init server
-function server:init()
+function server:init(daemon)
+    self._DAEMON = daemon
+end
+
+-- is daemon?
+function server:daemon()
+    return self._DAEMON
 end
 
 -- set handler
@@ -64,6 +70,7 @@ function server:runloop()
     local sock = socket.bind(self:addr(), self:port())
     sock:listen(100)
     print("%s: listening %s:%d ..", self, self:addr(), self:port())
+    io.flush()
     while true do
         local sock_client = sock:accept()
         if sock_client then
@@ -73,6 +80,7 @@ function server:runloop()
             end, sock_client)
         end
     end
+    io.flush()
     sock:close()
 end
 

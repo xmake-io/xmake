@@ -27,8 +27,11 @@ local remote_build_server = remote_build_server or server()
 local super = remote_build_server:class()
 
 -- init server
-function remote_build_server:init()
-    super.init(self)
+function remote_build_server:init(daemon)
+    super.init(self, daemon)
+    if self:daemon() then
+        config.load()
+    end
     local listen = assert(config.get("remote_build.server.listen"), "config(remote_build.server.listen): not found!")
     super.listen_set(self, listen)
     super.handler_set(self, self.handler)
@@ -48,8 +51,8 @@ function remote_build_server:__tostring()
     return "<remote_build_server>"
 end
 
-function main()
+function main(daemon)
     local instance = remote_build_server()
-    instance:init()
+    instance:init(daemon ~= nil)
     return instance
 end
