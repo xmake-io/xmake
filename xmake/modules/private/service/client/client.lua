@@ -40,27 +40,6 @@ function client:workdir()
     return os.tmpfile(tostring(self)) .. ".dir"
 end
 
--- is connected?
-function client:is_connected()
-    return os.isfile(self:statusfile())
-end
-
--- get the status
-function client:status()
-    local status = self._STATUS
-    local statusfile = self:statusfile()
-    if not status and os.isfile(statusfile) then
-        status = io.load(statusfile)
-        self._STATUS = status
-    end
-    return status
-end
-
--- get the status file
-function client:statusfile()
-    return path.join(self:workdir(), "status.txt")
-end
-
 function client:__tostring()
     return "<client>"
 end

@@ -36,6 +36,27 @@ function remote_build_client:class()
     return remote_build_client
 end
 
+-- is connected?
+function remote_build_client:is_connected()
+    return os.isfile(self:statusfile())
+end
+
+-- get the status
+function remote_build_client:status()
+    local status = self._STATUS
+    local statusfile = self:statusfile()
+    if not status and os.isfile(statusfile) then
+        status = io.load(statusfile)
+        self._STATUS = status
+    end
+    return status
+end
+
+-- get the status file
+function remote_build_client:statusfile()
+    return path.join(self:workdir(), "status.txt")
+end
+
 function remote_build_client:__tostring()
     return "<remote_build_client>"
 end
