@@ -125,7 +125,6 @@ function server:_handle_session(sock)
     local results = {}
     while true do
         real, data = sock:recv(8192)
-        print(real, data)
         if real > 0 then
             recv = recv + real
             wait = false
