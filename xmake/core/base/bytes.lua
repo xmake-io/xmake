@@ -461,6 +461,14 @@ function bytes.new(...)
     return _instance.new(...)
 end
 
+-- is instance of bytes?
+function bytes.instance_of(data)
+    if type(data) == "table" and data.cdata and data.size then
+        return true
+    end
+    return false
+end
+
 -- register call function
 setmetatable(bytes, {
     __call = function (_, ...)

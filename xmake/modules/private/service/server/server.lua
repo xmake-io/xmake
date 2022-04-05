@@ -22,6 +22,7 @@
 import("core.base.object")
 import("core.base.socket")
 import("core.base.scheduler")
+import("private.service.stream")
 
 -- define module
 local server = server or object()
@@ -29,6 +30,12 @@ local server = server or object()
 -- init server
 function server:init(daemon)
     self._DAEMON = daemon
+    self._STREAM = stream()
+end
+
+-- get stream
+function server:stream()
+    return self._STREAM
 end
 
 -- is daemon?
@@ -126,6 +133,9 @@ function server:_handle_session(sock)
     while true do
         real, data = sock:recv(8192)
         if real > 0 then
+            if data then
+                self:stream():write_bytes(data)
+            end
             recv = recv + real
             wait = false
         elseif real == 0 and not wait then
