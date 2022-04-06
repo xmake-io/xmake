@@ -471,19 +471,31 @@ function _instance:sendto(data, addr, port, opt)
         return -1, string.format("%s: sendto empty address!", self)
     end
 
-    -- data is bytes? table.unpack the raw address
-    if bytes.instance_of(data) then
-        data = {data = data:caddr(), size = data:size()}
+    -- get data address and size for bytes and string
+    if type(data) == "string" then
+        data = bytes(data)
+    end
+    local datasize = data:size()
+    local dataaddr = data:caddr()
+
+    -- init start and last
+    opt = opt or {}
+    local start = opt.start or 1
+    local last = opt.last or datasize
+    if start < 1 or start > datasize then
+        return -1, string.format("%s: invalid start(%d)!", self, start)
+    end
+    if last < start - 1 or last > datasize + start - 1 then
+        return -1, string.format("%s: invalid last(%d)!", self, last)
     end
 
     -- send it
-    opt = opt or {}
     local send = 0
     local wait = false
     local errors = nil
     if opt.block then
         while true do
-            send, errors = io.socket_sendto(self:cdata(), data, addr, port, self:family())
+            send, errors = io.socket_sendto(self:cdata(), dataaddr + start - 1, last + 1 - start, addr, port, self:family())
             if send == 0 and not wait then
                 local events, waiterrs = _instance.wait(self, socket.EV_SEND, opt.timeout or -1)
                 if events == socket.EV_SEND then
@@ -497,7 +509,7 @@ function _instance:sendto(data, addr, port, opt)
             end
         end
     else
-        send, errors = io.socket_sendto(self:cdata(), data, addr, port, self:family())
+        send, errors = io.socket_sendto(self:cdata(), dataaddr + start - 1, last + 1 - start, addr, port, self:family())
         if send < 0 and errors then
             errors = string.format("%s: %s", self, errors)
         end

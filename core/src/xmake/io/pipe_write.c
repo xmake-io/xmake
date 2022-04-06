@@ -52,29 +52,11 @@ tb_int_t xm_io_pipe_write(lua_State* lua)
     tb_pipe_file_ref_t pipefile = (tb_pipe_file_ref_t)xm_lua_topointer(lua, 1);
     tb_check_return_val(pipefile, 0);
 
-    // get data
+    // get data and size
     tb_size_t        size = 0;
     tb_byte_t const* data = tb_null;
-    if (lua_istable(lua, 2))
-    {
-        // get data address
-        lua_pushstring(lua, "data");
-        lua_gettable(lua, 2);
-        data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tonumber(lua, -1);
-        lua_pop(lua, 1);
-
-        // get data size
-        lua_pushstring(lua, "size");
-        lua_gettable(lua, 2);
-        size = (tb_size_t)lua_tonumber(lua, -1);
-        lua_pop(lua, 1);
-    }
-    else
-    {
-        size_t datasize = 0;
-        data = (tb_byte_t const*)luaL_checklstring(lua, 2, &datasize);
-        size = (tb_size_t)datasize;
-    }
+    if (lua_isnumber(lua, 2)) data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tonumber(lua, 2);
+    if (lua_isnumber(lua, 3)) size = (tb_size_t)lua_tonumber(lua, 3);
     if (!data || !size)
     {
         lua_pushinteger(lua, -1);
@@ -82,28 +64,8 @@ tb_int_t xm_io_pipe_write(lua_State* lua)
         return 2;
     }
 
-    // get start
-    tb_long_t start = 1;
-    if (lua_isnumber(lua, 3)) start = (tb_long_t)lua_tonumber(lua, 3);
-    if (start < 1 || start > size)
-    {
-        lua_pushinteger(lua, -1);
-        lua_pushfstring(lua, "invalid start position(%d)!", (tb_int_t)start);
-        return 2;
-    }
-
-    // get last
-    tb_long_t last = (tb_long_t)size;
-    if (lua_isnumber(lua, 4)) last = (tb_long_t)lua_tonumber(lua, 4);
-    if (last < start - 1 || last > size + start - 1)
-    {
-        lua_pushinteger(lua, -1);
-        lua_pushfstring(lua, "invalid last position(%d)!", (tb_int_t)last);
-        return 2;
-    }
-
     // write data
-    tb_long_t real = tb_pipe_file_write(pipefile, data + start - 1, last - start + 1);
+    tb_long_t real = tb_pipe_file_write(pipefile, data, size);
     lua_pushinteger(lua, (tb_int_t)real);
     return 1;
 }
