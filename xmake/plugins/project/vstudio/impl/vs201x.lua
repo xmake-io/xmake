@@ -79,13 +79,20 @@ function _clear_cache()
 end
 
 -- get command string
-function _get_command_string(cmd)
+function _get_command_string(cmd, vcxprojdir)
     local kind = cmd.kind
     local opt = cmd.opt
     if cmd.program then
-        local command = os.args(table.join(cmd.program, cmd.argv))
+        local argv = {}
+        for _, v in ipairs(table.join(cmd.program, cmd.argv)) do
+            if path.is_absolute(v) then
+                v = _make_dirs(v, vcxprojdir)
+            end
+            table.insert(argv, v)
+        end
+        local command = os.args(argv)
         if opt and opt.curdir then
-            command = string.format("pushd \"%s\"\n%s\npopd", opt.curdir, command)
+            command = string.format("pushd \"%s\"\n%s\npopd", _make_dirs(opt.curdir, vcxprojdir), command)
         end
         return command
     elseif kind == "cp" then
@@ -104,7 +111,7 @@ function _get_command_string(cmd)
 end
 
 -- add target custom commands for target
-function _make_custom_commands_for_target(commands, target, suffix)
+function _make_custom_commands_for_target(commands, target, suffix, vcxprojdir)
     for _, ruleinst in ipairs(target:orderules()) do
         local scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
         local script = ruleinst:script(scriptname)
@@ -113,7 +120,7 @@ function _make_custom_commands_for_target(commands, target, suffix)
             script(target, batchcmds_, {})
             if not batchcmds_:empty() then
                 for _, cmd in ipairs(batchcmds_:cmds()) do
-                    local command = _get_command_string(cmd)
+                    local command = _get_command_string(cmd, vcxprojdir)
                     if command then
                         local key = suffix and suffix or "before"
                         commands[key] = commands[key] or {}
@@ -130,7 +137,7 @@ function _make_custom_commands_for_target(commands, target, suffix)
             script(target, batchcmds_, {})
             if not batchcmds_:empty() then
                 for _, cmd in ipairs(batchcmds_:cmds()) do
-                    local command = _get_command_string(cmd)
+                    local command = _get_command_string(cmd, vcxprojdir)
                     if command then
                         local key = (suffix and suffix or "before") .. "_link"
                         commands[key] = commands[key] or {}
@@ -143,7 +150,7 @@ function _make_custom_commands_for_target(commands, target, suffix)
 end
 
 -- add target custom commands for object rules
-function _make_custom_commands_for_objectrules(commands, target, sourcebatch, suffix)
+function _make_custom_commands_for_objectrules(commands, target, sourcebatch, suffix, vcxprojdir)
 
     -- get rule
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
@@ -157,7 +164,7 @@ function _make_custom_commands_for_objectrules(commands, target, sourcebatch, su
         script(target, batchcmds_, sourcebatch, {})
         if not batchcmds_:empty() then
             for _, cmd in ipairs(batchcmds_:cmds()) do
-                local command = _get_command_string(cmd)
+                local command = _get_command_string(cmd, vcxprojdir)
                 if command then
                     local key = suffix and suffix or "before"
                     commands[key] = commands[key] or {}
@@ -178,7 +185,7 @@ function _make_custom_commands_for_objectrules(commands, target, sourcebatch, su
                 script(target, batchcmds_, sourcefile, {})
                 if not batchcmds_:empty() then
                     for _, cmd in ipairs(batchcmds_:cmds()) do
-                        local command = _get_command_string(cmd)
+                        local command = _get_command_string(cmd, vcxprojdir)
                         if command then
                             local key = suffix and suffix or "before"
                             commands[key] = commands[key] or {}
@@ -192,19 +199,19 @@ function _make_custom_commands_for_objectrules(commands, target, sourcebatch, su
 end
 
 -- make custom commands
-function _make_custom_commands(target)
+function _make_custom_commands(target, vcxprojdir)
     local commands = {}
-    _make_custom_commands_for_target(commands, target, "before")
-    _make_custom_commands_for_target(commands, target)
+    _make_custom_commands_for_target(commands, target, "before", vcxprojdir)
+    _make_custom_commands_for_target(commands, target, nil, vcxprojdir)
     for _, sourcebatch in pairs(target:sourcebatches()) do
         local sourcekind = sourcebatch.sourcekind
         if sourcekind ~= "cc" and sourcekind ~= "cxx" and sourcekind ~= "as" then
-            _make_custom_commands_for_objectrules(commands, target, sourcebatch, "before")
-            _make_custom_commands_for_objectrules(commands, target, sourcebatch)
-            _make_custom_commands_for_objectrules(commands, target, sourcebatch, "after")
+            _make_custom_commands_for_objectrules(commands, target, sourcebatch, "before", vcxprojdir)
+            _make_custom_commands_for_objectrules(commands, target, sourcebatch, nil, vcxprojdir)
+            _make_custom_commands_for_objectrules(commands, target, sourcebatch, "after", vcxprojdir)
         end
     end
-    _make_custom_commands_for_target(commands, target, "after")
+    _make_custom_commands_for_target(commands, target, "after", vcxprojdir)
     return commands
 end
 
@@ -356,7 +363,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     end
 
     -- save custom commands
-    targetinfo.commands = _make_custom_commands(target)
+    targetinfo.commands = _make_custom_commands(target, vcxprojdir)
     return targetinfo
 end
 
