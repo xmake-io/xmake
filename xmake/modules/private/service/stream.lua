@@ -26,39 +26,40 @@ import("core.base.bytes")
 local stream = stream or object()
 
 -- init stream
-function stream:init()
+function stream:init(sock)
+    self._SOCK = sock
 end
 
 -- is empty?
 function stream:empty()
 end
 
--- write bytes
-function stream:write_bytes(data)
+-- send bytes
+function stream:send_bytes(data)
 end
 
--- write table
-function stream:write_table(tbl)
+-- send table
+function stream:send_table(tbl)
 end
 
--- write string
-function stream:write_string(str)
+-- send string
+function stream:send_string(str)
 end
 
--- read bytes
-function stream:read_bytes(size)
+-- recv bytes
+function stream:recv_bytes(size)
 end
 
--- read table
-function stream:read_table()
+-- recv table
+function stream:recv_table()
 end
 
--- read string
-function stream:read_string()
+-- recv string
+function stream:recv_string()
 end
 
-function main()
+function main(sock)
     local instance = stream()
-    instance:init()
+    instance:init(sock)
     return instance
 end

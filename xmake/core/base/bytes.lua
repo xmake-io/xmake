@@ -97,7 +97,7 @@ function _instance.new(...)
                 os.raise("incorrect bounds(%d-%d) for bytes(...)!", start, last)
             end
             instance._SIZE     = last - start + 1
-            instance._CDATA    = b:cdata() -1 + start
+            instance._CDATA    = b:cdata() - 1 + start
             instance._REF      = b -- keep lua ref for GC
             instance._MANAGED  = false
             instance._READONLY = b:readonly()
