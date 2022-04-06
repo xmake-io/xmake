@@ -382,12 +382,17 @@ function _instance:sendfile(file, opt)
 end
 
 -- recv data from socket
-function _instance:recv(size, opt)
+function _instance:recv(buff, size, opt)
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
     if not ok then
         return -1, errors
+    end
+
+    -- check buffer
+    if not buff and buff:size() < size then
+        return -1, string.format("%s: too small buffer!", self)
     end
 
     -- check size
@@ -404,15 +409,11 @@ function _instance:recv(size, opt)
     local wait = false
     local data_or_errors = nil
     if opt.block then
-        local results = {}
         while recv < size do
-            local buff = self:_recvbuff()
-            real, data_or_errors = io.socket_recv(self:cdata(), buff:caddr(), math.min(buff:size(), size - recv))
+            real, data_or_errors = io.socket_recv(self:cdata(), buff:caddr() + recv, math.min(buff:size() - recv, size - recv))
             if real > 0 then
                 recv = recv + real
                 wait = false
-                table.insert(results, bytes(buff, 1, real))
-                self:_recvbuff_clear()
             elseif real == 0 and not wait then
                 local events, waiterrs = _instance.wait(self, socket.EV_RECV, opt.timeout or -1)
                 if events == socket.EV_RECV then
@@ -426,16 +427,14 @@ function _instance:recv(size, opt)
             end
         end
         if recv == size then
-            data_or_errors = bytes(results)
+            data_or_errors = bytes(buff, 1, recv)
         else
             recv = -1
         end
     else
-        local buff = self:_recvbuff()
         recv, data_or_errors = io.socket_recv(self:cdata(), buff:caddr(), math.min(buff:size(), size))
         if recv > 0 then
             data_or_errors = bytes(buff, 1, recv)
-            self:_recvbuff_clear()
         end
     end
     if recv < 0 and data_or_errors then
@@ -498,7 +497,7 @@ function _instance:sendto(data, addr, port, opt)
 end
 
 -- recv udp data from peer
-function _instance:recvfrom(size, opt)
+function _instance:recvfrom(buff, size, opt)
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
@@ -509,6 +508,11 @@ function _instance:recvfrom(size, opt)
     -- only for udp
     if self:type() ~= socket.UDP then
         return -1, string.format("%s: sendto() only for udp socket!", self)
+    end
+
+    -- check buffer
+    if not buff and buff:size() < size then
+        return -1, string.format("%s: too small buffer!", self)
     end
 
     -- check size
@@ -525,11 +529,9 @@ function _instance:recvfrom(size, opt)
     local data_or_errors = nil
     if opt.block then
         while true do
-            local buff = self:_recvbuff()
             recv, data_or_errors, addr, port = io.socket_recvfrom(self:cdata(), buff:caddr(), math.min(buff:size(), size))
             if recv > 0 then
                 data_or_errors = bytes(buff, 1, recv)
-                self:_recvbuff_clear()
                 break
             elseif recv == 0 and not wait then
                 local events, waiterrs = _instance.wait(self, socket.EV_RECV, opt.timeout or -1)
@@ -545,11 +547,9 @@ function _instance:recvfrom(size, opt)
             end
         end
     else
-        local buff = self:_recvbuff()
         recv, data_or_errors, addr, port = io.socket_recvfrom(self:cdata(), buff:caddr(), math.min(buff:size(), size))
         if recv > 0 then
             data_or_errors = bytes(buff, 1, recv)
-            self:_recvbuff_clear()
         end
     end
     if recv < 0 and data_or_errors then
@@ -604,21 +604,6 @@ function _instance:close()
         self._SOCK = nil
     end
     return ok
-end
-
--- get the recv buffer
-function _instance:_recvbuff()
-    local recvbuff = self._RECVBUFF
-    if not recvbuff then
-        recvbuff = bytes(8192)
-        self._RECVBUFF = recvbuff
-    end
-    return recvbuff
-end
-
--- clear the recv buffer
-function _instance:_recvbuff_clear()
-    self._RECVBUFF = nil
 end
 
 -- ensure the socket is opened

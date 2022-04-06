@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.object")
+import("core.base.bytes")
 import("core.base.socket")
 import("core.base.scheduler")
 import("private.service.stream")
@@ -123,9 +124,9 @@ function server:_handle_session(sock)
     local recv = 0
     local data = nil
     local wait = false
-    local results = {}
+    local buff = bytes(8192)
     while true do
-        real, data = sock:recv(8192)
+        real, data = sock:recv(buff, 8192)
         if real > 0 then
             if data then
             end

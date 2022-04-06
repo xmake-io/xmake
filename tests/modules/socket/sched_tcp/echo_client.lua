@@ -1,3 +1,4 @@
+import("core.base.bytes")
 import("core.base.socket")
 import("core.base.scheduler")
 
@@ -5,8 +6,9 @@ function _session_recv(sock)
     print("%s: recv ..", sock)
     local count = 0
     local result = nil
+    local buff = bytes(8192)
     while count < 100000 do
-        local recv, data = sock:recv(13, {block = true})
+        local recv, data = sock:recv(buff, 13, {block = true})
         if recv > 0 then
             result = data
             count = count + 1

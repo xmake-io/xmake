@@ -1,8 +1,10 @@
+import("core.base.bytes")
 import("core.base.socket")
 
 function main(addr)
     addr = addr or path.join(os.tmpdir(), "echo.socket")
     print("connect %s ..", addr)
+    local buff = bytes(8192)
     local sock = socket.connect_unix(addr)
     if sock then
         print("%s: connected!", sock)
@@ -10,7 +12,7 @@ function main(addr)
         while count < 10000 do
             local send = sock:send("hello world..", {block = true})
             if send > 0 then
-                sock:recv(13, {block = true})
+                sock:recv(buff, 13, {block = true})
             else
                 break
             end

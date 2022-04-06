@@ -1,3 +1,4 @@
+import("core.base.bytes")
 import("core.base.socket")
 
 function main()
@@ -8,10 +9,11 @@ function main()
     if sock then
         print("%s: connected!", sock)
         local count = 0
+        local buff = bytes(8192)
         while count < 10000 do
             local send = sock:send("hello world..", {block = true})
             if send > 0 then
-                sock:recv(13, {block = true})
+                sock:recv(buff, 13, {block = true})
             else
                 break
             end
