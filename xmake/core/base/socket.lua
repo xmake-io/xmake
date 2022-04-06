@@ -24,6 +24,7 @@ local _instance   = _instance or {}
 
 -- load modules
 local io        = require("base/io")
+local libc      = require("base/libc")
 local bytes     = require("base/bytes")
 local table     = require("base/table")
 local string    = require("base/string")
@@ -265,21 +266,22 @@ function _instance:send(data, opt)
         return -1, errors
     end
 
-    -- data is bytes? table.unpack the raw address
-    local datasize = #data
-    if bytes.instance_of(data) then
-        datasize = data:size()
-        data = {data = data:caddr(), size = data:size()}
+    -- get data address and size for bytes and string
+    if type(data) == "string" then
+        data = bytes(data)
     end
+    local datasize = data:size()
+    local dataaddr = data:caddr()
 
     -- init start and last
     opt = opt or {}
     local start = opt.start or 1
     local last = opt.last or datasize
-
-    -- check start and last
-    if start > last or start < 1 then
-        return -1, string.format("%s: invalid start(%d) and last(%d)!", self, start, last)
+    if start < 1 or start > datasize then
+        return -1, string.format("%s: invalid start(%d)!", self, start)
+    end
+    if last < start - 1 or last > datasize + start - 1 then
+        return -1, string.format("%s: invalid last(%d)!", self, last)
     end
 
     -- send it
@@ -290,7 +292,7 @@ function _instance:send(data, opt)
     if opt.block then
         local size = last + 1 - start
         while start <= last do
-            real, errors = io.socket_send(self:cdata(), data, start, last)
+            real, errors = io.socket_send(self:cdata(), dataaddr + start - 1, last + 1 - start)
             if real > 0 then
                 send = send + real
                 start = start + real
@@ -311,7 +313,7 @@ function _instance:send(data, opt)
             send = -1
         end
     else
-        send, errors = io.socket_send(self:cdata(), data, start, last)
+        send, errors = io.socket_send(self:cdata(), dataaddr + start - 1, last + 1 - start)
         if send < 0 and errors then
             errors = string.format("%s: %s", self, errors)
         end
