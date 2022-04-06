@@ -4,14 +4,14 @@ import("core.base.process")
 import("core.base.scheduler")
 
 function _session_read_pipe(id, rpipeopt)
-    local results = {}
     local buff = bytes(8192)
     local rpipe = rpipeopt.rpipe
     print("%s/%d: read ..", rpipe, id)
+    local read = 0
     while not rpipeopt.stop do
-        local real, data = rpipe:read(buff, 8192)
+        local real, data = rpipe:read(buff, 8192 - read, {start = read + 1})
         if real > 0 then
-            table.insert(results, data:clone()) -- TODO
+            read = read + real
         elseif real == 0 then
             if rpipe:wait(pipe.EV_READ, -1) < 0 then
                 break
@@ -20,7 +20,7 @@ function _session_read_pipe(id, rpipeopt)
             break
         end
     end
-    results = bytes(results)
+    local results = bytes(buff, 1, read)
     print("%s/%d: read ok, size: %d", rpipe, id, results:size())
     if results:size() > 0 then
         results:dump()
