@@ -267,7 +267,7 @@ function _instance:send(data, opt)
 
     -- data is bytes? table.unpack the raw address
     local datasize = #data
-    if type(data) == "table" and data.caddr then
+    if bytes.instance_of(data) then
         datasize = data:size()
         data = {data = data:caddr(), size = data:size()}
     end
@@ -402,15 +402,22 @@ function _instance:recv(buff, size, opt)
         return -1, string.format("%s: invalid size(%d)!", self, size)
     end
 
-    -- recv it
+    -- init start in buffer
     opt = opt or {}
+    local start = opt.start or 1
+    local pos = start - 1
+    if start >= buff:size() or start < 1 then
+        return -1, string.format("%s: invalid start(%d)!", self, start)
+    end
+
+    -- recv it
     local recv = 0
     local real = 0
     local wait = false
     local data_or_errors = nil
     if opt.block then
         while recv < size do
-            real, data_or_errors = io.socket_recv(self:cdata(), buff:caddr() + recv, math.min(buff:size() - recv, size - recv))
+            real, data_or_errors = io.socket_recv(self:cdata(), buff:caddr() + pos + recv, math.min(buff:size() - pos - recv, size - recv))
             if real > 0 then
                 recv = recv + real
                 wait = false
@@ -427,14 +434,14 @@ function _instance:recv(buff, size, opt)
             end
         end
         if recv == size then
-            data_or_errors = bytes(buff, 1, recv)
+            data_or_errors = bytes(buff, start, recv)
         else
             recv = -1
         end
     else
-        recv, data_or_errors = io.socket_recv(self:cdata(), buff:caddr(), math.min(buff:size(), size))
+        recv, data_or_errors = io.socket_recv(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
         if recv > 0 then
-            data_or_errors = bytes(buff, 1, recv)
+            data_or_errors = bytes(buff, start, recv)
         end
     end
     if recv < 0 and data_or_errors then
@@ -463,7 +470,7 @@ function _instance:sendto(data, addr, port, opt)
     end
 
     -- data is bytes? table.unpack the raw address
-    if type(data) == "table" and data.caddr then
+    if bytes.instance_of(data) then
         data = {data = data:caddr(), size = data:size()}
     end
 
@@ -522,16 +529,23 @@ function _instance:recvfrom(buff, size, opt)
         return -1, string.format("%s: invalid size(%d)!", self, size)
     end
 
-    -- recv it
+    -- init start in buffer
     opt = opt or {}
+    local start = opt.start or 1
+    local pos = start - 1
+    if start >= buff:size() or start < 1 then
+        return -1, string.format("%s: invalid start(%d)!", self, start)
+    end
+
+    -- recv it
     local recv = 0
     local wait = false
     local data_or_errors = nil
     if opt.block then
         while true do
-            recv, data_or_errors, addr, port = io.socket_recvfrom(self:cdata(), buff:caddr(), math.min(buff:size(), size))
+            recv, data_or_errors, addr, port = io.socket_recvfrom(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
             if recv > 0 then
-                data_or_errors = bytes(buff, 1, recv)
+                data_or_errors = bytes(buff, start, recv)
                 break
             elseif recv == 0 and not wait then
                 local events, waiterrs = _instance.wait(self, socket.EV_RECV, opt.timeout or -1)
@@ -547,9 +561,9 @@ function _instance:recvfrom(buff, size, opt)
             end
         end
     else
-        recv, data_or_errors, addr, port = io.socket_recvfrom(self:cdata(), buff:caddr(), math.min(buff:size(), size))
+        recv, data_or_errors, addr, port = io.socket_recvfrom(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
         if recv > 0 then
-            data_or_errors = bytes(buff, 1, recv)
+            data_or_errors = bytes(buff, start, recv)
         end
     end
     if recv < 0 and data_or_errors then

@@ -69,7 +69,7 @@ function _instance:write(data, opt)
 
     -- data is bytes? table.unpack the raw address
     local datasize = #data
-    if type(data) == "table" and data.caddr then
+    if bytes.instance_of(data) then
         datasize = data:size()
         data = {data = data:caddr(), size = data:size()}
     end
@@ -138,15 +138,22 @@ function _instance:read(buff, size, opt)
         return -1, string.format("%s: invalid size(%d)!", self, size)
     end
 
-    -- read it
+    -- init start in buffer
     opt = opt or {}
+    local start = opt.start or 1
+    local pos = start - 1
+    if start >= buff:size() or start < 1 then
+        return -1, string.format("%s: invalid start(%d)!", self, start)
+    end
+
+    -- read it
     local read = 0
     local real = 0
     local data_or_errors = nil
     if opt.block then
         local results = {}
         while read < size do
-            real, data_or_errors = io.pipe_read(self:cdata(), buff:caddr() + read, math.min(buff:size() - read, size - read))
+            real, data_or_errors = io.pipe_read(self:cdata(), buff:caddr() + pos + read, math.min(buff:size() - pos - read, size - read))
             if real > 0 then
                 read = read + real
             elseif real == 0 then
@@ -160,14 +167,14 @@ function _instance:read(buff, size, opt)
             end
         end
         if read == size then
-            data_or_errors = bytes(buff, 1, read)
+            data_or_errors = bytes(buff, start, read)
         else
             read = -1
         end
     else
-        read, data_or_errors = io.pipe_read(self:cdata(), buff:caddr(), math.min(buff:size(), size))
+        read, data_or_errors = io.pipe_read(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
         if read > 0 then
-            data_or_errors = bytes(buff, 1, read)
+            data_or_errors = bytes(buff, start, read)
         end
     end
     if read < 0 and data_or_errors then
