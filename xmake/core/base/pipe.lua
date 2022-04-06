@@ -120,6 +120,7 @@ end
 
 -- read data from pipe
 function _instance:read(buff, size, opt)
+    assert(buff)
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
@@ -128,7 +129,8 @@ function _instance:read(buff, size, opt)
     end
 
     -- check buffer
-    if not buff and buff:size() < size then
+    size = size or buff:size()
+    if buff:size() < size then
         return -1, string.format("%s: too small buffer!", self)
     end
 
@@ -168,14 +170,14 @@ function _instance:read(buff, size, opt)
             end
         end
         if read == size then
-            data_or_errors = bytes(buff, start, read)
+            data_or_errors = buff:slice(start, read)
         else
             read = -1
         end
     else
         read, data_or_errors = io.pipe_read(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
         if read > 0 then
-            data_or_errors = bytes(buff, start, read)
+            data_or_errors = buff:slice(start, read)
         end
     end
     if read < 0 and data_or_errors then

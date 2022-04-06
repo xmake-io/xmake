@@ -28,6 +28,8 @@ local stream = stream or object()
 -- init stream
 function stream:init(sock)
     self._SOCK = sock
+    self._RCACHE = bytes(8192)
+    self._RCACHE_SIZE = 0
 end
 
 -- is empty?
@@ -47,7 +49,47 @@ function stream:send_string(str)
 end
 
 -- recv bytes
-function stream:recv_bytes(size)
+function stream:recv_bytes(buff, size)
+
+    -- read data from cache first
+    local buffsize = 0
+    local cache = self._RCACHE
+    local cache_size = self._RCACHE_SIZE
+    local cache_maxn = cache:size()
+    if size <= cache_size then
+        buff:copy(cache:slice(1, size))
+        cache_size = cache_size - size
+        self._RCACHE_SIZE = cache_size
+        return buff:slice(1, size)
+    elseif cache_size > 0 then
+        buff:copy(cache:slice(1, cache_size))
+        buffsize = cache_size
+        cache_size = 0
+    end
+    assert(cache_size == 0)
+
+    -- recv data from socket
+    local real = 0
+    local data = nil
+    local wait = false
+    while buffsize < size do
+        real, data = sock:recv(cache)
+        if real > 0 then
+            --buff:append(data, 1, leftbuff)
+            -- TODO move left cache to head
+            buffsize = buffsize + real
+            wait = false
+        elseif real == 0 and not wait then
+            if sock:wait(socket.EV_RECV, -1) == socket.EV_RECV then
+                wait = true
+            else
+                break
+            end
+        else
+            -- TODO
+            break
+        end
+    end
 end
 
 -- recv table

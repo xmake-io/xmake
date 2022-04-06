@@ -205,13 +205,32 @@ function _instance:copy(src)
     if self:readonly() then
         os.raise("%s: cannot be modified!", self)
     end
-    if type(src) == 'string' then
+    if type(src) == "string" then
         src = bytes(src)
     end
-    if src:size() ~= self:size() then
-        os.raise("%s: cannot copy bytes, src and dst must have same size(%d->%d)!", self, src:size(), self:size())
+    if src:size() > self:size() then
+        os.raise("%s: cannot copy bytes, src:size(%d) must be smaller than %d!", self, src:size(), self:size())
     end
-    libc.memcpy(self:cdata(), src:cdata(), self:size())
+    libc.memcpy(self:cdata(), src:cdata(), src:size())
+    return self
+end
+
+-- copy bytes to the given position
+function _instance:copy2(pos, src)
+    if self:readonly() then
+        os.raise("%s: cannot be modified!", self)
+    end
+    if type(src) == "string" then
+        src = bytes(src)
+    end
+    if pos < 1 or pos > self:size() then
+        os.raise("%s: invalid pos(%d)!", self, pos)
+    end
+    local leftsize = self:size() + 1 - pos
+    if src:size() > leftsize then
+        os.raise("%s: cannot copy bytes, src:size(%d) must be smaller than %d!", self, src:size(), leftsize)
+    end
+    libc.memcpy(self:cdata() + pos - 1, src:cdata(), src:size())
     return self
 end
 
@@ -224,7 +243,6 @@ end
 
 -- dump whole bytes data
 function _instance:dump()
-
     local i    = 0
     local n    = 147
     local p    = 0

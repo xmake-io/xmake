@@ -385,6 +385,7 @@ end
 
 -- recv data from socket
 function _instance:recv(buff, size, opt)
+    assert(buff)
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
@@ -393,7 +394,8 @@ function _instance:recv(buff, size, opt)
     end
 
     -- check buffer
-    if not buff and buff:size() < size then
+    size = size or buff:size()
+    if buff:size() < size then
         return -1, string.format("%s: too small buffer!", self)
     end
 
@@ -436,14 +438,14 @@ function _instance:recv(buff, size, opt)
             end
         end
         if recv == size then
-            data_or_errors = bytes(buff, start, recv)
+            data_or_errors = buff:slice(start, recv)
         else
             recv = -1
         end
     else
         recv, data_or_errors = io.socket_recv(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
         if recv > 0 then
-            data_or_errors = bytes(buff, start, recv)
+            data_or_errors = buff:slice(start, recv)
         end
     end
     if recv < 0 and data_or_errors then
@@ -519,6 +521,7 @@ end
 
 -- recv udp data from peer
 function _instance:recvfrom(buff, size, opt)
+    assert(buff)
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
@@ -532,7 +535,8 @@ function _instance:recvfrom(buff, size, opt)
     end
 
     -- check buffer
-    if not buff and buff:size() < size then
+    size = size or buff:size()
+    if buff:size() < size then
         return -1, string.format("%s: too small buffer!", self)
     end
 
@@ -559,7 +563,7 @@ function _instance:recvfrom(buff, size, opt)
         while true do
             recv, data_or_errors, addr, port = io.socket_recvfrom(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
             if recv > 0 then
-                data_or_errors = bytes(buff, start, recv)
+                data_or_errors = buff:slice(start, recv)
                 break
             elseif recv == 0 and not wait then
                 local events, waiterrs = _instance.wait(self, socket.EV_RECV, opt.timeout or -1)
@@ -577,7 +581,7 @@ function _instance:recvfrom(buff, size, opt)
     else
         recv, data_or_errors, addr, port = io.socket_recvfrom(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
         if recv > 0 then
-            data_or_errors = bytes(buff, start, recv)
+            data_or_errors = buff:slice(start, recv)
         end
     end
     if recv < 0 and data_or_errors then

@@ -36,3 +36,12 @@ function test_concat(t)
     t:are_equal((bytes("123") .. bytes("456")):str(), "123456")
     t:are_equal(bytes(bytes("123"), bytes("456")):str(), "123456")
 end
+
+function test_copy(t)
+    t:are_equal(bytes(9):copy("123456789"):str(), "123456789")
+end
+
+function test_copy2(t)
+    t:are_equal(bytes(18):copy("123456789"):copy2(10, "123456789"):str(), "123456789123456789")
+end
+
