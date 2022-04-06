@@ -111,7 +111,7 @@ function _get_command_string(cmd, vcxprojdir)
 end
 
 -- add target custom commands for target
-function _make_custom_commands_for_target(commands, target, suffix, vcxprojdir)
+function _make_custom_commands_for_target(commands, target, vcxprojdir, suffix)
     for _, ruleinst in ipairs(target:orderules()) do
         local scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
         local script = ruleinst:script(scriptname)
@@ -150,7 +150,7 @@ function _make_custom_commands_for_target(commands, target, suffix, vcxprojdir)
 end
 
 -- add target custom commands for object rules
-function _make_custom_commands_for_objectrules(commands, target, sourcebatch, suffix, vcxprojdir)
+function _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, suffix)
 
     -- get rule
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
@@ -201,17 +201,17 @@ end
 -- make custom commands
 function _make_custom_commands(target, vcxprojdir)
     local commands = {}
-    _make_custom_commands_for_target(commands, target, "before", vcxprojdir)
-    _make_custom_commands_for_target(commands, target, nil, vcxprojdir)
+    _make_custom_commands_for_target(commands, target, vcxprojdir, "before")
+    _make_custom_commands_for_target(commands, target, vcxprojdir)
     for _, sourcebatch in pairs(target:sourcebatches()) do
         local sourcekind = sourcebatch.sourcekind
         if sourcekind ~= "cc" and sourcekind ~= "cxx" and sourcekind ~= "as" then
-            _make_custom_commands_for_objectrules(commands, target, sourcebatch, "before", vcxprojdir)
-            _make_custom_commands_for_objectrules(commands, target, sourcebatch, nil, vcxprojdir)
-            _make_custom_commands_for_objectrules(commands, target, sourcebatch, "after", vcxprojdir)
+            _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, "before")
+            _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, nil)
+            _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, "after")
         end
     end
-    _make_custom_commands_for_target(commands, target, "after", vcxprojdir)
+    _make_custom_commands_for_target(commands, target, vcxprojdir, "after")
     return commands
 end
 
