@@ -1,4 +1,5 @@
 import("core.base.pipe")
+import("core.base.bytes")
 import("core.base.scheduler")
 
 function _session(id)
@@ -8,8 +9,9 @@ function _session(id)
         print("%s/%d: connected", pipefile, id)
         local count = 0
         local result = nil
+        local buff = bytes(8192)
         while count < 10000 do
-            local read, data = pipefile:read(13, {block = true})
+            local read, data = pipefile:read(buff, 13, {block = true})
             if read > 0 then
                 result = data
                 count = count + 1

@@ -78,8 +78,8 @@ function sandbox_core_base_pipe_instance.write(pipefile, data, opt)
 end
 
 -- read data from pipe file
-function sandbox_core_base_pipe_instance.read(pipefile, size, opt)
-    local real, data_or_errors = pipefile:_read(size, opt)
+function sandbox_core_base_pipe_instance.read(pipefile, buff, size, opt)
+    local real, data_or_errors = pipefile:_read(buff, size, opt)
     if real < 0 and data_or_errors then
         raise(data_or_errors)
     end

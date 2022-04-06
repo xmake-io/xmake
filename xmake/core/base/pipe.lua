@@ -118,12 +118,17 @@ function _instance:write(data, opt)
 end
 
 -- read data from pipe
-function _instance:read(size, opt)
+function _instance:read(buff, size, opt)
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
     if not ok then
         return -1, errors
+    end
+
+    -- check buffer
+    if not buff and buff:size() < size then
+        return -1, string.format("%s: too small buffer!", self)
     end
 
     -- check size
@@ -141,12 +146,9 @@ function _instance:read(size, opt)
     if opt.block then
         local results = {}
         while read < size do
-            local buff = self:_readbuff()
-            real, data_or_errors = io.pipe_read(self:cdata(), buff:caddr(), math.min(buff:size(), size - read))
+            real, data_or_errors = io.pipe_read(self:cdata(), buff:caddr() + read, math.min(buff:size() - read, size - read))
             if real > 0 then
                 read = read + real
-                table.insert(results, bytes(buff, 1, real))
-                self:_readbuff_clear()
             elseif real == 0 then
                 local events, waiterrs = _instance.wait(self, pipe.EV_READ, opt.timeout or -1)
                 if events ~= pipe.EV_READ then
@@ -158,16 +160,14 @@ function _instance:read(size, opt)
             end
         end
         if read == size then
-            data_or_errors = bytes(results)
+            data_or_errors = bytes(buff, 1, read)
         else
             read = -1
         end
     else
-        local buff = self:_readbuff()
         read, data_or_errors = io.pipe_read(self:cdata(), buff:caddr(), math.min(buff:size(), size))
         if read > 0 then
             data_or_errors = bytes(buff, 1, read)
-            self:_readbuff_clear()
         end
     end
     if read < 0 and data_or_errors then
@@ -253,21 +253,6 @@ function _instance:close()
         self._PIPE = nil
     end
     return ok
-end
-
--- get the read buffer
-function _instance:_readbuff()
-    local readbuff = self._READBUFF
-    if not readbuff then
-        readbuff = bytes(8192)
-        self._READBUFF = readbuff
-    end
-    return readbuff
-end
-
--- clear the read buffer
-function _instance:_readbuff_clear()
-    self._READBUFF = nil
 end
 
 -- ensure the pipe is opened
