@@ -49,7 +49,7 @@ function _connect(addr, port)
     if sock then
         print("%s: connected!", client)
         local wstream = stream(sock)
-        if wstream:send_string("hello xmake!") and wstream:flush() then
+        if wstream:send_object({name = "msg", body = "hello xmake!", func = function () print("hello!") end}) and wstream:flush() then
             print("send ok")
         end
         io.save(statusfile, {addr = addr, port = port})

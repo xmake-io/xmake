@@ -122,9 +122,11 @@ function server:_handle_session(sock)
     print("%s: %s session connected", self, sock)
     local rstream = stream(sock)
     while true do
-        local data = rstream:recv_string()
-        if data then
-            print("%s", data)
+        local msg = rstream:recv_object()
+        if msg then
+            -- TODO
+            print(msg)
+            msg.func()
         else
             break
         end

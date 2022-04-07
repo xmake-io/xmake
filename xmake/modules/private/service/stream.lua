@@ -89,8 +89,15 @@ function stream:send(data, start, last)
     end
 end
 
--- send table
-function stream:send_table(tbl)
+-- send object
+function stream:send_object(obj)
+    local str, errors = string.serialize(obj, {strip = true, indent = false})
+    if errors then
+        raise(errors)
+    end
+    if str then
+        return self:send_string(str)
+    end
 end
 
 -- send string
@@ -170,8 +177,16 @@ function stream:recv_u16be()
     end
 end
 
--- recv table
-function stream:recv_table()
+-- recv object
+function stream:recv_object()
+    local str = self:recv_string()
+    if str then
+        local obj, errors = str:deserialize()
+        if errors then
+            raise(errors)
+        end
+        return obj
+    end
 end
 
 -- recv string
