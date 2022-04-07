@@ -490,7 +490,7 @@ function main(outputdir, vsinfo)
                         dir_id = hash.uuid4(dir)
                     }
                 end
-                dir = path.directory(dir)
+                dir = path.directory(dir) or "."
             end
         end
         target._dirs = dirs
