@@ -25,6 +25,7 @@ local libc = libc or {}
 libc._malloc  = libc._malloc or libc.malloc
 libc._free    = libc._free or libc.free
 libc._memcpy  = libc._memcpy or libc.memcpy
+libc._memmov  = libc._memmov or libc.memmov
 libc._memset  = libc._memset or libc.memset
 libc._strndup = libc._strndup or libc.strndup
 libc._dataptr = libc._dataptr or libc.dataptr

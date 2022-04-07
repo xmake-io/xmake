@@ -232,6 +232,7 @@ tb_int_t xm_semver_select(lua_State* lua);
 tb_int_t xm_libc_malloc(lua_State* lua);
 tb_int_t xm_libc_free(lua_State* lua);
 tb_int_t xm_libc_memcpy(lua_State* lua);
+tb_int_t xm_libc_memmov(lua_State* lua);
 tb_int_t xm_libc_memset(lua_State* lua);
 tb_int_t xm_libc_strndup(lua_State* lua);
 tb_int_t xm_libc_dataptr(lua_State* lua);
@@ -443,6 +444,7 @@ static luaL_Reg const g_libc_functions[] =
 ,   { "free",           xm_libc_free        }
 ,   { "memcpy",         xm_libc_memcpy      }
 ,   { "memset",         xm_libc_memset      }
+,   { "memmov",         xm_libc_memmov      }
 ,   { "strndup",        xm_libc_strndup     }
 ,   { "dataptr",        xm_libc_dataptr     }
 ,   { "byteof",         xm_libc_byteof      }
