@@ -124,7 +124,7 @@ function server:_handle_session(sock)
     while true do
         local data = rstream:recv_string()
         if data then
-            print("%s", data)
+            print("|%s|", data)
         else
             break
         end

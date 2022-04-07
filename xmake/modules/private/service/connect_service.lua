@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.socket")
 import("core.base.scheduler")
 import("private.service.config")
+import("private.service.stream")
 import("private.service.client.remote_build_client")
 
 function _get_address()
@@ -47,6 +48,10 @@ function _connect(addr, port)
     print("%s: connect %s:%d ..", client, addr, port)
     if sock then
         print("%s: connected!", client)
+        local wstream = stream(sock)
+        if wstream:send_string("hello xmake!") and wstream:flush() then
+            print("send ok")
+        end
         io.save(statusfile, {addr = addr, port = port})
     else
         print("%s: connect %s:%d failed", client, addr, port)

@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.object")
+import("core.base.socket")
 import("core.base.bytes")
 
 -- define module
@@ -33,6 +34,22 @@ function stream:init(sock)
     self._RCACHE_SIZE = 0
     self._WCACHE = bytes(8192)
     self._WCACHE_SIZE = 0
+end
+
+-- flush data
+function stream:flush()
+    local cache = self._WCACHE
+    local cache_size = self._WCACHE_SIZE
+    if cache_size > 0 then
+        local sock = self._SOCK
+        local real = sock:send(cache, {block = true, last = cache_size})
+        if real > 0 then
+            self._WCACHE_SIZE = 0
+            return true
+        end
+    else
+        return true
+    end
 end
 
 -- send the given bytes
@@ -61,6 +78,7 @@ function stream:send(data, start, last)
     assert(cache_size == cache_maxn)
 
     -- send data to socket
+    local sock = self._SOCK
     local real = sock:send(cache, {block = true})
     if real > 0 then
         -- copy left data to cache
@@ -110,16 +128,17 @@ function stream:recv(buff, size)
     local real = 0
     local data = nil
     local wait = false
+    local sock = self._SOCK
     while buffsize < size do
         real, data = sock:recv(cache)
         if real > 0 then
             -- append data to buffer
             local leftsize = size - buffsize
             if real < leftsize then
-                buff:copy2(buffsize, data)
+                buff:copy2(buffsize + 1, data)
                 buffsize = buffsize + real
             else
-                buff:copy2(buffsize, data, 1, leftsize)
+                buff:copy2(buffsize + 1, data, 1, leftsize)
                 buffsize = buffsize + leftsize
 
                 -- move left cache to head
@@ -147,7 +166,7 @@ end
 function stream:recv_u16be()
     local data = self:recv(self._BUFF, 2)
     if data then
-        return data:u16be()
+        return data:u16be(1)
     end
 end
 
