@@ -28,7 +28,7 @@ target("demo")
     -- add links
     if is_plat("windows") then
         add_links("ws2_32", "advapi32", "shell32")
-        add_ldflags("/export:malloc", "/export:free")
+        add_ldflags("/export:malloc", "/export:free", "/export:memmove")
     elseif is_plat("android") then
         add_links("m", "c")
     elseif is_plat("macosx") then
