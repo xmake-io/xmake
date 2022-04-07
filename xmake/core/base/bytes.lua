@@ -310,11 +310,13 @@ function _instance:clone()
 end
 
 -- dump whole bytes data
-function _instance:dump()
+function _instance:dump(start, last)
+    start = start or 1
+    last = last or self:size()
     local i    = 0
     local n    = 147
-    local p    = 0
-    local e    = self:size()
+    local p    = start - 1
+    local e    = last
     local line = nil
     while p < e do
         line = ""

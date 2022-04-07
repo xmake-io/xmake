@@ -144,7 +144,7 @@ function stream:recv(buff, size)
                 -- move left cache to head
                 cache_size = real - leftsize
                 if cache_size > 0 then
-                    cache:move(leftsize, cache_size)
+                    cache:move(leftsize + 1, real)
                 end
                 self._RCACHE_SIZE = cache_size
                 return buff:slice(1, buffsize)
