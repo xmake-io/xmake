@@ -30,14 +30,11 @@ function stream:init(sock)
     self._SOCK = sock
     self._RCACHE = bytes(8192)
     self._RCACHE_SIZE = 0
-end
-
--- is empty?
-function stream:empty()
+    self._RECVBUFF = bytes(65536)
 end
 
 -- send bytes
-function stream:send_bytes(data)
+function stream:send(data)
 end
 
 -- send table
@@ -48,8 +45,9 @@ end
 function stream:send_string(str)
 end
 
--- recv bytes
-function stream:recv_bytes(buff, size)
+-- recv the given bytes
+function stream:recv(buff, size)
+    assert(size <= buff:size())
 
     -- read data from cache first
     local buffsize = 0
@@ -72,6 +70,7 @@ function stream:recv_bytes(buff, size)
     local real = 0
     local data = nil
     local wait = false
+    local errors = nil
     while buffsize < size do
         real, data = sock:recv(cache)
         if real > 0 then
@@ -100,9 +99,16 @@ function stream:recv_bytes(buff, size)
                 break
             end
         else
-            -- TODO
             break
         end
+    end
+end
+
+-- recv u16be
+function stream:recv_u16be()
+    local data = self:recv(self._RECVBUFF, 2)
+    if data then
+        return data:u16be()
     end
 end
 
@@ -112,6 +118,13 @@ end
 
 -- recv string
 function stream:recv_string()
+    local size = self:recv_u16be()
+    if size then
+        local data = self:recv(self._RECVBUFF, size)
+        if data then
+            return data:str()
+        end
+    end
 end
 
 function main(sock)

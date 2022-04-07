@@ -120,24 +120,11 @@ end
 -- handle session
 function server:_handle_session(sock)
     print("%s: %s session connected", self, sock)
-    local real = 0
-    local recv = 0
-    local data = nil
-    local wait = false
-    local buff = bytes(8192)
+    local rstream = stream(sock)
     while true do
-        real, data = sock:recv(buff, 8192)
-        if real > 0 then
-            if data then
-            end
-            recv = recv + real
-            wait = false
-        elseif real == 0 and not wait then
-            if sock:wait(socket.EV_RECV, -1) == socket.EV_RECV then
-                wait = true
-            else
-                break
-            end
+        local data = rstream:recv_string()
+        if data then
+            print("%s", data)
         else
             break
         end
