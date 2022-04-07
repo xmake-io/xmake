@@ -30,6 +30,8 @@ function stream:init(sock)
     self._SOCK = sock
     self._RCACHE = bytes(8192)
     self._RCACHE_SIZE = 0
+    self._WCACHE = bytes(8192)
+    self._WCACHE_SIZE = 0
     self._RECVBUFF = bytes(65536)
 end
 

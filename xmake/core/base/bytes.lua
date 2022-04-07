@@ -419,6 +419,12 @@ function _instance:u8(offset)
     return self[offset]
 end
 
+-- set uint8 value
+function _instance:u8_set(offset, value)
+    self[offset] = value
+    return self
+end
+
 -- get sint8 value
 function _instance:s8(offset)
     local value = self[offset]
@@ -430,9 +436,23 @@ function _instance:u16le(offset)
     return bit.lshift(self[offset + 1], 8) + self[offset]
 end
 
+-- set uint16 little-endian value
+function _instance:u16le_set(offset, value)
+    self[offset + 1] = bit.rshift(value, 8)
+    self[offset] = bit.band(value, 0xff)
+    return self
+end
+
 -- get uint16 big-endian value
 function _instance:u16be(offset)
     return bit.lshift(self[offset], 8) + self[offset + 1]
+end
+
+-- set uint16 big-endian value
+function _instance:u16be_set(offset, value)
+    self[offset] = bit.rshift(value, 8)
+    self[offset + 1] = bit.band(value, 0xff)
+    return self
 end
 
 -- get sint16 little-endian value
@@ -449,12 +469,30 @@ end
 
 -- get uint32 little-endian value
 function _instance:u32le(offset)
-    return self[offset + 3] * 0x1000000 + bit.lshift(self[offset + 2], 16) + bit.lshift(self[offset + 1], 8) + self[offset]
+    return bit.lshift(self[offset + 3], 24) + bit.lshift(self[offset + 2], 16) + bit.lshift(self[offset + 1], 8) + self[offset]
+end
+
+-- set uint32 little-endian value
+function _instance:u32le_set(offset, value)
+    self[offset + 3] = bit.band(bit.rshift(value, 24), 0xff)
+    self[offset + 2] = bit.band(bit.rshift(value, 16), 0xff)
+    self[offset + 1] = bit.band(bit.rshift(value, 8), 0xff)
+    self[offset] = bit.band(value, 0xff)
+    return self
 end
 
 -- get uint32 big-endian value
 function _instance:u32be(offset)
-   return self[offset] * 0x1000000 + bit.lshift(self[offset + 1], 16) + bit.lshift(self[offset + 2], 8) + self[offset + 3]
+   return bit.lshift(self[offset], 24) + bit.lshift(self[offset + 1], 16) + bit.lshift(self[offset + 2], 8) + self[offset + 3]
+end
+
+-- set uint32 big-endian value
+function _instance:u32be_set(offset, value)
+    self[offset] = bit.band(bit.rshift(value, 24), 0xff)
+    self[offset + 1] = bit.band(bit.rshift(value, 16), 0xff)
+    self[offset + 2] = bit.band(bit.rshift(value, 8), 0xff)
+    self[offset + 3] = bit.band(value, 0xff)
+    return self
 end
 
 -- get sint32 little-endian value
@@ -502,7 +540,7 @@ function _instance:__newindex(key, value)
         return
     elseif type(key) == "table" then
         local start, last = key[1], key[2]
-        self:slice(start,last):copy(value)
+        self:slice(start, last):copy(value)
         return
     end
     rawset(self, key, value)

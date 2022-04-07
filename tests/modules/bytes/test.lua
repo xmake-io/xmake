@@ -52,3 +52,12 @@ function test_move(t)
     t:are_equal(bytes(9):copy("123456789"):move2(2, 5, 9):str(), "156789789")
 end
 
+function test_int(t)
+    t:are_equal(bytes(1):u8_set(1, 1):u8(1), 1)
+    t:are_equal(bytes(10):u8_set(5, 255):u8(5), 255)
+    t:are_equal(bytes(10):u16le_set(5, 12346):u16le(5), 12346)
+    t:are_equal(bytes(10):u16be_set(5, 12346):u16be(5), 12346)
+    t:are_equal(bytes(20):u32le_set(5, 12345678):u32le(5), 12345678)
+    t:are_equal(bytes(20):u32be_set(5, 12345678):u32be(5), 12345678)
+end
+
