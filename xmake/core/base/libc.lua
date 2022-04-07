@@ -40,6 +40,7 @@ if ffi then
     ffi.cdef[[
         void* malloc(size_t size);
         void  free(void* data);
+        void* memmove(void* dest, const void* src, size_t n);
     ]]
 end
 
@@ -77,7 +78,7 @@ end
 
 function libc.memmov(dst, src, size)
     if ffi then
-        return ffi.move(dst, src, size)
+        return ffi.C.memmove(dst, src, size)
     else
         return libc._memmov(dst, src, size)
     end
