@@ -421,7 +421,7 @@ end
 
 -- set uint8 value
 function _instance:u8_set(offset, value)
-    self[offset] = value
+    self[offset] = bit.band(value, 0xff)
     return self
 end
 
@@ -438,7 +438,7 @@ end
 
 -- set uint16 little-endian value
 function _instance:u16le_set(offset, value)
-    self[offset + 1] = bit.rshift(value, 8)
+    self[offset + 1] = bit.band(bit.rshift(value, 8), 0xff)
     self[offset] = bit.band(value, 0xff)
     return self
 end
@@ -450,7 +450,7 @@ end
 
 -- set uint16 big-endian value
 function _instance:u16be_set(offset, value)
-    self[offset] = bit.rshift(value, 8)
+    self[offset] = bit.band(bit.rshift(value, 8), 0xff)
     self[offset + 1] = bit.band(value, 0xff)
     return self
 end

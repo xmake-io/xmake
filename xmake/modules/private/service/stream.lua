@@ -28,15 +28,47 @@ local stream = stream or object()
 -- init stream
 function stream:init(sock)
     self._SOCK = sock
+    self._BUFF = bytes(65536)
     self._RCACHE = bytes(8192)
     self._RCACHE_SIZE = 0
     self._WCACHE = bytes(8192)
     self._WCACHE_SIZE = 0
-    self._RECVBUFF = bytes(65536)
 end
 
--- send bytes
-function stream:send(data)
+-- send the given bytes
+function stream:send(data, start, last)
+    start = start or 1
+    last = last or data:size()
+    local size = last + 1 - start
+    assert(size <= data:size())
+
+    -- write data to cache first
+    local cache = self._WCACHE
+    local cache_size = self._WCACHE_SIZE
+    local cache_maxn = cache:size()
+    local cache_left = cache_maxn - cache_size
+    if size <= cache_left then
+        cache:copy2(cache_size + 1, data, start, last)
+        cache_size = cache_size + size
+        self._WCACHE_SIZE = cache_size
+        return true
+    elseif cache_left > 0 then
+        cache:copy2(cache_size + 1, data, start, start + cache_left - 1)
+        cache_size = cache_size + cache_left
+        start = start + cache_left
+        size = last + 1 - start
+    end
+    assert(cache_size == cache_maxn)
+
+    -- send data to socket
+    local real = sock:send(cache, {block = true})
+    if real > 0 then
+        -- copy left data to cache
+        assert(size <= cache_maxn)
+        cache:copy2(1, data, start, last)
+        self._WCACHE_SIZE = size
+        return true
+    end
 end
 
 -- send table
@@ -45,6 +77,12 @@ end
 
 -- send string
 function stream:send_string(str)
+    local buff = self._BUFF
+    local size = #str
+    buff:u16be_set(1, size)
+    if self:send(buff, 1, 2) then
+        return self:send(bytes(str), 1, size)
+    end
 end
 
 -- recv the given bytes
@@ -72,7 +110,6 @@ function stream:recv(buff, size)
     local real = 0
     local data = nil
     local wait = false
-    local errors = nil
     while buffsize < size do
         real, data = sock:recv(cache)
         if real > 0 then
@@ -108,7 +145,7 @@ end
 
 -- recv u16be
 function stream:recv_u16be()
-    local data = self:recv(self._RECVBUFF, 2)
+    local data = self:recv(self._BUFF, 2)
     if data then
         return data:u16be()
     end
@@ -122,7 +159,7 @@ end
 function stream:recv_string()
     local size = self:recv_u16be()
     if size then
-        local data = self:recv(self._RECVBUFF, size)
+        local data = self:recv(self._BUFF, size)
         if data then
             return data:str()
         end
