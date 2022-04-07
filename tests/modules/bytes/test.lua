@@ -39,9 +39,16 @@ end
 
 function test_copy(t)
     t:are_equal(bytes(9):copy("123456789"):str(), "123456789")
+    t:are_equal(bytes(5):copy("123456789", 5, 9):str(), "56789")
 end
 
 function test_copy2(t)
     t:are_equal(bytes(18):copy("123456789"):copy2(10, "123456789"):str(), "123456789123456789")
+    t:are_equal(bytes(14):copy("123456789"):copy2(10, "123456789", 5, 9):str(), "12345678956789")
+end
+
+function test_move(t)
+    t:are_equal(bytes(9):copy("123456789"):move(5, 9):str(), "567896789")
+    t:are_equal(bytes(9):copy("123456789"):move2(2, 5, 9):str(), "156789789")
 end
 

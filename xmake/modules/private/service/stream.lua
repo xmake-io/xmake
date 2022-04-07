@@ -57,12 +57,12 @@ function stream:recv_bytes(buff, size)
     local cache_size = self._RCACHE_SIZE
     local cache_maxn = cache:size()
     if size <= cache_size then
-        buff:copy(cache:slice(1, size))
+        buff:copy(cache, 1, size)
         cache_size = cache_size - size
         self._RCACHE_SIZE = cache_size
         return buff:slice(1, size)
     elseif cache_size > 0 then
-        buff:copy(cache:slice(1, cache_size))
+        buff:copy(cache, 1, cache_size)
         buffsize = cache_size
         cache_size = 0
     end
@@ -75,9 +75,23 @@ function stream:recv_bytes(buff, size)
     while buffsize < size do
         real, data = sock:recv(cache)
         if real > 0 then
-            --buff:append(data, 1, leftbuff)
-            -- TODO move left cache to head
-            buffsize = buffsize + real
+            -- append data to buffer
+            local leftsize = size - buffsize
+            if real < leftsize then
+                buff:copy2(buffsize, data)
+                buffsize = buffsize + real
+            else
+                buff:copy2(buffsize, data, 1, leftsize)
+                buffsize = buffsize + leftsize
+
+                -- move left cache to head
+                cache_size = real - leftsize
+                if cache_size > 0 then
+                    cache:move(leftsize, cache_size)
+                end
+                self._RCACHE_SIZE = cache_size
+                return buff:slice(1, buffsize)
+            end
             wait = false
         elseif real == 0 and not wait then
             if sock:wait(socket.EV_RECV, -1) == socket.EV_RECV then

@@ -123,6 +123,7 @@ xmake_C_FILES 			+= \
 						libc/free \
 						libc/memset \
 						libc/memcpy \
+						libc/memmov \
 						libc/dataptr \
 						libc/byteof \
 						libc/setbyte \

@@ -201,36 +201,104 @@ function _instance:slice(start, last)
 end
 
 -- copy bytes
-function _instance:copy(src)
+function _instance:copy(src, start, last)
     if self:readonly() then
         os.raise("%s: cannot be modified!", self)
     end
     if type(src) == "string" then
         src = bytes(src)
     end
-    if src:size() > self:size() then
-        os.raise("%s: cannot copy bytes, src:size(%d) must be smaller than %d!", self, src:size(), self:size())
+    local srcsize = src:size()
+    start = start or 1
+    last = last or srcsize
+    if start < 1 or start > srcsize then
+        os.raise("%s: invalid start(%d)!", self, start)
     end
-    libc.memcpy(self:cdata(), src:cdata(), src:size())
+    if last < start - 1 or last > srcsize + start - 1 then
+        os.raise("%s: invalid last(%d)!", self, last)
+    end
+    local copysize = last + 1 - start
+    if copysize > self:size() then
+        os.raise("%s: cannot copy bytes, src:size(%d) must be smaller than %d!", self, copysize, self:size())
+    end
+    libc.memcpy(self:cdata(), src:cdata() + start - 1, copysize)
     return self
 end
 
 -- copy bytes to the given position
-function _instance:copy2(pos, src)
+function _instance:copy2(pos, src, start, last)
     if self:readonly() then
         os.raise("%s: cannot be modified!", self)
     end
     if type(src) == "string" then
         src = bytes(src)
     end
+    local srcsize = src:size()
+    start = start or 1
+    last = last or srcsize
+    if start < 1 or start > srcsize then
+        os.raise("%s: invalid start(%d)!", self, start)
+    end
+    if last < start - 1 or last > srcsize + start - 1 then
+        os.raise("%s: invalid last(%d)!", self, last)
+    end
     if pos < 1 or pos > self:size() then
         os.raise("%s: invalid pos(%d)!", self, pos)
     end
+    local copysize = last + 1 - start
     local leftsize = self:size() + 1 - pos
-    if src:size() > leftsize then
-        os.raise("%s: cannot copy bytes, src:size(%d) must be smaller than %d!", self, src:size(), leftsize)
+    if copysize > leftsize then
+        os.raise("%s: cannot copy bytes, src:size(%d) must be smaller than %d!", self, copysize, leftsize)
     end
-    libc.memcpy(self:cdata() + pos - 1, src:cdata(), src:size())
+    libc.memcpy(self:cdata() + pos - 1, src:cdata() + start - 1, copysize)
+    return self
+end
+
+-- move bytes to the begin position
+function _instance:move(start, last)
+    if self:readonly() then
+        os.raise("%s: cannot be modified!", self)
+    end
+    local totalsize = self:size()
+    start = start or 1
+    last = last or totalsize
+    if start < 1 or start > totalsize then
+        os.raise("%s: invalid start(%d)!", self, start)
+    end
+    if last < start - 1 or last > totalsize + start - 1 then
+        os.raise("%s: invalid last(%d)!", self, last)
+    end
+    local movesize = last + 1 - start
+    if movesize > totalsize then
+        os.raise("%s: cannot move bytes, move size(%d) must be smaller than %d!", self, movesize, totalsize)
+    end
+    libc.memmov(self:cdata(), self:cdata() + start - 1, movesize)
+    return self
+end
+
+-- move bytes to the given position
+function _instance:move2(pos, start, last)
+    if self:readonly() then
+        os.raise("%s: cannot be modified!", self)
+    end
+    local totalsize = self:size()
+    start = start or 1
+    last = last or totalsize
+    if start < 1 or start > totalsize then
+        os.raise("%s: invalid start(%d)!", self, start)
+    end
+    if last < start - 1 or last > totalsize + start - 1 then
+        os.raise("%s: invalid last(%d)!", self, last)
+    end
+    if pos < 1 or pos > totalsize then
+        os.raise("%s: invalid pos(%d)!", self, pos)
+    end
+    local movesize = last + 1 - start
+    local leftsize = totalsize + 1 - pos
+    if movesize > leftsize then
+        os.raise("%s: cannot move bytes, move size(%d) must be smaller than %d!", self, movesize, leftsize)
+    end
+    libc.memmov(self:cdata() + pos - 1, self:cdata() + start - 1, movesize)
     return self
 end
 

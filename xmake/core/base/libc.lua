@@ -74,6 +74,14 @@ function libc.memcpy(dst, src, size)
     end
 end
 
+function libc.memmov(dst, src, size)
+    if ffi then
+        return ffi.move(dst, src, size)
+    else
+        return libc._memmov(dst, src, size)
+    end
+end
+
 function libc.memset(data, ch, size)
     if ffi then
         return ffi.fill(data, size, ch)
