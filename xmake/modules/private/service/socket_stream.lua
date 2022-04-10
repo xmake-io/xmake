@@ -37,6 +37,11 @@ function socket_stream:init(sock)
     self._WCACHE_SIZE = 0
 end
 
+-- get socket
+function socket_stream:sock()
+    return self._SOCK
+end
+
 -- flush data
 function socket_stream:flush()
     local cache = self._WCACHE

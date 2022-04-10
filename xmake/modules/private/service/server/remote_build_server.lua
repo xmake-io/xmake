@@ -40,17 +40,16 @@ function remote_build_server:init(daemon)
 end
 
 -- handle ping message
-function remote_build_server:handle_ping(sock, msg)
-    local stream = socket_stream(sock)
+function remote_build_server:handle_ping(stream, msg)
     if stream:send_msg(message.new_ping()) and stream:flush() then
         print("send ok")
     end
 end
 
 -- on handle message
-function remote_build_server:on_handle(sock, msg)
+function remote_build_server:on_handle(stream, msg)
     if msg:is_ping() then
-        self:handle_ping(sock, msg)
+        self:handle_ping(stream, msg)
     end
 end
 

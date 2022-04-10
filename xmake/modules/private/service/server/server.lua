@@ -125,7 +125,7 @@ function server:_handle_session(sock)
     while true do
         local msg = stream:recv_object()
         if msg then
-            self:_HANDLER(sock, message(msg))
+            self:_HANDLER(stream, message(msg))
         else
             break
         end
