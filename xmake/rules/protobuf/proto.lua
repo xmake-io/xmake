@@ -49,6 +49,37 @@ function _get_protoc(target, sourcekind)
     return assert(target:data(sourcekind == "cxx" and "protobuf.protoc" or "protobuf.protoc-c"), "protoc not found!")
 end
 
+-- we need add some configs to export includedirs to other targets in on_load
+-- @see https://github.com/xmake-io/xmake/issues/2256
+function load(target, sourcekind)
+
+    -- get the first sourcefile
+    local sourcefile_proto
+    local sourcebatch = target:sourcebatches()[sourcekind == "cxx" and "protobuf.cpp" or "protobuf.c"]
+    if sourcebatch then
+        sourcefile_proto = sourcebatch.sourcefiles[1]
+    end
+    if not sourcefile_proto then
+        return
+    end
+
+    -- get c/c++ source file for protobuf
+    local prefixdir
+    local public
+    local fileconfig = target:fileconfig(sourcefile_proto)
+    if fileconfig then
+        public = fileconfig.proto_public
+        prefixdir = fileconfig.proto_rootdir
+    end
+    local rootdir = path.join(target:autogendir(), "rules", "protobuf")
+    local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
+    local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
+    local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
+
+    -- add includedirs
+    target:add("includedirs", sourcefile_dir, {public = public})
+end
+
 -- generate build commands
 function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
 

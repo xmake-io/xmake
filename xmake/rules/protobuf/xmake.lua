@@ -21,22 +21,28 @@
 -- define rule: protobuf.cpp
 rule("protobuf.cpp")
     set_extensions(".proto")
+    on_load(function(target)
+        import("proto").load(target, "cxx")
+    end)
     before_buildcmd_file(function (target, batchcmds, sourcefile_proto, opt)
-        return import("proto").buildcmd(target, batchcmds, sourcefile_proto, opt, "cxx")
+        import("proto").buildcmd(target, batchcmds, sourcefile_proto, opt, "cxx")
     end)
     before_build_files(function (target, batchjobs, sourcebatch, opt)
-        return import("proto").build_batchjobs(target, batchjobs, sourcebatch, opt, "cxx")
+        import("proto").build_batchjobs(target, batchjobs, sourcebatch, opt, "cxx")
     end, {batch = true})
 
 
 -- define rule: protobuf.c
 rule("protobuf.c")
     set_extensions(".proto")
+    on_load(function(target)
+        import("proto").load(target, "cc")
+    end)
     before_buildcmd_file(function (target, batchcmds, sourcefile_proto, opt)
-        return import("proto").buildcmd(target, batchcmds, sourcefile_proto, opt, "cc")
+        import("proto").buildcmd(target, batchcmds, sourcefile_proto, opt, "cc")
     end)
     before_build_files(function (target, batchjobs, sourcebatch, opt)
-        return import("proto").build_batchjobs(target, batchjobs, sourcebatch, opt, "cc")
+        import("proto").build_batchjobs(target, batchjobs, sourcebatch, opt, "cc")
     end, {batch = true})
 
 
