@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.socket")
+import("core.project.config", {alias = "project_config"})
 import("private.service.config")
 import("private.service.message")
 import("private.service.client.client")
@@ -32,6 +33,17 @@ local super = remote_build_client:class()
 -- init client
 function remote_build_client:init()
     super.init(self)
+
+    -- load project config
+    local projectdir = os.projectdir()
+    local projectfile = os.projectfile()
+    if projectfile and os.isfile(projectfile) and projectdir then
+        project_config.load()
+        self._PROJECTDIR = projectdir
+        self._WORKDIR = path.join(project_config.directory(), "remote_build")
+    else
+        raise("we need enter a project directory with xmake.lua first!")
+    end
 end
 
 -- get class
@@ -56,7 +68,7 @@ function remote_build_client:connect(addr, port)
         end
     end
     if connected then
-        print("%s: connected!", client)
+        print("%s: connected!", self)
         io.save(statusfile, {addr = addr, port = port})
     else
         print("%s: connect %s:%d failed", self, addr, port)
@@ -94,6 +106,16 @@ end
 -- get the status file
 function remote_build_client:statusfile()
     return path.join(self:workdir(), "status.txt")
+end
+
+-- get the project directory
+function remote_build_client:projectdir()
+    return self._PROJECTDIR
+end
+
+-- get working directory
+function remote_build_client:workdir()
+    return self._WORKDIR
 end
 
 function remote_build_client:__tostring()
