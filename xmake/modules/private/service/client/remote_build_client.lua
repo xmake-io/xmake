@@ -19,8 +19,11 @@
 --
 
 -- imports
+import("core.base.socket")
 import("private.service.config")
+import("private.service.message")
 import("private.service.client.client")
+import("private.service.socket_stream")
 
 -- define module
 local remote_build_client = remote_build_client or client()
@@ -34,6 +37,42 @@ end
 -- get class
 function remote_build_client:class()
     return remote_build_client
+end
+
+-- connect to the remote server
+function remote_build_client:connect(addr, port)
+    local statusfile = self:statusfile()
+    local sock = socket.connect(addr, port)
+    local connected = false
+    print("%s: connect %s:%d ..", self, addr, port)
+    if sock then
+        local stream = socket_stream(sock)
+        if stream:send_msg(message.new_ping()) and stream:flush() then
+            local msg = stream:recv_msg()
+            if msg then
+                vprint(msg:body())
+                connected = true
+            end
+        end
+    end
+    if connected then
+        print("%s: connected!", client)
+        io.save(statusfile, {addr = addr, port = port})
+    else
+        print("%s: connect %s:%d failed", self, addr, port)
+        os.tryrm(statusfile)
+    end
+end
+
+-- disconnect server
+function remote_build_client:disconnect()
+    local statusfile = self:statusfile()
+    if os.isfile(statusfile) then
+        os.rm(statusfile)
+        print("%s: disconnected!", self)
+    else
+        print("%s: has been disconnected!", self)
+    end
 end
 
 -- is connected?

@@ -26,10 +26,7 @@ import("private.service.config")
 import("private.service.client.remote_build_client")
 
 function main()
-    local client = remote_build_client()
-    local statusfile = client:statusfile()
-    os.tryrm(statusfile)
-    print("%s: disconnected!", client)
+    remote_build_client():disconnect()
 end
 
 
