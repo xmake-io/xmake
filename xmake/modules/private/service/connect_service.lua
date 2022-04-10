@@ -24,6 +24,7 @@ import("core.base.socket")
 import("core.base.scheduler")
 import("private.service.config")
 import("private.service.stream")
+import("private.service.message")
 import("private.service.client.remote_build_client")
 
 function _get_address()
@@ -48,9 +49,12 @@ function _connect(addr, port)
     print("%s: connect %s:%d ..", client, addr, port)
     if sock then
         print("%s: connected!", client)
-        local wstream = stream(sock)
-        if wstream:send_object({name = "msg", body = "hello xmake!", func = function () print("hello!") end}) and wstream:flush() then
-            print("send ok")
+        local sock_stream = stream(sock)
+        if sock_stream:send_msg(message.new_ping()) and sock_stream:flush() then
+            local msg = sock_stream:recv_msg()
+            if msg then
+                msg:dump()
+            end
         end
         io.save(statusfile, {addr = addr, port = port})
     else

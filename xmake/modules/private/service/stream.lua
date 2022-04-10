@@ -22,6 +22,7 @@
 import("core.base.object")
 import("core.base.socket")
 import("core.base.bytes")
+import("private.service.message")
 
 -- define module
 local stream = stream or object()
@@ -87,6 +88,11 @@ function stream:send(data, start, last)
         self._WCACHE_SIZE = size
         return true
     end
+end
+
+-- send message
+function stream:send_msg(msg)
+    return self:send_object(msg:body())
 end
 
 -- send object
@@ -174,6 +180,14 @@ function stream:recv_u16be()
     local data = self:recv(self._BUFF, 2)
     if data then
         return data:u16be(1)
+    end
+end
+
+-- recv message
+function stream:recv_msg()
+    local body = self:recv_object()
+    if body then
+        return message(body)
     end
 end
 

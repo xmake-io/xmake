@@ -20,6 +20,8 @@
 
 -- imports
 import("private.service.config")
+import("private.service.stream")
+import("private.service.message")
 import("private.service.server.server")
 
 -- define module
@@ -34,12 +36,22 @@ function remote_build_server:init(daemon)
     end
     local listen = assert(config.get("remote_build.server.listen"), "config(remote_build.server.listen): not found!")
     super.listen_set(self, listen)
-    super.handler_set(self, self.handler)
+    super.handler_set(self, self.on_handle)
 end
 
--- the server handler
-function remote_build_server:handler(msg)
-    print("on handler")
+-- handle ping message
+function remote_build_server:handle_ping(sock, msg)
+    local wstream = stream(sock)
+    if wstream:send_msg(message.new_ping()) and wstream:flush() then
+        print("send ok")
+    end
+end
+
+-- on handle message
+function remote_build_server:on_handle(sock, msg)
+    if msg:is_ping() then
+        self:handle_ping(sock, msg)
+    end
 end
 
 -- get class

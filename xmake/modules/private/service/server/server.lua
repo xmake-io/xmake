@@ -24,6 +24,7 @@ import("core.base.bytes")
 import("core.base.socket")
 import("core.base.scheduler")
 import("private.service.stream")
+import("private.service.message")
 
 -- define module
 local server = server or object()
@@ -124,9 +125,7 @@ function server:_handle_session(sock)
     while true do
         local msg = rstream:recv_object()
         if msg then
-            -- TODO
-            print(msg)
-            msg.func()
+            self:_HANDLER(sock, message(msg))
         else
             break
         end
