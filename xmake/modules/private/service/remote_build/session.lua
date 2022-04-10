@@ -20,6 +20,8 @@
 
 -- imports
 import("core.base.object")
+import("core.base.global")
+import("private.service.config")
 
 -- define module
 local session = session or object()
@@ -32,6 +34,15 @@ end
 -- get session id
 function session:id()
     return self._ID
+end
+
+-- get work directory
+function session:workdir()
+    local workdir = config.get("remote_build.server.workdir")
+    if not workdir then
+        workdir = path.join(global.directory(), "service", "remote_build")
+    end
+    return path.join(workdir, "sessons", self:id())
 end
 
 function main(session_id)

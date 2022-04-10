@@ -98,6 +98,14 @@ end
 
 -- close session
 function remote_build_server:_session_close(session_id)
+    -- remove the session caches
+    local session = self:_session(session_id)
+    if session then
+        local workdir = session:workdir()
+        if workdir then
+            os.tryrm(workdir)
+        end
+    end
     self._SESSIONS[session_id] = nil
 end
 

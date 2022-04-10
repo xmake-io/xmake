@@ -25,11 +25,13 @@ import("core.base.global")
 function _generate_configfile()
     local filepath = configfile()
     assert(not _g.configs and not os.isfile(filepath))
+    local servicedir = path.join(global.directory(), "service")
     local configs = {
-        logfile = path.join(global.directory(), "service", "logs.txt"),
+        logfile = path.join(servicedir, "logs.txt"),
         remote_build = {
             server = {
-                listen = "127.0.0.1:90091"
+                listen = "127.0.0.1:90091",
+                workdir = path.join(servicedir, "remote_build")
             },
             client = {
                 connect = "127.0.0.1:90091"
