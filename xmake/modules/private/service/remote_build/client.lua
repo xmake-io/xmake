@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        remote_build_client.lua
+-- @file        client.lua
 --
 
 -- imports
@@ -24,7 +24,7 @@ import("core.project.config", {alias = "project_config"})
 import("private.service.config")
 import("private.service.message")
 import("private.service.client")
-import("private.service.socket_stream")
+import("private.service.stream", {alias = "socket_stream"})
 
 -- define module
 local remote_build_client = remote_build_client or client()

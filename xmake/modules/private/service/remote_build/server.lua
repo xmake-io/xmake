@@ -15,14 +15,15 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        remote_build_server.lua
+-- @file        server.lua
 --
 
 -- imports
 import("private.service.config")
-import("private.service.socket_stream")
 import("private.service.message")
 import("private.service.server")
+import("private.service.stream", {alias = "socket_stream"})
+import("private.service.remote_build.session", {alias = "server_session"})
 
 -- define module
 local remote_build_server = remote_build_server or server()
@@ -92,7 +93,7 @@ end
 
 -- open session
 function remote_build_server:_session_open(session_id)
-    self._SESSIONS[session_id] = {}
+    self._SESSIONS[session_id] = server_session(session_id)
 end
 
 -- close session

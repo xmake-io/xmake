@@ -23,8 +23,8 @@ import("core.base.object")
 import("core.base.bytes")
 import("core.base.socket")
 import("core.base.scheduler")
-import("private.service.socket_stream")
 import("private.service.message")
+import("private.service.stream", {alias = "socket_stream"})
 
 -- define module
 local server = server or object()

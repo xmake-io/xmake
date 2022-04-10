@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        socket_stream.lua
+-- @file        stream.lua
 --
 
 -- imports
@@ -25,10 +25,10 @@ import("core.base.bytes")
 import("private.service.message")
 
 -- define module
-local socket_stream = socket_stream or object()
+local stream = stream or object()
 
--- init socket_stream
-function socket_stream:init(sock)
+-- init stream
+function stream:init(sock)
     self._SOCK = sock
     self._BUFF = bytes(65536)
     self._RCACHE = bytes(8192)
@@ -38,12 +38,12 @@ function socket_stream:init(sock)
 end
 
 -- get socket
-function socket_stream:sock()
+function stream:sock()
     return self._SOCK
 end
 
 -- flush data
-function socket_stream:flush()
+function stream:flush()
     local cache = self._WCACHE
     local cache_size = self._WCACHE_SIZE
     if cache_size > 0 then
@@ -59,7 +59,7 @@ function socket_stream:flush()
 end
 
 -- send the given bytes
-function socket_stream:send(data, start, last)
+function stream:send(data, start, last)
     start = start or 1
     last = last or data:size()
     local size = last + 1 - start
@@ -96,12 +96,12 @@ function socket_stream:send(data, start, last)
 end
 
 -- send message
-function socket_stream:send_msg(msg)
+function stream:send_msg(msg)
     return self:send_object(msg:body())
 end
 
 -- send object
-function socket_stream:send_object(obj)
+function stream:send_object(obj)
     local str, errors = string.serialize(obj, {strip = true, indent = false})
     if errors then
         raise(errors)
@@ -112,7 +112,7 @@ function socket_stream:send_object(obj)
 end
 
 -- send string
-function socket_stream:send_string(str)
+function stream:send_string(str)
     local buff = self._BUFF
     local size = #str
     buff:u16be_set(1, size)
@@ -122,7 +122,7 @@ function socket_stream:send_string(str)
 end
 
 -- recv the given bytes
-function socket_stream:recv(buff, size)
+function stream:recv(buff, size)
     assert(size <= buff:size())
 
     -- read data from cache first
@@ -181,7 +181,7 @@ function socket_stream:recv(buff, size)
 end
 
 -- recv u16be
-function socket_stream:recv_u16be()
+function stream:recv_u16be()
     local data = self:recv(self._BUFF, 2)
     if data then
         return data:u16be(1)
@@ -189,7 +189,7 @@ function socket_stream:recv_u16be()
 end
 
 -- recv message
-function socket_stream:recv_msg()
+function stream:recv_msg()
     local body = self:recv_object()
     if body then
         return message(body)
@@ -197,7 +197,7 @@ function socket_stream:recv_msg()
 end
 
 -- recv object
-function socket_stream:recv_object()
+function stream:recv_object()
     local str = self:recv_string()
     if str then
         local obj, errors = str:deserialize()
@@ -209,7 +209,7 @@ function socket_stream:recv_object()
 end
 
 -- recv string
-function socket_stream:recv_string()
+function stream:recv_string()
     local size = self:recv_u16be()
     if size then
         local data = self:recv(self._BUFF, size)
@@ -220,7 +220,7 @@ function socket_stream:recv_string()
 end
 
 function main(sock)
-    local instance = socket_stream()
+    local instance = stream()
     instance:init(sock)
     return instance
 end
