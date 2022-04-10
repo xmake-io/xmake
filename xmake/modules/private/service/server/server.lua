@@ -120,7 +120,7 @@ end
 
 -- handle session
 function server:_handle_session(sock)
-    print("%s: %s session connected", self, sock)
+    print("%s: %s: session connected", self, sock)
     local stream = socket_stream(sock)
     while true do
         local msg = stream:recv_object()
@@ -130,7 +130,7 @@ function server:_handle_session(sock)
             break
         end
     end
-    print("%s: %s session end", self, sock)
+    print("%s: %s: session end", self, sock)
 end
 
 function server:__tostring()

@@ -65,11 +65,12 @@ function remote_build_client:connect()
     local addr = self:addr()
     local port = self:port()
     local sock = socket.connect(addr, port)
+    local session_id = hash.uuid():split("-", {plain = true})[1]:lower()
     local connected = false
     print("%s: connect %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
-        if stream:send_msg(message.new_connect()) and stream:flush() then
+        if stream:send_msg(message.new_connect(session_id)) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
                 vprint(msg:body())
@@ -79,7 +80,10 @@ function remote_build_client:connect()
     end
     if connected then
         print("%s: connected!", self)
-        io.save(statusfile, {addr = addr, port = port})
+        io.save(statusfile, {
+            addr = addr,
+            port = port,
+            session_id = session_id})
         self:_syncfiles()
     else
         print("%s: connect %s:%d failed", self, addr, port)
@@ -97,11 +101,12 @@ function remote_build_client:disconnect()
     local addr = self:addr()
     local port = self:port()
     local sock = socket.connect(addr, port)
+    local session_id = assert(self:session_id(), "session id not found!")
     local disconnected = false
     print("%s: disconnect %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
-        if stream:send_msg(message.new_disconnect()) and stream:flush() then
+        if stream:send_msg(message.new_disconnect(session_id)) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
                 vprint(msg:body())
@@ -146,6 +151,14 @@ end
 -- get working directory
 function remote_build_client:workdir()
     return self._WORKDIR
+end
+
+-- get the session id, only for unique project
+function remote_build_client:session_id()
+    local status = self:status()
+    if status then
+        return status.session_id
+    end
 end
 
 -- sync files

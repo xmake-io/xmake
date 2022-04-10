@@ -38,6 +38,11 @@ function message:code()
     return self:body().code
 end
 
+-- get session id
+function message:session_id()
+    return self:body().session_id
+end
+
 -- is connect message?
 function message:is_connect()
     return self:code() == message.CODE_CONN
@@ -53,6 +58,12 @@ function message:body()
     return self._BODY
 end
 
+-- clone a message
+function message:clone()
+    local body = table.copy(self:body())
+    return _new(body)
+end
+
 -- dump message
 function message:dump()
     print(self:body())
@@ -66,17 +77,19 @@ function _new(body)
 end
 
 -- new connect message
-function new_connect()
+function new_connect(session_id)
     return _new({
         code = message.CODE_CONN,
+        session_id = session_id,
         xmakever = xmake.version():shortstr()
     })
 end
 
 -- new disconnect message
-function new_disconnect()
+function new_disconnect(session_id)
     return _new({
-        code = message.CODE_DISCONN
+        code = message.CODE_DISCONN,
+        session_id = session_id
     })
 end
 

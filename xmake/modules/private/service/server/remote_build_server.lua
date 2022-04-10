@@ -41,19 +41,24 @@ end
 
 -- handle connect message
 function remote_build_server:handle_connect(stream, msg)
-    local ok = stream:send_msg(message.new_connect()) and stream:flush()
-    vprint("%s: %s send %s", self, stream:sock(), ok and "ok" or "failed")
+    local session_id = msg:session_id()
+    local respmsg = msg:clone()
+    respmsg:body().xmakever = xmake.version():shortstr()
+    local ok = stream:send_msg(respmsg) and stream:flush()
+    vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
 end
 
 -- handle disconnect message
 function remote_build_server:handle_disconnect(stream, msg)
-    local ok = stream:send_msg(message.new_disconnect()) and stream:flush()
-    vprint("%s: %s send %s", self, stream:sock(), ok and "ok" or "failed")
+    local session_id = msg:session_id()
+    local respmsg = msg:clone()
+    local ok = stream:send_msg(respmsg) and stream:flush()
+    vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
 end
 
 -- on handle message
 function remote_build_server:on_handle(stream, msg)
-    vprint("%s: %s on handle message(%d)", self, stream:sock(), msg:code())
+    vprint("%s: %s: <session %s>: on handle message(%d)", self, stream:sock(), msg:session_id(), msg:code())
     vprint(msg:body())
     if msg:is_connect() then
         self:handle_connect(stream, msg)
