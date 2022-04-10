@@ -75,6 +75,14 @@ function remote_build_server:_handle_disconnect(stream, msg)
     vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
 end
 
+-- handle sync message
+function remote_build_server:_handle_sync(stream, msg)
+    local session_id = msg:session_id()
+    local respmsg = msg:clone()
+    local ok = stream:send_msg(respmsg) and stream:flush()
+    vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
+end
+
 -- on handle message
 function remote_build_server:_on_handle(stream, msg)
     vprint("%s: %s: <session %s>: on handle message(%d)", self, stream:sock(), msg:session_id(), msg:code())
@@ -83,6 +91,8 @@ function remote_build_server:_on_handle(stream, msg)
         self:_handle_connect(stream, msg)
     elseif msg:is_disconnect() then
         self:_handle_disconnect(stream, msg)
+    elseif msg:is_sync() then
+        self:_handle_sync(stream, msg)
     end
 end
 

@@ -45,6 +45,11 @@ function session:workdir()
     return path.join(workdir, "sessons", self:id())
 end
 
+-- get project directory
+function session:projectdir()
+    return path.join(self:workdir(), "source")
+end
+
 function main(session_id)
     local instance = session()
     instance:init(session_id)

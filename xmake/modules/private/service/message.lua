@@ -25,8 +25,9 @@ import("core.base.object")
 local message = message or object()
 
 -- the message code
-message.CODE_CONN       = 1 -- connect
-message.CODE_DISCONN    = 2 -- disconnect
+message.CODE_CONNECT    = 1
+message.CODE_DISCONNECT = 2
+message.CODE_SYNC       = 3
 
 -- init message
 function message:init(body)
@@ -45,12 +46,17 @@ end
 
 -- is connect message?
 function message:is_connect()
-    return self:code() == message.CODE_CONN
+    return self:code() == message.CODE_CONNECT
 end
 
 -- is disconnect message?
 function message:is_disconnect()
-    return self:code() == message.CODE_DISCONN
+    return self:code() == message.CODE_DISCONNECT
+end
+
+-- is sync message?
+function message:is_sync()
+    return self:code() == message.CODE_SYNC
 end
 
 -- get message body
@@ -79,7 +85,7 @@ end
 -- new connect message
 function new_connect(session_id)
     return _new({
-        code = message.CODE_CONN,
+        code = message.CODE_CONNECT,
         session_id = session_id,
         xmakever = xmake.version():shortstr()
     })
@@ -88,7 +94,15 @@ end
 -- new disconnect message
 function new_disconnect(session_id)
     return _new({
-        code = message.CODE_DISCONN,
+        code = message.CODE_DISCONNECT,
+        session_id = session_id
+    })
+end
+
+-- new sync message
+function new_sync(session_id)
+    return _new({
+        code = message.CODE_SYNC,
         session_id = session_id
     })
 end
