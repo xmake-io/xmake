@@ -25,7 +25,8 @@ import("core.base.object")
 local message = message or object()
 
 -- the message code
-message.CODE_PING = 1
+message.CODE_CONN       = 1 -- connect
+message.CODE_DISCONN    = 2 -- disconnect
 
 -- init message
 function message:init(body)
@@ -37,9 +38,14 @@ function message:code()
     return self:body().code
 end
 
--- is ping message?
-function message:is_ping()
-    return self:code() == message.CODE_PING
+-- is connect message?
+function message:is_connect()
+    return self:code() == message.CODE_CONN
+end
+
+-- is disconnect message?
+function message:is_disconnect()
+    return self:code() == message.CODE_DISCONN
 end
 
 -- get message body
@@ -59,11 +65,18 @@ function _new(body)
     return instance
 end
 
--- new ping message
-function new_ping()
+-- new connect message
+function new_connect()
     return _new({
-        code = message.CODE_PING,
+        code = message.CODE_CONN,
         xmakever = xmake.version():shortstr()
+    })
+end
+
+-- new disconnect message
+function new_disconnect()
+    return _new({
+        code = message.CODE_DISCONN
     })
 end
 

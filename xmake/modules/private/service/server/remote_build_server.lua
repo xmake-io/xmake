@@ -34,14 +34,20 @@ function remote_build_server:init(daemon)
     if self:daemon() then
         config.load()
     end
-    local listen = assert(config.get("remote_build.server.listen"), "config(remote_build.server.listen): not found!")
-    super.listen_set(self, listen)
+    local address = assert(config.get("remote_build.server.listen"), "config(remote_build.server.listen): not found!")
+    super.address_set(self, address)
     super.handler_set(self, self.on_handle)
 end
 
--- handle ping message
-function remote_build_server:handle_ping(stream, msg)
-    local ok = stream:send_msg(message.new_ping()) and stream:flush()
+-- handle connect message
+function remote_build_server:handle_connect(stream, msg)
+    local ok = stream:send_msg(message.new_connect()) and stream:flush()
+    vprint("%s: %s send %s", self, stream:sock(), ok and "ok" or "failed")
+end
+
+-- handle disconnect message
+function remote_build_server:handle_disconnect(stream, msg)
+    local ok = stream:send_msg(message.new_disconnect()) and stream:flush()
     vprint("%s: %s send %s", self, stream:sock(), ok and "ok" or "failed")
 end
 
@@ -49,8 +55,10 @@ end
 function remote_build_server:on_handle(stream, msg)
     vprint("%s: %s on handle message(%d)", self, stream:sock(), msg:code())
     vprint(msg:body())
-    if msg:is_ping() then
-        self:handle_ping(stream, msg)
+    if msg:is_connect() then
+        self:handle_connect(stream, msg)
+    elseif msg:is_disconnect() then
+        self:handle_disconnect(stream, msg)
     end
 end
 

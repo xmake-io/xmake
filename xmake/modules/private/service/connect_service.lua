@@ -20,29 +20,12 @@
 
 -- imports
 import("core.base.option")
-import("core.base.socket")
 import("core.base.scheduler")
-import("private.service.config")
 import("private.service.client.remote_build_client")
-
-function _get_address()
-    local addr, port
-    local address = assert(config.get("remote_build.client.connect"), "config(remote_build.client.connect): not found!")
-    local splitinfo = address:split(':', {plain = true})
-    if #splitinfo == 2 then
-        addr = splitinfo[1]
-        port = splitinfo[2]
-    else
-        addr = "127.0.0.1"
-        port = splitinfo[1]
-    end
-    assert(addr and port, "invalid connect address!")
-    return addr, port
-end
 
 function main()
     scheduler.co_start(function ()
-        remote_build_client():connect(_get_address())
+        remote_build_client():connect()
     end)
 end
 

@@ -45,8 +45,8 @@ function server:handler_set(handler)
 end
 
 -- set the given listen address
-function server:listen_set(listen)
-    local splitinfo = listen:split(':', {plain = true})
+function server:address_set(address)
+    local splitinfo = address:split(':', {plain = true})
     if #splitinfo == 2 then
         self._ADDR = splitinfo[1]
         self._PORT = splitinfo[2]

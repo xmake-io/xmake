@@ -34,6 +34,10 @@ local super = remote_build_client:class()
 function remote_build_client:init()
     super.init(self)
 
+    -- init address
+    local address = assert(config.get("remote_build.client.connect"), "config(remote_build.client.connect): not found!")
+    super.address_set(self, address)
+
     -- load project config
     local projectdir = os.projectdir()
     local projectfile = os.projectfile()
@@ -52,14 +56,20 @@ function remote_build_client:class()
 end
 
 -- connect to the remote server
-function remote_build_client:connect(addr, port)
+function remote_build_client:connect()
     local statusfile = self:statusfile()
+    if os.isfile(statusfile) then
+        print("%s: has been connected!", self)
+        return
+    end
+    local addr = self:addr()
+    local port = self:port()
     local sock = socket.connect(addr, port)
     local connected = false
     print("%s: connect %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
-        if stream:send_msg(message.new_ping()) and stream:flush() then
+        if stream:send_msg(message.new_connect()) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
                 vprint(msg:body())
@@ -70,6 +80,7 @@ function remote_build_client:connect(addr, port)
     if connected then
         print("%s: connected!", self)
         io.save(statusfile, {addr = addr, port = port})
+        self:_syncfiles()
     else
         print("%s: connect %s:%d failed", self, addr, port)
         os.tryrm(statusfile)
@@ -79,11 +90,30 @@ end
 -- disconnect server
 function remote_build_client:disconnect()
     local statusfile = self:statusfile()
-    if os.isfile(statusfile) then
+    if not os.isfile(statusfile) then
+        print("%s: has been disconnected!", self)
+        return
+    end
+    local addr = self:addr()
+    local port = self:port()
+    local sock = socket.connect(addr, port)
+    local disconnected = false
+    print("%s: disconnect %s:%d ..", self, addr, port)
+    if sock then
+        local stream = socket_stream(sock)
+        if stream:send_msg(message.new_disconnect()) and stream:flush() then
+            local msg = stream:recv_msg()
+            if msg then
+                vprint(msg:body())
+                disconnected = true
+            end
+        end
+    end
+    if disconnected then
         os.rm(statusfile)
         print("%s: disconnected!", self)
     else
-        print("%s: has been disconnected!", self)
+        print("%s: disconnect %s:%d failed", self, addr, port)
     end
 end
 
@@ -116,6 +146,10 @@ end
 -- get working directory
 function remote_build_client:workdir()
     return self._WORKDIR
+end
+
+-- sync files
+function remote_build_client:_syncfiles()
 end
 
 function remote_build_client:__tostring()
