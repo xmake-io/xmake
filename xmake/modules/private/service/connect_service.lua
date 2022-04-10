@@ -46,16 +46,20 @@ function _connect(addr, port)
     local client = remote_build_client()
     local statusfile = client:statusfile()
     local sock = socket.connect(addr, port)
+    local connected = false
     print("%s: connect %s:%d ..", client, addr, port)
     if sock then
-        print("%s: connected!", client)
         local stream = socket_stream(sock)
         if stream:send_msg(message.new_ping()) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
-                msg:dump()
+                vprint(msg:body())
+                connected = true
             end
         end
+    end
+    if connected then
+        print("%s: connected!", client)
         io.save(statusfile, {addr = addr, port = port})
     else
         print("%s: connect %s:%d failed", client, addr, port)

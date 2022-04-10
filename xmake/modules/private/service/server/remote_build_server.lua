@@ -41,13 +41,14 @@ end
 
 -- handle ping message
 function remote_build_server:handle_ping(stream, msg)
-    if stream:send_msg(message.new_ping()) and stream:flush() then
-        print("send ok")
-    end
+    local ok = stream:send_msg(message.new_ping()) and stream:flush()
+    vprint("%s: %s send %s", self, stream:sock(), ok and "ok" or "failed")
 end
 
 -- on handle message
 function remote_build_server:on_handle(stream, msg)
+    vprint("%s: %s on handle message(%d)", self, stream:sock(), msg:code())
+    vprint(msg:body())
     if msg:is_ping() then
         self:handle_ping(stream, msg)
     end
