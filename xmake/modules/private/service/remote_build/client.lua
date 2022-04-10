@@ -79,15 +79,15 @@ function remote_build_client:connect()
         end
     end
     if connected then
-        print("%s: connected!", self)
+        self:_syncfiles()
         io.save(statusfile, {
             addr = addr,
             port = port,
             session_id = session_id})
-        self:_syncfiles()
+        print("%s: connected!", self)
     else
-        print("%s: connect %s:%d failed", self, addr, port)
         os.tryrm(statusfile)
+        print("%s: connect %s:%d failed", self, addr, port)
     end
 end
 
@@ -163,6 +163,7 @@ end
 
 -- sync files
 function remote_build_client:_syncfiles()
+    -- TODO
 end
 
 function remote_build_client:__tostring()
