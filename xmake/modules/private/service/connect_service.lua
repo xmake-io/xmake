@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.scheduler")
-import("private.service.client.remote_build_client")
+import("private.service.remote_build.client", {alias = "remote_build_client"})
 
 function main()
     scheduler.co_start(function ()

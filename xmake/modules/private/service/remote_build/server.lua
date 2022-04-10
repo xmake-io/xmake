@@ -22,7 +22,7 @@
 import("private.service.config")
 import("private.service.socket_stream")
 import("private.service.message")
-import("private.service.server.server")
+import("private.service.server")
 
 -- define module
 local remote_build_server = remote_build_server or server()
@@ -34,42 +34,70 @@ function remote_build_server:init(daemon)
     if self:daemon() then
         config.load()
     end
+
+    -- init address
     local address = assert(config.get("remote_build.server.listen"), "config(remote_build.server.listen): not found!")
     super.address_set(self, address)
-    super.handler_set(self, self.on_handle)
-end
 
--- handle connect message
-function remote_build_server:handle_connect(stream, msg)
-    local session_id = msg:session_id()
-    local respmsg = msg:clone()
-    respmsg:body().xmakever = xmake.version():shortstr()
-    local ok = stream:send_msg(respmsg) and stream:flush()
-    vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
-end
+    -- init handler
+    super.handler_set(self, self._on_handle)
 
--- handle disconnect message
-function remote_build_server:handle_disconnect(stream, msg)
-    local session_id = msg:session_id()
-    local respmsg = msg:clone()
-    local ok = stream:send_msg(respmsg) and stream:flush()
-    vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
-end
-
--- on handle message
-function remote_build_server:on_handle(stream, msg)
-    vprint("%s: %s: <session %s>: on handle message(%d)", self, stream:sock(), msg:session_id(), msg:code())
-    vprint(msg:body())
-    if msg:is_connect() then
-        self:handle_connect(stream, msg)
-    elseif msg:is_disconnect() then
-        self:handle_disconnect(stream, msg)
-    end
+    -- init sessions
+    self._SESSIONS = {}
 end
 
 -- get class
 function remote_build_server:class()
     return remote_build_server
+end
+
+-- handle connect message
+function remote_build_server:_handle_connect(stream, msg)
+    local session_id = msg:session_id()
+    local respmsg = msg:clone()
+    respmsg:body().xmakever = xmake.version():shortstr()
+    local ok = stream:send_msg(respmsg) and stream:flush()
+    if ok then
+        self:_session_open(session_id)
+    end
+    vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
+end
+
+-- handle disconnect message
+function remote_build_server:_handle_disconnect(stream, msg)
+    local session_id = msg:session_id()
+    local respmsg = msg:clone()
+    local ok = stream:send_msg(respmsg) and stream:flush()
+    if ok then
+        self:_session_close(session_id)
+    end
+    vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
+end
+
+-- on handle message
+function remote_build_server:_on_handle(stream, msg)
+    vprint("%s: %s: <session %s>: on handle message(%d)", self, stream:sock(), msg:session_id(), msg:code())
+    vprint(msg:body())
+    if msg:is_connect() then
+        self:_handle_connect(stream, msg)
+    elseif msg:is_disconnect() then
+        self:_handle_disconnect(stream, msg)
+    end
+end
+
+-- get session
+function remote_build_server:_session(session_id)
+    return self._SESSIONS[session_id]
+end
+
+-- open session
+function remote_build_server:_session_open(session_id)
+    self._SESSIONS[session_id] = {}
+end
+
+-- close session
+function remote_build_server:_session_close(session_id)
+    self._SESSIONS[session_id] = nil
 end
 
 function remote_build_server:__tostring()

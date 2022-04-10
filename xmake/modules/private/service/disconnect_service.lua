@@ -23,7 +23,7 @@ import("core.base.option")
 import("core.base.socket")
 import("core.base.scheduler")
 import("private.service.config")
-import("private.service.client.remote_build_client")
+import("private.service.remote_build.client", {alias = "remote_build_client"})
 
 function main()
     remote_build_client():disconnect()

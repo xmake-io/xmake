@@ -23,7 +23,7 @@ import("core.base.socket")
 import("core.project.config", {alias = "project_config"})
 import("private.service.config")
 import("private.service.message")
-import("private.service.client.client")
+import("private.service.client")
 import("private.service.socket_stream")
 
 -- define module

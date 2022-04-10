@@ -19,7 +19,7 @@
 --
 
 -- imports
-import("private.service.client.remote_build_client")
+import("private.service.remote_build.client", {alias = "remote_build_client"})
 
 function main()
     local client = remote_build_client()
