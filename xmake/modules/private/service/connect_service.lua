@@ -23,7 +23,7 @@ import("core.base.option")
 import("core.base.socket")
 import("core.base.scheduler")
 import("private.service.config")
-import("private.service.stream")
+import("private.service.socket_stream")
 import("private.service.message")
 import("private.service.client.remote_build_client")
 
@@ -49,9 +49,9 @@ function _connect(addr, port)
     print("%s: connect %s:%d ..", client, addr, port)
     if sock then
         print("%s: connected!", client)
-        local sock_stream = stream(sock)
-        if sock_stream:send_msg(message.new_ping()) and sock_stream:flush() then
-            local msg = sock_stream:recv_msg()
+        local stream = socket_stream(sock)
+        if stream:send_msg(message.new_ping()) and stream:flush() then
+            local msg = stream:recv_msg()
             if msg then
                 msg:dump()
             end

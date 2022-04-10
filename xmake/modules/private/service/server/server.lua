@@ -23,7 +23,7 @@ import("core.base.object")
 import("core.base.bytes")
 import("core.base.socket")
 import("core.base.scheduler")
-import("private.service.stream")
+import("private.service.socket_stream")
 import("private.service.message")
 
 -- define module
@@ -121,9 +121,9 @@ end
 -- handle session
 function server:_handle_session(sock)
     print("%s: %s session connected", self, sock)
-    local rstream = stream(sock)
+    local stream = socket_stream(sock)
     while true do
-        local msg = rstream:recv_object()
+        local msg = stream:recv_object()
         if msg then
             self:_HANDLER(sock, message(msg))
         else

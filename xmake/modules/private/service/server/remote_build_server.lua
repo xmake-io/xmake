@@ -20,7 +20,7 @@
 
 -- imports
 import("private.service.config")
-import("private.service.stream")
+import("private.service.socket_stream")
 import("private.service.message")
 import("private.service.server.server")
 
@@ -41,8 +41,8 @@ end
 
 -- handle ping message
 function remote_build_server:handle_ping(sock, msg)
-    local wstream = stream(sock)
-    if wstream:send_msg(message.new_ping()) and wstream:flush() then
+    local stream = socket_stream(sock)
+    if stream:send_msg(message.new_ping()) and stream:flush() then
         print("send ok")
     end
 end
