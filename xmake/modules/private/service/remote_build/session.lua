@@ -36,6 +36,20 @@ function session:id()
     return self._ID
 end
 
+-- open session
+function session:open()
+end
+
+-- close session
+function session:close()
+
+    -- remove the session caches
+    local workdir = self:workdir()
+    if workdir then
+        os.tryrm(workdir)
+    end
+end
+
 -- get work directory
 function session:workdir()
     local workdir = config.get("remote_build.server.workdir")

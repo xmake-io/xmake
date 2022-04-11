@@ -74,7 +74,11 @@ function remote_build_client:connect()
             local msg = stream:recv_msg()
             if msg then
                 vprint(msg:body())
-                connected = true
+                if msg:success() then
+                    connected = true
+                else
+                    print("%s: connect %s:%d failed, %s", self, addr, port, msg:errors() or "unknown")
+                end
             end
         end
     end
@@ -86,7 +90,6 @@ function remote_build_client:connect()
             session_id = session_id})
         print("%s: connected!", self)
     else
-        os.tryrm(statusfile)
         print("%s: connect %s:%d failed", self, addr, port)
     end
 end
@@ -110,7 +113,11 @@ function remote_build_client:disconnect()
             local msg = stream:recv_msg()
             if msg then
                 vprint(msg:body())
-                disconnected = true
+                if msg:success() then
+                    disconnected = true
+                else
+                    print("%s: disconnect %s:%d failed, %s", self, addr, port, msg:errors())
+                end
             end
         end
     end

@@ -24,6 +24,7 @@ import("private.service.message")
 import("private.service.server")
 import("private.service.stream", {alias = "socket_stream"})
 import("private.service.remote_build.session", {alias = "server_session"})
+import("lib.detect.find_tool")
 
 -- define module
 local remote_build_server = remote_build_server or server()
@@ -35,6 +36,9 @@ function remote_build_server:init(daemon)
     if self:daemon() then
         config.load()
     end
+
+    -- check requires
+    self:_check_requires()
 
     -- init address
     local address = assert(config.get("remote_build.server.listen"), "config(remote_build.server.listen): not found!")
@@ -52,26 +56,41 @@ function remote_build_server:class()
     return remote_build_server
 end
 
+-- check requires
+function remote_build_server:_check_requires()
+
+    -- check git
+    local git = find_tool("git")
+    assert(git, "git not found!")
+
+    -- check sshkeys
+    -- TODO
+end
+
 -- handle connect message
 function remote_build_server:_handle_connect(stream, msg)
     local session_id = msg:session_id()
+    local session_ok, session_errs = self:_session_open(session_id)
     local respmsg = msg:clone()
     respmsg:body().xmakever = xmake.version():shortstr()
-    local ok = stream:send_msg(respmsg) and stream:flush()
-    if ok then
-        self:_session_open(session_id)
+    respmsg:status_set(ok)
+    if not session_ok and session_errs then
+        respmsg:errors_set(session_errs)
     end
+    local ok = stream:send_msg(respmsg) and stream:flush()
     vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
 end
 
 -- handle disconnect message
 function remote_build_server:_handle_disconnect(stream, msg)
     local session_id = msg:session_id()
+    local session_ok, session_errs = self:_session_close(session_id)
     local respmsg = msg:clone()
-    local ok = stream:send_msg(respmsg) and stream:flush()
-    if ok then
-        self:_session_close(session_id)
+    respmsg:status_set(ok)
+    if not session_ok and session_errs then
+        respmsg:errors_set(session_errs)
     end
+    local ok = stream:send_msg(respmsg) and stream:flush()
     vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
 end
 
@@ -103,20 +122,50 @@ end
 
 -- open session
 function remote_build_server:_session_open(session_id)
-    self._SESSIONS[session_id] = server_session(session_id)
+    local session = server_session(session_id)
+    local errors
+    local ok = try
+    {
+        function ()
+            session:open()
+            return true
+        end,
+        catch
+        {
+            function (errs)
+                errors = tostring(errs)
+            end
+        }
+    }
+    if ok then
+        self._SESSIONS[session_id] = session
+    end
+    return ok, errors
 end
 
 -- close session
 function remote_build_server:_session_close(session_id)
-    -- remove the session caches
     local session = self:_session(session_id)
-    if session then
-        local workdir = session:workdir()
-        if workdir then
-            os.tryrm(workdir)
-        end
+    local errors
+    local ok = try
+    {
+        function ()
+            if session then
+                session:close()
+            end
+            return true
+        end,
+        catch
+        {
+            function (errs)
+                errors = tostring(errs)
+            end
+        }
+    }
+    if ok then
+        self._SESSIONS[session_id] = nil
     end
-    self._SESSIONS[session_id] = nil
+    return ok, errors
 end
 
 function remote_build_server:__tostring()

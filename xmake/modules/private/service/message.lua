@@ -59,9 +59,29 @@ function message:is_sync()
     return self:code() == message.CODE_SYNC
 end
 
+-- is success?
+function message:success()
+    return self:body().status == true
+end
+
+-- set status, ok or failed
+function message:status_set(ok)
+    self:body().status = ok
+end
+
 -- get message body
 function message:body()
     return self._BODY
+end
+
+-- get message errors
+function message:errors()
+    return self:body().errors
+end
+
+-- set message errors
+function message:errors_set(errors)
+    self:body().errors = errors
 end
 
 -- clone a message
