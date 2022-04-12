@@ -207,9 +207,9 @@ function main(name, opt)
         table.insert(argv, "compiler=Visual Studio")
         table.insert(argv, "-s")
         table.insert(argv, "compiler.version=" .. assert(vsvers[vs], "unknown msvc version!"))
-        if opt.vs_runtime then
+        if configs.vs_runtime then
             table.insert(argv, "-s")
-            table.insert(argv, "compiler.runtime=" .. opt.vs_runtime)
+            table.insert(argv, "compiler.runtime=" .. configs.vs_runtime)
         end
     elseif opt.plat == "iphoneos" then
         local target_minver = nil
