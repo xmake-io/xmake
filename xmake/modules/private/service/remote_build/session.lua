@@ -21,6 +21,7 @@
 -- imports
 import("core.base.object")
 import("core.base.global")
+import("devel.git")
 import("private.service.config")
 
 -- define module
@@ -75,6 +76,18 @@ end
 
 -- reset sourcedir
 function session:_reset_sourcedir()
+
+    -- init sourcedir first if .git not exists
+    local sourcedir = self:sourcedir()
+    if not os.isdir(sourcedir) then
+        os.mkdir(sourcedir)
+    end
+    if not os.isdir(path.join(sourcedir, ".git")) then
+        git.init({repodir = sourcedir})
+    end
+
+    -- checkout and reset branch
+    -- TODO
 end
 
 function session:__tostring()
