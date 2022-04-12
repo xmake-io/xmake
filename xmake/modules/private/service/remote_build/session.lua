@@ -38,16 +38,12 @@ end
 
 -- open session
 function session:open()
+    self:_reset_sourcedir()
 end
 
 -- close session
 function session:close()
-
-    -- remove the session caches
-    local workdir = self:workdir()
-    if workdir then
-        os.tryrm(workdir)
-    end
+    self:_reset_sourcedir()
 end
 
 -- syncfiles
@@ -63,9 +59,13 @@ function session:workdir()
     return path.join(workdir, "sessons", self:id())
 end
 
--- get project directory
-function session:projectdir()
+-- get sourcedir directory
+function session:sourcedir()
     return path.join(self:workdir(), "source")
+end
+
+-- reset sourcedir
+function session:_reset_sourcedir()
 end
 
 function main(session_id)

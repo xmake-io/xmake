@@ -57,15 +57,14 @@ end
 
 -- connect to the remote server
 function remote_build_client:connect()
-    local statusfile = self:statusfile()
-    if os.isfile(statusfile) then
+    if self:is_connected() then
         print("%s: has been connected!", self)
         return
     end
     local addr = self:addr()
     local port = self:port()
     local sock = socket.connect(addr, port)
-    local session_id = hash.uuid():split("-", {plain = true})[1]:lower()
+    local session_id = self:session_id()
     local connected = false
     print("%s: connect %s:%d ..", self, addr, port)
     if sock then
@@ -84,27 +83,30 @@ function remote_build_client:connect()
     end
     if connected then
         self:_syncfiles()
-        io.save(statusfile, {
-            addr = addr,
-            port = port,
-            session_id = session_id})
         print("%s: connected!", self)
     else
         print("%s: connect %s:%d failed", self, addr, port)
     end
+
+    -- update status
+    local status = self:status()
+    status.addr = addr
+    status.port = port
+    status.connected = connected
+    status.session_id = session_id
+    self:status_save()
 end
 
 -- disconnect server
 function remote_build_client:disconnect()
-    local statusfile = self:statusfile()
-    if not os.isfile(statusfile) then
+    if not self:is_connected() then
         print("%s: has been disconnected!", self)
         return
     end
     local addr = self:addr()
     local port = self:port()
     local sock = socket.connect(addr, port)
-    local session_id = assert(self:session_id(), "session id not found!")
+    local session_id = self:session_id()
     local disconnected = false
     print("%s: disconnect %s:%d ..", self, addr, port)
     if sock then
@@ -122,27 +124,39 @@ function remote_build_client:disconnect()
         end
     end
     if disconnected then
-        os.rm(statusfile)
         print("%s: disconnected!", self)
     else
         print("%s: disconnect %s:%d failed", self, addr, port)
     end
+
+    -- update status
+    local status = self:status()
+    status.connected = not disconnected
+    self:status_save()
 end
 
 -- is connected?
 function remote_build_client:is_connected()
-    return os.isfile(self:statusfile())
+    return self:status().connected
 end
 
 -- get the status
 function remote_build_client:status()
     local status = self._STATUS
     local statusfile = self:statusfile()
-    if not status and os.isfile(statusfile) then
-        status = io.load(statusfile)
+    if not status then
+        if os.isfile(statusfile) then
+            status = io.load(statusfile)
+        end
+        status = status or {}
         self._STATUS = status
     end
     return status
+end
+
+-- save status
+function remote_build_client:status_save()
+    io.save(self:statusfile(), self:status())
 end
 
 -- get the status file
@@ -162,10 +176,7 @@ end
 
 -- get the session id, only for unique project
 function remote_build_client:session_id()
-    local status = self:status()
-    if status then
-        return status.session_id
-    end
+    return self:status().session_id or hash.uuid():split("-", {plain = true})[1]:lower()
 end
 
 -- sync files
