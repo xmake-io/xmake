@@ -28,6 +28,7 @@ import("private.service.connect_service")
 import("private.service.reconnect_service")
 import("private.service.disconnect_service")
 import("private.service.clean_files")
+import("private.service.sync_files")
 import("private.service.import_config")
 import("private.service.show_logs")
 import("private.service.show_status")
@@ -49,6 +50,8 @@ function main()
         disconnect_service()
     elseif option.get("clean") then
         clean_files()
+    elseif option.get("sync") then
+        sync_files()
     elseif option.get("config") then
         import_config()
     elseif option.get("logs") then

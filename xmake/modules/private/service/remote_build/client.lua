@@ -82,7 +82,6 @@ function remote_build_client:connect()
         end
     end
     if connected then
-        self:_syncfiles()
         print("%s: connected!", self)
     else
         print("%s: connect %s:%d failed", self, addr, port)
@@ -95,6 +94,11 @@ function remote_build_client:connect()
     status.connected = connected
     status.session_id = session_id
     self:status_save()
+
+    -- sync files
+    if connected then
+        self:sync()
+    end
 end
 
 -- disconnect server
@@ -133,6 +137,36 @@ function remote_build_client:disconnect()
     local status = self:status()
     status.connected = not disconnected
     self:status_save()
+end
+
+-- sync server files
+function remote_build_client:sync()
+    assert(self:is_connected(), "%s: has been not connected!", self)
+    local addr = self:addr()
+    local port = self:port()
+    local sock = socket.connect(addr, port)
+    local session_id = self:session_id()
+    local synced = false
+    print("%s: sync files in %s:%d ..", self, addr, port)
+    if sock then
+        local stream = socket_stream(sock)
+        if stream:send_msg(message.new_sync(session_id)) and stream:flush() then
+            local msg = stream:recv_msg()
+            if msg then
+                vprint(msg:body())
+                if msg:success() then
+                    synced = true
+                else
+                    print("%s: sync files in %s:%d failed, %s", self, addr, port, msg:errors())
+                end
+            end
+        end
+    end
+    if synced then
+        print("%s: synced!", self)
+    else
+        print("%s: sync files in %s:%d failed", self, addr, port)
+    end
 end
 
 -- clean server files
@@ -207,11 +241,6 @@ end
 -- get the session id, only for unique project
 function remote_build_client:session_id()
     return self:status().session_id or hash.uuid():split("-", {plain = true})[1]:lower()
-end
-
--- sync files
-function remote_build_client:_syncfiles()
-    -- TODO
 end
 
 function remote_build_client:__tostring()

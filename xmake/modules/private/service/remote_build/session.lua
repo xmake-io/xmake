@@ -48,13 +48,15 @@ end
 
 -- sync files
 function session:sync()
+    vprint("%s: sync files in %s ..", self, self:sourcedir())
+    vprint("%s: sync files ok", self)
 end
 
 -- clean files
 function session:clean()
-    vprint("%s: cleaning files in %s ..", self, self:workdir())
+    vprint("%s: clean files in %s ..", self, self:workdir())
     os.tryrm(self:workdir())
-    vprint("%s: cleaning files ok", self)
+    vprint("%s: clean files ok", self)
 end
 
 -- get work directory

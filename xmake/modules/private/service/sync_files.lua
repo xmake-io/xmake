@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        clean_files.lua
+-- @file        sync_files.lua
 --
 
 -- imports
@@ -24,7 +24,7 @@ import("private.service.config")
 import("private.service.remote_build.client", {alias = "remote_build_client"})
 
 function main()
-    remote_build_client():clean()
+    remote_build_client():sync()
 end
 
 

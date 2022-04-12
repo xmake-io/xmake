@@ -31,6 +31,7 @@ task("service")
                 {nil, "connect" ,   "k",  nil, "Connect current project to the remote daemon service."       },
                 {nil, "reconnect",  "k",  nil, "Reconnect current project to the remote daemon service."     },
                 {nil, "disconnect", "k",  nil, "Disconnect current project in the remote daemon service."    },
+                {nil, "sync",       "k",  nil, "Sync current project files in the remote daemon service."    },
                 {nil, "clean",      "k",  nil, "Clean current project files in the remote daemon service."   },
                 {nil, "config",     "kv", nil, "Import the configuration file. (default: ~/.xmake/service.conf)",
                                                "e.g.",
