@@ -39,7 +39,7 @@ import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = 
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("private.utils.batchcmds")
 
-function _make_dirs(dir, vcxprojdir)
+function _translate_path(dir, vcxprojdir)
     if dir == nil then
         return ""
     end
@@ -59,7 +59,7 @@ function _make_dirs(dir, vcxprojdir)
     end
     local r = {}
     for k, v in ipairs(dir) do
-        r[k] = _make_dirs(v, vcxprojdir)
+        r[k] = _translate_path(v, vcxprojdir)
     end
     r = table.unique(r)
     return path.joinenv(r)
@@ -86,13 +86,13 @@ function _get_command_string(cmd, vcxprojdir)
         local argv = {}
         for _, v in ipairs(table.join(cmd.program, cmd.argv)) do
             if path.is_absolute(v) then
-                v = _make_dirs(v, vcxprojdir)
+                v = _translate_path(v, vcxprojdir)
             end
             table.insert(argv, v)
         end
         local command = os.args(argv)
         if opt and opt.curdir then
-            command = string.format("pushd \"%s\"\n%s\npopd", _make_dirs(opt.curdir, vcxprojdir), command)
+            command = string.format("pushd \"%s\"\n%s\npopd", _translate_path(opt.curdir, vcxprojdir), command)
         end
         return command
     elseif kind == "cp" then
@@ -117,7 +117,7 @@ function _make_custom_commands_for_target(commands, target, vcxprojdir, suffix)
         local script = ruleinst:script(scriptname)
         if script then
             local batchcmds_ = batchcmds.new({target = target})
-            script(target, batchcmds_, {})
+            script(target, batchcmds_, {translate_path = function (p) return _translate_path(p) end})
             if not batchcmds_:empty() then
                 for _, cmd in ipairs(batchcmds_:cmds()) do
                     local command = _get_command_string(cmd, vcxprojdir)
@@ -134,7 +134,7 @@ function _make_custom_commands_for_target(commands, target, vcxprojdir, suffix)
         script = ruleinst:script(scriptname)
         if script then
             local batchcmds_ = batchcmds.new({target = target})
-            script(target, batchcmds_, {})
+            script(target, batchcmds_, {translate_path = function (p) return _translate_path(p) end})
             if not batchcmds_:empty() then
                 for _, cmd in ipairs(batchcmds_:cmds()) do
                     local command = _get_command_string(cmd, vcxprojdir)
@@ -161,7 +161,7 @@ function _make_custom_commands_for_objectrules(commands, target, sourcebatch, vc
     local script = ruleinst:script(scriptname)
     if script then
         local batchcmds_ = batchcmds.new({target = target})
-        script(target, batchcmds_, sourcebatch, {})
+        script(target, batchcmds_, sourcebatch, {translate_path = function (p) return _translate_path(p) end})
         if not batchcmds_:empty() then
             for _, cmd in ipairs(batchcmds_:cmds()) do
                 local command = _get_command_string(cmd, vcxprojdir)
@@ -182,7 +182,7 @@ function _make_custom_commands_for_objectrules(commands, target, sourcebatch, vc
             local sourcekind = sourcebatch.sourcekind
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local batchcmds_ = batchcmds.new({target = target})
-                script(target, batchcmds_, sourcefile, {})
+                script(target, batchcmds_, sourcefile, {translate_path = function (p) return _translate_path(p) end})
                 if not batchcmds_:empty() then
                     for _, cmd in ipairs(batchcmds_:cmds()) do
                         local command = _get_command_string(cmd, vcxprojdir)
@@ -324,7 +324,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     end
     for k, v in pairs(addrunenvs) do
         if k:upper() == "PATH" then
-            runenvs[k] = _make_dirs(v, vcxprojdir) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
+            runenvs[k] = _translate_path(v, vcxprojdir) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
             runenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
         end
@@ -333,7 +333,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
         if #v == 1 then
             v = v[1]
             if path.is_absolute(v) and v:startswith(project.directory()) then
-                runenvs[k] = _make_dirs(v, vcxprojdir)
+                runenvs[k] = _translate_path(v, vcxprojdir)
             else
                 runenvs[k] = v[1]
             end
