@@ -76,6 +76,7 @@ end
 
 -- reset sourcedir
 function session:_reset_sourcedir()
+    vprint("%s: reset %s", self, self:sourcedir())
 
     -- init sourcedir first if .git not exists
     local sourcedir = self:sourcedir()
@@ -86,8 +87,17 @@ function session:_reset_sourcedir()
         git.init({repodir = sourcedir})
     end
 
-    -- checkout and reset branch
-    -- TODO
+    -- reset the current branch
+    local branch = git.branch({repodir = sourcedir})
+    if branch then
+        git.clean({repodir = sourcedir, force = true, all = true})
+        git.reset({repodir = sourcedir, hard = true})
+    end
+end
+
+-- get working branch of the source directory
+function session:_source_branch()
+    return "remote_build"
 end
 
 function session:__tostring()
