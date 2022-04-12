@@ -50,6 +50,10 @@ function session:close()
     end
 end
 
+-- syncfiles
+function session:syncfiles()
+end
+
 -- get work directory
 function session:workdir()
     local workdir = config.get("remote_build.server.workdir")

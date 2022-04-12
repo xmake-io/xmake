@@ -67,52 +67,26 @@ function remote_build_server:_check_requires()
     -- TODO
 end
 
--- handle connect message
-function remote_build_server:_handle_connect(stream, msg)
-    local session_id = msg:session_id()
-    local session_ok, session_errs = self:_session_open(session_id)
-    local respmsg = msg:clone()
-    respmsg:body().xmakever = xmake.version():shortstr()
-    respmsg:status_set(ok)
-    if not session_ok and session_errs then
-        respmsg:errors_set(session_errs)
-    end
-    local ok = stream:send_msg(respmsg) and stream:flush()
-    vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
-end
-
--- handle disconnect message
-function remote_build_server:_handle_disconnect(stream, msg)
-    local session_id = msg:session_id()
-    local session_ok, session_errs = self:_session_close(session_id)
-    local respmsg = msg:clone()
-    respmsg:status_set(ok)
-    if not session_ok and session_errs then
-        respmsg:errors_set(session_errs)
-    end
-    local ok = stream:send_msg(respmsg) and stream:flush()
-    vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
-end
-
--- handle sync message
-function remote_build_server:_handle_sync(stream, msg)
-    local session_id = msg:session_id()
-    local respmsg = msg:clone()
-    local ok = stream:send_msg(respmsg) and stream:flush()
-    vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
-end
-
 -- on handle message
 function remote_build_server:_on_handle(stream, msg)
-    vprint("%s: %s: <session %s>: on handle message(%d)", self, stream:sock(), msg:session_id(), msg:code())
+    local session_id = msg:session_id()
+    vprint("%s: %s: <session %s>: on handle message(%d)", self, stream:sock(), session_id, msg:code())
     vprint(msg:body())
+    local session_ok, session_errs
     if msg:is_connect() then
-        self:_handle_connect(stream, msg)
+        session_ok, session_errs = self:_session_open(session_id)
     elseif msg:is_disconnect() then
-        self:_handle_disconnect(stream, msg)
+        session_ok, session_errs = self:_session_close(session_id)
     elseif msg:is_sync() then
-        self:_handle_sync(stream, msg)
+        session_ok, session_errs = self:_session_syncfiles(session_id)
     end
+    local respmsg = msg:clone()
+    respmsg:status_set(session_ok)
+    if not session_ok and session_errs then
+        respmsg:errors_set(session_errs)
+    end
+    local ok = stream:send_msg(respmsg) and stream:flush()
+    vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
 end
 
 -- get session
@@ -152,6 +126,31 @@ function remote_build_server:_session_close(session_id)
         function ()
             if session then
                 session:close()
+            end
+            return true
+        end,
+        catch
+        {
+            function (errs)
+                errors = tostring(errs)
+            end
+        }
+    }
+    if ok then
+        self._SESSIONS[session_id] = nil
+    end
+    return ok, errors
+end
+
+-- sync files
+function remote_build_server:_session_syncfiles(session_id)
+    local session = self:_session(session_id)
+    local errors
+    local ok = try
+    {
+        function ()
+            if session then
+                session:syncfiles()
             end
             return true
         end,
