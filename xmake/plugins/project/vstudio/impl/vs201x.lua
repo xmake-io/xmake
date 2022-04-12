@@ -117,7 +117,7 @@ function _make_custom_commands_for_target(commands, target, vcxprojdir, suffix)
         local script = ruleinst:script(scriptname)
         if script then
             local batchcmds_ = batchcmds.new({target = target})
-            script(target, batchcmds_, {translate_path = function (p) return _translate_path(p) end})
+            script(target, batchcmds_, {})
             if not batchcmds_:empty() then
                 for _, cmd in ipairs(batchcmds_:cmds()) do
                     local command = _get_command_string(cmd, vcxprojdir)
@@ -134,7 +134,7 @@ function _make_custom_commands_for_target(commands, target, vcxprojdir, suffix)
         script = ruleinst:script(scriptname)
         if script then
             local batchcmds_ = batchcmds.new({target = target})
-            script(target, batchcmds_, {translate_path = function (p) return _translate_path(p) end})
+            script(target, batchcmds_, {})
             if not batchcmds_:empty() then
                 for _, cmd in ipairs(batchcmds_:cmds()) do
                     local command = _get_command_string(cmd, vcxprojdir)
@@ -161,7 +161,7 @@ function _make_custom_commands_for_objectrules(commands, target, sourcebatch, vc
     local script = ruleinst:script(scriptname)
     if script then
         local batchcmds_ = batchcmds.new({target = target})
-        script(target, batchcmds_, sourcebatch, {translate_path = function (p) return _translate_path(p) end})
+        script(target, batchcmds_, sourcebatch, {})
         if not batchcmds_:empty() then
             for _, cmd in ipairs(batchcmds_:cmds()) do
                 local command = _get_command_string(cmd, vcxprojdir)
@@ -182,7 +182,7 @@ function _make_custom_commands_for_objectrules(commands, target, sourcebatch, vc
             local sourcekind = sourcebatch.sourcekind
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local batchcmds_ = batchcmds.new({target = target})
-                script(target, batchcmds_, sourcefile, {translate_path = function (p) return _translate_path(p) end})
+                script(target, batchcmds_, sourcefile, {})
                 if not batchcmds_:empty() then
                     for _, cmd in ipairs(batchcmds_:cmds()) do
                         local command = _get_command_string(cmd, vcxprojdir)
@@ -200,6 +200,10 @@ end
 
 -- make custom commands
 function _make_custom_commands(target, vcxprojdir)
+    -- https://github.com/xmake-io/xmake/issues/2258
+    target:data_set("plugin.project.translate_path", function (p)
+        return _translate_path(p, vcxprojdir)
+    end)
     local commands = {}
     _make_custom_commands_for_target(commands, target, vcxprojdir, "before")
     _make_custom_commands_for_target(commands, target, vcxprojdir)
