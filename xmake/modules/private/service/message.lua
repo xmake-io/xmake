@@ -28,6 +28,7 @@ local message = message or object()
 message.CODE_CONNECT    = 1
 message.CODE_DISCONNECT = 2
 message.CODE_SYNC       = 3
+message.CODE_CLEAN      = 4
 
 -- init message
 function message:init(body)
@@ -57,6 +58,11 @@ end
 -- is sync message?
 function message:is_sync()
     return self:code() == message.CODE_SYNC
+end
+
+-- is clean message?
+function message:is_clean()
+    return self:code() == message.CODE_CLEAN
 end
 
 -- is success?
@@ -123,6 +129,14 @@ end
 function new_sync(session_id)
     return _new({
         code = message.CODE_SYNC,
+        session_id = session_id
+    })
+end
+
+-- new clean message
+function new_clean(session_id)
+    return _new({
+        code = message.CODE_CLEAN,
         session_id = session_id
     })
 end

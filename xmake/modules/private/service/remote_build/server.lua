@@ -70,16 +70,34 @@ end
 -- on handle message
 function remote_build_server:_on_handle(stream, msg)
     local session_id = msg:session_id()
+    local session = self:_session(session_id)
     vprint("%s: %s: <session %s>: on handle message(%d)", self, stream:sock(), session_id, msg:code())
     vprint(msg:body())
-    local session_ok, session_errs
-    if msg:is_connect() then
-        session_ok, session_errs = self:_session_open(session_id)
-    elseif msg:is_disconnect() then
-        session_ok, session_errs = self:_session_close(session_id)
-    elseif msg:is_sync() then
-        session_ok, session_errs = self:_session_syncfiles(session_id)
-    end
+    local session_errs
+    local session_ok = try
+    {
+        function()
+            if msg:is_connect() then
+                session:open()
+            elseif msg:is_disconnect() then
+                session:close()
+                self._SESSIONS[session_id] = nil
+            elseif msg:is_sync() then
+                session:sync()
+            elseif msg:is_clean() then
+                session:clean()
+            end
+            return true
+        end,
+        catch
+        {
+            function (errors)
+                if errors then
+                    session_errs = tostring(errors)
+                end
+            end
+        }
+    }
     local respmsg = msg:clone()
     respmsg:status_set(session_ok)
     if not session_ok and session_errs then
@@ -91,80 +109,17 @@ end
 
 -- get session
 function remote_build_server:_session(session_id)
-    return self._SESSIONS[session_id]
-end
-
--- open session
-function remote_build_server:_session_open(session_id)
-    local session = server_session(session_id)
-    local errors
-    local ok = try
-    {
-        function ()
-            session:open()
-            return true
-        end,
-        catch
-        {
-            function (errs)
-                errors = tostring(errs)
-            end
-        }
-    }
-    if ok then
+    local session = self._SESSIONS[session_id]
+    if not session then
+        session = server_session(session_id)
         self._SESSIONS[session_id] = session
     end
-    return ok, errors
+    return session
 end
 
 -- close session
 function remote_build_server:_session_close(session_id)
-    local session = self:_session(session_id)
-    local errors
-    local ok = try
-    {
-        function ()
-            if session then
-                session:close()
-            end
-            return true
-        end,
-        catch
-        {
-            function (errs)
-                errors = tostring(errs)
-            end
-        }
-    }
-    if ok then
-        self._SESSIONS[session_id] = nil
-    end
-    return ok, errors
-end
-
--- sync files
-function remote_build_server:_session_syncfiles(session_id)
-    local session = self:_session(session_id)
-    local errors
-    local ok = try
-    {
-        function ()
-            if session then
-                session:syncfiles()
-            end
-            return true
-        end,
-        catch
-        {
-            function (errs)
-                errors = tostring(errs)
-            end
-        }
-    }
-    if ok then
-        self._SESSIONS[session_id] = nil
-    end
-    return ok, errors
+    self._SESSIONS[session_id] = nil
 end
 
 function remote_build_server:__tostring()

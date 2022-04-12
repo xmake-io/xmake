@@ -135,6 +135,36 @@ function remote_build_client:disconnect()
     self:status_save()
 end
 
+-- clean server files
+function remote_build_client:clean()
+    assert(self:is_connected(), "%s: has been not connected!", self)
+    local addr = self:addr()
+    local port = self:port()
+    local sock = socket.connect(addr, port)
+    local session_id = self:session_id()
+    local cleaned = false
+    print("%s: clean files in %s:%d ..", self, addr, port)
+    if sock then
+        local stream = socket_stream(sock)
+        if stream:send_msg(message.new_clean(session_id)) and stream:flush() then
+            local msg = stream:recv_msg()
+            if msg then
+                vprint(msg:body())
+                if msg:success() then
+                    cleaned = true
+                else
+                    print("%s: clean files in %s:%d failed, %s", self, addr, port, msg:errors())
+                end
+            end
+        end
+    end
+    if cleaned then
+        print("%s: cleaned!", self)
+    else
+        print("%s: clean files in %s:%d failed", self, addr, port)
+    end
+end
+
 -- is connected?
 function remote_build_client:is_connected()
     return self:status().connected

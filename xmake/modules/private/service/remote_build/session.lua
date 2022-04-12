@@ -46,8 +46,15 @@ function session:close()
     self:_reset_sourcedir()
 end
 
--- syncfiles
-function session:syncfiles()
+-- sync files
+function session:sync()
+end
+
+-- clean files
+function session:clean()
+    vprint("%s: cleaning files in %s ..", self, self:workdir())
+    os.tryrm(self:workdir())
+    vprint("%s: cleaning files ok", self)
 end
 
 -- get work directory
@@ -66,6 +73,10 @@ end
 
 -- reset sourcedir
 function session:_reset_sourcedir()
+end
+
+function session:__tostring()
+    return string.format("<session %s>", self:id())
 end
 
 function main(session_id)
