@@ -34,7 +34,10 @@ function _generate_configfile()
                 workdir = path.join(servicedir, "remote_build")
             },
             client = {
-                connect = "127.0.0.1:90091"
+                connect = "127.0.0.1:90091",
+                -- ssh user and password for git push
+                user = "user"
+                -- pass = "yyyy"
             }
         }
     }

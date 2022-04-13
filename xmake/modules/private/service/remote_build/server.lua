@@ -73,6 +73,7 @@ function remote_build_server:_on_handle(stream, msg)
     local session = self:_session(session_id)
     vprint("%s: %s: <session %s>: on handle message(%d)", self, stream:sock(), session_id, msg:code())
     vprint(msg:body())
+    local respmsg = msg:clone()
     local session_errs
     local session_ok = try
     {
@@ -83,7 +84,7 @@ function remote_build_server:_on_handle(stream, msg)
                 session:close()
                 self._SESSIONS[session_id] = nil
             elseif msg:is_sync() then
-                session:sync()
+                session:sync(respmsg)
             elseif msg:is_clean() then
                 session:clean()
             end
@@ -98,7 +99,6 @@ function remote_build_server:_on_handle(stream, msg)
             end
         }
     }
-    local respmsg = msg:clone()
     respmsg:status_set(session_ok)
     if not session_ok and session_errs then
         respmsg:errors_set(session_errs)

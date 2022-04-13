@@ -126,9 +126,10 @@ function new_disconnect(session_id)
 end
 
 -- new sync message
-function new_sync(session_id)
+function new_sync(session_id, start)
     return _new({
         code = message.CODE_SYNC,
+        start = start or true,
         session_id = session_id
     })
 end

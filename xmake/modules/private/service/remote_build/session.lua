@@ -48,9 +48,22 @@ function session:close()
 end
 
 -- sync files
-function session:sync()
-    vprint("%s: sync files in %s ..", self, self:sourcedir())
-    vprint("%s: sync files ok", self)
+function session:sync(respmsg)
+    local body = respmsg:body()
+    vprint("%s: %s sync files in %s ..", self, self:sourcedir(), body.start and "start" or "finish")
+    local sourcedir = self:sourcedir()
+    local source_branch = self:_source_branch()
+    if body.start then
+        self:_reset_sourcedir()
+        body.path = sourcedir
+        body.branch = source_branch
+    else
+        local branch = git.branch({repodir = sourcedir})
+        if not branch or branch ~= source_branch then
+            git.checkout(source_branch, {repodir = sourcedir})
+        end
+    end
+    vprint("%s: %s sync files ok", self, body.start and "start" or "finish")
 end
 
 -- clean files

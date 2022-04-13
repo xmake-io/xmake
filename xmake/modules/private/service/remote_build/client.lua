@@ -21,6 +21,8 @@
 -- imports
 import("core.base.socket")
 import("core.project.config", {alias = "project_config"})
+import("devel.git")
+import("lib.detect.find_tool")
 import("private.service.config")
 import("private.service.message")
 import("private.service.client")
@@ -48,6 +50,9 @@ function remote_build_client:init()
     else
         raise("we need enter a project directory with xmake.lua first!")
     end
+
+    -- check requires
+    self:_check_requires()
 end
 
 -- get class
@@ -66,6 +71,7 @@ function remote_build_client:connect()
     local sock = socket.connect(addr, port)
     local session_id = self:session_id()
     local connected = false
+    local errors
     print("%s: connect %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
@@ -76,7 +82,7 @@ function remote_build_client:connect()
                 if msg:success() then
                     connected = true
                 else
-                    print("%s: connect %s:%d failed, %s", self, addr, port, msg:errors() or "unknown")
+                    errors = msg:errors()
                 end
             end
         end
@@ -84,7 +90,7 @@ function remote_build_client:connect()
     if connected then
         print("%s: connected!", self)
     else
-        print("%s: connect %s:%d failed", self, addr, port)
+        print("%s: connect %s:%d failed, %s", self, addr, port, errors or "unknown")
     end
 
     -- update status
@@ -111,6 +117,7 @@ function remote_build_client:disconnect()
     local port = self:port()
     local sock = socket.connect(addr, port)
     local session_id = self:session_id()
+    local errors
     local disconnected = false
     print("%s: disconnect %s:%d ..", self, addr, port)
     if sock then
@@ -122,7 +129,7 @@ function remote_build_client:disconnect()
                 if msg:success() then
                     disconnected = true
                 else
-                    print("%s: disconnect %s:%d failed, %s", self, addr, port, msg:errors())
+                    errors = msg:errors()
                 end
             end
         end
@@ -130,7 +137,7 @@ function remote_build_client:disconnect()
     if disconnected then
         print("%s: disconnected!", self)
     else
-        print("%s: disconnect %s:%d failed", self, addr, port)
+        print("%s: disconnect %s:%d failed, %s", self, addr, port, errors or "unknown")
     end
 
     -- update status
@@ -146,26 +153,33 @@ function remote_build_client:sync()
     local port = self:port()
     local sock = socket.connect(addr, port)
     local session_id = self:session_id()
+    local errors
     local synced = false
     print("%s: sync files in %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
         if stream:send_msg(message.new_sync(session_id)) and stream:flush() then
             local msg = stream:recv_msg()
-            if msg then
+            if msg and msg:success() then
                 vprint(msg:body())
-                if msg:success() then
-                    synced = true
-                else
-                    print("%s: sync files in %s:%d failed, %s", self, addr, port, msg:errors())
+                self:_do_syncfiles(msg:body().path, msg:body().branch)
+                if stream:send_msg(message.new_sync(session_id, false)) and stream:flush() then
+                    msg = stream:recv_msg()
+                    if msg and msg:success() then
+                        synced = true
+                    elseif msg then
+                        errors = msg:errors()
+                    end
                 end
+            elseif msg then
+                errors = msg:errors()
             end
         end
     end
     if synced then
         print("%s: synced!", self)
     else
-        print("%s: sync files in %s:%d failed", self, addr, port)
+        print("%s: sync files in %s:%d failed, %s", self, addr, port, errors or "unknown")
     end
 end
 
@@ -176,6 +190,7 @@ function remote_build_client:clean()
     local port = self:port()
     local sock = socket.connect(addr, port)
     local session_id = self:session_id()
+    local errors
     local cleaned = false
     print("%s: clean files in %s:%d ..", self, addr, port)
     if sock then
@@ -187,7 +202,7 @@ function remote_build_client:clean()
                 if msg:success() then
                     cleaned = true
                 else
-                    print("%s: clean files in %s:%d failed, %s", self, addr, port, msg:errors())
+                    errors = msg:errors()
                 end
             end
         end
@@ -195,7 +210,7 @@ function remote_build_client:clean()
     if cleaned then
         print("%s: cleaned!", self)
     else
-        print("%s: clean files in %s:%d failed", self, addr, port)
+        print("%s: clean files in %s:%d failed, %s", self, addr, port, errors or "unknown")
     end
 end
 
@@ -241,6 +256,27 @@ end
 -- get the session id, only for unique project
 function remote_build_client:session_id()
     return self:status().session_id or hash.uuid():split("-", {plain = true})[1]:lower()
+end
+
+-- check requires
+function remote_build_client:_check_requires()
+    local git = find_tool("git")
+    assert(git, "git not found!")
+end
+
+-- do syncfiles, e.g. git push user@addr:remote_path branch:remote_branch
+function remote_build_client:_do_syncfiles(remote_path, remote_branch)
+    local user = assert(config.get("remote_build.client.user"), "config(remote_build.client.user): not found!")
+    local pass = config.get("remote_build.client.pass")
+    local addr = self:addr()
+    local branch = git.branch({repodir = os.curdir()})
+    assert(branch, "git branch not found!")
+    assert(remote_path, "git remote path not found!")
+    assert(remote_branch, "git remote branch not found!")
+
+    -- get remote url
+    local remote_url = string.format("%s@%s:%s %s:%s", user, addr, remote_path, branch, remote_branch)
+    print(remote_url)
 end
 
 function remote_build_client:__tostring()
