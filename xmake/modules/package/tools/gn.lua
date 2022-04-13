@@ -40,8 +40,6 @@ function _get_configs(package, configs, opt)
     if not package:is_plat("windows") then
         configs.cc  = package:build_getenv("cc")
         configs.cxx = package:build_getenv("cxx")
-    else
-        configs.extra_cflags  = {(package:config("vs_runtime"):startswith("MT") and "/MT" or "/MD")}
     end
     if package:is_plat("macosx") then
         configs.extra_ldflags = {"-lstdc++"}
