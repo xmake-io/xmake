@@ -15,30 +15,44 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        checkout.lua
+-- @file        push.lua
 --
 
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
+import("branch", {alias = "git_branch"})
 
--- checkout to given branch, tag or commit
+-- push to given remote url and branch
 --
--- @param commit    the commit, tag or branch
--- @param opt       the argument options
+-- @param url the remote url
+-- @param opt the argument options
 --
 -- @code
 --
 -- import("devel.git")
 --
--- git.checkout("master", {repodir = "/tmp/xmake"})
--- git.checkout("v1.0.1", {repodir = "/tmp/xmake"})
+-- git.push(url, {branch = "master, remote_branch = "xxx", force = true, "repodir = "/tmp/xmake", password = "xxx"})
 --
 -- @endcode
 --
-function main(commit, opt)
+function main(url, opt)
     opt = opt or {}
     local git = assert(find_tool("git"), "git not found!")
-    local argv = {"checkout", commit}
-    os.vrunv(git.program, argv, {curdir = opt.repodir})
+
+    local argv = {"push", url}
+    if opt.force then
+        table.insert(argv, "--force")
+    end
+    local branch = opt.branch or git_branch(opt)
+    assert(branch, "git branch not found!")
+    if opt.remote_branch then
+        branch = branch .. ":" .. opt.remote_branch
+    end
+    table.insert(argv, branch)
+    local stdin
+    if opt.password then
+        stdin = opt.password .. "\n"
+    end
+    os.vrunv(git.program, argv, {curdir = opt.repodir, stdin = stdin})
 end

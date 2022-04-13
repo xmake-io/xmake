@@ -269,14 +269,12 @@ function remote_build_client:_do_syncfiles(remote_path, remote_branch)
     local user = assert(config.get("remote_build.client.user"), "config(remote_build.client.user): not found!")
     local pass = config.get("remote_build.client.pass")
     local addr = self:addr()
-    local branch = git.branch({repodir = os.curdir()})
-    assert(branch, "git branch not found!")
     assert(remote_path, "git remote path not found!")
     assert(remote_branch, "git remote branch not found!")
 
-    -- get remote url
-    local remote_url = string.format("%s@%s:%s %s:%s", user, addr, remote_path, branch, remote_branch)
-    print(remote_url)
+    -- push to remote
+    local remote_url = string.format("%s@%s:%s", user, addr, remote_path)
+    git.push(remote_url, {remote_branch = remote_branch, password = pass})
 end
 
 function remote_build_client:__tostring()
