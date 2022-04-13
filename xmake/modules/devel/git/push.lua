@@ -50,5 +50,9 @@ function main(url, opt)
         branch = branch .. ":" .. opt.remote_branch
     end
     table.insert(argv, branch)
-    os.vrunv(git.program, argv, {curdir = opt.repodir})
+    if opt.verbose then
+        os.execv(git.program, argv, {curdir = opt.repodir})
+    else
+        os.vrunv(git.program, argv, {curdir = opt.repodir})
+    end
 end

@@ -273,7 +273,7 @@ function remote_build_client:_do_syncfiles(remote_path, remote_branch)
 
     -- push to remote
     local remote_url = string.format("%s@%s:%s", user, addr, remote_path)
-    git.push(remote_url, {remote_branch = remote_branch})
+    git.push(remote_url, {remote_branch = remote_branch, verbose = true})
 end
 
 function remote_build_client:__tostring()
