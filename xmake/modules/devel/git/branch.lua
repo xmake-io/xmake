@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
+import("branches", {alias = "git_branches"})
 
 -- get current branch
 --
@@ -37,16 +38,8 @@ import("lib.detect.find_tool")
 --
 function main(opt)
     opt = opt or {}
-    local git = assert(find_tool("git"), "git not found!")
-    local argv = {"branch"}
-    if not option.get("verbose") then
-        table.insert(argv, "-q")
-    end
-    local branch = os.iorunv(git.program, argv, {curdir = opt.repodir})
-    if branch then
-        branch = branch:trim()
-        if #branch > 0 then
-            return branch
-        end
+    local branches = git_branches(opt.repodir)
+    if branches and #branches > 0 then
+        return branches[1]
     end
 end
