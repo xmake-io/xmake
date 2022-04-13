@@ -32,7 +32,7 @@ import("branch", {alias = "git_branch"})
 --
 -- import("devel.git")
 --
--- git.push(url, {branch = "master, remote_branch = "xxx", force = true, "repodir = "/tmp/xmake", password = "xxx"})
+-- git.push(url, {branch = "master, remote_branch = "xxx", force = true, "repodir = "/tmp/xmake"})
 --
 -- @endcode
 --
@@ -50,9 +50,5 @@ function main(url, opt)
         branch = branch .. ":" .. opt.remote_branch
     end
     table.insert(argv, branch)
-    local stdin
-    if opt.password then
-        stdin = opt.password .. "\n"
-    end
-    os.vrunv(git.program, argv, {curdir = opt.repodir, stdin = stdin})
+    os.vrunv(git.program, argv, {curdir = opt.repodir})
 end

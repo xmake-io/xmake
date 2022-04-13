@@ -35,9 +35,7 @@ function _generate_configfile()
             },
             client = {
                 connect = "127.0.0.1:90091",
-                -- ssh user and password for git push
-                user = "user"
-                -- pass = "yyyy"
+                user = "user" -- remote ssh user
             }
         }
     }
