@@ -79,7 +79,7 @@ function _checkout(package, url, sourcedir, url_alias)
         git.clone(url, {longpaths = longpaths, outputdir = packagedir})
 
         -- attempt to checkout the given version
-        local revision = package:revision(url_alias) or package:tag() or package:version_str()
+        local revision = package:revision(url_alias) or package:tag() or package:commit() or package:version_str()
         git.checkout(revision, {repodir = packagedir})
 
         -- update all submodules

@@ -1016,10 +1016,17 @@ function _instance:version_set(version, source)
         self._BRANCH = version
     elseif source == "tag" then
         self._TAG = version
+    elseif source == "commit" then
+        self._COMMIT = version
     end
 
     -- save version string
-    self._VERSION_STR = version
+    if source == "commit" then
+        -- we strip it to avoid long paths
+        self._VERSION_STR = version:sub(1, 8)
+    else
+        self._VERSION_STR = version
+    end
 end
 
 -- get branch version
@@ -1032,9 +1039,14 @@ function _instance:tag()
     return self._TAG
 end
 
+-- get commit version
+function _instance:commit()
+    return self._COMMIT
+end
+
 -- is git ref?
 function _instance:gitref()
-    return self:branch() or self:tag()
+    return self:branch() or self:tag() or self:commit()
 end
 
 -- get the require info

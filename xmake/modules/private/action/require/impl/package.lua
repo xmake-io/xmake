@@ -361,7 +361,11 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         version, source = try { function () return semver.select(require_version, package:versions()) end }
     end
     if not version and has_giturl and not semver.is_valid(require_version) then -- select branch?
-        version, source = require_version ~= "latest" and require_version or "master", "branch"
+        if require_version and #require_version == 40 and require_version:match("%w+") then
+            version, source = require_version, "commit"
+        else
+            version, source = require_version ~= "latest" and require_version or "master", "branch"
+        end
     end
     -- local source package? we use a phony version
     if not version and require_version == "latest" and #package:urls() == 0 then
