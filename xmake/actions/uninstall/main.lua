@@ -29,21 +29,15 @@ import("uninstall")
 -- main
 function main()
 
-    -- get the target name
-    local targetname = option.get("target")
-
     -- config it first
+    local targetname = option.get("target")
     task.run("config", {target = targetname, require = "n", verbose = false})
 
     -- attempt to uninstall directly
     try
     {
         function ()
-
-            -- uninstall target
             uninstall(targetname)
-
-            -- trace
             cprint("${color.success}uninstall ok!")
         end,
 

@@ -181,7 +181,10 @@ end
 -- main
 function main()
 
-    -- config it first
+    -- load config first
+    config.load()
+
+    -- check targets first
     local targetname
     local group_pattern = option.get("group")
     if group_pattern then
@@ -189,9 +192,6 @@ function main()
     else
         targetname = option.get("target")
     end
-    task.run("config", {target = targetname, require = "n", verbose = false})
-
-    -- check targets first
     _check_targets(targetname, group_pattern)
 
     -- enter project directory

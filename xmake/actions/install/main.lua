@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
+import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("core.base.privilege")
@@ -63,24 +64,18 @@ end
 -- main
 function main()
 
-    -- get the target name
-    local targetname = option.get("target")
-
-    -- config it first
-    task.run("config", {target = targetname, require = "n", verbose = false})
+    -- local config first
+    config.load()
 
     -- check targets first
+    local targetname = option.get("target")
     _check_targets(targetname)
 
     -- attempt to install directly
     try
     {
         function ()
-
-            -- install target
             install(targetname or (option.get("all") and "__all" or "__def"))
-
-            -- trace
             cprint("${color.success}install ok!")
         end,
 
