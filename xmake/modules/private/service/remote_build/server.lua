@@ -87,6 +87,8 @@ function remote_build_server:_on_handle(stream, msg)
                 session:sync(respmsg)
             elseif msg:is_clean() then
                 session:clean()
+            elseif msg:is_runcmd() then
+                session:runcmd(respmsg)
             end
             return true
         end,

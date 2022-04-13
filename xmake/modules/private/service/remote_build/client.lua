@@ -69,7 +69,7 @@ function remote_build_client:connect()
     local port = self:port()
     local sock = socket.connect(addr, port)
     local session_id = self:session_id()
-    local connected = false
+    local ok = false
     local errors
     print("%s: connect %s:%d ..", self, addr, port)
     if sock then
@@ -79,14 +79,14 @@ function remote_build_client:connect()
             if msg then
                 vprint(msg:body())
                 if msg:success() then
-                    connected = true
+                    ok = true
                 else
                     errors = msg:errors()
                 end
             end
         end
     end
-    if connected then
+    if ok then
         print("%s: connected!", self)
     else
         print("%s: connect %s:%d failed, %s", self, addr, port, errors or "unknown")
@@ -96,12 +96,12 @@ function remote_build_client:connect()
     local status = self:status()
     status.addr = addr
     status.port = port
-    status.connected = connected
+    status.connected = ok
     status.session_id = session_id
     self:status_save()
 
     -- sync files
-    if connected then
+    if ok then
         self:sync()
     end
 end
@@ -117,7 +117,7 @@ function remote_build_client:disconnect()
     local sock = socket.connect(addr, port)
     local session_id = self:session_id()
     local errors
-    local disconnected = false
+    local ok = false
     print("%s: disconnect %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
@@ -126,14 +126,14 @@ function remote_build_client:disconnect()
             if msg then
                 vprint(msg:body())
                 if msg:success() then
-                    disconnected = true
+                    ok = true
                 else
                     errors = msg:errors()
                 end
             end
         end
     end
-    if disconnected then
+    if ok then
         print("%s: disconnected!", self)
     else
         print("%s: disconnect %s:%d failed, %s", self, addr, port, errors or "unknown")
@@ -141,7 +141,7 @@ function remote_build_client:disconnect()
 
     -- update status
     local status = self:status()
-    status.connected = not disconnected
+    status.connected = not ok
     self:status_save()
 end
 
@@ -153,7 +153,7 @@ function remote_build_client:sync()
     local sock = socket.connect(addr, port)
     local session_id = self:session_id()
     local errors
-    local synced = false
+    local ok = false
     print("%s: sync files in %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
@@ -165,7 +165,7 @@ function remote_build_client:sync()
                 if stream:send_msg(message.new_sync(session_id, false)) and stream:flush() then
                     msg = stream:recv_msg()
                     if msg and msg:success() then
-                        synced = true
+                        ok = true
                     elseif msg then
                         errors = msg:errors()
                     end
@@ -175,10 +175,10 @@ function remote_build_client:sync()
             end
         end
     end
-    if synced then
-        print("%s: synced!", self)
+    if ok then
+        print("%s: sync files ok!", self)
     else
-        print("%s: sync files in %s:%d failed, %s", self, addr, port, errors or "unknown")
+        print("%s: sync files failed in %s:%d, %s", self, addr, port, errors or "unknown")
     end
 end
 
@@ -190,7 +190,7 @@ function remote_build_client:clean()
     local sock = socket.connect(addr, port)
     local session_id = self:session_id()
     local errors
-    local cleaned = false
+    local ok = false
     print("%s: clean files in %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
@@ -199,17 +199,49 @@ function remote_build_client:clean()
             if msg then
                 vprint(msg:body())
                 if msg:success() then
-                    cleaned = true
+                    ok = true
                 else
                     errors = msg:errors()
                 end
             end
         end
     end
-    if cleaned then
-        print("%s: cleaned!", self)
+    if ok then
+        print("%s: clean files ok!", self)
     else
-        print("%s: clean files in %s:%d failed, %s", self, addr, port, errors or "unknown")
+        print("%s: clean files failed in %s:%d, %s", self, addr, port, errors or "unknown")
+    end
+end
+
+-- run command
+function remote_build_client:runcmd(program, argv)
+    assert(self:is_connected(), "%s: has been not connected!", self)
+    local addr = self:addr()
+    local port = self:port()
+    local sock = socket.connect(addr, port)
+    local session_id = self:session_id()
+    local errors
+    local ok = false
+    local command = os.args(table.join(program, argv))
+    cprint("%s: run ${bright}%s${clear} in %s:%d ..", self, command, addr, port)
+    if sock then
+        local stream = socket_stream(sock)
+        if stream:send_msg(message.new_runcmd(session_id, program, argv)) and stream:flush() then
+            local msg = stream:recv_msg()
+            if msg then
+                vprint(msg:body())
+                if msg:success() then
+                    ok = true
+                else
+                    errors = msg:errors()
+                end
+            end
+        end
+    end
+    if ok then
+        print("%s: run command ok!", self)
+    else
+        print("%s: run command failed in %s:%d, %s", self, addr, port, errors or "unknown")
     end
 end
 

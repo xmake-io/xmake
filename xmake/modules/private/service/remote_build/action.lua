@@ -29,7 +29,5 @@ end
 
 function main()
     config.load()
-    local client = remote_build_client()
-    print("do remote action!")
-    print(xmake.argv())
+    remote_build_client():runcmd("xmake", xmake.argv())
 end

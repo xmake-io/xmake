@@ -73,6 +73,15 @@ function session:clean()
     vprint("%s: clean files ok", self)
 end
 
+-- run command
+function session:runcmd(respmsg)
+    local body = respmsg:body()
+    local program = body.program
+    local argv = body.argv
+    vprint("%s: run command(%s) ..", self, os.args(table.join(program, argv)))
+    vprint("%s: run command ok", self)
+end
+
 -- get work directory
 function session:workdir()
     local workdir = config.get("remote_build.server.workdir")

@@ -29,6 +29,7 @@ message.CODE_CONNECT    = 1
 message.CODE_DISCONNECT = 2
 message.CODE_SYNC       = 3
 message.CODE_CLEAN      = 4
+message.CODE_RUNCMD     = 5
 
 -- init message
 function message:init(body)
@@ -63,6 +64,11 @@ end
 -- is clean message?
 function message:is_clean()
     return self:code() == message.CODE_CLEAN
+end
+
+-- is run command message?
+function message:is_runcmd()
+    return self:code() == message.CODE_RUNCMD
 end
 
 -- is success?
@@ -139,6 +145,16 @@ function new_clean(session_id)
     return _new({
         code = message.CODE_CLEAN,
         session_id = session_id
+    })
+end
+
+-- new run command message
+function new_runcmd(session_id, program, argv)
+    return _new({
+        code = message.CODE_RUNCMD,
+        session_id = session_id,
+        program = program,
+        argv = argv
     })
 end
 
