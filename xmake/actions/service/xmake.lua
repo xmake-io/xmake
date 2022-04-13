@@ -23,7 +23,7 @@ task("service")
     on_run("main")
 
     set_menu {usage = "xmake service [options]",
-              description = "Start service for remote or distributed compilation and etc. ${color.warning}(Experimental, still in development)",
+              description = "Start service for remote or distributed compilation and etc.",
               options = {
                 {nil, "start",      "k",  nil, "Start daemon service."                                       },
                 {nil, "restart",    "k",  nil, "Restart daemon service."                                     },

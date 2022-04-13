@@ -34,7 +34,6 @@ import("private.service.show_logs")
 import("private.service.show_status")
 
 function main()
-    cprint("${color.warning}It's experimental feature, still in development!")
     config.load()
     if option.get("start") then
         start_service({daemon = true})
