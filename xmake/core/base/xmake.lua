@@ -57,5 +57,10 @@ function xmake.luajit()
     return xmake._LUAJIT
 end
 
+-- get command arguments
+function xmake.argv()
+    return xmake._ARGV
+end
+
 -- return module: xmake
 return xmake
