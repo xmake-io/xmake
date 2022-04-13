@@ -33,6 +33,7 @@ import("configfiles", {alias = "generate_configfiles"})
 import("configheader", {alias = "generate_configheader"})
 import("private.action.require.check", {alias = "check_packages"})
 import("private.action.require.install", {alias = "install_packages"})
+import("private.service.remote_build.action", {alias = "remote_build_action"})
 
 -- filter option
 function _option_filter(name)
@@ -247,6 +248,11 @@ end
 
 -- main entry
 function main(opt)
+
+    -- do action for remote?
+    if remote_build_action.enabled() then
+        return remote_build_action()
+    end
 
     -- avoid to run this task repeatly
     opt = opt or {}

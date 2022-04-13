@@ -19,7 +19,7 @@
 --
 
 task("service")
-    set_category("plugin")
+    set_category("action")
     on_run("main")
 
     set_menu {usage = "xmake service [options]",

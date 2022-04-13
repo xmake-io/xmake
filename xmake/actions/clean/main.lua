@@ -28,6 +28,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("private.action.clean.remove_files")
 import("target.action.clean", {alias = "_do_clean_target"})
+import("private.service.remote_build.action", {alias = "remote_build_action"})
 
 -- on clean target
 function _on_clean_target(target)
@@ -148,6 +149,11 @@ function main()
     -- try cleaning it using third-party buildsystem if xmake.lua not exists
     if not os.isfile(project.rootfile()) then
         return _try_clean()
+    end
+
+    -- do action for remote?
+    if remote_build_action.enabled() then
+        return remote_build_action()
     end
 
     -- lock the whole project

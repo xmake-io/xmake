@@ -40,11 +40,10 @@ function remote_build_client:init()
     local address = assert(config.get("remote_build.client.connect"), "config(remote_build.client.connect): not found!")
     super.address_set(self, address)
 
-    -- load project config
+    -- get project directory
     local projectdir = os.projectdir()
     local projectfile = os.projectfile()
     if projectfile and os.isfile(projectfile) and projectdir then
-        project_config.load()
         self._PROJECTDIR = projectdir
         self._WORKDIR = path.join(project_config.directory(), "remote_build")
     else
@@ -278,6 +277,22 @@ end
 
 function remote_build_client:__tostring()
     return "<remote_build_client>"
+end
+
+-- is connected? we cannot depend on client:init when run action
+function is_connected()
+    local projectdir = os.projectdir()
+    local projectfile = os.projectfile()
+    if projectfile and os.isfile(projectfile) and projectdir then
+        local workdir = path.join(project_config.directory(), "remote_build")
+        local statusfile = path.join(workdir, "status.txt")
+        if os.isfile(statusfile) then
+            local status = io.load(statusfile)
+            if status and status.connected then
+                return true
+            end
+        end
+    end
 end
 
 function main()

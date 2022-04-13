@@ -32,6 +32,7 @@ import("build")
 import("build_files")
 import("cleaner")
 import("statistics")
+import("private.service.remote_build.action", {alias = "remote_build_action"})
 
 -- do build for the third-party buildsystem
 function _try_build()
@@ -112,6 +113,11 @@ function main()
 
     -- post statistics before locking project
     statistics.post()
+
+    -- do action for remote?
+    if remote_build_action.enabled() then
+        return remote_build_action()
+    end
 
     -- lock the whole project
     project.lock()

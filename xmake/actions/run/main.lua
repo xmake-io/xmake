@@ -27,6 +27,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("devel.debugger")
 import("private.action.run.make_runenvs")
+import("private.service.remote_build.action", {alias = "remote_build_action"})
 
 -- run target
 function _do_run_target(target)
@@ -180,6 +181,11 @@ end
 
 -- main
 function main()
+
+    -- do action for remote?
+    if remote_build_action.enabled() then
+        return remote_build_action()
+    end
 
     -- load config first
     config.load()
