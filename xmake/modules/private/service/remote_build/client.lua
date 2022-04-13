@@ -157,7 +157,7 @@ function remote_build_client:sync()
     print("%s: sync files in %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
-        if stream:send_msg(message.new_sync(session_id)) and stream:flush() then
+        if stream:send_msg(message.new_sync(session_id, true)) and stream:flush() then
             local msg = stream:recv_msg()
             if msg and msg:success() then
                 vprint(msg:body())

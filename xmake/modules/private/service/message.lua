@@ -135,7 +135,7 @@ end
 function new_sync(session_id, start)
     return _new({
         code = message.CODE_SYNC,
-        start = start or true,
+        start = start,
         session_id = session_id
     })
 end

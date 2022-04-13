@@ -58,10 +58,7 @@ function session:sync(respmsg)
         body.path = sourcedir
         body.branch = source_branch
     else
-        local branch = git.branch({repodir = sourcedir})
-        if not branch or branch ~= source_branch then
-            git.checkout(source_branch, {repodir = sourcedir})
-        end
+        git.checkout(source_branch, {repodir = sourcedir})
     end
     vprint("%s: %s sync files ok", self, body.start and "start" or "finish")
 end
@@ -79,6 +76,8 @@ function session:runcmd(respmsg)
     local program = body.program
     local argv = body.argv
     vprint("%s: run command(%s) ..", self, os.args(table.join(program, argv)))
+    print(self:sourcedir())
+    os.execv(program, argv, {curdir = self:sourcedir()})
     vprint("%s: run command ok", self)
 end
 
