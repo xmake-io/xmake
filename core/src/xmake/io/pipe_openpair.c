@@ -47,7 +47,7 @@ tb_int_t xm_io_pipe_openpair(lua_State* lua)
 
     // init pipe
     tb_pipe_file_ref_t pipefile[2];
-    if (tb_pipe_file_init_pair(pipefile, buffsize))
+    if (tb_pipe_file_init_pair(pipefile, tb_null, buffsize))
     {
         xm_lua_pushpointer(lua, (tb_pointer_t)pipefile[0]);
         xm_lua_pushpointer(lua, (tb_pointer_t)pipefile[1]);
