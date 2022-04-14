@@ -21,6 +21,7 @@
 -- imports
 import("core.base.bytes")
 import("core.base.socket")
+import("core.base.scheduler")
 import("core.project.config", {alias = "project_config"})
 import("devel.git")
 import("lib.detect.find_tool")
@@ -230,6 +231,8 @@ function remote_build_client:runcmd(program, argv)
     if sock then
         local stream = socket_stream(sock)
         if stream:send_msg(message.new_runcmd(session_id, program, argv)) and stream:flush() then
+            local stdin_opt = {stop = false}
+            scheduler.co_start(self._read_stdin, self, stream, stdin_opt)
             while true do
                 local msg = stream:recv_msg()
                 if msg then
@@ -258,6 +261,7 @@ function remote_build_client:runcmd(program, argv)
                     break
                 end
             end
+            stdin_opt.stop = true
         end
     end
     if #leftstr > 0 then
@@ -332,6 +336,30 @@ function remote_build_client:_do_syncfiles(remote_path, remote_branch)
     local remote_url = string.format("%s@%s:%s", user, addr, remote_path)
     git.push(remote_url, {remote_branch = remote_branch, verbose = true})
 end
+
+-- read stdin data
+function remote_build_client:_read_stdin(stream, opt)
+    while not opt.stop do
+        if io.read(0) then
+            local line = io.read("L") -- with crlf
+            if line and #line > 0 then
+                local ok = false
+                local data = bytes(line)
+                if stream:send_msg(message.new_data(0, data:size())) then
+                    if stream:send(data) and stream:flush() then
+                        ok = true
+                    end
+                end
+                if not ok then
+                    break
+                end
+            end
+        else
+            os.sleep(500)
+        end
+    end
+end
+
 
 function remote_build_client:__tostring()
     return "<remote_build_client>"
