@@ -19,8 +19,12 @@
 --
 
 -- imports
+import("core.base.pipe")
+import("core.base.bytes")
 import("core.base.object")
 import("core.base.global")
+import("core.base.option")
+import("core.base.scheduler")
 import("devel.git")
 import("private.service.config")
 
@@ -45,6 +49,16 @@ end
 -- close session
 function session:close()
     self:_reset_sourcedir()
+end
+
+-- set stream
+function session:stream_set(stream)
+    self._STREAM = stream
+end
+
+-- get stream
+function session:stream()
+    return self._STREAM
 end
 
 -- sync files
@@ -76,7 +90,12 @@ function session:runcmd(respmsg)
     local program = body.program
     local argv = body.argv
     vprint("%s: run command(%s) ..", self, os.args(table.join(program, argv)))
-    os.execv(program, argv, {curdir = self:sourcedir()})
+    local rpipe, wpipe = pipe.openpair(10)
+    local rpipeopt = {rpipe = rpipe, stop = false}
+    scheduler.co_start(self._read_pipe, self, rpipeopt)
+    os.execv(program, argv, {curdir = self:sourcedir(), stdout = wpipe})
+    rpipeopt.stop = true
+    wpipe:close()
     vprint("%s: run command ok", self)
 end
 
@@ -113,6 +132,27 @@ function session:_reset_sourcedir()
         git.clean({repodir = sourcedir, force = true, all = true})
         git.reset({repodir = sourcedir, hard = true})
     end
+end
+
+-- read process stdout from pipe
+function session:_read_pipe(opt)
+    local buff = bytes(256)
+    local rpipe = opt.rpipe
+    vprint("%s: %s: reading data ..", self, rpipe)
+    while not opt.stop do
+        local real, data = rpipe:read(buff)
+        if real > 0 then
+            utils.vprintf(data:str())
+        elseif real == 0 then
+            if rpipe:wait(pipe.EV_READ, -1) < 0 then
+                break
+            end
+        else
+            break
+        end
+    end
+    rpipe:close()
+    vprint("%s: %s read data end", self, rpipe)
 end
 
 -- get working branch of the source directory

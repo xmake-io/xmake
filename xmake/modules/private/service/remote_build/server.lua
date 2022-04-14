@@ -73,6 +73,7 @@ function remote_build_server:_on_handle(stream, msg)
     local session = self:_session(session_id)
     vprint("%s: %s: <session %s>: on handle message(%d)", self, stream:sock(), session_id, msg:code())
     vprint(msg:body())
+    session:stream_set(stream)
     local respmsg = msg:clone()
     local session_errs
     local session_ok = try
