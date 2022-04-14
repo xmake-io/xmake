@@ -91,13 +91,21 @@ function session:runcmd(respmsg)
     local program = body.program
     local argv = body.argv
     vprint("%s: run command(%s) ..", self, os.args(table.join(program, argv)))
-    local stdin_rpipe, stdin_wpipe = pipe.openpair(256)
+
+    -- init pipes
+    local stdin_rpipe, stdin_wpipe = pipe.openpair("BA") -- rpipe (block)
     local stdin_wpipeopt = {wpipe = stdin_wpipe, stop = false}
-    local stdout_rpipe, stdout_wpipe = pipe.openpair(256)
+    local stdout_rpipe, stdout_wpipe = pipe.openpair()
     local stdout_rpipeopt = {rpipe = stdout_rpipe, stop = false}
+
+    -- read and write pipe
     scheduler.co_start(self._write_pipe, self, stdin_wpipeopt)
     scheduler.co_start(self._read_pipe, self, stdout_rpipeopt)
+
+    -- run program
     os.execv(program, argv, {curdir = self:sourcedir(), stdout = stdout_wpipe, stdin = stdin_rpipe})
+
+    -- stop it
     stdin_wpipeopt.stop = true
     stdin_wpipe:close()
     stdout_rpipeopt.stop = true

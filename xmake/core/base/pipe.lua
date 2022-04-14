@@ -305,6 +305,8 @@ end
 --    pipe:close()
 -- end
 --
+-- mode: "r", "w", "rB" (block), "wB" (block), "rA" (non-block), "wA" (non-block)
+--
 function pipe.open(name, mode, buffsize)
 
     -- open named pipe
@@ -322,10 +324,17 @@ end
 -- rpipe:read(...)
 -- wpipe:write(...)
 --
-function pipe.openpair(buffsize)
+-- mode:
+--
+-- "BB": read block/write block
+-- "BA": read block/write non-block
+-- "AB": read non-block/write block
+-- "AA": read non-block/write non-block (default)
+--
+function pipe.openpair(mode, buffsize)
 
     -- open anonymous pipe pair
-    local rpipefile, wpipefile, errors = io.pipe_openpair(buffsize or 0)
+    local rpipefile, wpipefile, errors = io.pipe_openpair(mode, buffsize or 0)
     if rpipefile and wpipefile then
         return _instance.new(rpipefile), _instance.new(wpipefile)
     else

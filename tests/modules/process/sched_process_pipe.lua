@@ -29,7 +29,7 @@ function _session_read_pipe(id, rpipeopt)
 end
 
 function _session(id, program, ...)
-    local rpipe, wpipe = pipe.openpair(10)
+    local rpipe, wpipe = pipe.openpair()
     local rpipeopt = {rpipe = rpipe, stop = false}
     scheduler.co_start(_session_read_pipe, id, rpipeopt)
     local proc = process.openv(program, table.pack(...), {stdout = wpipe})

@@ -35,19 +35,28 @@
  */
 
 /*
- * io.pipe_openpair(buffsize)
+ * io.pipe_openpair(mode, buffsize)
  */
 tb_int_t xm_io_pipe_openpair(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+    // get pipe mode
+    tb_char_t const* modestr = luaL_optstring(lua, 1, "AA");
+    tb_assert_and_check_return_val(modestr, 0);
+
+    // init mode
+    tb_size_t mode[2] = {0};
+    if (modestr[0] == 'B') mode[0] |= TB_PIPE_MODE_BLOCK;
+    if (modestr[1] == 'B') mode[1] |= TB_PIPE_MODE_BLOCK;
+
     // get buffer size
-    tb_size_t buffsize = (tb_size_t)luaL_checknumber(lua, 1);
+    tb_size_t buffsize = (tb_size_t)luaL_checknumber(lua, 2);
 
     // init pipe
     tb_pipe_file_ref_t pipefile[2];
-    if (tb_pipe_file_init_pair(pipefile, tb_null, buffsize))
+    if (tb_pipe_file_init_pair(pipefile, mode, buffsize))
     {
         xm_lua_pushpointer(lua, (tb_pointer_t)pipefile[0]);
         xm_lua_pushpointer(lua, (tb_pointer_t)pipefile[1]);

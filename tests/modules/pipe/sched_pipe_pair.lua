@@ -26,7 +26,7 @@ function _session_write(id, pipefile)
 end
 
 function _session(id)
-    local rpipe, wpipe = pipe.openpair(256)
+    local rpipe, wpipe = pipe.openpair()
     scheduler.co_start(_session_read, id, rpipe)
     scheduler.co_start(_session_write, id, wpipe)
 end

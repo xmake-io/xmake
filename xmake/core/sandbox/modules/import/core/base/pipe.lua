@@ -104,8 +104,8 @@ function sandbox_core_base_pipe.open(name, mode, buffsize)
 end
 
 -- open a anonymous pipe pair
-function sandbox_core_base_pipe.openpair(buffsize)
-    local rpipefile, wpipefile, errors = pipe.openpair(buffsize)
+function sandbox_core_base_pipe.openpair(mode, buffsize)
+    local rpipefile, wpipefile, errors = pipe.openpair(mode, buffsize)
     if not rpipefile or not wpipefile then
         raise(errors)
     end
