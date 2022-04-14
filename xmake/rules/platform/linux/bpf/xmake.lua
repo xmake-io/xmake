@@ -46,6 +46,7 @@ rule("platform.linux.bpf")
             targetarch = "__TARGET_ARCH_powerpc"
         end
         target:add("includedirs", path.directory(headerfile))
+        target:set("optimize", "faster")
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.bpf %s", sourcefile)
         batchcmds:mkdir(path.directory(objectfile))
         batchcmds:compile(sourcefile, objectfile, {configs = {force = {cxflags = {"-target bpf", "-g"}}, defines = targetarch}})
