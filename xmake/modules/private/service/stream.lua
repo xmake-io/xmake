@@ -132,6 +132,7 @@ function stream:recv(buff, size)
     local cache_maxn = cache:size()
     if size <= cache_size then
         buff:copy(cache, 1, size)
+        cache:move(size + 1, cache_size)
         cache_size = cache_size - size
         self._RCACHE_SIZE = cache_size
         return buff:slice(1, size)
