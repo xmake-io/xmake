@@ -142,6 +142,23 @@ end
 
 -- write data from pipe
 function session:_write_pipe(opt)
+    local buff = bytes(256)
+    local wpipe = opt.wpipe
+    vprint("%s: %s: writing data ..", self, wpipe)
+    while not opt.stop do
+        local data = self:_recv_data(buff)
+        if data then
+            local real = wpipe:write(data, {block = true})
+            vprint("%s: %s: write bytes(%d)", self, wpipe, real)
+            if real < 0 then
+                break
+            end
+        else
+            break
+        end
+    end
+    wpipe:close()
+    vprint("%s: %s: write data end", self, wpipe)
 end
 
 -- read data from pipe
@@ -177,7 +194,16 @@ function session:_read_pipe(opt)
     if #leftstr > 0 then
         cprint(leftstr)
     end
-    vprint("%s: %s read data end", self, rpipe)
+    vprint("%s: %s: read data end", self, rpipe)
+end
+
+-- recv data from stream
+function session:_recv_data(buff)
+    local stream = self:stream()
+    local msg = stream:recv_msg()
+    if msg and msg:is_data() then
+        return stream:recv(buff, msg:body().size)
+    end
 end
 
 -- send data to stream
