@@ -76,7 +76,6 @@ function session:runcmd(respmsg)
     local program = body.program
     local argv = body.argv
     vprint("%s: run command(%s) ..", self, os.args(table.join(program, argv)))
-    print(self:sourcedir())
     os.execv(program, argv, {curdir = self:sourcedir()})
     vprint("%s: run command ok", self)
 end
