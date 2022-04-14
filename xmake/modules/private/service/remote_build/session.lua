@@ -91,12 +91,17 @@ function session:runcmd(respmsg)
     local program = body.program
     local argv = body.argv
     vprint("%s: run command(%s) ..", self, os.args(table.join(program, argv)))
-    local rpipe, wpipe = pipe.openpair(10)
-    local rpipeopt = {rpipe = rpipe, stop = false}
-    scheduler.co_start(self._read_pipe, self, rpipeopt)
-    os.execv(program, argv, {curdir = self:sourcedir(), stdout = wpipe})
-    rpipeopt.stop = true
-    wpipe:close()
+    local stdin_rpipe, stdin_wpipe = pipe.openpair(256)
+    local stdin_wpipeopt = {wpipe = stdin_wpipe, stop = false}
+    local stdout_rpipe, stdout_wpipe = pipe.openpair(256)
+    local stdout_rpipeopt = {rpipe = stdout_rpipe, stop = false}
+    scheduler.co_start(self._write_pipe, self, stdin_wpipeopt)
+    scheduler.co_start(self._read_pipe, self, stdout_rpipeopt)
+    os.execv(program, argv, {curdir = self:sourcedir(), stdout = stdout_wpipe, stdin = stdin_rpipe})
+    stdin_wpipeopt.stop = true
+    stdin_wpipe:close()
+    stdout_rpipeopt.stop = true
+    stdout_wpipe:close()
     vprint("%s: run command ok", self)
 end
 
@@ -133,6 +138,10 @@ function session:_reset_sourcedir()
         git.clean({repodir = sourcedir, force = true, all = true})
         git.reset({repodir = sourcedir, hard = true})
     end
+end
+
+-- write data from pipe
+function session:_write_pipe(opt)
 end
 
 -- read data from pipe
