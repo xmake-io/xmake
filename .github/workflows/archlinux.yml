@@ -19,6 +19,7 @@ jobs:
       - name: Prepare build tools
         run: |
           pacman -Sy --noconfirm --needed glibc git base-devel perl make unzip
+          git config --global --add safe.directory /__w/xmake/xmake
 
       - uses: actions/checkout@v2
         with:
@@ -27,7 +28,6 @@ jobs:
       - name: prepare local xmake
         run: |
           cp -rf . ../xmake-source
-          git config --global --add safe.directory /__w/xmake/xmake
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
           xmake-version: local#../xmake-source
