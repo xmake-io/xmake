@@ -141,11 +141,17 @@ function session:_read_pipe(opt)
     local rpipe = opt.rpipe
     local verbose = option.get("verbose")
     vprint("%s: %s: reading data ..", self, rpipe)
+    local leftstr = ""
     while not opt.stop do
         local real, data = rpipe:read(buff)
         if real > 0 then
             if verbose then
-                utils.printf(data:str())
+                leftstr = leftstr .. data:str()
+                local pos = leftstr:lastof("\n", true)
+                if pos then
+                    cprint(leftstr:sub(1, pos - 1))
+                    leftstr = leftstr:sub(pos + 1)
+                end
             end
             if not self:_send_data(data) then
                 break;
@@ -159,6 +165,9 @@ function session:_read_pipe(opt)
         end
     end
     rpipe:close()
+    if #leftstr > 0 then
+        cprint(leftstr)
+    end
     vprint("%s: %s read data end", self, rpipe)
 end
 

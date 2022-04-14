@@ -225,6 +225,7 @@ function remote_build_client:runcmd(program, argv)
     local ok = false
     local buff = bytes(8192)
     local command = os.args(table.join(program, argv))
+    local leftstr = ""
     cprint("%s: run ${bright}%s${clear} in %s:%d ..", self, command, addr, port)
     if sock then
         local stream = socket_stream(sock)
@@ -235,13 +236,17 @@ function remote_build_client:runcmd(program, argv)
                     if msg:is_data() then
                         local data = stream:recv(buff, msg:body().size)
                         if data then
-                            utils.cprintf(data:str())
+                            leftstr = leftstr .. data:str()
+                            local pos = leftstr:lastof("\n", true)
+                            if pos then
+                                cprint(leftstr:sub(1, pos - 1))
+                                leftstr = leftstr:sub(pos + 1)
+                            end
                         else
                             errors = string.format("recv output data(%d) failed!", msg:body().size)
                             break
                         end
                     else
-                        vprint(msg:body())
                         if msg:success() then
                             ok = true
                         else
@@ -255,11 +260,15 @@ function remote_build_client:runcmd(program, argv)
             end
         end
     end
+    if #leftstr > 0 then
+        cprint(leftstr)
+    end
     if ok then
         print("%s: run command ok!", self)
     else
         print("%s: run command failed in %s:%d, %s", self, addr, port, errors or "unknown")
     end
+    io.flush()
 end
 
 -- is connected?
