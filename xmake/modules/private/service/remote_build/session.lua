@@ -27,6 +27,7 @@ import("core.base.option")
 import("core.base.scheduler")
 import("devel.git")
 import("private.service.config")
+import("private.service.message")
 
 -- define module
 local session = session or object()
@@ -134,15 +135,21 @@ function session:_reset_sourcedir()
     end
 end
 
--- read process stdout from pipe
+-- read data from pipe
 function session:_read_pipe(opt)
     local buff = bytes(256)
     local rpipe = opt.rpipe
+    local verbose = option.get("verbose")
     vprint("%s: %s: reading data ..", self, rpipe)
     while not opt.stop do
         local real, data = rpipe:read(buff)
         if real > 0 then
-            utils.vprintf(data:str())
+            if verbose then
+                utils.printf(data:str())
+            end
+            if not self:_send_data(data) then
+                break;
+            end
         elseif real == 0 then
             if rpipe:wait(pipe.EV_READ, -1) < 0 then
                 break
@@ -153,6 +160,16 @@ function session:_read_pipe(opt)
     end
     rpipe:close()
     vprint("%s: %s read data end", self, rpipe)
+end
+
+-- send data to stream
+function session:_send_data(data)
+    local stream = self:stream()
+    if stream:send_msg(message.new_data(self:id(), data:size())) then
+        if stream:send(data) then
+            return stream:flush()
+        end
+    end
 end
 
 -- get working branch of the source directory

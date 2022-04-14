@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.bytes")
 import("core.base.socket")
 import("core.project.config", {alias = "project_config"})
 import("devel.git")
@@ -222,18 +223,34 @@ function remote_build_client:runcmd(program, argv)
     local session_id = self:session_id()
     local errors
     local ok = false
+    local buff = bytes(8192)
     local command = os.args(table.join(program, argv))
     cprint("%s: run ${bright}%s${clear} in %s:%d ..", self, command, addr, port)
     if sock then
         local stream = socket_stream(sock)
         if stream:send_msg(message.new_runcmd(session_id, program, argv)) and stream:flush() then
-            local msg = stream:recv_msg()
-            if msg then
-                vprint(msg:body())
-                if msg:success() then
-                    ok = true
+            while true do
+                local msg = stream:recv_msg()
+                if msg then
+                    if msg:is_data() then
+                        local data = stream:recv(buff, msg:body().size)
+                        if data then
+                            utils.cprintf(data:str())
+                        else
+                            errors = string.format("recv output data(%d) failed!", msg:body().size)
+                            break
+                        end
+                    else
+                        vprint(msg:body())
+                        if msg:success() then
+                            ok = true
+                        else
+                            errors = msg:errors()
+                        end
+                        break
+                    end
                 else
-                    errors = msg:errors()
+                    break
                 end
             end
         end

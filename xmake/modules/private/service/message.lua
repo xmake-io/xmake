@@ -30,6 +30,7 @@ message.CODE_DISCONNECT = 2
 message.CODE_SYNC       = 3
 message.CODE_CLEAN      = 4
 message.CODE_RUNCMD     = 5
+message.CODE_DATA       = 6
 
 -- init message
 function message:init(body)
@@ -69,6 +70,11 @@ end
 -- is run command message?
 function message:is_runcmd()
     return self:code() == message.CODE_RUNCMD
+end
+
+-- is data message?
+function message:is_data()
+    return self:code() == message.CODE_DATA
 end
 
 -- is success?
@@ -155,6 +161,15 @@ function new_runcmd(session_id, program, argv)
         session_id = session_id,
         program = program,
         argv = argv
+    })
+end
+
+-- new data message
+function new_data(session_id, size)
+    return _new({
+        code = message.CODE_DATA,
+        size = size,
+        session_id = session_id
     })
 end
 
