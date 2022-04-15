@@ -517,7 +517,7 @@ function _get_configs_for_install(package, configs, opt)
     --
     table.insert(configs, "-DCMAKE_INSTALL_PREFIX=" .. package:installdir())
     if not opt._configs_str:find("CMAKE_INSTALL_LIBDIR") then
-        table.insert(configs, "-DCMAKE_INSTALL_LIBDIR=" .. package:installdir("lib"))
+        table.insert(configs, "-DCMAKE_INSTALL_LIBDIR=lib")
     end
 end
 
