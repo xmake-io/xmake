@@ -321,6 +321,23 @@ function remote_build_client:session_id()
 end
 
 -- do syncfiles, e.g. git push user@addr:remote_path branch:remote_branch
+--
+-- @note on Windows/OpenSSH, we need solve the following issues
+-- https://github.com/PowerShell/Win32-OpenSSH/wiki/Setting-up-a-Git-server-on-Windows-using-Git-for-Windows-and-Win32_OpenSSH
+--
+-- 1. Set powershell as default shell
+-- @code
+-- New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -PropertyType String -Force
+-- New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShellCommandOption -Value "/c" -PropertyType String -Force
+-- @endcode
+--
+-- 2. Set git/mingw64/bin to %PATH%, to solve `git-receive-pack not found!`
+-- @code
+-- $gitPath = Join-Path -Path $env:ProgramFiles -ChildPath "git\mingw64\bin"
+-- $machinePath = [Environment]::GetEnvironmentVariable('Path', 'MACHINE')
+-- [Environment]::SetEnvironmentVariable('Path', "$gitPath;$machinePath", 'Machine')
+-- @endcode
+--
 function remote_build_client:_do_syncfiles(remote_path, remote_branch)
     local user = assert(config.get("remote_build.client.user"), "config(remote_build.client.user): not found!")
     local addr = self:addr()
