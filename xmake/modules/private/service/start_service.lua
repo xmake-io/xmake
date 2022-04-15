@@ -22,11 +22,11 @@
 import("core.base.option")
 import("private.service.config")
 import("private.service.service")
-import("private.action.require.impl.packagenv")
+import("private.service.remote_build.environment")
 
 function main(opt)
     opt = opt or {}
-    packagenv.enter("git")
+    environment.enter()
     if opt.daemon then
         local argv = {"lua"}
         if option.get("verbose") then

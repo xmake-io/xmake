@@ -29,7 +29,7 @@ import("private.service.config")
 import("private.service.message")
 import("private.service.client")
 import("private.service.stream", {alias = "socket_stream"})
-import("private.action.require.impl.packagenv")
+import("private.service.remote_build.environment")
 
 -- define module
 local remote_build_client = remote_build_client or client()
@@ -54,7 +54,7 @@ function remote_build_client:init()
     end
 
     -- enter git environment
-    packagenv.enter("git")
+    environment.enter()
 end
 
 -- get class
