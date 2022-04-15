@@ -30,7 +30,7 @@ function _generate_configfile()
         logfile = path.join(servicedir, "logs.txt"),
         remote_build = {
             server = {
-                listen = "127.0.0.1:90091",
+                listen = "0.0.0.0:90091",
                 workdir = path.join(servicedir, "remote_build")
             },
             client = {
