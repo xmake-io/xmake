@@ -8,6 +8,7 @@
 * [#2185](https://github.com/xmake-io/xmake/issues/2185): Add `--appledev=simulator` to improve apple simulator support
 * [#2227](https://github.com/xmake-io/xmake/issues/2227): Improve cargo package with Cargo.toml file
 * Improve `add_requires` to support git commit as version
+* [#622](https://github.com/xmake-io/xmake/issues/622): Support remote compilation
 
 ### Changes
 
@@ -1246,6 +1247,7 @@
 * [#2185](https://github.com/xmake-io/xmake/issues/2185): 添加 `--appledev=simulator` 去改进 Apple 模拟器目标编译支持
 * [#2227](https://github.com/xmake-io/xmake/issues/2227): 改进 cargo 包，支持指定 Cargo.toml 文件
 * 改进 `add_requires` 支持 git command 作为版本
+* [#622](https://github.com/xmake-io/xmake/issues/622): 支持远程编译
 
 ### 改进
 
