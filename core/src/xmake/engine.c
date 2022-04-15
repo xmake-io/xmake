@@ -123,6 +123,7 @@ tb_int_t xm_os_getown(lua_State* lua);
 tb_int_t xm_io_stdfile(lua_State* lua);
 tb_int_t xm_io_file_open(lua_State* lua);
 tb_int_t xm_io_file_read(lua_State* lua);
+tb_int_t xm_io_file_readable(lua_State* lua);
 tb_int_t xm_io_file_seek(lua_State* lua);
 tb_int_t xm_io_file_size(lua_State* lua);
 tb_int_t xm_io_file_rawfd(lua_State* lua);
@@ -324,6 +325,7 @@ static luaL_Reg const g_io_functions[] =
     { "stdfile",            xm_io_stdfile          }
 ,   { "file_open",          xm_io_file_open        }
 ,   { "file_read",          xm_io_file_read        }
+,   { "file_readable",      xm_io_file_readable    }
 ,   { "file_seek",          xm_io_file_seek        }
 ,   { "file_size",          xm_io_file_size        }
 ,   { "file_write",         xm_io_file_write       }

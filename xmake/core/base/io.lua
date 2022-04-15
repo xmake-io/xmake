@@ -181,6 +181,17 @@ function _file:read(fmt, opt)
     return result, errors
 end
 
+-- is readable?
+function _file:readable()
+
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    return io.file_readable(self:cdata())
+end
+
 -- write data to file
 function _file:write(...)
 
@@ -491,6 +502,10 @@ end
 
 function io.read(fmt, opt)
     return io.stdin:read(fmt, opt)
+end
+
+function io.readable()
+    return io.stdin:readable()
 end
 
 function io.write(...)

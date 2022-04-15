@@ -94,6 +94,15 @@ function sandbox_io_file.read(file, fmt, opt)
     return result
 end
 
+-- readable for file
+function sandbox_io_file.readable(file)
+    local ok, errors = file:_readable()
+    if errors then
+        raise(errors)
+    end
+    return ok
+end
+
 -- write data to file
 function sandbox_io_file.write(file, ...)
     local ok, errors = file:_write(...)
@@ -331,12 +340,17 @@ function sandbox_io.readfile(filepath, opt)
     return result
 end
 
---- direct read from stdin
+-- direct read from stdin
 function sandbox_io.read(fmt, opt)
     return sandbox_io.stdin:read(fmt, opt)
 end
 
---- direct write to stdout
+-- has readable for stdin?
+function sandbox_io.readable()
+    return sandbox_io.stdin:readable()
+end
+
+-- direct write to stdout
 function sandbox_io.write(...)
     sandbox_io.stdout:write(...)
 end

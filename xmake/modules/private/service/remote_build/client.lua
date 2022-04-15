@@ -340,7 +340,7 @@ end
 -- read stdin data
 function remote_build_client:_read_stdin(stream, opt)
     while not opt.stop do
-        if io.read(0) then
+        if io.readable() then
             local line = io.read("L") -- with crlf
             if line and #line > 0 then
                 local ok = false

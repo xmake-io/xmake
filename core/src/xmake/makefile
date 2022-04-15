@@ -55,6 +55,7 @@ xmake_C_FILES 			+= \
 						io/file_isatty \
 						io/file_open \
 						io/file_read \
+						io/file_readable \
 						io/file_seek \
 						io/file_write \
 						io/file_rawfd \
