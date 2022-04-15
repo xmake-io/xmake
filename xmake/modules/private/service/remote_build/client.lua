@@ -51,9 +51,6 @@ function remote_build_client:init()
     else
         raise("we need enter a project directory with xmake.lua first!")
     end
-
-    -- check requires
-    self:_check_requires()
 end
 
 -- get class
@@ -317,12 +314,6 @@ end
 -- get the session id, only for unique project
 function remote_build_client:session_id()
     return self:status().session_id or hash.uuid():split("-", {plain = true})[1]:lower()
-end
-
--- check requires
-function remote_build_client:_check_requires()
-    local git = find_tool("git")
-    assert(git, "git not found!")
 end
 
 -- do syncfiles, e.g. git push user@addr:remote_path branch:remote_branch

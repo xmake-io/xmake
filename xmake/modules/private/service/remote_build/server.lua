@@ -37,9 +37,6 @@ function remote_build_server:init(daemon)
         config.load()
     end
 
-    -- check requires
-    self:_check_requires()
-
     -- init address
     local address = assert(config.get("remote_build.server.listen"), "config(remote_build.server.listen): not found!")
     super.address_set(self, address)
@@ -54,17 +51,6 @@ end
 -- get class
 function remote_build_server:class()
     return remote_build_server
-end
-
--- check requires
-function remote_build_server:_check_requires()
-
-    -- check git
-    local git = find_tool("git")
-    assert(git, "git not found!")
-
-    -- check sshkeys
-    -- TODO
 end
 
 -- on handle message
