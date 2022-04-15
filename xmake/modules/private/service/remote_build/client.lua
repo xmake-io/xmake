@@ -29,6 +29,7 @@ import("private.service.config")
 import("private.service.message")
 import("private.service.client")
 import("private.service.stream", {alias = "socket_stream"})
+import("private.action.require.impl.packagenv")
 
 -- define module
 local remote_build_client = remote_build_client or client()
@@ -51,6 +52,9 @@ function remote_build_client:init()
     else
         raise("we need enter a project directory with xmake.lua first!")
     end
+
+    -- enter git environment
+    packagenv.enter("git")
 end
 
 -- get class

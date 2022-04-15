@@ -22,9 +22,11 @@
 import("core.base.option")
 import("private.service.config")
 import("private.service.service")
+import("private.action.require.impl.packagenv")
 
 function main(opt)
     opt = opt or {}
+    packagenv.enter("git")
     if opt.daemon then
         local argv = {"lua"}
         if option.get("verbose") then
