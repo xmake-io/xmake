@@ -30,8 +30,8 @@ message.CODE_DISCONNECT     = 2 -- disconnect server
 message.CODE_CLEAN          = 3 -- clean all cached files in server
 message.CODE_DATA           = 4 -- send data
 message.CODE_RUNCMD         = 5 -- run the given command in server
-message.CODE_DIFFDIR        = 6 -- diff files in directory between server and client
-message.CODE_SYNCDIR        = 7 -- sync files in directory between server and client
+message.CODE_DIFF           = 6 -- diff files between server and client
+message.CODE_SYNC           = 7 -- sync files between server and client
 message.CODE_PULL           = 8 -- pull the given files from server
 
 -- init message
@@ -59,9 +59,14 @@ function message:is_disconnect()
     return self:code() == message.CODE_DISCONNECT
 end
 
--- is syncdir message?
-function message:is_syncdir()
-    return self:code() == message.CODE_SYNCDIR
+-- is diff message?
+function message:is_diff()
+    return self:code() == message.CODE_DIFF
+end
+
+-- is sync message?
+function message:is_sync()
+    return self:code() == message.CODE_SYNC
 end
 
 -- is clean message?
@@ -139,11 +144,18 @@ function new_disconnect(session_id)
     })
 end
 
--- new syncdir message
-function new_syncdir(session_id, start)
+-- new diff message
+function new_diff(session_id)
     return _new({
-        code = message.CODE_SYNCDIR,
-        start = start,
+        code = message.CODE_DIFF,
+        session_id = session_id
+    })
+end
+
+-- new sync message
+function new_sync(session_id)
+    return _new({
+        code = message.CODE_SYNC,
         session_id = session_id
     })
 end

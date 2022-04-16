@@ -102,9 +102,9 @@ function remote_build_client:connect()
     status.session_id = session_id
     self:status_save()
 
-    -- syncdir files
+    -- sync files
     if ok then
-        self:syncdir()
+        self:sync()
     end
 end
 
@@ -148,7 +148,7 @@ function remote_build_client:disconnect()
 end
 
 -- sync server files
-function remote_build_client:syncdir()
+function remote_build_client:sync()
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
@@ -159,12 +159,11 @@ function remote_build_client:syncdir()
     print("%s: sync files in %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
-        if stream:send_msg(message.new_syncdir(session_id, true)) and stream:flush() then
+        if stream:send_msg(message.new_sync(session_id)) and stream:flush() then
             local msg = stream:recv_msg()
             if msg and msg:success() then
                 vprint(msg:body())
-                self:_do_syncdir(msg:body().path, msg:body().branch)
-                if stream:send_msg(message.new_syncdir(session_id, false)) and stream:flush() then
+                if stream:send_msg(message.new_sync(session_id)) and stream:flush() then
                     msg = stream:recv_msg()
                     if msg and msg:success() then
                         ok = true
@@ -319,8 +318,26 @@ function remote_build_client:session_id()
     return self:status().session_id or hash.uuid():split("-", {plain = true})[1]:lower()
 end
 
--- do syncdir
-function remote_build_client:_do_syncdir(remote_path, remote_branch)
+-- diff server files
+function remote_build_client:_diff_files(stream)
+    assert(self:is_connected(), "%s: has been not connected!", self)
+    --[[
+    if stream:send_msg(message.new_sync(session_id)) and stream:flush() then
+        local msg = stream:recv_msg()
+        if msg and msg:success() then
+            vprint(msg:body())
+            if stream:send_msg(message.new_sync(session_id)) and stream:flush() then
+                msg = stream:recv_msg()
+                if msg and msg:success() then
+                    ok = true
+                elseif msg then
+                    errors = msg:errors()
+                end
+            end
+        elseif msg then
+            errors = msg:errors()
+        end
+    end]]
 end
 
 -- read stdin data

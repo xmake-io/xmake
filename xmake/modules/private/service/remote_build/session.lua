@@ -61,11 +61,18 @@ function session:stream()
     return self._STREAM
 end
 
--- sync directory
-function session:syncdir(respmsg)
+-- diff files
+function session:diff(respmsg)
     local body = respmsg:body()
-    vprint("%s: %s sync files in %s ..", self, self:sourcedir(), body.start and "start" or "finish")
-    vprint("%s: %s sync files ok", self, body.start and "start" or "finish")
+    vprint("%s: %s diff files in %s ..", self, self:sourcedir())
+    vprint("%s: %s diff files ok", self)
+end
+
+-- sync files
+function session:sync(respmsg)
+    local body = respmsg:body()
+    vprint("%s: %s sync files in %s ..", self, self:sourcedir())
+    vprint("%s: %s sync files ok", self)
 end
 
 -- clean files
@@ -196,11 +203,6 @@ function session:_send_data(data)
             return stream:flush()
         end
     end
-end
-
--- get working branch of the source directory
-function session:_source_branch()
-    return "remote_build"
 end
 
 function session:__tostring()
