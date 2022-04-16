@@ -773,9 +773,13 @@ function os.execv(program, argv, opt)
         end
 
         -- wait process
-        local waitok, status = proc:wait(-1)
-        if waitok > 0 then
-            ok = status
+        if not opt.detach then
+            local waitok, status = proc:wait(-1)
+            if waitok > 0 then
+                ok = status
+            end
+        else
+            ok = 0
         end
 
         -- close process
