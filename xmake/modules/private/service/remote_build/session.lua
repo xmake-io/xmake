@@ -26,6 +26,7 @@ import("core.base.global")
 import("core.base.option")
 import("core.base.hashset")
 import("core.base.scheduler")
+import("utils.archive.extract", {alias = "extract_archive"})
 import("private.service.config")
 import("private.service.message")
 import("private.service.remote_build.filesync", {alias = "new_filesync"})
@@ -110,16 +111,40 @@ end
 function session:sync(respmsg)
     local body = respmsg:body()
     local stream = self:stream()
-    local manifest = body.manifest
+    local manifest = assert(body.manifest, "manifest not found!")
+    local sourcedir = self:sourcedir()
     local archivefile = os.tmpfile() .. ".zip"
+    local archivedir = archivefile .. ".dir"
     vprint("%s: sync files in %s ..", self, self:sourcedir())
     if stream:recv_file(archivefile) then
         vprint("receive archive file, size: %d", os.filesize(archivefile))
+
+        -- extract archive file
+        extract_archive(archivefile, archivedir)
+
         -- do sync
+        for _, fileitem in ipairs(manifest.inserted) do
+            vprint("[+]: %s", fileitem)
+            local filepath_server = path.join(sourcedir, fileitem)
+            local filepath_client = path.join(archivedir, fileitem)
+            os.cp(filepath_client, filepath_server)
+        end
+        for _, fileitem in ipairs(manifest.modified) do
+            vprint("[*]: %s", fileitem)
+            local filepath_server = path.join(sourcedir, fileitem)
+            local filepath_client = path.join(archivedir, fileitem)
+            os.cp(filepath_client, filepath_server)
+        end
+        for _, fileitem in ipairs(manifest.removed) do
+            vprint("[-]: %s", fileitem)
+            local filepath_server = path.join(sourcedir, fileitem)
+            os.rm(filepath_server)
+        end
     else
         raise("receive files failed!")
     end
-    --os.tryrm(archivefile)
+    os.tryrm(archivefile)
+    os.tryrm(archivedir)
     vprint("%s: sync files ok", self)
 end
 

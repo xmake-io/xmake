@@ -93,7 +93,7 @@ function filesync:reset()
             local manifest_info = manifest[fileitem]
             local mtime = os.mtime(filepath)
             if not manifest_info or not manifest_info.mtime or mtime > manifest_info.mtime then
-                manifest[fileitem] = {sha256 = hash.sha256(fileitem), mtime = mtime}
+                manifest[fileitem] = {sha256 = hash.sha256(filepath), mtime = mtime}
             end
         end
     end
