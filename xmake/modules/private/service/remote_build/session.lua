@@ -24,9 +24,11 @@ import("core.base.bytes")
 import("core.base.object")
 import("core.base.global")
 import("core.base.option")
+import("core.base.hashset")
 import("core.base.scheduler")
 import("private.service.config")
 import("private.service.message")
+import("private.service.remote_build.filesync", {alias = "new_filesync"})
 
 -- define module
 local session = session or object()
@@ -34,6 +36,7 @@ local session = session or object()
 -- init session
 function session:init(session_id)
     self._ID = session_id
+    self._FILESYNC = new_filesync(self:sourcedir(), path.join(self:workdir(), "manifest.txt"))
 end
 
 -- get session id
@@ -43,12 +46,14 @@ end
 
 -- open session
 function session:open()
-    self:_reset_sourcedir()
+    local sourcedir = self:sourcedir()
+    if not os.isdir(sourcedir) then
+        os.mkdir(sourcedir)
+    end
 end
 
 -- close session
 function session:close()
-    self:_reset_sourcedir()
 end
 
 -- set stream
@@ -64,8 +69,41 @@ end
 -- diff files
 function session:diff(respmsg)
     local body = respmsg:body()
-    vprint("%s: %s diff files in %s ..", self, self:sourcedir())
-    vprint("%s: %s diff files ok", self)
+    vprint("%s: diff files in %s ..", self, self:sourcedir())
+    local filesync = self:_filesync()
+    local manifest_server = assert(filesync:reset(), "server manifest not found!")
+    local manifest_client = assert(body.manifest, "client manifest not found!")
+
+    -- get all files
+    local fileitems = hashset.new()
+    for fileitem, _ in pairs(manifest_client) do
+        fileitems:insert(fileitem)
+    end
+    for fileitem, _ in pairs(manifest_server) do
+        fileitems:insert(fileitem)
+    end
+
+    -- do diff
+    local removed = {}
+    local modified = {}
+    local inserted = {}
+    for _, fileitem in fileitems:keys() do
+        local manifest_info_client = manifest_client[fileitem]
+        local manifest_info_server = manifest_server[fileitem]
+        if manifest_info_client and manifest_info_server
+            and manifest_info_client.sha256 ~= manifest_info_server.sha256 then
+            table.insert(modified, fileitem)
+            vprint("[*]: %s", fileitem)
+        elseif not manifest_info_server and manifest_info_client then
+            table.insert(inserted, fileitem)
+            vprint("[+]: %s", fileitem)
+        elseif not manifest_info_server and manifest_info_client then
+            table.insert(removed, fileitem)
+            vprint("[-]: %s", fileitem)
+        end
+    end
+    body.manifest = {removed = removed, inserted = inserted, modified = modified}
+    vprint("%s: diff files ok", self)
 end
 
 -- sync files
@@ -124,9 +162,9 @@ function session:sourcedir()
     return path.join(self:workdir(), "source")
 end
 
--- reset sourcedir
-function session:_reset_sourcedir()
-    vprint("%s: reset %s", self, self:sourcedir())
+-- get filesync
+function session:_filesync()
+    return self._FILESYNC
 end
 
 -- write data from pipe

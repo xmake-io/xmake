@@ -86,6 +86,7 @@ function remote_build_server:_on_handle(stream, msg)
             function (errors)
                 if errors then
                     session_errs = tostring(errors)
+                    vprint(session_errs)
                 end
             end
         }

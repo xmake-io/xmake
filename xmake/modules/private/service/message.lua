@@ -145,10 +145,11 @@ function new_disconnect(session_id)
 end
 
 -- new diff message
-function new_diff(session_id)
+function new_diff(session_id, manifest)
     return _new({
         code = message.CODE_DIFF,
-        session_id = session_id
+        session_id = session_id,
+        manifest = manifest
     })
 end
 

@@ -21,6 +21,7 @@
 -- imports
 import("core.base.bytes")
 import("core.base.socket")
+import("core.base.option")
 import("core.base.scheduler")
 import("core.project.config", {alias = "project_config"})
 import("lib.detect.find_tool")
@@ -28,6 +29,7 @@ import("private.service.config")
 import("private.service.message")
 import("private.service.client")
 import("private.service.stream", {alias = "socket_stream"})
+import("private.service.remote_build.filesync", {alias = "new_filesync"})
 import("private.service.remote_build.environment")
 
 -- define module
@@ -51,6 +53,11 @@ function remote_build_client:init()
     else
         raise("we need enter a project directory with xmake.lua first!")
     end
+
+    -- init filesync
+    local filesync = new_filesync(self:projectdir(), path.join(self:workdir(), "manifest.txt"))
+    filesync:ignorefiles_add(".git/**")
+    self._FILESYNC = filesync
 
     -- check environment
     environment.check(false)
@@ -157,8 +164,23 @@ function remote_build_client:sync()
     local errors
     local ok = false
     print("%s: sync files in %s:%d ..", self, addr, port)
-    if sock then
+    while sock do
+        -- diff files
         local stream = socket_stream(sock)
+        local diff_files, diff_errs = self:_diff_files(stream)
+        if not diff_files then
+            errors = diff_errs
+            break
+        end
+
+        -- archive diff files
+        local archive_diff_file, archive_diff_errs = self:_archive_diff_files()
+        if not archive_diff_file then
+            errors = archive_diff_errs
+            break
+        end
+
+        --[[
         if stream:send_msg(message.new_sync(session_id)) and stream:flush() then
             local msg = stream:recv_msg()
             if msg and msg:success() then
@@ -174,7 +196,9 @@ function remote_build_client:sync()
             elseif msg then
                 errors = msg:errors()
             end
-        end
+        end]]
+        ok = true
+        break
     end
     if ok then
         print("%s: sync files ok!", self)
@@ -318,26 +342,43 @@ function remote_build_client:session_id()
     return self:status().session_id or hash.uuid():split("-", {plain = true})[1]:lower()
 end
 
+-- get filesync
+function remote_build_client:_filesync()
+    return self._FILESYNC
+end
+
 -- diff server files
 function remote_build_client:_diff_files(stream)
     assert(self:is_connected(), "%s: has been not connected!", self)
-    --[[
-    if stream:send_msg(message.new_sync(session_id)) and stream:flush() then
+    local filesync = self:_filesync()
+    local manifest = filesync:reset()
+    local session_id = self:session_id()
+    local result, errors
+    if stream:send_msg(message.new_diff(session_id, manifest)) and stream:flush() then
         local msg = stream:recv_msg()
         if msg and msg:success() then
-            vprint(msg:body())
-            if stream:send_msg(message.new_sync(session_id)) and stream:flush() then
-                msg = stream:recv_msg()
-                if msg and msg:success() then
-                    ok = true
-                elseif msg then
-                    errors = msg:errors()
+            result = msg:body().manifest
+            if result and option.get("verbose") then
+                for _, fileitem in ipairs(result.inserted) do
+                    vprint("[+]: %s", fileitem)
+                end
+                for _, fileitem in ipairs(result.modified) do
+                    vprint("[*]: %s", fileitem)
+                end
+                for _, fileitem in ipairs(result.removed) do
+                    vprint("[-]: %s", fileitem)
                 end
             end
         elseif msg then
             errors = msg:errors()
         end
-    end]]
+    end
+    return result, errors
+end
+
+-- archive diff files
+function remote_build_client:_archive_diff_files(diff_files)
+    return ""
 end
 
 -- read stdin data
