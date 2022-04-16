@@ -103,7 +103,7 @@ function session:diff(respmsg)
             table.insert(inserted, fileitem)
             changed = true
             vprint("[+]: %s", fileitem)
-        elseif not manifest_info_server and manifest_info_client then
+        elseif manifest_info_server and not manifest_info_client then
             table.insert(removed, fileitem)
             changed = true
             vprint("[-]: %s", fileitem)

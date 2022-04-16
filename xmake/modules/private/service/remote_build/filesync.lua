@@ -81,8 +81,9 @@ end
 -- do snapshot, it will re-scan all and update to manifest file
 function filesync:snapshot()
     local rootdir = self:rootdir()
-    assert(rootdir and os.isdir(rootdir), "reset %s failed, rootdir not found!", rootdir)
-    local manifest = self:manifest()
+    assert(rootdir and os.isdir(rootdir), "get snapshot %s failed, rootdir not found!", rootdir)
+    local manifest = {}
+    local manifest_old = self:manifest()
     local ignorefiles = self:ignorefiles()
     if ignorefiles then
         ignorefiles = "|" .. table.concat(ignorefiles, "|")
@@ -90,10 +91,12 @@ function filesync:snapshot()
     for _, filepath in ipairs(os.files(path.join(rootdir, "**" .. ignorefiles))) do
         local fileitem = path.relative(filepath, rootdir)
         if fileitem then
-            local manifest_info = manifest[fileitem]
+            local manifest_info = manifest_old[fileitem]
             local mtime = os.mtime(filepath)
             if not manifest_info or not manifest_info.mtime or mtime > manifest_info.mtime then
                 manifest[fileitem] = {sha256 = hash.sha256(filepath), mtime = mtime}
+            else
+                manifest[fileitem] = manifest_info
             end
         end
     end
@@ -111,7 +114,7 @@ function filesync:update(fileitem, filepath, sha256)
 end
 
 -- remove file
-function filesync:remote(fileitem)
+function filesync:remove(fileitem)
     local manifest = self:manifest()
     manifest[fileitem] = nil
 end
