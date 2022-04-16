@@ -32,7 +32,7 @@ message.CODE_DATA           = 4 -- send data
 message.CODE_RUNCMD         = 5 -- run the given command in server
 message.CODE_DIFF           = 6 -- diff files between server and client
 message.CODE_SYNC           = 7 -- sync files between server and client
-message.CODE_PULL           = 8 -- pull the given files from server
+message.CODE_PULL           = 8 -- pull the given file from server
 
 -- init message
 function message:init(body)
@@ -67,6 +67,11 @@ end
 -- is sync message?
 function message:is_sync()
     return self:code() == message.CODE_SYNC
+end
+
+-- is pull message?
+function message:is_pull()
+    return self:code() == message.CODE_PULL
 end
 
 -- is clean message?
@@ -144,7 +149,7 @@ function new_disconnect(session_id)
     })
 end
 
--- new diff message
+-- new diff message, e.g manifest = {["src/main.c"] = {sha256 = "", mtime = ""}}
 function new_diff(session_id, manifest)
     return _new({
         code = message.CODE_DIFF,
@@ -153,7 +158,7 @@ function new_diff(session_id, manifest)
     })
 end
 
--- new sync message
+-- new sync message, e.g. manifest = {modified = {"src/main.c"}, inserted = {}, removed = {}}
 function new_sync(session_id, manifest)
     return _new({
         code = message.CODE_SYNC,

@@ -177,19 +177,29 @@ function remote_build_client:sync()
 
         -- archive diff files
         archive_diff_file, errors = self:_archive_diff_files(diff_files)
-        if not archive_diff_file then
+        if not archive_diff_file or not os.isfile(archive_diff_file) then
             break
         end
 
         -- do sync
+        local send_ok = false
         if stream:send_msg(message.new_sync(session_id, diff_files)) and stream:flush() then
-            local msg = stream:recv_msg()
-            if msg and msg:success() then
-                vprint(msg:body())
-                ok = true
-            elseif msg then
-                errors = msg:errors()
+            if stream:send_file(archive_diff_file) and stream:flush() then
+                send_ok = true
             end
+        end
+        if not send_ok then
+            errors = "send files failed"
+            break
+        end
+
+        -- sync ok
+        local msg = stream:recv_msg()
+        if msg and msg:success() then
+            vprint(msg:body())
+            ok = true
+        elseif msg then
+            errors = msg:errors()
         end
         break
     end
