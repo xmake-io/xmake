@@ -319,7 +319,7 @@ function main(archivefile, inputfiles, opt)
 
     -- init archivers
     local archivers = {
-        [".zip"]        = {_archive_using_zip}
+        [".zip"]        = {_archive_using_7z, _archive_using_7z}
     ,   [".7z"]         = {_archive_using_7z}
     ,   [".xz"]         = {_archive_using_xz}
     ,   [".gz"]         = {_archive_using_gzip}

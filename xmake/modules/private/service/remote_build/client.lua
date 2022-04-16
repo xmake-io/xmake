@@ -401,8 +401,11 @@ function remote_build_client:_archive_diff_files(diff_files)
     for _, fileitem in ipairs(diff_files.modified) do
         table.insert(filelist, fileitem)
     end
-    archive_files(archivefile, filelist, {curdir = self:projectdir()})
-    vprint("archive file ok, size: %s", os.filesize(archivefile))
+    local ok = archive_files(archivefile, filelist, {curdir = self:projectdir()})
+    if not ok then
+        return nil, "archive fileds failed!"
+    end
+    vprint("archive files ok, size: %s", os.filesize(archivefile))
     return archivefile
 end
 
