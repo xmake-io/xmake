@@ -25,7 +25,7 @@ import("lib.detect.find_tool")
 import("extension", {alias = "get_archive_extension"})
 
 -- archive archivefile using zip
-function _archive_using_zip(archivefile, inputpath, extension, opt)
+function _archive_using_zip(archivefile, inputfiles, extension, opt)
 
     -- find zip
     local zip = find_tool("zip")
@@ -44,12 +44,6 @@ function _archive_using_zip(archivefile, inputpath, extension, opt)
             table.insert(argv, exclude)
         end
     end
-    if opt.includes then
-        table.insert(argv, "-i")
-        for _, include in ipairs(opt.includes) do
-            table.insert(argv, include)
-        end
-    end
     local compress = opt.compress
     if compress then
         if compress == "faster" or compress == "fastest" then
@@ -61,15 +55,29 @@ function _archive_using_zip(archivefile, inputpath, extension, opt)
     if opt.recurse then
         table.insert(argv, "-r")
     end
-    table.insert(argv, inputpath)
+    local inputlistfile = os.tmpfile()
+    if type(inputfiles) == "table" then
+        local file = io.open(inputlistfile, "w")
+        for _, inputfile in ipairs(inputfiles) do
+            file:print(inputfile)
+        end
+        file:close()
+        table.insert(argv, "-@")
+        table.insert(argv, "-")
+    else
+        table.insert(argv, inputfiles)
+    end
 
     -- archive it
-    os.vrunv(zip.program, argv, {curdir = opt.curdir})
+    os.vrunv(zip.program, argv, {curdir = opt.curdir, stdin = inputlistfile})
+    if inputlistfile then
+        os.tryrm(inputlistfile)
+    end
     return true
 end
 
 -- archive archivefile using 7z
-function _archive_using_7z(archivefile, inputpath, extension, opt)
+function _archive_using_7z(archivefile, inputfiles, extension, opt)
 
     -- find 7z
     local z7 = find_tool("7z")
@@ -84,12 +92,6 @@ function _archive_using_7z(archivefile, inputpath, extension, opt)
         excludesfile = os.tmpfile()
         io.writefile(excludesfile, table.concat(table.wrap(opt.excludes), '\n'))
         table.insert(argv, "-xr@" .. excludesfile)
-    end
-    local includesfile
-    if opt.includes then
-        includesfile = os.tmpfile()
-        io.writefile(includesfile, table.concat(table.wrap(opt.includes), '\n'))
-        table.insert(argv, "-ir@" .. includesfile)
     end
     local compress = opt.compress
     if compress then
@@ -106,32 +108,39 @@ function _archive_using_7z(archivefile, inputpath, extension, opt)
     if opt.recurse then
         table.insert(argv, "-r")
     end
-    table.insert(argv, inputpath)
+    local inputlistfile = os.tmpfile()
+    if type(inputfiles) == "table" then
+        local file = io.open(inputlistfile, "w")
+        for _, inputfile in ipairs(inputfiles) do
+            file:print(inputfile)
+        end
+        file:close()
+        table.insert(argv, "-i@" .. inputlistfile)
+    else
+        table.insert(argv, inputfiles)
+    end
 
     -- archive it
     os.vrunv(z7.program, argv, {curdir = opt.curdir})
 
-    -- remove the excludes and includes file
+    -- remove the excludes files
     if excludesfile then
         os.tryrm(excludesfile)
     end
-    if includesfile then
-        os.tryrm(includesfile)
+    if inputlistfile then
+        os.tryrm(inputlistfile)
     end
     return true
 end
 
 -- archive archivefile using xz
-function _archive_using_xz(archivefile, inputfile, extension, opt)
+function _archive_using_xz(archivefile, inputfiles, extension, opt)
 
     -- find xz
     local xz = find_tool("xz")
     if not xz then
         return false
     end
-
-    -- only support to compress file
-    assert(not os.isdir(inputfile), "xz cannot compress directory(%s)", inputfile)
 
     -- init argv
     local argv = {"-z", "-k", "-c", archivefile}
@@ -150,7 +159,13 @@ function _archive_using_xz(archivefile, inputfile, extension, opt)
             table.insert(argv, "-9")
         end
     end
-    table.insert(argv, inputfile)
+    if type(inputfiles) == "table" then
+        for _, inputfile in ipairs(inputfiles) do
+            table.insert(argv, inputfile)
+        end
+    else
+        table.insert(argv, inputfiles)
+    end
 
     -- archive it
     os.vrunv(xz.program, argv, {stdout = archivefile, curdir = opt.curdir})
@@ -158,7 +173,7 @@ function _archive_using_xz(archivefile, inputfile, extension, opt)
 end
 
 -- archive archivefile using gzip
-function _archive_using_gzip(archivefile, inputpath, extension, opt)
+function _archive_using_gzip(archivefile, inputfiles, extension, opt)
 
     -- find gzip
     local gzip = find_tool("gzip")
@@ -186,7 +201,13 @@ function _archive_using_gzip(archivefile, inputpath, extension, opt)
     if opt.recurse then
         table.insert(argv, "-r")
     end
-    table.insert(argv, inputpath)
+    if type(inputfiles) == "table" then
+        for _, inputfile in ipairs(inputfiles) do
+            table.insert(argv, inputfile)
+        end
+    else
+        table.insert(argv, inputfiles)
+    end
 
     -- archive it
     os.vrunv(gzip.program, argv, {stdout = archivefile, curdir = opt.curdir})
@@ -194,7 +215,7 @@ function _archive_using_gzip(archivefile, inputpath, extension, opt)
 end
 
 -- archive archivefile using tar
-function _archive_using_tar(archivefile, inputpath, extension, opt)
+function _archive_using_tar(archivefile, inputfiles, extension, opt)
 
     -- find tar
     local tar = find_tool("tar")
@@ -231,19 +252,27 @@ function _archive_using_tar(archivefile, inputpath, extension, opt)
             table.insert(argv, exclude)
         end
     end
-    if opt.includes then
-        for _, include in ipairs(opt.includes) do
-            table.insert(argv, "--include=")
-            table.insert(argv, include)
-        end
-    end
     if not opt.recurse then
         table.insert(argv, "-n")
     end
-    table.insert(argv, inputpath)
+    local inputlistfile = os.tmpfile()
+    if type(inputfiles) == "table" then
+        local file = io.open(inputlistfile, "w")
+        for _, inputfile in ipairs(inputfiles) do
+            file:print(inputfile)
+        end
+        file:close()
+        table.insert(argv, "-T")
+        table.insert(argv, inputlistfile)
+    else
+        table.insert(argv, inputfiles)
+    end
 
     -- archive it
     os.vrunv(tar.program, argv, {curdir = opt.curdir})
+    if inputlistfile then
+        os.tryrm(inputlistfile)
+    end
     if archivefile_tar and os.isfile(archivefile_tar) then
         _archive_tarfile(archivefile, archivefile_tar, opt)
         os.rm(archivefile_tar)
@@ -252,9 +281,9 @@ function _archive_using_tar(archivefile, inputpath, extension, opt)
 end
 
 -- archive archive file using archivers
-function _archive(archivefile, inputpath, extension, archivers, opt)
+function _archive(archivefile, inputfiles, extension, archivers, opt)
     for _, archive in ipairs(archivers) do
-        if archive(archivefile, inputpath, extension, opt) then
+        if archive(archivefile, inputfiles, extension, opt) then
             return true
         end
     end
@@ -274,13 +303,13 @@ end
 -- archive archive file
 --
 -- @param archivefile   the archive file. e.g. *.tar.gz, *.zip, *.7z, *.tar.bz2, ..
--- @param inputpath     the input file or directory
--- @param options       the options, e.g.. {curdir = "/tmp", recurse = true, compress = "fastest|faster|default|better|best", includes = {"*/dir/*"}, excludes = {"*/dir/*", "dir/*"}}
+-- @param inputfiles    the input file or directory or list
+-- @param options       the options, e.g.. {curdir = "/tmp", recurse = true, compress = "fastest|faster|default|better|best", excludes = {"*/dir/*", "dir/*"}}
 --
-function main(archivefile, inputpath, opt)
+function main(archivefile, inputfiles, opt)
 
-    -- init inputpath
-    inputpath = inputpath or os.curdir()
+    -- init inputfiles
+    inputfiles = inputfiles or os.curdir()
 
     -- init options
     opt = opt or {}
@@ -303,5 +332,5 @@ function main(archivefile, inputpath, opt)
     local extension = opt.extension or get_archive_extension(archivefile)
 
     -- archive it
-    return _archive(archivefile, inputpath, extension, archivers[extension], opt)
+    return _archive(archivefile, inputfiles, extension, archivers[extension], opt)
 end
