@@ -23,7 +23,6 @@ import("core.base.bytes")
 import("core.base.socket")
 import("core.base.scheduler")
 import("core.project.config", {alias = "project_config"})
-import("devel.git")
 import("lib.detect.find_tool")
 import("private.service.config")
 import("private.service.message")
@@ -103,9 +102,9 @@ function remote_build_client:connect()
     status.session_id = session_id
     self:status_save()
 
-    -- sync files
+    -- syncdir files
     if ok then
-        self:sync()
+        self:syncdir()
     end
 end
 
@@ -149,7 +148,7 @@ function remote_build_client:disconnect()
 end
 
 -- sync server files
-function remote_build_client:sync()
+function remote_build_client:syncdir()
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
@@ -160,12 +159,12 @@ function remote_build_client:sync()
     print("%s: sync files in %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
-        if stream:send_msg(message.new_sync(session_id, true)) and stream:flush() then
+        if stream:send_msg(message.new_syncdir(session_id, true)) and stream:flush() then
             local msg = stream:recv_msg()
             if msg and msg:success() then
                 vprint(msg:body())
-                self:_do_syncfiles(msg:body().path, msg:body().branch)
-                if stream:send_msg(message.new_sync(session_id, false)) and stream:flush() then
+                self:_do_syncdir(msg:body().path, msg:body().branch)
+                if stream:send_msg(message.new_syncdir(session_id, false)) and stream:flush() then
                     msg = stream:recv_msg()
                     if msg and msg:success() then
                         ok = true
@@ -320,33 +319,8 @@ function remote_build_client:session_id()
     return self:status().session_id or hash.uuid():split("-", {plain = true})[1]:lower()
 end
 
--- do syncfiles, e.g. git push user@addr:remote_path branch:remote_branch
---
--- @note on Windows/OpenSSH, we need solve the following issues
--- https://github.com/PowerShell/Win32-OpenSSH/wiki/Setting-up-a-Git-server-on-Windows-using-Git-for-Windows-and-Win32_OpenSSH
---
--- 1. Set powershell as default shell
--- @code
--- New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -PropertyType String -Force
--- New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShellCommandOption -Value "/c" -PropertyType String -Force
--- @endcode
---
--- 2. Set git/mingw64/bin to %PATH%, to solve `git-receive-pack not found!`
--- @code
--- $gitPath = Join-Path -Path $env:ProgramFiles -ChildPath "git\mingw64\bin"
--- $machinePath = [Environment]::GetEnvironmentVariable('Path', 'MACHINE')
--- [Environment]::SetEnvironmentVariable('Path', "$gitPath;$machinePath", 'Machine')
--- @endcode
---
-function remote_build_client:_do_syncfiles(remote_path, remote_branch)
-    local user = assert(config.get("remote_build.client.user"), "config(remote_build.client.user): not found!")
-    local addr = self:addr()
-    assert(remote_path, "git remote path not found!")
-    assert(remote_branch, "git remote branch not found!")
-
-    -- push to remote
-    local remote_url = string.format("%s@%s:%s", user, addr, remote_path)
-    git.push(remote_url, {remote_branch = remote_branch, verbose = true})
+-- do syncdir
+function remote_build_client:_do_syncdir(remote_path, remote_branch)
 end
 
 -- read stdin data

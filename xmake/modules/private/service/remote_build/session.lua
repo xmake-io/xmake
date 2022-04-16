@@ -25,7 +25,6 @@ import("core.base.object")
 import("core.base.global")
 import("core.base.option")
 import("core.base.scheduler")
-import("devel.git")
 import("private.service.config")
 import("private.service.message")
 
@@ -62,19 +61,10 @@ function session:stream()
     return self._STREAM
 end
 
--- sync files
-function session:sync(respmsg)
+-- sync directory
+function session:syncdir(respmsg)
     local body = respmsg:body()
     vprint("%s: %s sync files in %s ..", self, self:sourcedir(), body.start and "start" or "finish")
-    local sourcedir = self:sourcedir()
-    local source_branch = self:_source_branch()
-    if body.start then
-        self:_reset_sourcedir()
-        body.path = sourcedir
-        body.branch = source_branch
-    else
-        git.checkout(source_branch, {repodir = sourcedir})
-    end
     vprint("%s: %s sync files ok", self, body.start and "start" or "finish")
 end
 
@@ -130,22 +120,6 @@ end
 -- reset sourcedir
 function session:_reset_sourcedir()
     vprint("%s: reset %s", self, self:sourcedir())
-
-    -- init sourcedir first if .git not exists
-    local sourcedir = self:sourcedir()
-    if not os.isdir(sourcedir) then
-        os.mkdir(sourcedir)
-    end
-    if not os.isdir(path.join(sourcedir, ".git")) then
-        git.init({repodir = sourcedir})
-    end
-
-    -- reset the current branch
-    local branch = git.branch({repodir = sourcedir})
-    if branch then
-        git.clean({repodir = sourcedir, force = true, all = true})
-        git.reset({repodir = sourcedir, hard = true})
-    end
 end
 
 -- write data from pipe

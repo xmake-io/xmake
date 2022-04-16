@@ -24,13 +24,15 @@ import("core.base.object")
 -- define module
 local message = message or object()
 
--- the message code
-message.CODE_CONNECT    = 1
-message.CODE_DISCONNECT = 2
-message.CODE_SYNC       = 3
-message.CODE_CLEAN      = 4
-message.CODE_RUNCMD     = 5
-message.CODE_DATA       = 6
+-- the common message code
+message.CODE_CONNECT        = 1 -- connect server
+message.CODE_DISCONNECT     = 2 -- disconnect server
+message.CODE_CLEAN          = 3 -- clean all cached files in server
+message.CODE_DATA           = 4 -- send data
+message.CODE_RUNCMD         = 5 -- run the given command in server
+message.CODE_DIFFDIR        = 6 -- diff files in directory between server and client
+message.CODE_SYNCDIR        = 7 -- sync files in directory between server and client
+message.CODE_PULL           = 8 -- pull the given files from server
 
 -- init message
 function message:init(body)
@@ -57,9 +59,9 @@ function message:is_disconnect()
     return self:code() == message.CODE_DISCONNECT
 end
 
--- is sync message?
-function message:is_sync()
-    return self:code() == message.CODE_SYNC
+-- is syncdir message?
+function message:is_syncdir()
+    return self:code() == message.CODE_SYNCDIR
 end
 
 -- is clean message?
@@ -137,10 +139,10 @@ function new_disconnect(session_id)
     })
 end
 
--- new sync message
-function new_sync(session_id, start)
+-- new syncdir message
+function new_syncdir(session_id, start)
     return _new({
-        code = message.CODE_SYNC,
+        code = message.CODE_SYNCDIR,
         start = start,
         session_id = session_id
     })
