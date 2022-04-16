@@ -27,6 +27,9 @@ import("private.service.message")
 -- define module
 local stream = stream or object()
 
+-- max data buffer size
+local STREAM_STRING_MAXN = 1024 * 1024
+
 -- init stream
 function stream:init(sock)
     self._SOCK = sock
@@ -115,9 +118,24 @@ end
 function stream:send_string(str)
     local buff = self._BUFF
     local size = #str
+    assert(size < STREAM_STRING_MAXN, "too large string size(%d)", size)
     buff:u32be_set(1, size)
     if self:send(buff, 1, 4) then
-        return self:send(bytes(str), 1, size)
+        local data = bytes(str)
+        local send = 0
+        local cache = self._WCACHE
+        local cache_maxn = cache:size()
+        while send < size do
+            local left = math.min(cache_maxn, size - send)
+            if self:send(data, send + 1, send + left) then
+                send = send + left
+            else
+                break
+            end
+        end
+        if send == size then
+            return true
+        end
     end
 end
 
@@ -243,9 +261,25 @@ end
 function stream:recv_string()
     local size = self:recv_u32be()
     if size then
-        local data = self:recv(self._BUFF, size)
-        if data then
-            return data:str()
+        local str
+        local recv = 0
+        local buff = self._BUFF
+        assert(size < STREAM_STRING_MAXN, "too large string size(%d)", size)
+        while recv < size do
+            local data = self:recv(buff, math.min(buff:size(), size - recv))
+            if data then
+                if str then
+                    str = str .. data:str()
+                else
+                    str = data:str()
+                end
+                recv = recv + data:size()
+            else
+                break
+            end
+        end
+        if recv == size then
+            return str
         end
     end
 end
@@ -258,7 +292,7 @@ function stream:recv_file(filepath)
         local recv = 0
         local file = io.open(filepath, "wb")
         while recv < size do
-            local data = self:recv(buff, math.min(8192, size - recv))
+            local data = self:recv(buff, math.min(buff:size(), size - recv))
             if data then
                 file:write(data)
                 recv = recv + data:size()
