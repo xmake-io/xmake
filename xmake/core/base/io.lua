@@ -201,8 +201,17 @@ function _file:write(...)
         return false, errors
     end
 
+    -- data items
+    local items = table.pack(...)
+    for idx, item in ipairs(items) do
+        if type(item) == "table" and item.caddr and item.size then
+            -- write bytes
+            items[idx] = {data = item:caddr(), size = item:size()}
+        end
+    end
+
     -- write file
-    ok, errors = io.file_write(self:cdata(), ...)
+    ok, errors = io.file_write(self:cdata(), table.unpack(items))
     if not ok and errors then
         errors = string.format("%s: %s", self, errors)
     end

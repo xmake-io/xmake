@@ -398,7 +398,7 @@ function remote_build_client:_archive_diff_files(diff_files)
         table.insert(filelist, fileitem)
     end
     archive_files(archivefile, filelist, {curdir = self:projectdir()})
-    vprint("archive file ok, %s", archivefile)
+    vprint("archive file ok, size: %s", os.filesize(archivefile))
     return archivefile
 end
 

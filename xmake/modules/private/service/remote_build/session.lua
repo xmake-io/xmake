@@ -109,8 +109,17 @@ end
 -- sync files
 function session:sync(respmsg)
     local body = respmsg:body()
+    local stream = self:stream()
     local manifest = body.manifest
+    local archivefile = os.tmpfile() .. ".zip"
     vprint("%s: sync files in %s ..", self, self:sourcedir())
+    if stream:recv_file(archivefile) then
+        vprint("receive archive file, size: %d", os.filesize(archivefile))
+        -- do sync
+    else
+        raise("receive files failed!")
+    end
+    --os.tryrm(archivefile)
     vprint("%s: sync files ok", self)
 end
 

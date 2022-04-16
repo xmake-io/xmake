@@ -121,6 +121,36 @@ function stream:send_string(str)
     end
 end
 
+-- send file
+function stream:send_file(filepath)
+
+    -- send size
+    local buff = self._BUFF
+    local size = os.filesize(filepath)
+    buff:u16be_set(1, size)
+    if not self:send(buff, 1, 2) then
+        return
+    end
+
+    -- flush cache data first
+    if not self:flush() then
+        return
+    end
+
+    -- send file
+    local ok = false
+    local sock = self._SOCK
+    local file = io.open(filepath, 'rb')
+    if file then
+        local send = sock:sendfile(file, {block = true})
+        if send > 0 then
+            ok = true
+        end
+        file:close()
+    end
+    return ok
+end
+
 -- recv the given bytes
 function stream:recv(buff, size)
     assert(size <= buff:size())
@@ -216,6 +246,27 @@ function stream:recv_string()
         local data = self:recv(self._BUFF, size)
         if data then
             return data:str()
+        end
+    end
+end
+
+-- recv file
+function stream:recv_file(filepath)
+    local size = self:recv_u16be()
+    if size then
+        local buff = self._BUFF
+        local recv = 0
+        local file = io.open(filepath, "wb")
+        while recv < size do
+            local data = self:recv(buff, math.min(8192, size - recv))
+            if data then
+                file:write(data)
+                recv = recv + data:size()
+            end
+        end
+        file:close()
+        if recv == size then
+            return true
         end
     end
 end

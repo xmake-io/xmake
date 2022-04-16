@@ -63,15 +63,12 @@ static tb_void_t xm_io_file_write_file_utfbom(xm_io_file_t* file)
         break;
     }
 }
-static tb_void_t xm_io_file_write_file_directly(xm_io_file_t* file, tb_char_t const* data, tb_size_t size)
+static tb_void_t xm_io_file_write_file_directly(xm_io_file_t* file, tb_byte_t const* data, tb_size_t size)
 {
-    // check
     tb_assert(file && data && xm_io_file_is_file(file) && file->file_ref);
-
-    // write data to file
-    tb_stream_bwrit(file->file_ref, (tb_byte_t const*)data, size);
+    tb_stream_bwrit(file->file_ref, data, size);
 }
-static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file_t* file, tb_char_t const* data, tb_size_t size)
+static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file_t* file, tb_byte_t const* data, tb_size_t size)
 {
     // check
     tb_assert(file && data && xm_io_file_is_file(file) && file->file_ref);
@@ -121,7 +118,7 @@ static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file_t* file, tb_char_t c
     return xm_io_file_write_file_directly(file, data, size);
 #endif
 }
-static tb_void_t xm_io_file_write_std(xm_io_file_t* file, tb_char_t const* data, tb_size_t size)
+static tb_void_t xm_io_file_write_std(xm_io_file_t* file, tb_byte_t const* data, tb_size_t size)
 {
     // check
     tb_assert(file && data && xm_io_file_is_std(file));
@@ -131,7 +128,7 @@ static tb_void_t xm_io_file_write_std(xm_io_file_t* file, tb_char_t const* data,
     tb_check_return(type != XM_IO_FILE_TYPE_STDIN);
 
     // write data to stdout/stderr
-    tb_stdfile_writ(file->std_ref, (tb_byte_t const*)data, size);
+    tb_stdfile_writ(file->std_ref, data, size);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -161,7 +158,28 @@ tb_int_t xm_io_file_write(lua_State* lua)
         {
             // get data
             size_t datasize = 0;
-            tb_char_t const* data = luaL_checklstring(lua, i, &datasize);
+            tb_byte_t const* data = tb_null;
+            if (lua_isstring(lua, i))
+                data = (tb_byte_t const*)luaL_checklstring(lua, i, &datasize);
+            else if (lua_istable(lua, i))
+            {
+                // get bytes data
+                lua_pushstring(lua, "data");
+                lua_gettable(lua, i);
+                if (lua_isnumber(lua, -1))
+                    data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tonumber(lua, -1);
+                lua_pop(lua, 1);
+
+                lua_pushstring(lua, "size");
+                lua_gettable(lua, i);
+                if (lua_isnumber(lua, -1))
+                    datasize = (tb_size_t)lua_tonumber(lua, -1);
+                lua_pop(lua, 1);
+
+                // mark as binary data
+                is_binary = tb_true;
+            }
+
             tb_check_continue(datasize);
             tb_assert_and_check_break(data);
 
