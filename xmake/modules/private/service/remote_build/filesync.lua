@@ -78,8 +78,8 @@ function filesync:manifest_file()
     return self._MANIFEST_FILE
 end
 
--- reset all, it will re-scan all and update to manifest file
-function filesync:reset()
+-- do snapshot, it will re-scan all and update to manifest file
+function filesync:snapshot()
     local rootdir = self:rootdir()
     assert(rootdir and os.isdir(rootdir), "reset %s failed, rootdir not found!", rootdir)
     local manifest = self:manifest()
@@ -100,6 +100,20 @@ function filesync:reset()
     self._MANIFEST = manifest
     self:manifest_save()
     return manifest
+end
+
+-- update file
+function filesync:update(fileitem, filepath, sha256)
+    local mtime = os.mtime(filepath)
+    local manifest = self:manifest()
+    sha256 = sha256 or hash.sha256(filepath)
+    manifest[fileitem] = {sha256 = sha256, mtime = mtime}
+end
+
+-- remove file
+function filesync:remote(fileitem)
+    local manifest = self:manifest()
+    manifest[fileitem] = nil
 end
 
 -- load ignore files from .gitignore files

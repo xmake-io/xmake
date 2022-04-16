@@ -47,10 +47,7 @@ end
 
 -- open session
 function session:open()
-    local sourcedir = self:sourcedir()
-    if not os.isdir(sourcedir) then
-        os.mkdir(sourcedir)
-    end
+    self:_ensure_sourcedir()
 end
 
 -- close session
@@ -71,8 +68,13 @@ end
 function session:diff(respmsg)
     local body = respmsg:body()
     vprint("%s: diff files in %s ..", self, self:sourcedir())
+
+    -- ensure sourcedir
+    self:_ensure_sourcedir()
+
+    -- do snapshot
     local filesync = self:_filesync()
-    local manifest_server = assert(filesync:reset(), "server manifest not found!")
+    local manifest_server = assert(filesync:snapshot(), "server manifest not found!")
     local manifest_client = assert(body.manifest, "client manifest not found!")
 
     -- get all files
@@ -88,22 +90,26 @@ function session:diff(respmsg)
     local removed = {}
     local modified = {}
     local inserted = {}
+    local changed = false
     for _, fileitem in fileitems:keys() do
         local manifest_info_client = manifest_client[fileitem]
         local manifest_info_server = manifest_server[fileitem]
         if manifest_info_client and manifest_info_server
             and manifest_info_client.sha256 ~= manifest_info_server.sha256 then
             table.insert(modified, fileitem)
+            changed = true
             vprint("[*]: %s", fileitem)
         elseif not manifest_info_server and manifest_info_client then
             table.insert(inserted, fileitem)
+            changed = true
             vprint("[+]: %s", fileitem)
         elseif not manifest_info_server and manifest_info_client then
             table.insert(removed, fileitem)
+            changed = true
             vprint("[-]: %s", fileitem)
         end
     end
-    body.manifest = {removed = removed, inserted = inserted, modified = modified}
+    body.manifest = {changed = changed, removed = removed, inserted = inserted, modified = modified}
     vprint("%s: diff files ok", self)
 end
 
@@ -112,6 +118,7 @@ function session:sync(respmsg)
     local body = respmsg:body()
     local stream = self:stream()
     local manifest = assert(body.manifest, "manifest not found!")
+    local filesync = self:_filesync()
     local sourcedir = self:sourcedir()
     local archivefile = os.tmpfile() .. ".zip"
     local archivedir = archivefile .. ".dir"
@@ -128,18 +135,22 @@ function session:sync(respmsg)
             local filepath_server = path.join(sourcedir, fileitem)
             local filepath_client = path.join(archivedir, fileitem)
             os.cp(filepath_client, filepath_server)
+            filesync:update(fileitem, filepath_server)
         end
         for _, fileitem in ipairs(manifest.modified) do
             vprint("[*]: %s", fileitem)
             local filepath_server = path.join(sourcedir, fileitem)
             local filepath_client = path.join(archivedir, fileitem)
             os.cp(filepath_client, filepath_server)
+            filesync:update(fileitem, filepath_server)
         end
         for _, fileitem in ipairs(manifest.removed) do
             vprint("[-]: %s", fileitem)
             local filepath_server = path.join(sourcedir, fileitem)
             os.rm(filepath_server)
+            filesync:remove(fileitem)
         end
+        filesync:manifest_save()
     else
         raise("receive files failed!")
     end
@@ -200,6 +211,14 @@ end
 -- get filesync
 function session:_filesync()
     return self._FILESYNC
+end
+
+-- ensure source directory
+function session:_ensure_sourcedir()
+    local sourcedir = self:sourcedir()
+    if not os.isdir(sourcedir) then
+        os.mkdir(sourcedir)
+    end
 end
 
 -- write data from pipe

@@ -174,6 +174,10 @@ function remote_build_client:sync()
         if not diff_files then
             break
         end
+        if not diff_files.changed then
+            ok = true
+            break
+        end
 
         -- archive diff files
         archive_diff_file, errors = self:_archive_diff_files(diff_files)
@@ -357,7 +361,7 @@ end
 function remote_build_client:_diff_files(stream)
     assert(self:is_connected(), "%s: has been not connected!", self)
     local filesync = self:_filesync()
-    local manifest = filesync:reset()
+    local manifest = filesync:snapshot()
     local session_id = self:session_id()
     local result, errors
     if stream:send_msg(message.new_diff(session_id, manifest)) and stream:flush() then
