@@ -49,7 +49,23 @@ function main(opt)
                 os.mkdir(logdir)
             end
         end
-        os.execv(os.programfile(), argv, {detach = true, stdout = logfile, stderr = logfile})
+        local tmpdir = os.tmpfile() .. ".dir"
+        if not os.isdir(tmpdir) then
+            os.mkdir(tmpdir)
+        end
+        try
+        {
+            function()
+                os.execv(os.programfile(), argv, {detach = true, curdir = tmpdir, stdout = logfile, stderr = logfile})
+            end,
+            catch
+            {
+                function (errors)
+                    io.cat(logfile)
+                    raise(errors)
+                end
+            }
+        }
     else
         service()
     end
