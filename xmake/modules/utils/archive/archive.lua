@@ -25,7 +25,7 @@ import("lib.detect.find_tool")
 import("extension", {alias = "get_archive_extension"})
 
 -- archive archivefile using zip
-function _archive_using_zip(archivefile, inputdir, extension, opt)
+function _archive_using_zip(archivefile, inputpath, extension, opt)
 
     -- find zip
     local zip = find_tool("zip")
@@ -61,7 +61,7 @@ function _archive_using_zip(archivefile, inputdir, extension, opt)
     if opt.recurse then
         table.insert(argv, "-r")
     end
-    table.insert(argv, inputdir)
+    table.insert(argv, inputpath)
 
     -- archive it
     os.vrunv(zip.program, argv, {curdir = opt.curdir})
@@ -69,7 +69,7 @@ function _archive_using_zip(archivefile, inputdir, extension, opt)
 end
 
 -- archive archivefile using 7z
-function _archive_using_7z(archivefile, inputdir, extension, opt)
+function _archive_using_7z(archivefile, inputpath, extension, opt)
 
     -- find 7z
     local z7 = find_tool("7z")
@@ -106,7 +106,7 @@ function _archive_using_7z(archivefile, inputdir, extension, opt)
     if opt.recurse then
         table.insert(argv, "-r")
     end
-    table.insert(argv, inputdir)
+    table.insert(argv, inputpath)
 
     -- archive it
     os.vrunv(z7.program, argv, {curdir = opt.curdir})
@@ -157,26 +157,130 @@ function _archive_using_xz(archivefile, inputfile, extension, opt)
     return true
 end
 
+-- archive archivefile using gzip
+function _archive_using_gzip(archivefile, inputpath, extension, opt)
+
+    -- find gzip
+    local gzip = find_tool("gzip")
+    if not gzip then
+        return false
+    end
+
+    -- init argv
+    local argv = {"-k", "-c", archivefile}
+    if not option.get("verbose") then
+        table.insert(argv, "-q")
+    end
+    local compress = opt.compress
+    if compress then
+        if compress == "fastest" then
+            table.insert(argv, "-1")
+        elseif compress == "faster" then
+            table.insert(argv, "-3")
+        elseif compress == "better" then
+            table.insert(argv, "-7")
+        elseif compress == "best" then
+            table.insert(argv, "-9")
+        end
+    end
+    if opt.recurse then
+        table.insert(argv, "-r")
+    end
+    table.insert(argv, inputpath)
+
+    -- archive it
+    os.vrunv(gzip.program, argv, {stdout = archivefile, curdir = opt.curdir})
+    return true
+end
+
+-- archive archivefile using tar
+function _archive_using_tar(archivefile, inputpath, extension, opt)
+
+    -- find tar
+    local tar = find_tool("tar")
+    if not tar then
+        return false
+    end
+
+    -- with compress? e.g. .tar.xz
+    local compress = false
+    local archivefile_tar
+    if extension ~= ".tar" then
+        if is_host("windows") then
+            return false
+        else
+            compress = true
+            archivefile_tar = path.join(path.directory(archivefile), path.basename(archivefile))
+        end
+    end
+
+    -- init argv
+    local argv = {}
+    if compress then
+        table.insert(argv, "-a")
+    end
+    if option.get("verbose") then
+        table.insert(argv, "-cvf")
+    else
+        table.insert(argv, "-cf")
+    end
+    table.insert(argv, archivefile_tar and archivefile_tar or archivefile)
+    if opt.excludes then
+        for _, exclude in ipairs(opt.excludes) do
+            table.insert(argv, "--exclude=")
+            table.insert(argv, exclude)
+        end
+    end
+    if opt.includes then
+        for _, include in ipairs(opt.includes) do
+            table.insert(argv, "--include=")
+            table.insert(argv, include)
+        end
+    end
+    if not opt.recurse then
+        table.insert(argv, "-n")
+    end
+    table.insert(argv, inputpath)
+
+    -- archive it
+    os.vrunv(tar.program, argv, {curdir = opt.curdir})
+    if archivefile_tar and os.isfile(archivefile_tar) then
+        _archive_tarfile(archivefile, archivefile_tar, opt)
+        os.rm(archivefile_tar)
+    end
+    return true
+end
+
 -- archive archive file using archivers
-function _archive(archivefile, inputdir, extension, archivers, opt)
+function _archive(archivefile, inputpath, extension, archivers, opt)
     for _, archive in ipairs(archivers) do
-        if archive(archivefile, inputdir, extension, opt) then
+        if archive(archivefile, inputpath, extension, opt) then
             return true
         end
     end
     return false
 end
 
+-- only archive tar file
+function _archive_tarfile(archivefile, tarfile, opt)
+    local archivers = {
+        [".xz"]         = {_archive_using_xz}
+    ,   [".gz"]         = {_archive_using_gzip}
+    }
+    local extension = opt.extension or path.extension(archivefile)
+    return _archive(archivefile, tarfile, extension, archivers[extension], opt)
+end
+
 -- archive archive file
 --
 -- @param archivefile   the archive file. e.g. *.tar.gz, *.zip, *.7z, *.tar.bz2, ..
--- @param inputdir      the input directory
+-- @param inputpath     the input file or directory
 -- @param options       the options, e.g.. {curdir = "/tmp", recurse = true, compress = "fastest|faster|default|better|best", includes = {"*/dir/*"}, excludes = {"*/dir/*", "dir/*"}}
 --
-function main(archivefile, inputdir, opt)
+function main(archivefile, inputpath, opt)
 
-    -- init inputdir
-    inputdir = inputdir or os.curdir()
+    -- init inputpath
+    inputpath = inputpath or os.curdir()
 
     -- init options
     opt = opt or {}
@@ -189,18 +293,15 @@ function main(archivefile, inputdir, opt)
         [".zip"]        = {_archive_using_zip}
     ,   [".7z"]         = {_archive_using_7z}
     ,   [".xz"]         = {_archive_using_xz}
-        --[[
     ,   [".gz"]         = {_archive_using_gzip}
-    ,   [".bz2"]        = {_archive_using_bzip2}
     ,   [".tar"]        = {_archive_using_tar}
     ,   [".tar.gz"]     = {_archive_using_tar, _archive_using_gzip}
     ,   [".tar.xz"]     = {_archive_using_tar, _archive_using_xz}
-    ,   [".tar.bz2"]    = {_archive_using_tar, _archive_using_bzip2}]]
     }
 
     -- get extension
     local extension = opt.extension or get_archive_extension(archivefile)
 
     -- archive it
-    return _archive(archivefile, inputdir, extension, archivers[extension], opt)
+    return _archive(archivefile, inputpath, extension, archivers[extension], opt)
 end
