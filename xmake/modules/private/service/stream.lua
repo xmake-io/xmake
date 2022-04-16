@@ -115,8 +115,8 @@ end
 function stream:send_string(str)
     local buff = self._BUFF
     local size = #str
-    buff:u16be_set(1, size)
-    if self:send(buff, 1, 2) then
+    buff:u32be_set(1, size)
+    if self:send(buff, 1, 4) then
         return self:send(bytes(str), 1, size)
     end
 end
@@ -127,8 +127,8 @@ function stream:send_file(filepath)
     -- send size
     local buff = self._BUFF
     local size = os.filesize(filepath)
-    buff:u16be_set(1, size)
-    if not self:send(buff, 1, 2) then
+    buff:u32be_set(1, size)
+    if not self:send(buff, 1, 4) then
         return
     end
 
@@ -153,7 +153,7 @@ end
 
 -- recv the given bytes
 function stream:recv(buff, size)
-    assert(size <= buff:size())
+    assert(size <= buff:size(), "too large size(%d)", size)
 
     -- read data from cache first
     local buffsize = 0
@@ -211,11 +211,11 @@ function stream:recv(buff, size)
     end
 end
 
--- recv u16be
-function stream:recv_u16be()
-    local data = self:recv(self._BUFF, 2)
+-- recv u32be
+function stream:recv_u32be()
+    local data = self:recv(self._BUFF, 4)
     if data then
-        return data:u16be(1)
+        return data:u32be(1)
     end
 end
 
@@ -241,7 +241,7 @@ end
 
 -- recv string
 function stream:recv_string()
-    local size = self:recv_u16be()
+    local size = self:recv_u32be()
     if size then
         local data = self:recv(self._BUFF, size)
         if data then
@@ -252,7 +252,7 @@ end
 
 -- recv file
 function stream:recv_file(filepath)
-    local size = self:recv_u16be()
+    local size = self:recv_u32be()
     if size then
         local buff = self._BUFF
         local recv = 0
