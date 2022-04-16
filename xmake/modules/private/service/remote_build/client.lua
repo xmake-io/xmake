@@ -77,7 +77,7 @@ function remote_build_client:connect()
     end
     local addr = self:addr()
     local port = self:port()
-    local sock = socket.connect(addr, port)
+    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local ok = false
     local errors
@@ -124,7 +124,7 @@ function remote_build_client:disconnect()
     end
     local addr = self:addr()
     local port = self:port()
-    local sock = socket.connect(addr, port)
+    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -160,7 +160,7 @@ function remote_build_client:sync()
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = socket.connect(addr, port)
+    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -222,22 +222,20 @@ function remote_build_client:clean()
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = socket.connect(addr, port)
+    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local errors
     local ok = false
     print("%s: clean files in %s:%d ..", self, addr, port)
-    if sock then
-        local stream = socket_stream(sock)
-        if stream:send_msg(message.new_clean(session_id)) and stream:flush() then
-            local msg = stream:recv_msg()
-            if msg then
-                vprint(msg:body())
-                if msg:success() then
-                    ok = true
-                else
-                    errors = msg:errors()
-                end
+    local stream = socket_stream(sock)
+    if stream:send_msg(message.new_clean(session_id)) and stream:flush() then
+        local msg = stream:recv_msg()
+        if msg then
+            vprint(msg:body())
+            if msg:success() then
+                ok = true
+            else
+                errors = msg:errors()
             end
         end
     end
@@ -253,7 +251,7 @@ function remote_build_client:runcmd(program, argv)
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = socket.connect(addr, port)
+    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -261,41 +259,39 @@ function remote_build_client:runcmd(program, argv)
     local command = os.args(table.join(program, argv))
     local leftstr = ""
     cprint("%s: run ${bright}%s${clear} in %s:%d ..", self, command, addr, port)
-    if sock then
-        local stream = socket_stream(sock)
-        if stream:send_msg(message.new_runcmd(session_id, program, argv)) and stream:flush() then
-            local stdin_opt = {stop = false}
-            scheduler.co_start(self._read_stdin, self, stream, stdin_opt)
-            while true do
-                local msg = stream:recv_msg()
-                if msg then
-                    if msg:is_data() then
-                        local data = stream:recv(buff, msg:body().size)
-                        if data then
-                            leftstr = leftstr .. data:str()
-                            local pos = leftstr:lastof("\n", true)
-                            if pos then
-                                cprint(leftstr:sub(1, pos - 1))
-                                leftstr = leftstr:sub(pos + 1)
-                            end
-                        else
-                            errors = string.format("recv output data(%d) failed!", msg:body().size)
-                            break
+    local stream = socket_stream(sock)
+    if stream:send_msg(message.new_runcmd(session_id, program, argv)) and stream:flush() then
+        local stdin_opt = {stop = false}
+        scheduler.co_start(self._read_stdin, self, stream, stdin_opt)
+        while true do
+            local msg = stream:recv_msg()
+            if msg then
+                if msg:is_data() then
+                    local data = stream:recv(buff, msg:body().size)
+                    if data then
+                        leftstr = leftstr .. data:str()
+                        local pos = leftstr:lastof("\n", true)
+                        if pos then
+                            cprint(leftstr:sub(1, pos - 1))
+                            leftstr = leftstr:sub(pos + 1)
                         end
                     else
-                        if msg:success() then
-                            ok = true
-                        else
-                            errors = msg:errors()
-                        end
+                        errors = string.format("recv output data(%d) failed!", msg:body().size)
                         break
                     end
                 else
+                    if msg:success() then
+                        ok = true
+                    else
+                        errors = msg:errors()
+                    end
                     break
                 end
+            else
+                break
             end
-            stdin_opt.stop = true
         end
+        stdin_opt.stop = true
     end
     if #leftstr > 0 then
         cprint(leftstr)
