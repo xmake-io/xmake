@@ -26,23 +26,12 @@ import("private.service.service")
 import("private.service.remote_build.environment")
 
 function main(opt)
-    opt = opt or {}
 
-    -- enter a working directory
-    local workdir = path.join(os.tmpdir(), "service")
-    if not os.isdir(workdir) then
-        os.mkdir(workdir)
-        os.cd(workdir)
-        os.vrunv("xmake", {"create", "-P", "."})
-    else
-        os.cd(workdir)
-    end
-    project.chdir(workdir)
-
-    -- enter environment
-    environment.enter()
+    -- check environment
+    environment.check(true)
 
     -- start service
+    opt = opt or {}
     if opt.daemon then
         local argv = {"lua"}
         if option.get("verbose") then

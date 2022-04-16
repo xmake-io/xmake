@@ -53,8 +53,8 @@ function remote_build_client:init()
         raise("we need enter a project directory with xmake.lua first!")
     end
 
-    -- enter git environment
-    environment.enter()
+    -- check environment
+    environment.check(false)
 end
 
 -- get class

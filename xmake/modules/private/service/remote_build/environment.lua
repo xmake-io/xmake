@@ -20,42 +20,23 @@
 
 -- imports
 import("lib.detect.find_tool")
-import("private.action.require.impl.packagenv")
-import("private.action.require.impl.install_packages")
 
--- enter environment
+-- check environment
 --
--- ensure that we can find some basic tools: git, ...
+-- ensure that we can find some basic tools: zip, 7zip, ...
 --
 -- If these tools not exist, we will install it first.
 --
-function enter()
-
-    -- enter the environments of git
-    _g._OLDENVS = packagenv.enter("git")
-
-    -- git not found? install it first
-    local packages = {}
-    local git = find_tool("git")
-    if not git then
-        table.join2(packages, install_packages("git"))
-    end
-
-    -- enter the environments of installed packages
-    for _, instance in ipairs(packages) do
-        instance:envs_enter()
-    end
-
-    -- we need force to detect and flush detect cache after loading all environments
-    if not git then
-        find_tool("git", {force = true})
-    end
-end
-
--- leave environment
-function leave()
-    local oldenvs = _g._OLDENVS
-    if oldenvs then
-        os.setenvs(oldenvs)
+function check(server_side)
+    if server_side then
+        -- unzip or 7zip is necessary
+        if not find_tool("unzip") and not find_tool("7z") then
+            raise("unzip or 7zip not found! we need install it first")
+        end
+    else
+        -- zip or 7zip is necessary
+        if not find_tool("zip") and not find_tool("7z") then
+            raise("zip or 7zip not found! we need install it first")
+        end
     end
 end

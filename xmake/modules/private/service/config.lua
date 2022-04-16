@@ -34,8 +34,7 @@ function _generate_configfile()
                 workdir = path.join(servicedir, "remote_build")
             },
             client = {
-                connect = "127.0.0.1:90091",
-                user = "user" -- remote ssh user
+                connect = "127.0.0.1:90091"
             }
         }
     }
