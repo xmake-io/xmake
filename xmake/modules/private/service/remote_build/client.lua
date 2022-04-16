@@ -25,6 +25,7 @@ import("core.base.option")
 import("core.base.scheduler")
 import("core.project.config", {alias = "project_config"})
 import("lib.detect.find_tool")
+import("utils.archive.archive", {alias = "archive_files"})
 import("private.service.config")
 import("private.service.message")
 import("private.service.client")
@@ -163,42 +164,37 @@ function remote_build_client:sync()
     local session_id = self:session_id()
     local errors
     local ok = false
+    local diff_files
+    local archive_diff_file
     print("%s: sync files in %s:%d ..", self, addr, port)
     while sock do
         -- diff files
         local stream = socket_stream(sock)
-        local diff_files, diff_errs = self:_diff_files(stream)
+        diff_files, errors = self:_diff_files(stream)
         if not diff_files then
-            errors = diff_errs
             break
         end
 
         -- archive diff files
-        local archive_diff_file, archive_diff_errs = self:_archive_diff_files()
+        archive_diff_file, errors = self:_archive_diff_files(diff_files)
         if not archive_diff_file then
-            errors = archive_diff_errs
             break
         end
 
-        --[[
-        if stream:send_msg(message.new_sync(session_id)) and stream:flush() then
+        -- do sync
+        if stream:send_msg(message.new_sync(session_id, diff_files)) and stream:flush() then
             local msg = stream:recv_msg()
             if msg and msg:success() then
                 vprint(msg:body())
-                if stream:send_msg(message.new_sync(session_id)) and stream:flush() then
-                    msg = stream:recv_msg()
-                    if msg and msg:success() then
-                        ok = true
-                    elseif msg then
-                        errors = msg:errors()
-                    end
-                end
+                ok = true
             elseif msg then
                 errors = msg:errors()
             end
-        end]]
-        ok = true
+        end
         break
+    end
+    if archive_diff_file then
+        os.tryrm(archive_diff_file)
     end
     if ok then
         print("%s: sync files ok!", self)
@@ -378,7 +374,22 @@ end
 
 -- archive diff files
 function remote_build_client:_archive_diff_files(diff_files)
-    return ""
+    vprint("archiving files ..")
+    local archivefile = os.tmpfile() .. ".zip"
+    local archivedir = path.directory(archivefile)
+    if not os.isdir(archivedir) then
+        os.mkdir(archivedir)
+    end
+    local filelist = {}
+    for _, fileitem in ipairs(diff_files.inserted) do
+        table.insert(filelist, fileitem)
+    end
+    for _, fileitem in ipairs(diff_files.modified) do
+        table.insert(filelist, fileitem)
+    end
+    archive_files(archivefile, filelist, {curdir = self:projectdir()})
+    vprint("archive file ok, %s", archivefile)
+    return archivefile
 end
 
 -- read stdin data

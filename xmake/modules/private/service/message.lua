@@ -154,10 +154,11 @@ function new_diff(session_id, manifest)
 end
 
 -- new sync message
-function new_sync(session_id)
+function new_sync(session_id, manifest)
     return _new({
         code = message.CODE_SYNC,
-        session_id = session_id
+        session_id = session_id,
+        manifest = manifest
     })
 end
 

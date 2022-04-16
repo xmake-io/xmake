@@ -109,6 +109,7 @@ end
 -- sync files
 function session:sync(respmsg)
     local body = respmsg:body()
+    local manifest = body.manifest
     vprint("%s: %s sync files in %s ..", self, self:sourcedir())
     vprint("%s: %s sync files ok", self)
 end
