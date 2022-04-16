@@ -88,6 +88,7 @@ function filesync:snapshot()
     if ignorefiles then
         ignorefiles = "|" .. table.concat(ignorefiles, "|")
     end
+    local count = 0
     for _, filepath in ipairs(os.files(path.join(rootdir, "**" .. ignorefiles))) do
         local fileitem = path.relative(filepath, rootdir)
         if fileitem then
@@ -98,11 +99,12 @@ function filesync:snapshot()
             else
                 manifest[fileitem] = manifest_info
             end
+            count = count + 1
         end
     end
     self._MANIFEST = manifest
     self:manifest_save()
-    return manifest
+    return manifest, count
 end
 
 -- update file

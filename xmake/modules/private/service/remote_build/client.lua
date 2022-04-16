@@ -168,6 +168,7 @@ function remote_build_client:sync()
     local archive_diff_file
     print("%s: sync files in %s:%d ..", self, addr, port)
     while sock do
+
         -- diff files
         local stream = socket_stream(sock)
         diff_files, errors = self:_diff_files(stream)
@@ -180,12 +181,14 @@ function remote_build_client:sync()
         end
 
         -- archive diff files
+        print("Archiving files ..")
         archive_diff_file, errors = self:_archive_diff_files(diff_files)
         if not archive_diff_file or not os.isfile(archive_diff_file) then
             break
         end
 
         -- do sync
+        cprint("Uploading files with ${bright}%d${clear} bytes ..", os.filesize(archive_diff_file))
         local send_ok = false
         if stream:send_msg(message.new_sync(session_id, diff_files)) and stream:flush() then
             if stream:send_file(archive_diff_file) and stream:flush() then
@@ -356,35 +359,50 @@ end
 -- diff server files
 function remote_build_client:_diff_files(stream)
     assert(self:is_connected(), "%s: has been not connected!", self)
+    print("Scanning files ..")
     local filesync = self:_filesync()
-    local manifest = filesync:snapshot()
+    local manifest, filecount = filesync:snapshot()
     local session_id = self:session_id()
+    local count = 0
     local result, errors
+    cprint("Comparing ${bright}%d${clear} files ..", filecount)
     if stream:send_msg(message.new_diff(session_id, manifest)) and stream:flush() then
         local msg = stream:recv_msg()
         if msg and msg:success() then
             result = msg:body().manifest
-            if result and option.get("verbose") then
+            if result then
                 for _, fileitem in ipairs(result.inserted) do
-                    vprint("[+]: %s", fileitem)
+                    if count < 8 then
+                        cprint("    ${green}[+]: ${clear}%s", fileitem)
+                        count = count + 1
+                    end
                 end
                 for _, fileitem in ipairs(result.modified) do
-                    vprint("[*]: %s", fileitem)
+                    if count < 8 then
+                        cprint("    ${yellow}[*]: ${clear}%s", fileitem)
+                        count = count + 1
+                    end
                 end
                 for _, fileitem in ipairs(result.removed) do
-                    vprint("[-]: %s", fileitem)
+                    if count < 8 then
+                        cprint("    ${red}[-]: ${clear}%s", fileitem)
+                        count = count + 1
+                    end
+                end
+                if count >= 8 then
+                    print("    ...")
                 end
             end
         elseif msg then
             errors = msg:errors()
         end
     end
+    cprint("${bright}%d${clear} files has been changed!", count)
     return result, errors
 end
 
 -- archive diff files
 function remote_build_client:_archive_diff_files(diff_files)
-    vprint("archiving files ..")
     local archivefile = os.tmpfile() .. ".zip"
     local archivedir = path.directory(archivefile)
     if not os.isdir(archivedir) then
@@ -401,7 +419,6 @@ function remote_build_client:_archive_diff_files(diff_files)
     if not ok then
         return nil, "archive fileds failed!"
     end
-    vprint("archive files ok, size: %s", os.filesize(archivefile))
     return archivefile
 end
 
