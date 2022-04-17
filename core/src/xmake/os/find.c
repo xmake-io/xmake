@@ -60,75 +60,81 @@ static tb_long_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
     // trace
     tb_trace_d("path[%c]: %s", info->type == TB_FILE_TYPE_DIRECTORY? 'd' : 'f', path);
 
-    // find file or directory?
-    tb_size_t match = (mode == 1)? TB_FILE_TYPE_DIRECTORY : ((mode == 0)? TB_FILE_TYPE_FILE : (TB_FILE_TYPE_FILE | TB_FILE_TYPE_DIRECTORY));
-    if (info->type & match)
+    // we can ignore it directly if this path is file, but we need directory
+    tb_size_t needtype = (mode == 1)? TB_FILE_TYPE_DIRECTORY : ((mode == 0)? TB_FILE_TYPE_FILE : (TB_FILE_TYPE_FILE | TB_FILE_TYPE_DIRECTORY));
+    if (info->type == TB_FILE_TYPE_FILE && needtype == TB_FILE_TYPE_DIRECTORY)
+        return TB_DIRECTORY_WALK_CODE_CONTINUE;
+
+    // do path:match(pattern)
+    lua_getfield(lua, -1, "match");
+    lua_pushstring(lua, path);
+    lua_pushstring(lua, pattern);
+    if (lua_pcall(lua, 2, 1, 0))
     {
-        // do path:match(pattern)
-        lua_getfield(lua, -1, "match");
-        lua_pushstring(lua, path);
-        lua_pushstring(lua, pattern);
-        if (lua_pcall(lua, 2, 1, 0))
-        {
-            // trace
-            tb_printf("error: call string.match(%s, %s) failed: %s!\n", path, pattern, lua_tostring(lua, -1));
-            return TB_DIRECTORY_WALK_CODE_END;
-        }
+        // trace
+        tb_printf("error: call string.match(%s, %s) failed: %s!\n", path, pattern, lua_tostring(lua, -1));
+        return TB_DIRECTORY_WALK_CODE_END;
+    }
 
-        // match ok?
-        if (lua_isstring(lua, -1) && !tb_strcmp(path, lua_tostring(lua, -1)))
+    // match ok?
+    tb_bool_t matched = tb_false;
+    tb_bool_t skip_recursion = tb_false;
+    if (lua_isstring(lua, -1) && !tb_strcmp(path, lua_tostring(lua, -1)))
+    {
+        // exists excludes?
+        tb_bool_t excluded = tb_false;
+        if (lua_istable(lua, 5))
         {
-            // exists excludes?
-            tb_bool_t excluded = tb_false;
-            if (lua_istable(lua, 5))
+            // the root directory
+            size_t              rootlen = 0;
+            tb_char_t const*    rootdir = luaL_checklstring(lua, 1, &rootlen);
+            tb_assert_and_check_return_val(rootdir && rootlen, TB_DIRECTORY_WALK_CODE_END);
+
+            // check
+            tb_assert(!tb_strncmp(path, rootdir, rootlen));
+            tb_assert(rootlen + 1 <= tb_strlen(path));
+
+            // skip the rootdir if not "."
+            if (tb_strcmp(rootdir, "."))
+                path += rootlen + 1;
+
+            // exclude paths
+            tb_int_t i = 0;
+            tb_int_t count = (tb_int_t)lua_objlen(lua, 5);
+            for (i = 0; i < count && !excluded; i++)
             {
-                // the root directory
-                size_t              rootlen = 0;
-                tb_char_t const*    rootdir = luaL_checklstring(lua, 1, &rootlen);
-                tb_assert_and_check_return_val(rootdir && rootlen, TB_DIRECTORY_WALK_CODE_END);
-
-                // check
-                tb_assert(!tb_strncmp(path, rootdir, rootlen));
-                tb_assert(rootlen + 1 <= tb_strlen(path));
-
-                // skip the rootdir if not "."
-                if (tb_strcmp(rootdir, "."))
-                    path += rootlen + 1;
-
-                // exclude paths
-                tb_int_t i = 0;
-                tb_int_t count = (tb_int_t)lua_objlen(lua, 5);
-                for (i = 0; i < count && !excluded; i++)
+                // get exclude
+                lua_rawgeti(lua, 5, i + 1);
+                tb_char_t const* exclude = lua_tostring(lua, -1);
+                if (exclude)
                 {
-                    // get exclude
-                    lua_rawgeti(lua, 5, i + 1);
-                    tb_char_t const* exclude = lua_tostring(lua, -1);
-                    if (exclude)
+                    // do path:match(exclude)
+                    lua_getfield(lua, -3, "match");
+                    lua_pushstring(lua, path);
+                    lua_pushstring(lua, exclude);
+                    if (lua_pcall(lua, 2, 1, 0))
                     {
-                        // do path:match(exclude)
-                        lua_getfield(lua, -3, "match");
-                        lua_pushstring(lua, path);
-                        lua_pushstring(lua, exclude);
-                        if (lua_pcall(lua, 2, 1, 0))
-                        {
-                            // trace
-                            tb_printf("error: call string.match(%s, %s) failed: %s!\n", path, exclude, lua_tostring(lua, -1));
-                        }
-
-                        // matched?
-                        excluded = lua_isstring(lua, -1) && !tb_strcmp(path, lua_tostring(lua, -1));
-
-                        // pop the match result
-                        lua_pop(lua, 1);
+                        // trace
+                        tb_printf("error: call string.match(%s, %s) failed: %s!\n", path, exclude, lua_tostring(lua, -1));
                     }
 
-                    // pop exclude
+                    // matched?
+                    excluded = lua_isstring(lua, -1) && !tb_strcmp(path, lua_tostring(lua, -1));
+
+                    // pop the match result
                     lua_pop(lua, 1);
                 }
-            }
 
-            // does not exclude this path?
-            if (!excluded)
+                // pop exclude
+                lua_pop(lua, 1);
+            }
+        }
+
+        // does not exclude this path?
+        if (!excluded)
+        {
+            // match file or directory?
+            if (info->type & needtype)
             {
                 // save it
                 lua_rawseti(lua, -3, (tb_int_t)(++*pcount));
@@ -147,14 +153,14 @@ static tb_long_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
                     lua_pop(lua, 1);
                     if (!is_continue) return TB_DIRECTORY_WALK_CODE_END;
                 }
+                matched = tb_true;
             }
-            // pop this return value
-            else lua_pop(lua, 1);
         }
-        // pop this return value
-        else lua_pop(lua, 1);
+        // we do not recurse sub-directories if this path has been excluded and it's directory
+        else skip_recursion = tb_true;
     }
-    return TB_DIRECTORY_WALK_CODE_CONTINUE;
+    if (!matched) lua_pop(lua, 1);
+    return skip_recursion? TB_DIRECTORY_WALK_CODE_SKIP_RECURSION : TB_DIRECTORY_WALK_CODE_CONTINUE;
 }
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
