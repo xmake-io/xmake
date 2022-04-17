@@ -17,6 +17,8 @@
 * Improve tools/autoconf,cmake to support toolchain switching.
 * [#2221](https://github.com/xmake-io/xmake/pull/2221): Improve registry api to support unicode
 * [#2225](https://github.com/xmake-io/xmake/issues/2225): Support to parse import dependencies for protobuf
+* [#2265](https://github.com/xmake-io/xmake/issues/2265): Sort CMakeLists.txt
+* Speed up `os.files`
 
 ### Bugs fixed
 
@@ -1256,6 +1258,8 @@
 * 改进 tools/autoconf,cmake 去更好地支持工具链切换
 * [#2221](https://github.com/xmake-io/xmake/pull/2221): 改进注册表 api 去支持 unicode
 * [#2225](https://github.com/xmake-io/xmake/issues/2225): 增加对 protobuf 的依赖分析和构建支持
+* [#2265](https://github.com/xmake-io/xmake/issues/2265): 排序 CMakeLists.txt
+* 改进 os.files 的文件遍历速度
 
 ### Bugs 修复
 
