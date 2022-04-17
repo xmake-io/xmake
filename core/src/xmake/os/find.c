@@ -33,19 +33,19 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* info, tb_cpointer_t priv)
+static tb_long_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* info, tb_cpointer_t priv)
 {
     // check
     tb_value_ref_t tuple = (tb_value_ref_t)priv;
-    tb_assert_and_check_return_val(path && info && tuple, tb_false);
+    tb_assert_and_check_return_val(path && info && tuple, TB_DIRECTORY_WALK_CODE_END);
 
     // the lua
     lua_State* lua = (lua_State*)tuple[0].ptr;
-    tb_assert_and_check_return_val(lua, tb_false);
+    tb_assert_and_check_return_val(lua, TB_DIRECTORY_WALK_CODE_END);
 
     // the pattern
     tb_char_t const* pattern = (tb_char_t const*)tuple[1].cstr;
-    tb_assert_and_check_return_val(pattern, tb_false);
+    tb_assert_and_check_return_val(pattern, TB_DIRECTORY_WALK_CODE_END);
 
     // remove ./ for path
     if (path[0] == '.' && (path[1] == '/' || path[1] == '\\'))
@@ -64,7 +64,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
     tb_size_t match = (mode == 1)? TB_FILE_TYPE_DIRECTORY : ((mode == 0)? TB_FILE_TYPE_FILE : (TB_FILE_TYPE_FILE | TB_FILE_TYPE_DIRECTORY));
     if (info->type & match)
     {
-        // done path:match(pattern)
+        // do path:match(pattern)
         lua_getfield(lua, -1, "match");
         lua_pushstring(lua, path);
         lua_pushstring(lua, pattern);
@@ -72,9 +72,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
         {
             // trace
             tb_printf("error: call string.match(%s, %s) failed: %s!\n", path, pattern, lua_tostring(lua, -1));
-
-            // failed
-            return tb_false;
+            return TB_DIRECTORY_WALK_CODE_END;
         }
 
         // match ok?
@@ -87,7 +85,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
                 // the root directory
                 size_t              rootlen = 0;
                 tb_char_t const*    rootdir = luaL_checklstring(lua, 1, &rootlen);
-                tb_assert_and_check_return_val(rootdir && rootlen, tb_false);
+                tb_assert_and_check_return_val(rootdir && rootlen, TB_DIRECTORY_WALK_CODE_END);
 
                 // check
                 tb_assert(!tb_strncmp(path, rootdir, rootlen));
@@ -107,7 +105,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
                     tb_char_t const* exclude = lua_tostring(lua, -1);
                     if (exclude)
                     {
-                        // done path:match(exclude)
+                        // do path:match(exclude)
                         lua_getfield(lua, -3, "match");
                         lua_pushstring(lua, path);
                         lua_pushstring(lua, exclude);
@@ -147,7 +145,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
                     // is continue?
                     tb_bool_t is_continue = lua_toboolean(lua, -1);
                     lua_pop(lua, 1);
-                    if (!is_continue) return tb_false;
+                    if (!is_continue) return TB_DIRECTORY_WALK_CODE_END;
                 }
             }
             // pop this return value
@@ -156,9 +154,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
         // pop this return value
         else lua_pop(lua, 1);
     }
-
-    // continue
-    return tb_true;
+    return TB_DIRECTORY_WALK_CODE_CONTINUE;
 }
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -188,7 +184,7 @@ tb_int_t xm_os_find(lua_State* lua)
     // get string package
     lua_getglobal(lua, "string");
 
-    // done os.find(root, name)
+    // do os.find(root, name)
     tb_value_t tuple[4];
     tuple[0].ptr    = lua;
     tuple[1].cstr   = pattern;
@@ -201,7 +197,5 @@ tb_int_t xm_os_find(lua_State* lua)
 
     // return count
     lua_pushinteger(lua, tuple[3].ul);
-
-    // ok
     return 2;
 }
