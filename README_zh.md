@@ -304,6 +304,7 @@ armclang      ARM Compiler Version 6 of Keil MDK
 * 增量编译支持，头文件依赖自动分析
 * 工具链的快速切换、定制化支持
 * 丰富的扩展模块支持
+* 远程编译支持
 
 ## 工程类型
 

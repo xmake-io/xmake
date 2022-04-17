@@ -297,6 +297,7 @@ armclang      ARM Compiler Version 6 of Keil MDK
 * Incremental compilation support with automatic analysis of header files
 * Quick toolchain management
 * A large number of expansion modules
+* Remote compilation support
 
 ## Supported Projects
 
