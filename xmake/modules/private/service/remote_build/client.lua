@@ -124,7 +124,7 @@ function remote_build_client:disconnect()
     end
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = socket.connect(addr, port)
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -142,6 +142,10 @@ function remote_build_client:disconnect()
                 end
             end
         end
+    else
+        -- server unreachable, but we still disconnect it.
+        wprint("%s: server unreachable!", self)
+        ok = true
     end
     if ok then
         print("%s: disconnected!", self)
