@@ -64,7 +64,7 @@ end
 -- get enabled languages from targets
 function _get_project_languages(targets)
     local languages = {}
-    for _, target in pairs(targets) do
+    for _, target in table.orderpairs(targets) do
         for _, sourcekind in ipairs(target:sourcekinds()) do
             if     sourcekind == "cc"  then table.insert(languages, "C")
             elseif sourcekind == "cxx" then table.insert(languages, "CXX")
@@ -109,7 +109,7 @@ function _add_project(cmakelists, languages)
     end
     local project_name = project.name()
     if not project_name then
-        for _, target in pairs(project.targets()) do
+        for _, target in table.orderpairs(project.targets()) do
             project_name = target:name()
             break
         end
@@ -191,7 +191,7 @@ end
 function _add_target_sources(cmakelists, target)
     local has_cuda = false
     cmakelists:print("target_sources(%s PRIVATE", target:name())
-    for _, sourcebatch in pairs(target:sourcebatches()) do
+    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
         local sourcekind = sourcebatch.sourcekind
         if sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "cu" then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -681,7 +681,7 @@ end
 -- add target custom commands
 function _add_target_custom_commands(cmakelists, target)
     _add_target_custom_commands_for_target(cmakelists, target, "before")
-    for _, sourcebatch in pairs(target:sourcebatches()) do
+    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
         local sourcekind = sourcebatch.sourcekind
         if sourcekind ~= "cc" and sourcekind ~= "cxx" and sourcekind ~= "as" then
             _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, "before")
@@ -793,7 +793,7 @@ function _generate_cmakelists(cmakelists)
     _add_project(cmakelists, _get_project_languages(project.targets()))
 
     -- add targets
-    for _, target in pairs(project.targets()) do
+    for _, target in table.orderpairs(project.targets()) do
         _add_target(cmakelists, target)
     end
 end
