@@ -360,7 +360,7 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
     elseif #package:versions() > 0 then -- select version?
         version, source = try { function () return semver.select(require_version, package:versions()) end }
     end
-    if not version and has_giturl and not semver.is_valid(require_version) then -- select branch?
+    if not version and has_giturl then -- select branch?
         if require_version and #require_version == 40 and require_version:match("%w+") then
             version, source = require_version, "commit"
         else
