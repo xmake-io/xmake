@@ -87,8 +87,8 @@ function sandbox_core_project_config.readonly(name)
 end
 
 -- load the configuration
-function sandbox_core_project_config.load(filepath)
-    return config.load(filepath)
+function sandbox_core_project_config.load(filepath, opt)
+    return config.load(filepath, opt)
 end
 
 -- save the configuration
