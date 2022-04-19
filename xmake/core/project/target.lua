@@ -2039,6 +2039,7 @@ function target.apis()
         ,   "target.set_strip"
         ,   "target.set_rules"
         ,   "target.set_group"
+        ,   "target.add_filegroups"
         ,   "target.set_version"
         ,   "target.set_license"
         ,   "target.set_enabled"

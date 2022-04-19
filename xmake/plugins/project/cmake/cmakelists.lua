@@ -215,6 +215,27 @@ function _add_target_sources(cmakelists, target)
     end
 end
 
+-- add target source groups
+function _add_target_source_groups(cmakelists, target)
+    --[[TODO
+    local filegroups = target:get("filegroups")
+    for _, filegroup in ipairs(filegroups) do
+        local files = target:extraconf("filegroups", filegroup, "files") or "**"
+        local mode = target:extraconf("filegroups", filegroup, "mode")
+        if mode and mode == "plain" then
+            mode = ""
+        else
+            mode = "TREE "
+        end
+        local rootdir = target:extraconf("filegroups", filegroup, "rootdir")
+        assert(rootdir, "please set root directory, e.g. add_filegroups(%s, {rootdir = 'xxx'})", filegroup)
+        for _, filepattern in ipairs(files) do
+            cmakelists:print("source_group(%s%s %s REGULAR_EXPRESSION %s)",
+                mode, _get_unix_path(filegroup), _get_unix_path(rootdir), _get_unix_path(filepattern))
+        end
+    end]]
+end
+
 -- add target precompilied header
 function _add_target_precompiled_header(cmakelists, target)
     local precompiled_header = target:get("pcheader") or target:get("pcxxheader")
@@ -781,6 +802,9 @@ function _add_target(cmakelists, target)
 
     -- add target sources
     _add_target_sources(cmakelists, target)
+
+    -- add target source groups
+    _add_target_source_groups(cmakelists, target)
 
     -- end
     cmakelists:print("")

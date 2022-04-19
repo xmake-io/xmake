@@ -340,6 +340,57 @@ function _config_targets()
     end
 end
 
+-- make filter
+function _make_filter(filepath, target, vcxprojdir)
+    local filter
+    local filegroups = target.filegroups
+    if filegroups then
+        -- @see https://github.com/xmake-io/xmake/issues/2282
+        filepath = path.absolute(filepath)
+        local scriptdir = target.absscriptdir
+        local filegroups_extraconf = target.filegroups_extraconf or {}
+        for _, filegroup in ipairs(filegroups) do
+            local extraconf = filegroups_extraconf[filegroup] or {}
+            local rootdir = extraconf.rootdir
+            assert(rootdir, "please set root directory, e.g. add_filegroups(%s, {rootdir = 'xxx'})", filegroup)
+            if not path.is_absolute(rootdir) then
+                rootdir = path.absolute(rootdir, scriptdir)
+            end
+            local fileitem = path.relative(filepath, rootdir)
+            local files = extraconf.files or "**"
+            local mode = extraconf.mode
+            for _, filepattern in ipairs(files) do
+                filepattern = path.pattern(path.translate(filepattern))
+                if fileitem:match(filepattern) then
+                    if mode == "plain" then
+                        filter = path.translate(filegroup)
+                    else
+                        -- file tree mode (default)
+                        filter = path.join(filegroup, path.directory(fileitem))
+                    end
+                    if filter and filter == '.' then
+                        filter = nil
+                    end
+                    break
+                end
+            end
+        end
+    end
+    if not filter then
+        -- use the default filter rule
+        filter = path.relative(path.absolute(path.directory(filepath)), vcxprojdir)
+        -- @see https://github.com/xmake-io/xmake/issues/2039
+        if filter then
+            filter = _strip_dotdirs(filter)
+        end
+        if filter and filter == '.' then
+            filter = nil
+        end
+    end
+    return filter
+end
+
+
 -- make vstudio project
 function main(outputdir, vsinfo)
 
@@ -458,6 +509,10 @@ function main(outputdir, vsinfo)
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
+                -- save file groups
+                _target.filegroups = target:get("filegroups")
+                _target.filegroups_extraconf = target:extraconf("filegroups")
+
                 -- save deps
                 _target.deps = table.unique(table.join(_target.deps or {}, table.keys(target:deps()), nil))
             end
@@ -472,10 +527,8 @@ function main(outputdir, vsinfo)
         target.sourcefiles = table.imap(target.sourcefiles, function(_, v) return path.relative(v, projectdir) end)
         target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, projectdir) end)
         for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
-            local dir = path.directory(path.relative(f, root))
+            local dir = _make_filter(f, target, root)
             local escaped_f = _escape(f)
-            -- @see https://github.com/xmake-io/xmake/issues/2039
-            dir = _strip_dotdirs(dir)
             target._paths[f] =
             {
                 -- @see https://github.com/xmake-io/xmake/issues/2077

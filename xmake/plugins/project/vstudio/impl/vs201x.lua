@@ -582,6 +582,10 @@ function make(outputdir, vsinfo)
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
+                -- save file groups
+                _target.filegroups = target:get("filegroups")
+                _target.filegroups_extraconf = target:extraconf("filegroups")
+
                 -- make target headers
                 _make_targetheaders(mode, arch, target, mode_idx == #vsinfo.modes and arch_idx == 2)
             end
