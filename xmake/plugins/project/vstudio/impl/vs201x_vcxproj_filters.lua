@@ -57,6 +57,7 @@ function _make_filter(filepath, target, vcxprojdir)
     local targetinst = assert(target.instance, "target instance not found!")
     local filegroups = targetinst:get("filegroups")
     if filegroups then
+        -- @see https://github.com/xmake-io/xmake/issues/2282
         filepath = path.absolute(filepath)
         local scriptdir = target.scriptdir
         for _, filegroup in ipairs(filegroups) do

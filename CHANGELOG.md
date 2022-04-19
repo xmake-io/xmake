@@ -9,6 +9,7 @@
 * [#2227](https://github.com/xmake-io/xmake/issues/2227): Improve cargo package with Cargo.toml file
 * Improve `add_requires` to support git commit as version
 * [#622](https://github.com/xmake-io/xmake/issues/622): Support remote compilation
+* [#2282](https://github.com/xmake-io/xmake/issues/2282): Add `add_filegroups` to support file group for vs/vsxmake/cmake generator
 
 ### Changes
 
@@ -1250,6 +1251,7 @@
 * [#2227](https://github.com/xmake-io/xmake/issues/2227): 改进 cargo 包，支持指定 Cargo.toml 文件
 * 改进 `add_requires` 支持 git command 作为版本
 * [#622](https://github.com/xmake-io/xmake/issues/622): 支持远程编译
+* [#2282](https://github.com/xmake-io/xmake/issues/2282): 添加 `add_filegroups` 接口为 vs/vsxmake/cmake generator 增加文件组支持
 
 ### 改进
 
