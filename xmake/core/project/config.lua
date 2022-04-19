@@ -135,9 +135,10 @@ end
 
 -- load the project configuration
 --
--- @param opt   {readonly = true}
+-- @param opt   {readonly = true, force = true}
 --
 function config.load(filepath, opt)
+    opt = opt or {}
     local configs, errors
     filepath = filepath or config.filepath()
     if os.isfile(filepath) then
@@ -151,7 +152,7 @@ function config.load(filepath, opt)
     local ok = false
     if configs then
         for name, value in pairs(configs) do
-            if config.get(name) == nil then
+            if config.get(name) == nil or opt.force then
                 config.set(name, value, opt)
                 ok = true
             end

@@ -307,7 +307,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
 
     -- override configuration from the options or cache
     local options_history = {}
-    if not option.get("clean") and not autogen and not option.get("import") then
+    if not option.get("clean") and not autogen then
         options_history = localcache.get("config", "options") or {}
         options = options or options_history
     end
@@ -325,7 +325,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     if importfile then
         assert(os.isfile(importfile), "%s not found!", importfile)
         -- we need use readonly, @see https://github.com/xmake-io/xmake/issues/2278
-        if config.load(importfile, {readonly = true}) then
+        if config.load(importfile, {force = true, readonly = true}) then
             options_changed = true
         end
     end
