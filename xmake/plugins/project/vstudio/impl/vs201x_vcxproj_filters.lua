@@ -51,24 +51,36 @@ function _make_tailer(filtersfile, vsinfo)
     filtersfile:leave("</Project>")
 end
 
+-- strip dot directories, e.g. ..\..\.. => ..
+-- @see https://github.com/xmake-io/xmake/issues/2039
+function _strip_dotdirs(dir)
+    local count
+    dir, count = dir:gsub("%.%.[\\/]%.%.", "..")
+    if count > 0 then
+        dir = _strip_dotdirs(dir)
+    end
+    return dir
+end
+
 -- make filter
 function _make_filter(filepath, target, vcxprojdir)
     local filter
-    local targetinst = assert(target.instance, "target instance not found!")
-    local filegroups = targetinst:get("filegroups")
+    local filegroups = target.filegroups
     if filegroups then
         -- @see https://github.com/xmake-io/xmake/issues/2282
         filepath = path.absolute(filepath)
         local scriptdir = target.scriptdir
+        local filegroups_extraconf = target.filegroups_extraconf or {}
         for _, filegroup in ipairs(filegroups) do
-            local rootdir = targetinst:extraconf("filegroups", filegroup, "rootdir")
+            local extraconf = filegroups_extraconf[filegroup] or {}
+            local rootdir = extraconf.rootdir
             assert(rootdir, "please set root directory, e.g. add_filegroups(%s, {rootdir = 'xxx'})", filegroup)
             if not path.is_absolute(rootdir) then
                 rootdir = path.absolute(rootdir, scriptdir)
             end
             local fileitem = path.relative(filepath, rootdir)
-            local files = targetinst:extraconf("filegroups", filegroup, "files") or "**"
-            local mode = targetinst:extraconf("filegroups", filegroup, "mode")
+            local files = extraconf.files or "**"
+            local mode = extraconf.mode
             for _, filepattern in ipairs(files) do
                 filepattern = path.pattern(path.translate(filepattern))
                 if fileitem:match(filepattern) then
@@ -89,6 +101,10 @@ function _make_filter(filepath, target, vcxprojdir)
     if not filter then
         -- use the default filter rule
         filter = path.relative(path.absolute(path.directory(filepath)), target.scriptdir or vcxprojdir)
+        -- @see https://github.com/xmake-io/xmake/issues/2039
+        if filter then
+            filter = _strip_dotdirs(filter)
+        end
         if filter and filter == '.' then
             filter = nil
         end
