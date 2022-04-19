@@ -576,6 +576,7 @@ function make(outputdir, vsinfo)
                 _target.kind = target:kind()
                 _target.scriptdir = target:scriptdir()
                 _target.info = _target.info or {}
+                _target.instance = target
                 table.insert(_target.info, _make_targetinfo(mode, arch, target, _target.project_dir))
 
                 -- save all sourcefiles and headerfiles

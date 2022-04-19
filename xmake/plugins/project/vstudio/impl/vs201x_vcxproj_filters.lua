@@ -53,16 +53,45 @@ end
 
 -- make filter
 function _make_filter(filepath, target, vcxprojdir)
-
-    -- make filter
-    local filter = path.relative(path.absolute(path.directory(filepath)), target.scriptdir or vcxprojdir)
-
-    -- is '.'? no filter
-    if filter and filter == '.' then
-        filter = nil
+    local filter
+    local targetinst = assert(target.instance, "target instance not found!")
+    local filegroups = targetinst:get("filegroups")
+    if filegroups then
+        filepath = path.absolute(filepath)
+        local scriptdir = target.scriptdir
+        for _, filegroup in ipairs(filegroups) do
+            local rootdir = targetinst:extraconf("filegroups", filegroup, "rootdir")
+            assert(rootdir, "please set root directory, e.g. add_filegroups(%s, {rootdir = 'xxx'})", filegroup)
+            if not path.is_absolute(rootdir) then
+                rootdir = path.absolute(rootdir, scriptdir)
+            end
+            local fileitem = path.relative(filepath, rootdir)
+            local files = targetinst:extraconf("filegroups", filegroup, "files") or "**"
+            local mode = targetinst:extraconf("filegroups", filegroup, "mode")
+            for _, filepattern in ipairs(files) do
+                filepattern = path.pattern(path.translate(filepattern))
+                if fileitem:match(filepattern) then
+                    if mode == "plain" then
+                        filter = path.translate(filegroup)
+                    else
+                        -- file tree mode (default)
+                        filter = path.join(filegroup, path.directory(fileitem))
+                    end
+                    if filter and filter == '.' then
+                        filter = nil
+                    end
+                    break
+                end
+            end
+        end
     end
-
-    -- ok?
+    if not filter then
+        -- use the default filter rule
+        filter = path.relative(path.absolute(path.directory(filepath)), target.scriptdir or vcxprojdir)
+        if filter and filter == '.' then
+            filter = nil
+        end
+    end
     return filter
 end
 
