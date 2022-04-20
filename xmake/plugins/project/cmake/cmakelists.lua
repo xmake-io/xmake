@@ -216,24 +216,50 @@ function _add_target_sources(cmakelists, target)
 end
 
 -- add target source groups
+-- @see https://github.com/xmake-io/xmake/issues/1149
 function _add_target_source_groups(cmakelists, target)
-    --[[TODO
     local filegroups = target:get("filegroups")
     for _, filegroup in ipairs(filegroups) do
         local files = target:extraconf("filegroups", filegroup, "files") or "**"
         local mode = target:extraconf("filegroups", filegroup, "mode")
-        if mode and mode == "plain" then
-            mode = ""
-        else
-            mode = "TREE "
-        end
         local rootdir = target:extraconf("filegroups", filegroup, "rootdir")
         assert(rootdir, "please set root directory, e.g. add_filegroups(%s, {rootdir = 'xxx'})", filegroup)
-        for _, filepattern in ipairs(files) do
-            cmakelists:print("source_group(%s%s %s REGULAR_EXPRESSION %s)",
-                mode, _get_unix_path(filegroup), _get_unix_path(rootdir), _get_unix_path(filepattern))
+        local sources = {}
+        local recurse_sources = {}
+        if path.is_absolute(rootdir) then
+            rootdir = _get_unix_path(rootdir)
+        else
+            rootdir = string.format("${CMAKE_CURRENT_SOURCE_DIR}/%s", _get_unix_path(rootdir))
         end
-    end]]
+        for _, filepattern in ipairs(files) do
+            if filepattern:find("**", 1, true) then
+                filepattern = filepattern:gsub("%*%*", "*")
+                table.insert(recurse_sources, _get_unix_path(path.join(rootdir, filepattern)))
+            else
+                table.insert(sources, _get_unix_path(path.join(rootdir, filepattern)))
+            end
+        end
+        if #sources > 0 then
+            cmakelists:print("FILE(GLOB %s_GROUP_SOURCE_LIST %s)", target:name(), table.concat(sources, " "))
+            if mode and mode == "plain" then
+                cmakelists:print("source_group(%s FILES ${%s_GROUP_SOURCE_LIST})",
+                    _get_unix_path(filegroup), target:name())
+            else
+                cmakelists:print("source_group(TREE %s PREFIX %s FILES ${%s_GROUP_SOURCE_LIST})",
+                    rootdir, _get_unix_path(filegroup), target:name())
+            end
+        end
+        if #recurse_sources > 0 then
+            cmakelists:print("FILE(GLOB_RECURSE %s_GROUP_RECURSE_SOURCE_LIST %s)", target:name(), table.concat(recurse_sources, " "))
+            if mode and mode == "plain" then
+                cmakelists:print("source_group(%s FILES ${%s_GROUP_RECURSE_SOURCE_LIST})",
+                    _get_unix_path(filegroup), target:name())
+            else
+                cmakelists:print("source_group(TREE %s PREFIX %s FILES ${%s_GROUP_RECURSE_SOURCE_LIST})",
+                    rootdir, _get_unix_path(filegroup), target:name())
+            end
+        end
+    end
 end
 
 -- add target precompilied header
