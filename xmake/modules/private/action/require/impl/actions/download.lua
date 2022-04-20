@@ -45,6 +45,11 @@ function _checkout(package, url, sourcedir, url_alias)
         git.clean({repodir = packagedir, force = true, all = true})
         -- reset the previous modified files
         git.reset({repodir = packagedir, hard = true})
+        -- clean and reset submodules
+        if os.isfile(path.join(packagedir, ".gitmodules")) then
+            git.submodule.clean({repodir = packagedir, force = true, all = true})
+            git.submodule.reset({repodir = packagedir, hard = true})
+        end
         tty.erase_line_to_start().cr()
         return
     end
@@ -54,6 +59,10 @@ function _checkout(package, url, sourcedir, url_alias)
     if localdir and os.isdir(localdir) then
         git.clean({repodir = localdir, force = true, all = true})
         git.reset({repodir = localdir, hard = true})
+        if os.isfile(path.join(localdir, ".gitmodules")) then
+            git.submodule.clean({repodir = localdir, force = true, all = true})
+            git.submodule.reset({repodir = localdir, hard = true})
+        end
         os.cp(localdir, packagedir)
         tty.erase_line_to_start().cr()
         return

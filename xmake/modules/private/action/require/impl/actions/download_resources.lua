@@ -44,6 +44,10 @@ function _checkout(package, resource_name, resource_url, resource_revision)
         git.clean({repodir = resourcedir, force = true, all = true})
         -- reset the previous modified files
         git.reset({repodir = resourcedir, hard = true})
+        if os.isfile(path.join(resourcedir, ".gitmodules")) then
+            git.submodule.clean({repodir = resourcedir, force = true, all = true})
+            git.submodule.reset({repodir = resourcedir, hard = true})
+        end
         return
     end
 
@@ -52,6 +56,10 @@ function _checkout(package, resource_name, resource_url, resource_revision)
     if localdir and os.isdir(localdir) then
         git.clean({repodir = localdir, force = true, all = true})
         git.reset({repodir = localdir, hard = true})
+        if os.isfile(path.join(localdir, ".gitmodules")) then
+            git.submodule.clean({repodir = localdir, force = true, all = true})
+            git.submodule.reset({repodir = localdir, hard = true})
+        end
         os.cp(localdir, resourcedir)
         return
     end
