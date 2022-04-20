@@ -305,6 +305,22 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
     end
 
+    -- merge options from the given import file
+    local importfile = option.get("import")
+    if importfile then
+        assert(os.isfile(importfile), "%s not found!", importfile)
+        -- we need use readonly, @see https://github.com/xmake-io/xmake/issues/2278
+        local import_configs = io.load(importfile)
+        if import_configs then
+            for name, value in pairs(import_configs) do
+                options = options or {}
+                if options[name] == nil then
+                    options[name] = value
+                end
+            end
+        end
+    end
+
     -- override configuration from the options or cache
     local options_history = {}
     if not option.get("clean") and not autogen then
@@ -312,22 +328,10 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         options = options or options_history
     end
     for name, value in pairs(options) do
-
         -- options is changed by argument options?
         options_changed = options_changed or options_history[name] ~= value
-
         -- @note override it and mark as readonly (highest priority)
         config.set(name, value, {readonly = true})
-    end
-
-    -- merge configuration from the given import file
-    local importfile = option.get("import")
-    if importfile then
-        assert(os.isfile(importfile), "%s not found!", importfile)
-        -- we need use readonly, @see https://github.com/xmake-io/xmake/issues/2278
-        if config.load(importfile, {force = true, readonly = true}) then
-            options_changed = true
-        end
     end
 
     -- merge the cached configuration
