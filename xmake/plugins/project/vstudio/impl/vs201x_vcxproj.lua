@@ -46,7 +46,7 @@ end
 function _check_cuda(target)
     local cuda
     for _, targetinfo in ipairs(target.info) do
-        if table.contains(targetinfo.sourcekinds, "cu") then
+        if targetinfo.sourcekinds and table.contains(targetinfo.sourcekinds, "cu") then
             cuda = find_cuda()
             break
         end

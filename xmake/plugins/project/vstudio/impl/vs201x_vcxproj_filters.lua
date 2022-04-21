@@ -85,10 +85,10 @@ function _make_filter(filepath, target, vcxprojdir)
                 filepattern = path.pattern(path.translate(filepattern))
                 if fileitem:match(filepattern) then
                     if mode == "plain" then
-                        filter = path.translate(filegroup)
+                        filter = path.normalize(filegroup)
                     else
                         -- file tree mode (default)
-                        filter = path.join(filegroup, path.directory(fileitem))
+                        filter = path.normalize(path.join(filegroup, path.directory(fileitem)))
                     end
                     if filter and filter == '.' then
                         filter = nil
