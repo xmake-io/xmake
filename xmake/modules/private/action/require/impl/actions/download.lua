@@ -159,12 +159,19 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
     end
 
     -- extract package file
-    os.rm(sourcedir .. ".tmp")
+    local sourcedir_tmp = sourcedir .. ".tmp"
+    os.rm(sourcedir_tmp)
     local extension = archive.extension(packagefile)
-    if archive.extract(packagefile, sourcedir .. ".tmp", {excludes = url_excludes}) then
-        -- move to source directory
+    if archive.extract(packagefile, sourcedir_tmp, {excludes = url_excludes}) then
+        -- move to source directory and we skip it to avoid long path issues on windows if only one root directory
         os.rm(sourcedir)
-        os.mv(sourcedir .. ".tmp", sourcedir)
+        local filedirs = os.filedirs(path.join(sourcedir_tmp, "*"))
+        if #filedirs == 1 and os.isdir(filedirs[1]) then
+            os.mv(filedirs[1], sourcedir)
+            os.rm(sourcedir_tmp)
+        else
+            os.mv(sourcedir_tmp, sourcedir)
+        end
     elseif extension and extension ~= "" then
         -- create an empty source directory if do not extract package file
         os.tryrm(sourcedir)
