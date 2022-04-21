@@ -580,6 +580,7 @@ function _get_packagekey(packagename, requireinfo, version)
     return _get_requirekey(requireinfo, {name = packagename,
                                          plat = requireinfo.plat,
                                          arch = requireinfo.arch,
+                                         kind = requireinfo.kind,
                                          version = version or requireinfo.version})
 end
 
@@ -990,6 +991,9 @@ function get_configs_str(package)
         end
         if requireinfo.arch then
             table.insert(configs, requireinfo.arch)
+        end
+        if requireinfo.kind then
+            table.insert(configs, requireinfo.kind)
         end
         for k, v in pairs(requireinfo.configs) do
             if type(v) == "boolean" then

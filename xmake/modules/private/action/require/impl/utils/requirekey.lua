@@ -31,6 +31,9 @@ function main(requireinfo, opt)
     if opt.arch then
         key = key .. "/" .. opt.arch
     end
+    if opt.kind then
+        key = key .. "/" .. opt.kind
+    end
     if opt.version then
         key = key .. "/" .. opt.version
     end
