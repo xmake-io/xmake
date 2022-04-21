@@ -238,8 +238,9 @@ function main(package)
         oldir = os.cd(sourcedir)
     elseif #package:urls() > 0 then
         -- only one root directory? skip it
+        local anchorfile = path.join(workdir, "source", "__sourceroot_anchor__.txt")
         local filedirs = os.filedirs(path.join(workdir, "source", "*"))
-        if #filedirs == 1 and os.isdir(filedirs[1]) then
+        if not os.isfile(anchorfile) and #filedirs == 1 and os.isdir(filedirs[1]) then
             oldir = os.cd(filedirs[1])
         else
             oldir = os.cd(path.join(workdir, "source"))

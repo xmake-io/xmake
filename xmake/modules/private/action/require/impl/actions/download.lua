@@ -168,6 +168,8 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
         local filedirs = os.filedirs(path.join(sourcedir_tmp, "*"))
         if #filedirs == 1 and os.isdir(filedirs[1]) then
             os.mv(filedirs[1], sourcedir)
+            -- we need anchor it to avoid expand it when installing package
+            io.writefile(path.join(sourcedir, "__sourceroot_anchor__.txt"), "")
             os.rm(sourcedir_tmp)
         else
             os.mv(sourcedir_tmp, sourcedir)
