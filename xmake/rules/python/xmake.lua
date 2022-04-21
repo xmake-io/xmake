@@ -40,4 +40,13 @@ rule("python.library")
             end
         end
     end)
+    after_build(function(target)
+        local targetfile = target:targetfile()
+        os.cp(targetfile, path.join("./", path.filename(targetfile)))
+        local setuptools = target:extraconf("rules", "python.library", "setuptools")
+        if setuptools then
+          print("python setup.py develop")
+          os.run("python setup.py develop")
+        end
+    end)
 
