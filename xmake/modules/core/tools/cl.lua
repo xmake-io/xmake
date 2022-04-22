@@ -189,6 +189,7 @@ function nf_vectorext(self, extension)
 end
 
 -- make the language flag
+-- clang-cl should also use it, @see https://github.com/xmake-io/xmake/issues/2211#issuecomment-1083322178
 function nf_language(self, stdname)
 
     -- the stdc maps
