@@ -175,7 +175,7 @@ function _check_targets(targetname, group_pattern)
 
     -- there are targets that have not yet been built?
     if #targetnames > 0 then
-        raise("please run `$xmake [target]` to build the following targets first:\n  -> " .. table.concat(targetnames, '\n  -> '))
+        raise("please run `$xmake build [target]` to build the following targets first:\n  -> " .. table.concat(targetnames, '\n  -> '))
     end
 end
 
