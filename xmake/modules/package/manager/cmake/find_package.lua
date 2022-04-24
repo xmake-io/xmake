@@ -142,7 +142,6 @@ function _find_package(cmake, name, opt)
     if os.isfile(linkfile) then
         local linkdata = io.readfile(linkfile)
         if linkdata then
-            print(flagsdata)
             if option.get("diagnosis") then
                 vprint(linkdata)
             end
