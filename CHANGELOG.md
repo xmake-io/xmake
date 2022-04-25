@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.6.5
+
 ### New features
 
 * [#2138](https://github.com/xmake-io/xmake/issues/2138): Support template package
@@ -1243,6 +1245,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.6.5
 
 ### 新特性
 
