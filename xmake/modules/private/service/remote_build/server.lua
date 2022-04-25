@@ -70,14 +70,17 @@ function remote_build_server:_on_handle(stream, msg)
             elseif msg:is_disconnect() then
                 session:close()
                 self._SESSIONS[session_id] = nil
-            elseif msg:is_diff() then
-                session:diff(respmsg)
-            elseif msg:is_sync() then
-                session:sync(respmsg)
-            elseif msg:is_clean() then
-                session:clean()
-            elseif msg:is_runcmd() then
-                session:runcmd(respmsg)
+            else
+                assert(session:is_connected(), "session has not been connected!")
+                if msg:is_diff() then
+                    session:diff(respmsg)
+                elseif msg:is_sync() then
+                    session:sync(respmsg)
+                elseif msg:is_clean() then
+                    session:clean()
+                elseif msg:is_runcmd() then
+                    session:runcmd(respmsg)
+                end
             end
             return true
         end,

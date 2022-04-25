@@ -456,6 +456,10 @@ end
 
 -- is connected? we cannot depend on client:init when run action
 function is_connected()
+    -- the current process is in service? we cannot enable it
+    if os.getenv("XMAKE_IN_SERVICE") then
+        return false
+    end
     local projectdir = os.projectdir()
     local projectfile = os.projectfile()
     if projectfile and os.isfile(projectfile) and projectdir then

@@ -47,11 +47,31 @@ end
 
 -- open session
 function session:open()
+    if self:is_connected() then
+        return
+    end
+
+    -- ensure source directory
     self:_ensure_sourcedir()
+
+    -- update status
+    local status = self:status()
+    status.connected = true
+    status.session_id = self:id()
+    self:status_save()
 end
 
 -- close session
 function session:close()
+    if not self:is_connected() then
+        return
+    end
+
+    -- update status
+    local status = self:status()
+    status.connected = false
+    status.session_id = self:id()
+    self:status_save()
 end
 
 -- set stream
@@ -184,7 +204,7 @@ function session:runcmd(respmsg)
     scheduler.co_start(self._read_pipe, self, stdout_rpipeopt)
 
     -- run program
-    os.execv(program, argv, {curdir = self:sourcedir(), stdout = stdout_wpipe, stdin = stdin_rpipe})
+    os.execv(program, argv, {curdir = self:sourcedir(), stdout = stdout_wpipe, stdin = stdin_rpipe, envs = {XMAKE_IN_SERVICE = "true"}})
 
     -- stop it
     stdin_wpipeopt.stop = true
@@ -201,6 +221,35 @@ function session:workdir()
         workdir = path.join(global.directory(), "service", "remote_build")
     end
     return path.join(workdir, "sessons", self:id())
+end
+
+-- is connected?
+function session:is_connected()
+    return self:status().connected
+end
+
+-- get the status
+function session:status()
+    local status = self._STATUS
+    local statusfile = self:statusfile()
+    if not status then
+        if os.isfile(statusfile) then
+            status = io.load(statusfile)
+        end
+        status = status or {}
+        self._STATUS = status
+    end
+    return status
+end
+
+-- save status
+function session:status_save()
+    io.save(self:statusfile(), self:status())
+end
+
+-- get status file
+function session:statusfile()
+    return path.join(self:workdir(), "status.txt")
 end
 
 -- get sourcedir directory
