@@ -450,6 +450,7 @@ function _add_target_languages(cmakelists, target)
     ,   cxx14 = "cxx_std_14"
     ,   cxx17 = "cxx_std_17"
     ,   cxx20 = "cxx_std_20"
+    ,   cxx23 = "cxx_std_23"
     }
     local languages = target:get("languages")
     if languages then
