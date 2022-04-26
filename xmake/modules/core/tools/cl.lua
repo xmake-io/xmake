@@ -224,6 +224,8 @@ function nf_language(self, stdname)
         ,   gnuxx20     = {"-std:c++20", "-std:c++latest"}
         ,   cxx2a       = {"-std:c++20", "-std:c++latest"}
         ,   gnuxx2a     = {"-std:c++20", "-std:c++latest"}
+        ,   cxx23       = {"-std:c++23", "-std:c++latest"}
+        ,   gnuxx23     = {"-std:c++23", "-std:c++latest"}
         ,   cxxlatest   = "-std:c++latest"
         ,   gnuxxlatest = "-std:c++latest"
         }
