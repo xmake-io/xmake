@@ -876,8 +876,11 @@ function _instance:toolchain(name)
     local toolchains_map = self._TOOLCHAINS_MAP
     if toolchains_map == nil then
         toolchains_map = {}
-        for _, toolchain_inst in ipairs(self:toolchains()) do
-            toolchains_map[toolchain_inst:name()] = toolchain_inst
+        local toolchains = self:toolchains()
+        if toolchains then
+            for _, toolchain_inst in ipairs(toolchains) do
+                toolchains_map[toolchain_inst:name()] = toolchain_inst
+            end
         end
         self._TOOLCHAINS_MAP = toolchains_map
     end
