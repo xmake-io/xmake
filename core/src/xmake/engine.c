@@ -183,6 +183,10 @@ tb_int_t xm_path_is_absolute(lua_State* lua);
 tb_int_t xm_hash_uuid4(lua_State* lua);
 tb_int_t xm_hash_sha256(lua_State* lua);
 
+// the base64 functions
+tb_int_t xm_base64_encode(lua_State* lua);
+tb_int_t xm_base64_decode(lua_State* lua);
+
 // the windows functions
 #ifdef TB_CONFIG_OS_WINDOWS
 tb_int_t xm_winos_cp_info(lua_State* lua);
@@ -385,6 +389,14 @@ static luaL_Reg const g_hash_functions[] =
     { "uuid4",          xm_hash_uuid4  }
 ,   { "sha256",         xm_hash_sha256 }
 ,   { tb_null,          tb_null        }
+};
+
+// the base64 functions
+static luaL_Reg const g_base64_functions[] =
+{
+    { "encode",         xm_base64_encode }
+,   { "decode",         xm_base64_decode }
+,   { tb_null,          tb_null          }
 };
 
 // the string functions
@@ -931,6 +943,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
         // bind hash functions
         xm_lua_register(engine->lua, "hash", g_hash_functions);
+
+        // bind base64 functions
+        xm_lua_register(engine->lua, "base64", g_base64_functions);
 
         // bind string functions
         xm_lua_register(engine->lua, "string", g_string_functions);

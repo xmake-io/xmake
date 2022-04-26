@@ -99,6 +99,8 @@ xmake_C_FILES 			+= \
 						path/is_absolute \
 						hash/uuid4 \
 						hash/sha256 \
+						base64/encode \
+						base64/decode \
 						string/trim \
 						string/split \
 						string/lastof \
