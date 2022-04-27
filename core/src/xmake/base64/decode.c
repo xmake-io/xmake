@@ -48,9 +48,13 @@ tb_int_t xm_base64_decode(lua_State* lua)
     if (size < sizeof(buff))
     {
         tb_size_t real = tb_base64_decode(cstr, size, buff, sizeof(buff));
-        if (real > 0) lua_pushlstring(lua, (tb_char_t const*)buff, (tb_int_t)real);
-        else lua_pushnil(lua);
+        if (real > 0)
+        {
+            lua_pushlstring(lua, (tb_char_t const*)buff, (tb_int_t)real);
+            return 1;
+        }
     }
-    else lua_pushnil(lua);
-    return 1;
+    lua_pushnil(lua);
+    lua_pushstring(lua, "buffer is too small");
+    return 2;
 }

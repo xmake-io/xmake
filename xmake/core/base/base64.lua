@@ -24,6 +24,7 @@ local base64  = base64 or {}
 -- load modules
 local io    = require("base/io")
 local utils = require("base/utils")
+local bytes = require("base/bytes")
 
 -- save metatable and builtin functions
 base64._encode  = base64._encode or base64.encode
@@ -40,7 +41,7 @@ function base64.decode(base64str)
     if not data then
         return nil, string.format("decode base64 failed")
     end
-    return data
+    return bytes(data)
 end
 
 -- encode data to the base64 string
@@ -50,9 +51,14 @@ end
 -- @return              the base64 string
 --
 function base64.encode(data)
-    local base64str = base64._encode(data)
+    if type(data) == "string" then
+        data = bytes(data)
+    end
+    local datasize = data:size()
+    local dataaddr = data:caddr()
+    local base64str, errors = base64._encode(dataaddr, datasize)
     if not base64str then
-        return nil, string.format("encode base64 failed")
+        return nil, errors or string.format("encode base64 failed")
     end
     return base64str
 end
