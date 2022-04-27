@@ -37,7 +37,10 @@ local session = session or object()
 -- init session
 function session:init(session_id)
     self._ID = session_id
-    self._FILESYNC = new_filesync(self:sourcedir(), path.join(self:workdir(), "manifest.txt"))
+    local filesync = new_filesync(self:sourcedir(), path.join(self:workdir(), "manifest.txt"))
+    filesync:ignorefiles_add(".git/**")
+    filesync:ignorefiles_add(".xmake/**")
+    self._FILESYNC = filesync
 end
 
 -- get session id

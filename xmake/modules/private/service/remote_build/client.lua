@@ -58,6 +58,7 @@ function remote_build_client:init()
     -- init filesync
     local filesync = new_filesync(self:projectdir(), path.join(self:workdir(), "manifest.txt"))
     filesync:ignorefiles_add(".git/**")
+    filesync:ignorefiles_add(".xmake/**")
     self._FILESYNC = filesync
 
     -- check environment
