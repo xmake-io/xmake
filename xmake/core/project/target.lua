@@ -1975,6 +1975,7 @@ function _instance:tool(toolkind)
     return toolchain.tool(self:toolchains(), toolkind, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
                                                         before_get = function()
         -- get program from set_toolchain/set_tools (deprecated)
+        local toolname
         local program = self:get("toolset." .. toolkind) or self:get("toolchain." .. toolkind)
         if not program then
             local tools = self:get("tools") -- TODO: deprecated
@@ -1986,7 +1987,23 @@ function _instance:tool(toolkind)
         if not program and not self:get("toolchains") then
             program = config.get(toolkind)
         end
-        return program
+
+        -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
+        -- https://github.com/xmake-io/xmake/issues/1361
+        if program and not toolname then
+            local pos = program:find('@', 1, true)
+            if pos then
+                toolname = program:sub(1, pos - 1)
+                program = program:sub(pos + 1)
+            end
+        end
+
+        -- find toolname
+        if program and not toolname then
+            local find_toolname = sandbox_module.import("lib.detect.find_toolname", {anonymous = true})
+            toolname = find_toolname(program)
+        end
+        return program, toolname
     end})
 end
 
