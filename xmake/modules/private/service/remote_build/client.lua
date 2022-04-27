@@ -421,7 +421,7 @@ function remote_build_client:_archive_diff_files(diff_files)
     end
     local ok = archive_files(archivefile, filelist, {curdir = self:projectdir()})
     if not ok then
-        return nil, "archive fileds failed!"
+        return nil, "archive files failed!"
     end
     return archivefile
 end
