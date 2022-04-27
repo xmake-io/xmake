@@ -535,7 +535,7 @@ function main(outputdir, vsinfo)
                 path = path.is_absolute(escaped_f) and escaped_f or "$(XmakeProjectDir)\\" .. escaped_f,
                 dir = _escape(dir)
             }
-            while dir ~= "." do
+            while dir and dir ~= "." do
                 if not dirs[dir] then
                     dirs[dir] =
                     {
