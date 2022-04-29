@@ -86,7 +86,7 @@ function _get_configs(package, configs)
             end
         end
     else
-        local names = {"ndk", "ndk_sdkver", "vs", "mingw", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
+        local names = {"ndk", "ndk_sdkver", "vs", "vs_toolset", "mingw", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
         for _, name in ipairs(names) do
             local value = get_config(name)
             if value ~= nil then
