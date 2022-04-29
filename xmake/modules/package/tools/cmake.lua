@@ -225,6 +225,19 @@ function _get_shflags(package, opt)
     end
 end
 
+-- get vs toolset
+function _get_vs_toolset(package)
+    local toolset_ver = nil
+    local vs_toolset = _get_msvc(package):config("vs_toolset") or config.get("vs_toolset")
+    if vs_toolset then
+        local verinfo = vs_toolset:split('%.')
+        if #verinfo >= 2 then
+            toolset_ver = "v" .. verinfo[1] .. (verinfo[2]:sub(1, 1) or "0")
+        end
+    end
+    return toolset_ver
+end
+
 -- get configs for generic
 function _get_configs_for_generic(package, configs, opt)
     local cflags = _get_cflags(package, opt)
@@ -261,6 +274,10 @@ function _get_configs_for_windows(package, configs, opt)
             table.insert(configs, "Win32")
         else
             table.insert(configs, "x64")
+        end
+        local vs_toolset = _get_vs_toolset(package)
+        if vs_toolset then
+            table.insert(configs, "-DCMAKE_GENERATOR_TOOLSET=" .. vs_toolset)
         end
     end
     -- we maybe need patch `cmake_policy(SET CMP0091 NEW)` to enable this argument for some packages
