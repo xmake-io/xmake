@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* [#2309](https://github.com/xmake-io/xmake/issues/2309): Support user authorization for remote compilation
+
 ## v2.6.5
 
 ### New features
@@ -1245,6 +1249,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#2309](https://github.com/xmake-io/xmake/issues/2309): 远程编译支持用户授权验证
 
 ## v2.6.5
 
