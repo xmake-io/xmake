@@ -30,10 +30,10 @@ function _generate_configfile()
         logfile = path.join(servicedir, "logs.txt"),
         server = {
             known_hosts = {
-                "127.0.0.1"
+            --    "127.0.0.1"
             },
             auths = {
-                "root:123456"
+            --    "a7b198c3ddf355c59e9221d13305314b4b05130a2967dc76f66a59759bcc3250"
             }
         },
         remote_build = {
@@ -42,12 +42,12 @@ function _generate_configfile()
                 workdir = path.join(servicedir, "remote_build"),
             },
             client = {
-                connect = "127.0.0.1:9691",
-                user = "root"
+                -- with authorization: "root@127.0.0.1:9691"
+                connect = "127.0.0.1:9691"
             }
         }
     }
-    io.save(filepath, configs, {orderkeys = true})
+    save(configs)
 end
 
 -- get config file path
@@ -74,7 +74,7 @@ function get(name)
     return value
 end
 
--- load config
+-- load configs
 function load()
     assert(not _g.configs, "config has been loaded!")
     local filepath = configfile()
@@ -83,4 +83,10 @@ function load()
     end
     assert(os.isfile(filepath), "%s not found!", filepath)
     _g.configs = io.load(filepath)
+end
+
+-- save configs
+function save(configs)
+    local filepath = configfile()
+    io.save(filepath, configs, {orderkeys = true})
 end

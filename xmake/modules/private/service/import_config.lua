@@ -21,8 +21,10 @@
 -- imports
 import("core.base.option")
 import("private.service.service")
+import("private.service.config")
 
-function main()
-    -- TODO
+function main(filepath)
+    os.cp(filepath, config.configfile())
+    print("import %s ok!", filepath)
 end
 

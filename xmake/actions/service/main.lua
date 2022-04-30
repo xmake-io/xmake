@@ -30,6 +30,8 @@ import("private.service.disconnect_service")
 import("private.service.clean_files")
 import("private.service.sync_files")
 import("private.service.import_config")
+import("private.service.add_user")
+import("private.service.rm_user")
 import("private.service.show_logs")
 import("private.service.show_status")
 
@@ -52,7 +54,11 @@ function main()
     elseif option.get("sync") then
         sync_files()
     elseif option.get("config") then
-        import_config()
+        import_config(option.get("config"))
+    elseif option.get("add-user") then
+        add_user(option.get("add-user"))
+    elseif option.get("rm-user") then
+        rm_user(option.get("rm-user"))
     elseif option.get("logs") then
         show_logs()
     elseif option.get("status") then

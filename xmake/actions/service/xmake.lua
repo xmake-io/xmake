@@ -36,6 +36,12 @@ task("service")
                 {nil, "config",     "kv", nil, "Import the configuration file. (default: ~/.xmake/service.conf)",
                                                "e.g.",
                                                "    - xmake service --config=/tmp/config.lua"                },
+                {nil, "add-user",   "kv", nil, "Add user in the server.",
+                                               "e.g.",
+                                               "    - xmake service --add-user=root"                         },
+                {nil, "rm-user",    "kv", nil, "Remove user in the server.",
+                                               "e.g.",
+                                               "    - xmake service --rm-user=root"                          },
                 {nil, "logs",       "k",  nil, "Show service logs if the daemon service has been started."   },
                 {nil, "status",     "k",  nil, "Show service status if the daemon service has been started." }
              }}

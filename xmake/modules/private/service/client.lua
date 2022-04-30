@@ -40,17 +40,20 @@ function client:address_set(address)
         self._ADDR = "127.0.0.1"
         self._PORT = splitinfo[1]
     end
+    local addr = self._ADDR
+    if addr and addr:find("@", 1, true) then
+        splitinfo = addr:split('@', {plain = true})
+        if #splitinfo == 2 then
+            self._USER = splitinfo[1]
+            self._ADDR = splitinfo[2]
+        end
+    end
     assert(self._ADDR and self._PORT, "invalid client address!")
 end
 
 -- get user name
 function client:user()
     return self._USER
-end
-
--- set user name
-function client:user_set(user)
-    self._USER = user
 end
 
 -- get the ip address

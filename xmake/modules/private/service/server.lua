@@ -81,18 +81,12 @@ end
 
 -- set authorizations
 function server:auths_set(auths)
-    if auths then
-        local result = hashset.new()
-        for _, auth in ipairs(auths) do
-            result:insert(base64.encode(auth))
-        end
-        self._AUTHS = result
-    end
+    self._AUTHS = auths and hashset.from(auths) or hashset.new()
 end
 
 -- we need verify user
 function server:need_verfiy()
-    return self:auths() ~= nil
+    return not self:auths():empty()
 end
 
 -- verify user

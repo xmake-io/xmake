@@ -46,10 +46,6 @@ function remote_build_client:init()
     local address = assert(config.get("remote_build.client.connect"), "config(remote_build.client.connect): not found!")
     super.address_set(self, address)
 
-    -- init user
-    local user = config.get("remote_build.client.user")
-    super.user_set(self, user)
-
     -- get project directory
     local projectdir = os.projectdir()
     local projectfile = os.projectfile()
@@ -94,6 +90,7 @@ function remote_build_client:connect()
 
         -- compute user authorization
         auth = base64.encode(self:user() .. ":" .. pass)
+        auth = hash.sha256(bytes(auth))
     end
 
     -- do connect
