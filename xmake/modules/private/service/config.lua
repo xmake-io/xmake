@@ -29,7 +29,7 @@ function _generate_configfile()
     assert(not _g.configs and not os.isfile(filepath))
     local servicedir = path.join(global.directory(), "service")
     local initauth = base64.encode("root:000000")
-    initauth = hash.sha256(bytes(initauth))
+    initauth = hash.md5(bytes(initauth))
     local configs = {
         logfile = path.join(servicedir, "logs.txt"),
         server = {

@@ -37,7 +37,7 @@ function main(user)
 
     -- compute user authorization
     local auth = base64.encode(user .. ":" .. pass)
-    auth = hash.sha256(bytes(auth))
+    auth = hash.md5(bytes(auth))
 
     -- save to configs
     local configs = assert(config.configs(), "configs not found!")

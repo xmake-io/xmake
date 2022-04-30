@@ -90,7 +90,7 @@ function remote_build_client:connect()
 
         -- compute user authorization
         auth = base64.encode(self:user() .. ":" .. pass)
-        auth = hash.sha256(bytes(auth))
+        auth = hash.md5(bytes(auth))
     end
 
     -- do connect
