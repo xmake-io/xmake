@@ -20,12 +20,16 @@
 
 -- imports
 import("core.base.global")
+import("core.base.base64")
+import("core.base.bytes")
 
 -- generate a default config file
 function _generate_configfile()
     local filepath = configfile()
     assert(not _g.configs and not os.isfile(filepath))
     local servicedir = path.join(global.directory(), "service")
+    local initauth = base64.encode("root:000000")
+    initauth = hash.sha256(bytes(initauth))
     local configs = {
         logfile = path.join(servicedir, "logs.txt"),
         server = {
@@ -33,7 +37,8 @@ function _generate_configfile()
             --    "127.0.0.1"
             },
             auths = {
-            --    "a7b198c3ddf355c59e9221d13305314b4b05130a2967dc76f66a59759bcc3250"
+                -- initialized user and password, root:000000
+                initauth
             }
         },
         remote_build = {
@@ -42,8 +47,9 @@ function _generate_configfile()
                 workdir = path.join(servicedir, "remote_build"),
             },
             client = {
-                -- with authorization: "root@127.0.0.1:9691"
-                connect = "127.0.0.1:9691"
+                -- without authorization: "127.0.0.1:9691"
+                -- with authorization: "user@127.0.0.1:9691"
+                connect = "root@127.0.0.1:9691"
             }
         }
     }
