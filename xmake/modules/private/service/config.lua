@@ -30,6 +30,8 @@ function _generate_configfile()
     local servicedir = path.join(global.directory(), "service")
     local initauth = base64.encode("root:000000")
     initauth = hash.md5(bytes(initauth))
+    print("generating the default config file to %s ..", filepath)
+    print("the default user(root) and password(000000) are generated!")
     local configs = {
         logfile = path.join(servicedir, "logs.txt"),
         server = {
