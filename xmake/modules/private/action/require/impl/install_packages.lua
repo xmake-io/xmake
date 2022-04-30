@@ -540,6 +540,9 @@ function main(requires, opt)
     _sort_packages_for_installdeps(packages, installdeps, order_packages)
     packages = table.unique(order_packages)
 
+    -- save terminal mode for stdout
+    local term_mode_stdout = tty.term_mode("stdout")
+
     -- fetch and register packages (with system) from local first
     runjobs("fetch_packages", function (index)
         local instance = packages[index]
@@ -551,6 +554,15 @@ function main(requires, opt)
             instance:fetch()
             os.setenvs(oldenvs)
         end
+
+        -- fix terminal mode to avoid some subprocess to change it
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/1924
+        -- https://github.com/xmake-io/xmake/issues/2329
+        if term_mode_stdout ~= tty.term_mode("stdout") then
+            tty.term_mode("stdout", term_mode_stdout)
+        end
+
     end, {total = #packages,
           comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4,
           isolate = true})
