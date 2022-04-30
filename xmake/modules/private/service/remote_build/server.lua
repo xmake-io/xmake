@@ -41,10 +41,6 @@ function remote_build_server:init(daemon)
     local address = assert(config.get("remote_build.server.listen"), "config(remote_build.server.listen): not found!")
     super.address_set(self, address)
 
-    -- init authorizations
-    local auths = config.get("remote_build.server.auths")
-    super.auths_set(self, auths)
-
     -- init handler
     super.handler_set(self, self._on_handle)
 

@@ -28,16 +28,18 @@ function _generate_configfile()
     local servicedir = path.join(global.directory(), "service")
     local configs = {
         logfile = path.join(servicedir, "logs.txt"),
+        server = {
+            known_hosts = {
+                "127.0.0.1"
+            },
+            auths = {
+                "root:123456"
+            }
+        },
         remote_build = {
             server = {
                 listen = "0.0.0.0:9691",
                 workdir = path.join(servicedir, "remote_build"),
-                known_hosts = {
-                    "127.0.0.1"
-                },
-                auths = {
-                    "root:123456"
-                }
             },
             client = {
                 connect = "127.0.0.1:9691",

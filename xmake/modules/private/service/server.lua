@@ -25,6 +25,7 @@ import("core.base.base64")
 import("core.base.hashset")
 import("core.base.socket")
 import("core.base.scheduler")
+import("private.service.config")
 import("private.service.message")
 import("private.service.stream", {alias = "socket_stream"})
 
@@ -34,6 +35,10 @@ local server = server or object()
 -- init server
 function server:init(daemon)
     self._DAEMON = daemon
+
+    -- init authorizations
+    local auths = config.get("server.auths")
+    self:auths_set(auths)
 end
 
 -- is daemon?
