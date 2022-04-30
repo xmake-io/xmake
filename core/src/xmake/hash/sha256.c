@@ -38,6 +38,36 @@ tb_int_t xm_hash_sha256(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+    // is bytes? get data and size
+    if (lua_isnumber(lua, 1) && lua_isnumber(lua, 2))
+    {
+        tb_byte_t const* data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tonumber(lua, 1);
+        tb_size_t size = (tb_size_t)lua_tonumber(lua, 2);
+        if (!data || !size)
+        {
+            lua_pushnil(lua);
+            lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
+            return 2;
+        }
+
+        // compute sha256
+        tb_sha_t sha;
+        tb_byte_t buffer[32];
+        tb_sha_init(&sha, TB_SHA_MODE_SHA2_256);
+        tb_sha_spak(&sha, data, size);
+        tb_sha_exit(&sha, buffer, sizeof(buffer));
+
+        // make sha256 string
+        tb_size_t i = 0;
+        tb_size_t n = sha.digest_len << 2;
+        tb_char_t s[256] = {0};
+        for (i = 0; i < n; ++i) tb_snprintf(s + (i << 1), 3, "%02x", buffer[i]);
+
+        // save result
+        lua_pushstring(lua, s);
+        return 1;
+    }
+
     // get the filename
     tb_char_t const* filename = luaL_checkstring(lua, 1);
     tb_check_return_val(filename, 0);
@@ -97,10 +127,6 @@ tb_int_t xm_hash_sha256(lua_State* lua)
         // exit stream
         tb_stream_exit(stream);
     }
-
-    // failed? return nil
     if (!ok) lua_pushnil(lua);
-
-    // ok
     return 1;
 }

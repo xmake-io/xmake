@@ -18,36 +18,29 @@
 -- @file        hash.lua
 --
 
+-- define module: hash
+local hash  = hash or {}
+
 -- load modules
-local hash  = require("base/hash")
-local raise = require("sandbox/modules/raise")
+local io    = require("base/io")
+local utils = require("base/utils")
+local bytes = require("base/bytes")
 
--- define module
-local sandbox_hash = sandbox_hash or {}
-
--- make a new uuid
-function sandbox_hash.uuid(name)
-    return sandbox_hash.uuid4(name)
-end
-
--- make a new uuid v4
-function sandbox_hash.uuid4(name)
-    local uuid = hash.uuid4(name)
-    if not uuid then
-        raise("cannot make uuid %s", name)
-    end
-    return uuid
-end
+-- save metatable and builtin functions
+hash._sha256  = hash._sha256 or hash.sha256
 
 -- make sha256 from the given file or data
-function sandbox_hash.sha256(file_or_data)
-    local sha256, errors = hash.sha256(file_or_data)
-    if not sha256 then
-        raise("cannot make sha256 for %s, %s", file_or_data, errors or "unknown errors")
+function hash.sha256(file_or_data)
+    local hashstr, errors
+    if bytes.instance_of(file_or_data) then
+        local datasize = file_or_data:size()
+        local dataaddr = file_or_data:caddr()
+        hashstr, errors = hash._sha256(dataaddr, datasize)
+    else
+        hashstr, errors = hash._sha256(file_or_data)
     end
-    return sha256
+    return hashstr, errors
 end
 
--- return module
-return sandbox_hash
-
+-- return module: hash
+return hash
