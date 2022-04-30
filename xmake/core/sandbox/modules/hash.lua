@@ -48,6 +48,15 @@ function sandbox_hash.sha256(file_or_data)
     return sha256
 end
 
+-- make md5 from the given file or data
+function sandbox_hash.md5(file_or_data)
+    local md5, errors = hash.md5(file_or_data)
+    if not md5 then
+        raise("cannot make md5 for %s, %s", file_or_data, errors or "unknown errors")
+    end
+    return md5
+end
+
 -- return module
 return sandbox_hash
 

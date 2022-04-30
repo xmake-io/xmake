@@ -27,7 +27,21 @@ local utils = require("base/utils")
 local bytes = require("base/bytes")
 
 -- save metatable and builtin functions
+hash._md5     = hash._md5 or hash.md5
 hash._sha256  = hash._sha256 or hash.sha256
+
+-- make md5 from the given file or data
+function hash.md5(file_or_data)
+    local hashstr, errors
+    if bytes.instance_of(file_or_data) then
+        local datasize = file_or_data:size()
+        local dataaddr = file_or_data:caddr()
+        hashstr, errors = hash._md5(dataaddr, datasize)
+    else
+        hashstr, errors = hash._md5(file_or_data)
+    end
+    return hashstr, errors
+end
 
 -- make sha256 from the given file or data
 function hash.sha256(file_or_data)
