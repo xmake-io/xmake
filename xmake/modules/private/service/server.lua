@@ -22,6 +22,7 @@
 import("core.base.object")
 import("core.base.bytes")
 import("core.base.base64")
+import("core.base.hashset")
 import("core.base.socket")
 import("core.base.scheduler")
 import("private.service.message")
@@ -68,21 +69,25 @@ function server:port()
     return self._PORT
 end
 
--- set users
-function server:users_set(users)
-    self._USERS = users
+-- get authorizations
+function server:auths()
+    return self._AUTHS
 end
 
--- get the user information
-function server:user(name)
-    if name and self._USERS then
-        return self._USERS[name]
+-- set authorizations
+function server:auths_set(auths)
+    if auths then
+        local result = hashset.new()
+        for _, auth in ipairs(auths) do
+            result:insert(base64.encode(auth))
+        end
+        self._AUTHS = result
     end
 end
 
 -- we need verify user
 function server:need_verfiy()
-    return self._USERS ~= nil
+    return self:auths() ~= nil
 end
 
 -- verify user
@@ -91,26 +96,9 @@ function server:verify_user(auth)
         return false, "client has no authorization, this remote server need user authorization!"
     end
 
-    -- decode authorization
-    local authstr = base64.decode(auth)
-    local splitinfo = authstr:str():split(":")
-    if not splitinfo or #splitinfo ~= 2 then
-        return false, "invalid authorization!"
-    end
-
-    -- get client user and password
-    local client_user = splitinfo[1]
-    local client_pass = splitinfo[2]
-    if not client_user or not client_pass then
-        return false, "invalid user and password!"
-    end
-
-    -- get server user and password
-    local server_userinfo = self:user(client_user)
-    assert(server_userinfo, "user(%s) is unknown!", client_user)
-    local server_pass = server_userinfo.pass
-    if client_pass ~= server_pass then
-        return false, "password is incorrect!"
+    -- check authorization
+    if not self:auths():has(auth) then
+        return false, "user and password are incorrect!"
     end
 
     -- TODO check known_hosts

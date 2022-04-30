@@ -32,13 +32,11 @@ function _generate_configfile()
             server = {
                 listen = "0.0.0.0:9691",
                 workdir = path.join(servicedir, "remote_build"),
-                users = {
-                    root = {
-                        pass = "123456",
-                        known_hosts = {
-                            "127.0.0.1"
-                        }
-                    }
+                known_hosts = {
+                    "127.0.0.1"
+                },
+                auths = {
+                    "root:123456"
                 }
             },
             client = {
