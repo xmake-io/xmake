@@ -92,7 +92,7 @@ end
 -- verify user
 function server:verify_user(auth)
     if not auth then
-        return false, "client has no authorization, this remote server need user authorization!"
+        return false, "client has no authorization, we need add user name to `remote_build.client.connect`!"
     end
 
     -- check authorization
