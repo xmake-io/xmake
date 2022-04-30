@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.bytes")
+import("core.base.base64")
 import("core.base.socket")
 import("core.base.option")
 import("core.base.scheduler")
@@ -44,6 +45,10 @@ function remote_build_client:init()
     -- init address
     local address = assert(config.get("remote_build.client.connect"), "config(remote_build.client.connect): not found!")
     super.address_set(self, address)
+
+    -- init user
+    local user = config.get("remote_build.client.user")
+    super.user_set(self, user)
 
     -- get project directory
     local projectdir = os.projectdir()
@@ -76,6 +81,22 @@ function remote_build_client:connect()
         print("%s: has been connected!", self)
         return
     end
+
+    -- we need user authorization?
+    local auth
+    if self:user() then
+
+        -- get user password
+        cprint("Please input user ${bright}%s${clear} password:", self:user())
+        io.flush()
+        local pass = (io.read() or ""):trim()
+        assert(pass ~= "", "password is empty!")
+
+        -- compute user authorization
+        auth = base64.encode(self:user() .. ":" .. pass)
+    end
+
+    -- do connect
     local addr = self:addr()
     local port = self:port()
     local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
@@ -85,7 +106,7 @@ function remote_build_client:connect()
     print("%s: connect %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
-        if stream:send_msg(message.new_connect(session_id)) and stream:flush() then
+        if stream:send_msg(message.new_connect(session_id, {auth = auth})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
                 vprint(msg:body())
@@ -107,6 +128,7 @@ function remote_build_client:connect()
     local status = self:status()
     status.addr = addr
     status.port = port
+    status.auth = auth
     status.connected = ok
     status.session_id = session_id
     self:status_save()
@@ -132,7 +154,7 @@ function remote_build_client:disconnect()
     print("%s: disconnect %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
-        if stream:send_msg(message.new_disconnect(session_id)) and stream:flush() then
+        if stream:send_msg(message.new_disconnect(session_id, {auth = self:auth()})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
                 vprint(msg:body())
@@ -156,6 +178,7 @@ function remote_build_client:disconnect()
 
     -- update status
     local status = self:status()
+    status.auth = nil
     status.connected = not ok
     self:status_save()
 end
@@ -195,7 +218,7 @@ function remote_build_client:sync()
         -- do sync
         cprint("Uploading files with ${bright}%d${clear} bytes ..", os.filesize(archive_diff_file))
         local send_ok = false
-        if stream:send_msg(message.new_sync(session_id, diff_files)) and stream:flush() then
+        if stream:send_msg(message.new_sync(session_id, diff_files, {auth = self:auth()})) and stream:flush() then
             if stream:send_file(archive_diff_file) and stream:flush() then
                 send_ok = true
             end
@@ -236,7 +259,7 @@ function remote_build_client:clean()
     local ok = false
     print("%s: clean files in %s:%d ..", self, addr, port)
     local stream = socket_stream(sock)
-    if stream:send_msg(message.new_clean(session_id)) and stream:flush() then
+    if stream:send_msg(message.new_clean(session_id, {auth = self:auth()})) and stream:flush() then
         local msg = stream:recv_msg()
         if msg then
             vprint(msg:body())
@@ -268,7 +291,7 @@ function remote_build_client:runcmd(program, argv)
     local leftstr = ""
     cprint("%s: run ${bright}%s${clear} in %s:%d ..", self, command, addr, port)
     local stream = socket_stream(sock)
-    if stream:send_msg(message.new_runcmd(session_id, program, argv)) and stream:flush() then
+    if stream:send_msg(message.new_runcmd(session_id, program, argv, {auth = self:auth()})) and stream:flush() then
         local stdin_opt = {stop = false}
         scheduler.co_start(self._read_stdin, self, stream, stdin_opt)
         while true do
@@ -351,6 +374,11 @@ function remote_build_client:workdir()
     return self._WORKDIR
 end
 
+-- get user auth
+function remote_build_client:auth()
+    return self:status().auth
+end
+
 -- get the session id, only for unique project
 function remote_build_client:session_id()
     return self:status().session_id or hash.uuid():split("-", {plain = true})[1]:lower()
@@ -371,7 +399,7 @@ function remote_build_client:_diff_files(stream)
     local count = 0
     local result, errors
     cprint("Comparing ${bright}%d${clear} files ..", filecount)
-    if stream:send_msg(message.new_diff(session_id, manifest)) and stream:flush() then
+    if stream:send_msg(message.new_diff(session_id, manifest, {auth = self:auth()})) and stream:flush() then
         local msg = stream:recv_msg()
         if msg and msg:success() then
             result = msg:body().manifest
@@ -435,7 +463,7 @@ function remote_build_client:_read_stdin(stream, opt)
             if line and #line > 0 then
                 local ok = false
                 local data = bytes(line)
-                if stream:send_msg(message.new_data(0, data:size())) then
+                if stream:send_msg(message.new_data(0, data:size(), {auth = self:auth()})) then
                     if stream:send(data) and stream:flush() then
                         ok = true
                     end

@@ -41,6 +41,10 @@ function remote_build_server:init(daemon)
     local address = assert(config.get("remote_build.server.listen"), "config(remote_build.server.listen): not found!")
     super.address_set(self, address)
 
+    -- init users
+    local users = config.get("remote_build.server.users")
+    super.users_set(self, users)
+
     -- init handler
     super.handler_set(self, self._on_handle)
 
@@ -65,6 +69,13 @@ function remote_build_server:_on_handle(stream, msg)
     local session_ok = try
     {
         function()
+            if self:need_verfiy() then
+                local ok, errors = self:verify_user(msg:auth())
+                if not ok then
+                    session_errs = errors
+                    return false
+                end
+            end
             if msg:is_connect() then
                 session:open()
             elseif msg:is_disconnect() then

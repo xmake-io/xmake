@@ -89,6 +89,11 @@ function message:is_data()
     return self:code() == message.CODE_DATA
 end
 
+-- get user authorization
+function message:auth()
+    return self:body().auth
+end
+
 -- is success?
 function message:success()
     return self:body().status == true
@@ -133,64 +138,78 @@ function _new(body)
 end
 
 -- new connect message
-function new_connect(session_id)
+function new_connect(session_id, opt)
+    opt = opt or {}
     return _new({
         code = message.CODE_CONNECT,
         session_id = session_id,
+        auth = opt.auth,
         xmakever = xmake.version():shortstr()
     })
 end
 
 -- new disconnect message
-function new_disconnect(session_id)
+function new_disconnect(session_id, opt)
+    opt = opt or {}
     return _new({
         code = message.CODE_DISCONNECT,
-        session_id = session_id
+        session_id = session_id,
+        auth = opt.auth
     })
 end
 
 -- new diff message, e.g manifest = {["src/main.c"] = {sha256 = "", mtime = ""}}
-function new_diff(session_id, manifest)
+function new_diff(session_id, manifest, opt)
+    opt = opt or {}
     return _new({
         code = message.CODE_DIFF,
         session_id = session_id,
+        auth = opt.auth,
         manifest = manifest
     })
 end
 
 -- new sync message, e.g. manifest = {modified = {"src/main.c"}, inserted = {}, removed = {}}
-function new_sync(session_id, manifest)
+function new_sync(session_id, manifest, opt)
+    opt = opt or {}
     return _new({
         code = message.CODE_SYNC,
         session_id = session_id,
+        auth = opt.auth,
         manifest = manifest
     })
 end
 
 -- new clean message
-function new_clean(session_id)
+function new_clean(session_id, opt)
+    opt = opt or {}
     return _new({
         code = message.CODE_CLEAN,
-        session_id = session_id
+        session_id = session_id,
+        auth = opt.auth
     })
 end
 
 -- new run command message
-function new_runcmd(session_id, program, argv)
+function new_runcmd(session_id, program, argv, opt)
+    opt = opt or {}
     return _new({
         code = message.CODE_RUNCMD,
         session_id = session_id,
+        auth = opt.auth,
         program = program,
         argv = argv
     })
 end
 
 -- new data message
-function new_data(session_id, size)
+function new_data(session_id, size, opt)
+    opt = opt or {}
     return _new({
         code = message.CODE_DATA,
         size = size,
-        session_id = session_id
+        session_id = session_id,
+        auth = opt.auth
     })
 end
 

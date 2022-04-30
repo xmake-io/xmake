@@ -43,7 +43,17 @@ function client:address_set(address)
     assert(self._ADDR and self._PORT, "invalid client address!")
 end
 
--- get the address address
+-- get user name
+function client:user()
+    return self._USER
+end
+
+-- set user name
+function client:user_set(user)
+    self._USER = user
+end
+
+-- get the ip address
 function client:addr()
     return self._ADDR
 end
