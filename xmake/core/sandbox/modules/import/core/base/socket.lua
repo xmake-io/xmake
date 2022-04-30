@@ -82,6 +82,15 @@ function sandbox_core_base_socket_instance.ctrl(sock, code, value)
     return ok
 end
 
+-- get peer address
+function sandbox_core_base_socket_instance.peeraddr(sock)
+    local result, errors = sock:_peeraddr(data, opt)
+    if not result and errors then
+        raise(errors)
+    end
+    return result
+end
+
 -- bind socket
 function sandbox_core_base_socket_instance.bind(sock, addr, port)
     local ok, errors = sock:_bind(addr, port)

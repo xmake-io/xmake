@@ -97,6 +97,23 @@ function _instance:rawfd()
     return result, errors
 end
 
+-- get socket peer address
+function _instance:peeraddr()
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors
+    end
+
+    -- get peer address
+    local result, errors = io.socket_peeraddr(self:cdata())
+    if not result and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return result, errors
+end
+
 -- control socket
 function _instance:ctrl(code, value)
 

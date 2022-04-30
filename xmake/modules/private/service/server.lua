@@ -39,6 +39,10 @@ function server:init(daemon)
     -- init authorizations
     local auths = config.get("server.auths")
     self:auths_set(auths)
+
+    -- init known hosts
+    local known_hosts = config.get("server.known_hosts")
+    self:known_hosts_set(known_hosts)
 end
 
 -- is daemon?
@@ -84,13 +88,23 @@ function server:auths_set(auths)
     self._AUTHS = auths and hashset.from(auths) or hashset.new()
 end
 
+-- get known hosts
+function server:known_hosts()
+    return self._KNOWN_HOSTS
+end
+
+-- set known hosts
+function server:known_hosts_set(hosts)
+    self._KNOWN_HOSTS = hosts and hashset.from(hosts) or hashset.new()
+end
+
 -- we need verify user
 function server:need_verfiy()
     return not self:auths():empty()
 end
 
 -- verify user
-function server:verify_user(auth)
+function server:verify_user(auth, peeraddr)
     if not auth then
         return false, "client has no authorization, we need add user name to `remote_build.client.connect`!"
     end
@@ -100,7 +114,16 @@ function server:verify_user(auth)
         return false, "user and password are incorrect!"
     end
 
-    -- TODO check known_hosts
+    -- check known_hosts
+    if not self:known_hosts():empty() and peeraddr then
+        local addrinfo = peeraddr:split(":")
+        if addrinfo and #addrinfo == 2 then
+            local addr = addrinfo[1]
+            if not self:known_hosts():has(addr) then
+                return false, "your host address is unknown in server!"
+            end
+        end
+    end
     return true
 end
 

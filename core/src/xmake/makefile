@@ -85,6 +85,7 @@ xmake_C_FILES 			+= \
 						io/socket_recv \
 						io/socket_recvfrom \
 						io/socket_close \
+						io/socket_peeraddr \
 						io/pipe_open \
 						io/pipe_openpair \
 						io/pipe_close \
