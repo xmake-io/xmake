@@ -21,7 +21,7 @@
 -- define rule: fortran.build.modules
 rule("fortran.build.modules")
     before_build(function (target)
-        if not is_host("windows") then
+        if target:has_tool("fc", "gfortran") then
             local modulesdir = target:values("fortran.moduledir") or path.join(target:objectdir(), ".modules")
             os.mkdir(modulesdir)
             target:add("fcflags", "-J" .. modulesdir)

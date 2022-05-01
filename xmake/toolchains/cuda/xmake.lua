@@ -26,6 +26,13 @@ toolchain("cuda")
     set_description("CUDA Toolkit")
 
     -- set toolset
+    set_toolset("cc",   "nvc")
+    set_toolset("cxx",  "nvc++")
+    set_toolset("fc",   "nvfortran")
+    set_toolset("fcld", "nvfortran")
+    set_toolset("fcsh", "nvfortran")
+    set_toolset("ld",   "nvc++", "nvc")
+    set_toolset("sh",   "nvc++", "nvc")
     set_toolset("cu",   "nvcc", "clang")
     set_toolset("culd", "nvcc")
     set_toolset("cu-ccbin", "$(env CXX)", "$(env CC)")
