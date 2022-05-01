@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        add_user.lua
+-- @file        gen_token.lua
 --
 
 -- imports
@@ -26,18 +26,15 @@ import("core.base.hashset")
 import("private.service.service")
 import("private.service.config")
 
-function main(user)
-    assert(user, "empty user name!")
+-- generate a token
+function _generate_token()
+    return hash.md5(bytes(base64.encode(hash.uuid())))
+end
 
-    -- get user password
-    cprint("Please input user ${bright}%s${clear} password:", user)
-    io.flush()
-    local pass = (io.read() or ""):trim()
-    assert(pass ~= "", "password is empty!")
+function main()
 
-    -- compute user authorization
-    local token = base64.encode(user .. ":" .. pass)
-    token = hash.md5(bytes(token))
+    -- generate token
+    local token = _generate_token()
 
     -- save to configs
     local configs = assert(config.configs(), "configs not found!")
@@ -46,10 +43,10 @@ function main(user)
     if not hashset.from(configs.server.tokens):has(token) then
         table.insert(configs.server.tokens, token)
     else
-        cprint("User ${bright}%s${clear} has been added!", user)
+        cprint("Token ${yellow bright}%s${clear} has been added!", token)
         return
     end
     config.save(configs)
-    cprint("Add user ${bright}%s${clear} ok!", user)
+    cprint("New token ${yellow bright}%s${clear} is generated!", token)
 end
 

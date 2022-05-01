@@ -42,6 +42,9 @@ task("service")
                 {nil, "rm-user",    "kv", nil, "Remove user in the server.",
                                                "e.g.",
                                                "    - xmake service --rm-user=root"                          },
+                {nil, "gen-token",  "k",  nil, "Generate a new token in the server.",
+                                               "e.g.",
+                                               "    - xmake service --gen-token"                             },
                 {nil, "logs",       "k",  nil, "Show service logs if the daemon service has been started."   },
                 {nil, "status",     "k",  nil, "Show service status if the daemon service has been started." }
              }}

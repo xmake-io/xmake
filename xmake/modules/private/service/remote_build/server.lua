@@ -66,7 +66,7 @@ function remote_build_server:_on_handle(stream, msg)
     {
         function()
             if self:need_verfiy() then
-                local ok, errors = self:verify_user(msg:auth(), stream:sock():peeraddr())
+                local ok, errors = self:verify_user(msg:token(), stream:sock():peeraddr())
                 if not ok then
                     session_errs = errors
                     return false

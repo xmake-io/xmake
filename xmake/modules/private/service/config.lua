@@ -23,24 +23,27 @@ import("core.base.global")
 import("core.base.base64")
 import("core.base.bytes")
 
+-- generate a token
+function _generate_token()
+    return hash.md5(bytes(base64.encode(hash.uuid())))
+end
+
 -- generate a default config file
 function _generate_configfile()
     local filepath = configfile()
     assert(not _g.configs and not os.isfile(filepath))
     local servicedir = path.join(global.directory(), "service")
-    local initauth = base64.encode("root:000000")
-    initauth = hash.md5(bytes(initauth))
-    print("generating the default config file to %s ..", filepath)
-    print("the default user(root) and password(000000) are generated!")
+    local token = _generate_token()
+    print("generating the config file to %s ..", filepath)
+    cprint("an token(${bright yellow}%s${clear}) is generated, we can use this token to connect service.", token)
     local configs = {
         logfile = path.join(servicedir, "logs.txt"),
         server = {
             known_hosts = {
             --    "127.0.0.1"
             },
-            auths = {
-                -- initialized user and password, root:000000
-                initauth
+            tokens = {
+                token
             }
         },
         remote_build = {
@@ -50,8 +53,10 @@ function _generate_configfile()
             },
             client = {
                 -- without authorization: "127.0.0.1:9691"
-                -- with authorization: "user@127.0.0.1:9691"
-                connect = "root@127.0.0.1:9691"
+                -- with user authorization: "user@127.0.0.1:9691"
+                connect = "127.0.0.1:9691",
+                -- with token authorization
+                token = token
             }
         }
     }

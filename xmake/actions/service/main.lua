@@ -32,6 +32,7 @@ import("private.service.sync_files")
 import("private.service.import_config")
 import("private.service.add_user")
 import("private.service.rm_user")
+import("private.service.gen_token")
 import("private.service.show_logs")
 import("private.service.show_status")
 
@@ -55,6 +56,8 @@ function main()
         sync_files()
     elseif option.get("config") then
         import_config(option.get("config"))
+    elseif option.get("gen-token") then
+        gen_token()
     elseif option.get("add-user") then
         add_user(option.get("add-user"))
     elseif option.get("rm-user") then

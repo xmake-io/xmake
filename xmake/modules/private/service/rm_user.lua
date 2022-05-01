@@ -36,17 +36,17 @@ function main(user)
     assert(pass ~= "", "password is empty!")
 
     -- compute user authorization
-    local auth = base64.encode(user .. ":" .. pass)
-    auth = hash.md5(bytes(auth))
+    local token = base64.encode(user .. ":" .. pass)
+    token = hash.md5(bytes(token))
 
     -- save to configs
     local configs = assert(config.configs(), "configs not found!")
     configs.server = configs.server or {}
-    configs.server.auths = configs.server.auths or {}
-    local authset = hashset.from(configs.server.auths)
-    if authset:has(auth) then
-        authset:remove(auth)
-        configs.server.auths = authset:to_array()
+    configs.server.tokens = configs.server.tokens or {}
+    local tokenset = hashset.from(configs.server.tokens)
+    if tokenset:has(token) then
+        tokenset:remove(token)
+        configs.server.tokens = tokenset:to_array()
     else
         cprint("User ${bright}%s${clear} not found!", user)
         return

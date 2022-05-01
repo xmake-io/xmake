@@ -90,8 +90,8 @@ function message:is_data()
 end
 
 -- get user authorization
-function message:auth()
-    return self:body().auth
+function message:token()
+    return self:body().token
 end
 
 -- is success?
@@ -143,7 +143,7 @@ function new_connect(session_id, opt)
     return _new({
         code = message.CODE_CONNECT,
         session_id = session_id,
-        auth = opt.auth,
+        token = opt.token,
         xmakever = xmake.version():shortstr()
     })
 end
@@ -154,7 +154,7 @@ function new_disconnect(session_id, opt)
     return _new({
         code = message.CODE_DISCONNECT,
         session_id = session_id,
-        auth = opt.auth
+        token = opt.token
     })
 end
 
@@ -164,7 +164,7 @@ function new_diff(session_id, manifest, opt)
     return _new({
         code = message.CODE_DIFF,
         session_id = session_id,
-        auth = opt.auth,
+        token = opt.token,
         manifest = manifest
     })
 end
@@ -175,7 +175,7 @@ function new_sync(session_id, manifest, opt)
     return _new({
         code = message.CODE_SYNC,
         session_id = session_id,
-        auth = opt.auth,
+        token = opt.token,
         manifest = manifest
     })
 end
@@ -186,7 +186,7 @@ function new_clean(session_id, opt)
     return _new({
         code = message.CODE_CLEAN,
         session_id = session_id,
-        auth = opt.auth
+        token = opt.token
     })
 end
 
@@ -196,7 +196,7 @@ function new_runcmd(session_id, program, argv, opt)
     return _new({
         code = message.CODE_RUNCMD,
         session_id = session_id,
-        auth = opt.auth,
+        token = opt.token,
         program = program,
         argv = argv
     })
@@ -209,7 +209,7 @@ function new_data(session_id, size, opt)
         code = message.CODE_DATA,
         size = size,
         session_id = session_id,
-        auth = opt.auth
+        token = opt.token
     })
 end
 

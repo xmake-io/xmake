@@ -37,8 +37,8 @@ function server:init(daemon)
     self._DAEMON = daemon
 
     -- init authorizations
-    local auths = config.get("server.auths")
-    self:auths_set(auths)
+    local tokens = config.get("server.tokens")
+    self:tokens_set(tokens)
 
     -- init known hosts
     local known_hosts = config.get("server.known_hosts")
@@ -78,14 +78,14 @@ function server:port()
     return self._PORT
 end
 
--- get authorizations
-function server:auths()
-    return self._AUTHS
+-- get tokens
+function server:tokens()
+    return self._TOKENS
 end
 
--- set authorizations
-function server:auths_set(auths)
-    self._AUTHS = auths and hashset.from(auths) or hashset.new()
+-- set tokens
+function server:tokens_set(tokens)
+    self._TOKENS = tokens and hashset.from(tokens) or hashset.new()
 end
 
 -- get known hosts
@@ -100,17 +100,17 @@ end
 
 -- we need verify user
 function server:need_verfiy()
-    return not self:auths():empty()
+    return not self:tokens():empty()
 end
 
 -- verify user
-function server:verify_user(auth, peeraddr)
-    if not auth then
-        return false, "client has no authorization, we need add user name to `remote_build.client.connect`!"
+function server:verify_user(token, peeraddr)
+    if not token then
+        return false, "client has no authorization, we need add username to connect address or token to `remote_build.client.token`!"
     end
 
     -- check authorization
-    if not self:auths():has(auth) then
+    if not self:tokens():has(token) then
         return false, "user and password are incorrect!"
     end
 
