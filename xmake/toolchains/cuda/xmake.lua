@@ -23,7 +23,7 @@ toolchain("cuda")
 
     -- set homepage
     set_homepage("https://developer.nvidia.com/cuda-toolkit")
-    set_description("CUDA Toolkit")
+    set_description("CUDA Toolkit (nvcc, nvc, nvc++, nvfortran)")
 
     -- set toolset
     set_toolset("cc",   "nvc")

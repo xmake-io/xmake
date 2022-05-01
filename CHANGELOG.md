@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#2327](https://github.com/xmake-io/xmake/issues/2327): Support nvc/nvc++/nvfortran in nvidia-hpc-sdk
+
 ### Changes
 
 * [#2309](https://github.com/xmake-io/xmake/issues/2309): Support user authorization for remote compilation
@@ -1249,6 +1253,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#2327](https://github.com/xmake-io/xmake/issues/2327): 支持 nvidia-hpc-sdk 工具链中的 nvc/nvc++/nvfortran 编译器
 
 ### 改进
 

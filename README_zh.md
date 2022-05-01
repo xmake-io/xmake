@@ -248,7 +248,7 @@ dlang         D Programming Language Compiler
 gfortran      GNU Fortran Programming Language Compiler
 zig           Zig Programming Language Compiler
 sdcc          Small Device C Compiler
-cuda          CUDA Toolkit
+cuda          CUDA Toolkit (nvcc, nvc, nvc++, nvfortran)
 ndk           Android NDK
 rust          Rust Programming Language Compiler
 swift         Swift Programming Language Compiler
