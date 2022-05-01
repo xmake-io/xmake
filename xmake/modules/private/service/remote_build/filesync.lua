@@ -137,10 +137,16 @@ function filesync:_ignorefiles_load(ignorefiles)
                 local filepath = path.join(gitroot, line)
                 local pattern = path.relative(filepath, rootdir)
                 if pattern then
-                    if not line:endswith(path.sep()) then
+                    if line:endswith(path.sep()) or os.isdir(line) then
+                        table.insert(ignorefiles, path.join(pattern, "**"))
+                    elseif os.isfile(line) then
                         table.insert(ignorefiles, pattern)
+                    elseif line:find("*.", 1, true) then
+                        table.insert(ignorefiles, (pattern:gsub("%*%.", "**.")))
+                    else
+                        table.insert(ignorefiles, pattern)
+                        table.insert(ignorefiles, path.join(pattern, "**"))
                     end
-                    table.insert(ignorefiles, path.join(pattern, "**"))
                 end
             end
         end
