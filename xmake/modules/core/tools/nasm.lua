@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.language.language")
 
 -- init it
 function init(self)
@@ -45,16 +46,23 @@ function init(self)
     })
 end
 
+-- make the symbol flag
+function nf_symbol(self, level)
+    -- only for source kind
+    local kind = self:kind()
+    if language.sourcekinds()[kind] then
+        local maps = {
+            debug  = "-g"
+        }
+        return maps[level]
+    end
+end
+
 -- make the warning flag
 function nf_warning(self, level)
-
-    -- the maps
-    local maps =
-    {
+    local maps = {
         none  = "-w"
     }
-
-    -- make it
     return maps[level]
 end
 
@@ -79,12 +87,12 @@ function nf_sysincludedir(self, dir)
 end
 
 -- make the compile arguments list
-function _compargv1(self, sourcefile, objectfile, flags)
+function compargv(self, sourcefile, objectfile, flags)
     return self:program(), table.join(flags, "-o", objectfile, sourcefile)
 end
 
 -- compile the source file
-function _compile1(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
@@ -93,7 +101,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     local outdata, errdata = try
     {
         function ()
-            return os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
+            return os.iorunv(compargv(self, sourcefile, objectfile, flags))
         end,
         catch
         {
@@ -120,25 +128,5 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
             end
         }
     }
-end
-
--- make the compile arguments list
-function compargv(self, sourcefiles, objectfile, flags)
-
-    -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
-
-    -- for only single source file
-    return _compargv1(self, sourcefiles, objectfile, flags)
-end
-
--- compile the source file
-function compile(self, sourcefiles, objectfile, dependinfo, flags)
-
-    -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
-
-    -- for only single source file
-    _compile1(self, sourcefiles, objectfile, dependinfo, flags)
 end
 
