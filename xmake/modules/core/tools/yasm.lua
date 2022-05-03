@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.language.language")
 
 -- init it
 function init(self)
@@ -47,14 +48,9 @@ end
 
 -- make the warning flag
 function nf_warning(self, level)
-
-    -- the maps
-    local maps =
-    {
+    local maps = {
         none  = "-w"
     }
-
-    -- make it
     return maps[level]
 end
 

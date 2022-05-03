@@ -24,5 +24,5 @@ segment extra
   write_text:
         mov     ah,9
         int     21h
-        retf       
-    
+        retf
+
