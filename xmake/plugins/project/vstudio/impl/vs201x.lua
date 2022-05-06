@@ -200,6 +200,8 @@ end
 
 -- make custom commands
 function _make_custom_commands(target, vcxprojdir)
+    -- https://github.com/xmake-io/xmake/issues/2337
+    target:data_set("plugin.project.kind", "vs")
     -- https://github.com/xmake-io/xmake/issues/2258
     target:data_set("plugin.project.translate_path", function (p)
         return _translate_path(p, vcxprojdir)
