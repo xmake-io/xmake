@@ -23,6 +23,79 @@ local path = path or {}
 
 -- load modules
 local string = require("base/string")
+local table  = require("base/table")
+local _instance = _instance or {}
+
+-- new a path
+function _instance.new(p)
+    local instance = table.inherit(_instance)
+    instance._PATH = p
+    setmetatable(instance, _instance)
+    return instance
+end
+
+function _instance:str()
+    return self._PATH
+end
+
+function _instance:normalize()
+    return path.new(path.normalize(self:str()))
+end
+
+function _instance:translate(opt)
+    return path.new(path.translate(self:str(), opt))
+end
+
+function _instance:filename()
+    return path.filename(self:str())
+end
+
+function _instance:basename()
+    return path.basename(self:str())
+end
+
+function _instance:extension()
+    return path.extension(self:str())
+end
+
+function _instance:directory()
+    return path.new(path.directory(self:str()))
+end
+
+function _instance:join(...)
+    local items = {self:str()}
+    for _, item in ipairs(table.pack(...)) do
+        if path.instance_of(item) then
+            table.insert(items, item:str())
+        else
+            table.insert(items, item)
+        end
+    end
+    return path.new(path.join(table.unpack(items)))
+end
+
+function _instance:split(p)
+    return path.split(self:str(), p)
+end
+
+function _instance:splitenv(p)
+    return path.splitenv(self:str(), p)
+end
+
+-- concat two paths
+function _instance:__concat(other)
+    return path.new(path.join(self:str(), other:str()))
+end
+
+-- tostring(path)
+function _instance:__tostring()
+    return self:str()
+end
+
+-- todisplay(path)
+function _instance:__todisplay()
+    return "<path: " .. self:str() .. ">"
+end
 
 -- path.translate:
 -- - transform the path separator
@@ -230,6 +303,23 @@ function path.cygwin_path(p)
     end
     return p
 end
+
+-- new a path instance
+function path.new(p)
+    return _instance.new(p)
+end
+
+-- is path instance?
+function path.instance_of(p)
+    return type(p) == "table" and p.normalize and p._PATH
+end
+
+-- register call function
+setmetatable(path, {
+    __call = function (_, ...)
+        return path.new(...)
+    end,
+})
 
 -- return module: path
 return path
