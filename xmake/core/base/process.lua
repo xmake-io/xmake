@@ -262,11 +262,6 @@ function process.openv(program, argv, opt)
         end
     end
 
-    -- handle paths parameters
-    for k, arg in pairs(argv) do
-        argv[k] = tostring(arg)
-    end
-
     -- open subprocess
     local proc = process._openv(program, argv, opt)
     if proc then
