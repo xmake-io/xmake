@@ -227,6 +227,9 @@ end
 -- add build rule for target
 function _add_build_for_target(ninjafile, target)
 
+    -- https://github.com/xmake-io/xmake/issues/2337
+    target:data_set("plugin.project.kind", "ninja")
+
     -- is phony target?
     if target:is_phony() then
         return _add_build_for_phony(ninjafile, target)

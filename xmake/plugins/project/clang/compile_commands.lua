@@ -188,6 +188,9 @@ end
 -- make target
 function _make_target(jsonfile, target)
 
+    -- https://github.com/xmake-io/xmake/issues/2337
+    target:data_set("plugin.project.kind", "compile_commands")
+
     -- enter package environments
     local oldenvs = os.addenvs(target:pkgenvs())
 
