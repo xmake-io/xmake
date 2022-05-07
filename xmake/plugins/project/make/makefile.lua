@@ -213,6 +213,9 @@ end
 -- make target
 function _make_target(makefile, target, targetflags)
 
+    -- https://github.com/xmake-io/xmake/issues/2337
+    target:data_set("plugin.project.kind", "makefile")
+
     -- is phony target?
     if target:is_phony() then
         return _make_phony(makefile, target)

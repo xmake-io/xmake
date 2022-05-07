@@ -131,6 +131,10 @@ end
 
 -- add target: phony
 function _add_target_phony(cmakelists, target)
+
+    -- https://github.com/xmake-io/xmake/issues/2337
+    target:data_set("plugin.project.kind", "cmakelist")
+
     cmakelists:printf("add_custom_target(%s", target:name())
     local deps = target:get("deps")
     if deps then

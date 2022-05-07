@@ -485,6 +485,10 @@ function main(outputdir, vsinfo)
 
             -- save targets
             for targetname, target in pairs(project.targets()) do
+
+                -- https://github.com/xmake-io/xmake/issues/2337
+                target:data_set("plugin.project.kind", "vsxmake")
+
                 -- make target with the given mode and arch
                 targets[targetname] = targets[targetname] or {}
                 local _target = targets[targetname]
