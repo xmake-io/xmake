@@ -85,8 +85,8 @@ function _get_command_string(cmd, vcxprojdir)
     if cmd.program then
         local argv = {}
         for _, v in ipairs(table.join(cmd.program, cmd.argv)) do
-            if path.is_absolute(v) then
-                v = _translate_path(v, vcxprojdir)
+            if path.instance_of(v) then
+                v = _translate_path(v:str(), vcxprojdir)
             end
             table.insert(argv, v)
         end

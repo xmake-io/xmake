@@ -606,8 +606,8 @@ function _get_command_string(cmd, outputdir)
         -- @see https://github.com/xmake-io/xmake/discussions/2156
         local argv = {}
         for _, v in ipairs(table.join(cmd.program, cmd.argv)) do
-            if path.is_absolute(v) then
-                v = _get_unix_path_relative_to_cmake(v, outputdir)
+            if path.instance_of(v) or path.instance_of(v) then
+                v = _get_unix_path_relative_to_cmake(tostring(v), outputdir)
             end
             table.insert(argv, v)
         end

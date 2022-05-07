@@ -42,7 +42,7 @@ rule("yacc")
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.yacc %s", sourcefile_yacc)
         batchcmds:mkdir(sourcefile_dir)
-        batchcmds:vrunv(yacc.program, {"-d", "-o", sourcefile_cx, sourcefile_yacc})
+        batchcmds:vrunv(yacc.program, {"-d", "-o", path(sourcefile_cx), path(sourcefile_yacc)})
         batchcmds:compile(sourcefile_cx, objectfile)
 
         -- add deps
