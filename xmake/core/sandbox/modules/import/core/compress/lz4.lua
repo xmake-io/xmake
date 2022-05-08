@@ -1,4 +1,4 @@
---!A cross-platform build utility based on Lua
+--!A cross-platform build utility compressd on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@
 --
 
 -- define module
-local sandbox_core_base_lz4 = sandbox_core_base_lz4 or {}
+local sandbox_core_compress_lz4 = sandbox_core_compress_lz4 or {}
 
 -- load modules
-local lz4   = require("base/lz4")
+local lz4   = require("compress/lz4")
 local raise = require("sandbox/modules/raise")
 
 -- compress data
-function sandbox_core_base_lz4.compress(data, opt)
+function sandbox_core_compress_lz4.compress(data, opt)
     local result, errors = lz4.compress(data, opt)
     if not result and errors then
         raise(errors)
@@ -35,7 +35,7 @@ function sandbox_core_base_lz4.compress(data, opt)
 end
 
 -- decompress data
-function sandbox_core_base_lz4.decompress(data, opt)
+function sandbox_core_compress_lz4.decompress(data, opt)
     local result, errors = lz4.decompress(data, opt)
     if not result and errors then
         raise(errors)
@@ -44,4 +44,4 @@ function sandbox_core_base_lz4.decompress(data, opt)
 end
 
 -- return module
-return sandbox_core_base_lz4
+return sandbox_core_compress_lz4
