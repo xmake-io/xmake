@@ -494,7 +494,7 @@ function io.readfile(filepath, opt)
     opt = opt or {}
 
     -- open file
-    local file, errors = io.open(filepath, "r", opt)
+    local file, errors = io.open(tostring(filepath), "r", opt)
     if not file then
         return nil, errors
     end
@@ -540,7 +540,7 @@ function io.writefile(filepath, data, opt)
     opt = opt or {}
 
     -- open file
-    local file, errors = io.open(filepath, "w", opt)
+    local file, errors = io.open(tostring(filepath), "w", opt)
     if not file then
         return false, errors
     end
@@ -595,6 +595,7 @@ function io.open(filepath, mode, opt)
     mode = mode or "r"
 
     -- open it
+    filepath = tostring(filepath)
     local file = io.file_open(filepath, mode .. (opt.encoding or ""))
     if file then
         return _file.new(filepath, file)
@@ -610,6 +611,7 @@ function io.openlock(filepath)
     assert(filepath)
 
     -- open it
+    filepath = tostring(filepath)
     local lock = io.filelock_open(filepath)
     if lock then
         return _filelock.new(filepath, lock)
@@ -628,6 +630,7 @@ function io.save(filepath, object, opt)
     assert(filepath and object)
 
     opt = opt or {}
+    filepath = tostring(filepath)
     local file, err = io.open(filepath, "wb", opt)
     if err then
         return false, err
@@ -646,6 +649,7 @@ function io.load(filepath, opt)
     assert(filepath)
 
     opt = opt or {}
+    filepath = tostring(filepath)
     local file, err = io.open(filepath, "rb", opt)
     if err then
         return nil, err

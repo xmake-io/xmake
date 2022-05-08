@@ -43,6 +43,22 @@ function sandbox_core_compress_lz4.decompress(data, opt)
     return result
 end
 
+-- compress file data
+function sandbox_core_compress_lz4.compress_file(srcpath, dstpath, opt)
+    local result, errors = lz4.compress_file(srcpath, dstpath, opt)
+    if not result and errors then
+        raise(errors)
+    end
+end
+
+-- decompress file data
+function sandbox_core_compress_lz4.decompress_file(srcpath, dstpath, opt)
+    local result, errors = lz4.decompress_file(srcpath, dstpath, opt)
+    if not result and errors then
+        raise(errors)
+    end
+end
+
 -- compress block data
 function sandbox_core_compress_lz4.block_compress(data, opt)
     local result, errors = lz4.block_compress(data, opt)

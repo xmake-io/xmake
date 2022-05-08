@@ -69,6 +69,30 @@ function lz4.decompress(data, opt)
     return bytes(result)
 end
 
+-- compress file data
+function lz4.compress_file(srcpath, dstpath, opt)
+    local data, errors = io.readfile(srcpath)
+    if data then
+        data, errors = lz4.compress(data, opt)
+        if data then
+            return io.writefile(dstpath, data)
+        end
+    end
+    return false, errors or "compress failed"
+end
+
+-- decompress file data
+function lz4.decompress_file(srcpath, dstpath, opt)
+    local data, errors = io.readfile(srcpath)
+    if data then
+        data, errors = lz4.decompress(data, opt)
+        if data then
+            return io.writefile(dstpath, data)
+        end
+    end
+    return false, errors or "decompress failed"
+end
+
 -- compress block data
 --
 -- @param data          the data
