@@ -53,6 +53,14 @@ which can be obtained at:
   * HOMEPAGE:
     * http://lua.org/
 
+This product depends on 'lz4', Extremely Fast Compression algorithm,
+which can be obtained at:
+
+  * LICENSE:
+    * https://github.com/lz4/lz4/blob/dev/LICENSE
+  * HOMEPAGE:
+    * https://www.lz4.org/
+
 This product depends on 'tbox', The Treasure Box Library,
 which can be obtained at:
 

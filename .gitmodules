@@ -16,3 +16,6 @@
 [submodule "core/src/lua/lua"]
 	path = core/src/lua/lua
 	url = ../../xmake-io/xmake-core-lua.git
+[submodule "core/src/lz4/lz4"]
+	path = core/src/lz4/lz4
+	url = ../../xmake-io/xmake-core-lz4.git

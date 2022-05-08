@@ -189,6 +189,12 @@ tb_int_t xm_hash_md5(lua_State* lua);
 tb_int_t xm_base64_encode(lua_State* lua);
 tb_int_t xm_base64_decode(lua_State* lua);
 
+// the lz4 functions
+tb_int_t xm_lz4_compress(lua_State* lua);
+tb_int_t xm_lz4_decompress(lua_State* lua);
+tb_int_t xm_lz4_block_compress(lua_State* lua);
+tb_int_t xm_lz4_block_decompress(lua_State* lua);
+
 // the windows functions
 #ifdef TB_CONFIG_OS_WINDOWS
 tb_int_t xm_winos_cp_info(lua_State* lua);
@@ -401,6 +407,16 @@ static luaL_Reg const g_base64_functions[] =
     { "encode",         xm_base64_encode }
 ,   { "decode",         xm_base64_decode }
 ,   { tb_null,          tb_null          }
+};
+
+// the lz4 functions
+static luaL_Reg const g_lz4_functions[] =
+{
+    { "compress",         xm_lz4_compress         }
+,   { "decompress",       xm_lz4_decompress       }
+,   { "block_compress",   xm_lz4_block_compress   }
+,   { "block_decompress", xm_lz4_block_decompress }
+,   { tb_null,            tb_null                 }
 };
 
 // the string functions
@@ -947,6 +963,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
         // bind hash functions
         xm_lua_register(engine->lua, "hash", g_hash_functions);
+
+        // bind lz4 functions
+        xm_lua_register(engine->lua, "lz4", g_lz4_functions);
 
         // bind base64 functions
         xm_lua_register(engine->lua, "base64", g_base64_functions);
