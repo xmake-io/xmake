@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.bit")
 import("core.base.object")
 import("core.base.socket")
 import("core.base.bytes")
@@ -29,6 +30,9 @@ local stream = stream or object()
 
 -- max data buffer size
 local STREAM_DATA_MAXN = 10 * 1024 * 1024
+
+-- the header flags
+local HEADER_FLAG_COMPRESS_LZ4 = 1
 
 -- init stream
 function stream:init(sock)
@@ -114,13 +118,24 @@ function stream:send_object(obj)
     end
 end
 
--- send data
-function stream:send_data(data)
+-- send data header
+function stream:send_header(size, flags)
     local buff = self._BUFF
+    buff:u32be_set(1, size)
+    buff:u8_set(5, flags or 0)
+    return self:send(buff, 1, 5)
+end
+
+-- send data
+function stream:send_data(data, opt)
+    opt = opt or {}
+    local flags = 0
+    if opt.compress then
+        flags = bit.bor(flags, HEADER_FLAG_COMPRESS_LZ4)
+    end
     local size = data:size()
     assert(size < STREAM_DATA_MAXN, "too large data size(%d)", size)
-    buff:u32be_set(1, size)
-    if self:send(buff, 1, 4) then
+    if self:send_header(size, flags) then
         local send = 0
         local cache = self._WCACHE
         local cache_maxn = cache:size()
@@ -139,18 +154,21 @@ function stream:send_data(data)
 end
 
 -- send string
-function stream:send_string(str)
-    return self:send_data(bytes(str))
+function stream:send_string(str, opt)
+    return self:send_data(bytes(str), opt)
 end
 
 -- send file
-function stream:send_file(filepath)
+function stream:send_file(filepath, opt)
 
-    -- send size
-    local buff = self._BUFF
+    -- send header
+    opt = opt or {}
+    local flags = 0
+    if opt.compress then
+        flags = bit.bor(flags, HEADER_FLAG_COMPRESS_LZ4)
+    end
     local size = os.filesize(filepath)
-    buff:u32be_set(1, size)
-    if not self:send(buff, 1, 4) then
+    if not self:send_header(size, flags) then
         return
     end
 
@@ -233,14 +251,6 @@ function stream:recv(buff, size)
     end
 end
 
--- recv u32be
-function stream:recv_u32be()
-    local data = self:recv(self._BUFF, 4)
-    if data then
-        return data:u32be(1)
-    end
-end
-
 -- recv message
 function stream:recv_msg()
     local body = self:recv_object()
@@ -261,9 +271,19 @@ function stream:recv_object()
     end
 end
 
+-- recv header
+function stream:recv_header()
+    local data = self:recv(self._BUFF, 5)
+    if data then
+        local size = data:u32be(1)
+        local flags = data:u8(5)
+        return size, flags
+    end
+end
+
 -- recv data
 function stream:recv_data()
-    local size = self:recv_u32be()
+    local size, flags = self:recv_header()
     if size then
         local recv = 0
         assert(size < STREAM_DATA_MAXN, "too large data size(%d)", size)
@@ -292,7 +312,7 @@ end
 
 -- recv file
 function stream:recv_file(filepath)
-    local size = self:recv_u32be()
+    local size, flags = self:recv_header()
     if size then
         local buff = self._BUFF
         local recv = 0
