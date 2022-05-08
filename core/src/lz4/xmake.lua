@@ -11,7 +11,7 @@ target("lz4")
     add_headerfiles("lz4/lib/(*.h)")
 
     -- add include directories
-    add_includedirs("lz4", {public = true})
+    add_includedirs("lz4/lib", {public = true})
 
     -- add the common source files
     add_files("lz4/lib/*.c|lz4file.c")
