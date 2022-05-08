@@ -9,7 +9,7 @@ endif
 ifeq ($(RUNTIME),lua)
 DEP_PROS 	+= lua
 endif
-DEP_PROS 	+= lcurses sv lua-cjson tbox xmake
+DEP_PROS 	+= lcurses sv lua-cjson lz4 tbox xmake
 
 # suffix
 include $(PRO_DIR)/suffix.mak
