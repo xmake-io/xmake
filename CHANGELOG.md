@@ -6,6 +6,7 @@
 
 * [#2327](https://github.com/xmake-io/xmake/issues/2327): Support nvc/nvc++/nvfortran in nvidia-hpc-sdk
 * Add path instance interfaces
+* [#2334](https://github.com/xmake-io/xmake/pull/2334): Add lz4 compress module
 
 ### Changes
 
@@ -1259,6 +1260,7 @@
 
 * [#2327](https://github.com/xmake-io/xmake/issues/2327): 支持 nvidia-hpc-sdk 工具链中的 nvc/nvc++/nvfortran 编译器
 * 添加 path 实例接口
+* [#2334](https://github.com/xmake-io/xmake/pull/2334): 添加 lz4 压缩模块
 
 ### 改进
 
