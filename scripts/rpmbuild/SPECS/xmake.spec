@@ -4,6 +4,7 @@
 %define     lua_cjson_revision   515bab6d6d80b164b94db73af69609ea02f3a798
 %define     luajit_revision      e9af1abec542e6f9851ff2368e7f196b6382a44c
 %define     lua_revision         eadd8c7178c79c814ecca9652973a9b9dd4cc71b
+%define     lz4_revision         033606ef259ef2852f6ae1e8ec7a10c641417654
 %define     _binaries_in_noarch_packages_terminate_build   0
 %undefine   _disable_source_fetch
 
@@ -20,6 +21,7 @@ Source2:    https://github.com/xmake-io/xmake-core-lua/archive/%{lua_revision}.t
 Source3:    https://github.com/xmake-io/xmake-core-luajit/archive/%{luajit_revision}.tar.gz#/xmake-core-luajit-%{luajit_revision}.tar.gz
 Source4:    https://github.com/xmake-io/xmake-core-sv/archive/%{sv_revision}.tar.gz#/xmake-core-sv-%{sv_revision}.tar.gz
 Source5:    https://github.com/xmake-io/xmake-core-lua-cjson/archive/%{lua_cjson_revision}.tar.gz#/xmake-core-lua-cjson-%{lua_cjson_revision}.tar.gz
+Source6:    https://github.com/xmake-io/xmake-core-lz4/archive/%{lz4_revision}.tar.gz#/xmake-core-lz4-%{lz4_revision}.tar.gz
 
 BuildRequires:  gcc-c++
 BuildRequires:  ncurses-devel
@@ -48,17 +50,21 @@ cd ..
 cd ..
 %setup -q -T -b 5 -n xmake-core-lua-cjson-%{lua_cjson_revision}
 cd ..
+%setup -q -T -b 6 -n xmake-core-lz4-%{lz4_revision}
+cd ..
 %setup -q -T -b 0 -n xmake-%{xmake_revision}
 rm -rf core/src/sv/sv
 rm -rf core/src/tbox/tbox
 rm -rf core/src/lua/lua
 rm -rf core/src/luajit/luajit
 rm -rf core/src/lua-cjson/lua-cjson
+rm -rf core/src/lz4/lz4
 ln -s `pwd`/../tbox-%{tbox_revision} core/src/tbox/tbox
 ln -s `pwd`/../xmake-core-sv-%{sv_revision} core/src/sv/sv
 ln -s `pwd`/../xmake-core-lua-%{lua_revision} core/src/lua/lua
 ln -s `pwd`/../xmake-core-luajit-%{luajit_revision} core/src/luajit/luajit
 ln -s `pwd`/../xmake-core-lua-cjson-%{lua_cjson_revision} core/src/lua-cjson/lua-cjson
+ln -s `pwd`/../xmake-core-lz4-%{lz4_revision} core/src/lz4/lz4
 
 %build
 %if 0%{?suse_version} && 0%{?suse_version} < 1550
