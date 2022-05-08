@@ -117,10 +117,23 @@ tb_int_t xm_os_args(lua_State* lua)
             // add argument
             lua_pushnumber(lua, (tb_int_t)i);
             lua_rawget(lua, 1);
-            size_t size = 0;
-            tb_char_t const* cstr = luaL_checklstring(lua, -1, &size);
-            if (cstr && size)
-                tb_os_args_append(&result, cstr, size, escape, nowrap);
+            if (lua_istable(lua, -1)) // is path instance?
+            {
+                lua_pushstring(lua, "_PATH");
+                lua_gettable(lua, -2);
+                size_t size = 0;
+                tb_char_t const* cstr = luaL_checklstring(lua, -1, &size);
+                if (cstr && size)
+                    tb_os_args_append(&result, cstr, size, escape, nowrap);
+                lua_pop(lua, 1);
+            }
+            else
+            {
+                size_t size = 0;
+                tb_char_t const* cstr = luaL_checklstring(lua, -1, &size);
+                if (cstr && size)
+                    tb_os_args_append(&result, cstr, size, escape, nowrap);
+            }
             lua_pop(lua, 1);
         }
     }

@@ -309,6 +309,9 @@ end
 --
 function os.match(pattern, mode, callback)
 
+    -- support path instance
+    pattern = tostring(pattern)
+
     -- get the excludes
     local excludes = pattern:match("|.*$")
     if excludes then excludes = excludes:split("|", {plain = true}) end
@@ -423,12 +426,15 @@ function os.cp(srcpath, dstpath, opt)
     -- reserve the source directory structure if opt.rootdir is given
     local rootdir = opt and opt.rootdir
     if rootdir then
+        rootdir = tostring(rootdir)
         if not path.is_absolute(rootdir) then
             rootdir = path.absolute(rootdir)
         end
     end
 
     -- copy files or directories
+    srcpath = tostring(srcpath)
+    dstpath = tostring(dstpath)
     local srcpathes = os._match_wildcard_pathes(srcpath)
     if type(srcpathes) == "string" then
         return os._cp(srcpathes, dstpath, rootdir, opt)
@@ -452,6 +458,8 @@ function os.mv(srcpath, dstpath)
     end
 
     -- copy files or directories
+    srcpath = tostring(srcpath)
+    dstpath = tostring(dstpath)
     local srcpathes = os._match_wildcard_pathes(srcpath)
     if type(srcpathes) == "string" then
         return os._mv(srcpathes, dstpath)
@@ -475,6 +483,7 @@ function os.rm(filepath)
     end
 
     -- remove file or directories
+    filepath = tostring(filepath)
     local filepathes = os._match_wildcard_pathes(filepath)
     if type(filepathes) == "string" then
         return os._rm(filepathes)
@@ -491,6 +500,8 @@ end
 
 -- link file or directory to the new symfile
 function os.ln(srcpath, dstpath)
+    srcpath = tostring(srcpath)
+    dstpath = tostring(dstpath)
     if not os.link(srcpath, dstpath) then
         return false, string.format("cannot link %s to %s, %s", srcpath, dstpath, os.strerror())
     end
@@ -499,9 +510,10 @@ end
 
 -- change to directory
 function os.cd(dir)
-
-    -- check
     assert(dir)
+
+    -- support path instance
+    dir = tostring(dir)
 
     -- the previous directory
     local oldir = os.curdir()
@@ -551,6 +563,9 @@ function os.mkdir(dir)
         return false, string.format("invalid arguments!")
     end
 
+    -- support path instance
+    dir = tostring(dir)
+
     -- create directories
     local dirs = table.wrap(os._match_wildcard_pathes(dir))
     for _, _dir in ipairs(dirs) do
@@ -568,6 +583,9 @@ function os.rmdir(dir)
     if not dir then
         return false, string.format("invalid arguments!")
     end
+
+    -- support path instance
+    dir = tostring(dir)
 
     -- remove directories
     local dirs = table.wrap(os._match_wildcard_pathes(dir))
@@ -728,7 +746,7 @@ function os.execv(program, argv, opt)
     opt = opt or {}
 
     -- is not executable program file?
-    local filename = program
+    local filename = tostring(program)
     if not os.isexec(program) then
 
         -- parse the filename and arguments, e.g. "xcrun -sdk macosx clang"

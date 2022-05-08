@@ -82,6 +82,14 @@ tb_int_t xm_process_openv(lua_State* lua)
             // pass this argument
             argv[1 + argi] = lua_tostring(lua, -1);
         }
+        // is path instance?
+        else if (lua_istable(lua, -1))
+        {
+            lua_pushstring(lua, "_PATH");
+            lua_gettable(lua, -2);
+            argv[1 + argi] = lua_tostring(lua, -1);
+            lua_pop(lua, 1);
+        }
         else
         {
             // error
