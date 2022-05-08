@@ -28,7 +28,7 @@ import("private.service.message")
 local stream = stream or object()
 
 -- max data buffer size
-local STREAM_STRING_MAXN = 1024 * 1024
+local STREAM_DATA_MAXN = 10 * 1024 * 1024
 
 -- init stream
 function stream:init(sock)
@@ -61,7 +61,7 @@ function stream:flush()
     end
 end
 
--- send the given bytes
+-- send the given bytes (small data)
 function stream:send(data, start, last)
     start = start or 1
     last = last or data:size()
@@ -114,14 +114,13 @@ function stream:send_object(obj)
     end
 end
 
--- send string
-function stream:send_string(str)
+-- send data
+function stream:send_data(data)
     local buff = self._BUFF
-    local size = #str
-    assert(size < STREAM_STRING_MAXN, "too large string size(%d)", size)
+    local size = data:size()
+    assert(size < STREAM_DATA_MAXN, "too large data size(%d)", size)
     buff:u32be_set(1, size)
     if self:send(buff, 1, 4) then
-        local data = bytes(str)
         local send = 0
         local cache = self._WCACHE
         local cache_maxn = cache:size()
@@ -137,6 +136,11 @@ function stream:send_string(str)
             return true
         end
     end
+end
+
+-- send string
+function stream:send_string(str)
+    return self:send_data(bytes(str))
 end
 
 -- send file
@@ -257,30 +261,32 @@ function stream:recv_object()
     end
 end
 
--- recv string
-function stream:recv_string()
+-- recv data
+function stream:recv_data()
     local size = self:recv_u32be()
     if size then
-        local str
         local recv = 0
-        local buff = self._BUFF
-        assert(size < STREAM_STRING_MAXN, "too large string size(%d)", size)
+        assert(size < STREAM_DATA_MAXN, "too large data size(%d)", size)
+        local buff = bytes(size)
         while recv < size do
-            local data = self:recv(buff, math.min(buff:size(), size - recv))
+            local data = self:recv(buff:slice(recv + 1), size - recv)
             if data then
-                if str then
-                    str = str .. data:str()
-                else
-                    str = data:str()
-                end
                 recv = recv + data:size()
             else
                 break
             end
         end
         if recv == size then
-            return str
+            return buff
         end
+    end
+end
+
+-- recv string
+function stream:recv_string()
+    local data = self:recv_data()
+    if data then
+        return data:str()
     end
 end
 
