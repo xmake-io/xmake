@@ -86,6 +86,8 @@ sandbox_os.SYSERR_NOT_FILEDIR = os.SYSERR_NOT_FILEDIR
 -- copy file or directory
 function sandbox_os.cp(srcpath, dstpath, opt)
     assert(srcpath and dstpath)
+    srcpath = tostring(srcpath)
+    dstpath = tostring(dstpath)
     local ok, errors = os.cp(vformat(srcpath), vformat(dstpath), opt)
     if not ok then
         os.raise(errors)
@@ -95,6 +97,8 @@ end
 -- move file or directory
 function sandbox_os.mv(srcpath, dstpath)
     assert(srcpath and dstpath)
+    srcpath = tostring(srcpath)
+    dstpath = tostring(dstpath)
     local ok, errors = os.mv(vformat(srcpath), vformat(dstpath))
     if not ok then
         os.raise(errors)
@@ -104,6 +108,7 @@ end
 -- remove files or directories
 function sandbox_os.rm(filepath)
     assert(filepath)
+    filepath = tostring(filepath)
     local ok, errors = os.rm(vformat(filepath))
     if not ok then
         os.raise(errors)
@@ -113,6 +118,8 @@ end
 -- link file or directory to the new symfile
 function sandbox_os.ln(srcpath, dstpath)
     assert(srcpath and dstpath)
+    srcpath = tostring(srcpath)
+    dstpath = tostring(dstpath)
     local ok, errors = os.ln(vformat(srcpath), vformat(dstpath))
     if not ok then
         os.raise(errors)
@@ -389,7 +396,7 @@ end
 
 -- match files or directories
 function sandbox_os.match(pattern, mode, callback)
-    return os.match(vformat(pattern), mode, callback)
+    return os.match(vformat(tostring(pattern)), mode, callback)
 end
 
 -- match directories
@@ -410,36 +417,41 @@ end
 -- is directory?
 function sandbox_os.isdir(dirpath)
     assert(dirpath)
+    dirpath = tostring(dirpath)
     return os.isdir(vformat(dirpath))
 end
 
 -- is file?
 function sandbox_os.isfile(filepath)
     assert(filepath)
+    filepath = tostring(filepath)
     return os.isfile(vformat(filepath))
 end
 
 -- is symlink?
 function sandbox_os.islink(filepath)
     assert(filepath)
+    filepath = tostring(filepath)
     return os.islink(vformat(filepath))
 end
 
 -- is execute program?
 function sandbox_os.isexec(filepath)
     assert(filepath)
+    filepath = tostring(filepath)
     return os.isexec(vformat(filepath))
 end
 
 -- exists file or directory?
 function sandbox_os.exists(filedir)
     assert(filedir)
+    filedir = tostring(filedir)
     return os.exists(vformat(filedir))
 end
 
 -- read the content of symlink
 function sandbox_os.readlink(symlink)
-    local result = os.readlink(symlink)
+    local result = os.readlink(tostring(symlink))
     if not result then
         os.raise("cannot read link(%s)", symlink)
     end
