@@ -47,7 +47,7 @@ function lz4.compress(data, opt)
     local dataaddr = data:caddr()
     local result, errors = lz4._compress(dataaddr, datasize)
     if not result then
-        return nil, errors or string.format("compress lz4 data failed")
+        return nil, errors or string.format("compress lz4 data failed, %s", errors or "unknown")
     end
     return bytes(result)
 end
@@ -64,7 +64,7 @@ function lz4.decompress(data, opt)
     local dataaddr = data:caddr()
     local result, errors = lz4._decompress(dataaddr, datasize)
     if not result then
-        return nil, string.format("decompress lz4 data failed")
+        return nil, string.format("decompress lz4 data failed, %s", errors or "unknown")
     end
     return bytes(result)
 end

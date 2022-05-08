@@ -66,7 +66,7 @@ tb_int_t xm_lz4_decompress(lua_State* lua)
         tb_bool_t failed = tb_false;
         while (1)
         {
-            tb_size_t advance = size;
+            size_t advance = (size_t)size;
             size_t buffer_size = sizeof(buffer);
             code = LZ4F_decompress(ctx, buffer, &buffer_size, data, &advance, tb_null);
             if (LZ4F_isError(code))

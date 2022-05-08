@@ -63,14 +63,14 @@ tb_int_t xm_lz4_compress(lua_State* lua)
         output_data = output_size <= sizeof(buffer)? buffer : tb_malloc(output_size);
         tb_assert_and_check_break(output_data);
 
-        tb_size_t err = LZ4F_compressFrame(output_data, output_size, data, size, tb_null);
-        if (LZ4F_isError(err))
+        tb_size_t real_or_errs = LZ4F_compressFrame(output_data, output_size, data, size, tb_null);
+        if (LZ4F_isError(real_or_errs))
         {
-            error = LZ4F_getErrorName(err);
+            error = LZ4F_getErrorName(real_or_errs);
             break;
         }
 
-        lua_pushlstring(lua, (tb_char_t const*)output_data, output_size);
+        lua_pushlstring(lua, (tb_char_t const*)output_data, real_or_errs);
         ok = tb_true;
     } while (0);
 
