@@ -25,7 +25,7 @@ local sandbox_core_compress_lz4 = sandbox_core_compress_lz4 or {}
 local lz4   = require("compress/lz4")
 local raise = require("sandbox/modules/raise")
 
--- compress data
+-- compress frame data
 function sandbox_core_compress_lz4.compress(data, opt)
     local result, errors = lz4.compress(data, opt)
     if not result and errors then
@@ -34,9 +34,27 @@ function sandbox_core_compress_lz4.compress(data, opt)
     return result
 end
 
--- decompress data
+-- decompress frame data
 function sandbox_core_compress_lz4.decompress(data, opt)
     local result, errors = lz4.decompress(data, opt)
+    if not result and errors then
+        raise(errors)
+    end
+    return result
+end
+
+-- compress block data
+function sandbox_core_compress_lz4.block_compress(data, opt)
+    local result, errors = lz4.block_compress(data, opt)
+    if not result and errors then
+        raise(errors)
+    end
+    return result
+end
+
+-- decompress block data
+function sandbox_core_compress_lz4.block_decompress(data, opt)
+    local result, errors = lz4.block_decompress(data, opt)
     if not result and errors then
         raise(errors)
     end

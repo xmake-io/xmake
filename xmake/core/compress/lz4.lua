@@ -32,7 +32,7 @@ lz4._decompress       = lz4._decompress or lz4.decompress
 lz4._block_compress   = lz4._block_compress or lz4.block_compress
 lz4._block_decompress = lz4._block_decompress or lz4.block_decompress
 
--- compress data
+-- compress frame data
 --
 -- @param data          the data
 -- @param opt           the options
@@ -47,12 +47,12 @@ function lz4.compress(data, opt)
     local dataaddr = data:caddr()
     local result, errors = lz4._compress(dataaddr, datasize)
     if not result then
-        return nil, errors or string.format("compress lz4 data failed, %s", errors or "unknown")
+        return nil, errors or string.format("compress frame data failed, %s", errors or "unknown")
     end
     return bytes(result)
 end
 
--- decompres data
+-- decompres frame data
 --
 -- @param data          the data
 -- @param opt           the options
@@ -64,7 +64,44 @@ function lz4.decompress(data, opt)
     local dataaddr = data:caddr()
     local result, errors = lz4._decompress(dataaddr, datasize)
     if not result then
-        return nil, string.format("decompress lz4 data failed, %s", errors or "unknown")
+        return nil, string.format("decompress frame data failed, %s", errors or "unknown")
+    end
+    return bytes(result)
+end
+
+-- compress block data
+--
+-- @param data          the data
+-- @param opt           the options
+--
+-- @return              the result data
+--
+function lz4.block_compress(data, opt)
+    if type(data) == "string" then
+        data = bytes(data)
+    end
+    local datasize = data:size()
+    local dataaddr = data:caddr()
+    local result, errors = lz4._block_compress(dataaddr, datasize)
+    if not result then
+        return nil, errors or string.format("compress block data failed, %s", errors or "unknown")
+    end
+    return bytes(result)
+end
+
+-- decompres block data
+--
+-- @param data          the data
+-- @param opt           the options
+--
+-- @return              the result data
+--
+function lz4.block_decompress(data, opt)
+    local datasize = data:size()
+    local dataaddr = data:caddr()
+    local result, errors = lz4._block_decompress(dataaddr, datasize)
+    if not result then
+        return nil, string.format("decompress block data failed, %s", errors or "unknown")
     end
     return bytes(result)
 end
