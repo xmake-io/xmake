@@ -133,7 +133,11 @@ xmake_C_FILES 			+= \
 						libc/byteof \
 						libc/setbyte \
 						libc/strndup \
-						tty/term_mode
+						tty/term_mode \
+						lz4/compress \
+						lz4/decompress \
+						lz4/block_compress \
+						lz4/block_decompress
 
 iswin =
 ifeq ($(PLAT),windows)
@@ -168,7 +172,8 @@ xmake_CXFLAGS 	   	    += $(if $(findstring curses,$(base_LIBNAMES)),-DXM_CONFIG
 xmake_INC_DIRS 		    += \
 						../tbox/tbox/src \
 						../tbox/inc/$(PLAT) \
-                        ../sv/sv/include
+                        ../sv/sv/include \
+						../lz4/lz4/lib
 ifeq ($(RUNTIME),luajit)
 xmake_INC_DIRS 			+= ../luajit/luajit/src
 xmake_CXFLAGS 			+= -DUSE_LUAJIT
