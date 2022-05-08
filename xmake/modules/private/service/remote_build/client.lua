@@ -215,7 +215,7 @@ function remote_build_client:sync()
         -- do sync
         cprint("Uploading files with ${bright}%d${clear} bytes ..", os.filesize(archive_diff_file))
         local send_ok = false
-        if stream:send_msg(message.new_sync(session_id, diff_files, {token = self:token()})) and stream:flush() then
+        if stream:send_msg(message.new_sync(session_id, diff_files, {token = self:token()}), {compress = true}) and stream:flush() then
             if stream:send_file(archive_diff_file) and stream:flush() then
                 send_ok = true
             end
@@ -396,7 +396,7 @@ function remote_build_client:_diff_files(stream)
     local count = 0
     local result, errors
     cprint("Comparing ${bright}%d${clear} files ..", filecount)
-    if stream:send_msg(message.new_diff(session_id, manifest, {token = self:token()})) and stream:flush() then
+    if stream:send_msg(message.new_diff(session_id, manifest, {token = self:token()}), {compress = true}) and stream:flush() then
         local msg = stream:recv_msg()
         if msg and msg:success() then
             result = msg:body().manifest

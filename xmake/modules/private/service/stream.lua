@@ -23,6 +23,7 @@ import("core.base.bit")
 import("core.base.object")
 import("core.base.socket")
 import("core.base.bytes")
+import("core.compress.lz4")
 import("private.service.message")
 
 -- define module
@@ -103,18 +104,18 @@ function stream:send(data, start, last)
 end
 
 -- send message
-function stream:send_msg(msg)
-    return self:send_object(msg:body())
+function stream:send_msg(msg, opt)
+    return self:send_object(msg:body(), opt)
 end
 
 -- send object
-function stream:send_object(obj)
+function stream:send_object(obj, opt)
     local str, errors = string.serialize(obj, {strip = true, indent = false})
     if errors then
         raise(errors)
     end
     if str then
-        return self:send_string(str)
+        return self:send_string(str, opt)
     end
 end
 
@@ -132,6 +133,7 @@ function stream:send_data(data, opt)
     local flags = 0
     if opt.compress then
         flags = bit.bor(flags, HEADER_FLAG_COMPRESS_LZ4)
+        data = lz4.compress(data)
     end
     local size = data:size()
     assert(size < STREAM_DATA_MAXN, "too large data size(%d)", size)
@@ -297,6 +299,9 @@ function stream:recv_data()
             end
         end
         if recv == size then
+            if bit.band(flags, HEADER_FLAG_COMPRESS_LZ4) == HEADER_FLAG_COMPRESS_LZ4 then
+                buff = lz4.decompress(buff)
+            end
             return buff
         end
     end
