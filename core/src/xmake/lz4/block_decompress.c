@@ -52,7 +52,7 @@ tb_int_t xm_lz4_block_decompress(lua_State* lua)
 
     // get real size
     tb_int_t real = (tb_int_t)lua_tointeger(lua, 3);
-    if (real > 0)
+    if (real <= 0)
     {
         lua_pushnil(lua);
         lua_pushfstring(lua, "invalid output size(%d)!", real);
