@@ -74,12 +74,12 @@ function _instance:join(...)
     return path.new(path.join(table.unpack(items)))
 end
 
-function _instance:split(p)
-    return path.split(self:str(), p)
+function _instance:split()
+    return path.split(self:str())
 end
 
-function _instance:splitenv(p)
-    return path.splitenv(self:str(), p)
+function _instance:splitenv()
+    return path.splitenv(self:str())
 end
 
 -- concat two paths
