@@ -17,6 +17,8 @@ lz4_C_FILES 			+= \
 						lz4/lib/lz4hc \
 						lz4/lib/xxhash
 
+lz4_CFLAGS 				+= -DXXH_NAMESPACE=LZ4_
+
 # use given system library?
 lz4_C_FILES 			:= $(if $(findstring lz4,$(base_LIBNAMES)),,$(lz4_C_FILES))
 lz4_ASM_FILES 			:= $(if $(findstring lz4,$(base_LIBNAMES)),,$(lz4_ASM_FILES))

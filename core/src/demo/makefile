@@ -46,6 +46,11 @@ lua-cjson_LIBS 	   	:= $(if $(findstring cjson,$(base_LIBNAMES)),,lua-cjson$(DTY
 demo_LIBS 			+= $(lua-cjson_LIBS)
 demo_LIB_DIRS 		+= ../lua-cjson
 
+# lz4
+lz4_DTYPE 			:= $(if $(findstring lz4,$(base_LIBNAMES)),,$(DTYPE))
+demo_LIBS 			+= lz4$(lz4_DTYPE)
+demo_LIB_DIRS 		+= ../lz4
+
 demo_LIBS 			+= $(BASE_LIBS)
 
 include $(PRO_DIR)/suffix.mak

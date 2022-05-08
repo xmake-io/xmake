@@ -7,7 +7,7 @@ target("xmake")
     if has_config("curses") or has_config("pdcurses") then
         add_deps("lcurses")
     end
-    add_deps("sv", "lua-cjson", "tbox")
+    add_deps("sv", "lua-cjson", "lz4", "tbox")
     add_deps(get_config("runtime"))
 
     -- add defines
