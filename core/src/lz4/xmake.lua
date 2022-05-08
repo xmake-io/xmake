@@ -8,7 +8,7 @@ target("lz4")
     end
 
     -- add header files
-    add_headerfiles("lz4/lib/(*.h)", {prefixdir = "lz4"})
+    add_headerfiles("lz4/lib/(*.h)")
 
     -- add include directories
     add_includedirs("lz4", {public = true})

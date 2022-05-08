@@ -38,5 +38,53 @@ tb_int_t xm_lz4_compress(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    return 0;
+    // get data and size
+    tb_size_t        size = 0;
+    tb_byte_t const* data = tb_null;
+    if (lua_isnumber(lua, 1)) data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tonumber(lua, 1);
+    if (lua_isnumber(lua, 2)) size = (tb_size_t)lua_tonumber(lua, 2);
+    if (!data || !size)
+    {
+        lua_pushnil(lua);
+        lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
+        return 2;
+    }
+
+    // do compress
+    tb_bool_t ok = tb_false;
+    tb_char_t const* error = tb_null;
+    tb_byte_t* output_data = tb_null;
+    tb_byte_t buffer[8192];
+    do
+    {
+        tb_size_t output_size = LZ4F_compressFrameBound(size, tb_null);
+        tb_assert_and_check_break(output_size);
+
+        output_data = output_size <= sizeof(buffer)? buffer : tb_malloc(output_size);
+        tb_assert_and_check_break(output_data);
+
+        tb_size_t err = LZ4F_compressFrame(output_data, output_size, data, size, tb_null);
+        if (LZ4F_isError(err))
+        {
+            error = LZ4F_getErrorName(err);
+            break;
+        }
+
+        lua_pushlstring(lua, (tb_char_t const*)output_data, output_size);
+        ok = tb_true;
+    } while (0);
+
+    if (output_data && output_data != buffer)
+    {
+        tb_free(output_data);
+        output_data = tb_null;
+    }
+
+    if (!ok)
+    {
+        lua_pushnil(lua);
+        lua_pushstring(lua, error? error : "unknown");
+        return 2;
+    }
+    return 1;
 }
