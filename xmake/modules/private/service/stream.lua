@@ -166,9 +166,15 @@ function stream:send_file(filepath, opt)
     -- send header
     opt = opt or {}
     local flags = 0
+    local tmpfile
     if opt.compress then
         flags = bit.bor(flags, HEADER_FLAG_COMPRESS_LZ4)
+        tmpfile = os.tmpfile()
+        lz4.compress_file(filepath, tmpfile)
+        filepath = tmpfile
     end
+
+    -- send header
     local size = os.filesize(filepath)
     if not self:send_header(size, flags) then
         return
@@ -189,6 +195,9 @@ function stream:send_file(filepath, opt)
             ok = true
         end
         file:close()
+    end
+    if tmpfile then
+        os.tryrm(tmpfile)
     end
     return ok
 end
@@ -319,6 +328,11 @@ end
 function stream:recv_file(filepath)
     local size, flags = self:recv_header()
     if size then
+        local dstfile
+        if bit.band(flags, HEADER_FLAG_COMPRESS_LZ4) == HEADER_FLAG_COMPRESS_LZ4 then
+            dstfile = filepath
+            filepath = os.tmpfile()
+        end
         local buff = self._BUFF
         local recv = 0
         local file = io.open(filepath, "wb")
@@ -331,6 +345,10 @@ function stream:recv_file(filepath)
         end
         file:close()
         if recv == size then
+            if dstfile then
+                lz4.decompress_file(filepath, dstfile)
+                os.tryrm(filepath)
+            end
             return true
         end
     end
