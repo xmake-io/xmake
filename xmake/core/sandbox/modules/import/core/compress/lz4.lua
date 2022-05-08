@@ -53,8 +53,8 @@ function sandbox_core_compress_lz4.block_compress(data, opt)
 end
 
 -- decompress block data
-function sandbox_core_compress_lz4.block_decompress(data, opt)
-    local result, errors = lz4.block_decompress(data, opt)
+function sandbox_core_compress_lz4.block_decompress(data, realsize, opt)
+    local result, errors = lz4.block_decompress(data, realsize, opt)
     if not result and errors then
         raise(errors)
     end

@@ -92,14 +92,15 @@ end
 -- decompres block data
 --
 -- @param data          the data
+-- @param realsize      the decompressed real size
 -- @param opt           the options
 --
 -- @return              the result data
 --
-function lz4.block_decompress(data, opt)
+function lz4.block_decompress(data, realsize, opt)
     local datasize = data:size()
     local dataaddr = data:caddr()
-    local result, errors = lz4._block_decompress(dataaddr, datasize)
+    local result, errors = lz4._block_decompress(dataaddr, datasize, realsize)
     if not result then
         return nil, string.format("decompress block data failed, %s", errors or "unknown")
     end
