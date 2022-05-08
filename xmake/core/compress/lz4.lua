@@ -72,6 +72,7 @@ function lz4.decompress(data, opt)
     return bytes(result)
 end
 
+-- TODO use lz4file
 -- compress file data
 function lz4.compress_file(srcpath, dstpath, opt)
     local data, errors = io.readfile(srcpath, {encoding = "binary"})
@@ -84,6 +85,7 @@ function lz4.compress_file(srcpath, dstpath, opt)
     return false, errors or "compress failed"
 end
 
+-- TODO use lz4file
 -- decompress file data
 function lz4.decompress_file(srcpath, dstpath, opt)
     local data, errors = io.readfile(srcpath, {encoding = "binary"})
