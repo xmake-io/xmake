@@ -51,11 +51,11 @@ tb_int_t xm_lz4_block_decompress(lua_State* lua)
     }
 
     // get real size
-    tb_size_t real = (tb_size_t)lua_tonumber(lua, 3);
-    if (!real)
+    tb_int_t real = (tb_int_t)lua_tointeger(lua, 3);
+    if (real > 0)
     {
         lua_pushnil(lua);
-        lua_pushfstring(lua, "invalid output size(%d)!", (tb_int_t)real);
+        lua_pushfstring(lua, "invalid output size(%d)!", real);
         return 2;
     }
 
@@ -65,7 +65,7 @@ tb_int_t xm_lz4_block_decompress(lua_State* lua)
     tb_byte_t buffer[8192];
     do
     {
-        output_data = real <= sizeof(buffer)? buffer : tb_malloc(real);
+        output_data = real <= sizeof(buffer)? buffer : (tb_byte_t*)tb_malloc(real);
         tb_assert_and_check_break(output_data);
 
         tb_int_t r = LZ4_decompress_fast((tb_char_t const*)data, (tb_char_t*)output_data, real);
