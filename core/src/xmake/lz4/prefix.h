@@ -47,7 +47,11 @@ typedef struct __xm_lz4_cstream_t
 // the lz4 decompress stream type
 typedef struct __xm_lz4_dstream_t
 {
-    tb_int_t            dummy;
+    LZ4F_dctx*          dctx;
+    LZ4_byte*           srcBuf;
+    tb_int_t            srcBufNext;
+    tb_int_t            srcBufSize;
+    tb_int_t            srcBufMaxSize;
 }xm_lz4_dstream_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -129,13 +133,43 @@ static __tb_inline__ tb_int_t xm_lz4_cstream_compress(xm_lz4_cstream_t* stream, 
     return real;
 }
 
-static __tb_inline__ xm_lz4_dstream_t* xm_lz4_dstream_init()
-{
-    return tb_null;
-}
-
 static __tb_inline__ tb_void_t xm_lz4_dstream_exit(xm_lz4_dstream_t* stream)
 {
+    if (stream)
+    {
+        if (stream->dctx)
+        {
+            LZ4F_freeDecompressionContext(stream->dctx);
+            stream->dctx = tb_null;
+        }
+        tb_free(stream);
+    }
+}
+
+static __tb_inline__ xm_lz4_dstream_t* xm_lz4_dstream_init()
+{
+    LZ4F_errorCode_t ret;
+    tb_bool_t ok = tb_false;
+    xm_lz4_dstream_t* stream = tb_null;
+    do
+    {
+        stream = tb_malloc0_type(xm_lz4_dstream_t);
+        tb_assert_and_check_break(stream);
+
+        ret = LZ4F_createDecompressionContext(&stream->dctx, LZ4F_getVersion());
+        if (LZ4F_isError(ret))
+            break;
+
+        ok = tb_true;
+
+    } while (0);
+
+    if (!ok && stream)
+    {
+        xm_lz4_dstream_exit(stream);
+        stream = tb_null;
+    }
+    return stream;
 }
 
 static __tb_inline__ tb_int_t xm_lz4_dstream_decompress(xm_lz4_dstream_t* stream, tb_byte_t const* idata, tb_int_t isize, tb_byte_t** podata)
