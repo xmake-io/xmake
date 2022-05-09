@@ -15,14 +15,14 @@
  * Copyright (C) 2015-present, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        decompress_file.c
+ * @file        dedecompress_file.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "decompress_file"
+#define TB_TRACE_MODULE_NAME                "dedecompress_file"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -38,6 +38,61 @@ tb_int_t xm_lz4_decompress_file(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    return 0;
+    // get the file paths
+    tb_char_t const* srcpath = luaL_checkstring(lua, 1);
+    tb_char_t const* dstpath = luaL_checkstring(lua, 2);
+    tb_check_return_val(srcpath && dstpath, 0);
+
+    // init lz4 stream
+    xm_lz4_stream_t stream_lz4;
+    xm_lz4_stream_init(&stream_lz4);
+
+    // do decompress
+    tb_bool_t       ok = tb_false;
+    tb_stream_ref_t istream = tb_stream_init_from_file(srcpath, TB_FILE_MODE_RO);
+    tb_stream_ref_t ostream = tb_stream_init_from_file(dstpath, TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC);
+    if (istream && ostream && tb_stream_open(istream) && tb_stream_open(ostream))
+    {
+        tb_bool_t write_ok = tb_false;
+        tb_byte_t idata[TB_STREAM_BLOCK_MAXN];
+        while (!tb_stream_beof(istream))
+        {
+            write_ok = tb_false;
+            tb_int_t ireal = (tb_int_t)tb_stream_read(istream, idata, sizeof(idata));
+            if (ireal > 0)
+            {
+                tb_byte_t* odata = tb_null;
+                tb_int_t oreal = xm_lz4_stream_decompress(&stream_lz4, idata, ireal, &odata);
+                tb_assert_and_check_break(oreal >= 0 && odata);
+                if (oreal > 0)
+                {
+                    if (!tb_stream_bwrit(ostream, odata, oreal))
+                        break;
+                }
+            }
+            else break;
+            write_ok = tb_true;
+        }
+
+        if (tb_stream_beof(istream) && write_ok)
+            ok = tb_true;
+    }
+
+    // exit stream
+    if (istream)
+    {
+        tb_stream_exit(istream);
+        istream = tb_null;
+    }
+    if (ostream)
+    {
+        tb_stream_exit(ostream);
+        ostream = tb_null;
+    }
+    xm_lz4_stream_exit(&stream_lz4);
+
+    // ok?
+    lua_pushboolean(lua, ok);
+    return 1;
 }
 
