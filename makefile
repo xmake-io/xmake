@@ -1,5 +1,5 @@
 # is debug?
-debug  		:=y
+debug  		:=n
 
 # verbose
 ifneq ($(VERBOSE),y)
