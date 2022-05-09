@@ -127,3 +127,10 @@ function test_normalize(t)
     end
 end
 
+function test_instance(t)
+    t:are_equal(path("/tmp/a"):str(), "/tmp/a")
+    t:are_equal(path("/tmp/a"):directory():str(), "/tmp")
+    t:are_equal(path("/tmp/a", function (p) return "--key=" .. p end):str(), "--key=/tmp/a")
+    t:are_equal(path("/tmp/a", function (p) return "--key=" .. p end):rawstr(), "/tmp/a")
+    t:are_equal(path("/tmp/a", function (p) return "--key=" .. p end):clone():set("/tmp/b"):str(), "--key=/tmp/b")
+end
