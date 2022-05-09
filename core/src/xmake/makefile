@@ -137,7 +137,9 @@ xmake_C_FILES 			+= \
 						lz4/compress \
 						lz4/decompress \
 						lz4/block_compress \
-						lz4/block_decompress
+						lz4/block_decompress \
+						lz4/compress_file \
+						lz4/decompress_file
 
 iswin =
 ifeq ($(PLAT),windows)

@@ -194,6 +194,8 @@ tb_int_t xm_lz4_compress(lua_State* lua);
 tb_int_t xm_lz4_decompress(lua_State* lua);
 tb_int_t xm_lz4_block_compress(lua_State* lua);
 tb_int_t xm_lz4_block_decompress(lua_State* lua);
+tb_int_t xm_lz4_compress_file(lua_State* lua);
+tb_int_t xm_lz4_decompress_file(lua_State* lua);
 
 // the windows functions
 #ifdef TB_CONFIG_OS_WINDOWS
@@ -416,6 +418,8 @@ static luaL_Reg const g_lz4_functions[] =
 ,   { "decompress",       xm_lz4_decompress       }
 ,   { "block_compress",   xm_lz4_block_compress   }
 ,   { "block_decompress", xm_lz4_block_decompress }
+,   { "compress_file",    xm_lz4_compress_file    }
+,   { "decompress_file",  xm_lz4_decompress_file  }
 ,   { tb_null,            tb_null                 }
 };
 
