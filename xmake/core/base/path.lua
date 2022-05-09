@@ -27,23 +27,46 @@ local table  = require("base/table")
 local _instance = _instance or {}
 
 -- new a path
-function _instance.new(p)
+function _instance.new(p, transform)
     local instance = table.inherit(_instance)
     instance._PATH = p
+    instance._TRANSFORM = transform
     setmetatable(instance, _instance)
     return instance
 end
 
 function _instance:str()
+    local transform = self._TRANSFORM
+    if transform then
+        return transform(self:rawstr())
+    end
+    return self:rawstr()
+end
+
+function _instance:rawstr()
     return self._PATH
 end
 
+function _instance:set(p)
+    self._PATH = tostring(p)
+    return self
+end
+
+function _instance:transform_set(transform)
+    self._TRANSFORM = transform
+    return self
+end
+
+function _instance:clone()
+    return path.new(self:rawstr(), self._TRANSFORM)
+end
+
 function _instance:normalize()
-    return path.new(path.normalize(self:str()))
+    return path.new(path.normalize(self:str()), self._TRANSFORM)
 end
 
 function _instance:translate(opt)
-    return path.new(path.translate(self:str(), opt))
+    return path.new(path.translate(self:str(), opt), self._TRANSFORM)
 end
 
 function _instance:filename()
@@ -59,7 +82,7 @@ function _instance:extension()
 end
 
 function _instance:directory()
-    return path.new(path.directory(self:str()))
+    return path.new(path.directory(self:str()), self._TRANSFORM)
 end
 
 function _instance:join(...)
@@ -71,7 +94,7 @@ function _instance:join(...)
             table.insert(items, item)
         end
     end
-    return path.new(path.join(table.unpack(items)))
+    return path.new(path.join(table.unpack(items)), self._TRANSFORM)
 end
 
 function _instance:split()
@@ -84,7 +107,7 @@ end
 
 -- concat two paths
 function _instance:__concat(other)
-    return path.new(path.join(self:str(), other:str()))
+    return path.new(path.join(self:str(), other:str()), self._TRANSFORM)
 end
 
 -- tostring(path)
@@ -305,8 +328,8 @@ function path.cygwin_path(p)
 end
 
 -- new a path instance
-function path.new(p)
-    return _instance.new(p)
+function path.new(p, transform)
+    return _instance.new(p, transform)
 end
 
 -- is path instance?
@@ -315,6 +338,9 @@ function path.instance_of(p)
 end
 
 -- register call function
+--
+-- local p = path("/tmp/a")
+-- local p = path("/tmp/a", function (p) return "--key=" .. p end)
 setmetatable(path, {
     __call = function (_, ...)
         return path.new(...)
