@@ -44,8 +44,8 @@ tb_int_t xm_lz4_decompress_file(lua_State* lua)
     tb_check_return_val(srcpath && dstpath, 0);
 
     // init lz4 stream
-    xm_lz4_stream_t stream_lz4;
-    xm_lz4_stream_init(&stream_lz4);
+    xm_lz4_dstream_t* stream_lz4 = xm_lz4_dstream_init();
+    tb_check_return_val(stream_lz4, 0);
 
     // do decompress
     tb_bool_t       ok = tb_false;
@@ -62,7 +62,7 @@ tb_int_t xm_lz4_decompress_file(lua_State* lua)
             if (ireal > 0)
             {
                 tb_byte_t* odata = tb_null;
-                tb_int_t oreal = xm_lz4_stream_decompress(&stream_lz4, idata, ireal, &odata);
+                tb_int_t oreal = xm_lz4_dstream_decompress(stream_lz4, idata, ireal, &odata);
                 tb_assert_and_check_break(oreal >= 0 && odata);
                 if (oreal > 0)
                 {
@@ -89,7 +89,7 @@ tb_int_t xm_lz4_decompress_file(lua_State* lua)
         tb_stream_exit(ostream);
         ostream = tb_null;
     }
-    xm_lz4_stream_exit(&stream_lz4);
+    xm_lz4_dstream_exit(stream_lz4);
 
     // ok?
     lua_pushboolean(lua, ok);
