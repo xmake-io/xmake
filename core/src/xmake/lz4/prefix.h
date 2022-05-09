@@ -50,6 +50,7 @@ typedef struct __xm_lz4_stream_t
     tb_int_t     buffer_position;
     tb_byte_t*   output;
     tb_int_t     output_maxn;
+    tb_int_t     accelerate;
     LZ4_stream_t handle;
 }xm_lz4_stream_t;
 
@@ -69,6 +70,7 @@ static __tb_inline__ tb_int_t xm_lz4_stream_buffer_policy(tb_int_t buffer_size, 
 
 static __tb_inline__ tb_void_t xm_lz4_stream_init(xm_lz4_stream_t* stream)
 {
+    stream->accelerate = 1;
     stream->buffer_position = 0;
     stream->buffer_size = sizeof(stream->buffer);
     stream->output = tb_null;
@@ -87,8 +89,48 @@ static __tb_inline__ tb_void_t xm_lz4_stream_exit(xm_lz4_stream_t* stream)
 
 static __tb_inline__ tb_int_t xm_lz4_stream_compress(xm_lz4_stream_t* stream, tb_byte_t const* idata, tb_int_t isize, tb_byte_t** podata)
 {
-    // TODO
-    return -1;
+    // check
+    tb_assert_and_check_return_val(stream && idata && isize && podata, -1);
+
+    // ensure the output buffer
+    tb_int_t bound = LZ4_compressBound(isize);
+    if (bound > 0 && bound > stream->output_maxn)
+    {
+        if (!stream->output) stream->output = tb_malloc_bytes(bound);
+        else stream->output = (tb_byte_t*)tb_ralloc(stream->output, bound);
+        stream->output_maxn = bound;
+    }
+    tb_assert_and_check_return_val(stream->output && stream->output_maxn > 0, -1);
+
+    // do compress
+    tb_int_t real = 0;
+    tb_int_t policy = xm_lz4_stream_buffer_policy(stream->buffer_size, stream->buffer_position, isize);
+    if (policy == LZ4_STREAM_BUFFER_POLICY_APPEND || policy == LZ4_STREAM_BUFFER_POLICY_RESET)
+    {
+        tb_byte_t* buffer = tb_null;
+        if (policy == LZ4_STREAM_BUFFER_POLICY_APPEND)
+        {
+            buffer = stream->buffer + stream->buffer_position;
+            stream->buffer_position += isize;
+        }
+        else
+        {
+            buffer = stream->buffer;
+            stream->buffer_position = isize;
+        }
+        tb_memcpy(buffer, idata, isize);
+        real = LZ4_compress_fast_continue(&stream->handle, (tb_char_t*)buffer, (tb_char_t*)stream->output, isize, bound, stream->accelerate);
+        tb_assert_and_check_return_val(real > 0, -1);
+    }
+    else
+    {
+        real = LZ4_compress_fast_continue(&stream->handle, (tb_char_t*)idata, (tb_char_t*)stream->output, isize, bound, stream->accelerate);
+        tb_assert_and_check_return_val(real > 0, -1);
+        stream->buffer_position = LZ4_saveDict(&stream->handle, (tb_char_t*)stream->buffer, stream->buffer_size);
+    }
+
+    *podata = stream->output;
+    return real;
 }
 
 #endif

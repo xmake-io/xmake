@@ -31,6 +31,8 @@ lz4._compress         = lz4._compress or lz4.compress
 lz4._decompress       = lz4._decompress or lz4.decompress
 lz4._block_compress   = lz4._block_compress or lz4.block_compress
 lz4._block_decompress = lz4._block_decompress or lz4.block_decompress
+lz4._compress_file    = lz4._compress_file or lz4.compress_file
+lz4._decompress_file  = lz4._decompress_file or lz4.decompress_file
 
 -- compress frame data
 --
@@ -72,30 +74,14 @@ function lz4.decompress(data, opt)
     return bytes(result)
 end
 
--- TODO use stream in core
 -- compress file data
 function lz4.compress_file(srcpath, dstpath, opt)
-    local data, errors = io.readfile(srcpath, {encoding = "binary"})
-    if data then
-        data, errors = lz4.compress(data, opt)
-        if data then
-            return io.writefile(dstpath, data, {encoding = "binary"})
-        end
-    end
-    return false, errors or "compress failed"
+    return lz4._compress_file(srcpath, dstpath)
 end
 
--- TODO use stream in core
 -- decompress file data
 function lz4.decompress_file(srcpath, dstpath, opt)
-    local data, errors = io.readfile(srcpath, {encoding = "binary"})
-    if data then
-        data, errors = lz4.decompress(data, opt)
-        if data then
-            return io.writefile(dstpath, data, {encoding = "binary"})
-        end
-    end
-    return false, errors or "decompress failed"
+    return lz4._decompress_file(srcpath, dstpath)
 end
 
 -- compress block data
