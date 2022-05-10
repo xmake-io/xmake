@@ -58,11 +58,11 @@ tb_int_t xm_lz4_compress_file(lua_State* lua)
         while (!tb_stream_beof(istream))
         {
             write_ok = tb_false;
-            tb_int_t ireal = (tb_int_t)tb_stream_read(istream, idata, sizeof(idata));
+            tb_long_t ireal = (tb_long_t)tb_stream_read(istream, idata, sizeof(idata));
             if (ireal > 0)
             {
                 tb_byte_t* odata = tb_null;
-                tb_int_t oreal = xm_lz4_cstream_compress(stream_lz4, idata, ireal, &odata);
+                tb_long_t oreal = xm_lz4_cstream_compress(stream_lz4, idata, ireal, &odata);
                 tb_assert_and_check_break(oreal >= 0 && odata);
                 if (oreal > 0)
                 {

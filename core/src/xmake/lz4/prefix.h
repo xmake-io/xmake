@@ -38,8 +38,8 @@ typedef struct __xm_lz4_cstream_t
 {
     LZ4F_cctx*          cctx;
     LZ4_byte*           buffer;
-    tb_int_t            write_maxn;
-    tb_int_t            buffer_maxn;
+    tb_size_t           write_maxn;
+    tb_size_t           buffer_maxn;
     tb_bool_t           header_written;
     LZ4_byte            header[LZ4F_HEADER_SIZE_MAX];
 }xm_lz4_cstream_t;
@@ -49,9 +49,11 @@ typedef struct __xm_lz4_dstream_t
 {
     LZ4F_dctx*          dctx;
     LZ4_byte*           srcBuf;
-    tb_int_t            srcBufNext;
-    tb_int_t            srcBufSize;
-    tb_int_t            srcBufMaxSize;
+    tb_size_t           srcBufNext;
+    tb_size_t           srcBufSize;
+    tb_size_t           srcBufMaxSize;
+    tb_size_t           header_size;
+    LZ4_byte            header[LZ4F_HEADER_SIZE_MAX];
 }xm_lz4_dstream_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -112,7 +114,7 @@ static __tb_inline__ xm_lz4_cstream_t* xm_lz4_cstream_init()
     return stream;
 }
 
-static __tb_inline__ tb_int_t xm_lz4_cstream_compress(xm_lz4_cstream_t* stream, tb_byte_t const* idata, tb_int_t isize, tb_byte_t** podata)
+static __tb_inline__ tb_long_t xm_lz4_cstream_compress(xm_lz4_cstream_t* stream, tb_byte_t const* idata, tb_size_t isize, tb_byte_t** podata)
 {
     // check
     tb_assert_and_check_return_val(stream && idata && isize && podata, -1);
@@ -172,10 +174,36 @@ static __tb_inline__ xm_lz4_dstream_t* xm_lz4_dstream_init()
     return stream;
 }
 
-static __tb_inline__ tb_int_t xm_lz4_dstream_decompress(xm_lz4_dstream_t* stream, tb_byte_t const* idata, tb_int_t isize, tb_byte_t** podata)
+static __tb_inline__ tb_long_t xm_lz4_dstream_decompress(xm_lz4_dstream_t* stream, tb_byte_t const* idata, tb_size_t isize, tb_byte_t** podata)
 {
     // check
     tb_assert_and_check_return_val(stream && idata && isize && podata, -1);
+
+    // read header first
+    LZ4F_errorCode_t ret;
+    const tb_size_t header_size = sizeof(stream->header);
+    if (stream->header_size < header_size)
+    {
+        tb_size_t size = tb_min(header_size - stream->header_size, isize);
+        tb_memcpy(stream->header + stream->header_size, idata, size);
+        stream->header_size += size;
+        idata += size;
+        isize -= size;
+
+        // get frame info if header is ok
+        if (stream->header_size == header_size)
+        {
+            size_t consumed_size;
+            LZ4F_frameInfo_t info;
+            ret = LZ4F_getFrameInfo(stream->dctx, &info, stream->header, &consumed_size);
+            if (LZ4F_isError(ret)) {
+                return -1;
+            }
+        }
+
+        // TODO
+    }
+    tb_check_return_val(stream->header_size == header_size && isize, 0);
 
     return 0;
 }
