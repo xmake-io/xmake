@@ -1,3 +1,4 @@
+
 rule("c51.static")
     on_load(function (target)
         -- we disable checking flags for cross toolchain automatically
@@ -13,9 +14,9 @@ rule("c51.static")
 
     after_link(function(target, opt)
         import("core.project.depend")
+        import("lib.detect.find_tool")
+        import("utils.progress")
         depend.on_changed(function()
-            import("lib.detect.find_tool")
-            import("utils.progress")
             local oh = assert(find_tool("oh51"), "oh51 not found")
             os.iorunv(oh.program, {target:targetfile()})
             progress.show(opt.progress, "${color.build.target}generating.$(mode) %s", target:targetfile() .. ".hex")
