@@ -228,7 +228,7 @@ static __tb_inline__ tb_long_t xm_lz4_dstream_write(xm_lz4_dstream_t* stream, tb
         if (stream->header_size == header_size)
         {
             LZ4F_frameInfo_t info;
-            tb_size_t consumed_size = header_size;
+            size_t consumed_size = header_size;
             LZ4F_errorCode_t ret = LZ4F_getFrameInfo(stream->dctx, &info, stream->header, &consumed_size);
             if (LZ4F_isError(ret))
                 return -1;
@@ -255,6 +255,7 @@ static __tb_inline__ tb_long_t xm_lz4_dstream_write(xm_lz4_dstream_t* stream, tb
             stream->buffer = (LZ4_byte*)tb_malloc(stream->buffer_maxn);
             tb_assert_and_check_return_val(stream->buffer, -1);
 
+           // TODO
            // stream->buffer_size = header_size - consumed_size;
            // tb_memcpy(stream->buffer, stream->header + consumed_size, stream->buffer_size);
         }
