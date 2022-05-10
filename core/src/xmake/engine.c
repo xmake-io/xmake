@@ -196,6 +196,10 @@ tb_int_t xm_lz4_block_compress(lua_State* lua);
 tb_int_t xm_lz4_block_decompress(lua_State* lua);
 tb_int_t xm_lz4_compress_file(lua_State* lua);
 tb_int_t xm_lz4_decompress_file(lua_State* lua);
+tb_int_t xm_lz4_compress_stream_open(lua_State* lua);
+tb_int_t xm_lz4_compress_stream_close(lua_State* lua);
+tb_int_t xm_lz4_decompress_stream_open(lua_State* lua);
+tb_int_t xm_lz4_decompress_stream_close(lua_State* lua);
 
 // the windows functions
 #ifdef TB_CONFIG_OS_WINDOWS
@@ -414,13 +418,17 @@ static luaL_Reg const g_base64_functions[] =
 // the lz4 functions
 static luaL_Reg const g_lz4_functions[] =
 {
-    { "compress",         xm_lz4_compress         }
-,   { "decompress",       xm_lz4_decompress       }
-,   { "block_compress",   xm_lz4_block_compress   }
-,   { "block_decompress", xm_lz4_block_decompress }
-,   { "compress_file",    xm_lz4_compress_file    }
-,   { "decompress_file",  xm_lz4_decompress_file  }
-,   { tb_null,            tb_null                 }
+    { "compress",               xm_lz4_compress                }
+,   { "decompress",             xm_lz4_decompress              }
+,   { "block_compress",         xm_lz4_block_compress          }
+,   { "block_decompress",       xm_lz4_block_decompress        }
+,   { "compress_file",          xm_lz4_compress_file           }
+,   { "decompress_file",        xm_lz4_decompress_file         }
+,   { "compress_stream_open",   xm_lz4_compress_stream_open    }
+,   { "compress_stream_close",  xm_lz4_compress_stream_close   }
+,   { "decompress_stream_open", xm_lz4_decompress_stream_open  }
+,   { "decompress_stream_close",xm_lz4_decompress_stream_close }
+,   { tb_null,                  tb_null                        }
 };
 
 // the string functions
