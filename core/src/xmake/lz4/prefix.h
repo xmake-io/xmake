@@ -38,8 +38,8 @@ typedef struct __xm_lz4_cstream_t
 {
     LZ4F_cctx*          cctx;
     LZ4_byte*           buffer;
-    tb_size_t           write_maxn;
     tb_size_t           buffer_maxn;
+    tb_size_t           write_maxn;
     tb_bool_t           header_written;
     LZ4_byte            header[LZ4F_HEADER_SIZE_MAX];
 }xm_lz4_cstream_t;
@@ -48,10 +48,10 @@ typedef struct __xm_lz4_cstream_t
 typedef struct __xm_lz4_dstream_t
 {
     LZ4F_dctx*          dctx;
-    LZ4_byte*           srcBuf;
-    tb_size_t           srcBufNext;
-    tb_size_t           srcBufSize;
-    tb_size_t           srcBufMaxSize;
+    LZ4_byte*           buffer;
+    tb_size_t           buffer_next;
+    tb_size_t           buffer_size;
+    tb_size_t           buffer_maxn;
     tb_size_t           header_size;
     LZ4_byte            header[LZ4F_HEADER_SIZE_MAX];
 }xm_lz4_dstream_t;
@@ -199,9 +199,32 @@ static __tb_inline__ tb_long_t xm_lz4_dstream_decompress(xm_lz4_dstream_t* strea
             if (LZ4F_isError(ret)) {
                 return -1;
             }
-        }
 
-        // TODO
+            switch (info.blockSizeID)
+            {
+            case LZ4F_default:
+            case LZ4F_max64KB:
+                stream->buffer_maxn = 64 * 1024;
+                break;
+            case LZ4F_max256KB:
+                stream->buffer_maxn = 256 * 1024;
+                break;
+            case LZ4F_max1MB:
+                stream->buffer_maxn = 1 * 1024 * 1024;
+                break;
+            case LZ4F_max4MB:
+                stream->buffer_maxn = 4 * 1024 * 1024;
+                break;
+            default:
+                return -1;
+            }
+
+            stream->buffer = (LZ4_byte*)tb_malloc(stream->buffer_maxn);
+            tb_assert_and_check_return_val(stream->buffer, -1);
+
+            stream->buffer_size = header_size - consumed_size;
+            tb_memcpy(stream->buffer, stream->header + consumed_size, stream->buffer_size);
+        }
     }
     tb_check_return_val(stream->header_size == header_size && isize, 0);
 
