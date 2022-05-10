@@ -41,7 +41,7 @@ typedef struct __xm_lz4_cstream_t
     tb_size_t           buffer_size;
     tb_size_t           buffer_maxn;
     tb_size_t           write_maxn;
-    tb_bool_t           header_written;
+    tb_size_t           header_size;
     LZ4_byte            header[LZ4F_HEADER_SIZE_MAX];
 }xm_lz4_cstream_t;
 
@@ -102,6 +102,8 @@ static __tb_inline__ xm_lz4_cstream_t* xm_lz4_cstream_init()
         if (LZ4F_isError(ret))
             break;
 
+        stream->header_size = ret;
+
         ok = tb_true;
 
     } while (0);
@@ -145,15 +147,15 @@ static __tb_inline__ tb_long_t xm_lz4_cstream_read(xm_lz4_cstream_t* stream, tb_
 {
     // check
     tb_assert_and_check_return_val(stream && stream->cctx && odata && osize, -1);
-    tb_assert_and_check_return_val(osize >= sizeof(stream->header), -1);
+    tb_assert_and_check_return_val(osize >= stream->header_size, -1);
 
     tb_size_t read = 0;
-    if (!stream->header_written)
+    if (stream->header_size)
     {
-        tb_memcpy(odata, stream->header, sizeof(stream->header));
-        stream->header_written = tb_true;
-        read += sizeof(stream->header);
-        osize -= sizeof(stream->header);
+        tb_memcpy(odata, stream->header, stream->header_size);
+        read += stream->header_size;
+        osize -= stream->header_size;
+        stream->header_size = 0;
     }
 
     tb_size_t need = tb_min(stream->buffer_size, osize);
@@ -255,9 +257,8 @@ static __tb_inline__ tb_long_t xm_lz4_dstream_write(xm_lz4_dstream_t* stream, tb
             stream->buffer = (LZ4_byte*)tb_malloc(stream->buffer_maxn);
             tb_assert_and_check_return_val(stream->buffer, -1);
 
-           // TODO
-           // stream->buffer_size = header_size - consumed_size;
-           // tb_memcpy(stream->buffer, stream->header + consumed_size, stream->buffer_size);
+            stream->buffer_size = header_size - consumed_size;
+            tb_memcpy(stream->buffer, stream->header + consumed_size, stream->buffer_size);
         }
     }
     tb_check_return_val(stream->header_size == header_size && isize, 0);
