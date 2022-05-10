@@ -9,7 +9,7 @@ void delay_ms(unsigned int n) {
         for (i = 112; i > 0; i--);
 }
 
-/*——————宏定义——————*/
+
 int i;
 
 void set(unsigned int x) {
