@@ -49,11 +49,11 @@ typedef struct __xm_lz4_dstream_t
 {
     LZ4F_dctx*          dctx;
     LZ4_byte*           buffer;
-    tb_size_t           buffer_next;
     tb_size_t           buffer_size;
     tb_size_t           buffer_maxn;
     tb_size_t           header_size;
     LZ4_byte            header[LZ4F_HEADER_SIZE_MAX];
+    LZ4_byte            output[TB_STREAM_BLOCK_MAXN];
 }xm_lz4_dstream_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ static __tb_inline__ xm_lz4_cstream_t* xm_lz4_cstream_init()
 static __tb_inline__ tb_long_t xm_lz4_cstream_compress(xm_lz4_cstream_t* stream, tb_byte_t const* idata, tb_size_t isize, tb_byte_t** podata)
 {
     // check
-    tb_assert_and_check_return_val(stream && idata && isize && podata, -1);
+    tb_assert_and_check_return_val(stream && stream->cctx && idata && isize && podata, -1);
     tb_assert_and_check_return_val(isize <= stream->write_maxn, -1);
 
     if (!stream->header_written)
@@ -143,6 +143,11 @@ static __tb_inline__ tb_void_t xm_lz4_dstream_exit(xm_lz4_dstream_t* stream)
         {
             LZ4F_freeDecompressionContext(stream->dctx);
             stream->dctx = tb_null;
+        }
+        if (stream->buffer)
+        {
+            tb_free(stream->buffer);
+            stream->buffer = tb_null;
         }
         tb_free(stream);
     }
@@ -177,10 +182,9 @@ static __tb_inline__ xm_lz4_dstream_t* xm_lz4_dstream_init()
 static __tb_inline__ tb_long_t xm_lz4_dstream_decompress(xm_lz4_dstream_t* stream, tb_byte_t const* idata, tb_size_t isize, tb_byte_t** podata)
 {
     // check
-    tb_assert_and_check_return_val(stream && idata && isize && podata, -1);
+    tb_assert_and_check_return_val(stream && stream->dctx && idata && isize && podata, -1);
 
     // read header first
-    LZ4F_errorCode_t ret;
     const tb_size_t header_size = sizeof(stream->header);
     if (stream->header_size < header_size)
     {
@@ -193,12 +197,11 @@ static __tb_inline__ tb_long_t xm_lz4_dstream_decompress(xm_lz4_dstream_t* strea
         // get frame info if header is ok
         if (stream->header_size == header_size)
         {
-            size_t consumed_size;
             LZ4F_frameInfo_t info;
-            ret = LZ4F_getFrameInfo(stream->dctx, &info, stream->header, &consumed_size);
-            if (LZ4F_isError(ret)) {
+            tb_size_t consumed_size = header_size;
+            LZ4F_errorCode_t ret = LZ4F_getFrameInfo(stream->dctx, &info, stream->header, &consumed_size);
+            if (LZ4F_isError(ret))
                 return -1;
-            }
 
             switch (info.blockSizeID)
             {
@@ -222,13 +225,31 @@ static __tb_inline__ tb_long_t xm_lz4_dstream_decompress(xm_lz4_dstream_t* strea
             stream->buffer = (LZ4_byte*)tb_malloc(stream->buffer_maxn);
             tb_assert_and_check_return_val(stream->buffer, -1);
 
-            stream->buffer_size = header_size - consumed_size;
-            tb_memcpy(stream->buffer, stream->header + consumed_size, stream->buffer_size);
+           // stream->buffer_size = header_size - consumed_size;
+           // tb_memcpy(stream->buffer, stream->header + consumed_size, stream->buffer_size);
         }
     }
     tb_check_return_val(stream->header_size == header_size && isize, 0);
+    tb_assert_and_check_return_val(stream->buffer && stream->buffer_size + isize <= stream->buffer_maxn, -1);
 
-    return 0;
+    // append the input data
+    tb_memcpy(stream->buffer + stream->buffer_size, idata, isize);
+    stream->buffer_size += isize;
+
+    // do decompress
+    size_t srcsize = stream->buffer_size;
+    size_t dstsize = sizeof(stream->output);
+    tb_size_t ret = LZ4F_decompress(stream->dctx, stream->output, &dstsize, stream->buffer, &srcsize, tb_null);
+    if (LZ4F_isError(ret))
+        return -1;
+
+    // move the left input data
+    if (srcsize < stream->buffer_size)
+        tb_memmov(stream->buffer, stream->buffer + srcsize, stream->buffer_size - srcsize);
+    stream->buffer_size -= srcsize;
+
+    *podata = stream->output;
+    return dstsize;
 }
 
 #endif

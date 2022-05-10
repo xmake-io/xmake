@@ -63,9 +63,10 @@ tb_int_t xm_lz4_compress_file(lua_State* lua)
             {
                 tb_byte_t* odata = tb_null;
                 tb_long_t oreal = xm_lz4_cstream_compress(stream_lz4, idata, ireal, &odata);
-                tb_assert_and_check_break(oreal >= 0 && odata);
+                tb_assert_and_check_break(oreal >= 0);
                 if (oreal > 0)
                 {
+                    tb_assert_and_check_break(odata);
                     if (!tb_stream_bwrit(ostream, odata, oreal))
                         break;
                 }
