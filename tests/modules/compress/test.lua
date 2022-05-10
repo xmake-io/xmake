@@ -9,6 +9,6 @@ function test_lz4(t)
     io.writefile(srcfile, "hello world")
     lz4.compress_file(srcfile, dstfile)
     lz4.decompress_file(dstfile, dstfile2)
-    t:are_equal(io.readfile(srcfile) == io.readfile(dstfile2))
+    t:are_equal(io.readfile(srcfile), io.readfile(dstfile2))
 end
 
