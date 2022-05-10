@@ -20,10 +20,42 @@
 
 -- define module
 local sandbox_core_compress_lz4 = sandbox_core_compress_lz4 or {}
+local sandbox_core_compress_lz4_cstream = sandbox_core_compress_lz4_cstream or {}
+local sandbox_core_compress_lz4_dstream = sandbox_core_compress_lz4_dstream or {}
 
 -- load modules
 local lz4   = require("compress/lz4")
 local raise = require("sandbox/modules/raise")
+
+-- wrap compress stream
+function _cstream_wrap(instance)
+    local hooked = {}
+    for name, func in pairs(sandbox_core_compress_lz4_cstream) do
+        if not name:startswith("_") and type(func) == "function" then
+            hooked["_" .. name] = instance["_" .. name] or instance[name]
+            hooked[name] = func
+        end
+    end
+    for name, func in pairs(hooked) do
+        instance[name] = func
+    end
+    return instance
+end
+
+-- wrap decompress stream
+function _dstream_wrap(instance)
+    local hooked = {}
+    for name, func in pairs(sandbox_core_compress_lz4_dstream) do
+        if not name:startswith("_") and type(func) == "function" then
+            hooked["_" .. name] = instance["_" .. name] or instance[name]
+            hooked[name] = func
+        end
+    end
+    for name, func in pairs(hooked) do
+        instance[name] = func
+    end
+    return instance
+end
 
 -- compress frame data
 function sandbox_core_compress_lz4.compress(data, opt)
@@ -83,7 +115,7 @@ function sandbox_core_compress_lz4.compress_stream(opt)
     if not result and errors then
         raise(errors)
     end
-    return result
+    return _cstream_wrap(result)
 end
 
 -- new a decompress stream
@@ -92,7 +124,7 @@ function sandbox_core_compress_lz4.decompress_stream(opt)
     if not result and errors then
         raise(errors)
     end
-    return result
+    return _dstream_wrap(result)
 end
 
 -- return module

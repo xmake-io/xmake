@@ -40,7 +40,7 @@ tb_int_t xm_lz4_compress_stream_open(lua_State* lua)
 
     xm_lz4_cstream_t* stream = xm_lz4_cstream_init();
     if (stream) xm_lua_pushpointer(lua, (tb_pointer_t)stream);
-    lua_pushnil(lua);
+    else lua_pushnil(lua);
     return 1;
 }
 

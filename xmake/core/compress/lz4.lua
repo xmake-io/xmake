@@ -54,6 +54,11 @@ function _cstream:cdata()
     return self._HANDLE
 end
 
+-- tostring(stream)
+function _cstream:__tostring()
+    return string.format("<lz4/cstream: %s>", self:cdata())
+end
+
 -- gc(stream)
 function _cstream:__gc()
     if self:cdata() and lz4._compress_stream_close(self:cdata()) then
@@ -72,6 +77,11 @@ end
 -- get cdata of stream
 function _dstream:cdata()
     return self._HANDLE
+end
+
+-- tostring(stream)
+function _dstream:__tostring()
+    return string.format("<lz4/dstream: %s>", self:cdata())
 end
 
 -- gc(stream)
