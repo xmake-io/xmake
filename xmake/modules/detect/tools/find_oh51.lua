@@ -22,36 +22,25 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 import("detect.sdks.find_c51")
+import("lib.detect.find_tool")
 
 function _check(program)
-    import("detect.tools.find_c51")
-    import("detect.tools.find_bl51")
-
+    local c51 = assert(find_tool("c51"), "c51 not found")
+    local bl51 = assert(find_tool("bl51"), "bl51 not found")
     -- make temp source file
-    local c51 = assert(find_c51())
-    local bl51 = assert(find_bl51())
-    local temp_prefix = os.tmpfile()
-    local cfile = temp_prefix .. ".c"
-    local objfile = temp_prefix .. ".obj"
-    local lstfile = temp_prefix .. ".lst"
-    local tmpfile = "." .. temp_prefix .. ".un~"
-    local binfile = temp_prefix .. ""
-    local m51file = temp_prefix .. ".m51"
-    local hexfile = temp_prefix .. ".hex"
+    local tmpdir = os.tmpfile()
+    os.mkdir(tmpdir)
+    local cfile = path.join(tmpdir, "test.c")
+    local objfile = path.join(tmpdir, "test.obj")
+    local binfile = path.join(tmpdir, "test")
     -- write test code
     io.writefile(cfile, "void main() {}")
     -- archive it
-    os.runv(c51, {cfile})
-    os.runv(bl51, {objfile, "TO", binfile})
+    os.runv(c51.program, {cfile})
+    os.runv(bl51.program, {objfile, "TO", binfile})
     os.runv(program, {binfile})
     -- remove files
-    os.rm(cfile)
-    os.rm(objfile)
-    os.rm(lstfile)
-    os.rm(tmpfile)
-    os.rm(binfile)
-    os.rm(m51file)
-    os.rm(hexfile)
+    os.rmdir(tmpdir)
 end
 -- find oh51
 --

@@ -27,98 +27,13 @@ import("utils.progress")
 -- init it
 function init(self)
 end
---
----- make the symbol flag
---function nf_symbol(self, level)
---    -- only for source kind
---    local kind = self:kind()
---    if language.sourcekinds()[kind] then
---        local maps = _g.symbol_maps
---        if not maps then
---            maps =
---            {
---                debug  = "-g"
---            }
---            _g.symbol_maps = maps
---        end
---        return maps[level .. '_' .. kind] or maps[level]
---    end
---end
---
----- make the optimize flag
---function nf_optimize(self, level)
---    local maps =
---    {
---        none       = "-O0"
---    ,   fast       = "-O1"
---    ,   faster     = "-O2"
---    ,   fastest    = "-O3"
---    ,   smallest   = "-Os"
---    ,   aggressive = "-Ofast"
---    }
---    return maps[level]
---end
---
----- make the language flag
---function nf_language(self, stdname)
---
---    -- the stdc maps
---    if _g.cmaps == nil then
---        _g.cmaps =
---        {
---            ansi        = "-c89"
---        ,   c89         = "-c89"
---        ,   gnu89       = "-c89"
---        ,   c99         = "-c99"
---        ,   gnu99       = "-c99"
---        ,   c11         = "-c11"
---        ,   gnu11       = "-c11"
---        ,   clatest     = {"-c11", "-c99", "-c89"}
---        ,   gnulatest   = {"-c11", "-c99", "-c89"}
---        }
---    end
---    local maps = _g.cmaps
---    local result = maps[stdname]
---    if type(result) == "table" then
---        for _, v in ipairs(result) do
---            if self:has_flags(v, "cxflags") then
---                result = v
---                maps[stdname] = result
---                return result
---            end
---        end
---    else
---        return result
---    end
---end
---
----- make the define flag
---function nf_define(self, macro)
---    return "-D" .. macro
---end
---
----- make the undefine flag
---function nf_undefine(self, macro)
---    return "-U" .. macro
---end
---
----- make the includedir flag
---function nf_includedir(self, dir)
---    return {"-I" .. dir}
---end
---
----- make the sysincludedir flag
---function nf_sysincludedir(self, dir)
---    return nf_includedir(self, dir)
---end
---
 
--- compile the source file
-
----- make the compile arguments list
+-- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
     return self:program(), table.join(sourcefile, flags)
 end
+
+-- compile the source file
 function compile(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
@@ -128,7 +43,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
     try
     {
         function ()
-            local realsourcefile = string.gsub(objectfile, "\\.obj$", "")
+            local realsourcefile = objectfile:gsub("\\.obj$", "")
             os.cp(sourcefile, realsourcefile)
             local outdata, errdata = os.iorunv(compargv(self, realsourcefile, objectfile, dependinfo, flags))
             return (outdata or "") .. (errdata or "")

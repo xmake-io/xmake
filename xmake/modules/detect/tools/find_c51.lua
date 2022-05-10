@@ -21,23 +21,19 @@
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
-local c51_module = import("detect.sdks.find_c51")
+import("detect.sdks.find_c51")
 
 function _check(program)
     -- make temp source file
-    local cfile = os.tmpfile() .. ".c"
-    local objfile = os.tmpfile() .. ".obj"
-    local lstfile = os.tmpfile() .. ".c"
-    local tmpfile = "." .. os.tmpfile() .. ".un~"
+    local tmpdir = os.tmpfile()
+    os.mkdir(tmpdir)
+    local cfile = path.join(tmpdir, "test.c")
     -- write test code
     io.writefile(cfile, "void main() {}")
     -- archive it
     os.runv(program, {cfile})
     -- remove files
-    os.rm(cfile)
-    os.rm(objfile)
-    os.rm(lstfile)
-    os.rm(tmpfile)
+    os.rmdir(tmpdir)
 end
 -- find c51
 --
@@ -57,15 +53,15 @@ function main(opt)
     -- init options
     opt = opt or {}
     opt.check = opt.check or _check
-    local program = find_program(opt.program or "c51.exe", opt)
+    local program = find_program(opt.program or "c51", opt)
     if not program then
-        local c51_module = c51_module.find_c51()
-        if c51_module then
-            if c51_module.sdkdir_c51 then
-                program = find_program(path.join(c51_module.sdkdir_c51, "bin", "c51.exe"), opt)
+        local c51 = find_c51()
+        if c51 then
+            if c51.sdkdir_c51 then
+                program = find_program(path.join(c51.sdkdir_c51, "bin", "c51"), opt)
             end
-            if not program and c51_module.sdkdir_a51 then
-                program = find_program(path.join(c51_module.sdkdir_a51, "bin", "c51.exe"), opt)
+            if not program and c51.sdkdir_a51 then
+                program = find_program(path.join(c51.sdkdir_a51, "bin", "c51"), opt)
             end
         end
     end
