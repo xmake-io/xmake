@@ -87,7 +87,7 @@ end
 function lz4.decompress_file(srcpath, dstpath, opt)
     local ok, errors = lz4._decompress_file(tostring(srcpath), tostring(dstpath))
     if not ok then
-        errors = string.format("compress file %s failed!", srcpath, errors or os.strerror() or "unknown")
+        errors = string.format("decompress file %s failed!", srcpath, errors or os.strerror() or "unknown")
     end
     return ok, errors
 end
