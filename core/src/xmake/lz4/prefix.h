@@ -53,7 +53,6 @@ typedef struct __xm_lz4_dstream_t
     tb_size_t           buffer_maxn;
     tb_size_t           header_size;
     LZ4_byte            header[LZ4F_HEADER_SIZE_MAX];
-    LZ4_byte            output[TB_STREAM_BLOCK_MAXN];
 }xm_lz4_dstream_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -179,10 +178,10 @@ static __tb_inline__ xm_lz4_dstream_t* xm_lz4_dstream_init()
     return stream;
 }
 
-static __tb_inline__ tb_long_t xm_lz4_dstream_decompress(xm_lz4_dstream_t* stream, tb_byte_t const* idata, tb_size_t isize, tb_byte_t** podata)
+static __tb_inline__ tb_long_t xm_lz4_dstream_write(xm_lz4_dstream_t* stream, tb_byte_t const* idata, tb_size_t isize)
 {
     // check
-    tb_assert_and_check_return_val(stream && stream->dctx && idata && isize && podata, -1);
+    tb_assert_and_check_return_val(stream && stream->dctx && idata && isize, -1);
 
     // read header first
     const tb_size_t header_size = sizeof(stream->header);
@@ -235,11 +234,19 @@ static __tb_inline__ tb_long_t xm_lz4_dstream_decompress(xm_lz4_dstream_t* strea
     // append the input data
     tb_memcpy(stream->buffer + stream->buffer_size, idata, isize);
     stream->buffer_size += isize;
+    return isize;
+}
+
+static __tb_inline__ tb_long_t xm_lz4_dstream_read(xm_lz4_dstream_t* stream, tb_byte_t* odata, tb_size_t omaxn)
+{
+    // check
+    tb_assert_and_check_return_val(stream && stream->dctx && stream->buffer && odata && omaxn, -1);
+    tb_check_return_val(stream->buffer_size, 0);
 
     // do decompress
     size_t srcsize = stream->buffer_size;
-    size_t dstsize = sizeof(stream->output);
-    tb_size_t ret = LZ4F_decompress(stream->dctx, stream->output, &dstsize, stream->buffer, &srcsize, tb_null);
+    size_t dstsize = omaxn;
+    tb_size_t ret = LZ4F_decompress(stream->dctx, odata, &dstsize, stream->buffer, &srcsize, tb_null);
     if (LZ4F_isError(ret))
         return -1;
 
@@ -247,8 +254,6 @@ static __tb_inline__ tb_long_t xm_lz4_dstream_decompress(xm_lz4_dstream_t* strea
     if (srcsize < stream->buffer_size)
         tb_memmov(stream->buffer, stream->buffer + srcsize, stream->buffer_size - srcsize);
     stream->buffer_size -= srcsize;
-
-    *podata = stream->output;
     return dstsize;
 }
 
