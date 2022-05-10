@@ -8,6 +8,6 @@ target("foo")
 
 target("hello")
     add_deps("foo")
-    add_rules("mdk.console")
+    add_rules("mdk.binary")
     add_files("src/*.c", "src/*.s")
     add_includedirs("src/lib/cmsis")

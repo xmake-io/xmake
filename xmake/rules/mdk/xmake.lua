@@ -18,7 +18,7 @@
 -- @file        xmake.lua
 --
 
-rule("mdk.console")
+rule("mdk.binary")
     on_load(function (target)
         -- we disable checking flags for cross toolchain automatically
         target:set("policy", "check.auto_ignore_flags", false)
@@ -41,3 +41,5 @@ rule("mdk.static")
         target:set("kind", "static")
     end)
 
+rule("mdk.console")
+    add_deps("mdk.binary")
