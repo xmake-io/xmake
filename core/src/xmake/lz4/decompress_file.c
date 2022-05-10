@@ -62,7 +62,7 @@ tb_int_t xm_lz4_decompress_file(lua_State* lua)
             tb_long_t ireal = (tb_long_t)tb_stream_read(istream, idata, sizeof(idata));
             if (ireal > 0)
             {
-                tb_long_t r = xm_lz4_dstream_write(stream_lz4, idata, ireal);
+                tb_long_t r = xm_lz4_dstream_write(stream_lz4, idata, ireal, tb_stream_beof(istream));
                 tb_assert_and_check_break(r >= 0);
                 tb_check_continue(r > 0);
 
