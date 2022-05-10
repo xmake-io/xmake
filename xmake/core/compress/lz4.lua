@@ -54,6 +54,14 @@ function _cstream:cdata()
     return self._HANDLE
 end
 
+-- ensure the socket is opened
+function _cstream:_ensure_opened()
+    if not self:cdata() then
+        return false, string.format("%s: has been closed!", self)
+    end
+    return true
+end
+
 -- tostring(stream)
 function _cstream:__tostring()
     return string.format("<lz4/cstream: %s>", self:cdata())
@@ -77,6 +85,14 @@ end
 -- get cdata of stream
 function _dstream:cdata()
     return self._HANDLE
+end
+
+-- ensure the socket is opened
+function _dstream:_ensure_opened()
+    if not self:cdata() then
+        return false, string.format("%s: has been closed!", self)
+    end
+    return true
 end
 
 -- tostring(stream)

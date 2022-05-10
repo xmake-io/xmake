@@ -57,6 +57,42 @@ function _dstream_wrap(instance)
     return instance
 end
 
+-- read data from stream
+function sandbox_core_compress_lz4_cstream.read(stream, buff, size, opt)
+    local real, data_or_errors = stream:_read(buff, size, opt)
+    if real < 0 and data_or_errors then
+        raise(data_or_errors)
+    end
+    return real, data_or_errors
+end
+
+-- write data to stream
+function sandbox_core_compress_lz4_cstream.write(stream, data, beof, opt)
+    local real, errors = stream:_write(data, beof, opt)
+    if real < 0 and errors then
+        raise(errors)
+    end
+    return real
+end
+
+-- read data from stream
+function sandbox_core_compress_lz4_dstream.read(stream, buff, size, opt)
+    local real, data_or_errors = stream:_read(buff, size, opt)
+    if real < 0 and data_or_errors then
+        raise(data_or_errors)
+    end
+    return real, data_or_errors
+end
+
+-- write data to stream
+function sandbox_core_compress_lz4_dstream.write(stream, data, beof, opt)
+    local real, errors = stream:_write(data, beof, opt)
+    if real < 0 and errors then
+        raise(errors)
+    end
+    return real
+end
+
 -- compress frame data
 function sandbox_core_compress_lz4.compress(data, opt)
     local result, errors = lz4.compress(data, opt)
