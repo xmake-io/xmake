@@ -140,9 +140,13 @@ xmake_C_FILES 			+= \
 						lz4/block_decompress \
 						lz4/compress_file \
 						lz4/compress_stream_open \
+						lz4/compress_stream_read \
+						lz4/compress_stream_write \
 						lz4/compress_stream_close \
 						lz4/decompress_file \
 						lz4/decompress_stream_open \
+						lz4/decompress_stream_read \
+						lz4/decompress_stream_write \
 						lz4/decompress_stream_close
 
 iswin =
