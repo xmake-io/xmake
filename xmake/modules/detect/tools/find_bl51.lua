@@ -25,17 +25,20 @@ import("lib.detect.find_tool")
 
 function _check(program)
     local c51 = assert(find_tool("c51"), "c51 not found")
+
     -- make temp source file
-    local tmpdir = os.tmpfile()
-    os.mkdir(tmpdir)
+    local tmpdir = os.tmpfile() .. ".dir"
     local cfile = path.join(tmpdir, "test.c")
     local objfile = path.join(tmpdir, "test.obj")
     local binfile = path.join(tmpdir, "test")
+
     -- write test code
     io.writefile(cfile, "void main() {}")
+
     -- archive it
-    os.runv(c51.program, {cfile})
+    os.runv(c51.program, {"test.c"}, {curdir = tmpdir})
     os.runv(program, {objfile, "TO", binfile})
+
     -- remove files
     os.rmdir(tmpdir)
 end

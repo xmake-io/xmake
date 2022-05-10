@@ -25,13 +25,13 @@ import("detect.sdks.find_c51")
 
 function _check(program)
     -- make temp source file
-    local tmpdir = os.tmpfile()
-    os.mkdir(tmpdir)
+    local tmpdir = os.tmpfile() .. ".dir"
     local cfile = path.join(tmpdir, "test.c")
+
     -- write test code
     io.writefile(cfile, "void main() {}")
     -- archive it
-    os.runv(program, {cfile})
+    os.runv(program, {"test.c"}, {curdir = tmpdir})
     -- remove files
     os.rmdir(tmpdir)
 end
