@@ -77,5 +77,23 @@ function sandbox_core_compress_lz4.block_decompress(data, realsize, opt)
     return result
 end
 
+-- new compress stream
+function sandbox_core_compress_lz4.compress_stream(opt)
+    local result, errors = lz4.compress_stream(opt)
+    if not result and errors then
+        raise(errors)
+    end
+    return result
+end
+
+-- new a decompress stream
+function sandbox_core_compress_lz4.decompress_stream(opt)
+    local result, errors = lz4.decompress_stream(opt)
+    if not result and errors then
+        raise(errors)
+    end
+    return result
+end
+
 -- return module
 return sandbox_core_compress_lz4

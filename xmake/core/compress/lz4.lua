@@ -19,20 +19,87 @@
 --
 
 -- define module: lz4
-local lz4  = lz4 or {}
+local lz4 = lz4 or {}
+local _cstream = _cstream or {}
+local _dstream = _dstream or {}
 
 -- load modules
 local io    = require("base/io")
 local utils = require("base/utils")
 local bytes = require("base/bytes")
+local table = require("base/table")
 
 -- save metatable and builtin functions
-lz4._compress         = lz4._compress or lz4.compress
-lz4._decompress       = lz4._decompress or lz4.decompress
-lz4._block_compress   = lz4._block_compress or lz4.block_compress
-lz4._block_decompress = lz4._block_decompress or lz4.block_decompress
-lz4._compress_file    = lz4._compress_file or lz4.compress_file
-lz4._decompress_file  = lz4._decompress_file or lz4.decompress_file
+lz4._compress                = lz4._compress or lz4.compress
+lz4._decompress              = lz4._decompress or lz4.decompress
+lz4._block_compress          = lz4._block_compress or lz4.block_compress
+lz4._block_decompress        = lz4._block_decompress or lz4.block_decompress
+lz4._compress_file           = lz4._compress_file or lz4.compress_file
+lz4._decompress_file         = lz4._decompress_file or lz4.decompress_file
+lz4._compress_stream_open    = lz4._compress_stream_open or lz4.compress_stream_open
+lz4._compress_stream_close   = lz4._compress_stream_close or lz4.compress_stream_close
+lz4._decompress_stream_open  = lz4._decompress_stream_open or lz4.decompress_stream_open
+lz4._decompress_stream_close = lz4._decompress_stream_close or lz4.decompress_stream_close
+
+-- new a compress stream
+function _cstream.new(handle)
+    local instance   = table.inherit(_cstream)
+    instance._HANDLE = handle
+    setmetatable(instance, _cstream)
+    return instance
+end
+
+-- get cdata of stream
+function _cstream:cdata()
+    return self._HANDLE
+end
+
+-- gc(stream)
+function _cstream:__gc()
+    if self:cdata() and lz4._compress_stream_close(self:cdata()) then
+        self._HANDLE = nil
+    end
+end
+
+-- new a decompress stream
+function _dstream.new(handle)
+    local instance   = table.inherit(_dstream)
+    instance._HANDLE = handle
+    setmetatable(instance, _dstream)
+    return instance
+end
+
+-- get cdata of stream
+function _dstream:cdata()
+    return self._HANDLE
+end
+
+-- gc(stream)
+function _dstream:__gc()
+    if self:cdata() and lz4._decompress_stream_close(self:cdata()) then
+        self._HANDLE = nil
+    end
+end
+
+-- open a compress stream
+function lz4.compress_stream(opt)
+    local handle, errors = lz4._compress_stream_open()
+    if handle then
+        return _cstream.new(handle)
+    else
+        return nil, errors or "failed to open compress stream!"
+    end
+end
+
+-- open a decompress stream
+function lz4.decompress_stream(opt)
+    local handle, errors = lz4._decompress_stream_open()
+    if handle then
+        return _dstream.new(handle)
+    else
+        return nil, errors or "failed to open decompress stream!"
+    end
+end
 
 -- compress frame data
 --
