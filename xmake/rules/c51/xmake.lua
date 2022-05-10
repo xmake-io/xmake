@@ -1,5 +1,4 @@
-
-rule("c51.static")
+rule("c51.binary")
     on_load(function (target)
         -- we disable checking flags for cross toolchain automatically
         target:set("policy", "check.auto_ignore_flags", false)
