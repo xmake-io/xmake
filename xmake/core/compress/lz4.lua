@@ -76,22 +76,20 @@ end
 
 -- compress file data
 function lz4.compress_file(srcpath, dstpath, opt)
-    return lz4._compress_file(srcpath, dstpath)
-
-    --[[
-    local data, errors = io.readfile(srcpath, {encoding = "binary"})
-    if data then
-        data, errors = lz4.compress(data, opt)
-        if data then
-            return io.writefile(dstpath, data, {encoding = "binary"})
-        end
+    local ok, errors = lz4._compress_file(tostring(srcpath), tostring(dstpath))
+    if not ok then
+        errors = string.format("compress file %s failed!", srcpath, errors or os.strerror() or "unknown")
     end
-    return false, errors or "compress failed"]]
+    return ok, errors
 end
 
 -- decompress file data
 function lz4.decompress_file(srcpath, dstpath, opt)
-    return lz4._decompress_file(srcpath, dstpath)
+    local ok, errors = lz4._decompress_file(tostring(srcpath), tostring(dstpath))
+    if not ok then
+        errors = string.format("compress file %s failed!", srcpath, errors or os.strerror() or "unknown")
+    end
+    return ok, errors
 end
 
 -- compress block data
