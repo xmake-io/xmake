@@ -79,12 +79,12 @@ function buildcmd(target, batchcmds, sourcefile_capnp, opt)
     table.insert(argv, "-o")
     table.insert(argv, path(sourcefile_dir, function (p) return "c++:" .. p end))
     table.insert(argv, path(sourcefile_capnp))
-    batchcmds:vrunv(capnp, argv)
+    batchcmds:vrunv(path(capnp), argv)
     local configs = {includedirs = path(sourcefile_dir), languages = "c++14"}
     if target:is_plat("windows") then
         configs.cxflags = "/TP"
     end
-    batchcmds:compile(sourcefile_cx, objectfile, {sourcekind = "cxx", configs = configs})
+    batchcmds:compile(path(sourcefile_cx), path(objectfile), {sourcekind = "cxx", configs = configs})
 
     -- add deps
     batchcmds:add_depfiles(sourcefile_capnp)

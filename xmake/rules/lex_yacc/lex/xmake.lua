@@ -37,9 +37,9 @@ rule("lex")
 
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.lex %s", sourcefile_lex)
-        batchcmds:mkdir(path.directory(sourcefile_cx))
-        batchcmds:vrunv(lex.program, {"-o", path(sourcefile_cx), path(sourcefile_lex)})
-        batchcmds:compile(sourcefile_cx, objectfile)
+        batchcmds:mkdir(path(path.directory(sourcefile_cx)))
+        batchcmds:vrunv(path(lex.program), {"-o", path(sourcefile_cx), path(sourcefile_lex)})
+        batchcmds:compile(path(sourcefile_cx), path(objectfile))
 
         -- add deps
         batchcmds:add_depfiles(sourcefile_lex)

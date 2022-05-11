@@ -34,7 +34,7 @@ function main(target, batchcmds, sourcefile, opt)
 
     -- add commands
     local moduletype = assert(target:data("swig.moduletype"), "swig.moduletype not found!")
-    local argv = {"-" .. moduletype, "-o", sourcefile_cx}
+    local argv = {"-" .. moduletype, "-o", path(sourcefile_cx)}
     if opt.sourcekind == "cxx" then
         table.insert(argv, "-c++")
     end
@@ -42,11 +42,11 @@ function main(target, batchcmds, sourcefile, opt)
     if fileconfig.swigflags then
         table.join2(argv, fileconfig.swigflags)
     end
-    table.insert(argv, sourcefile)
+    table.insert(argv, path(sourcefile))
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.swig.%s %s", moduletype, sourcefile)
-    batchcmds:mkdir(path.directory(sourcefile_cx))
-    batchcmds:vrunv(swig.program, argv)
-    batchcmds:compile(sourcefile_cx, objectfile)
+    batchcmds:mkdir(path(path.directory(sourcefile_cx)))
+    batchcmds:vrunv(path(swig.program), argv)
+    batchcmds:compile(path(sourcefile_cx), path(objectfile))
 
     -- add deps
     batchcmds:add_depfiles(sourcefile)

@@ -231,8 +231,8 @@ function batchcmds:compile(sourcefiles, objectfile, opt)
     local program, argv = compiler_inst:compargv(sourcefiles, objectfile, opt)
 
     -- add compilation command and bind run environments of compiler
-    self:mkdir(path.directory(objectfile))
-    self:vrunv(program, argv, {envs = table.join(compiler_inst:runenvs(), opt.envs)})
+    self:mkdir(path(path.directory(objectfile)))
+    self:vrunv(path(program), argv, {envs = table.join(compiler_inst:runenvs(), opt.envs)})
 end
 
 -- add command: linker.link
@@ -248,8 +248,8 @@ function batchcmds:link(objectfiles, targetfile, opt)
     local program, argv = linker_inst:linkargv(objectfiles, targetfile, opt)
 
     -- add link command and bind run environments of linker
-    self:mkdir(path.directory(targetfile))
-    self:vrunv(program, argv, {envs = table.join(linker_inst:runenvs(), opt.envs)})
+    self:mkdir(path(path.directory(targetfile)))
+    self:vrunv(path(program), argv, {envs = table.join(linker_inst:runenvs(), opt.envs)})
 end
 
 -- add command: os.mkdir

@@ -74,8 +74,8 @@ rule("vala.build")
 
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.vala %s", sourcefile_vala)
-        batchcmds:mkdir(basedir)
-        local argv = {"-C", "-b", basedir}
+        batchcmds:mkdir(path(basedir))
+        local argv = {"-C", "-b", path(basedir)}
         local packages = target:values("vala.packages")
         if packages then
             for _, package in ipairs(packages) do
@@ -95,7 +95,7 @@ rule("vala.build")
         else
             local vapifile = target:data("vala.vapifile")
             if vapifile then
-                table.insert(argv, "--vapi=" .. vapifile) -- how to use path here?
+                table.insert(argv, path(vapifile, function (p) return "--vapi=" .. p end))
             end
             local headerfile = target:data("vala.headerfile")
             if headerfile then
@@ -105,15 +105,15 @@ rule("vala.build")
         end
         local vapidir = target:data("vala.vapidir")
         if vapidir then
-            table.insert(argv, "--vapidir=" .. vapidir) -- how to use path here?
+            table.insert(argv, path(vapidir, function (p) return "--vapidir=" .. p end)
         end
         local valaflags = target:data("vala.flags")
         if valaflags then
             table.join2(argv, valaflags)
         end
-        table.insert(argv, sourcefile_vala)
-        batchcmds:vrunv(valac.program, argv)
-        batchcmds:compile(sourcefile_c, objectfile)
+        table.insert(argv, path(sourcefile_vala))
+        batchcmds:vrunv(path(valac.program), argv)
+        batchcmds:compile(path(sourcefile_c), objectfile)
 
         -- add deps
         batchcmds:add_depfiles(sourcefile_vala)

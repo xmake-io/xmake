@@ -27,10 +27,10 @@ rule("asn1c")
         local asn1c = assert(find_tool("asn1c"), "asn1c not found!")
 
         -- asn1 to *.c sourcefiles
-        local sourcefile_dir = path.join(target:autogendir(), "rules", "asn1c")
+        local sourcefile_dir = path(path.join(target:autogendir(), "rules", "asn1c"))
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.asn1c %s", sourcefile_asn1)
-        batchcmds:mkdir(sourcefile_dir)
-        batchcmds:vrunv(asn1c.program, {path(sourcefile_asn1)}, {curdir = sourcefile_dir})
+        batchcmds:mkdir(path(sourcefile_dir))
+        batchcmds:vrunv(path(asn1c.program), {path(sourcefile_asn1)}, {curdir = sourcefile_dir})
 
         -- compile *.c
         for _, sourcefile in ipairs(os.files(path.join(sourcefile_dir, "*.c|converter-*.c"))) do

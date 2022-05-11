@@ -38,10 +38,10 @@ function main(target, batchcmds, sourcefile, opt)
 
     -- add commands
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.cxxbridge %s", sourcefile)
-    batchcmds:mkdir(path.directory(sourcefile_cx))
-    batchcmds:vrunv(cxxbridge.program, {sourcefile}, {stdout = sourcefile_cx})
-    batchcmds:vrunv(cxxbridge.program, {sourcefile, "--header"}, {stdout = headerfile})
-    batchcmds:compile(sourcefile_cx, objectfile)
+    batchcmds:mkdir(path(path.directory(sourcefile_cx)))
+    batchcmds:vrunv(path(cxxbridge.program), {path(sourcefile)}, {stdout = path(sourcefile_cx)})
+    batchcmds:vrunv(path(cxxbridge.program), {path(sourcefile), "--header"}, {stdout = path(headerfile)})
+    batchcmds:compile(path(sourcefile_cx), objectfile)
 
     -- add deps
     batchcmds:add_depfiles(sourcefile)

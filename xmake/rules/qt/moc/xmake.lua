@@ -62,8 +62,8 @@ rule("qt.moc")
         table.join2(flags, compiler.map_flags("cxx", "includedir", target:get("includedirs")))
         table.join2(flags, compiler.map_flags("cxx", "includedir", target:get("sysincludedirs"))) -- for now, moc process doesn't support MSVC external includes flags and will fail
         table.join2(flags, compiler.map_flags("cxx", "frameworkdir", target:get("frameworkdirs")))
-        batchcmds:mkdir(path.directory(sourcefile_moc))
-        batchcmds:vrunv(moc, table.join(flags, path(sourcefile), "-o", path(sourcefile_moc)))
+        batchcmds:mkdir(path(path.directory(sourcefile_moc)))
+        batchcmds:vrunv(path(moc), table.join(flags, path(sourcefile), "-o", path(sourcefile_moc)))
 
         -- we need compile this moc_xxx.cpp file if exists Q_PRIVATE_SLOT, @see https://github.com/xmake-io/xmake/issues/750
         local mocdata = io.readfile(sourcefile)
@@ -81,7 +81,7 @@ rule("qt.moc")
             end
         else
             -- compile c++ source file for moc
-            batchcmds:compile(sourcefile_moc, objectfile)
+            batchcmds:compile(path(sourcefile_moc), path(objectfile))
         end
 
         -- add deps

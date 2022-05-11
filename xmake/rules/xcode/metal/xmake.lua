@@ -95,8 +95,8 @@ rule("xcode.metal")
 
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.metal %s", sourcefile)
-        batchcmds:mkdir(path.directory(objectfile))
-        batchcmds:vrunv(metal.program, argv)
+        batchcmds:mkdir(path(path.directory(objectfile)))
+        batchcmds:vrunv(path(metal.program), argv)
 
         -- add deps
         batchcmds:add_depfiles(sourcefile)
@@ -135,8 +135,8 @@ rule("xcode.metal")
         local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
         local libraryfile = resourcesdir and path.join(resourcesdir, "default.metallib") or (target:targetfile() .. ".metallib")
         batchcmds:show_progress(opt.progress, "${color.build.target}linking.metal %s", path.filename(libraryfile))
-        batchcmds:mkdir(path.directory(libraryfile))
-        batchcmds:vrunv(metallib.program, table.join({"-o", path(libraryfile)}, path(objectfiles)), {envs = {SDKROOT = xcode_sysroot}})
+        batchcmds:mkdir(path(path.directory(libraryfile)))
+        batchcmds:vrunv(path(metallib.program), table.join({"-o", path(libraryfile)}, path(objectfiles)), {envs = {SDKROOT = xcode_sysroot}})
 
         -- add deps
         batchcmds:add_depfiles(objectfiles)

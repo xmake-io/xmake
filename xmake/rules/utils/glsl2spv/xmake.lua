@@ -61,11 +61,11 @@ rule("utils.glsl2spv")
         local outputdir = target:extraconf("rules", "utils.glsl2spv", "outputdir") or path.join(target:autogendir(), "rules", "utils", "glsl2spv")
         local spvfilepath = path.join(outputdir, path.filename(sourcefile_glsl) .. ".spv")
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.glsl2spv %s", sourcefile_glsl)
-        batchcmds:mkdir(outputdir)
+        batchcmds:mkdir(path(outputdir))
         if glslangValidator then
-            batchcmds:vrunv(glslangValidator.program, {"--target-env", targetenv, "-o", path(spvfilepath), path(sourcefile_glsl)})
+            batchcmds:vrunv(path(glslangValidator.program), {"--target-env", targetenv, "-o", path(spvfilepath), path(sourcefile_glsl)})
         else
-            batchcmds:vrunv(glslc.program, {"--target-env", targetenv, "-o", path(spvfilepath), path(sourcefile_glsl)})
+            batchcmds:vrunv(path(glslc.program), {"--target-env", targetenv, "-o", path(spvfilepath), path(sourcefile_glsl)})
         end
 
         -- do bin2c
@@ -80,7 +80,7 @@ rule("utils.glsl2spv")
 
             -- add commands
             local argv = {"lua", "private.utils.bin2c", "--nozeroend", "-i", path(spvfilepath), "-o", path(headerfile)}
-            batchcmds:vrunv(os.programfile(), argv, {envs = {XMAKE_SKIP_HISTORY = "y"}})
+            batchcmds:vrunv(path(os.programfile()), argv, {envs = {XMAKE_SKIP_HISTORY = "y"}})
         end
 
         -- add deps
