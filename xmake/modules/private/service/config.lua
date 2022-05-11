@@ -58,7 +58,21 @@ function _generate_configfile()
                 -- with token authorization
                 token = token
             }
+        },
+        distributed_build = {
+            server = {
+                listen = "0.0.0.0:9692",
+                workdir = path.join(servicedir, "distributed_build"),
+            },
+            client = {
+                -- without authorization: "127.0.0.1:9691"
+                -- with user authorization: "user@127.0.0.1:9691"
+                connect = "127.0.0.1:9692",
+                -- with token authorization
+                token = token
+            }
         }
+
     }
     save(configs)
 end
