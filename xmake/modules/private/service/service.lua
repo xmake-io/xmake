@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.scheduler")
+import("private.service.config")
 import("private.service.remote_build.server", {alias = "remote_build_server"})
 import("private.service.distcc_build.server", {alias = "distcc_build_server"})
 
@@ -39,8 +40,12 @@ function main(...)
     elseif option.get("distcc") then
         table.insert(starters, _start_distcc_build_server)
     else
-        table.insert(starters, _start_remote_build_server)
-        table.insert(starters, _start_distcc_build_server)
+        if config.get("remote_build.server.listen") then
+            table.insert(starters, _start_remote_build_server)
+        end
+        if config.get("distcc_build.server.listen") then
+            table.insert(starters, _start_distcc_build_server)
+        end
     end
     for _, start_server in ipairs(starters) do
         scheduler.co_start(start_server, ...)
