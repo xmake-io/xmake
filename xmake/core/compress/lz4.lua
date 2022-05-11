@@ -37,8 +37,12 @@ lz4._block_decompress        = lz4._block_decompress or lz4.block_decompress
 lz4._compress_file           = lz4._compress_file or lz4.compress_file
 lz4._decompress_file         = lz4._decompress_file or lz4.decompress_file
 lz4._compress_stream_open    = lz4._compress_stream_open or lz4.compress_stream_open
+lz4._compress_stream_read    = lz4._compress_stream_read or lz4.compress_stream_read
+lz4._compress_stream_write   = lz4._compress_stream_write or lz4.compress_stream_write
 lz4._compress_stream_close   = lz4._compress_stream_close or lz4.compress_stream_close
 lz4._decompress_stream_open  = lz4._decompress_stream_open or lz4.decompress_stream_open
+lz4._decompress_stream_read  = lz4._decompress_stream_read or lz4.decompress_stream_read
+lz4._decompress_stream_write = lz4._decompress_stream_write or lz4.decompress_stream_write
 lz4._decompress_stream_close = lz4._decompress_stream_close or lz4.decompress_stream_close
 
 -- new a compress stream
@@ -52,6 +56,84 @@ end
 -- get cdata of stream
 function _cstream:cdata()
     return self._HANDLE
+end
+
+-- read data from stream
+function _cstream:read(buff, size, opt)
+    assert(buff)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- check buffer
+    size = size or buff:size()
+    if buff:size() < size then
+        return -1, string.format("%s: too small buffer!", self)
+    end
+
+    -- check size
+    if size == 0 then
+        return 0
+    elseif size == nil or size < 0 then
+        return -1, string.format("%s: invalid size(%d)!", self, size)
+    end
+
+    -- init start in buffer
+    opt = opt or {}
+    local start = opt.start or 1
+    local pos = start - 1
+    if start >= buff:size() or start < 1 then
+        return -1, string.format("%s: invalid start(%d)!", self, start)
+    end
+
+    -- read it
+    local read, data_or_errors = lz4._compress_stream_read(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
+    if read > 0 then
+        data_or_errors = buff:slice(start, read)
+    end
+    if read < 0 and data_or_errors then
+        data_or_errors = string.format("%s: %s", self, data_or_errors)
+    end
+    return read, data_or_errors
+end
+
+-- write data to stream
+function _cstream:write(data, opt)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- get data address and size for bytes and string
+    if type(data) == "string" then
+        data = bytes(data)
+    end
+    local datasize = data:size()
+    local dataaddr = data:caddr()
+
+    -- init start and last
+    opt = opt or {}
+    local start = opt.start or 1
+    local last = opt.last or datasize
+    if start < 1 or start > datasize then
+        return -1, string.format("%s: invalid start(%d)!", self, start)
+    end
+    if last < start - 1 or last > datasize + start - 1 then
+        return -1, string.format("%s: invalid last(%d)!", self, last)
+    end
+
+    -- write it
+    local errors = nil
+    local write, errors = lz4._compress_stream_write(self:cdata(), dataaddr + start - 1, last + 1 - start, opt.beof)
+    if write < 0 and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return write, errors
 end
 
 -- ensure the socket is opened
@@ -85,6 +167,84 @@ end
 -- get cdata of stream
 function _dstream:cdata()
     return self._HANDLE
+end
+
+-- read data from stream
+function _dstream:read(buff, size, opt)
+    assert(buff)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- check buffer
+    size = size or buff:size()
+    if buff:size() < size then
+        return -1, string.format("%s: too small buffer!", self)
+    end
+
+    -- check size
+    if size == 0 then
+        return 0
+    elseif size == nil or size < 0 then
+        return -1, string.format("%s: invalid size(%d)!", self, size)
+    end
+
+    -- init start in buffer
+    opt = opt or {}
+    local start = opt.start or 1
+    local pos = start - 1
+    if start >= buff:size() or start < 1 then
+        return -1, string.format("%s: invalid start(%d)!", self, start)
+    end
+
+    -- read it
+    local read, data_or_errors = lz4._compress_stream_read(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
+    if read > 0 then
+        data_or_errors = buff:slice(start, read)
+    end
+    if read < 0 and data_or_errors then
+        data_or_errors = string.format("%s: %s", self, data_or_errors)
+    end
+    return read, data_or_errors
+end
+
+-- write data to stream
+function _dstream:write(data, opt)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- get data address and size for bytes and string
+    if type(data) == "string" then
+        data = bytes(data)
+    end
+    local datasize = data:size()
+    local dataaddr = data:caddr()
+
+    -- init start and last
+    opt = opt or {}
+    local start = opt.start or 1
+    local last = opt.last or datasize
+    if start < 1 or start > datasize then
+        return -1, string.format("%s: invalid start(%d)!", self, start)
+    end
+    if last < start - 1 or last > datasize + start - 1 then
+        return -1, string.format("%s: invalid last(%d)!", self, last)
+    end
+
+    -- write it
+    local errors = nil
+    local write, errors = lz4._compress_stream_write(self:cdata(), dataaddr + start - 1, last + 1 - start, opt.beof)
+    if write < 0 and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return write, errors
 end
 
 -- ensure the socket is opened

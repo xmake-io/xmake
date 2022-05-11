@@ -67,8 +67,8 @@ function sandbox_core_compress_lz4_cstream.read(stream, buff, size, opt)
 end
 
 -- write data to stream
-function sandbox_core_compress_lz4_cstream.write(stream, data, beof, opt)
-    local real, errors = stream:_write(data, beof, opt)
+function sandbox_core_compress_lz4_cstream.write(stream, data, opt)
+    local real, errors = stream:_write(data, opt)
     if real < 0 and errors then
         raise(errors)
     end
@@ -85,8 +85,8 @@ function sandbox_core_compress_lz4_dstream.read(stream, buff, size, opt)
 end
 
 -- write data to stream
-function sandbox_core_compress_lz4_dstream.write(stream, data, beof, opt)
-    local real, errors = stream:_write(data, beof, opt)
+function sandbox_core_compress_lz4_dstream.write(stream, data, opt)
+    local real, errors = stream:_write(data, opt)
     if real < 0 and errors then
         raise(errors)
     end
