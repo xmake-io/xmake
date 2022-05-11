@@ -423,6 +423,7 @@ end
 function remote_build_client:_send_diff_files(stream, diff_files)
     local count = 0
     local totalsize = 0
+    local compressed_size = 0
     local totalcount = #(diff_files.inserted or {}) + #(diff_files.modified or {})
     local time = os.mclock()
     for _, fileitem in ipairs(diff_files.inserted) do
@@ -432,11 +433,13 @@ function remote_build_client:_send_diff_files(stream, diff_files)
             time = os.mclock()
         end
         vprint("uploading %s, %d bytes ..", fileitem, filesize)
-        if not stream:send_file(fileitem, {compress = filesize > 4096}) then
+        local sent, compressed_real = stream:send_file(fileitem, {compress = filesize > 4096})
+        if not sent then
             return false
         end
         count = count + 1
         totalsize = totalsize + filesize
+        compressed_size = compressed_size + compressed_real
     end
     for _, fileitem in ipairs(diff_files.modified) do
         local filesize = os.filesize(fileitem)
@@ -445,14 +448,17 @@ function remote_build_client:_send_diff_files(stream, diff_files)
             time = os.mclock()
         end
         vprint("uploading %s, %d bytes ..", fileitem, filesize)
-        if not stream:send_file(fileitem, {compress = filesize > 4096}) then
+        local sent, compressed_real = stream:send_file(fileitem, {compress = filesize > 4096})
+        if not sent then
             return false
         end
         count = count + 1
         totalsize = totalsize + filesize
+        compressed_size = compressed_size + compressed_real
     end
     cprint("Uploading ${bright}%d%%${clear} ..", math.floor(count * 100 / totalcount))
-    cprint("${bright}%d${clear} files, ${bright}%d${clear} bytes are uploaded, ${bright}%d${clear} ms.", totalcount, totalsize, os.mclock() - time)
+    cprint("${bright}%d${clear} files, ${bright}%d (%d%%)${clear} bytes are uploaded, spent ${bright}%d${clear} ms.",
+        totalcount, compressed_size, math.floor(compressed_size * 100 / totalsize), os.mclock() - time)
     return stream:flush()
 end
 

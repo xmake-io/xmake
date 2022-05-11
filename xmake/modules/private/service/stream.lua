@@ -167,6 +167,7 @@ function stream:send_file(filepath, opt)
     opt = opt or {}
     local flags = 0
     local tmpfile
+    local originsize = os.filesize(filepath)
     if opt.compress then
         flags = bit.bor(flags, HEADER_FLAG_COMPRESS_LZ4)
         tmpfile = os.tmpfile()
@@ -199,17 +200,25 @@ function stream:send_file(filepath, opt)
     if tmpfile then
         os.tryrm(tmpfile)
     end
-    return ok
+    if ok then
+        return originsize, size
+    end
 end
 
 -- send files
 function stream:send_files(filepaths, opt)
+    local size
+    local compressed_size
     for _, filepath in ipairs(filepaths) do
-        if not self:send_file(filepath, opt) then
-            return false
+        local real, compressed_real = self:send_file(filepath, opt)
+        if real then
+            size = (size or 0) + real
+            compressed_size = (compressed_size or 0) + compressed_real
+        else
+            return
         end
     end
-    return true
+    return size, compressed_size
 end
 
 -- recv the given bytes
@@ -353,19 +362,24 @@ function stream:recv_file(filepath)
         end
         file:close()
         if recv == size then
-            return true
+            return recv
         end
     end
 end
 
 -- recv files
 function stream:recv_files(filepaths)
+    local size, decompressed_size
     for _, filepath in ipairs(filepaths) do
-        if not self:recv_file(filepath) then
-            return false
+        local real, decompressed_real = self:recv_file(filepath)
+        if real then
+            size = (size or 0) + real
+            decompressed_size = (decompressed_size or 0) + decompressed_real
+        else
+            return
         end
     end
-    return true
+    return size, decompressed_size
 end
 
 -- recv compressed file
@@ -373,6 +387,7 @@ function stream:_recv_compressed_file(lz4_stream, filepath, size)
     local buff = self._BUFF
     local recv = 0
     local file = io.open(filepath, "wb")
+    local decompressed_size = 0
     while recv < size do
         local data = self:recv(buff, math.min(buff:size(), size - recv))
         if data then
@@ -383,9 +398,10 @@ function stream:_recv_compressed_file(lz4_stream, filepath, size)
                 local real = lz4_stream:write(data, {start = write + 1, last = write + blocksize})
                 if real > 0 then
                     while true do
-                        local decompress_size, decompressed_data = lz4_stream:read(buff, 8192)
-                        if decompress_size > 0 and decompressed_data then
+                        local decompressed_real, decompressed_data = lz4_stream:read(buff, 8192)
+                        if decompressed_real > 0 and decompressed_data then
                             file:write(decompressed_data)
+                            decompressed_size = decompressed_size + decompressed_real
                         else
                             break
                         end
@@ -398,7 +414,7 @@ function stream:_recv_compressed_file(lz4_stream, filepath, size)
     end
     file:close()
     if recv == size then
-        return true
+        return recv, decompressed_size
     end
 end
 
