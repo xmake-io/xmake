@@ -59,7 +59,7 @@ function _generate_configfile()
                 token = token
             }
         },
-        distributed_build = {
+        distcc_build = {
             server = {
                 listen = "0.0.0.0:9692",
                 workdir = path.join(servicedir, "distributed_build"),
