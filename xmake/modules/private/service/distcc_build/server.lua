@@ -33,9 +33,6 @@ local super = distcc_build_server:class()
 -- init server
 function distcc_build_server:init(daemon)
     super.init(self, daemon)
-    if self:daemon() then
-        config.load()
-    end
 
     -- init address
     local address = assert(config.get("distcc_build.server.listen"), "config(distcc_build.server.listen): not found!")

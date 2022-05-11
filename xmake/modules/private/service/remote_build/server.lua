@@ -33,9 +33,6 @@ local super = remote_build_server:class()
 -- init server
 function remote_build_server:init(daemon)
     super.init(self, daemon)
-    if self:daemon() then
-        config.load()
-    end
 
     -- init address
     local address = assert(config.get("remote_build.server.listen"), "config(remote_build.server.listen): not found!")
