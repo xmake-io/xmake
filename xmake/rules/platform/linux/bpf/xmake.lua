@@ -47,7 +47,7 @@ rule("platform.linux.bpf")
         end
         target:add("includedirs", path.directory(headerfile))
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.bpf %s", sourcefile)
-        batchcmds:mkdir(path(path.directory(objectfile))
+        batchcmds:mkdir(path(path.directory(objectfile)))
         batchcmds:compile(path(sourcefile), path(objectfile), {configs = {force = {cxflags = {"-target bpf", "-g", "-O2"}}, defines = targetarch}})
         batchcmds:mkdir(path(path.directory(headerfile)))
         batchcmds:execv("bpftool", {"gen", "skeleton", path(objectfile)}, {stdout = path(headerfile)})
