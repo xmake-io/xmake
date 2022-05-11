@@ -423,9 +423,15 @@ end
 function remote_build_client:_send_diff_files(stream, diff_files)
     local count = 0
     local totalsize = 0
+    local totalcount = #(diff_files.inserted or {}) + #(diff_files.modified or {})
+    local time = os.mclock()
     for _, fileitem in ipairs(diff_files.inserted) do
         local filesize = os.filesize(fileitem)
-        vprint("sending %s, %d bytes ..", fileitem, filesize)
+        if os.mclock() - time > 1000 then
+            cprint("Uploading ${bright}%d%%${clear} ..", math.floor(count * 100 / totalcount))
+            time = os.mclock()
+        end
+        vprint("uploading %s, %d bytes ..", fileitem, filesize)
         if not stream:send_file(fileitem, {compress = filesize > 4096}) then
             return false
         end
@@ -434,14 +440,19 @@ function remote_build_client:_send_diff_files(stream, diff_files)
     end
     for _, fileitem in ipairs(diff_files.modified) do
         local filesize = os.filesize(fileitem)
-        vprint("sending %s, %d bytes ..", fileitem, filesize)
+        if os.mclock() - time > 1000 then
+            cprint("Uploading ${bright}%d%%${clear} ..", math.floor(count * 100 / totalcount))
+            time = os.mclock()
+        end
+        vprint("uploading %s, %d bytes ..", fileitem, filesize)
         if not stream:send_file(fileitem, {compress = filesize > 4096}) then
             return false
         end
         count = count + 1
         totalsize = totalsize + filesize
     end
-    cprint("${bright}%d${clear} files, ${bright}%d${clear} bytes are uploaded.", count, totalsize)
+    cprint("Uploading ${bright}%d%%${clear} ..", math.floor(count * 100 / totalcount))
+    cprint("${bright}%d${clear} files, ${bright}%d${clear} bytes are uploaded, ${bright}%d${clear} ms.", totalcount, totalsize, os.mclock() - time)
     return stream:flush()
 end
 
