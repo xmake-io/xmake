@@ -105,7 +105,7 @@ rule("vala.build")
         end
         local vapidir = target:data("vala.vapidir")
         if vapidir then
-            table.insert(argv, path(vapidir, function (p) return "--vapidir=" .. p end)
+            table.insert(argv, path(vapidir, function (p) return "--vapidir=" .. p end))
         end
         local valaflags = target:data("vala.flags")
         if valaflags then
