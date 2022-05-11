@@ -202,6 +202,16 @@ function stream:send_file(filepath, opt)
     return ok
 end
 
+-- send files
+function stream:send_files(filepaths, opt)
+    for _, filepath in ipairs(filepaths) do
+        if not self:send_file(filepath, opt) then
+            return false
+        end
+    end
+    return true
+end
+
 -- recv the given bytes
 function stream:recv(buff, size)
     assert(size <= buff:size(), "too large size(%d)", size)
@@ -346,6 +356,16 @@ function stream:recv_file(filepath)
             return true
         end
     end
+end
+
+-- recv files
+function stream:recv_files(filepaths)
+    for _, filepath in ipairs(filepaths) do
+        if not self:recv_file(filepath) then
+            return false
+        end
+    end
+    return true
 end
 
 -- recv compressed file
