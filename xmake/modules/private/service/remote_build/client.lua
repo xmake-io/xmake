@@ -26,7 +26,6 @@ import("core.base.option")
 import("core.base.scheduler")
 import("core.project.config", {alias = "project_config"})
 import("lib.detect.find_tool")
-import("utils.archive.archive", {alias = "archive_files"})
 import("private.service.config")
 import("private.service.message")
 import("private.service.client")
@@ -190,7 +189,6 @@ function remote_build_client:sync()
     local errors
     local ok = false
     local diff_files
-    local archive_diff_file
     print("%s: sync files in %s:%d ..", self, addr, port)
     while sock do
 
@@ -205,18 +203,11 @@ function remote_build_client:sync()
             break
         end
 
-        -- archive diff files
-        print("Archiving files ..")
-        archive_diff_file, errors = self:_archive_diff_files(diff_files)
-        if not archive_diff_file or not os.isfile(archive_diff_file) then
-            break
-        end
-
         -- do sync
-        cprint("Uploading files with ${bright}%d${clear} bytes ..", os.filesize(archive_diff_file))
+        cprint("Uploading files ..")
         local send_ok = false
         if stream:send_msg(message.new_sync(session_id, diff_files, {token = self:token()}), {compress = true}) and stream:flush() then
-            if stream:send_file(archive_diff_file) and stream:flush() then
+            if self:_send_diff_files(stream, diff_files) then
                 send_ok = true
             end
         end
@@ -234,9 +225,6 @@ function remote_build_client:sync()
             errors = msg:errors()
         end
         break
-    end
-    if archive_diff_file then
-        os.tryrm(archive_diff_file)
     end
     if ok then
         print("%s: sync files ok!", self)
@@ -431,25 +419,19 @@ function remote_build_client:_diff_files(stream)
     return result, errors
 end
 
--- archive diff files
-function remote_build_client:_archive_diff_files(diff_files)
-    local archivefile = os.tmpfile() .. ".zip"
-    local archivedir = path.directory(archivefile)
-    if not os.isdir(archivedir) then
-        os.mkdir(archivedir)
-    end
-    local filelist = {}
+-- send diff files
+function remote_build_client:_send_diff_files(stream, diff_files)
     for _, fileitem in ipairs(diff_files.inserted) do
-        table.insert(filelist, fileitem)
+        if not stream:send_file(fileitem, {compress = os.filesize(fileitem) > 4096}) then
+            return false
+        end
     end
     for _, fileitem in ipairs(diff_files.modified) do
-        table.insert(filelist, fileitem)
+        if not stream:send_file(fileitem, {compress = os.filesize(fileitem) > 4096}) then
+            return false
+        end
     end
-    local ok = archive_files(archivefile, filelist, {curdir = self:projectdir()})
-    if not ok then
-        return nil, "archive files failed!"
-    end
-    return archivefile
+    return stream:flush()
 end
 
 -- read stdin data

@@ -26,7 +26,6 @@ import("core.base.global")
 import("core.base.option")
 import("core.base.hashset")
 import("core.base.scheduler")
-import("utils.archive.extract", {alias = "extract_archive"})
 import("private.service.config")
 import("private.service.message")
 import("private.service.remote_build.filesync", {alias = "new_filesync"})
@@ -143,14 +142,9 @@ function session:sync(respmsg)
     local manifest = assert(body.manifest, "manifest not found!")
     local filesync = self:_filesync()
     local sourcedir = self:sourcedir()
-    local archivefile = os.tmpfile() .. ".zip"
-    local archivedir = archivefile .. ".dir"
+    local archivedir = os.tmpfile() .. ".dir"
     vprint("%s: sync files in %s ..", self, self:sourcedir())
-    if stream:recv_file(archivefile) then
-        vprint("receive archive file, size: %d", os.filesize(archivefile))
-
-        -- extract archive file
-        extract_archive(archivefile, archivedir)
+    if self:_recv_syncfiles(manifest, archivedir) then
 
         -- do sync
         for _, fileitem in ipairs(manifest.inserted) do
@@ -177,7 +171,6 @@ function session:sync(respmsg)
     else
         raise("receive files failed!")
     end
-    os.tryrm(archivefile)
     os.tryrm(archivedir)
     vprint("%s: sync files ok", self)
 end
@@ -347,6 +340,24 @@ function session:_send_data(data)
             return stream:flush()
         end
     end
+end
+
+-- recv syncfiles
+function session:_recv_syncfiles(manifest, outputdir)
+    local stream = self:stream()
+    for _, fileitem in ipairs(manifest.inserted) do
+        local filepath = path.join(outputdir, fileitem)
+        if not stream:recv_file(filepath) then
+            return false
+        end
+    end
+    for _, fileitem in ipairs(manifest.modified) do
+        local filepath = path.join(outputdir, fileitem)
+        if not stream:recv_file(filepath) then
+            return false
+        end
+    end
+    return true
 end
 
 function session:__tostring()

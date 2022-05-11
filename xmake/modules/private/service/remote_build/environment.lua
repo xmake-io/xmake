@@ -22,21 +22,5 @@
 import("lib.detect.find_tool")
 
 -- check environment
---
--- ensure that we can find some basic tools: zip, 7zip, ...
---
--- If these tools not exist, we will install it first.
---
 function check(server_side)
-    if server_side then
-        -- unzip or 7zip is necessary
-        if not find_tool("unzip") and not find_tool("7z") then
-            raise("unzip or 7zip not found! we need install it first")
-        end
-    else
-        -- zip or 7zip is necessary
-        if not find_tool("zip") and not find_tool("7z") then
-            raise("zip or 7zip not found! we need install it first")
-        end
-    end
 end
