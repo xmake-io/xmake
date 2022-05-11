@@ -64,7 +64,7 @@ function buildcmd(target, batchcmds, sourcefile_capnp, opt)
     table.insert(target:objectfiles(), objectfile)
 
     -- add commands
-    batchcmds:mkdir(sourcefile_dir)
+    batchcmds:mkdir(path(sourcefile_dir))
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.capnp %s", sourcefile_capnp)
     local capnproto = target:pkg("capnproto")
     local includes = capnproto:get("sysincludedirs")
@@ -72,15 +72,15 @@ function buildcmd(target, batchcmds, sourcefile_capnp, opt)
     for _, value in ipairs(includes) do
         table.insert(argv, "-I" .. value)
     end
-    table.insert(argv, "-I" .. (prefixdir and prefixdir or path.directory(sourcefile_capnp)))
+    table.insert(argv, path(prefixdir and prefixdir or path.directory(sourcefile_capnp), function (p) return "-I" .. p end))
     if prefixdir then
-        table.insert(argv, "--src-prefix=" .. prefixdir)
+        table.insert(argv, path(prefixdir, function (p) return "--src-prefix=" .. p end))
     end
     table.insert(argv, "-o")
-    table.insert(argv, "c++:" .. sourcefile_dir)
-    table.insert(argv, sourcefile_capnp)
+    table.insert(argv, path(sourcefile_dir, function (p) return "c++:" .. p end))
+    table.insert(argv, path(sourcefile_capnp))
     batchcmds:vrunv(capnp, argv)
-    local configs = {includedirs = sourcefile_dir, languages = "c++14"}
+    local configs = {includedirs = path(sourcefile_dir), languages = "c++14"}
     if target:is_plat("windows") then
         configs.cxflags = "/TP"
     end
