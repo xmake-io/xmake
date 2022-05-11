@@ -33,7 +33,10 @@ function _start_distcc_build_server(...)
     distcc_build_server(...):runloop()
 end
 
-function main(...)
+function main(daemon, ...)
+    if daemon then
+        config.load()
+    end
     local starters = {}
     if option.get("remote") then
         table.insert(starters, _start_remote_build_server)
@@ -48,7 +51,7 @@ function main(...)
         end
     end
     for _, start_server in ipairs(starters) do
-        scheduler.co_start(start_server, ...)
+        scheduler.co_start(start_server, daemon, ...)
     end
 end
 
