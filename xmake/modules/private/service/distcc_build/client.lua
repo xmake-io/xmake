@@ -32,15 +32,15 @@ import("private.service.client")
 import("private.service.stream", {alias = "socket_stream"})
 
 -- define module
-local distributed_build_client = distributed_build_client or client()
-local super = distributed_build_client:class()
+local distcc_build_client = distcc_build_client or client()
+local super = distcc_build_client:class()
 
 -- init client
-function distributed_build_client:init()
+function distcc_build_client:init()
     super.init(self)
 
     -- init address
-    local address = assert(config.get("distributed_build.client.connect"), "config(distributed_build.client.connect): not found!")
+    local address = assert(config.get("distcc_build.client.connect"), "config(distcc_build.client.connect): not found!")
     super.address_set(self, address)
 
     -- get project directory
@@ -48,7 +48,7 @@ function distributed_build_client:init()
     local projectfile = os.projectfile()
     if projectfile and os.isfile(projectfile) and projectdir then
         self._PROJECTDIR = projectdir
-        self._WORKDIR = path.join(project_config.directory(), "distributed_build")
+        self._WORKDIR = path.join(project_config.directory(), "distcc_build")
     else
         raise("we need enter a project directory with xmake.lua first!")
     end
@@ -58,14 +58,14 @@ function distributed_build_client:init()
 end
 
 -- connect to the remote server
-function distributed_build_client:connect()
+function distcc_build_client:connect()
     if self:is_connected() then
         print("%s: has been connected!", self)
         return
     end
 
     -- we need user authorization?
-    local token = config.get("distributed_build.client.token")
+    local token = config.get("distcc_build.client.token")
     if not token and self:user() then
 
         -- get user password
@@ -123,7 +123,7 @@ function distributed_build_client:connect()
 end
 
 -- disconnect server
-function distributed_build_client:disconnect()
+function distcc_build_client:disconnect()
     if not self:is_connected() then
         print("%s: has been disconnected!", self)
         return
@@ -167,8 +167,8 @@ function distributed_build_client:disconnect()
 end
 
 -- get class
-function distributed_build_client:class()
-    return distributed_build_client
+function distcc_build_client:class()
+    return distcc_build_client
 end
 
 -- is connected? we cannot depend on client:init when run action
@@ -180,7 +180,7 @@ function is_connected()
     local projectdir = os.projectdir()
     local projectfile = os.projectfile()
     if projectfile and os.isfile(projectfile) and projectdir then
-        local workdir = path.join(project_config.directory(), "distributed_build")
+        local workdir = path.join(project_config.directory(), "distcc_build")
         local statusfile = path.join(workdir, "status.txt")
         if os.isfile(statusfile) then
             local status = io.load(statusfile)
@@ -192,7 +192,7 @@ function is_connected()
 end
 
 function main()
-    local instance = distributed_build_client()
+    local instance = distcc_build_client()
     instance:init()
     return instance
 end

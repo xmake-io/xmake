@@ -23,22 +23,22 @@ import("private.service.config")
 import("private.service.message")
 import("private.service.server")
 import("private.service.stream", {alias = "socket_stream"})
-import("private.service.distributed_build.session", {alias = "server_session"})
+import("private.service.distcc_build.session", {alias = "server_session"})
 import("lib.detect.find_tool")
 
 -- define module
-local distributed_build_server = distributed_build_server or server()
-local super = distributed_build_server:class()
+local distcc_build_server = distcc_build_server or server()
+local super = distcc_build_server:class()
 
 -- init server
-function distributed_build_server:init(daemon)
+function distcc_build_server:init(daemon)
     super.init(self, daemon)
     if self:daemon() then
         config.load()
     end
 
     -- init address
-    local address = assert(config.get("distributed_build.server.listen"), "config(distributed_build.server.listen): not found!")
+    local address = assert(config.get("distcc_build.server.listen"), "config(distcc_build.server.listen): not found!")
     super.address_set(self, address)
 
     -- init handler
@@ -49,12 +49,12 @@ function distributed_build_server:init(daemon)
 end
 
 -- get class
-function distributed_build_server:class()
-    return distributed_build_server
+function distcc_build_server:class()
+    return distcc_build_server
 end
 
 -- on handle message
-function distributed_build_server:_on_handle(stream, msg)
+function distcc_build_server:_on_handle(stream, msg)
     local session_id = msg:session_id()
     local session = self:_session(session_id)
     vprint("%s: %s: <session %s>: on handle message(%d)", self, stream:sock(), session_id, msg:code())
@@ -102,7 +102,7 @@ function distributed_build_server:_on_handle(stream, msg)
 end
 
 -- get session
-function distributed_build_server:_session(session_id)
+function distcc_build_server:_session(session_id)
     local session = self._SESSIONS[session_id]
     if not session then
         session = server_session(session_id)
@@ -112,16 +112,16 @@ function distributed_build_server:_session(session_id)
 end
 
 -- close session
-function distributed_build_server:_session_close(session_id)
+function distcc_build_server:_session_close(session_id)
     self._SESSIONS[session_id] = nil
 end
 
-function distributed_build_server:__tostring()
-    return "<distributed_build_server>"
+function distcc_build_server:__tostring()
+    return "<distcc_build_server>"
 end
 
 function main(daemon)
-    local instance = distributed_build_server()
+    local instance = distcc_build_server()
     instance:init(daemon ~= nil)
     return instance
 end

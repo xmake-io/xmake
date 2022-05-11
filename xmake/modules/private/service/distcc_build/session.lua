@@ -80,9 +80,9 @@ end
 
 -- get work directory
 function session:workdir()
-    local workdir = config.get("distributed_build.server.workdir")
+    local workdir = config.get("distcc_build.server.workdir")
     if not workdir then
-        workdir = path.join(global.directory(), "service", "distributed_build")
+        workdir = path.join(global.directory(), "service", "distcc_build")
     end
     return path.join(workdir, "sessons", self:id())
 end

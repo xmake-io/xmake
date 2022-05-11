@@ -62,7 +62,7 @@ function _generate_configfile()
         distcc_build = {
             server = {
                 listen = "0.0.0.0:9692",
-                workdir = path.join(servicedir, "distributed_build"),
+                workdir = path.join(servicedir, "distcc_build"),
             },
             client = {
                 -- without authorization: "127.0.0.1:9691"
