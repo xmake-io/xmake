@@ -201,7 +201,7 @@ function _dstream:read(buff, size, opt)
     end
 
     -- read it
-    local read, data_or_errors = lz4._compress_stream_read(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
+    local read, data_or_errors = lz4._decompress_stream_read(self:cdata(), buff:caddr() + pos, math.min(buff:size() - pos, size))
     if read > 0 then
         data_or_errors = buff:slice(start, read)
     end
@@ -240,7 +240,7 @@ function _dstream:write(data, opt)
 
     -- write it
     local errors = nil
-    local write, errors = lz4._compress_stream_write(self:cdata(), dataaddr + start - 1, last + 1 - start, opt.beof)
+    local write, errors = lz4._decompress_stream_write(self:cdata(), dataaddr + start - 1, last + 1 - start, opt.beof)
     if write < 0 and errors then
         errors = string.format("%s: %s", self, errors)
     end

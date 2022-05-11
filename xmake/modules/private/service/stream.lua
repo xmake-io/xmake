@@ -328,10 +328,8 @@ end
 function stream:recv_file(filepath)
     local size, flags = self:recv_header()
     if size then
-        local dstfile
         if bit.band(flags, HEADER_FLAG_COMPRESS_LZ4) == HEADER_FLAG_COMPRESS_LZ4 then
-            dstfile = filepath
-            filepath = os.tmpfile()
+            return self:_recv_compressed_file(lz4.decompress_stream(), filepath, size)
         end
         local buff = self._BUFF
         local recv = 0
@@ -345,12 +343,42 @@ function stream:recv_file(filepath)
         end
         file:close()
         if recv == size then
-            if dstfile then
-                lz4.decompress_file(filepath, dstfile)
-                os.tryrm(filepath)
-            end
             return true
         end
+    end
+end
+
+-- recv compressed file
+function stream:_recv_compressed_file(lz4_stream, filepath, size)
+    local buff = self._BUFF
+    local recv = 0
+    local file = io.open(filepath, "wb")
+    while recv < size do
+        local data = self:recv(buff, math.min(buff:size(), size - recv))
+        if data then
+            local write = 0
+            local writesize = data:size()
+            while write < writesize do
+                local blocksize = math.min(writesize - write, 8192)
+                local real = lz4_stream:write(data, {start = write + 1, last = write + blocksize})
+                if real > 0 then
+                    while true do
+                        local decompress_size, decompressed_data = lz4_stream:read(buff, 8192)
+                        if decompress_size > 0 and decompressed_data then
+                            file:write(decompressed_data)
+                        else
+                            break
+                        end
+                    end
+                end
+                write = write + blocksize
+            end
+            recv = recv + data:size()
+        end
+    end
+    file:close()
+    if recv == size then
+        return true
     end
 end
 
