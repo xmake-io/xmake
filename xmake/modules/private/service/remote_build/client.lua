@@ -31,7 +31,6 @@ import("private.service.message")
 import("private.service.client")
 import("private.service.stream", {alias = "socket_stream"})
 import("private.service.remote_build.filesync", {alias = "new_filesync"})
-import("private.service.remote_build.environment")
 
 -- define module
 local remote_build_client = remote_build_client or client()
@@ -60,9 +59,6 @@ function remote_build_client:init()
     filesync:ignorefiles_add(".git/**")
     filesync:ignorefiles_add(".xmake/**")
     self._FILESYNC = filesync
-
-    -- check environment
-    environment.check(false)
 end
 
 -- get class

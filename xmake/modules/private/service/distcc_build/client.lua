@@ -52,12 +52,14 @@ function distcc_build_client:init()
     else
         raise("we need enter a project directory with xmake.lua first!")
     end
-
-    -- check environment
-    environment.check(false)
 end
 
--- connect to the remote server
+-- get class
+function distcc_build_client:class()
+    return distcc_build_client
+end
+
+-- connect to the distcc server
 function distcc_build_client:connect()
     if self:is_connected() then
         print("%s: has been connected!", self)
@@ -115,11 +117,6 @@ function distcc_build_client:connect()
     status.connected = ok
     status.session_id = session_id
     self:status_save()
-
-    -- sync files
-    if ok then
-        self:sync()
-    end
 end
 
 -- disconnect server
@@ -166,9 +163,53 @@ function distcc_build_client:disconnect()
     self:status_save()
 end
 
--- get class
-function distcc_build_client:class()
-    return distcc_build_client
+-- is connected?
+function distcc_build_client:is_connected()
+    return self:status().connected
+end
+
+-- get the status
+function distcc_build_client:status()
+    local status = self._STATUS
+    local statusfile = self:statusfile()
+    if not status then
+        if os.isfile(statusfile) then
+            status = io.load(statusfile)
+        end
+        status = status or {}
+        self._STATUS = status
+    end
+    return status
+end
+
+-- save status
+function distcc_build_client:status_save()
+    io.save(self:statusfile(), self:status())
+end
+
+-- get the status file
+function distcc_build_client:statusfile()
+    return path.join(self:workdir(), "status.txt")
+end
+
+-- get the project directory
+function distcc_build_client:projectdir()
+    return self._PROJECTDIR
+end
+
+-- get working directory
+function distcc_build_client:workdir()
+    return self._WORKDIR
+end
+
+-- get user token
+function distcc_build_client:token()
+    return self:status().token
+end
+
+-- get the session id, only for unique project
+function distcc_build_client:session_id()
+    return self:status().session_id or hash.uuid():split("-", {plain = true})[1]:lower()
 end
 
 -- is connected? we cannot depend on client:init when run action

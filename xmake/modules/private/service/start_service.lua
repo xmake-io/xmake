@@ -23,12 +23,8 @@ import("core.base.option")
 import("core.project.project")
 import("private.service.config")
 import("private.service.service")
-import("private.service.remote_build.environment")
 
 function main(opt)
-
-    -- check environment
-    environment.check(true)
 
     -- start service
     opt = opt or {}
