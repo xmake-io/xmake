@@ -421,16 +421,27 @@ end
 
 -- send diff files
 function remote_build_client:_send_diff_files(stream, diff_files)
+    local count = 0
+    local totalsize = 0
     for _, fileitem in ipairs(diff_files.inserted) do
-        if not stream:send_file(fileitem, {compress = os.filesize(fileitem) > 4096}) then
+        local filesize = os.filesize(fileitem)
+        vprint("sending %s, %d bytes ..", fileitem, filesize)
+        if not stream:send_file(fileitem, {compress = filesize > 4096}) then
             return false
         end
+        count = count + 1
+        totalsize = totalsize + filesize
     end
     for _, fileitem in ipairs(diff_files.modified) do
-        if not stream:send_file(fileitem, {compress = os.filesize(fileitem) > 4096}) then
+        local filesize = os.filesize(fileitem)
+        vprint("sending %s, %d bytes ..", fileitem, filesize)
+        if not stream:send_file(fileitem, {compress = filesize > 4096}) then
             return false
         end
+        count = count + 1
+        totalsize = totalsize + filesize
     end
+    cprint("${bright}%d${clear} files, ${bright}%d${clear} bytes are uploaded.", count, totalsize)
     return stream:flush()
 end
 
