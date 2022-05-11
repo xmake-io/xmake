@@ -12,6 +12,11 @@
 ### Changes
 
 * [#2309](https://github.com/xmake-io/xmake/issues/2309): Support user authorization for remote compilation
+* Improve remote compilation to support lz4 compression
+
+### Bugs fixed
+
+* Fix lua stack when select package versions
 
 ## v2.6.5
 
@@ -1267,6 +1272,11 @@
 ### 改进
 
 * [#2309](https://github.com/xmake-io/xmake/issues/2309): 远程编译支持用户授权验证
+* 改进远程编译，增加对 lz4 压缩支持
+
+### Bugs 修复
+
+* 修复选择包版本时候 lua 栈不平衡导致的崩溃问题
 
 ## v2.6.5
 
