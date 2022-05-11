@@ -426,6 +426,7 @@ function remote_build_client:_send_diff_files(stream, diff_files)
     local compressed_size = 0
     local totalcount = #(diff_files.inserted or {}) + #(diff_files.modified or {})
     local time = os.mclock()
+    local startime = time
     for _, fileitem in ipairs(diff_files.inserted) do
         local filesize = os.filesize(fileitem)
         if os.mclock() - time > 1000 then
@@ -458,7 +459,7 @@ function remote_build_client:_send_diff_files(stream, diff_files)
     end
     cprint("Uploading ${bright}%d%%${clear} ..", math.floor(count * 100 / totalcount))
     cprint("${bright}%d${clear} files, ${bright}%d (%d%%)${clear} bytes are uploaded, spent ${bright}%d${clear} ms.",
-        totalcount, compressed_size, math.floor(compressed_size * 100 / totalsize), os.mclock() - time)
+        totalcount, compressed_size, math.floor(compressed_size * 100 / totalsize), os.mclock() - startime)
     return stream:flush()
 end
 
