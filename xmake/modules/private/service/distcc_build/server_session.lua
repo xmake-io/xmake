@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        session.lua
+-- @file        server_session.lua
 --
 
 -- imports
@@ -30,20 +30,20 @@ import("private.service.server_config", {alias = "config"})
 import("private.service.message")
 
 -- define module
-local session = session or object()
+local server_session = server_session or object()
 
--- init session
-function session:init(session_id)
+-- init server_session
+function server_session:init(session_id)
     self._ID = session_id
 end
 
--- get session id
-function session:id()
+-- get server_session id
+function server_session:id()
     return self._ID
 end
 
--- open session
-function session:open()
+-- open server_session
+function server_session:open()
     if self:is_connected() then
         return
     end
@@ -55,8 +55,8 @@ function session:open()
     self:status_save()
 end
 
--- close session
-function session:close()
+-- close server_session
+function server_session:close()
     if not self:is_connected() then
         return
     end
@@ -69,17 +69,17 @@ function session:close()
 end
 
 -- set stream
-function session:stream_set(stream)
+function server_session:stream_set(stream)
     self._STREAM = stream
 end
 
 -- get stream
-function session:stream()
+function server_session:stream()
     return self._STREAM
 end
 
 -- get work directory
-function session:workdir()
+function server_session:workdir()
     local workdir = config.get("distcc_build.workdir")
     if not workdir then
         workdir = path.join(global.directory(), "service", "server", "distcc_build")
@@ -88,12 +88,12 @@ function session:workdir()
 end
 
 -- is connected?
-function session:is_connected()
+function server_session:is_connected()
     return self:status().connected
 end
 
 -- get the status
-function session:status()
+function server_session:status()
     local status = self._STATUS
     local statusfile = self:statusfile()
     if not status then
@@ -107,21 +107,21 @@ function session:status()
 end
 
 -- save status
-function session:status_save()
+function server_session:status_save()
     io.save(self:statusfile(), self:status())
 end
 
 -- get status file
-function session:statusfile()
+function server_session:statusfile()
     return path.join(self:workdir(), "status.txt")
 end
 
-function session:__tostring()
+function server_session:__tostring()
     return string.format("<session %s>", self:id())
 end
 
 function main(session_id)
-    local instance = session()
+    local instance = server_session()
     instance:init(session_id)
     return instance
 end

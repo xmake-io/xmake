@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        session.lua
+-- @file        server_session.lua
 --
 
 -- imports
@@ -31,10 +31,10 @@ import("private.service.message")
 import("private.service.remote_build.filesync", {alias = "new_filesync"})
 
 -- define module
-local session = session or object()
+local server_session = server_session or object()
 
--- init session
-function session:init(session_id)
+-- init server_session
+function server_session:init(session_id)
     self._ID = session_id
     local filesync = new_filesync(self:sourcedir(), path.join(self:workdir(), "manifest.txt"))
     filesync:ignorefiles_add(".git/**")
@@ -42,13 +42,13 @@ function session:init(session_id)
     self._FILESYNC = filesync
 end
 
--- get session id
-function session:id()
+-- get server_session id
+function server_session:id()
     return self._ID
 end
 
--- open session
-function session:open()
+-- open server_session
+function server_session:open()
     if self:is_connected() then
         return
     end
@@ -63,8 +63,8 @@ function session:open()
     self:status_save()
 end
 
--- close session
-function session:close()
+-- close server_session
+function server_session:close()
     if not self:is_connected() then
         return
     end
@@ -77,17 +77,17 @@ function session:close()
 end
 
 -- set stream
-function session:stream_set(stream)
+function server_session:stream_set(stream)
     self._STREAM = stream
 end
 
 -- get stream
-function session:stream()
+function server_session:stream()
     return self._STREAM
 end
 
 -- diff files
-function session:diff(respmsg)
+function server_session:diff(respmsg)
     local body = respmsg:body()
     vprint("%s: diff files in %s ..", self, self:sourcedir())
 
@@ -136,7 +136,7 @@ function session:diff(respmsg)
 end
 
 -- sync files
-function session:sync(respmsg)
+function server_session:sync(respmsg)
     local body = respmsg:body()
     local stream = self:stream()
     local manifest = assert(body.manifest, "manifest not found!")
@@ -176,14 +176,14 @@ function session:sync(respmsg)
 end
 
 -- clean files
-function session:clean()
+function server_session:clean()
     vprint("%s: clean files in %s ..", self, self:workdir())
     os.tryrm(self:workdir())
     vprint("%s: clean files ok", self)
 end
 
 -- run command
-function session:runcmd(respmsg)
+function server_session:runcmd(respmsg)
     local body = respmsg:body()
     local program = body.program
     local argv = body.argv
@@ -211,7 +211,7 @@ function session:runcmd(respmsg)
 end
 
 -- get work directory
-function session:workdir()
+function server_session:workdir()
     local workdir = config.get("remote_build.workdir")
     if not workdir then
         workdir = path.join(global.directory(), "service", "server", "remote_build")
@@ -220,12 +220,12 @@ function session:workdir()
 end
 
 -- is connected?
-function session:is_connected()
+function server_session:is_connected()
     return self:status().connected
 end
 
 -- get the status
-function session:status()
+function server_session:status()
     local status = self._STATUS
     local statusfile = self:statusfile()
     if not status then
@@ -239,27 +239,27 @@ function session:status()
 end
 
 -- save status
-function session:status_save()
+function server_session:status_save()
     io.save(self:statusfile(), self:status())
 end
 
 -- get status file
-function session:statusfile()
+function server_session:statusfile()
     return path.join(self:workdir(), "status.txt")
 end
 
 -- get sourcedir directory
-function session:sourcedir()
+function server_session:sourcedir()
     return path.join(self:workdir(), "source")
 end
 
 -- get filesync
-function session:_filesync()
+function server_session:_filesync()
     return self._FILESYNC
 end
 
 -- ensure source directory
-function session:_ensure_sourcedir()
+function server_session:_ensure_sourcedir()
     local sourcedir = self:sourcedir()
     if not os.isdir(sourcedir) then
         os.mkdir(sourcedir)
@@ -267,7 +267,7 @@ function session:_ensure_sourcedir()
 end
 
 -- write data from pipe
-function session:_write_pipe(opt)
+function server_session:_write_pipe(opt)
     local buff = bytes(256)
     local wpipe = opt.wpipe
     vprint("%s: %s: writing data ..", self, wpipe)
@@ -288,7 +288,7 @@ function session:_write_pipe(opt)
 end
 
 -- read data from pipe
-function session:_read_pipe(opt)
+function server_session:_read_pipe(opt)
     local buff = bytes(256)
     local rpipe = opt.rpipe
     local verbose = option.get("verbose")
@@ -324,7 +324,7 @@ function session:_read_pipe(opt)
 end
 
 -- recv data from stream
-function session:_recv_data(buff)
+function server_session:_recv_data(buff)
     local stream = self:stream()
     local msg = stream:recv_msg()
     if msg and msg:is_data() then
@@ -333,7 +333,7 @@ function session:_recv_data(buff)
 end
 
 -- send data to stream
-function session:_send_data(data)
+function server_session:_send_data(data)
     local stream = self:stream()
     if stream:send_msg(message.new_data(self:id(), data:size())) then
         if stream:send(data) then
@@ -343,7 +343,7 @@ function session:_send_data(data)
 end
 
 -- recv syncfiles
-function session:_recv_syncfiles(manifest, outputdir)
+function server_session:_recv_syncfiles(manifest, outputdir)
     local stream = self:stream()
     for _, fileitem in ipairs(manifest.inserted) do
         local filepath = path.join(outputdir, fileitem)
@@ -360,12 +360,12 @@ function session:_recv_syncfiles(manifest, outputdir)
     return true
 end
 
-function session:__tostring()
+function server_session:__tostring()
     return string.format("<session %s>", self:id())
 end
 
 function main(session_id)
-    local instance = session()
+    local instance = server_session()
     instance:init(session_id)
     return instance
 end
