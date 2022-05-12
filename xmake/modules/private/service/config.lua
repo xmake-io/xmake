@@ -65,11 +65,9 @@ function _generate_configfile()
                 workdir = path.join(servicedir, "distcc_build"),
             },
             client = {
-                -- without authorization: "127.0.0.1:9691"
-                -- with user authorization: "user@127.0.0.1:9691"
-                connect = "127.0.0.1:9692",
-                -- with token authorization
-                token = token
+                hosts = {
+                    {connect = "127.0.0.1:9692", token = token}
+                }
             }
         }
 

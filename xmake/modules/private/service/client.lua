@@ -30,40 +30,26 @@ local client = client or object()
 function client:init()
 end
 
--- set the given client address
-function client:address_set(address)
+-- parse host address
+function client:address_parse(address)
+    local addr, port, user
     local splitinfo = address:split(':', {plain = true})
     if #splitinfo == 2 then
-        self._ADDR = splitinfo[1]
-        self._PORT = splitinfo[2]
+        addr = splitinfo[1]
+        port = splitinfo[2]
     else
-        self._ADDR = "127.0.0.1"
-        self._PORT = splitinfo[1]
+        addr = "127.0.0.1"
+        port = splitinfo[1]
     end
-    local addr = self._ADDR
     if addr and addr:find("@", 1, true) then
         splitinfo = addr:split('@', {plain = true})
         if #splitinfo == 2 then
-            self._USER = splitinfo[1]
-            self._ADDR = splitinfo[2]
+            user = splitinfo[1]
+            addr = splitinfo[2]
         end
     end
-    assert(self._ADDR and self._PORT, "invalid client address!")
-end
-
--- get user name
-function client:user()
-    return self._USER
-end
-
--- get the ip address
-function client:addr()
-    return self._ADDR
-end
-
--- get the address port
-function client:port()
-    return self._PORT
+    assert(addr and port, "invalid client address!")
+    return addr, port, user
 end
 
 -- get class

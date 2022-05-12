@@ -39,9 +39,9 @@ local super = distcc_build_client:class()
 function distcc_build_client:init()
     super.init(self)
 
-    -- init address
-    local address = assert(config.get("distcc_build.client.connect"), "config(distcc_build.client.connect): not found!")
-    super.address_set(self, address)
+    -- init hosts
+    local hosts = assert(config.get("distcc_build.client.hosts"), "config(distcc_build.client.hosts): not found!")
+    self:hosts_set(hosts)
 
     -- get project directory
     local projectdir = os.projectdir()
@@ -59,6 +59,36 @@ function distcc_build_client:class()
     return distcc_build_client
 end
 
+-- get the client hosts
+function distcc_build_client:hosts()
+    return self._HOSTS
+end
+
+-- set the client hosts
+function distcc_build_client:hosts_set(hosts)
+    local hostinfos = {}
+    for _, host in ipairs(hosts) do
+        local hostinfo = {}
+        local address = assert(host.connect, "connect address not found in hosts configuration!")
+        local addr, port, user = self:address_parse(address)
+        hostinfo.addr = addr
+        hostinfo.port = port
+        hostinfo.user = user
+        hostinfo.token = host.token
+        table.insert(hostinfos, hostinfo)
+    end
+    self._HOSTS = hostinfos
+end
+
+-- connect to the distcc server
+function distcc_build_client:connect()
+end
+
+-- disconnect server
+function distcc_build_client:disconnect()
+end
+
+--[[
 -- connect to the distcc server
 function distcc_build_client:connect()
     if self:is_connected() then
@@ -162,6 +192,7 @@ function distcc_build_client:disconnect()
     status.connected = not ok
     self:status_save()
 end
+]]
 
 -- is connected?
 function distcc_build_client:is_connected()

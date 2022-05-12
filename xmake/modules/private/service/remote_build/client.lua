@@ -42,7 +42,7 @@ function remote_build_client:init()
 
     -- init address
     local address = assert(config.get("remote_build.client.connect"), "config(remote_build.client.connect): not found!")
-    super.address_set(self, address)
+    self:address_set(address)
 
     -- get project directory
     local projectdir = os.projectdir()
@@ -363,6 +363,29 @@ end
 -- get the session id, only for unique project
 function remote_build_client:session_id()
     return self:status().session_id or hash.uuid():split("-", {plain = true})[1]:lower()
+end
+
+-- set the given client address
+function remote_build_client:address_set(address)
+    local addr, port, user = self:address_parse(address)
+    self._ADDR = addr
+    self._PORT = port
+    self._USER = user
+end
+
+-- get user name
+function remote_build_client:user()
+    return self._USER
+end
+
+-- get the ip address
+function remote_build_client:addr()
+    return self._ADDR
+end
+
+-- get the address port
+function remote_build_client:port()
+    return self._PORT
 end
 
 -- get filesync
