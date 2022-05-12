@@ -24,7 +24,7 @@ import("core.base.base64")
 import("core.base.bytes")
 import("core.base.hashset")
 import("private.service.service")
-import("private.service.config")
+import("private.service.server_config", {alias = "config"})
 
 function main(user)
     assert(user, "empty user name!")
@@ -41,12 +41,11 @@ function main(user)
 
     -- save to configs
     local configs = assert(config.configs(), "configs not found!")
-    configs.server = configs.server or {}
-    configs.server.tokens = configs.server.tokens or {}
-    local tokenset = hashset.from(configs.server.tokens)
+    configs.tokens = configs.tokens or {}
+    local tokenset = hashset.from(configs.tokens)
     if tokenset:has(token) then
         tokenset:remove(token)
-        configs.server.tokens = tokenset:to_array()
+        configs.tokens = tokenset:to_array()
     else
         cprint("User ${bright}%s${clear} not found!", user)
         return

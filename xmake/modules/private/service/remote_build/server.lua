@@ -19,7 +19,7 @@
 --
 
 -- imports
-import("private.service.config")
+import("private.service.server_config", {alias = "config"})
 import("private.service.message")
 import("private.service.server")
 import("private.service.stream", {alias = "socket_stream"})
@@ -35,7 +35,7 @@ function remote_build_server:init(daemon)
     super.init(self, daemon)
 
     -- init address
-    local address = assert(config.get("remote_build.server.listen"), "config(remote_build.server.listen): not found!")
+    local address = assert(config.get("remote_build.listen"), "config(remote_build.listen): not found!")
     super.address_set(self, address)
 
     -- init handler

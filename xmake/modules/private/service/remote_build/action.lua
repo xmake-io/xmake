@@ -19,7 +19,7 @@
 --
 
 -- imports
-import("private.service.config")
+import("private.service.client_config", {alias = "config"})
 import("private.service.remote_build.client", {alias = "remote_build_client"})
 
 -- is enabled?

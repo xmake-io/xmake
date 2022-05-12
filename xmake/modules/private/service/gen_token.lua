@@ -24,7 +24,7 @@ import("core.base.base64")
 import("core.base.bytes")
 import("core.base.hashset")
 import("private.service.service")
-import("private.service.config")
+import("private.service.server_config", {alias = "config"})
 
 -- generate a token
 function _generate_token()
@@ -38,10 +38,9 @@ function main()
 
     -- save to configs
     local configs = assert(config.configs(), "configs not found!")
-    configs.server = configs.server or {}
-    configs.server.tokens = configs.server.tokens or {}
-    if not hashset.from(configs.server.tokens):has(token) then
-        table.insert(configs.server.tokens, token)
+    configs.tokens = configs.tokens or {}
+    if not hashset.from(configs.tokens):has(token) then
+        table.insert(configs.tokens, token)
     else
         cprint("Token ${yellow bright}%s${clear} has been added!", token)
         return

@@ -20,7 +20,7 @@
 
 -- imports
 import("core.base.option")
-import("private.service.config")
+import("private.service.server_config", {alias = "config"})
 
 function main()
     local log

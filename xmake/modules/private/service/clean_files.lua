@@ -20,7 +20,6 @@
 
 -- imports
 import("core.base.option")
-import("private.service.config")
 import("private.service.remote_build.client", {alias = "remote_build_client"})
 
 function main()

@@ -26,7 +26,7 @@ import("core.base.global")
 import("core.base.option")
 import("core.base.hashset")
 import("core.base.scheduler")
-import("private.service.config")
+import("private.service.server_config", {alias = "config"})
 import("private.service.message")
 import("private.service.remote_build.filesync", {alias = "new_filesync"})
 
@@ -212,9 +212,9 @@ end
 
 -- get work directory
 function session:workdir()
-    local workdir = config.get("remote_build.server.workdir")
+    local workdir = config.get("remote_build.workdir")
     if not workdir then
-        workdir = path.join(global.directory(), "service", "remote_build")
+        workdir = path.join(global.directory(), "service", "server", "remote_build")
     end
     return path.join(workdir, "sessons", self:id())
 end

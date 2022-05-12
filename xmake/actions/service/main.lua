@@ -20,7 +20,8 @@
 
 -- imports
 import("core.base.option")
-import("private.service.config")
+import("private.service.server_config")
+import("private.service.client_config")
 import("private.service.start_service")
 import("private.service.restart_service")
 import("private.service.stop_service")
@@ -29,7 +30,6 @@ import("private.service.reconnect_service")
 import("private.service.disconnect_service")
 import("private.service.clean_files")
 import("private.service.sync_files")
-import("private.service.import_config")
 import("private.service.add_user")
 import("private.service.rm_user")
 import("private.service.gen_token")
@@ -37,7 +37,8 @@ import("private.service.show_logs")
 import("private.service.show_status")
 
 function main()
-    config.load()
+    server_config.load()
+    client_config.load()
     if option.get("start") then
         start_service({daemon = true})
     elseif option.get("restart") then
@@ -54,8 +55,6 @@ function main()
         clean_files()
     elseif option.get("sync") then
         sync_files()
-    elseif option.get("config") then
-        import_config(option.get("config"))
     elseif option.get("gen-token") then
         gen_token()
     elseif option.get("add-user") then

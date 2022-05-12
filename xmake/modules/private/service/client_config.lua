@@ -15,59 +15,40 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        config.lua
+-- @file        client_config.lua
 --
 
 -- imports
 import("core.base.global")
 import("core.base.base64")
 import("core.base.bytes")
+import("private.service.server_config")
 
--- generate a token
-function _generate_token()
-    return hash.md5(bytes(base64.encode(hash.uuid())))
+-- get a local server token
+function _get_local_server_token()
+    local tokens = server_config.get("tokens")
+    if tokens then
+        return tokens[1]
+    end
 end
 
 -- generate a default config file
 function _generate_configfile()
     local filepath = configfile()
     assert(not _g.configs and not os.isfile(filepath))
-    local servicedir = path.join(global.directory(), "service")
-    local token = _generate_token()
+    local token = _get_local_server_token()
     print("generating the config file to %s ..", filepath)
-    cprint("an token(${bright yellow}%s${clear}) is generated, we can use this token to connect service.", token)
     local configs = {
-        logfile = path.join(servicedir, "logs.txt"),
-        server = {
-            known_hosts = {
-            --    "127.0.0.1"
-            },
-            tokens = {
-                token
-            }
-        },
         remote_build = {
-            server = {
-                listen = "0.0.0.0:9691",
-                workdir = path.join(servicedir, "remote_build"),
-            },
-            client = {
-                -- without authorization: "127.0.0.1:9691"
-                -- with user authorization: "user@127.0.0.1:9691"
-                connect = "127.0.0.1:9691",
-                -- with token authorization
-                token = token
-            }
+            -- without authorization: "127.0.0.1:9691"
+            -- with user authorization: "user@127.0.0.1:9691"
+            connect = "127.0.0.1:9691",
+            -- with token authorization
+            token = token
         },
         distcc_build = {
-            server = {
-                listen = "0.0.0.0:9692",
-                workdir = path.join(servicedir, "distcc_build"),
-            },
-            client = {
-                hosts = {
-                    {connect = "127.0.0.1:9692", token = token}
-                }
+            hosts = {
+                {connect = "127.0.0.1:9692", token = token}
             }
         }
 
@@ -77,7 +58,7 @@ end
 
 -- get config file path
 function configfile()
-    return path.join(global.directory(), "service.conf")
+    return path.join(global.directory(), "service", "client.conf")
 end
 
 -- get all configs
@@ -85,7 +66,7 @@ function configs()
     return _g.configs
 end
 
--- get the given config, e.g. config.get("remote_build.server.listen")
+-- get the given config, e.g. client_config.get("remote_build.connect")
 function get(name)
     local value = configs()
     for _, key in ipairs(name:split('.', {plain = true})) do

@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.project")
-import("private.service.config")
+import("private.service.server_config", {alias = "config"})
 import("private.service.service")
 
 function main(opt)

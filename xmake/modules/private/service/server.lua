@@ -25,7 +25,7 @@ import("core.base.base64")
 import("core.base.hashset")
 import("core.base.socket")
 import("core.base.scheduler")
-import("private.service.config")
+import("private.service.server_config", {alias = "config"})
 import("private.service.message")
 import("private.service.stream", {alias = "socket_stream"})
 
@@ -37,11 +37,11 @@ function server:init(daemon)
     self._DAEMON = daemon
 
     -- init authorizations
-    local tokens = config.get("server.tokens")
+    local tokens = config.get("tokens")
     self:tokens_set(tokens)
 
     -- init known hosts
-    local known_hosts = config.get("server.known_hosts")
+    local known_hosts = config.get("known_hosts")
     self:known_hosts_set(known_hosts)
 end
 
@@ -106,7 +106,7 @@ end
 -- verify user
 function server:verify_user(token, peeraddr)
     if not token then
-        return false, "client has no authorization, we need add username to connect address or token to `remote_build.client.token`!"
+        return false, "client has no authorization, we need add username to connect address or token to `remote_build.token`!"
     end
 
     -- check authorization

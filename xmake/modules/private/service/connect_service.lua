@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.scheduler")
-import("private.service.config")
+import("private.service.client_config", {alias = "config"})
 import("private.service.remote_build.client", {alias = "remote_build_client"})
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 
@@ -40,7 +40,7 @@ function main(...)
     elseif option.get("distcc") then
         table.insert(connectors, _connect_distcc_build_server)
     else
-        if config.get("remote_build.client") then
+        if config.get("remote_build") then
             table.insert(connectors, _connect_remote_build_server)
         end
     end

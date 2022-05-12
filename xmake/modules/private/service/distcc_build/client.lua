@@ -26,7 +26,7 @@ import("core.base.option")
 import("core.base.scheduler")
 import("core.project.config", {alias = "project_config"})
 import("lib.detect.find_tool")
-import("private.service.config")
+import("private.service.client_config", {alias = "config"})
 import("private.service.message")
 import("private.service.client")
 import("private.service.stream", {alias = "socket_stream"})
@@ -40,7 +40,7 @@ function distcc_build_client:init()
     super.init(self)
 
     -- init hosts
-    local hosts = assert(config.get("distcc_build.client.hosts"), "config(distcc_build.client.hosts): not found!")
+    local hosts = assert(config.get("distcc_build.hosts"), "config(distcc_build.hosts): not found!")
     self:hosts_set(hosts)
 
     -- get project directory
@@ -97,7 +97,7 @@ function distcc_build_client:connect()
     end
 
     -- we need user authorization?
-    local token = config.get("distcc_build.client.token")
+    local token = config.get("distcc_build.token")
     if not token and self:user() then
 
         -- get user password

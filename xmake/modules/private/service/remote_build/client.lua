@@ -26,7 +26,7 @@ import("core.base.option")
 import("core.base.scheduler")
 import("core.project.config", {alias = "project_config"})
 import("lib.detect.find_tool")
-import("private.service.config")
+import("private.service.client_config", {alias = "config"})
 import("private.service.message")
 import("private.service.client")
 import("private.service.stream", {alias = "socket_stream"})
@@ -41,7 +41,7 @@ function remote_build_client:init()
     super.init(self)
 
     -- init address
-    local address = assert(config.get("remote_build.client.connect"), "config(remote_build.client.connect): not found!")
+    local address = assert(config.get("remote_build.connect"), "config(remote_build.connect): not found!")
     self:address_set(address)
 
     -- get project directory
@@ -74,7 +74,7 @@ function remote_build_client:connect()
     end
 
     -- we need user authorization?
-    local token = config.get("remote_build.client.token")
+    local token = config.get("remote_build.token")
     if not token and self:user() then
 
         -- get user password

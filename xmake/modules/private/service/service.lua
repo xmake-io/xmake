@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.scheduler")
-import("private.service.config")
+import("private.service.server_config", {alias = "config"})
 import("private.service.remote_build.server", {alias = "remote_build_server"})
 import("private.service.distcc_build.server", {alias = "distcc_build_server"})
 
@@ -43,10 +43,10 @@ function main(daemon, ...)
     elseif option.get("distcc") then
         table.insert(starters, _start_distcc_build_server)
     else
-        if config.get("remote_build.server") then
+        if config.get("remote_build") then
             table.insert(starters, _start_remote_build_server)
         end
-        if config.get("distcc_build.server") then
+        if config.get("distcc_build") then
             table.insert(starters, _start_distcc_build_server)
         end
     end

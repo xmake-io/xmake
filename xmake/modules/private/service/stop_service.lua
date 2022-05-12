@@ -20,7 +20,6 @@
 
 -- imports
 import("core.base.option")
-import("private.service.config")
 import("private.service.remote_build.server", {alias = "remote_build_server"})
 import("private.service.distcc_build.server", {alias = "distcc_build_server"})
 
