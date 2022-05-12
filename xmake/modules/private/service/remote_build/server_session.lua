@@ -33,21 +33,27 @@ import("private.service.remote_build.filesync", {alias = "new_filesync"})
 -- define module
 local server_session = server_session or object()
 
--- init server_session
-function server_session:init(session_id)
+-- init server session
+function server_session:init(server, session_id)
     self._ID = session_id
+    self._SERVER = server
     local filesync = new_filesync(self:sourcedir(), path.join(self:workdir(), "manifest.txt"))
     filesync:ignorefiles_add(".git/**")
     filesync:ignorefiles_add(".xmake/**")
     self._FILESYNC = filesync
 end
 
--- get server_session id
+-- get server session id
 function server_session:id()
     return self._ID
 end
 
--- open server_session
+-- get server
+function server_session:server()
+    return self._SERVER
+end
+
+-- open server session
 function server_session:open()
     if self:is_connected() then
         return
@@ -63,7 +69,7 @@ function server_session:open()
     self:status_save()
 end
 
--- close server_session
+-- close server session
 function server_session:close()
     if not self:is_connected() then
         return
@@ -212,11 +218,7 @@ end
 
 -- get work directory
 function server_session:workdir()
-    local workdir = config.get("remote_build.workdir")
-    if not workdir then
-        workdir = path.join(global.directory(), "service", "server", "remote_build")
-    end
-    return path.join(workdir, "sessons", self:id())
+    return path.join(self:server():workdir(), "sessons", self:id())
 end
 
 -- is connected?
@@ -364,8 +366,8 @@ function server_session:__tostring()
     return string.format("<session %s>", self:id())
 end
 
-function main(session_id)
+function main(server, session_id)
     local instance = server_session()
-    instance:init(session_id)
+    instance:init(server, session_id)
     return instance
 end

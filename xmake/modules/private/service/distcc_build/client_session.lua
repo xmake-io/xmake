@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        server_session.lua
+-- @file        client_session.lua
 --
 
 -- imports
@@ -26,30 +26,30 @@ import("core.base.global")
 import("core.base.option")
 import("core.base.hashset")
 import("core.base.scheduler")
-import("private.service.server_config", {alias = "config"})
+import("private.service.client_config", {alias = "config"})
 import("private.service.message")
 
 -- define module
-local server_session = server_session or object()
+local client_session = client_session or object()
 
--- init server session
-function server_session:init(server, session_id)
+-- init client session
+function client_session:init(client, session_id)
     self._ID = session_id
-    self._SERVER = server
+    self._CLIENT = client
 end
 
--- get server session id
-function server_session:id()
+-- get client session id
+function client_session:id()
     return self._ID
 end
 
--- get server
-function server_session:server()
-    return self._SERVER
+-- get client
+function client_session:client()
+    return self._CLIENT
 end
 
--- open server session
-function server_session:open()
+-- open client session
+function client_session:open()
     if self:is_connected() then
         return
     end
@@ -61,8 +61,8 @@ function server_session:open()
     self:status_save()
 end
 
--- close server session
-function server_session:close()
+-- close client session
+function client_session:close()
     if not self:is_connected() then
         return
     end
@@ -75,27 +75,27 @@ function server_session:close()
 end
 
 -- set stream
-function server_session:stream_set(stream)
+function client_session:stream_set(stream)
     self._STREAM = stream
 end
 
 -- get stream
-function server_session:stream()
+function client_session:stream()
     return self._STREAM
 end
 
 -- get work directory
-function server_session:workdir()
-    return path.join(self:server(), "sessons", self:id())
+function client_session:workdir()
+    return path.join(self:workdir(), "sessons", self:id())
 end
 
 -- is connected?
-function server_session:is_connected()
+function client_session:is_connected()
     return self:status().connected
 end
 
 -- get the status
-function server_session:status()
+function client_session:status()
     local status = self._STATUS
     local statusfile = self:statusfile()
     if not status then
@@ -109,21 +109,21 @@ function server_session:status()
 end
 
 -- save status
-function server_session:status_save()
+function client_session:status_save()
     io.save(self:statusfile(), self:status())
 end
 
 -- get status file
-function server_session:statusfile()
+function client_session:statusfile()
     return path.join(self:workdir(), "status.txt")
 end
 
-function server_session:__tostring()
+function client_session:__tostring()
     return string.format("<session %s>", self:id())
 end
 
-function main(server, session_id)
-    local instance = server_session()
-    instance:init(server, session_id)
+function main(session_id)
+    local instance = client_session()
+    instance:init(session_id)
     return instance
 end

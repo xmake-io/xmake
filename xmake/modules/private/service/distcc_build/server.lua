@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.global")
 import("private.service.server_config", {alias = "config"})
 import("private.service.message")
 import("private.service.server")
@@ -48,6 +49,15 @@ end
 -- get class
 function distcc_build_server:class()
     return distcc_build_server
+end
+
+-- get work directory
+function distcc_build_server:workdir()
+    local workdir = config.get("distcc_build.workdir")
+    if not workdir then
+        workdir = path.join(global.directory(), "service", "server", "distcc_build")
+    end
+    return workdir
 end
 
 -- on handle message
@@ -102,7 +112,7 @@ end
 function distcc_build_server:_session(session_id)
     local session = self._SESSIONS[session_id]
     if not session then
-        session = server_session(session_id)
+        session = server_session(server, session_id)
         self._SESSIONS[session_id] = session
     end
     return session

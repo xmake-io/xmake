@@ -29,6 +29,7 @@ import("lib.detect.find_tool")
 import("private.service.client_config", {alias = "config"})
 import("private.service.message")
 import("private.service.client")
+import("private.service.distcc_build.client_session")
 import("private.service.stream", {alias = "socket_stream"})
 
 -- define module
