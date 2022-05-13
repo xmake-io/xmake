@@ -38,7 +38,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
     local script = ruleinst:script(scriptname)
     if script then
         if ruleinst:extraconf(scriptname, "batch") then
-            script(target, batchjobs, sourcebatch, {rootjob = rootjob})
+            script(target, batchjobs, sourcebatch, {rootjob = rootjob, distcc = ruleinst:extraconf(scriptname, "distcc")})
         else
             batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total)
                 script(target, sourcebatch, {progress = (index * 100) / total})
@@ -55,7 +55,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 batchjobs:addjob(sourcefile, function (index, total)
                     script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
-                end, {rootjob = rootjob})
+                end, {rootjob = rootjob, distcc = ruleinst:extraconf(scriptname, "distcc")})
             end
         end
     end
@@ -67,7 +67,8 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
         if script then
             batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total)
                 local batchcmds_ = batchcmds.new({target = target})
-                script(target, batchcmds_, sourcebatch, {progress = (index * 100) / total})
+                local distcc = ruleinst:extraconf(scriptname, "distcc")
+                script(target, batchcmds_, sourcebatch, {progress = (index * 100) / total, distcc = distcc})
                 batchcmds_:runcmds({dryrun = option.get("dry-run")})
             end, {rootjob = rootjob})
         end
@@ -84,7 +85,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
                     local batchcmds_ = batchcmds.new({target = target})
                     script(target, batchcmds_, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
                     batchcmds_:runcmds({dryrun = option.get("dry-run")})
-                end, {rootjob = rootjob})
+                end, {rootjob = rootjob, distcc = ruleinst:extraconf(scriptname, "distcc")})
             end
         end
     end
@@ -98,7 +99,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suff
     local script = target:script(scriptname)
     if script then
         if target:extraconf(scriptname, "batch") then
-            script(target, batchjobs, sourcebatch, {rootjob = rootjob})
+            script(target, batchjobs, sourcebatch, {rootjob = rootjob, distcc = target:extraconf(scriptname, "distcc")})
         else
             batchjobs:addjob(target:name() .. "/" .. scriptname, function (index, total)
                 script(target, sourcebatch, {progress = (index * 100) / total})
@@ -113,7 +114,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suff
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 batchjobs:addjob(sourcefile, function (index, total)
                     script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
-                end, {rootjob = rootjob})
+                end, {rootjob = rootjob, distcc = target:extraconf(scriptname, "distcc")})
             end
             return true
         end

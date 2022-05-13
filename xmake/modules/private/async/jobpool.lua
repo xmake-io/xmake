@@ -43,8 +43,9 @@ end
 -- jobpool:add(job, rootjob2)
 -- jobpool:add(job, rootjob3)
 --
-function jobpool:newjob(name, run)
-    return {name = name, run = run}
+function jobpool:newjob(name, run, opt)
+    opt = opt or {}
+    return {name = name, run = run, distcc = opt.distcc}
 end
 
 -- add run job to the given job node
@@ -54,11 +55,12 @@ end
 --
 -- @param name      the job name
 -- @param run       the run command/script
--- @param opt       the options (rootjob)
+-- @param opt       the options (rootjob, distcc)
+--                  we can support distcc build if distcc is true
 --
 function jobpool:addjob(name, run, opt)
     opt = opt or {}
-    return self:add({name = name, run = run}, opt.rootjob)
+    return self:add({name = name, run = run, distcc = opt.distcc}, opt.rootjob)
 end
 
 -- add job to the given job node
