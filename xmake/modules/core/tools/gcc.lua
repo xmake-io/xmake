@@ -28,6 +28,7 @@ import("core.project.project")
 import("core.language.language")
 import("private.tools.ccache")
 import("utils.progress")
+import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 
 -- init it
 function init(self)
@@ -456,7 +457,11 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
 
             -- do compile
             local program, argv = compargv(self, sourcefile, objectfile, compflags)
-            return os.iorunv(program, argv, {envs = self:runenvs()})
+            if distcc_build_client.is_connected() then
+                return distcc_build_client.singleton():iorunv(program, argv, {envs = self:runenvs()})
+            else
+                return os.iorunv(program, argv, {envs = self:runenvs()})
+            end
         end,
         catch
         {

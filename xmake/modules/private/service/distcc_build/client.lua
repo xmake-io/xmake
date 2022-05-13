@@ -162,6 +162,11 @@ function distcc_build_client:freejobs()
     return 8
 end
 
+-- run compilation job
+function distcc_build_client:iorunv(program, argv, opt)
+    return os.iorunv(program, argv, opt)
+end
+
 -- get the status
 function distcc_build_client:status()
     local status = self._STATUS
@@ -330,22 +335,30 @@ end
 
 -- is connected? we cannot depend on client:init when run action
 function is_connected()
-    -- the current process is in service? we cannot enable it
-    if os.getenv("XMAKE_IN_SERVICE") then
-        return false
-    end
-    local projectdir = os.projectdir()
-    local projectfile = os.projectfile()
-    if projectfile and os.isfile(projectfile) and projectdir then
-        local workdir = path.join(project_config.directory(), "distcc_build")
-        local statusfile = path.join(workdir, "status.txt")
-        if os.isfile(statusfile) then
-            local status = io.load(statusfile)
-            if status and status.connected then
-                return true
+    local connected = _g.connected
+    if connected == nil then
+        -- the current process is in service? we cannot enable it
+        if os.getenv("XMAKE_IN_SERVICE") then
+            connected = false
+        end
+        if connected == nil then
+            local projectdir = os.projectdir()
+            local projectfile = os.projectfile()
+            if projectfile and os.isfile(projectfile) and projectdir then
+                local workdir = path.join(project_config.directory(), "distcc_build")
+                local statusfile = path.join(workdir, "status.txt")
+                if os.isfile(statusfile) then
+                    local status = io.load(statusfile)
+                    if status and status.connected then
+                        connected = true
+                    end
+                end
             end
         end
+        connected = connected or false
+        _g.connected = connected
     end
+    return connected
 end
 
 -- new a client instance
