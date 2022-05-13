@@ -125,7 +125,7 @@ function distcc_build_client:disconnect()
     -- do disconnect
     local hosts = self:hosts()
     assert(hosts and #hosts > 0, "hosts not found!")
-    local group_name = tostring(self) .. "/connect"
+    local group_name = tostring(self) .. "/disconnect"
     scheduler.co_group_begin(group_name, function ()
         for _, host in ipairs(hosts) do
             scheduler.co_start(self._disconnect_host, self, host)
