@@ -106,7 +106,7 @@ end
 -- verify user
 function server:verify_user(token, peeraddr)
     if not token then
-        return false, "client has no authorization, we need add username to connect address or token to `remote_build.token`!"
+        return false, "client has no authorization, we need add username to connect address or token!"
     end
 
     -- check authorization

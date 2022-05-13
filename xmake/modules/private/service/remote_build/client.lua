@@ -78,7 +78,7 @@ function remote_build_client:connect()
     if not token and self:user() then
 
         -- get user password
-        cprint("Please input user ${bright}%s${clear} password:", self:user())
+        cprint("Please input user ${bright}%s${clear} password to connect <%s:%d>:", self:user(), self:addr(), self:port())
         io.flush()
         local pass = (io.read() or ""):trim()
         assert(pass ~= "", "password is empty!")

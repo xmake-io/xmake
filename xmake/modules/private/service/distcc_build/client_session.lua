@@ -86,7 +86,7 @@ end
 
 -- get work directory
 function client_session:workdir()
-    return path.join(self:workdir(), "sessons", self:id())
+    return path.join(self:server():workdir(), "sessons", self:id())
 end
 
 -- is connected?

@@ -72,24 +72,17 @@ function distcc_build_client:hosts_set(hosts)
         local hostinfo = {}
         local address = assert(host.connect, "connect address not found in hosts configuration!")
         local addr, port, user = self:address_parse(address)
-        hostinfo.addr = addr
-        hostinfo.port = port
-        hostinfo.user = user
-        hostinfo.token = host.token
-        table.insert(hostinfos, hostinfo)
+        if addr and port then
+            hostinfo.addr = addr
+            hostinfo.port = port
+            hostinfo.user = user
+            hostinfo.token = host.token
+            table.insert(hostinfos, hostinfo)
+        end
     end
     self._HOSTS = hostinfos
 end
 
--- connect to the distcc server
-function distcc_build_client:connect()
-end
-
--- disconnect server
-function distcc_build_client:disconnect()
-end
-
---[[
 -- connect to the distcc server
 function distcc_build_client:connect()
     if self:is_connected() then
@@ -97,56 +90,28 @@ function distcc_build_client:connect()
         return
     end
 
-    -- we need user authorization?
-    local token = config.get("distcc_build.token")
-    if not token and self:user() then
-
-        -- get user password
-        cprint("Please input user ${bright}%s${clear} password:", self:user())
-        io.flush()
-        local pass = (io.read() or ""):trim()
-        assert(pass ~= "", "password is empty!")
-
-        -- compute user authorization
-        token = base64.encode(self:user() .. ":" .. pass)
-        token = hash.md5(bytes(token))
-    end
-
     -- do connect
-    local addr = self:addr()
-    local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
-    local session_id = self:session_id()
-    local ok = false
-    local errors
-    print("%s: connect %s:%d ..", self, addr, port)
-    if sock then
-        local stream = socket_stream(sock)
-        if stream:send_msg(message.new_connect(session_id, {token = token})) and stream:flush() then
-            local msg = stream:recv_msg()
-            if msg then
-                vprint(msg:body())
-                if msg:success() then
-                    ok = true
-                else
-                    errors = msg:errors()
-                end
-            end
+    local hosts = self:hosts()
+    assert(hosts and #hosts > 0, "hosts not found!")
+    local group_name = tostring(self) .. "/connect"
+    scheduler.co_group_begin(group_name, function ()
+        for _, host in ipairs(hosts) do
+            scheduler.co_start(self._connect_host, self, host)
         end
-    end
-    if ok then
-        print("%s: connected!", self)
-    else
-        print("%s: connect %s:%d failed, %s", self, addr, port, errors or "unknown")
+    end)
+    scheduler.co_group_wait(group_name)
+
+    -- all hosts are connected?
+    local connected = true
+    for _, host in ipairs(hosts) do
+        if not self:_is_connected(host.addr, host.port) then
+            connected = false
+        end
     end
 
     -- update status
     local status = self:status()
-    status.addr = addr
-    status.port = port
-    status.token = token
-    status.connected = ok
-    status.session_id = session_id
+    status.connected = connected
     self:status_save()
 end
 
@@ -156,44 +121,31 @@ function distcc_build_client:disconnect()
         print("%s: has been disconnected!", self)
         return
     end
-    local addr = self:addr()
-    local port = self:port()
-    local sock = socket.connect(addr, port)
-    local session_id = self:session_id()
-    local errors
-    local ok = false
-    print("%s: disconnect %s:%d ..", self, addr, port)
-    if sock then
-        local stream = socket_stream(sock)
-        if stream:send_msg(message.new_disconnect(session_id, {token = self:token()})) and stream:flush() then
-            local msg = stream:recv_msg()
-            if msg then
-                vprint(msg:body())
-                if msg:success() then
-                    ok = true
-                else
-                    errors = msg:errors()
-                end
-            end
+
+    -- do disconnect
+    local hosts = self:hosts()
+    assert(hosts and #hosts > 0, "hosts not found!")
+    local group_name = tostring(self) .. "/connect"
+    scheduler.co_group_begin(group_name, function ()
+        for _, host in ipairs(hosts) do
+            scheduler.co_start(self._disconnect_host, self, host)
         end
-    else
-        -- server unreachable, but we still disconnect it.
-        wprint("%s: server unreachable!", self)
-        ok = true
-    end
-    if ok then
-        print("%s: disconnected!", self)
-    else
-        print("%s: disconnect %s:%d failed, %s", self, addr, port, errors or "unknown")
+    end)
+    scheduler.co_group_wait(group_name)
+
+    -- all hosts are connected?
+    local connected = true
+    for _, host in ipairs(hosts) do
+        if not self:_is_connected(host.addr, host.port) then
+            connected = false
+        end
     end
 
     -- update status
     local status = self:status()
-    status.token = nil
-    status.connected = not ok
+    status.connected = connected
     self:status_save()
 end
-]]
 
 -- is connected?
 function distcc_build_client:is_connected()
@@ -234,14 +186,136 @@ function distcc_build_client:workdir()
     return self._WORKDIR
 end
 
--- get user token
-function distcc_build_client:token()
-    return self:status().token
+-- get the session id, only for unique project
+function distcc_build_client:_session_id(addr, port)
+    local hosts = self:status().hosts
+    if hosts then
+        local host = hosts[addr .. ":" .. port]
+        if host then
+            return host.session_id
+        end
+    end
+    return hash.uuid():split("-", {plain = true})[1]:lower()
 end
 
--- get the session id, only for unique project
-function distcc_build_client:session_id()
-    return self:status().session_id or hash.uuid():split("-", {plain = true})[1]:lower()
+-- is connected for the given host
+function distcc_build_client:_is_connected(addr, port)
+    local hosts = self:status().hosts
+    if hosts then
+        local host = hosts[addr .. ":" .. port]
+        if host then
+            return host.connected
+        end
+    end
+end
+
+-- connect to the host
+function distcc_build_client:_connect_host(host)
+    local addr = host.addr
+    local port = host.port
+    if self:_is_connected(addr, port) then
+        print("%s: %s:%d has been connected!", self, addr, port)
+        return
+    end
+
+    -- we need user authorization?
+    local user = host.user
+    local token = host.token
+    if not token and user then
+
+        -- get user password
+        cprint("Please input user ${bright}%s${clear} password to connect <%s:%d>:", user, addr, port)
+        io.flush()
+        local pass = (io.read() or ""):trim()
+        assert(pass ~= "", "password is empty!")
+
+        -- compute user authorization
+        token = base64.encode(self:user() .. ":" .. pass)
+        token = hash.md5(bytes(token))
+    end
+
+    -- do connect
+    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local session_id = self:_session_id(addr, port)
+    local ok = false
+    local errors
+    print("%s: connect %s:%d ..", self, addr, port)
+    if sock then
+        local stream = socket_stream(sock)
+        if stream:send_msg(message.new_connect(session_id, {token = token})) and stream:flush() then
+            local msg = stream:recv_msg()
+            if msg then
+                vprint(msg:body())
+                if msg:success() then
+                    ok = true
+                else
+                    errors = msg:errors()
+                end
+            end
+        end
+    end
+    if ok then
+        print("%s: %s:%d connected!", self, addr, port)
+    else
+        print("%s: connect %s:%d failed, %s", self, addr, port, errors or "unknown")
+    end
+
+    -- update status
+    local status = self:status()
+    status.hosts = status.hosts or {}
+    status.hosts[addr .. ":" .. port] = {addr = addr, port = port, token = token, connected = ok, session_id = session_id}
+    self:status_save()
+end
+
+-- disconnect from the host
+function distcc_build_client:_disconnect_host(host)
+    local addr = host.addr
+    local port = host.port
+    if not self:_is_connected(addr, port) then
+        print("%s: %s:%d has been disconnected!", self, addr, port)
+        return
+    end
+
+    -- do disconnect
+    local token = host.token
+    local sock = socket.connect(addr, port)
+    local session_id = self:_session_id(addr, port)
+    local errors
+    local ok = false
+    print("%s: disconnect %s:%d ..", self, addr, port)
+    if sock then
+        local stream = socket_stream(sock)
+        if stream:send_msg(message.new_disconnect(session_id, {token = token})) and stream:flush() then
+            local msg = stream:recv_msg()
+            if msg then
+                vprint(msg:body())
+                if msg:success() then
+                    ok = true
+                else
+                    errors = msg:errors()
+                end
+            end
+        end
+    else
+        -- server unreachable, but we still disconnect it.
+        wprint("%s: server unreachable!", self)
+        ok = true
+    end
+    if ok then
+        print("%s: %s:%d disconnected!", self, addr, port)
+    else
+        print("%s: disconnect %s:%d failed, %s", self, addr, port, errors or "unknown")
+    end
+
+    -- update status
+    local status = self:status()
+    status.hosts = status.hosts or {}
+    local host_status = status.hosts[addr .. ":" .. port]
+    if host_status then
+        host_status.token = nil
+        host_status.connected = not ok
+    end
+    self:status_save()
 end
 
 -- is connected? we cannot depend on client:init when run action

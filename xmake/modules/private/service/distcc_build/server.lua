@@ -112,7 +112,7 @@ end
 function distcc_build_server:_session(session_id)
     local session = self._SESSIONS[session_id]
     if not session then
-        session = server_session(server, session_id)
+        session = server_session(self, session_id)
         self._SESSIONS[session_id] = session
     end
     return session
