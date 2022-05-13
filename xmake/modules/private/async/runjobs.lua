@@ -50,6 +50,8 @@ end
 -- end
 -- runjobs("test", jobs, {comax = 6, timeout = 1000, on_timer = function (running_jobs_indices) end})
 --
+-- distributed build:
+-- runjobs("test", jobs, {comax = 6, distcc = distcc_build_client.singleton()}
 --
 function main(name, jobs, opt)
 
@@ -57,6 +59,7 @@ function main(name, jobs, opt)
     op = opt or {}
     local total = opt.total or (type(jobs) == "table" and jobs:size()) or 1
     local comax = opt.comax or math.min(total, 4)
+    local distcc = opt.distcc
     local timeout = opt.timeout or 500
     local group_name = name
     local jobs_cb = type(jobs) == "function" and jobs or nil
@@ -158,6 +161,9 @@ function main(name, jobs, opt)
     while index < total do
         scheduler.co_group_begin(group_name, function (co_group)
             local freemax = comax - #co_group
+            if distcc then
+                freemax = freemax + distcc:freejobs()
+            end
             local max = math.min(index + freemax, total)
             local jobfunc = jobs_cb
             while index < max do

@@ -152,6 +152,16 @@ function distcc_build_client:is_connected()
     return self:status().connected
 end
 
+-- get max jobs count
+function distcc_build_client:maxjobs()
+    return 0
+end
+
+-- get free jobs count
+function distcc_build_client:freejobs()
+    return 0
+end
+
 -- get the status
 function distcc_build_client:status()
     local status = self._STATUS

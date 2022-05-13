@@ -250,12 +250,12 @@ function main(targetname, group_pattern)
     local batchjobs = get_batchjobs(targetname, group_pattern)
     if batchjobs and batchjobs:size() > 0 then
         local curdir = os.curdir()
-        runjobs("build", batchjobs, {comax = option.get("jobs") or 1, on_exit = function (errors)
+        runjobs("build", batchjobs, {on_exit = function (errors)
             import("utils.progress")
             if errors and progress.showing_without_scroll() then
                 print("")
             end
-        end, curdir = curdir, count_as_index = true, distcc = distcc})
+        end, comax = option.get("jobs") or 1, curdir = curdir, count_as_index = true, distcc = distcc})
         os.cd(curdir)
     end
 end
