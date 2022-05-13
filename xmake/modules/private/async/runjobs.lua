@@ -161,12 +161,13 @@ function main(name, jobs, opt)
     while index < total do
         scheduler.co_group_begin(group_name, function (co_group)
             local freemax = comax - #co_group
+            local local_max = math.min(index + freemax, total)
+            local total_max = local_max
             if distcc then
-                freemax = freemax + distcc:freejobs()
+                total_max = math.min(index + freemax + distcc:freejobs(), total)
             end
-            local max = math.min(index + freemax, total)
             local jobfunc = jobs_cb
-            while index < max do
+            while index < total_max do
 
                 -- uses job pool?
                 local jobname
@@ -191,11 +192,17 @@ function main(name, jobs, opt)
                         job_pending = job
                         break
                     end
-                    job_pending = nil
+
+                    -- we can only continue to run the job with distcc if local jobs are full
+                    if index >= local_max and not job.distcc then
+                        job_pending = job
+                        break
+                    end
 
                     -- get run function
                     jobfunc = job.run
                     jobname = job.name
+                    job_pending = nil
                 else
                     jobname = tostring(index)
                 end

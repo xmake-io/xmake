@@ -159,7 +159,7 @@ end
 
 -- get free jobs count
 function distcc_build_client:freejobs()
-    return 0
+    return 8
 end
 
 -- get the status
