@@ -29,5 +29,5 @@ end
 
 function main()
     config.load()
-    remote_build_client():runcmd("xmake", xmake.argv())
+    remote_build_client.singleton():runcmd("xmake", xmake.argv())
 end

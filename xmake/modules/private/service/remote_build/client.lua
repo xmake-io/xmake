@@ -530,8 +530,23 @@ function is_connected()
     end
 end
 
-function main()
+-- new a client instance
+function new()
     local instance = remote_build_client()
     instance:init()
     return instance
+end
+
+-- get the singleton
+function singleton()
+    local instance = _g.singleton
+    if not instance then
+        instance = new()
+        _g.singleton = instance
+    end
+    return instance
+end
+
+function main()
+    return new()
 end
