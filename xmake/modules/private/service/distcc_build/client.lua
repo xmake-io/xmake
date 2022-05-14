@@ -84,6 +84,19 @@ function distcc_build_client:hosts_set(hosts)
     self._HOSTS = hostinfos
 end
 
+-- get the status of client hosts
+function distcc_build_client:hosts_status()
+    local hosts_status = self._HOSTS_STATUS
+    if hosts_status == nil then
+        hosts_status = table.copy(self:status().hosts)
+        for _, host_status in pairs(hosts_status) do
+            self:_update_status(hosts_status)
+        end
+        self._HOSTS_STATUS = hosts_status
+    end
+    return hosts_status
+end
+
 -- connect to the distcc server
 function distcc_build_client:connect()
     if self:is_connected() then
@@ -217,6 +230,17 @@ end
 -- get working directory
 function distcc_build_client:workdir()
     return self._WORKDIR
+end
+
+-- update the host status
+function distcc_build_client:_update_status(host_status)
+    local running  = host_status.running or 0
+    if running > host_status.njob then
+        running = host_status.njob
+    end
+    host_status.running  = running
+    host_status.freejobs = host_status.njob - host_status.running
+    host_status.weight   = host_status.freejobs
 end
 
 -- has free jobs?
