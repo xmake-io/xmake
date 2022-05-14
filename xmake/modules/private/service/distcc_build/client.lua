@@ -90,7 +90,7 @@ function distcc_build_client:hosts_status()
     if hosts_status == nil then
         hosts_status = table.copy(self:status().hosts)
         for _, host_status in pairs(hosts_status) do
-            self:_update_status(hosts_status)
+            self:_host_status_update(host_status)
         end
         self._HOSTS_STATUS = hosts_status
     end
@@ -183,19 +183,33 @@ end
 function distcc_build_client:freejobs()
     local maxjobs = self:maxjobs()
     if maxjobs > 0 then
-        -- TODO
-        return 8
+        local running = (self._RUNNING or 0)
+        if running > maxjobs then
+            running = maxjobs
+        end
+        return maxjobs - running
     end
     return 0
 end
 
 -- run compilation job
 function distcc_build_client:iorunv(program, argv, opt)
-    if not self:_has_freejobs() then
+
+    -- get free host
+    local host = self:_get_freehost()
+    if not host then
         return os.iorunv(program, argv, opt)
     end
-    -- TODO
-    return os.iorunv(program, argv, opt)
+
+    -- lock this host
+    self:_host_status_lock(host)
+
+    -- TODO, do distcc compilation
+    local outdata, errdata = os.iorunv(program, argv, opt)
+
+    -- unlock this host
+    self:_host_status_unlock(host)
+    return outdata, errdata
 end
 
 -- get the status
@@ -232,16 +246,65 @@ function distcc_build_client:workdir()
     return self._WORKDIR
 end
 
+-- get free host
+function distcc_build_client:_get_freehost()
+    local max_weight = -1
+    local host
+    if self:_has_freejobs() then
+        for _, host_status in pairs(self:hosts_status()) do
+            if host_status.freejobs > 0 and host_status.weight > max_weight then
+                max_weight = host_status.weight
+                host = host_status
+            end
+        end
+    end
+    return host
+end
+
 -- update the host status
-function distcc_build_client:_update_status(host_status)
+function distcc_build_client:_host_status_update(host_status)
     local running  = host_status.running or 0
     if running > host_status.njob then
         running = host_status.njob
+    end
+    if running < 0 then
+        running = 0
     end
     host_status.running  = running
     host_status.freejobs = host_status.njob - host_status.running
     host_status.weight   = host_status.freejobs
 end
+
+-- lock host status
+function distcc_build_client:_host_status_lock(host_status)
+
+    -- update the host status
+    host_status.running = host_status.running + 1
+    self:_host_status_update(host_status)
+
+    -- update the total running status
+    local running = (self._RUNNING or 0) + 1
+    if running > self:maxjobs() then
+        running = self:maxjobs()
+    end
+    self._RUNNING = running
+end
+
+-- unlock host status
+function distcc_build_client:_host_status_unlock(host_status)
+
+    -- update the host status
+    host_status.running = host_status.running - 1
+    self:_host_status_update(host_status)
+
+    -- update the total running status
+    local running = self._RUNNING - 1
+    if running < 0 then
+        running = 0
+    end
+    self._RUNNING = running
+end
+
 
 -- has free jobs?
 function distcc_build_client:_has_freejobs()
