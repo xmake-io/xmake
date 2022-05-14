@@ -57,15 +57,38 @@ end
 
 -- run compilation job
 function client_session:iorunv(program, argv, opt)
+    opt = opt or {}
+    local toolname = opt.toolname
+    local iorunv = assert(self["_" .. toolname .. "_iorunv"], "%s: iorunv(%s) is not supported!", self, program)
+    return iorunv(self, program, argv, opt)
+end
+
+-- run compilation job for gcc
+function client_session:_gcc_iorunv(program, argv, opt)
     -- TODO, do distcc compilation
     local outdata, errdata = os.iorunv(program, argv, opt)
 
     return outdata, errdata
 end
 
+-- run compilation job for g++
+function client_session:_gxx_iorunv(program, argv, opt)
+    return self:_gcc_iorunv(program, argv, opt)
+end
+
+-- run compilation job for clang
+function client_session:_clang_iorunv(program, argv, opt)
+    return self:_gcc_iorunv(program, argv, opt)
+end
+
+-- run compilation job for clang++
+function client_session:_clangxx_iorunv(program, argv, opt)
+    return self:_gcc_iorunv(program, argv, opt)
+end
+
 -- get work directory
 function client_session:workdir()
-    return path.join(self:server():workdir(), "sessons", self:id())
+    return path.join(self:server():workdir(), "sessions", self:id())
 end
 
 function client_session:__tostring()
