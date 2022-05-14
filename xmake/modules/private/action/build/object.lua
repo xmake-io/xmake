@@ -26,6 +26,7 @@ import("core.project.depend")
 import("private.tools.ccache")
 import("private.async.runjobs")
 import("utils.progress")
+import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 
 -- do build file
 function _do_build_file(target, sourcefile, opt)
@@ -58,12 +59,17 @@ function _do_build_file(target, sourcefile, opt)
     -- is verbose?
     local verbose = option.get("verbose")
 
-    -- exists ccache?
-    local exists_ccache = ccache.exists()
+    -- exists ccache or distcc?
+    local prefix = ""
+    if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
+        prefix = "distcc "
+    elseif ccache.exists() then
+        prefix = "ccache "
+    end
 
     -- trace progress info
     if not opt.quiet then
-        progress.show(opt.progress, "${color.build.object}%scompiling.$(mode) %s", exists_ccache and "ccache " or "", sourcefile)
+        progress.show(opt.progress, "${color.build.object}%scompiling.$(mode) %s", prefix, sourcefile)
     end
 
     -- trace verbose info
