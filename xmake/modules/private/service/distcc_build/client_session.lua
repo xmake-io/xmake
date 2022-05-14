@@ -55,6 +55,14 @@ function client_session:stream()
     return self._STREAM
 end
 
+-- run compilation job
+function client_session:iorunv(program, argv, opt)
+    -- TODO, do distcc compilation
+    local outdata, errdata = os.iorunv(program, argv, opt)
+
+    return outdata, errdata
+end
+
 -- get work directory
 function client_session:workdir()
     return path.join(self:server():workdir(), "sessons", self:id())
