@@ -28,13 +28,15 @@ import("core.base.hashset")
 import("core.base.scheduler")
 import("private.service.client_config", {alias = "config"})
 import("private.service.message")
+import("private.service.stream", {alias = "socket_stream"})
 
 -- define module
 local client_session = client_session or object()
 
 -- init client session
-function client_session:init(client, session_id)
+function client_session:init(client, session_id, sock)
     self._ID = session_id
+    self._STREAM = socket_stream(sock)
     self._CLIENT = client
 end
 
@@ -48,37 +50,6 @@ function client_session:client()
     return self._CLIENT
 end
 
--- open client session
-function client_session:open()
-    if self:is_connected() then
-        return
-    end
-
-    -- update status
-    local status = self:status()
-    status.connected = true
-    status.session_id = self:id()
-    self:status_save()
-end
-
--- close client session
-function client_session:close()
-    if not self:is_connected() then
-        return
-    end
-
-    -- update status
-    local status = self:status()
-    status.connected = false
-    status.session_id = self:id()
-    self:status_save()
-end
-
--- set stream
-function client_session:stream_set(stream)
-    self._STREAM = stream
-end
-
 -- get stream
 function client_session:stream()
     return self._STREAM
@@ -89,41 +60,12 @@ function client_session:workdir()
     return path.join(self:server():workdir(), "sessons", self:id())
 end
 
--- is connected?
-function client_session:is_connected()
-    return self:status().connected
-end
-
--- get the status
-function client_session:status()
-    local status = self._STATUS
-    local statusfile = self:statusfile()
-    if not status then
-        if os.isfile(statusfile) then
-            status = io.load(statusfile)
-        end
-        status = status or {}
-        self._STATUS = status
-    end
-    return status
-end
-
--- save status
-function client_session:status_save()
-    io.save(self:statusfile(), self:status())
-end
-
--- get status file
-function client_session:statusfile()
-    return path.join(self:workdir(), "status.txt")
-end
-
 function client_session:__tostring()
     return string.format("<session %s>", self:id())
 end
 
-function main(session_id)
+function main(client, session_id, job_id, sock)
     local instance = client_session()
-    instance:init(session_id)
+    instance:init(client, session_id, job_id, sock)
     return instance
 end

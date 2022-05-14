@@ -209,6 +209,9 @@ function distcc_build_client:iorunv(program, argv, opt)
     -- lock this host
     self:_host_status_lock(host)
 
+    -- get the host session
+    local session = self:_host_status_session(host)
+
     -- TODO, do distcc compilation
     local outdata, errdata = os.iorunv(program, argv, opt)
 
@@ -308,6 +311,19 @@ function distcc_build_client:_host_status_unlock(host_status)
         running = 0
     end
     self._RUNNING = running
+end
+
+-- get host session
+function distcc_build_client:_host_status_session(host_status)
+    host_status.sessions  = host_status.sessions or {}
+    local running = host_status.running
+    local session = host_status.sessions[running]
+    if not session then
+        local sock = assert(socket.connect(host_status.addr, host_status.port), "%s: server unreachable!", self)
+        session = client_session(self, host_status.session_id, sock)
+        host_status.sessions[running] = session
+    end
+    return session
 end
 
 -- get the session id, only for unique project
