@@ -171,6 +171,7 @@ function main(name, jobs, opt)
 
                 -- uses job pool?
                 local jobname
+                local localjob = true
                 if not jobs_cb then
 
                     -- get job priority
@@ -194,9 +195,13 @@ function main(name, jobs, opt)
                     end
 
                     -- we can only continue to run the job with distcc if local jobs are full
-                    if index >= local_max and not job.distcc then
-                        job_pending = job
-                        break
+                    if distcc and index >= local_max then
+                        if job.distcc then
+                            localjob = false
+                        else
+                            job_pending = job
+                            break
+                        end
                     end
 
                     -- get run function
@@ -213,6 +218,12 @@ function main(name, jobs, opt)
                     try
                     {
                         function()
+                            if distcc then
+                                local co_running = scheduler.co_running()
+                                if co_running then
+                                    co_running:data_set("distcc.localjob", localjob)
+                                end
+                            end
                             running_jobs_indices[i] = i
                             if jobfunc then
                                 if opt.curdir then

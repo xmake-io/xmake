@@ -164,6 +164,9 @@ end
 
 -- run compilation job
 function distcc_build_client:iorunv(program, argv, opt)
+    if self:_is_localjob() then
+        return os.iorunv(program, argv, opt)
+    end
     return os.iorunv(program, argv, opt)
 end
 
@@ -199,6 +202,18 @@ end
 -- get working directory
 function distcc_build_client:workdir()
     return self._WORKDIR
+end
+
+-- only run the local job?
+function distcc_build_client:_is_localjob()
+    local co_running = scheduler.co_running()
+    if co_running then
+        local localjob = co_running:data("distcc.localjob")
+        if localjob then
+            return true
+        end
+    end
+    return self:freejobs() == 0
 end
 
 -- get the session id, only for unique project

@@ -62,6 +62,23 @@ function _coroutine:waitobj_set(obj)
     self._WAITOBJ = obj
 end
 
+-- get user private data
+function _coroutine:data(name)
+    return self._DATA and self._DATA[name]
+end
+
+-- set user private data
+function _coroutine:data_set(name, data)
+    self._DATA = self._DATA or {}
+    self._DATA[name] = data
+end
+
+-- add user private data
+function _coroutine:data_add(name, data)
+    self._DATA = self._DATA or {}
+    self._DATA[name] = table.unwrap(table.join(self._DATA[name] or {}, data))
+end
+
 -- get the raw coroutine thread
 function _coroutine:thread()
     return self._THREAD
