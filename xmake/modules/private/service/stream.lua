@@ -160,6 +160,11 @@ function stream:send_string(str, opt)
     return self:send_data(bytes(str), opt)
 end
 
+-- send empty data
+function stream:send_emptydata(opt)
+    return self:send_header(0)
+end
+
 -- send file
 function stream:send_file(filepath, opt)
 

@@ -120,12 +120,14 @@ function client_session:_gcc_iorunv(program, argv, opt)
     local stream = self:stream()
     if stream:send_msg(message.new_compile(self:id(), opt.toolname, flags, path.filename(sourcefile), {token = self:token()})) and
         stream:send_file(cppfile, {compress = os.filesize(cppfile) > 4096}) and stream:flush() then
-        local msg = stream:recv_msg()
-        if msg then
-            if msg:success() and stream:recv_file(objectfile) then
-                ok = true
-            else
-                errors = msg:errors()
+        if stream:recv_file(objectfile) then
+            local msg = stream:recv_msg()
+            if msg then
+                if msg:success() then
+                    ok = true
+                else
+                    errors = msg:errors()
+                end
             end
         end
     end

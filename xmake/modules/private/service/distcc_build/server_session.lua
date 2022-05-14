@@ -87,14 +87,22 @@ function server_session:compile(respmsg)
     local sourcename = respmsg.sourcename
     local sourcedir = path.join(self:workdir(), (hash.uuid4():gsub("-", "")))
     local sourcefile = path.join(sourcedir, sourcename)
+    local objectfile = sourcefile .. ".o"
     if not stream:recv_file(sourcefile) then
         raise("recv %s failed!", sourcename)
     end
 
-    print("recv %s", sourcefile)
+    -- do compile
+    -- TODO
 
-    -- remove source files
-    os.rm(sourcefile)
+    -- send object file
+    if not stream:send_emptydata() then
+        raise("send %s failed!", objectfile)
+    end
+
+    -- remove files
+    os.tryrm(sourcefile)
+    os.tryrm(objectfile)
 end
 
 -- set stream
