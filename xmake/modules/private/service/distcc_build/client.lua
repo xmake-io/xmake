@@ -192,6 +192,11 @@ function distcc_build_client:freejobs()
     return 0
 end
 
+-- has free jobs?
+function distcc_build_client:has_freejobs()
+    return self:freejobs() > 0
+end
+
 -- run compilation job
 function distcc_build_client:iorunv(program, argv, opt)
 
@@ -250,7 +255,7 @@ end
 function distcc_build_client:_get_freehost()
     local max_weight = -1
     local host
-    if self:_has_freejobs() then
+    if self:has_freejobs() then
         for _, host_status in pairs(self:hosts_status()) do
             if host_status.freejobs > 0 and host_status.weight > max_weight then
                 max_weight = host_status.weight
@@ -303,12 +308,6 @@ function distcc_build_client:_host_status_unlock(host_status)
         running = 0
     end
     self._RUNNING = running
-end
-
-
--- has free jobs?
-function distcc_build_client:_has_freejobs()
-    return self:freejobs() > 0
 end
 
 -- get the session id, only for unique project
