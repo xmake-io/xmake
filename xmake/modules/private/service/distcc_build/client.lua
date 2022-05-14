@@ -77,6 +77,7 @@ function distcc_build_client:hosts_set(hosts)
             hostinfo.port = port
             hostinfo.user = user
             hostinfo.token = host.token
+            hostinfo.njob = host.njob
             table.insert(hostinfos, hostinfo)
         end
     end
@@ -302,7 +303,7 @@ function distcc_build_client:_connect_host(host)
     status.hosts[addr .. ":" .. port] = {
         addr = addr, port = port, token = token,
         connected = ok, session_id = session_id,
-        ncpu = ncpu, njob = njob}
+        ncpu = ncpu, njob = host.njob or njob}
     self:status_save()
 end
 
