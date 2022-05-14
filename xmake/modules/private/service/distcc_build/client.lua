@@ -168,7 +168,12 @@ end
 
 -- get free jobs count
 function distcc_build_client:freejobs()
-    return 8
+    local maxjobs = self:maxjobs()
+    if maxjobs > 0 then
+        -- TODO
+        return 8
+    end
+    return 0
 end
 
 -- run compilation job
