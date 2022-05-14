@@ -320,7 +320,7 @@ function distcc_build_client:_host_status_session(host_status)
     local session = host_status.sessions[running]
     if not session then
         local sock = assert(socket.connect(host_status.addr, host_status.port), "%s: server unreachable!", self)
-        session = client_session(self, host_status.session_id, sock)
+        session = client_session(self, host_status.session_id, host_status.token, sock)
         host_status.sessions[running] = session
     end
     return session

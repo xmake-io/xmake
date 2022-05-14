@@ -34,8 +34,9 @@ import("private.service.stream", {alias = "socket_stream"})
 local client_session = client_session or object()
 
 -- init client session
-function client_session:init(client, session_id, sock)
+function client_session:init(client, session_id, token, sock)
     self._ID = session_id
+    self._TOKEN = token
     self._STREAM = socket_stream(sock)
     self._CLIENT = client
 end
@@ -43,6 +44,11 @@ end
 -- get client session id
 function client_session:id()
     return self._ID
+end
+
+-- get token
+function client_session:token()
+    return self._TOKEN
 end
 
 -- get client
@@ -65,10 +71,66 @@ end
 
 -- run compilation job for gcc
 function client_session:_gcc_iorunv(program, argv, opt)
-    -- TODO, do distcc compilation
-    local outdata, errdata = os.iorunv(program, argv, opt)
 
-    return outdata, errdata
+    -- get flags and source file
+    local flags = {}
+    local cppflags = {}
+    local skipped = 0
+    for _, flag in ipairs(argv) do
+        if flag == "-o" then
+            break
+        end
+
+        -- get preprocessor flags
+        table.insert(cppflags, flag)
+
+        -- get compiler flags
+        if flag == "-MMD" or flag:startswith("-I") then
+            skipped = 1
+        elseif flag == "-MF" or flag == "-I" or flag == "-isystem" then
+            skipped = 2
+        elseif flag:endswith("xcrun") then
+            skipped = 4
+        end
+        if skipped > 0 then
+            skipped = skipped - 1
+        else
+            table.insert(flags, flag)
+        end
+    end
+    local objectfile = argv[#argv - 1]
+    local sourcefile = argv[#argv]
+    assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
+
+    -- do preprocess
+    local cppfile = objectfile:gsub("%.o$", ".p")
+    local cppfiledir = path.directory(cppfile)
+    if not os.isdir(cppfiledir) then
+        os.mkdir(cppfiledir)
+    end
+    table.insert(cppflags, "-E")
+    table.insert(cppflags, "-o")
+    table.insert(cppflags, cppfile)
+    table.insert(cppflags, sourcefile)
+    os.runv(program, cppflags, opt)
+
+    -- do compile
+    local ok = false
+    local errors
+    local stream = self:stream()
+    if stream:send_msg(message.new_compile(self:id(), opt.toolname, flags, path.filename(sourcefile), {token = self:token()})) and
+        stream:send_file(cppfile, {compress = os.filesize(cppfile) > 4096}) and stream:flush() then
+        local msg = stream:recv_msg()
+        if msg then
+            if msg:success() and stream:recv_file(objectfile) then
+                ok = true
+            else
+                errors = msg:errors()
+            end
+        end
+    end
+    os.tryrm(cppfile)
+    assert(ok, errors or "unknown errors!")
 end
 
 -- run compilation job for g++
@@ -95,8 +157,8 @@ function client_session:__tostring()
     return string.format("<session %s>", self:id())
 end
 
-function main(client, session_id, job_id, sock)
+function main(client, session_id, token, sock)
     local instance = client_session()
-    instance:init(client, session_id, job_id, sock)
+    instance:init(client, session_id, token, sock)
     return instance
 end

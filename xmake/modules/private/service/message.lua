@@ -32,7 +32,7 @@ message.CODE_DATA           = 4 -- send data
 message.CODE_RUNCMD         = 5 -- run the given command in server
 message.CODE_DIFF           = 6 -- diff files between server and client
 message.CODE_SYNC           = 7 -- sync files between server and client
-message.CODE_PULL           = 8 -- pull the given file from server
+message.CODE_COMPILE        = 8 -- compile the given file from client in server
 
 -- init message
 function message:init(body)
@@ -69,9 +69,9 @@ function message:is_sync()
     return self:code() == message.CODE_SYNC
 end
 
--- is pull message?
-function message:is_pull()
-    return self:code() == message.CODE_PULL
+-- is compile message?
+function message:is_compile()
+    return self:code() == message.CODE_COMPILE
 end
 
 -- is clean message?
@@ -210,6 +210,19 @@ function new_data(session_id, size, opt)
         size = size,
         session_id = session_id,
         token = opt.token
+    })
+end
+
+-- new compile command message
+function new_compile(session_id, compiler, flags, sourcename, opt)
+    opt = opt or {}
+    return _new({
+        code = message.CODE_COMPILE,
+        session_id = session_id,
+        token = opt.token,
+        compiler = compiler,
+        flags = flags,
+        sourcename = sourcename
     })
 end
 

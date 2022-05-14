@@ -79,6 +79,24 @@ function server_session:close()
     self:status_save()
 end
 
+-- do compile
+function server_session:compile(respmsg)
+
+    -- recv source file
+    local stream = self:stream()
+    local sourcename = respmsg.sourcename
+    local sourcedir = path.join(self:workdir(), (hash.uuid4():gsub("-", "")))
+    local sourcefile = path.join(sourcedir, sourcename)
+    if not stream:recv_file(sourcefile) then
+        raise("recv %s failed!", sourcename)
+    end
+
+    print("recv %s", sourcefile)
+
+    -- remove source files
+    os.rm(sourcefile)
+end
+
 -- set stream
 function server_session:stream_set(stream)
     self._STREAM = stream

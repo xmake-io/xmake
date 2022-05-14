@@ -86,7 +86,9 @@ function distcc_build_server:_on_handle(stream, msg)
                 self._SESSIONS[session_id] = nil
             else
                 assert(session:is_connected(), "session has not been connected!")
-                -- TODO
+                if msg:is_compile() then
+                    session:compile(respmsg)
+                end
             end
             return true
         end,
