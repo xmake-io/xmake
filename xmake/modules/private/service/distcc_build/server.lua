@@ -80,7 +80,7 @@ function distcc_build_server:_on_handle(stream, msg)
                 end
             end
             if msg:is_connect() then
-                session:open()
+                session:open(respmsg)
             elseif msg:is_disconnect() then
                 session:close()
                 self._SESSIONS[session_id] = nil

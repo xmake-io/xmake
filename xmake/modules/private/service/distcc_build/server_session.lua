@@ -49,10 +49,15 @@ function server_session:server()
 end
 
 -- open server session
-function server_session:open()
+function server_session:open(respmsg)
     if self:is_connected() then
         return
     end
+
+    -- get server info
+    local body = respmsg:body()
+    body.ncpu = os.cpuinfo().ncpu
+    body.njob = os.default_njob()
 
     -- update status
     local status = self:status()

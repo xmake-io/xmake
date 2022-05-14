@@ -154,7 +154,15 @@ end
 
 -- get max jobs count
 function distcc_build_client:maxjobs()
-    return 0
+    local maxjobs = self._MAXJOBS
+    if maxjobs == nil then
+        maxjobs = 0
+        for _, host in pairs(self:status().hosts) do
+            maxjobs = maxjobs + host.njob
+        end
+        self._MAXJOBS = maxjobs
+    end
+    return maxjobs or 0
 end
 
 -- get free jobs count
@@ -164,9 +172,10 @@ end
 
 -- run compilation job
 function distcc_build_client:iorunv(program, argv, opt)
-    if self:_is_localjob() then
+    if not self:_has_freejobs() then
         return os.iorunv(program, argv, opt)
     end
+    -- TODO
     return os.iorunv(program, argv, opt)
 end
 
@@ -204,16 +213,9 @@ function distcc_build_client:workdir()
     return self._WORKDIR
 end
 
--- only run the local job?
-function distcc_build_client:_is_localjob()
-    local co_running = scheduler.co_running()
-    if co_running then
-        local localjob = co_running:data("distcc.localjob")
-        if localjob then
-            return true
-        end
-    end
-    return self:freejobs() == 0
+-- has free jobs?
+function distcc_build_client:_has_freejobs()
+    return self:freejobs() > 0
 end
 
 -- get the session id, only for unique project
@@ -269,14 +271,18 @@ function distcc_build_client:_connect_host(host)
     local session_id = self:_session_id(addr, port)
     local ok = false
     local errors
+    local ncpu, njob
     print("%s: connect %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock)
         if stream:send_msg(message.new_connect(session_id, {token = token})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
-                vprint(msg:body())
+                local body = msg:body()
+                vprint(body)
                 if msg:success() then
+                    ncpu = body.ncpu
+                    njob = body.njob
                     ok = true
                 else
                     errors = msg:errors()
@@ -293,7 +299,10 @@ function distcc_build_client:_connect_host(host)
     -- update status
     local status = self:status()
     status.hosts = status.hosts or {}
-    status.hosts[addr .. ":" .. port] = {addr = addr, port = port, token = token, connected = ok, session_id = session_id}
+    status.hosts[addr .. ":" .. port] = {
+        addr = addr, port = port, token = token,
+        connected = ok, session_id = session_id,
+        ncpu = ncpu, njob = njob}
     self:status_save()
 end
 
@@ -374,6 +383,16 @@ function is_connected()
         _g.connected = connected
     end
     return connected
+end
+
+-- we can run distcc job?
+function is_distccjob()
+    if is_connected() then
+        local co_running = scheduler.co_running()
+        if co_running then
+            return co_running:data("distcc.distccjob")
+        end
+    end
 end
 
 -- new a client instance
