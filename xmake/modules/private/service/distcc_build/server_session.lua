@@ -100,7 +100,8 @@ function server_session:compile(respmsg)
         function ()
             local flags = body.flags
             local toolname = body.toolname
-            os.vrunv(toolname, table.join(flags, "-o", objectfile, sourcefile))
+            local compile = assert(self["_" .. toolname .. "_compile"], "%s: compiler(%s) is not supported!", self, toolname)
+            compile(self, toolname, flags, sourcefile, objectfile, body)
             return os.isfile(objectfile)
         end,
         catch
@@ -170,6 +171,26 @@ end
 -- get status file
 function server_session:statusfile()
     return path.join(self:workdir(), "status.txt")
+end
+
+-- do compile job for gcc
+function server_session:_gcc_compile(toolname, flags, sourcefile, objectfile, opt)
+    os.vrunv(toolname, table.join(flags, "-o", objectfile, sourcefile))
+end
+
+-- do compile job for g++
+function server_session:_gxx_compile(toolname, flags, sourcefile, objectfile, opt)
+    return self:_gcc_compile(toolname, flags, sourcefile, objectfile, opt)
+end
+
+-- do compile job for clang
+function server_session:_clang_compile(toolname, flags, sourcefile, objectfile, opt)
+    return self:_gcc_compile(toolname, flags, sourcefile, objectfile, opt)
+end
+
+-- do compile job for clang++
+function server_session:_clangxx_compile(toolname, flags, sourcefile, objectfile, opt)
+    return self:_gcc_compile(toolname, flags, sourcefile, objectfile, opt)
 end
 
 function server_session:__tostring()
