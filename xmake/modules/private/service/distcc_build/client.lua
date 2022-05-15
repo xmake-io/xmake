@@ -209,17 +209,14 @@ function distcc_build_client:iorunv(program, argv, opt)
     -- lock this host
     self:_host_status_lock(host)
 
-    -- get the host session
-    local session = self:_host_status_session(host)
-
-    -- open session
-    session:open()
+    -- open the host session
+    local session = assert(self:_host_status_session_open(host), "open session failed!")
 
     -- do distcc compilation
     local outdata, errdata = session:iorunv(program, argv, opt)
 
     -- close session
-    session:close()
+    self:_host_status_session_close(host, session)
 
     -- unlock this host
     self:_host_status_unlock(host)
@@ -319,17 +316,41 @@ function distcc_build_client:_host_status_unlock(host_status)
     self._RUNNING = running
 end
 
--- get host session
-function distcc_build_client:_host_status_session(host_status)
+-- open host session
+function distcc_build_client:_host_status_session_open(host_status)
     host_status.sessions  = host_status.sessions or {}
-    local running = host_status.running
-    local session = host_status.sessions[running]
-    if not session then
-        local sock = assert(socket.connect(host_status.addr, host_status.port), "%s: server unreachable!", self)
-        session = client_session(self, host_status.session_id, host_status.token, sock)
-        host_status.sessions[running] = session
+    host_status.free_sessions = host_status.free_sessions or {}
+    local sessions = host_status.sessions
+    local free_sessions = host_status.free_sessions
+    if #free_sessions > 0 then
+        local session = free_sessions[#free_sessions]
+        if session and not session:is_opened() then
+            table.remove(free_sessions)
+            session:open()
+            return session
+        end
     end
-    return session
+    local njob = host_status.njob
+    for i = 1, njob do
+        local session = host_status.sessions[i]
+        if not session then
+            local sock = assert(socket.connect(host_status.addr, host_status.port), "%s: server unreachable!", self)
+            session = client_session(self, host_status.session_id, host_status.token, sock)
+            host_status.sessions[i] = session
+            session:open()
+            return session
+        elseif not session:is_opened() then
+            session:open()
+            return session
+        end
+    end
+end
+
+-- close session
+function distcc_build_client:_host_status_session_close(host_status, session)
+    host_status.free_sessions = host_status.free_sessions or {}
+    session:close()
+    table.insert(host_status.free_sessions, session)
 end
 
 -- get the session id, only for unique project
