@@ -197,6 +197,25 @@ function distcc_build_client:has_freejobs()
     return self:freejobs() > 0
 end
 
+-- clean server files
+function distcc_build_client:clean()
+    if not self:is_connected() then
+        print("%s: has been disconnected!", self)
+        return
+    end
+
+    -- do disconnect
+    local hosts = self:hosts()
+    assert(hosts and #hosts > 0, "hosts not found!")
+    local group_name = tostring(self) .. "/clean"
+    scheduler.co_group_begin(group_name, function ()
+        for _, host in ipairs(hosts) do
+            scheduler.co_start(self._clean_host, self, host)
+        end
+    end)
+    scheduler.co_group_wait(group_name)
+end
+
 -- run compilation job
 function distcc_build_client:iorunv(program, argv, opt)
 
@@ -490,6 +509,47 @@ function distcc_build_client:_disconnect_host(host)
         host_status.connected = not ok
     end
     self:status_save()
+end
+
+-- clean file for the host
+function distcc_build_client:_clean_host(host)
+    local addr = host.addr
+    local port = host.port
+    if not self:_is_connected(addr, port) then
+        print("%s: %s:%d has been disconnected!", self, addr, port)
+        return
+    end
+
+    -- do clean
+    local token = host.token
+    local sock = socket.connect(addr, port)
+    local session_id = self:_session_id(addr, port)
+    local errors
+    local ok = false
+    print("%s: clean files in %s:%d ..", self, addr, port)
+    if sock then
+        local stream = socket_stream(sock)
+        if stream:send_msg(message.new_clean(session_id, {token = token})) and stream:flush() then
+            local msg = stream:recv_msg()
+            if msg then
+                vprint(msg:body())
+                if msg:success() then
+                    ok = true
+                else
+                    errors = msg:errors()
+                end
+            end
+        end
+    else
+        -- server unreachable, but we still disconnect it.
+        wprint("%s: server unreachable!", self)
+        ok = true
+    end
+    if ok then
+        print("%s: %s:%d clean files ok!", self, addr, port)
+    else
+        print("%s: clean files %s:%d failed, %s", self, addr, port, errors or "unknown")
+    end
 end
 
 -- is connected? we cannot depend on client:init when run action

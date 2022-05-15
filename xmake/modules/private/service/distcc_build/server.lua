@@ -92,6 +92,8 @@ function distcc_build_server:_on_handle(stream, msg)
                         session_errs = errors
                         return false
                     end
+                elseif msg:is_clean() then
+                    session:clean()
                 end
             end
             return true
