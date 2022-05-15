@@ -77,7 +77,7 @@ It uses xmake.lua to maintain project builds with a very simple and readable syn
 We can use it to build projects directly like Make/Ninja or generate project files like CMake/Meson. It also has a built-in package management system to help users integrate C/C++ dependencies.
 
 ```
-Xmake = Build backend + Project Generator + Package Manager
+Xmake = Build backend + Project Generator + Package Manager + [Remote|Distributed] Compilation
 ```
 
 If you want to know more, please refer to: [Documents](https://xmake.io/#/getting_started), [Github](https://github.com/xmake-io/xmake) and [Gitee](https://gitee.com/tboox/xmake). You are also welcome to join our [community](https://xmake.io/#/about/contact).
