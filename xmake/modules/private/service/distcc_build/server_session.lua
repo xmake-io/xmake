@@ -190,10 +190,14 @@ function server_session:_tool(name, opt)
     local cacheinfo = self:_cache():get(cachekey)
     if not cacheinfo then
         local toolchain_inst = toolchain.load(name, {plat = plat, arch = arch})
-        local program, toolname = toolchain_inst:tool(toolkind)
-        assert(program, "%s/%s not found!", name, toolkind)
-        cacheinfo = {program, toolname}
-        self:_cache():set(cachekey, cacheinfo)
+        if toolchain_inst:check() then
+            local program, toolname = toolchain_inst:tool(toolkind)
+            assert(program, "%s/%s not found!", name, toolkind)
+            cacheinfo = {program, toolname}
+            self:_cache():set(cachekey, cacheinfo)
+        else
+            raise("toolchain(%s) not found!", name)
+        end
     end
     return cacheinfo[1], cacheinfo[2]
 end
