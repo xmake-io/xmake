@@ -103,9 +103,9 @@ function client_session:_gcc_iorunv(program, argv, opt)
         table.insert(cppflags, flag)
 
         -- get compiler flags
-        if flag == "-MMD" or flag:startswith("-I") then
+        if flag == "-MMD" or flag:startswith("-I") or flag:startswith("--sysroot=") then
             skipped = 1
-        elseif flag == "-MF" or flag == "-I" or flag == "-isystem" then
+        elseif flag == "-MF" or flag == "-I" or flag == "-isystem" or flag == "-isysroot" or flag == "-gcc-toolchain" then
             skipped = 2
         elseif flag:endswith("xcrun") then
             skipped = 4
