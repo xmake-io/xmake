@@ -87,7 +87,11 @@ function distcc_build_server:_on_handle(stream, msg)
             else
                 assert(session:is_connected(), "session has not been connected!")
                 if msg:is_compile() then
-                    session:compile(respmsg)
+                    local ok, errors = session:compile(respmsg)
+                    if not ok then
+                        session_errs = errors
+                        return false
+                    end
                 end
             end
             return true

@@ -83,8 +83,9 @@ end
 function server_session:compile(respmsg)
 
     -- recv source file
+    local body = respmsg:body()
     local stream = self:stream()
-    local sourcename = respmsg.sourcename
+    local sourcename = body.sourcename
     local sourcedir = path.join(self:workdir(), (hash.uuid4():gsub("-", "")))
     local sourcefile = path.join(sourcedir, sourcename)
     local objectfile = sourcefile .. ".o"
@@ -93,16 +94,38 @@ function server_session:compile(respmsg)
     end
 
     -- do compile
-    -- TODO
+    local errors
+    local ok = try
+    {
+        function ()
+            local flags = body.flags
+            local compiler = body.compiler
+            os.vrunv(compiler, table.join(flags, "-o", objectfile, sourcefile))
+            return os.isfile(objectfile)
+        end,
+        catch
+        {
+            function (errs)
+                errors = tostring(errs)
+            end
+        }
+    }
 
     -- send object file
-    if not stream:send_emptydata() then
-        raise("send %s failed!", objectfile)
+    if ok then
+        if not stream:send_file(objectfile, {compress = os.filesize(objectfile) > 4096}) then
+            raise("send %s failed!", objectfile)
+        end
+    else
+        if not stream:send_emptydata() then
+            raise("send empty data failed!")
+        end
     end
 
     -- remove files
     os.tryrm(sourcefile)
     os.tryrm(objectfile)
+    return ok, errors
 end
 
 -- set stream
