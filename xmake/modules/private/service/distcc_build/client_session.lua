@@ -81,7 +81,8 @@ end
 function client_session:iorunv(program, argv, opt)
     assert(self:is_opened(), "%s: has been not opened!", self)
     opt = opt or {}
-    local toolname = opt.toolname
+    local tool = opt.tool
+    local toolname = tool:name()
     local iorunv = assert(self["_" .. toolname .. "_iorunv"], "%s: iorunv(%s) is not supported!", self, program)
     return iorunv(self, program, argv, opt)
 end
@@ -134,8 +135,10 @@ function client_session:_gcc_iorunv(program, argv, opt)
     -- do compile
     local ok = false
     local errors
+    local tool = opt.tool
+    local toolname = tool:name()
     local stream = self:stream()
-    if stream:send_msg(message.new_compile(self:id(), opt.toolname, flags, path.filename(sourcefile), {token = self:token()})) and
+    if stream:send_msg(message.new_compile(self:id(), toolname, flags, path.filename(sourcefile), {token = self:token()})) and
         stream:send_file(cppfile, {compress = os.filesize(cppfile) > 4096}) and stream:flush() then
         local recv = stream:recv_file(objectfile)
         if recv ~= nil then

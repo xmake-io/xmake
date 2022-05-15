@@ -104,8 +104,6 @@ function compiler._load_tool(sourcekind, target)
     if not result then
         return nil, errors
     end
-
-    -- done
     return result, program
 end
 
