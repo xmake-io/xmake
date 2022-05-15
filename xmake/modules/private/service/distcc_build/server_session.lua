@@ -189,7 +189,8 @@ function server_session:_tool(name, opt)
     local cachekey = name .. (plat or "") .. (arch or "") .. toolkind
     local cacheinfo = self:_cache():get(cachekey)
     if not cacheinfo then
-        local toolchain_inst = toolchain.load(name, {plat = plat, arch = arch})
+        local toolchain_configs = (config.get("distcc_build.toolchains") or {})[name]
+        local toolchain_inst = toolchain.load(name, table.join({plat = plat, arch = arch}, toolchain_configs))
         if toolchain_inst:check() then
             local program, toolname = toolchain_inst:tool(toolkind)
             assert(program, "%s/%s not found!", name, toolkind)

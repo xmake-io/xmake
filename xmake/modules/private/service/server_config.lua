@@ -51,6 +51,10 @@ function _generate_configfile()
         distcc_build = {
             listen = "0.0.0.0:9692",
             workdir = path.join(servicedir, "distcc_build"),
+            toolchains = {
+                ndk = {
+                }
+            }
         }
 
     }
