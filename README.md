@@ -299,6 +299,7 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 * Quick toolchain management
 * A large number of expansion modules
 * Remote compilation support
+* Distributed compilation support
 
 ## Supported Projects
 
@@ -318,6 +319,22 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 * Lex/yacc program
 * C++20 Modules
 * Linux Kernel Driver Modules
+
+## Distributed Compilation
+
+- [x] Cross-platform support
+- [x] Support for msvc, clang, gcc and cross-compilation toolchain
+- [x] Support for building android, ios, linux, win, macOS programs
+- [x] No dependencies other than the compilation toolchain
+- [x] Support for build server load balancing scheduling
+- [x] Support for real time compressed transfer of large files (lz4)
+- [x] Almost zero configuration cost, no shared filesystem required, more convenience and security
+
+For more details see: [#274](https://github.com/xmake-io/xmake/issues/274)
+
+## Remote compilation
+
+For more details see: [#622](https://github.com/xmake-io/xmake/issues/622)
 
 ## More Examples
 

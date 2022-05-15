@@ -306,6 +306,7 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 * 工具链的快速切换、定制化支持
 * 丰富的扩展模块支持
 * 远程编译支持
+* 分布式编译支持
 
 ## 工程类型
 
@@ -325,6 +326,22 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 * Lex/yacc 程序
 * C++20 模块
 * Linux 内核驱动模块
+
+## 分布式编译
+
+- [x] 跨平台支持
+- [x] 支持 msvc, clang, gcc 和交叉编译工具链
+- [x] 支持构建 android, ios, linux, win, macOS 程序
+- [x] 除了编译工具链，无任何其他依赖
+- [x] 支持编译服务器负载均衡调度
+- [x] 支持大文件实时压缩传输 (lz4)
+- [x] 几乎零配置成本，无需共享文件系统，更加方便和安全
+
+更多详情见：[#274](https://github.com/xmake-io/xmake/issues/274)
+
+## 远程编译
+
+更多详情见：[#622](https://github.com/xmake-io/xmake/issues/622)
 
 ## 更多例子
 
