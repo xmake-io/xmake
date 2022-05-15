@@ -93,7 +93,7 @@ function client_session:_gcc_iorunv(program, argv, opt)
     -- get flags and source file
     local flags = {}
     local cppflags = {}
-    local skipped = 0
+    local skipped = program:endswith("cache") and 1 or 0
     for _, flag in ipairs(argv) do
         if flag == "-o" then
             break
