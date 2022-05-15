@@ -26,6 +26,7 @@ import("core.project.project")
 import("core.language.language")
 import("private.tools.vstool")
 import("private.tools.cl.parse_include")
+import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 import("utils.progress")
 
 -- init it
@@ -447,7 +448,11 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
             -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
             local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
-            return vstool.iorunv(program, argv, {envs = self:runenvs()})
+            if distcc_build_client.is_distccjob() then
+                return distcc_build_client.singleton():iorunv(program, argv, {envs = self:runenvs(), tool = self})
+            else
+                return vstool.iorunv(program, argv, {envs = self:runenvs()})
+            end
         end,
         catch
         {
