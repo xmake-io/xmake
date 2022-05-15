@@ -212,8 +212,14 @@ function distcc_build_client:iorunv(program, argv, opt)
     -- get the host session
     local session = self:_host_status_session(host)
 
+    -- open session
+    session:open()
+
     -- do distcc compilation
     local outdata, errdata = session:iorunv(program, argv, opt)
+
+    -- close session
+    session:close()
 
     -- unlock this host
     self:_host_status_unlock(host)

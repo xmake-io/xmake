@@ -61,8 +61,25 @@ function client_session:stream()
     return self._STREAM
 end
 
+-- open session
+function client_session:open()
+    assert(not self:is_opened(), "%s: has been opened!", self)
+    self._OPENED = true
+end
+
+-- close session
+function client_session:close()
+    self._OPENED = false
+end
+
+-- is opened?
+function client_session:is_opened()
+    return self._OPENED
+end
+
 -- run compilation job
 function client_session:iorunv(program, argv, opt)
+    assert(self:is_opened(), "%s: has been not opened!", self)
     opt = opt or {}
     local toolname = opt.toolname
     local iorunv = assert(self["_" .. toolname .. "_iorunv"], "%s: iorunv(%s) is not supported!", self, program)
