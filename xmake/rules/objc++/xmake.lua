@@ -31,7 +31,7 @@ rule("objc.build")
             target:add("frameworks", "Foundation", "CoreFoundation")
         end
     end)
-    on_build_files("private.action.build.object", {batch = true})
+    on_build_files("private.action.build.object", {batch = true, distcc = true})
 
 -- define rule: objc++.build
 rule("objc++.build")
@@ -46,7 +46,7 @@ rule("objc++.build")
             target:add("frameworks", "Foundation", "CoreFoundation")
         end
     end)
-    on_build_files("private.action.build.object", {batch = true})
+    on_build_files("private.action.build.object", {batch = true, distcc = true})
 
 -- define rule: objc
 rule("objc++")
