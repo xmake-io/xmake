@@ -28,6 +28,7 @@ import("core.base.hashset")
 import("core.base.scheduler")
 import("core.tool.toolchain")
 import("core.cache.memcache")
+import("private.tools.vstool")
 import("private.service.server_config", {alias = "config"})
 import("private.service.message")
 
@@ -194,20 +195,20 @@ function server_session:_tool(name, opt)
         if toolchain_inst:check() then
             local program, toolname = toolchain_inst:tool(toolkind)
             assert(program, "%s/%s not found!", name, toolkind)
-            cacheinfo = {program, toolname}
+            cacheinfo = {program, toolname, toolchain_inst:runenvs()}
             self:_cache():set(cachekey, cacheinfo)
         else
             raise("toolchain(%s) not found!", name)
         end
     end
-    return cacheinfo[1], cacheinfo[2]
+    return cacheinfo[1], cacheinfo[2], cacheinfo[3]
 end
 
 -- do compile job for gcc
 function server_session:_gcc_compile(toolname, flags, sourcefile, objectfile, opt)
-    local program, toolname_real = self:_tool(opt.toolchain, opt)
+    local program, toolname_real, runenvs = self:_tool(opt.toolchain, opt)
     assert(toolname_real == toolname, "toolname is not matched, %s != %s", toolname, toolname_real)
-    os.vrunv(program, table.join(flags, "-o", objectfile, sourcefile))
+    os.vrunv(program, table.join(flags, "-o", objectfile, sourcefile), {envs = runenvs})
 end
 
 -- do compile job for g++
@@ -223,6 +224,13 @@ end
 -- do compile job for clang++
 function server_session:_clangxx_compile(toolname, flags, sourcefile, objectfile, opt)
     return self:_gcc_compile(toolname, flags, sourcefile, objectfile, opt)
+end
+
+-- do compile job for cl
+function server_session:_cl_compile(toolname, flags, sourcefile, objectfile, opt)
+    local program, toolname_real, runenvs = self:_tool(opt.toolchain, opt)
+    assert(toolname_real == toolname, "toolname is not matched, %s != %s", toolname, toolname_real)
+    vstool.runv(program, table.join(flags, "-Fo", objectfile, sourcefile), {envs = runenvs})
 end
 
 function server_session:__tostring()

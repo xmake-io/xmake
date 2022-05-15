@@ -151,6 +151,56 @@ function client_session:_clangxx_iorunv(program, argv, opt)
     return self:_gcc_iorunv(program, argv, opt)
 end
 
+-- run compilation job for cl
+function client_session:_cl_iorunv(program, argv, opt)
+
+    -- get flags and source file
+    local flags = {}
+    local cppflags = {}
+    local skipped = 0
+    for _, flag in ipairs(argv) do
+        if flag == "-Fo" then
+            break
+        end
+
+        -- get preprocessor flags
+        table.insert(cppflags, flag)
+
+        -- get compiler flags
+        if flag == "-showIncludes" or flag == "/showIncludes" or
+           flag == "-sourceDependencies" or flag == "/sourceDependencies" or
+           flag:startswith("-I") or flag:startswith("/I") or
+           flag:startswith("-external:") or flag:startswith("/external:") then
+            skipped = 1
+        elseif flag == "-I" then
+            skipped = 2
+        end
+        if skipped > 0 then
+            skipped = skipped - 1
+        else
+            table.insert(flags, flag)
+        end
+    end
+    local objectfile = argv[#argv - 1]
+    local sourcefile = argv[#argv]
+    assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
+
+    -- do preprocess
+    local cppfile = objectfile:gsub("%.obj$", ".p")
+    local cppfiledir = path.directory(cppfile)
+    if not os.isdir(cppfiledir) then
+        os.mkdir(cppfiledir)
+    end
+    table.insert(cppflags, "-P")
+    table.insert(cppflags, "-Fo")
+    table.insert(cppflags, cppfile)
+    table.insert(cppflags, sourcefile)
+    os.runv(program, cppflags, opt)
+
+    -- do compile
+    self:_compile(sourcefile, cppfile, objectfile, flags, opt)
+end
+
 -- do compile
 function client_session:_compile(sourcefile, cppfile, objectfile, flags, opt)
     local ok = false
