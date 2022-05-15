@@ -158,8 +158,10 @@ function client_session:_cl_iorunv(program, argv, opt)
     local flags = {}
     local cppflags = {}
     local skipped = 0
+    local objectfile
     for _, flag in ipairs(argv) do
-        if flag == "-Fo" then
+        if flag:startswith("-Fo") or flag:startswith("/Fo") then
+            objectfile = flag:sub(4)
             break
         end
 
@@ -168,11 +170,10 @@ function client_session:_cl_iorunv(program, argv, opt)
 
         -- get compiler flags
         if flag == "-showIncludes" or flag == "/showIncludes" or
-           flag == "-sourceDependencies" or flag == "/sourceDependencies" or
            flag:startswith("-I") or flag:startswith("/I") or
            flag:startswith("-external:") or flag:startswith("/external:") then
             skipped = 1
-        elseif flag == "-I" then
+        elseif flag == "-I" or flag == "-sourceDependencies" or flag == "/sourceDependencies" then
             skipped = 2
         end
         if skipped > 0 then
@@ -181,24 +182,23 @@ function client_session:_cl_iorunv(program, argv, opt)
             table.insert(flags, flag)
         end
     end
-    local objectfile = argv[#argv - 1]
     local sourcefile = argv[#argv]
     assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
 
     -- do preprocess
-    local cppfile = objectfile:gsub("%.obj$", ".p")
+    local cppfile = objectfile:gsub("%.obj$", ".i")
     local cppfiledir = path.directory(cppfile)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
     end
     table.insert(cppflags, "-P")
-    table.insert(cppflags, "-Fo")
-    table.insert(cppflags, cppfile)
+    table.insert(cppflags, "-Fi" .. cppfile)
     table.insert(cppflags, sourcefile)
-    os.runv(program, cppflags, opt)
+    local outdata, errdata = os.iorunv(program, cppflags, opt)
 
     -- do compile
     self:_compile(sourcefile, cppfile, objectfile, flags, opt)
+    return outdata, errdata
 end
 
 -- do compile
