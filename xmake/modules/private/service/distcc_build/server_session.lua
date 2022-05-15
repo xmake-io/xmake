@@ -99,8 +99,8 @@ function server_session:compile(respmsg)
     {
         function ()
             local flags = body.flags
-            local compiler = body.compiler
-            os.vrunv(compiler, table.join(flags, "-o", objectfile, sourcefile))
+            local toolname = body.toolname
+            os.vrunv(toolname, table.join(flags, "-o", objectfile, sourcefile))
             return os.isfile(objectfile)
         end,
         catch

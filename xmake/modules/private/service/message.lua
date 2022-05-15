@@ -214,13 +214,17 @@ function new_data(session_id, size, opt)
 end
 
 -- new compile command message
-function new_compile(session_id, compiler, flags, sourcename, opt)
+function new_compile(session_id, toolname, toolkind, plat, arch, toolchain, flags, sourcename, opt)
     opt = opt or {}
     return _new({
         code = message.CODE_COMPILE,
         session_id = session_id,
         token = opt.token,
-        compiler = compiler,
+        toolname = toolname,
+        toolkind = toolkind,
+        plat = plat,
+        arch = arch,
+        toolchain = toolchain,
         flags = flags,
         sourcename = sourcename
     })

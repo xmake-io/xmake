@@ -137,8 +137,13 @@ function client_session:_gcc_iorunv(program, argv, opt)
     local errors
     local tool = opt.tool
     local toolname = tool:name()
+    local toolkind = tool:kind()
+    local plat = tool:plat()
+    local arch = tool:arch()
+    local toolchain = tool:toolchain():name()
     local stream = self:stream()
-    if stream:send_msg(message.new_compile(self:id(), toolname, flags, path.filename(sourcefile), {token = self:token()})) and
+    if stream:send_msg(message.new_compile(self:id(), toolname, toolkind, plat, arch, toolchain,
+            flags, path.filename(sourcefile), {token = self:token()})) and
         stream:send_file(cppfile, {compress = os.filesize(cppfile) > 4096}) and stream:flush() then
         local recv = stream:recv_file(objectfile)
         if recv ~= nil then
