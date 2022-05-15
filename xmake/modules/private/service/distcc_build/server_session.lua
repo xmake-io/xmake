@@ -26,6 +26,8 @@ import("core.base.global")
 import("core.base.option")
 import("core.base.hashset")
 import("core.base.scheduler")
+import("core.tool.toolchain")
+import("core.cache.memcache")
 import("private.service.server_config", {alias = "config"})
 import("private.service.message")
 
@@ -173,9 +175,34 @@ function server_session:statusfile()
     return path.join(self:workdir(), "status.txt")
 end
 
+-- get cache
+function server_session:_cache()
+    return memcache.cache("distcc_build_server.session")
+end
+
+-- get tool
+function server_session:_tool(name, opt)
+    opt = opt or {}
+    local plat = opt.plat
+    local arch = opt.arch
+    local toolkind = opt.toolkind
+    local cachekey = name .. (plat or "") .. (arch or "") .. toolkind
+    local cacheinfo = self:_cache():get(cachekey)
+    if not cacheinfo then
+        local toolchain_inst = toolchain.load(name, {plat = plat, arch = arch})
+        local program, toolname = toolchain_inst:tool(toolkind)
+        assert(program, "%s/%s not found!", name, toolkind)
+        cacheinfo = {program, toolname}
+        self:_cache():set(cachekey, cacheinfo)
+    end
+    return cacheinfo[1], cacheinfo[2]
+end
+
 -- do compile job for gcc
 function server_session:_gcc_compile(toolname, flags, sourcefile, objectfile, opt)
-    os.vrunv(toolname, table.join(flags, "-o", objectfile, sourcefile))
+    local program, toolname_real = self:_tool(opt.toolchain, opt)
+    assert(toolname_real == toolname, "toolname is not matched, %s != %s", toolname, toolname_real)
+    os.vrunv(program, table.join(flags, "-o", objectfile, sourcefile))
 end
 
 -- do compile job for g++
