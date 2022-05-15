@@ -121,7 +121,7 @@ function client_session:_gcc_iorunv(program, argv, opt)
     assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
 
     -- do preprocess
-    local cppfile = objectfile:gsub("%.o$", ".p")
+    local cppfile = objectfile .. ".p"
     local cppfiledir = path.directory(cppfile)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
@@ -186,7 +186,7 @@ function client_session:_cl_iorunv(program, argv, opt)
     assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
 
     -- do preprocess
-    local cppfile = objectfile:gsub("%.obj$", ".i")
+    local cppfile = objectfile .. ".p"
     local cppfiledir = path.directory(cppfile)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
