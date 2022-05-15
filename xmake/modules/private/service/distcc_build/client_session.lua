@@ -133,6 +133,26 @@ function client_session:_gcc_iorunv(program, argv, opt)
     os.runv(program, cppflags, opt)
 
     -- do compile
+    self:_compile(sourcefile, cppfile, objectfile, flags, opt)
+end
+
+-- run compilation job for g++
+function client_session:_gxx_iorunv(program, argv, opt)
+    return self:_gcc_iorunv(program, argv, opt)
+end
+
+-- run compilation job for clang
+function client_session:_clang_iorunv(program, argv, opt)
+    return self:_gcc_iorunv(program, argv, opt)
+end
+
+-- run compilation job for clang++
+function client_session:_clangxx_iorunv(program, argv, opt)
+    return self:_gcc_iorunv(program, argv, opt)
+end
+
+-- do compile
+function client_session:_compile(sourcefile, cppfile, objectfile, flags, opt)
     local ok = false
     local errors
     local tool = opt.tool
@@ -161,21 +181,6 @@ function client_session:_gcc_iorunv(program, argv, opt)
     end
     os.tryrm(cppfile)
     assert(ok, errors or "unknown errors!")
-end
-
--- run compilation job for g++
-function client_session:_gxx_iorunv(program, argv, opt)
-    return self:_gcc_iorunv(program, argv, opt)
-end
-
--- run compilation job for clang
-function client_session:_clang_iorunv(program, argv, opt)
-    return self:_gcc_iorunv(program, argv, opt)
-end
-
--- run compilation job for clang++
-function client_session:_clangxx_iorunv(program, argv, opt)
-    return self:_gcc_iorunv(program, argv, opt)
 end
 
 -- get work directory
