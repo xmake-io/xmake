@@ -78,132 +78,8 @@ function client_session:is_opened()
 end
 
 -- run compilation job
-function client_session:iorunv(program, argv, opt)
+function client_session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
     assert(self:is_opened(), "%s: has been not opened!", self)
-    opt = opt or {}
-    local tool = opt.tool
-    local toolname = tool:name()
-    local iorunv = assert(self["_" .. toolname .. "_iorunv"], "%s: iorunv(%s) is not supported!", self, program)
-    return iorunv(self, program, argv, opt)
-end
-
--- run compilation job for gcc
-function client_session:_gcc_iorunv(program, argv, opt)
-
-    -- get flags and source file
-    local flags = {}
-    local cppflags = {}
-    local skipped = program:endswith("cache") and 1 or 0
-    for _, flag in ipairs(argv) do
-        if flag == "-o" then
-            break
-        end
-
-        -- get preprocessor flags
-        table.insert(cppflags, flag)
-
-        -- get compiler flags
-        if flag == "-MMD" or flag:startswith("-I") or flag:startswith("--sysroot=") then
-            skipped = 1
-        elseif flag == "-MF" or flag == "-I" or flag == "-isystem" or flag == "-isysroot" or flag == "-gcc-toolchain" then
-            skipped = 2
-        elseif flag:endswith("xcrun") then
-            skipped = 4
-        end
-        if skipped > 0 then
-            skipped = skipped - 1
-        else
-            table.insert(flags, flag)
-        end
-    end
-    local objectfile = argv[#argv - 1]
-    local sourcefile = argv[#argv]
-    assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
-
-    -- do preprocess
-    local cppfile = objectfile .. ".p"
-    local cppfiledir = path.directory(cppfile)
-    if not os.isdir(cppfiledir) then
-        os.mkdir(cppfiledir)
-    end
-    table.insert(cppflags, "-E")
-    table.insert(cppflags, "-o")
-    table.insert(cppflags, cppfile)
-    table.insert(cppflags, sourcefile)
-    local outdata, errdata = os.iorunv(program, cppflags, opt)
-
-    -- do compile
-    self:_compile(sourcefile, cppfile, objectfile, flags, opt)
-    return outdata, errdata
-end
-
--- run compilation job for g++
-function client_session:_gxx_iorunv(program, argv, opt)
-    return self:_gcc_iorunv(program, argv, opt)
-end
-
--- run compilation job for clang
-function client_session:_clang_iorunv(program, argv, opt)
-    return self:_gcc_iorunv(program, argv, opt)
-end
-
--- run compilation job for clang++
-function client_session:_clangxx_iorunv(program, argv, opt)
-    return self:_gcc_iorunv(program, argv, opt)
-end
-
--- run compilation job for cl
-function client_session:_cl_iorunv(program, argv, opt)
-
-    -- get flags and source file
-    local flags = {}
-    local cppflags = {}
-    local skipped = 0
-    local objectfile
-    for _, flag in ipairs(argv) do
-        if flag:startswith("-Fo") or flag:startswith("/Fo") then
-            objectfile = flag:sub(4)
-            break
-        end
-
-        -- get preprocessor flags
-        table.insert(cppflags, flag)
-
-        -- get compiler flags
-        if flag == "-showIncludes" or flag == "/showIncludes" or
-           flag:startswith("-I") or flag:startswith("/I") or
-           flag:startswith("-external:") or flag:startswith("/external:") then
-            skipped = 1
-        elseif flag == "-I" or flag == "-sourceDependencies" or flag == "/sourceDependencies" then
-            skipped = 2
-        end
-        if skipped > 0 then
-            skipped = skipped - 1
-        else
-            table.insert(flags, flag)
-        end
-    end
-    local sourcefile = argv[#argv]
-    assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
-
-    -- do preprocess
-    local cppfile = objectfile .. ".p"
-    local cppfiledir = path.directory(cppfile)
-    if not os.isdir(cppfiledir) then
-        os.mkdir(cppfiledir)
-    end
-    table.insert(cppflags, "-P")
-    table.insert(cppflags, "-Fi" .. cppfile)
-    table.insert(cppflags, sourcefile)
-    local outdata, errdata = os.iorunv(program, cppflags, opt)
-
-    -- do compile
-    self:_compile(sourcefile, cppfile, objectfile, flags, opt)
-    return outdata, errdata
-end
-
--- do compile
-function client_session:_compile(sourcefile, cppfile, objectfile, flags, opt)
     local ok = false
     local errors
     local tool = opt.tool
@@ -214,7 +90,7 @@ function client_session:_compile(sourcefile, cppfile, objectfile, flags, opt)
     local toolchain = tool:toolchain():name()
     local stream = self:stream()
     if stream:send_msg(message.new_compile(self:id(), toolname, toolkind, plat, arch, toolchain,
-            flags, path.filename(sourcefile), {token = self:token()})) and
+            cppflags, path.filename(sourcefile), {token = self:token()})) and
         stream:send_file(cppfile, {compress = os.filesize(cppfile) > 4096}) and stream:flush() then
         local recv = stream:recv_file(objectfile)
         if recv ~= nil then

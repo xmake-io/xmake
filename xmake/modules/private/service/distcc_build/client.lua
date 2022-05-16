@@ -217,7 +217,7 @@ function distcc_build_client:clean()
 end
 
 -- run compilation job
-function distcc_build_client:iorunv(program, argv, opt)
+function distcc_build_client:compile(program, argv, opt)
 
     -- get free host
     local host = assert(self:_get_freehost(), "free host not found!")
@@ -228,8 +228,13 @@ function distcc_build_client:iorunv(program, argv, opt)
     -- open the host session
     local session = assert(self:_host_status_session_open(host), "open session failed!")
 
+    -- do preprocess
+    opt = opt or {}
+    local preprocess = assert(opt.preprocess, "preprocessor not found!")
+    local outdata, errdata, sourcefile, objectfile, cppfile, cppflags = preprocess(program, argv, opt)
+
     -- do distcc compilation
-    local outdata, errdata = session:iorunv(program, argv, opt)
+    session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
 
     -- close session
     self:_host_status_session_close(host, session)

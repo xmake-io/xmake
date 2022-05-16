@@ -395,6 +395,53 @@ function _is_in_vstudio()
     return is_in_vstudio
 end
 
+-- do preprocess
+function _preprocess(program, argv, opt)
+
+    -- get flags and source file
+    local flags = {}
+    local cppflags = {}
+    local skipped = 0
+    local objectfile
+    for _, flag in ipairs(argv) do
+        if flag:startswith("-Fo") or flag:startswith("/Fo") then
+            objectfile = flag:sub(4)
+            break
+        end
+
+        -- get preprocessor flags
+        table.insert(cppflags, flag)
+
+        -- get compiler flags
+        if flag == "-showIncludes" or flag == "/showIncludes" or
+           flag:startswith("-I") or flag:startswith("/I") or
+           flag:startswith("-external:") or flag:startswith("/external:") then
+            skipped = 1
+        elseif flag == "-I" or flag == "-sourceDependencies" or flag == "/sourceDependencies" then
+            skipped = 2
+        end
+        if skipped > 0 then
+            skipped = skipped - 1
+        else
+            table.insert(flags, flag)
+        end
+    end
+    local sourcefile = argv[#argv]
+    assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
+
+    -- do preprocess
+    local cppfile = objectfile .. ".p"
+    local cppfiledir = path.directory(cppfile)
+    if not os.isdir(cppfiledir) then
+        os.mkdir(cppfiledir)
+    end
+    table.insert(cppflags, "-P")
+    table.insert(cppflags, "-Fi" .. cppfile)
+    table.insert(cppflags, sourcefile)
+    local outdata, errdata = vstool.iorunv(program, cppflags, opt)
+    return outdata, errdata, sourcefile, objectfile, cppfile, flags
+end
+
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags, opt)
 
@@ -449,7 +496,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
             local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
             if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-                return distcc_build_client.singleton():iorunv(program, argv, {envs = self:runenvs(), tool = self})
+                return distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self})
             else
                 return vstool.iorunv(program, argv, {envs = self:runenvs()})
             end

@@ -389,6 +389,53 @@ function _has_color_diagnostics(self)
     return colors_diagnostics
 end
 
+-- do preprocess
+function _preprocess(program, argv, opt)
+
+    -- get flags and source file
+    local flags = {}
+    local cppflags = {}
+    local skipped = program:endswith("cache") and 1 or 0
+    for _, flag in ipairs(argv) do
+        if flag == "-o" then
+            break
+        end
+
+        -- get preprocessor flags
+        table.insert(cppflags, flag)
+
+        -- get compiler flags
+        if flag == "-MMD" or flag:startswith("-I") or flag:startswith("--sysroot=") then
+            skipped = 1
+        elseif flag == "-MF" or flag == "-I" or flag == "-isystem" or flag == "-isysroot" or flag == "-gcc-toolchain" then
+            skipped = 2
+        elseif flag:endswith("xcrun") then
+            skipped = 4
+        end
+        if skipped > 0 then
+            skipped = skipped - 1
+        else
+            table.insert(flags, flag)
+        end
+    end
+    local objectfile = argv[#argv - 1]
+    local sourcefile = argv[#argv]
+    assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
+
+    -- do preprocess
+    local cppfile = objectfile .. ".p"
+    local cppfiledir = path.directory(cppfile)
+    if not os.isdir(cppfiledir) then
+        os.mkdir(cppfiledir)
+    end
+    table.insert(cppflags, "-E")
+    table.insert(cppflags, "-o")
+    table.insert(cppflags, cppfile)
+    table.insert(cppflags, sourcefile)
+    local outdata, errdata = os.iorunv(program, cppflags, opt)
+    return outdata, errdata, sourcefile, objectfile, cppfile, flags
+end
+
 -- make the compile arguments list for the precompiled header
 function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
 
@@ -458,7 +505,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             -- do compile
             local program, argv = compargv(self, sourcefile, objectfile, compflags)
             if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-                return distcc_build_client.singleton():iorunv(program, argv, {envs = self:runenvs(), tool = self})
+                return distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self})
             else
                 return os.iorunv(program, argv, {envs = self:runenvs()})
             end
