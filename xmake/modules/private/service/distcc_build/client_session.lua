@@ -130,10 +130,11 @@ function client_session:_gcc_iorunv(program, argv, opt)
     table.insert(cppflags, "-o")
     table.insert(cppflags, cppfile)
     table.insert(cppflags, sourcefile)
-    os.runv(program, cppflags, opt)
+    local outdata, errdata = os.iorunv(program, cppflags, opt)
 
     -- do compile
     self:_compile(sourcefile, cppfile, objectfile, flags, opt)
+    return outdata, errdata
 end
 
 -- run compilation job for g++
