@@ -457,7 +457,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
 
             -- do compile
             local program, argv = compargv(self, sourcefile, objectfile, compflags)
-            if distcc_build_client.is_distccjob() then
+            if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
                 return distcc_build_client.singleton():iorunv(program, argv, {envs = self:runenvs(), tool = self})
             else
                 return os.iorunv(program, argv, {envs = self:runenvs()})

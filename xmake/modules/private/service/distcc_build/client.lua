@@ -220,10 +220,7 @@ end
 function distcc_build_client:iorunv(program, argv, opt)
 
     -- get free host
-    local host = self:_get_freehost()
-    if not host then
-        return os.iorunv(program, argv, opt)
-    end
+    local host = assert(self:_get_freehost(), "free host not found!")
 
     -- lock this host
     self:_host_status_lock(host)
