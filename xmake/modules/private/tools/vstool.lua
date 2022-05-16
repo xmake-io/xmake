@@ -136,8 +136,6 @@ function iorunv(program, argv, opt)
         -- raise errors
         os.raise({errors = errors, stderr = errdata, stdout = outdata})
     end
-
-    -- ok?
     return outdata, errdata
 end
 

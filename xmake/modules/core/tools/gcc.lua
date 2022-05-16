@@ -407,7 +407,9 @@ function _preprocess(program, argv, opt)
         -- get compiler flags
         if flag == "-MMD" or flag:startswith("-I") or flag:startswith("--sysroot=") then
             skipped = 1
-        elseif flag == "-MF" or flag == "-I" or flag == "-isystem" or flag == "-isysroot" or flag == "-gcc-toolchain" then
+        elseif flag == "-MF" or
+            flag == "-I" or flag == "-isystem" or flag == "-include" or flag == "-include-pch" or
+            flag == "-isysroot" or flag == "-gcc-toolchain" then
             skipped = 2
         elseif flag:endswith("xcrun") then
             skipped = 4

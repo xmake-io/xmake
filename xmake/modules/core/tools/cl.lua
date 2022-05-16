@@ -415,6 +415,9 @@ function _preprocess(program, argv, opt)
         -- get compiler flags
         if flag == "-showIncludes" or flag == "/showIncludes" or
            flag:startswith("-I") or flag:startswith("/I") or
+           flag:startswith("-Yu") or flag:startswith("/Yu") or
+           flag:startswith("-FI") or flag:startswith("/FI") or
+           flag:startswith("-Fp") or flag:startswith("/Fp") or
            flag:startswith("-external:") or flag:startswith("/external:") then
             skipped = 1
         elseif flag == "-I" or flag == "-sourceDependencies" or flag == "/sourceDependencies" then
