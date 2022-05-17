@@ -237,7 +237,7 @@ end
 function server_session:_cl_compile(toolname, flags, sourcefile, objectfile, opt)
     local program, toolname_real, runenvs = self:_tool(opt.toolchain, opt)
     assert(toolname_real == toolname, "toolname is not matched, %s != %s", toolname, toolname_real)
-    vstool.iorunv(program, table.join(flags, "-Fo" .. objectfile, sourcefile), {envs = runenvs})
+    vstool.iorunv(program, winos.cmdargv(table.join(flags, "-Fo" .. objectfile, sourcefile)), {envs = runenvs})
 end
 
 function server_session:__tostring()
