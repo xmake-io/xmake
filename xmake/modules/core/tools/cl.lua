@@ -507,7 +507,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
             if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
                 local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
-                return distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self, target = opt.target})
+                return distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
+                    preprocess = _preprocess, tool = self, target = opt.target})
             else
                 local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
                 return vstool.iorunv(program, argv, {envs = self:runenvs()})
