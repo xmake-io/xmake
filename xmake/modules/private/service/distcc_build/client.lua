@@ -29,6 +29,7 @@ import("lib.detect.find_tool")
 import("private.service.client_config", {alias = "config"})
 import("private.service.message")
 import("private.service.client")
+import("private.cache.build_cache")
 import("private.service.distcc_build.client_session")
 import("private.service.stream", {alias = "socket_stream"})
 
@@ -233,8 +234,25 @@ function distcc_build_client:compile(program, argv, opt)
     local preprocess = assert(opt.preprocess, "preprocessor not found!")
     local outdata, errdata, sourcefile, objectfile, cppfile, cppflags = preprocess(program, argv, opt)
 
+    -- get objectfile from the build cache first
+    local cached = false
+    local cachekey
+    if build_cache.enabled() then
+        cachekey = build_cache.cachekey(program, cppfile, cppflags, opt.envs)
+        local objectfile_cached = build_cache.get(cachekey)
+        if objectfile_cached then
+            os.cp(objectfile_cached, objectfile)
+            cached = true
+        end
+    end
+
     -- do distcc compilation
-    session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
+    if not cached then
+        session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
+        if cachekey then
+            build_cache.put(cachekey, objectfile)
+        end
+    end
 
     -- close session
     self:_host_status_session_close(host, session)

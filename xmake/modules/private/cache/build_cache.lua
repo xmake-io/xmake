@@ -24,9 +24,47 @@ import("core.project.config")
 -- is enabled?
 function enabled()
     local build_cache = _g.build_cache
-    if build_cache == nil and config.get("ccache") then
-        _g.build_cache = build_cache or false
+    if build_cache == nil then
+        build_cache = config.get("ccache") or false
+        _g.build_cache = build_cache
     end
     return build_cache or false
 end
 
+-- get cache key
+function cachekey(program, cppfile, cppflags, envs)
+    local items = {program}
+    table.insert(items, hash.sha256(cppfile))
+    table.join2(items, cppflags)
+    if envs then
+        for k, v in pairs(table.orderpairs(envs)) do
+            table.insert(items, k)
+            table.insert(items, v)
+        end
+    end
+    return (hash.uuid(table.concat(items, "")):gsub("-", "")):lower()
+end
+
+-- get cache root directory
+function rootdir()
+    return path.join(config.buildir(), ".cache")
+end
+
+-- clean cached files
+function clean()
+    os.rm(rootdir())
+end
+
+-- get object file
+function get(cachekey)
+    local objectfile_cached = path.join(rootdir(), cachekey:sub(1, 2):lower(), cachekey)
+    if os.isfile(objectfile_cached) then
+        return objectfile_cached
+    end
+end
+
+-- put object file
+function put(cachekey, objectfile)
+    local objectfile_cached = path.join(rootdir(), cachekey:sub(1, 2):lower(), cachekey)
+    os.cp(objectfile, objectfile_cached)
+end
