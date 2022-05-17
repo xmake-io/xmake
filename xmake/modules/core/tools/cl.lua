@@ -514,9 +514,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                 -- use cl/stdout as errors first from vstool.iorunv()
                 if type(errors) == "table" then
                     local errs = errors.stdout or ""
-                    if #errs:trim() == 0 then
-                        errs = errors.stderr or ""
-                    end
+                    errs = errs .. (errors.stderr or "")
                     errors = errs
                 end
 
