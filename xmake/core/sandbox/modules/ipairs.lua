@@ -30,13 +30,16 @@ function sandbox_ipairs(t)
     end
 
     -- wrap table and return iterator
+    if t == nil then
+        t = {}
+    end
     return function (t, i)
         i = i + 1
         local v = t[i]
         if v ~= nil then
             return i, v
         end
-    end, table.wrap(t), 0
+    end, t, 0
 end
 
 -- load module

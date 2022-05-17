@@ -410,6 +410,14 @@ function _preprocess(program, argv, opt)
         end
 
         -- get preprocessor flags
+        -- TODO fix precompiled header bug for /P + /FI
+        local target = opt.target
+        if target and (flag:startswith("-FI") or flag:startswith("/FI")) then
+            local pcheaderfile = target:get("pcheader") or target:get("pcxxheader")
+            if pcheaderfile then
+                flag = "-FI" .. path.absolute(pcheaderfile)
+            end
+        end
         table.insert(cppflags, flag)
 
         -- get compiler flags
@@ -499,7 +507,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
             local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
             if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-                return distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self})
+                return distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self, target = opt.target})
             else
                 return vstool.iorunv(program, argv, {envs = self:runenvs()})
             end

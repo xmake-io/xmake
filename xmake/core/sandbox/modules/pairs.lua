@@ -30,9 +30,12 @@ function sandbox_pairs(t)
     end
 
     -- wrap table and return iterator
+    if t == nil then
+        t = {}
+    end
     return function (t, i)
         return next(t, i)
-    end, table.wrap(t), nil
+    end, t, nil
 end
 
 -- load module

@@ -141,6 +141,9 @@ function compiler.load(sourcekind, target)
     end
     instance._LANGUAGE = result
 
+    -- init target (optional)
+    instance._TARGET = target
+
     -- init target kind
     instance._TARGETKIND = "object"
 
@@ -253,6 +256,7 @@ function compiler:compile(sourcefiles, objectfile, opt)
     end
 
     -- compile it
+    opt.target = self:target()
     return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.dependinfo, compflags, opt)
 end
 

@@ -392,6 +392,11 @@ function builder:_preprocess_flags(flags)
     return results
 end
 
+-- get the target
+function builder:target()
+    return self._TARGET
+end
+
 -- get tool name
 function builder:name()
     return self:_tool():name()

@@ -172,6 +172,9 @@ function linker.load(targetkind, sourcekinds, target)
     end
     instance._NAMEFLAGS = nameflags
 
+    -- init target (optional)
+    instance._TARGET = target
+
     -- init target kind
     instance._TARGETKIND = targetkind
 
@@ -202,6 +205,7 @@ end
 -- link the target file
 function linker:link(objectfiles, targetfile, opt)
     opt = opt or {}
+    opt.target = self:target()
     return sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, opt.linkflags or self:linkflags(opt), opt)
 end
 
