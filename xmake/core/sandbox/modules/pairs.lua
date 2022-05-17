@@ -25,13 +25,14 @@ local table = require("base/table")
 function sandbox_pairs(t)
 
     -- exists the custom ipairs?
-    if type(t) == "table" and t.pairs then
+    local is_table = type(t) == "table"
+    if is_table and t.pairs then
         return t:pairs()
     end
 
     -- wrap table and return iterator
-    if t == nil then
-        t = {}
+    if not is_table then
+        t = t ~= nil and {t} or {}
     end
     return function (t, i)
         return next(t, i)
