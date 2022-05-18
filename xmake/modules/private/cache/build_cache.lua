@@ -19,16 +19,27 @@
 --
 
 -- imports
+import("core.base.hashset")
 import("core.project.config")
 
 -- is enabled?
-function enabled()
+function is_enabled()
     local build_cache = _g.build_cache
     if build_cache == nil then
         build_cache = config.get("ccache") or false
         _g.build_cache = build_cache
     end
     return build_cache or false
+end
+
+-- is supported?
+function is_supported(sourcekind)
+    local sourcekinds = _g.sourcekinds
+    if sourcekinds == nil then
+        sourcekinds = hashset.of("cc", "cxx", "mm", "mxx")
+        _g.sourcekinds = sourcekinds
+    end
+    return sourcekinds:has(sourcekind)
 end
 
 -- get cache key
@@ -38,9 +49,14 @@ function cachekey(program, cppfile, cppflags, envs)
     table.sort(items)
     table.insert(items, hash.sha256(cppfile))
     if envs then
-        for k, v in pairs(table.orderpairs(envs)) do
-            table.insert(items, k)
-            table.insert(items, v)
+        local basename = path.basename(program)
+        if basename == "cl" then
+            for _, name in ipairs({"WindowsSDKVersion", "VCToolsVersion", "LIB"}) do
+                local val = envs[name]
+                if val then
+                    table.insert(items, val)
+                end
+            end
         end
     end
     return (hash.uuid(table.concat(items, "")):gsub("-", "")):lower()

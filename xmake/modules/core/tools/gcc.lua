@@ -28,6 +28,7 @@ import("core.project.project")
 import("core.language.language")
 import("private.tools.ccache")
 import("utils.progress")
+import("private.cache.build_cache")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 
 -- init it
@@ -507,9 +508,25 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             -- do compile
             local program, argv = compargv(self, sourcefile, objectfile, compflags)
             if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-                return distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self})
+                distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self})
+            elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
+                local _, _, _, _, cppfile, cppflags = _preprocess(program, argv, opt)
+                local cached = false
+                local cachekey
+                cachekey = build_cache.cachekey(program, cppfile, cppflags, self:runenvs())
+                local objectfile_cached = build_cache.get(cachekey)
+                if objectfile_cached then
+                    os.cp(objectfile_cached, objectfile)
+                    cached = true
+                end
+                if not cached then
+                    os.iorunv(program, argv, {envs = self:runenvs()})
+                    if cachekey then
+                        build_cache.put(cachekey, objectfile)
+                    end
+                end
             else
-                return os.iorunv(program, argv, {envs = self:runenvs()})
+                os.iorunv(program, argv, {envs = self:runenvs()})
             end
         end,
         catch

@@ -26,6 +26,7 @@ import("core.project.project")
 import("core.language.language")
 import("private.tools.vstool")
 import("private.tools.cl.parse_include")
+import("private.cache.build_cache")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 import("utils.progress")
 
@@ -509,6 +510,24 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                 local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
                 return distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
                     preprocess = _preprocess, tool = self, target = opt.target})
+            elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
+                local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
+                local outdata, errdata, _, _, cppfile, cppflags = _preprocess(program, argv, {envs = self:runenvs(), target = opt.target})
+                local cached = false
+                local cachekey
+                cachekey = build_cache.cachekey(program, cppfile, cppflags, self:runenvs())
+                local objectfile_cached = build_cache.get(cachekey)
+                if objectfile_cached then
+                    os.cp(objectfile_cached, objectfile)
+                    cached = true
+                end
+                if not cached then
+                    vstool.iorunv(program, winos.cmdargv(argv), {envs = self:runenvs()})
+                    if cachekey then
+                        build_cache.put(cachekey, objectfile)
+                    end
+                end
+                return outdata, errdata
             else
                 local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
                 return vstool.iorunv(program, argv, {envs = self:runenvs()})
