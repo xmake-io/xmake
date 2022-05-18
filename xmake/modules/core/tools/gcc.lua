@@ -26,7 +26,6 @@ import("core.base.global")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
-import("private.tools.ccache")
 import("utils.progress")
 import("private.cache.build_cache")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
@@ -473,7 +472,7 @@ function compargv(self, sourcefile, objectfile, flags)
     if (extension:startswith(".h") or extension == ".inl") then
         return _compargv_pch(self, sourcefile, objectfile, flags)
     end
-    return ccache.cmdargv(self:program(), table.join("-c", flags, "-o", objectfile, sourcefile))
+    return self:program(), table.join("-c", flags, "-o", objectfile, sourcefile)
 end
 
 -- compile the source file
