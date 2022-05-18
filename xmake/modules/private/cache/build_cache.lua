@@ -34,8 +34,9 @@ end
 -- get cache key
 function cachekey(program, cppfile, cppflags, envs)
     local items = {program}
-    table.insert(items, hash.sha256(cppfile))
     table.join2(items, cppflags)
+    table.sort(items)
+    table.insert(items, hash.sha256(cppfile))
     if envs then
         for k, v in pairs(table.orderpairs(envs)) do
             table.insert(items, k)
@@ -55,10 +56,22 @@ function clean()
     os.rm(rootdir())
 end
 
+-- get hit rate
+function hitrate()
+    local hit_count = (_g.hit_count or 0)
+    local total_count = (_g.total_count or 0)
+    if total_count > 0 then
+        return hit_count * 100 / total_count
+    end
+    return 0
+end
+
 -- get object file
 function get(cachekey)
+    _g.total_count = (_g.total_count or 0) + 1
     local objectfile_cached = path.join(rootdir(), cachekey:sub(1, 2):lower(), cachekey)
     if os.isfile(objectfile_cached) then
+        _g.hit_count = (_g.hit_count or 0) + 1
         return objectfile_cached
     end
 end
