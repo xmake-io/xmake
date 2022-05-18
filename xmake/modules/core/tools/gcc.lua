@@ -401,7 +401,7 @@ function _preprocess(program, argv, opt)
         table.insert(cppflags, flag)
 
         -- get compiler flags
-        if flag == "-MMD" or flag:startswith("-I") or flag:startswith("--sysroot=") then
+        if flag == "-MMD" or (flag:startswith("-I") and #flag > 2) or flag:startswith("--sysroot=") then
             skipped = 1
         elseif flag == "-MF" or
             flag == "-I" or flag == "-isystem" or flag == "-include" or flag == "-include-pch" or
@@ -419,6 +419,11 @@ function _preprocess(program, argv, opt)
     local objectfile = argv[#argv - 1]
     local sourcefile = argv[#argv]
     assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
+
+    -- is precompiled header?
+    if objectfile:endswith(".gch") or objectfile:endswith(".pch") then
+        return false
+    end
 
     -- do preprocess
     local cppfile = path.join(path.directory(objectfile), path.basename(objectfile) .. path.extension(sourcefile))

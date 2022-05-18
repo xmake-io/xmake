@@ -423,7 +423,7 @@ function _preprocess(program, argv, opt)
 
         -- get compiler flags
         if flag == "-showIncludes" or flag == "/showIncludes" or
-           flag:startswith("-I") or flag:startswith("/I") or
+           (flag:startswith("-I") and #flag > 2) or (flag:startswith("/I") and #flag > 2) or
            flag:startswith("-Yu") or flag:startswith("/Yu") or
            flag:startswith("-FI") or flag:startswith("/FI") or
            flag:startswith("-Fp") or flag:startswith("/Fp") or
@@ -440,6 +440,11 @@ function _preprocess(program, argv, opt)
     end
     local sourcefile = argv[#argv]
     assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
+
+    -- is precompiled header?
+    if objectfile:endswith(".pch") then
+        return false
+    end
 
     -- do preprocess
     local cppfile = path.join(path.directory(objectfile), path.basename(objectfile) .. path.extension(sourcefile))
