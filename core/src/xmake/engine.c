@@ -182,7 +182,7 @@ tb_int_t xm_path_is_absolute(lua_State* lua);
 
 // the hash functions
 tb_int_t xm_hash_uuid4(lua_State* lua);
-tb_int_t xm_hash_sha256(lua_State* lua);
+tb_int_t xm_hash_sha(lua_State* lua);
 tb_int_t xm_hash_md5(lua_State* lua);
 
 // the base64 functions
@@ -406,7 +406,7 @@ static luaL_Reg const g_path_functions[] =
 static luaL_Reg const g_hash_functions[] =
 {
     { "uuid4",          xm_hash_uuid4  }
-,   { "sha256",         xm_hash_sha256 }
+,   { "sha",            xm_hash_sha    }
 ,   { "md5",            xm_hash_md5    }
 ,   { tb_null,          tb_null        }
 };

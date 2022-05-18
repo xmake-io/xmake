@@ -99,7 +99,7 @@ xmake_C_FILES 			+= \
 						path/directory \
 						path/is_absolute \
 						hash/uuid4 \
-						hash/sha256 \
+						hash/sha \
 						hash/md5 \
 						base64/encode \
 						base64/decode \

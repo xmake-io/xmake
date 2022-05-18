@@ -39,6 +39,15 @@ function sandbox_hash.uuid4(name)
     return uuid
 end
 
+-- make sha1 from the given file or data
+function sandbox_hash.sha1(file_or_data)
+    local sha1, errors = hash.sha1(file_or_data)
+    if not sha1 then
+        raise("cannot make sha1 for %s, %s", file_or_data, errors or "unknown errors")
+    end
+    return sha1
+end
+
 -- make sha256 from the given file or data
 function sandbox_hash.sha256(file_or_data)
     local sha256, errors = hash.sha256(file_or_data)

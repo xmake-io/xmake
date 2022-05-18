@@ -15,14 +15,14 @@
  * Copyright (C) 2015-present, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        sha256.c
+ * @file        sha.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "sha256"
+#define TB_TRACE_MODULE_NAME                "sha"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -33,16 +33,19 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_hash_sha256(lua_State* lua)
+tb_int_t xm_hash_sha(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+    // get mode
+    tb_size_t mode = (tb_size_t)lua_tonumber(lua, 1);
+
     // is bytes? get data and size
-    if (lua_isnumber(lua, 1) && lua_isnumber(lua, 2))
+    if (lua_isnumber(lua, 2) && lua_isnumber(lua, 3))
     {
-        tb_byte_t const* data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tonumber(lua, 1);
-        tb_size_t size = (tb_size_t)lua_tonumber(lua, 2);
+        tb_byte_t const* data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tonumber(lua, 2);
+        tb_size_t size = (tb_size_t)lua_tonumber(lua, 3);
         if (!data || !size)
         {
             lua_pushnil(lua);
@@ -50,14 +53,14 @@ tb_int_t xm_hash_sha256(lua_State* lua)
             return 2;
         }
 
-        // compute sha256
+        // compute sha
         tb_sha_t sha;
         tb_byte_t buffer[32];
-        tb_sha_init(&sha, TB_SHA_MODE_SHA2_256);
+        tb_sha_init(&sha, mode);
         tb_sha_spak(&sha, data, size);
         tb_sha_exit(&sha, buffer, sizeof(buffer));
 
-        // make sha256 string
+        // make sha string
         tb_size_t i = 0;
         tb_size_t n = sha.digest_len << 2;
         tb_char_t s[256] = {0};
@@ -69,7 +72,7 @@ tb_int_t xm_hash_sha256(lua_State* lua)
     }
 
     // get the filename
-    tb_char_t const* filename = luaL_checkstring(lua, 1);
+    tb_char_t const* filename = luaL_checkstring(lua, 2);
     tb_check_return_val(filename, 0);
 
     // load data from file
@@ -80,11 +83,11 @@ tb_int_t xm_hash_sha256(lua_State* lua)
         // open stream
         if (tb_stream_open(stream))
         {
-            // init sha256
+            // init sha
             tb_sha_t sha;
-            tb_sha_init(&sha, TB_SHA_MODE_SHA2_256);
+            tb_sha_init(&sha, mode);
 
-            // read data and update sha256
+            // read data and update sha
             tb_byte_t data[TB_STREAM_BLOCK_MAXN];
             while (!tb_stream_beof(stream))
             {
@@ -107,11 +110,11 @@ tb_int_t xm_hash_sha256(lua_State* lua)
                 else break;
             }
 
-            // exit sha256
+            // exit sha
             tb_byte_t buffer[32];
             tb_sha_exit(&sha, buffer, sizeof(buffer));
 
-            // make sha256 string
+            // make sha string
             tb_size_t i = 0;
             tb_size_t n = sha.digest_len << 2;
             tb_char_t s[256] = {0};
