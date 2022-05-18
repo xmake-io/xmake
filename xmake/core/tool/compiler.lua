@@ -242,10 +242,8 @@ end
 -- compile the source files
 function compiler:compile(sourcefiles, objectfile, opt)
 
-    -- init options
-    opt = opt or {}
-
     -- get compile flags
+    opt = opt or {}
     local compflags = opt.compflags
     if not compflags then
         -- patch sourcefile to get flags of the given source file
@@ -256,6 +254,7 @@ function compiler:compile(sourcefiles, objectfile, opt)
     end
 
     -- compile it
+    opt = table.copy(opt)
     opt.target = self:target()
     return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.dependinfo, compflags, opt)
 end

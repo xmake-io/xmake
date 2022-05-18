@@ -205,8 +205,10 @@ end
 -- link the target file
 function linker:link(objectfiles, targetfile, opt)
     opt = opt or {}
+    local linkflags = opt.linkflags or self:linkflags(opt)
+    opt = table.copy(opt)
     opt.target = self:target()
-    return sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, opt.linkflags or self:linkflags(opt), opt)
+    return sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, linkflags, opt)
 end
 
 -- get the link arguments list
