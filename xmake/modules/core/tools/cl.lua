@@ -455,8 +455,43 @@ function _preprocess(program, argv, opt)
     table.insert(cppflags, "-P")
     table.insert(cppflags, "-Fi" .. cppfile)
     table.insert(cppflags, sourcefile)
-    local ok = try{ function() vstool.runv(program, winos.cmdargv(cppflags), opt); return true end}
-    return ok, sourcefile, objectfile, cppfile, flags
+    return try{ function()
+        local outdata, errdata = vstool.iorunv(program, winos.cmdargv(cppflags), opt)
+        return {outdata = outdata, errdata = errdata, sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags}
+    end}
+end
+
+-- do compile
+function _compile(self, sourcefile, objectfile, compflags, opt)
+    local cppinfo
+    if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
+        local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
+        cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
+            preprocess = _preprocess, tool = self, target = opt.target})
+    elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
+        local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
+        local cppinfo = _preprocess(program, argv, {envs = self:runenvs(), target = opt.target})
+        if cppinfo then
+            local cachekey
+            cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, self:runenvs())
+            local objectfile_cached = build_cache.get(cachekey)
+            if objectfile_cached then
+                os.cp(objectfile_cached, cppinfo.objectfile)
+            else
+                vstool.iorunv(program, winos.cmdargv(table.join(cppinfo.cppflags, "-Fo" .. cppinfo.objectfile, cppinfo.cppfile)), {envs = self:runenvs()})
+                if cachekey then
+                    build_cache.put(cachekey, cppinfo.objectfile)
+                end
+            end
+            os.rm(cppinfo.cppfile)
+        end
+    end
+    if cppinfo then
+        return cppinfo.outdata, cppinfo.errdata
+    else
+        local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
+        return vstool.iorunv(program, argv, {envs = self:runenvs()})
+    end
 end
 
 -- make the compile arguments list
@@ -510,35 +545,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                 end
             end
 
-            -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
-            local preprocessed = false
-            if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-                local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
-                preprocessed = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
-                    preprocess = _preprocess, tool = self, target = opt.target})
-            elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
-                local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
-                local ok, _, objectfile_real, cppfile, cppflags = _preprocess(program, argv, {envs = self:runenvs(), target = opt.target})
-                if ok then
-                    local cachekey
-                    cachekey = build_cache.cachekey(program, cppfile, cppflags, self:runenvs())
-                    local objectfile_cached = build_cache.get(cachekey)
-                    if objectfile_cached then
-                        os.cp(objectfile_cached, objectfile_real)
-                    else
-                        vstool.iorunv(program, winos.cmdargv(table.join(cppflags, "-Fo" .. objectfile_real, cppfile)), {envs = self:runenvs()})
-                        if cachekey then
-                            build_cache.put(cachekey, objectfile_real)
-                        end
-                    end
-                    preprocessed = true
-                    os.rm(cppfile)
-                end
-            end
-            if not preprocessed then
-                local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
-                return vstool.iorunv(program, argv, {envs = self:runenvs()})
-            end
+            -- do compile
+            return _compile(self, sourcefile, objectfile, compflags, opt)
         end,
         catch
         {

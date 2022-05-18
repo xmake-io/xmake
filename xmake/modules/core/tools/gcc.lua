@@ -435,8 +435,40 @@ function _preprocess(program, argv, opt)
     table.insert(cppflags, "-o")
     table.insert(cppflags, cppfile)
     table.insert(cppflags, sourcefile)
-    local ok = try {function () os.runv(program, cppflags, opt); return true end}
-    return ok, sourcefile, objectfile, cppfile, flags
+    return try {function ()
+        local outdata, errdata = os.iorunv(program, cppflags, opt)
+        return {outdata = outdata, errdata = errdata, sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags}
+    end}
+end
+
+-- do compile
+function _compile(self, sourcefile, objectfile, compflags, opt)
+    local cppinfo
+    local program, argv = compargv(self, sourcefile, objectfile, compflags)
+    if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
+        cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self})
+    elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
+        local cppinfo = _preprocess(program, argv, opt)
+        if cppinfo then
+            local cachekey
+            cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, self:runenvs())
+            local objectfile_cached = build_cache.get(cachekey)
+            if objectfile_cached then
+                os.cp(objectfile_cached, cppinfo.objectfile)
+            else
+                os.iorunv(program, table.join(cppinfo.cppflags, "-o", cppinfo.objectfile, cppinfo.cppfile), {envs = self:runenvs()})
+                if cachekey then
+                    build_cache.put(cachekey, cppinfo.objectfile)
+                end
+            end
+            os.rm(cppinfo.cppfile)
+        end
+    end
+    if cppinfo then
+        return cppinfo.outdata, cppinfo.errdata
+    else
+        return os.iorunv(program, argv, {envs = self:runenvs()})
+    end
 end
 
 -- make the compile arguments list for the precompiled header
@@ -506,31 +538,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             end
 
             -- do compile
-            local preprocessed = false
-            local program, argv = compargv(self, sourcefile, objectfile, compflags)
-            if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-                preprocessed = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self})
-            elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
-                local ok, _, objectfile_real, cppfile, cppflags = _preprocess(program, argv, opt)
-                if ok then
-                    local cachekey
-                    cachekey = build_cache.cachekey(program, cppfile, cppflags, self:runenvs())
-                    local objectfile_cached = build_cache.get(cachekey)
-                    if objectfile_cached then
-                        os.cp(objectfile_cached, objectfile_real)
-                    else
-                        os.iorunv(program, table.join(cppflags, "-o", objectfile_real, cppfile), {envs = self:runenvs()})
-                        if cachekey then
-                            build_cache.put(cachekey, objectfile_real)
-                        end
-                    end
-                    preprocessed = true
-                    os.rm(cppfile)
-                end
-            end
-            if not preprocessed then
-                os.iorunv(program, argv, {envs = self:runenvs()})
-            end
+            return _compile(self, sourcefile, objectfile, compflags, opt)
         end,
         catch
         {
@@ -564,7 +572,6 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                     results = results .. "\n  ${yellow}> in ${bright}" .. sourcefile
                 end
                 raise(results)
-
             end
         },
         finally
