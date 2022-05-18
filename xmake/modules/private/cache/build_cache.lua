@@ -45,7 +45,9 @@ end
 -- get cache key
 function cachekey(program, cppfile, cppflags, envs)
     local items = {program}
-    table.join2(items, cppflags)
+    for _, cppflag in ipairs(cppflags) do
+        table.insert(items, cppflag)
+    end
     table.sort(items)
     table.insert(items, hash.sha256(cppfile))
     if envs then
@@ -59,12 +61,12 @@ function cachekey(program, cppfile, cppflags, envs)
             end
         end
     end
-    return (hash.uuid(table.concat(items, "")):gsub("-", "")):lower()
+    return (hash.uuid(table.concat(items, "")):gsub("-", ""))
 end
 
 -- get cache root directory
 function rootdir()
-    return path.join(config.buildir(), ".cache")
+    return path.join(config.buildir(), ".build_cache")
 end
 
 -- clean cached files
