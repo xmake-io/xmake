@@ -512,19 +512,19 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                     preprocess = _preprocess, tool = self, target = opt.target})
             elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
                 local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
-                local outdata, errdata, _, _, cppfile, cppflags = _preprocess(program, argv, {envs = self:runenvs(), target = opt.target})
+                local outdata, errdata, _, objectfile_real, cppfile, cppflags = _preprocess(program, argv, {envs = self:runenvs(), target = opt.target})
                 local cached = false
                 local cachekey
                 cachekey = build_cache.cachekey(program, cppfile, cppflags, self:runenvs())
                 local objectfile_cached = build_cache.get(cachekey)
                 if objectfile_cached then
-                    os.cp(objectfile_cached, objectfile)
+                    os.cp(objectfile_cached, objectfile_real)
                     cached = true
                 end
                 if not cached then
                     vstool.iorunv(program, winos.cmdargv(argv), {envs = self:runenvs()})
                     if cachekey then
-                        build_cache.put(cachekey, objectfile)
+                        build_cache.put(cachekey, objectfile_real)
                     end
                 end
                 return outdata, errdata

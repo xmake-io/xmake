@@ -509,19 +509,19 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
                 distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self})
             elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
-                local _, _, _, _, cppfile, cppflags = _preprocess(program, argv, opt)
+                local _, _, _, objectfile_real, cppfile, cppflags = _preprocess(program, argv, opt)
                 local cached = false
                 local cachekey
                 cachekey = build_cache.cachekey(program, cppfile, cppflags, self:runenvs())
                 local objectfile_cached = build_cache.get(cachekey)
                 if objectfile_cached then
-                    os.cp(objectfile_cached, objectfile)
+                    os.cp(objectfile_cached, objectfile_real)
                     cached = true
                 end
                 if not cached then
                     os.iorunv(program, argv, {envs = self:runenvs()})
                     if cachekey then
-                        build_cache.put(cachekey, objectfile)
+                        build_cache.put(cachekey, objectfile_real)
                     end
                 end
             else
