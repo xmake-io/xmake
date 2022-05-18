@@ -358,11 +358,7 @@ end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags)
-
-    -- ensure the target directory
     os.mkdir(path.directory(targetfile))
-
-    -- link it
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
     os.runv(program, argv, {envs = self:runenvs()})
 end
@@ -425,7 +421,7 @@ function _preprocess(program, argv, opt)
     assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
 
     -- do preprocess
-    local cppfile = objectfile .. ".p"
+    local cppfile = path.join(path.directory(objectfile), path.basename(objectfile) .. path.extension(sourcefile))
     local cppfiledir = path.directory(cppfile)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
@@ -434,8 +430,8 @@ function _preprocess(program, argv, opt)
     table.insert(cppflags, "-o")
     table.insert(cppflags, cppfile)
     table.insert(cppflags, sourcefile)
-    local outdata, errdata = os.iorunv(program, cppflags, opt)
-    return outdata, errdata, sourcefile, objectfile, cppfile, flags
+    local ok = try {function () os.runv(program, cppflags, opt); return true end}
+    return ok, sourcefile, objectfile, cppfile, flags
 end
 
 -- make the compile arguments list for the precompiled header
@@ -505,26 +501,29 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             end
 
             -- do compile
+            local preprocessed = false
             local program, argv = compargv(self, sourcefile, objectfile, compflags)
             if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-                distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self})
+                preprocessed = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self})
             elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
-                local _, _, _, objectfile_real, cppfile, cppflags = _preprocess(program, argv, opt)
-                local cached = false
-                local cachekey
-                cachekey = build_cache.cachekey(program, cppfile, cppflags, self:runenvs())
-                local objectfile_cached = build_cache.get(cachekey)
-                if objectfile_cached then
-                    os.cp(objectfile_cached, objectfile_real)
-                    cached = true
-                end
-                if not cached then
-                    os.iorunv(program, argv, {envs = self:runenvs()})
-                    if cachekey then
-                        build_cache.put(cachekey, objectfile_real)
+                local ok, _, objectfile_real, cppfile, cppflags = _preprocess(program, argv, opt)
+                if ok then
+                    local cachekey
+                    cachekey = build_cache.cachekey(program, cppfile, cppflags, self:runenvs())
+                    local objectfile_cached = build_cache.get(cachekey)
+                    if objectfile_cached then
+                        os.cp(objectfile_cached, objectfile_real)
+                    else
+                        os.iorunv(program, table.join(cppflags, "-o", objectfile_real, cppfile), {envs = self:runenvs()})
+                        if cachekey then
+                            build_cache.put(cachekey, objectfile_real)
+                        end
                     end
+                    preprocessed = true
+                    os.rm(cppfile)
                 end
-            else
+            end
+            if not preprocessed then
                 os.iorunv(program, argv, {envs = self:runenvs()})
             end
         end,

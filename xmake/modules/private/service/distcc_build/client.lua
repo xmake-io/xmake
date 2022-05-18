@@ -232,25 +232,26 @@ function distcc_build_client:compile(program, argv, opt)
     -- do preprocess
     opt = opt or {}
     local preprocess = assert(opt.preprocess, "preprocessor not found!")
-    local outdata, errdata, sourcefile, objectfile, cppfile, cppflags = preprocess(program, argv, opt)
-
-    -- get objectfile from the build cache first
-    local cached = false
-    local cachekey
-    if build_cache.is_enabled() then
-        cachekey = build_cache.cachekey(program, cppfile, cppflags, opt.envs)
-        local objectfile_cached = build_cache.get(cachekey)
-        if objectfile_cached then
-            os.cp(objectfile_cached, objectfile)
-            cached = true
+    local ok, sourcefile, objectfile, cppfile, cppflags = preprocess(program, argv, opt)
+    if ok then
+        -- get objectfile from the build cache first
+        local cached = false
+        local cachekey
+        if build_cache.is_enabled() then
+            cachekey = build_cache.cachekey(program, cppfile, cppflags, opt.envs)
+            local objectfile_cached = build_cache.get(cachekey)
+            if objectfile_cached then
+                os.cp(objectfile_cached, objectfile)
+                cached = true
+            end
         end
-    end
 
-    -- do distcc compilation
-    if not cached then
-        session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
-        if cachekey then
-            build_cache.put(cachekey, objectfile)
+        -- do distcc compilation
+        if not cached then
+            session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
+            if cachekey then
+                build_cache.put(cachekey, objectfile)
+            end
         end
     end
 
@@ -259,7 +260,7 @@ function distcc_build_client:compile(program, argv, opt)
 
     -- unlock this host
     self:_host_status_unlock(host)
-    return outdata, errdata
+    return ok
 end
 
 -- get the status
