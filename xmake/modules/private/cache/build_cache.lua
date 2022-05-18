@@ -49,7 +49,7 @@ function cachekey(program, cppfile, cppflags, envs)
         table.insert(items, cppflag)
     end
     table.sort(items)
-    table.insert(items, hash.sha1(cppfile))
+    table.insert(items, hash.sha1(cppfile)) -- TODO use blake3
     if envs then
         local basename = path.basename(program)
         if basename == "cl" then

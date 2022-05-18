@@ -431,6 +431,7 @@ function _preprocess(program, argv, opt)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
     end
+    -- TODO try -fdirectives-only
     table.insert(cppflags, "-E")
     table.insert(cppflags, "-o")
     table.insert(cppflags, cppfile)
