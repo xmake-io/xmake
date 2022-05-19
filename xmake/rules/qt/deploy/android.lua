@@ -151,12 +151,12 @@ function main(target, opt)
         settings_file:print('   "target-architecture": "%s",', target_arch)
         settings_file:print('   "qml-root-path": "%s",', _escape_path(os.projectdir()))
         -- for 6.2.x
-        local qmlimportscanner = path.join(qt.libexecdir, "qmlimportscanner" .. (is_host("windows") and ".exe" or ""))
+        local qmlimportscanner = path.join(qt.libexecdir, "qmlimportscanner")
         if not os.isexec(qmlimportscanner) and qt.libexecdir_host then
-            qmlimportscanner = path.join(qt.libexecdir_host, "qmlimportscanner" .. (is_host("windows") and ".exe" or ""))
+            qmlimportscanner = path.join(qt.libexecdir_host, "qmlimportscanner")
         end
         if os.isexec(qmlimportscanner) then
-            settings_file:print('   "qml-importscanner-binary": "%s",', qmlimportscanner)
+            settings_file:print('   "qml-importscanner-binary": "%s",', _escape_path(qmlimportscanner))
         end
         local minsdkversion = target:values("qt.android.minsdkversion")
         if minsdkversion then
