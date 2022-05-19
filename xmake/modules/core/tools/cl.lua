@@ -488,11 +488,8 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
     if cppinfo then
         return cppinfo.outdata, cppinfo.errdata
     else
-        local dt = os.mclock()
         local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
         local outdata, errdata = vstool.iorunv(program, argv, {envs = self:runenvs()})
-
-                print("fallback", os.mclock() - dt)
         return outdata, errdata
     end
 end
