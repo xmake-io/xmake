@@ -25,6 +25,7 @@ import("core.base.semver")
 import("core.project.config")
 import("core.project.depend")
 import("core.tool.toolchain")
+import("lib.detect.find_file")
 import("utils.progress")
 
 -- escape path
@@ -158,6 +159,19 @@ function main(target, opt)
         if os.isexec(qmlimportscanner) then
             settings_file:print('   "qml-importscanner-binary": "%s",', _escape_path(qmlimportscanner))
         end
+        -- for 6.3.x
+        local rcc = path.join(qt.bindir, "rcc")
+        if not os.isexec(rcc) and qt.bindir_host then
+            rcc = path.join(qt.bindir_host, "rcc")
+        end
+        if os.isexec(rcc) then
+            settings_file:print('   "rcc-binary": "%s",', _escape_path(rcc))
+        end
+        local platformplugin = find_file("libplugins_platforms_qtforandroid_" .. target_arch .. "*", path.join(qt.sdkdir, "plugins", "platforms"))
+        if platformplugin then
+            settings_file:print('   "deployment-dependencies": {"%s":"%s"},', target_arch, _escape_path(platformplugin))
+        end
+
         local minsdkversion = target:values("qt.android.minsdkversion")
         if minsdkversion then
             settings_file:print('    "android-min-sdk-version": "%s",', tostring(minsdkversion))
