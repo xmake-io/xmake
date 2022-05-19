@@ -158,6 +158,19 @@ function main(target, opt)
         if os.isexec(qmlimportscanner) then
             settings_file:print('   "qml-importscanner-binary": "%s",', _escape_path(qmlimportscanner))
         end
+        -- for 6.3.x
+        local rcc = path.join(qt.bindir, "rcc")
+        if not os.isexec(rcc) and qt.bindir_host then
+            rcc = path.join(qt.bindir_host, "rcc")
+        end
+        if os.isexec(rcc) then
+            settings_file:print('   "rcc-binary": "%s",', _escape_path(rcc))
+        end
+        local platformplugin = os.files(path.join(qt.sdkdir, "plugins", "platforms", "libplugins_platforms_qtforandroid_" .. target_arch .. "*"))
+        if #platformplugin > 0 then
+            settings_file:print('   "deployment-dependencies": {"%s":"%s"},', target_arch, _escape_path(platformplugin[1]))
+        end
+
         local minsdkversion = target:values("qt.android.minsdkversion")
         if minsdkversion then
             settings_file:print('    "android-min-sdk-version": "%s",', tostring(minsdkversion))
