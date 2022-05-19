@@ -483,8 +483,7 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
         local t = os.mclock()
         cppinfo = _preprocess(program, argv, {envs = self:runenvs(), tool = self})
         if cppinfo then
-            local cachekey
-            cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, self:runenvs())
+            local cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, self:runenvs())
             local objectfile_cached = build_cache.get(cachekey)
             if objectfile_cached then
                 os.cp(objectfile_cached, cppinfo.objectfile)
