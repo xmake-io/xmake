@@ -114,17 +114,25 @@ function _find_sdkdir(sdkdir, sdkver)
         table.insert(paths, "~/Qt*")
     end
 
+    -- special case for android on windows, where qmake is a .bat from version 6.3
+    if is_host("windows") and is_plat("android") then
+        local qmake = find_file("qmake.bat", paths, {suffixes = subdirs})
+        if qmake then
+            return path.directory(path.directory(qmake)), path.filename(qmake)
+        end
+    end
+
     -- attempt to find qmake
     local qmake = find_file(is_host("windows") and "qmake.exe" or "qmake", paths, {suffixes = subdirs})
     if qmake then
-        return path.directory(path.directory(qmake))
+        return path.directory(path.directory(qmake)), path.filename(qmake)
     end
 end
 
 -- find qmake
 function _find_qmake(sdkdir, sdkver)
-    sdkdir = _find_sdkdir(sdkdir, sdkver)
-    local qmake = find_tool("qmake", {paths = sdkdir and path.join(sdkdir, "bin")})
+    local sdkdir, qmakefile = _find_sdkdir(sdkdir, sdkver)
+    local qmake = find_tool(qmakefile, {paths = sdkdir and path.join(sdkdir, "bin")})
     if qmake then
         return qmake.program
     end
@@ -175,8 +183,8 @@ function _find_qt(sdkdir, sdkver)
     local includedir = qtenvs.QT_INSTALL_HEADERS
     local mkspecsdir = qtenvs.QMAKE_MKSPECS or path.join(qtenvs.QT_INSTALL_ARCHDATA, "mkspecs")
     -- for 6.2
-    local bindir_host
-    if libexecdir and is_plat("android", "iphoneos") then
+    local bindir_host = qtenvs.QT_HOST_BINS
+    if not bindir_host and libexecdir and is_plat("android", "iphoneos") then
         local rootdir = path.directory(path.directory(bindir))
         if is_host("macosx") then
             bindir_host = path.join(rootdir, "macos", "bin")
@@ -184,8 +192,8 @@ function _find_qt(sdkdir, sdkver)
             -- TODO
         end
     end
-    local libexecdir_host
-    if libexecdir and is_plat("android", "iphoneos") then
+    local libexecdir_host = qtenvs.QT_HOST_LIBEXECS
+    if not libexecdir_host and libexecdir and is_plat("android", "iphoneos") then
         local rootdir = path.directory(path.directory(libexecdir))
         if is_host("macosx") then
             libexecdir_host = path.join(rootdir, "macos", "libexec")
