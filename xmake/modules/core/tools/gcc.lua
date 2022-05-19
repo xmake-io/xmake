@@ -425,6 +425,17 @@ function _preprocess(program, argv, opt)
         return false
     end
 
+    -- enable "-fdirectives-only"?
+    local tool = opt.tool
+    local fdirectives_only = _g.fdirectives_only
+    local is_gcc = false
+    if tool and (tool:name() == "gcc" or tool:name() == "gxx") then
+        is_gcc = true
+    end
+    if fdirectives_only ~= false and is_gcc then
+        fdirectives_only = true
+    end
+
     -- do preprocess
     local cppfile = path.join(path.directory(objectfile), path.basename(objectfile) .. path.extension(sourcefile))
     local cppfiledir = path.directory(cppfile)
@@ -434,22 +445,32 @@ function _preprocess(program, argv, opt)
     table.insert(cppflags, "-E")
     -- it will be faster for preprocessing
     -- when preprocessing, handle directives, but do not expand macros.
-    table.insert(cppflags, "-fdirectives-only")
+    if fdirectives_only then
+        table.insert(cppflags, "-fdirectives-only")
+    end
     table.insert(cppflags, "-o")
     table.insert(cppflags, cppfile)
     table.insert(cppflags, sourcefile)
 
     -- we need mark as it when compiling the preprocessed source file
     -- it will indicate to the preprocessor that the input file has already been preprocessed.
-    table.insert(flags, "-fpreprocessed")
+    if is_gcc then
+        table.insert(flags, "-fpreprocessed")
+    end
     -- with -fpreprocessed, predefinition of command line and most builtin macros is disabled.
-    table.insert(flags, "-fdirectives-only")
+    if fdirectives_only then
+        table.insert(flags, "-fdirectives-only")
+    end
 
     -- do preprocess
-    return try {function ()
+    local cppinfo = try {function ()
         local outdata, errdata = os.iorunv(program, cppflags, opt)
         return {outdata = outdata, errdata = errdata, sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags}
     end}
+    if not cppinfo then
+        _g.fdirectives_only = false
+    end
+    return cppinfo
 end
 
 -- do compile
@@ -459,7 +480,8 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
     if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
         cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self})
     elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
-        local cppinfo = _preprocess(program, argv, opt)
+        local t = os.mclock()
+        cppinfo = _preprocess(program, argv, {envs = self:runenvs(), tool = self})
         if cppinfo then
             local cachekey
             cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, self:runenvs())

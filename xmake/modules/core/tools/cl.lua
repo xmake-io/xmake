@@ -470,7 +470,7 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
             preprocess = _preprocess, tool = self, target = opt.target})
     elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
         local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
-        local cppinfo = _preprocess(program, argv, {envs = self:runenvs(), target = opt.target})
+        cppinfo = _preprocess(program, argv, {envs = self:runenvs(), target = opt.target})
         if cppinfo then
             local cachekey
             cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, self:runenvs())
