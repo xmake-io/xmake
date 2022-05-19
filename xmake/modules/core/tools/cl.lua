@@ -618,7 +618,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
     if dependinfo then
         if depfile and os.isfile(depfile) then
             dependinfo.depfiles_cl_json = io.readfile(depfile)
-            os.rm(depfile)
+            os.tryrm(depfile)
         elseif outdata then
             dependinfo.depfiles_cl = outdata
         end
