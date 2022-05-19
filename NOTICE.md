@@ -61,6 +61,14 @@ which can be obtained at:
   * HOMEPAGE:
     * https://www.lz4.org/
 
+This product depends on 'xxHash', Extremely fast non-cryptographic hash algorithm,
+which can be obtained at:
+
+  * LICENSE:
+    * https://github.com/Cyan4973/xxHash/blob/dev/LICENSE
+  * HOMEPAGE:
+    * https://www.xxhash.com/
+
 This product depends on 'tbox', The Treasure Box Library,
 which can be obtained at:
 

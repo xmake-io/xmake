@@ -470,14 +470,22 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
             preprocess = _preprocess, tool = self, target = opt.target})
     elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
         local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
+        local dt = os.mclock()
         cppinfo = _preprocess(program, argv, {envs = self:runenvs(), target = opt.target})
+        print("preprocess", os.mclock() - dt)
         if cppinfo then
             local cachekey
+            dt = os.mclock()
             cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, self:runenvs())
+        print("cachekey", os.mclock() - dt)
+            dt = os.mclock()
             local objectfile_cached = build_cache.get(cachekey)
             if objectfile_cached then
+
                 os.cp(objectfile_cached, cppinfo.objectfile)
+        print("get", os.mclock() - dt)
             else
+                print("put")
                 vstool.iorunv(program, winos.cmdargv(table.join(cppinfo.cppflags, "-Fo" .. cppinfo.objectfile, cppinfo.cppfile)), {envs = self:runenvs()})
                 if cachekey then
                     build_cache.put(cachekey, cppinfo.objectfile)
@@ -489,8 +497,12 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
     if cppinfo then
         return cppinfo.outdata, cppinfo.errdata
     else
+        local dt = os.mclock()
         local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
-        return vstool.iorunv(program, argv, {envs = self:runenvs()})
+        local outdata, errdata = vstool.iorunv(program, argv, {envs = self:runenvs()})
+
+                print("fallback", os.mclock() - dt)
+        return outdata, errdata
     end
 end
 

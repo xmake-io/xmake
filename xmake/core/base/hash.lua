@@ -29,6 +29,7 @@ local bytes = require("base/bytes")
 -- save metatable and builtin functions
 hash._md5 = hash._md5 or hash.md5
 hash._sha = hash._sha or hash.sha
+hash._xxhash = hash._xxhash or hash.xxhash
 
 -- make md5 from the given file or data
 function hash.md5(file_or_data)
@@ -65,6 +66,32 @@ function hash.sha256(file_or_data)
         hashstr, errors = hash._sha(256, dataaddr, datasize)
     else
         hashstr, errors = hash._sha(256, file_or_data)
+    end
+    return hashstr, errors
+end
+
+-- make xxhash64 from the given file or data
+function hash.xxhash64(file_or_data)
+    local hashstr, errors
+    if bytes.instance_of(file_or_data) then
+        local datasize = file_or_data:size()
+        local dataaddr = file_or_data:caddr()
+        hashstr, errors = hash._xxhash(64, dataaddr, datasize)
+    else
+        hashstr, errors = hash._xxhash(64, file_or_data)
+    end
+    return hashstr, errors
+end
+
+-- make xxhash128 from the given file or data
+function hash.xxhash128(file_or_data)
+    local hashstr, errors
+    if bytes.instance_of(file_or_data) then
+        local datasize = file_or_data:size()
+        local dataaddr = file_or_data:caddr()
+        hashstr, errors = hash._xxhash(128, dataaddr, datasize)
+    else
+        hashstr, errors = hash._xxhash(128, file_or_data)
     end
     return hashstr, errors
 end

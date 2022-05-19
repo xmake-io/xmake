@@ -66,6 +66,24 @@ function sandbox_hash.md5(file_or_data)
     return md5
 end
 
+-- make xxhash64 from the given file or data
+function sandbox_hash.xxhash64(file_or_data)
+    local xxhash64, errors = hash.xxhash64(file_or_data)
+    if not xxhash64 then
+        raise("cannot make xxhash64 for %s, %s", file_or_data, errors or "unknown errors")
+    end
+    return xxhash64
+end
+
+-- make xxhash128 from the given file or data
+function sandbox_hash.xxhash128(file_or_data)
+    local xxhash128, errors = hash.xxhash128(file_or_data)
+    if not xxhash128 then
+        raise("cannot make xxhash128 for %s, %s", file_or_data, errors or "unknown errors")
+    end
+    return xxhash128
+end
+
 -- return module
 return sandbox_hash
 
