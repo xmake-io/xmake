@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.bytes")
 import("core.base.hashset")
 import("core.project.config")
 
@@ -49,7 +50,7 @@ function cachekey(program, cppfile, cppflags, envs)
         table.insert(items, cppflag)
     end
     table.sort(items)
-    table.insert(items, hash.sha1(cppfile)) -- TODO use blake3
+    table.insert(items, hash.md5(cppfile)) -- TODO use blake3
     if envs then
         local basename = path.basename(program)
         if basename == "cl" then
@@ -61,7 +62,7 @@ function cachekey(program, cppfile, cppflags, envs)
             end
         end
     end
-    return (hash.uuid(table.concat(items, "")):gsub("-", ""))
+    return hash.md5(bytes(table.concat(items, "")))
 end
 
 -- get cache root directory
