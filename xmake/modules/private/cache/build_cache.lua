@@ -50,7 +50,7 @@ function cachekey(program, cppfile, cppflags, envs)
         table.insert(items, cppflag)
     end
     table.sort(items)
-    table.insert(items, hash.md5(cppfile)) -- TODO use blake3
+    table.insert(items, hash.xxhash128(cppfile))
     if envs then
         local basename = path.basename(program)
         if basename == "cl" then
@@ -62,7 +62,7 @@ function cachekey(program, cppfile, cppflags, envs)
             end
         end
     end
-    return hash.md5(bytes(table.concat(items, "")))
+    return hash.xxhash128(bytes(table.concat(items, "")))
 end
 
 -- get cache root directory
