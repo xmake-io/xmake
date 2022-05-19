@@ -431,11 +431,21 @@ function _preprocess(program, argv, opt)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
     end
-    -- TODO try -fdirectives-only
     table.insert(cppflags, "-E")
+    -- it will be faster for preprocessing
+    -- when preprocessing, handle directives, but do not expand macros.
+    table.insert(cppflags, "-fdirectives-only")
     table.insert(cppflags, "-o")
     table.insert(cppflags, cppfile)
     table.insert(cppflags, sourcefile)
+
+    -- we need mark as it when compiling the preprocessed source file
+    -- it will indicate to the preprocessor that the input file has already been preprocessed.
+    table.insert(flags, "-fpreprocessed")
+    -- with -fpreprocessed, predefinition of command line and most builtin macros is disabled.
+    table.insert(flags, "-fdirectives-only")
+
+    -- do preprocess
     return try {function ()
         local outdata, errdata = os.iorunv(program, cppflags, opt)
         return {outdata = outdata, errdata = errdata, sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags}
