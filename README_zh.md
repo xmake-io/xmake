@@ -81,7 +81,7 @@ Xmake 是一个基于 Lua 的轻量级跨平台构建工具。
 Xmake = Build backend + Project Generator + Package Manager + [Remote|Distributed] Build + Cache
 ```
 
-尽管不是很准确，但我们也可以把 Xmake 按下面的方式来理解：
+尽管不是很准确，但我们还是可以把 Xmake 按下面的方式来理解：
 
 ```
 Xmake ~= Make/Ninja + CMake/Meson + Vcpkg/Conan + distcc + ccache

@@ -80,7 +80,7 @@ We can use it to build projects directly like Make/Ninja or generate project fil
 Xmake = Build backend + Project Generator + Package Manager + [Remote|Distributed] Build + Cache
 ```
 
-Although not very precise, we can understand Xmake in the following way:
+Although not very precise, we can still understand Xmake in the following way:
 
 ```
 Xmake ~= Make/Ninja + CMake/Meson + Vcpkg/Conan + distcc + ccache
