@@ -266,7 +266,21 @@ function distcc_build_client:compile(program, argv, opt)
 
     -- unlock this host
     self:_host_status_unlock(host)
-    return cppinfo, build_in_local
+
+    -- build in local
+    if build_in_local then
+        if cppinfo and build_in_local then
+            local compile = assert(opt.compile, "compiler not found!")
+            compile(program, cppinfo, opt)
+            if build_cache.is_enabled() then
+                local cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, opt.envs)
+                if cachekey then
+                    build_cache.put(cachekey, cppinfo.objectfile)
+                end
+            end
+        end
+    end
+    return cppinfo
 end
 
 -- get the status

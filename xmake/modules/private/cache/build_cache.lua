@@ -100,3 +100,28 @@ function put(cachekey, objectfile)
     local objectfile_cached = path.join(rootdir(), cachekey:sub(1, 2):lower(), cachekey)
     os.cp(objectfile, objectfile_cached)
 end
+
+-- build with cache
+function build(program, argv, opt)
+
+    -- do preprocess
+    opt = opt or {}
+    local preprocess = assert(opt.preprocess, "preprocessor not found!")
+    local compile = assert(opt.compile, "compiler not found!")
+    local cppinfo = preprocess(program, argv, opt)
+    if cppinfo then
+        local cachekey = cachekey(program, cppinfo.cppfile, cppinfo.cppflags, opt.envs)
+        local objectfile_cached = get(cachekey)
+        if objectfile_cached then
+            os.cp(objectfile_cached, cppinfo.objectfile)
+        else
+            -- do compile
+            compile(program, cppinfo, opt)
+            if cachekey then
+                put(cachekey, cppinfo.objectfile)
+            end
+        end
+        os.rm(cppinfo.cppfile)
+    end
+    return cppinfo
+end

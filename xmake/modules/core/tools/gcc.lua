@@ -473,39 +473,21 @@ function _preprocess(program, argv, opt)
     return cppinfo
 end
 
+-- compile preprocessed file
+function _compile_preprocessed_file(program, cppinfo, opt)
+    os.iorunv(program, table.join(cppinfo.cppflags, "-o", cppinfo.objectfile, cppinfo.cppfile), opt)
+end
+
 -- do compile
 function _compile(self, sourcefile, objectfile, compflags, opt)
     local cppinfo
-    local build_in_local
     local program, argv = compargv(self, sourcefile, objectfile, compflags)
     if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-        cppinfo, build_in_local = distcc_build_client.singleton():compile(program, argv,
-            {envs = self:runenvs(), preprocess = _preprocess, tool = self, remote = true})
-        if cppinfo and build_in_local then
-            os.iorunv(program, table.join(cppinfo.cppflags, "-o", cppinfo.objectfile, cppinfo.cppfile), {envs = self:runenvs()})
-            if build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
-                local cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, self:runenvs())
-                if cachekey then
-                    build_cache.put(cachekey, cppinfo.objectfile)
-                end
-            end
-        end
+        cppinfo = distcc_build_client.singleton():compile(program, argv,
+            {envs = self:runenvs(), preprocess = _preprocess, compile = _compile_preprocessed_file, remote = true, tool = self})
     elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
-        local t = os.mclock()
-        cppinfo = _preprocess(program, argv, {envs = self:runenvs(), tool = self})
-        if cppinfo then
-            local cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, self:runenvs())
-            local objectfile_cached = build_cache.get(cachekey)
-            if objectfile_cached then
-                os.cp(objectfile_cached, cppinfo.objectfile)
-            else
-                os.iorunv(program, table.join(cppinfo.cppflags, "-o", cppinfo.objectfile, cppinfo.cppfile), {envs = self:runenvs()})
-                if cachekey then
-                    build_cache.put(cachekey, cppinfo.objectfile)
-                end
-            end
-            os.rm(cppinfo.cppfile)
-        end
+        cppinfo = build_cache.build(program, argv,
+            {envs = self:runenvs(), preprocess = _preprocess, compile = _compile_preprocessed_file})
     end
     if cppinfo then
         return cppinfo.outdata, cppinfo.errdata
