@@ -188,7 +188,7 @@ else
         cd $projectdir || my_exit 'Chdir Error'
         git checkout -qf "$2"
         cd - || my_exit 'Chdir Error'
-    else 
+    else
         git clone --depth=1 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     fi
 fi

@@ -80,6 +80,12 @@ We can use it to build projects directly like Make/Ninja or generate project fil
 Xmake = Build backend + Project Generator + Package Manager + [Remote|Distributed] Build + Cache
 ```
 
+Although not very precise, we can understand Xmake in the following way:
+
+```
+Xmake ~= Make/Ninja + CMake/Meson + Vcpkg/Conan + distcc + ccache
+```
+
 If you want to know more, please refer to: [Documents](https://xmake.io/#/getting_started), [Github](https://github.com/xmake-io/xmake) and [Gitee](https://gitee.com/tboox/xmake). You are also welcome to join our [community](https://xmake.io/#/about/contact).
 
 ![](https://xmake.io/assets/img/index/xmake-basic-render.gif)
