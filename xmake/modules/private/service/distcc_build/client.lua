@@ -233,6 +233,7 @@ function distcc_build_client:compile(program, argv, opt)
     opt = opt or {}
     local preprocess = assert(opt.preprocess, "preprocessor not found!")
     local cppinfo = preprocess(program, argv, opt)
+    local build_in_local = false
     if cppinfo then
         -- get objectfile from the build cache first
         local cached = false
@@ -248,9 +249,14 @@ function distcc_build_client:compile(program, argv, opt)
 
         -- do distcc compilation
         if not cached then
-            session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags, opt)
-            if cachekey then
-                build_cache.put(cachekey, cppinfo.objectfile)
+            -- we just compile the large preprocessed file in remote
+            if os.filesize(cppinfo.cppfile) > 4096 then
+                session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags, opt)
+                if cachekey then
+                    build_cache.put(cachekey, cppinfo.objectfile)
+                end
+            else
+                build_in_local = true
             end
         end
     end
@@ -260,7 +266,7 @@ function distcc_build_client:compile(program, argv, opt)
 
     -- unlock this host
     self:_host_status_unlock(host)
-    return cppinfo
+    return cppinfo, build_in_local
 end
 
 -- get the status
