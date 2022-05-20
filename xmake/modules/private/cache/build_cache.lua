@@ -67,7 +67,7 @@ end
 
 -- get cache root directory
 function rootdir()
-    local cachedir = config.get("cachedir")
+    local cachedir = config.get("ccachedir")
     return cachedir or path.join(config.buildir(), ".build_cache")
 end
 
