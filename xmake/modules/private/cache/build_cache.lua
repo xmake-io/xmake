@@ -85,6 +85,21 @@ function hitrate()
     return 0
 end
 
+
+-- dump stats
+function dump_stats()
+    local hit_count = (_g.hit_count or 0)
+    local total_count = (_g.total_count or 0)
+    local files_count = (_g.files_count or 0)
+    vprint("")
+    vprint("build cache stats:")
+    vprint("cache directory: %s", rootdir())
+    vprint("cache hit rate: %d%%", hitrate())
+    vprint("cache hit: %d", hit_count)
+    vprint("cache miss: %d", total_count - hit_count)
+    vprint("files in cache: %d", files_count)
+end
+
 -- get object file
 function get(cachekey)
     _g.total_count = (_g.total_count or 0) + 1
@@ -99,6 +114,7 @@ end
 function put(cachekey, objectfile)
     local objectfile_cached = path.join(rootdir(), cachekey:sub(1, 2):lower(), cachekey)
     os.cp(objectfile, objectfile_cached)
+    _g.files_count = (_g.files_count or 0) + 1
 end
 
 -- build with cache
