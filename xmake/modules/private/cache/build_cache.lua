@@ -98,7 +98,7 @@ function dump_stats()
     vprint("cache hit: %d", hit_count)
     vprint("cache miss: %d", total_count - hit_count)
     vprint("new cached files: %d", newfiles_count)
-    vprint("preprocessor error: %d", preprocess_error_count)
+    vprint("preprocess failed: %d", preprocess_error_count)
     vprint("")
 end
 
