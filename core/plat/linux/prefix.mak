@@ -75,6 +75,12 @@ else
 CXFLAGS_RELEASE		+= -fomit-frame-pointer
 CXFLAGS_DEBUG		+= -fno-omit-frame-pointer
 endif
+ifeq ($(BUILD_ARCH),x86_64)
+CXFLAGS_RELEASE		+= -msse -msse2 -msse3 -mavx -mavx2
+endif
+ifeq ($(BUILD_ARCH),arm64)
+CXFLAGS_RELEASE		+= -mfpu=neon
+endif
 
 # cflags: .c files
 CFLAGS_RELEASE		=
