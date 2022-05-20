@@ -32,6 +32,7 @@ import("build")
 import("build_files")
 import("cleaner")
 import("statistics")
+import("private.cache.build_cache")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 
 -- do build for the third-party buildsystem
@@ -147,8 +148,12 @@ function main()
 
             -- do build
             _do_build(targetname, group_pattern)
-        end,
 
+            -- dump cache stats
+            if option.get("diagnosis") then
+                build_cache.dump_stats()
+            end
+        end,
         catch
         {
             function (errors)

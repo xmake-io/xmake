@@ -20,7 +20,6 @@
 
 -- imports
 import("core.project.config")
-import("private.tools.ccache")
 
 -- init it
 function init(self)
@@ -187,37 +186,13 @@ function link(self, objectfiles, targetkind, targetfile, flags)
 end
 
 -- make the compile arguments list
-function _compargv1(self, sourcefile, objectfile, flags)
-    return ccache.cmdargv(self:program(), table.join("-c", flags, "-o", objectfile, sourcefile))
+function compargv(self, sourcefile, objectfile, flags)
+    return self:program(), table.join("-c", flags, "-o", objectfile, sourcefile)
 end
 
 -- compile the source file
-function _compile1(self, sourcefile, objectfile, dependinfo, flags)
-
-    -- ensure the object directory
+function compile(self, sourcefile, objectfile, dependinfo, flags)
     os.mkdir(path.directory(objectfile))
-
-    -- compile it
-    os.runv(_compargv1(self, sourcefile, objectfile, flags))
-end
-
--- make the compile arguments list
-function compargv(self, sourcefiles, objectfile, flags)
-
-    -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
-
-    -- for only single source file
-    return _compargv1(self, sourcefiles, objectfile, flags)
-end
-
--- compile the source file
-function compile(self, sourcefiles, objectfile, dependinfo, flags)
-
-    -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
-
-    -- for only single source file
-    _compile1(self, sourcefiles, objectfile, dependinfo, flags)
+    os.runv(compargv(self, sourcefile, objectfile, flags))
 end
 

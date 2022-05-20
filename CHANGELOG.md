@@ -9,6 +9,7 @@
 * [#2334](https://github.com/xmake-io/xmake/pull/2334): Add lz4 compress module
 * [#2349](https://github.com/xmake-io/xmake/pull/2349): Add keil/c51 project support
 * [#274](https://github.com/xmake-io/xmake/issues/274): Distributed compilation support
+* Use builtin local cache instead of ccache
 
 ### Changes
 
@@ -1270,6 +1271,7 @@
 * [#2334](https://github.com/xmake-io/xmake/pull/2334): 添加 lz4 压缩模块
 * [#2349](https://github.com/xmake-io/xmake/pull/2349): 添加 keil/c51 工程支持
 * [#274](https://github.com/xmake-io/xmake/issues/274): 跨平台分布式编译支持
+* 使用内置的本地缓存替代 ccache
 
 ### 改进
 

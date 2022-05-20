@@ -232,25 +232,32 @@ function distcc_build_client:compile(program, argv, opt)
     -- do preprocess
     opt = opt or {}
     local preprocess = assert(opt.preprocess, "preprocessor not found!")
-    local outdata, errdata, sourcefile, objectfile, cppfile, cppflags = preprocess(program, argv, opt)
-
-    -- get objectfile from the build cache first
-    local cached = false
-    local cachekey
-    if build_cache.enabled() then
-        cachekey = build_cache.cachekey(program, cppfile, cppflags, opt.envs)
-        local objectfile_cached = build_cache.get(cachekey)
-        if objectfile_cached then
-            os.cp(objectfile_cached, objectfile)
-            cached = true
+    local cppinfo = preprocess(program, argv, opt)
+    local build_in_local = false
+    if cppinfo then
+        -- get objectfile from the build cache first
+        local cached = false
+        local cachekey
+        if build_cache.is_enabled() then
+            cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, opt.envs)
+            local objectfile_cached = build_cache.get(cachekey)
+            if objectfile_cached then
+                os.cp(objectfile_cached, cppinfo.objectfile)
+                cached = true
+            end
         end
-    end
 
-    -- do distcc compilation
-    if not cached then
-        session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
-        if cachekey then
-            build_cache.put(cachekey, objectfile)
+        -- do distcc compilation
+        if not cached then
+            -- we just compile the large preprocessed file in remote
+            if os.filesize(cppinfo.cppfile) > 4096 then
+                session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags, opt)
+                if cachekey then
+                    build_cache.put(cachekey, cppinfo.objectfile)
+                end
+            else
+                build_in_local = true
+            end
         end
     end
 
@@ -259,7 +266,21 @@ function distcc_build_client:compile(program, argv, opt)
 
     -- unlock this host
     self:_host_status_unlock(host)
-    return outdata, errdata
+
+    -- build in local
+    if build_in_local then
+        if cppinfo and build_in_local then
+            local compile = assert(opt.compile, "compiler not found!")
+            compile(program, cppinfo, opt)
+            if build_cache.is_enabled() then
+                local cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, opt.envs)
+                if cachekey then
+                    build_cache.put(cachekey, cppinfo.objectfile)
+                end
+            end
+        end
+    end
+    return cppinfo
 end
 
 -- get the status

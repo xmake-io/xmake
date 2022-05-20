@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("private.action.clean.remove_files")
+import("private.cache.build_cache")
 
 -- the builtin clean main entry
 function main(target)
@@ -61,6 +62,9 @@ function main(target)
 
         -- remove all autogen files for each platform
         remove_files(target:autogendir({root = true}))
+
+        -- clean build cache
+        build_cache.clean()
     else
 
         -- remove dependent files for the current platform

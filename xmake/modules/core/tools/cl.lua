@@ -26,6 +26,7 @@ import("core.project.project")
 import("core.language.language")
 import("private.tools.vstool")
 import("private.tools.cl.parse_include")
+import("private.cache.build_cache")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 import("utils.progress")
 
@@ -403,6 +404,7 @@ function _preprocess(program, argv, opt)
     local cppflags = {}
     local skipped = 0
     local objectfile
+    local pdbfile
     for _, flag in ipairs(argv) do
         if flag:startswith("-Fo") or flag:startswith("/Fo") then
             objectfile = flag:sub(4)
@@ -422,7 +424,7 @@ function _preprocess(program, argv, opt)
 
         -- get compiler flags
         if flag == "-showIncludes" or flag == "/showIncludes" or
-           flag:startswith("-I") or flag:startswith("/I") or
+           (flag:startswith("-I") and #flag > 2) or (flag:startswith("/I") and #flag > 2) or
            flag:startswith("-Yu") or flag:startswith("/Yu") or
            flag:startswith("-FI") or flag:startswith("/FI") or
            flag:startswith("-Fp") or flag:startswith("/Fp") or
@@ -430,6 +432,9 @@ function _preprocess(program, argv, opt)
             skipped = 1
         elseif flag == "-I" or flag == "-sourceDependencies" or flag == "/sourceDependencies" then
             skipped = 2
+        elseif opt.remote and flag:startswith("-Fd") or flag:startswith("/Fd") then
+            skipped = 1
+            pdbfile = flag:sub(4) --TODO handle remote pdb
         end
         if skipped > 0 then
             skipped = skipped - 1
@@ -440,8 +445,13 @@ function _preprocess(program, argv, opt)
     local sourcefile = argv[#argv]
     assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
 
+    -- is precompiled header?
+    if objectfile:endswith(".pch") then
+        return false
+    end
+
     -- do preprocess
-    local cppfile = objectfile .. ".p"
+    local cppfile = path.join(path.directory(objectfile), path.basename(objectfile) .. path.extension(sourcefile))
     local cppfiledir = path.directory(cppfile)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
@@ -449,8 +459,38 @@ function _preprocess(program, argv, opt)
     table.insert(cppflags, "-P")
     table.insert(cppflags, "-Fi" .. cppfile)
     table.insert(cppflags, sourcefile)
-    local outdata, errdata = vstool.iorunv(program, winos.cmdargv(cppflags), opt)
-    return outdata, errdata, sourcefile, objectfile, cppfile, flags
+    return try{ function()
+        local outdata, errdata = vstool.iorunv(program, winos.cmdargv(cppflags), opt)
+        return {outdata = outdata, errdata = errdata,
+                sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags,
+                pdbfile = pdbfile}
+    end}
+end
+
+-- compile preprocessed file
+function _compile_preprocessed_file(program, cppinfo, opt)
+    vstool.iorunv(program, winos.cmdargv(table.join(cppinfo.cppflags, "-Fo" .. cppinfo.objectfile, cppinfo.cppfile)), opt)
+end
+
+-- do compile
+function _compile(self, sourcefile, objectfile, compflags, opt)
+    local cppinfo
+    if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
+        local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
+        cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
+            preprocess = _preprocess, compile = _compile_preprocessed_file, target = opt.target, remote = true, tool = self})
+    elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
+        local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
+        cppinfo = build_cache.build(program, argv, {envs = self:runenvs(),
+            preprocess = _preprocess, compile = _compile_preprocessed_file, target = opt.target})
+    end
+    if cppinfo then
+        return cppinfo.outdata, cppinfo.errdata
+    else
+        local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
+        local outdata, errdata = vstool.iorunv(program, argv, {envs = self:runenvs()})
+        return outdata, errdata
+    end
 end
 
 -- make the compile arguments list
@@ -504,15 +544,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                 end
             end
 
-            -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
-            if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-                local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
-                return distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
-                    preprocess = _preprocess, tool = self, target = opt.target})
-            else
-                local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
-                return vstool.iorunv(program, argv, {envs = self:runenvs()})
-            end
+            -- do compile
+            return _compile(self, sourcefile, objectfile, compflags, opt)
         end,
         catch
         {
@@ -584,7 +617,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
     if dependinfo then
         if depfile and os.isfile(depfile) then
             dependinfo.depfiles_cl_json = io.readfile(depfile)
-            os.rm(depfile)
+            os.tryrm(depfile)
         elseif outdata then
             dependinfo.depfiles_cl = outdata
         end

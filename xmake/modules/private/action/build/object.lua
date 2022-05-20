@@ -23,7 +23,7 @@ import("core.base.option")
 import("core.theme.theme")
 import("core.tool.compiler")
 import("core.project.depend")
-import("private.tools.ccache")
+import("private.cache.build_cache")
 import("private.async.runjobs")
 import("utils.progress")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
@@ -61,10 +61,11 @@ function _do_build_file(target, sourcefile, opt)
 
     -- exists ccache or distcc?
     local prefix = ""
-    if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-        prefix = "distcc "
-    elseif ccache.exists() then
+    if build_cache.is_enabled() and build_cache.is_supported(sourcekind) then
         prefix = "ccache "
+    end
+    if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
+        prefix = prefix .. "distcc "
     end
 
     -- trace progress info

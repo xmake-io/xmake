@@ -28,7 +28,13 @@ PRE_				:= $(if $(BIN),$(BIN)/$(PRE),xcrun -sdk macosx )
 CC					= $(PRE_)clang
 ifeq ($(CXFLAGS_CHECK),)
 CC_CHECK			= ${shell if $(CC) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi }
-CXFLAGS_CHECK		:= $(call CC_CHECK,-ftrapv,)
+ifeq ($(BUILD_ARCH),arm64)
+CXFLAGS_CHECK		:= $(call CC_CHECK,-mfpu=neon,)
+endif
+ifeq ($(BUILD_ARCH),x86_64)
+# it will crash on ci
+#CXFLAGS_CHECK		:= $(call CC_CHECK,-msse -msse2 -msse3 -mavx -mavx2,)
+endif
 export CXFLAGS_CHECK
 endif
 
@@ -36,7 +42,7 @@ endif
 LD					= $(PRE_)clang
 ifeq ($(LDFLAGS_CHECK),)
 LD_CHECK			= ${shell if $(LD) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi }
-LDFLAGS_CHECK		:= $(call LD_CHECK,-ftrapv,)
+LDFLAGS_CHECK		:=
 export LDFLAGS_CHECK
 endif
 
@@ -56,7 +62,7 @@ MAKE				= make -r
 # cxflags: .c/.cc/.cpp files, @note luajit cannot use -Oz, because it will panic
 CXFLAGS_RELEASE		= -Os -fvisibility=hidden -fvisibility-inlines-hidden -flto
 CXFLAGS_DEBUG		= -g -D__tb_debug__
-CXFLAGS				= -m$(BITS) -c -Wall -Werror -Wno-error=deprecated-declarations -Qunused-arguments
+CXFLAGS				= -m$(BITS) -c -Wall -Werror -Wno-error=deprecated-declarations -Qunused-arguments $(CXFLAGS_CHECK)
 CXFLAGS-I			= -I
 CXFLAGS-o			= -o
 
@@ -65,7 +71,7 @@ ifeq ($(PROF),y)
 CXFLAGS				+= -g -fno-omit-frame-pointer
 else
 CXFLAGS_RELEASE		+= -fomit-frame-pointer
-CXFLAGS_DEBUG		+= -fno-omit-frame-pointer $(CXFLAGS_CHECK)
+CXFLAGS_DEBUG		+= -fno-omit-frame-pointer
 endif
 
 # cflags: .c files
@@ -107,7 +113,7 @@ ifeq ($(PROF),y)
 MXFLAGS				+= -g -fno-omit-frame-pointer
 else
 MXFLAGS_RELEASE		+= -fomit-frame-pointer
-MXFLAGS_DEBUG		+= -fno-omit-frame-pointer $(LDFLAGS_CHECK)
+MXFLAGS_DEBUG		+= -fno-omit-frame-pointer
 endif
 
 # mflags: .m files

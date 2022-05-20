@@ -23,6 +23,7 @@ target("xmake")
     -- add includes directory
     add_includedirs("..", {interface = true})
     add_includedirs("$(buildir)/$(plat)/$(arch)/$(mode)", {public = true})
+    add_includedirs("../xxhash")
 
     -- add header files
     add_headerfiles("../(xmake/*.h)")

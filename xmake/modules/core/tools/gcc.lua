@@ -26,8 +26,8 @@ import("core.base.global")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
-import("private.tools.ccache")
 import("utils.progress")
+import("private.cache.build_cache")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 
 -- init it
@@ -358,11 +358,7 @@ end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags)
-
-    -- ensure the target directory
     os.mkdir(path.directory(targetfile))
-
-    -- link it
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
     os.runv(program, argv, {envs = self:runenvs()})
 end
@@ -405,7 +401,7 @@ function _preprocess(program, argv, opt)
         table.insert(cppflags, flag)
 
         -- get compiler flags
-        if flag == "-MMD" or flag:startswith("-I") or flag:startswith("--sysroot=") then
+        if flag == "-MMD" or (flag:startswith("-I") and #flag > 2) or flag:startswith("--sysroot=") then
             skipped = 1
         elseif flag == "-MF" or
             flag == "-I" or flag == "-isystem" or flag == "-include" or flag == "-include-pch" or
@@ -424,18 +420,80 @@ function _preprocess(program, argv, opt)
     local sourcefile = argv[#argv]
     assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
 
+    -- is precompiled header?
+    if objectfile:endswith(".gch") or objectfile:endswith(".pch") then
+        return false
+    end
+
+    -- enable "-fdirectives-only"?
+    local tool = opt.tool
+    local fdirectives_only = _g.fdirectives_only
+    local is_gcc = false
+    if tool and (tool:name() == "gcc" or tool:name() == "gxx") then
+        is_gcc = true
+    end
+    if fdirectives_only ~= false and is_gcc then
+        fdirectives_only = true
+    end
+
     -- do preprocess
-    local cppfile = objectfile .. ".p"
+    local cppfile = path.join(path.directory(objectfile), path.basename(objectfile) .. path.extension(sourcefile))
     local cppfiledir = path.directory(cppfile)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
     end
     table.insert(cppflags, "-E")
+    -- it will be faster for preprocessing
+    -- when preprocessing, handle directives, but do not expand macros.
+    if fdirectives_only then
+        table.insert(cppflags, "-fdirectives-only")
+    end
     table.insert(cppflags, "-o")
     table.insert(cppflags, cppfile)
     table.insert(cppflags, sourcefile)
-    local outdata, errdata = os.iorunv(program, cppflags, opt)
-    return outdata, errdata, sourcefile, objectfile, cppfile, flags
+
+    -- we need mark as it when compiling the preprocessed source file
+    -- it will indicate to the preprocessor that the input file has already been preprocessed.
+    if is_gcc then
+        table.insert(flags, "-fpreprocessed")
+    end
+    -- with -fpreprocessed, predefinition of command line and most builtin macros is disabled.
+    if fdirectives_only then
+        table.insert(flags, "-fdirectives-only")
+    end
+
+    -- do preprocess
+    local cppinfo = try {function ()
+        local outdata, errdata = os.iorunv(program, cppflags, opt)
+        return {outdata = outdata, errdata = errdata, sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags}
+    end}
+    if not cppinfo then
+        _g.fdirectives_only = false
+    end
+    return cppinfo
+end
+
+-- compile preprocessed file
+function _compile_preprocessed_file(program, cppinfo, opt)
+    os.iorunv(program, table.join(cppinfo.cppflags, "-o", cppinfo.objectfile, cppinfo.cppfile), opt)
+end
+
+-- do compile
+function _compile(self, sourcefile, objectfile, compflags, opt)
+    local cppinfo
+    local program, argv = compargv(self, sourcefile, objectfile, compflags)
+    if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
+        cppinfo = distcc_build_client.singleton():compile(program, argv,
+            {envs = self:runenvs(), preprocess = _preprocess, compile = _compile_preprocessed_file, remote = true, tool = self})
+    elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
+        cppinfo = build_cache.build(program, argv,
+            {envs = self:runenvs(), preprocess = _preprocess, compile = _compile_preprocessed_file})
+    end
+    if cppinfo then
+        return cppinfo.outdata, cppinfo.errdata
+    else
+        return os.iorunv(program, argv, {envs = self:runenvs()})
+    end
 end
 
 -- make the compile arguments list for the precompiled header
@@ -472,7 +530,7 @@ function compargv(self, sourcefile, objectfile, flags)
     if (extension:startswith(".h") or extension == ".inl") then
         return _compargv_pch(self, sourcefile, objectfile, flags)
     end
-    return ccache.cmdargv(self:program(), table.join("-c", flags, "-o", objectfile, sourcefile))
+    return self:program(), table.join("-c", flags, "-o", objectfile, sourcefile)
 end
 
 -- compile the source file
@@ -505,12 +563,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             end
 
             -- do compile
-            local program, argv = compargv(self, sourcefile, objectfile, compflags)
-            if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-                return distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(), preprocess = _preprocess, tool = self})
-            else
-                return os.iorunv(program, argv, {envs = self:runenvs()})
-            end
+            return _compile(self, sourcefile, objectfile, compflags, opt)
         end,
         catch
         {
@@ -544,7 +597,6 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                     results = results .. "\n  ${yellow}> in ${bright}" .. sourcefile
                 end
                 raise(results)
-
             end
         },
         finally

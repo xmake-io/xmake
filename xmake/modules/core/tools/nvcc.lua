@@ -25,7 +25,6 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("core.language.language")
-import("private.tools.ccache")
 import("utils.progress")
 
 -- init it
@@ -328,7 +327,7 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
-    return ccache.cmdargv(self:program(), table.join("-c", flags, "-o", objectfile, sourcefile))
+    return self:program(), table.join("-c", flags, "-o", objectfile, sourcefile)
 end
 
 -- compile the source file

@@ -99,8 +99,9 @@ xmake_C_FILES 			+= \
 						path/directory \
 						path/is_absolute \
 						hash/uuid4 \
-						hash/sha256 \
+						hash/sha \
 						hash/md5 \
+						hash/xxhash \
 						base64/encode \
 						base64/decode \
 						string/trim \
@@ -183,7 +184,8 @@ xmake_INC_DIRS 		    += \
 						../tbox/tbox/src \
 						../tbox/inc/$(PLAT) \
                         ../sv/sv/include \
-						../lz4/lz4/lib
+						../lz4/lz4/lib \
+						../xxhash
 ifeq ($(RUNTIME),luajit)
 xmake_INC_DIRS 			+= ../luajit/luajit/src
 xmake_CXFLAGS 			+= -DUSE_LUAJIT

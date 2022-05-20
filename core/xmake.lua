@@ -28,6 +28,13 @@ add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing", "-Wno-
 -- add defines
 add_defines("_GNU_SOURCE=1", "_FILE_OFFSET_BITS=64", "_LARGEFILE_SOURCE")
 
+-- add vectorexts
+if is_arch("x86", "x64", "i386", "x86_64") then
+    add_vectorexts("sse", "sse2", "sse3", "avx", "avx2")
+elseif is_arch("arm.*") then
+    add_vectorexts("neon")
+end
+
 -- for the windows platform (msvc)
 if is_plat("windows") then
     add_cxflags("-MT")
