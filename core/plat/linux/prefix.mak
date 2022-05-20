@@ -40,7 +40,12 @@ AHFLAGS				:= $(if $(AHFLAGS),$(AHFLAGS),$(if $(findstring i386,$(BUILD_ARCH)),-
 ifneq ($(AHFLAGS),)
 ifeq ($(CXFLAGS_CHECK),)
 CC_CHECK			= ${shell if $(CC) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi }
-CXFLAGS_CHECK		:=
+ifeq ($(BUILD_ARCH),arm64)
+CXFLAGS_CHECK		:= $(call CC_CHECK,-mfpu=neon,)
+endif
+ifeq ($(BUILD_ARCH),x86_64)
+CXFLAGS_CHECK		:= $(call CC_CHECK,-msse -msse2 -msse3 -mavx -mavx2,)
+endif
 export CXFLAGS_CHECK
 endif
 
@@ -74,12 +79,6 @@ CXFLAGS				+= -g -pg -fno-omit-frame-pointer
 else
 CXFLAGS_RELEASE		+= -fomit-frame-pointer
 CXFLAGS_DEBUG		+= -fno-omit-frame-pointer
-endif
-ifeq ($(BUILD_ARCH),x86_64)
-CXFLAGS_RELEASE		+= -msse -msse2 -msse3 -mavx -mavx2
-endif
-ifeq ($(BUILD_ARCH),arm64)
-CXFLAGS_RELEASE		+= -mfpu=neon
 endif
 
 # cflags: .c files
