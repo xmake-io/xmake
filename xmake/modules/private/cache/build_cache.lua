@@ -85,12 +85,12 @@ function hitrate()
     return 0
 end
 
-
 -- dump stats
 function dump_stats()
     local hit_count = (_g.hit_count or 0)
     local total_count = (_g.total_count or 0)
     local newfiles_count = (_g.newfiles_count or 0)
+    local preprocess_error_count = (_g.preprocess_error_count or 0)
     vprint("")
     vprint("build cache stats:")
     vprint("cache directory: %s", rootdir())
@@ -98,6 +98,8 @@ function dump_stats()
     vprint("cache hit: %d", hit_count)
     vprint("cache miss: %d", total_count - hit_count)
     vprint("new cached files: %d", newfiles_count)
+    vprint("preprocessor error: %d", preprocess_error_count)
+    vprint("")
 end
 
 -- get object file
@@ -138,6 +140,8 @@ function build(program, argv, opt)
             end
         end
         os.rm(cppinfo.cppfile)
+    else
+        _g.preprocess_error_count = (_g.preprocess_error_count or 0) + 1
     end
     return cppinfo
 end
