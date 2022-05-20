@@ -43,6 +43,7 @@ task("service")
                 {nil, "disconnect", "k",  nil, "Disconnect current project in the remote daemon service."    },
                 {nil, "remote",     "k",  nil, "Start or connect the remote build service."                  },
                 {nil, "distcc",     "k",  nil, "Start or connect the distributed build service."             },
+                {nil, "ccache",     "k",  nil, "Start or connect the remote c/c++ cache service."            },
                 {nil, "sync",       "k",  nil, "Sync current project files in the remote daemon service."    },
                 {nil, "clean",      "k",  nil, "Clean current project files in the remote daemon service."   },
                 {nil, "add-user",   "kv", nil, "Add user in the server.",

@@ -46,12 +46,16 @@ function _generate_configfile()
             -- with token authorization
             token = token
         },
+        remote_cache = {
+            connect = "127.0.0.1:9692",
+            token = token
+        },
         distcc_build = {
             hosts = {
                 -- optional configs
                 --
                 -- njob: max jobs
-                {connect = "127.0.0.1:9692", token = token}
+                {connect = "127.0.0.1:9693", token = token}
             }
         }
 

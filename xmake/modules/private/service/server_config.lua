@@ -48,8 +48,12 @@ function _generate_configfile()
             listen = "0.0.0.0:9691",
             workdir = path.join(servicedir, "remote_build"),
         },
-        distcc_build = {
+        remote_cache = {
             listen = "0.0.0.0:9692",
+            workdir = path.join(servicedir, "remote_cache"),
+        },
+        distcc_build = {
+            listen = "0.0.0.0:9693",
             workdir = path.join(servicedir, "distcc_build"),
             toolchains = {
                 ndk = {
