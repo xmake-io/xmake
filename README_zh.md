@@ -78,7 +78,7 @@ Xmake 是一个基于 Lua 的轻量级跨平台构建工具。
 目前，Xmake 主要用于 C/C++ 项目的构建，但是同时也支持其他 native 语言的构建，可以实现跟 C/C++ 进行混合编译，同时编译速度也是非常的快，可以跟 Ninja 持平。
 
 ```
-Xmake = Build backend + Project Generator + Package Manager + [Remote|Distributed] Compilation
+Xmake = Build backend + Project Generator + Package Manager + [Remote|Distributed] Build + Cache
 ```
 
 如果你想要了解更多，请参考：[在线文档](https://xmake.io/#/zh-cn/getting_started), [Github](https://github.com/xmake-io/xmake)以及[Gitee](https://gitee.com/tboox/xmake)，同时也欢迎加入我们的 [社区](https://xmake.io/#/zh-ch/about/contact).
