@@ -32,7 +32,8 @@ ifeq ($(BUILD_ARCH),arm64)
 CXFLAGS_CHECK		:= $(call CC_CHECK,-mfpu=neon,)
 endif
 ifeq ($(BUILD_ARCH),x86_64)
-CXFLAGS_CHECK		:= $(call CC_CHECK,-msse -msse2 -msse3 -mavx -mavx2,)
+# it will crash on ci
+#CXFLAGS_CHECK		:= $(call CC_CHECK,-msse -msse2 -msse3 -mavx -mavx2,)
 endif
 export CXFLAGS_CHECK
 endif
