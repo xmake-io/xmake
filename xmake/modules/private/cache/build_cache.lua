@@ -80,7 +80,7 @@ function hitrate()
     local hit_count = (_g.hit_count or 0)
     local total_count = (_g.total_count or 0)
     if total_count > 0 then
-        return hit_count * 100 / total_count
+        return math.floor(hit_count * 100 / total_count)
     end
     return 0
 end
