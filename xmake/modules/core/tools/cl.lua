@@ -404,6 +404,7 @@ function _preprocess(program, argv, opt)
     local cppflags = {}
     local skipped = 0
     local objectfile
+    local pdbfile
     for _, flag in ipairs(argv) do
         if flag:startswith("-Fo") or flag:startswith("/Fo") then
             objectfile = flag:sub(4)
@@ -431,6 +432,9 @@ function _preprocess(program, argv, opt)
             skipped = 1
         elseif flag == "-I" or flag == "-sourceDependencies" or flag == "/sourceDependencies" then
             skipped = 2
+        elseif opt.remote and flag:startswith("-Fd") or flag:startswith("/Fd") then
+            skipped = 1
+            pdbfile = flag:sub(4) --TODO handle remote pdb
         end
         if skipped > 0 then
             skipped = skipped - 1
@@ -457,7 +461,9 @@ function _preprocess(program, argv, opt)
     table.insert(cppflags, sourcefile)
     return try{ function()
         local outdata, errdata = vstool.iorunv(program, winos.cmdargv(cppflags), opt)
-        return {outdata = outdata, errdata = errdata, sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags}
+        return {outdata = outdata, errdata = errdata,
+                sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags,
+                pdbfile = pdbfile}
     end}
 end
 
@@ -468,7 +474,7 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
     if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
         local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
         cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
-            preprocess = _preprocess, tool = self, target = opt.target})
+            preprocess = _preprocess, tool = self, target = opt.target, remote = true})
         if cppinfo and build_in_local then
             vstool.iorunv(program, winos.cmdargv(table.join(cppinfo.cppflags, "-Fo" .. cppinfo.objectfile, cppinfo.cppfile)), {envs = self:runenvs()})
             if build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
