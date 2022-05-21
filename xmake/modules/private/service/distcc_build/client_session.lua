@@ -24,6 +24,7 @@ import("core.base.bytes")
 import("core.base.object")
 import("core.base.global")
 import("core.base.option")
+import("core.base.socket")
 import("core.base.hashset")
 import("core.base.scheduler")
 import("private.service.client_config", {alias = "config"})
@@ -34,10 +35,11 @@ import("private.service.stream", {alias = "socket_stream"})
 local client_session = client_session or object()
 
 -- init client session
-function client_session:init(client, session_id, token, sock)
+function client_session:init(client, session_id, token, addr, port)
     self._ID = session_id
+    self._ADDR = addr
+    self._PORT = port
     self._TOKEN = token
-    self._STREAM = socket_stream(sock)
     self._CLIENT = client
 end
 
@@ -58,7 +60,15 @@ end
 
 -- get stream
 function client_session:stream()
-    return self._STREAM
+    local stream = self._STREAM
+    if stream == nil then
+        local addr = self._ADDR
+        local port = self._PORT
+        local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+        stream = socket_stream(sock)
+        self._STREAM = stream
+    end
+    return stream
 end
 
 -- open session
@@ -120,8 +130,8 @@ function client_session:__tostring()
     return string.format("<session %s>", self:id())
 end
 
-function main(client, session_id, token, sock)
+function main(client, session_id, token, addr, port)
     local instance = client_session()
-    instance:init(client, session_id, token, sock)
+    instance:init(client, session_id, token, addr, port)
     return instance
 end

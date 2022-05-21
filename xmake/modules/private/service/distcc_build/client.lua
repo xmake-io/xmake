@@ -395,8 +395,7 @@ function distcc_build_client:_host_status_session_open(host_status)
     for i = 1, njob do
         local session = host_status.sessions[i]
         if not session then
-            local sock = assert(socket.connect(host_status.addr, host_status.port), "%s: server unreachable!", self)
-            session = client_session(self, host_status.session_id, host_status.token, sock)
+            session = client_session(self, host_status.session_id, host_status.token, host_status.addr, host_status.port)
             host_status.sessions[i] = session
             session:open()
             return session
