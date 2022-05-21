@@ -76,10 +76,34 @@ end
 
 -- pull file
 function server_session:pull(respmsg)
+    local body = respmsg:body()
+    local stream = self:stream()
+    local cachekey = body.filename
+    local cachefile = path.join(self:cachedir(), cachekey:sub(1, 2), cachekey)
+
+    -- send cache file
+    if os.isfile(cachefile) then
+        body.exists = true
+        if not stream:send_file(cachefile, {compress = os.filesize(cachefile) > 4096}) then
+            raise("send %s failed!", cachefile)
+        end
+    else
+        body.exists = false
+        if not stream:send_emptydata() then
+            raise("send empty data failed!")
+        end
+    end
 end
 
 -- push file
 function server_session:push(respmsg)
+    local body = respmsg:body()
+    local stream = self:stream()
+    local cachekey = body.filename
+    local cachefile = path.join(self:cachedir(), cachekey:sub(1, 2), cachekey)
+    if not stream:recv_file(cachefile) then
+        raise("recv %s failed!", cachefile)
+    end
 end
 
 -- clean files

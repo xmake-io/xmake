@@ -163,6 +163,75 @@ function remote_cache_client:disconnect()
     self:status_save()
 end
 
+-- pull cache file
+function remote_cache_client:pull(cachekey, cachefile)
+    assert(self:is_connected(), "%s: has been not connected!", self)
+    local addr = self:addr()
+    local port = self:port()
+    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local session_id = self:session_id()
+    local errors
+    local ok = false
+    local exists = false
+    dprint("%s: pull cache(%s) in %s:%d ..", self, cachekey, addr, port)
+    local stream = socket_stream(sock)
+    if stream:send_msg(message.new_pull(session_id, cachekey, {token = self:token()})) and stream:flush() then
+        if stream:recv_file(cachefile) then
+            local msg = stream:recv_msg()
+            if msg then
+                dprint(msg:body())
+                if msg:success() then
+                    ok = true
+                    exists = msg:body().exists
+                else
+                    errors = msg:errors()
+                end
+            end
+        else
+            errors = "recv cache file failed"
+        end
+    end
+    if ok then
+        dprint("%s: pull cache(%s) ok!", self, cachekey)
+    else
+        dprint("%s: pull cache(%s) failed in %s:%d, %s", self, cachekey, addr, port, errors or "unknown")
+    end
+    return exists
+end
+
+-- push cache file
+function remote_cache_client:push(cachekey, cachefile)
+    assert(self:is_connected(), "%s: has been not connected!", self)
+    local addr = self:addr()
+    local port = self:port()
+    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local session_id = self:session_id()
+    local errors
+    local ok = false
+    dprint("%s: push cache(%s) in %s:%d ..", self, cachekey, addr, port)
+    local stream = socket_stream(sock)
+    if stream:send_msg(message.new_push(session_id, cachekey, {token = self:token()})) and stream:flush() then
+        if stream:send_file(cachefile, {compress = os.filesize(cachefile) > 4096}) then
+            local msg = stream:recv_msg()
+            if msg then
+                dprint(msg:body())
+                if msg:success() then
+                    ok = true
+                else
+                    errors = msg:errors()
+                end
+            end
+        else
+            errors = "send cache file failed"
+        end
+    end
+    if ok then
+        dprint("%s: push cache(%s) ok!", self, cachekey)
+    else
+        dprint("%s: push cache(%s) failed in %s:%d, %s", self, cachekey, addr, port, errors or "unknown")
+    end
+end
+
 -- clean server files
 function remote_cache_client:clean()
     assert(self:is_connected(), "%s: has been not connected!", self)
