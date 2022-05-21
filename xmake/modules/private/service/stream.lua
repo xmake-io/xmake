@@ -356,23 +356,32 @@ function stream:recv_file(filepath)
         if size == 0 then
             return size
         end
+        local result
+        local tmpfile = os.tmpfile({ramdisk = false})
         if bit.band(flags, HEADER_FLAG_COMPRESS_LZ4) == HEADER_FLAG_COMPRESS_LZ4 then
-            return self:_recv_compressed_file(lz4.decompress_stream(), filepath, size)
-        end
-        local buff = self._BUFF
-        local recv = 0
-        local file = io.open(filepath, "wb")
-        while recv < size do
-            local data = self:recv(buff, math.min(buff:size(), size - recv))
-            if data then
-                file:write(data)
-                recv = recv + data:size()
+            result = self:_recv_compressed_file(lz4.decompress_stream(), tmpfile, size)
+        else
+            local buff = self._BUFF
+            local recv = 0
+            local file = io.open(tmpfile, "wb")
+            while recv < size do
+                local data = self:recv(buff, math.min(buff:size(), size - recv))
+                if data then
+                    file:write(data)
+                    recv = recv + data:size()
+                end
+            end
+            file:close()
+            if recv == size then
+                result = recv
             end
         end
-        file:close()
-        if recv == size then
-            return recv
+        if result then
+            os.mv(tmpfile, filepath)
+        else
+            os.tryrm(tmpfile)
         end
+        return result
     end
 end
 
