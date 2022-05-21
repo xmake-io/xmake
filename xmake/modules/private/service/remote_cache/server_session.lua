@@ -102,13 +102,10 @@ function server_session:push(respmsg)
     local stream = self:stream()
     local cachekey = body.filename
     local cachefile = path.join(self:cachedir(), cachekey:sub(1, 2), cachekey)
-    local cachefile_tmp = cachefile .. ".tmp"
     vprint("push cachefile(%s) ..", cachekey)
-    if not stream:recv_file(cachefile_tmp) then
-        os.tryrm(cachefile_tmp)
+    if not stream:recv_file(cachefile) then
         raise("recv %s failed!", cachefile)
     end
-    os.mv(cachefile_tmp, cachefile)
 end
 
 -- get file info

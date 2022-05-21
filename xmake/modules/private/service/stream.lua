@@ -352,6 +352,10 @@ end
 function stream:recv_file(filepath)
     local size, flags = self:recv_header()
     if size then
+        -- empty file? we need not create file
+        if size == 0 then
+            return size
+        end
         if bit.band(flags, HEADER_FLAG_COMPRESS_LZ4) == HEADER_FLAG_COMPRESS_LZ4 then
             return self:_recv_compressed_file(lz4.decompress_stream(), filepath, size)
         end
