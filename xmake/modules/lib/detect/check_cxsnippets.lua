@@ -197,9 +197,11 @@ function main(snippets, opt)
     end
 
     -- make the source file
-    local sourcefile = os.tmpfile() .. extension
-    local objectfile = os.tmpfile() .. ".o"
-    local binaryfile = os.tmpfile() .. ".b"
+    -- @note we use fixed temporary filenames in order to better cache the compilation results for build_cache.
+    local tmpfile = os.tmpfile(sourcecode)
+    local sourcefile = tmpfile .. extension
+    local objectfile = tmpfile .. ".o"
+    local binaryfile = tmpfile .. ".b"
     io.writefile(sourcefile, sourcecode)
 
     -- @note cannot cache result, all conditions will be changed
