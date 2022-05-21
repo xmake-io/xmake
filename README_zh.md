@@ -314,6 +314,7 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 * 丰富的扩展模块支持
 * 远程编译支持
 * 分布式编译支持
+* 内置的本地和远程编译缓存支持
 
 ## 工程类型
 
@@ -349,6 +350,10 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 ## 远程编译
 
 更多详情见：[#622](https://github.com/xmake-io/xmake/issues/622)
+
+## 本地和远程编译缓存
+
+更多详情见: [#622](https://github.com/xmake-io/xmake/issues/2371)
 
 ## 更多例子
 

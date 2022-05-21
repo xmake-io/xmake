@@ -306,6 +306,7 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 * A large number of expansion modules
 * Remote compilation support
 * Distributed compilation support
+* Local and remote build cache support
 
 ## Supported Projects
 
@@ -338,9 +339,13 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 
 For more details see: [#274](https://github.com/xmake-io/xmake/issues/274)
 
-## Remote compilation
+## Remote Compilation
 
 For more details see: [#622](https://github.com/xmake-io/xmake/issues/622)
+
+## Local/Remote Build Cache
+
+For more details see: [#622](https://github.com/xmake-io/xmake/issues/2371)
 
 ## More Examples
 
