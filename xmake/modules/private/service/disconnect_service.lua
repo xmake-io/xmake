@@ -40,13 +40,20 @@ end
 
 function main(...)
     local disconnectors = {}
+    local default = true
     if option.get("remote") then
         table.insert(disconnectors, _disconnect_remote_build_server)
-    elseif option.get("distcc") then
+        default = false
+    end
+    if option.get("distcc") then
         table.insert(disconnectors, _disconnect_distcc_build_server)
-    elseif option.get("ccache") then
+        default = false
+    end
+    if option.get("ccache") then
         table.insert(disconnectors, _disconnect_remote_cache_server)
-    else
+        default = false
+    end
+    if default then
         if config.get("remote_build") then
             table.insert(disconnectors, _disconnect_remote_build_server)
         end

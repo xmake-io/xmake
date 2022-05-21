@@ -40,13 +40,20 @@ end
 
 function main(...)
     local cleaners = {}
+    local default = true
     if option.get("remote") then
         table.insert(cleaners, _clean_remote_build_server)
-    elseif option.get("distcc") then
+        default = false
+    end
+    if option.get("distcc") then
         table.insert(cleaners, _clean_distcc_build_server)
-    elseif option.get("ccache") then
+        default = false
+    end
+    if option.get("ccache") then
         table.insert(cleaners, _clean_remote_cache_server)
-    else
+        default = false
+    end
+    if default then
         if config.get("remote_build") then
             table.insert(cleaners, _clean_remote_build_server)
         end
