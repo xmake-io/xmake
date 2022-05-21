@@ -80,6 +80,7 @@ function server_session:pull(respmsg)
     local stream = self:stream()
     local cachekey = body.filename
     local cachefile = path.join(self:cachedir(), cachekey:sub(1, 2), cachekey)
+    vprint("pull cachefile(%s) ..", cachekey)
 
     -- send cache file
     if os.isfile(cachefile) then
@@ -102,6 +103,7 @@ function server_session:push(respmsg)
     local cachekey = body.filename
     local cachefile = path.join(self:cachedir(), cachekey:sub(1, 2), cachekey)
     local cachefile_tmp = cachefile .. ".tmp"
+    vprint("push cachefile(%s) ..", cachekey)
     if not stream:recv_file(cachefile_tmp) then
         os.tryrm(cachefile_tmp)
         raise("recv %s failed!", cachefile)
@@ -116,6 +118,7 @@ function server_session:fileinfo(respmsg)
     local cachekey = body.filename
     local cachefile = path.join(self:cachedir(), cachekey:sub(1, 2), cachekey)
     body.fileinfo = {filesize = os.filesize(cachefile), exists = os.isfile(cachefile)}
+    vprint("get cacheinfo(%s)", cachekey)
 end
 
 -- clean files

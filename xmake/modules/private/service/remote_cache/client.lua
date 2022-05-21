@@ -244,7 +244,7 @@ function remote_cache_client:cacheinfo(cachekey)
     local cacheinfo
     dprint("%s: get cacheinfo(%s) in %s:%d ..", self, cachekey, addr, port)
     local stream = socket_stream(sock)
-    if stream:send_msg(message.new_clean(session_id, {token = self:token()})) and stream:flush() then
+    if stream:send_msg(message.new_fileinfo(session_id, cachekey, {token = self:token()})) and stream:flush() then
         local msg = stream:recv_msg()
         if msg then
             dprint(msg:body())
