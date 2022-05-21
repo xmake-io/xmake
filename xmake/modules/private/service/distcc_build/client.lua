@@ -251,7 +251,8 @@ function distcc_build_client:compile(program, argv, opt)
         if not cached then
             -- we just compile the large preprocessed file in remote
             if os.filesize(cppinfo.cppfile) > 4096 then
-                session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags, opt)
+                session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags,
+                    table.join(opt, {cachekey = cachekey}))
                 if cachekey then
                     build_cache.put(cachekey, cppinfo.objectfile)
                 end

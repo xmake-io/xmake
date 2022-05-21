@@ -85,7 +85,8 @@ end
 -- do clean
 function server_session:clean()
     vprint("%s: clean files in %s ..", self, self:workdir())
-    os.tryrm(self:workdir())
+    os.tryrm(self:buildir())
+    os.tryrm(self:cachedir())
     vprint("%s: clean files ok", self)
 end
 
@@ -95,32 +96,46 @@ function server_session:compile(respmsg)
     -- recv source file
     local body = respmsg:body()
     local stream = self:stream()
+    local cachekey = body.cachekey
     local sourcename = body.sourcename
-    local sourcedir = path.join(self:workdir(), (hash.uuid4():gsub("-", "")))
+    local sourcedir = path.join(self:buildir(), (hash.uuid4():gsub("-", "")))
     local sourcefile = path.join(sourcedir, sourcename)
-    local objectfile = sourcefile .. ".o"
+    local objectfile = (cachekey and path.join(self:cachedir(), cachekey:sub(1, 2), cachekey) or sourcefile) .. ".o"
     if not stream:recv_file(sourcefile) then
         raise("recv %s failed!", sourcename)
     end
 
     -- do compile
     local errors
-    local ok = try
-    {
-        function ()
-            local flags = body.flags
-            local toolname = body.toolname
-            local compile = assert(self["_" .. toolname .. "_compile"], "%s: compiler(%s) is not supported!", self, toolname)
-            compile(self, toolname, flags, sourcefile, objectfile, body)
-            return os.isfile(objectfile)
-        end,
-        catch
+    local ok
+    if not (cachekey and os.isfile(objectfile)) then -- no cached object file?
+        ok = try
         {
-            function (errs)
-                errors = tostring(errs)
-            end
+            function ()
+                local flags = body.flags
+                local toolname = body.toolname
+                local compile = assert(self["_" .. toolname .. "_compile"], "%s: compiler(%s) is not supported!", self, toolname)
+                local objectdir = path.directory(objectfile)
+                if not os.isdir(objectdir) then
+                    os.mkdir(objectdir)
+                end
+                compile(self, toolname, flags, sourcefile, objectfile, body)
+                return os.isfile(objectfile)
+            end,
+            catch
+            {
+                function (errs)
+                    errors = tostring(errs)
+                end
+            }
         }
-    }
+        if ok then
+            vprint("send compiled object file %s ..", objectfile)
+        end
+    else
+        vprint("send cached object file %s ..", objectfile)
+        ok = true
+    end
 
     -- send object file
     if ok then
@@ -135,7 +150,9 @@ function server_session:compile(respmsg)
 
     -- remove files
     os.tryrm(sourcefile)
-    os.tryrm(objectfile)
+    if not cachekey then
+        os.tryrm(objectfile)
+    end
     return ok, errors
 end
 
@@ -152,6 +169,16 @@ end
 -- get work directory
 function server_session:workdir()
     return path.join(self:server():workdir(), "sessons", self:id())
+end
+
+-- get build directory
+function server_session:buildir()
+    return path.join(self:workdir(), "build")
+end
+
+-- get cache directory
+function server_session:cachedir()
+    return path.join(self:workdir(), "cache")
 end
 
 -- is connected?

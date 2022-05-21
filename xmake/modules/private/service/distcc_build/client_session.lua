@@ -87,10 +87,11 @@ function client_session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
     local toolkind = tool:kind()
     local plat = tool:plat()
     local arch = tool:arch()
+    local cachekey = opt.cachekey
     local toolchain = tool:toolchain():name()
     local stream = self:stream()
     if stream:send_msg(message.new_compile(self:id(), toolname, toolkind, plat, arch, toolchain,
-            cppflags, path.filename(sourcefile), {token = self:token()})) and
+            cppflags, path.filename(sourcefile), {token = self:token(), cachekey = cachekey})) and
         stream:send_file(cppfile, {compress = os.filesize(cppfile) > 4096}) and stream:flush() then
         local recv = stream:recv_file(objectfile)
         if recv ~= nil then

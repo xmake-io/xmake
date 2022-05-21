@@ -240,6 +240,7 @@ function new_compile(session_id, toolname, toolkind, plat, arch, toolchain, flag
         token = opt.token,
         toolname = toolname,
         toolkind = toolkind,
+        cachekey = opt.cachekey,
         plat = plat,
         arch = arch,
         toolchain = toolchain,
