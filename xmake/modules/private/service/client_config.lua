@@ -89,13 +89,14 @@ end
 
 -- load configs
 function load()
-    assert(not _g.configs, "config has been loaded!")
-    local filepath = configfile()
-    if not os.isfile(filepath) then
-        _generate_configfile()
+    if _g.configs == nil then
+        local filepath = configfile()
+        if not os.isfile(filepath) then
+            _generate_configfile()
+        end
+        assert(os.isfile(filepath), "%s not found!", filepath)
+        _g.configs = io.load(filepath)
     end
-    assert(os.isfile(filepath), "%s not found!", filepath)
-    _g.configs = io.load(filepath)
 end
 
 -- save configs

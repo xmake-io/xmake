@@ -277,7 +277,7 @@ function remote_cache_client:clean()
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(self:_sock_open(), "open socket failed!")
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -294,6 +294,7 @@ function remote_cache_client:clean()
             end
         end
     end
+    self:_sock_close(sock)
     if ok then
         print("%s: clean files ok!", self)
     else

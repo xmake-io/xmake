@@ -22,6 +22,7 @@
 import("core.base.bytes")
 import("core.base.hashset")
 import("core.project.config")
+import("private.service.client_config")
 import("private.service.remote_cache.client", {alias = "remote_cache_client"})
 
 -- is enabled?
@@ -75,6 +76,10 @@ end
 -- clean cached files
 function clean()
     os.rm(rootdir())
+    if remote_cache_client.is_connected() then
+        client_config.load()
+        remote_cache_client.singleton():clean()
+    end
 end
 
 -- get hit rate
