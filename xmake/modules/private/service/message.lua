@@ -36,6 +36,7 @@ message.CODE_COMPILE        = 8  -- compile the given file from client in server
 message.CODE_PULL           = 9  -- pull the given file from server
 message.CODE_PUSH           = 10 -- push the given file to server
 message.CODE_FILEINFO       = 11 -- get the given file info in server
+message.CODE_EXISTINFO      = 12 -- get exists info in server (use bloom filter)
 
 -- init message
 function message:init(body)
@@ -105,6 +106,11 @@ end
 -- is fileinfo message?
 function message:is_fileinfo()
     return self:code() == message.CODE_FILEINFO
+end
+
+-- is existinfo message?
+function message:is_existinfo()
+    return self:code() == message.CODE_EXISTINFO
 end
 
 -- get user authorization
@@ -277,6 +283,17 @@ function new_fileinfo(session_id, filename, opt)
     return _new({
         code = message.CODE_FILEINFO,
         filename = filename,
+        session_id = session_id,
+        token = opt.token
+    })
+end
+
+-- new existinfo message
+function new_existinfo(session_id, name, opt)
+    opt = opt or {}
+    return _new({
+        code = message.CODE_EXISTINFO,
+        name = name,
         session_id = session_id,
         token = opt.token
     })

@@ -26,6 +26,7 @@ import("core.base.global")
 import("core.base.option")
 import("core.base.hashset")
 import("core.base.scheduler")
+import("core.base.bloom_filter")
 import("private.service.server_config", {alias = "config"})
 import("private.service.message")
 
@@ -116,6 +117,34 @@ function server_session:fileinfo(respmsg)
     local cachefile = path.join(self:cachedir(), cachekey:sub(1, 2), cachekey)
     body.fileinfo = {filesize = os.filesize(cachefile), exists = os.isfile(cachefile)}
     vprint("get cacheinfo(%s)", cachekey)
+end
+
+-- get exist info
+function server_session:existinfo(respmsg)
+    local body = respmsg:body()
+    local stream = self:stream()
+    local cachedir = self:cachedir()
+    local filter = bloom_filter.new()
+    local count = 0
+    vprint("get existinfo(%s) ..", body.name)
+    for _, objectfile in ipairs(os.files(path.join(cachedir, "*", "*"))) do
+        local cachekey = path.basename(objectfile)
+        if cachekey then
+            filter:set(cachekey)
+            count = count + 1
+        end
+    end
+    if count > 0 then
+        if not stream:send_data(filter:data(), {compress = true}) then
+            raise("send data failed!")
+        end
+    else
+        if not stream:send_emptydata() then
+            raise("send empty data failed!")
+        end
+    end
+    body.count = count
+    vprint("get existinfo(%s): %d ok", body.name, count)
 end
 
 -- clean files

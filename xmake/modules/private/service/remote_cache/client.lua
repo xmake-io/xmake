@@ -25,6 +25,7 @@ import("core.base.socket")
 import("core.base.option")
 import("core.base.hashset")
 import("core.base.scheduler")
+import("core.base.bloom_filter")
 import("core.project.config", {alias = "project_config"})
 import("lib.detect.find_tool")
 import("private.service.client_config", {alias = "config"})
@@ -272,6 +273,47 @@ function remote_cache_client:cacheinfo(cachekey)
     return cacheinfo
 end
 
+-- get the exist info of cache in server
+function remote_cache_client:existinfo()
+    assert(self:is_connected(), "%s: has been not connected!", self)
+    local addr = self:addr()
+    local port = self:port()
+    local sock = assert(self:_sock_open(), "open socket failed!")
+    local session_id = self:session_id()
+    local errors
+    local existinfo
+    dprint("%s: get exist info in %s:%d ..", self, addr, port)
+    local stream = socket_stream(sock)
+    if stream:send_msg(message.new_existinfo(session_id, "objectfiles", {token = self:token()})) and stream:flush() then
+        local data = stream:recv_data()
+        if data then
+            local msg = stream:recv_msg()
+            if msg then
+                dprint(msg:body())
+                if msg:success() then
+                    local count = msg:body().count
+                    if count and count > 0 then
+                        local filter = bloom_filter.new()
+                        filter:data_set(data)
+                        existinfo = filter
+                    end
+                else
+                    errors = msg:errors()
+                end
+            end
+        else
+            errors = "recv exist info failed"
+        end
+    end
+    self:_sock_close(sock)
+    if existinfo then
+        dprint("%s: get exist info ok!", self)
+    else
+        dprint("%s: get exist info failed in %s:%d, %s", self, addr, port, errors or "unknown")
+    end
+    return existinfo
+end
+
 -- clean server files
 function remote_cache_client:clean()
     assert(self:is_connected(), "%s: has been not connected!", self)
@@ -456,6 +498,7 @@ end
 function singleton()
     local instance = _g.singleton
     if not instance then
+        config.load()
         instance = new()
         _g.singleton = instance
     end

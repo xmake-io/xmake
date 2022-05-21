@@ -25,6 +25,16 @@ import("core.project.config")
 import("private.service.client_config")
 import("private.service.remote_cache.client", {alias = "remote_cache_client"})
 
+-- get exist info
+function _get_existinfo()
+    local existinfo = _g.existinfo
+    if existinfo == nil then
+        existinfo = remote_cache_client.singleton():existinfo()
+        _g.existinfo = existinfo
+    end
+    return existinfo
+end
+
 -- is enabled?
 function is_enabled()
     local build_cache = _g.build_cache
@@ -135,11 +145,18 @@ function put(cachekey, objectfile)
     os.cp(objectfile, objectfile_cached)
     _g.newfiles_count = (_g.newfiles_count or 0) + 1
     if remote_cache_client.is_connected() then
-        -- TODO we need optimize it, decrease query count
-        local cacheinfo = remote_cache_client.singleton():cacheinfo(cachekey)
-        if not cacheinfo or not cacheinfo.exists then
-            _g.remote_newfiles_count = (_g.remote_newfiles_count or 0) + 1
-            remote_cache_client.singleton():push(cachekey, objectfile)
+        -- this file does not exist in remote server? push it to server
+        --
+        -- we use the bloom filter to approximate whether it exists or not,
+        -- which may result in a few less files being uploaded, but that's fine.
+        local existinfo = _get_existinfo()
+        if not existinfo or not existinfo:get(cachekey) then
+            -- existinfo is just an initial snapshot, we need to go further and determine if the current file exists
+            local cacheinfo = remote_cache_client.singleton():cacheinfo(cachekey)
+            if not cacheinfo or not cacheinfo.exists then
+                _g.remote_newfiles_count = (_g.remote_newfiles_count or 0) + 1
+                remote_cache_client.singleton():push(cachekey, objectfile)
+            end
         end
     end
 end

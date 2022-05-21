@@ -541,6 +541,7 @@ end
 function singleton()
     local instance = _g.singleton
     if not instance then
+        config.load()
         instance = new()
         _g.singleton = instance
     end
