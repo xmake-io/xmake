@@ -178,11 +178,11 @@ function bloom_filter.new(opt)
     opt = opt or {}
     local probability = opt.probability or 0.001
     local maps = {
-        [0.1] = bloom_filter.PROBABILITY_0_1
-        [0.01] = bloom_filter.PROBABILITY_0_01
-        [0.001] = bloom_filter.PROBABILITY_0_001
-        [0.0001] = bloom_filter.PROBABILITY_0_0001
-        [0.00001] = bloom_filter.PROBABILITY_0_00001
+        [0.1] = bloom_filter.PROBABILITY_0_1,
+        [0.01] = bloom_filter.PROBABILITY_0_01,
+        [0.001] = bloom_filter.PROBABILITY_0_001,
+        [0.0001] = bloom_filter.PROBABILITY_0_0001,
+        [0.00001] = bloom_filter.PROBABILITY_0_00001,
         [0.000001] = bloom_filter.PROBABILITY_0_000001
     }
     probability = assert(maps[probability], "invalid probability(%f)", probability)
