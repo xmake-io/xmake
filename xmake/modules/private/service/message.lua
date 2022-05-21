@@ -35,6 +35,7 @@ message.CODE_SYNC           = 7  -- sync files between server and client
 message.CODE_COMPILE        = 8  -- compile the given file from client in server
 message.CODE_PULL           = 9  -- pull the given file from server
 message.CODE_PUSH           = 10 -- push the given file to server
+message.CODE_FILEINFO       = 11 -- get the given file info in server
 
 -- init message
 function message:init(body)
@@ -99,6 +100,11 @@ end
 -- is push message?
 function message:is_push()
     return self:code() == message.CODE_PUSH
+end
+
+-- is fileinfo message?
+function message:is_fileinfo()
+    return self:code() == message.CODE_FILEINFO
 end
 
 -- get user authorization
@@ -255,6 +261,17 @@ end
 
 -- new push message
 function new_push(session_id, filename, opt)
+    opt = opt or {}
+    return _new({
+        code = message.CODE_PUSH,
+        filename = filename,
+        session_id = session_id,
+        token = opt.token
+    })
+end
+
+-- new fileinfo message
+function new_fileinfo(session_id, filename, opt)
     opt = opt or {}
     return _new({
         code = message.CODE_PUSH,

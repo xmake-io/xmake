@@ -90,6 +90,8 @@ function remote_cache_server:_on_handle(stream, msg)
                     session:push(respmsg)
                 elseif msg:is_pull() then
                     session:pull(respmsg)
+                elseif msg:is_fileinfo() then
+                    session:fileinfo(respmsg)
                 elseif msg:is_clean() then
                     session:clean()
                 end

@@ -232,6 +232,38 @@ function remote_cache_client:push(cachekey, cachefile)
     end
 end
 
+-- get cache file info
+function remote_cache_client:cacheinfo(cachekey)
+    assert(self:is_connected(), "%s: has been not connected!", self)
+    local addr = self:addr()
+    local port = self:port()
+    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local session_id = self:session_id()
+    local errors
+    local ok = false
+    local cacheinfo
+    dprint("%s: get cacheinfo(%s) in %s:%d ..", self, cachekey, addr, port)
+    local stream = socket_stream(sock)
+    if stream:send_msg(message.new_clean(session_id, {token = self:token()})) and stream:flush() then
+        local msg = stream:recv_msg()
+        if msg then
+            dprint(msg:body())
+            if msg:success() then
+                cacheinfo = msg:body().fileinfo
+                ok = true
+            else
+                errors = msg:errors()
+            end
+        end
+    end
+    if ok then
+        dprint("%s: get cacheinfo(%s) ok!", self, cachekey)
+    else
+        dprint("%s: get cacheinfo(%s) failed in %s:%d, %s", self, cachekey, addr, port, errors or "unknown")
+    end
+    return cacheinfo
+end
+
 -- clean server files
 function remote_cache_client:clean()
     assert(self:is_connected(), "%s: has been not connected!", self)

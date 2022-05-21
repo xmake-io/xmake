@@ -101,9 +101,21 @@ function server_session:push(respmsg)
     local stream = self:stream()
     local cachekey = body.filename
     local cachefile = path.join(self:cachedir(), cachekey:sub(1, 2), cachekey)
-    if not stream:recv_file(cachefile) then
+    local cachefile_tmp = cachefile .. ".tmp"
+    if not stream:recv_file(cachefile_tmp) then
+        os.tryrm(cachefile_tmp)
         raise("recv %s failed!", cachefile)
     end
+    os.mv(cachefile_tmp, cachefile)
+end
+
+-- get file info
+function server_session:fileinfo(respmsg)
+    local body = respmsg:body()
+    local stream = self:stream()
+    local cachekey = body.filename
+    local cachefile = path.join(self:cachedir(), cachekey:sub(1, 2), cachekey)
+    body.fileinfo = {filesize = os.filesize(cachefile), exists = os.isfile(cachefile)}
 end
 
 -- clean files

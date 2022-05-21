@@ -22,6 +22,7 @@
 import("core.base.bytes")
 import("core.base.hashset")
 import("core.project.config")
+import("private.service.remote_cache.client", {alias = "remote_cache_client"})
 
 -- is enabled?
 function is_enabled()
@@ -110,6 +111,11 @@ function get(cachekey)
     if os.isfile(objectfile_cached) then
         _g.hit_count = (_g.hit_count or 0) + 1
         return objectfile_cached
+    elseif remote_cache_client.is_connected() and
+        remote_cache_client.singleton():pull(cachekey, objectfile_cached) and
+        os.isfile(objectfile_cached) then
+        _g.hit_count = (_g.hit_count or 0) + 1
+        return objectfile_cached
     end
 end
 
@@ -118,6 +124,12 @@ function put(cachekey, objectfile)
     local objectfile_cached = path.join(rootdir(), cachekey:sub(1, 2):lower(), cachekey)
     os.cp(objectfile, objectfile_cached)
     _g.newfiles_count = (_g.newfiles_count or 0) + 1
+    if remote_cache_client.is_connected() then
+        local cacheinfo = remote_cache_client.singleton():cacheinfo(cachekey)
+        if not cacheinfo or not cacheinfo.exists then
+            remote_cache_client.singleton():push(cachekey, objectfile)
+        end
+    end
 end
 
 -- build with cache

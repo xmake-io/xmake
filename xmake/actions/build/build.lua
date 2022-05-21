@@ -27,6 +27,7 @@ import("private.async.runjobs")
 import("private.utils.batchcmds")
 import("core.base.hashset")
 import("private.service.client_config")
+import("private.service.remote_cache.client", {alias = "remote_cache_client"})
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 
 -- clean target for rebuilding
@@ -244,6 +245,8 @@ function main(targetname, group_pattern)
     if distcc_build_client.is_connected() then
         client_config.load()
         distcc = distcc_build_client.singleton()
+    elseif remote_cache_client.is_connected() then
+        client_config.load()
     end
 
     -- build all jobs
