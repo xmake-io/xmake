@@ -118,9 +118,9 @@ function server_session:statusfile()
     return path.join(self:workdir(), "status.txt")
 end
 
--- get sourcedir directory
-function server_session:sourcedir()
-    return path.join(self:workdir(), "source")
+-- get cache directory
+function server_session:cachedir()
+    return path.join(self:workdir(), "cache")
 end
 
 function server_session:__tostring()
