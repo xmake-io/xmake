@@ -209,6 +209,10 @@ tb_int_t xm_lz4_decompress_stream_close(lua_State* lua);
 // the bloom filter functions
 tb_int_t xm_bloom_filter_open(lua_State* lua);
 tb_int_t xm_bloom_filter_close(lua_State* lua);
+tb_int_t xm_bloom_filter_clear(lua_State* lua);
+tb_int_t xm_bloom_filter_data(lua_State* lua);
+tb_int_t xm_bloom_filter_size(lua_State* lua);
+tb_int_t xm_bloom_filter_data_set(lua_State* lua);
 
 // the windows functions
 #ifdef TB_CONFIG_OS_WINDOWS
@@ -448,9 +452,13 @@ static luaL_Reg const g_lz4_functions[] =
 // the bloom filter functions
 static luaL_Reg const g_bloom_filter_functions[] =
 {
-    { "open",           xm_bloom_filter_open    }
-,   { "close",          xm_bloom_filter_close   }
-,   { tb_null,          tb_null                 }
+    { "open",           xm_bloom_filter_open     }
+,   { "close",          xm_bloom_filter_close    }
+,   { "clear",          xm_bloom_filter_clear    }
+,   { "data",           xm_bloom_filter_data     }
+,   { "size",           xm_bloom_filter_size     }
+,   { "data_set",       xm_bloom_filter_data_set }
+,   { tb_null,          tb_null                  }
 };
 
 // the string functions

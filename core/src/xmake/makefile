@@ -150,7 +150,11 @@ xmake_C_FILES 			+= \
 						lz4/decompress_stream_write \
 						lz4/decompress_stream_close \
 						bloom_filter/bloom_filter_open \
-						bloom_filter/bloom_filter_close
+						bloom_filter/bloom_filter_close \
+						bloom_filter/bloom_filter_clear \
+						bloom_filter/bloom_filter_data \
+						bloom_filter/bloom_filter_size \
+						bloom_filter/bloom_filter_data_set
 
 iswin =
 ifeq ($(PLAT),windows)

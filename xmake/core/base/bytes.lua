@@ -47,7 +47,8 @@ function _instance.new(...)
     local instance = table.inherit(_instance)
     if type(arg1) == "number" then
         local size = arg1
-        if type(arg2) == "cdata" then
+        local arg2_type = type(arg2)
+        if arg2_type == "cdata" or arg2_type == "userdata" then
             -- bytes(size, ptr [, manage]): mounts buffer on existing storage (manage memory or not)
             local ptr = arg2
             local manage = arg3
@@ -62,9 +63,9 @@ function _instance.new(...)
             -- bytes(size[, init]): allocates a buffer of given size
             local init
             if arg2 then
-                if type(arg2) == "number" then
+                if arg2_type == "number" then
                     init = arg2
-                elseif type(arg2) == "string" then
+                elseif arg2_type == "string" then
                     init = arg2:byte()
                 else
                     os.raise("invalid arguments #2 for bytes(size, ...), cdata, string, number or nil expected!")
