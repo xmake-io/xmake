@@ -127,7 +127,8 @@ function _instance:set(item)
     end
 
     -- do set
-    return bloom_filter._set(self:cdata(), item)
+    ok = bloom_filter._set(self:cdata(), item)
+    return true, ok
 end
 
 -- get the bloom filter data item
@@ -150,7 +151,8 @@ function _instance:get(item)
     end
 
     -- do get
-    return bloom_filter._get(self:cdata(), item)
+    ok = bloom_filter._get(self:cdata(), item)
+    return true, ok
 end
 
 -- ensure it is opened

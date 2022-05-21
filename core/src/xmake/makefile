@@ -154,6 +154,8 @@ xmake_C_FILES 			+= \
 						bloom_filter/bloom_filter_clear \
 						bloom_filter/bloom_filter_data \
 						bloom_filter/bloom_filter_size \
+						bloom_filter/bloom_filter_get \
+						bloom_filter/bloom_filter_set \
 						bloom_filter/bloom_filter_data_set
 
 iswin =

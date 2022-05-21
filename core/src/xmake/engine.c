@@ -212,6 +212,8 @@ tb_int_t xm_bloom_filter_close(lua_State* lua);
 tb_int_t xm_bloom_filter_clear(lua_State* lua);
 tb_int_t xm_bloom_filter_data(lua_State* lua);
 tb_int_t xm_bloom_filter_size(lua_State* lua);
+tb_int_t xm_bloom_filter_get(lua_State* lua);
+tb_int_t xm_bloom_filter_set(lua_State* lua);
 tb_int_t xm_bloom_filter_data_set(lua_State* lua);
 
 // the windows functions
@@ -457,6 +459,8 @@ static luaL_Reg const g_bloom_filter_functions[] =
 ,   { "clear",          xm_bloom_filter_clear    }
 ,   { "data",           xm_bloom_filter_data     }
 ,   { "size",           xm_bloom_filter_size     }
+,   { "get",            xm_bloom_filter_get      }
+,   { "set",            xm_bloom_filter_set      }
 ,   { "data_set",       xm_bloom_filter_data_set }
 ,   { tb_null,          tb_null                  }
 };
