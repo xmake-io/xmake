@@ -29,7 +29,7 @@ CC					= $(PRE_)clang
 ifeq ($(CXFLAGS_CHECK),)
 CC_CHECK			= ${shell if $(CC) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi }
 ifeq ($(BUILD_ARCH),arm64)
-CXFLAGS_CHECK		:= $(call CC_CHECK,-mfpu=neon,)
+#CXFLAGS_CHECK		:= $(call CC_CHECK,-mfpu=neon,)
 endif
 ifeq ($(BUILD_ARCH),x86_64)
 # it will crash on ci
