@@ -163,6 +163,35 @@ function remote_cache_client:disconnect()
     self:status_save()
 end
 
+-- clean server files
+function remote_cache_client:clean()
+    assert(self:is_connected(), "%s: has been not connected!", self)
+    local addr = self:addr()
+    local port = self:port()
+    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local session_id = self:session_id()
+    local errors
+    local ok = false
+    print("%s: clean files in %s:%d ..", self, addr, port)
+    local stream = socket_stream(sock)
+    if stream:send_msg(message.new_clean(session_id, {token = self:token()})) and stream:flush() then
+        local msg = stream:recv_msg()
+        if msg then
+            vprint(msg:body())
+            if msg:success() then
+                ok = true
+            else
+                errors = msg:errors()
+            end
+        end
+    end
+    if ok then
+        print("%s: clean files ok!", self)
+    else
+        print("%s: clean files failed in %s:%d, %s", self, addr, port, errors or "unknown")
+    end
+end
+
 -- is connected?
 function remote_cache_client:is_connected()
     return self:status().connected

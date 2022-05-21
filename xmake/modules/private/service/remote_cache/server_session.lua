@@ -74,6 +74,21 @@ function server_session:close()
     self:status_save()
 end
 
+-- pull file
+function server_session:pull(respmsg)
+end
+
+-- push file
+function server_session:push(respmsg)
+end
+
+-- clean files
+function server_session:clean()
+    vprint("%s: clean files in %s ..", self, self:workdir())
+    os.tryrm(self:workdir())
+    vprint("%s: clean files ok", self)
+end
+
 -- set stream
 function server_session:stream_set(stream)
     self._STREAM = stream

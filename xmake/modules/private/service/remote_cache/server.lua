@@ -86,6 +86,13 @@ function remote_cache_server:_on_handle(stream, msg)
                 self._SESSIONS[session_id] = nil
             else
                 assert(session:is_connected(), "session has not been connected!")
+                if msg:is_push() then
+                    session:push(respmsg)
+                elseif msg:is_pull() then
+                    session:pull(respmsg)
+                elseif msg:is_clean() then
+                    session:clean()
+                end
             end
             return true
         end,
