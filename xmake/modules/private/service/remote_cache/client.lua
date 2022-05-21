@@ -23,6 +23,7 @@ import("core.base.bytes")
 import("core.base.base64")
 import("core.base.socket")
 import("core.base.option")
+import("core.base.hashset")
 import("core.base.scheduler")
 import("core.project.config", {alias = "project_config"})
 import("lib.detect.find_tool")
@@ -52,6 +53,10 @@ function remote_cache_client:init()
     else
         raise("we need enter a project directory with xmake.lua first!")
     end
+
+    -- init sockets
+    self._FREESOCKS = {}
+    self._OPENSOCKS = hashset.new()
 end
 
 -- get class
@@ -168,7 +173,7 @@ function remote_cache_client:pull(cachekey, cachefile)
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(self:_sock_open(), "open socket failed!")
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -191,6 +196,7 @@ function remote_cache_client:pull(cachekey, cachefile)
             errors = "recv cache file failed"
         end
     end
+    self:_sock_close(sock)
     if ok then
         dprint("%s: pull cache(%s) ok!", self, cachekey)
     else
@@ -204,7 +210,7 @@ function remote_cache_client:push(cachekey, cachefile)
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(self:_sock_open(), "open socket failed!")
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -225,6 +231,7 @@ function remote_cache_client:push(cachekey, cachefile)
             errors = "send cache file failed"
         end
     end
+    self:_sock_close(sock)
     if ok then
         dprint("%s: push cache(%s) ok!", self, cachekey)
     else
@@ -237,7 +244,7 @@ function remote_cache_client:cacheinfo(cachekey)
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(self:_sock_open(), "open socket failed!")
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -256,6 +263,7 @@ function remote_cache_client:cacheinfo(cachekey)
             end
         end
     end
+    self:_sock_close(sock)
     if ok then
         dprint("%s: get cacheinfo(%s) ok!", self, cachekey)
     else
@@ -363,6 +371,45 @@ end
 -- get the address port
 function remote_cache_client:port()
     return self._PORT
+end
+
+-- open a free socket
+function remote_cache_client:_sock_open()
+    local freesocks = self._FREESOCKS
+    local opensocks = self._OPENSOCKS
+    if #freesocks > 0 then
+        local sock = freesocks[#freesocks]
+        table.remove(freesocks)
+        opensocks:insert(sock)
+        return sock
+    end
+
+    local addr = self:addr()
+    local port = self:port()
+    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    opensocks:insert(sock)
+    return sock
+end
+
+-- close a socket
+function remote_cache_client:_sock_close(sock)
+    local freesocks = self._FREESOCKS
+    local opensocks = self._OPENSOCKS
+    table.insert(freesocks, sock)
+    opensocks:remove(sock)
+end
+
+function remote_cache_client:__gc()
+    local freesocks = self._FREESOCKS
+    local opensocks = self._OPENSOCKS
+    for _, sock in ipairs(freesocks) do
+        sock:close()
+    end
+    for _, sock in ipairs(opensocks:keys()) do
+        sock:close()
+    end
+    self._FREESOCKS = {}
+    self._OPENSOCKS = {}
 end
 
 function remote_cache_client:__tostring()
