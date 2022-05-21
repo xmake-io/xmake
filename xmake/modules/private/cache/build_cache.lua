@@ -92,6 +92,8 @@ function dump_stats()
     local hit_count = (_g.hit_count or 0)
     local total_count = (_g.total_count or 0)
     local newfiles_count = (_g.newfiles_count or 0)
+    local remote_hit_count = (_g.remote_hit_count or 0)
+    local remote_newfiles_count = (_g.remote_newfiles_count or 0)
     local preprocess_error_count = (_g.preprocess_error_count or 0)
     vprint("")
     vprint("build cache stats:")
@@ -100,6 +102,8 @@ function dump_stats()
     vprint("cache hit: %d", hit_count)
     vprint("cache miss: %d", total_count - hit_count)
     vprint("new cached files: %d", newfiles_count)
+    vprint("remote cache hit: %d", remote_hit_count)
+    vprint("remote new cached files: %d", remote_newfiles_count)
     vprint("preprocess failed: %d", preprocess_error_count)
     vprint("")
 end
@@ -115,6 +119,7 @@ function get(cachekey)
         remote_cache_client.singleton():pull(cachekey, objectfile_cached) and
         os.isfile(objectfile_cached) then
         _g.hit_count = (_g.hit_count or 0) + 1
+        _g.remote_hit_count = (_g.remote_hit_count or 0) + 1
         return objectfile_cached
     end
 end
@@ -127,6 +132,7 @@ function put(cachekey, objectfile)
     if remote_cache_client.is_connected() then
         local cacheinfo = remote_cache_client.singleton():cacheinfo(cachekey)
         if not cacheinfo or not cacheinfo.exists then
+            _g.remote_newfiles_count = (_g.remote_newfiles_count or 0) + 1
             remote_cache_client.singleton():push(cachekey, objectfile)
         end
     end
