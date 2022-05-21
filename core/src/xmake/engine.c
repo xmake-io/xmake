@@ -206,6 +206,10 @@ tb_int_t xm_lz4_decompress_stream_read(lua_State* lua);
 tb_int_t xm_lz4_decompress_stream_write(lua_State* lua);
 tb_int_t xm_lz4_decompress_stream_close(lua_State* lua);
 
+// the bloom filter functions
+tb_int_t xm_bloom_filter_open(lua_State* lua);
+tb_int_t xm_bloom_filter_close(lua_State* lua);
+
 // the windows functions
 #ifdef TB_CONFIG_OS_WINDOWS
 tb_int_t xm_winos_cp_info(lua_State* lua);
@@ -439,6 +443,14 @@ static luaL_Reg const g_lz4_functions[] =
 ,   { "decompress_stream_write",xm_lz4_decompress_stream_write }
 ,   { "decompress_stream_close",xm_lz4_decompress_stream_close }
 ,   { tb_null,                  tb_null                        }
+};
+
+// the bloom filter functions
+static luaL_Reg const g_bloom_filter_functions[] =
+{
+    { "open",           xm_bloom_filter_open    }
+,   { "close",          xm_bloom_filter_close   }
+,   { tb_null,          tb_null                 }
 };
 
 // the string functions
@@ -988,6 +1000,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
         // bind lz4 functions
         xm_lua_register(engine->lua, "lz4", g_lz4_functions);
+
+        // bind bloom filter functions
+        xm_lua_register(engine->lua, "bloom_filter", g_bloom_filter_functions);
 
         // bind base64 functions
         xm_lua_register(engine->lua, "base64", g_base64_functions);

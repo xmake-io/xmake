@@ -173,7 +173,7 @@ function _instance:__gc()
     end
 end
 
--- new a bloom filter, e.g. {probability = 0.001}
+-- new a bloom filter, e.g. {probability = 0.001, hash_count = 3, item_maxn = 1000000}
 function bloom_filter.new(opt)
     opt = opt or {}
     local probability = opt.probability or 0.001
@@ -186,7 +186,9 @@ function bloom_filter.new(opt)
         [0.000001] = bloom_filter.PROBABILITY_0_000001
     }
     probability = assert(maps[probability], "invalid probability(%f)", probability)
-    local handle, errors = bloom_filter._open(probability)
+    local hash_count = opt.hash_count or 3
+    local item_maxn = opt.item_maxn or 1000000
+    local handle, errors = bloom_filter._open(probability, hash_count, item_maxn)
     if handle then
         return _instance.new(handle)
     else
