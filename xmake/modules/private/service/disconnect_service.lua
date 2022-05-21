@@ -24,9 +24,14 @@ import("core.base.scheduler")
 import("private.service.client_config", {alias = "config"})
 import("private.service.remote_build.client", {alias = "remote_build_client"})
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
+import("private.service.remote_cache.client", {alias = "remote_cache_client"})
 
 function _disconnect_remote_build_server(...)
     remote_build_client(...):disconnect()
+end
+
+function _disconnect_remote_cache_server(...)
+    remote_cache_client(...):disconnect()
 end
 
 function _disconnect_distcc_build_server(...)
@@ -39,6 +44,8 @@ function main(...)
         table.insert(disconnectors, _disconnect_remote_build_server)
     elseif option.get("distcc") then
         table.insert(disconnectors, _disconnect_distcc_build_server)
+    elseif option.get("ccache") then
+        table.insert(disconnectors, _disconnect_remote_cache_server)
     else
         if config.get("remote_build") then
             table.insert(disconnectors, _disconnect_remote_build_server)

@@ -21,10 +21,30 @@
 -- imports
 import("core.base.option")
 import("private.service.remote_build.server", {alias = "remote_build_server"})
+import("private.service.remote_cache.server", {alias = "remote_cache_server"})
 import("private.service.distcc_build.server", {alias = "distcc_build_server"})
 
 function _stop_remote_build_server(...)
     local pidfile = remote_build_server(...):pidfile()
+    if pidfile and os.isfile(pidfile) then
+        local pid = io.readfile(pidfile)
+        if pid then
+            pid = pid:trim()
+            try { function ()
+                if is_host("windows") then
+                    os.run("taskkill /f /t /pid %s", pid)
+                else
+                    os.run("kill -9 %s", pid)
+                end
+                print("service[%s]: stopped", pid)
+            end}
+        end
+        os.rm(pidfile)
+    end
+end
+
+function _stop_remote_cache_server(...)
+    local pidfile = remote_cache_server(...):pidfile()
     if pidfile and os.isfile(pidfile) then
         local pid = io.readfile(pidfile)
         if pid then
@@ -62,7 +82,7 @@ function _stop_distcc_build_server(...)
 end
 
 function main(...)
-    local stoppers = {_stop_remote_build_server, _stop_distcc_build_server}
+    local stoppers = {_stop_remote_build_server, _stop_remote_cache_server, _stop_distcc_build_server}
     for _, stop_server in ipairs(stoppers) do
         stop_server(...)
     end

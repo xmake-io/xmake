@@ -54,9 +54,6 @@ function server_session:open()
         return
     end
 
-    -- ensure source directory
-    self:_ensure_sourcedir()
-
     -- update status
     local status = self:status()
     status.connected = true

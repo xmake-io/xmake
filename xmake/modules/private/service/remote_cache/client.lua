@@ -52,12 +52,6 @@ function remote_cache_client:init()
     else
         raise("we need enter a project directory with xmake.lua first!")
     end
-
-    -- init filesync
-    local filesync = new_filesync(self:projectdir(), path.join(self:workdir(), "manifest.txt"))
-    filesync:ignorefiles_add(".git/**")
-    filesync:ignorefiles_add(".xmake/**")
-    self._FILESYNC = filesync
 end
 
 -- get class
@@ -123,11 +117,6 @@ function remote_cache_client:connect()
     status.connected = ok
     status.session_id = session_id
     self:status_save()
-
-    -- sync files
-    if ok then
-        self:sync()
-    end
 end
 
 -- disconnect server

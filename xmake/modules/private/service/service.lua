@@ -23,10 +23,15 @@ import("core.base.option")
 import("core.base.scheduler")
 import("private.service.server_config", {alias = "config"})
 import("private.service.remote_build.server", {alias = "remote_build_server"})
+import("private.service.remote_cache.server", {alias = "remote_cache_server"})
 import("private.service.distcc_build.server", {alias = "distcc_build_server"})
 
 function _start_remote_build_server(...)
     remote_build_server(...):runloop()
+end
+
+function _start_remote_cache_server(...)
+    remote_cache_server(...):runloop()
 end
 
 function _start_distcc_build_server(...)
@@ -42,9 +47,14 @@ function main(daemon, ...)
         table.insert(starters, _start_remote_build_server)
     elseif option.get("distcc") then
         table.insert(starters, _start_distcc_build_server)
+    elseif option.get("ccache") then
+        table.insert(starters, _start_remote_cache_server)
     else
         if config.get("remote_build") then
             table.insert(starters, _start_remote_build_server)
+        end
+        if config.get("remote_cache") then
+            table.insert(starters, _start_remote_cache_server)
         end
         if config.get("distcc_build") then
             table.insert(starters, _start_distcc_build_server)
