@@ -136,7 +136,7 @@ function _cstream:write(data, opt)
     return write, errors
 end
 
--- ensure the socket is opened
+-- ensure it is opened
 function _cstream:_ensure_opened()
     if not self:cdata() then
         return false, string.format("%s: has been closed!", self)
@@ -247,7 +247,7 @@ function _dstream:write(data, opt)
     return write, errors
 end
 
--- ensure the socket is opened
+-- ensure it is opened
 function _dstream:_ensure_opened()
     if not self:cdata() then
         return false, string.format("%s: has been closed!", self)
