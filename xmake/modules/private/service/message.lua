@@ -274,7 +274,7 @@ end
 function new_fileinfo(session_id, filename, opt)
     opt = opt or {}
     return _new({
-        code = message.CODE_PUSH,
+        code = message.CODE_FILEINFO,
         filename = filename,
         session_id = session_id,
         token = opt.token
