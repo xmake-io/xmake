@@ -25,14 +25,16 @@ import("core.base.object")
 local message = message or object()
 
 -- the common message code
-message.CODE_CONNECT        = 1 -- connect server
-message.CODE_DISCONNECT     = 2 -- disconnect server
-message.CODE_CLEAN          = 3 -- clean all cached files in server
-message.CODE_DATA           = 4 -- send data
-message.CODE_RUNCMD         = 5 -- run the given command in server
-message.CODE_DIFF           = 6 -- diff files between server and client
-message.CODE_SYNC           = 7 -- sync files between server and client
-message.CODE_COMPILE        = 8 -- compile the given file from client in server
+message.CODE_CONNECT        = 1  -- connect server
+message.CODE_DISCONNECT     = 2  -- disconnect server
+message.CODE_CLEAN          = 3  -- clean all cached files in server
+message.CODE_DATA           = 4  -- send data
+message.CODE_RUNCMD         = 5  -- run the given command in server
+message.CODE_DIFF           = 6  -- diff files between server and client
+message.CODE_SYNC           = 7  -- sync files between server and client
+message.CODE_COMPILE        = 8  -- compile the given file from client in server
+message.CODE_PULL           = 9  -- pull the given file from server
+message.CODE_PUSH           = 10 -- push the given file to server
 
 -- init message
 function message:init(body)
@@ -87,6 +89,16 @@ end
 -- is data message?
 function message:is_data()
     return self:code() == message.CODE_DATA
+end
+
+-- is pull message?
+function message:is_pull()
+    return self:code() == message.CODE_PULL
+end
+
+-- is push message?
+function message:is_push()
+    return self:code() == message.CODE_PUSH
 end
 
 -- get user authorization
@@ -227,6 +239,28 @@ function new_compile(session_id, toolname, toolkind, plat, arch, toolchain, flag
         toolchain = toolchain,
         flags = flags,
         sourcename = sourcename
+    })
+end
+
+-- new pull message
+function new_pull(session_id, filename, opt)
+    opt = opt or {}
+    return _new({
+        code = message.CODE_PULL,
+        filename = filename,
+        session_id = session_id,
+        token = opt.token
+    })
+end
+
+-- new push message
+function new_push(session_id, filename, opt)
+    opt = opt or {}
+    return _new({
+        code = message.CODE_PUSH,
+        filename = filename,
+        session_id = session_id,
+        token = opt.token
     })
 end
 
