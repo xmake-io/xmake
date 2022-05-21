@@ -130,6 +130,7 @@ function put(cachekey, objectfile)
     os.cp(objectfile, objectfile_cached)
     _g.newfiles_count = (_g.newfiles_count or 0) + 1
     if remote_cache_client.is_connected() then
+        -- TODO we need optimize it, decrease query count
         local cacheinfo = remote_cache_client.singleton():cacheinfo(cachekey)
         if not cacheinfo or not cacheinfo.exists then
             _g.remote_newfiles_count = (_g.remote_newfiles_count or 0) + 1
