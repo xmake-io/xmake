@@ -146,7 +146,7 @@
     <TargetName Condition="'$(XmakeFilename)' != ''">$([System.IO.Path]::GetFileNameWithoutExtension('$(XmakeFilename)'))</TargetName>
     <TargetExt Condition="'$(XmakeFilename)' != ''">$([System.IO.Path]::GetExtension('$(XmakeFilename)'))</TargetExt>
   </PropertyGroup>
-  
+
   <PropertyGroup Label="Path">
     <IncludePath>$(XmakeIncludeDirs);$(IncludePath)</IncludePath>
     <LibraryPath>$(XmakeLinkDirs);$(LibraryPath)</LibraryPath>
@@ -178,7 +178,7 @@ $(RemoteDebuggerEnvironment)</RemoteDebuggerEnvironment>
     <None Condition="'$(XmakeScriptDir)' != '$(XmakeProjectDir)' And Exists('$(XmakeScriptDir)\xmake.lua')"
       Include="$(XmakeScriptDir)\xmake.lua" />
   </ItemGroup>
-  
+
   <Import Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.items')"
     Project="$(MSBuildProjectDirectory)\Xmake.Custom.items" />
 </Project>

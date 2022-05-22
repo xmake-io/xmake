@@ -151,8 +151,8 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.default       = tostring(target:is_default())
 
     -- save target file
-    targetinfo.basename      = _escape(target:get("basename"))
-    targetinfo.filename      = _escape(target:get("filename"))
+    targetinfo.basename      = _escape(target:basename())
+    targetinfo.filename      = _escape(target:filename())
 
     -- save dirs
     targetinfo.targetdir     = _make_dirs(target:get("targetdir"))
