@@ -619,7 +619,7 @@ function _get_command_string(cmd, outputdir)
     if cmd.program then
         -- @see https://github.com/xmake-io/xmake/discussions/2156
         local argv = {}
-        for _, v in ipairs(table.join(cmd.program, cmd.argv)) do
+        for _, v in ipairs(cmd.argv) do
             if path.instance_of(v) then
                 v = v:clone():set(_get_unix_path_relative_to_cmake(v:rawstr(), outputdir)):str()
             elseif path.is_absolute(v) then
@@ -627,7 +627,7 @@ function _get_command_string(cmd, outputdir)
             end
             table.insert(argv, v)
         end
-        local command = os.args(argv)
+        local command = cmd.program .. " " .. os.args(argv)
         if opt and opt.curdir then
             command = "${CMAKE_COMMAND} -E chdir " .. _get_unix_path_relative_to_cmake(opt.curdir, outputdir) .. " " .. command
         end
