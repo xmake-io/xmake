@@ -42,12 +42,25 @@ function _get_cmake_minver()
     return cmake_minver
 end
 
+-- tranlate path
+function _translate_path(filepath, outputdir)
+    filepath = path.translate(filepath)
+    if filepath == "" then
+        return ""
+    end
+    if path.is_absolute(filepath) then
+        if filepath:startswith(project.directory()) then
+            return path.relative(filepath, outputdir)
+        end
+        return filepath
+    else
+        return path.relative(path.absolute(filepath), outputdir)
+    end
+end
+
 -- get unix path
 function _get_unix_path(filepath, outputdir)
-    if path.is_absolute(filepath) and filepath:startswith(os.projectdir()) then
-        filepath = path.relative(filepath, os.projectdir())
-    end
-    filepath = path.relative(filepath, outputdir)
+    filepath = _translate_path(filepath, outputdir)
     filepath = path.translate(filepath):gsub('\\', '/')
     return os.args(filepath)
 end
@@ -55,7 +68,8 @@ end
 -- get unix path relative to the cmake path
 -- @see https://github.com/xmake-io/xmake/issues/2026
 function _get_unix_path_relative_to_cmake(filepath, outputdir)
-    filepath = _get_unix_path(filepath, outputdir)
+    filepath = _translate_path(filepath, outputdir)
+    filepath = path.translate(filepath):gsub('\\', '/')
     if filepath and not path.is_absolute(filepath) then
         filepath = "${CMAKE_SOURCE_DIR}/" .. filepath
     end
@@ -606,7 +620,9 @@ function _get_command_string(cmd, outputdir)
         -- @see https://github.com/xmake-io/xmake/discussions/2156
         local argv = {}
         for _, v in ipairs(table.join(cmd.program, cmd.argv)) do
-            if path.is_absolute(v) then
+            if path.instance_of(v) then
+                v = v:clone():set(_get_unix_path_relative_to_cmake(v:rawstr(), outputdir)):str()
+            elseif path.is_absolute(v) then
                 v = _get_unix_path_relative_to_cmake(v, outputdir)
             end
             table.insert(argv, v)

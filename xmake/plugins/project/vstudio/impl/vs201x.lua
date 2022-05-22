@@ -85,7 +85,9 @@ function _get_command_string(cmd, vcxprojdir)
     if cmd.program then
         local argv = {}
         for _, v in ipairs(table.join(cmd.program, cmd.argv)) do
-            if path.is_absolute(v) then
+            if path.instance_of(v) then
+                v = v:clone():set(_translate_path(v:rawstr(), vcxprojdir)):str()
+            elseif path.is_absolute(v) then
                 v = _translate_path(v, vcxprojdir)
             end
             table.insert(argv, v)
@@ -96,15 +98,16 @@ function _get_command_string(cmd, vcxprojdir)
         end
         return command
     elseif kind == "cp" then
-        return string.format("copy /Y \"%s\" \"%s\"", cmd.srcpath, cmd.dstpath)
+        return string.format("copy /Y \"%s\" \"%s\"", _translate_path(cmd.srcpath, vcxprojdir), _translate_path(cmd.dstpath, vcxprojdir))
     elseif kind == "rm" then
-        return string.format("del /F /Q \"%s\" || rmdir /S /Q \"%s\"", cmd.filepath, cmd.filepath)
+        return string.format("del /F /Q \"%s\" || rmdir /S /Q \"%s\"", _translate_path(cmd.filepath, vcxprojdir), _translate_path(cmd.filepath, vcxprojdir))
     elseif kind == "mv" then
-        return string.format("rename \"%s\" \"%s\"", cmd.srcpath, cmd.dstpath)
+        return string.format("rename \"%s\" \"%s\"", _translate_path(cmd.srcpath, vcxprojdir), _translate_path(cmd.dstpath, vcxprojdir))
     elseif kind == "cd" then
-        return string.format("cd \"%s\"", cmd.dir)
+        return string.format("cd \"%s\"", _translate_path(cmd.dir, vcxprojdir))
     elseif kind == "mkdir" then
-        return string.format("if not exist \"%s\" mkdir \"%s\"", cmd.dir, cmd.dir)
+        local dir = _translate_path(cmd.dir, vcxprojdir)
+        return string.format("if not exist \"%s\" mkdir \"%s\"", dir, dir)
     elseif kind == "show" then
         return string.format("echo %s", cmd.showtext)
     end
