@@ -57,13 +57,13 @@ end
 
 function _instance:set(p)
     self._RAWSTR = tostring(p)
-    instance:_update()
+    self:_update()
     return self
 end
 
 function _instance:transform_set(transform)
     self._TRANSFORM = transform
-    instance:_update()
+    self:_update()
     return self
 end
 
