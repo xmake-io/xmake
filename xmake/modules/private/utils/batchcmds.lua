@@ -235,8 +235,8 @@ function batchcmds:compile(sourcefiles, objectfile, opt)
 
     -- load compiler and get compilation command
     local sourcekind = opt.sourcekind
-    if not sourcekind and type(sourcefiles) == "string" then
-        sourcekind = language.sourcekind_of(sourcefiles)
+    if not sourcekind and type(sourcefiles) == "string" or path.instance_of(sourcefiles) then
+        sourcekind = language.sourcekind_of(tostring(sourcefiles))
     end
     local compiler_inst = compiler.load(sourcekind, opt)
     local program, argv = compiler_inst:compargv(sourcefiles, path(objectfile), opt)
