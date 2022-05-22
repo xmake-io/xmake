@@ -222,7 +222,7 @@ function batchcmds:compile(sourcefiles, objectfile, opt)
     opt = opt or {}
     opt.target = self._TARGET
 
-    -- wrap path for sourcefiles
+    -- wrap path for sourcefiles, because we need translate path for project generator
     if type(sourcefiles) == "table" then
         local sourcefiles_wrap = {}
         for _, sourcefile in ipairs(sourcefiles) do
@@ -254,7 +254,7 @@ function batchcmds:link(objectfiles, targetfile, opt)
     opt = opt or {}
     opt.target = target
 
-    -- wrap path for objectfiles
+    -- wrap path for objectfiles, because we need translate path for project generator
     local objectfiles_wrap = {}
     for _, objectfile in ipairs(objectfiles) do
         table.insert(objectfiles_wrap, path(objectfile))
