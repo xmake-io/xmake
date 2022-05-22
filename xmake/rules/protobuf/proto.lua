@@ -109,9 +109,9 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
     -- add commands
     batchcmds:mkdir(sourcefile_dir)
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
-    batchcmds:vrunv(protoc, {sourcefile_proto,
-        "-I" .. (prefixdir and prefixdir or path.directory(sourcefile_proto)),
-        (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. sourcefile_dir})
+    batchcmds:vrunv(protoc, {path(sourcefile_proto),
+        path(prefixdir and prefixdir or path.directory(sourcefile_proto), function (p) return "-I" .. p end),
+        path(sourcefile_dir, function (p) return (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. p end)})
     batchcmds:compile(sourcefile_cx, objectfile, {configs = {includedirs = sourcefile_dir, languages = (sourcekind == "cxx" and "c++11")}})
 
     -- add deps
