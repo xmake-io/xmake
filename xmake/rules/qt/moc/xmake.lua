@@ -47,7 +47,8 @@ rule("qt.moc")
         if sourcefile:endswith(".cpp") then
             filename_moc = basename .. ".moc"
         end
-        local sourcefile_moc = path.join(target:autogendir(), "rules", "qt", "moc", filename_moc)
+        -- we need to retain the file directory structure, @see https://github.com/xmake-io/xmake/issues/2343
+        local sourcefile_moc = target:autogenfile(path.join(path.directory(sourcefile), filename_moc))
 
         -- add objectfile
         local objectfile = target:objectfile(sourcefile_moc)
