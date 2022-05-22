@@ -42,12 +42,25 @@ function _get_cmake_minver()
     return cmake_minver
 end
 
+-- tranlate path
+function _translate_path(filepath, outputdir)
+    filepath = path.translate(filepath)
+    if filepath == "" then
+        return ""
+    end
+    if path.is_absolute(filepath) then
+        if filepath:startswith(project.directory()) then
+            return path.relative(filepath, outputdir)
+        end
+        return filepath
+    else
+        return path.relative(path.absolute(filepath), outputdir)
+    end
+end
+
 -- get unix path
 function _get_unix_path(filepath, outputdir)
-    if path.is_absolute(filepath) and filepath:startswith(os.projectdir()) then
-        filepath = path.relative(filepath, os.projectdir())
-    end
-    filepath = path.relative(filepath, outputdir)
+    filepath = _translate_path(filepath, outputdir)
     filepath = path.translate(filepath):gsub('\\', '/')
     return os.args(filepath)
 end
@@ -55,7 +68,8 @@ end
 -- get unix path relative to the cmake path
 -- @see https://github.com/xmake-io/xmake/issues/2026
 function _get_unix_path_relative_to_cmake(filepath, outputdir)
-    filepath = _get_unix_path(filepath, outputdir)
+    filepath = _translate_path(filepath, outputdir)
+    filepath = path.translate(filepath):gsub('\\', '/')
     if filepath and not path.is_absolute(filepath) then
         filepath = "${CMAKE_SOURCE_DIR}/" .. filepath
     end
@@ -289,8 +303,6 @@ function _add_target_include_directories(cmakelists, target, outputdir)
         end
         cmakelists:print(")")
     end
-
-    -- TODO deprecated
     local includedirs_interface = target:get("includedirs", {interface = true})
     if includedirs_interface then
         cmakelists:print("target_include_directories(%s INTERFACE", target:name())
@@ -324,6 +336,42 @@ function _add_target_sysinclude_directories(cmakelists, target, outputdir)
         cmakelists:print("target_include_directories(%s INTERFACE", target:name())
         for _, headerdir in ipairs(includedirs_interface) do
             cmakelists:print("    " .. _get_unix_path(headerdir, outputdir))
+        end
+        cmakelists:print(")")
+    end
+end
+
+-- add target framework directories
+function _add_target_framework_directories(cmakelists, target, outputdir)
+    local frameworkdirs = _get_configs_from_target(target, "frameworkdirs")
+    if #frameworkdirs > 0 then
+        cmakelists:print("target_compile_options(%s PRIVATE", target:name())
+        for _, frameworkdir in ipairs(frameworkdirs) do
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:OBJC>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:OBJCXX>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+        end
+        cmakelists:print(")")
+        local cmake_minver = _get_cmake_minver()
+        if cmake_minver:ge("3.13.0") then
+            cmakelists:print("target_link_options(%s PRIVATE", target:name())
+        else
+            cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
+        end
+        for _, frameworkdir in ipairs(frameworkdirs) do
+            cmakelists:print("    -F" .. _get_unix_path(frameworkdir, outputdir))
+        end
+        cmakelists:print(")")
+    end
+    local frameworkdirs_interface = target:get("frameworkdirs", {interface = true})
+    if frameworkdirs_interface then
+        cmakelists:print("target_compile_options(%s PRIVATE", target:name())
+        for _, frameworkdir in ipairs(frameworkdirs_interface) do
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:OBJC>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:OBJCXX>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
         end
         cmakelists:print(")")
     end
@@ -605,13 +653,15 @@ function _get_command_string(cmd, outputdir)
     if cmd.program then
         -- @see https://github.com/xmake-io/xmake/discussions/2156
         local argv = {}
-        for _, v in ipairs(table.join(cmd.program, cmd.argv)) do
-            if path.is_absolute(v) then
+        for _, v in ipairs(cmd.argv) do
+            if path.instance_of(v) then
+                v = v:clone():set(_get_unix_path_relative_to_cmake(v:rawstr(), outputdir)):str()
+            elseif path.is_absolute(v) then
                 v = _get_unix_path_relative_to_cmake(v, outputdir)
             end
             table.insert(argv, v)
         end
-        local command = os.args(argv)
+        local command = cmd.program .. " " .. os.args(argv)
         if opt and opt.curdir then
             command = "${CMAKE_COMMAND} -E chdir " .. _get_unix_path_relative_to_cmake(opt.curdir, outputdir) .. " " .. command
         end
@@ -798,6 +848,9 @@ function _add_target(cmakelists, target, outputdir)
 
     -- add target system include directories
     _add_target_sysinclude_directories(cmakelists, target, outputdir)
+
+    -- add target framework directories
+    _add_target_framework_directories(cmakelists, target, outputdir)
 
     -- add target compile definitions
     _add_target_compile_definitions(cmakelists, target)

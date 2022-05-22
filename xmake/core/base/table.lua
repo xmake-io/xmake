@@ -93,7 +93,7 @@ end
 function table.join(...)
     local result = {}
     for _, t in ipairs({...}) do
-        if type(t) == "table" then
+        if type(t) == "table" and not t.__wraplocked__ then
             for k, v in pairs(t) do
                 if type(k) == "number" then table.insert(result, v)
                 else result[k] = v end
@@ -108,7 +108,7 @@ end
 -- join all objects and tables to self
 function table.join2(self, ...)
     for _, t in ipairs({...}) do
-        if type(t) == "table" then
+        if type(t) == "table" and not t.__wraplocked__ then
             for k, v in pairs(t) do
                 if type(k) == "number" then table.insert(self, v)
                 else self[k] = v end

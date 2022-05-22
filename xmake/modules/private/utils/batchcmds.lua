@@ -222,13 +222,24 @@ function batchcmds:compile(sourcefiles, objectfile, opt)
     opt = opt or {}
     opt.target = self._TARGET
 
+    -- wrap path for sourcefiles, because we need translate path for project generator
+    if type(sourcefiles) == "table" then
+        local sourcefiles_wrap = {}
+        for _, sourcefile in ipairs(sourcefiles) do
+            table.insert(sourcefiles_wrap, path(sourcefile))
+        end
+        sourcefiles = sourcefiles_wrap
+    else
+        sourcefiles = path(sourcefiles)
+    end
+
     -- load compiler and get compilation command
     local sourcekind = opt.sourcekind
-    if not sourcekind and type(sourcefiles) == "string" then
-        sourcekind = language.sourcekind_of(sourcefiles)
+    if not sourcekind and type(sourcefiles) == "string" or path.instance_of(sourcefiles) then
+        sourcekind = language.sourcekind_of(tostring(sourcefiles))
     end
     local compiler_inst = compiler.load(sourcekind, opt)
-    local program, argv = compiler_inst:compargv(sourcefiles, objectfile, opt)
+    local program, argv = compiler_inst:compargv(sourcefiles, path(objectfile), opt)
 
     -- add compilation command and bind run environments of compiler
     self:mkdir(path.directory(objectfile))
@@ -243,9 +254,16 @@ function batchcmds:link(objectfiles, targetfile, opt)
     opt = opt or {}
     opt.target = target
 
+    -- wrap path for objectfiles, because we need translate path for project generator
+    local objectfiles_wrap = {}
+    for _, objectfile in ipairs(objectfiles) do
+        table.insert(objectfiles_wrap, path(objectfile))
+    end
+    objectfiles = objectfiles_wrap
+
     -- load linker and get link command
     local linker_inst = target and target:linker() or linker.load(opt.targetkind, opt.sourcekinds, opt)
-    local program, argv = linker_inst:linkargv(objectfiles, targetfile, opt)
+    local program, argv = linker_inst:linkargv(objectfiles, path(targetfile), opt)
 
     -- add link command and bind run environments of linker
     self:mkdir(path.directory(targetfile))

@@ -26,34 +26,48 @@ local string = require("base/string")
 local table  = require("base/table")
 local _instance = _instance or {}
 
+-- save original interfaces
+path._absolute = path._absolute or path.absolute
+path._relative = path._relative or path.relative
+
 -- new a path
 function _instance.new(p, transform)
     local instance = table.inherit(_instance)
-    instance._PATH = p
+    instance._RAWSTR = p
     instance._TRANSFORM = transform
     setmetatable(instance, _instance)
+    table.wraplock(instance)
+    instance:_update()
     return instance
 end
 
-function _instance:str()
+-- update path string
+function _instance:_update()
     local transform = self._TRANSFORM
     if transform then
-        return transform(self:rawstr())
+        self._STR = transform(self:rawstr())
+    else
+        self._STR = self:rawstr()
     end
-    return self:rawstr()
+end
+
+function _instance:str()
+    return self._STR
 end
 
 function _instance:rawstr()
-    return self._PATH
+    return self._RAWSTR
 end
 
 function _instance:set(p)
-    self._PATH = tostring(p)
+    self._RAWSTR = tostring(p)
+    self:_update()
     return self
 end
 
 function _instance:transform_set(transform)
     self._TRANSFORM = transform
+    self:_update()
     return self
 end
 
@@ -83,6 +97,14 @@ end
 
 function _instance:directory()
     return path.new(path.directory(self:str()), self._TRANSFORM)
+end
+
+function _instance:absolute(rootdir)
+    return path.new(path.absolute(self:str(), rootdir), self._TRANSFORM)
+end
+
+function _instance:relative(rootdir)
+    return path.new(path.relative(self:str(), rootdir), self._TRANSFORM)
 end
 
 function _instance:join(...)
@@ -131,12 +153,14 @@ end
 -- - reduce "/xxx/.." => "/"
 --
 function path.normalize(p)
+    p = tostring(p)
     return path.translate(p, {normalize = true})
 end
 
 -- get the directory of the path, compatible with lower version core binary
 if not path.directory then
     function path.directory(p, sep)
+        p = tostring(p)
         local i =  0
         if sep then
             -- if the path has been normalized, we can quickly find it with a unique path separator prompt
@@ -153,8 +177,25 @@ if not path.directory then
     end
 end
 
+-- get absolute path
+function path.absolute(p, rootdir)
+    if rootdir then
+        rootdir = tostring(rootdir)
+    end
+    return path._absolute(tostring(p), rootdir)
+end
+
+-- get relative path
+function path.relative(p, rootdir)
+    if rootdir then
+        rootdir = tostring(rootdir)
+    end
+    return path._relative(tostring(p), rootdir)
+end
+
 -- get the filename of the path
 function path.filename(p, sep)
+    p = tostring(p)
     local i =  0
     if sep then
         -- if the path has been normalized, we can quickly find it with a unique path separator prompt
@@ -171,6 +212,7 @@ end
 
 -- get the basename of the path
 function path.basename(p)
+    p = tostring(p)
     local name = path.filename(p)
     local i = name:lastof(".", true)
     if i then
@@ -182,6 +224,7 @@ end
 
 -- get the file extension of the path: .xxx
 function path.extension(p, level)
+    p = tostring(p)
     local i = p:lastof(".", true)
     if i then
         local ext = p:sub(i)
@@ -199,11 +242,13 @@ end
 
 -- join path
 function path.join(p, ...)
+    p = tostring(p)
     return path.translate(p .. path.sep() .. table.concat({...}, path.sep()))
 end
 
 -- split path by the separator
 function path.split(p)
+    p = tostring(p)
     return p:split("[/\\]")
 end
 
@@ -292,6 +337,7 @@ end
 
 -- the last character is the path seperator?
 function path.islastsep(p)
+    p = tostring(p)
     local sep = p:sub(#p, #p)
     return xmake._HOST == "windows" and (sep == '\\' or sep == '/') or (sep == '/')
 end
@@ -319,6 +365,7 @@ end
 
 -- get cygwin-style path on msys2/cygwin, e.g. "c:\xxx" -> "/c/xxx"
 function path.cygwin_path(p)
+    p = tostring(p)
     p = p:gsub("\\", "/")
     local pos = p:find(":/")
     if pos == 2 then
@@ -334,7 +381,7 @@ end
 
 -- is path instance?
 function path.instance_of(p)
-    return type(p) == "table" and p.normalize and p._PATH
+    return type(p) == "table" and p.normalize and p._RAWSTR
 end
 
 -- register call function

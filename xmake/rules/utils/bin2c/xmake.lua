@@ -37,7 +37,7 @@ rule("utils.bin2c")
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.bin2c %s", sourcefile_bin)
         batchcmds:mkdir(headerdir)
-        local argv = {"lua", "private.utils.bin2c", "-i", sourcefile_bin, "-o", headerfile}
+        local argv = {"lua", "private.utils.bin2c", "-i", path(sourcefile_bin), "-o", path(headerfile)}
         local linewidth = target:extraconf("rules", "utils.bin2c", "linewidth")
         if linewidth then
             table.insert(argv, "-w")

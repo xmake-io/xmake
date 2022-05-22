@@ -54,12 +54,12 @@ rule("qt.qrc")
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.qt.qrc %s", sourcefile_qrc)
         batchcmds:mkdir(sourcefile_dir)
-        batchcmds:vrunv(rcc, {"-name", path.basename(sourcefile_qrc), sourcefile_qrc, "-o", sourcefile_cpp})
+        batchcmds:vrunv(rcc, {"-name", path.basename(sourcefile_qrc), path(sourcefile_qrc), "-o", path(sourcefile_cpp)})
         batchcmds:compile(sourcefile_cpp, objectfile)
-        
+
         -- get qrc resources files
         local outdata = os.iorunv(rcc, {"-name", path.basename(sourcefile_qrc), sourcefile_qrc, "-list"})
-        
+
         -- add resources files to batch
         for _, file in ipairs(outdata:split("\n")) do
             batchcmds:add_depfiles(file)

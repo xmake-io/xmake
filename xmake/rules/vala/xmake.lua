@@ -75,12 +75,12 @@ rule("vala.build")
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.vala %s", sourcefile_vala)
         batchcmds:mkdir(basedir)
-        local argv = {"-C", "-b", basedir}
+        local argv = {"-C", "-b", path(basedir)}
         local packages = target:values("vala.packages")
         if packages then
             for _, package in ipairs(packages) do
                 table.insert(argv, "--pkg")
-                table.insert(argv, package)
+                table.insert(argv, path(package))
             end
         end
         if target:is_binary() then
@@ -88,30 +88,30 @@ rule("vala.build")
                 if dep:is_shared() or dep:is_static() then
                     local vapifile = dep:data("vala.vapifile")
                     if vapifile then
-                        table.join2(argv, vapifile)
+                        table.join2(argv, path(vapifile))
                     end
                 end
             end
         else
             local vapifile = target:data("vala.vapifile")
             if vapifile then
-                table.insert(argv, "--vapi=" .. vapifile)
+                table.insert(argv, path(vapifile, function (p) return "--vapi=" .. p end))
             end
             local headerfile = target:data("vala.headerfile")
             if headerfile then
                 table.insert(argv, "-H")
-                table.insert(argv, headerfile)
+                table.insert(argv, path(headerfile))
             end
         end
         local vapidir = target:data("vala.vapidir")
         if vapidir then
-            table.insert(argv, "--vapidir=" .. vapidir)
+            table.insert(argv, path(vapidir, function (p) return "--vapidir=" .. p end))
         end
         local valaflags = target:data("vala.flags")
         if valaflags then
             table.join2(argv, valaflags)
         end
-        table.insert(argv, sourcefile_vala)
+        table.insert(argv, path(sourcefile_vala))
         batchcmds:vrunv(valac.program, argv)
         batchcmds:compile(sourcefile_c, objectfile)
 
