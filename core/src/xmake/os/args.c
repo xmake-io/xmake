@@ -119,7 +119,7 @@ tb_int_t xm_os_args(lua_State* lua)
             lua_rawget(lua, 1);
             if (lua_istable(lua, -1)) // is path instance?
             {
-                lua_pushstring(lua, "_PATH");
+                lua_pushstring(lua, "_STR");
                 lua_gettable(lua, -2);
                 size_t size = 0;
                 tb_char_t const* cstr = luaL_checklstring(lua, -1, &size);

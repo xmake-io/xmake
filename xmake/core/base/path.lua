@@ -29,32 +29,41 @@ local _instance = _instance or {}
 -- new a path
 function _instance.new(p, transform)
     local instance = table.inherit(_instance)
-    instance._PATH = p
+    instance._RAWSTR = p
     instance._TRANSFORM = transform
     setmetatable(instance, _instance)
     table.wraplock(instance)
+    instance:_update()
     return instance
 end
 
-function _instance:str()
+-- update path string
+function _instance:_update()
     local transform = self._TRANSFORM
     if transform then
-        return transform(self:rawstr())
+        self._STR = transform(self:rawstr())
+    else
+        self._STR = self:rawstr()
     end
-    return self:rawstr()
+end
+
+function _instance:str()
+    return self._STR
 end
 
 function _instance:rawstr()
-    return self._PATH
+    return self._RAWSTR
 end
 
 function _instance:set(p)
-    self._PATH = tostring(p)
+    self._RAWSTR = tostring(p)
+    instance:_update()
     return self
 end
 
 function _instance:transform_set(transform)
     self._TRANSFORM = transform
+    instance:_update()
     return self
 end
 
@@ -344,7 +353,7 @@ end
 
 -- is path instance?
 function path.instance_of(p)
-    return type(p) == "table" and p.normalize and p._PATH
+    return type(p) == "table" and p.normalize and p._RAWSTR
 end
 
 -- register call function

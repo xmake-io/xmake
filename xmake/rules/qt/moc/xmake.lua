@@ -59,9 +59,19 @@ rule("qt.moc")
         -- generate c++ source file for moc
         local flags = {}
         table.join2(flags, compiler.map_flags("cxx", "define", target:get("defines")))
-        table.join2(flags, compiler.map_flags("cxx", "includedir", target:get("includedirs")))
-        table.join2(flags, compiler.map_flags("cxx", "includedir", target:get("sysincludedirs"))) -- for now, moc process doesn't support MSVC external includes flags and will fail
-        table.join2(flags, compiler.map_flags("cxx", "frameworkdir", target:get("frameworkdirs")))
+        local pathmaps = {
+            {"includedirs", "includedir"},
+            {"sysincludedirs", "includedir"}, -- for now, moc process doesn't support MSVC external includes flags and will fail
+            {"frameworkdirs", "frameworkdir"}
+        }
+        for _, pathmap in ipairs(pathmaps) do
+            for _, item in ipairs(target:get(pathmap[1])) do
+                local pathitem = path(item, function (p)
+                    return table.unwrap(compiler.map_flags("cxx", pathmap[2], p))
+                end)
+                table.insert(flags, pathitem)
+            end
+        end
         batchcmds:mkdir(path.directory(sourcefile_moc))
         batchcmds:vrunv(moc, table.join(flags, path(sourcefile), "-o", path(sourcefile_moc)))
 
