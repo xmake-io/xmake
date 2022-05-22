@@ -303,8 +303,6 @@ function _add_target_include_directories(cmakelists, target, outputdir)
         end
         cmakelists:print(")")
     end
-
-    -- TODO deprecated
     local includedirs_interface = target:get("includedirs", {interface = true})
     if includedirs_interface then
         cmakelists:print("target_include_directories(%s INTERFACE", target:name())
@@ -338,6 +336,32 @@ function _add_target_sysinclude_directories(cmakelists, target, outputdir)
         cmakelists:print("target_include_directories(%s INTERFACE", target:name())
         for _, headerdir in ipairs(includedirs_interface) do
             cmakelists:print("    " .. _get_unix_path(headerdir, outputdir))
+        end
+        cmakelists:print(")")
+    end
+end
+
+-- add target framework directories
+function _add_target_framework_directories(cmakelists, target, outputdir)
+    local frameworkdirs = _get_configs_from_target(target, "frameworkdirs")
+    if #frameworkdirs > 0 then
+        cmakelists:print("target_compile_options(%s PRIVATE", target:name())
+        for _, frameworkdir in ipairs(frameworkdirs) do
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:OBJC>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:OBJCXX>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+        end
+        cmakelists:print(")")
+    end
+    local frameworkdirs_interface = target:get("frameworkdirs", {interface = true})
+    if frameworkdirs_interface then
+        cmakelists:print("target_compile_options(%s PRIVATE", target:name())
+        for _, frameworkdir in ipairs(frameworkdirs_interface) do
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:OBJC>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:OBJCXX>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
         end
         cmakelists:print(")")
     end
@@ -814,6 +838,9 @@ function _add_target(cmakelists, target, outputdir)
 
     -- add target system include directories
     _add_target_sysinclude_directories(cmakelists, target, outputdir)
+
+    -- add target framework directories
+    _add_target_framework_directories(cmakelists, target, outputdir)
 
     -- add target compile definitions
     _add_target_compile_definitions(cmakelists, target)
