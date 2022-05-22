@@ -353,6 +353,16 @@ function _add_target_framework_directories(cmakelists, target, outputdir)
             cmakelists:print("    $<$<COMPILE_LANGUAGE:OBJCXX>:-F" .. _get_unix_path(frameworkdir, outputdir) .. ">")
         end
         cmakelists:print(")")
+        local cmake_minver = _get_cmake_minver()
+        if cmake_minver:ge("3.13.0") then
+            cmakelists:print("target_link_options(%s PRIVATE", target:name())
+        else
+            cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
+        end
+        for _, frameworkdir in ipairs(frameworkdirs) do
+            cmakelists:print("    -F" .. _get_unix_path(frameworkdir, outputdir))
+        end
+        cmakelists:print(")")
     end
     local frameworkdirs_interface = target:get("frameworkdirs", {interface = true})
     if frameworkdirs_interface then
