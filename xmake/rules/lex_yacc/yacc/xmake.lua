@@ -21,6 +21,10 @@
 -- define rule: yacc
 rule("yacc")
     set_extensions(".y", ".yy")
+    on_load(function (target)
+        local sourcefile_dir = path.join(target:autogendir(), "rules", "yacc_yacc")
+        target:add("includedirs", sourcefile_dir)
+    end)
     before_buildcmd_file(function (target, batchcmds, sourcefile_yacc, opt)
 
         -- get yacc
@@ -37,12 +41,11 @@ rule("yacc")
 
         -- add includedirs
         local sourcefile_dir = path.directory(sourcefile_cx)
-        target:add("includedirs", sourcefile_dir)
 
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.yacc %s", sourcefile_yacc)
         batchcmds:mkdir(sourcefile_dir)
-        batchcmds:vrunv(yacc.program, {"-d", "-o", sourcefile_cx, sourcefile_yacc})
+        batchcmds:vrunv(yacc.program, {"-d", "-o", path(sourcefile_cx), path(sourcefile_yacc)})
         batchcmds:compile(sourcefile_cx, objectfile)
 
         -- add deps

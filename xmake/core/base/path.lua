@@ -26,6 +26,9 @@ local string = require("base/string")
 local table  = require("base/table")
 local _instance = _instance or {}
 
+-- save original interfaces
+path._absolute = path._absolute or path.absolute
+
 -- new a path
 function _instance.new(p, transform)
     local instance = table.inherit(_instance)
@@ -93,6 +96,10 @@ end
 
 function _instance:directory()
     return path.new(path.directory(self:str()), self._TRANSFORM)
+end
+
+function _instance:absolute()
+    return path.new(path.absolute(self:str()), self._TRANSFORM)
 end
 
 function _instance:join(...)
@@ -163,6 +170,12 @@ if not path.directory then
             return "."
         end
     end
+end
+
+-- get absolute path
+function path.absolute(p)
+    p = tostring(p)
+    return path._absolute(p)
 end
 
 -- get the filename of the path
