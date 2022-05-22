@@ -70,15 +70,15 @@ function buildcmd(target, batchcmds, sourcefile_capnp, opt)
     local includes = capnproto:get("sysincludedirs")
     local argv = {"compile"}
     for _, value in ipairs(includes) do
-        table.insert(argv, "-I" .. value)
+        table.insert(argv, path(value, function (p) return "-I" .. p end))
     end
-    table.insert(argv, "-I" .. (prefixdir and prefixdir or path.directory(sourcefile_capnp)))
+    table.insert(argv, path(prefixdir and prefixdir or path.directory(sourcefile_capnp), function (p) return "-I" .. p end))
     if prefixdir then
-        table.insert(argv, "--src-prefix=" .. prefixdir)
+        table.insert(argv, path(prefixdir, function (p) return "--src-prefix=" .. p end))
     end
     table.insert(argv, "-o")
-    table.insert(argv, "c++:" .. sourcefile_dir)
-    table.insert(argv, sourcefile_capnp)
+    table.insert(argv, path(sourcefile_dir, function (p) return "c++:" .. p end))
+    table.insert(argv, path(sourcefile_capnp))
     batchcmds:vrunv(capnp, argv)
     local configs = {includedirs = sourcefile_dir, languages = "c++14"}
     if target:is_plat("windows") then
