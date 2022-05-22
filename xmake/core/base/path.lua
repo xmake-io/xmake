@@ -32,6 +32,7 @@ function _instance.new(p, transform)
     instance._PATH = p
     instance._TRANSFORM = transform
     setmetatable(instance, _instance)
+    table.wraplock(instance)
     return instance
 end
 
@@ -131,12 +132,14 @@ end
 -- - reduce "/xxx/.." => "/"
 --
 function path.normalize(p)
+    p = tostring(p)
     return path.translate(p, {normalize = true})
 end
 
 -- get the directory of the path, compatible with lower version core binary
 if not path.directory then
     function path.directory(p, sep)
+        p = tostring(p)
         local i =  0
         if sep then
             -- if the path has been normalized, we can quickly find it with a unique path separator prompt
@@ -155,6 +158,7 @@ end
 
 -- get the filename of the path
 function path.filename(p, sep)
+    p = tostring(p)
     local i =  0
     if sep then
         -- if the path has been normalized, we can quickly find it with a unique path separator prompt
@@ -171,6 +175,7 @@ end
 
 -- get the basename of the path
 function path.basename(p)
+    p = tostring(p)
     local name = path.filename(p)
     local i = name:lastof(".", true)
     if i then
@@ -182,6 +187,7 @@ end
 
 -- get the file extension of the path: .xxx
 function path.extension(p, level)
+    p = tostring(p)
     local i = p:lastof(".", true)
     if i then
         local ext = p:sub(i)
@@ -199,11 +205,13 @@ end
 
 -- join path
 function path.join(p, ...)
+    p = tostring(p)
     return path.translate(p .. path.sep() .. table.concat({...}, path.sep()))
 end
 
 -- split path by the separator
 function path.split(p)
+    p = tostring(p)
     return p:split("[/\\]")
 end
 
@@ -292,6 +300,7 @@ end
 
 -- the last character is the path seperator?
 function path.islastsep(p)
+    p = tostring(p)
     local sep = p:sub(#p, #p)
     return xmake._HOST == "windows" and (sep == '\\' or sep == '/') or (sep == '/')
 end
@@ -319,6 +328,7 @@ end
 
 -- get cygwin-style path on msys2/cygwin, e.g. "c:\xxx" -> "/c/xxx"
 function path.cygwin_path(p)
+    p = tostring(p)
     p = p:gsub("\\", "/")
     local pos = p:find(":/")
     if pos == 2 then
