@@ -28,6 +28,7 @@ local _instance = _instance or {}
 
 -- save original interfaces
 path._absolute = path._absolute or path.absolute
+path._relative = path._relative or path.relative
 
 -- new a path
 function _instance.new(p, transform)
@@ -98,8 +99,12 @@ function _instance:directory()
     return path.new(path.directory(self:str()), self._TRANSFORM)
 end
 
-function _instance:absolute()
-    return path.new(path.absolute(self:str()), self._TRANSFORM)
+function _instance:absolute(rootdir)
+    return path.new(path.absolute(self:str(), rootdir), self._TRANSFORM)
+end
+
+function _instance:relative(rootdir)
+    return path.new(path.relative(self:str(), rootdir), self._TRANSFORM)
 end
 
 function _instance:join(...)
@@ -173,9 +178,19 @@ if not path.directory then
 end
 
 -- get absolute path
-function path.absolute(p)
-    p = tostring(p)
-    return path._absolute(p)
+function path.absolute(p, rootdir)
+    if rootdir then
+        rootdir = tostring(rootdir)
+    end
+    return path._absolute(tostring(p), rootdir)
+end
+
+-- get relative path
+function path.relative(p, rootdir)
+    if rootdir then
+        rootdir = tostring(rootdir)
+    end
+    return path._relative(tostring(p), rootdir)
 end
 
 -- get the filename of the path
