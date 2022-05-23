@@ -337,15 +337,15 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 - [x] Support for real time compressed transfer of large files (lz4)
 - [x] Almost zero configuration cost, no shared filesystem required, more convenience and security
 
-For more details see: [#274](https://github.com/xmake-io/xmake/issues/274)
+About distributed compilation and build cache, you can see:
+
+- [Distributed Compilation](https://xmake.io/#/guide/other_features?id=distributed-compilation)
+- [Local Build Cache](https://xmake.io/#/guide/other_features?id=local-compilation-cache)
+- [Remote Build Cache](https://xmake.io/#/guide/other_features?id=remote-compilation-cache)
 
 ## Remote Compilation
 
-For more details see: [#622](https://github.com/xmake-io/xmake/issues/622)
-
-## Local/Remote Build Cache
-
-For more details see: [#622](https://github.com/xmake-io/xmake/issues/2371)
+For more details see: [Remote Compilation](https://xmake.io/#/guide/other_features?id=remote-compilation)
 
 ## More Examples
 

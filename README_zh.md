@@ -335,7 +335,7 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 * C++20 模块
 * Linux 内核驱动模块
 
-## 分布式编译
+## 分布式编译和缓存
 
 - [x] 跨平台支持
 - [x] 支持 msvc, clang, gcc 和交叉编译工具链
@@ -345,15 +345,15 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 - [x] 支持大文件实时压缩传输 (lz4)
 - [x] 几乎零配置成本，无需共享文件系统，更加方便和安全
 
-更多详情见：[#274](https://github.com/xmake-io/xmake/issues/274)
+关于分布式编译和缓存，可以见下面的文档。
+
+- [分布式编译](https://xmake.io/#/zh-cn/guide/other_features?id=%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%96%e8%af%91)
+- [本地编译缓存](https://xmake.io/#/zh-cn/guide/other_features?id=%e6%9c%ac%e5%9c%b0%e7%bc%96%e8%af%91%e7%bc%93%e5%ad%98)
+- [远程编译缓存](https://xmake.io/#/zh-cn/guide/other_features?id=%e8%bf%9c%e7%a8%8b%e7%bc%96%e8%af%91%e7%bc%93%e5%ad%98)
 
 ## 远程编译
 
-更多详情见：[#622](https://github.com/xmake-io/xmake/issues/622)
-
-## 本地和远程编译缓存
-
-更多详情见: [#622](https://github.com/xmake-io/xmake/issues/2371)
+更多详情见：[远程编译](https://xmake.io/#/zh-cn/guide/other_features?id=%e8%bf%9c%e7%a8%8b%e7%bc%96%e8%af%91)
 
 ## 更多例子
 
