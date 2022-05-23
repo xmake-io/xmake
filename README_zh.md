@@ -84,7 +84,7 @@ Xmake = Build backend + Project Generator + Package Manager + [Remote|Distribute
 尽管不是很准确，但我们还是可以把 Xmake 按下面的方式来理解：
 
 ```
-Xmake ~= Make/Ninja + CMake/Meson + Vcpkg/Conan + distcc + ccache
+Xmake ~= Make/Ninja + CMake/Meson + Vcpkg/Conan + distcc + ccache/sccache
 ```
 
 
