@@ -132,7 +132,7 @@ end
 -- find qmake
 function _find_qmake(sdkdir, sdkver)
     local sdkdir, qmakefile = _find_sdkdir(sdkdir, sdkver)
-    local qmake = find_tool(qmakefile, {paths = sdkdir and path.join(sdkdir, "bin")})
+    local qmake = find_tool(qmakefile or "qmake", {paths = sdkdir and path.join(sdkdir, "bin")})
     if qmake then
         return qmake.program
     end
