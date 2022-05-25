@@ -29,6 +29,7 @@ jobs:
 
       - name: Prepare
         run: |
+          sudo apt update
           sudo apt install -y ruby ruby-dev rubygems build-essential llvm
 
       - name: Tests
