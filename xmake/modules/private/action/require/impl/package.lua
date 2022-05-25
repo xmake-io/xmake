@@ -675,8 +675,12 @@ end
 
 -- select to use precompiled artifacts?
 function _select_artifacts(package, artifacts_manifest)
-    -- the precompile policy is disabled?
+    -- the precompile policy is disabled in package?
     if package:policy("package.precompiled") == false then
+        return
+    end
+    -- the precompile policy is disabled in project?
+    if os.isfile(os.projectfile()) and project.policy("package.precompiled") == false then
         return
     end
     local artifacts_info
