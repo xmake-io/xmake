@@ -10,7 +10,7 @@ PRO_VERSION_MAJOR 	= 2
 PRO_VERSION_MINOR 	= 6
 
 # the project alter version
-PRO_VERSION_ALTER 	= 5
+PRO_VERSION_ALTER 	= 6
 
 # the project prefix
 PRO_PREFIX 			= XM_

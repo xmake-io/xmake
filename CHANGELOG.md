@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.6.6
+
 ### New features
 
 * [#2327](https://github.com/xmake-io/xmake/issues/2327): Support nvc/nvc++/nvfortran in nvidia-hpc-sdk
@@ -1263,6 +1265,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.6.6
 
 ### 新特性
 
