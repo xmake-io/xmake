@@ -8,7 +8,7 @@
 
 * [#2327](https://github.com/xmake-io/xmake/issues/2327): Support nvc/nvc++/nvfortran in nvidia-hpc-sdk
 * Add path instance interfaces
-* [#2334](https://github.com/xmake-io/xmake/pull/2334): Add lz4 compress module
+* [#2344](https://github.com/xmake-io/xmake/pull/2344): Add lz4 compress module
 * [#2349](https://github.com/xmake-io/xmake/pull/2349): Add keil/c51 project support
 * [#274](https://github.com/xmake-io/xmake/issues/274): Distributed compilation support
 * Use builtin local cache instead of ccache
@@ -1272,7 +1272,7 @@
 
 * [#2327](https://github.com/xmake-io/xmake/issues/2327): 支持 nvidia-hpc-sdk 工具链中的 nvc/nvc++/nvfortran 编译器
 * 添加 path 实例接口
-* [#2334](https://github.com/xmake-io/xmake/pull/2334): 添加 lz4 压缩模块
+* [#2344](https://github.com/xmake-io/xmake/pull/2344): 添加 lz4 压缩模块
 * [#2349](https://github.com/xmake-io/xmake/pull/2349): 添加 keil/c51 工程支持
 * [#274](https://github.com/xmake-io/xmake/issues/274): 跨平台分布式编译支持
 * 使用内置的本地缓存替代 ccache
