@@ -110,11 +110,7 @@ end
 function _instance:join(...)
     local items = {self:str()}
     for _, item in ipairs(table.pack(...)) do
-        if path.instance_of(item) then
-            table.insert(items, item:str())
-        else
-            table.insert(items, item)
-        end
+        table.insert(items, tostring(item))
     end
     return path.new(path.join(table.unpack(items)), self._TRANSFORM)
 end
@@ -129,7 +125,7 @@ end
 
 -- concat two paths
 function _instance:__concat(other)
-    return path.new(path.join(self:str(), other:str()), self._TRANSFORM)
+    return path.new(path.join(self:str(), tostring(other)), self._TRANSFORM)
 end
 
 -- tostring(path)
