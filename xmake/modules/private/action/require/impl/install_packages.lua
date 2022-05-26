@@ -26,12 +26,12 @@ import("core.project.project")
 import("core.base.tty")
 import("private.async.runjobs")
 import("utils.progress")
-import("actions.install", {alias = "action_install"})
-import("actions.download", {alias = "action_download"})
 import("net.fasturl")
 import("private.action.require.impl.package")
 import("private.action.require.impl.lock_packages")
 import("private.action.require.impl.register_packages")
+import("private.action.require.impl.actions.install", {alias = "action_install"})
+import("private.action.require.impl.actions.download", {alias = "action_download"})
 
 -- sort packages urls
 function _sort_packages_urls(packages)
@@ -364,7 +364,13 @@ function _install_packages(packages_install, packages_download, installdeps)
                 -- install this package
                 packages_installing[index] = instance
                 if downloaded then
-                    action_install(instance)
+                    if not action_install(instance) then
+                        assert(instance:is_precompiled(), "package(%s) should be precompiled", instance:name())
+                        -- we need disable built and re-download and re-install it
+                        instance:fackback_build()
+                        action_download(instance)
+                        action_install(instance)
+                    end
                 end
 
                 -- register it to local cache if it is root required package

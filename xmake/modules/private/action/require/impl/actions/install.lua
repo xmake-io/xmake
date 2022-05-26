@@ -258,6 +258,7 @@ function main(package)
     end
 
     -- install it
+    local ok = true
     local oldenvs = os.getenvs()
     try
     {
@@ -375,22 +376,27 @@ function main(package)
                 end
                 os.tryrm(installdir)
 
-                -- failed
-                if not package:requireinfo().optional then
-                    if os.isfile(errorfile) then
-                        if errors then
-                            print("")
-                            for idx, line in ipairs(errors:split("\n")) do
-                                print(line)
-                                if idx > 16 then
-                                    break
+                -- is precompiled package? we can fallback to source package and try reinstall it again
+                if package:is_precompiled() then
+                    ok = false
+                else
+                    -- failed
+                    if not package:requireinfo().optional then
+                        if os.isfile(errorfile) then
+                            if errors then
+                                print("")
+                                for idx, line in ipairs(errors:split("\n")) do
+                                    print(line)
+                                    if idx > 16 then
+                                        break
+                                    end
                                 end
                             end
+                            cprint("if you want to get more verbose errors, please see:")
+                            cprint("  -> ${bright}%s", errorfile)
                         end
-                        cprint("if you want to get more verbose errors, please see:")
-                        cprint("  -> ${bright}%s", errorfile)
+                        raise("install failed!")
                     end
-                    raise("install failed!")
                 end
             end
         }
@@ -407,4 +413,5 @@ function main(package)
 
     -- leave source codes directory
     os.cd(oldir)
+    return ok
 end

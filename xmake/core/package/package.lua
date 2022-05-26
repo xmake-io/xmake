@@ -267,6 +267,9 @@ end
 function _instance:artifacts_set(artifacts_info)
     local versions = self:get("versions")
     if versions then
+        -- backup previous package configuration
+        self._ARTIFACTS_BACKUP = {urls = table.copy(self:urls()), versions = table.copy(versions), install = self:get("install")}
+
         -- we switch to urls of the precompiled artifacts
         self:urls_set(table.wrap(artifacts_info.urls))
         versions[self:version_str()] = artifacts_info.sha256
@@ -305,7 +308,32 @@ end
 
 -- is this package built?
 function _instance:is_built()
-    return not self._IS_PRECOMPILED
+    return not self:is_precompiled()
+end
+
+-- is this package precompiled?
+function _instance:is_precompiled()
+    return self._IS_PRECOMPILED
+end
+
+-- fallback to source code build
+function _instance:fackback_build()
+    if self:is_precompiled() then
+        local artifacts_backup = self._ARTIFACTS_BACKUP
+        if artifacts_backup then
+            if artifacts_backup.urls then
+                self:urls_set(artifacts_backup.urls)
+            end
+            if artifacts_backup.versions then
+                self:set("versions", artifacts_backup.versions)
+            end
+            if artifacts_backup.install then
+                self:set("install", artifacts_backup.install)
+            end
+            self._MANIFEST = nil
+        end
+        self._IS_PRECOMPILED = false
+    end
 end
 
 -- get the given dependent package
