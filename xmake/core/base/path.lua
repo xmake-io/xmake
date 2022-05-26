@@ -125,7 +125,15 @@ end
 
 -- concat two paths
 function _instance:__concat(other)
-    return path.join(tostring(self), tostring(other))
+    if path.instance_of(self) then
+        return path.new(path.join(self:str(), tostring(other)), self._TRANSFORM)
+    elseif type(self) == "string" then
+        return path.new(self, function (p)
+            return self .. tostring(other)
+        end)
+    else
+        os.raise("cannot concat %s/%s", tostring(self), type(self))
+    end
 end
 
 -- tostring(path)
