@@ -125,7 +125,7 @@ end
 
 -- concat two paths
 function _instance:__concat(other)
-    return path.new(path.join(self:str(), tostring(other)), self._TRANSFORM)
+    return path.join(tostring(self), tostring(other))
 end
 
 -- tostring(path)
