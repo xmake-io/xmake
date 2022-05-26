@@ -324,7 +324,7 @@ function main(package)
             if installed_now then
 
                 -- fix paths for the precompiled package
-                if not package:is_built() and not package:is_system() then
+                if package:is_precompiled() and not package:is_system() then
                     _fix_paths_for_precompiled_package(package)
                 end
 

@@ -102,7 +102,7 @@ end
 function main(package)
 
     -- we need not patch it if we use the precompiled artifacts to install package
-    if not package:is_built() then
+    if package:is_precompiled() then
         return
     end
 
