@@ -58,7 +58,7 @@ get_fast_host() {
     speed_gitee=$(get_host_speed "gitee.com")
     speed_github=$(get_host_speed "github.com")
     if [ $speed_gitee -le $speed_github ]; then
-        echo "gitee.com" 
+        echo "gitee.com"
     else
         echo "github.com"
     fi
@@ -83,7 +83,8 @@ if [ 'x__local__' != "x$branch" ]; then
         gitrepo_raw="https://gitee.com/tboox/xmake/raw/master"
     else
         gitrepo="https://github.com/xmake-io/xmake.git"
-        gitrepo_raw="https://github.com/xmake-io/xmake/raw/master"
+        #gitrepo_raw="https://github.com/xmake-io/xmake/raw/master"
+        gitrepo_raw="https://fastly.jsdelivr.net/gh/xmake-io/xmake@master"
     fi
 fi
 
@@ -177,9 +178,14 @@ elif [ 'x__run__' = "x$branch" ]; then
         pack=gz
     fi
     mkdir -p $projectdir
-    runfile_url="https://github.com/xmake-io/xmake/releases/download/$version/xmake-$version.$pack.run"
+    runfile_url="https://fastly.jsdelivr.net/gh/xmake-mirror/xmake-releases@$version/xmake-$version.$pack.run"
     echo "downloading $runfile_url .."
     remote_get_content "$runfile_url" > $projectdir/xmake.run
+    if [[ $? != 0 ]]; then
+        runfile_url="https://github.com/xmake-io/xmake/releases/download/$version/xmake-$version.$pack.run"
+        echo "downloading $runfile_url .."
+        remote_get_content "$runfile_url" > $projectdir/xmake.run
+    fi
     sh $projectdir/xmake.run --noexec --target $projectdir
 else
     echo "cloning $gitrepo $branch .."
@@ -195,7 +201,7 @@ fi
 
 # do build
 if [ 'x__install_only__' != "x$2" ]; then
-    $make -C $projectdir --no-print-directory build 
+    $make -C $projectdir --no-print-directory build
     rv=$?
     if [ $rv -ne 0 ]
     then
@@ -238,18 +244,17 @@ install_profile()
         remote_get_content "$gitrepo_raw/scripts/register-virtualenvs.sh" >> ~/.xmake/profile
     fi
 
-    if   [[ "$SHELL" = */zsh ]]; then 
+    if   [[ "$SHELL" = */zsh ]]; then
         write_profile ~/.zshrc
-    elif [[ "$SHELL" = */ksh ]]; then 
+    elif [[ "$SHELL" = */ksh ]]; then
         write_profile ~/.kshrc
-    elif [[ "$SHELL" = */bash ]]; then 
+    elif [[ "$SHELL" = */bash ]]; then
         write_profile ~/.bashrc
         if [ "$(uname)" == "Darwin" ]; then
             write_profile ~/.bash_profile
         fi
-    else write_profile ~/.profile 
+    else write_profile ~/.profile
     fi
-    
 }
 install_profile
 if xmake --version >/dev/null 2>&1; then xmake --version; else
