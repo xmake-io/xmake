@@ -6,6 +6,10 @@
 
 * fallback to source code build if the precompiled package is error
 
+### Bugs fixed
+
+* [#2388](https://github.com/xmake-io/xmake/issues/2388): Fix path bug
+
 ## v2.6.6
 
 ### New features
@@ -1273,6 +1277,10 @@
 ### 改进
 
 * 如果预编译包构建失败，自动回退到源码包构建
+
+### Bugs 修复
+
+* [#2388](https://github.com/xmake-io/xmake/issues/2388): 修复路径问题
 
 ## v2.6.6
 
