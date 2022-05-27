@@ -11,6 +11,7 @@
 
 * [#2382](https://github.com/xmake-io/xmake/issues/2382): Fix headeronly package configs
 * [#2388](https://github.com/xmake-io/xmake/issues/2388): Fix path bug
+* [#2385](https://github.com/xmake-io/xmake/issues/2385): Fix cmake/find_package
 * Fix find_qt bug
 
 ## v2.6.6
@@ -1286,6 +1287,7 @@
 
 * [#2382](https://github.com/xmake-io/xmake/issues/2382): 修改 headeronly 包配置
 * [#2388](https://github.com/xmake-io/xmake/issues/2388): 修复路径问题
+* [#2385](https://github.com/xmake-io/xmake/issues/2385): 修复 cmake/find_package
 * 修复 find_qt 问题
 
 ## v2.6.6
