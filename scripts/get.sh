@@ -152,7 +152,7 @@ install_tools()
     { apt --version >/dev/null 2>&1 && $sudoprefix apt install -y git build-essential libreadline-dev ccache; } ||
     { yum --version >/dev/null 2>&1 && $sudoprefix yum install -y git readline-devel ccache bzip2 && $sudoprefix yum groupinstall -y 'Development Tools'; } ||
     { zypper --version >/dev/null 2>&1 && $sudoprefix zypper --non-interactive install git readline-devel ccache && $sudoprefix zypper --non-interactive install -t pattern devel_C_C++; } ||
-    { pacman -V >/dev/null 2>&1 && $sudoprefix pacman -S --noconfirm --needed git base-devel ccache; } ||
+    { pacman -V >/dev/null 2>&1 && $sudoprefix pacman -S --noconfirm --needed git base-devel ncurses readline ccache; } ||
     { emerge -V >/dev/null 2>&1 && $sudoprefix emerge -atv dev-vcs/git ccache; } ||
     { pkg list-installed >/dev/null 2>&1 && $sudoprefix pkg install -y git getconf build-essential readline ccache; } || # termux
     { pkg help >/dev/null 2>&1 && $sudoprefix pkg install -y git readline ccache ncurses; } || # freebsd

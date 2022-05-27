@@ -9,7 +9,7 @@ depends=('bash')
 arch=('i686' 'x86_64')
 url="https://github.com/xmake-io/xmake"
 license=('Apache')
-makedepends=()
+makedepends=('ncurses' 'readline')
 source=("https://github.com/xmake-io/xmake/releases/download/v${pkgver}/xmake-v${pkgver}.tar.gz")
 sha256sums=('5b50e3f28956cabcaa153624c91781730387ceb7c056f3f9b5306b1c77460d8f')
 
