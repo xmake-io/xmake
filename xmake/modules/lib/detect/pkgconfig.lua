@@ -148,36 +148,53 @@ function libinfo(name, opt)
         envs.PKG_CONFIG_PATH = path.joinenv(configdirs)
     end
 
-    -- get libs and cflags
+    -- get cflags
     local result = nil
-    local flags = try { function () return os.iorunv(pkgconfig, {"--libs", "--cflags", name}, {envs = envs}) end }
-    if flags then
-
-        -- init result
-        result = {}
-        for _, flag in ipairs(os.argv(flags)) do
-            if flag:startswith("-L") and #flag > 2 then
-                -- get linkdirs
-                local linkdir = flag:sub(3)
-                if linkdir and os.isdir(linkdir) then
-                    result.linkdirs = result.linkdirs or {}
-                    table.insert(result.linkdirs, linkdir)
-                end
-            elseif flag:startswith("-I") and #flag > 2 then
-                -- get includedirs
+    local cflags = try { function () return os.iorunv(pkgconfig, {"--cflags", name}, {envs = envs}) end }
+    if cflags then
+        result = result or {}
+        for _, flag in ipairs(os.argv(cflags)) do
+            if flag:startswith("-I") and #flag > 2 then
                 local includedir = flag:sub(3)
                 if includedir and os.isdir(includedir) then
                     result.includedirs = result.includedirs or {}
                     table.insert(result.includedirs, includedir)
                 end
-            elseif flag:startswith("-l") and #flag > 2 then
-                -- get links
-                local link = flag:sub(3)
-                result.links = result.links or {}
-                table.insert(result.links, link)
+            elseif flag:startswith("-D") and #flag > 2 then
+                local define = flag:sub(3)
+                result.defines = result.defines or {}
+                table.insert(result.defines, define)
+            elseif flag:startswith("-") and #flag > 1 then
+                result.cxflags = result.cxflags or {}
+                table.insert(result.cxflags, flag)
             end
         end
     end
+
+    -- get libs and ldflags
+    local ldflags = try { function () return os.iorunv(pkgconfig, {"--libs", name}, {envs = envs}) end }
+    if ldflags then
+        result = result or {}
+        for _, flag in ipairs(os.argv(ldflags)) do
+            if flag:startswith("-L") and #flag > 2 then
+                local linkdir = flag:sub(3)
+                if linkdir and os.isdir(linkdir) then
+                    result.linkdirs = result.linkdirs or {}
+                    table.insert(result.linkdirs, linkdir)
+                end
+            elseif flag:startswith("-l") and #flag > 2 then
+                local link = flag:sub(3)
+                result.links = result.links or {}
+                table.insert(result.links, link)
+            elseif flag:startswith("-") and #flag > 1 then
+                result.ldflags = result.ldflags or {}
+                result.shflags = result.shflags or {}
+                table.insert(result.ldflags, flag)
+                table.insert(result.shflags, flag)
+            end
+        end
+    end
+
 
     -- get version
     local version = try { function() return os.iorunv(pkgconfig, {"--modversion", name}, {envs = envs}) end }

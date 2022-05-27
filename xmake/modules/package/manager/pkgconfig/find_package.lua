@@ -57,6 +57,10 @@ function main(name, opt)
         result.includedirs = libinfo.includedirs
         result.linkdirs    = libinfo.linkdirs
         result.links       = libinfo.links
+        result.defines     = libinfo.defines
+        result.cxflags     = libinfo.cxflags
+        result.ldflags     = libinfo.ldflags
+        result.shflags     = libinfo.shflags
         result.version     = libinfo.version
     end
     return result
