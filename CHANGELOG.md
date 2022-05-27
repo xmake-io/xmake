@@ -5,6 +5,7 @@
 ### Changes
 
 * fallback to source code build if the precompiled package is error
+* [#2387](https://github.com/xmake-io/xmake/issues/2387): Improve pkgconfig and find_package
 
 ### Bugs fixed
 
@@ -1279,6 +1280,7 @@
 ### 改进
 
 * 如果预编译包构建失败，自动回退到源码包构建
+* [#2387](https://github.com/xmake-io/xmake/issues/2387): 改进 pkgconfig 和 find_package
 
 ### Bugs 修复
 
