@@ -123,6 +123,9 @@ function main()
     -- lock the whole project
     project.lock()
 
+    -- load config
+    config.load()
+
     -- package the given target?
     local targetname = option.get("target")
     if targetname then
