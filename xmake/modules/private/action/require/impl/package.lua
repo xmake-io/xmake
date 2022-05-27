@@ -481,7 +481,9 @@ end
 -- finish requireinfo
 function _finish_requireinfo(requireinfo, package)
     requireinfo.configs = requireinfo.configs or {}
-    if not package:is_headeronly() then
+    if package:is_headeronly() then
+        requireinfo.configs.vs_runtime = nil
+    else
         if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
             requireinfo.configs.vs_runtime = "MT"
         end
