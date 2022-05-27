@@ -1152,6 +1152,18 @@ function _instance:installdir()
     return installdir
 end
 
+-- get package directory
+function _instance:packagedir()
+    -- get the output directory
+    local outputdir   = baseoption.get("outputdir") or config.buildir()
+    local packagename = self:name():lower()
+    if #packagename > 1 and bit.band(packagename:byte(2), 0xc0) == 0x80 then
+        utils.wprint("package(%s): cannot generate package, becauese it contains unicode characters!", packagename)
+        return
+    end
+    return path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
+end
+
 -- get rules of the source file
 function _instance:filerules(sourcefile)
 

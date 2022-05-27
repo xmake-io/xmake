@@ -42,13 +42,8 @@ end
 function _package_remote(target)
 
     -- get the output directory
-    local outputdir   = option.get("outputdir") or config.buildir()
+    local packagedir  = target:packagedir()
     local packagename = target:name():lower()
-    if #packagename > 1 and bit.band(packagename:byte(2), 0xc0) == 0x80 then
-        wprint("package(%s): cannot generate package, becauese it contains unicode characters!", packagename)
-        return
-    end
-    local packagedir  = path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
 
     -- generate xmake.lua
     local file = io.open(path.join(packagedir, "xmake.lua"), "w")

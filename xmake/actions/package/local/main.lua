@@ -42,13 +42,8 @@ end
 function _package_binary(target)
 
     -- get the output directory
-    local outputdir   = option.get("outputdir") or config.buildir()
+    local packagedir  = target:packagedir()
     local packagename = target:name():lower()
-    if #packagename > 1 and bit.band(packagename:byte(2), 0xc0) == 0x80 then
-        wprint("package(%s): cannot generate package, becauese it contains unicode characters!", packagename)
-        return
-    end
-    local packagedir  = path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
     local binarydir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "bin")
 
     -- copy the binary file to the output directory
@@ -95,13 +90,8 @@ end
 function _package_library(target)
 
     -- get the output directory
-    local outputdir   = option.get("outputdir") or config.buildir()
+    local packagedir  = target:packagedir()
     local packagename = target:name():lower()
-    if #packagename > 1 and bit.band(packagename:byte(2), 0xc0) == 0x80 then
-        wprint("package(%s): cannot generate package, becauese it contains unicode characters!", packagename)
-        return
-    end
-    local packagedir  = path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
     local binarydir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "bin")
     local librarydir  = path.join(packagedir, target:plat(), target:arch(), config.mode(), "lib")
     local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
@@ -183,13 +173,8 @@ end
 function _package_headeronly(target)
 
     -- get the output directory
-    local outputdir   = option.get("outputdir") or config.buildir()
+    local packagedir  = target:packagedir()
     local packagename = target:name():lower()
-    if #packagename > 1 and bit.band(packagename:byte(2), 0xc0) == 0x80 then
-        wprint("package(%s): cannot generate package, becauese it contains unicode characters!", packagename)
-        return
-    end
-    local packagedir  = path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
     local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
 
     -- copy headers
