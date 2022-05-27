@@ -42,8 +42,8 @@ function _find_package(cmake, name, opt)
     -- e.g. OpenCV 4.1.1, Boost COMPONENTS regex system
     local requirestr = name
     local configs = opt.configs or {}
-    if opt.required_version then
-        requirestr = requirestr .. " " .. opt.required_version
+    if opt.require_version then
+        requirestr = requirestr .. " " .. opt.require_version
     end
     -- use opt.components is for backward compatibility
     local components = configs.components or opt.components
@@ -254,7 +254,7 @@ end
 -- e.g.
 --
 -- find_package("cmake::ZLIB")
--- find_package("cmake::OpenCV", {required_version = "4.1.1"})
+-- find_package("cmake::OpenCV", {require_version = "4.1.1"})
 -- find_package("cmake::Boost", {configs = {components = {"regex", "system"}, presets = {Boost_USE_STATIC_LIB = true}}})
 -- find_package("cmake::Foo", {configs = {moduledirs = "xxx"}})
 --
@@ -266,7 +266,7 @@ end
 -- add_requires("cmake::Foo", {configs = {moduledirs = "xxx"}})
 --
 -- @param name  the package name
--- @param opt   the options, e.g. {verbose = true, required_version = "1.0",
+-- @param opt   the options, e.g. {verbose = true, require_version = "1.0",
 --                                 configs = {
 --                                      components = {"regex", "system"},
 --                                      moduledirs = "xxx",
