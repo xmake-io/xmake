@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* fallback to source code build if the precompiled package is error
+
 ## v2.6.6
 
 ### New features
@@ -1265,6 +1269,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* 如果预编译包构建失败，自动回退到源码包构建
 
 ## v2.6.6
 
