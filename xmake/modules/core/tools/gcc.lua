@@ -388,6 +388,18 @@ end
 -- do preprocess
 function _preprocess(program, argv, opt)
 
+    -- is gcc or clang?
+    local tool = opt.tool
+    local is_gcc = false
+    local is_clang = false
+    if tool then
+        if tool:name() == "gcc" or tool:name() == "gxx" then
+            is_gcc = true
+        elseif tool:name():startswith("clang") then
+            is_clang = true
+        end
+    end
+
     -- get flags and source file
     local flags = {}
     local cppflags = {}
@@ -400,8 +412,8 @@ function _preprocess(program, argv, opt)
         -- get preprocessor flags
         table.insert(cppflags, flag)
 
-        -- for c++ modules, we cannot support it now
-        if flag:startswith("-fmodules") then
+        -- for c++ modules, we cannot support it for clang now
+        if is_clang and flag:startswith("-fmodules") then
             return
         end
 
@@ -431,12 +443,7 @@ function _preprocess(program, argv, opt)
     end
 
     -- enable "-fdirectives-only"?
-    local tool = opt.tool
     local fdirectives_only = _g.fdirectives_only
-    local is_gcc = false
-    if tool and (tool:name() == "gcc" or tool:name() == "gxx") then
-        is_gcc = true
-    end
     if fdirectives_only ~= false and is_gcc then
         fdirectives_only = true
     end
@@ -489,10 +496,10 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
     local program, argv = compargv(self, sourcefile, objectfile, compflags)
     if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
         cppinfo = distcc_build_client.singleton():compile(program, argv,
-            {envs = self:runenvs(), preprocess = _preprocess, compile = _compile_preprocessed_file, remote = true, tool = self})
+            {envs = self:runenvs(), preprocess = _preprocess, compile = _compile_preprocessed_file, tool = self, remote = true})
     elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
         cppinfo = build_cache.build(program, argv,
-            {envs = self:runenvs(), preprocess = _preprocess, compile = _compile_preprocessed_file})
+            {envs = self:runenvs(), preprocess = _preprocess, compile = _compile_preprocessed_file, tool = self})
     end
     if cppinfo then
         return cppinfo.outdata, cppinfo.errdata

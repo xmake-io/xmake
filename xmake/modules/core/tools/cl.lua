@@ -478,11 +478,11 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
     if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
         local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
         cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
-            preprocess = _preprocess, compile = _compile_preprocessed_file, target = opt.target, remote = true, tool = self})
+            preprocess = _preprocess, compile = _compile_preprocessed_file, target = opt.target, tool = self, remote = true})
     elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
         local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
         cppinfo = build_cache.build(program, argv, {envs = self:runenvs(),
-            preprocess = _preprocess, compile = _compile_preprocessed_file, target = opt.target})
+            preprocess = _preprocess, compile = _compile_preprocessed_file, target = opt.target, tool = self})
     end
     if cppinfo then
         return cppinfo.outdata, cppinfo.errdata
