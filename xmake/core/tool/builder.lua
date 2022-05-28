@@ -384,6 +384,7 @@ function builder:_preprocess_flags(flags)
             else
                 -- may be a table group? e.g. {"-I", "/xxx"}
                 if #flag > 0 then
+                    table.wrap_unlock(flag)
                     table.join2(results, flag)
                 end
             end

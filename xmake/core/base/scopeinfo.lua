@@ -119,7 +119,7 @@ function _instance:_api_set_values(name, ...)
     -- e.g. target:set("shflags", {"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})
     if extra_config and extra_config.expand == false then
         for _, value in ipairs(values) do
-            table.wraplock(value)
+            table.wrap_lock(value)
         end
     else
         -- expand values
@@ -168,7 +168,7 @@ function _instance:_api_add_values(name, ...)
     -- e.g. target:add("shflags", {"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})
     if extra_config and extra_config.expand == false then
         for _, value in ipairs(values) do
-            table.wraplock(value)
+            table.wrap_lock(value)
         end
     else
         -- expand values

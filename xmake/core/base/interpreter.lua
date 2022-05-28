@@ -1065,7 +1065,7 @@ function interpreter:api_register_set_values(scope_kind, ...)
         -- e.g. set_shflags({"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})
         if extra_config and extra_config.expand == false then
             for _, value in ipairs(values) do
-                table.wraplock(value)
+                table.wrap_lock(value)
             end
         else
             -- expand values
@@ -1115,7 +1115,7 @@ function interpreter:api_register_add_values(scope_kind, ...)
         -- e.g. add_shflags({"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})
         if extra_config and extra_config.expand == false then
             for _, value in ipairs(values) do
-                table.wraplock(value)
+                table.wrap_lock(value)
             end
         else
             -- expand values

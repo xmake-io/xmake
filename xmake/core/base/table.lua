@@ -93,7 +93,7 @@ end
 function table.join(...)
     local result = {}
     for _, t in ipairs({...}) do
-        if type(t) == "table" and not t.__wraplocked__ then
+        if type(t) == "table" and not t.__wrap_locked__ then
             for k, v in pairs(t) do
                 if type(k) == "number" then table.insert(result, v)
                 else result[k] = v end
@@ -108,7 +108,7 @@ end
 -- join all objects and tables to self
 function table.join2(self, ...)
     for _, t in ipairs({...}) do
-        if type(t) == "table" and not t.__wraplocked__ then
+        if type(t) == "table" and not t.__wrap_locked__ then
             for k, v in pairs(t) do
                 if type(k) == "number" then table.insert(self, v)
                 else self[k] = v end
@@ -310,7 +310,7 @@ end
 
 -- unwrap array if be only one value
 function table.unwrap(array)
-    if type(array) == "table" and not array.__wraplocked__ then
+    if type(array) == "table" and not array.__wrap_locked__ then
         if #array == 1 then
             return array[1]
         end
@@ -323,7 +323,7 @@ function table.wrap(value)
     if nil == value then
         return {}
     end
-    if type(value) ~= "table" or value.__wraplocked__ then
+    if type(value) ~= "table" or value.__wrap_locked__ then
         return {value}
     end
     return value
@@ -332,10 +332,17 @@ end
 -- lock table value to avoid unwrap
 --
 -- a = {1}, wrap(a): {1}, unwrap(a): 1
--- a = wraplock({1}), wrap(a): {a}, unwrap(a): a
-function table.wraplock(value)
+-- a = wrap_lock({1}), wrap(a): {a}, unwrap(a): a
+function table.wrap_lock(value)
     if type(value) == "table" then
-        value.__wraplocked__ = true
+        value.__wrap_locked__ = true
+    end
+end
+
+-- unlock table value to unwrap
+function table.wrap_unlock(value)
+    if type(value) == "table" then
+        value.__wrap_locked__ = nil
     end
 end
 

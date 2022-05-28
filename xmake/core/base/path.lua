@@ -36,7 +36,7 @@ function _instance.new(p, transform)
     instance._RAWSTR = p
     instance._TRANSFORM = transform
     setmetatable(instance, _instance)
-    table.wraplock(instance)
+    table.wrap_lock(instance)
     instance:_update()
     return instance
 end
