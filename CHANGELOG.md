@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#2318](https://github.com/xmake-io/xmake/issues/2318): Add `xmake f --policies=` config argument to modify project policies
+
 ### Changes
 
 * fallback to source code build if the precompiled package is error
@@ -1279,6 +1283,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#2318](https://github.com/xmake-io/xmake/issues/2318): 添加 `xmake f --policies=` 配置参数去修改默认策略
 
 ### 改进
 
