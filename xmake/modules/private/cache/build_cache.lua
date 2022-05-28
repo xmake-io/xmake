@@ -22,6 +22,7 @@
 import("core.base.bytes")
 import("core.base.hashset")
 import("core.project.config")
+import("core.project.project")
 import("private.service.client_config")
 import("private.service.remote_cache.client", {alias = "remote_cache_client"})
 
@@ -39,7 +40,15 @@ end
 function is_enabled()
     local build_cache = _g.build_cache
     if build_cache == nil then
-        build_cache = config.get("ccache") or false
+        if build_cache == nil and os.isfile(os.projectfile()) then
+            local policy = project.policy("build.ccache")
+            if policy ~= nil then
+                build_cache = policy
+            end
+        end
+        if build_cache == nil then
+            build_cache = config.get("ccache") or false
+        end
         _g.build_cache = build_cache
     end
     return build_cache or false

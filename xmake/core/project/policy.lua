@@ -45,6 +45,8 @@ function policy.policies()
             ["build.across_targets_in_parallel"] = {description = "Enable compile the source files for each target in parallel.", default = true, type = "boolean"},
             -- merge archive intead of linking for all dependent targets
             ["build.merge_archive"]              = {description = "Enable merge archive intead of linking for all dependent targets.", default = false, type = "boolean"},
+            -- C/C++ build cache
+            ["build.ccache"]                     = {description = "Enable C/C++ build cache.", default = true, type = "boolean"},
             -- we need enable longpaths when building target or installing package
             ["platform.longpaths"]               = {description = "Enable long paths when building target or installing package on windows.", default = false, type = "boolean"},
             -- lock required packages
