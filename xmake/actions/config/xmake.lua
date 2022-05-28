@@ -179,6 +179,10 @@ task("config")
                     {'m', "mode",       "kv", "auto" ,      "Compile for the given mode.", values = _mode_values},
                     {'k', "kind",       "kv", "static"  ,   "Compile for the given target kind.", values = {"static", "shared", "binary"}},
                     {nil, "host",       "kv", "$(host)" ,   "Set the current host environment."},
+                    {nil, "policies",    "kv", nil       ,  "Set the project policies.",
+                                                            "    e.g.",
+                                                            "    - xmake f --policies=package.fetch_only",
+                                                            "    - xmake f --policies=package.precompiled:n,package.install_only"},
                     {category = "Package Configuration"},
                     {nil, "require",    "kv",   nil     ,   "Require all dependent packages?", values = {"yes", "no"}},
                     {nil, "pkg_searchdirs", "kv", nil       , "The search directories of the remote package."

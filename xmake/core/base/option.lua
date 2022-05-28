@@ -412,8 +412,6 @@ end
 
 -- get the given default option value for the current task
 function option.default(name)
-
-    -- check
     assert(name)
 
     -- the defaults

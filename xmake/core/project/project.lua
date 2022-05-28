@@ -31,6 +31,7 @@ local table                 = require("base/table")
 local global                = require("base/global")
 local process               = require("base/process")
 local hashset               = require("base/hashset")
+local baseoption            = require("base/option")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
 local memcache              = require("cache/memcache")
@@ -908,7 +909,23 @@ end
 function project.policy(name)
     local policies = project._memcache():get("policies")
     if not policies then
+        -- get policies from project, e.g. set_policy("xxx", true)
         policies = project.get("target.policy")
+        -- get policies from config, e.g. xmake f --policies=package.precompiled:n,package.install_only
+        -- @see https://github.com/xmake-io/xmake/issues/2318
+        local policies_config = config.get("policies")
+        if policies_config then
+            for _, policy in ipairs(policies_config:split(",", {plain = true})) do
+                local splitinfo = policy:split(":", {limit = 2})
+                if #splitinfo > 1 then
+                    policies = policies or {}
+                    policies[splitinfo[1]] = baseoption.boolean(splitinfo[2])
+                else
+                    policies = policies or {}
+                    policies[splitinfo[1]] = true
+                end
+            end
+        end
         project._memcache():set("policies", policies)
         if policies then
             local defined_policies = policy.policies()
