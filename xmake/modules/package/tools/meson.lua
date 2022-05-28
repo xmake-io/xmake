@@ -56,7 +56,7 @@ function _get_configs(package, configs, opt)
     table.insert(configs, "--libdir=lib")
 
     -- set build type
-    table.insert(configs, "--buildtype=" .. (package:debug() and "debug" or "release"))
+    table.insert(configs, "-Dbuildtype=" .. (package:debug() and "debug" or "release"))
 
     -- add -fpic
     if package:is_plat("linux") and package:config("pic") then
