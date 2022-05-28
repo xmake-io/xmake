@@ -400,6 +400,11 @@ function _preprocess(program, argv, opt)
         -- get preprocessor flags
         table.insert(cppflags, flag)
 
+        -- for c++ modules, we cannot support it now
+        if flag:startswith("-fmodules") then
+            return
+        end
+
         -- get compiler flags
         if flag == "-MMD" or (flag:startswith("-I") and #flag > 2) or flag:startswith("--sysroot=") then
             skipped = 1
@@ -422,7 +427,7 @@ function _preprocess(program, argv, opt)
 
     -- is precompiled header?
     if objectfile:endswith(".gch") or objectfile:endswith(".pch") then
-        return false
+        return
     end
 
     -- enable "-fdirectives-only"?
