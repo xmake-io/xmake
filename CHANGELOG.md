@@ -6,6 +6,7 @@
 
 * fallback to source code build if the precompiled package is error
 * [#2387](https://github.com/xmake-io/xmake/issues/2387): Improve pkgconfig and find_package
+* Add `build.ccache` policy
 
 ### Bugs fixed
 
@@ -1282,6 +1283,7 @@
 
 * 如果预编译包构建失败，自动回退到源码包构建
 * [#2387](https://github.com/xmake-io/xmake/issues/2387): 改进 pkgconfig 和 find_package
+* 添加 `build.ccache` 策略，用于在工程中配置编译缓存
 
 ### Bugs 修复
 
