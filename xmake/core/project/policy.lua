@@ -53,6 +53,10 @@ function policy.policies()
             ["package.requires_lock"]            = {description = "Enable xmake-requires.lock to lock required packages.", default = false, type = "boolean"},
             -- enable the precompiled packages, it will be enabled by default
             ["package.precompiled"]              = {description = "Enable precompiled packages.", default = true, type = "boolean"},
+            -- only fetch packages on system
+            ["package.fetch_only"]               = {description = "Only fetch packages on system.", type = "boolean"},
+            -- only install packages from remote
+            ["package.install_only"]             = {description = "Only install packages from remote.", type = "boolean"},
             -- inherit the configs from the external command arguments, e.g. toolchains, `xmake f --toolchain=`
             ["package.inherit_external_configs"] = {description = "Inherit the configs from the external command arguments.", default = true, type = "boolean"}
         }

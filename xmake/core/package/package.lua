@@ -485,6 +485,10 @@ end
 
 -- is fetch only?
 function _instance:is_fetchonly()
+    local project = package._project()
+    if project and project.policy("package.fetch_only") then
+        return true
+    end
     return self:get("fetch") and not self:get("install")
 end
 
@@ -1464,6 +1468,12 @@ function _instance:fetch(opt)
     local fetchinfo = self._FETCHINFO
     if not opt.force and opt.external == nil and opt.system == nil and fetchinfo then
         return fetchinfo
+    end
+
+    -- install only?
+    local project = package._project()
+    if project and project.policy("package.install_only") then
+        return
     end
 
     -- fetch the require version
