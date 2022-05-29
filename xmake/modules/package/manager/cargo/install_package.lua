@@ -75,8 +75,6 @@ function main(name, opt)
         tomlfile:print("")
         tomlfile:print("[dependencies]")
         tomlfile:print("")
-        tomlfile:print("[workspace]")
-        tomlfile:print("")
 
         local features = configs.features
         if features then
