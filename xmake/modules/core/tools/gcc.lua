@@ -401,9 +401,9 @@ function _preprocess(program, argv, opt)
     end
 
     -- enable "-fdirectives-only"?
-    local fdirectives_only = _g.fdirectives_only
-    if fdirectives_only ~= false and is_gcc then
-        fdirectives_only = true
+    local directives_only = _g.fdirectives_only
+    if directives_only ~= false and is_gcc then
+        directives_only = true
     end
 
     -- get flags and source file
@@ -424,9 +424,9 @@ function _preprocess(program, argv, opt)
         end
 
         -- we cannot enable "-fdirectives-only"
-        if fdirectives_only and (flag:startswith("-D__TIME__=") or
+        if directives_only and (flag:startswith("-D__TIME__=") or
                 flag:startswith("-D__DATE__=") or flag:startswith("-D__TIMESTAMP__=")) then
-            fdirectives_only = false
+            directives_only = false
         end
 
         -- get compiler flags
@@ -474,7 +474,7 @@ function _preprocess(program, argv, opt)
     table.insert(cppflags, "-E")
     -- it will be faster for preprocessing
     -- when preprocessing, handle directives, but do not expand macros.
-    if fdirectives_only then
+    if directives_only then
         table.insert(cppflags, "-fdirectives-only")
     end
     if linemarkers == false then
@@ -490,7 +490,7 @@ function _preprocess(program, argv, opt)
         table.insert(flags, "-fpreprocessed")
     end
     -- with -fpreprocessed, predefinition of command line and most builtin macros is disabled.
-    if fdirectives_only then
+    if directives_only then
         table.insert(flags, "-fdirectives-only")
     end
 
@@ -500,7 +500,7 @@ function _preprocess(program, argv, opt)
         return {outdata = outdata, errdata = errdata, sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags}
     end}
     if not cppinfo then
-        _g.fdirectives_only = false
+        _g.directives_only = false
     end
     return cppinfo
 end
