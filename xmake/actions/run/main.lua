@@ -44,9 +44,6 @@ function _do_run_target(target)
     -- get the absolute target file path
     local targetfile = path.absolute(target:targetfile())
 
-    -- enter the run directory
-    local oldir = os.cd(rundir)
-
     -- add run environments
     local addrunenvs, setrunenvs = make_runenvs(target)
     for name, values in pairs(addrunenvs) do
@@ -58,13 +55,10 @@ function _do_run_target(target)
 
     -- debugging?
     if option.get("debug") then
-        debugger.run(targetfile, option.get("arguments"))
+        debugger.run(targetfile, option.get("arguments"), {curdir = rundir})
     else
-        os.execv(targetfile, option.get("arguments"), {detach = option.get("detach")})
+        os.execv(targetfile, option.get("arguments"), {curdir = rundir, detach = option.get("detach")})
     end
-
-    -- restore the previous directory
-    os.cd(oldir)
 end
 
 -- run target
