@@ -400,6 +400,12 @@ function _preprocess(program, argv, opt)
         end
     end
 
+    -- enable "-fdirectives-only"?
+    local fdirectives_only = _g.fdirectives_only
+    if fdirectives_only ~= false and is_gcc then
+        fdirectives_only = true
+    end
+
     -- get flags and source file
     local flags = {}
     local cppflags = {}
@@ -415,6 +421,12 @@ function _preprocess(program, argv, opt)
         -- for c++ modules, we cannot support it for clang now
         if is_clang and flag:startswith("-fmodules") then
             return
+        end
+
+        -- we cannot enable "-fdirectives-only"
+        if fdirectives_only and (flag:startswith("-D__TIME__=") or
+                flag:startswith("-D__DATE__=") or flag:startswith("-D__TIMESTAMP__=")) then
+            fdirectives_only = false
         end
 
         -- get compiler flags
@@ -440,12 +452,6 @@ function _preprocess(program, argv, opt)
     -- is precompiled header?
     if objectfile:endswith(".gch") or objectfile:endswith(".pch") then
         return
-    end
-
-    -- enable "-fdirectives-only"?
-    local fdirectives_only = _g.fdirectives_only
-    if fdirectives_only ~= false and is_gcc then
-        fdirectives_only = true
     end
 
     -- disable linemarkers?
