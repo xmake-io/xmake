@@ -26,6 +26,7 @@ import("core.base.global")
 import("core.project.project")
 import("core.platform.platform")
 import("devel.debugger")
+import("private.async.runjobs")
 import("private.action.run.make_runenvs")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 
@@ -207,14 +208,24 @@ function main()
     if targetname then
         _run(project.target(targetname))
     else
+        local targets = {}
         for _, target in ipairs(project.ordertargets()) do
             if target:is_binary() then
                 local group = target:get("group")
                 if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                    _run(target)
+                    table.insert(targets, target)
                 end
             end
         end
+        local jobs = tonumber(option.get("jobs") or "1")
+        runjobs("run_targets", function (index)
+            local target = targets[index]
+            if target then
+                _run(target)
+            end
+        end, {total = #targets,
+              comax = jobs,
+              isolate = true})
     end
 
     -- leave project directory

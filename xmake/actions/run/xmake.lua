@@ -47,11 +47,12 @@ task("run")
                                                       "e.g.",
                                                       "    xmake run -g test",
                                                       "    xmake run -g test_*",
-                                                      "    xmake run --group=benchmark/*"                                 }
+                                                      "    xmake run --group=benchmark/*"                                  }
                 ,   {'w', "workdir",    "kv",  nil  , "Work directory of running targets, default is folder of targetfile",
                                                       "e.g.",
                                                       "    xmake run -w .",
                                                       "    xmake run --workdir=`pwd`"                                      }
+                ,   {'j', "jobs",       "kv", "1",    "Set the number of parallel compilation jobs."                       }
                 ,   {}
                 ,   {nil, "target",     "v",   nil  , "The target name. It will run all default targets if this parameter is not specified."
                                                     , values = function (complete, opt)
