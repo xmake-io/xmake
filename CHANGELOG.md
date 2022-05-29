@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* Add `preprocessor.linemarkers` policy to disable linemarkers to speed up ccache/distcc
+
 ## v2.6.7
 
 ### New features
@@ -1285,6 +1289,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* 添加 `preprocessor.linemarkers` 策略去禁用 linemarkers 去加速 ccache/distcc
 
 ## v2.6.7
 
