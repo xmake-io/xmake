@@ -53,6 +53,7 @@ task("run")
                                                       "    xmake run -w .",
                                                       "    xmake run --workdir=`pwd`"                                      }
                 ,   {'j', "jobs",       "kv", "1",    "Set the number of parallel compilation jobs."                       }
+                ,   {nil, "detach",     "k", nil,     "Run targets in detached processes."                                 }
                 ,   {}
                 ,   {nil, "target",     "v",   nil  , "The target name. It will run all default targets if this parameter is not specified."
                                                     , values = function (complete, opt)

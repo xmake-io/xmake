@@ -60,7 +60,7 @@ function _do_run_target(target)
     if option.get("debug") then
         debugger.run(targetfile, option.get("arguments"))
     else
-        os.execv(targetfile, option.get("arguments"))
+        os.execv(targetfile, option.get("arguments"), {detach = option.get("detach")})
     end
 
     -- restore the previous directory
