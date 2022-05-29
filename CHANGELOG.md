@@ -5,6 +5,7 @@
 ### Changes
 
 * Add `preprocessor.linemarkers` policy to disable linemarkers to speed up ccache/distcc
+* [#2389](https://github.com/xmake-io/xmake/issues/2389): Improve `xmake run` to parallel running of targets
 
 ## v2.6.7
 
@@ -1293,6 +1294,7 @@
 ### 改进
 
 * 添加 `preprocessor.linemarkers` 策略去禁用 linemarkers 去加速 ccache/distcc
+* [#2389](https://github.com/xmake-io/xmake/issues/2389): 改进 `xmake run` 支持并行运行目标程序
 
 ## v2.6.7
 
