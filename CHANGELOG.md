@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.6.7
+
 ### New features
 
 * [#2318](https://github.com/xmake-io/xmake/issues/2318): Add `xmake f --policies=` config argument to modify project policies
@@ -1283,6 +1285,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.6.7
 
 ### 新特性
 
