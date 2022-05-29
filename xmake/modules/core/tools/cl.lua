@@ -450,6 +450,17 @@ function _preprocess(program, argv, opt)
         return false
     end
 
+    -- disable linemarkers?
+    local linemarkers = _g.linemarkers
+    if linemarkers == nil then
+        if os.isfile(os.projectfile()) and project.policy("preprocessor.linemarkers") == false then
+            linemarkers = false
+        else
+            linemarkers = true
+        end
+        _g.linemarkers = linemarkers
+    end
+
     -- do preprocess
     local cppfile = path.join(path.directory(objectfile), path.basename(objectfile) .. path.extension(sourcefile))
     local cppfiledir = path.directory(cppfile)
@@ -457,6 +468,9 @@ function _preprocess(program, argv, opt)
         os.mkdir(cppfiledir)
     end
     table.insert(cppflags, "-P")
+    if linemarkers == false then
+        table.insert(cppflags, "-EP")
+    end
     table.insert(cppflags, "-Fi" .. cppfile)
     table.insert(cppflags, sourcefile)
     return try{ function()

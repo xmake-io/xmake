@@ -448,6 +448,17 @@ function _preprocess(program, argv, opt)
         fdirectives_only = true
     end
 
+    -- disable linemarkers?
+    local linemarkers = _g.linemarkers
+    if linemarkers == nil then
+        if os.isfile(os.projectfile()) and project.policy("preprocessor.linemarkers") == false then
+            linemarkers = false
+        else
+            linemarkers = true
+        end
+        _g.linemarkers = linemarkers
+    end
+
     -- do preprocess
     local cppfile = path.join(path.directory(objectfile), path.basename(objectfile) .. path.extension(sourcefile))
     local cppfiledir = path.directory(cppfile)
@@ -459,6 +470,9 @@ function _preprocess(program, argv, opt)
     -- when preprocessing, handle directives, but do not expand macros.
     if fdirectives_only then
         table.insert(cppflags, "-fdirectives-only")
+    end
+    if linemarkers == false then
+        table.insert(cppflags, "-P")
     end
     table.insert(cppflags, "-o")
     table.insert(cppflags, cppfile)
