@@ -99,6 +99,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);$(XmakeDefines)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(XmakeIncludeDirs)</AdditionalIncludeDirectories>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx11'))">stdcpp11</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx14'))">stdcpp14</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx17'))">stdcpp17</LanguageStandard>
@@ -148,7 +149,6 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Path">
-    <IncludePath>$(XmakeIncludeDirs);$(IncludePath)</IncludePath>
     <LibraryPath>$(XmakeLinkDirs);$(LibraryPath)</LibraryPath>
     <OutDir>$(XmakeTargetDir)\</OutDir>
     <IntDir>$(XmakeBuilDir)\.vs\$(TargetName)\$(XmakeArch)\$(XmakeMode)\</IntDir>
