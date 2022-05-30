@@ -128,8 +128,8 @@ function _instance:__concat(other)
     if path.instance_of(self) then
         return path.new(path.join(self:str(), tostring(other)), self._TRANSFORM)
     elseif type(self) == "string" then
-        return path.new(self, function (p)
-            return self .. tostring(other)
+        return path.new(tostring(other), function (p)
+            return self .. p
         end)
     else
         os.raise("cannot concat %s/%s", tostring(self), type(self))
