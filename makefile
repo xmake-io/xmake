@@ -1,5 +1,5 @@
 # is debug?
-debug  		:=n
+debug		:=n
 
 # verbose
 ifneq ($(VERBOSE),y)
@@ -9,67 +9,67 @@ endif
 # prefix
 ifeq ($(prefix),) # compatible with brew script (make install PREFIX=xxx DESTDIR=/xxx)
 ifeq ($(PREFIX),)
-prefix 		:=$(if $(findstring /usr/local/bin,$(PATH)),/usr/local,/usr)
+prefix		:=$(if $(findstring /usr/local/bin,$(PATH)),/usr/local,/usr)
 else
-prefix 		:=$(PREFIX)
+prefix		:=$(PREFIX)
 endif
 endif
 
 # use luajit or lua backend
 ifeq ($(RUNTIME),)
-RUNTIME 	:=lua
+RUNTIME		:=lua
 endif
 
 # the temporary directory
 ifeq ($(TMPDIR),)
-TMP_DIR 	:=$(if $(TMP_DIR),$(TMP_DIR),/tmp)
+TMP_DIR		:=$(if $(TMP_DIR),$(TMP_DIR),/tmp)
 else
 # for termux
-TMP_DIR 	:=$(if $(TMP_DIR),$(TMP_DIR),$(TMPDIR))
+TMP_DIR		:=$(if $(TMP_DIR),$(TMP_DIR),$(TMPDIR))
 endif
 
 # platform
-PLAT 		:=$(if ${shell uname | egrep -i linux},linux,)
-PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i darwin},macosx,))
-PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i cygwin},cygwin,))
-PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i msys},msys,))
-PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i mingw},msys,))
-PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i windows},windows,))
-PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i bsd},bsd,))
-PLAT 		:=$(if $(PLAT),$(PLAT),linux)
+PLAT		:=$(if ${shell uname | egrep -i linux},linux,)
+PLAT		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i darwin},macosx,))
+PLAT		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i cygwin},cygwin,))
+PLAT		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i msys},msys,))
+PLAT		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i mingw},msys,))
+PLAT		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i windows},windows,))
+PLAT		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i bsd},bsd,))
+PLAT		:=$(if $(PLAT),$(PLAT),linux)
 
 # architecture
 ifeq ($(BUILD_ARCH),)
 ifneq ($(MSYSTEM_CARCH),)
-MSYSARCH 	:= $(if $(findstring mingw32,$(shell which gcc)),i386,$(MSYSTEM_CARCH))
+MSYSARCH	:= $(if $(findstring mingw32,$(shell which gcc)),i386,$(MSYSTEM_CARCH))
 else
-MSYSARCH 	:= x$(shell getconf LONG_BIT)
+MSYSARCH	:= x$(shell getconf LONG_BIT)
 endif
-BUILD_ARCH 	:=$(if $(findstring windows,$(PLAT)),x86,$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring msys,$(PLAT)),$(MSYSARCH),$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring cygwin,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring macosx,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring linux,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring bsd,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring iphoneos,$(PLAT)),arm64,$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring android,$(PLAT)),armv7,$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring i686,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring x32,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring x64,$(BUILD_ARCH)),x86_64,$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring windows,$(PLAT)),x86,$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring msys,$(PLAT)),$(MSYSARCH),$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring cygwin,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring macosx,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring linux,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring bsd,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring iphoneos,$(PLAT)),arm64,$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring android,$(PLAT)),armv7,$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring i686,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring x32,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring x64,$(BUILD_ARCH)),x86_64,$(BUILD_ARCH))
 
 # on termux/ci
 ifneq ($(TERMUX_ARCH),)
-BUILD_ARCH 	:= $(TERMUX_ARCH)
+BUILD_ARCH	:= $(TERMUX_ARCH)
 endif
 endif
 
 # translate architecture, e.g. armhf/armv7l -> arm, arm64-v8a -> arm64
-BUILD_ARCH 	:= $(if $(findstring aarch64,$(BUILD_ARCH)),arm64,$(BUILD_ARCH))
-BUILD_ARCH 	:= $(if $(findstring arm64,$(BUILD_ARCH)),arm64,$(BUILD_ARCH))
+BUILD_ARCH	:= $(if $(findstring aarch64,$(BUILD_ARCH)),arm64,$(BUILD_ARCH))
+BUILD_ARCH	:= $(if $(findstring arm64,$(BUILD_ARCH)),arm64,$(BUILD_ARCH))
 ifneq ($(BUILD_ARCH),arm64)
-BUILD_ARCH 	:= $(if $(findstring arm,$(BUILD_ARCH)),arm,$(BUILD_ARCH))
+BUILD_ARCH	:= $(if $(findstring arm,$(BUILD_ARCH)),arm,$(BUILD_ARCH))
 endif
-BUILD_ARCH 	:= $(if $(findstring i686,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
+BUILD_ARCH	:= $(if $(findstring i686,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
 
 # is windows?
 iswin =
@@ -86,15 +86,15 @@ ifeq ($(PLAT),cygwin)
 	iswin = yes
 endif
 
-destdir 		    :=$(if $(DESTDIR),$(DESTDIR)/$(prefix),$(prefix))
-xmake_dir_install   :=$(destdir)/share/xmake
-xmake_core          :=./core/src/demo/demo.b
+destdir				:=$(if $(DESTDIR),$(DESTDIR)/$(prefix),$(prefix))
+xmake_dir_install	:=$(destdir)/share/xmake
+xmake_core			:=./core/src/demo/demo.b
 ifdef iswin
-xmake_core_install  :=$(destdir)/bin/xmake.exe
+xmake_core_install	:=$(destdir)/bin/xmake.exe
 else
-xmake_core_install  :=$(destdir)/bin/xmake
+xmake_core_install	:=$(destdir)/bin/xmake
 endif
-xrepo_bin_install   :=$(destdir)/bin/xrepo
+xrepo_bin_install	:=$(destdir)/bin/xrepo
 
 build:
 	@echo compiling xmake-core ...
