@@ -259,9 +259,6 @@ end
 -- fetch packages
 function _fetch_packages(packages_fetch, installdeps)
 
-    -- we need hide wait characters if is not a tty
-    local show_wait = io.isatty()
-
     -- init installed packages
     local packages_fetched = {}
     for _, instance in ipairs(packages_fetch) do
