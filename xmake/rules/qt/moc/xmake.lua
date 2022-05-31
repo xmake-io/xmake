@@ -68,7 +68,12 @@ rule("qt.moc")
         for _, pathmap in ipairs(pathmaps) do
             for _, item in ipairs(target:get(pathmap[1])) do
                 local pathitem = path(item, function (p)
-                    return table.unwrap(compiler.map_flags("cxx", pathmap[2], p))
+                    local item = table.unwrap(compiler.map_flags("cxx", pathmap[2], p))
+                    if item then
+                        -- we always need use '/' to fix it for project generator, because it will use path.translate in cl.lua
+                        item = item:gsub("\\", "/")
+                    end
+                    return item
                 end)
                 table.insert(flags, pathitem)
             end

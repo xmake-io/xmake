@@ -241,6 +241,17 @@ function batchcmds:compile(sourcefiles, objectfile, opt)
     local compiler_inst = compiler.load(sourcekind, opt)
     local program, argv = compiler_inst:compargv(sourcefiles, path(objectfile), opt)
 
+    -- we need translate path for the project generator
+    for idx, item in ipairs(argv) do
+        if type(item) == "string" then
+            if item:startswith("-I") then
+                argv[idx] = path(item:sub(3), function (p) return "-I" .. p end)
+            elseif item:startswith("/I") then
+                argv[idx] = path(item:sub(3), function (p) return "/I" .. p end)
+            end
+        end
+    end
+
     -- add compilation command and bind run environments of compiler
     self:mkdir(path.directory(objectfile))
     self:vrunv(program, argv, {envs = table.join(compiler_inst:runenvs(), opt.envs)})
@@ -264,6 +275,19 @@ function batchcmds:link(objectfiles, targetfile, opt)
     -- load linker and get link command
     local linker_inst = target and target:linker() or linker.load(opt.targetkind, opt.sourcekinds, opt)
     local program, argv = linker_inst:linkargv(objectfiles, path(targetfile), opt)
+
+    -- we need translate path for the project generator
+    for idx, item in ipairs(argv) do
+        if type(item) == "string" then
+            if item:startswith("-L") then
+                argv[idx] = path(item:sub(3), function (p) return "-L" .. p end)
+            elseif item:startswith("-F") then
+                argv[idx] = path(item:sub(3), function (p) return "-F" .. p end)
+            elseif item:startswith("-libpath:") then
+                argv[idx] = path(item:sub(10), function (p) return "-libpath:" .. p end)
+            end
+        end
+    end
 
     -- add link command and bind run environments of linker
     self:mkdir(path.directory(targetfile))
