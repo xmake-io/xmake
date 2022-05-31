@@ -38,7 +38,7 @@ function _checkout(package, url, sourcedir, url_alias)
 
     -- use previous source directory if exists
     local packagedir = path.join(sourcedir, package:name())
-    if os.isdir(packagedir) and
+    if os.isdir(path.join(packagedir, ".git")) and
         not (option.get("force") and package:branch()) then -- we need disable cache if we force to clone from the given branch
 
         -- clean the previous build files
@@ -56,7 +56,7 @@ function _checkout(package, url, sourcedir, url_alias)
 
     -- we can use local package from the search directories directly if network is too slow
     local localdir = find_directory(package:name() .. archive.extension(url), core_package.searchdirs())
-    if localdir and os.isdir(localdir) then
+    if localdir and os.isdir(path.join(localdir, ".git")) then
         git.clean({repodir = localdir, force = true, all = true})
         git.reset({repodir = localdir, hard = true})
         if os.isfile(path.join(localdir, ".gitmodules")) then
