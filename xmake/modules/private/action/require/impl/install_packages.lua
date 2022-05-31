@@ -256,6 +256,120 @@ function _show_upgraded_packages(packages)
     cprint("${bright}%d packages are upgraded!", upgraded_count)
 end
 
+-- fetch packages
+function _fetch_packages(packages_fetch, installdeps)
+
+    -- we need hide wait characters if is not a tty
+    local show_wait = io.isatty()
+
+    -- init installed packages
+    local packages_fetched = {}
+    for _, instance in ipairs(packages_fetch) do
+        packages_fetched[tostring(instance)] = false
+    end
+
+    -- save terminal mode for stdout, @see https://github.com/xmake-io/xmake/issues/1924
+    local term_mode_stdout = tty.term_mode("stdout")
+
+    --[[
+        runjobs("fetch_packages", function (index)
+        local instance = packages[index]
+        if instance and (instance:is_fetchonly() or
+                         not option.get("force") or
+                         (option.get("shallow") and not instance:is_toplevel())) then
+            local oldenvs = os.getenvs()
+            instance:envs_enter()
+            instance:fetch()
+            os.setenvs(oldenvs)
+        end
+
+        -- fix terminal mode to avoid some subprocess to change it
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/1924
+        -- https://github.com/xmake-io/xmake/issues/2329
+        if term_mode_stdout ~= tty.term_mode("stdout") then
+            tty.term_mode("stdout", term_mode_stdout)
+        end
+]]
+
+    -- do install
+    local packages_fetching = {}
+    local packages_pending = table.copy(packages_fetch)
+    local working_count = 0
+    local installing_count = 0
+    local parallelize = true
+    runjobs("fetch_packages", function (index)
+
+        -- fetch a new package
+        local instance = nil
+        while instance == nil and #packages_pending > 0 do
+            for idx, pkg in ipairs(packages_pending) do
+
+                -- all dependences has been fetched? we fetch it now
+                local ready = true
+                local dep_not_found = nil
+                for _, dep in pairs(installdeps[tostring(pkg)]) do
+                    local fetched = packages_fetched[tostring(dep)]
+                    if fetched == false or (fetched == nil and not dep:exists() and not dep:is_optional()) then
+                        ready = false
+                        dep_not_found = dep
+                        break
+                    end
+                end
+
+                -- get a package with the ready status
+                if ready then
+                    instance = pkg
+                    table.remove(packages_pending, idx)
+                    break
+                elseif working_count == 0 then
+                    if #packages_pending == 1 and dep_not_found then
+                        raise("package(%s): cannot be installed, there are dependencies(%s) that cannot be installed!", pkg:displayname(), dep_not_found:displayname())
+                    elseif #packages_pending == 1 then
+                        raise("package(%s): cannot be installed!", pkg:displayname())
+                    end
+                end
+            end
+            if instance == nil and #packages_pending > 0 then
+                scheduler.co_yield()
+            end
+        end
+        if instance then
+
+            -- update working count
+            working_count = working_count + 1
+
+            -- disable parallelize?
+            if not instance:is_parallelize() then
+                parallelize = false
+            end
+            if not parallelize then
+                while installing_count > 0 do
+                    scheduler.co_yield()
+                end
+            end
+            installing_count = installing_count + 1
+
+            -- install this package
+            packages_fetching[index] = instance
+
+
+            -- next
+            parallelize = true
+            installing_count = installing_count - 1
+            packages_fetching[index] = nil
+            packages_fetched[tostring(instance)] = true
+
+            -- update working count
+            working_count = working_count - 1
+        end
+        packages_fetching[index] = nil
+
+    end, {total = #packages_fetch,
+          comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4,
+          isolate = true})
+end
+
 -- install packages
 function _install_packages(packages_install, packages_download, installdeps)
 
