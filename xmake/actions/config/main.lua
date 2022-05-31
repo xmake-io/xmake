@@ -112,7 +112,7 @@ end
 -- check targets
 function _check_targets(targetname)
     assert(not project.is_loaded(), "project and targets may have been loaded early!")
-    if targetname == "all" then
+    if not targetname then
         for _, target in pairs(project.targets()) do
             _check_target(target)
         end
@@ -176,7 +176,7 @@ end
 
 -- config targets
 function _config_targets(targetname)
-    if targetname == "all" then
+    if not targetname then
         for _, target in ipairs(project.ordertargets()) do
             if target:is_enabled() then
                 _config_target(target)
@@ -289,7 +289,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     end
 
     -- the target name
-    local targetname = option.get("target") or "all"
+    local targetname = option.get("target")
 
     -- load the project configuration
     --
