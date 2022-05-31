@@ -377,10 +377,9 @@ function stream:recv_file(filepath)
             end
         end
         if result then
-            os.mv(tmpfile, filepath)
-        else
-            os.tryrm(tmpfile)
+            os.cp(tmpfile, filepath)
         end
+        os.tryrm(tmpfile)
         return result
     end
 end
