@@ -248,6 +248,8 @@ function batchcmds:compile(sourcefiles, objectfile, opt)
                 argv[idx] = path(item:sub(3), function (p) return "-I" .. p end)
             elseif item:startswith("/I") then
                 argv[idx] = path(item:sub(3), function (p) return "/I" .. p end)
+            elseif item:startswith("-external:I") or item:startswith("/external:I") then
+                argv[idx] = path(item:sub(12), function (p) return "-external:I" .. p end)
             end
         end
     end
