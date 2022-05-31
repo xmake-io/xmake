@@ -361,7 +361,7 @@ function _make_filter(filepath, target, vcxprojdir)
             local mode = extraconf.mode
             for _, filepattern in ipairs(files) do
                 filepattern = path.pattern(path.absolute(path.join(rootdir, filepattern)))
-                if fileitem:match(filepattern) then
+                if filepath:match(filepattern) then
                     if mode == "plain" then
                         filter = path.normalize(filegroup)
                     else
