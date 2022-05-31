@@ -46,7 +46,7 @@ function policy.policies()
             -- merge archive intead of linking for all dependent targets
             ["build.merge_archive"]              = {description = "Enable merge archive intead of linking for all dependent targets.", default = false, type = "boolean"},
             -- C/C++ build cache
-            ["build.ccache"]                     = {description = "Enable C/C++ build cache.", default = true, type = "boolean"},
+            ["build.ccache"]                     = {description = "Enable C/C++ build cache.", type = "boolean"},
             -- preprocessor configuration for ccache/distcc, we can disable linemarkers to speed up preprocess
             ["preprocessor.linemarkers"]         = {description = "Enable linemarkers for preprocessor.", default = true, type = "boolean"},
             -- we need enable longpaths when building target or installing package
