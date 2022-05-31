@@ -55,12 +55,20 @@ end
 function _instance:_save()
 
     -- clear scripts for caching to file
+    local check = self:get("check")
+    local check_after = self:get("check_after")
+    local check_before = self:get("check_before")
     self:set("check", nil)
     self:set("check_after", nil)
     self:set("check_before", nil)
 
     -- save option
     option._cache():set(self:name(), self:info())
+
+    -- restore scripts
+    self:set("check", check)
+    self:set("check_after", check_after)
+    self:set("check_before", check_before)
 end
 
 -- clear the option info for cache
