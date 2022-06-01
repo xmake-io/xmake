@@ -103,7 +103,6 @@ function distcc_build_server:_on_handle(stream, msg)
             function (errors)
                 if errors then
                     session_errs = tostring(errors)
-                    vprint(session_errs)
                 end
             end
         }
@@ -111,6 +110,7 @@ function distcc_build_server:_on_handle(stream, msg)
     respmsg:status_set(session_ok)
     if not session_ok and session_errs then
         respmsg:errors_set(session_errs)
+        vprint(session_errs)
     end
     local ok = stream:send_msg(respmsg) and stream:flush()
     vprint("%s: %s: <session %s>: send %s", self, stream:sock(), session_id, ok and "ok" or "failed")
