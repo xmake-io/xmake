@@ -256,6 +256,107 @@ function _show_upgraded_packages(packages)
     cprint("${bright}%d packages are upgraded!", upgraded_count)
 end
 
+-- fetch packages
+function _fetch_packages(packages_fetch, installdeps)
+
+    -- init installed packages
+    local packages_fetched = {}
+    for _, instance in ipairs(packages_fetch) do
+        packages_fetched[tostring(instance)] = false
+    end
+
+    -- save terminal mode for stdout, @see https://github.com/xmake-io/xmake/issues/1924
+    local term_mode_stdout = tty.term_mode("stdout")
+
+    -- do fetch
+    local packages_fetching = {}
+    local packages_pending = table.copy(packages_fetch)
+    local working_count = 0
+    local fetching_count = 0
+    local parallelize = true
+    runjobs("fetch_packages", function (index)
+
+        -- fetch a new package
+        local instance = nil
+        while instance == nil and #packages_pending > 0 do
+            for idx, pkg in ipairs(packages_pending) do
+
+                -- all dependences has been fetched? we fetch it now
+                local ready = true
+                local dep_not_ready = nil
+                for _, dep in pairs(installdeps[tostring(pkg)]) do
+                    local fetched = packages_fetched[tostring(dep)]
+                    if fetched == false then
+                        ready = false
+                        dep_not_ready = dep
+                        break
+                    end
+                end
+
+                -- get a package with the ready status
+                if ready then
+                    instance = pkg
+                    table.remove(packages_pending, idx)
+                    break
+                elseif working_count == 0 then
+                    if #packages_pending == 1 and dep_not_ready then
+                        raise("package(%s): cannot be fetched, there are dependencies(%s) that cannot be fetched!", pkg:displayname(), dep_not_ready:displayname())
+                    elseif #packages_pending == 1 then
+                        raise("package(%s): cannot be fetched!", pkg:displayname())
+                    end
+                end
+            end
+            if instance == nil and #packages_pending > 0 then
+                scheduler.co_yield()
+            end
+        end
+        if instance then
+
+            -- update working count
+            working_count = working_count + 1
+
+            -- disable parallelize?
+            if not instance:is_parallelize() then
+                parallelize = false
+            end
+            if not parallelize then
+                while fetching_count > 0 do
+                    scheduler.co_yield()
+                end
+            end
+            fetching_count = fetching_count + 1
+
+            -- fetch this package
+            packages_fetching[index] = instance
+            local oldenvs = os.getenvs()
+            instance:envs_enter()
+            instance:fetch()
+            os.setenvs(oldenvs)
+
+            -- fix terminal mode to avoid some subprocess to change it
+            --
+            -- @see https://github.com/xmake-io/xmake/issues/1924
+            -- https://github.com/xmake-io/xmake/issues/2329
+            if term_mode_stdout ~= tty.term_mode("stdout") then
+                tty.term_mode("stdout", term_mode_stdout)
+            end
+
+            -- next
+            parallelize = true
+            fetching_count = fetching_count - 1
+            packages_fetching[index] = nil
+            packages_fetched[tostring(instance)] = true
+
+            -- update working count
+            working_count = working_count - 1
+        end
+        packages_fetching[index] = nil
+
+    end, {total = #packages_fetch,
+          comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4,
+          isolate = true})
+end
+
 -- install packages
 function _install_packages(packages_install, packages_download, installdeps)
 
@@ -550,28 +651,15 @@ function main(requires, opt)
     local term_mode_stdout = tty.term_mode("stdout")
 
     -- fetch and register packages (with system) from local first
-    runjobs("fetch_packages", function (index)
-        local instance = packages[index]
+    local packages_fetch = {}
+    for _, instance in ipairs(packages) do
         if instance and (instance:is_fetchonly() or
                          not option.get("force") or
                          (option.get("shallow") and not instance:is_toplevel())) then
-            local oldenvs = os.getenvs()
-            instance:envs_enter()
-            instance:fetch()
-            os.setenvs(oldenvs)
+            table.insert(packages_fetch, instance)
         end
-
-        -- fix terminal mode to avoid some subprocess to change it
-        --
-        -- @see https://github.com/xmake-io/xmake/issues/1924
-        -- https://github.com/xmake-io/xmake/issues/2329
-        if term_mode_stdout ~= tty.term_mode("stdout") then
-            tty.term_mode("stdout", term_mode_stdout)
-        end
-
-    end, {total = #packages,
-          comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4,
-          isolate = true})
+    end
+    _fetch_packages(packages_fetch, installdeps)
 
     -- register all installed root packages to local cache
     register_packages(packages)
