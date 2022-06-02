@@ -32,6 +32,7 @@ function check_macros(definition, macros, opt)
     local snippets = {}
     save_scope()
     option(optname)
+        set_showmenu(false)
         for _, macro in ipairs(macros) do
             if macro:find(' ', 1, true) then
                 table.insert(snippets, ([[
@@ -85,6 +86,7 @@ function configvar_check_macros(definition, macros, opt)
     local snippets = {}
     save_scope()
     option(optname)
+        set_showmenu(false)
         for _, macro in ipairs(macros) do
             if macro:find(' ', 1, true) then
                 table.insert(snippets, ([[

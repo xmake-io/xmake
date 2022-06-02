@@ -6,6 +6,7 @@
 
 * Add `preprocessor.linemarkers` policy to disable linemarkers to speed up ccache/distcc
 * [#2389](https://github.com/xmake-io/xmake/issues/2389): Improve `xmake run` to parallel running of targets
+* [#2417](https://github.com/xmake-io/xmake/issues/2417): Switch the default value of option/showmenu
 
 ## v2.6.7
 
@@ -1295,6 +1296,7 @@
 
 * 添加 `preprocessor.linemarkers` 策略去禁用 linemarkers 去加速 ccache/distcc
 * [#2389](https://github.com/xmake-io/xmake/issues/2389): 改进 `xmake run` 支持并行运行目标程序
+* [#2417](https://github.com/xmake-io/xmake/issues/2417): 切换 option/showmenu 的默认值，默认开启
 
 ## v2.6.7
 

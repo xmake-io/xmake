@@ -35,6 +35,7 @@ function find_and_add_packages(...)
         local optname = "__" .. name
         save_scope()
         option(optname)
+            set_showmenu(false)
             before_check(function (option)
                 option:add(find_packages(name))
             end)
