@@ -94,17 +94,17 @@
   </Target>
   <Target Name="_XmakeConfig" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake config $(_XmakeCommonFlags) $(_XmakeConfigFlags)" Importance="High" Condition="'$(XmakeDefault)' != 'false'" />
-    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+    <Exec Command="$(_XmakeEnv)
       $(_XmakeExecutable) config $(_XmakeCommonFlags) $(_XmakeConfigFlags)" EchoOff="true" Condition="'$(XmakeDefault)' != 'false'" />
   </Target>
   <Target Name="_XmakeBuild" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(_XmakeTarget)" Importance="High" Condition="'$(XmakeDefault)' != 'false'" />
-    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+    <Exec Command="$(_XmakeEnv)
       $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(_XmakeTarget)" EchoOff="true" Condition="'$(XmakeDefault)' != 'false'" />
   </Target>
   <Target Name="_XmakeRebuild" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake build -r $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(_XmakeTarget)" Importance="High" Condition="'$(XmakeDefault)' != 'false'" />
-    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+    <Exec Command="$(_XmakeEnv)
       $(_XmakeExecutable) build -r $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(_XmakeTarget)" EchoOff="true" Condition="'$(XmakeDefault)' != 'false'" />
   </Target>
   <Target Name="_XmakeBuildFile" DependsOnTargets="_XmakeProjCheck">
@@ -116,12 +116,12 @@
       <FileFlag>--files="@(File)"</FileFlag>
     </PropertyGroup>
     <Message Text="$xmake build $(_XmakeCommonFlags) $(_XmakeBuildFileFlags) $(FileFlag) $(_XmakeTarget)" Importance="High" />
-    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+    <Exec Command="$(_XmakeEnv)
       $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFileFlags) $(FileFlag) $(_XmakeTarget)" EchoOff="true" />
   </Target>
   <Target Name="_XmakeClean" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake clean $(_XmakeCommonFlags) $(_XmakeCleanFlags) $(_XmakeTarget)" Importance="High" Condition="'$(XmakeDefault)' != 'false'" />
-    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+    <Exec Command="$(_XmakeEnv)
       $(_XmakeExecutable) clean $(_XmakeCommonFlags) $(_XmakeCleanFlags) $(_XmakeTarget)" EchoOff="true" Condition="'$(XmakeDefault)' != 'false'" />
   </Target>
 
