@@ -218,7 +218,7 @@ function searchdirs(name)
             local dir = path.directory(file)
             local subdirname = path.basename(path.directory(dir))
             if #subdirname == 1 then -- ignore l/luajit/port/xmake.lua
-                local packagename = path.basename(dir)
+                local packagename = path.filename(dir)
                 if not unique[packagename] then
                     table.insert(packageinfos, {name = packagename, repo = repo, packagedir = path.directory(file)})
                     unique[packagename] = true
