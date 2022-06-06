@@ -508,6 +508,7 @@ function main(outputdir, vsinfo)
                 local targetinfo = _make_targetinfo(mode, arch, target)
                 _target._targets[mode][arch] = targetinfo
                 _target.sdkver = targetinfo.sdkver
+                _target.default = targetinfo.default
 
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))

@@ -225,7 +225,7 @@ function make(version)
 
         -- write solution file
         local sln = path.join(info.solution_dir, info.slnfile .. ".sln")
-        _writefileifneeded(sln, render(template_sln, "#([A-Za-z0-9_,%.%*%(%)]+)#", paramsprovidersln))
+        _writefileifneeded(sln, render(template_sln, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidersln))
 
         -- add solution custom file
         _trycp(template_props, info.solution_dir)
@@ -237,10 +237,10 @@ function make(version)
 
             -- write project file
             local proj = path.join(proj_dir, target .. ".vcxproj")
-            _writefileifneeded(proj, render(template_vcx, "#([A-Za-z0-9_,%.%*%(%)]+)#", paramsprovidertarget))
+            _writefileifneeded(proj, render(template_vcx, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidertarget))
 
             local projfil = path.join(proj_dir, target .. ".vcxproj.filters")
-            _writefileifneeded(projfil, render(template_fil, "#([A-Za-z0-9_,%.%*%(%)]+)#", paramsprovidertarget))
+            _writefileifneeded(projfil, render(template_fil, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidertarget))
 
             -- add project custom file
             _trycp(template_props, proj_dir)

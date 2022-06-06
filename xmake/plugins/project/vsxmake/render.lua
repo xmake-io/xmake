@@ -32,6 +32,33 @@ function _fill(opt, params)
     end
 end
 
+function _cfill(opt, params)
+    return function(match)
+        local tmp = match:split(";", {strict = true})
+        assert(#tmp == 2 or #tmp == 3)
+
+        local cond = tmp[1]
+        local value1 = tmp[2]
+        local value2 = ""
+        
+        if #tmp == 3 then
+            value2 = tmp[3]
+        end
+
+        tmp = cond:split("=")
+        assert(#tmp == 2)
+
+        local k = tmp[1]:trim()
+        local v = tmp[2]:trim()
+
+        if opt.paramsprovider(k, params) == v then
+            return value1
+        end
+
+        return value2
+    end
+end
+
 function _expand(params)
     local r = {""}
     for _, v in ipairs(params) do
@@ -46,7 +73,7 @@ function _expand(params)
                 for i, p in ipairs(r) do
                     rcopy[i] = p .. "\0" .. c
                 end
-               newr = table.join(newr, rcopy)
+                newr = table.join(newr, rcopy)
             end
             r = newr
         end
@@ -58,17 +85,17 @@ function _expand(params)
 end
 
 function _render(templatepath, opt, args)
-
     local template = io.readfile(templatepath)
     local params = _expand(opt.paramsprovider(args))
     local replaced = ""
     for _, v in ipairs(params) do
-        replaced = replaced .. template:gsub(opt.pattern, _fill(opt, v))
+        local tmpl = template:gsub(opt.cpattern, _cfill(opt, v))
+        replaced = replaced .. tmpl:gsub(opt.pattern, _fill(opt, v))
     end
     return replaced
 end
 
-function main(templatepath, pattern, paramsprovider)
-    local opt = { pattern = pattern, paramsprovider = paramsprovider, templatedir = path.directory(templatepath) }
+function main(templatepath, pattern, cpattern, paramsprovider)
+    local opt = { pattern = pattern, cpattern = cpattern, paramsprovider = paramsprovider, templatedir = path.directory(templatepath) }
     return _render(templatepath, opt, {})
 end
