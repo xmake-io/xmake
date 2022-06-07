@@ -47,6 +47,7 @@ function _filter_files(files, includeexts, excludeexts)
             table.insert(f, file)
         end
     end
+    table.sort(f)
     return f
 end
 

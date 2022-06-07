@@ -421,8 +421,8 @@ function main(outputdir, vsinfo)
 
     -- init groups
     local groups, group_deps = _make_vsinfo_groups()
-    vsinfo.groups            = table.keys(groups)
-    vsinfo.group_deps        = table.keys(group_deps)
+    vsinfo.groups            = table.orderkeys(groups)
+    vsinfo.group_deps        = table.orderkeys(group_deps)
     vsinfo._groups           = groups
     vsinfo._group_deps       = group_deps
 
@@ -519,7 +519,7 @@ function main(outputdir, vsinfo)
                 _target.filegroups_extraconf = target:extraconf("filegroups")
 
                 -- save deps
-                _target.deps = table.unique(table.join(_target.deps or {}, table.keys(target:deps()), nil))
+                _target.deps = table.unique(table.join(_target.deps or {}, table.orderkeys(target:deps()), nil))
             end
         end
     end
@@ -552,7 +552,7 @@ function main(outputdir, vsinfo)
             end
         end
         target._dirs = dirs
-        target.dirs = table.keys(dirs)
+        target.dirs = table.orderkeys(dirs)
         target._deps = {}
         for _, v in ipairs(target.deps) do
             target._deps[v] = targets[v]
@@ -562,7 +562,7 @@ function main(outputdir, vsinfo)
     -- we need set startup project for default or binary target
     -- @see https://github.com/xmake-io/xmake/issues/1249
     local targetnames = {}
-    for targetname, target in pairs(project.targets()) do
+    for targetname, target in table.orderpairs(project.targets()) do
         if target:get("default") == true then
             table.insert(targetnames, 1, targetname)
         elseif target:is_binary() then
