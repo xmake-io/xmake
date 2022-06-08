@@ -9,6 +9,7 @@
 * [#2417](https://github.com/xmake-io/xmake/issues/2417): Switch the default value of option/showmenu
 * [#2440](https://github.com/xmake-io/xmake/pull/2440): Improve package installation error messages
 * [#2438](https://github.com/xmake-io/xmake/pull/2438): Make sure the solution and project file unchanged by sorting those tables
+* [#2434](https://github.com/xmake-io/xmake/issues/2434): Improve plugins manager, allow to handle multiples plugin repositories
 
 ### Bugs Fixed
 
@@ -1305,6 +1306,7 @@
 * [#2417](https://github.com/xmake-io/xmake/issues/2417): 切换 option/showmenu 的默认值，默认开启
 * [#2440](https://github.com/xmake-io/xmake/pull/2440): 改进安装包的失败错误信息
 * [#2438](https://github.com/xmake-io/xmake/pull/2438): 确保生成的 vsxmake 工程不会随机变动
+* [#2434](https://github.com/xmake-io/xmake/issues/2434): 改进插件管理器，允许多插件管理
 
 ### Bugs 修复
 
