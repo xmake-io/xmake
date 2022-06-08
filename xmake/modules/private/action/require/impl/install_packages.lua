@@ -669,6 +669,7 @@ function main(requires, opt)
     local packages_download = {}
     local packages_unsupported = {}
     local packages_not_found = {}
+    local packages_unknown = {}
     for _, instance in ipairs(packages) do
         if package.should_install(instance) then
             if instance:is_supported() then
@@ -677,7 +678,11 @@ function main(requires, opt)
                 end
                 table.insert(packages_install, instance)
             elseif not instance:is_optional() then
-                table.insert(packages_unsupported, instance)
+                if not instance:exists() and not instance:repo() then
+                    table.insert(packages_unknown, instance)
+                else
+                    table.insert(packages_unsupported, instance)
+                end
             end
         -- @see https://github.com/xmake-io/xmake/issues/2050
         elseif not instance:exists() and not instance:is_optional() then
@@ -688,21 +693,36 @@ function main(requires, opt)
         end
     end
 
+    local has_errors = false
+
+    -- exists unknwon packages?
+    if #packages_unknown > 0 then
+        cprint("${bright color.warning}note: ${clear}the following packages were not found in any repository (check if they are spelled correctly):")
+        for _, instance in ipairs(packages_unknown) do
+            print("  -> %s", instance:displayname())
+        end
+        has_errors = true
+    end
+
     -- exists unsupported packages?
     if #packages_unsupported > 0 then
-        cprint("${bright color.warning}note: ${clear}the following packages are unsupported for $(plat)/$(arch)!")
+        cprint("${bright color.warning}note: ${clear}the following packages are unsupported for $(plat)/$(arch):")
         for _, instance in ipairs(packages_unsupported) do
             print("  -> %s %s", instance:displayname(), instance:version_str() or "")
         end
-        raise()
+        has_errors = true
     end
 
     -- exists not found packages?
     if #packages_not_found > 0 then
-        cprint("${bright color.warning}note: ${clear}the following packages are not found for $(plat)/$(arch)!")
+        cprint("${bright color.warning}note: ${clear}the following packages were not found for $(plat)/$(arch):")
         for _, instance in ipairs(packages_not_found) do
             print("  -> %s %s", instance:displayname(), instance:version_str() or "")
         end
+        has_errors = true
+    end
+
+    if has_errors then
         raise()
     end
 
