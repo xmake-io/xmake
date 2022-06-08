@@ -188,7 +188,6 @@ task("config")
                     {nil, "pkg_searchdirs", "kv", nil       , "The search directories of the remote package."
                                                             , "    e.g."
                                                             , "    - xmake f --pkg_searchdirs=/dir1" .. path.envsep() .. "/dir2"},
-                    _project_menu_options,
                     {category = "Cross Complation Configuration"},
                     {nil, "cross",      "kv", nil,          "Set cross toolchains prefix"
                                                           , "e.g."
@@ -228,7 +227,9 @@ task("config")
                     {'o', "buildir",    "kv", "build"   , "Set build directory."},
                     {},
                     {nil, "target",     "v" , nil       , "Configure for the given target."
-                                                        , values = _target_values}}}
+                                                        , values = _target_values},
+                    {category = "Project Configuration"},
+                    _project_menu_options}}
 
 
 

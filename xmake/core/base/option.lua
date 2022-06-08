@@ -685,8 +685,6 @@ end
 
 -- show the options menu
 function option.show_options(options, taskname)
-
-    -- check
     assert(options)
 
     -- remove repeat empty lines
@@ -694,14 +692,10 @@ function option.show_options(options, taskname)
     local emptyline_count = 0
     local printed_options = {}
     for _, opt in ipairs(options) do
-        if not opt[1] and not opt[2] then
-            emptyline_count = emptyline_count + 1
-        else
-            emptyline_count = 0
+        if opt.category and printed_options[#printed_options].category then
+            table.remove(printed_options)
         end
-        if emptyline_count < 2 then
-            table.insert(printed_options, opt)
-        end
+        table.insert(printed_options, opt)
         if opt.category and opt.category == "action" then
             is_action = true
         end
@@ -720,19 +714,23 @@ function option.show_options(options, taskname)
     end
 
     -- print options
+    local categories = {}
     for _, opt in ipairs(printed_options) do
-
         if opt.category and opt.category == "action" then
-
             -- the following options are belong action? show command section
             --
             -- @see core/base/task.lua: translate menu
             --
             table.insert(tablecontent, {})
             table.insert(tablecontent, {{"Command options (" .. taskname .. "):", style="${reset bright}"}})
+        elseif opt.category and opt.category ~= "." then
+            local category_root = opt.category:split("/")[1]
+            if not categories[category_root] then
+                table.insert(tablecontent, {})
+                table.insert(tablecontent, {{"Command options (" .. opt.category .. "):", style="${reset bright}"}})
+                categories[category_root] = true
+            end
         elseif opt[3] == nil then
-
-            -- insert empty line
             table.insert(tablecontent, {})
         else
 
