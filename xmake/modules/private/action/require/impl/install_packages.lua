@@ -678,7 +678,7 @@ function main(requires, opt)
                 end
                 table.insert(packages_install, instance)
             elseif not instance:is_optional() then
-                if not instance:exists() and not instance:repo() then
+                if not instance:exists() and instance:is_system() then
                     table.insert(packages_unknown, instance)
                 else
                     table.insert(packages_unsupported, instance)
