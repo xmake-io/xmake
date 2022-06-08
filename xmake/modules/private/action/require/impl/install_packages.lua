@@ -695,7 +695,7 @@ function main(requires, opt)
 
     local has_errors = false
 
-    -- exists unknwon packages?
+    -- exists unknown packages?
     if #packages_unknown > 0 then
         cprint("${bright color.warning}note: ${clear}the following packages were not found in any repository (check if they are spelled correctly):")
         for _, instance in ipairs(packages_unknown) do
@@ -706,7 +706,7 @@ function main(requires, opt)
 
     -- exists unsupported packages?
     if #packages_unsupported > 0 then
-        cprint("${bright color.warning}note: ${clear}the following packages are unsupported for $(plat)/$(arch):")
+        cprint("${bright color.warning}note: ${clear}the following packages are unsupported on $(plat)/$(arch):")
         for _, instance in ipairs(packages_unsupported) do
             print("  -> %s %s", instance:displayname(), instance:version_str() or "")
         end
@@ -715,7 +715,7 @@ function main(requires, opt)
 
     -- exists not found packages?
     if #packages_not_found > 0 then
-        cprint("${bright color.warning}note: ${clear}the following packages were not found for $(plat)/$(arch):")
+        cprint("${bright color.warning}note: ${clear}the following packages were not found on your system, try again after installing them:")
         for _, instance in ipairs(packages_not_found) do
             print("  -> %s %s", instance:displayname(), instance:version_str() or "")
         end
