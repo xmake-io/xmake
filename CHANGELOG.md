@@ -7,6 +7,12 @@
 * Add `preprocessor.linemarkers` policy to disable linemarkers to speed up ccache/distcc
 * [#2389](https://github.com/xmake-io/xmake/issues/2389): Improve `xmake run` to parallel running of targets
 * [#2417](https://github.com/xmake-io/xmake/issues/2417): Switch the default value of option/showmenu
+* [#2440](https://github.com/xmake-io/xmake/pull/2440): Improve package installation error messages
+* [#2438](https://github.com/xmake-io/xmake/pull/2438): Make sure the solution and project file unchanged by sorting those tables
+
+### Bugs Fixed
+
+* [#2435](https://github.com/xmake-io/xmake/pull/2435): fix the search bug when the package name has an extension name.
 
 ## v2.6.7
 
@@ -1297,6 +1303,12 @@
 * 添加 `preprocessor.linemarkers` 策略去禁用 linemarkers 去加速 ccache/distcc
 * [#2389](https://github.com/xmake-io/xmake/issues/2389): 改进 `xmake run` 支持并行运行目标程序
 * [#2417](https://github.com/xmake-io/xmake/issues/2417): 切换 option/showmenu 的默认值，默认开启
+* [#2440](https://github.com/xmake-io/xmake/pull/2440): 改进安装包的失败错误信息
+* [#2438](https://github.com/xmake-io/xmake/pull/2438): 确保生成的 vsxmake 工程不会随机变动
+
+### Bugs 修复
+
+* [#2435](https://github.com/xmake-io/xmake/pull/2435): 修复无法搜索带有 `.` 的包名
 
 ## v2.6.7
 
