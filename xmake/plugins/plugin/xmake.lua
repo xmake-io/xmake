@@ -18,28 +18,19 @@
 -- @file        plugin.lua
 --
 
--- define task
 task("plugin")
-
-    -- set category
     set_category("plugin")
-
-    -- on run
     on_run("main")
-
-    -- set menu
     set_menu {
-
-        -- usage
-        usage = "xmake plugin [options]"
-
-        -- description
-    ,   description = "Manage plugins of xmake."
-
-        -- options
-    ,   options =
-        {
-            {'i', "install", "k",  nil,      "Install all plugins of the official remote repository." }
-        ,   {'c', "clear",  "k",  nil,       "Clear all installed plugins."                           }
+        usage = "xmake plugin [options]",
+        description = "Manage plugins of xmake.",
+        options = {
+            {'i', "install", "k",  nil,      "Install plugins."             },
+            {'u', "update",  "k",  nil,      "Update plugins."              },
+            {'c', "clear",   "k",  nil,      "Clear all installed plugins." },
+            {nil, "plugins", "v",  nil,      "The plugins path or url.",
+                                             "e.g.",
+                                             "    $ xmake plugin --install https://github.com/xmake-io/xmake-plugins",
+                                             "    $ xmake plugin --update"}
         }
     }

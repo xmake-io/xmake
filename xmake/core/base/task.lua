@@ -63,17 +63,13 @@ end
 
 -- the directories of tasks
 function task._directories()
-
-    return  {   path.join(global.directory(), "plugins")
-            ,   path.join(os.programdir(), "plugins")
-            ,   path.join(os.programdir(), "actions")
-            }
+    return {path.join(global.directory(), "plugins"),
+            path.join(os.programdir(), "plugins"),
+            path.join(os.programdir(), "actions")}
 end
 
 -- translate menu
 function task._translate_menu(menu)
-
-    -- check
     assert(menu)
 
     -- the interpreter
@@ -385,8 +381,6 @@ end
 
 -- get global tasks
 function task.tasks()
-
-    -- return it directly if exists
     if task._TASKS then
         return task._TASKS
     end
@@ -395,16 +389,10 @@ function task.tasks()
     local tasks = {}
     local dirs = task._directories()
     for _, dir in ipairs(dirs) do
-
-        -- get files
         local files = os.files(path.join(dir, "*", "xmake.lua"))
         if files then
             for _, filepath in ipairs(files) do
-
-                -- load task
                 local results, errors = task._load(filepath)
-
-                -- save task
                 if results then
                     table.join2(tasks, results)
                 else
@@ -413,17 +401,11 @@ function task.tasks()
             end
         end
     end
-
-    -- make task instances
     local instances = {}
     for taskname, taskinfo in pairs(tasks) do
         instances[taskname] = task.new(taskname, taskinfo)
     end
-
-    -- save it
     task._TASKS = instances
-
-    -- ok?
     return instances
 end
 

@@ -25,36 +25,120 @@ import("devel.git")
 import("net.fasturl")
 import("private.action.require.impl.environment")
 
+-- get plugin urls
+function _plugin_urls()
+    local urls = option.get("plugins")
+    if not urls then
+        urls = {
+        "https://github.com/xmake-io/xmake-plugins.git",
+        "https://gitlab.com/tboox/xmake-plugins.git",
+        "https://gitee.com/tboox/xmake-plugins.git"}
+        urls = fasturl.add(urls)
+        urls = fasturl.sort(urls)
+    end
+    return urls
+end
+
+-- get manifest path
+function _manifest_path()
+    return path.join(global.directory(), "plugins", "manifest.txt")
+end
+
+-- load manifest
+function _load_manifest()
+    local manifest_path = _manifest_path()
+    if os.isfile(manifest_path) then
+        return io.load(manifest_path)
+    end
+end
+
+-- save manifest
+function _save_manifest(manifest)
+    io.save(_manifest_path(), manifest)
+end
+
 -- install plugins
 function _install()
 
     -- enter environment
     environment.enter()
 
-    -- remove previous plugins if exists
-    local plugindir = path.join(global.directory(), "plugins")
-    if os.isdir(plugindir) then
-        os.rmdir(plugindir)
-    end
-
-    -- do install
     try
     {
         function ()
 
-            -- sort main urls
-            local mainurls = {"https://github.com/xmake-io/xmake-plugins.git", "https://gitlab.com/tboox/xmake-plugins.git", "https://gitee.com/tboox/xmake-plugins.git"}
-            fasturl.add(mainurls)
-            mainurls = fasturl.sort(mainurls)
-
-            -- add main url
-            for _, url in ipairs(mainurls) do
-                git.clone(url, {verbose = option.get("verbose"), branch = "master", outputdir = plugindir})
+            -- do install
+            local urls = _plugin_urls()
+            local tmpdir = os.tmpfile() .. ".dir"
+            local plugindir = path.join(global.directory(), "plugins")
+            local installed_url
+            for _, url in ipairs(urls) do
+                cprint("installing plugins from %s ..", url)
+                git.clone(url, {verbose = option.get("verbose"), outputdir = tmpdir})
+                installed_url = url
                 break
             end
+            for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
+                local srcdir = path.directory(filepath)
+                local name = path.filename(srcdir)
+                local dstdir = path.join(plugindir, name)
+                assert(not os.isdir(dstdir), "plugin(%s) has been installed!", name)
+                os.vcp(srcdir, dstdir)
+                cprint("  ${yellow}->${clear} %s", name)
+            end
+            os.tryrm(tmpdir)
 
-            -- trace
+            -- save manifest
+            if installed_url then
+                local manifest = _load_manifest() or {}
+                manifest.urls = manifest.urls or {}
+                table.join2(manifest.urls, installed_url)
+                _save_manifest(manifest)
+            end
             cprint("${bright}all plugins have been installed in %s!", plugindir)
+        end,
+        catch
+        {
+            function (errors)
+                raise(errors)
+            end
+        }
+    }
+
+    -- leave environment
+    environment.leave()
+end
+
+-- update plugins
+function _update()
+
+    -- enter environment
+    environment.enter()
+
+    try
+    {
+        function ()
+
+            -- do update
+            local manifest = _load_manifest()
+            assert(manifest and manifest.urls, "3rd plugins not found!")
+            local urls = manifest.urls
+            local plugindir = path.join(global.directory(), "plugins")
+            for _, url in ipairs(urls) do
+                cprint("updating plugins from %s ..", url)
+                local tmpdir = os.tmpfile() .. ".dir"
+                git.clone(url, {verbose = option.get("verbose"), outputdir = tmpdir})
+                for _, filepath in ipairs(os.files(path.join(tmpdir, "*", "xmake.lua"))) do
+                    local srcdir = path.directory(filepath)
+                    local name = path.filename(srcdir)
+                    local dstdir = path.join(plugindir, name)
+                    os.tryrm(dstdir)
+                    os.vcp(srcdir, dstdir)
+                    cprint("  ${yellow}->${clear} %s", name)
+                end
+                os.tryrm(tmpdir)
+            end
+            cprint("${bright}all plugins have been updated in %s!", plugindir)
         end,
         catch
         {
@@ -70,21 +154,18 @@ end
 
 -- clear all installed plugins
 function _clear()
-
-    -- remove all plugins
     local plugindir = path.join(global.directory(), "plugins")
     if os.isdir(plugindir) then
         os.rmdir(plugindir)
     end
-
-    -- trace
     cprint("${color.success}clear all installed plugins ok!")
 end
 
--- main
 function main()
     if option.get("install") then
         _install()
+    elseif option.get("update") then
+        _update()
     elseif option.get("clear") then
         _clear()
     end
