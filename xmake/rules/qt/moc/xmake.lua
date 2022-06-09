@@ -78,6 +78,7 @@ rule("qt.moc")
                 table.insert(flags, pathitem)
             end
         end
+        local user_flags = target:get("qt.moc.flags") or {}
         batchcmds:mkdir(path.directory(sourcefile_moc))
         batchcmds:vrunv(moc, table.join(flags, path(sourcefile), "-o", path(sourcefile_moc)))
 

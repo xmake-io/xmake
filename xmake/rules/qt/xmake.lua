@@ -235,6 +235,13 @@ rule("qt.quickapp_static")
     on_install("android", "install.android")
     after_install("windows", "install.windows")
 
+-- define rule: qt quickplugin
+rule("qt.quickplugin")
+    add_deps("qt.shared", "qt.qmltyperegistrar")
+    on_load(function(target)
+        import("load")(target, {frameworks = { "QtCore", "QtGui", "QtQuick", "QtQml", "QtNetwork" }})
+    end)
+
 -- define rule: qt application (deprecated)
 rule("qt.application")
     add_deps("qt.quickapp", "qt.ui")
