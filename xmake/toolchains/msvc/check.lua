@@ -91,9 +91,6 @@ function _check_vstudio(toolchain)
         toolchain:configs_save()
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
         if msvc then
-            if option.get("verbose") and msvc.program then
-                cprint("checking for Microsoft C/C++ Compiler (%s) ... ${color.success}%s", toolchain:arch(), msvc.program)
-            end
             if msvc.version then
                 cprint("checking for Microsoft C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), msvc.version)
             end
