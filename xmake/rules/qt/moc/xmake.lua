@@ -80,7 +80,7 @@ rule("qt.moc")
         end
         local user_flags = target:get("qt.moc.flags") or {}
         batchcmds:mkdir(path.directory(sourcefile_moc))
-        batchcmds:vrunv(moc, table.join(flags, path(sourcefile), "-o", path(sourcefile_moc)))
+        batchcmds:vrunv(moc, table.join(user_flags, flags, path(sourcefile), "-o", path(sourcefile_moc)))
 
         -- we need compile this moc_xxx.cpp file if exists Q_PRIVATE_SLOT, @see https://github.com/xmake-io/xmake/issues/750
         local mocdata = io.readfile(sourcefile)
