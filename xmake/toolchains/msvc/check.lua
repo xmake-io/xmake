@@ -68,12 +68,12 @@ function _check_vsenv(toolchain)
 
                 -- check compiler
                 local program = nil
-                local tool = find_tool("cl.exe", {force = true, envs = vcvars})
+                local tool = find_tool("cl.exe", {version = true, force = true, envs = vcvars})
                 if tool then
                     program = tool.program
                 end
                 if program then
-                    return vsver
+                    return vsver, tool
                 end
             end
         end
@@ -82,7 +82,7 @@ end
 
 -- check the visual studio
 function _check_vstudio(toolchain)
-    local vs = _check_vsenv(toolchain)
+    local vs, msvc = _check_vsenv(toolchain)
     if vs then
         if toolchain:is_global() then
             config.set("vs", vs, {force = true, readonly = true})
@@ -90,6 +90,14 @@ function _check_vstudio(toolchain)
         toolchain:config_set("vs", vs)
         toolchain:configs_save()
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
+        if msvc then
+            if option.get("verbose") and msvc.program then
+                cprint("checking for Microsoft C/C++ Compiler (%s) ... ${color.success}%s", toolchain:arch(), msvc.program)
+            end
+            if msvc.version then
+                cprint("checking for Microsoft C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), msvc.version)
+            end
+        end
     else
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())
     end
