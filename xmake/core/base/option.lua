@@ -700,6 +700,9 @@ function option.show_options(options, taskname)
             is_action = true
         end
     end
+    if printed_options[#printed_options].category then
+        table.remove(printed_options)
+    end
 
     -- narrow mode?
     local narrow = option._modenarrow()
