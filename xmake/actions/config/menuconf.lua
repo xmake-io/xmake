@@ -302,7 +302,7 @@ function app:_project_configs(cache)
     local keys = table.orderkeys(options)
     for _, key in ipairs(keys) do
         local opt = options[key]
-        if opt:get("showmenu") ~= false then
+        if opt:showmenu() ~= false then
             local category = "."
             if opt:get("category") then category = table.unwrap(opt:get("category")) end
             options_by_category[category] = options_by_category[category] or {}

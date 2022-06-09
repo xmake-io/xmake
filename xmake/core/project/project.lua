@@ -1174,7 +1174,7 @@ function project.menu()
         for name, opt in pairs(opts) do
 
             -- show menu?
-            if opt:get("showmenu") ~= false then
+            if opt:showmenu() ~= false then
 
                 -- the default value
                 local default = "auto"

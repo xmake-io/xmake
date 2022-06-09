@@ -475,10 +475,8 @@ end
 -- get xxx_script
 function _instance:script(name)
 
-    -- get script
-    local script = self:get(name)
-
     -- imports some modules first
+    local script = self:get(name)
     if script then
         local scope = getfenv(script)
         if scope then
@@ -487,9 +485,23 @@ function _instance:script(name)
             end
         end
     end
-
-    -- ok
     return script
+end
+
+-- show menu?
+function _instance:showmenu()
+    local showmenu = self:get("showmenu")
+    if showmenu == nil then
+        -- auto check mode? we hidden menu by default
+        if self:get("ctypes") or self:get("cxxtypes") or
+            self:get("cfuncs") or self:get("cxxfuncs") or
+            self:get("cincludes") or self:get("cxxincludes") or
+            self:get("links") or self:get("syslinks") or
+            self:get("csnippets") or self:get("cxxsnippets") then
+            showmenu = false
+        end
+    end
+    return showmenu
 end
 
 -- get cache
