@@ -82,7 +82,7 @@ function _install()
                 local srcdir = path.directory(filepath)
                 local name = path.filename(srcdir)
                 local dstdir = path.join(plugindir, name)
-                assert(not os.isdir(dstdir), "plugin(%s) has been installed!", name)
+                assert(not os.isdir(dstdir), "plugin(%s) already exists!", name)
                 os.vcp(srcdir, dstdir)
                 cprint("  ${yellow}->${clear} %s", name)
             end
