@@ -37,26 +37,29 @@ rule("qt.qmltyperegistrar")
         assert(qmltyperegistrar and os.isexec(qmltyperegistrar), "qmltyperegistrar not found!")
 
         -- set targetdir
-        local importname = target:values("qml.plugin.importname")
+        local importname = target:values("qt.qmlplugin.import_name")
+        assert(importname, "QML plugin import name not set")
+
         local targetdir = path.join(target:targetdir(), "imports")
         for _, dir in pairs(importname:split(".", { plain = true })) do
             targetdir = path.join(targetdir, dir)
         end
-
         os.mkdir(targetdir)
         target:set("targetdir", targetdir)
 
         -- add qmldir
-        local qmldir = target:values("qml.plugin.qmldir")
-
+        local qmldir = target:values("qt.qmlplugin.qmldir")
         if qmldir then
             target:add("installfiles", qmldir)
         end
 
+        -- add qmltypes
+        target:add("installfiles", target:get("targetdir") .. "/plugin.qmltypes")
+
         local sourcefile = path.join(target:autogendir(), "rules", "qt", "qmltyperegistrar", target:name() .. "_qmltyperegistrations.cpp")
         local sourcefile_dir = path.directory(sourcefile)
         os.mkdir(sourcefile_dir)
-        target:data_set("qml.plugin.sourcefile", sourcefile)
+        target:data_set("qt.qmlplugin.sourcefile", sourcefile)
 
         -- add moc arguments
         target:add("qt.moc.flags", "--output-json")
@@ -64,19 +67,18 @@ rule("qt.qmltyperegistrar")
         -- save qmltyperegistrar
         target:data_set("qt.qmltyperegistrar", qmltyperegistrar)
         -- save qmltyperegistrar
-        target:data_set("qml.plugin.qmltyperegistrar", qmltyperegistrar)
+        target:data_set("qt.qmlplugin.qmltyperegistrar", qmltyperegistrar)
      end)
 
      on_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
-        assert(target:values("qml.plugin.importname"), "QML plugin import name not set")
 
         -- setup qmltyperegistrar arguments
         local qmltyperegistrar = target:data("qt.qmltyperegistrar")
-        local sourcefile = target:data("qml.plugin.sourcefile")
+        local sourcefile = target:data("qt.qmlplugin.sourcefile")
 
-        local importname = target:values("qml.plugin.importname")
-        local majorversion = target:values("qml.plugin.majorversion") or 1
-        local minorversion = target:values("qml.plugin.minorversion") or 0
+        local importname = target:values("qt.qmlplugin.import_name")
+        local majorversion = target:values("qt.qmlplugin.majorversion") or 1
+        local minorversion = target:values("qt.qmlplugin.minorversion") or 0
 
         local metatypefiles = {}
         for _, mocedfile in ipairs(sourcebatch.sourcefiles) do
@@ -86,9 +88,7 @@ rule("qt.qmltyperegistrar")
             if mocedfile:endswith(".cpp") then
                 filename_moc = basename .. ".moc"
             end
-
             local sourcefile_moc = target:autogenfile(path.join(path.directory(mocedfile), filename_moc))
-
             table.insert(metatypefiles, path(sourcefile_moc .. ".json"))
         end
 
@@ -110,9 +110,8 @@ rule("qt.qmltyperegistrar")
 
         -- compile sourcefile
         batchcmds:show_progress(opt.progress, "${color.build.object}compile.qt.qmltyperegistrar %s", path.filename(sourcefile))
-
         batchcmds:compile(sourcefile, objectfile)
-
+        
         batchcmds:add_depfiles(sourcefile)
         batchcmds:set_depmtime(os.mtime(objectfile))
         batchcmds:set_depcache(target:dependfile(objectfile))
@@ -120,7 +119,6 @@ rule("qt.qmltyperegistrar")
 
     after_build(function(target)
         local qmldir = target:values("qml.plugin.qmldir")
-
         if qmldir then
             os.cp(qmldir, target:targetdir())
         end

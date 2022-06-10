@@ -8,7 +8,7 @@ int Foo::bar() const noexcept {
 }
 
 void Foo::setBar(int bar) noexcept {
-    if(bar == m_bar) return;
+    if (bar == m_bar) return;
 
     m_bar = bar;
 

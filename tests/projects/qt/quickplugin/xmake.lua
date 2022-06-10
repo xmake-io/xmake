@@ -9,4 +9,4 @@ target("demo")
         add_cxxflags("/permissive-")
     end
 
-    set_values("qml.plugin.importname", "My.Plugin")
+    set_values("qt.qmlplugin.import_name", "My.Plugin")
