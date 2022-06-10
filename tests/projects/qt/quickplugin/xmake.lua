@@ -5,8 +5,4 @@ target("demo")
     add_headerfiles("src/*.h")
     add_files("src/*.cpp")
 
-    if is_plat("windows") then
-        add_cxxflags("/permissive-")
-    end
-
     set_values("qt.qmlplugin.import_name", "My.Plugin")

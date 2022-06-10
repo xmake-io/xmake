@@ -48,7 +48,7 @@ rule("qt.qmltyperegistrar")
         target:set("targetdir", targetdir)
 
         -- add qmldir
-        local qmldir = target:values("qt.qmlplugin.qmldir")
+        local qmldir = target:values("qt.qmlplugin.qmldirfile")
         if qmldir then
             target:add("installfiles", qmldir)
         end
@@ -97,7 +97,7 @@ rule("qt.qmltyperegistrar")
             "--import-name=" .. importname,
             "--major-version=" .. majorversion,
             "--minor-version=" .. minorversion,
-            "-o", path(sourcefile)
+            "-o", sourcefile
         }
 
         -- gen sourcefile
@@ -111,14 +111,14 @@ rule("qt.qmltyperegistrar")
         -- compile sourcefile
         batchcmds:show_progress(opt.progress, "${color.build.object}compile.qt.qmltyperegistrar %s", path.filename(sourcefile))
         batchcmds:compile(sourcefile, objectfile)
-        
+
         batchcmds:add_depfiles(sourcefile)
         batchcmds:set_depmtime(os.mtime(objectfile))
         batchcmds:set_depcache(target:dependfile(objectfile))
     end)
 
     after_build(function(target)
-        local qmldir = target:values("qml.plugin.qmldir")
+        local qmldir = target:values("qml.plugin.qmldirfile")
         if qmldir then
             os.cp(qmldir, target:targetdir())
         end
