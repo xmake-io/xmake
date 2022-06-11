@@ -139,6 +139,7 @@ function main(target, opt)
             -- @see https://github.com/xmake-io/xmake/issues/2071
             if target:is_plat("windows") then
                 target:add("cxxflags", "/Zc:__cplusplus")
+                target:add("cxxflags", "/permissive-")
             end
         else
             target:add("languages", "c++11")
