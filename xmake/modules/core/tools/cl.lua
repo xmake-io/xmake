@@ -540,10 +540,9 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
             -- generate includes file
             local compflags = flags
-
             if dependinfo then
                 if _has_source_dependencies(self) then
-                    depfile = os.tmpfile()
+                    depfile = os.tmpfile() .. ".json"
                     compflags = table.join(flags, "/sourceDependencies", depfile)
                 else
                     compflags = table.join(flags, "-showIncludes")
