@@ -467,15 +467,16 @@ function _preprocess(program, argv, opt)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
     end
-    table.insert(cppflags, "-P")
+    table.insert(cppflags, "-E")
     if linemarkers == false then
         table.insert(cppflags, "-EP")
     end
-    table.insert(cppflags, "-Fi" .. cppfile)
     table.insert(cppflags, sourcefile)
     return try{ function()
-        local outdata, errdata = vstool.iorunv(program, winos.cmdargv(cppflags), opt)
-        return {outdata = outdata, errdata = errdata,
+        local outdata, errdata = os.iorunv(program, winos.cmdargv(cppflags), opt)
+        io.writefile(cppfile, outdata or "")
+        -- includes information will be output to stderr instead of stdout now
+        return {outdata = errdata, errdata = errdata,
                 sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags,
                 pdbfile = pdbfile}
     end}
@@ -637,3 +638,4 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         end
     end
 end
+
