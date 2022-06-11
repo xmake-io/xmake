@@ -470,12 +470,21 @@ function _preprocess(program, argv, opt)
     if linemarkers == false then
         table.insert(cppflags, "-EP")
     else
+        -- we cannot use `/P`, @see https://github.com/xmake-io/xmake/issues/2445
         table.insert(cppflags, "-E")
     end
     table.insert(cppflags, sourcefile)
     return try{ function()
-        local outdata, errdata = os.iorunv(program, winos.cmdargv(cppflags), opt)
-        io.writefile(cppfile, outdata or "")
+        local outfile = os.tmpfile() .. ".i.out"
+        local errfile = os.tmpfile() .. ".i.err"
+        os.execv(program, winos.cmdargv(cppflags), table.join(opt, {stdout = outfile, stderr = errfile}))
+        local errdata
+        if os.isfile(errfile) then
+            errdata = io.readfile(errfile)
+        end
+        os.cp(outfile, cppfile)
+        os.tryrm(errfile)
+        os.tryrm(outfile)
         -- includes information will be output to stderr instead of stdout now
         return {outdata = errdata, errdata = errdata,
                 sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags,
