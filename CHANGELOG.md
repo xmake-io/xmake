@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#2447](https://github.com/xmake-io/xmake/pull/2447): Add qt.qmlplugin rule and support of qmltypesregistrar
+
 ### Changes
 
 * Add `preprocessor.linemarkers` policy to disable linemarkers to speed up ccache/distcc
@@ -1299,6 +1303,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#2447](https://github.com/xmake-io/xmake/pull/2447): 添加 qt.qmlplugin 规则和 qmltypesregistrar 支持
 
 ### 改进
 
