@@ -467,9 +467,10 @@ function _preprocess(program, argv, opt)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
     end
-    table.insert(cppflags, "-E")
     if linemarkers == false then
         table.insert(cppflags, "-EP")
+    else
+        table.insert(cppflags, "-E")
     end
     table.insert(cppflags, sourcefile)
     return try{ function()
