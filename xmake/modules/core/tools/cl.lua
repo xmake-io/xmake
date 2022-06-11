@@ -467,15 +467,26 @@ function _preprocess(program, argv, opt)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
     end
-    table.insert(cppflags, "-P")
     if linemarkers == false then
         table.insert(cppflags, "-EP")
+    else
+        -- we cannot use `/P`, @see https://github.com/xmake-io/xmake/issues/2445
+        table.insert(cppflags, "-E")
     end
-    table.insert(cppflags, "-Fi" .. cppfile)
     table.insert(cppflags, sourcefile)
     return try{ function()
-        local outdata, errdata = vstool.iorunv(program, winos.cmdargv(cppflags), opt)
-        return {outdata = outdata, errdata = errdata,
+        local outfile = os.tmpfile() .. ".i.out"
+        local errfile = os.tmpfile() .. ".i.err"
+        os.execv(program, winos.cmdargv(cppflags), table.join(opt, {stdout = outfile, stderr = errfile}))
+        local errdata
+        if os.isfile(errfile) then
+            errdata = io.readfile(errfile)
+        end
+        os.cp(outfile, cppfile)
+        os.tryrm(errfile)
+        os.tryrm(outfile)
+        -- includes information will be output to stderr instead of stdout now
+        return {outdata = errdata, errdata = errdata,
                 sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags,
                 pdbfile = pdbfile}
     end}
@@ -538,10 +549,9 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
             -- generate includes file
             local compflags = flags
-
             if dependinfo then
                 if _has_source_dependencies(self) then
-                    depfile = os.tmpfile()
+                    depfile = os.tmpfile() .. ".json"
                     compflags = table.join(flags, "/sourceDependencies", depfile)
                 else
                     compflags = table.join(flags, "-showIncludes")
@@ -637,3 +647,4 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         end
     end
 end
+
