@@ -267,7 +267,7 @@ function process.openv(program, argv, opt)
     if proc then
         return _subprocess.new(program, proc)
     else
-        return nil, string.format("openv process(%s, %s) failed!", program, table.concat(argv, " "))
+        return nil, string.format("openv process(%s, %s) failed!", program, os.args(argv))
     end
 end
 
