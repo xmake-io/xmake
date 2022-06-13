@@ -494,7 +494,10 @@ end
 
 -- compile preprocessed file
 function _compile_preprocessed_file(program, cppinfo, opt)
-    vstool.iorunv(program, winos.cmdargv(table.join(cppinfo.cppflags, "-Fo" .. cppinfo.objectfile, cppinfo.cppfile)), opt)
+    local outdata, errdata = vstool.iorunv(program, winos.cmdargv(table.join(cppinfo.cppflags, "-Fo" .. cppinfo.objectfile, cppinfo.cppfile)), opt)
+    -- we need get warning information from output
+    cppinfo.outdata = outdata
+    cppinfo.errdata = errdata
 end
 
 -- do compile

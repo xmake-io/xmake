@@ -507,7 +507,10 @@ end
 
 -- compile preprocessed file
 function _compile_preprocessed_file(program, cppinfo, opt)
-    os.iorunv(program, table.join(cppinfo.cppflags, "-o", cppinfo.objectfile, cppinfo.cppfile), opt)
+    local outdata, errdata = os.iorunv(program, table.join(cppinfo.cppflags, "-o", cppinfo.objectfile, cppinfo.cppfile), opt)
+    -- we need get warning information from output
+    cppinfo.outdata = outdata
+    cppinfo.errdata = errdata
 end
 
 -- do compile
