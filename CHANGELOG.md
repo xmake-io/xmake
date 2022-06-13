@@ -20,6 +20,7 @@
 
 * [#2435](https://github.com/xmake-io/xmake/pull/2435): fix the search bug when the package name has an extension name.
 * [#2445](https://github.com/xmake-io/xmake/issues/2445): Fix ccache bug for msvc
+* [#2452](https://github.com/xmake-io/xmake/issues/2452): Fix warnings output for ccache
 
 ## v2.6.7
 
@@ -1323,6 +1324,7 @@
 
 * [#2435](https://github.com/xmake-io/xmake/pull/2435): 修复无法搜索带有 `.` 的包名
 * [#2445](https://github.com/xmake-io/xmake/issues/2445): 修复 windows 上 ccache 构建失败问题
+* [#2452](https://github.com/xmake-io/xmake/issues/2452): 修复 ccache 下，警告无法输出的问题
 
 ## v2.6.7
 
