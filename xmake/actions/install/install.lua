@@ -106,7 +106,7 @@ function _install_targets(targets)
 end
 
 -- install targets
-function main(targetname)
+function main(targetname, group_pattern)
 
     -- install the given target?
     if targetname and not targetname:startswith("__") then
@@ -116,7 +116,8 @@ function main(targetname)
     else
         -- install default or all targets
         for _, target in ipairs(project.ordertargets()) do
-            if target:is_default() or targetname == "__all" then
+            local group = target:get("group")
+            if (target:is_default() and not group_pattern) or targetname == "__all" or (group_pattern and group and group:match(group_pattern)) then
                 _install_target(target)
             end
         end

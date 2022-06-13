@@ -46,6 +46,11 @@ task("install")
                                                       "    $ xmake install -o /usr/local",
                                                       "or  $ DESTDIR=/usr/local xmake install",
                                                       "or  $ INSTALLDIR=/usr/local xmake install" }
+                ,   {'g', "group",      "kv",  nil  , "Install all targets of the given group. It support path pattern matching.",
+                                                      "e.g.",
+                                                      "    xmake install -g test",
+                                                      "    xmake install -g test_*",
+                                                      "    xmake install --group=benchmark/*"     }
                 ,   {'a', "all",        "k",  nil   , "Install all targets."                      }
                 ,   {nil, "admin",      "k",  nil   , "Try to request administrator permission to install"}
 

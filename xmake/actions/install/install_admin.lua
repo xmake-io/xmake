@@ -26,7 +26,7 @@ import("core.platform.platform")
 import("install")
 
 -- install
-function main(targetname, installdir, prefix)
+function main(targetname, group_pattern, installdir, prefix)
 
     local verbose = option.get("verbose")
 
@@ -56,7 +56,7 @@ function main(targetname, installdir, prefix)
     end
 
     -- install target
-    install(targetname)
+    install(targetname, group_pattern)
 
     -- restore the previous option context
     option.restore()
