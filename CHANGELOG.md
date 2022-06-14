@@ -17,6 +17,7 @@
 * [#2434](https://github.com/xmake-io/xmake/issues/2434): Improve plugins manager, allow to handle multiples plugin repositories
 * [#2421](https://github.com/xmake-io/xmake/issues/2421): Improve config option menu
 * [#2425](https://github.com/xmake-io/xmake/issues/2425): Add `preprocessor.gcc.directives_only` policy
+* [#2455](https://github.com/xmake-io/xmake/issues/2455): Improve optimize options for emcc
 
 ### Bugs Fixed
 
@@ -1323,6 +1324,7 @@
 * [#2434](https://github.com/xmake-io/xmake/issues/2434): 改进插件管理器，允许多插件管理
 * [#2421](https://github.com/xmake-io/xmake/issues/2421): 改进配置选项菜单
 * [#2425](https://github.com/xmake-io/xmake/issues/2425): 添加 `preprocessor.gcc.directives_only` 策略
+* [#2455](https://github.com/xmake-io/xmake/issues/2455): 改进 emcc 的优化选项
 
 ### Bugs 修复
 
