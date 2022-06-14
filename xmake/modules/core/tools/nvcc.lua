@@ -150,20 +150,20 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-
-    -- the maps
-    local maps =
-    {
-        none       = "-O0"
-    ,   fast       = "-O1"
-    ,   faster     = "-O2"
-    ,   fastest    = "-O3"
-    ,   smallest   = "-Os"
-    ,   aggressive = "-Ofast"
-    }
-
-    -- make it
-    return maps[level]
+    -- only for source kind
+    local kind = self:kind()
+    if language.sourcekinds()[kind] then
+        local maps =
+        {
+            none       = "-O0"
+        ,   fast       = "-O1"
+        ,   faster     = "-O2"
+        ,   fastest    = "-O3"
+        ,   smallest   = "-Os"
+        ,   aggressive = "-Ofast"
+        }
+        return maps[level]
+    end
 end
 
 -- make the language flag

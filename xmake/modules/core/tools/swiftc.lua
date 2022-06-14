@@ -20,6 +20,7 @@
 
 -- imports
 import("core.project.config")
+import("core.language.language")
 
 -- init it
 function init(self)
@@ -103,20 +104,20 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-
-    -- the maps
-    local maps =
-    {
-        none        = "-Onone"
-    ,   fast        = "-O"
-    ,   faster      = "-O"
-    ,   fastest     = "-O"
-    ,   smallest    = "-O"
-    ,   aggressive  = "-Ounchecked"
-    }
-
-    -- make it
-    return maps[level]
+    -- only for source kind
+    local kind = self:kind()
+    if language.sourcekinds()[kind] then
+        local maps =
+        {
+            none        = "-Onone"
+        ,   fast        = "-O"
+        ,   faster      = "-O"
+        ,   fastest     = "-O"
+        ,   smallest    = "-O"
+        ,   aggressive  = "-Ounchecked"
+        }
+        return maps[level]
+    end
 end
 
 -- make the vector extension flag

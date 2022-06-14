@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.global")
 import("utils.progress")
+import("core.language.language")
 
 -- init it
 function init(self)
@@ -79,16 +80,20 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    local maps =
-    {
-        none       = ""
-    ,   fast       = "--opt-code-speed"
-    ,   faster     = "--opt-code-speed"
-    ,   fastest    = "--opt-code-speed"
-    ,   smallest   = "--opt-code-size"
-    ,   aggressive = "--opt-code-speed"
-    }
-    return maps[level]
+    -- only for source kind
+    local kind = self:kind()
+    if language.sourcekinds()[kind] then
+        local maps =
+        {
+            none       = ""
+        ,   fast       = "--opt-code-speed"
+        ,   faster     = "--opt-code-speed"
+        ,   fastest    = "--opt-code-speed"
+        ,   smallest   = "--opt-code-size"
+        ,   aggressive = "--opt-code-speed"
+        }
+        return maps[level]
+    end
 end
 
 -- make the language flag

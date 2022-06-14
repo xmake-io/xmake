@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
+import("core.language.language")
 
 -- init it
 function init(self)
@@ -29,16 +30,20 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    local maps =
-    {
-        none        = "-C opt-level=0"
-    ,   fast        = "-C opt-level=1"
-    ,   faster      = "-C opt-level=2"
-    ,   fastest     = "-C opt-level=3"
-    ,   smallest    = "-C opt-level=s"
-    ,   aggressive  = "-C opt-level=z"
-    }
-    return maps[level]
+    -- only for source kind
+    local kind = self:kind()
+    if language.sourcekinds()[kind] then
+        local maps =
+        {
+            none        = "-C opt-level=0"
+        ,   fast        = "-C opt-level=1"
+        ,   faster      = "-C opt-level=2"
+        ,   fastest     = "-C opt-level=3"
+        ,   smallest    = "-C opt-level=s"
+        ,   aggressive  = "-C opt-level=z"
+        }
+        return maps[level]
+    end
 end
 
 -- make the symbol flag

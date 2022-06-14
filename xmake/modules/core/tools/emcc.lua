@@ -21,6 +21,22 @@
 -- inherit gcc
 inherit("gcc")
 
+-- make the optimize flag
+--
+-- same options must be used at compile and link, @see https://github.com/xmake-io/xmake/issues/2455
+-- https://emscripten.org/docs/compiling/Building-Projects.html?highlight=optimization#building-projects-optimizations
+function nf_optimize(self, level)
+    local maps = {
+        none       = "-O0"
+    ,   fast       = "-O1"
+    ,   faster     = "-O2"
+    ,   fastest    = "-O3"
+    ,   smallest   = "-Os"
+    ,   aggressive = "-O3"
+    }
+    return maps[level]
+end
+
 -- make the strip flag
 function nf_strip(self, level)
 end
