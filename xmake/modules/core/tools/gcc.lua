@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.tty")
 import("core.base.colors")
 import("core.base.global")
+import("core.cache.memcache")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
@@ -401,9 +402,18 @@ function _preprocess(program, argv, opt)
     end
 
     -- enable "-fdirectives-only"?
-    local directives_only = _g.fdirectives_only
-    if directives_only ~= false and is_gcc then
-        directives_only = true
+    local directives_only
+    if is_gcc then
+        local cachekey = "core.tool." .. tool:name()
+        directives_only = memcache.get(cachekey, "directives_only")
+        if directives_only == nil then
+            if os.isfile(os.projectfile()) and project.policy("preprocessor.gcc.directives_only") == false then
+                directives_only = false
+            else
+                directives_only = true
+            end
+            memcache.set(cachekey, "directives_only", directives_only)
+        end
     end
 
     -- get flags and source file
@@ -500,7 +510,10 @@ function _preprocess(program, argv, opt)
         return {outdata = outdata, errdata = errdata, sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags}
     end}
     if not cppinfo then
-        _g.directives_only = false
+        if is_gcc then
+            local cachekey = "core.tool." .. tool:name()
+            memcache.set(cachekey, "directives_only", false)
+        end
     end
     return cppinfo
 end
