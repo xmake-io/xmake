@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
+import("core.language.language")
 
 -- init it
 --
@@ -62,16 +63,20 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    local maps =
-    {
-        none        = "--opt:none"
-    ,   fast        = "-d:release"
-    ,   faster      = "-d:release"
-    ,   fastest     = "-d:release"
-    ,   smallest    = {"-d:release", "--opt:size"}
-    ,   aggressive  = "-d:danger"
-    }
-    return maps[level]
+    -- only for source kind
+    local kind = self:kind()
+    if language.sourcekinds()[kind] then
+        local maps =
+        {
+            none        = "--opt:none"
+        ,   fast        = "-d:release"
+        ,   faster      = "-d:release"
+        ,   fastest     = "-d:release"
+        ,   smallest    = {"-d:release", "--opt:size"}
+        ,   aggressive  = "-d:danger"
+        }
+        return maps[level]
+    end
 end
 
 -- make the symbol flag

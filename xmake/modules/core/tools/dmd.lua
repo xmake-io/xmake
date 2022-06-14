@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
+import("core.language.language")
 
 -- init it
 function init(self)
@@ -38,15 +39,19 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    local maps =
-    {
-        fast        = "-O"
-    ,   faster      = "-O -release"
-    ,   fastest     = "-O -release -inline -boundscheck=off"
-    ,   smallest    = "-O -release -boundscheck=off"
-    ,   aggressive  = "-O -release -inline -boundscheck=off"
-    }
-    return maps[level]
+    -- only for source kind
+    local kind = self:kind()
+    if language.sourcekinds()[kind] then
+        local maps =
+        {
+            fast        = "-O"
+        ,   faster      = "-O -release"
+        ,   fastest     = "-O -release -inline -boundscheck=off"
+        ,   smallest    = "-O -release -boundscheck=off"
+        ,   aggressive  = "-O -release -inline -boundscheck=off"
+        }
+        return maps[level]
+    end
 end
 
 -- make the strip flag
