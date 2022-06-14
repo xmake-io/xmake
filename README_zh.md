@@ -347,17 +347,16 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 
 关于分布式编译和缓存，可以见下面的文档。
 
-- [分布式编译](https://xmake.io/#/zh-cn/guide/other_features?id=%e5%88%86%e5%b8%83%e5%bc%8f%e7%bc%96%e8%af%91)
-- [本地编译缓存](https://xmake.io/#/zh-cn/guide/other_features?id=%e6%9c%ac%e5%9c%b0%e7%bc%96%e8%af%91%e7%bc%93%e5%ad%98)
-- [远程编译缓存](https://xmake.io/#/zh-cn/guide/other_features?id=%e8%bf%9c%e7%a8%8b%e7%bc%96%e8%af%91%e7%bc%93%e5%ad%98)
+- [分布式编译](https://xmake.io/#/zh-cn/features/distcc_build)
+- [编译缓存](https://xmake.io/#/zh-cn/features/build_cache)
 
 ## 远程编译
 
-更多详情见：[远程编译](https://xmake.io/#/zh-cn/guide/other_features?id=%e8%bf%9c%e7%a8%8b%e7%bc%96%e8%af%91)
+更多详情见：[远程编译](https://xmake.io/#/zh-cn/features/remote_build)
 
 ## 更多例子
 
-#### Debug 和 Release模式
+#### Debug 和 Release 模式
 
 ```lua
 add_rules("mode.debug", "mode.release")

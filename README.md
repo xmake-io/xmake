@@ -339,13 +339,12 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 
 About distributed compilation and build cache, you can see:
 
-- [Distributed Compilation](https://xmake.io/#/guide/other_features?id=distributed-compilation)
-- [Local Build Cache](https://xmake.io/#/guide/other_features?id=local-compilation-cache)
-- [Remote Build Cache](https://xmake.io/#/guide/other_features?id=remote-compilation-cache)
+- [Distributed Compilation](https://xmake.io/#/features/distcc_build)
+- [Build Cache](https://xmake.io/#/features/build_cache)
 
 ## Remote Compilation
 
-For more details see: [Remote Compilation](https://xmake.io/#/guide/other_features?id=remote-compilation)
+For more details see: [Remote Compilation](https://xmake.io/#/features/remote_build)
 
 ## More Examples
 
