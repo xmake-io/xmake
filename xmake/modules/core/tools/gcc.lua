@@ -404,7 +404,7 @@ function _preprocess(program, argv, opt)
     -- enable "-fdirectives-only"?
     local directives_only
     if is_gcc then
-        local cachekey = "core.tool." .. tool:name()
+        local cachekey = "core.tools." .. tool:name()
         directives_only = memcache.get(cachekey, "directives_only")
         if directives_only == nil then
             if os.isfile(os.projectfile()) and project.policy("preprocessor.gcc.directives_only") == false then
@@ -511,7 +511,7 @@ function _preprocess(program, argv, opt)
     end}
     if not cppinfo then
         if is_gcc then
-            local cachekey = "core.tool." .. tool:name()
+            local cachekey = "core.tools." .. tool:name()
             memcache.set(cachekey, "directives_only", false)
         end
     end
