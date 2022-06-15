@@ -353,6 +353,11 @@ function _instance:sendfile(file, opt)
         return -1, errors
     end
 
+    -- empty file?
+    if file:size() == 0 then
+        return -1, string.format("%s: send empty file!", self)
+    end
+
     -- init start and last
     opt = opt or {}
     local start = opt.start or 1

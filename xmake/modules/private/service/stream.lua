@@ -195,7 +195,7 @@ function stream:send_file(filepath, opt)
     local ok = false
     local sock = self._SOCK
     local file = io.open(filepath, 'rb')
-    if file then
+    if file and file:size() > 0 then
         local send = sock:sendfile(file, {block = true})
         if send > 0 then
             ok = true
@@ -352,8 +352,10 @@ end
 function stream:recv_file(filepath)
     local size, flags = self:recv_header()
     if size then
-        -- empty file? we need not create file
+        -- empty file? we just create an empty file
         if size == 0 then
+            local file = io.open(filepath, "wb")
+            file:close()
             return size
         end
         local result
