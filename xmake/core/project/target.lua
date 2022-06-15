@@ -530,6 +530,11 @@ function _instance:is_arch(...)
     end
 end
 
+-- is 64bits architecture?
+function _instance:is_arch64()
+    return self:is_arch(".+64.*")
+end
+
 -- get the platform instance
 function _instance:platform()
     local platform_inst = self._PLATFORM
