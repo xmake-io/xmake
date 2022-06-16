@@ -100,6 +100,10 @@ function main(name, opt)
                 return
             end
         end
+        local require_version = opt.require_version
+        if require_version ~= nil and require_version ~= "latest" then
+            result.version = opt.require_version
+        end
         return result
     end
 end

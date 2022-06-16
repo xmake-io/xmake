@@ -49,7 +49,7 @@ function _conan_get_build_directory(name)
 end
 
 -- generate conanfile.txt
-function _conan_generate_conanfile(name, configs)
+function _conan_generate_conanfile(name, configs, opt)
 
     -- trace
     dprint("generate %s ..", path.join(_conan_get_build_directory(name), "conanfile.txt"))
@@ -66,7 +66,12 @@ function _conan_generate_conanfile(name, configs)
         conanfile:print("[generators]")
         conanfile:print("xmake")
         conanfile:print("[requires]")
-        conanfile:print("%s", name)
+        local require_version = opt.require_version
+        if require_version ~= nil and require_version ~= "latest" then
+            conanfile:print("%s/%s", name, require_version)
+        else
+            conanfile:print("%s", name)
+        end
         if #options > 0 then
             conanfile:print("[options]")
             conanfile:print("%s", table.concat(options, "\n"))
@@ -147,7 +152,7 @@ function main(name, opt)
     _conan_install_xmake_generator(conan)
 
     -- generate conanfile.txt
-    _conan_generate_conanfile(name, configs)
+    _conan_generate_conanfile(name, configs, opt)
 
     -- install package
     local argv = {"install", "."}
