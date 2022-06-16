@@ -502,22 +502,27 @@ end
 
 -- do compile
 function _compile(self, sourcefile, objectfile, compflags, opt)
+    local function _compile_fallback()
+        local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
+        local outdata, errdata = vstool.iorunv(program, argv, {envs = self:runenvs()})
+        return outdata, errdata
+    end
     local cppinfo
     if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
         local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
         cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
-            preprocess = _preprocess, compile = _compile_preprocessed_file, target = opt.target, tool = self, remote = true})
+            preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
+            target = opt.target, tool = self, remote = true})
     elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
         local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
         cppinfo = build_cache.build(program, argv, {envs = self:runenvs(),
-            preprocess = _preprocess, compile = _compile_preprocessed_file, target = opt.target, tool = self})
+            preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
+            target = opt.target, tool = self})
     end
     if cppinfo then
         return cppinfo.outdata, cppinfo.errdata
     else
-        local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
-        local outdata, errdata = vstool.iorunv(program, argv, {envs = self:runenvs()})
-        return outdata, errdata
+        return _compile_fallback()
     end
 end
 

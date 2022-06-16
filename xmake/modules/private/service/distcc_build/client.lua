@@ -251,8 +251,22 @@ function distcc_build_client:compile(program, argv, opt)
         if not cached then
             -- we just compile the large preprocessed file in remote
             if os.filesize(cppinfo.cppfile) > 4096 then
-                session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags,
-                    table.join(opt, {cachekey = cachekey}))
+                local compile_fallback = opt.compile_fallback
+                if compile_fallback then
+                    local ok = try {function ()
+                        session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags,
+                            table.join(opt, {cachekey = cachekey}))
+                        return true
+                    end}
+                    if not ok then
+                        -- we fallback to compile original source file if compiling preprocessed file fails.
+                        -- https://github.com/xmake-io/xmake/issues/2467
+                        compile_fallback()
+                    end
+                else
+                    session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags,
+                        table.join(opt, {cachekey = cachekey}))
+                end
                 if cachekey then
                     build_cache.put(cachekey, cppinfo.objectfile)
                 end
@@ -272,7 +286,17 @@ function distcc_build_client:compile(program, argv, opt)
     if build_in_local then
         if cppinfo and build_in_local then
             local compile = assert(opt.compile, "compiler not found!")
-            compile(program, cppinfo, opt)
+            local compile_fallback = opt.compile_fallback
+            if compile_fallback then
+                local ok = try {function () compile(program, cppinfo, opt); return true end}
+                if not ok then
+                    -- we fallback to compile original source file if compiling preprocessed file fails.
+                    -- https://github.com/xmake-io/xmake/issues/2467
+                    compile_fallback()
+                end
+            else
+                compile(program, cppinfo, opt)
+            end
             if build_cache.is_enabled() then
                 local cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, opt.envs)
                 if cachekey then

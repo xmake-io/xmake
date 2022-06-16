@@ -119,6 +119,7 @@ function dump_stats()
     local remote_hit_count = (_g.remote_hit_count or 0)
     local remote_newfiles_count = (_g.remote_newfiles_count or 0)
     local preprocess_error_count = (_g.preprocess_error_count or 0)
+    local compile_fallback_count = (_g.compile_fallback_count or 0)
     vprint("")
     vprint("build cache stats:")
     vprint("cache directory: %s", rootdir())
@@ -129,6 +130,7 @@ function dump_stats()
     vprint("remote cache hit: %d", remote_hit_count)
     vprint("remote new cached files: %d", remote_newfiles_count)
     vprint("preprocess failed: %d", preprocess_error_count)
+    vprint("compile fallback count: %d", compile_fallback_count)
     vprint("")
 end
 
@@ -185,7 +187,18 @@ function build(program, argv, opt)
             os.cp(objectfile_cached, cppinfo.objectfile)
         else
             -- do compile
-            compile(program, cppinfo, opt)
+            local compile_fallback = opt.compile_fallback
+            if compile_fallback then
+                local ok = try {function () compile(program, cppinfo, opt); return true end}
+                if not ok then
+                    -- we fallback to compile original source file if compiling preprocessed file fails.
+                    -- https://github.com/xmake-io/xmake/issues/2467
+                    compile_fallback()
+                    _g.compile_fallback_count = (_g.compile_fallback_count or 0) + 1
+                end
+            else
+                compile(program, cppinfo, opt)
+            end
             if cachekey then
                 put(cachekey, cppinfo.objectfile)
             end
