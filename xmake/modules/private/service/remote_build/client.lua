@@ -476,9 +476,9 @@ function remote_build_client:_send_diff_files(stream, diff_files)
         totalsize = totalsize + filesize
         compressed_size = compressed_size + compressed_real
     end
-    cprint("Uploading ${bright}%d%%${clear} ..", math.floor(count * 100 / totalcount))
-    cprint("${bright}%d${clear} files, ${bright}%d (%d%%)${clear} bytes are uploaded, spent ${bright}%d${clear} ms.",
-        totalcount, compressed_size, math.floor(compressed_size * 100 / totalsize), os.mclock() - startime)
+    cprint("Uploading ${bright}%s%%${clear} ..", totalcount > 0 and math.floor(count * 100 / totalcount) or 0)
+    cprint("${bright}%s${clear} files, ${bright}%s (%s%%)${clear} bytes are uploaded, spent ${bright}%s${clear} ms.",
+        totalcount, compressed_size, totalsize > 0 and math.floor(compressed_size * 100 / totalsize) or 0, os.mclock() - startime)
     return stream:flush()
 end
 

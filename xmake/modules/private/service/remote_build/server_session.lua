@@ -350,12 +350,14 @@ function server_session:_recv_syncfiles(manifest, outputdir)
     for _, fileitem in ipairs(manifest.inserted) do
         local filepath = path.join(outputdir, fileitem)
         if not stream:recv_file(filepath) then
+            dprint("%s: recv %s failed!", self, filepath)
             return false
         end
     end
     for _, fileitem in ipairs(manifest.modified) do
         local filepath = path.join(outputdir, fileitem)
         if not stream:recv_file(filepath) then
+            dprint("%s: recv %s failed!", self, filepath)
             return false
         end
     end

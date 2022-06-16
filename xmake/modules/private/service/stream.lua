@@ -173,7 +173,7 @@ function stream:send_file(filepath, opt)
     local flags = 0
     local tmpfile
     local originsize = os.filesize(filepath)
-    if opt.compress then
+    if opt.compress and originsize > 0 then
         flags = bit.bor(flags, HEADER_FLAG_COMPRESS_LZ4)
         tmpfile = os.tmpfile()
         lz4.compress_file(filepath, tmpfile)
@@ -186,6 +186,11 @@ function stream:send_file(filepath, opt)
         return
     end
 
+    -- empty file?
+    if size == 0 then
+        return 0, 0
+    end
+
     -- flush cache data first
     if not self:flush() then
         return
@@ -195,7 +200,7 @@ function stream:send_file(filepath, opt)
     local ok = false
     local sock = self._SOCK
     local file = io.open(filepath, 'rb')
-    if file and file:size() > 0 then
+    if file then
         local send = sock:sendfile(file, {block = true})
         if send > 0 then
             ok = true
