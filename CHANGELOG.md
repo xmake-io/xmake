@@ -18,6 +18,7 @@
 * [#2421](https://github.com/xmake-io/xmake/issues/2421): Improve config option menu
 * [#2425](https://github.com/xmake-io/xmake/issues/2425): Add `preprocessor.gcc.directives_only` policy
 * [#2455](https://github.com/xmake-io/xmake/issues/2455): Improve optimize options for emcc
+* [#2467](https://github.com/xmake-io/xmake/issues/2467): Add compile fallback for msvc/ccache
 
 ### Bugs Fixed
 
@@ -1325,6 +1326,7 @@
 * [#2421](https://github.com/xmake-io/xmake/issues/2421): 改进配置选项菜单
 * [#2425](https://github.com/xmake-io/xmake/issues/2425): 添加 `preprocessor.gcc.directives_only` 策略
 * [#2455](https://github.com/xmake-io/xmake/issues/2455): 改进 emcc 的优化选项
+* [#2467](https://github.com/xmake-io/xmake/issues/2467): 支持回退到原始文件编译，兼容 msvc 预处理器的一些问题
 
 ### Bugs 修复
 
