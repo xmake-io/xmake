@@ -239,7 +239,7 @@ function distcc_build_client:compile(program, argv, opt)
         local cached = false
         local cachekey
         if build_cache.is_enabled() then
-            cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, opt.envs)
+            cachekey = build_cache.cachekey(program, cppinfo, opt.envs)
             local objectfile_cached = build_cache.get(cachekey)
             if objectfile_cached then
                 os.cp(objectfile_cached, cppinfo.objectfile)

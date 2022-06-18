@@ -87,7 +87,7 @@ rule("qt.widgetapp")
     end)
 
     on_config(function (target)
-        
+
         -- get qt sdk version
         local qt = target:data("qt")
         local qt_sdkver = nil

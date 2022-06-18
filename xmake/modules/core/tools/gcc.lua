@@ -511,7 +511,9 @@ function _preprocess(program, argv, opt)
     -- do preprocess
     local cppinfo = try {function ()
         local outdata, errdata = os.iorunv(program, cppflags, opt)
-        return {outdata = outdata, errdata = errdata, sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags}
+        return {outdata = outdata, errdata = errdata,
+                sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags,
+                directives_only = directives_only}
     end}
     if not cppinfo then
         if is_gcc then

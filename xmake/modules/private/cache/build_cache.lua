@@ -65,10 +65,18 @@ function is_supported(sourcekind)
 end
 
 -- get cache key
-function cachekey(program, cppfile, cppflags, envs)
+function cachekey(program, cppinfo, envs)
+    local cppfile = cppinfo.cppfile
+    local cppflags = cppinfo.cppflags
+    local directives_only = cppinfo.directives_only
     local items = {program}
     for _, cppflag in ipairs(cppflags) do
-        table.insert(items, cppflag)
+        if not directives_only and (cppflag:startswith("-D") or cppflag:startswith("/D")) then
+            -- ignore `-Dxx` to improve the cache hit rate, as some source files may not use the defined macros.
+            -- @see https://github.com/xmake-io/xmake/issues/2425
+        else
+            table.insert(items, cppflag)
+        end
     end
     table.sort(items)
     table.insert(items, hash.xxhash128(cppfile))
@@ -181,7 +189,7 @@ function build(program, argv, opt)
     local compile = assert(opt.compile, "compiler not found!")
     local cppinfo = preprocess(program, argv, opt)
     if cppinfo then
-        local cachekey = cachekey(program, cppinfo.cppfile, cppinfo.cppflags, opt.envs)
+        local cachekey = cachekey(program, cppinfo, opt.envs)
         local objectfile_cached = get(cachekey)
         if objectfile_cached then
             os.cp(objectfile_cached, cppinfo.objectfile)
