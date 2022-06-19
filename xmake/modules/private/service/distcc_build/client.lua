@@ -240,9 +240,16 @@ function distcc_build_client:compile(program, argv, opt)
         local cachekey
         if build_cache.is_enabled() then
             cachekey = build_cache.cachekey(program, cppinfo, opt.envs)
-            local objectfile_cached = build_cache.get(cachekey)
+            local objectfile_cached, objectfile_infofile = build_cache.get(cachekey)
             if objectfile_cached then
                 os.cp(objectfile_cached, cppinfo.objectfile)
+                -- we need get outdata/errdata to show warnings,
+                -- @see https://github.com/xmake-io/xmake/issues/2452
+                if objectfile_infofile and os.isfile(objectfile_infofile) then
+                    local extrainfo = io.load(objectfile_infofile)
+                    cppinfo.outdata = extrainfo.outdata
+                    cppinfo.errdata = extrainfo.errdata
+                end
                 cached = true
             end
         end
@@ -270,7 +277,16 @@ function distcc_build_client:compile(program, argv, opt)
                         table.join(opt, {cachekey = cachekey}))
                 end
                 if cachekey then
-                    build_cache.put(cachekey, cppinfo.objectfile)
+                    local extrainfo
+                    if cppinfo.outdata and #cppinfo.outdata ~= 0 then
+                        extrainfo = extrainfo or {}
+                        extrainfo.outdata = cppinfo.outdata
+                    end
+                    if cppinfo.errdata and #cppinfo.errdata ~= 0 then
+                        extrainfo = extrainfo or {}
+                        extrainfo.errdata = cppinfo.errdata
+                    end
+                    build_cache.put(cachekey, cppinfo.objectfile, extrainfo)
                 end
             else
                 build_in_local = true
@@ -302,9 +318,18 @@ function distcc_build_client:compile(program, argv, opt)
                 compile(program, cppinfo, opt)
             end
             if build_cache.is_enabled() then
-                local cachekey = build_cache.cachekey(program, cppinfo.cppfile, cppinfo.cppflags, opt.envs)
+                local cachekey = build_cache.cachekey(program, cppinfo, opt.envs)
                 if cachekey then
-                    build_cache.put(cachekey, cppinfo.objectfile)
+                    local extrainfo
+                    if cppinfo.outdata and #cppinfo.outdata ~= 0 then
+                        extrainfo = extrainfo or {}
+                        extrainfo.outdata = cppinfo.outdata
+                    end
+                    if cppinfo.errdata and #cppinfo.errdata ~= 0 then
+                        extrainfo = extrainfo or {}
+                        extrainfo.errdata = cppinfo.errdata
+                    end
+                    build_cache.put(cachekey, cppinfo.objectfile, extrainfo)
                 end
             end
         end

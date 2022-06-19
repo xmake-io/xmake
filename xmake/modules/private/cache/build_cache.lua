@@ -200,7 +200,7 @@ function build(program, argv, opt)
             os.cp(objectfile_cached, cppinfo.objectfile)
             -- we need get outdata/errdata to show warnings,
             -- @see https://github.com/xmake-io/xmake/issues/2452
-            if os.isfile(objectfile_infofile) then
+            if objectfile_infofile and os.isfile(objectfile_infofile) then
                 local extrainfo = io.load(objectfile_infofile)
                 cppinfo.outdata = extrainfo.outdata
                 cppinfo.errdata = extrainfo.errdata
