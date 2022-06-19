@@ -179,6 +179,7 @@ function remote_cache_client:pull(cachekey, cachefile)
     local errors
     local ok = false
     local exists = false
+    local extrainfo
     dprint("%s: pull cache(%s) in %s:%d ..", self, cachekey, addr, port)
     local stream = socket_stream(sock)
     if stream:send_msg(message.new_pull(session_id, cachekey, {token = self:token()})) and stream:flush() then
@@ -189,6 +190,7 @@ function remote_cache_client:pull(cachekey, cachefile)
                 if msg:success() then
                     ok = true
                     exists = msg:body().exists
+                    extrainfo = msg:body().extrainfo
                 else
                     errors = msg:errors()
                 end
@@ -203,11 +205,11 @@ function remote_cache_client:pull(cachekey, cachefile)
     else
         dprint("%s: pull cache(%s) failed in %s:%d, %s", self, cachekey, addr, port, errors or "unknown")
     end
-    return exists
+    return exists, extrainfo
 end
 
 -- push cache file
-function remote_cache_client:push(cachekey, cachefile)
+function remote_cache_client:push(cachekey, cachefile, extrainfo)
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
@@ -217,7 +219,7 @@ function remote_cache_client:push(cachekey, cachefile)
     local ok = false
     dprint("%s: push cache(%s) in %s:%d ..", self, cachekey, addr, port)
     local stream = socket_stream(sock)
-    if stream:send_msg(message.new_push(session_id, cachekey, {token = self:token()})) and stream:flush() then
+    if stream:send_msg(message.new_push(session_id, cachekey, {token = self:token(), extrainfo = extrainfo})) and stream:flush() then
         if stream:send_file(cachefile, {compress = os.filesize(cachefile) > 4096}) then
             local msg = stream:recv_msg()
             if msg then

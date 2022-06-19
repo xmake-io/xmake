@@ -273,7 +273,8 @@ function new_push(session_id, filename, opt)
         code = message.CODE_PUSH,
         filename = filename,
         session_id = session_id,
-        token = opt.token
+        token = opt.token,
+        extrainfo = opt.extrainfo
     })
 end
 

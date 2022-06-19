@@ -81,11 +81,15 @@ function server_session:pull(respmsg)
     local stream = self:stream()
     local cachekey = body.filename
     local cachefile = path.join(self:cachedir(), cachekey:sub(1, 2), cachekey)
+    local cacheinfofile = cachefile .. ".txt"
     vprint("pull cachefile(%s) ..", cachekey)
 
     -- send cache file
     if os.isfile(cachefile) then
         body.exists = true
+        if os.isfile(cacheinfofile) then
+            body.extrainfo = io.load(cacheinfofile)
+        end
         if not stream:send_file(cachefile, {compress = os.filesize(cachefile) > 4096}) then
             raise("send %s failed!", cachefile)
         end
@@ -103,9 +107,13 @@ function server_session:push(respmsg)
     local stream = self:stream()
     local cachekey = body.filename
     local cachefile = path.join(self:cachedir(), cachekey:sub(1, 2), cachekey)
+    local cacheinfofile = cachefile .. ".txt"
     vprint("push cachefile(%s) ..", cachekey)
     if not stream:recv_file(cachefile) then
         raise("recv %s failed!", cachefile)
+    end
+    if body.extrainfo then
+        io.save(cacheinfofile, body.extrainfo)
     end
 end
 

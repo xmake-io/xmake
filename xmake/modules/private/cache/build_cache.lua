@@ -150,12 +150,16 @@ function get(cachekey)
     if os.isfile(objectfile_cached) then
         _g.hit_count = (_g.hit_count or 0) + 1
         return objectfile_cached, objectfile_infofile
-    elseif remote_cache_client.is_connected() and
-        remote_cache_client.singleton():pull(cachekey, objectfile_cached) and
-        os.isfile(objectfile_cached) then
-        _g.hit_count = (_g.hit_count or 0) + 1
-        _g.remote_hit_count = (_g.remote_hit_count or 0) + 1
-        return objectfile_cached, objectfile_infofile
+    elseif remote_cache_client.is_connected() then
+        local exists, extrainfo = remote_cache_client.singleton():pull(cachekey, objectfile_cached)
+        if exists and os.isfile(objectfile_cached) then
+            _g.hit_count = (_g.hit_count or 0) + 1
+            _g.remote_hit_count = (_g.remote_hit_count or 0) + 1
+            if extrainfo then
+                io.save(objectfile_infofile, extrainfo)
+            end
+            return objectfile_cached, objectfile_infofile
+        end
     end
 end
 
@@ -179,7 +183,7 @@ function put(cachekey, objectfile, extrainfo)
             local cacheinfo = remote_cache_client.singleton():cacheinfo(cachekey)
             if not cacheinfo or not cacheinfo.exists then
                 _g.remote_newfiles_count = (_g.remote_newfiles_count or 0) + 1
-                remote_cache_client.singleton():push(cachekey, objectfile)
+                remote_cache_client.singleton():push(cachekey, objectfile, extrainfo)
             end
         end
     end
