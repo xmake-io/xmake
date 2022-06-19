@@ -100,6 +100,7 @@ function client_session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
     local cachekey = opt.cachekey
     local toolchain = tool:toolchain():name()
     local stream = self:stream()
+    local outdata, errdata
     if stream:send_msg(message.new_compile(self:id(), toolname, toolkind, plat, arch, toolchain,
             cppflags, path.filename(sourcefile), {token = self:token(), cachekey = cachekey})) and
         stream:send_file(cppfile, {compress = os.filesize(cppfile) > 4096}) and stream:flush() then
@@ -108,6 +109,9 @@ function client_session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
             local msg = stream:recv_msg()
             if msg then
                 if msg:success() then
+                    local body = msg:body()
+                    outdata = body.outdata
+                    errdata = body.errdata
                     ok = true
                 else
                     errors = msg:errors()
@@ -119,6 +123,7 @@ function client_session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
     end
     os.tryrm(cppfile)
     assert(ok, errors or "unknown errors!")
+    return outdata, errdata
 end
 
 -- get work directory

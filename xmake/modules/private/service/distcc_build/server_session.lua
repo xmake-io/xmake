@@ -101,6 +101,7 @@ function server_session:compile(respmsg)
     local sourcedir = path.join(self:buildir(), (hash.uuid4():gsub("-", "")))
     local sourcefile = path.join(sourcedir, sourcename)
     local objectfile = (cachekey and path.join(self:cachedir(), cachekey:sub(1, 2), cachekey) or sourcefile) .. ".o"
+    local objectfile_infofile = objectfile .. ".txt"
     if not stream:recv_file(sourcefile) then
         raise("recv %s failed!", sourcename)
     end
@@ -108,6 +109,7 @@ function server_session:compile(respmsg)
     -- do compile
     local errors
     local ok
+    local outdata, errdata
     if not (cachekey and os.isfile(objectfile)) then -- no cached object file?
         ok = try
         {
@@ -119,7 +121,19 @@ function server_session:compile(respmsg)
                 if not os.isdir(objectdir) then
                     os.mkdir(objectdir)
                 end
-                compile(self, toolname, flags, sourcefile, objectfile, body)
+                outdata, errdata = compile(self, toolname, flags, sourcefile, objectfile, body)
+                local extrainfo
+                if outdata and #outdata ~= 0 then
+                    extrainfo = extrainfo or {}
+                    extrainfo.outdata = outdata
+                end
+                if errdata and #errdata ~= 0 then
+                    extrainfo = extrainfo or {}
+                    extrainfo.errdata = errdata
+                end
+                if extrainfo then
+                    io.save(objectfile_infofile, extrainfo)
+                end
                 return os.isfile(objectfile)
             end,
             catch
@@ -134,6 +148,11 @@ function server_session:compile(respmsg)
         end
     else
         vprint("send cached object file %s ..", objectfile)
+        if os.isfile(objectfile_infofile) then
+            local extrainfo = io.load(objectfile_infofile)
+            outdata = extrainfo.outdata
+            errdata = extrainfo.errdata
+        end
         ok = true
     end
 
@@ -142,6 +161,8 @@ function server_session:compile(respmsg)
         if not stream:send_file(objectfile, {compress = os.filesize(objectfile) > 4096}) then
             raise("send %s failed!", objectfile)
         end
+        body.outdata = outdata
+        body.errdata = errdata
     else
         if not stream:send_emptydata() then
             raise("send empty data failed!")
@@ -242,7 +263,7 @@ end
 function server_session:_gcc_compile(toolname, flags, sourcefile, objectfile, opt)
     local program, toolname_real, runenvs = self:_tool(opt.toolchain, opt)
     assert(toolname_real == toolname, "toolname is not matched, %s != %s", toolname, toolname_real)
-    os.iorunv(program, table.join(flags, "-o", objectfile, sourcefile), {envs = runenvs})
+    return os.iorunv(program, table.join(flags, "-o", objectfile, sourcefile), {envs = runenvs})
 end
 
 -- do compile job for g++
@@ -264,7 +285,7 @@ end
 function server_session:_cl_compile(toolname, flags, sourcefile, objectfile, opt)
     local program, toolname_real, runenvs = self:_tool(opt.toolchain, opt)
     assert(toolname_real == toolname, "toolname is not matched, %s != %s", toolname, toolname_real)
-    vstool.iorunv(program, winos.cmdargv(table.join(flags, "-Fo" .. objectfile, sourcefile)), {envs = runenvs})
+    return vstool.iorunv(program, winos.cmdargv(table.join(flags, "-Fo" .. objectfile, sourcefile)), {envs = runenvs})
 end
 
 function server_session:__tostring()

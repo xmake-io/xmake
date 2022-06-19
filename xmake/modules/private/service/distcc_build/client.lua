@@ -261,8 +261,10 @@ function distcc_build_client:compile(program, argv, opt)
                 local compile_fallback = opt.compile_fallback
                 if compile_fallback then
                     local ok = try {function ()
-                        session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags,
+                        local outdata, errdata = session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags,
                             table.join(opt, {cachekey = cachekey}))
+                        cppinfo.outdata = outdata
+                        cppinfo.errdata = errdata
                         return true
                     end}
                     if not ok then
@@ -273,8 +275,10 @@ function distcc_build_client:compile(program, argv, opt)
                         cppinfo.errdata = errdata
                     end
                 else
-                    session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags,
+                    local outdata, errdata = session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags,
                         table.join(opt, {cachekey = cachekey}))
+                    cppinfo.outdata = outdata
+                    cppinfo.errdata = errdata
                 end
                 if cachekey then
                     local extrainfo
