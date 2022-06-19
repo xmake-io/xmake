@@ -201,7 +201,9 @@ function build(program, argv, opt)
                 if not ok then
                     -- we fallback to compile original source file if compiling preprocessed file fails.
                     -- https://github.com/xmake-io/xmake/issues/2467
-                    compile_fallback()
+                    local outdata, errdata = compile_fallback()
+                    cppinfo.outdata = outdata
+                    cppinfo.errdata = errdata
                     _g.compile_fallback_count = (_g.compile_fallback_count or 0) + 1
                 end
             else

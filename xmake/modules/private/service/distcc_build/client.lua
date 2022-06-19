@@ -261,7 +261,9 @@ function distcc_build_client:compile(program, argv, opt)
                     if not ok then
                         -- we fallback to compile original source file if compiling preprocessed file fails.
                         -- https://github.com/xmake-io/xmake/issues/2467
-                        compile_fallback()
+                        local outdata, errdata = compile_fallback()
+                        cppinfo.outdata = outdata
+                        cppinfo.errdata = errdata
                     end
                 else
                     session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags,
@@ -292,7 +294,9 @@ function distcc_build_client:compile(program, argv, opt)
                 if not ok then
                     -- we fallback to compile original source file if compiling preprocessed file fails.
                     -- https://github.com/xmake-io/xmake/issues/2467
-                    compile_fallback()
+                    local outdata, errdata = compile_fallback()
+                    cppinfo.outdata = outdata
+                    cppinfo.errdata = errdata
                 end
             else
                 compile(program, cppinfo, opt)
