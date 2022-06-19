@@ -366,6 +366,22 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
     return self:program(), table.join("-c", "-Yc", pchflags, "-Fp" .. pcoutputfile, "-Fo" .. pcoutputfile .. ".obj", pcheaderfile)
 end
 
+-- has warnings output?
+function _has_warnings()
+    local warnings = _g.warnings
+    if warnings == nil then
+        warnings = option.get("diagnosis") or option.get("warning")
+        if warnings == nil and os.isfile(os.projectfile()) and project.policy("build.warning") ~= nil then
+            warnings = project.policy("build.warning")
+        end
+        if warnings == nil then
+            warnings = global.get("build_warning")
+        end
+        _g.warnings = warnings or false
+    end
+    return warnings
+end
+
 -- has /sourceDependencies xxx.json @see https://github.com/xmake-io/xmake/issues/868?
 function _has_source_dependencies(self)
     local has_source_dependencies = _g._HAS_SOURCE_DEPENDENCIES
@@ -616,7 +632,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             function (ok, outdata, errdata)
 
                 -- show warnings?
-                if ok and (option.get("diagnosis") or option.get("warning") or global.get("build_warning")) then
+                if ok and _has_warnings() then
                     local output = outdata or ""
                     if #output:trim() == 0 then
                         output = errdata or ""

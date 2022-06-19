@@ -47,6 +47,8 @@ function policy.policies()
             ["build.merge_archive"]              = {description = "Enable merge archive intead of linking for all dependent targets.", default = false, type = "boolean"},
             -- C/C++ build cache
             ["build.ccache"]                     = {description = "Enable C/C++ build cache.", type = "boolean"},
+            -- Enable build warning output, it's disabled by default and we need `xmake -w/-vD` to look at it.
+            ["build.warning"]                    = {description = "Enable build warning output.", type = "boolean"},
             -- preprocessor configuration for ccache/distcc, we can disable linemarkers to speed up preprocess
             ["preprocessor.linemarkers"]         = {description = "Enable linemarkers for preprocessor.", default = true, type = "boolean"},
             -- preprocessor configuration for ccache/distcc, we can disable it to avoid cache object file with __DATE__, __TIME__
