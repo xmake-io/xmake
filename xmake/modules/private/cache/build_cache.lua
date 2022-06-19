@@ -146,22 +146,27 @@ end
 function get(cachekey)
     _g.total_count = (_g.total_count or 0) + 1
     local objectfile_cached = path.join(rootdir(), cachekey:sub(1, 2):lower(), cachekey)
+    local objectfile_infofile = objectfile_cached .. ".txt"
     if os.isfile(objectfile_cached) then
         _g.hit_count = (_g.hit_count or 0) + 1
-        return objectfile_cached
+        return objectfile_cached, objectfile_infofile
     elseif remote_cache_client.is_connected() and
         remote_cache_client.singleton():pull(cachekey, objectfile_cached) and
         os.isfile(objectfile_cached) then
         _g.hit_count = (_g.hit_count or 0) + 1
         _g.remote_hit_count = (_g.remote_hit_count or 0) + 1
-        return objectfile_cached
+        return objectfile_cached, objectfile_infofile
     end
 end
 
 -- put object file
-function put(cachekey, objectfile)
+function put(cachekey, objectfile, extrainfo)
     local objectfile_cached = path.join(rootdir(), cachekey:sub(1, 2):lower(), cachekey)
+    local objectfile_infofile = objectfile_cached .. ".txt"
     os.cp(objectfile, objectfile_cached)
+    if extrainfo then
+        io.save(objectfile_infofile, extrainfo)
+    end
     _g.newfiles_count = (_g.newfiles_count or 0) + 1
     if remote_cache_client.is_connected() then
         -- this file does not exist in remote server? push it to server
@@ -190,9 +195,16 @@ function build(program, argv, opt)
     local cppinfo = preprocess(program, argv, opt)
     if cppinfo then
         local cachekey = cachekey(program, cppinfo, opt.envs)
-        local objectfile_cached = get(cachekey)
+        local objectfile_cached, objectfile_infofile = get(cachekey)
         if objectfile_cached then
             os.cp(objectfile_cached, cppinfo.objectfile)
+            -- we need get outdata/errdata to show warnings,
+            -- @see https://github.com/xmake-io/xmake/issues/2452
+            if os.isfile(objectfile_infofile) then
+                local extrainfo = io.load(objectfile_infofile)
+                cppinfo.outdata = extrainfo.outdata
+                cppinfo.errdata = extrainfo.errdata
+            end
         else
             -- do compile
             local compile_fallback = opt.compile_fallback
@@ -210,7 +222,16 @@ function build(program, argv, opt)
                 compile(program, cppinfo, opt)
             end
             if cachekey then
-                put(cachekey, cppinfo.objectfile)
+                local extrainfo
+                if cppinfo.outdata and #cppinfo.outdata ~= 0 then
+                    extrainfo = extrainfo or {}
+                    extrainfo.outdata = cppinfo.outdata
+                end
+                if cppinfo.errdata and #cppinfo.errdata ~= 0 then
+                    extrainfo = extrainfo or {}
+                    extrainfo.errdata = cppinfo.errdata
+                end
+                put(cachekey, cppinfo.objectfile, extrainfo)
             end
         end
         os.rm(cppinfo.cppfile)
