@@ -128,7 +128,7 @@ function _install_for_manifest(vcpkg, name, opt)
         overrides = {{name = name, version = require_version}}
     end
 
-    -- generate manifest
+    -- generate manifest, vcpkg.json
     local baseline = configs.baseline or "44d94c2edbd44f0c01d66c2ad95eb6982a9a61bc" -- 2021.04.30
     local manifest = {
         name = "stub",
@@ -144,6 +144,13 @@ function _install_for_manifest(vcpkg, name, opt)
     if option.get("diagnosis") then
         vprint(path.join(installdir, "vcpkg.json"))
         vprint(manifest)
+    end
+
+    -- generate vcpkg-configuration.json
+    -- @see https://github.com/xmake-io/xmake/issues/2469
+    if configs.registries or configs.default_registries then
+        local configuration = {registries = configs.registries, ["default-registries"] = configs.default_registries}
+        json.savefile(path.join(installdir, "vcpkg-configuration.json"), configuration)
     end
 
     -- install package

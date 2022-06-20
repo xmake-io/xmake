@@ -40,9 +40,11 @@ end
 -- get configurations
 function main()
     return {
-        baseline         = {description = "set the builtin baseline."},
-        features         = {description = "set the features of dependency."},
-        default_features = {description = "enables or disables any defaults provided by the dependency.", default = true}
+        baseline           = {description = "set the builtin baseline."},
+        features           = {description = "set the features of dependency."},
+        default_features   = {description = "enables or disables any defaults provided by the dependency.", default = true},
+        registries         = {description = "set the registries in vcpkg-configuration.json"}
+        default_registries = {description = "set the default registries in vcpkg-configuration.json"}
     }
 end
 

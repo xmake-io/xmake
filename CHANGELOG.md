@@ -6,6 +6,7 @@
 
 * [#2447](https://github.com/xmake-io/xmake/pull/2447): Add qt.qmlplugin rule and support of qmltypesregistrar
 * [#2446](https://github.com/xmake-io/xmake/issues/2446): Support target group for `xmake install`
+* [#2469](https://github.com/xmake-io/xmake/issues/2469): Generate vcpkg-configuration.json
 
 ### Changes
 
@@ -1315,6 +1316,7 @@
 
 * [#2447](https://github.com/xmake-io/xmake/pull/2447): 添加 qt.qmlplugin 规则和 qmltypesregistrar 支持
 * [#2446](https://github.com/xmake-io/xmake/issues/2446): 支持 target 分组安装
+* [#2469](https://github.com/xmake-io/xmake/issues/2469): 产生 vcpkg-configuration.json
 
 ### 改进
 
