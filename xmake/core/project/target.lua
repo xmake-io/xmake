@@ -2001,7 +2001,7 @@ function _instance:tool(toolkind)
             end
         end
         -- get program from `xmake f --cc`
-        if not program and not self:get("toolchains") then
+        if not program then
             program = config.get(toolkind)
         end
 
