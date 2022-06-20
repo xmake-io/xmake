@@ -68,10 +68,9 @@ end
 function cachekey(program, cppinfo, envs)
     local cppfile = cppinfo.cppfile
     local cppflags = cppinfo.cppflags
-    local directives_only = cppinfo.directives_only
     local items = {program}
     for _, cppflag in ipairs(cppflags) do
-        if not directives_only and (cppflag:startswith("-D") or cppflag:startswith("/D")) then
+        if cppflag:startswith("-D") or cppflag:startswith("/D") then
             -- ignore `-Dxx` to improve the cache hit rate, as some source files may not use the defined macros.
             -- @see https://github.com/xmake-io/xmake/issues/2425
         else
