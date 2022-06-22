@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.6.8
+
 ### New features
 
 * [#2447](https://github.com/xmake-io/xmake/pull/2447): Add qt.qmlplugin rule and support of qmltypesregistrar
@@ -1311,6 +1313,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.6.8
 
 ### 新特性
 
