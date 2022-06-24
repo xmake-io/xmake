@@ -478,7 +478,7 @@ function _preprocess(program, argv, opt)
     end
 
     -- do preprocess
-    local cppfile = path.join(path.directory(objectfile), path.filename(objectfile) .. path.extension(sourcefile))
+    local cppfile = path.join(path.directory(objectfile), "__cpp_" .. path.basename(objectfile) .. path.extension(sourcefile))
     local cppfiledir = path.directory(cppfile)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
