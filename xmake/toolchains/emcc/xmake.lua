@@ -38,6 +38,7 @@ toolchain("emcc")
     set_toolset("sh", "em++" .. suffix, "emcc" .. suffix)
     set_toolset("ar", "emar" .. suffix)
     set_toolset("as", "emcc" .. suffix)
+    set_toolset("ranlib", "emranlib" .. suffix)
 
     -- check toolchain
     on_check(function (toolchain)
