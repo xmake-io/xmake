@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* Improve tools.cmake to support wasm
+
 ## v2.6.8
 
 ### New features
@@ -1313,6 +1317,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* 改进 tools.cmake 支持 wasm 库构建
 
 ## v2.6.8
 
