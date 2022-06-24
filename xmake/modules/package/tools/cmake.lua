@@ -413,6 +413,20 @@ function _get_configs_for_mingw(package, configs, opt)
     end
 end
 
+-- get configs for wasm
+function _get_configs_for_wasm(package, configs, opt)
+    local emsdk = os.getenv("EMSDK")
+    local emscripten_cmakefile
+    if emsdk and os.isdir(emsdk) then
+        emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk, "*", "emscripten/cmake/Modules/Platform"))
+    end
+    if emscripten_cmakefile then
+        table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. emscripten_cmakefile)
+    end
+    assert(emscripten_cmakefile, "Emscripten.cmake not found!")
+    _get_configs_for_generic(package, configs, opt)
+end
+
 -- get configs for cross
 function _get_configs_for_cross(package, configs, opt)
     opt = opt or {}
@@ -552,6 +566,8 @@ function _get_configs(package, configs, opt)
         _get_configs_for_appleos(package, configs, opt)
     elseif package:is_plat("mingw") then
         _get_configs_for_mingw(package, configs, opt)
+    elseif package:is_plat("wasm") then
+        _get_configs_for_wasm(package, configs, opt)
     elseif not package:is_plat(os.subhost()) or
         package:config("toolchains") then -- we need pass toolchains
         _get_configs_for_cross(package, configs, opt)
