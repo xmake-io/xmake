@@ -92,6 +92,11 @@ function filesync:snapshot()
     for _, filepath in ipairs(os.files(path.join(rootdir, "**" .. ignorefiles))) do
         local fileitem = path.relative(filepath, rootdir)
         if fileitem then
+            -- we should always use '/' in path key for supporting linux & windows
+            -- https://github.com/xmake-io/xmake/issues/2488
+            if is_host("windows") then
+                fileitem = fileitem:gsub("\\", "/")
+            end
             local manifest_info = manifest_old[fileitem]
             local mtime = os.mtime(filepath)
             if not manifest_info or not manifest_info.mtime or mtime > manifest_info.mtime then
