@@ -41,19 +41,21 @@ function _find_package_from_list(list, name, pacman, opt)
     for _, line in ipairs(list:split('\n', {plain = true})) do -- on msys cygpath should be used to convert local path to windows path
         line = line:trim():split('%s+')[2]
         if line:find("/include/", 1, true) and (line:endswith(".h") or line:endswith(".hpp")) then
-            local hpath = line
-            if is_subhost("msys") and opt.plat == "mingw" then
-                hpath = os.iorunv(cygpath.program, {"--windows", line})
+            if not line:startswith("/usr/include/") then
+                local hpath = line
+                if is_subhost("msys") and opt.plat == "mingw" then
+                    hpath = os.iorunv(cygpath.program, {"--windows", line})
 
-                if opt.arch == "x86_64" then
-                    local basehpath = os.iorunv(cygpath.program, {"--windows", "/mingw64/include"})
-                    table.insert(result.includedirs, basehpath)
-                else
-                    local basehpath = os.iorunv(cygpath.program, {"--windows", "/mingw32/include"})
-                    table.insert(result.includedirs, basehpath)
+                    if opt.arch == "x86_64" then
+                        local basehpath = os.iorunv(cygpath.program, {"--windows", "/mingw64/include"})
+                        table.insert(result.includedirs, basehpath)
+                    else
+                        local basehpath = os.iorunv(cygpath.program, {"--windows", "/mingw32/include"})
+                        table.insert(result.includedirs, basehpath)
+                    end
                 end
+                table.insert(result.includedirs, path.directory(hpath))
             end
-            table.insert(result.includedirs, path.directory(hpath))
         -- remove lib and .a, .dll.a and .so to have the links
         elseif line:endswith(".dll.a") then -- only for mingw
             local apath = os.iorunv(cygpath.program, {"--windows", line})
