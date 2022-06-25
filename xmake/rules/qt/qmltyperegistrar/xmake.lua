@@ -118,7 +118,7 @@ rule("qt.qmltyperegistrar")
     end)
 
     after_build(function(target)
-        local qmldir = target:values("qml.plugin.qmldirfile")
+        local qmldir = path.join(target:scriptdir(), target:values("qt.qmlplugin.qmldirfile"))
         if qmldir then
             os.cp(qmldir, target:targetdir())
         end
