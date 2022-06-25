@@ -5,6 +5,7 @@
 ### Changes
 
 * Improve tools.cmake to support wasm
+* [#2491](https://github.com/xmake-io/xmake/issues/2491): Fallback to local compiler/cache from remote if server is unreachable
 
 ### Bugs fixed
 
@@ -1326,6 +1327,7 @@
 ### 改进
 
 * 改进 tools.cmake 支持 wasm 库构建
+* [#2491](https://github.com/xmake-io/xmake/issues/2491): 如果服务器不可访问，自动回退到本地编译和缓存
 
 ### Bugs 修复
 
