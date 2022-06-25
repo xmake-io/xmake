@@ -35,8 +35,6 @@ local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- the directories of rule
 function rule._directories()
-
-    -- the directories
     return  {   path.join(global.directory(), "rules")
             ,   path.join(os.programdir(), "rules")
             }
@@ -93,8 +91,6 @@ function rule._interpreter()
 
     -- save interpreter
     rule._INTERPRETER = interp
-
-    -- ok?
     return interp
 end
 
@@ -116,8 +112,6 @@ function rule._load(filepath)
     if not results then
         return nil, errors
     end
-
-    -- ok
     return results
 end
 
@@ -320,8 +314,6 @@ function rule:script(name, generic)
             end
         end
     end
-
-    -- ok
     return result
 end
 
@@ -332,54 +324,41 @@ end
 
 -- get global rules
 function rule.rules()
-
-    -- return it directly if exists
-    if rule._RULES then
-        return rule._RULES
-    end
-
-    -- load rules
-    local rules = {}
-    local dirs = rule._directories()
-    for _, dir in ipairs(dirs) do
-
-        -- get files
-        local files = os.match(path.join(dir, "**/xmake.lua"))
-        if files then
-            for _, filepath in ipairs(files) do
-
-                -- load rule
-                local results, errors = rule._load(filepath)
-
-                -- save rule
-                if results then
-                    table.join2(rules, results)
-                else
-                    os.raise(errors)
+    local rules = rule._RULES
+    if rules == nil then
+        local ruleinfos = {}
+        local dirs = rule._directories()
+        for _, dir in ipairs(dirs) do
+            local files = os.match(path.join(dir, "**/xmake.lua"))
+            if files then
+                for _, filepath in ipairs(files) do
+                    local results, errors = rule._load(filepath)
+                    if results then
+                        table.join2(ruleinfos, results)
+                    else
+                        os.raise(errors)
+                    end
                 end
             end
         end
+
+        -- make rule instances
+        local instances = {}
+        for rulename, ruleinfo in pairs(ruleinfos) do
+            local instance = rule.new(rulename, ruleinfo)
+            instances[rulename] = instance
+        end
+
+        -- load rule deps
+        for _, instance in pairs(instances)  do
+            instance._DEPS      = instance._DEPS or {}
+            instance._ORDERDEPS = instance._ORDERDEPS or {}
+            rule._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS)
+        end
+        rules = instances
+        rule._RULES = rules
     end
-
-    -- make rule instances
-    local instances = {}
-    for rulename, ruleinfo in pairs(rules) do
-        local instance = rule.new(rulename, ruleinfo)
-        instances[rulename] = instance
-    end
-
-    -- load rule deps
-    for _, instance in pairs(instances)  do
-        instance._DEPS      = instance._DEPS or {}
-        instance._ORDERDEPS = instance._ORDERDEPS or {}
-        rule._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS)
-    end
-
-    -- save it
-    rule._RULES = instances
-
-    -- ok?
-    return rule._RULES
+    return rules
 end
 
 -- return module
