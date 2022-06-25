@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version #solution_version#.0
+Microsoft Visual Studio Solution File, Format Version #solution_version#.00
 # Visual Studio Version #vs_version#
 #
 # #xmake_info#
@@ -9,7 +9,7 @@ Microsoft Visual Studio Solution File, Format Version #solution_version#.0
 #   See https://github.com/xmake-io/xmake/pull/472 for more infomation.
 #
 VisualStudioVersion = #vs_version#
-MinimumVisualStudioVersion = 10.0
+MinimumVisualStudioVersion = 10.0.40219.1
 #Import(Project)#
 #Import(ProjectGroup)#
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", "{007754BD-BB1F-452F-A0D8-13EF216C5ED9}"
@@ -20,16 +20,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", 
 	EndProjectSection
 EndProject
 Global
-    GlobalSection(SolutionConfigurationPlatforms) = preSolution
-#Import(SlnConfig)#    EndGlobalSection
-    GlobalSection(ProjectConfigurationPlatforms) = postSolution
-#Import(ProjConfig)#    EndGlobalSection
-    GlobalSection(SolutionProperties) = preSolution
-        HideSolutionNode = FALSE
-    EndGlobalSection
-    GlobalSection(NestedProjects) = preSolution
-#Import(ProjectGroupConfig)#    EndGlobalSection
-    GlobalSection(ExtensibilityGlobals) = postSolution
-        SolutionGuid = {#solution_id#}
-    EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+#Import(SlnConfig)#	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+#Import(ProjConfig)#	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+#Import(ProjectGroupConfig)#	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {#solution_id#}
+	EndGlobalSection
 EndGlobal
