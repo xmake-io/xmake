@@ -23,12 +23,30 @@ local sandbox_core_project_policy = sandbox_core_project_policy or {}
 
 -- load modules
 local table       = require("base/table")
+local global      = require("base/global")
+local option      = require("base/option")
 local policy      = require("project/policy")
 local project     = require("project/project")
 local raise       = require("sandbox/modules/raise")
 
 -- export some readonly interfaces
 sandbox_core_project_policy.policies = policy.policies
+
+-- has build warnings?
+function sandbox_core_project_policy.build_warnings()
+    local warnings = sandbox_core_project_policy._BUILD_WARNINGS
+    if warnings == nil then
+        warnings = option.get("diagnosis") or option.get("warning")
+        if warnings == nil and os.isfile(os.projectfile()) and project.policy("build.warning") ~= nil then
+            warnings = project.policy("build.warning")
+        end
+        if warnings == nil then
+            warnings = global.get("build_warning")
+        end
+        sandbox_core_project_policy._BUILD_WARNINGS = warnings or false
+    end
+    return warnings
+end
 
 -- return module
 return sandbox_core_project_policy

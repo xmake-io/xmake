@@ -58,13 +58,22 @@ function client_session:client()
     return self._CLIENT
 end
 
+-- server unreachable?
+function client_session:is_unreachable()
+    return self._UNREACHABLE
+end
+
 -- get stream
 function client_session:stream()
     local stream = self._STREAM
     if stream == nil then
         local addr = self._ADDR
         local port = self._PORT
-        local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+        local sock = socket.connect(addr, port)
+        if not sock then
+            self._UNREACHABLE = true
+            raise("%s: server unreachable!", self)
+        end
         stream = socket_stream(sock)
         self._STREAM = stream
     end

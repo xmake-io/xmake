@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.global")
 import("core.base.hashset")
 import("core.project.project")
+import("core.project.policy")
 import("core.language.language")
 import("private.tools.vstool")
 import("private.tools.cl.parse_include")
@@ -366,22 +367,6 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
     return self:program(), table.join("-c", "-Yc", pchflags, "-Fp" .. pcoutputfile, "-Fo" .. pcoutputfile .. ".obj", pcheaderfile)
 end
 
--- has warnings output?
-function _has_warnings()
-    local warnings = _g.warnings
-    if warnings == nil then
-        warnings = option.get("diagnosis") or option.get("warning")
-        if warnings == nil and os.isfile(os.projectfile()) and project.policy("build.warning") ~= nil then
-            warnings = project.policy("build.warning")
-        end
-        if warnings == nil then
-            warnings = global.get("build_warning")
-        end
-        _g.warnings = warnings or false
-    end
-    return warnings
-end
-
 -- has /sourceDependencies xxx.json @see https://github.com/xmake-io/xmake/issues/868?
 function _has_source_dependencies(self)
     local has_source_dependencies = _g._HAS_SOURCE_DEPENDENCIES
@@ -520,8 +505,7 @@ end
 function _compile(self, sourcefile, objectfile, compflags, opt)
     local function _compile_fallback()
         local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
-        local outdata, errdata = vstool.iorunv(program, argv, {envs = self:runenvs()})
-        return outdata, errdata
+        return vstool.iorunv(program, argv, {envs = self:runenvs()})
     end
     local cppinfo
     if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
@@ -632,7 +616,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             function (ok, outdata, errdata)
 
                 -- show warnings?
-                if ok and _has_warnings() then
+                if ok and policy.build_warnings() then
                     local output = outdata or ""
                     if #output:trim() == 0 then
                         output = errdata or ""

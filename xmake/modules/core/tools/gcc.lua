@@ -25,6 +25,7 @@ import("core.base.colors")
 import("core.base.global")
 import("core.cache.memcache")
 import("core.project.config")
+import("core.project.policy")
 import("core.project.project")
 import("core.language.language")
 import("utils.progress")
@@ -368,22 +369,6 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.runv(program, argv, {envs = self:runenvs()})
 end
 
--- has warnings output?
-function _has_warnings()
-    local warnings = _g.warnings
-    if warnings == nil then
-        warnings = option.get("diagnosis") or option.get("warning")
-        if warnings == nil and os.isfile(os.projectfile()) and project.policy("build.warning") ~= nil then
-            warnings = project.policy("build.warning")
-        end
-        if warnings == nil then
-            warnings = global.get("build_warning")
-        end
-        _g.warnings = warnings or false
-    end
-    return warnings
-end
-
 -- has color diagnostics?
 function _has_color_diagnostics(self)
     local colors_diagnostics = _g._HAS_COLOR_DIAGNOSTICS
@@ -549,19 +534,24 @@ end
 
 -- do compile
 function _compile(self, sourcefile, objectfile, compflags, opt)
-    local cppinfo
     local program, argv = compargv(self, sourcefile, objectfile, compflags)
+    local function _compile_fallback()
+        return os.iorunv(program, argv, {envs = self:runenvs()})
+    end
+    local cppinfo
     if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-        cppinfo = distcc_build_client.singleton():compile(program, argv,
-            {envs = self:runenvs(), preprocess = _preprocess, compile = _compile_preprocessed_file, tool = self, remote = true})
+        cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
+            preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
+            tool = self, remote = true})
     elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
-        cppinfo = build_cache.build(program, argv,
-            {envs = self:runenvs(), preprocess = _preprocess, compile = _compile_preprocessed_file, tool = self})
+        cppinfo = build_cache.build(program, argv, {envs = self:runenvs(),
+            preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
+            tool = self})
     end
     if cppinfo then
         return cppinfo.outdata, cppinfo.errdata
     else
-        return os.iorunv(program, argv, {envs = self:runenvs()})
+        return _compile_fallback()
     end
 end
 
@@ -672,7 +662,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
         {
             function (ok, outdata, errdata)
                 -- show warnings?
-                if ok and errdata and #errdata > 0 and _has_warnings() then
+                if ok and errdata and #errdata > 0 and policy.build_warnings() then
                     local lines = errdata:split('\n', {plain = true})
                     if #lines > 0 then
                         if not option.get("diagnosis") then

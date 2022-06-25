@@ -24,6 +24,7 @@ import("core.base.base64")
 import("core.base.socket")
 import("core.base.option")
 import("core.base.scheduler")
+import("core.project.policy")
 import("core.project.config", {alias = "project_config"})
 import("lib.detect.find_tool")
 import("private.service.client_config", {alias = "config"})
@@ -257,16 +258,27 @@ function distcc_build_client:compile(program, argv, opt)
         -- do distcc compilation
         if not cached then
             -- we just compile the large preprocessed file in remote
-            if os.filesize(cppinfo.cppfile) > 4096 then
+            if os.filesize(cppinfo.cppfile) > 4096 and not session:is_unreachable() then
                 local compile_fallback = opt.compile_fallback
                 if compile_fallback then
-                    local ok = try {function ()
-                        local outdata, errdata = session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags,
-                            table.join(opt, {cachekey = cachekey}))
-                        cppinfo.outdata = outdata
-                        cppinfo.errdata = errdata
-                        return true
-                    end}
+                    local ok = try
+                    {
+                        function ()
+                            local outdata, errdata = session:compile(cppinfo.sourcefile, cppinfo.objectfile, cppinfo.cppfile, cppinfo.cppflags,
+                                table.join(opt, {cachekey = cachekey}))
+                            cppinfo.outdata = outdata
+                            cppinfo.errdata = errdata
+                            return true
+                        end,
+                        catch
+                        {
+                            function (errors)
+                                if errors and policy.build_warnings() then
+                                    cprint("${color.warning}fallback to the local compiler, %s", tostring(errors))
+                                end
+                            end
+                        }
+                    }
                     if not ok then
                         -- we fallback to compile original source file if compiling preprocessed file fails.
                         -- https://github.com/xmake-io/xmake/issues/2467
