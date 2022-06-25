@@ -6,6 +6,11 @@
 
 * Improve tools.cmake to support wasm
 
+### Bugs fixed
+
+* [#2488](https://github.com/xmake-io/xmake/issues/2488): Fix remote compilation from windows to linux
+* Fix cache-induced path conflicts in preprocessed files
+
 ## v2.6.8
 
 ### New features
@@ -1321,6 +1326,11 @@
 ### 改进
 
 * 改进 tools.cmake 支持 wasm 库构建
+
+### Bugs 修复
+
+* [#2488](https://github.com/xmake-io/xmake/issues/2488): 修复从 windows 到 linux 的远程编译路径问题
+* 修复缓存导致的预处理文件路径冲突问题
 
 ## v2.6.8
 
