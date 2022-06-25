@@ -22,6 +22,7 @@
 import("core.base.bytes")
 import("core.base.hashset")
 import("core.project.config")
+import("core.project.policy")
 import("core.project.project")
 import("private.service.client_config")
 import("private.service.remote_cache.client", {alias = "remote_cache_client"})
@@ -150,15 +151,30 @@ function get(cachekey)
         _g.hit_count = (_g.hit_count or 0) + 1
         return objectfile_cached, objectfile_infofile
     elseif remote_cache_client.is_connected() then
-        local exists, extrainfo = remote_cache_client.singleton():pull(cachekey, objectfile_cached)
-        if exists and os.isfile(objectfile_cached) then
-            _g.hit_count = (_g.hit_count or 0) + 1
-            _g.remote_hit_count = (_g.remote_hit_count or 0) + 1
-            if extrainfo then
-                io.save(objectfile_infofile, extrainfo)
-            end
-            return objectfile_cached, objectfile_infofile
-        end
+        try
+        {
+            function ()
+                if not remote_cache_client.singleton():unreachable() then
+                    local exists, extrainfo = remote_cache_client.singleton():pull(cachekey, objectfile_cached)
+                    if exists and os.isfile(objectfile_cached) then
+                        _g.hit_count = (_g.hit_count or 0) + 1
+                        _g.remote_hit_count = (_g.remote_hit_count or 0) + 1
+                        if extrainfo then
+                            io.save(objectfile_infofile, extrainfo)
+                        end
+                        return objectfile_cached, objectfile_infofile
+                    end
+                end
+            end,
+            catch
+            {
+                function (errors)
+                    if errors and policy.build_warnings() then
+                        cprint("${color.warning}fallback to the local cache, %s", tostring(errors))
+                    end
+                end
+            }
+        }
     end
 end
 
@@ -172,19 +188,34 @@ function put(cachekey, objectfile, extrainfo)
     end
     _g.newfiles_count = (_g.newfiles_count or 0) + 1
     if remote_cache_client.is_connected() then
-        -- this file does not exist in remote server? push it to server
-        --
-        -- we use the bloom filter to approximate whether it exists or not,
-        -- which may result in a few less files being uploaded, but that's fine.
-        local existinfo = _get_existinfo()
-        if not existinfo or not existinfo:get(cachekey) then
-            -- existinfo is just an initial snapshot, we need to go further and determine if the current file exists
-            local cacheinfo = remote_cache_client.singleton():cacheinfo(cachekey)
-            if not cacheinfo or not cacheinfo.exists then
-                _g.remote_newfiles_count = (_g.remote_newfiles_count or 0) + 1
-                remote_cache_client.singleton():push(cachekey, objectfile, extrainfo)
-            end
-        end
+        try
+        {
+            function ()
+                if not remote_cache_client.singleton():unreachable() then
+                    -- this file does not exist in remote server? push it to server
+                    --
+                    -- we use the bloom filter to approximate whether it exists or not,
+                    -- which may result in a few less files being uploaded, but that's fine.
+                    local existinfo = _get_existinfo()
+                    if not existinfo or not existinfo:get(cachekey) then
+                        -- existinfo is just an initial snapshot, we need to go further and determine if the current file exists
+                        local cacheinfo = remote_cache_client.singleton():cacheinfo(cachekey)
+                        if not cacheinfo or not cacheinfo.exists then
+                            _g.remote_newfiles_count = (_g.remote_newfiles_count or 0) + 1
+                            remote_cache_client.singleton():push(cachekey, objectfile, extrainfo)
+                        end
+                    end
+                end
+            end,
+            catch
+            {
+                function (errors)
+                    if errors and policy.build_warnings() then
+                        cprint("${color.warning}fallback to the local cache, %s", tostring(errors))
+                    end
+                end
+            }
+        }
     end
 end
 

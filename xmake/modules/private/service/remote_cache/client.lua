@@ -418,6 +418,11 @@ function remote_cache_client:port()
     return self._PORT
 end
 
+-- is server unreachable?
+function remote_cache_client:unreachable()
+    return self._UNREACHABLE
+end
+
 -- open a free socket
 function remote_cache_client:_sock_open()
     local freesocks = self._FREESOCKS
@@ -431,7 +436,11 @@ function remote_cache_client:_sock_open()
 
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = socket.connect(addr, port)
+    if not sock then
+        self._UNREACHABLE = true
+        raise("%s: server unreachable!", self)
+    end
     opensocks:insert(sock)
     return sock
 end
