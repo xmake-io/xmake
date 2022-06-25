@@ -15,21 +15,38 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        find_icpc.lua
 --
 
--- define toolchain
-toolchain("icc")
+-- imports
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
-    -- set homepage
-    set_homepage("https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler.html")
-    set_description("Intel C/C++ Compiler")
+-- find icpc
+--
+-- @param opt   the argument options, e.g. {version = true}
+--
+-- @return      program, version
+--
+-- @code
+--
+-- local icpc = find_icpc()
+-- local icpc, version, hintname = find_icpc({program = "icpc", version = true})
+--
+-- @endcode
+--
+function main(opt)
 
-    -- mark as standalone toolchain
-    set_kind("standalone")
+    -- init options
+    opt = opt or {}
 
-    -- check toolchain
-    on_check("check")
+    -- find program
+    local program = find_program(opt.program or "icpx", opt)
 
-    -- on load
-    on_load("load")
+    -- find program version
+    local version = nil
+    if program and opt.version then
+        version = find_programver(program, opt)
+    end
+    return program, version
+end
