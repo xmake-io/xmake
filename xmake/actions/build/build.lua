@@ -117,7 +117,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
 
     -- add after_build job for target
     local oldenvs
-    local job_after_build = batchjobs:addjob(target:name() .. "/after_build", function (index, total)
+    local job_build_after = batchjobs:addjob(target:name() .. "/after_build", function (index, total)
 
         -- do after_build
         local progress = (index * 100) / total
@@ -147,7 +147,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
     end, {rootjob = rootjob})
 
     -- add batch jobs for target, @note only on_build script support batch jobs
-    local job_build, job_build_leaf = _add_batchjobs(batchjobs, job_after_build, target)
+    local job_build, job_build_leaf = _add_batchjobs(batchjobs, job_build_after, target)
 
     -- add before_build job for target
     local job_build_before = batchjobs:addjob(target:name() .. "/before_build", function (index, total)
@@ -180,9 +180,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
             end
         end
     end, {rootjob = job_build_leaf})
-
-    -- we need do build_before after all dependent targets if across_targets_in_parallel is disabled
-    return target:policy("build.across_targets_in_parallel") == false and job_build_before or job_build, job_after_build
+    return job_build_before, job_build, job_build_after
 end
 
 -- add batch jobs for the given target and deps
@@ -191,11 +189,17 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target)
     if targetjob_ref then
         batchjobs:add(targetjob_ref, rootjob)
     else
-        local targetjob, targetjob_root = _add_batchjobs_for_target(batchjobs, rootjob, target)
-        if targetjob and targetjob_root then
-            jobrefs[target:name()] = targetjob_root
+        local job_build_before, job_build, job_build_after = _add_batchjobs_for_target(batchjobs, rootjob, target)
+        if job_build_before and job_build and job_build_after then
+            jobrefs[target:name()] = job_build_after
             for _, depname in ipairs(target:get("deps")) do
-                _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs, project.target(depname))
+                local dep = project.target(depname)
+                local targetjob = job_build
+                -- @see https://github.com/xmake-io/xmake/discussions/2500
+                if dep:policy("build.across_targets_in_parallel") == false then
+                    targetjob = job_build_before
+                end
+                _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs, dep)
             end
         end
     end
@@ -258,5 +262,6 @@ function main(targetname, group_pattern)
         os.cd(curdir)
     end
 end
+
 
 
