@@ -19,11 +19,11 @@
 --
 
 -- define toolchain
-toolchain("icc")
+toolchain("icx")
 
     -- set homepage
     set_homepage("https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler.html")
-    set_description("Intel C/C++ Compiler")
+    set_description("Intel LLVM C/C++ Compiler")
 
     -- mark as standalone toolchain
     set_kind("standalone")

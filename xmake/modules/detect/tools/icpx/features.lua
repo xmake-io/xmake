@@ -15,21 +15,9 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        features.lua
 --
 
--- define toolchain
-toolchain("icc")
+-- imports
+inherit("detect.tools.clang.features")
 
-    -- set homepage
-    set_homepage("https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler.html")
-    set_description("Intel C/C++ Compiler")
-
-    -- mark as standalone toolchain
-    set_kind("standalone")
-
-    -- check toolchain
-    on_check("check")
-
-    -- on load
-    on_load("load")
