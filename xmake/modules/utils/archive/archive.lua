@@ -63,7 +63,6 @@ function _archive_using_zip(archivefile, inputfiles, extension, opt)
         end
         file:close()
         table.insert(argv, "-@")
-        table.insert(argv, "-")
     else
         table.insert(argv, inputfiles)
     end
