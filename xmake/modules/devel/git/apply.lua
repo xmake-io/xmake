@@ -36,14 +36,8 @@ import("lib.detect.find_tool")
 -- @endcode
 --
 function main(patchfile, opt)
-
-    -- find git
-    local git = assert(find_tool("git"), "git not found!")
-
-    -- init argv
     opt = opt or {}
+    local git = assert(find_tool("git"), "git not found!")
     local argv = {"apply", "--reject", "--ignore-whitespace", patchfile}
-
-    -- apply it
     os.vrunv(git.program, argv, {curdir = opt.repodir})
 end
