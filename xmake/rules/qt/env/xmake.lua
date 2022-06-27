@@ -31,7 +31,7 @@ rule("qt.env")
             target:data_set("qt", qt)
         end
 
-        local qmlimportpath = target:get("qt.env.qmlimportpath") or {}
+        local qmlimportpath = target:values("qt.env.qmlimportpath") or {}
         if target:is_plat("windows") or (target:is_plat("mingw") and is_host("windows")) then
             target:add("runenvs", "PATH", qt.bindir)
             table.append(qmlimportpath, qt.qmldir)
