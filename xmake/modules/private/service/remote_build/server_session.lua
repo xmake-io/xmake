@@ -210,12 +210,12 @@ function server_session:runcmd(respmsg)
 
     -- run program
     os.execv(program, argv, {curdir = self:sourcedir(), stdout = stdout_wpipe, stdin = stdin_rpipe, envs = {XMAKE_IN_SERVICE = "true"}})
+    stdin_rpipe:close()
+    stdout_wpipe:close()
 
     -- stop it
     stdin_wpipeopt.stop = true
-    stdin_wpipe:close()
     stdout_rpipeopt.stop = true
-    stdout_wpipe:close()
 
     -- wait pipes exits
     scheduler.co_group_wait(group_name)
