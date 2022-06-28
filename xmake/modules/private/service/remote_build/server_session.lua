@@ -202,8 +202,11 @@ function server_session:runcmd(respmsg)
     local stdout_rpipeopt = {rpipe = stdout_rpipe, stop = false}
 
     -- read and write pipe
-    scheduler.co_start(self._write_pipe, self, stdin_wpipeopt)
-    scheduler.co_start(self._read_pipe, self, stdout_rpipeopt)
+    local group_name = "remote_build/runcmd"
+    scheduler.co_group_begin(group_name, function (co_group)
+        scheduler.co_start(self._write_pipe, self, stdin_wpipeopt)
+        scheduler.co_start(self._read_pipe, self, stdout_rpipeopt)
+    end)
 
     -- run program
     os.execv(program, argv, {curdir = self:sourcedir(), stdout = stdout_wpipe, stdin = stdin_rpipe, envs = {XMAKE_IN_SERVICE = "true"}})
@@ -213,6 +216,9 @@ function server_session:runcmd(respmsg)
     stdin_wpipe:close()
     stdout_rpipeopt.stop = true
     stdout_wpipe:close()
+
+    -- wait pipes exits
+    scheduler.co_group_wait(group_name)
     vprint("%s: run command ok", self)
 end
 
@@ -268,7 +274,7 @@ function server_session:_ensure_sourcedir()
     end
 end
 
--- write data from pipe
+-- write data to pipe
 function server_session:_write_pipe(opt)
     local buff = bytes(256)
     local wpipe = opt.wpipe
@@ -308,7 +314,7 @@ function server_session:_read_pipe(opt)
                 end
             end
             if not self:_send_data(data) then
-                break;
+                break
             end
         elseif real == 0 then
             if rpipe:wait(pipe.EV_READ, -1) < 0 then
@@ -322,6 +328,8 @@ function server_session:_read_pipe(opt)
     if #leftstr > 0 then
         cprint(leftstr)
     end
+    -- say end to client
+    self:_send_end()
     vprint("%s: %s: read data end", self, rpipe)
 end
 
@@ -341,6 +349,14 @@ function server_session:_send_data(data)
         if stream:send(data) then
             return stream:flush()
         end
+    end
+end
+
+-- send end to stream
+function server_session:_send_end()
+    local stream = self:stream()
+    if stream:send_msg(message.new_end(self:id())) then
+        return stream:flush()
     end
 end
 
