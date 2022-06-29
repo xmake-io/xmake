@@ -105,8 +105,9 @@ function nf_symbol(self, level)
         end
         return maps[level .. '_' .. kind] or maps[level]
     elseif kind == "ld" or kind == "sh" then
-        -- we need add `-g` to linker to generate debug symbol file for mingw-gcc, llvm-clang
-        if self:plat() == "windows" and level == "debug" then
+        -- we need add `-g` to linker to generate pdb symbol file for mingw-gcc, llvm-clang on windows
+        local plat = self:plat()
+        if level == "debug" and (plat == "windows" or (plat == "mingw" and is_host("windows"))) then
             return "-g"
         end
     end
