@@ -90,7 +90,6 @@ end
 
 -- make the symbol flag
 function nf_symbol(self, level)
-    -- only for source kind
     local kind = self:kind()
     if language.sourcekinds()[kind] then
         local maps = _g.symbol_maps
@@ -105,6 +104,11 @@ function nf_symbol(self, level)
             _g.symbol_maps = maps
         end
         return maps[level .. '_' .. kind] or maps[level]
+    elseif kind == "ld" or kind == "sh" then
+        -- we need add `-g` to linker to generate debug symbol file for mingw-gcc, llvm-clang
+        if self:plat() == "windows" and level == "debug" then
+            return "-g"
+        end
     end
 end
 
