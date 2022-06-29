@@ -615,7 +615,7 @@ The user list is available [here](https://xmake.io/#/about/who_is_using_xmake)
 
 If you are using xmake, you are welcome to submit your information to the above list through a PR, so that others can know how many users are using it.
 
-Ihis also let users to use xmake more confidently and give us motivation to continue to maintain it.
+This also let users use xmake more confidently and give us motivation to continue to maintain it.
 This will help the xmake project and it's community to grow stronger.
 
 ## Contacts
