@@ -61,7 +61,10 @@ static tb_size_t xm_io_stdfile_isatty(tb_size_t type)
     case XM_IO_FILE_TYPE_STDERR: console_handle = GetStdHandle(STD_ERROR_HANDLE); break;
     }
     answer = GetConsoleMode(console_handle, &mode);
-    if (!answer)
+    /* we cannot call is_cygpty for stdin, because it will cause io.readable is always true
+     * https://github.com/xmake-io/xmake/issues/2504#issuecomment-1170130756
+     */
+    if (!answer && type != XM_IO_FILE_TYPE_STDIN)
         answer = is_cygpty(console_handle);
 #else
     switch (type)
@@ -130,4 +133,5 @@ tb_int_t xm_io_stdfile(lua_State* lua)
     if (file) return 1;
     else xm_io_return_error(lua, "invalid stdfile type!");
 }
+
 
