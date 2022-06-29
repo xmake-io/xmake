@@ -22,6 +22,7 @@
 import("core.project.project")
 import("core.tool.compiler")
 import("core.base.semver")
+import("core.base.hashset")
 import("core.project.rule")
 import("lib.detect.find_tool")
 import("private.utils.batchcmds")
@@ -545,6 +546,38 @@ function _add_target_optimization(cmakelists, target)
     end
 end
 
+-- add target symbols
+function _add_target_symbols(cmakelists, target)
+    local symbols = target:get("symbols")
+    if symbols then
+        local flags_gcc = {}
+        local flags_msvc = {}
+        local levels = hashset.from(table.wrap(symbols))
+        if levels:has("debug") then
+            table.insert(flags_gcc, "-g")
+            if levels:has("edit") then
+                table.insert(flags_msvc, "-ZI")
+            elseif levels:has("embed") then
+                table.insert(flags_msvc, "-Z7")
+            else
+                table.insert(flags_msvc, "-Zi")
+            end
+        end
+        if levels:has("hidden") then
+            table.insert(flags_gcc, "-fvisibility=hidden")
+        end
+        cmakelists:print("if(MSVC)")
+        if #flags_msvc > 0 then
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), table.concat(flags_msvc, " "))
+        end
+        cmakelists:print("else()")
+        if #flags_gcc > 0 then
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), table.concat(flags_gcc, " "))
+        end
+        cmakelists:print("endif()")
+    end
+end
+
 -- add target vs runtime
 --
 -- https://github.com/xmake-io/xmake/issues/1661#issuecomment-927979489
@@ -869,6 +902,9 @@ function _add_target(cmakelists, target, outputdir)
 
     -- add target optimization
     _add_target_optimization(cmakelists, target)
+
+    -- add target symbols
+    _add_target_symbols(cmakelists, target)
 
     -- add vs runtime for msvc
     _add_target_vs_runtime(cmakelists, target)
