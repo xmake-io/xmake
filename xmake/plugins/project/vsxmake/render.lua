@@ -41,18 +41,16 @@ function _cfill(opt, params)
         local value1 = tmp[2]
         local value2 = ""
         local len = false
-   
+
         if #tmp == 3 then
             value2 = tmp[3]
         end
 
         local ops = { "==", "~=", "<=", ">=", "<", ">", "=" }
-        local op = nil
-        local k = nil
-        local v = nil
+        local op, k, v
 
         for _, o in ipairs(ops) do
-            local i, j = cond:find(o)
+            local i, j = cond:find(o, 1, true)
             if i ~= nil then
                 op = o
                 k = cond:sub(1, i - 1):trim()
@@ -61,9 +59,7 @@ function _cfill(opt, params)
             end
         end
 
-        assert(op)
-        assert(k)
-        assert(v)
+        assert(op and k and v)
         
         if k:startswith("#") then
             k = k:sub(2)
@@ -72,10 +68,8 @@ function _cfill(opt, params)
 
         local m = k:split(".", { plain = true })
         local p
-
         local old_target = opt.paramsprovider() or ""
-
-        for i,item in ipairs(m) do
+        for i, item in ipairs(m) do
             if i == 1 then
                 p = opt.paramsprovider(item, params)
                 if item == "target" then
