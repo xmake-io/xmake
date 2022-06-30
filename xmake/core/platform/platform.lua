@@ -254,6 +254,7 @@ function _instance:check()
             idx = idx + 1
             table.insert(toolchains_valid, toolchain:name())
         end
+        standalone = true
     end
     if #toolchains == 0 then
         return false, "toolchains not found!"
