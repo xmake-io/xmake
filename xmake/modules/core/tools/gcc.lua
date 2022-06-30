@@ -396,6 +396,11 @@ function _has_color_diagnostics(self)
     return colors_diagnostics
 end
 
+-- get preprocess file path
+function _get_cppfile(sourcefile, objectfile)
+    return path.join(path.directory(objectfile), "__cpp_" .. path.basename(objectfile) .. path.extension(sourcefile))
+end
+
 -- do preprocess
 function _preprocess(program, argv, opt)
 
@@ -486,7 +491,7 @@ function _preprocess(program, argv, opt)
     end
 
     -- do preprocess
-    local cppfile = path.join(path.directory(objectfile), "__cpp_" .. path.basename(objectfile) .. path.extension(sourcefile))
+    local cppfile = _get_cppfile(sourcefile, objectfile)
     local cppfiledir = path.directory(cppfile)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
@@ -635,6 +640,10 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
 
                 -- try removing the old object file for forcing to rebuild this source file
                 os.tryrm(objectfile)
+
+                -- remove preprocess file
+                local cppfile = _get_cppfile(sourcefile, objectfile)
+                os.tryrm(cppfile)
 
                 -- parse and strip errors
                 local lines = errors and tostring(errors):split('\n', {plain = true}) or {}

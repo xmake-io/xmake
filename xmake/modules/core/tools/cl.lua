@@ -397,6 +397,11 @@ function _is_in_vstudio()
     return is_in_vstudio
 end
 
+-- get preprocess file path
+function _get_cppfile(sourcefile, objectfile)
+    return path.join(path.directory(objectfile), "__cpp_" .. path.basename(objectfile) .. path.extension(sourcefile))
+end
+
 -- do preprocess
 function _preprocess(program, argv, opt)
 
@@ -463,7 +468,7 @@ function _preprocess(program, argv, opt)
     end
 
     -- do preprocess
-    local cppfile = path.join(path.directory(objectfile), "__cpp_" .. path.basename(objectfile) .. path.extension(sourcefile))
+    local cppfile = _get_cppfile(sourcefile, objectfile)
     local cppfiledir = path.directory(cppfile)
     if not os.isdir(cppfiledir) then
         os.mkdir(cppfiledir)
@@ -585,6 +590,10 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
                 -- try removing the old object file for forcing to rebuild this source file
                 os.tryrm(objectfile)
+
+                -- remove preprocess file
+                local cppfile = _get_cppfile(sourcefile, objectfile)
+                os.tryrm(cppfile)
 
                 -- use cl/stdout as errors first from vstool.iorunv()
                 if type(errors) == "table" then
