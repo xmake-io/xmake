@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.tty")
 import("core.base.bytes")
 import("core.base.base64")
 import("core.base.socket")
@@ -491,7 +492,13 @@ end
 
 -- read stdin data
 function remote_build_client:_read_stdin(stream, opt)
+    local term = tty.term()
+    if term == "msys2" or term == "cygwin" then
+        wprint("we cannot capture stdin on %s, please pass `-y` option to xmake command or use cmd/powershell terminal!", term)
+    end
     while not opt.stop do
+        -- FIXME, io.readable is invalid on msys2/cygwin, it always return false
+        -- @see https://github.com/xmake-io/xmake/issues/2504
         if io.readable() then
             local line = io.read("L") -- with crlf
             if line and #line > 0 then
@@ -511,7 +518,7 @@ function remote_build_client:_read_stdin(stream, opt)
         end
     end
     -- say bye
-    if stream:send_msg(message.new_end({token = self:token()})) then
+    if stream:send_msg(message.new_end(self:session_id(), {token = self:token()})) then
         stream:flush()
     end
 end
