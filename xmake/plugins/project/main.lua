@@ -82,6 +82,9 @@ end
 -- main
 function main()
 
+    -- in project generator?
+    os.setenv("XMAKE_IN_PROJECT_GENERATOR", "true")
+
     -- config it first
     task.run("config")
 
@@ -90,4 +93,5 @@ function main()
 
     -- trace
     cprint("${color.success}create ok!")
+    os.setenv("XMAKE_IN_PROJECT_GENERATOR", nil)
 end

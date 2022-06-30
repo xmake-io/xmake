@@ -73,6 +73,11 @@ end
 --
 function main(target, sourcebatch)
 
+    -- we cannot generate unity build files in project generator
+    if os.getenv("XMAKE_IN_PROJECT_GENERATOR") then
+        return
+    end
+
     -- get unit batch sources
     local extraconf = target:extraconf("rules", sourcebatch.sourcekind == "cxx" and "c++.unity_build" or "c.unity_build")
     local batchsize = extraconf and extraconf.batchsize
