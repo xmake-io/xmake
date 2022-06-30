@@ -1,2 +1,2 @@
-		{#target_id#}.#mode#|#arch#.ActiveCfg = #mode#|#vsarch#@default=true;
+		{#target_id#}.#mode#|#arch#.ActiveCfg = #mode#|#vsarch#@default==true;
 		{#target_id#}.#mode#|#arch#.Build.0 = #mode#|#vsarch#@

@@ -57,7 +57,7 @@ function _buildparams(info, target, default)
         local i = info
         local r = info[match]
         if target then
-            opt = table.join(target, opt)
+            opt = table.unique(table.join(target, opt))
         end
         for _, k in ipairs(opt) do
             local v = (i._targets or {})[k]
@@ -149,11 +149,25 @@ function _buildparams(info, target, default)
         return r
     end
 
-    return function(match, opt)
-        if type(match) == "table" then
-            return listconfig(match)
+    return function(...)
+        local args = {...}
+        if #args == 0 then
+            return target
         end
-        return getprop(match, opt)
+
+        if type(args[1]) == "string" and #args == 1 then
+            target = args[1]
+            if target == "" then
+                target = nil
+            end
+            return
+        end
+
+        if type(args[1]) == "table" then
+            return listconfig(args[1])
+        end
+
+        return getprop(args[1], args[2])
     end
 end
 
