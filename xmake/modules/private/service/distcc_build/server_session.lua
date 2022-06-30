@@ -189,7 +189,7 @@ end
 
 -- get work directory
 function server_session:workdir()
-    return path.join(self:server():workdir(), "sessons", self:id())
+    return path.join(self:server():workdir(), "sessions", self:id())
 end
 
 -- get build directory

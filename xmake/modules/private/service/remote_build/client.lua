@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.tty")
 import("core.base.bytes")
 import("core.base.base64")
 import("core.base.socket")
@@ -274,7 +275,10 @@ function remote_build_client:runcmd(program, argv)
     local stream = socket_stream(sock)
     if stream:send_msg(message.new_runcmd(session_id, program, argv, {token = self:token()})) and stream:flush() then
         local stdin_opt = {stop = false}
-        scheduler.co_start(self._read_stdin, self, stream, stdin_opt)
+        local group_name = "remote_build/runcmd"
+        scheduler.co_group_begin(group_name, function (co_group)
+            scheduler.co_start(self._read_stdin, self, stream, stdin_opt)
+        end)
         while true do
             local msg = stream:recv_msg()
             if msg then
@@ -291,6 +295,9 @@ function remote_build_client:runcmd(program, argv)
                         errors = string.format("recv output data(%d) failed!", msg:body().size)
                         break
                     end
+                elseif msg:is_end() then
+                    ok = true
+                    break
                 else
                     if msg:success() then
                         ok = true
@@ -304,6 +311,7 @@ function remote_build_client:runcmd(program, argv)
             end
         end
         stdin_opt.stop = true
+        scheduler.co_group_wait(group_name)
     end
     if #leftstr > 0 then
         cprint(leftstr)
@@ -484,7 +492,13 @@ end
 
 -- read stdin data
 function remote_build_client:_read_stdin(stream, opt)
+    local term = tty.term()
+    if term == "msys2" or term == "cygwin" then
+        wprint("we cannot capture stdin on %s, please pass `-y` option to xmake command or use cmd/powershell terminal!", term)
+    end
     while not opt.stop do
+        -- FIXME, io.readable is invalid on msys2/cygwin, it always return false
+        -- @see https://github.com/xmake-io/xmake/issues/2504
         if io.readable() then
             local line = io.read("L") -- with crlf
             if line and #line > 0 then
@@ -503,8 +517,11 @@ function remote_build_client:_read_stdin(stream, opt)
             os.sleep(500)
         end
     end
+    -- say bye
+    if stream:send_msg(message.new_end(self:session_id(), {token = self:token()})) then
+        stream:flush()
+    end
 end
-
 
 function remote_build_client:__tostring()
     return "<remote_build_client>"
