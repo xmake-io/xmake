@@ -23,10 +23,12 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.target")
 import("lib.detect.find_tool")
+import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
 -- find package
 function _find_package(dpkg, name, opt)
     local result = nil
+    local pkgconfig_files = {}
     local listinfo = try {function () return os.iorunv(dpkg.program, {"--listfiles", name}) end}
     if listinfo then
         for _, line in ipairs(listinfo:split('\n', {plain = true})) do
@@ -37,6 +39,11 @@ function _find_package(dpkg, name, opt)
             if pos then
                 -- we need not add includedirs, gcc/clang will use /usr/ as default sysroot
                 result = result or {}
+            end
+
+            -- get pc files
+            if line:find("/pkgconfig/", 1, true) and line:endswith(".pc") then
+                table.insert(pkgconfig_files, line)
             end
 
             -- get linkdirs and links
@@ -50,6 +57,37 @@ function _find_package(dpkg, name, opt)
                 table.insert(result.libfiles, path.join(path.directory(line), path.filename(line)))
             end
         end
+    end
+
+    -- we iterate over each pkgconfig file to extract the required data
+    local foundpc = false
+    local pcresult = {includedirs = {}, linkdirs = {}, links = {}}
+    for _, pkgconfig_file in ipairs(pkgconfig_files) do
+        local pkgconfig_dir = path.directory(pkgconfig_file)
+        local pkgconfig_name = path.basename(pkgconfig_file)
+        local pcinfo = find_package_from_pkgconfig(pkgconfig_name, {configdirs = pkgconfig_dir, linkdirs = linkdirs})
+
+        -- the pkgconfig file has been parse successfully
+        if pcinfo then
+            for _, includedir in ipairs(pcinfo.includedirs) do
+                table.insert(pcresult.includedirs, includedir)
+            end
+            for _, linkdir in ipairs(pcinfo.linkdirs) do
+                table.insert(pcresult.linkdirs, linkdir)
+            end
+            for _, link in ipairs(pcinfo.links) do
+                table.insert(pcresult.links, link)
+            end
+            -- version should be the same if a pacman package contains multiples .pc
+            pcresult.version = pcinfo.version
+            foundpc = true
+        end
+    end
+    if foundpc == true then
+        pcresult.includedirs = table.unique(pcresult.includedirs)
+        pcresult.linkdirs = table.unique(pcresult.linkdirs)
+        pcresult.links = table.reverse_unique(pcresult.links)
+        result = pcresult
     end
 
     -- meta/alias package? e.g. libboost-dev -> libboost1.74-dev
