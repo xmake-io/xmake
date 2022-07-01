@@ -1705,6 +1705,11 @@ function _instance:_generate_build_configs(configs)
             end
         end
     end
+    if configs and (configs.ldflags or configs.shflags) then
+        configs.force = {ldflags = configs.ldflags, shflags = configs.shflags}
+        configs.ldflags = nil
+        configs.shflags = nil
+    end
     return configs
 end
 
