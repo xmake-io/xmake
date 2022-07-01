@@ -49,6 +49,8 @@ function policy.policies()
             ["build.ccache"]                     = {description = "Enable C/C++ build cache.", type = "boolean"},
             -- Enable build warning output, it's disabled by default and we need `xmake -w/-vD` to look at it.
             ["build.warning"]                    = {description = "Enable build warning output.", type = "boolean"},
+            -- Enable LTO linker-time optimization for c/c++ building.
+            ["build.optimization.lto"]           = {description = "Enable LTO linker-time optimization for c/c++ building.", type = "boolean"},
             -- preprocessor configuration for ccache/distcc, we can disable linemarkers to speed up preprocess
             ["preprocessor.linemarkers"]         = {description = "Enable linemarkers for preprocessor.", default = true, type = "boolean"},
             -- preprocessor configuration for ccache/distcc, we can disable it to avoid cache object file with __DATE__, __TIME__

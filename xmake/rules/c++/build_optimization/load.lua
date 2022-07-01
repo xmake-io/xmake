@@ -18,5 +18,46 @@
 -- @file        load.lua
 --
 
+-- imports
+import("core.tool.compiler")
+
+-- add lto optimization
+function _add_lto_optimization(target, sourcekind)
+
+    -- add cflags
+    local _, cc = target:tool(sourcekind)
+    local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
+    if cc == "cl" then
+        -- TODO
+    elseif cc == "clang" or cc == "clangxx" then
+        target:add(cflag, "-flto=thin")
+    elseif cc == "gcc" or cc == "gxx" then
+        target:add(cflag, "-flto")
+    end
+
+    -- add ldflags and shflags
+    local _, ld = target:tool("ld")
+    if ld == "cl" then
+        -- TODO
+    elseif ld == "clang" or ld == "clangxx" then
+        target:add("ldflags", "-flto=thin")
+        target:add("shflags", "-flto=thin")
+    elseif ld == "gcc" or ld == "gxx" then
+        target:add("ldflags", "-flto")
+        target:add("shflags", "-flto")
+        -- to use the link-time optimizer, -flto and optimization options should be specified at compile time and during the final link.
+        -- @see https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
+        local optimize = target:get("optimize")
+        if optimize then
+            local optimize_flags = compiler.map_flags(sourcekind == "cc" and "c" or "cxx", "optimize", optimize)
+            target:add("ldflags", optimize_flags)
+            target:add("shflags", optimize_flags)
+        end
+    end
+end
+
 function main(target, sourcekind)
+    if target:policy("build.optimization.lto") then
+        _add_lto_optimization(target, sourcekind)
+    end
 end
