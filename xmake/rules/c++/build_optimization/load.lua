@@ -20,6 +20,7 @@
 
 -- imports
 import("core.tool.compiler")
+import("core.project.project")
 
 -- add lto optimization
 function _add_lto_optimization(target, sourcekind)
@@ -57,7 +58,8 @@ function _add_lto_optimization(target, sourcekind)
 end
 
 function main(target, sourcekind)
-    if target:policy("build.optimization.lto") then
+    if target:policy("build.optimization.lto") or
+        project.policy("build.optimization.lto") then
         _add_lto_optimization(target, sourcekind)
     end
 end
