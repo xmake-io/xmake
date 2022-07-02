@@ -94,6 +94,9 @@ function _get_configs(package, configs)
             end
         end
     end
+    if package:config("lto") then
+        table.insert(configs, "--policies=build.optimization.lto")
+    end
     if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
         table.insert(cxflags, "-fPIC")
     end
