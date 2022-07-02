@@ -59,8 +59,13 @@ function _get_configs(package, configs, opt)
     table.insert(configs, "-Dbuildtype=" .. (package:debug() and "debug" or "release"))
 
     -- add -fpic
-    if package:is_plat("linux") and package:config("pic") then
+    if package:is_plat("linux") and package:config("pic") ~= false then
         table.insert(configs, "-Db_staticpic=true")
+    end
+
+    -- add lto
+    if package:config("lto") then
+        table.insert(configs, "-Db_lto=true")
     end
 
     -- add vs_runtime flags
