@@ -1709,7 +1709,7 @@ function _instance:_generate_lto_configs(sourcekind)
 
     -- add ldflags and shflags
     local _, ld = self:tool("ld")
-    if ld == "cl" then
+    if ld == "link" then
         configs.ldflags = "-LTCG"
         configs.shflags = "-LTCG"
     elseif ld == "clang" or ld == "clangxx" then

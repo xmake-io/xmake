@@ -38,7 +38,7 @@ function _add_lto_optimization(target, sourcekind)
 
     -- add ldflags and shflags
     local _, ld = target:tool("ld")
-    if ld == "cl" then
+    if ld == "link" then
         target:add("ldflags", "-LTCG")
         target:add("shflags", "-LTCG")
     elseif ld == "clang" or ld == "clangxx" then
