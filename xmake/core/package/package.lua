@@ -1690,8 +1690,41 @@ function _instance:resourcedir(name)
     end
 end
 
+-- generate lto configs
+function _instance:_generate_lto_configs(sourcekind)
+
+    -- add cflags
+    local configs = {}
+    if sourcekind then
+        local _, cc = self:tool(sourcekind)
+        local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
+        if cc == "cl" then
+            configs[cflag] = "-GL"
+        elseif cc == "clang" or cc == "clangxx" then
+            configs[cflag] = "-flto=thin"
+        elseif cc == "gcc" or cc == "gxx" then
+            configs[cflag] = "-flto"
+        end
+    end
+
+    -- add ldflags and shflags
+    local _, ld = self:tool("ld")
+    if ld == "link" then
+        configs.ldflags = "-LTCG"
+        configs.shflags = "-LTCG"
+    elseif ld == "clang" or ld == "clangxx" then
+        configs.ldflags = "-flto=thin"
+        configs.shflags = "-flto=thin"
+    elseif ld == "gcc" or ld == "gxx" then
+        configs.ldflags = "-flto"
+        configs.shflags = "-flto"
+    end
+    return configs
+end
+
 -- generate building configs for has_xxx/check_xxx
-function _instance:_generate_build_configs(configs)
+function _instance:_generate_build_configs(configs, opt)
+    opt = opt or {}
     configs = table.join(self:fetch_linkdeps(), configs)
     if self:is_plat("windows") then
         local ld = self:build_getenv("ld")
@@ -1702,6 +1735,15 @@ function _instance:_generate_build_configs(configs)
             if vs_runtime:startswith("MT") then
                 configs.ldflags = table.wrap(configs.ldflags)
                 table.insert(configs.ldflags, "-nodefaultlib:msvcrt.lib")
+            end
+        end
+    end
+    if self:config("lto") then
+        local configs_lto = self:_generate_lto_configs(opt.sourcekind or "cxx")
+        if configs_lto then
+            for k, v in pairs(configs_lto) do
+                configs[k] = table.wrap(configs[k] or {})
+                table.join2(configs[k], v)
             end
         end
     end
@@ -1723,7 +1765,7 @@ end
 function _instance:has_cfuncs(funcs, opt)
     opt = opt or {}
     opt.target = self
-    opt.configs = self:_generate_build_configs(opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cc"})
     return sandbox_module.import("lib.detect.has_cfuncs", {anonymous = true})(funcs, opt)
 end
 
@@ -1737,7 +1779,7 @@ end
 function _instance:has_cxxfuncs(funcs, opt)
     opt = opt or {}
     opt.target = self
-    opt.configs = self:_generate_build_configs(opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cxx"})
     return sandbox_module.import("lib.detect.has_cxxfuncs", {anonymous = true})(funcs, opt)
 end
 
@@ -1751,7 +1793,7 @@ end
 function _instance:has_ctypes(types, opt)
     opt = opt or {}
     opt.target = self
-    opt.configs = self:_generate_build_configs(opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cc"})
     return sandbox_module.import("lib.detect.has_ctypes", {anonymous = true})(types, opt)
 end
 
@@ -1765,7 +1807,7 @@ end
 function _instance:has_cxxtypes(types, opt)
     opt = opt or {}
     opt.target = self
-    opt.configs = self:_generate_build_configs(opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cxx"})
     return sandbox_module.import("lib.detect.has_cxxtypes", {anonymous = true})(types, opt)
 end
 
@@ -1779,7 +1821,7 @@ end
 function _instance:has_cincludes(includes, opt)
     opt = opt or {}
     opt.target = self
-    opt.configs = self:_generate_build_configs(opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cc"})
     return sandbox_module.import("lib.detect.has_cincludes", {anonymous = true})(includes, opt)
 end
 
@@ -1793,7 +1835,7 @@ end
 function _instance:has_cxxincludes(includes, opt)
     opt = opt or {}
     opt.target = self
-    opt.configs = self:_generate_build_configs(opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cxx"})
     return sandbox_module.import("lib.detect.has_cxxincludes", {anonymous = true})(includes, opt)
 end
 
@@ -1807,7 +1849,7 @@ end
 function _instance:check_csnippets(snippets, opt)
     opt = opt or {}
     opt.target = self
-    opt.configs = self:_generate_build_configs(opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cc"})
     return sandbox_module.import("lib.detect.check_csnippets", {anonymous = true})(snippets, opt)
 end
 
@@ -1821,7 +1863,7 @@ end
 function _instance:check_cxxsnippets(snippets, opt)
     opt = opt or {}
     opt.target = self
-    opt.configs = self:_generate_build_configs(opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cxx"})
     return sandbox_module.import("lib.detect.check_cxxsnippets", {anonymous = true})(snippets, opt)
 end
 

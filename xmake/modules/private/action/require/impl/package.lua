@@ -310,6 +310,9 @@ function _add_package_configurations(package)
     if package:extraconf("configs", "pic", "default") == nil then
         package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
     end
+    if package:extraconf("configs", "lto", "default") == nil then
+        package:add("configs", "lto", {builtin = true, description = "Enable the link-time build optimization.", type = "boolean"})
+    end
     if package:extraconf("configs", "vs_runtime", "default") == nil then
         package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", values = {"MT", "MTd", "MD", "MDd"}})
     end
@@ -474,6 +477,7 @@ function _init_requireinfo(requireinfo, package, opt)
             if project.policy("package.inherit_external_configs") then
                 requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or get_config("vs_runtime")
             end
+            requireinfo.configs.lto = requireinfo.configs.lto or project.policy("build.optimization.lto")
         end
     end
 end

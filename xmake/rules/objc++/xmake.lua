@@ -21,7 +21,7 @@
 -- define rule: objc.build
 rule("objc.build")
     set_sourcekinds("mm")
-    add_deps("c.build.pcheader")
+    add_deps("c.build.pcheader", "c.build.optimization")
     after_load(function (target)
         -- deprecated, we need only use `add_mflags("-fno-objc-arc")` to override it
         if target:values("objc.build.arc") == false then
@@ -36,7 +36,7 @@ rule("objc.build")
 -- define rule: objc++.build
 rule("objc++.build")
     set_sourcekinds("mxx")
-    add_deps("c++.build.pcheader")
+    add_deps("c++.build.pcheader", "c++.build.optimization")
     after_load(function (target)
         -- deprecated, we need only use `add_mxxflags("-fno-objc-arc")` to override it
         if target:values("objc++.build.arc") == false then

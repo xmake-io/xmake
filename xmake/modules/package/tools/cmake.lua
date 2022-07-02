@@ -137,6 +137,9 @@ function _get_cflags(package, opt)
     if opt.cxflags then
         table.join2(result, opt.cxflags)
     end
+    if package:config("lto") then
+        table.join2(result, package:_generate_lto_configs("cc").cflags)
+    end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
     if #result > 0 then
         return os.args(result)
@@ -161,6 +164,9 @@ function _get_cxxflags(package, opt)
     end
     if opt.cxflags then
         table.join2(result, opt.cxflags)
+    end
+    if package:config("lto") then
+        table.join2(result, package:_generate_lto_configs("cxx").cxxflags)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
     if #result > 0 then
@@ -197,6 +203,9 @@ function _get_ldflags(package, opt)
         table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "syslink", package:build_getenv("syslinks")))
         table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
     end
+    if package:config("lto") then
+        table.join2(result, package:_generate_lto_configs().ldflags)
+    end
     table.join2(result, _get_ldflags_from_packagedeps(package, opt))
     if opt.ldflags then
         table.join2(result, opt.ldflags)
@@ -215,6 +224,9 @@ function _get_shflags(package, opt)
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "link", package:build_getenv("links")))
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "syslink", package:build_getenv("syslinks")))
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
+    end
+    if package:config("lto") then
+        table.join2(result, package:_generate_lto_configs().shflags)
     end
     table.join2(result, _get_ldflags_from_packagedeps(package, opt))
     if opt.shflags then
