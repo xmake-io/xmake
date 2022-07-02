@@ -155,12 +155,14 @@ end
 function buildenvs(package, opt)
     opt = opt or {}
     local envs = {}
-    local cppflags = {}
+    local cross = false
+    local cflags, cxxflags, cppflags, asflags, ldflags, shflags, arflags
     if package:is_plat(os.subhost()) and not package:config("toolchains") then
-        local cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
-        local cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
-        local asflags  = table.copy(table.wrap(package:config("asflags")))
-        local ldflags  = table.copy(table.wrap(package:config("ldflags")))
+        cppflags = {}
+        cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
+        cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
+        asflags  = table.copy(table.wrap(package:config("asflags")))
+        ldflags  = table.copy(table.wrap(package:config("ldflags")))
         if package:is_plat("linux") and package:is_arch("i386") then
             table.insert(cflags,   "-m32")
             table.insert(cxxflags, "-m32")
@@ -184,12 +186,14 @@ function buildenvs(package, opt)
         envs.ASFLAGS   = table.concat(asflags, ' ')
         envs.LDFLAGS   = table.concat(ldflags, ' ')
     else
-        local cflags         = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
-        local cxxflags       = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
-        local asflags        = table.copy(table.wrap(package:build_getenv("asflags")))
-        local ldflags        = table.copy(table.wrap(package:build_getenv("ldflags")))
-        local shflags        = table.copy(table.wrap(package:build_getenv("shflags")))
-        local arflags        = table.copy(table.wrap(package:build_getenv("arflags")))
+        cross = true
+        cppflags = {}
+        cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
+        cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
+        asflags  = table.copy(table.wrap(package:build_getenv("asflags")))
+        ldflags  = table.copy(table.wrap(package:build_getenv("ldflags")))
+        shflags  = table.copy(table.wrap(package:build_getenv("shflags")))
+        arflags  = table.copy(table.wrap(package:build_getenv("arflags")))
         local defines        = package:build_getenv("defines")
         local includedirs    = package:build_getenv("includedirs")
         local sysincludedirs = package:build_getenv("sysincludedirs")
@@ -231,13 +235,32 @@ function buildenvs(package, opt)
         envs.LDSHARED  = package:build_getenv("sh")
         envs.CPP       = package:build_getenv("cpp")
         envs.RANLIB    = package:build_getenv("ranlib")
-        envs.CFLAGS    = table.concat(cflags, ' ')
-        envs.CXXFLAGS  = table.concat(cxxflags, ' ')
-        envs.CPPFLAGS  = table.concat(cppflags, ' ')
-        envs.ASFLAGS   = table.concat(asflags, ' ')
+    end
+    if package:is_plat("linux") and package:config("pic") ~= false then
+        table.insert(cflags, "-fPIC")
+        table.insert(cxxflags, "-fPIC")
+    end
+    if package:config("lto") then
+        table.join2(cflags, package:_generate_lto_configs("cc").cflags)
+        table.join2(cxxflags, package:_generate_lto_configs("cxx").cxxflags)
+        table.join2(ldflags, package:_generate_lto_configs().ldflags)
+    end
+    envs.CFLAGS    = table.concat(cflags, ' ')
+    envs.CXXFLAGS  = table.concat(cxxflags, ' ')
+    envs.CPPFLAGS  = table.concat(cppflags, ' ')
+    envs.ASFLAGS   = table.concat(asflags, ' ')
+    if arflags then
         envs.ARFLAGS   = table.concat(arflags, ' ')
+    end
+    if ldflags then
         envs.LDFLAGS   = table.concat(ldflags, ' ')
+    end
+    if shflags then
         envs.SHFLAGS   = table.concat(shflags, ' ')
+    end
+
+    -- cross-compilation? pass the full build environments
+    if cross then
         if package:is_plat("mingw") then
             -- fix linker error, @see https://github.com/xmake-io/xmake/issues/574
             -- libtool: line 1855: lib: command not found
