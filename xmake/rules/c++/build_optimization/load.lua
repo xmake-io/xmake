@@ -29,7 +29,7 @@ function _add_lto_optimization(target, sourcekind)
     local _, cc = target:tool(sourcekind)
     local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
     if cc == "cl" then
-        -- TODO
+        target:add(cflag, "-GL")
     elseif cc == "clang" or cc == "clangxx" then
         target:add(cflag, "-flto=thin")
     elseif cc == "gcc" or cc == "gxx" then
@@ -39,7 +39,8 @@ function _add_lto_optimization(target, sourcekind)
     -- add ldflags and shflags
     local _, ld = target:tool("ld")
     if ld == "cl" then
-        -- TODO
+        target:add("ldflags", "-LTCG")
+        target:add("shflags", "-LTCG")
     elseif ld == "clang" or ld == "clangxx" then
         target:add("ldflags", "-flto=thin")
         target:add("shflags", "-flto=thin")
