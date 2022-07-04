@@ -2091,6 +2091,7 @@ function target.apis()
         ,   "target.set_runtimes"
         ,   "target.set_languages"
         ,   "target.set_toolchains"
+        ,   "target.set_runargs"
             -- target.add_xxx
         ,   "target.add_deps"
         ,   "target.add_rules"

@@ -53,11 +53,14 @@ function _do_run_target(target)
         os.setenv(name, table.unpack(table.wrap(value)))
     end
 
+    -- get run arguments
+    local args = option.get("arguments") or target:get("runargs")
+
     -- debugging?
     if option.get("debug") then
-        debugger.run(targetfile, option.get("arguments"), {curdir = rundir})
+        debugger.run(targetfile, args, {curdir = rundir})
     else
-        os.execv(targetfile, option.get("arguments"), {curdir = rundir, detach = option.get("detach")})
+        os.execv(targetfile, args, {curdir = rundir, detach = option.get("detach")})
     end
 end
 
@@ -145,7 +148,8 @@ function _check_targets(targetname, group_pattern)
     -- get targets
     local targets = {}
     if targetname then
-        table.insert(targets, project.target(targetname))
+        local target = assert(project.target(targetname), "%s not found!", targetname)
+        table.insert(targets, target)
     else
         for _, target in ipairs(project.ordertargets()) do
             if target:is_binary() then
