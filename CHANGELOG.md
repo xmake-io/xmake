@@ -6,6 +6,7 @@
 
 * [#2474](https://github.com/xmake-io/xmake/issues/2474): Add icx and dpcpp toolchains
 * [#2523](https://github.com/xmake-io/xmake/issues/2523): Improve LTO support
+* [#2527](https://github.com/xmake-io/xmake/issues/2527): Add set_runargs api
 
 ### Changes
 
@@ -1336,6 +1337,7 @@
 
 * [#2474](https://github.com/xmake-io/xmake/issues/2474): 添加 icx 和 dpcpp 工具链
 * [#2523](https://github.com/xmake-io/xmake/issues/2523): 改进对 LTO 的支持
+* [#2527](https://github.com/xmake-io/xmake/issues/2527): 添加 set_runargs 接口
 
 ### 改进
 
