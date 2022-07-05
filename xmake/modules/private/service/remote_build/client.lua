@@ -214,7 +214,7 @@ function remote_build_client:sync()
         end
 
         -- sync ok
-        local msg = stream:recv_msg()
+        local msg = stream:recv_msg({timeout = -1})
         if msg and msg:success() then
             vprint(msg:body())
             ok = true
@@ -242,7 +242,7 @@ function remote_build_client:clean()
     print("%s: clean files in %s:%d ..", self, addr, port)
     local stream = socket_stream(sock, {timeout = self:timeout()})
     if stream:send_msg(message.new_clean(session_id, {token = self:token()})) and stream:flush() then
-        local msg = stream:recv_msg()
+        local msg = stream:recv_msg({timeout = -1})
         if msg then
             vprint(msg:body())
             if msg:success() then
@@ -280,7 +280,7 @@ function remote_build_client:runcmd(program, argv)
             scheduler.co_start(self._read_stdin, self, stream, stdin_opt)
         end)
         while true do
-            local msg = stream:recv_msg()
+            local msg = stream:recv_msg({timeout = -1})
             if msg then
                 if msg:is_data() then
                     local data = stream:recv(buff, msg:body().size)
@@ -412,7 +412,7 @@ function remote_build_client:_diff_files(stream)
     local result, errors
     cprint("Comparing ${bright}%d${clear} files ..", filecount)
     if stream:send_msg(message.new_diff(session_id, manifest, {token = self:token()}), {compress = true}) and stream:flush() then
-        local msg = stream:recv_msg()
+        local msg = stream:recv_msg({timeout = -1})
         if msg and msg:success() then
             result = msg:body().manifest
             if result then

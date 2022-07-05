@@ -58,12 +58,13 @@ function stream:timeout()
 end
 
 -- flush data
-function stream:flush()
+function stream:flush(opt)
+    opt = opt or {}
     local cache = self._WCACHE
     local cache_size = self._WCACHE_SIZE
     if cache_size > 0 then
         local sock = self._SOCK
-        local real = sock:send(cache, {block = true, last = cache_size})
+        local real = sock:send(cache, {block = true, last = cache_size, timeout = opt.timeout or self:timeout()})
         if real > 0 then
             self._WCACHE_SIZE = 0
             return true
@@ -74,7 +75,8 @@ function stream:flush()
 end
 
 -- send the given bytes (small data)
-function stream:send(data, start, last)
+function stream:send(data, start, last, opt)
+    opt = opt or {}
     start = start or 1
     last = last or data:size()
     local size = last + 1 - start
@@ -100,8 +102,7 @@ function stream:send(data, start, last)
 
     -- send data to socket
     local sock = self._SOCK
-    local real = sock:send(cache, {block = true, timeout = self:timeout()})
-    print("send", real)
+    local real = sock:send(cache, {block = true, timeout = opt.timeout or self:timeout()})
     if real > 0 then
         -- copy left data to cache
         assert(size <= cache_maxn)
@@ -128,11 +129,11 @@ function stream:send_object(obj, opt)
 end
 
 -- send data header
-function stream:send_header(size, flags)
+function stream:send_header(size, flags, opt)
     local buff = self._BUFF
     buff:u32be_set(1, size)
     buff:u8_set(5, flags or 0)
-    return self:send(buff, 1, 5)
+    return self:send(buff, 1, 5, opt)
 end
 
 -- send data
@@ -145,13 +146,13 @@ function stream:send_data(data, opt)
     end
     local size = data:size()
     assert(size < STREAM_DATA_MAXN, "too large data size(%d)", size)
-    if self:send_header(size, flags) then
+    if self:send_header(size, flags, opt) then
         local send = 0
         local cache = self._WCACHE
         local cache_maxn = cache:size()
         while send < size do
             local left = math.min(cache_maxn, size - send)
-            if self:send(data, send + 1, send + left) then
+            if self:send(data, send + 1, send + left, opt) then
                 send = send + left
             else
                 break
@@ -170,7 +171,7 @@ end
 
 -- send empty data
 function stream:send_emptydata(opt)
-    return self:send_header(0)
+    return self:send_header(0, opt)
 end
 
 -- send file
@@ -209,7 +210,7 @@ function stream:send_file(filepath, opt)
     local sock = self._SOCK
     local file = io.open(filepath, 'rb')
     if file then
-        local send = sock:sendfile(file, {block = true, timeout = self:timeout()})
+        local send = sock:sendfile(file, {block = true, timeout = opt.timeout or self:timeout()})
         if send > 0 then
             ok = true
         end
@@ -240,7 +241,8 @@ function stream:send_files(filepaths, opt)
 end
 
 -- recv the given bytes
-function stream:recv(buff, size)
+function stream:recv(buff, size, opt)
+    opt = opt or {}
     assert(size <= buff:size(), "too large size(%d)", size)
 
     -- read data from cache first
@@ -288,7 +290,7 @@ function stream:recv(buff, size)
             end
             wait = false
         elseif real == 0 and not wait then
-            local ok = sock:wait(socket.EV_RECV, self:timeout())
+            local ok = sock:wait(socket.EV_RECV, opt.timeout or self:timeout())
             if ok == socket.EV_RECV then
                 wait = true
             else
@@ -302,16 +304,16 @@ function stream:recv(buff, size)
 end
 
 -- recv message
-function stream:recv_msg()
-    local body = self:recv_object()
+function stream:recv_msg(opt)
+    local body = self:recv_object(opt)
     if body then
         return message(body)
     end
 end
 
 -- recv object
-function stream:recv_object()
-    local str = self:recv_string()
+function stream:recv_object(opt)
+    local str = self:recv_string(opt)
     if str then
         local obj, errors = str:deserialize()
         if errors then
@@ -322,8 +324,8 @@ function stream:recv_object()
 end
 
 -- recv header
-function stream:recv_header()
-    local data = self:recv(self._BUFF, 5)
+function stream:recv_header(opt)
+    local data = self:recv(self._BUFF, 5, opt)
     if data then
         local size = data:u32be(1)
         local flags = data:u8(5)
@@ -332,14 +334,14 @@ function stream:recv_header()
 end
 
 -- recv data
-function stream:recv_data()
-    local size, flags = self:recv_header()
+function stream:recv_data(opt)
+    local size, flags = self:recv_header(opt)
     if size then
         local recv = 0
         assert(size < STREAM_DATA_MAXN, "too large data size(%d)", size)
         local buff = bytes(size)
         while recv < size do
-            local data = self:recv(buff:slice(recv + 1), size - recv)
+            local data = self:recv(buff:slice(recv + 1), size - recv, opt)
             if data then
                 recv = recv + data:size()
             else
@@ -356,16 +358,16 @@ function stream:recv_data()
 end
 
 -- recv string
-function stream:recv_string()
-    local data = self:recv_data()
+function stream:recv_string(opt)
+    local data = self:recv_data(opt)
     if data then
         return data:str()
     end
 end
 
 -- recv file
-function stream:recv_file(filepath)
-    local size, flags = self:recv_header()
+function stream:recv_file(filepath, opt)
+    local size, flags = self:recv_header(opt)
     if size then
         -- empty file? we just create an empty file
         if size == 0 then
@@ -376,13 +378,13 @@ function stream:recv_file(filepath)
         local result
         local tmpfile = os.tmpfile({ramdisk = false})
         if bit.band(flags, HEADER_FLAG_COMPRESS_LZ4) == HEADER_FLAG_COMPRESS_LZ4 then
-            result = self:_recv_compressed_file(lz4.decompress_stream(), tmpfile, size)
+            result = self:_recv_compressed_file(lz4.decompress_stream(), tmpfile, size, opt)
         else
             local buff = self._BUFF
             local recv = 0
             local file = io.open(tmpfile, "wb")
             while recv < size do
-                local data = self:recv(buff, math.min(buff:size(), size - recv))
+                local data = self:recv(buff, math.min(buff:size(), size - recv), opt)
                 if data then
                     file:write(data)
                     recv = recv + data:size()
@@ -402,10 +404,10 @@ function stream:recv_file(filepath)
 end
 
 -- recv files
-function stream:recv_files(filepaths)
+function stream:recv_files(filepaths, opt)
     local size, decompressed_size
     for _, filepath in ipairs(filepaths) do
-        local real, decompressed_real = self:recv_file(filepath)
+        local real, decompressed_real = self:recv_file(filepath, opt)
         if real then
             size = (size or 0) + real
             decompressed_size = (decompressed_size or 0) + decompressed_real
@@ -417,13 +419,13 @@ function stream:recv_files(filepaths)
 end
 
 -- recv compressed file
-function stream:_recv_compressed_file(lz4_stream, filepath, size)
+function stream:_recv_compressed_file(lz4_stream, filepath, size, opt)
     local buff = self._BUFF
     local recv = 0
     local file = io.open(filepath, "wb")
     local decompressed_size = 0
     while recv < size do
-        local data = self:recv(buff, math.min(buff:size(), size - recv))
+        local data = self:recv(buff, math.min(buff:size(), size - recv), opt)
         if data then
             local write = 0
             local writesize = data:size()

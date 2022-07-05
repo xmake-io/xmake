@@ -191,9 +191,24 @@ function server:_handle_session(sock)
     print("%s: %s: session connected", self, sock)
     local stream = socket_stream(sock, {timeout = self:timeout()})
     while true do
-        local msg = stream:recv_object()
+        local msg = stream:recv_object({timeout = -1})
         if msg then
-            self:_HANDLER(stream, message(msg))
+            local ok = try
+            {
+                function ()
+                    self:_HANDLER(stream, message(msg))
+                    return true
+                end,
+                catch
+                {
+                    function (errors)
+                        vprint(errors)
+                    end
+                }
+            }
+            if not ok then
+                break
+            end
         else
             break
         end

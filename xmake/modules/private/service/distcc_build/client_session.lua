@@ -120,7 +120,7 @@ function client_session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
     if stream:send_msg(message.new_compile(self:id(), toolname, toolkind, plat, arch, toolchain,
             cppflags, path.filename(sourcefile), {token = self:token(), cachekey = cachekey})) and
         stream:send_file(cppfile, {compress = os.filesize(cppfile) > 4096}) and stream:flush() then
-        local recv = stream:recv_file(objectfile)
+        local recv = stream:recv_file(objectfile, {timeout = -1})
         if recv ~= nil then
             local msg = stream:recv_msg()
             if msg then
