@@ -64,6 +64,7 @@ function remote_build_client:init()
     -- init timeout
     self._SEND_TIMEOUT = config.get("remote_build.send_timeout") or config.get("send_timeout") or -1
     self._RECV_TIMEOUT = config.get("remote_build.recv_timeout") or config.get("recv_timeout") or -1
+    self._CONNECT_TIMEOUT = config.get("remote_build.connect_timeout") or config.get("connect_timeout") or -1
 end
 
 -- get class
