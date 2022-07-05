@@ -94,6 +94,20 @@ function _add_target_pkgenvs(target, targets_added)
     end
 end
 
+-- find target names matching a specific name
+function _find_matching_target_names(targetname)
+    targetname = targetname:lower()
+    local matching_targetnames = {}
+    for _, target in ipairs(project.ordertargets()) do
+        if target:name():lower():find(targetname) then
+            table.insert(matching_targetnames, target:name())
+        end
+    end
+
+    table.sort(matching_targetnames)
+    return matching_targetnames
+end
+
 -- run the given target
 function _run(target)
 
@@ -151,16 +165,11 @@ function _check_targets(targetname, group_pattern)
         local target = project.target(targetname)
         if not target then
             -- check if the name is part of other target to help
-            local possible_targetnames = {}
-            for _, target in ipairs(project.ordertargets()) do
-                if target:name():lower():find(targetname:lower()) then
-                    table.insert(possible_targetnames, target:name())
-                end
-            end
+            local possible_targetnames =_find_matching_target_names(targetname)
 
             local err = targetname .. " is not a valid target name for this project"
             if #possible_targetnames > 0 then
-                err = err .. "\ndid you mean:\n - " .. table.concat(possible_targetnames, '\n - ')
+                err = err .. "\nlist of valid target names close to your input:\n - " .. table.concat(possible_targetnames, '\n - ')
             end
 
             raise(err)
