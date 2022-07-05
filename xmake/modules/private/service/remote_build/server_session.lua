@@ -336,7 +336,7 @@ end
 -- recv data from stream
 function server_session:_recv_data(buff)
     local stream = self:stream()
-    local msg = stream:recv_msg()
+    local msg = stream:recv_msg({timeout = -1})
     if msg and msg:is_data() then
         return stream:recv(buff, msg:body().size)
     end

@@ -60,6 +60,11 @@ function remote_build_client:init()
     filesync:ignorefiles_add(".git/**")
     filesync:ignorefiles_add(".xmake/**")
     self._FILESYNC = filesync
+
+    -- init timeout
+    self._SEND_TIMEOUT = config.get("remote_build.send_timeout") or config.get("send_timeout") or -1
+    self._RECV_TIMEOUT = config.get("remote_build.recv_timeout") or config.get("recv_timeout") or -1
+    self._CONNECT_TIMEOUT = config.get("remote_build.connect_timeout") or config.get("connect_timeout") or -1
 end
 
 -- get class
@@ -92,13 +97,13 @@ function remote_build_client:connect()
     -- do connect
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(socket.connect(addr, port, {timeout = self:connect_timeout()}), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local ok = false
     local errors
     print("%s: connect %s:%d ..", self, addr, port)
     if sock then
-        local stream = socket_stream(sock)
+        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         if stream:send_msg(message.new_connect(session_id, {token = token})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
@@ -140,13 +145,13 @@ function remote_build_client:disconnect()
     end
     local addr = self:addr()
     local port = self:port()
-    local sock = socket.connect(addr, port)
+    local sock = socket.connect(addr, port, {timeout = self:connect_timeout()})
     local session_id = self:session_id()
     local errors
     local ok = false
     print("%s: disconnect %s:%d ..", self, addr, port)
     if sock then
-        local stream = socket_stream(sock)
+        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         if stream:send_msg(message.new_disconnect(session_id, {token = self:token()})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
@@ -181,7 +186,7 @@ function remote_build_client:sync()
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(socket.connect(addr, port, {timeout = self:connect_timeout()}), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -190,7 +195,7 @@ function remote_build_client:sync()
     while sock do
 
         -- diff files
-        local stream = socket_stream(sock)
+        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         diff_files, errors = self:_diff_files(stream)
         if not diff_files then
             break
@@ -214,7 +219,7 @@ function remote_build_client:sync()
         end
 
         -- sync ok
-        local msg = stream:recv_msg()
+        local msg = stream:recv_msg({timeout = -1})
         if msg and msg:success() then
             vprint(msg:body())
             ok = true
@@ -235,14 +240,14 @@ function remote_build_client:clean()
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(socket.connect(addr, port, {timeout = self:connect_timeout()}), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local errors
     local ok = false
     print("%s: clean files in %s:%d ..", self, addr, port)
-    local stream = socket_stream(sock)
+    local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_clean(session_id, {token = self:token()})) and stream:flush() then
-        local msg = stream:recv_msg()
+        local msg = stream:recv_msg({timeout = -1})
         if msg then
             vprint(msg:body())
             if msg:success() then
@@ -264,7 +269,7 @@ function remote_build_client:runcmd(program, argv)
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(socket.connect(addr, port, {timeout = self:connect_timeout()}), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -272,7 +277,7 @@ function remote_build_client:runcmd(program, argv)
     local command = os.args(table.join(program, argv))
     local leftstr = ""
     cprint("%s: run ${bright}%s${clear} in %s:%d ..", self, command, addr, port)
-    local stream = socket_stream(sock)
+    local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_runcmd(session_id, program, argv, {token = self:token()})) and stream:flush() then
         local stdin_opt = {stop = false}
         local group_name = "remote_build/runcmd"
@@ -280,7 +285,7 @@ function remote_build_client:runcmd(program, argv)
             scheduler.co_start(self._read_stdin, self, stream, stdin_opt)
         end)
         while true do
-            local msg = stream:recv_msg()
+            local msg = stream:recv_msg({timeout = -1})
             if msg then
                 if msg:is_data() then
                     local data = stream:recv(buff, msg:body().size)
@@ -412,7 +417,7 @@ function remote_build_client:_diff_files(stream)
     local result, errors
     cprint("Comparing ${bright}%d${clear} files ..", filecount)
     if stream:send_msg(message.new_diff(session_id, manifest, {token = self:token()}), {compress = true}) and stream:flush() then
-        local msg = stream:recv_msg()
+        local msg = stream:recv_msg({timeout = -1})
         if msg and msg:success() then
             result = msg:body().manifest
             if result then

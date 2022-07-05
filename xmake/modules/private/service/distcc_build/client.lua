@@ -55,6 +55,11 @@ function distcc_build_client:init()
     else
         raise("we need enter a project directory with xmake.lua first!")
     end
+
+    -- init timeout
+    self._SEND_TIMEOUT = config.get("distcc_build.send_timeout") or config.get("send_timeout") or -1
+    self._RECV_TIMEOUT = config.get("distcc_build.recv_timeout") or config.get("recv_timeout") or -1
+    self._CONNECT_TIMEOUT = config.get("distcc_build.connect_timeout") or config.get("connect_timeout") or -1
 end
 
 -- get class
@@ -464,7 +469,8 @@ function distcc_build_client:_host_status_session_open(host_status)
     for i = 1, njob do
         local session = host_status.sessions[i]
         if not session then
-            session = client_session(self, host_status.session_id, host_status.token, host_status.addr, host_status.port)
+            session = client_session(self, host_status.session_id, host_status.token, host_status.addr, host_status.port,
+                {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout(), connect_timeout = self:connect_timeout()})
             host_status.sessions[i] = session
             session:open()
             return session
@@ -531,14 +537,14 @@ function distcc_build_client:_connect_host(host)
     end
 
     -- do connect
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(socket.connect(addr, port, {timeout = self:connect_timeout()}), "%s: server unreachable!", self)
     local session_id = self:_session_id(addr, port)
     local ok = false
     local errors
     local ncpu, njob
     print("%s: connect %s:%d ..", self, addr, port)
     if sock then
-        local stream = socket_stream(sock)
+        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         if stream:send_msg(message.new_connect(session_id, {token = token})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
@@ -581,13 +587,13 @@ function distcc_build_client:_disconnect_host(host)
 
     -- do disconnect
     local token = host.token
-    local sock = socket.connect(addr, port)
+    local sock = socket.connect(addr, port, {timeout = self:connect_timeout()})
     local session_id = self:_session_id(addr, port)
     local errors
     local ok = false
     print("%s: disconnect %s:%d ..", self, addr, port)
     if sock then
-        local stream = socket_stream(sock)
+        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         if stream:send_msg(message.new_disconnect(session_id, {token = token})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
@@ -632,13 +638,13 @@ function distcc_build_client:_clean_host(host)
 
     -- do clean
     local token = host.token
-    local sock = socket.connect(addr, port)
+    local sock = socket.connect(addr, port, {timeout = self:connect_timeout()})
     local session_id = self:_session_id(addr, port)
     local errors
     local ok = false
     print("%s: clean files in %s:%d ..", self, addr, port)
     if sock then
-        local stream = socket_stream(sock)
+        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         if stream:send_msg(message.new_clean(session_id, {token = token})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then

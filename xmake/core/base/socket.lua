@@ -318,6 +318,8 @@ function _instance:send(data, opt)
                 local events, waiterrs = _instance.wait(self, socket.EV_SEND, opt.timeout or -1)
                 if events == socket.EV_SEND then
                     wait = true
+                elseif events == 0 then
+                    os.raise("%s: send timeout!", self)
                 else
                     errors = waiterrs
                     break
@@ -385,6 +387,8 @@ function _instance:sendfile(file, opt)
                 local events, waiterrs = _instance.wait(self, socket.EV_SEND, opt.timeout or -1)
                 if events == socket.EV_SEND then
                     wait = true
+                elseif events == 0 then
+                    os.raise("%s: sendfile timeout!", self)
                 else
                     errors = waiterrs
                     break
@@ -451,6 +455,8 @@ function _instance:recv(buff, size, opt)
                 local events, waiterrs = _instance.wait(self, socket.EV_RECV, opt.timeout or -1)
                 if events == socket.EV_RECV then
                     wait = true
+                elseif events == 0 then
+                    os.raise("%s: recv timeout!", self)
                 else
                     data_or_errors = waiterrs
                     break

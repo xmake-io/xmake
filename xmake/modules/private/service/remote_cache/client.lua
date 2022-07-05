@@ -58,6 +58,11 @@ function remote_cache_client:init()
     -- init sockets
     self._FREESOCKS = {}
     self._OPENSOCKS = hashset.new()
+
+    -- init timeout
+    self._SEND_TIMEOUT = config.get("remote_cache.send_timeout") or config.get("send_timeout") or -1
+    self._RECV_TIMEOUT = config.get("remote_cache.recv_timeout") or config.get("recv_timeout") or -1
+    self._CONNECT_TIMEOUT = config.get("remote_cache.connect_timeout") or config.get("connect_timeout") or -1
 end
 
 -- get class
@@ -90,13 +95,13 @@ function remote_cache_client:connect()
     -- do connect
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(socket.connect(addr, port, {timeout = self:connect_timeout()}), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local ok = false
     local errors
     print("%s: connect %s:%d ..", self, addr, port)
     if sock then
-        local stream = socket_stream(sock)
+        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         if stream:send_msg(message.new_connect(session_id, {token = token})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
@@ -133,13 +138,13 @@ function remote_cache_client:disconnect()
     end
     local addr = self:addr()
     local port = self:port()
-    local sock = socket.connect(addr, port)
+    local sock = socket.connect(addr, port, {timeout = self:connect_timeout()})
     local session_id = self:session_id()
     local errors
     local ok = false
     print("%s: disconnect %s:%d ..", self, addr, port)
     if sock then
-        local stream = socket_stream(sock)
+        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         if stream:send_msg(message.new_disconnect(session_id, {token = self:token()})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
@@ -181,7 +186,7 @@ function remote_cache_client:pull(cachekey, cachefile)
     local exists = false
     local extrainfo
     dprint("%s: pull cache(%s) in %s:%d ..", self, cachekey, addr, port)
-    local stream = socket_stream(sock)
+    local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_pull(session_id, cachekey, {token = self:token()})) and stream:flush() then
         if stream:recv_file(cachefile) then
             local msg = stream:recv_msg()
@@ -218,7 +223,7 @@ function remote_cache_client:push(cachekey, cachefile, extrainfo)
     local errors
     local ok = false
     dprint("%s: push cache(%s) in %s:%d ..", self, cachekey, addr, port)
-    local stream = socket_stream(sock)
+    local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_push(session_id, cachekey, {token = self:token(), extrainfo = extrainfo})) and stream:flush() then
         if stream:send_file(cachefile, {compress = os.filesize(cachefile) > 4096}) then
             local msg = stream:recv_msg()
@@ -253,7 +258,7 @@ function remote_cache_client:cacheinfo(cachekey)
     local ok = false
     local cacheinfo
     dprint("%s: get cacheinfo(%s) in %s:%d ..", self, cachekey, addr, port)
-    local stream = socket_stream(sock)
+    local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_fileinfo(session_id, cachekey, {token = self:token()})) and stream:flush() then
         local msg = stream:recv_msg()
         if msg then
@@ -285,7 +290,7 @@ function remote_cache_client:existinfo()
     local errors
     local existinfo
     dprint("%s: get exist info in %s:%d ..", self, addr, port)
-    local stream = socket_stream(sock)
+    local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_existinfo(session_id, "objectfiles", {token = self:token()})) and stream:flush() then
         local data = stream:recv_data()
         if data then
@@ -326,7 +331,7 @@ function remote_cache_client:clean()
     local errors
     local ok = false
     print("%s: clean files in %s:%d ..", self, addr, port)
-    local stream = socket_stream(sock)
+    local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_clean(session_id, {token = self:token()})) and stream:flush() then
         local msg = stream:recv_msg()
         if msg then
@@ -436,7 +441,7 @@ function remote_cache_client:_sock_open()
 
     local addr = self:addr()
     local port = self:port()
-    local sock = socket.connect(addr, port)
+    local sock = socket.connect(addr, port, {timeout = self:connect_timeout()})
     if not sock then
         self._UNREACHABLE = true
         raise("%s: server unreachable!", self)

@@ -35,12 +35,16 @@ import("private.service.stream", {alias = "socket_stream"})
 local client_session = client_session or object()
 
 -- init client session
-function client_session:init(client, session_id, token, addr, port)
+function client_session:init(client, session_id, token, addr, port, opt)
+    opt = opt or {}
     self._ID = session_id
     self._ADDR = addr
     self._PORT = port
     self._TOKEN = token
     self._CLIENT = client
+    self._SEND_TIMEOUT = opt.send_timeout and opt.send_timeout or -1
+    self._RECV_TIMEOUT = opt.recv_timeout and opt.recv_timeout or -1
+    self._CONNECT_TIMEOUT = opt.connect_timeout and opt.connect_timeout or -1
 end
 
 -- get client session id
@@ -58,6 +62,21 @@ function client_session:client()
     return self._CLIENT
 end
 
+-- get send timeout
+function client_session:send_timeout()
+    return self._SEND_TIMEOUT
+end
+
+-- get recv timeout
+function client_session:recv_timeout()
+    return self._RECV_TIMEOUT
+end
+
+-- get connect timeout
+function client_session:connect_timeout()
+    return self._CONNECT_TIMEOUT
+end
+
 -- server unreachable?
 function client_session:is_unreachable()
     return self._UNREACHABLE
@@ -69,12 +88,12 @@ function client_session:stream()
     if stream == nil then
         local addr = self._ADDR
         local port = self._PORT
-        local sock = socket.connect(addr, port)
+        local sock = socket.connect(addr, port, {timeout = self:connect_timeout()})
         if not sock then
             self._UNREACHABLE = true
             raise("%s: server unreachable!", self)
         end
-        stream = socket_stream(sock)
+        stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         self._STREAM = stream
     end
     return stream
@@ -113,7 +132,7 @@ function client_session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
     if stream:send_msg(message.new_compile(self:id(), toolname, toolkind, plat, arch, toolchain,
             cppflags, path.filename(sourcefile), {token = self:token(), cachekey = cachekey})) and
         stream:send_file(cppfile, {compress = os.filesize(cppfile) > 4096}) and stream:flush() then
-        local recv = stream:recv_file(objectfile)
+        local recv = stream:recv_file(objectfile, {timeout = -1})
         if recv ~= nil then
             local msg = stream:recv_msg()
             if msg then
@@ -144,8 +163,8 @@ function client_session:__tostring()
     return string.format("<session %s>", self:id())
 end
 
-function main(client, session_id, token, addr, port)
+function main(client, session_id, token, addr, port, opt)
     local instance = client_session()
-    instance:init(client, session_id, token, addr, port)
+    instance:init(client, session_id, token, addr, port, opt)
     return instance
 end

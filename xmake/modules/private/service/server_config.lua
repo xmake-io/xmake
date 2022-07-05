@@ -44,6 +44,8 @@ function _generate_configfile()
         tokens = {
             token
         },
+        send_timeout = -1,
+        recv_timeout = -1,
         remote_build = {
             listen = "0.0.0.0:9691",
             workdir = path.join(servicedir, "remote_build"),
@@ -60,7 +62,6 @@ function _generate_configfile()
                 }
             }
         }
-
     }
     save(configs)
 end
