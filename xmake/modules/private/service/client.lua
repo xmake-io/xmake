@@ -31,12 +31,18 @@ local client = client or object()
 function client:init()
 
     -- init timeout
-    self._TIMEOUT = config.get("timeout") or -1
+    self._SEND_TIMEOUT = config.get("send_timeout") or -1
+    self._RECV_TIMEOUT = config.get("recv_timeout") or -1
 end
 
--- get timeout
-function client:timeout()
-    return self._TIMEOUT
+-- get send timeout
+function client:send_timeout()
+    return self._SEND_TIMEOUT
+end
+
+-- get recv timeout
+function client:recv_timeout()
+    return self._RECV_TIMEOUT
 end
 
 -- parse host address

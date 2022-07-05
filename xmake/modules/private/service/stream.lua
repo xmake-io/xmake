@@ -44,7 +44,8 @@ function stream:init(sock, opt)
     self._RCACHE_SIZE = 0
     self._WCACHE = bytes(8192)
     self._WCACHE_SIZE = 0
-    self._TIMEOUT = opt.timeout and opt.timeout or -1
+    self._SEND_TIMEOUT = opt.send_timeout and opt.send_timeout or -1
+    self._RECV_TIMEOUT = opt.recv_timeout and opt.recv_timeout or -1
 end
 
 -- get socket
@@ -52,9 +53,14 @@ function stream:sock()
     return self._SOCK
 end
 
--- get timeout
-function stream:timeout()
-    return self._TIMEOUT
+-- get send timeout
+function stream:send_timeout()
+    return self._SEND_TIMEOUT
+end
+
+-- get send timeout
+function stream:recv_timeout()
+    return self._RECV_TIMEOUT
 end
 
 -- flush data
@@ -64,7 +70,7 @@ function stream:flush(opt)
     local cache_size = self._WCACHE_SIZE
     if cache_size > 0 then
         local sock = self._SOCK
-        local real = sock:send(cache, {block = true, last = cache_size, timeout = opt.timeout or self:timeout()})
+        local real = sock:send(cache, {block = true, last = cache_size, timeout = opt.timeout or self:send_timeout()})
         if real > 0 then
             self._WCACHE_SIZE = 0
             return true
@@ -102,7 +108,7 @@ function stream:send(data, start, last, opt)
 
     -- send data to socket
     local sock = self._SOCK
-    local real = sock:send(cache, {block = true, timeout = opt.timeout or self:timeout()})
+    local real = sock:send(cache, {block = true, timeout = opt.timeout or self:send_timeout()})
     if real > 0 then
         -- copy left data to cache
         assert(size <= cache_maxn)
@@ -210,7 +216,7 @@ function stream:send_file(filepath, opt)
     local sock = self._SOCK
     local file = io.open(filepath, 'rb')
     if file then
-        local send = sock:sendfile(file, {block = true, timeout = opt.timeout or self:timeout()})
+        local send = sock:sendfile(file, {block = true, timeout = opt.timeout or self:send_timeout()})
         if send > 0 then
             ok = true
         end
@@ -290,7 +296,7 @@ function stream:recv(buff, size, opt)
             end
             wait = false
         elseif real == 0 and not wait then
-            local ok = sock:wait(socket.EV_RECV, opt.timeout or self:timeout())
+            local ok = sock:wait(socket.EV_RECV, opt.timeout or self:recv_timeout())
             if ok == socket.EV_RECV then
                 wait = true
             else

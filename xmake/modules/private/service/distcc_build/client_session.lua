@@ -42,7 +42,8 @@ function client_session:init(client, session_id, token, addr, port, opt)
     self._PORT = port
     self._TOKEN = token
     self._CLIENT = client
-    self._TIMEOUT = opt.timeout and opt.timeout or -1
+    self._SEND_TIMEOUT = opt.send_timeout and opt.send_timeout or -1
+    self._RECV_TIMEOUT = opt.recv_timeout and opt.recv_timeout or -1
 end
 
 -- get client session id
@@ -60,9 +61,14 @@ function client_session:client()
     return self._CLIENT
 end
 
--- get timeout
-function client_session:timeout()
-    return self._TIMEOUT
+-- get send timeout
+function client_session:send_timeout()
+    return self._SEND_TIMEOUT
+end
+
+-- get recv timeout
+function client_session:recv_timeout()
+    return self._RECV_TIMEOUT
 end
 
 -- server unreachable?
@@ -81,7 +87,7 @@ function client_session:stream()
             self._UNREACHABLE = true
             raise("%s: server unreachable!", self)
         end
-        stream = socket_stream(sock, {timeout = self:timeout()})
+        stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         self._STREAM = stream
     end
     return stream

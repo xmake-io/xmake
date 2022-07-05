@@ -98,7 +98,7 @@ function remote_build_client:connect()
     local errors
     print("%s: connect %s:%d ..", self, addr, port)
     if sock then
-        local stream = socket_stream(sock, {timeout = self:timeout()})
+        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         if stream:send_msg(message.new_connect(session_id, {token = token})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
@@ -146,7 +146,7 @@ function remote_build_client:disconnect()
     local ok = false
     print("%s: disconnect %s:%d ..", self, addr, port)
     if sock then
-        local stream = socket_stream(sock, {timeout = self:timeout()})
+        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         if stream:send_msg(message.new_disconnect(session_id, {token = self:token()})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
@@ -190,7 +190,7 @@ function remote_build_client:sync()
     while sock do
 
         -- diff files
-        local stream = socket_stream(sock, {timeout = self:timeout()})
+        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         diff_files, errors = self:_diff_files(stream)
         if not diff_files then
             break
@@ -240,7 +240,7 @@ function remote_build_client:clean()
     local errors
     local ok = false
     print("%s: clean files in %s:%d ..", self, addr, port)
-    local stream = socket_stream(sock, {timeout = self:timeout()})
+    local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_clean(session_id, {token = self:token()})) and stream:flush() then
         local msg = stream:recv_msg({timeout = -1})
         if msg then
@@ -272,7 +272,7 @@ function remote_build_client:runcmd(program, argv)
     local command = os.args(table.join(program, argv))
     local leftstr = ""
     cprint("%s: run ${bright}%s${clear} in %s:%d ..", self, command, addr, port)
-    local stream = socket_stream(sock, {timeout = self:timeout()})
+    local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_runcmd(session_id, program, argv, {token = self:token()})) and stream:flush() then
         local stdin_opt = {stop = false}
         local group_name = "remote_build/runcmd"

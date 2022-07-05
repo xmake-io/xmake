@@ -45,7 +45,8 @@ function server:init(daemon)
     self:known_hosts_set(known_hosts)
 
     -- init timeout
-    self._TIMEOUT = config.get("timeout") or -1
+    self._SEND_TIMEOUT = config.get("send_timeout") or -1
+    self._RECV_TIMEOUT = config.get("recv_timeout") or -1
 end
 
 -- is daemon?
@@ -81,9 +82,14 @@ function server:port()
     return self._PORT
 end
 
--- get timeout
-function server:timeout()
-    return self._TIMEOUT
+-- get send timeout
+function server:send_timeout()
+    return self._SEND_TIMEOUT
+end
+
+-- get recv timeout
+function server:recv_timeout()
+    return self._RECV_TIMEOUT
 end
 
 -- get tokens
@@ -189,7 +195,7 @@ end
 -- handle session
 function server:_handle_session(sock)
     print("%s: %s: session connected", self, sock)
-    local stream = socket_stream(sock, {timeout = self:timeout()})
+    local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     while true do
         local msg = stream:recv_object({timeout = -1})
         if msg then

@@ -39,6 +39,8 @@ function _generate_configfile()
     local token = _get_local_server_token()
     print("generating the config file to %s ..", filepath)
     local configs = {
+        send_timeout = -1,
+        recv_timeout = -1,
         remote_build = {
             -- without authorization: "127.0.0.1:9691"
             -- with user authorization: "user@127.0.0.1:9691"
