@@ -41,6 +41,7 @@ function _generate_configfile()
     local configs = {
         send_timeout = -1,
         recv_timeout = -1,
+        connect_timeout = -1,
         remote_build = {
             -- without authorization: "127.0.0.1:9691"
             -- with user authorization: "user@127.0.0.1:9691"

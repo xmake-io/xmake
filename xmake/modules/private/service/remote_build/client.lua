@@ -96,7 +96,7 @@ function remote_build_client:connect()
     -- do connect
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(socket.connect(addr, port, {timeout = self:connect_timeout()}), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local ok = false
     local errors
@@ -144,7 +144,7 @@ function remote_build_client:disconnect()
     end
     local addr = self:addr()
     local port = self:port()
-    local sock = socket.connect(addr, port)
+    local sock = socket.connect(addr, port, {timeout = self:connect_timeout()})
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -185,7 +185,7 @@ function remote_build_client:sync()
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(socket.connect(addr, port, {timeout = self:connect_timeout()}), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -239,7 +239,7 @@ function remote_build_client:clean()
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(socket.connect(addr, port, {timeout = self:connect_timeout()}), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local errors
     local ok = false
@@ -268,7 +268,7 @@ function remote_build_client:runcmd(program, argv)
     assert(self:is_connected(), "%s: has been not connected!", self)
     local addr = self:addr()
     local port = self:port()
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(socket.connect(addr, port, {timeout = self:connect_timeout()}), "%s: server unreachable!", self)
     local session_id = self:session_id()
     local errors
     local ok = false

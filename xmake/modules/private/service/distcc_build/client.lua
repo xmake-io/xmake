@@ -469,7 +469,7 @@ function distcc_build_client:_host_status_session_open(host_status)
         local session = host_status.sessions[i]
         if not session then
             session = client_session(self, host_status.session_id, host_status.token, host_status.addr, host_status.port,
-                {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
+                {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout(), connect_timeout = self:connect_timeout()})
             host_status.sessions[i] = session
             session:open()
             return session
@@ -536,7 +536,7 @@ function distcc_build_client:_connect_host(host)
     end
 
     -- do connect
-    local sock = assert(socket.connect(addr, port), "%s: server unreachable!", self)
+    local sock = assert(socket.connect(addr, port, {timeout = self:connect_timeout()}), "%s: server unreachable!", self)
     local session_id = self:_session_id(addr, port)
     local ok = false
     local errors
@@ -586,7 +586,7 @@ function distcc_build_client:_disconnect_host(host)
 
     -- do disconnect
     local token = host.token
-    local sock = socket.connect(addr, port)
+    local sock = socket.connect(addr, port, {timeout = self:connect_timeout()})
     local session_id = self:_session_id(addr, port)
     local errors
     local ok = false
@@ -637,7 +637,7 @@ function distcc_build_client:_clean_host(host)
 
     -- do clean
     local token = host.token
-    local sock = socket.connect(addr, port)
+    local sock = socket.connect(addr, port, {timeout = self:connect_timeout()})
     local session_id = self:_session_id(addr, port)
     local errors
     local ok = false
