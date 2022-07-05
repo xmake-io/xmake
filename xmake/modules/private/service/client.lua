@@ -22,12 +22,21 @@
 import("core.base.object")
 import("core.base.socket")
 import("core.base.scheduler")
+import("private.service.client_config", {alias = "config"})
 
 -- define module
 local client = client or object()
 
 -- init client
 function client:init()
+
+    -- init timeout
+    self._TIMEOUT = config.get("timeout") or -1
+end
+
+-- get timeout
+function client:timeout()
+    return self._TIMEOUT
 end
 
 -- parse host address

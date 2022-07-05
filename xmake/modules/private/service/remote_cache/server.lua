@@ -23,7 +23,6 @@ import("core.base.global")
 import("private.service.server_config", {alias = "config"})
 import("private.service.message")
 import("private.service.server")
-import("private.service.stream", {alias = "socket_stream"})
 import("private.service.remote_cache.server_session")
 import("lib.detect.find_tool")
 

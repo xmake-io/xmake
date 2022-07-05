@@ -35,12 +35,14 @@ import("private.service.stream", {alias = "socket_stream"})
 local client_session = client_session or object()
 
 -- init client session
-function client_session:init(client, session_id, token, addr, port)
+function client_session:init(client, session_id, token, addr, port, opt)
+    opt = opt or {}
     self._ID = session_id
     self._ADDR = addr
     self._PORT = port
     self._TOKEN = token
     self._CLIENT = client
+    self._TIMEOUT = opt.timeout and opt.timeout or -1
 end
 
 -- get client session id
@@ -56,6 +58,11 @@ end
 -- get client
 function client_session:client()
     return self._CLIENT
+end
+
+-- get timeout
+function client_session:timeout()
+    return self._TIMEOUT
 end
 
 -- server unreachable?
@@ -74,7 +81,7 @@ function client_session:stream()
             self._UNREACHABLE = true
             raise("%s: server unreachable!", self)
         end
-        stream = socket_stream(sock)
+        stream = socket_stream(sock, {timeout = self:timeout()})
         self._STREAM = stream
     end
     return stream
@@ -144,8 +151,8 @@ function client_session:__tostring()
     return string.format("<session %s>", self:id())
 end
 
-function main(client, session_id, token, addr, port)
+function main(client, session_id, token, addr, port, opt)
     local instance = client_session()
-    instance:init(client, session_id, token, addr, port)
+    instance:init(client, session_id, token, addr, port, opt)
     return instance
 end

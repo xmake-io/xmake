@@ -464,7 +464,7 @@ function distcc_build_client:_host_status_session_open(host_status)
     for i = 1, njob do
         local session = host_status.sessions[i]
         if not session then
-            session = client_session(self, host_status.session_id, host_status.token, host_status.addr, host_status.port)
+            session = client_session(self, host_status.session_id, host_status.token, host_status.addr, host_status.port, {timeout = self:timeout()})
             host_status.sessions[i] = session
             session:open()
             return session
@@ -538,7 +538,7 @@ function distcc_build_client:_connect_host(host)
     local ncpu, njob
     print("%s: connect %s:%d ..", self, addr, port)
     if sock then
-        local stream = socket_stream(sock)
+        local stream = socket_stream(sock, {timeout = self:timeout()})
         if stream:send_msg(message.new_connect(session_id, {token = token})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
@@ -587,7 +587,7 @@ function distcc_build_client:_disconnect_host(host)
     local ok = false
     print("%s: disconnect %s:%d ..", self, addr, port)
     if sock then
-        local stream = socket_stream(sock)
+        local stream = socket_stream(sock, {timeout = self:timeout()})
         if stream:send_msg(message.new_disconnect(session_id, {token = token})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then
@@ -638,7 +638,7 @@ function distcc_build_client:_clean_host(host)
     local ok = false
     print("%s: clean files in %s:%d ..", self, addr, port)
     if sock then
-        local stream = socket_stream(sock)
+        local stream = socket_stream(sock, {timeout = self:timeout()})
         if stream:send_msg(message.new_clean(session_id, {token = token})) and stream:flush() then
             local msg = stream:recv_msg()
             if msg then

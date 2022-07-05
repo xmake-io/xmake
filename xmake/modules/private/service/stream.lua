@@ -36,18 +36,25 @@ local STREAM_DATA_MAXN = 10 * 1024 * 1024
 local HEADER_FLAG_COMPRESS_LZ4 = 1
 
 -- init stream
-function stream:init(sock)
+function stream:init(sock, opt)
+    opt = opt or {}
     self._SOCK = sock
     self._BUFF = bytes(65536)
     self._RCACHE = bytes(8192)
     self._RCACHE_SIZE = 0
     self._WCACHE = bytes(8192)
     self._WCACHE_SIZE = 0
+    self._TIMEOUT = opt.timeout and opt.timeout or -1
 end
 
 -- get socket
 function stream:sock()
     return self._SOCK
+end
+
+-- get timeout
+function stream:timeout()
+    return self._TIMEOUT
 end
 
 -- flush data
@@ -93,7 +100,7 @@ function stream:send(data, start, last)
 
     -- send data to socket
     local sock = self._SOCK
-    local real = sock:send(cache, {block = true})
+    local real = sock:send(cache, {block = true, timeout = self:timeout()})
     if real > 0 then
         -- copy left data to cache
         assert(size <= cache_maxn)
@@ -201,7 +208,7 @@ function stream:send_file(filepath, opt)
     local sock = self._SOCK
     local file = io.open(filepath, 'rb')
     if file then
-        local send = sock:sendfile(file, {block = true})
+        local send = sock:sendfile(file, {block = true, timeout = self:timeout()})
         if send > 0 then
             ok = true
         end
@@ -280,7 +287,7 @@ function stream:recv(buff, size)
             end
             wait = false
         elseif real == 0 and not wait then
-            if sock:wait(socket.EV_RECV, -1) == socket.EV_RECV then
+            if sock:wait(socket.EV_RECV, self:timeout()) == socket.EV_RECV then
                 wait = true
             else
                 break
@@ -442,8 +449,8 @@ function stream:_recv_compressed_file(lz4_stream, filepath, size)
     end
 end
 
-function main(sock)
+function main(sock, opt)
     local instance = stream()
-    instance:init(sock)
+    instance:init(sock, opt)
     return instance
 end

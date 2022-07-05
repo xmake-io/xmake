@@ -43,6 +43,9 @@ function server:init(daemon)
     -- init known hosts
     local known_hosts = config.get("known_hosts")
     self:known_hosts_set(known_hosts)
+
+    -- init timeout
+    self._TIMEOUT = config.get("timeout") or -1
 end
 
 -- is daemon?
@@ -76,6 +79,11 @@ end
 -- get the listen port
 function server:port()
     return self._PORT
+end
+
+-- get timeout
+function server:timeout()
+    return self._TIMEOUT
 end
 
 -- get tokens
@@ -181,7 +189,7 @@ end
 -- handle session
 function server:_handle_session(sock)
     print("%s: %s: session connected", self, sock)
-    local stream = socket_stream(sock)
+    local stream = socket_stream(sock, {timeout = self:timeout()})
     while true do
         local msg = stream:recv_object()
         if msg then
