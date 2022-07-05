@@ -62,7 +62,6 @@ function _generate_configfile()
                 }
             }
         }
-
     }
     save(configs)
 end

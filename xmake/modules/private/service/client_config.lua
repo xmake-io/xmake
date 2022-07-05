@@ -61,7 +61,6 @@ function _generate_configfile()
                 {connect = "127.0.0.1:9693", token = token}
             }
         }
-
     }
     save(configs)
 end
