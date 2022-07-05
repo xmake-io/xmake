@@ -99,7 +99,7 @@ function _find_matching_target_names(targetname)
     targetname = targetname:lower()
     local matching_targetnames = {}
     for _, target in ipairs(project.ordertargets()) do
-        if target:name():lower():find(targetname) then
+        if target:name():lower():find(targetname, 1, true) then
             table.insert(matching_targetnames, target:name())
         end
     end
@@ -165,7 +165,7 @@ function _check_targets(targetname, group_pattern)
         local target = project.target(targetname)
         if not target then
             -- check if the name is part of other target to help
-            local possible_targetnames =_find_matching_target_names(targetname)
+            local possible_targetnames = _find_matching_target_names(targetname)
 
             local err = targetname .. " is not a valid target name for this project"
             if #possible_targetnames > 0 then
