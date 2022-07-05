@@ -60,6 +60,10 @@ function remote_build_client:init()
     filesync:ignorefiles_add(".git/**")
     filesync:ignorefiles_add(".xmake/**")
     self._FILESYNC = filesync
+
+    -- init timeout
+    self._SEND_TIMEOUT = config.get("remote_build.send_timeout") or config.get("send_timeout") or -1
+    self._RECV_TIMEOUT = config.get("remote_build.recv_timeout") or config.get("recv_timeout") or -1
 end
 
 -- get class

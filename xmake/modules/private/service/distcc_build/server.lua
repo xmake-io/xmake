@@ -43,6 +43,10 @@ function distcc_build_server:init(daemon)
 
     -- init sessions
     self._SESSIONS = {}
+
+    -- init timeout
+    self._SEND_TIMEOUT = config.get("distcc_build.send_timeout") or config.get("send_timeout") or -1
+    self._RECV_TIMEOUT = config.get("distcc_build.recv_timeout") or config.get("recv_timeout") or -1
 end
 
 -- get class

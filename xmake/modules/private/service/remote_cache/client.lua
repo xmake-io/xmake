@@ -58,6 +58,10 @@ function remote_cache_client:init()
     -- init sockets
     self._FREESOCKS = {}
     self._OPENSOCKS = hashset.new()
+
+    -- init timeout
+    self._SEND_TIMEOUT = config.get("remote_cache.send_timeout") or config.get("send_timeout") or -1
+    self._RECV_TIMEOUT = config.get("remote_cache.recv_timeout") or config.get("recv_timeout") or -1
 end
 
 -- get class
