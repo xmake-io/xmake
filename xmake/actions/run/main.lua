@@ -148,7 +148,24 @@ function _check_targets(targetname, group_pattern)
     -- get targets
     local targets = {}
     if targetname then
-        local target = assert(project.target(targetname), "%s not found!", targetname)
+        local target = project.target(targetname)
+        if not target then
+            -- check if the name is part of other target to help
+            local possible_targetnames = {}
+            for _, target in ipairs(project.ordertargets()) do
+                if target:name():lower():find(targetname:lower()) then
+                    table.insert(possible_targetnames, target:name())
+                end
+            end
+
+            local err = targetname .. " is not a valid target name for this project"
+            if #possible_targetnames > 0 then
+                err = err .. "\ndid you mean:\n - " .. table.concat(possible_targetnames, '\n - ')
+            end
+
+            raise(err)
+        end
+
         table.insert(targets, target)
     else
         for _, target in ipairs(project.ordertargets()) do
