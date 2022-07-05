@@ -101,6 +101,7 @@ function stream:send(data, start, last)
     -- send data to socket
     local sock = self._SOCK
     local real = sock:send(cache, {block = true, timeout = self:timeout()})
+    print("send", real)
     if real > 0 then
         -- copy left data to cache
         assert(size <= cache_maxn)
@@ -287,9 +288,11 @@ function stream:recv(buff, size)
             end
             wait = false
         elseif real == 0 and not wait then
-            if sock:wait(socket.EV_RECV, self:timeout()) == socket.EV_RECV then
+            local ok = sock:wait(socket.EV_RECV, self:timeout())
+            if ok == socket.EV_RECV then
                 wait = true
             else
+                assert(ok ~= 0, "%s: recv timeout!", self)
                 break
             end
         else
@@ -447,6 +450,10 @@ function stream:_recv_compressed_file(lz4_stream, filepath, size)
     if recv == size then
         return recv, decompressed_size
     end
+end
+
+function stream:__tostring()
+    return string.format("<stream: %s>", self:sock())
 end
 
 function main(sock, opt)
