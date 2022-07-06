@@ -37,6 +37,9 @@ function _translate_arguments(arguments)
     local cc = path.basename(arguments[1]):lower()
     local is_include = false
     for idx, arg in ipairs(arguments) do
+        -- convert path to string, maybe we need convert path, but not supported now.
+        arg = tostring(arg)
+
         -- see https://github.com/xmake-io/xmake/issues/1721
         if idx == 1 and is_host("windows") and path.extension(arg) == "" then
             arg = arg .. ".exe"
