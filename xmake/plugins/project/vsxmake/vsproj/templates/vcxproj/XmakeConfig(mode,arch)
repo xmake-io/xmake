@@ -13,6 +13,7 @@
     <XmakeWindowsSdkVersion>#sdkver#</XmakeWindowsSdkVersion>
     <XmakeMfcKind>#mfckind#</XmakeMfcKind>
     <XmakeRunEnvs>#runenvs#</XmakeRunEnvs>
+    <XmakeRunArgs>#runargs#</XmakeRunArgs>
     <XmakeConfigFlags>#configflags#</XmakeConfigFlags>
     <XmakeIncludeDirs>#includedirs#</XmakeIncludeDirs>
     <XmakeLinkDirs>#linkdirs#</XmakeLinkDirs>

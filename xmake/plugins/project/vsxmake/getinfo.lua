@@ -227,6 +227,11 @@ function _make_targetinfo(mode, arch, target)
     end
     targetinfo.runenvs = table.concat(runenvstr, "\n")
 
+    local runargs = target:get("runargs")
+    if runargs then
+        targetinfo.runargs = os.args(table.wrap(runargs))
+    end
+
     -- use mfc? save the mfc runtime kind
     if target:rule("win.sdk.mfc.shared_app") or target:rule("win.sdk.mfc.shared") then
         targetinfo.mfckind = "Dynamic"
