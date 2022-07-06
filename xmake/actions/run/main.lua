@@ -166,13 +166,11 @@ function _check_targets(targetname, group_pattern)
         if not target then
             -- check if the name is part of other target to help
             local possible_targetnames = _find_matching_target_names(targetname)
-
-            local err = targetname .. " is not a valid target name for this project"
+            local errors = targetname .. " is not a valid target name for this project"
             if #possible_targetnames > 0 then
-                err = err .. "\nlist of valid target names close to your input:\n - " .. table.concat(possible_targetnames, '\n - ')
+                errors = errors .. "\nlist of valid target names close to your input:\n - " .. table.concat(possible_targetnames, '\n - ')
             end
-
-            raise(err)
+            raise(errors)
         end
 
         table.insert(targets, target)
