@@ -228,10 +228,8 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.runenvs = table.concat(runenvstr, "\n")
 
     local runargs = target:get("runargs")
-    if type(runargs) == "table" then
-        targetinfo.runargs = table.concat(runargs, " ")
-    else
-        targetinfo.runargs = runargs
+    if runargs then
+        targetinfo.runargs = os.args(table.wrap(runargs))
     end
 
     -- use mfc? save the mfc runtime kind
