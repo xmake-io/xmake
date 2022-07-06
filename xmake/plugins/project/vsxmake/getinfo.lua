@@ -226,6 +226,7 @@ function _make_targetinfo(mode, arch, target)
         table.insert(runenvstr, k .. "=" .. v)
     end
     targetinfo.runenvs = table.concat(runenvstr, "\n")
+    targetinfo.runargs = target:get("runargs")
 
     -- use mfc? save the mfc runtime kind
     if target:rule("win.sdk.mfc.shared_app") or target:rule("win.sdk.mfc.shared") then

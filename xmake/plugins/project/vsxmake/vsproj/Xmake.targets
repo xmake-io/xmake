@@ -146,6 +146,7 @@ MSBuild Properties:
     XmakeSourceDirs: $(XmakeSourceDirs)
     XmakePrecompiledHeader: $(XmakePrecompiledHeader)
     XmakeRunEnvs: $(XmakeRunEnvs)
+    XmakeRunArgs: $(XmakeRunArgs)
   Xmake Path:
     XmakeProgramDir: $(XmakeProgramDir)
     XmakeProjectDir: $(XmakeProjectDir)

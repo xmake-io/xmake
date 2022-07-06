@@ -159,10 +159,12 @@
     <LocalDebuggerWorkingDirectory>$(XmakeRunDir)</LocalDebuggerWorkingDirectory>
     <LocalDebuggerEnvironment>$(XmakeRunEnvs)
 $(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
+    <LocalDebuggerCommandArguments>$(XmakeRunArgs)</LocalDebuggerCommandArguments>
     <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
     <RemoteDebuggerWorkingDirectory>$(XmakeRunDir)</RemoteDebuggerWorkingDirectory>
     <RemoteDebuggerEnvironment>$(XmakeRunEnvs)
 $(RemoteDebuggerEnvironment)</RemoteDebuggerEnvironment>
+    <RemoteDebuggerCommandArguments>$(XmakeRunArgs)</RemoteDebuggerCommandArguments>
   </PropertyGroup>
 
   <!-- Common files -->
