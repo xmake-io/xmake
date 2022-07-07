@@ -1896,7 +1896,11 @@ end
 -- @param langkind  c/cxx
 --
 function _instance:pcheaderfile(langkind)
-    return self:get("p" .. langkind .. "header")
+    local pcheaderfile = self:get("p" .. langkind .. "header")
+    if table.empty(pcheaderfile) then
+        pcheaderfile = nil
+    end
+    return pcheaderfile
 end
 
 -- get the output of precompiled header file (xxx.h.pch)

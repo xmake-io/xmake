@@ -494,6 +494,11 @@ function table.remove_if(tbl, pred)
     return tbl
 end
 
+-- is empty table?
+function table.empty(tbl)
+    return type(tbl) == "table" and #tbl == 0 and #table.keys(tbl) == 0
+end
+
 -- return indices or keys for the given value
 function table.find(tbl, value)
     local result
