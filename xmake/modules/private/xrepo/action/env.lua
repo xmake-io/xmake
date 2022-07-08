@@ -309,7 +309,7 @@ function _package_getenvs(opt)
             _enter_project({enteronly = true})
             table.insert(project.rcfiles(), boundenv)
         end
-        task.run("config", {target = "all"}, {disable_dump = true})
+        task.run("config", {}, {disable_dump = true})
         _toolchain_addenvs(envs)
         local requires, requires_extra = get_requires()
         for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
@@ -393,7 +393,7 @@ function info(key, bnd)
                 _enter_project({enteronly = true})
                 table.insert(project.rcfiles(), boundenv)
             end
-            task.run("config", {target = "all"}, {disable_dump = true})
+            task.run("config", {}, {disable_dump = true})
         end
     elseif key:startswith("script.") then
         local shell = key:match("script%.(.+)")
