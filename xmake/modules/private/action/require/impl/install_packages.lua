@@ -307,7 +307,7 @@ function _fetch_packages(packages_fetch, installdeps)
                 end
             end
             if instance == nil and #packages_pending > 0 then
-                scheduler.co_yield()
+                os.sleep(100)
             end
         end
         if instance then
@@ -321,7 +321,7 @@ function _fetch_packages(packages_fetch, installdeps)
             end
             if not parallelize then
                 while fetching_count > 0 do
-                    scheduler.co_yield()
+                    os.sleep(100)
                 end
             end
             fetching_count = fetching_count + 1
@@ -426,7 +426,7 @@ function _install_packages(packages_install, packages_download, installdeps)
                 end
             end
             if instance == nil and #packages_pending > 0 then
-                scheduler.co_yield()
+                os.sleep(100)
             end
         end
         if instance then
@@ -444,7 +444,7 @@ function _install_packages(packages_install, packages_download, installdeps)
                 end
                 if not parallelize then
                     while installing_count > 0 do
-                        scheduler.co_yield()
+                        os.sleep(100)
                     end
                 end
                 installing_count = installing_count + 1
