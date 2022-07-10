@@ -870,9 +870,11 @@ function _load_packages(requires, opt)
                                                         nodeps = opt.nodeps,
                                                         system = false})
                     for _, dep in ipairs(deps) do
-                        dep:parents_add(package)
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
+                    end
+                    for _, dep in ipairs(plaindeps) do
+                        dep:parents_add(package)
                     end
                     package._DEPS = packagedeps
                     package._PLAINDEPS = plaindeps
