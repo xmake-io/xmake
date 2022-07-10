@@ -393,7 +393,7 @@ function _install_packages(packages_install, packages_download, installdeps)
                 local dep_not_found = nil
                 for _, dep in pairs(installdeps[tostring(pkg)]) do
                     local installed = packages_installed[tostring(dep)]
-                    if installed == false or (installed == nil and not dep:exists() and not dep:is_optional()) then
+                    if installed == false or (installed == nil and package.should_install(dep) and not dep:is_optional()) then
                         ready = false
                         dep_not_found = dep
                         break

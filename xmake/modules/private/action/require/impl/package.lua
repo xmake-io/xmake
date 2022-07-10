@@ -942,13 +942,8 @@ function _must_depend_on(package, dep)
     end
 end
 
--- the cache directory
-function cachedir()
-    return path.join(global.directory(), "cache", "packages")
-end
-
 -- this package should be install?
-function should_install(package)
+function _should_install(package)
     if package:is_template() or package:exists() then
         return false
     end
@@ -985,6 +980,21 @@ function should_install(package)
     else
         return true
     end
+end
+
+-- the cache directory
+function cachedir()
+    return path.join(global.directory(), "cache", "packages")
+end
+
+-- this package should be install?
+function should_install(package)
+    local result = _memcache():get2("should_install", tostring(package))
+    if result == nil then
+        result = _should_install(package) or false
+        _memcache():set2("should_install", tostring(package), result)
+    end
+    return result
 end
 
 -- get package configs string
