@@ -440,6 +440,7 @@ function _add_target_language_standards(cmakelists, target)
     ,   gnuxx1z     = "17"
     ,   cxx2a       = "20"
     ,   gnuxx2a     = "20"
+    ,   cxxlatest   = "latest"
     }
     for _, lang in ipairs(target:get("languages")) do
         local cstd = cstds[lang]
@@ -453,7 +454,13 @@ function _add_target_language_standards(cmakelists, target)
         end
         local cxxstd = cxxstds[lang]
         if cxxstd then
-            cmakelists:print("set_property(TARGET %s PROPERTY CXX_STANDARD %s)", target:name(), cxxstd)
+            if cxxstd == "latest" then
+                cmakelists:print("if (MSVC)")
+                cmakelists:print("    target_compile_options(%s PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/std:c++latest>)", target:name())
+                cmakelists:print("endif()")
+            else
+                cmakelists:print("set_property(TARGET %s PROPERTY CXX_STANDARD %s)", target:name(), cxxstd)
+            end
         end
     end
 end
