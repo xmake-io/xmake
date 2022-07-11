@@ -42,7 +42,7 @@ function _find_package(cmake, name, opt)
     -- e.g. OpenCV 4.1.1, Boost COMPONENTS regex system
     local requirestr = name
     local configs = opt.configs or {}
-    if opt.require_version then
+    if opt.require_version and opt.require_version ~= "latest" then
         requirestr = requirestr .. " " .. opt.require_version
     end
     -- use opt.components is for backward compatibility
@@ -70,6 +70,7 @@ function _find_package(cmake, name, opt)
             end
         end
     end
+    print(requirestr)
     local testname = "test_" .. name
     cmakefile:print("find_package(%s REQUIRED)", requirestr)
     cmakefile:print("if(%s_FOUND)", name)
