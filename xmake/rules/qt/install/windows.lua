@@ -38,16 +38,20 @@ function main(target, opt)
     assert(os.isexec(windeployqt), "windeployqt.exe not found!")
 
     -- find qml directory
-    local qmldir = nil
-    for _, sourcebatch in pairs(target:sourcebatches()) do
-        if sourcebatch.rulename == "qt.qrc" then
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                qmldir = find_path("*.qml", path.directory(sourcefile))
-                if qmldir then
-                    break
+    local qmldir = target:values("qt.deploy.qmldir")
+    if not qmldir then
+        for _, sourcebatch in pairs(target:sourcebatches()) do
+            if sourcebatch.rulename == "qt.qrc" then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    qmldir = find_path("*.qml", path.directory(sourcefile))
+                    if qmldir then
+                        break
+                    end
                 end
             end
         end
+    else
+        qmldir = path.join(target:scriptdir(), qmldir)
     end
 
     -- find msvc to set VCINSTALLDIR env
@@ -78,6 +82,13 @@ function main(target, opt)
     if qmldir then
         table.insert(argv, "--qmldir=" .. qmldir)
     end
+
+    -- add user flags
+    local user_flags = target:values("qt.deploy.flags") or {}
+    if user_flags then
+        table.join(argv, user_flags)
+    end
+
     table.insert(argv, installfile)
 
     os.vrunv(windeployqt, argv, {envs = envs})

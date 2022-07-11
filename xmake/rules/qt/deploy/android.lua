@@ -216,6 +216,13 @@ function main(target, opt)
     if option.get("verbose") and option.get("diagnosis") then
         table.insert(argv, "--verbose")
     end
+
+    -- add user flags
+    local user_flags = target:values("qt.deploy.flags") or {}
+    if user_flags then
+        table.join(argv, user_flags)
+    end
+
     os.vrunv(androiddeployqt, argv)
 
     -- output apk
