@@ -693,9 +693,8 @@ function main(requires, opt)
         end
     end
 
-    local has_errors = false
-
     -- exists unknown packages?
+    local has_errors = false
     if #packages_unknown > 0 then
         cprint("${bright color.warning}note: ${clear}the following packages were not found in any repository (check if they are spelled correctly):")
         for _, instance in ipairs(packages_unknown) do
