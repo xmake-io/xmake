@@ -20,6 +20,7 @@
 
 * [#2488](https://github.com/xmake-io/xmake/issues/2488): Fix remote compilation from windows to linux
 * [#2504](https://github.com/xmake-io/xmake/issues/2504): Fix remote build bug on msys2/cygwin
+* [#2525](https://github.com/xmake-io/xmake/issues/2525): Fix install package deps and stuck
 * Fix cache-induced path conflicts in preprocessed files
 
 ## v2.6.8
@@ -1352,6 +1353,7 @@
 
 * [#2488](https://github.com/xmake-io/xmake/issues/2488): 修复从 windows 到 linux 的远程编译路径问题
 * [#2504](https://github.com/xmake-io/xmake/issues/2504): 修复在 msys2 上远程编译失败问题
+* [#2525](https://github.com/xmake-io/xmake/issues/2525): 修复安装依赖包时候卡死问题
 * 修复缓存导致的预处理文件路径冲突问题
 
 ## v2.6.8
