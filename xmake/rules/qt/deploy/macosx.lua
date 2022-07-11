@@ -103,16 +103,20 @@ function main(target, opt)
     _save_info_plist(target, path.join(target_contents, "Info.plist"))
 
     -- find qml directory
-    local qmldir = nil
-    for _, sourcebatch in pairs(target:sourcebatches()) do
-        if sourcebatch.rulename == "qt.qrc" then
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                qmldir = find_path("*.qml", path.directory(sourcefile))
-                if qmldir then
-                    break
+    local qmldir = target:values("qt.deploy.qmldir") or nil
+    if not qmldir then
+        for _, sourcebatch in pairs(target:sourcebatches()) do
+            if sourcebatch.rulename == "qt.qrc" then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    qmldir = find_path("*.qml", path.directory(sourcefile))
+                    if qmldir then
+                        break
+                    end
                 end
             end
         end
+    else
+        qmldir = path.join(target:scriptdir(), qmldir)
     end
 
     -- do deploy
@@ -132,6 +136,13 @@ function main(target, opt)
         -- e.g. "Apple Development: waruqi@gmail.com (T3NA4MRVPU)"
         table.insert(argv, "-codesign=" .. codesign_identity)
     end
+
+    -- add user flags
+    local user_flags = target:values("qt.deploy.flags") or {}
+    if user_flags then
+        table.join(argv, user_flags)
+    end
+
     os.vrunv(macdeployqt, argv)
 
     -- update files and values to the dependent file
