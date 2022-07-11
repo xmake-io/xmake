@@ -50,11 +50,11 @@ rule("qt.qmltyperegistrar")
         -- add qmldir
         local qmldir = target:values("qt.qmlplugin.qmldirfile")
         if qmldir then
-            target:add("installfiles", qmldir)
+            target:add("installfiles", path.join(target:scriptdir(), qmldir), { prefixdir = path.join("bin", table.unpack(importname:split(".", { plain = true }))) })
         end
 
         -- add qmltypes
-        target:add("installfiles", target:get("targetdir") .. "/plugin.qmltypes")
+        target:add("installfiles", path.join(target:get("targetdir"), "plugin.qmltypes"), { prefixdir = path.join("bin", table.unpack(importname:split(".", { plain = true }))) })
 
         local sourcefile = path.join(target:autogendir(), "rules", "qt", "qmltyperegistrar", target:name() .. "_qmltyperegistrations.cpp")
         local sourcefile_dir = path.directory(sourcefile)
