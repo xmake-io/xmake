@@ -103,7 +103,7 @@ function main(target, opt)
     _save_info_plist(target, path.join(target_contents, "Info.plist"))
 
     -- find qml directory
-    local qmldir = target:values("qt.deploy.qmldir") or nil
+    local qmldir = target:values("qt.deploy.qmldir")
     if not qmldir then
         for _, sourcebatch in pairs(target:sourcebatches()) do
             if sourcebatch.rulename == "qt.qrc" then
