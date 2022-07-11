@@ -38,7 +38,7 @@ function main(target, opt)
     assert(os.isexec(windeployqt), "windeployqt.exe not found!")
 
     -- find qml directory
-    local qmldir = target:values("qt.deploy.qmldir") or nil
+    local qmldir = target:values("qt.deploy.qmldir")
     if not qmldir then
         for _, sourcebatch in pairs(target:sourcebatches()) do
             if sourcebatch.rulename == "qt.qrc" then
