@@ -157,6 +157,7 @@ function winos.cmdargv(argv, opt)
     local limit = 4096
     local argn = 0
     for _, arg in ipairs(argv) do
+        arg = tostring(arg)
         argn = argn + #arg
         if argn > limit then
             break
