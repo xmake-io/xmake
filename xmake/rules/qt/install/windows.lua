@@ -86,7 +86,7 @@ function main(target, opt)
     -- add user flags
     local user_flags = target:values("qt.deploy.flags") or {}
     if user_flags then
-        table.join(argv, user_flags)
+        argv = table.join(argv, user_flags)
     end
 
     table.insert(argv, installfile)
