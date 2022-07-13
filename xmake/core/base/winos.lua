@@ -173,6 +173,10 @@ function winos.cmdargv(argv, opt)
             local idx = 1
             while idx <= #argv do
                 arg = tostring(argv[idx])
+                arg1 = argv[idx + 1]
+                if arg1 then
+                    arg1 = tostring(arg1)
+                end
                 -- we need ensure `/name value` in same line,
                 -- otherwise cl.exe will prompt that the corresponding parameter value cannot be found
                 --
@@ -182,9 +186,9 @@ function winos.cmdargv(argv, opt)
                 -- -Dxxx
                 -- foo.obj
                 --
-                if idx + 1 <= #argv and arg:find("^[-/]") and not tostring(argv[idx + 1]):find("^[-/]") then
+                if idx + 1 <= #argv and arg:find("^[-/]") and not arg1:find("^[-/]") then
                     f:write(os.args(arg, {escape = opt.escape}) .. " ")
-                    f:write(os.args(argv[idx + 1], {escape = opt.escape}) .. "\n")
+                    f:write(os.args(arg1, {escape = opt.escape}) .. "\n")
                     idx = idx + 2
                 else
                     f:write(os.args(arg, {escape = opt.escape}) .. "\n")
