@@ -184,6 +184,11 @@ function _find_package(cmake, name, opt)
                         links = links or {}
                         table.insert(links, link)
                     end
+                -- is link? e.g. -lxxx
+                elseif line:startswith("-l") then
+                    local link = line:sub(3):trim()
+                    links = links or {}
+                    table.insert(links, link)
                 end
             end
         end
