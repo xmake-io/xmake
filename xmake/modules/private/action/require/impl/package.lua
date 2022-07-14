@@ -462,7 +462,7 @@ end
 
 -- init requireinfo
 function _init_requireinfo(requireinfo, package, opt)
-    -- pass root toolchains to top library package
+    -- pass root configs to top library package
     requireinfo.configs = requireinfo.configs or {}
     if opt.is_toplevel then
         requireinfo.is_toplevel = true
@@ -490,6 +490,13 @@ function _finish_requireinfo(requireinfo, package)
     else
         if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
             requireinfo.configs.vs_runtime = "MT"
+        end
+        local external = project.policy("package.include_external_headers")
+        if external == nil then
+            external = package:policy("package.include_external_headers")
+        end
+        if requireinfo.external == nil and external ~= nil then
+            requireinfo.external = external
         end
     end
     -- we need ensure readonly configs
@@ -620,6 +627,7 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
         end
         requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
         requireinfo_configs.vs_runtime = requireinfo_configs.vs_runtime or parentinfo_configs.vs_runtime
+        requireinfo_configs.lto = requireinfo_configs.lto or parentinfo_configs.lto
         requireinfo.configs = requireinfo_configs
     end
 end

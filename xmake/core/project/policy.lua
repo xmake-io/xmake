@@ -47,9 +47,9 @@ function policy.policies()
             ["build.merge_archive"]              = {description = "Enable merge archive intead of linking for all dependent targets.", default = false, type = "boolean"},
             -- C/C++ build cache
             ["build.ccache"]                     = {description = "Enable C/C++ build cache.", type = "boolean"},
-            -- Enable build warning output, it's disabled by default and we need `xmake -w/-vD` to look at it.
+            -- enable build warning output, it's disabled by default and we need `xmake -w/-vD` to look at it.
             ["build.warning"]                    = {description = "Enable build warning output.", type = "boolean"},
-            -- Enable LTO linker-time optimization for c/c++ building.
+            -- enable LTO linker-time optimization for c/c++ building.
             ["build.optimization.lto"]           = {description = "Enable LTO linker-time optimization for c/c++ building.", type = "boolean"},
             -- preprocessor configuration for ccache/distcc, we can disable linemarkers to speed up preprocess
             ["preprocessor.linemarkers"]         = {description = "Enable linemarkers for preprocessor.", default = true, type = "boolean"},
@@ -65,6 +65,8 @@ function policy.policies()
             ["package.fetch_only"]               = {description = "Only fetch packages on system.", type = "boolean"},
             -- only install packages from remote
             ["package.install_only"]             = {description = "Only install packages from remote.", type = "boolean"},
+            -- use includes as external header files? e.g. -isystem ..
+            ["package.include_external_headers"] = {description = "Use includes as external headers.", type = "boolean"},
             -- inherit the configs from the external command arguments, e.g. toolchains, `xmake f --toolchain=`
             ["package.inherit_external_configs"] = {description = "Inherit the configs from the external command arguments.", default = true, type = "boolean"}
         }
