@@ -80,10 +80,10 @@ function _find_package(cmake, name, opt)
         testname, name:upper(), name:upper())
     cmakefile:print("   target_include_directories(%s PRIVATE ${%s_CXX_INCLUDE_DIRS})",
         testname, name)
-    cmakefile:print("   target_link_libraries(%s %s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
-        testname, name, name, name, name)
-    cmakefile:print("   target_link_libraries(%s %s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
-        testname, name:upper(), name:upper(), name:upper(), name:upper())
+    cmakefile:print("   target_link_libraries(%s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
+        testname, name, name, name)
+    cmakefile:print("   target_link_libraries(%s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
+        testname, name:upper(), name:upper(), name:upper())
     cmakefile:print("endif(%s_FOUND)", name)
     cmakefile:close()
 
