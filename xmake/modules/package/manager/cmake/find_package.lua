@@ -70,7 +70,6 @@ function _find_package(cmake, name, opt)
             end
         end
     end
-    print(requirestr)
     local testname = "test_" .. name
     cmakefile:print("find_package(%s REQUIRED)", requirestr)
     cmakefile:print("if(%s_FOUND)", name)
