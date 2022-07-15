@@ -49,10 +49,15 @@ function _do_build_file(target, sourcefile, opt)
     local dryrun = option.get("dry-run")
 
     -- need build this object?
-    -- @note we use mtime(dependfile) instead of mtime(objectfile) to ensure the object file is is fully compiled.
+    --
+    -- we need use `os.mtime(dependfile)` to determine the mtime of the dependfile to avoid objectfile corruption due to compilation interruptions
     -- @see https://github.com/xmake-io/xmake/issues/748
+    --
+    -- we also need avoid the problem of not being able to recompile after the objectfile has been deleted
+    -- @see https://github.com/xmake-io/xmake/issues/2551#issuecomment-1183922208
     local depvalues = {compinst:program(), compflags}
-    if not dryrun and not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile), values = depvalues}) then
+    local lastmtime = os.isfile(objectfile) and os.mtime(dependfile) or 0
+    if not dryrun and not depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
         return
     end
 
