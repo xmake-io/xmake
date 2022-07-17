@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.6.9
+
 ### New features
 
 * [#2474](https://github.com/xmake-io/xmake/issues/2474): Add icx and dpcpp toolchains
@@ -1335,6 +1337,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.6.9
 
 ### 新特性
 
