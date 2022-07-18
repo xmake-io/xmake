@@ -206,7 +206,15 @@ function main(name, opt)
 
     -- set compiler settings
     if opt.plat == "windows" then
-        local vsvers = {["2019"] = "16", ["2017"] = "15", ["2015"] = "14", ["2013"] = "12", ["2012"] = "11", ["2010"] = "10", ["2008"] = "9", ["2005"] = "8"}
+        local vsvers = {["2022"] = "17",
+                        ["2019"] = "16",
+                        ["2017"] = "15",
+                        ["2015"] = "14",
+                        ["2013"] = "12",
+                        ["2012"] = "11",
+                        ["2010"] = "10",
+                        ["2008"] = "9",
+                        ["2005"] = "8"}
         local vs = assert(config.get("vs"), "vs not found!")
         table.insert(argv, "-s")
         table.insert(argv, "compiler=Visual Studio")
