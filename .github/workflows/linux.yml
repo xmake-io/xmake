@@ -67,11 +67,9 @@ jobs:
           echo "$PPA_GPG_PRIKEY_2C0C68C9" > ppa_gpg.key
           gpg --import ppa_gpg.key
           scripts/makepkg jellyfish
-          scripts/makeppa groovy
           scripts/makeppa focal
           scripts/makeppa bionic
           scripts/makeppa xenial
           scripts/makeppa trusty
-          scripts/makeppa precise
 
 
