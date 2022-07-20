@@ -492,13 +492,6 @@ function _finish_requireinfo(requireinfo, package)
             requireinfo.configs.vs_runtime = "MT"
         end
     end
-    local external = project.policy("package.include_external_headers")
-    if external == nil then
-        external = package:policy("package.include_external_headers")
-    end
-    if requireinfo.external == nil and external ~= nil then
-        requireinfo.external = external
-    end
     -- we need ensure readonly configs
     for _, name in ipairs(table.keys(requireinfo.configs)) do
         if package:extraconf("configs", name, "readonly") then

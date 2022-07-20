@@ -99,11 +99,18 @@ function _get_configs(package, configs)
         end
     end
     local policies = get_config("policies")
-    if package:config("lto") then
+    if package:config("lto") and (not policies or not policies:find("build.optimization.lto", 1, true)) then
         if policies then
             policies = policies .. ",build.optimization.lto"
         else
             policies = "build.optimization.lto"
+        end
+    end
+    if not package:use_external_includes() and (not policies or not policies:find("package.include_external_headers", 1, true)) then
+        if policies then
+            policies = policies .. ",package.include_external_headers:n"
+        else
+            policies = "package.include_external_headers:n"
         end
     end
     if policies then

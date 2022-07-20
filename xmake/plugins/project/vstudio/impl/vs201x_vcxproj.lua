@@ -498,7 +498,7 @@ function _make_resource_options_cl(vcxprojfile, flags)
 
     -- get flags string
     local flagstr = os.args(flags)
-    
+
     -- make PreprocessorDefinitions
     local defstr = ""
     for _, flag in ipairs(flags) do
@@ -644,7 +644,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
     end
 
     if not (opt and opt.link) then
-            
+
         -- make CudaRuntime
         local cudart
         local cudaruntime = {
@@ -658,7 +658,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
         if cudart and cudaruntime[cudart] then
             vcxprojfile:print("<CudaRuntime%s>%s</CudaRuntime>", condition, cudaruntime[cudart])
         end
-        
+
         -- handle GPU debug info
         if flagstr:find("%-G") then
             vcxprojfile:print("<GPUDebugInfo%s>true</GPUDebugInfo>", condition)
@@ -668,7 +668,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
         if flagstr:find("%-use_fast_math") then
             vcxprojfile:print("<FastMath%s>true</FastMath>", condition)
         end
-        
+
         -- handle relocatable device code
         local rdc
         for _, flag in ipairs(flags) do
@@ -906,13 +906,13 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
         end
 
     vcxprojfile:leave("</ClCompile>")
-    
+
     vcxprojfile:enter("<ResourceCompile>")
         -- make resource options
         _make_resource_options_cl(vcxprojfile, targetinfo.commonflags.cl)
-    
+
     vcxprojfile:leave("</ResourceCompile>")
-    
+
     local cuda = _check_cuda(target)
     if cuda then
         -- for CUDA linker?
@@ -1080,8 +1080,8 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
 
     -- enter it
     local nodename
-    if     sourcekind == "as"  then nodename = "CustomBuild" 
-    elseif sourcekind == "mrc" then nodename = "ResourceCompile" 
+    if     sourcekind == "as"  then nodename = "CustomBuild"
+    elseif sourcekind == "mrc" then nodename = "ResourceCompile"
     elseif sourcekind == "cu"  then nodename = "CudaCompile"
     elseif sourcekind == "cc" or sourcekind == "cxx" then nodename = "ClCompile"
     end
@@ -1219,8 +1219,8 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
 
         -- enter it
         local nodename
-        if     info.sourcekind == "as"  then nodename = "CustomBuild" 
-        elseif info.sourcekind == "mrc" then nodename = "ResourceCompile" 
+        if     info.sourcekind == "as"  then nodename = "CustomBuild"
+        elseif info.sourcekind == "mrc" then nodename = "ResourceCompile"
         elseif info.sourcekind == "cu"  then nodename = "CudaCompile"
         elseif info.sourcekind == "cc" or info.sourcekind == "cxx" then nodename = "ClCompile"
         end

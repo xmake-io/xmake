@@ -547,6 +547,24 @@ function _instance:is_local()
     return self:is_embed() or self:is_thirdparty()
 end
 
+-- use external includes?
+function _instance:use_external_includes()
+    local external = self:requireinfo().external
+    if external == nil then
+        local project = package._project()
+        if project then
+            external = project.policy("package.include_external_headers")
+        end
+    end
+    if external == nil then
+        external = self:policy("package.include_external_headers")
+    end
+    if external == nil then
+        external = true
+    end
+    return external
+end
+
 -- is debug package? (deprecated)
 function _instance:debug()
     return self:is_debug()
@@ -1509,10 +1527,7 @@ function _instance:fetch(opt)
     if opt.external ~= nil then
         external = opt.external
     else
-        external = self:requireinfo().external
-    end
-    if external == nil then
-        external = true
+        external = self:use_external_includes()
     end
 
     -- fetch binary tool?
