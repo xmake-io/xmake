@@ -275,7 +275,7 @@ function _get_configs_for_generic(package, configs, opt)
     if package:config("pic") ~= false then
         table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
     end
-    if package:policy("package.include_external_headers") == false then
+    if not package:use_external_includes() then
         table.insert(configs, "-DCMAKE_NO_SYSTEM_FROM_IMPORTED=ON")
     end
 end
