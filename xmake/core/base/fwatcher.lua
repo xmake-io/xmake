@@ -220,4 +220,61 @@ function fwatcher.watchdirs(watchdirs, callback, opt)
     return ok, errors
 end
 
+-- watch the created file path in directories
+--
+-- @param watchdirs     the watch directories, pattern path string or path list
+-- @param callback      the event callback
+-- @param opt           the option, e.g. {timeout = -1, recursion = true}
+--
+-- @code
+-- fwatcher.on_created("/tmp/test_*", function (filepath)
+--   print(filepath)
+-- end, {timeout = -1, recursion = true})
+-- @endcode
+function fwatcher.on_created(watchdirs, callback, opt)
+    return fwatcher.watchdirs(watchdirs, function (event)
+        if event and event.type == fwatcher.ET_CREATE then
+            callback(event.path)
+        end
+    end, opt)
+end
+
+-- watch the modified file path in directories
+--
+-- @param watchdirs     the watch directories, pattern path string or path list
+-- @param callback      the event callback
+-- @param opt           the option, e.g. {timeout = -1, recursion = true}
+--
+-- @code
+-- fwatcher.on_modified("/tmp/test_*", function (filepath)
+--   print(filepath)
+-- end, {timeout = -1, recursion = true})
+-- @endcode
+function fwatcher.on_modified(watchdirs, callback, opt)
+    return fwatcher.watchdirs(watchdirs, function (event)
+        if event and event.type == fwatcher.ET_MODIFY then
+            callback(event.path)
+        end
+    end, opt)
+end
+
+-- watch the deleted file path in directories
+--
+-- @param watchdirs     the watch directories, pattern path string or path list
+-- @param callback      the event callback
+-- @param opt           the option, e.g. {timeout = -1, recursion = true}
+--
+-- @code
+-- fwatcher.on_deleted("/tmp/test_*", function (filepath)
+--   print(filepath)
+-- end, {timeout = -1, recursion = true})
+-- @endcode
+function fwatcher.on_deleted(watchdirs, callback, opt)
+    return fwatcher.watchdirs(watchdirs, function (event)
+        if event and event.type == fwatcher.ET_DELETE then
+            callback(event.path)
+        end
+    end, opt)
+end
+
 return fwatcher
