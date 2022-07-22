@@ -18,5 +18,29 @@
 -- @file        fwatcher.lua
 --
 
+-- define module
+local sandbox_core_base_fwatcher = sandbox_core_base_fwatcher or {}
+
+-- load modules
+local fwatcher = require("base/fwatcher")
+local raise    = require("sandbox/modules/raise")
+
+-- add watch directory
+function sandbox_core_base_fwatcher.add(watchdir, opt)
+    local ok, errors = fwatcher.add(watchdir, opt)
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- remove watch directory
+function sandbox_core_base_fwatcher.remove(watchdir)
+    local ok, errors = fwatcher.remove(watchdir)
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- return module
-return require("base/fwatcher")
+return sandbox_core_base_fwatcher
+

@@ -29,6 +29,8 @@ local scheduler = require("base/scheduler")
 
 -- save original interfaces
 fwatcher._open       = fwatcher._open or fwatcher.open
+fwatcher._add        = fwatcher._add or fwatcher.add
+fwatcher._remove     = fwatcher._remove or fwatcher.remove
 fwatcher._wait       = fwatcher._wait or fwatcher.wait
 fwatcher._close      = fwatcher._close or fwatcher.close
 
@@ -45,6 +47,14 @@ end
 -- get poller object type, poller.OT_FWATCHER
 function _instance:otype()
     return 4
+end
+
+-- add watch directory, e.g. {recursion = true}
+function _instance:add(watchdir, opt)
+end
+
+-- remove watch directory
+function _instance:remove(watchdir)
 end
 
 -- wait event
