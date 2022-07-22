@@ -25,6 +25,11 @@ local sandbox_core_base_fwatcher = sandbox_core_base_fwatcher or {}
 local fwatcher = require("base/fwatcher")
 local raise    = require("sandbox/modules/raise")
 
+-- the fwatcher event type
+sandbox_core_base_fwatcher.ET_MODIFY = fwatcher.ET_MODIFY
+sandbox_core_base_fwatcher.ET_CREATE = fwatcher.ET_CREATE
+sandbox_core_base_fwatcher.ET_DELETE = fwatcher.ET_DELETE
+
 -- add watch directory
 function sandbox_core_base_fwatcher.add(watchdir, opt)
     local ok, errors = fwatcher.add(watchdir, opt)

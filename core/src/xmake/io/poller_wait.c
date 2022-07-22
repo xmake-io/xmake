@@ -54,7 +54,22 @@ static tb_void_t xm_io_poller_event(tb_poller_ref_t poller, tb_poller_object_ref
     if (priv) lua_pushstring(g_lua, (tb_char_t const*)priv);
     else lua_pushlightuserdata(g_lua, object->ref.ptr);
     lua_rawseti(g_lua, -2, 2);
-    lua_pushinteger(g_lua, (tb_int_t)events);
+    if (object->type == TB_POLLER_OBJECT_FWATCHER)
+    {
+        lua_newtable(g_lua);
+        tb_fwatcher_event_t* event = (tb_fwatcher_event_t*)events;
+        if (event)
+        {
+            lua_pushstring(g_lua, "path");
+            lua_pushstring(g_lua, event->filepath);
+            lua_settable(g_lua, -3);
+
+            lua_pushstring(g_lua, "type");
+            lua_pushinteger(g_lua, event->event);
+            lua_settable(g_lua, -3);
+        }
+    }
+    else lua_pushinteger(g_lua, (tb_int_t)events);
     lua_rawseti(g_lua, -2, 3);
     lua_rawseti(g_lua, -2, ++g_events_count);
 }

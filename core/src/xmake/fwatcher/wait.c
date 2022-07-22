@@ -48,7 +48,26 @@ tb_int_t xm_fwatcher_wait(lua_State* lua)
     tb_fwatcher_ref_t fwatcher = (tb_fwatcher_ref_t)xm_lua_topointer(lua, 1);
     tb_check_return_val(fwatcher, 0);
 
-    // save result: ok
-    lua_pushboolean(lua, tb_true);
+    // get the timeout
+    tb_long_t timeout = (tb_long_t)luaL_checkinteger(lua, 2);
+
+    // wait fwatcher event
+    tb_fwatcher_event_t event;
+    tb_long_t ok = tb_fwatcher_wait(fwatcher, &event, timeout);
+
+    // save result
+    lua_pushinteger(lua, ok);
+    if (ok > 0)
+    {
+        lua_newtable(lua);
+        lua_pushstring(lua, "path");
+        lua_pushstring(lua, event.filepath);
+        lua_settable(lua, -3);
+
+        lua_pushstring(lua, "type");
+        lua_pushinteger(lua, event.event);
+        lua_settable(lua, -3);
+        return 2;
+    }
     return 1;
 }

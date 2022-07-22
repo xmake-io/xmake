@@ -34,6 +34,11 @@ fwatcher._remove     = fwatcher._remove or fwatcher.remove
 fwatcher._wait       = fwatcher._wait or fwatcher.wait
 fwatcher._close      = fwatcher._close or fwatcher.close
 
+-- the fwatcher event type, @see tbox/platform/fwatcher.h
+fwatcher.ET_MODIFY = 1
+fwatcher.ET_CREATE = 2
+fwatcher.ET_DELETE = 4
+
 -- get cdata of fwatcher
 function _instance:cdata()
     local cdata = self._CDATA
@@ -89,7 +94,7 @@ end
 --
 -- @param timeout   the timeout
 --
--- @return          ok, event
+-- @return          ok, event, e.g {type = fwatcher.ET_MODIFY, path = "/tmp"}
 --
 function _instance:wait(timeout)
 
