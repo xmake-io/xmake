@@ -41,6 +41,15 @@ function sandbox_core_base_fwatcher.remove(watchdir)
     end
 end
 
+-- wait event
+function sandbox_core_base_fwatcher.wait(timeout)
+    local ok, event_or_errors = fwatcher.wait(timeout)
+    if ok < 0 and event_or_errors then
+        raise(event_or_errors)
+    end
+    return ok, event_or_errors
+end
+
 -- return module
 return sandbox_core_base_fwatcher
 

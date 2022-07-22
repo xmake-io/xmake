@@ -37,7 +37,7 @@ fwatcher._close      = fwatcher._close or fwatcher.close
 -- get cdata of fwatcher
 function _instance:cdata()
     local cdata = self._CDATA
-    if not cdata then
+    if not cdata and not self._CLOSED then
         cdata = fwatcher._open()
         self._CDATA = cdata
     end
@@ -51,17 +51,37 @@ end
 
 -- add watch directory, e.g. {recursion = true}
 function _instance:add(watchdir, opt)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    -- add watchdir
+    opt = opt or {}
+    return fwatcher._add(self:cdata(), watchdir, opt.recursion or false)
 end
 
 -- remove watch directory
 function _instance:remove(watchdir)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    -- remove watchdir
+    opt = opt or {}
+    return fwatcher._remove(self:cdata(), watchdir)
 end
 
 -- wait event
 --
 -- @param timeout   the timeout
 --
--- @return          ok, status
+-- @return          ok, event
 --
 function _instance:wait(timeout)
 
@@ -73,16 +93,16 @@ function _instance:wait(timeout)
 
     -- wait events
     local result = -1
-    local status_or_errors = nil
+    local event_or_errors = nil
     if scheduler:co_running() then
-        result, status_or_errors = scheduler:poller_waitproc(self, timeout or -1)
+        result, event_or_errors = scheduler:poller_waitfs(self, timeout or -1)
     else
-        result, status_or_errors = fwatcher._wait(self:cdata(), timeout or -1)
+        result, event_or_errors = fwatcher._wait(self:cdata(), timeout or -1)
     end
-    if result < 0 and status_or_errors then
-        status_or_errors = string.format("%s: %s", self, status_or_errors)
+    if result < 0 and event_or_errors then
+        event_or_errors = string.format("%s: %s", self, event_or_errors)
     end
-    return result, status_or_errors
+    return result, event_or_errors
 end
 
 -- close instance
@@ -106,6 +126,7 @@ function _instance:close()
     ok = fwatcher._close(self:cdata())
     if ok then
         self._CDATA = nil
+        self._CLOSED = true
     end
     return ok
 end
@@ -125,6 +146,7 @@ setmetatable(_instance, {
         __gc = function(self)
             if self._CDATA and fwatcher._close(self._CDATA) then
                 self._CDATA = nil
+                self._CLOSED = true
             end
         end
     })

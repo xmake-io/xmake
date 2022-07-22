@@ -31,11 +31,11 @@ sandbox_core_base_process._subprocess = sandbox_core_base_process._subprocess or
 
 -- wait subprocess
 function sandbox_core_base_instance.wait(proc, timeout)
-    local ok, status, errors = proc:_wait(timeout)
-    if errors then
-        raise(errors)
+    local ok, status_or_errors = proc:_wait(timeout)
+    if ok < 0 and status_or_errors then
+        raise(status_or_errors)
     end
-    return ok, status
+    return ok, status_or_errors
 end
 
 -- kill subprocess
