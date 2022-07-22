@@ -60,7 +60,11 @@ function _instance:add(watchdir, opt)
 
     -- add watchdir
     opt = opt or {}
-    return fwatcher._add(self:cdata(), watchdir, opt.recursion or false)
+    local ok, errors = fwatcher._add(self:cdata(), watchdir, opt.recursion or false)
+    if not ok then
+        errors = string.format("<fwatcher>: add %s failed, %s", watchdir, errors or "unknown errors")
+    end
+    return ok, errors
 end
 
 -- remove watch directory
@@ -74,7 +78,11 @@ function _instance:remove(watchdir)
 
     -- remove watchdir
     opt = opt or {}
-    return fwatcher._remove(self:cdata(), watchdir)
+    local ok, errors = fwatcher._remove(self:cdata(), watchdir)
+    if not ok then
+        errors = string.format("<fwatcher>: remove %s failed, %s", watchdir, errors or "unknown errors")
+    end
+    return ok, errors
 end
 
 -- wait event
@@ -100,7 +108,7 @@ function _instance:wait(timeout)
         result, event_or_errors = fwatcher._wait(self:cdata(), timeout or -1)
     end
     if result < 0 and event_or_errors then
-        event_or_errors = string.format("%s: %s", self, event_or_errors)
+        event_or_errors = string.format("<fwatcher>: wait failed, %s", event_or_errors)
     end
     return result, event_or_errors
 end
@@ -139,15 +147,16 @@ function _instance:_ensure_opened()
     return true
 end
 
-setmetatable(_instance, {
-        __tostring = function()
-            return "<fwatcher>"
-        end,
-        __gc = function(self)
-            if self._CDATA and fwatcher._close(self._CDATA) then
-                self._CDATA = nil
-                self._CLOSED = true
-            end
-        end
-    })
-return _instance
+function fwatcher.add(watchdir, opt)
+    return _instance:add(watchdir, opt)
+end
+
+function fwatcher.remove(watchdir)
+    return _instance:remove(watchdir)
+end
+
+function fwatcher.wait(timeout)
+    return _instance:wait(timeout)
+end
+
+return fwatcher

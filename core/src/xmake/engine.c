@@ -247,6 +247,9 @@ tb_int_t xm_process_close(lua_State* lua);
 
 // the fwatcher functions
 tb_int_t xm_fwatcher_open(lua_State* lua);
+tb_int_t xm_fwatcher_add(lua_State* lua);
+tb_int_t xm_fwatcher_remove(lua_State* lua);
+tb_int_t xm_fwatcher_wait(lua_State* lua);
 tb_int_t xm_fwatcher_close(lua_State* lua);
 
 // the sandbox functions
@@ -496,6 +499,9 @@ static luaL_Reg const g_process_functions[] =
 static luaL_Reg const g_fwatcher_functions[] =
 {
     { "open",           xm_fwatcher_open    }
+,   { "add",            xm_fwatcher_add     }
+,   { "remove",         xm_fwatcher_remove  }
+,   { "wait",           xm_fwatcher_wait    }
 ,   { "close",          xm_fwatcher_close   }
 ,   { tb_null,          tb_null             }
 };
