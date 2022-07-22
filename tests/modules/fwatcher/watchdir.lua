@@ -1,6 +1,7 @@
 import("core.base.fwatcher")
 
 function main(watchdir)
+    print("watch %s ..", watchdir)
     fwatcher.add(watchdir)
     while true do
         local ok, event = fwatcher.wait(-1)
