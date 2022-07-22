@@ -130,7 +130,7 @@ MMFLAGS				=
 LDFLAGS_ARCH		:= $(if $(findstring arm64,$(BUILD_ARCH)),,-pagezero_size 10000 -image_base 100000000)
 LDFLAGS_RELEASE		= -flto
 LDFLAGS_DEBUG		=
-LDFLAGS				= -m$(BITS) -all_load $(LDFLAGS_ARCH) -mmacosx-version-min=10.7
+LDFLAGS				= -m$(BITS) -all_load $(LDFLAGS_ARCH) -mmacosx-version-min=10.7 -framework CoreFoundation -framework CoreServices
 LDFLAGS-L			= -L
 LDFLAGS-l			= -l
 LDFLAGS-f			=

@@ -229,6 +229,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/print \
 						tbox/src/tbox/platform/stdfile \
 						tbox/src/tbox/platform/process \
+						tbox/src/tbox/platform/fwatcher \
 						tbox/src/tbox/platform/cpu \
 						tbox/src/tbox/platform/sched \
 						tbox/src/tbox/platform/semaphore \
@@ -301,6 +302,9 @@ endif
 tbox_INC_DIRS 			+= \
 						tbox/src \
 						inc/$(PLAT)
+
+# add frameworks
+tbox_CFLAGS 			+= -framework CoreFoundation -framework CoreServices
 
 # use system tbox library?
 tbox_C_FILES 			:= $(if $(findstring tbox,$(base_LIBNAMES)),,$(tbox_C_FILES))
