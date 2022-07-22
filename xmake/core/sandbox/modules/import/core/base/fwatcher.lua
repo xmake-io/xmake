@@ -55,6 +55,14 @@ function sandbox_core_base_fwatcher.wait(timeout)
     return ok, event_or_errors
 end
 
+-- wait watchdirs
+function sandbox_core_base_fwatcher.watchdirs(watchdirs, callback, opt)
+    local ok, errors = fwatcher.watchdirs(watchdirs, callback, opt)
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- return module
 return sandbox_core_base_fwatcher
 

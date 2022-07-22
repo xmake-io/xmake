@@ -23,6 +23,7 @@ local fwatcher   = fwatcher or {}
 local _instance = _instance or {}
 
 -- load modules
+local os        = require("base/os")
 local string    = require("base/string")
 local coroutine = require("base/coroutine")
 local scheduler = require("base/scheduler")
@@ -152,16 +153,71 @@ function _instance:_ensure_opened()
     return true
 end
 
+-- add watchdir
 function fwatcher.add(watchdir, opt)
     return _instance:add(watchdir, opt)
 end
 
+-- remove watchdir
 function fwatcher.remove(watchdir)
     return _instance:remove(watchdir)
 end
 
+-- wait event
 function fwatcher.wait(timeout)
     return _instance:wait(timeout)
+end
+
+-- watch directories
+--
+-- @param watchdirs     the watch directories, pattern path string or path list
+-- @param callback      the event callback
+-- @param opt           the option, e.g. {timeout = -1, recursion = true}
+--
+-- @code
+-- fwatcher.watchdirs("/tmp/test_*", function (event)
+--   print(event)
+-- end, {timeout = -1, recursion = true})
+-- @endcode
+function fwatcher.watchdirs(watchdirs, callback, opt)
+
+    -- add watch directories
+    opt = opt or {}
+    if type(watchdirs) == "string" then
+        watchdirs = os.dirs(watchdirs)
+    end
+    local ok = true
+    local errors = nil
+    for _, watchdir in ipairs(watchdirs) do
+        ok, errors = fwatcher.add(watchdir, opt.recursion)
+        if not ok then
+            break
+        end
+    end
+
+    -- do watch
+    while ok do
+        local result, event_or_errors = fwatcher.wait(opt.timeout or -1)
+        if result < 0 then
+            ok = false
+            errors = event_or_errors
+            break
+        end
+        if result > 0 then
+            callback(event_or_errors)
+        end
+    end
+
+    -- remove watch directories
+    for _, watchdir in ipairs(watchdirs) do
+        local result, rm_errors = fwatcher.remove(watchdir)
+        if not result then
+            ok = false
+            errors = errors or rm_errors
+            break
+        end
+    end
+    return ok, errors
 end
 
 return fwatcher
