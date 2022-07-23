@@ -26,7 +26,7 @@ task("watch")
             ,   description = "Watch the project directories and run command."
             ,   options =
                 {
-                    {'c', "command"     , "kv"  , nil   ,   "Run the given command instead of the default build command.",
+                    {'c', "commands"    , "kv"  , nil   ,   "Run the given commands instead of the default build command.",
                                                             "e.g.",
                                                             "    $ xmake watch -c 'xmake -rv'",
                                                             "    $ xmake watch -c 'xmake -vD; xmake run hello'"},
@@ -39,7 +39,8 @@ task("watch")
                                                             "    $ xmake watch -d 'src/*" .. path.envsep() .. "tests/**/subdir'"},
                     {'r', "run"         , "k"   , nil   ,   "Build and run target."},
                     {'t', "target"      , "kv"  , nil   ,   "Build the given target.",
-                                                            values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
+                                                            values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end },
+                    {'-', "arbitrary"   , "vs"   , nil  ,   "Run an arbitrary command."}
                 }
             }
 

@@ -58,12 +58,17 @@ function _run_command()
     try
     {
         function ()
-            local command = option.get("command")
+            local commands = option.get("commands")
             local scriptfile = option.get("script")
-            if command then
-                for _, command in ipairs(command:split(";")) do
+            local arbitrary = option.get("arbitrary")
+            if commands then
+                for _, command in ipairs(commands:split(";")) do
                     os.exec(command)
                 end
+            elseif arbitrary then
+                local program = arbitrary[1]
+                local argv = #arbitrary > 1 and table.slice(arbitrary, 2) or {}
+                os.execv(program, argv)
             elseif scriptfile and os.isfile(scriptfile) and path.extension(scriptfile) == ".lua" then
                 local script = import(path.basename(scriptfile),
                     {rootdir = path.directory(scriptfile), anonymous = true})
