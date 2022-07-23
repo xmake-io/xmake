@@ -189,7 +189,7 @@ function fwatcher.watchdirs(watchdirs, callback, opt)
     local ok = true
     local errors = nil
     for _, watchdir in ipairs(watchdirs) do
-        ok, errors = fwatcher.add(watchdir, opt.recursion)
+        ok, errors = fwatcher.add(watchdir, opt)
         if not ok then
             break
         end

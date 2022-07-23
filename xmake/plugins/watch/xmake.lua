@@ -33,7 +33,7 @@ task("watch")
                     {'s', "script"      , "kv"  , nil   ,   "Run the given lua script file.",
                                                             "e.g.",
                                                             "    $ xmake watch -s /tmp/watch.lua"},
-                    {'d', "dir"         , "kv"  , nil   ,   "Set the given watch directories, the project directories will be watched by default.",
+                    {'d', "watchdirs"   , "kv"  , nil   ,   "Set the given watch directories, the project directories will be watched by default.",
                                                             "e.g.",
                                                             "    $ xmake watch -d src",
                                                             "    $ xmake watch -d 'src/*" .. path.envsep() .. "tests/**/subdir'"},
