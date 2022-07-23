@@ -40,7 +40,11 @@ task("watch")
                     {'r', "run"         , "k"   , nil   ,   "Build and run target."},
                     {'t', "target"      , "kv"  , nil   ,   "Build the given target.",
                                                             values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end },
-                    {'-', "arbitrary"   , "vs"   , nil  ,   "Run an arbitrary command."}
+                    {'-', "arbitrary"   , "vs"   , nil  ,   "Run an arbitrary command.",
+                                                            "e.g.",
+                                                            "    $ xmake watch -- echo hello xmake!",
+                                                            "    $ xmake watch -- xmake run",
+                                                            "    $ xmake watch -- xmake -rv"}
                 }
             }
 
