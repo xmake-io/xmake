@@ -303,9 +303,6 @@ tbox_INC_DIRS 			+= \
 						tbox/src \
 						inc/$(PLAT)
 
-# add frameworks
-tbox_CFLAGS 			+= -framework CoreFoundation -framework CoreServices
-
 # use system tbox library?
 tbox_C_FILES 			:= $(if $(findstring tbox,$(base_LIBNAMES)),,$(tbox_C_FILES))
 tbox_M_FILES 			:= $(if $(findstring tbox,$(base_LIBNAMES)),,$(tbox_M_FILES))
