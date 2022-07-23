@@ -23,15 +23,20 @@ import("core.base.option")
 import("core.base.fwatcher")
 import("core.project.config")
 
--- get watchdirs
-function _get_watchdirs()
-    local results = {}
+-- add watchdir
+function _add_watchdir(watchdir, opt)
+    opt = opt or {}
+    cprint("watching ${bright}%s/%s${clear} ..", watchdir, opt.recursion and "**" or "*")
+    fwatcher.add(watchdir, opt)
+end
+
+-- add watchdirs
+function _add_watchdirs()
     local watchdirs = option.get("watchdirs")
     if watchdirs then
         for _, watchdir in ipairs(path.splitenv(watchdirs)) do
-            local dirs = os.dirs(watchdir)
-            if dirs then
-                table.join2(results, dirs)
+            for _, dir in ipairs(os.dirs(watchdir)) do
+                _add_watchdir(dir, {recursion = true})
             end
         end
     elseif os.isfile(os.projectfile()) then
@@ -39,48 +44,65 @@ function _get_watchdirs()
         for _, watchdir in ipairs(watchdirs) do
             local buildir = path.absolute(config.buildir())
             if path.absolute(watchdir) ~= buildir then
-                table.insert(results, watchdir)
+                _add_watchdir(watchdir, {recursion = true})
             end
         end
+        _add_watchdir(os.projectdir())
     else
-        table.insert(results, os.curdir())
+        _add_watchdir(watchdir, {recursion = true})
     end
-    return results
 end
 
 -- run command
 function _run_command()
-    if os.isfile(os.projectfile()) then
-        os.execv(os.programfile(), {"build", "-w"})
-    end
+    try
+    {
+        function ()
+            local command = option.get("command")
+            local scriptfile = option.get("script")
+            if command then
+                for _, command in ipairs(command:split(";")) do
+                    os.exec(command)
+                end
+            elseif os.isfile(scriptfile) and path.extension(scriptfile) == ".lua" then
+                local script = import(path.basename(scriptfile),
+                    {rootdir = path.directory(scriptfile), anonymous = true})
+                script()
+            elseif os.isfile(os.projectfile()) then
+                os.execv(os.programfile(), {"build", "-w"})
+            end
+        end,
+        catch
+        {
+            function (errors)
+                cprint(tostring(errors))
+            end
+        }
+    }
 end
 
 function main()
 
-    -- get watchdirs
-    local watchdirs = _get_watchdirs()
-    if #watchdirs > 0 then
-        for _, watchdir in ipairs(watchdirs) do
-            cprint("watching ${bright}%s${clear} ..", watchdir)
-        end
-    else
-        raise("no any watch directories!")
-    end
+    -- add watchdirs
+    _add_watchdirs()
 
     -- do watch
-    fwatcher.watchdirs(watchdirs, function (event)
-        local status
-        if event.type == fwatcher.ET_CREATE then
-            status = "created"
-        elseif event.type == fwatcher.ET_MODIFY then
-            status = "modified"
-        elseif event.type == fwatcher.ET_DELETE then
-            status = "deleted"
+    while true do
+        local ok, event = fwatcher.wait(-1)
+        if ok > 0 then
+            -- trace event
+            local status
+            if event.type == fwatcher.ET_CREATE then
+                status = "created"
+            elseif event.type == fwatcher.ET_MODIFY then
+                status = "modified"
+            elseif event.type == fwatcher.ET_DELETE then
+                status = "deleted"
+            end
+            print(event.path, status)
+
+            -- run command
+            _run_command()
         end
-        print(event.path, status)
-
-        -- run command
-        _run_command()
-
-    end, {recursion = option.get("recursion")})
+    end
 end
