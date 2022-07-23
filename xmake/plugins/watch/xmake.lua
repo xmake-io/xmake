@@ -26,7 +26,7 @@ task("watch")
             ,   description = "Watch the project directories and run command."
             ,   options =
                 {
-                    {'c', "commands"    , "kv"  , nil   ,   "Run the given commands instead of the default build command.",
+                    {'c', "commands"    , "kv"  , nil   ,   "Run the multiple commands instead of the default build command.",
                                                             "e.g.",
                                                             "    $ xmake watch -c 'xmake -rv'",
                                                             "    $ xmake watch -c 'xmake -vD; xmake run hello'"},
