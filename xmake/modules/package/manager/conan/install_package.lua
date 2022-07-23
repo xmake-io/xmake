@@ -95,8 +95,8 @@ function _conan_install_xmake_generator(conan)
 
         -- sort main urls
         local mainurls = {"https://github.com/xmake-io/conan-xmake_generator.git",
-                          "https://gitlab.com/tboox/conan-xmake_generator.git",
-                          "https://gitee.com/tboox/conan-xmake_generator.git"}
+                          "https://gitlab.com/xmake-io/conan-xmake_generator.git",
+                          "https://gitee.com/xmake-io/conan-xmake_generator.git"}
         fasturl.add(mainurls)
         mainurls = fasturl.sort(mainurls)
 
