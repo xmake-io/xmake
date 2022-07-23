@@ -144,7 +144,7 @@ function scheduler:_timer()
     return t
 end
 
--- get poller object data for socket, pipe or process object
+-- get poller object data for socket, pipe, process, fwatcher object
 function scheduler:_poller_data(obj)
     return self._POLLERDATA and self._POLLERDATA[obj] or nil
 end
@@ -196,19 +196,19 @@ function scheduler:_poller_events_cb(obj, events)
         return false, string.format("%s: cannot get poller data!", obj)
     end
 
-    -- is process object?
-    if obj:otype() == poller.OT_PROC then
+    -- is process/fwatcher object?
+    if obj:otype() == poller.OT_PROC or obj:otype() == poller.OT_FWATCHER then
 
-        -- resume coroutine and return the process exit status
-        pollerdata.proc_status = events
+        -- resume coroutine and return the process exit status/fwatcher event
+        pollerdata.object_event = events
 
-        -- waiting process? resume this coroutine
+        -- waiting process/fwatcher? resume this coroutine
         if pollerdata.co_waiting then
             local co_waiting = pollerdata.co_waiting
             pollerdata.co_waiting = nil
             return self:_poller_resume_co(co_waiting, 1)
         else
-            pollerdata.proc_pending = 1
+            pollerdata.object_pending = 1
         end
         return true
     end
@@ -745,14 +745,14 @@ function scheduler:poller_waitproc(obj, timeout)
     -- get and allocate poller object data
     local pollerdata = self:_poller_data(obj)
     if not pollerdata then
-        pollerdata = {proc_pending = 0, proc_status = 0}
+        pollerdata = {object_pending = 0, object_event = 0}
         self:_poller_data_set(obj, pollerdata)
     end
 
     -- has pending process status?
-    if pollerdata.proc_pending ~= 0 then
-        pollerdata.proc_pending = 0
-        return 1, pollerdata.proc_status
+    if pollerdata.object_pending ~= 0 then
+        pollerdata.object_pending = 0
+        return 1, pollerdata.object_event
     end
 
     -- insert poller object to poller for waiting process
@@ -776,8 +776,8 @@ function scheduler:poller_waitproc(obj, timeout)
     running:_timer_task_set(timer_task)
 
     -- set process status
-    pollerdata.proc_status  = 0
-    pollerdata.proc_pending = 0
+    pollerdata.object_event  = 0
+    pollerdata.object_pending = 0
     pollerdata.co_waiting   = running
 
     -- save the waiting poller object
@@ -785,7 +785,73 @@ function scheduler:poller_waitproc(obj, timeout)
 
     -- wait
     local ok = self:co_suspend()
-    return ok, pollerdata.proc_status
+    return ok, pollerdata.object_event
+end
+
+-- wait poller object/fwatcher status
+function scheduler:poller_waitfs(obj, timeout)
+
+    -- get the running coroutine
+    local running = self:co_running()
+    if not running then
+        return -1, "we must call poller_wait() in coroutine with scheduler!"
+    end
+
+    -- is stopped?
+    if not self._STARTED then
+        return -1, "the scheduler is stopped!"
+    end
+
+    -- check the object type
+    local otype = obj:otype()
+    if otype ~= poller.OT_FWATCHER then
+        return -1, string.format("%s: invalid object type(%d)!", obj, otype)
+    end
+
+    -- get and allocate poller object data
+    local pollerdata = self:_poller_data(obj)
+    if not pollerdata then
+        pollerdata = {object_pending = 0, object_event = 0}
+        self:_poller_data_set(obj, pollerdata)
+    end
+
+    -- has pending process status?
+    if pollerdata.object_pending ~= 0 then
+        pollerdata.object_pending = 0
+        return 1, pollerdata.object_event
+    end
+
+    -- insert poller object to poller for waiting fwatcher
+    local ok, errors = poller:insert(obj, 0, self._poller_events_cb)
+    if not ok then
+        return -1, errors
+    end
+
+    -- register timeout task to timer
+    local timer_task = nil
+    if timeout > 0 then
+        timer_task = self:_timer():post(function (cancel)
+            if not cancel and running:is_suspended() then
+                pollerdata.co_waiting = nil
+                running:waitobj_set(nil)
+                return self:co_resume(running, 0)
+            end
+            return true
+        end, timeout)
+    end
+    running:_timer_task_set(timer_task)
+
+    -- set fwatcher status
+    pollerdata.object_event  = 0
+    pollerdata.object_pending = 0
+    pollerdata.co_waiting   = running
+
+    -- save the waiting poller object
+    running:waitobj_set(obj)
+
+    -- wait
+    local ok = self:co_suspend()
+    return ok, pollerdata.object_event
 end
 
 -- cancel poller object events
@@ -794,7 +860,7 @@ function scheduler:poller_cancel(obj)
     -- reset the pollerdata data
     local pollerdata = self:_poller_data(obj)
     if pollerdata then
-        if pollerdata.poller_events_wait ~= 0 or obj:otype() == poller.OT_PROC then
+        if pollerdata.poller_events_wait ~= 0 or obj:otype() == poller.OT_PROC or obj:otype() == poller.OT_FWATCHER then
             local ok, errors = poller:remove(obj)
             if not ok then
                 return false, errors
@@ -818,7 +884,7 @@ function scheduler:stop()
     return true
 end
 
--- run loop, schedule coroutine with socket/io and sub-processes
+-- run loop, schedule coroutine with socket/io, sub-processes, fwatcher
 function scheduler:runloop()
 
     -- start loop

@@ -115,6 +115,11 @@ xmake_C_FILES 			+= \
 						process/wait \
 						process/kill \
 						process/close \
+						fwatcher/open \
+						fwatcher/add \
+						fwatcher/remove \
+						fwatcher/wait \
+						fwatcher/close \
 						sandbox/interactive \
 						semver/parse \
 						semver/compare \

@@ -26,9 +26,10 @@ local io     = require("base/io")
 local string = require("base/string")
 
 -- the poller object type, @see tbox/platform/poller.h
-poller.OT_SOCK = 1
-poller.OT_PIPE = 2
-poller.OT_PROC = 3
+poller.OT_SOCK     = 1
+poller.OT_PIPE     = 2
+poller.OT_PROC     = 3
+poller.OT_FWATCHER = 4
 
 -- the poller events, @see tbox/platform/poller.h
 poller.EV_POLLER_RECV    = 1

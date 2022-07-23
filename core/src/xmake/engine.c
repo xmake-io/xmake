@@ -245,6 +245,13 @@ tb_int_t xm_process_wait(lua_State* lua);
 tb_int_t xm_process_kill(lua_State* lua);
 tb_int_t xm_process_close(lua_State* lua);
 
+// the fwatcher functions
+tb_int_t xm_fwatcher_open(lua_State* lua);
+tb_int_t xm_fwatcher_add(lua_State* lua);
+tb_int_t xm_fwatcher_remove(lua_State* lua);
+tb_int_t xm_fwatcher_wait(lua_State* lua);
+tb_int_t xm_fwatcher_close(lua_State* lua);
+
 // the sandbox functions
 tb_int_t xm_sandbox_interactive(lua_State* lua);
 
@@ -485,6 +492,17 @@ static luaL_Reg const g_process_functions[] =
 ,   { "wait",           xm_process_wait     }
 ,   { "kill",           xm_process_kill     }
 ,   { "close",          xm_process_close    }
+,   { tb_null,          tb_null             }
+};
+
+// the fwatcher functions
+static luaL_Reg const g_fwatcher_functions[] =
+{
+    { "open",           xm_fwatcher_open    }
+,   { "add",            xm_fwatcher_add     }
+,   { "remove",         xm_fwatcher_remove  }
+,   { "wait",           xm_fwatcher_wait    }
+,   { "close",          xm_fwatcher_close   }
 ,   { tb_null,          tb_null             }
 };
 
@@ -1024,6 +1042,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
         // bind process functions
         xm_lua_register(engine->lua, "process", g_process_functions);
+
+        // bind fwatcher functions
+        xm_lua_register(engine->lua, "fwatcher", g_fwatcher_functions);
 
         // bind sandbox functions
         xm_lua_register(engine->lua, "sandbox", g_sandbox_functions);

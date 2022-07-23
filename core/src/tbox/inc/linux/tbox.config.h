@@ -203,4 +203,7 @@
 // valgrind functions
 /* #undef TB_CONFIG_SYSTEMV_HAVE_VALGRIND_STACK_REGISTER */
 
+// linux functions
+#define TB_CONFIG_LINUX_HAVE_INOTIFY_INIT 1
+
 #endif
