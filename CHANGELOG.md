@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#2555](https://github.com/xmake-io/xmake/issues/2555): Add fwatcher module and `xmake watch` plugin command
+
 ## v2.6.9
 
 ### New features
@@ -1337,6 +1341,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#2555](https://github.com/xmake-io/xmake/issues/2555): 添加 fwatcher 模块和 `xmake watch` 插件命令
 
 ## v2.6.9
 
