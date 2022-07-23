@@ -70,7 +70,15 @@ function _run_command()
                 script()
             elseif os.isfile(os.projectfile()) then
                 local argv = {"build"}
-                table.insert(argv, "-w")
+                if option.get("verbose") then
+                    table.insert(argv, "-v")
+                end
+                if option.get("diagnosis") then
+                    table.insert(argv, "-D")
+                end
+                if option.get("warning") then
+                    table.insert(argv, "-w")
+                end
                 local target = option.get("target")
                 if target then
                     table.insert(argv, target)
@@ -93,10 +101,10 @@ function main()
     _add_watchdirs()
 
     -- do watch
+    local count = 0
     while true do
-        local ok, event = fwatcher.wait(-1)
+        local ok, event = fwatcher.wait(300)
         if ok > 0 then
-            -- trace event
             local status
             if event.type == fwatcher.ET_CREATE then
                 status = "created"
@@ -106,9 +114,10 @@ function main()
                 status = "deleted"
             end
             print(event.path, status)
-
-            -- run command
+            count = count + 1
+        elseif count > 0 then
             _run_command()
+            count = 0
         end
     end
 end
