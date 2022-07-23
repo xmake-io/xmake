@@ -37,8 +37,7 @@ task("watch")
                                                             "e.g.",
                                                             "    $ xmake watch -d src",
                                                             "    $ xmake watch -d 'src/*" .. path.envsep() .. "tests/**/subdir'"},
-                    {'r', "recursion"   , "k"   , nil   ,   "Recursively watch directories."},
-                    {'t', "target"      , "kv"  , nil   ,   "Build the given target.",
+                    {'t', "target"      , "v"   , nil   ,   "Build the given target.",
                                                             values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
                 }
             }

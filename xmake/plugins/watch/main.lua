@@ -64,12 +64,18 @@ function _run_command()
                 for _, command in ipairs(command:split(";")) do
                     os.exec(command)
                 end
-            elseif os.isfile(scriptfile) and path.extension(scriptfile) == ".lua" then
+            elseif scriptfile and os.isfile(scriptfile) and path.extension(scriptfile) == ".lua" then
                 local script = import(path.basename(scriptfile),
                     {rootdir = path.directory(scriptfile), anonymous = true})
                 script()
             elseif os.isfile(os.projectfile()) then
-                os.execv(os.programfile(), {"build", "-w"})
+                local argv = {"build"}
+                table.insert(argv, "-w")
+                local target = option.get("target")
+                if target then
+                    table.insert(argv, target)
+                end
+                os.execv(os.programfile(), argv)
             end
         end,
         catch
