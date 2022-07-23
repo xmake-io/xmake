@@ -84,6 +84,10 @@ function _run_command()
                     table.insert(argv, target)
                 end
                 os.execv(os.programfile(), argv)
+                if option.get("run") then
+                    argv[1] = "run"
+                    os.execv(os.programfile(), argv)
+                end
             end
         end,
         catch
