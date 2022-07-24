@@ -23,52 +23,33 @@ import("core.project.depend")
 import("core.base.hashset")
 
 -- get depend file of module source file
-function _get_dependfile_of_modulesource(target, sourcefile)
-    return target:dependfile(sourcefile)
+function _get_dependfile_of_modulesource(target, modulefile)
+    return target:dependfile(modulefile)
 end
 
 -- get depend file of module object file, compiler will rewrite it
-function _get_dependfile_of_moduleobject(target, sourcefile)
-    local objectfile = target:objectfile(sourcefile)
+function _get_dependfile_of_modulebmi(target, modulefile)
+    local objectfile = target:objectfile(modulefile)
     return target:dependfile(objectfile)
 end
 
 -- generate module deps for the given file
-function _generate_moduledeps(target, sourcefile, opt)
-    local dependfile = _get_dependfile_of_modulesource(target, sourcefile)
+function _generate_moduledeps(target, modulefile, opt)
+    local program = target:compiler("cxx"):program()
+
+    local dependfile = _get_dependfile_of_modulesource(target, modulefile)
     depend.on_changed(function ()
 
         -- trace
-        vprint("generating.moduledeps %s", sourcefile)
-
-        -- generating deps
-        local module_name
-        local module_deps
-        local sourcecode = io.readfile(sourcefile)
-        sourcecode = sourcecode:gsub("//.-\n", "\n")
-        sourcecode = sourcecode:gsub("/%*.-%*/", "")
-        for _, line in ipairs(sourcecode:split("\n", {plain = true})) do
-            if not module_name then
-                module_name = line:match("export%s+module%s+(.+)%s*;")
-            end
-            local module_depname = line:match("import%s+(.+)%s*;")
-            if module_depname then
-                -- partition? import :xxx;
-                if module_depname:startswith(":") then
-                    module_depname = module_name .. module_depname
-                end
-                module_deps = module_deps or {}
-                table.insert(module_deps, module_depname)
-            end
-        end
+        vprint("generating.moduledeps %s", modulefile)
 
         -- save depend data
         if module_name then
-            local dependinfo = {moduleinfo = {name = module_name, deps = module_deps, file = sourcefile}}
+            local dependinfo = {moduleinfo = {name = module_name, deps = module_deps, file = modulefile}}
             return dependinfo
         end
 
-    end, {dependfile = dependfile, files = {sourcefile}})
+    end, {dependfile = dependfile, files = {modulefile}})
 end
 
 -- build batch jobs with deps
@@ -91,22 +72,22 @@ function _build_batchjobs_with_deps(moduledeps, batchjobs, rootjob, jobrefs, mod
 end
 
 -- generate module deps
-function generate(target, sourcebatch, opt)
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        _generate_moduledeps(target, sourcefile, opt)
+function generate(target, modulefiles, opt)
+    for _, modulefile in ipairs(modulefiles) do
+        _generate_moduledeps(target, modulefile, opt)
     end
 end
 
 -- load module deps
-function load(target, sourcebatch, opt)
+function load(target, modulefiles, opt)
 
     -- do generate first
-    generate(target, sourcebatch, opt)
+    generate(target, modulefiles, opt)
 
     -- load deps
     local moduledeps
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local dependfile = _get_dependfile_of_modulesource(target, sourcefile)
+    for _, modulefile in ipairs(modulefiles) do
+        local dependfile = _get_dependfile_of_modulesource(target, modulefile)
         if os.isfile(dependfile) then
             local data = io.load(dependfile)
             if data then

@@ -20,40 +20,45 @@
 
 -- imports
 import("core.tool.compiler")
+import("core.project.depend")
 import("private.action.build.object", {alias = "objectbuilder"})
-import("module_parser")
+
+local default_flags = {"/EHsc", "/nologo", "/std:c++20", "/experimental:module"}
+
 
 -- load parent target with modules files
 function load_parent(target, opt)
-
+    local common = import("common")
     -- get modules flag
     local modulesflag
     local compinst = compiler.load("cxx", {target = target})
-    if compinst:has_flags("/experimental:module", "cxxflags") then
-        modulesflag = "/experimental:module"
-    end
-    assert(modulesflag, "compiler(msvc): does not support c++ module!")
 
     -- add module flags
-    target:add("cxxflags", modulesflag)
+    local cachedir = common.get_cache_dir(target)
+    local stlcachedir = common.get_stlcache_dir(target)
 
-    -- get output flag
-    if compinst:has_flags("/ifcOutput", "cxxflags")  then
-        for _, dep in ipairs(target:orderdeps()) do
-            local sourcebatches = dep:sourcebatches()
-            if sourcebatches and sourcebatches["c++.build.modules"] then
-                local cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
-                target:add("cxxflags", {"/ifcSearchDir", cachedir}, {force = true, expand = false})
+    target:add("cxxflags", {"/ifcSearchDir", cachedir, "/ifcSearchDir", stlcachedir}, {force = true, expand = false})
+    for _, dep in ipairs(target:orderdeps()) do
+        cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
+        target:add("cxxflags", {"/ifcSearchDir", cachedir, "/ifcSearchDir", stlcachedir}, {force = true, expand = false})
+    end
+
+    for _, toolchain_inst in ipairs(target:toolchains()) do
+        if toolchain_inst:name() == "msvc" then
+            local vcvars = toolchain_inst:config("vcvars")
+            if vcvars.VCInstallDir and vcvars.VCToolsVersion then
+                local stdifcdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "ifc", target:is_arch("x64") and "x64" or "x86")
+                if os.isdir(stdifcdir) then
+                    target:add("cxxflags", {"/stdIfcDir", winos.short_path(stdifcdir)}, {force = true, expand = false})
+                end
             end
+            break
         end
     end
 end
 
--- build module files
-function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
-
-    -- get modules flag
-    local modulesflag
+-- check C++20 module support
+function check_module_support(target)
     local compinst = compiler.load("cxx", {target = target})
     if compinst:has_flags("/experimental:module", "cxxflags") then
         modulesflag = "/experimental:module"
@@ -61,16 +66,9 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     assert(modulesflag, "compiler(msvc): does not support c++ module!")
 
     -- get output flag
-    local cachedir
     local outputflag
     if compinst:has_flags("/ifcOutput", "cxxflags")  then
         outputflag = "/ifcOutput"
-        cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
-        if not os.isdir(cachedir) then
-            os.mkdir(cachedir)
-        end
-    elseif compinst:has_flags("/module:output", "cxxflags") then
-        outputflag = "/module:output"
     end
     assert(outputflag, "compiler(msvc): does not support c++ module!")
 
@@ -78,8 +76,6 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     local interfaceflag
     if compinst:has_flags("/interface", "cxxflags") then
         interfaceflag = "/interface"
-    elseif compinst:has_flags("/module:interface", "cxxflags") then
-        interfaceflag = "/module:interface"
     end
     assert(interfaceflag, "compiler(msvc): does not support c++ module!")
 
@@ -87,8 +83,6 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     local referenceflag
     if compinst:has_flags("/reference", "cxxflags") then
         referenceflag = "/reference"
-    elseif compinst:has_flags("/module:interface", "cxxflags") then
-        referenceflag = "/module:reference"
     end
     assert(referenceflag, "compiler(msvc): does not support c++ module!")
 
@@ -96,83 +90,162 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     local stdifcdirflag
     if compinst:has_flags("/stdIfcDir", "cxxflags") then
         stdifcdirflag = "/stdIfcDir"
-    elseif compinst:has_flags("/module:stdIfcDir", "cxxflags") then
-        stdifcdirflag = "/module:stdIfcDir"
     end
     assert(stdifcdirflag, "compiler(msvc): does not support c++ module!")
+end
 
-    -- we need patch objectfiles to sourcebatch for linking module objects
+-- patch sourcebatch
+function patch_sourcebatch(target, sourcebatch, opt)
+    local common = import("common")
+    local cachedir = common.get_cache_dir(target)
+
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
         local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
         table.insert(sourcebatch.objectfiles, objectfile)
         table.insert(sourcebatch.dependfiles, dependfile)
     end
 
-    -- load moduledeps
-    local moduledeps, moduledeps_files = module_parser.load(target, sourcebatch, opt)
-
-    -- get modulefiles
-    local modulefiles = {}
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local moduleinfo = moduledeps_files[sourcefile] or {}
-        -- make module file path, @note we need process submodule name, e.g. module.submodule.mpp -> module.submodule.ifc
-        -- @see https://github.com/xmake-io/xmake/issues/2614
-        local modulefile = (cachedir and path.join(cachedir, moduleinfo.name or path.basename(sourcefile)) or objectfile) .. ".ifc"
-        table.insert(modulefiles, modulefile)
-    end
-
-    -- compile module files to object files
-    local count = 0
-    local sourcefiles_total = #sourcebatch.sourcefiles
-    for i = 1, sourcefiles_total do
-        local sourcefile = sourcebatch.sourcefiles[i]
-        local moduleinfo = assert(moduledeps_files[sourcefile], "moduleinfo(%s) not found!", sourcefile)
-        moduleinfo.job = batchjobs:newjob(sourcefile, function (index, total)
-            local opt2 = table.join(opt, {configs = {force = {cxxflags = {
-                    interfaceflag,
-                    {outputflag, modulefiles[i]},
-                    "/TP"}}}})
-            opt2.progress   = (index * 100) / total
-            opt2.objectfile = sourcebatch.objectfiles[i]
-            opt2.dependfile = sourcebatch.dependfiles[i]
-            opt2.sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
-            objectbuilder.build_object(target, sourcefile, opt2)
-
-            -- add module flags to other c++ files after building all modules
-            count = count + 1
-            if count == sourcefiles_total and not cachedir then
-                for _, modulefile in ipairs(modulefiles) do
-                    target:add("cxxflags", {referenceflag, modulefile}, {force = true, expand = false})
-                end
-            end
-        end)
-    end
-
-    -- add module flags
-    target:add("cxxflags", modulesflag)
-    if cachedir then
-        target:add("cxxflags", {"/ifcSearchDir", cachedir}, {force = true, expand = false})
-    end
-    if stdifcdirflag then
-        for _, toolchain_inst in ipairs(target:toolchains()) do
-            if toolchain_inst:name() == "msvc" then
-                local vcvars = toolchain_inst:config("vcvars")
-                if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                    local stdifcdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "ifc", target:is_arch("x64") and "x64" or "x86")
-                    if os.isdir(stdifcdir) then
-                        target:add("cxxflags", {stdifcdirflag, winos.short_path(stdifcdir)}, {force = true, expand = false})
-                    end
-                end
-                break
-            end
-        end
-    end
-
-    -- build batchjobs
-    module_parser.build_batchjobs(moduledeps, batchjobs, opt.rootjob)
 end
 
+-- generate dependency files
+function generate_dependencies(target, sourcebatch, opt)
+    local common = import("common")
+    local cachedir = common.get_cache_dir(target)
+    local compinst = compiler.load("cxx", {target = target})
+    local common_args = {"/TP", "/scanDependencies"}
+
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
+        local dependfile = target:dependfile(sourcefile)
+        depend.on_changed(function()
+            vprint("generating.cxx.moduledeps %s", sourcefile)
+
+            local outdir = path.join(cachedir, path.directory(path.relative(target:scriptdir(), file)))
+            local jsonfile = path.join(outdir, path.filename(sourcefile) .. ".json")
+
+            local args = {jsonfile, sourcefile, "/Fo" .. target:objectfile(sourcefile)}
+
+            os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args))
+
+            local dependinfo = io.readfile(jsonfile)
+
+            return { moduleinfo = dependinfo }
+        end, {dependfile = dependfile, files = {sourcefile}})
+    end
+end 
+
+-- generate target header units
+function generate_headerunits(target, batchcmds, sourcebatch, opt)
+    local common = import("common")
+    local compinst = compiler.load("cxx", {target = target})
+
+    local cachedir = common.get_cache_dir(target)
+    local stlcachedir = common.get_stlcache_dir(target)
+
+    -- build headerunits
+    local common_args = {"/TP", "/exportHeader", "/c"}
+    local objectfiles = {}
+    for _, headerunit in ipairs(sourcebatch) do
+        if not headerunit.stl then
+            local file = path.relative(headerunit.path, target:scriptdir())
+            local outdir = path.join(cachedir, path.directory(file))
+            if not os.isdir(outdir) then
+                os.mkdir(outdir)
+            end
+
+            local bmifilename = path.filename(file) .. ".ifc"
+
+            local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
+            local objectfile = target:objectfile(file)
+            if not os.isdir(path.directory(objectfile)) then
+                os.mkdir(path.directory(objectfile))
+            end
+
+            local args = {"/headerName" .. headerunit.type, headerunit.path, "/ifcOutput", outdir, "/Fo" .. objectfile}
+            batchcmds:show_progress(opt.progress, "${color.build.object}generate.cxx.headerunit.bmi %s", headerunit.name)
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args))
+
+            batchcmds:add_depfiles(headerunit.path)
+            batchcmds:set_depmtime(os.mtime(bmifile))
+            batchcmds:set_depcache(target:dependfile(bmifile))
+            batchcmds:set_depmtime(os.mtime(objectfile))
+            batchcmds:set_depcache(target:dependfile(objectfile))
+
+            local flag = {"/headerUnit" .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir)}
+            target:add("cxxflags", flag, {force = true, expand = false})
+            target:data_add("cxx.modules.flags", "/headerUnit" .. headerunit.type)
+            target:data_add("cxx.modules.flags", path.filename(file) .. "=" .. path.relative(bmifile, cachedir))
+            target:add("objectfiles", objectfile)
+        else
+            local bmifile = path.join(stlcachedir, headerunit.name .. ".ifc")
+
+            local args = {"/exportHeader", "/headerName:angle", headerunit.name, "/ifcOutput", stlcachedir}
+            batchcmds:show_progress(opt.progress, "${color.build.object}generate.cxx.headerunit.bmi %s", headerunit.name)
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, args))
+
+            batchcmds:set_depmtime(os.mtime(bmifile))
+            batchcmds:set_depcache(target:dependfile(bmifile))
+
+            local flag = {"/headerUnit:angle", headerunit.name .. "=" .. headerunit.name .. ".ifc"}
+            target:add("cxxflags", flag, {force = true, expand = false})
+            target:data_add("cxx.modules.flags", "/headerUnit" .. headerunit.type)
+            target:data_add("cxx.modules.flags", headerunit.name .. "=" .. headerunit.name .. ".ifc")
+        end
+    end
+end
+
+-- build module files
+-- TODO detect dependencies, and build in the right order
+function build_modules(target, batchcmds, sourcebatch, modules, opt)
+    local compinst = compiler.load("cxx", {target = target})
+    local cachedir = common.get_cache_dir(target)
+    
+    -- append deps modules
+    for _, dep in ipairs(target:orderdeps()) do
+        target:add("cxxflags", dep:data("cxx.modules.flags"), {force = true, expand = false})
+    end
+
+    -- compile module files to bmi files
+    local common_args = {"/TP"}
+    for _, objectfile in ipairs(sourcebatch.objectfiles) do
+        local m = modules[objectfile]
+
+        if m then
+            if not os.isdir(path.directory(objectfile)) then
+                os.mkdir(path.directory(objectfile))
+            end
+
+            local args = {"/c", "/Fo" .. objectfile}
+
+            local flag = {}
+            for name, provide in pairs(m.provides) do
+                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
+
+                local bmifile = provide.bmi
+                 
+                table.join2(args, {"/interface", "/ifcOutput", bmifile, provide.sourcefile})
+
+                batchcmds:set_depmtime(os.mtime(bmifile))
+                batchcmds:set_depcache(target:dependfile(bmifile))
+
+                table.join2(flag, {"/reference", name .. "=" .. bmifile})
+            end  
+
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args))
+
+            batchcmds:add_depfiles(m.sourcefile)
+            batchcmds:set_depmtime(os.mtime(objectfile))
+            batchcmds:set_depcache(target:dependfile(objectfile))
+
+            target:add("cxxflags", flag, {force = true, expand = false})
+            for _, f in ipairs(flag) do
+                target:data_add("cxx.modules.flags", f)
+            end
+            target:add("objectfiles", objectfile)
+        end
+    end
+end

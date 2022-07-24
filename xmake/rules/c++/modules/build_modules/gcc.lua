@@ -25,6 +25,7 @@ import("module_parser")
 
 -- load parent target with modules files
 function load_parent(target, opt)
+
     -- get modules flag
     local modulesflag
     local compinst = compiler.load("cxx", {target = target})

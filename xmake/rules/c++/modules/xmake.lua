@@ -20,46 +20,160 @@
 
 -- define rule: c++.build.modules
 rule("c++.build.modules")
-    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
+    add_deps("c++.build.modules.builder")
+
     on_config(function (target)
-        -- we disable to build across targets in parallel, because the source files may depend on other target modules
-        -- @see https://github.com/xmake-io/xmake/issues/1858
-        local target_with_modules
+        local target_with_modules = (target:get("modulefiles") and #target:get("modulefiles") > 0) and true or false
+
         for _, dep in ipairs(target:orderdeps()) do
-            local sourcebatches = dep:sourcebatches()
-            if sourcebatches and sourcebatches["c++.build.modules"] then
+            local modulefiles = dep:get("modulefiles")
+            if modulefiles and #modulefiles > 0 then
                 target_with_modules = true
                 break
             end
         end
+
         if target_with_modules then
-            -- @note this will cause cross-parallel builds to be disabled for all sub-dependent targets,
-            -- even if some sub-targets do not contain C++ modules.
-            --
-            -- maybe we will have a more fine-grained configuration strategy to disable it in the future.
             target:set("policy", "build.across_targets_in_parallel", false)
+
+            -- import build_modules
+            local build_modules
             if target:has_tool("cxx", "clang", "clangxx") then
-                import("build_modules.clang").load_parent(target, opt)
+                build_modules = import("build_modules.clang")
             elseif target:has_tool("cxx", "gcc", "gxx") then
-                import("build_modules.gcc").load_parent(target, opt)
+                build_modules = import("build_modules.gcc")
             elseif target:has_tool("cxx", "cl") then
-                import("build_modules.msvc").load_parent(target, opt)
+                build_modules = import("build_modules.msvc")
             else
                 local _, toolname = target:tool("cxx")
                 raise("compiler(%s): does not support c++ module!", toolname)
             end
+
+            -- check C++20 module support
+            build_modules.check_module_support(target)
+
+            -- load parent
+            build_modules.load_parent(target, opt)
+
+            for _, modulefile in ipairs(target:get("modulefiles")) do
+                target:add("files", modulefile)
+            end
+
+            target:set("cxx.has_modules", true)
         end
     end)
-    before_build_files(function (target, batchjobs, sourcebatch, opt)
+
+    before_build(function(target, opt) 
+        if not target:get("cxx.has_modules") then
+            return
+        end
+
+        local build_modules
         if target:has_tool("cxx", "clang", "clangxx") then
-            import("build_modules.clang").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
+            build_modules = import("build_modules.clang")
         elseif target:has_tool("cxx", "gcc", "gxx") then
-            import("build_modules.gcc").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
+            build_modules = import("build_modules.gcc")
         elseif target:has_tool("cxx", "cl") then
-            import("build_modules.msvc").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
+            build_modules = import("build_modules.msvc")
         else
             local _, toolname = target:tool("cxx")
             raise("compiler(%s): does not support c++ module!", toolname)
         end
+
+        -- build dependency data
+        local common = import("build_modules.common")
+
+        local moduleinfos = {}
+        for _, sourcebatch in pairs(target:sourcebatches()) do
+            if sourcebatch.rulename == "c++.build.modules.builder" then
+                build_modules.patch_sourcebatch(target, sourcebatch, opt)
+            end
+
+            build_modules.generate_dependencies(target, sourcebatch, opt)
+            local infos = common.load(target, sourcebatch, opt)
+
+            table.join2(moduleinfos, infos or {})
+        end
+
+        local modules = common.parseDependencyDatas(target, moduleinfos, opt)
+
+        target:data_set("cxx.modules", modules)
+    end)
+
+
+rule("c++.build.modules.builder")
+    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
+    add_deps("c++.build.modules.builder.headerunits")
+
+    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
+        if not target:get("cxx.has_modules") then
+            return
+        end
+
+        local build_modules
+        if target:has_tool("cxx", "clang", "clangxx") then
+            build_modules = import("build_modules.clang")
+        elseif target:has_tool("cxx", "gcc", "gxx") then
+            build_modules = import("build_modules.gcc")
+        elseif target:has_tool("cxx", "cl") then
+            build_modules = import("build_modules.msvc")
+        else
+            local _, toolname = target:tool("cxx")
+            raise("compiler(%s): does not support c++ module!", toolname)
+        end
+
+        local modules = target:data("cxx.modules")
+
+        build_modules.build_modules(target, batchcmds, sourcebatch, modules, opt)
     end, {batch = true})
 
+rule("c++.build.modules.builder.headerunits")
+    set_sourcekinds("cxx")
+    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
+
+    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
+        if not target:get("cxx.has_modules") then
+            return
+        end
+
+        local build_modules
+        if target:has_tool("cxx", "clang", "clangxx") then
+            build_modules = import("build_modules.clang")
+        elseif target:has_tool("cxx", "gcc", "gxx") then
+            build_modules = import("build_modules.gcc")
+        elseif target:has_tool("cxx", "cl") then
+            build_modules = import("build_modules.msvc")
+        else
+            local _, toolname = target:tool("cxx")
+            raise("compiler(%s): does not support c++ module!", toolname)
+        end
+
+        sourcebatch.objectfiles = {}
+        sourcebatch.dependfiles = {}
+        build_modules.patch_sourcebatch(target, sourcebatch, opt)
+
+        local common = import("build_modules.common")
+
+        local modules = target:data("cxx.modules")
+
+        local headerunits
+        for _, objectfile in ipairs(sourcebatch.objectfiles) do
+            for obj, m in pairs(modules) do
+                if obj == objectfile then
+                    for name, r in pairs(m.requires) do
+                        if r.method ~= "by-name" then
+                            headerunits = headerunits or {}
+
+                            local type = r.method == "include-angle" and ":angle" or ":quote"
+                            table.append(headerunits, { name = name, path = r.path, type = type, stl = common.is_stl_header(name) })
+                        end
+                    end
+                    break
+                end
+            end
+        end
+
+        if headerunits then
+            build_modules.generate_headerunits(target, batchcmds, headerunits, opt)
+        end
+    end, {batch = true})

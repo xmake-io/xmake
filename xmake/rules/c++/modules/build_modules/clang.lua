@@ -46,7 +46,7 @@ function load_parent(target, opt)
 end
 
 -- build module files
-function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
+function build_with_batchjobs(target, opt)
 
     -- get modules flag
     local modulesflag
