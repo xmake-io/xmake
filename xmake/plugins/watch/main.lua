@@ -74,7 +74,7 @@ function _run_command()
                     {rootdir = path.directory(scriptfile), anonymous = true})
                 script()
             elseif os.isfile(os.projectfile()) then
-                local argv = {"build"}
+                local argv = {"build", "-y"}
                 if option.get("verbose") then
                     table.insert(argv, "-v")
                 end
