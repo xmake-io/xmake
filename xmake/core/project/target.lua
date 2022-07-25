@@ -1568,8 +1568,13 @@ end
 
 -- get the module files
 function _instance:modulefiles(outputdir)
+    local modules = self:get("modulefiles")
+
     -- get the installed module directory
-    local moduledir = outputdir or path.join(self:installdir(), "include")
+    local moduledir = outputdir 
+    if not moduledir and self:installdir() then 
+        path.join(self:installdir(), "include")
+    end
 
     -- get the extra information
     local extrainfo = table.wrap(self:get("__extra_modulefiles"))
@@ -1580,7 +1585,6 @@ function _instance:modulefiles(outputdir)
     local srcmodules_removed = {}
     local removed_count = 0
     for _, module in ipairs(table.wrap(modules)) do
-
         -- mark as removed files?
         local removed = false
         local prefix = "__remove_"
@@ -1652,6 +1656,7 @@ function _instance:modulefiles(outputdir)
             end
         end)
     end
+
     return srcmodules, dstmodules
 end
 
