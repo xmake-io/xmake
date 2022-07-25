@@ -280,7 +280,7 @@ function _package_addenvs(envs, instance)
     end
 end
 
--- add toolcjhain environments
+-- add toolchain environments
 function _toolchain_addenvs(envs)
     for _, name in ipairs(project.get("target.toolchains")) do
         local toolchain_opt = project.extraconf("target.toolchains", name)
@@ -288,6 +288,21 @@ function _toolchain_addenvs(envs)
         if toolchain_inst then
             for k, v in pairs(toolchain_inst:runenvs()) do
                 _addenvs(envs, k, table.unpack(path.splitenv(v)))
+            end
+        end
+    end
+end
+
+-- add target environments
+function _target_addenvs(envs)
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_binary() then
+            _addenvs(envs, "PATH", target:targetdir())
+        elseif target:is_shared() then
+            if is_host("macosx") then
+                _addenvs(envs, "LD_LIBRARY_PATH", target:targetdir())
+            else
+                _addenvs(envs, "DYLD_LIBRARY_PATH", target:targetdir())
             end
         end
     end
@@ -315,6 +330,7 @@ function _package_getenvs(opt)
         for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
             _package_addenvs(envs, instance)
         end
+        _target_addenvs(envs)
     elseif packages then
         _enter_project()
         packages = packages:split(',', {plain = true})
