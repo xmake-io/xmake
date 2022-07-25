@@ -74,6 +74,19 @@ function _package_library(target)
         end
     end
 
+    -- copy headers
+    local srcmodules, dstmodules = target:modulefiles(format("%s/%s.pkg/$(plat)/$(arch)/include", outputdir, targetname))
+    if srcmodules and dstmodules then
+        local i = 1
+        for _, srcmodule in ipairs(srcmodules) do
+            local dstmodule = dstmodules[i]
+            if dstmodule then
+                os.vcp(srcmodule, dstmodule)
+            end
+            i = i + 1
+        end
+    end
+
     -- make xmake.lua
     local file = io.open(format("%s/%s.pkg/xmake.lua", outputdir, targetname), "w")
     if file then

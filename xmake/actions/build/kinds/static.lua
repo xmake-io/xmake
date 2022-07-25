@@ -69,6 +69,20 @@ function _do_link_target(target, opt)
             end
         end
 
+        if not dryrun then
+            local srcmodules, dstmodules = target:modulefiles()
+            if srcmodules and dstmodules then
+                local i = 1
+                for _, srcmodule in ipairs(srcmodules) do
+                    local dstmodule = dstmodules[i]
+                    if dstmodule then
+                        os.cp(srcmodule, dstmodule)
+                    end
+                    i = i + 1
+                end
+            end
+        end
+
         -- the target file
         local targetfile = target:targetfile()
 

@@ -95,6 +95,7 @@ function _package_library(target)
     local binarydir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "bin")
     local librarydir  = path.join(packagedir, target:plat(), target:arch(), config.mode(), "lib")
     local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
+    local moduledir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
 
     -- copy the library file to the output directory
     local targetfile = target:targetfile()
@@ -121,6 +122,19 @@ function _package_library(target)
             local dstheader = dstheaders[i]
             if dstheader then
                 os.vcp(srcheader, dstheader)
+            end
+            i = i + 1
+        end
+    end
+
+    -- copy module
+    local srcmodules, dstmodules = target:modulefiles(moduledir)
+    if srcmodules and dstmodules then
+        local i = 1
+        for _, srcmodule in ipairs(srcmodules) do
+            local dstmodule = dstmodules[i]
+            if dstmodule then
+                os.vcp(srcmodule, dstmodule)
             end
             i = i + 1
         end
@@ -176,6 +190,7 @@ function _package_headeronly(target)
     local packagedir  = target:packagedir()
     local packagename = target:name():lower()
     local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
+    local moduledir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
 
     -- copy headers
     local srcheaders, dstheaders = target:headerfiles(headerdir)
@@ -185,6 +200,19 @@ function _package_headeronly(target)
             local dstheader = dstheaders[i]
             if dstheader then
                 os.vcp(srcheader, dstheader)
+            end
+            i = i + 1
+        end
+    end
+
+    -- copy modules
+    local srcmodules, dstmodules = target:modulefiles(moduledir)
+    if srcmodules and dstmodules then
+        local i = 1
+        for _, srcmodule in ipairs(srcmodules) do
+            local dstmodule = dstmodules[i]
+            if dstmodule then
+                os.vcp(srcmodule, dstmodule)
             end
             i = i + 1
         end
