@@ -231,7 +231,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
                 batchcmds:set_depmtime(os.mtime(bmifile))
                 batchcmds:set_depcache(target:dependfile(bmifile))
 
-                table.join2(flag, {"/reference", name .. "=" .. bmifile})
+                table.join2(flag, {"/reference", name .. "=" .. path.filename(bmifile)})
             end  
 
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args))
