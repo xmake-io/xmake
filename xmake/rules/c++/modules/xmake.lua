@@ -23,7 +23,7 @@ rule("c++.build.modules")
     add_deps("c++.build.modules.builder")
 
     on_config(function (target)
-        local target_with_modules = (target:get("modulefiles") and #target:get("modulefiles") > 0) and true or false
+        local target_with_modules = (target:modulefiles() and #target:modulefiles() > 0) and true or false
 
         for _, dep in ipairs(target:orderdeps()) do
             local modulefiles = dep:get("modulefiles")
@@ -55,7 +55,7 @@ rule("c++.build.modules")
             -- load parent
             build_modules.load_parent(target, opt)
 
-            for _, modulefile in ipairs(target:get("modulefiles")) do
+            for _, modulefile in ipairs(target:modulefiles()) do
                 target:add("files", modulefile)
             end
 
