@@ -25,7 +25,6 @@ import("private.action.build.object", {alias = "objectbuilder"})
 
 local default_flags = {"/EHsc", "/nologo", "/std:c++20", "/experimental:module"}
 
-
 -- load parent target with modules files
 function load_parent(target, opt)
     local common = import("common")
@@ -40,7 +39,7 @@ function load_parent(target, opt)
     target:add("cxxflags", {"/ifcSearchDir", cachedir, "/ifcSearchDir", stlcachedir}, {force = true, expand = false})
     for _, dep in ipairs(target:orderdeps()) do
         cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
-        target:add("cxxflags", {"/ifcSearchDir", cachedir, "/ifcSearchDir", stlcachedir}, {force = true, expand = false})
+        target:add("cxxflags", {"/ifcSearchDir", cachedir}, {force = true, expand = false})
     end
 
     for _, toolchain_inst in ipairs(target:toolchains()) do
@@ -166,7 +165,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             end
 
             local args = {"/headerName" .. headerunit.type, headerunit.path, "/ifcOutput", outdir, "/Fo" .. objectfile}
-            batchcmds:show_progress(opt.progress, "${color.build.object}generate.cxx.headerunit.bmi %s", headerunit.name)
+            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args))
 
             batchcmds:add_depfiles(headerunit.path)
@@ -184,7 +183,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             local bmifile = path.join(stlcachedir, headerunit.name .. ".ifc")
 
             local args = {"/exportHeader", "/headerName:angle", headerunit.name, "/ifcOutput", stlcachedir}
-            batchcmds:show_progress(opt.progress, "${color.build.object}generate.cxx.headerunit.bmi %s", headerunit.name)
+            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, args))
 
             batchcmds:set_depmtime(os.mtime(bmifile))
@@ -200,7 +199,7 @@ end
 
 -- build module files
 -- TODO detect dependencies, and build in the right order
-function build_modules(target, batchcmds, sourcebatch, modules, opt)
+function build_modules(target, batchcmds, objectfiles, modules, opt)
     local compinst = compiler.load("cxx", {target = target})
     local cachedir = common.get_cache_dir(target)
     
@@ -211,7 +210,7 @@ function build_modules(target, batchcmds, sourcebatch, modules, opt)
 
     -- compile module files to bmi files
     local common_args = {"/TP"}
-    for _, objectfile in ipairs(sourcebatch.objectfiles) do
+    for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
 
         if m then

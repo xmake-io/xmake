@@ -101,7 +101,7 @@ rule("qt.qmltyperegistrar")
         }
 
         -- gen sourcefile
-        batchcmds:show_progress(opt.progress, "${color.build.object}generate.qt.qmltyperegistrar %s", path.filename(sourcefile))
+        batchcmds:show_progress(opt.progress, "${color.build.object}generating.qt.qmltyperegistrar %s", path.filename(sourcefile))
         qmltype_source = os.vrunv(qmltyperegistrar, table.join(args, metatypefiles))
 
         -- add objectfile
@@ -109,7 +109,7 @@ rule("qt.qmltyperegistrar")
         table.insert(target:objectfiles(), objectfile)
 
         -- compile sourcefile
-        batchcmds:show_progress(opt.progress, "${color.build.object}compile.qt.qmltyperegistrar %s", path.filename(sourcefile))
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.qt.qmltyperegistrar %s", path.filename(sourcefile))
         batchcmds:compile(sourcefile, objectfile)
 
         batchcmds:add_depfiles(sourcefile)

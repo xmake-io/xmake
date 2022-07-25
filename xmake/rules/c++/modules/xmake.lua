@@ -122,9 +122,16 @@ rule("c++.build.modules.builder")
             raise("compiler(%s): does not support c++ module!", toolname)
         end
 
+        local common = import("build_modules.common")
+
         local modules = target:data("cxx.modules")
 
-        build_modules.build_modules(target, batchcmds, sourcebatch, modules, opt)
+        local nodes = sourcebatch.objectfiles
+
+        -- topological sort
+        local objectfiles = common.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
+
+        build_modules.build_modules(target, batchcmds, objectfiles, modules, opt)
     end, {batch = true})
 
 rule("c++.build.modules.builder.headerunits")

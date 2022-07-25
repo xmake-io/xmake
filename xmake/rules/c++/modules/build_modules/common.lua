@@ -213,3 +213,67 @@ function parseDependencyDatas(target, moduleinfos, opt)
 
     return modules
 end
+
+function _topological_sort_visit(node, nodes, modules, output)
+    if node.marked then
+        return
+    end
+
+    assert(not node.tempmarked)
+
+    node.tempmarked = true
+
+    local m1 = modules[node.objectfile]
+    assert(m1.provides)
+    for _, n in ipairs(nodes) do
+        if not n.tempmarked then
+            local m2 = modules[n.objectfile]
+
+            for name, provide in pairs(m1.provides) do
+                if m2.requires and m2.requires[name] then
+                    _topological_sort_visit(n, nodes, modules, output)
+                end
+            end
+        end
+    end
+
+    node.tempmarked = false
+    node.marked = true
+
+    table.insert(output, 1, node.objectfile)
+end
+
+function _topological_sort_has_node_without_mark(nodes)
+    for _, node in ipairs(nodes) do
+        if not node.marked then
+            return true
+        end
+    end
+
+    return false
+end
+
+function _topological_sort_get_first_unmarked_node(nodes)
+    for _, node in ipairs(nodes) do
+        if not node.marked and not node.tempmarked then
+            return node
+        end
+    end
+end
+
+function sort_modules_by_dependencies(objectfiles, modules)
+    local output = {}
+
+    local nodes  = {}
+    for _, objectfile in ipairs(objectfiles) do 
+        table.append(nodes, { marked = false, tempmarked = false, objectfile = objectfile })
+    end
+
+    while _topological_sort_has_node_without_mark(nodes) do
+        local node = _topological_sort_get_first_unmarked_node(nodes)
+
+        _topological_sort_visit(node, nodes, modules, output)
+    end
+
+    return output
+end
