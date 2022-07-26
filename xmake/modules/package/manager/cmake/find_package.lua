@@ -48,7 +48,7 @@ function _find_package(cmake, name, opt)
     -- set search mode, CONFIG, MODULE, BOTH
     -- e.g. https://cmake.org/cmake/help/latest/command/find_package.html#id4
     if configs.search_mode then
-        requirestr = requirestr .. " " .. configs.search_mode
+        requirestr = requirestr .. " " .. configs.search_mode:upper()
     end
     -- use opt.components is for backward compatibility
     local components = configs.components or opt.components
