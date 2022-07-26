@@ -45,6 +45,11 @@ function _find_package(cmake, name, opt)
     if opt.require_version and opt.require_version ~= "latest" then
         requirestr = requirestr .. " " .. opt.require_version
     end
+    -- set search mode, CONFIG, MODULE, BOTH
+    -- e.g. https://cmake.org/cmake/help/latest/command/find_package.html#id4
+    if configs.search_mode then
+        requirestr = requirestr .. " " .. configs.search_mode
+    end
     -- use opt.components is for backward compatibility
     local components = configs.components or opt.components
     if components then
@@ -84,6 +89,10 @@ function _find_package(cmake, name, opt)
         testname, name, name, name)
     cmakefile:print("   target_link_libraries(%s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
         testname, name:upper(), name:upper(), name:upper())
+    if configs.link_libraries then
+        cmakefile:print("   target_link_libraries(%s %s)",
+            testname, table.concat(table.wrap(configs.link_libraries), " "))
+    end
     cmakefile:print("endif(%s_FOUND)", name)
     cmakefile:close()
 
