@@ -594,14 +594,19 @@ function _add_target_vs_runtime(cmakelists, target)
     local cmake_minver = _get_cmake_minver()
     if cmake_minver:ge("3.15.0") then
         local vs_runtime = target:get("runtimes")
-        if not vs_runtime then
-            vs_runtime = "MT"
-        end
         cmakelists:print("if(MSVC)")
-        if vs_runtime:startswith("MT") then
+        if vs_runtime then
+            if vs_runtime == "MT" then
+                vs_runtime = "MultiThreaded"
+            elseif vs_runtime == "MTd" then
+                vs_runtime = "MultiThreadedDebug"
+            elseif vs_runtime == "MD" then
+                vs_runtime = "MultiThreadedDLL"
+            elseif vs_runtime == "MDd" then
+                vs_runtime = "MultiThreadedDebugDLL"
+            end
+        else
             vs_runtime = "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-        elseif vs_runtime:startswith("MD") then
-            vs_runtime = "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
         end
         cmakelists:print('    set_property(TARGET %s PROPERTY', target:name())
         cmakelists:print('        MSVC_RUNTIME_LIBRARY "%s")', vs_runtime)
