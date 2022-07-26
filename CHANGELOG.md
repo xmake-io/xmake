@@ -8,6 +8,7 @@
 
 ### Changes
 
+* [#2576](https://github.com/xmake-io/xmake/issues/2576): More flexible package fetching from cmake
 * [#2577](https://github.com/xmake-io/xmake/issues/2577): Improve add_headerfiles(), add `{install = false}` support
 
 ## v2.6.9
@@ -1352,6 +1353,7 @@
 
 ### 改进
 
+* [#2576](https://github.com/xmake-io/xmake/issues/2576): More flexible package fetching from cmake
 * [#2577](https://github.com/xmake-io/xmake/issues/2577): 改进 add_headerfiles()，增加 `{install = false}` 支持
 
 ## v2.6.9
