@@ -108,7 +108,6 @@ function _clean(targetname)
     -- clean the given target
     if targetname then
         local target = project.target(targetname)
-        _clean_targets(target:orderdeps())
         _clean_target(target)
     else
         _clean_targets(project.ordertargets())
