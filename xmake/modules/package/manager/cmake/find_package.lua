@@ -45,7 +45,8 @@ function _find_package(cmake, name, opt)
     if opt.require_version and opt.require_version ~= "latest" then
         requirestr = requirestr .. " " .. opt.require_version
     end
-    -- set search mode, CONFIG, MODULE, BOTH
+    -- set search mode, e.g. config, module
+    -- it will be both mode if do not set this config.
     -- e.g. https://cmake.org/cmake/help/latest/command/find_package.html#id4
     if configs.search_mode then
         requirestr = requirestr .. " " .. configs.search_mode:upper()
