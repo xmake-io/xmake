@@ -76,6 +76,7 @@ task("global")
                     {nil, "pkg_searchdirs", "kv", nil      , "The search directories of the remote package."
                                                            , "    e.g."
                                                            , "    - xmake g --pkg_searchdirs=/dir1" .. path.envsep() .. "/dir2"},
+                    {nil, "pkg_cachedir",   "kv", nil      , "The cache root directory of the remote package."},
                     {nil, "pkg_installdir", "kv", nil      , "The install root directory of the remote package."},
 
                     -- show platform menu options

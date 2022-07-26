@@ -2054,7 +2054,7 @@ function package.cachedir(opt)
     opt = opt or {}
     local cachedir = package._CACHEDIR
     if not cachedir then
-        cachedir = os.getenv("XMAKE_PKG_CACHEDIR") or path.join(global.cachedir(), "packages")
+        cachedir = os.getenv("XMAKE_PKG_CACHEDIR") or global.get("pkg_cachedir") or path.join(global.cachedir(), "packages")
         package._CACHEDIR = cachedir
     end
     if opt.rootonly then
