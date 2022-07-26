@@ -6,6 +6,10 @@
 
 * [#2555](https://github.com/xmake-io/xmake/issues/2555): Add fwatcher module and `xmake watch` plugin command
 
+### Changes
+
+* [#2577](https://github.com/xmake-io/xmake/issues/2577): Improve add_headerfiles(), add `{install = false}` support
+
 ## v2.6.9
 
 ### New features
@@ -1345,6 +1349,10 @@
 ### 新特性
 
 * [#2555](https://github.com/xmake-io/xmake/issues/2555): 添加 fwatcher 模块和 `xmake watch` 插件命令
+
+### 改进
+
+* [#2577](https://github.com/xmake-io/xmake/issues/2577): 改进 add_headerfiles()，增加 `{install = false}` 支持
 
 ## v2.6.9
 
