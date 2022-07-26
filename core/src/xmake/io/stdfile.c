@@ -78,6 +78,38 @@ static tb_size_t xm_io_stdfile_isatty(tb_size_t type)
     if (answer) type |= XM_IO_FILE_FLAG_TTY;
     return type;
 }
+
+static tb_void_t xm_io_stdfile_init_buffer(tb_size_t type)
+{
+#if defined(TB_CONFIG_OS_WINDOWS)
+    // TODO
+#else
+    tb_int_t size = 0;
+    tb_char_t data[256];
+    switch (type)
+    {
+    case XM_IO_FILE_TYPE_STDIN:
+        {
+            if (tb_environment_first("XMAKE_STDIN_NBUF", data, sizeof(data)) && ((size = tb_stoi32(data)) > 0))
+                setvbuf(stdin, tb_null, _IONBF, 0);
+        }
+        break;
+    case XM_IO_FILE_TYPE_STDOUT:
+        {
+            if (tb_environment_first("XMAKE_STDOUT_NBUF", data, sizeof(data)) && ((size = tb_stoi32(data)) > 0))
+                setvbuf(stdout, tb_null, _IONBF, 0);
+        }
+        break;
+    case XM_IO_FILE_TYPE_STDERR:
+        {
+            if (tb_environment_first("XMAKE_STDERR_NBUF", data, sizeof(data)) && ((size = tb_stoi32(data)) > 0))
+                setvbuf(stderr, tb_null, _IONBF, 0);
+        }
+        break;
+    }
+#endif
+}
+
 static xm_io_file_t* xm_io_stdfile_new(lua_State* lua, tb_size_t type)
 {
     // init stdfile
@@ -105,6 +137,9 @@ static xm_io_file_t* xm_io_stdfile_new(lua_State* lua, tb_size_t type)
     file->fstream    = tb_null;
     file->type       = xm_io_stdfile_isatty(type);
     file->encoding   = TB_CHARSET_TYPE_UTF8;
+
+    // init stdio buffer
+    xm_io_stdfile_init_buffer(type);
 
     // init the read/write line cache buffer
     tb_buffer_init(&file->rcache);
