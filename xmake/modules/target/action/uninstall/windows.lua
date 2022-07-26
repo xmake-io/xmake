@@ -21,7 +21,7 @@
 -- uninstall headers
 function _uninstall_headers(target, opt)
     local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
-    local _, dstheaders = target:headerfiles(includedir)
+    local _, dstheaders = target:headerfiles(includedir, {installonly = true})
     for _, dstheader in ipairs(dstheaders) do
         os.vrm(dstheader)
     end

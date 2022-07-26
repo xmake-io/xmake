@@ -22,7 +22,7 @@
 function _install_headers(target, opt)
     local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
     os.mkdir(includedir)
-    local srcheaders, dstheaders = target:headerfiles(includedir)
+    local srcheaders, dstheaders = target:headerfiles(includedir, {installonly = true})
     if srcheaders and dstheaders then
         local i = 1
         for _, srcheader in ipairs(srcheaders) do

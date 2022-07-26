@@ -1440,7 +1440,7 @@ end
 
 -- TODO get the header files, get("headers") (deprecated)
 function _instance:headers(outputdir)
-    return self:headerfiles(outputdir, true)
+    return self:headerfiles(outputdir, {only_deprecated = true})
 end
 
 -- get the header files
@@ -1448,14 +1448,29 @@ end
 -- default: get("headers") + get("headerfiles")
 -- only_deprecated: get("headers")
 --
-function _instance:headerfiles(outputdir, only_deprecated)
+function _instance:headerfiles(outputdir, opt)
 
     -- get header files?
+    opt = opt or {}
     local headers = self:get("headers") -- TODO deprecated
+    local only_deprecated = opt.only_deprecated
     if not only_deprecated then
        headers = table.join(headers or {}, self:get("headerfiles"))
+       -- add_headerfiles("src/*.h", {install = false})
+       -- @see https://github.com/xmake-io/xmake/issues/2577
+       if opt.installonly then
+           local installfiles = {}
+           for _, headerfile in ipairs(table.wrap(headers)) do
+               if self:extraconf("headerfiles", headerfile, "install") ~= false then
+                   table.insert(installfiles, headerfile)
+               end
+           end
+           headers = installfiles
+       end
     end
-    if not headers then return end
+    if not headers then
+        return
+    end
 
     -- get the installed header directory
     local headerdir = outputdir
