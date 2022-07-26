@@ -100,18 +100,7 @@ function is_stl_header(header)
 end
 
 function get_stlcache_dir(target)
-    --[[
-    local compinst = compiler.load("cxx", {target = target})
-
-    local toolname = compinst:_tool():name()
-    local compinfos = detect.find_tool(toolname, {version=true, program=toolname})
-    local compiler = compinfos.name
-    local version = compinfos.version()
-
-    local stlcachedir = globalcache.cache("stlbmi")
-    --]]
-
-    local stlcachedir = path.join(target:autogendir(), ".gens", "stlmodules", "cache")
+    local stlcachedir = path.join(target:autogendir(), "stlmodules", "cache")
     if not os.isdir(stlcachedir) then
         os.mkdir(stlcachedir)
     end
@@ -152,7 +141,7 @@ function load(target, sourcebatch, opt)
     return moduleinfos
 end
 
-function parseDependencyDatas(target, moduleinfos, opt)
+function parse_dependency_data(target, moduleinfos, opt)
     local cachedir = get_cache_dir(target)
     local modules
     for _, moduleinfo in ipairs(moduleinfos) do

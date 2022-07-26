@@ -95,7 +95,7 @@ rule("c++.build.modules")
             table.join2(moduleinfos, infos or {})
         end
 
-        local modules = common.parseDependencyDatas(target, moduleinfos, opt)
+        local modules = common.parse_dependency_data(target, moduleinfos, opt)
 
         target:data_set("cxx.modules", modules)
     end)

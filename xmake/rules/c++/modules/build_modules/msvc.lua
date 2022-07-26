@@ -30,13 +30,15 @@ function load_parent(target, opt)
     local common = import("common")
     -- get modules flag
     local modulesflag
-    local compinst = compiler.load("cxx", {target = target})
+    local compinst = target:compiler("cxx")
 
     -- add module flags
     local cachedir = common.get_cache_dir(target)
     local stlcachedir = common.get_stlcache_dir(target)
 
-    target:add("cxxflags", {"/ifcSearchDir", cachedir, "/ifcSearchDir", stlcachedir}, {force = true, expand = false})
+    target:add("cxxflags", {"/ifcSearchDir", cachedir}, {force = true, expand = false})
+    target:add("cxxflags", {"/ifcSearchDir", stlcachedir}, {force = true, expand = false})
+
     for _, dep in ipairs(target:orderdeps()) do
         cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
         target:add("cxxflags", {"/ifcSearchDir", cachedir}, {force = true, expand = false})
@@ -58,7 +60,8 @@ end
 
 -- check C++20 module support
 function check_module_support(target)
-    local compinst = compiler.load("cxx", {target = target})
+    local compinst = target:compiler("cxx")
+
     if compinst:has_flags("/experimental:module", "cxxflags") then
         modulesflag = "/experimental:module"
     end
@@ -113,10 +116,14 @@ end
 
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
+    local compinst = target:compiler("cxx")
+    local toolchain = target:toolchain("msvc")
+    local vcvars = toolchain:config("vcvars")
+
     local common = import("common")
     local cachedir = common.get_cache_dir(target)
-    local compinst = compiler.load("cxx", {target = target})
-    local common_args = {"/TP", "/scanDependencies"}
+    local common_args = {"/TP", "/scanDependencies"}  
+
 
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
         local dependfile = target:dependfile(sourcefile)
@@ -127,8 +134,8 @@ function generate_dependencies(target, sourcebatch, opt)
             local jsonfile = path.join(outdir, path.filename(sourcefile) .. ".json")
 
             local args = {jsonfile, sourcefile, "/Fo" .. target:objectfile(sourcefile)}
-
-            os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args))
+        
+            os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args), {envs = vcvars})
 
             local dependinfo = io.readfile(jsonfile)
 
@@ -140,7 +147,10 @@ end
 -- generate target header units
 function generate_headerunits(target, batchcmds, sourcebatch, opt)
     local common = import("common")
-    local compinst = compiler.load("cxx", {target = target})
+
+    local compinst = target:compiler("cxx")
+    local toolchain = target:toolchain("msvc")
+    local vcvars = toolchain:config("vcvars")
 
     local cachedir = common.get_cache_dir(target)
     local stlcachedir = common.get_stlcache_dir(target)
@@ -166,7 +176,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
 
             local args = {"/headerName" .. headerunit.type, headerunit.path, "/ifcOutput", outdir, "/Fo" .. objectfile}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args))
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args), {envs = vcvars})
 
             batchcmds:add_depfiles(headerunit.path)
             batchcmds:set_depmtime(os.mtime(bmifile))
@@ -181,13 +191,14 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             target:add("objectfiles", objectfile)
         else
             local bmifile = path.join(stlcachedir, headerunit.name .. ".ifc")
+            if not os.isfile(bmifile) then
+                local args = {"/exportHeader", "/headerName:angle", headerunit.name, "/ifcOutput", stlcachedir}
+                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, args), {envs = vcvars})
 
-            local args = {"/exportHeader", "/headerName:angle", headerunit.name, "/ifcOutput", stlcachedir}
-            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, args))
-
-            batchcmds:set_depmtime(os.mtime(bmifile))
-            batchcmds:set_depcache(target:dependfile(bmifile))
+                batchcmds:set_depmtime(os.mtime(bmifile))
+                batchcmds:set_depcache(target:dependfile(bmifile))
+            end
 
             local flag = {"/headerUnit:angle", headerunit.name .. "=" .. headerunit.name .. ".ifc"}
             target:add("cxxflags", flag, {force = true, expand = false})
@@ -200,9 +211,12 @@ end
 -- build module files
 -- TODO detect dependencies, and build in the right order
 function build_modules(target, batchcmds, objectfiles, modules, opt)
-    local compinst = compiler.load("cxx", {target = target})
     local cachedir = common.get_cache_dir(target)
     
+    local compinst = target:compiler("cxx")
+    local toolchain = target:toolchain("msvc")
+    local vcvars = toolchain:config("vcvars")
+
     -- append deps modules
     for _, dep in ipairs(target:orderdeps()) do
         target:add("cxxflags", dep:data("cxx.modules.flags"), {force = true, expand = false})
@@ -231,10 +245,10 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
                 batchcmds:set_depmtime(os.mtime(bmifile))
                 batchcmds:set_depcache(target:dependfile(bmifile))
 
-                table.join2(flag, {"/reference", name .. "=" .. path.filename(bmifile)})
+                flag = {"/reference", name .. "=" .. path.filename(bmifile)}
             end  
 
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args))
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args), {envs = vcvars})
 
             batchcmds:add_depfiles(m.sourcefile)
             batchcmds:set_depmtime(os.mtime(objectfile))
