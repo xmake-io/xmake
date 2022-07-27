@@ -91,19 +91,19 @@ static tb_void_t xm_io_stdfile_init_buffer(tb_size_t type)
     case XM_IO_FILE_TYPE_STDIN:
         {
             if (tb_environment_first("XMAKE_STDIN_NBUF", data, sizeof(data)) && ((size = tb_stoi32(data)) >= 0))
-                setvbuf(stdin, tb_null, _IONBF, 0);
+                setvbuf(stdin, tb_null, _IONBF, size);
         }
         break;
     case XM_IO_FILE_TYPE_STDOUT:
         {
             if (tb_environment_first("XMAKE_STDOUT_NBUF", data, sizeof(data)) && ((size = tb_stoi32(data)) >= 0))
-                setvbuf(stdout, tb_null, _IONBF, 0);
+                setvbuf(stdout, tb_null, _IONBF, size);
         }
         break;
     case XM_IO_FILE_TYPE_STDERR:
         {
             if (tb_environment_first("XMAKE_STDERR_NBUF", data, sizeof(data)) && ((size = tb_stoi32(data)) >= 0))
-                setvbuf(stderr, tb_null, _IONBF, 0);
+                setvbuf(stderr, tb_null, _IONBF, size);
         }
         break;
     }
