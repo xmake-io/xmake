@@ -65,6 +65,7 @@ sandbox_os.joinenvs     = os.joinenvs
 sandbox_os.pbpaste      = os.pbpaste
 sandbox_os.pbcopy       = os.pbcopy
 sandbox_os.cpuinfo      = os.cpuinfo
+sandbox_os.meminfo      = os.meminfo
 sandbox_os.default_njob = os.default_njob
 sandbox_os.emptydir     = os.emptydir
 sandbox_os.filesize     = os.filesize

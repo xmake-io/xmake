@@ -33,15 +33,16 @@ local process   = require("base/process")
 -- save original interfaces
 os._uid      = os._uid or os.uid
 os._gid      = os._gid or os.gid
-os._getpid      = os._getpid or os.getpid
-os._exit        = os._exit or os.exit
-os._mkdir       = os._mkdir or os.mkdir
-os._rmdir       = os._rmdir or os.rmdir
-os._tmpdir      = os._tmpdir or os.tmpdir
-os._setenv      = os._setenv or os.setenv
-os._getenvs     = os._getenvs or os.getenvs
-os._cpuinfo     = os._cpuinfo or os.cpuinfo
-os._readlink    = os._readlink or os.readlink
+os._getpid   = os._getpid or os.getpid
+os._exit     = os._exit or os.exit
+os._mkdir    = os._mkdir or os.mkdir
+os._rmdir    = os._rmdir or os.rmdir
+os._tmpdir   = os._tmpdir or os.tmpdir
+os._setenv   = os._setenv or os.setenv
+os._getenvs  = os._getenvs or os.getenvs
+os._cpuinfo  = os._cpuinfo or os.cpuinfo
+os._meminfo  = os._meminfo or os.meminfo
+os._readlink = os._readlink or os.readlink
 
 -- syserror code
 os.SYSERR_UNKNOWN     = -1
@@ -1282,6 +1283,11 @@ end
 -- get cpu info
 function os.cpuinfo(name)
     return require("base/cpu").info(name)
+end
+
+-- get memory info
+function os.meminfo(name)
+    return require("base/memory").info(name)
 end
 
 -- get the default parallel jobs number

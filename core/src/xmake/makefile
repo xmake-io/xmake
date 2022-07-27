@@ -38,6 +38,7 @@ xmake_C_FILES 			+= \
 						os/getenv \
 						os/getenvs \
 						os/cpuinfo \
+						os/meminfo \
 						os/readlink \
 						os/emptydir \
 						os/syserror \
