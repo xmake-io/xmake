@@ -993,9 +993,11 @@ end
 -- end
 function _instance:has_tool(toolkind, ...)
     local _, toolname = self:tool(toolkind)
-    for _, v in ipairs(table.join(...)) do
-        if v and toolname:find("^" .. v:gsub("%-", "%%-") .. "$") then
-            return true
+    if toolname then
+        for _, v in ipairs(table.join(...)) do
+            if v and toolname:find("^" .. v:gsub("%-", "%%-") .. "$") then
+                return true
+            end
         end
     end
 end
