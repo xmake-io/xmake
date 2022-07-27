@@ -416,15 +416,16 @@ function _preprocess(program, argv, opt)
         end
     end
 
-    -- enable "-fdirectives-only"?
+    -- enable "-fdirectives-only"? we need enable it manually
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/2603
+    -- https://github.com/xmake-io/xmake/issues/2425
     local directives_only
     if is_gcc then
         local cachekey = "core.tools." .. tool:name()
         directives_only = memcache.get(cachekey, "directives_only")
         if directives_only == nil then
-            if os.isfile(os.projectfile()) and project.policy("preprocessor.gcc.directives_only") == false then
-                directives_only = false
-            else
+            if os.isfile(os.projectfile()) and project.policy("preprocessor.gcc.directives_only") then
                 directives_only = true
             end
             memcache.set(cachekey, "directives_only", directives_only)
