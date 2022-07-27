@@ -91,19 +91,19 @@ tb_int_t xm_os_meminfo(lua_State* lua)
     // init table
     lua_newtable(lua);
 
-    // get the pagesize
+    // get the pagesize (bytes)
     tb_int_t pagesize = (tb_int_t)tb_page_size();
     lua_pushstring(lua, "pagesize");
     lua_pushinteger(lua, pagesize);
     lua_settable(lua, -3);
 
-    // get the total memory size
+    // get the total memory size (MB)
     tb_int_t physmem = xm_os_meminfo_physmem();
     lua_pushstring(lua, "physmem");
     lua_pushinteger(lua, physmem);
     lua_settable(lua, -3);
 
-    // get the vm memory info
+    // get the vm memory size (MB)
     tb_int_t vm_availsize = 0;
     tb_int_t vm_totalsize = 0;
     if (xm_os_meminfo_vmstats(&vm_totalsize, &vm_availsize))
