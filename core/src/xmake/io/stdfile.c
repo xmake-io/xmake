@@ -81,21 +81,16 @@ static tb_size_t xm_io_stdfile_isatty(tb_size_t type)
     return type;
 }
 
+// @see https://github.com/xmake-io/xmake/issues/2580
 static tb_void_t xm_io_stdfile_init_buffer(tb_size_t type)
 {
-#if defined(TB_CONFIG_OS_WINDOWS)
-    // TODO
-#else
-    tb_char_t data[256];
-    if (tb_environment_first("XMAKE_STDOUT_LINEFLUSH", data, sizeof(data)))
-    {
-        struct stat stats;
-        tb_int_t size = BUFSIZ;
-        int fileno(FILE*);
-        if (fstat(fileno(stdout), &stats) != -1)
-            size = stats.st_blksize;
-        setvbuf(stdout, tb_null, _IOLBF, size);
-    }
+#if !defined(TB_CONFIG_OS_WINDOWS)
+    struct stat stats;
+    tb_int_t size = BUFSIZ;
+    int fileno(FILE*);
+    if (fstat(fileno(stdout), &stats) != -1)
+        size = stats.st_blksize;
+    setvbuf(stdout, tb_null, _IOLBF, size);
 #endif
 }
 
