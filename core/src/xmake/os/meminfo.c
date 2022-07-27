@@ -54,7 +54,7 @@ static tb_int64_t xm_os_meminfo_get_value(tb_char_t const* buffer, tb_char_t con
 static tb_bool_t xm_os_meminfo_stats(tb_int_t* ptotalsize, tb_int_t* pavailsize)
 {
 #if defined(TB_CONFIG_OS_MACOSX)
-    statistics64_data_t vmstat;
+    vm_statistics64_data_t vmstat;
     mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
     if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info_t) &vmstat, &count) == KERN_SUCCESS)
     {
