@@ -33,7 +33,10 @@
 #   include <io.h>
 #   include "iscygpty.c"
 #else
+#    include <stdio.h>
 #    include <unistd.h>
+#    include <sys/types.h>
+#    include <sys/stat.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -78,6 +81,19 @@ static tb_size_t xm_io_stdfile_isatty(tb_size_t type)
     if (answer) type |= XM_IO_FILE_FLAG_TTY;
     return type;
 }
+
+// @see https://github.com/xmake-io/xmake/issues/2580
+static tb_void_t xm_io_stdfile_init_buffer(tb_size_t type)
+{
+#if !defined(TB_CONFIG_OS_WINDOWS)
+    struct stat stats;
+    tb_int_t size = BUFSIZ;
+    if (fstat(fileno(stdout), &stats) != -1)
+        size = stats.st_blksize;
+    setvbuf(stdout, tb_null, _IOLBF, size);
+#endif
+}
+
 static xm_io_file_t* xm_io_stdfile_new(lua_State* lua, tb_size_t type)
 {
     // init stdfile
@@ -105,6 +121,9 @@ static xm_io_file_t* xm_io_stdfile_new(lua_State* lua, tb_size_t type)
     file->fstream    = tb_null;
     file->type       = xm_io_stdfile_isatty(type);
     file->encoding   = TB_CHARSET_TYPE_UTF8;
+
+    // init stdio buffer
+    xm_io_stdfile_init_buffer(type);
 
     // init the read/write line cache buffer
     tb_buffer_init(&file->rcache);
