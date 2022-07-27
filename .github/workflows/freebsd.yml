@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: macos-10.15
+    runs-on: macos-12
 
     concurrency:
         group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-FreeBSD
@@ -20,7 +20,7 @@ jobs:
           submodules: true
 
       - name: Tests
-        uses: vmactions/freebsd-vm@v0.1.6
+        uses: vmactions/freebsd-vm@v0.2.0
         with:
           usesh: true
           mem: 4096
