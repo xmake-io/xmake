@@ -11,6 +11,7 @@
 * [#2576](https://github.com/xmake-io/xmake/issues/2576): More flexible package fetching from cmake
 * [#2577](https://github.com/xmake-io/xmake/issues/2577): Improve add_headerfiles(), add `{install = false}` support
 * [#2603](https://github.com/xmake-io/xmake/issues/2603): Disable `-fdirectives-only` for ccache by default
+* [#2580](https://github.com/xmake-io/xmake/issues/2580): Set stdout to line buffering
 
 ## v2.6.9
 
@@ -1357,6 +1358,7 @@
 * [#2576](https://github.com/xmake-io/xmake/issues/2576): More flexible package fetching from cmake
 * [#2577](https://github.com/xmake-io/xmake/issues/2577): 改进 add_headerfiles()，增加 `{install = false}` 支持
 * [#2603](https://github.com/xmake-io/xmake/issues/2603): 为 ccache 默认禁用 `-fdirectives-only`
+* [#2580](https://github.com/xmake-io/xmake/issues/2580): 设置 stdout 到 line 缓冲输出
 
 ## v2.6.9
 
