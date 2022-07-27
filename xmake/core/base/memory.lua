@@ -26,9 +26,10 @@ local os      = require("base/os")
 
 -- get memory info
 function memory.info(name)
+    -- TODO we need cache per 10s
     local meminfo = os._meminfo()
-    if meminfo.vm_totalsize and meminfo.vm_availsize then
-        meminfo.vm_usagerate = (meminfo.vm_totalsize - meminfo.vm_availsize) / meminfo.vm_totalsize
+    if meminfo.totalsize and meminfo.availsize then
+        meminfo.usagerate = (meminfo.totalsize - meminfo.availsize) / meminfo.totalsize
     end
     return name and meminfo[name] or meminfo
 end
