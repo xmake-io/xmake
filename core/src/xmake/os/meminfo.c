@@ -79,6 +79,7 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t* ptotalsize, tb_int_t* pavailsize)
      */
     if (tb_file_info("/proc/meminfo", tb_null))
     {
+        tb_bool_t ok = tb_false;
         FILE* fp = fopen("/proc/meminfo", "r");
         if (fp)
         {
@@ -88,10 +89,26 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t* ptotalsize, tb_int_t* pavailsize)
             if (!ferror(fp) && len)
             {
                 tb_int64_t totalsize = xm_os_meminfo_get_value(buffer, "MemTotal:");
-                tb_trace_i("totalsize: %lld", totalsize);
+                tb_int64_t availsize = xm_os_meminfo_get_value(buffer, "MemAvailable:");
+                if (availsize <= 0)
+                {
+                    tb_int64_t cachesize  = xm_os_meminfo_get_value(buffer, "Cached:");
+                    tb_int64_t freesize   = xm_os_meminfo_get_value(buffer, "MemFree:");
+                    tb_int64_t buffersize = xm_os_meminfo_get_value(buffer, "Buffers:");
+                    tb_int64_t shmemsize  = xm_os_meminfo_get_value(buffer, "Shmem:");
+                    if (cachesize >= 0 && freesize >= 0 && buffersize >= 0 && shmemsize >= 0)
+                        availsize = freesize + buffersize + cachesize - shmemsize;
+                }
+                if (totalsize > 0 && availsize >= 0)
+                {
+                    *ptotalsize = (tb_int_t)(totalsize / 1024);
+                    *pavailsize = (tb_int_t)(availsize / 1024);
+                    ok = tb_true;
+                }
             }
             fclose(fp);
         }
+        return ok;
     }
     else
     {
