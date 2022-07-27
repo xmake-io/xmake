@@ -33,6 +33,7 @@
 #   include <io.h>
 #   include "iscygpty.c"
 #else
+#    include <stdio.h>
 #    include <unistd.h>
 #    include <sys/types.h>
 #    include <sys/stat.h>
@@ -87,7 +88,6 @@ static tb_void_t xm_io_stdfile_init_buffer(tb_size_t type)
 #if !defined(TB_CONFIG_OS_WINDOWS)
     struct stat stats;
     tb_int_t size = BUFSIZ;
-    int fileno(FILE*);
     if (fstat(fileno(stdout), &stats) != -1)
         size = stats.st_blksize;
     setvbuf(stdout, tb_null, _IOLBF, size);
