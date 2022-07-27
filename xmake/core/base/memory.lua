@@ -27,6 +27,9 @@ local os      = require("base/os")
 -- get memory info
 function memory.info(name)
     local meminfo = os._meminfo()
+    if meminfo.vm_totalsize and meminfo.vm_availsize then
+        meminfo.vm_usagerate = (meminfo.vm_totalsize - meminfo.vm_availsize) / meminfo.vm_totalsize
+    end
     return name and meminfo[name] or meminfo
 end
 
