@@ -497,7 +497,8 @@ function _instance:showmenu()
             self:get("cfuncs") or self:get("cxxfuncs") or
             self:get("cincludes") or self:get("cxxincludes") or
             self:get("links") or self:get("syslinks") or
-            self:get("csnippets") or self:get("cxxsnippets") then
+            self:get("csnippets") or self:get("cxxsnippets") or
+            self:get("features") then
             showmenu = false
         end
     end
