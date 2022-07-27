@@ -34,6 +34,8 @@
 #   include "iscygpty.c"
 #else
 #    include <unistd.h>
+#    include <sys/types.h>
+#    include <sys/stat.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -84,28 +86,15 @@ static tb_void_t xm_io_stdfile_init_buffer(tb_size_t type)
 #if defined(TB_CONFIG_OS_WINDOWS)
     // TODO
 #else
-    tb_int_t size = 0;
     tb_char_t data[256];
-    switch (type)
+    if (tb_environment_first("XMAKE_STDOUT_LINEFLUSH", data, sizeof(data)))
     {
-    case XM_IO_FILE_TYPE_STDIN:
-        {
-            if (tb_environment_first("XMAKE_STDIN_NBUF", data, sizeof(data)) && ((size = tb_stoi32(data)) >= 0))
-                setvbuf(stdin, tb_null, _IONBF, size);
-        }
-        break;
-    case XM_IO_FILE_TYPE_STDOUT:
-        {
-            if (tb_environment_first("XMAKE_STDOUT_NBUF", data, sizeof(data)) && ((size = tb_stoi32(data)) >= 0))
-                setvbuf(stdout, tb_null, _IONBF, size);
-        }
-        break;
-    case XM_IO_FILE_TYPE_STDERR:
-        {
-            if (tb_environment_first("XMAKE_STDERR_NBUF", data, sizeof(data)) && ((size = tb_stoi32(data)) >= 0))
-                setvbuf(stderr, tb_null, _IONBF, size);
-        }
-        break;
+        struct stat stats;
+        tb_int_t size = BUFSIZ;
+        int fileno(FILE*);
+        if (fstat(fileno(stdout), &stats) != -1)
+            size = stats.st_blksize;
+        setvbuf(stdout, tb_null, _IOLBF, size);
     }
 #endif
 }
