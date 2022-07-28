@@ -22,13 +22,19 @@
 local memory = memory or {}
 
 -- load modules
-local os      = require("base/os")
+local os = require("base/os")
 
 -- get memory info
 function memory.info(name)
-    local meminfo = os._meminfo()
-    if meminfo.vm_totalsize and meminfo.vm_availsize then
-        meminfo.vm_usagerate = (meminfo.vm_totalsize - meminfo.vm_availsize) / meminfo.vm_totalsize
+    local meminfo = memory._MEMINFO
+    local memtime = memory._MEMTIME
+    if meminfo == nil or memtime == nil or os.time() - memtime > 10 then -- cache 10s
+        meminfo = os._meminfo()
+        if meminfo.totalsize and meminfo.availsize then
+            meminfo.usagerate = (meminfo.totalsize - meminfo.availsize) / meminfo.totalsize
+        end
+        memory._MEMINFO = meminfo
+        memory._MEMTIME = os.time()
     end
     return name and meminfo[name] or meminfo
 end
