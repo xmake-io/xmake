@@ -161,15 +161,17 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
     for _, headerunit in ipairs(sourcebatch) do
         if not headerunit.stl then
             local file = path.relative(headerunit.path, target:scriptdir())
-            local outdir = path.join(cachedir, path.directory(file))
+
+            local objectfile = target:objectfile(file)
+
+            local outdir = path.join(cachedir, "include", path.directory(headerunit.name))
             if not os.isdir(outdir) then
                 os.mkdir(outdir)
             end
 
-            local bmifilename = path.filename(file) .. ".ifc"
+            local bmifilename = path.basename(objectfile) .. ".ifc"
 
             local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
-            local objectfile = target:objectfile(file)
             if not os.isdir(path.directory(objectfile)) then
                 os.mkdir(path.directory(objectfile))
             end
