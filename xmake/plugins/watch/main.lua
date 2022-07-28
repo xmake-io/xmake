@@ -54,7 +54,7 @@ function _add_watchdirs()
 end
 
 -- run command
-function _run_command()
+function _run_command(events)
     try
     {
         function ()
@@ -72,7 +72,7 @@ function _run_command()
             elseif scriptfile and os.isfile(scriptfile) and path.extension(scriptfile) == ".lua" then
                 local script = import(path.basename(scriptfile),
                     {rootdir = path.directory(scriptfile), anonymous = true})
-                script()
+                script(events)
             elseif os.isfile(os.projectfile()) then
                 local argv = {"build", "-y"}
                 if option.get("verbose") then
@@ -111,6 +111,7 @@ function main()
 
     -- do watch
     local count = 0
+    local events = {}
     while true do
         local ok, event = fwatcher.wait(300)
         if ok > 0 then
@@ -123,9 +124,10 @@ function main()
                 status = "deleted"
             end
             print(event.path, status)
+            table.insert(events, event)
             count = count + 1
         elseif count > 0 then
-            _run_command()
+            _run_command(events)
             count = 0
         end
     end
