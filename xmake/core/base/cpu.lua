@@ -319,6 +319,11 @@ function cpu.number()
     return os._cpuinfo().ncpu
 end
 
+-- get cpu usage rate
+function cpu.usagerate()
+    return os._cpuinfo().usagerate
+end
+
 -- get cpu info
 function cpu.info(name)
     local cpuinfo = {}
@@ -328,6 +333,7 @@ function cpu.info(name)
     cpuinfo.march      = cpu.march()
     cpuinfo.ncpu       = cpu.number()
     cpuinfo.features   = cpu.features()
+    cpuinfo.usagerate  = cpu.usagerate()
     cpuinfo.model_name = cpu.model_name()
     return name and cpuinfo[name] or cpuinfo
 end
