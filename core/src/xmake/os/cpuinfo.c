@@ -38,25 +38,18 @@
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * macros
- */
-#define XM_CPU_MAX  (1024)
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_int_t xm_os_cpuinfo_stats(tb_float_t usages[XM_CPU_MAX])
+static tb_float_t xm_os_cpuinfo_usagerate()
 {
 #if defined(TB_CONFIG_OS_MACOSX)
+    tb_float_t usagerate = 0;
     natural_t cpu_count = 0;
     processor_info_array_t cpuinfo;
     mach_msg_type_number_t cpuinfo_count;
     static tb_hong_t s_time = 0;
     if (tb_mclock() - s_time > 1000 && host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, &cpu_count, &cpuinfo, &cpuinfo_count) == KERN_SUCCESS)
     {
-        if (cpuinfo_count > XM_CPU_MAX)
-            cpuinfo_count = XM_CPU_MAX;
-
         static processor_info_array_t s_cpuinfo_prev = tb_null;
         static mach_msg_type_number_t s_cpuinfo_count_prev = 0;
         for (tb_int_t i = 0; i < cpu_count; ++i)
@@ -74,7 +67,7 @@ static tb_int_t xm_os_cpuinfo_stats(tb_float_t usages[XM_CPU_MAX])
                 use = cpuinfo[(CPU_STATE_MAX * i) + CPU_STATE_USER] + cpuinfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM] + cpuinfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE];
                 total = use + cpuinfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE];
             }
-            usages[i] = total > 0? ((tb_float_t)use / (tb_float_t)total) : 0;
+            usagerate += total > 0? ((tb_float_t)use / (tb_float_t)total) : 0;
         }
         if (s_cpuinfo_prev)
             vm_deallocate(mach_task_self(), (vm_address_t)s_cpuinfo_prev, sizeof(integer_t) * s_cpuinfo_count_prev);
@@ -82,7 +75,7 @@ static tb_int_t xm_os_cpuinfo_stats(tb_float_t usages[XM_CPU_MAX])
         s_cpuinfo_prev = cpuinfo;
         s_cpuinfo_count_prev = cpuinfo_count;
     }
-    return cpu_count;
+    return cpu_count > 0? usagerate / cpu_count : 0;
 #else
     return 0;
 #endif
@@ -112,15 +105,10 @@ tb_int_t xm_os_cpuinfo(lua_State* lua)
     lua_pushinteger(lua, ncpu > 0? ncpu : 1);
     lua_settable(lua, -3);
 
-    // get cpu usages
-    tb_float_t usages[XM_CPU_MAX];
-    tb_int_t count = xm_os_cpuinfo_stats(usages);
-    if (count > 0)
+    // get cpu usage rate
+    tb_float_t usagerate = xm_os_cpuinfo_usagerate();
+    if (usagerate > 0)
     {
-        tb_float_t usagerate = 0;
-        for (tb_int_t i = 0; i < count; i++)
-            usagerate += usages[i];
-        usagerate /= count;
         lua_pushstring(lua, "usagerate");
         lua_pushnumber(lua, usagerate);
         lua_settable(lua, -3);
