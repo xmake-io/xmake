@@ -33,10 +33,20 @@ end
 -- add watchdirs
 function _add_watchdirs()
     local watchdirs = option.get("watchdirs")
-    if watchdirs then
-        for _, watchdir in ipairs(path.splitenv(watchdirs)) do
-            for _, dir in ipairs(os.dirs(watchdir)) do
-                _add_watchdir(dir, {recursion = true})
+    local plaindirs = option.get("plaindirs")
+    if watchdirs or plaindirs then
+        if watchdirs then
+            for _, watchdir in ipairs(path.splitenv(watchdirs)) do
+                for _, dir in ipairs(os.dirs(watchdir)) do
+                    _add_watchdir(dir, {recursion = true})
+                end
+            end
+        end
+        if plaindirs then
+            for _, watchdir in ipairs(path.splitenv(plaindirs)) do
+                for _, dir in ipairs(os.dirs(watchdir)) do
+                    _add_watchdir(dir)
+                end
             end
         end
     elseif os.isfile(os.projectfile()) then
