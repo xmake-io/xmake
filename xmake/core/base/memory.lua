@@ -36,7 +36,11 @@ function memory.info(name)
         memory._MEMINFO = meminfo
         memory._MEMTIME = os.time()
     end
-    return name and meminfo[name] or meminfo
+    if name then
+        return meminfo[name]
+    else
+        return meminfo
+    end
 end
 
 -- return module

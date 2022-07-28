@@ -335,7 +335,11 @@ function cpu.info(name)
     cpuinfo.features   = cpu.features()
     cpuinfo.usagerate  = cpu.usagerate()
     cpuinfo.model_name = cpu.model_name()
-    return name and cpuinfo[name] or cpuinfo
+    if name then
+        return cpuinfo[name]
+    else
+        return cpuinfo
+    end
 end
 
 -- return module
