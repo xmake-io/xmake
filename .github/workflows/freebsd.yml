@@ -31,6 +31,8 @@ jobs:
             gmake install
             export XMAKE_ROOT=y
             xrepo --version
-            xmake lua -v -D tests/run.lua
+            dmesg | grep -i memory
+            xmake l os.meminfo
+            #xmake lua -v -D tests/run.lua
 
 

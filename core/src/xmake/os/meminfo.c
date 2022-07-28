@@ -39,6 +39,12 @@
 #   include <sys/sysinfo.h>
 #elif defined(TB_CONFIG_OS_WINDOWS)
 #   include <windows.h>
+#elif defined(TB_CONFIG_OS_BSD)
+#   include <sys/types.h>
+#   include <sys/sysctl.h>
+#   include <sys/vmmeter.h>
+#   include <sys/limits.h>
+#   include <vm/vm_param.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -129,6 +135,23 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t* ptotalsize, tb_int_t* pavailsize)
     {
         *ptotalsize = (tb_int_t)(statex.ullTotalPhys / (1024 * 1024));
         *pavailsize = (tb_int_t)(statex.ullAvailPhys / (1024 * 1024));
+        return tb_true;
+    }
+#elif defined(TB_CONFIG_OS_BSD)
+    struct vmtotal vm_info;
+    int mib[2];
+    mib[0] = CTL_VM;
+    mib[1] = VM_TOTAL;
+    size_t len = sizeof(vm_info);
+    if (sysctl(mib, 2, &vm_info, &len, tb_null, 0) == 0)
+    {
+        tb_trace_i("Total VM Memory: %d\n",vm_info.t_vm);
+        tb_trace_i("Total Real Memory: %d\n",vm_info.t_rm);
+        tb_trace_i("shared real memory: %d\n",vm_info.t_rmshr);
+        tb_trace_i("active shared real memory: %d\n",vm_info.t_armshr);
+        tb_trace_i("Total Free Memory pages: %d\n",vm_info.t_free);
+        *ptotalsize = (tb_int_t)(vm_info.t_vm / (1024 * 1024));
+        *pavailsize = (tb_int_t)(vm_info.t_free / (1024 * 1024));
         return tb_true;
     }
 #endif
