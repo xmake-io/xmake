@@ -140,13 +140,20 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t* ptotalsize, tb_int_t* pavailsize)
     if (sysctlbyname("hw.physmem", &totalsize, &size, tb_null, 0) != 0)
         return tb_false;
 
-    tb_uint32_t availsize;
-    size = sizeof(availsize);
-    if (sysctlbyname("vm.stats.vm.v_free_count", &availsize, &size, tb_null, 0) != 0)
+    tb_uint32_t v_free_count;
+    size = sizeof(v_free_count);
+    if (sysctlbyname("vm.stats.vm.v_free_count", &v_free_count, &size, tb_null, 0) != 0)
         return tb_false;
 
+    tb_uint32_t v_inactive_count;
+    size = sizeof(v_inactive_count);
+    if (sysctlbyname("vm.stats.vm.v_inactive_count", &v_inactive_count, &size, tb_null, 0) != 0)
+        return tb_false;
+
+    tb_trace_i("%ld %d %d", totalsize, v_free_count, v_inactive_count);
+
     *ptotalsize = (tb_int_t)(totalsize / (1024 * 1024));
-    *pavailsize = (tb_int_t)(((tb_int64_t)availsize * tb_page_size()) / (1024 * 1024));
+    *pavailsize = (tb_int_t)(((tb_int64_t)(v_free_count + v_inactive_count) * tb_page_size()) / (1024 * 1024));
     return tb_true;
 #endif
     return tb_false;
