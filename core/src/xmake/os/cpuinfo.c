@@ -35,11 +35,27 @@
 #   include <mach/mach.h>
 #   include <mach/processor_info.h>
 #   include <mach/mach_host.h>
+#elif defined(TB_CONFIG_OS_WINDOWS)
+#   include <windows.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
+#if defined(TB_CONFIG_OS_WINDOWS)
+static tb_uint64_t xm_os_cpuinfo_subtract_times(FILETIME const* one, FILETIME const* two)
+{
+    LARGE_INTEGER a, b;
+    a.LowPart  = one->dwLowDateTime;
+    a.HighPart = one->dwHighDateTime;
+
+    b.LowPart  = two->dwLowDateTime;
+    b.HighPart = two->dwHighDateTime;
+
+    return (tb_uint64_t)(a.QuadPart - b.QuadPart);
+}
+#endif
+
 static tb_float_t xm_os_cpuinfo_usagerate()
 {
 #if defined(TB_CONFIG_OS_MACOSX)
@@ -76,6 +92,35 @@ static tb_float_t xm_os_cpuinfo_usagerate()
         s_cpuinfo_count_prev = cpuinfo_count;
     }
     return cpu_count > 0? usagerate / cpu_count : 0;
+#elif defined(TB_CONFIG_OS_WINDOWS)
+    // kernel include IdleTime
+    tb_float_t usagerate = 0;
+    FILETIME idle, kernel, user;
+    if (GetSystemTimes(&idle, &kernel, &user))
+    {
+        static FILETIME idle_prev = {0};
+        static FILETIME kernel_prev = {0};
+        static FILETIME user_prev = {0};
+
+        if (idle_prev.dwLowDateTime != 0 && idle_prev.dwHighDateTime != 0)
+        {
+            tb_uint64_t idle_diff = xm_os_cpuinfo_subtract_times(&idle, &idle_prev);
+            tb_uint64_t kernel_diff = xm_os_cpuinfo_subtract_times(&kernel, &kernel_prev);
+            tb_uint64_t user_diff = xm_os_cpuinfo_subtract_times(&user, &user_prev);
+
+            // kernelTime - IdleTime = kernelTime, because kernel include IdleTime
+            tb_uint64_t sys_total = kernel_diff + user_diff;
+            tb_uint64_t kernel_total = kernel_diff - idle_diff;
+
+            // sometimes kernelTime > idleTime
+            if (sys_total > 0)
+                usagerate = (tb_float_t)((tb_double_t)(kernel_total + user_diff) / sys_total);
+        }
+
+        idle_prev = idle;
+        kernel_prev = kernel;
+        user_prev = user;
+    }
 #else
     return 0;
 #endif
