@@ -121,6 +121,7 @@ static tb_float_t xm_os_cpuinfo_usagerate()
         kernel_prev = kernel;
         user_prev = user;
     }
+    return usagerate;
 #else
     return 0;
 #endif
