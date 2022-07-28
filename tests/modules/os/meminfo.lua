@@ -1,6 +1,6 @@
 function main()
     while true do
-        print(os.time(), os.meminfo())
+        print("%d%%", math.floor(os.meminfo("usagerate") * 100))
         os.sleep(1000)
     end
 end
