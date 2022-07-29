@@ -93,7 +93,7 @@ static tb_float_t xm_os_cpuinfo_usagerate()
     }
     return cpu_count > 0? usagerate / cpu_count : 0;
 #elif defined(TB_CONFIG_OS_WINDOWS)
-    // kernel include IdleTime
+    // kernel include idle_time
     tb_float_t usagerate = 0;
     FILETIME idle, kernel, user;
     if (GetSystemTimes(&idle, &kernel, &user))
@@ -108,11 +108,11 @@ static tb_float_t xm_os_cpuinfo_usagerate()
             tb_uint64_t kernel_diff = xm_os_cpuinfo_subtract_times(&kernel, &kernel_prev);
             tb_uint64_t user_diff = xm_os_cpuinfo_subtract_times(&user, &user_prev);
 
-            // kernelTime - IdleTime = kernelTime, because kernel include IdleTime
+            // kernel_time - idle_time = kernel_time, because kernel include idle_time
             tb_uint64_t sys_total = kernel_diff + user_diff;
             tb_uint64_t kernel_total = kernel_diff - idle_diff;
 
-            // sometimes kernelTime > idleTime
+            // sometimes kernel_time > idle_time
             if (sys_total > 0)
                 usagerate = (tb_float_t)((tb_double_t)(kernel_total + user_diff) / sys_total);
         }
@@ -153,7 +153,7 @@ tb_int_t xm_os_cpuinfo(lua_State* lua)
 
     // get cpu usage rate
     tb_float_t usagerate = xm_os_cpuinfo_usagerate();
-    if (usagerate > 0)
+    if (usagerate >= 0)
     {
         lua_pushstring(lua, "usagerate");
         lua_pushnumber(lua, usagerate);
