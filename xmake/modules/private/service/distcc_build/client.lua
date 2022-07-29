@@ -418,7 +418,10 @@ function distcc_build_client:_host_status_update(host_status)
     end
     host_status.running  = running
     host_status.freejobs = host_status.njob - host_status.running
-    host_status.weight   = host_status.freejobs
+    host_status.weight   = host_status.freejobs * (1.0 - (host_status.cpurate or 0))
+    if host_status.memrate and host_status.memrate > 0.9 then
+        host_status.weight = host_status.weight * (1.0 - (host_status.memrate or 0))
+    end
 end
 
 -- lock host status
@@ -461,7 +464,7 @@ function distcc_build_client:_host_status_session_open(host_status)
         local session = free_sessions[#free_sessions]
         if session and not session:is_opened() then
             table.remove(free_sessions)
-            session:open()
+            session:open(host_status)
             return session
         end
     end
@@ -472,10 +475,10 @@ function distcc_build_client:_host_status_session_open(host_status)
             session = client_session(self, host_status.session_id, host_status.token, host_status.addr, host_status.port,
                 {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout(), connect_timeout = self:connect_timeout()})
             host_status.sessions[i] = session
-            session:open()
+            session:open(host_status)
             return session
         elseif not session:is_opened() then
-            session:open()
+            session:open(host_status)
             return session
         end
     end

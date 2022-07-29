@@ -169,6 +169,10 @@ function server_session:compile(respmsg)
         end
     end
 
+    -- send current server stats
+    body.cpurate = os.cpuinfo("usagerate")
+    body.memrate = os.meminfo("usagerate")
+
     -- remove files
     os.tryrm(sourcefile)
     if not cachekey then

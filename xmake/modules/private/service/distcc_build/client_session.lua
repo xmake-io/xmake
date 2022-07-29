@@ -100,9 +100,10 @@ function client_session:stream()
 end
 
 -- open session
-function client_session:open()
+function client_session:open(host_status)
     assert(not self:is_opened(), "%s: has been opened!", self)
     self._OPENED = true
+    self._HOST_STATUS = host_status
 end
 
 -- close session
@@ -114,6 +115,13 @@ end
 function client_session:is_opened()
     return self._OPENED
 end
+
+-- get host status
+function client_session:host_status()
+    return self._HOST_STATUS
+end
+
+
 
 -- run compilation job
 function client_session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
@@ -128,6 +136,7 @@ function client_session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
     local cachekey = opt.cachekey
     local toolchain = tool:toolchain():name()
     local stream = self:stream()
+    local host_status = self:host_status()
     local outdata, errdata
     if stream:send_msg(message.new_compile(self:id(), toolname, toolkind, plat, arch, toolchain,
             cppflags, path.filename(sourcefile), {token = self:token(), cachekey = cachekey})) and
@@ -140,6 +149,8 @@ function client_session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
                     local body = msg:body()
                     outdata = body.outdata
                     errdata = body.errdata
+                    host_status.cpurate = body.cpurate
+                    host_status.memrate = body.memrate
                     ok = true
                 else
                     errors = msg:errors()
