@@ -92,59 +92,41 @@ end
 function generate_dependencies(target, sourcebatch, opt)
     local common = import("common")
     local cachedir = common.get_cache_dir(target)
+    local compinst = target:compiler("cxx")
+    local common_args = {"-E", "-x", "c++"}
 
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
             vprint("generating.cxx.moduledeps %s", sourcefile)
 
-            local outdir = path.translate(path.join(cachedir, path.directory(path.relative(target:scriptdir(), sourcefile))))
+            local outdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, target:scriptdir()))))
             if not os.isdir(outdir) then
                 os.mkdir(outdir)
             end
 
             local jsonfile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".json"))
 
-            local dependinfo = common.fallback_generate_dependencies(target, jsonfile, sourcefile)
-            local jsondata = json.encode(dependinfo)
+            if target:data("cxx.has_p1689r4") then
+                local ifile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".i"))
+                local dfile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".d"))
 
-            io.writefile(jsonfile, jsondata)
+                local args = {sourcefile, "-MD", "-MT", jsonfile, "-MF", dfile, "-fdep-file=" .. jsonfile, "-fdep-format=trtbd", "-fdep-output=" .. target:objectfile(sourcefile), "-o", ifile}
+            
+                os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args), {envs = vcvars})
+            else
+                local dependinfo = common.fallback_generate_dependencies(target, jsonfile, sourcefile)
+                local jsondata = json.encode(dependinfo)
+
+                io.writefile(jsonfile, jsondata)
+            end
+
+            local dependinfo = io.readfile(jsonfile)
 
             return { moduleinfo = jsondata }
         end, {dependfile = dependfile, files = {sourcefile}})
     end
 end
-
--- generate dependency files
---[[
-function generate_dependencies(target, sourcebatch, opt)
-    local compinst = target:compiler("cxx")
-
-    local common = import("common")
-    local cachedir = common.get_cache_dir(target)
-    local common_args = {"-E", "-fmodules-ts", "-x", "c++"}
-
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
-        local dependfile = target:dependfile(sourcefile)
-        depend.on_changed(function()
-            vprint("generating.cxx.moduledeps %s", sourcefile)
-
-            local outdir = path.translate(path.join(cachedir, path.directory(path.relative(target:scriptdir(), file))))
-            local jsonfile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".json"))
-            local ifile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".i"))
-            local dfile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".d"))
-
-            local args = {sourcefile, "-MD", "-MT", jsonfile, "-MF", dfile, "-fdep-file=" .. jsonfile, "-fdep-format=trtbd", "-fdep-output=" .. target:objectfile(sourcefile), "-o", ifile}
-        
-            os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args), {envs = vcvars})
-
-            local dependinfo = io.readfile(jsonfile)
-
-            return { moduleinfo = dependinfo }
-        end, {dependfile = dependfile, files = {sourcefile}})
-    end
-end
-]]--
 
 -- generate target header units
 function generate_headerunits(target, batchcmds, sourcebatch, opt)

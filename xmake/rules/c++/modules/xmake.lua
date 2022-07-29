@@ -89,6 +89,8 @@ rule("c++.build.modules")
                 common.patch_sourcebatch(target, sourcebatch, opt)
             end
 
+            print(sourcebatch)
+
             build_modules.generate_dependencies(target, sourcebatch, opt)
             local infos = common.load(target, sourcebatch, opt)
 
@@ -137,7 +139,7 @@ rule("c++.build.modules.builder")
         local objectfiles = common.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
 
         build_modules.build_modules(target, batchcmds, objectfiles, modules, opt)
-    end, {batch = true})
+    end)
 
 rule("c++.build.modules.builder.headerunits")
     set_sourcekinds("cxx")
@@ -171,7 +173,6 @@ rule("c++.build.modules.builder.headerunits")
         sourcebatch.dependfiles = {}
         common.patch_sourcebatch(target, sourcebatch, opt)
 
-
         local modules = target:data("cxx.modules")
 
         local headerunits
@@ -194,4 +195,4 @@ rule("c++.build.modules.builder.headerunits")
         if headerunits then
             build_modules.generate_headerunits(target, batchcmds, headerunits, opt)
         end
-    end, {batch = true})
+    end)
