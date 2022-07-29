@@ -207,7 +207,6 @@ static tb_float_t xm_os_cpuinfo_usagerate()
         tb_long_t intr = states[CP_INTR];
         tb_long_t idle = states[CP_IDLE];
 
-        tb_trace_i("%ld %ld %ld %ld %ld", user, nice, sys, intr, idle);
         tb_int64_t active = user + nice + sys + intr;
         tb_int64_t total = user + nice + sys + idle + intr;
         if (total_prev > 0 && active_prev > 0)
