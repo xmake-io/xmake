@@ -48,6 +48,7 @@ function _do_build_file(target, sourcefile, opt)
     -- dry run?
     local dryrun = option.get("dry-run")
 
+    print(os.cpuinfo("usagerate"))
     -- need build this object?
     --
     -- we need use `os.mtime(dependfile)` to determine the mtime of the dependfile to avoid objectfile corruption due to compilation interruptions

@@ -37,6 +37,8 @@
 #   include <mach/mach_host.h>
 #elif defined(TB_CONFIG_OS_WINDOWS)
 #   include <windows.h>
+#elif defined(TB_CONFIG_OS_LINUX)
+#   include <stdio.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -120,6 +122,61 @@ static tb_float_t xm_os_cpuinfo_usagerate()
         idle_prev = idle;
         kernel_prev = kernel;
         user_prev = user;
+    }
+    return usagerate;
+#elif defined(TB_CONFIG_OS_LINUX)
+    tb_float_t usagerate = 0;
+    if (tb_file_info("/proc/stat", tb_null))
+    {
+        tb_bool_t ok = tb_false;
+        FILE* fp = fopen("/proc/stat", "r");
+        if (fp)
+        {
+            tb_char_t line[8192];
+            static tb_int64_t total_prev = 0;
+            static tb_int64_t active_prev = 0;
+            while (!feof(fp))
+            {
+                /* cpu  548760 0 867417 102226682 12430 0 9089 0 0 0
+                 * cpu0 136863 0 218110 25632388 2706 0 2328 0 0 0
+                 * cpu1 148383 0 213941 25627686 3925 0 2129 0 0 0
+                 *
+                 * The meanings of the columns are as follows, from left to right:
+                 *
+                 * user: normal processes executing in user mode
+                 * nice: niced processes executing in user mode
+                 * system: processes executing in kernel mode
+                 * idle: twiddling thumbs
+                 * iowait: waiting for I/O to complete
+                 * irq: servicing interrupts
+                 * softirq: servicing softirqs
+                 * steal
+                 * guest
+                 * guest_nice
+                 */
+                if (fgets(line, sizeof(line), fp) && !tb_strncmp(line, "cpu ", 4))
+                {
+                    tb_int64_t user, nice, sys, idle, iowait, irq, softirq, steal, guest, guest_nice;
+                    if (10 == sscanf(line, "cpu  %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld",
+                            &user, &nice, &sys, &idle, &iowait, &irq, &softirq, &steal, &guest, &guest_nice))
+                    {
+                        tb_int64_t active = user + nice + sys + irq + softirq + steal + guest + guest_nice;
+                        tb_int64_t total = user + nice + sys + idle + iowait + irq + softirq + steal + guest + guest_nice;
+                        if (total_prev > 0 && active_prev > 0)
+                        {
+                            tb_int64_t total_diff = total - total_prev;
+                            tb_int64_t active_diff = active - active_prev;
+                            if (total_diff > 0)
+                                usagerate = (tb_float_t)((tb_double_t)active_diff / total_diff);
+                        }
+                        total_prev = total;
+                        active_prev = active;
+                    }
+                    break;
+                }
+            }
+            fclose(fp);
+        }
     }
     return usagerate;
 #else
