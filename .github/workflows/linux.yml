@@ -66,10 +66,9 @@ jobs:
           sudo apt install -y dh-make rng-tools devscripts lintian
           echo "$PPA_GPG_PRIKEY_2C0C68C9" > ppa_gpg.key
           gpg --import ppa_gpg.key
-          scripts/makeppa jammy
-          scripts/makeppa focal
-          scripts/makeppa bionic
-          scripts/makeppa xenial
-          scripts/makeppa trusty
-
-
+          scripts/makeppa kinetic # 22.10
+          scripts/makeppa jammy # 22.04
+          scripts/makeppa focal # 20.04
+          scripts/makeppa bionic # 18.04
+          scripts/makeppa xenial # 16.04
+          scripts/makeppa trusty # 14.04
