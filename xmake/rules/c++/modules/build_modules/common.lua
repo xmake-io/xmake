@@ -2,7 +2,10 @@ import("core.base.json")
 import("core.project.config")
 import("core.tool.compiler")
 import("core.cache.globalcache")
+import("core.project.project")
 import("lib.detect")
+import("lib.detect.find_package")
+import("lib.detect.find_file")
 
 local stl_headers = {
     "algorithm",
@@ -117,6 +120,22 @@ function get_cache_dir(target)
     return cachedir
 end
 
+function patch_sourcebatch(target, sourcebatch, opt)
+    local cachedir = get_cache_dir(target)
+
+    sourcebatch.sourcekind = "cxx"
+    sourcebatch.objectfiles = sourcebatch.objectfiles or {}
+    sourcebatch.dependfiles = sourcebatch.dependfiles or {}
+
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
+        local objectfile = target:objectfile(sourcefile)
+        local dependfile = target:dependfile(objectfile)
+        table.insert(sourcebatch.objectfiles, objectfile)
+        table.insert(sourcebatch.dependfiles, dependfile)
+    end
+
+end
+
 function load(target, sourcebatch, opt)
     local cachedir = get_cache_dir(target)
 
@@ -143,6 +162,7 @@ end
 
 function parse_dependency_data(target, moduleinfos, opt)
     local cachedir = get_cache_dir(target)
+
     local modules
     for _, moduleinfo in ipairs(moduleinfos) do
         assert(moduleinfo.version <= 1)
@@ -161,7 +181,16 @@ function parse_dependency_data(target, moduleinfos, opt)
                         m.provides[provide["logical-name"] ] = provide["compiled-module-path"]
                     end
                 else -- assume path with name
-                    local name = provide["logical-name"] .. ".ifc"
+                    local ext
+                    if target:has_tool("cxx", "gcc", "gxx") then
+                        ext = ".gcm"
+                    elseif target:has_tool("cxx", "cl") then
+                        ext = ".ifc"
+                    elseif target:has_tool("cxx", "clang", "clangxx") then
+
+                    end
+        
+                    local name = provide["logical-name"] .. ext
                     name:replace(":", "-")
 
                     m.provides[provide["logical-name"] ] = { 
@@ -263,6 +292,116 @@ function sort_modules_by_dependencies(objectfiles, modules)
 
         _topological_sort_visit(node, nodes, modules, output)
     end
+
+    return output
+end
+
+function find_quote_header_file(target, sourcefile, file)
+    local p = path.join(path.directory(path.absolute(sourcefile, project.directory())), file)
+
+    assert(os.isfile(p))
+
+    return p
+end
+
+function find_angle_header_file(target, file)
+    -- check if the header is in subtarget
+
+    local headerpaths = {}
+
+    for _, dep in ipairs(target:orderdeps()) do
+        table.append(headerpaths, dep:scriptdir())
+    end
+
+    if project.required_packages then
+        for _, name in ipairs(target:get("packages")) do
+            local package = project.required_package(name)
+            table.join2(headerpaths, package:get("sysincludedirs"))
+        end
+    end
+
+    table.join2(headerpaths, target:get("includedirs"))
+
+    local p = find_file(file, table.join(headerpaths, { "/usr/include/**", "/usr/local/include/**" }))
+
+    assert(os.isfile(p))
+
+    return p
+end
+
+function fallback_generate_dependencies(target, jsonfile, sourcefile)
+    local output = {
+        version = 0,
+        revision = 0,
+        rules = {}
+    }
+
+    local rule = {
+        outputs = {
+            jsonfile
+        }
+    }
+    rule["primary-output"] = target:objectfile(sourcefile)
+
+    local module_name
+    local module_deps = {}
+    local sourcecode = io.readfile(sourcefile)
+    sourcecode = sourcecode:gsub("//.-\n", "\n")
+    sourcecode = sourcecode:gsub("/%*.-%*/", "")
+    for _, line in ipairs(sourcecode:split("\n", {plain = true})) do
+        if not module_name then
+            module_name = line:match("export%s+module%s+(.+)%s*;")
+        end
+
+        local module_depname = line:match("import%s+(.+)%s*;")
+
+        if module_depname then
+            local module_dep = {}
+
+            -- partition? import :xxx;
+            if module_depname:startswith(":") then
+                module_depname = module_name .. module_depname
+            elseif module_depname:startswith("\"") then
+                module_depname = module_depname:sub(2, -2)
+                module_dep["lookup-method"] = "include-quote"
+                module_dep["unique-on-source-path"] = true
+                module_dep["source-path"] = find_quote_header_file(target, sourcefile, module_depname)
+            elseif module_depname:startswith("<") then
+                module_depname = module_depname:sub(2, -2)
+                module_dep["lookup-method"] = "include-angle"
+                module_dep["unique-on-source-path"] = true
+                module_dep["source-path"] = find_angle_header_file(target, module_depname)
+            end
+
+            module_dep["logical-name"] = module_depname
+
+            table.insert(module_deps, module_dep)
+        end
+    end
+
+    if module_name then
+        local ext
+        if target:has_tool("cxx", "gcc", "gxx") then
+            ext = ".gcm"
+        elseif target:has_tool("cxx", "cl") then
+            ext = ".ifc"
+        elseif target:has_tool("cxx", "clang", "clangxx") then
+
+        end
+        
+        table.append(rule.outputs, module_name .. ext)
+      
+        local provide = {}
+        provide["logical-name"] = module_name
+        provide["source-path"] = path.absolute(sourcefile, project.directory())
+
+        rule.provides = {}
+        table.append(rule.provides, provide)
+    end
+
+    rule.requires = module_deps
+
+    table.append(output.rules, rule)
 
     return output
 end

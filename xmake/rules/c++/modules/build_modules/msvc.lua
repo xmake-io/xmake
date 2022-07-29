@@ -29,18 +29,19 @@ local default_flags = {"/EHsc", "/nologo", "/std:c++20", "/experimental:module"}
 function load_parent(target, opt)
     local common = import("common")
     -- get modules flag
-    local modulesflag
     local compinst = target:compiler("cxx")
 
     -- add module flags
     local cachedir = common.get_cache_dir(target)
     local stlcachedir = common.get_stlcache_dir(target)
 
+    target:add("cxxflags", "/experimental:module")
     target:add("cxxflags", {"/ifcSearchDir", cachedir}, {force = true, expand = false})
     target:add("cxxflags", {"/ifcSearchDir", stlcachedir}, {force = true, expand = false})
 
     for _, dep in ipairs(target:orderdeps()) do
         cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
+        dep:add("cxxflags", "/experimental:module")
         target:add("cxxflags", {"/ifcSearchDir", cachedir}, {force = true, expand = false})
     end
 
@@ -96,23 +97,6 @@ function check_module_support(target)
     assert(stdifcdirflag, "compiler(msvc): does not support c++ module!")
 end
 
--- patch sourcebatch
-function patch_sourcebatch(target, sourcebatch, opt)
-    local common = import("common")
-    local cachedir = common.get_cache_dir(target)
-
-    sourcebatch.sourcekind = "cxx"
-    sourcebatch.objectfiles = sourcebatch.objectfiles or {}
-    sourcebatch.dependfiles = sourcebatch.dependfiles or {}
-
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
-        local objectfile = target:objectfile(sourcefile)
-        local dependfile = target:dependfile(objectfile)
-        table.insert(sourcebatch.objectfiles, objectfile)
-        table.insert(sourcebatch.dependfiles, dependfile)
-    end
-
-end
 
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
@@ -124,13 +108,16 @@ function generate_dependencies(target, sourcebatch, opt)
     local cachedir = common.get_cache_dir(target)
     local common_args = {"/TP", "/scanDependencies"}  
 
-
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
             vprint("generating.cxx.moduledeps %s", sourcefile)
 
-            local outdir = path.join(cachedir, path.directory(path.relative(target:scriptdir(), file)))
+            local outdir = path.join(cachedir, path.directory(path.relative(target:scriptdir(), sourcefile)))
+            if not os.isdir(outdir) then
+                os.mkdir(outdir)
+            end
+
             local jsonfile = path.join(outdir, path.filename(sourcefile) .. ".json")
 
             local args = {jsonfile, sourcefile, "/Fo" .. target:objectfile(sourcefile)}
@@ -211,7 +198,6 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
 end
 
 -- build module files
--- TODO detect dependencies, and build in the right order
 function build_modules(target, batchcmds, objectfiles, modules, opt)
     local cachedir = common.get_cache_dir(target)
     
@@ -244,6 +230,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
                  
                 table.join2(args, {"/interface", "/ifcOutput", bmifile, provide.sourcefile})
 
+                batchcmds:add_depfiles(provide.sourcefile)
                 batchcmds:set_depmtime(os.mtime(bmifile))
                 batchcmds:set_depcache(target:dependfile(bmifile))
 
@@ -252,7 +239,6 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
 
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args), {envs = vcvars})
 
-            batchcmds:add_depfiles(m.sourcefile)
             batchcmds:set_depmtime(os.mtime(objectfile))
             batchcmds:set_depcache(target:dependfile(objectfile))
 

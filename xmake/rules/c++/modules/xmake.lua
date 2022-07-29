@@ -86,7 +86,7 @@ rule("c++.build.modules")
         local moduleinfos = {}
         for _, sourcebatch in pairs(target:sourcebatches()) do
             if sourcebatch.rulename == "c++.build.modules.builder" then
-                build_modules.patch_sourcebatch(target, sourcebatch, opt)
+                common.patch_sourcebatch(target, sourcebatch, opt)
             end
 
             build_modules.generate_dependencies(target, sourcebatch, opt)
@@ -108,6 +108,11 @@ rule("c++.build.modules.builder")
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         if not target:get("cxx.has_modules") then
             return
+        end
+
+        local lock = io.openlock("modules.lock")
+        while(not lock) do
+            lock = io.openlock("modules.lock")
         end
 
         local build_modules
@@ -143,6 +148,11 @@ rule("c++.build.modules.builder.headerunits")
             return
         end
 
+        local lock = io.openlock("modules.lock")
+        while(not lock) do
+            lock = io.openlock("modules.lock")
+        end
+
         local build_modules
         if target:has_tool("cxx", "clang", "clangxx") then
             build_modules = import("build_modules.clang")
@@ -155,11 +165,12 @@ rule("c++.build.modules.builder.headerunits")
             raise("compiler(%s): does not support c++ module!", toolname)
         end
 
+        local common = import("build_modules.common")
+
         sourcebatch.objectfiles = {}
         sourcebatch.dependfiles = {}
-        build_modules.patch_sourcebatch(target, sourcebatch, opt)
+        common.patch_sourcebatch(target, sourcebatch, opt)
 
-        local common = import("build_modules.common")
 
         local modules = target:data("cxx.modules")
 
