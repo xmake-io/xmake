@@ -259,6 +259,22 @@ function cpu._info()
     return cpuinfo
 end
 
+-- get cpu stats info
+function cpu._statinfo(name)
+    local stats = cpu._STATS
+    local stime = cpu._STIME
+    if stats == nil or stime == nil or os.time() - stime > 1 then -- cache 1s
+        stats = os._cpuinfo()
+        cpu._STATS = stats
+        cpu._STIME = os.time()
+    end
+    if name then
+        return stats[name]
+    else
+        return stats
+    end
+end
+
 -- get vendor id
 function cpu.vendor()
     return cpu._info().vendor_id
@@ -316,7 +332,12 @@ end
 
 -- get cpu number
 function cpu.number()
-    return os._cpuinfo().ncpu
+    return cpu._statinfo("ncpu")
+end
+
+-- get cpu usage rate
+function cpu.usagerate()
+    return cpu._statinfo("usagerate")
 end
 
 -- get cpu info
@@ -328,8 +349,13 @@ function cpu.info(name)
     cpuinfo.march      = cpu.march()
     cpuinfo.ncpu       = cpu.number()
     cpuinfo.features   = cpu.features()
+    cpuinfo.usagerate  = cpu.usagerate()
     cpuinfo.model_name = cpu.model_name()
-    return name and cpuinfo[name] or cpuinfo
+    if name then
+        return cpuinfo[name]
+    else
+        return cpuinfo
+    end
 end
 
 -- return module

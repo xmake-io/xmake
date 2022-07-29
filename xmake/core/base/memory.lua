@@ -32,11 +32,17 @@ function memory.info(name)
         meminfo = os._meminfo()
         if meminfo.totalsize and meminfo.availsize then
             meminfo.usagerate = (meminfo.totalsize - meminfo.availsize) / meminfo.totalsize
+        else
+            meminfo.usagerate = 0
         end
         memory._MEMINFO = meminfo
         memory._MEMTIME = os.time()
     end
-    return name and meminfo[name] or meminfo
+    if name then
+        return meminfo[name]
+    else
+        return meminfo
+    end
 end
 
 -- return module

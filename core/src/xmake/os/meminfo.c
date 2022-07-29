@@ -36,6 +36,7 @@
 #   include <mach-o/dyld.h>
 #   include <mach-o/nlist.h>
 #elif defined(TB_CONFIG_OS_LINUX)
+#   include <stdio.h>
 #   include <sys/sysinfo.h>
 #elif defined(TB_CONFIG_OS_WINDOWS)
 #   include <windows.h>
