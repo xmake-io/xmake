@@ -39,6 +39,12 @@
 #   include <windows.h>
 #elif defined(TB_CONFIG_OS_LINUX)
 #   include <stdio.h>
+#elif defined(TB_CONFIG_OS_BSD)
+#   include <stdio.h>
+#   include <string.h>
+#   include <sys/types.h>
+#   include <sys/sysctl.h>
+#   include <unistd.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -177,6 +183,42 @@ static tb_float_t xm_os_cpuinfo_usagerate()
             }
             fclose(fp);
         }
+    }
+    return usagerate;
+#elif defined(TB_CONFIG_OS_BSD)
+#   define CP_USER   0
+#   define CP_NICE   1
+#   define CP_SYS    2
+#   define CP_INTR   3
+#   define CP_IDLE   4
+#   define CPUSTATES 5
+
+    static tb_int64_t total_prev = 0;
+    static tb_int64_t active_prev = 0;
+
+    tb_float_t usagerate = 0;
+    long states[CPUSTATES] = {0};
+    size_t states_size = sizeof(states);
+    if (sysctlbyname("kern.cp_time", &states, &states_size, tb_null, 0) == 0)
+    {
+        tb_long_t user = states[CP_USER];
+        tb_long_t nice = states[CP_NICE];
+        tb_long_t sys = states[CP_SYS];
+        tb_long_t intr = states[CP_INTR];
+        tb_long_t idle = states[CP_IDLE];
+
+        tb_trace_i("%ld %ld %ld %ld %ld", user, nice, sys, intr, idle);
+        tb_int64_t active = user + nice + sys + irq + softirq + steal + guest + guest_nice;
+        tb_int64_t total = user + nice + sys + idle + iowait + irq + softirq + steal + guest + guest_nice;
+        if (total_prev > 0 && active_prev > 0)
+        {
+            tb_int64_t total_diff = total - total_prev;
+            tb_int64_t active_diff = active - active_prev;
+            if (total_diff > 0)
+                usagerate = (tb_float_t)((tb_double_t)active_diff / total_diff);
+        }
+        total_prev = total;
+        active_prev = active;
     }
     return usagerate;
 #else
