@@ -169,7 +169,7 @@ function server_session:compile(respmsg)
         end
     end
 
-    -- send current server stats
+    -- send current server status
     body.cpurate = os.cpuinfo("usagerate")
     body.memrate = os.meminfo("usagerate")
 
