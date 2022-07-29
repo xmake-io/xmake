@@ -113,7 +113,7 @@ function generate_dependencies(target, sourcebatch, opt)
         depend.on_changed(function()
             vprint("generating.cxx.moduledeps %s", sourcefile)
 
-            local outdir = path.join(cachedir, path.directory(path.relative(target:scriptdir(), sourcefile)))
+            local outdir = path.join(cachedir, path.directory(path.relative(sourcefile, target:scriptdir())))
             if not os.isdir(outdir) then
                 os.mkdir(outdir)
             end

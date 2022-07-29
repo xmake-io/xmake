@@ -89,12 +89,12 @@ rule("c++.build.modules")
                 common.patch_sourcebatch(target, sourcebatch, opt)
             end
 
-            print(sourcebatch)
+            if sourcebatch.rulename:startswith("c++.build") then
+                build_modules.generate_dependencies(target, sourcebatch, opt)
+                local infos = common.load(target, sourcebatch, opt)
 
-            build_modules.generate_dependencies(target, sourcebatch, opt)
-            local infos = common.load(target, sourcebatch, opt)
-
-            table.join2(moduleinfos, infos or {})
+                table.join2(moduleinfos, infos or {})
+            end
         end
 
         local modules = common.parse_dependency_data(target, moduleinfos, opt)
@@ -110,11 +110,6 @@ rule("c++.build.modules.builder")
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         if not target:get("cxx.has_modules") then
             return
-        end
-
-        local lock = io.openlock("modules.lock")
-        while(not lock) do
-            lock = io.openlock("modules.lock")
         end
 
         local build_modules
@@ -148,11 +143,6 @@ rule("c++.build.modules.builder.headerunits")
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         if not target:get("cxx.has_modules") then
             return
-        end
-
-        local lock = io.openlock("modules.lock")
-        while(not lock) do
-            lock = io.openlock("modules.lock")
         end
 
         local build_modules
