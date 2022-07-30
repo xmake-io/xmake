@@ -14,6 +14,10 @@
 * [#2580](https://github.com/xmake-io/xmake/issues/2580): Set stdout to line buffering
 * [#2571](https://github.com/xmake-io/xmake/issues/2571): Improve task scheduling for parallel and distributed compilation based on memory/cpu usage
 
+### Bugs fixed
+
+* [#2614](https://github.com/xmake-io/xmake/issues/2614): Fix building submodules2 tests for msvc
+
 ## v2.6.9
 
 ### New features
@@ -1361,6 +1365,10 @@
 * [#2603](https://github.com/xmake-io/xmake/issues/2603): 为 ccache 默认禁用 `-fdirectives-only`
 * [#2580](https://github.com/xmake-io/xmake/issues/2580): 设置 stdout 到 line 缓冲输出
 * [#2571](https://github.com/xmake-io/xmake/issues/2571): 改进分布式编译的调度算法，增加 cpu/memory 状态权重
+
+### Bugs 修复
+
+* [#2614](https://github.com/xmake-io/xmake/issues/2614): 为 msvc 修复构建 submodules2 测试工程
 
 ## v2.6.9
 
