@@ -5,6 +5,7 @@
 ### New features
 
 * [#2555](https://github.com/xmake-io/xmake/issues/2555): Add fwatcher module and `xmake watch` plugin command
+* Add `xmake service --pull 'build/**' outputdir` to pull the given files in remote server
 
 ### Changes
 
@@ -1357,6 +1358,7 @@
 ### 新特性
 
 * [#2555](https://github.com/xmake-io/xmake/issues/2555): 添加 fwatcher 模块和 `xmake watch` 插件命令
+* 添加 `xmake service --pull 'build/**' outputdir` 命令去拉取远程构建服务器上的文件
 
 ### 改进
 
