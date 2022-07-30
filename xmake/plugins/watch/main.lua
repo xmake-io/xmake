@@ -134,10 +134,11 @@ function main()
                 status = "deleted"
             end
             print(event.path, status)
-            table.insert(events, event)
+            -- we use map to remove repeat event
+            events[event.path .. tostring(event.type)] = event
             count = count + 1
         elseif count > 0 then
-            _run_command(events)
+            _run_command(table.values(events))
             count = 0
         end
     end
