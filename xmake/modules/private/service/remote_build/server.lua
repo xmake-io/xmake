@@ -93,6 +93,8 @@ function remote_build_server:_on_handle(stream, msg)
                     session:diff(respmsg)
                 elseif msg:is_sync() then
                     session:sync(respmsg)
+                elseif msg:is_pull() then
+                    session:pull(respmsg)
                 elseif msg:is_clean() then
                     session:clean()
                 elseif msg:is_runcmd() then

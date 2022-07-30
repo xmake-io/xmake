@@ -30,6 +30,7 @@ import("private.service.reconnect_service")
 import("private.service.disconnect_service")
 import("private.service.clean_files")
 import("private.service.sync_files")
+import("private.service.pull_files")
 import("private.service.add_user")
 import("private.service.rm_user")
 import("private.service.gen_token")
@@ -57,6 +58,9 @@ function main()
         clean_files()
     elseif option.get("sync") then
         sync_files()
+    elseif option.get("pull") then
+        local values = option.get("values") or {}
+        pull_files(values[1], values[2])
     elseif option.get("gen-token") then
         gen_token()
     elseif option.get("add-user") then

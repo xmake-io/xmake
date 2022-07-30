@@ -235,6 +235,57 @@ function remote_build_client:sync()
     end
 end
 
+-- pull server files
+function remote_build_client:pull(filepattern, outputdir)
+    assert(self:is_connected(), "%s: has been not connected!", self)
+    local addr = self:addr()
+    local port = self:port()
+    local sock = assert(socket.connect(addr, port, {timeout = self:connect_timeout()}), "%s: server unreachable!", self)
+    local session_id = self:session_id()
+    local errors
+    local ok = false
+    if not filepattern:find("*", 1, true) and os.isdir(filepattern) then
+        filepattern = path.join(filepattern, "**")
+    end
+    print("%s: pull %s in %s:%d ..", self, filepattern, addr, port)
+    local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
+    if stream:send_msg(message.new_pull(session_id, filepattern, {token = self:token()})) and stream:flush() then
+        local fileitems
+        local msg = stream:recv_msg({timeout = -1})
+        if msg then
+            dprint(msg:body())
+            if msg:success() then
+                fileitems = msg:body().fileitems
+            else
+                errors = msg:errors()
+            end
+        end
+        if fileitems then
+            for _, fileitem in ipairs(fileitems) do
+                print("recving %s ..", fileitem)
+                if not stream:recv_file(path.normalize(path.join(outputdir, fileitem))) then
+                    errors = string.format("recv %s failed", fileitem)
+                    break
+                end
+            end
+            msg = stream:recv_msg({timeout = -1})
+            if msg then
+                dprint(msg:body())
+                if msg:success() then
+                    ok = true
+                else
+                    errors = msg:errors()
+                end
+            end
+        end
+    end
+    if ok then
+        print("%s: pull files to %s!", self, outputdir)
+    else
+        print("%s: pull files failed in %s:%d, %s", self, addr, port, errors or "unknown")
+    end
+end
+
 -- clean server files
 function remote_build_client:clean()
     assert(self:is_connected(), "%s: has been not connected!", self)

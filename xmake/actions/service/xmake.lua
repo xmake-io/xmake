@@ -45,6 +45,10 @@ task("service")
                 {nil, "distcc",     "k",  nil, "Start or connect the distributed build service."             },
                 {nil, "ccache",     "k",  nil, "Start or connect the remote c/c++ cache service."            },
                 {nil, "sync",       "k",  nil, "Sync current project files in the remote daemon service."    },
+                {nil, "pull",       "k",  nil, "Pull the given file or directory in the remote daemon service.",
+                                               "e.g.",
+                                               "    - xmake service --pull build outputdir",
+                                               "    - xmake service --pull 'build/**' outputdir"              },
                 {nil, "clean",      "k",  nil, "Clean current project files in the remote daemon service."   },
                 {nil, "add-user",   "kv", nil, "Add user in the server.",
                                                "e.g.",
@@ -56,5 +60,6 @@ task("service")
                                                "e.g.",
                                                "    - xmake service --gen-token"                             },
                 {nil, "logs",       "k",  nil, "Show service logs if the daemon service has been started."   },
-                {nil, "status",     "k",  nil, "Show service status if the daemon service has been started." }
+                {nil, "status",     "k",  nil, "Show service status if the daemon service has been started." },
+                {nil, "values",     "vs", nil, "The values list for pull/.. options." }
              }}

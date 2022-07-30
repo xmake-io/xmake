@@ -181,6 +181,42 @@ function server_session:sync(respmsg)
     vprint("%s: sync files ok", self)
 end
 
+-- pull file
+function server_session:pull(respmsg)
+    local body = respmsg:body()
+    local stream = self:stream()
+    local filepattern = body.filename
+    vprint("pull %s ..", filepattern)
+
+    -- get files
+    local filepaths = os.files(path.join(self:sourcedir(), filepattern))
+    local fileitems = {}
+    for _, filepath in ipairs(filepaths) do
+        local fileitem = path.relative(filepath, self:sourcedir())
+        if is_host("windows") then
+            fileitem = fileitem:gsub("\\", "/")
+        end
+        if fileitem:startswith("./") then
+            fileitem = fileitem:sub(3)
+        end
+        table.insert(fileitems, fileitem)
+    end
+    vprint(fileitems)
+
+    -- send files
+    body.fileitems = fileitems
+    respmsg:status_set(true)
+    if stream:send_msg(respmsg) then
+        for _, fileitem in ipairs(fileitems) do
+            local filepath = path.join(self:sourcedir(), fileitem)
+            vprint("sending %s ..", filepath)
+            if not stream:send_file(filepath, {compress = os.filesize(filepath) > 4096}) then
+                raise("send %s failed!", filepath)
+            end
+        end
+    end
+end
+
 -- clean files
 function server_session:clean()
     vprint("%s: clean files in %s ..", self, self:workdir())
