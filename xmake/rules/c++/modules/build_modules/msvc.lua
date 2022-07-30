@@ -102,21 +102,28 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     assert(stdifcdirflag, "compiler(msvc): does not support c++ module!")
 
     -- we need patch objectfiles to sourcebatch for linking module objects
-    local modulefiles = {}
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
-        local modulefile = (cachedir and path.join(cachedir, path.basename(sourcefile)) or objectfile) .. ".ifc"
-        table.insert(modulefiles, modulefile)
         table.insert(sourcebatch.objectfiles, objectfile)
         table.insert(sourcebatch.dependfiles, dependfile)
     end
 
     -- load moduledeps
     local moduledeps, moduledeps_files = module_parser.load(target, sourcebatch, opt)
+
+    -- get modulefiles
+    local modulefiles = {}
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+        local moduleinfo = moduledeps_files[sourcefile] or {}
+        -- make module file path, @note we need process submodule name, e.g. module.submodule.mpp -> module.submodule.ifc
+        -- @see https://github.com/xmake-io/xmake/issues/2614
+        local modulefile = (cachedir and path.join(cachedir, moduleinfo.name or path.basename(sourcefile)) or objectfile) .. ".ifc"
+        table.insert(modulefiles, modulefile)
+    end
 
     -- compile module files to object files
     local count = 0
