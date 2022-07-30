@@ -134,7 +134,7 @@ function main()
                 status = "deleted"
             end
             print(event.path, status)
-            -- we use map to remove repeat event
+            -- we use map to remove repeat events
             events[event.path .. tostring(event.type)] = event
             count = count + 1
         elseif count > 0 then
