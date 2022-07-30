@@ -12,6 +12,7 @@
 * [#2577](https://github.com/xmake-io/xmake/issues/2577): Improve add_headerfiles(), add `{install = false}` support
 * [#2603](https://github.com/xmake-io/xmake/issues/2603): Disable `-fdirectives-only` for ccache by default
 * [#2580](https://github.com/xmake-io/xmake/issues/2580): Set stdout to line buffering
+* [#2571](https://github.com/xmake-io/xmake/issues/2571): Improve task scheduling for parallel and distributed compilation based on memory/cpu usage
 
 ## v2.6.9
 
@@ -1359,6 +1360,7 @@
 * [#2577](https://github.com/xmake-io/xmake/issues/2577): 改进 add_headerfiles()，增加 `{install = false}` 支持
 * [#2603](https://github.com/xmake-io/xmake/issues/2603): 为 ccache 默认禁用 `-fdirectives-only`
 * [#2580](https://github.com/xmake-io/xmake/issues/2580): 设置 stdout 到 line 缓冲输出
+* [#2571](https://github.com/xmake-io/xmake/issues/2571): 改进分布式编译的调度算法，增加 cpu/memory 状态权重
 
 ## v2.6.9
 
