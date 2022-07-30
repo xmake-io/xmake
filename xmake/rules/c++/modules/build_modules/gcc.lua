@@ -53,9 +53,11 @@ end
 
 -- load parent target with modules files
 function load_parent(target, opt)
-    local cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
+    local common = import("common")
+    local cachedir = common.get_cache_dir(target)
+
     target:add("cxxflags", "-fmodules-ts")
-    target:add("cxxflags", "-fno-module-lazy")
+    -- target:add("cxxflags", "-fno-module-lazy")
     -- target:add("cxxflags", "-flang-info-include-translate")
     -- target:add("cxxflags", "-flang-info-include-translate-not")
     -- target:add("cxxflags", "-flang-info-module-cmi")
@@ -65,9 +67,9 @@ function load_parent(target, opt)
     target:add("cxxflags", "-fmodule-mapper=" .. get_module_mapper(), {force = true, expand = false})
 
     for _, dep in ipairs(target:orderdeps()) do
-        cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
+        cachedir = common.get_cache_dir(dep)
         dep:add("cxxflags", "-fmodules-ts")
-        dep:add("cxxflags", "-fno-module-lazy")
+        -- dep:add("cxxflags", "-fno-module-lazy")
         -- dep:add("cxxflags", "-flang-info-include-translate")
         -- dep:add("cxxflags", "-flang-info-include-translate-not")
         -- dep:add("cxxflags", "-flang-info-module-cmi")
@@ -114,7 +116,7 @@ function generate_dependencies(target, sourcebatch, opt)
                 local args = {sourcefile, "-MD", "-MT", jsonfile, "-MF", dfile, "-fdep-file=" .. jsonfile, "-fdep-format=trtbd", "-fdep-output=" .. target:objectfile(sourcefile), "-o", ifile}
             
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args), {envs = vcvars})
-            else
+            else -- fallback as GCC doesn't fully support p1689r4
                 local dependinfo = common.fallback_generate_dependencies(target, jsonfile, sourcefile)
                 local jsondata = json.encode(dependinfo)
 
@@ -123,7 +125,7 @@ function generate_dependencies(target, sourcebatch, opt)
 
             local dependinfo = io.readfile(jsonfile)
 
-            return { moduleinfo = jsondata }
+            return { moduleinfo = dependinfo }
         end, {dependfile = dependfile, files = {sourcefile}})
     end
 end

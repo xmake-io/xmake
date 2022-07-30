@@ -104,6 +104,9 @@ end
 
 function get_stlcache_dir(target)
     local stlcachedir = path.join(target:autogendir(), "stlmodules", "cache")
+    if target:has_tool("cxx", "clang", "clangxx") then
+        stlcachedir = path.join(config.buildir(), "stlmodules", "cache")
+    end
     if not os.isdir(stlcachedir) then
         os.mkdir(stlcachedir)
     end
@@ -134,6 +137,18 @@ function patch_sourcebatch(target, sourcebatch, opt)
         table.insert(sourcebatch.dependfiles, dependfile)
     end
 
+end
+
+function get_bmi_ext(target)
+    if target:has_tool("cxx", "gcc", "gxx") then
+        return ".gcm"
+    elseif target:has_tool("cxx", "cl") then
+        return ".ifc"
+    elseif target:has_tool("cxx", "clang", "clangxx") then
+        return ".pcm"
+    end
+
+    assert(false)
 end
 
 function load(target, sourcebatch, opt)
@@ -181,16 +196,7 @@ function parse_dependency_data(target, moduleinfos, opt)
                         m.provides[provide["logical-name"] ] = provide["compiled-module-path"]
                     end
                 else -- assume path with name
-                    local ext
-                    if target:has_tool("cxx", "gcc", "gxx") then
-                        ext = ".gcm"
-                    elseif target:has_tool("cxx", "cl") then
-                        ext = ".ifc"
-                    elseif target:has_tool("cxx", "clang", "clangxx") then
-
-                    end
-        
-                    local name = provide["logical-name"] .. ext
+                    local name = provide["logical-name"] .. get_bmi_ext(target)
                     name:replace(":", "-")
 
                     m.provides[provide["logical-name"] ] = { 
@@ -242,6 +248,7 @@ function _topological_sort_visit(node, nodes, modules, output)
     node.tempmarked = true
 
     local m1 = modules[node.objectfile]
+
     assert(m1.provides)
     for _, n in ipairs(nodes) do
         if not n.tempmarked then
@@ -284,7 +291,11 @@ function sort_modules_by_dependencies(objectfiles, modules)
 
     local nodes  = {}
     for _, objectfile in ipairs(objectfiles) do 
-        table.append(nodes, { marked = false, tempmarked = false, objectfile = objectfile })
+        local m = modules[objectfile]
+
+        if m.provides then
+            table.append(nodes, { marked = false, tempmarked = false, objectfile = objectfile })
+        end
     end
 
     while _topological_sort_has_node_without_mark(nodes) do
@@ -380,16 +391,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
     end
 
     if module_name then
-        local ext
-        if target:has_tool("cxx", "gcc", "gxx") then
-            ext = ".gcm"
-        elseif target:has_tool("cxx", "cl") then
-            ext = ".ifc"
-        elseif target:has_tool("cxx", "clang", "clangxx") then
-
-        end
-        
-        table.append(rule.outputs, module_name .. ext)
+        table.append(rule.outputs, module_name .. get_bmi_ext(target))
       
         local provide = {}
         provide["logical-name"] = module_name

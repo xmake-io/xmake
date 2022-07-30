@@ -40,7 +40,7 @@ function load_parent(target, opt)
     target:add("cxxflags", {"/ifcSearchDir", stlcachedir}, {force = true, expand = false})
 
     for _, dep in ipairs(target:orderdeps()) do
-        cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
+        cachedir = common.get_cache_dir(dep)
         dep:add("cxxflags", "/experimental:module")
         target:add("cxxflags", {"/ifcSearchDir", cachedir}, {force = true, expand = false})
     end
@@ -145,6 +145,8 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
     -- build headerunits
     local common_args = {"/TP", "/exportHeader", "/c"}
     local objectfiles = {}
+    local public_flags = {}
+    local private_flags = {}
     for _, headerunit in ipairs(sourcebatch) do
         if not headerunit.stl then
             local file = path.relative(headerunit.path, target:scriptdir())
@@ -174,9 +176,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             batchcmds:set_depcache(target:dependfile(objectfile))
 
             local flag = {"/headerUnit" .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir)}
-            target:add("cxxflags", flag, {force = true, expand = false})
-            target:data_add("cxx.modules.flags", "/headerUnit" .. headerunit.type)
-            target:data_add("cxx.modules.flags", path.filename(file) .. "=" .. path.relative(bmifile, cachedir))
+            table.join2(public_flags, flag)
             target:add("objectfiles", objectfile)
         else
             local bmifile = path.join(stlcachedir, headerunit.name .. ".ifc")
@@ -190,11 +190,11 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             end
 
             local flag = {"/headerUnit:angle", headerunit.name .. "=" .. headerunit.name .. ".ifc"}
-            target:add("cxxflags", flag, {force = true, expand = false})
-            target:data_add("cxx.modules.flags", "/headerUnit" .. headerunit.type)
-            target:data_add("cxx.modules.flags", headerunit.name .. "=" .. headerunit.name .. ".ifc")
+            table.join2(public_flags, flag)
         end
     end
+
+    return public_flags, private_flags
 end
 
 -- build module files

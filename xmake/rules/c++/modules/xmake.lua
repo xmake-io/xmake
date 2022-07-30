@@ -104,41 +104,9 @@ rule("c++.build.modules")
 
 
 rule("c++.build.modules.builder")
-    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
-    add_deps("c++.build.modules.builder.headerunits")
-
-    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
-        if not target:get("cxx.has_modules") then
-            return
-        end
-
-        local build_modules
-        if target:has_tool("cxx", "clang", "clangxx") then
-            build_modules = import("build_modules.clang")
-        elseif target:has_tool("cxx", "gcc", "gxx") then
-            build_modules = import("build_modules.gcc")
-        elseif target:has_tool("cxx", "cl") then
-            build_modules = import("build_modules.msvc")
-        else
-            local _, toolname = target:tool("cxx")
-            raise("compiler(%s): does not support c++ module!", toolname)
-        end
-
-        local common = import("build_modules.common")
-
-        local modules = target:data("cxx.modules")
-
-        local nodes = sourcebatch.objectfiles
-
-        -- topological sort
-        local objectfiles = common.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
-
-        build_modules.build_modules(target, batchcmds, objectfiles, modules, opt)
-    end)
-
-rule("c++.build.modules.builder.headerunits")
     set_sourcekinds("cxx")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
+    add_deps("c++.build.modules.builder.headerunits")
 
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         if not target:get("cxx.has_modules") then
@@ -182,7 +150,27 @@ rule("c++.build.modules.builder.headerunits")
             end
         end
 
+        local headerunits_flags
+        local private_headerunits_flags
         if headerunits then
-            build_modules.generate_headerunits(target, batchcmds, headerunits, opt)
+            headerunits_flags, private_headerunits_flags = build_modules.generate_headerunits(target, batchcmds, headerunits, opt)
+        end
+
+        if headerunits_flags then
+            target:add("cxxflags", headerunits_flags, {public = true, force = true, expand = false})
+        end
+        if private_headerunits_flags then
+            target:add("cxxflags", private_headerunits_flags, {public = false, force = true, expand = false})
+        end
+
+        local modules = target:data("cxx.modules")
+
+        -- topological sort
+        local objectfiles = common.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
+
+        build_modules.build_modules(target, batchcmds, objectfiles, modules, opt)
+
+        if target:has_tool("cxx", "clang", "clangxx") then
+            sourcebatch.objectfiles = {}
         end
     end)
