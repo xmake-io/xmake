@@ -24,6 +24,7 @@ import("core.project.project")
 import("core.project.depend")
 import("core.base.json")
 import("core.project.config")
+import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 
 local default_flags = { "-std=c++20" }
@@ -69,7 +70,7 @@ function generate_dependencies(target, sourcebatch, opt)
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
-            vprint("generating.cxx.moduledeps %s", sourcefile)
+			progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
 
             local outdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, target:scriptdir()))))
             if not os.isdir(outdir) then

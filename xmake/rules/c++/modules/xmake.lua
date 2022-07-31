@@ -85,13 +85,17 @@ rule("c++.build.modules")
 
         local moduleinfos = {}
         for _, sourcebatch in pairs(target:sourcebatches()) do
-            if sourcebatch.rulename == "c++.build.modules.builder" then
-                common.patch_sourcebatch(target, sourcebatch, opt)
+            local batch = sourcebatch
+
+            if batch.rulename == "c++.build.modules.builder" then
+                batch.objectfiles = {}
+                batch.dependfiles = {}
+                common.patch_sourcebatch(target, batch, opt)
             end
 
-            if sourcebatch.rulename:startswith("c++.build") then
-                build_modules.generate_dependencies(target, sourcebatch, opt)
-                local infos = common.load(target, sourcebatch, opt)
+            if batch.rulename:startswith("c++.build") then
+                build_modules.generate_dependencies(target, batch, opt)
+                local infos = common.load(target, batch, opt)
 
                 table.join2(moduleinfos, infos or {})
             end
@@ -106,7 +110,6 @@ rule("c++.build.modules")
 rule("c++.build.modules.builder")
     set_sourcekinds("cxx")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
-    add_deps("c++.build.modules.builder.headerunits")
 
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         if not target:get("cxx.has_modules") then
@@ -127,14 +130,16 @@ rule("c++.build.modules.builder")
 
         local common = import("build_modules.common")
 
-        sourcebatch.objectfiles = {}
-        sourcebatch.dependfiles = {}
-        common.patch_sourcebatch(target, sourcebatch, opt)
+        local batch = sourcebatch
+
+        batch.objectfiles = {}
+        batch.dependfiles = {}
+        common.patch_sourcebatch(target, batch, opt)
 
         local modules = target:data("cxx.modules")
 
         local headerunits
-        for _, objectfile in ipairs(sourcebatch.objectfiles) do
+        for _, objectfile in ipairs(batch.objectfiles) do
             for obj, m in pairs(modules) do
                 if obj == objectfile then
                     for name, r in pairs(m.requires) do
@@ -157,20 +162,16 @@ rule("c++.build.modules.builder")
         end
 
         if headerunits_flags then
-            target:add("cxxflags", headerunits_flags, {public = true, force = true, expand = false})
+            target:add("cxxflags", headerunits_flags, {force = true, expand = false})
         end
         if private_headerunits_flags then
-            target:add("cxxflags", private_headerunits_flags, {public = false, force = true, expand = false})
+            target:add("cxxflags", private_headerunits_flags, {force = true, expand = false})
         end
 
         local modules = target:data("cxx.modules")
 
         -- topological sort
-        local objectfiles = common.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
+        local objectfiles = common.sort_modules_by_dependencies(batch.objectfiles, modules)
 
         build_modules.build_modules(target, batchcmds, objectfiles, modules, opt)
-
-        if target:has_tool("cxx", "clang", "clangxx") then
-            sourcebatch.objectfiles = {}
-        end
     end)

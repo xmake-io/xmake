@@ -21,6 +21,7 @@
 -- imports
 import("core.tool.compiler")
 import("core.project.depend")
+import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 
 local default_flags = {"/EHsc", "/nologo", "/std:c++20", "/experimental:module"}
@@ -111,7 +112,7 @@ function generate_dependencies(target, sourcebatch, opt)
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
-            vprint("generating.cxx.moduledeps %s", sourcefile)
+			progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
 
             local outdir = path.join(cachedir, path.directory(path.relative(sourcefile, target:scriptdir())))
             if not os.isdir(outdir) then
@@ -119,7 +120,6 @@ function generate_dependencies(target, sourcebatch, opt)
             end
 
             local jsonfile = path.join(outdir, path.filename(sourcefile) .. ".json")
-
             local args = {jsonfile, sourcefile, "/Fo" .. target:objectfile(sourcefile)}
         
             os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args), {envs = vcvars})
@@ -180,17 +180,15 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             target:add("objectfiles", objectfile)
         else
             local bmifile = path.join(stlcachedir, headerunit.name .. ".ifc")
-            if not os.isfile(bmifile) then
-                local args = {"/exportHeader", "/headerName:angle", headerunit.name, "/ifcOutput", stlcachedir}
-                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, args), {envs = vcvars})
+            local args = {"/exportHeader", "/headerName:angle", headerunit.name, "/ifcOutput", stlcachedir}
+            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, args), {envs = vcvars})
 
-                batchcmds:set_depmtime(os.mtime(bmifile))
-                batchcmds:set_depcache(target:dependfile(bmifile))
-            end
+            batchcmds:set_depmtime(os.mtime(bmifile))
+            batchcmds:set_depcache(target:dependfile(bmifile))
 
             local flag = {"/headerUnit:angle", headerunit.name .. "=" .. headerunit.name .. ".ifc"}
-            table.join2(public_flags, flag)
+            table.join2(private_flags, flag)
         end
     end
 
@@ -227,7 +225,6 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
 
                 local bmifile = provide.bmi
-                 
                 table.join2(args, {"/interface", "/ifcOutput", bmifile, provide.sourcefile})
 
                 batchcmds:add_depfiles(provide.sourcefile)
@@ -237,7 +234,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
                 flag = {"/reference", name .. "=" .. path.filename(bmifile)}
             end  
 
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args), {envs = vcvars})
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args, bmi_args), {envs = vcvars})
 
             batchcmds:set_depmtime(os.mtime(objectfile))
             batchcmds:set_depcache(target:dependfile(objectfile))

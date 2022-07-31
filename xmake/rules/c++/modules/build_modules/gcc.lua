@@ -24,6 +24,7 @@ import("core.project.project")
 import("core.project.depend")
 import("core.base.json")
 import("core.project.config")
+import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 
 local default_flags = {"-std=c++20"}
@@ -57,10 +58,6 @@ function load_parent(target, opt)
     local cachedir = common.get_cache_dir(target)
 
     target:add("cxxflags", "-fmodules-ts")
-    -- target:add("cxxflags", "-fno-module-lazy")
-    -- target:add("cxxflags", "-flang-info-include-translate")
-    -- target:add("cxxflags", "-flang-info-include-translate-not")
-    -- target:add("cxxflags", "-flang-info-module-cmi")
     if os.isfile(get_module_mapper()) then
         os.rm(get_module_mapper())
     end
@@ -69,10 +66,6 @@ function load_parent(target, opt)
     for _, dep in ipairs(target:orderdeps()) do
         cachedir = common.get_cache_dir(dep)
         dep:add("cxxflags", "-fmodules-ts")
-        -- dep:add("cxxflags", "-fno-module-lazy")
-        -- dep:add("cxxflags", "-flang-info-include-translate")
-        -- dep:add("cxxflags", "-flang-info-include-translate-not")
-        -- dep:add("cxxflags", "-flang-info-module-cmi")
         dep:add("cxxflags", "-fmodule-mapper=" .. get_module_mapper(), {force = true, expand = false})
     end
 end
@@ -100,7 +93,7 @@ function generate_dependencies(target, sourcebatch, opt)
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
-            vprint("generating.cxx.moduledeps %s", sourcefile)
+			progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
 
             local outdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, target:scriptdir()))))
             if not os.isdir(outdir) then
