@@ -200,6 +200,15 @@ function sandbox_os.cd(dir)
     return oldir
 end
 
+-- touch file or directory
+function sandbox_os.touch(filepath, opt)
+    assert(filepath)
+    local ok, errors = os.touch(vformat(filepath), opt)
+    if not ok then
+        os.raise(errors)
+    end
+end
+
 -- create directories
 function sandbox_os.mkdir(dir)
     assert(dir)

@@ -37,6 +37,7 @@ os._getpid   = os._getpid or os.getpid
 os._exit     = os._exit or os.exit
 os._mkdir    = os._mkdir or os.mkdir
 os._rmdir    = os._rmdir or os.rmdir
+os._touch    = os._touch or os.touch
 os._tmpdir   = os._tmpdir or os.tmpdir
 os._setenv   = os._setenv or os.setenv
 os._getenvs  = os._getenvs or os.getenvs
@@ -551,9 +552,17 @@ function os.cd(dir)
     if os._SCHED_CHDIR then
         os._SCHED_CHDIR(os.curdir())
     end
-
-    -- ok
     return oldir
+end
+
+-- touch file or directory, it will modify atime/mtime or create a new file
+-- we will do not change it if atime/mtime is zero
+function os.touch(filepath, opt)
+    opt = opt or {}
+    if not os._touch(filepath, opt.atime or 0, opt.mtime or 0) then
+        return false, string.format("cannot touch %s, %s", filepath, os.strerror())
+    end
+    return true
 end
 
 -- create directories
