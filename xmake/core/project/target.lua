@@ -2249,6 +2249,7 @@ function target.apis()
         ,   "target.set_rundir"
             -- target.add_xxx
         ,   "target.add_files"
+        ,   "target.add_modulefiles"
         ,   "target.add_cleanfiles"
         ,   "target.add_configfiles"
         ,   "target.add_installfiles"
@@ -2257,6 +2258,7 @@ function target.apis()
             -- target.remove_xxx
         ,   "target.remove_files"
         ,   "target.remove_headerfiles"
+        ,   "target.remove_modulefiles"
         }
     ,   dictionary =
         {
