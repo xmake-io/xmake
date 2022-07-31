@@ -1566,6 +1566,110 @@ function _instance:headerfiles(outputdir, opt)
     return srcheaders, dstheaders
 end
 
+-- get the module files
+function _instance:modulefiles(outputdir)
+    local modules = self:get("modulefiles")
+
+    -- get the installed module directory
+    local moduledir = outputdir 
+    if not moduledir and self:installdir() then 
+        path.join(self:installdir(), "include")
+    end
+
+    -- get the extra information
+    local extrainfo = table.wrap(self:get("__extra_modulefiles"))
+
+    -- get the source paths and destinate paths
+    local srcmodules = {}
+    local dstmodules = {}
+    local srcmodules_removed = {}
+    local removed_count = 0
+    for _, module in ipairs(table.wrap(modules)) do
+        -- mark as removed files?
+        local removed = false
+        local prefix = "__remove_"
+        if module:startswith(prefix) then
+            module = module:sub(#prefix + 1)
+            removed = true
+        end
+
+        -- get the root directory
+        local rootdir, count = module:gsub("|.*$", ""):gsub("%(.*%)$", "")
+        if count == 0 then
+            rootdir = nil
+        end
+        if rootdir and rootdir:trim() == "" then
+            rootdir = "."
+        end
+
+        -- remove '(' and ')' first
+        local srcpaths = module:gsub("[%(%)]", "")
+        if srcpaths then
+
+            -- get the source paths
+            srcpaths = os.match(srcpaths)
+            if srcpaths then
+                if removed then
+                    removed_count = removed_count + #srcpaths
+                    table.join2(srcmodules_removed, srcpaths)
+                else
+                    -- add the source modules
+                    table.join2(srcmodules, srcpaths)
+
+                    -- get the destinate directories if the install directory exists
+                    if moduledir then
+                        local prefixdir = (extrainfo[module] or {}).prefixdir
+                        for _, srcpath in ipairs(srcpaths) do
+                            local dstdir = moduledir
+                            if prefixdir then
+                                dstdir = path.join(dstdir, prefixdir)
+                            end
+                            local dstmodule = nil
+                            if rootdir then
+                                dstmodule = path.absolute(path.relative(srcpath, rootdir), dstdir)
+                            else
+                                dstmodule = path.join(dstdir, path.filename(srcpath))
+                            end
+                            table.insert(dstmodules, dstmodule)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- remove all module files which need be removed
+    if removed_count > 0 then
+        table.remove_if(srcmodules, function (i, srcmodule)
+            for _, removed_file in ipairs(srcmodules_removed) do
+                local pattern = path.translate(removed_file:gsub("|.*$", ""))
+                if pattern:sub(1, 2):find('%.[/\\]') then
+                    pattern = pattern:sub(3)
+                end
+                pattern = path.pattern(pattern)
+                if srcmodule:match(pattern) then
+                    if i <= #dstmodules then
+                        table.remove(dstmodules, i)
+                    end
+                    return true
+                end
+            end
+        end)
+    end
+
+    return srcmodules, dstmodules
+end
+
+-- get the bmi files
+function _instance:bmifiles(outputdir)
+    local compilerinst = self:compiler()
+
+    -- get the installed bmi directory
+    local bmidir = bmi_outputdir or path.join(self:installdir(), "lib", compilerinst:name() + "-" + compilerinst:version())
+
+    return self:_copiedfiles("bmifiles", bmidir)
+end
+
 -- get the configuration files
 function _instance:configfiles(outputdir)
     return self:_copiedfiles("configfiles", outputdir or self:configdir(), function (dstpath, fileinfo)
@@ -2145,6 +2249,7 @@ function target.apis()
         ,   "target.set_rundir"
             -- target.add_xxx
         ,   "target.add_files"
+        ,   "target.add_modulefiles"
         ,   "target.add_cleanfiles"
         ,   "target.add_configfiles"
         ,   "target.add_installfiles"
@@ -2153,6 +2258,7 @@ function target.apis()
             -- target.remove_xxx
         ,   "target.remove_files"
         ,   "target.remove_headerfiles"
+        ,   "target.remove_modulefiles"
         }
     ,   dictionary =
         {
