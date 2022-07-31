@@ -559,6 +559,7 @@ end
 -- we will do not change it if atime/mtime is zero
 function os.touch(filepath, opt)
     opt = opt or {}
+    opt.mtime = os.time()
     if not os._touch(filepath, opt.atime or 0, opt.mtime or 0) then
         return false, string.format("cannot touch %s, %s", filepath, os.strerror())
     end
