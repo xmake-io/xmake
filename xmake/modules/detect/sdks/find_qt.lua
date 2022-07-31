@@ -123,7 +123,13 @@ function _find_sdkdir(sdkdir, sdkver)
     end
 
     -- attempt to find qmake
-    local qmake = find_file(is_host("windows") and "qmake.exe" or "qmake", paths, {suffixes = subdirs})
+    local qmake
+    if is_host("windows") then
+        qmake = find_file("qmake*.exe", paths, {suffices = subdirs})
+    else
+        qmake = find_file("qmake*", paths, {suffixes = subdirs})
+    end
+
     if qmake then
         return path.directory(path.directory(qmake)), path.filename(qmake)
     end
@@ -132,7 +138,9 @@ end
 -- find qmake
 function _find_qmake(sdkdir, sdkver)
     local sdkdir, qmakefile = _find_sdkdir(sdkdir, sdkver)
-    local qmake = find_tool(qmakefile or "qmake", {paths = sdkdir and path.join(sdkdir, "bin")})
+
+    local qmake = find_tool(qmakefile or "qmake*", {program = "qmake", paths = sdkdir and path.join(sdkdir, "bin")})
+
     if qmake then
         return qmake.program
     end
