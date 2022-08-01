@@ -162,6 +162,7 @@ end
 
 -- config target
 function _config_target(target)
+    local oldenvs = os.addenvs(target:pkgenvs())
     for _, rule in ipairs(target:orderules()) do
         local on_config = rule:script("config")
         if on_config then
@@ -171,6 +172,9 @@ function _config_target(target)
     local on_config = target:script("config")
     if on_config then
         on_config(target)
+    end
+    if oldenvs then
+        os.setenvs(oldenvs)
     end
 end
 

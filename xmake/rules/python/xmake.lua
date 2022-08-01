@@ -20,7 +20,7 @@
 
 -- @see https://github.com/xmake-io/xmake/issues/1896
 rule("python.library")
-    on_load(function (target)
+    on_config(function (target)
         target:set("kind", "shared")
         target:set("prefixname", "")
         local soabi = target:extraconf("rules", "python.library", "soabi")
@@ -40,4 +40,3 @@ rule("python.library")
             end
         end
     end)
-
