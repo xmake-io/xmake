@@ -183,9 +183,6 @@ function put(cachekey, objectfile, extrainfo)
     local objectfile_cached = path.join(rootdir(), cachekey:sub(1, 2):lower(), cachekey)
     local objectfile_infofile = objectfile_cached .. ".txt"
     os.cp(objectfile, objectfile_cached)
-    -- we need update mtime for incremental compilation
-    -- @see https://github.com/xmake-io/xmake/issues/2620
-    os.touch(objectfile_cached, {mtime = os.time()})
     if extrainfo then
         io.save(objectfile_infofile, extrainfo)
     end
@@ -235,6 +232,9 @@ function build(program, argv, opt)
         local objectfile_cached, objectfile_infofile = get(cachekey)
         if objectfile_cached then
             os.cp(objectfile_cached, cppinfo.objectfile)
+            -- we need update mtime for incremental compilation
+            -- @see https://github.com/xmake-io/xmake/issues/2620
+            os.touch(cppinfo.objectfile, {mtime = os.time()})
             -- we need get outdata/errdata to show warnings,
             -- @see https://github.com/xmake-io/xmake/issues/2452
             if objectfile_infofile and os.isfile(objectfile_infofile) then
