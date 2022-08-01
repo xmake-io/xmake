@@ -299,7 +299,9 @@ function _target_addenvs(envs)
         if target:is_binary() then
             _addenvs(envs, "PATH", target:targetdir())
         elseif target:is_shared() then
-            if is_host("macosx") then
+            if is_host("windows") then
+                _addenvs(envs, "PATH", target:targetdir())
+            elseif is_host("macosx") then
                 _addenvs(envs, "LD_LIBRARY_PATH", target:targetdir())
             else
                 _addenvs(envs, "DYLD_LIBRARY_PATH", target:targetdir())
