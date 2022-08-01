@@ -330,7 +330,9 @@ function _package_getenvs(opt)
         for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
             _package_addenvs(envs, instance)
         end
-        _target_addenvs(envs)
+        if not has_envfile then
+            _target_addenvs(envs)
+        end
     elseif packages then
         _enter_project()
         packages = packages:split(',', {plain = true})
