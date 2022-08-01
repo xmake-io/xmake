@@ -20,6 +20,7 @@
 
 -- define rule: yacc
 rule("yacc")
+    add_deps("c++")
     set_extensions(".y", ".yy")
     on_load(function (target)
         local sourcefile_dir = path.join(target:autogendir(), "rules", "yacc_yacc")

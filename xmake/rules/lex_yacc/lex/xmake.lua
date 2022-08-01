@@ -20,6 +20,7 @@
 
 -- define rule: lex
 rule("lex")
+    add_deps("c++")
     set_extensions(".l", ".ll")
     on_buildcmd_file(function (target, batchcmds, sourcefile_lex, opt)
 
