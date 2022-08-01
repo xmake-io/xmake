@@ -98,6 +98,7 @@ tb_int_t xm_os_curdir(lua_State* lua);
 tb_int_t xm_os_tmpdir(lua_State* lua);
 tb_int_t xm_os_islink(lua_State* lua);
 tb_int_t xm_os_isfile(lua_State* lua);
+tb_int_t xm_os_touch(lua_State* lua);
 tb_int_t xm_os_rmfile(lua_State* lua);
 tb_int_t xm_os_cpfile(lua_State* lua);
 tb_int_t xm_os_rename(lua_State* lua);
@@ -319,6 +320,7 @@ static luaL_Reg const g_os_functions[] =
 ,   { "tmpdir",         xm_os_tmpdir    }
 ,   { "islink",         xm_os_islink    }
 ,   { "isfile",         xm_os_isfile    }
+,   { "touch",          xm_os_touch     }
 ,   { "rmfile",         xm_os_rmfile    }
 ,   { "cpfile",         xm_os_cpfile    }
 ,   { "rename",         xm_os_rename    }

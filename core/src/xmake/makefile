@@ -30,6 +30,7 @@ xmake_C_FILES 			+= \
 						os/tmpdir \
 						os/isfile \
 						os/islink \
+						os/touch \
 						os/rmfile \
 						os/cpfile \
 						os/rename \

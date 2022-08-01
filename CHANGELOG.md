@@ -18,6 +18,7 @@
 ### Bugs fixed
 
 * [#2614](https://github.com/xmake-io/xmake/issues/2614): Fix building submodules2 tests for msvc
+* [#2620](https://github.com/xmake-io/xmake/issues/2620): Fix build cache for incremental compilation
 
 ## v2.6.9
 
@@ -1371,6 +1372,7 @@
 ### Bugs 修复
 
 * [#2614](https://github.com/xmake-io/xmake/issues/2614): 为 msvc 修复构建 submodules2 测试工程
+* [#2620](https://github.com/xmake-io/xmake/issues/2620): 修复构建缓存导致的增量编译问题
 
 ## v2.6.9
 
