@@ -20,15 +20,18 @@
 
 -- define rule: c++.build.modules
 rule("c++.build.modules")
+    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
+    add_deps("c++.build.modules.dependencies")
     add_deps("c++.build.modules.builder")
+    add_deps("c++.build.modules.install")
 
     on_config(function (target)
-        local target_with_modules = (target:modulefiles() and #target:modulefiles() > 0) and true or false
+        local target_with_modules = target:sourcebatches()["c++.build.modules"] and true or false
 
         for _, dep in ipairs(target:orderdeps()) do
             local modulefiles = dep:get("modulefiles")
             if modulefiles and #modulefiles > 0 then
-                target_with_modules = true
+                target_with_modules = target:sourcebatches()["c++.build.modules"] and true or target_with_modules
                 break
             end
         end
@@ -55,13 +58,14 @@ rule("c++.build.modules")
             -- load parent
             build_modules.load_parent(target, opt)
 
-            for _, modulefile in ipairs(target:modulefiles()) do
-                target:add("files", modulefile)
-            end
-
             target:set("cxx.has_modules", true)
         end
     end)
+
+
+rule("c++.build.modules.dependencies")
+    set_sourcekinds("cxx")
+    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
     before_build(function(target, opt) 
         if not target:get("cxx.has_modules") then
@@ -80,32 +84,19 @@ rule("c++.build.modules")
             raise("compiler(%s): does not support c++ module!", toolname)
         end
 
-        -- build dependency data
         local common = import("build_modules.common")
 
-        local moduleinfos = {}
-        for _, sourcebatch in pairs(target:sourcebatches()) do
-            local batch = sourcebatch
+        -- build dependency data
+        local batch = target:sourcebatches()["c++.build.modules.dependencies"]
+        common.patch_sourcebatch(target, batch, opt)
 
-            if batch.rulename == "c++.build.modules.builder" then
-                batch.objectfiles = {}
-                batch.dependfiles = {}
-                common.patch_sourcebatch(target, batch, opt)
-            end
+        build_modules.generate_dependencies(target, batch, opt)
 
-            if batch.rulename:startswith("c++.build") then
-                build_modules.generate_dependencies(target, batch, opt)
-                local infos = common.load(target, batch, opt)
-
-                table.join2(moduleinfos, infos or {})
-            end
-        end
-
+        local moduleinfos = common.load(target, batch, opt)
         local modules = common.parse_dependency_data(target, moduleinfos, opt)
 
         target:data_set("cxx.modules", modules)
     end)
-
 
 rule("c++.build.modules.builder")
     set_sourcekinds("cxx")
@@ -131,6 +122,8 @@ rule("c++.build.modules.builder")
         local common = import("build_modules.common")
 
         local batch = sourcebatch
+        print(sourcebatch)
+        print(batch)
 
         batch.objectfiles = {}
         batch.dependfiles = {}
@@ -175,3 +168,12 @@ rule("c++.build.modules.builder")
 
         build_modules.build_modules(target, batchcmds, objectfiles, modules, opt)
     end)
+
+rules("c++.build.modules.install")
+    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
+
+    on_config(function (target)
+        local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
+
+        target:add("installfiles", sourcebatch.sourcefiles, {prefixdir = "include"})
+    end
