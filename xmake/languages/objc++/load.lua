@@ -80,7 +80,6 @@ function _get_apis()
         -- target.add_xxx
     ,   "target.add_headers"        -- TODO deprecated
     ,   "target.add_headerfiles"
-    ,   "target.add_modulefiles"
     ,   "target.add_linkdirs"
     ,   "target.add_includedirs"
     ,   "target.add_sysincludedirs"
