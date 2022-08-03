@@ -26,12 +26,19 @@ rule("c++.build.modules")
     add_deps("c++.build.modules.install")
 
     on_config(function (target)
-        local target_with_modules = target:sourcebatches()["c++.build.modules"] and true or false
-
-        for _, dep in ipairs(target:orderdeps()) do
-            target_with_modules = dep:sourcebatches()["c++.build.modules"] and true or target_with_modules
+        function contains_modules(target)
+            local target_with_modules
+            for _, dep in ipairs(target:orderdeps()) do
+                local sourcebatches = dep:sourcebatches()
+                if sourcebatches and sourcebatches["c++.build.modules"] then
+                    target_with_modules = true
+                    break
+                end
+            end
+            return target_with_modules
         end
 
+        local target_with_modules = target:sourcebatches()["c++.build.modules"] and contains_modules(target) or false
         if target_with_modules then
             -- we disable to build across targets in parallel, because the source files may depend on other target modules
             -- @see https://github.com/xmake-io/xmake/issues/1858
