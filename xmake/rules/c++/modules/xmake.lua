@@ -87,6 +87,7 @@ rule("c++.build.modules.builder")
 
         -- patch sourcebatch
         import("modules_support.common")
+        import("modules_support.stl_headers")
         sourcebatch.objectfiles = {}
         sourcebatch.dependfiles = {}
         common.patch_sourcebatch(target, sourcebatch, opt)
@@ -101,7 +102,7 @@ rule("c++.build.modules.builder")
                         if r.method ~= "by-name" then
                             headerunits = headerunits or {}
                             local unittype = r.method == "include-angle" and ":angle" or ":quote"
-                            table.append(headerunits, {name = name, path = r.path, type = unittype, stl = common.is_stl_header(name)})
+                            table.append(headerunits, {name = name, path = r.path, type = unittype, stl = stl_headers.is_stl_header(name)})
                         end
                     end
                     break
