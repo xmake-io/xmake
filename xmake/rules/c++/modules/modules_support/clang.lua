@@ -29,12 +29,12 @@ import("common")
 
 -- load parent target with modules files
 function load_parent(target, opt)
-    local cachedir = common.get_modules_cachedir(target)
+    local cachedir = common.modules_cachedir(target)
 
     local prebuiltmodulepathflag = get_prebuiltmodulepathflag(target)
 
     for _, dep in ipairs(target:orderdeps()) do
-        cachedir = common.get_modules_cachedir(dep)
+        cachedir = common.modules_cachedir(dep)
         target:add("cxxflags", prebuiltmodulepathflag .. cachedir, {force = true})
     end
 end
@@ -42,8 +42,8 @@ end
 -- check C++20 module support
 function check_module_support(target)
     local compinst = compiler.load("cxx", {target = target})
-    local cachedir = common.get_modules_cachedir(target)
-    local stlcachedir = common.get_stlmodules_cachedir(target)
+    local cachedir = common.modules_cachedir(target)
+    local stlcachedir = common.stlmodules_cachedir(target)
 
     -- get module and module cache flags
     local modulesflag = get_modulesflag(target)
@@ -87,7 +87,7 @@ function toolchain_include_directories(target)
 end
 
 function generate_dependencies(target, sourcebatch, opt)
-    local cachedir = common.get_modules_cachedir(target)
+    local cachedir = common.modules_cachedir(target)
 
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
@@ -114,8 +114,8 @@ end
 -- generate target header units
 function generate_headerunits(target, batchcmds, sourcebatch, opt)
     local compinst = target:compiler("cxx")
-    local cachedir = common.get_modules_cachedir(target)
-    local stlcachedir = common.get_stlmodules_cachedir(target)
+    local cachedir = common.modules_cachedir(target)
+    local stlcachedir = common.stlmodules_cachedir(target)
 
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
 
@@ -145,7 +145,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
                 os.mkdir(outdir)
             end
 
-            local bmifilename = path.basename(objectfile) .. get_bmi_ext()
+            local bmifilename = path.basename(objectfile) .. bmi_extension()
 
             local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
             if not os.isdir(path.directory(objectfile)) then
@@ -168,7 +168,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
 
             table.append(public_flags, modulefileflag .. bmifile)
         else
-            local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_ext())
+            local bmifile = path.join(stlcachedir, headerunit.name .. bmi_extension())
 
             if not os.isfile(bmifile) then
                 local args = { modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.path }
@@ -190,7 +190,7 @@ end
 -- build module files
 function build_modules(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
-    local cachedir = common.get_modules_cachedir(target)
+    local cachedir = common.modules_cachedir(target)
 
     -- get modules flags
     local modulecachepathflag = get_modulecachepathflag(target)
@@ -246,7 +246,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     end
 end
 
-function get_bmi_ext()
+function bmi_extension()
     return ".pcm"
 end
 
@@ -345,7 +345,7 @@ function get_modulefileflag(target)
     local modulefileflag = _g.modulefileflag
     if modulefileflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fmodule-file=" .. os.tmpfile() .. get_bmi_ext(), "cxxflags", {flagskey = "clang_module_file"}) then
+        if compinst:has_flags("-fmodule-file=" .. os.tmpfile() .. bmi_extension(), "cxxflags", {flagskey = "clang_module_file"}) then
             modulefileflag = "-fmodule-file="
         end
         assert(modulefileflag, "compiler(clang): does not support c++ module!")

@@ -23,11 +23,17 @@ import("core.base.json")
 import("core.base.hashset")
 import("core.project.config")
 import("core.tool.compiler")
+import("core.cache.memcache", {alias = "_memcache"})
 import("core.project.project")
 import("lib.detect.find_file")
 
+-- get memcache
+function memcache()
+    return _memcache.cache("rule.cxx.modules")
+end
+
 -- get stl modules cache directory
-function get_stlmodules_cachedir(target)
+function stlmodules_cachedir(target)
     local stlcachedir = path.join(target:autogendir(), "stlmodules", "cache")
     if target:has_tool("cxx", "clang", "clangxx") then
         stlcachedir = path.join(config.buildir(), "stlmodules", "cache")
@@ -39,7 +45,7 @@ function get_stlmodules_cachedir(target)
 end
 
 -- get modules cache directory
-function get_modules_cachedir(target)
+function modules_cachedir(target)
     local cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
     if not os.isdir(cachedir) then
         os.mkdir(cachedir)
@@ -49,7 +55,7 @@ end
 
 -- patch sourcebatch
 function patch_sourcebatch(target, sourcebatch, opt)
-    local cachedir = get_modules_cachedir(target)
+    local cachedir = modules_cachedir(target)
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
@@ -63,40 +69,46 @@ end
 
 -- get modules support
 function modules_support(target)
-    local module_builder
-    if target:has_tool("cxx", "clang", "clangxx") then
-        module_builder = import("clang", {anonymous = true})
-    elseif target:has_tool("cxx", "gcc", "gxx") then
-        module_builder = import("gcc", {anonymous = true})
-    elseif target:has_tool("cxx", "cl") then
-        module_builder = import("msvc", {anonymous = true})
-    else
-        local _, toolname = target:tool("cxx")
-        raise("compiler(%s): does not support c++ module!", toolname)
+    local cachekey = tostring(target)
+    local module_builder = memcache():get2("modules_support", cachekey)
+    if module_builder == nil then
+        if target:has_tool("cxx", "clang", "clangxx") then
+            module_builder = import("clang", {anonymous = true})
+        elseif target:has_tool("cxx", "gcc", "gxx") then
+            module_builder = import("gcc", {anonymous = true})
+        elseif target:has_tool("cxx", "cl") then
+            module_builder = import("msvc", {anonymous = true})
+        else
+            local _, toolname = target:tool("cxx")
+            raise("compiler(%s): does not support c++ module!", toolname)
+        end
+        memcache():set2("modules_support", cachekey, module_builder)
     end
     return module_builder
 end
 
 -- get bmi extension
-function get_bmi_ext(target)
-    return modules_support(target).get_bmi_ext()
+function bmi_extension(target)
+    return modules_support(target).bmi_extension()
 end
 
+-- this target contains module files?
 function contains_modules(target)
     local target_with_modules = target:sourcebatches()["c++.build.modules"] and true or false
-
-    for _, dep in ipairs(target:orderdeps()) do
-        local sourcebatches = dep:sourcebatches()
-        if sourcebatches and sourcebatches["c++.build.modules"] then
-            target_with_modules = true
-            break
+    if not target_with_modules then
+        for _, dep in ipairs(target:orderdeps()) do
+            local sourcebatches = dep:sourcebatches()
+            if sourcebatches and sourcebatches["c++.build.modules"] then
+                target_with_modules = true
+                break
+            end
         end
     end
     return target_with_modules
 end
 
 function load(target, sourcebatch, opt)
-    local cachedir = get_modules_cachedir(target)
+    local cachedir = modules_cachedir(target)
 
     local moduleinfos
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -119,7 +131,7 @@ function load(target, sourcebatch, opt)
 end
 
 function parse_dependency_data(target, moduleinfos, opt)
-    local cachedir = get_modules_cachedir(target)
+    local cachedir = modules_cachedir(target)
 
     local modules
     for _, moduleinfo in ipairs(moduleinfos) do
@@ -140,7 +152,7 @@ function parse_dependency_data(target, moduleinfos, opt)
                         m.provides[provide["logical-name"] ] = path.translate(provide["compiled-module-path"])
                     end
                 else -- assume path with name
-                    local name = provide["logical-name"] .. get_bmi_ext(target)
+                    local name = provide["logical-name"] .. bmi_extension(target)
                     name:replace(":", "-")
 
                     m.provides[provide["logical-name"] ] = {
@@ -347,7 +359,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
     end
 
     if module_name then
-        table.append(rule.outputs, module_name .. get_bmi_ext(target))
+        table.append(rule.outputs, module_name .. bmi_extension(target))
 
         local provide = {}
         provide["logical-name"] = module_name

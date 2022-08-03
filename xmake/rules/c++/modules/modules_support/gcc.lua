@@ -99,7 +99,7 @@ end
 
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
-    local cachedir = common.get_modules_cachedir(target)
+    local cachedir = common.modules_cachedir(target)
     local compinst = target:compiler("cxx")
     local common_args = {"-E", "-x", "c++"}
 
@@ -141,8 +141,8 @@ end
 function generate_headerunits(target, batchcmds, sourcebatch, opt)
     local compinst = target:compiler("cxx")
 
-    local cachedir = common.get_modules_cachedir(target)
-    local stlcachedir = common.get_stlmodules_cachedir(target)
+    local cachedir = common.modules_cachedir(target)
+    local stlcachedir = common.stlmodules_cachedir(target)
 
     local mapper_file = get_module_mapper()
 
@@ -165,7 +165,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
                 os.mkdir(outdir)
             end
 
-            local bmifilename = path.basename(objectfile) .. get_bmi_ext()
+            local bmifilename = path.basename(objectfile) .. bmi_extension()
 
             local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
             if not os.isdir(path.directory(objectfile)) then
@@ -190,7 +190,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
                 batchcmds:set_depcache(target:dependfile(bmifile))
             end
         else
-            local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_ext())
+            local bmifile = path.join(stlcachedir, headerunit.name .. bmi_extension())
 
             if add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, project.directory())) then
                 if not os.isfile(bmifile) then
@@ -209,7 +209,7 @@ end
 
 -- build module files
 function build_modules(target, batchcmds, objectfiles, modules, opt)
-    local cachedir = common.get_modules_cachedir(target)
+    local cachedir = common.modules_cachedir(target)
 
     local compinst = target:compiler("cxx")
 
@@ -247,7 +247,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     end
 end
 
-function get_bmi_ext()
+function bmi_extension()
     return ".gcm"
 end
 

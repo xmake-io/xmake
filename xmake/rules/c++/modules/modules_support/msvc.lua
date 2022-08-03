@@ -31,7 +31,7 @@ function load_parent(target, opt)
     local ifcsearchdirflag = get_ifcsearchdirflag(target)
 
     for _, dep in ipairs(target:orderdeps()) do
-        cachedir = common.get_modules_cachedir(dep)
+        cachedir = common.modules_cachedir(dep)
         target:add("cxxflags", {ifcsearchdirflag, cachedir}, {force = true, expand = false})
     end
 end
@@ -39,8 +39,8 @@ end
 -- check C++20 module support
 function check_module_support(target)
     local compinst = target:compiler("cxx")
-    local cachedir = common.get_modules_cachedir(target)
-    local stlcachedir = common.get_stlmodules_cachedir(target)
+    local cachedir = common.modules_cachedir(target)
+    local stlcachedir = common.stlmodules_cachedir(target)
 
     -- get flags
     local modulesflag = get_modulesflag(target)
@@ -89,7 +89,7 @@ function generate_dependencies(target, sourcebatch, opt)
 
     local scandependenciesflag = get_scandependenciesflag(target)
 
-    local cachedir = common.get_modules_cachedir(target)
+    local cachedir = common.modules_cachedir(target)
     local common_args = {"/TP", scandependenciesflag}
 
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -133,8 +133,8 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
 
     assert(headerunitflag and headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
 
-    local cachedir = common.get_modules_cachedir(target)
-    local stlcachedir = common.get_stlmodules_cachedir(target)
+    local cachedir = common.modules_cachedir(target)
+    local stlcachedir = common.stlmodules_cachedir(target)
 
     -- build headerunits
     local common_args = {"/TP", exportheaderflag, "/c"}
@@ -158,7 +158,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
                 os.mkdir(outdir)
             end
 
-            local bmifilename = path.basename(objectfile) .. get_bmi_ext()
+            local bmifilename = path.basename(objectfile) .. bmi_extension()
 
             local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
             if not os.isdir(path.directory(objectfile)) then
@@ -179,7 +179,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             table.join2(public_flags, flag)
             target:add("objectfiles", objectfile)
         else
-            local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_ext())
+            local bmifile = path.join(stlcachedir, headerunit.name .. bmi_extension())
             local args = {exportheaderflag, headernameflag .. ":angle", headerunit.name, ifcoutputflag, stlcachedir}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args), {envs = vcvars})
@@ -187,7 +187,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             batchcmds:set_depmtime(os.mtime(bmifile))
             batchcmds:set_depcache(target:dependfile(bmifile))
 
-            local flag = {headerunitflag .. ":angle", headerunit.name .. "=" .. headerunit.name .. get_bmi_ext()}
+            local flag = {headerunitflag .. ":angle", headerunit.name .. "=" .. headerunit.name .. bmi_extension()}
             table.join2(private_flags, flag)
         end
     end
@@ -197,7 +197,7 @@ end
 
 -- build module files
 function build_modules(target, batchcmds, objectfiles, modules, opt)
-    local cachedir = common.get_modules_cachedir(target)
+    local cachedir = common.modules_cachedir(target)
 
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
@@ -253,7 +253,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     end
 end
 
-function get_bmi_ext()
+function bmi_extension()
     return ".ifc"
 end
 
