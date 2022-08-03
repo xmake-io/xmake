@@ -22,13 +22,19 @@
 import("core.tool.compiler")
 import("core.project.project")
 import("core.project.depend")
-import("core.base.json")
 import("core.project.config")
 import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 
-local default_flags = {"-std=c++20"}
+modulesflag = nil
+modulemapperflag = nil
+trtbdflag = nil
 
+function get_bmi_ext()
+    return ".gcm"
+end
+
+-- get and create the path of module mapper
 function get_module_mapper()
     local mapper_file = path.join(config.buildir(), "mapper.txt")
     if not os.isfile(mapper_file) then
@@ -38,6 +44,7 @@ function get_module_mapper()
     return mapper_file
 end
 
+-- add a module or header unit into the mapper
 function add_module_to_mapper(file, module, bmi)
     for line in io.lines(file) do
         if line:startswith(module .. " ") then
@@ -57,33 +64,50 @@ function load_parent(target, opt)
     local common = import("common")
     local cachedir = common.get_cache_dir(target)
 
-    target:add("cxxflags", "-fmodules-ts")
+    target:add("cxxflags", modulesflag)
     if os.isfile(get_module_mapper()) then
         os.rm(get_module_mapper())
     end
     target:add("cxxflags", "-fmodule-mapper=" .. get_module_mapper(), {force = true, expand = false})
-
-    for _, dep in ipairs(target:orderdeps()) do
-        cachedir = common.get_cache_dir(dep)
-        dep:add("cxxflags", "-fmodules-ts")
-        dep:add("cxxflags", "-fmodule-mapper=" .. get_module_mapper(), {force = true, expand = false})
-    end
 end
 
 -- check C++20 module support
 function check_module_support(target)
-    local modulesflag
     local compinst = compiler.load("cxx", {target = target})
-    if compinst:has_flags("-fmodules-ts") then
+
+    if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "gcc_modules_ts"}) then
         modulesflag = "-fmodules-ts"
     end
     assert(modulesflag, "compiler(gcc): does not support c++ module!")
 
-    if compinst:has_flags("-fdep-format=trtbd") then
-        target:data_set("cxx.has_p1689r4", true)
+    if compinst:has_flags("-fmodule-mapper=" .. os.tmpfile(), "cxxflags", {flagskey = "gcc_module_mapper"}) then
+        modulemapperflag = "-fmodule-mapper="
+    end
+    assert(modulemapperflag, "compiler(gcc): does not support c++ module!")
+
+    if compinst:has_flags("-fdep-format=trtbd", "cxxflags", {flagskey = "gcc_dep_format"}) then
+        trtbdflag = "-fdep-format=trtbd"
+    end
+
+    if compinst:has_flags("-fdep-file=" .. os.tmpfile(), "cxxflags", {flagskey = "gcc_dep_file"}) then
+        depfileflag = "-fdep-file="
+    end
+
+    if compinst:has_flags("-fdep-output=" .. os.tmpfile() .. ".o", "cxxflags", {flagskey = "gcc_dep_output"}) then
+        depoutputflag = "-fdep-output="
     end
 end
 
+-- provide toolchain include dir for stl headerunit when p1689 is not supported
+function toolchain_include_directories(target)
+    if is_plat("linux") then
+        return { "/usr/include/**", "/usr/local/include/**" }
+    end
+
+    return {}
+end
+
+-- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
     local common = import("common")
     local cachedir = common.get_cache_dir(target)
@@ -102,18 +126,15 @@ function generate_dependencies(target, sourcebatch, opt)
 
             local jsonfile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".json"))
 
-            if target:data("cxx.has_p1689r4") then
+            if trtbdflag and depfileflag and depoutputflag then
                 local ifile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".i"))
                 local dfile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".d"))
 
-                local args = {sourcefile, "-MD", "-MT", jsonfile, "-MF", dfile, "-fdep-file=" .. jsonfile, "-fdep-format=trtbd", "-fdep-output=" .. target:objectfile(sourcefile), "-o", ifile}
+                local args = {sourcefile, "-MD", "-MT", jsonfile, "-MF", dfile, depfileflag .. jsonfile, trtbdflag, depoutputfile .. target:objectfile(sourcefile), "-o", ifile}
             
-                os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args), {envs = vcvars})
-            else -- fallback as GCC doesn't fully support p1689r4
-                local dependinfo = common.fallback_generate_dependencies(target, jsonfile, sourcefile)
-                local jsondata = json.encode(dependinfo)
-
-                io.writefile(jsonfile, jsondata)
+                os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+            else 
+                common.fallback_generate_dependencies(target, jsonfile, sourcefile)
             end
 
             local dependinfo = io.readfile(jsonfile)
@@ -142,12 +163,18 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
 
             local objectfile = target:objectfile(file)
 
-            local outdir = path.join(cachedir, "include", path.directory(headerunit.name))
+            local outdir 
+            if headerunit.type == ":quote" then
+                outdir = path.join(cachedir, path.directory(path.relative(headerunit.path, project.directory())))
+            else
+                outdir = path.join(cachedir, path.directory(headerunit.path))
+            end
+
             if not os.isdir(outdir) then
                 os.mkdir(outdir)
             end
 
-            local bmifilename = path.basename(objectfile) .. ".gcm"
+            local bmifilename = path.basename(objectfile) .. get_bmi_ext()
 
             local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
             if not os.isdir(path.directory(objectfile)) then
@@ -165,21 +192,21 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
                 end
 
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, args))
+                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
 
                 batchcmds:add_depfiles(headerunit.path)
                 batchcmds:set_depmtime(os.mtime(bmifile))
                 batchcmds:set_depcache(target:dependfile(bmifile))
             end
         else
-            local bmifile = path.join(stlcachedir, headerunit.name .. ".gcm")
+            local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_ext())
 
             if add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, project.directory())) then
                 if not os.isfile(bmifile) then
                     local args = { "-c", "-x", "c++-system-header", headerunit.name }
 
                     batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-                    batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, args))
+                    batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
 
                     batchcmds:set_depmtime(os.mtime(bmifile))
                     batchcmds:set_depcache(target:dependfile(bmifile))
@@ -220,7 +247,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
                 end
             end  
 
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}) or default_flags, common_args, args))
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
 
             batchcmds:set_depmtime(os.mtime(objectfile))
             batchcmds:set_depcache(target:dependfile(objectfile))

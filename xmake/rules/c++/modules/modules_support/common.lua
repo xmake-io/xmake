@@ -1,10 +1,7 @@
 import("core.base.json")
 import("core.project.config")
 import("core.tool.compiler")
-import("core.cache.globalcache")
 import("core.project.project")
-import("lib.detect")
-import("lib.detect.find_package")
 import("lib.detect.find_file")
 
 local stl_headers = {
@@ -111,7 +108,7 @@ function get_stlcache_dir(target)
         os.mkdir(stlcachedir)
     end
 
-    return stlcachedir
+    return path.translate(stlcachedir)
 end
 
 function get_cache_dir(target)
@@ -120,7 +117,7 @@ function get_cache_dir(target)
         os.mkdir(cachedir)
     end
 
-    return cachedir
+    return path.translate(cachedir)
 end
 
 function patch_sourcebatch(target, sourcebatch, opt)
@@ -141,11 +138,11 @@ end
 
 function get_bmi_ext(target)
     if target:has_tool("cxx", "gcc", "gxx") then
-        return ".gcm"
+        return import("gcc").get_bmi_ext()
     elseif target:has_tool("cxx", "cl") then
-        return ".ifc"
+        return import("msvc").get_bmi_ext()
     elseif target:has_tool("cxx", "clang", "clangxx") then
-        return ".pcm"
+        return import("clang").get_bmi_ext()
     end
 
     assert(false)
@@ -189,11 +186,12 @@ function parse_dependency_data(target, moduleinfos, opt)
             for _, provide in ipairs(rule.provides) do
                 m.provides = m.provides or {}
 
+                assert(provide["logical-name"])
                 if provide["compiled-module-path"] then
                     if not path.is_absolute(provide["compiled-module-path"]) then
-                        m.provides[provide["logical-name"] ] = path.absolute(provide["compiled-module-path"])
+                        m.provides[provide["logical-name"] ] = path.absolute(path.translate(provide["compiled-module-path"]))
                     else
-                        m.provides[provide["logical-name"] ] = provide["compiled-module-path"]
+                        m.provides[provide["logical-name"] ] = path.translate(provide["compiled-module-path"])
                     end
                 else -- assume path with name
                     local name = provide["logical-name"] .. get_bmi_ext(target)
@@ -206,13 +204,14 @@ function parse_dependency_data(target, moduleinfos, opt)
                 end
             end
 
-            modules[rule["primary-output"] ] = m
+            assert(rule["primary-output"])
+            modules[path.translate(rule["primary-output"])] = m
         end
     end
 
     for _, moduleinfo in ipairs(moduleinfos) do
         for _, rule in ipairs(moduleinfo.rules) do
-            local m = modules[rule["primary-output"] ]
+            local m = modules[path.translate(rule["primary-output"])]
             for _, r in ipairs(rule.requires) do
                 m.requires = m.requires or {}
 
@@ -228,7 +227,7 @@ function parse_dependency_data(target, moduleinfos, opt)
 
                 m.requires[r["logical-name"] ] = {
                     method = r["lookup-method"] or "by-name",
-                    path = p,
+                    path = p and path.translate(p) or nil,
                     unique = r["unique-on-source-path"] or false
                 }
             end
@@ -317,8 +316,20 @@ end
 
 function find_angle_header_file(target, file)
     -- check if the header is in subtarget
+    
+    local modules_support
+    if target:has_tool("cxx", "clang", "clangxx") then
+        modules_support = import("clang")
+    elseif target:has_tool("cxx", "gcc", "gxx") then
+        modules_support = import("gcc")
+    elseif target:has_tool("cxx", "cl") then
+        modules_support = import("msvc")
+    else
+        local _, toolname = target:tool("cxx")
+        raise("compiler(%s): does not support c++ module!", toolname)
+    end
 
-    local headerpaths = {}
+    local headerpaths = modules_support.toolchain_include_directories(target)
 
     for _, dep in ipairs(target:orderdeps()) do
         table.append(headerpaths, dep:scriptdir())
@@ -333,8 +344,9 @@ function find_angle_header_file(target, file)
 
     table.join2(headerpaths, target:get("includedirs"))
 
-    local p = find_file(file, table.join(headerpaths, { "/usr/include/**", "/usr/local/include/**" }))
+    local p = find_file(file, headerpaths)
 
+    assert(p)
     assert(os.isfile(p))
 
     return p
@@ -405,5 +417,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
 
     table.append(output.rules, rule)
 
-    return output
+    local jsondata = json.encode(output)
+
+    io.writefile(jsonfile, jsondata)
 end

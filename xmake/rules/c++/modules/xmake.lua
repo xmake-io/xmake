@@ -29,34 +29,30 @@ rule("c++.build.modules")
         local target_with_modules = target:sourcebatches()["c++.build.modules"] and true or false
 
         for _, dep in ipairs(target:orderdeps()) do
-            local modulefiles = dep:get("modulefiles")
-            if modulefiles and #modulefiles > 0 then
-                target_with_modules = target:sourcebatches()["c++.build.modules"] and true or target_with_modules
-                break
-            end
+            target_with_modules = dep:sourcebatches()["c++.build.modules"] and true or target_with_modules
         end
 
         if target_with_modules then
             target:set("policy", "build.across_targets_in_parallel", false)
 
-            -- import build_modules
-            local build_modules
+            -- import modules_support
+            local modules_support
             if target:has_tool("cxx", "clang", "clangxx") then
-                build_modules = import("build_modules.clang")
+                modules_support = import("modules_support.clang")
             elseif target:has_tool("cxx", "gcc", "gxx") then
-                build_modules = import("build_modules.gcc")
+                modules_support = import("modules_support.gcc")
             elseif target:has_tool("cxx", "cl") then
-                build_modules = import("build_modules.msvc")
+                modules_support = import("modules_support.msvc")
             else
                 local _, toolname = target:tool("cxx")
                 raise("compiler(%s): does not support c++ module!", toolname)
             end
 
             -- check C++20 module support
-            build_modules.check_module_support(target)
+            modules_support.check_module_support(target)
 
             -- load parent
-            build_modules.load_parent(target, opt)
+            modules_support.load_parent(target, opt)
 
             target:set("cxx.has_modules", true)
         end
@@ -64,33 +60,30 @@ rule("c++.build.modules")
 
 
 rule("c++.build.modules.dependencies")
-    set_sourcekinds("cxx")
-    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
-
     before_build(function(target, opt) 
         if not target:get("cxx.has_modules") then
             return
         end
 
-        local build_modules
+        local modules_support
         if target:has_tool("cxx", "clang", "clangxx") then
-            build_modules = import("build_modules.clang")
+            modules_support = import("modules_support.clang")
         elseif target:has_tool("cxx", "gcc", "gxx") then
-            build_modules = import("build_modules.gcc")
+            modules_support = import("modules_support.gcc")
         elseif target:has_tool("cxx", "cl") then
-            build_modules = import("build_modules.msvc")
+            modules_support = import("modules_support.msvc")
         else
             local _, toolname = target:tool("cxx")
             raise("compiler(%s): does not support c++ module!", toolname)
         end
 
-        local common = import("build_modules.common")
+        local common = import("modules_support.common")
 
         -- build dependency data
-        local batch = target:sourcebatches()["c++.build.modules.dependencies"]
+        local batch = target:sourcebatches()["c++.build.modules.builder"]
         common.patch_sourcebatch(target, batch, opt)
 
-        build_modules.generate_dependencies(target, batch, opt)
+        modules_support.generate_dependencies(target, batch, opt)
 
         local moduleinfos = common.load(target, batch, opt)
         local modules = common.parse_dependency_data(target, moduleinfos, opt)
@@ -104,26 +97,25 @@ rule("c++.build.modules.builder")
 
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         if not target:get("cxx.has_modules") then
+            sourcebatch.objectfiles = {}
             return
         end
 
-        local build_modules
+        local modules_support
         if target:has_tool("cxx", "clang", "clangxx") then
-            build_modules = import("build_modules.clang")
+            modules_support = import("modules_support.clang")
         elseif target:has_tool("cxx", "gcc", "gxx") then
-            build_modules = import("build_modules.gcc")
+            modules_support = import("modules_support.gcc")
         elseif target:has_tool("cxx", "cl") then
-            build_modules = import("build_modules.msvc")
+            modules_support = import("modules_support.msvc")
         else
             local _, toolname = target:tool("cxx")
             raise("compiler(%s): does not support c++ module!", toolname)
         end
 
-        local common = import("build_modules.common")
+        local common = import("modules_support.common")
 
         local batch = sourcebatch
-        print(sourcebatch)
-        print(batch)
 
         batch.objectfiles = {}
         batch.dependfiles = {}
@@ -151,7 +143,7 @@ rule("c++.build.modules.builder")
         local headerunits_flags
         local private_headerunits_flags
         if headerunits then
-            headerunits_flags, private_headerunits_flags = build_modules.generate_headerunits(target, batchcmds, headerunits, opt)
+            headerunits_flags, private_headerunits_flags = modules_support.generate_headerunits(target, batchcmds, headerunits, opt)
         end
 
         if headerunits_flags then
@@ -166,14 +158,16 @@ rule("c++.build.modules.builder")
         -- topological sort
         local objectfiles = common.sort_modules_by_dependencies(batch.objectfiles, modules)
 
-        build_modules.build_modules(target, batchcmds, objectfiles, modules, opt)
+        modules_support.build_modules(target, batchcmds, objectfiles, modules, opt)
     end)
 
-rules("c++.build.modules.install")
+rule("c++.build.modules.install")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
-    on_config(function (target)
+    before_install(function (target)
         local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
 
-        target:add("installfiles", sourcebatch.sourcefiles, {prefixdir = "include"})
-    end
+        if sourcebatch then 
+            target:add("installfiles", sourcebatch.sourcefiles, {prefixdir = "include"})
+        end
+    end)
