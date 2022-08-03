@@ -28,20 +28,9 @@ rule("c++.build.modules")
     on_config(function (target)
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
         -- @see https://github.com/xmake-io/xmake/issues/1858
+        local common = import("modules_support.common")
 
-        function contains_modules(target)
-            local target_with_modules
-            for _, dep in ipairs(target:orderdeps()) do
-                local sourcebatches = dep:sourcebatches()
-                if sourcebatches and sourcebatches["c++.build.modules"] then
-                    target_with_modules = true
-                    break
-                end
-            end
-            return target_with_modules
-        end
-
-        local target_with_modules = target:sourcebatches()["c++.build.modules"] and contains_modules(target) or false
+        local target_with_modules = target:sourcebatches()["c++.build.modules"] and common.contains_modules(target) or false
         if target_with_modules then
             -- @note this will cause cross-parallel builds to be disabled for all sub-dependent targets,
             -- even if some sub-targets do not contain C++ modules.
@@ -49,7 +38,6 @@ rule("c++.build.modules")
             -- maybe we will have a more fine-grained configuration strategy to disable it in the future.
             target:set("policy", "build.across_targets_in_parallel", false)
 
-            local common = import("modules_support.common")
             local modules_support = common.modules_support(target)
 
             -- check C++20 module support
@@ -148,7 +136,6 @@ rule("c++.build.modules.install")
 
     before_install(function (target)
         local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
-
         if sourcebatch then 
             target:add("installfiles", sourcebatch.sourcefiles, {prefixdir = "include"})
         end

@@ -163,6 +163,18 @@ function modules_support(target)
     return module_builder
 end
 
+function contains_modules(target)
+    local target_with_modules
+    for _, dep in ipairs(target:orderdeps()) do
+        local sourcebatches = dep:sourcebatches()
+        if sourcebatches and sourcebatches["c++.build.modules"] then
+            target_with_modules = true
+            break
+        end
+    end
+    return target_with_modules
+end
+
 function load(target, sourcebatch, opt)
     local cachedir = get_cache_dir(target)
 
