@@ -107,18 +107,15 @@ function contains_modules(target)
     return target_with_modules
 end
 
+-- load module infos
 function load(target, sourcebatch, opt)
-    local cachedir = modules_cachedir(target)
-
     local moduleinfos
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
         if os.isfile(dependfile) then
             local data = io.load(dependfile)
-
             if data then
                 moduleinfos = moduleinfos or {}
-
                 local moduleinfo = json.decode(data.moduleinfo)
                 moduleinfo.sourcefile = sourcefile
                 if moduleinfo then
@@ -130,38 +127,34 @@ function load(target, sourcebatch, opt)
     return moduleinfos
 end
 
+-- parse module dependency data
 function parse_dependency_data(target, moduleinfos, opt)
-    local cachedir = modules_cachedir(target)
-
     local modules
+    local cachedir = modules_cachedir(target)
     for _, moduleinfo in ipairs(moduleinfos) do
         assert(moduleinfo.version <= 1)
         for _, rule in ipairs(moduleinfo.rules) do
             modules = modules or {}
-
             local m = {}
-
             for _, provide in ipairs(rule.provides) do
                 m.provides = m.provides or {}
-
                 assert(provide["logical-name"])
                 if provide["compiled-module-path"] then
                     if not path.is_absolute(provide["compiled-module-path"]) then
-                        m.provides[provide["logical-name"] ] = path.absolute(path.translate(provide["compiled-module-path"]))
+                        m.provides[provide["logical-name"]] = path.absolute(path.translate(provide["compiled-module-path"]))
                     else
-                        m.provides[provide["logical-name"] ] = path.translate(provide["compiled-module-path"])
+                        m.provides[provide["logical-name"]] = path.translate(provide["compiled-module-path"])
                     end
-                else -- assume path with name
+                else
+                    -- assume path with name
                     local name = provide["logical-name"] .. bmi_extension(target)
                     name:replace(":", "-")
-
-                    m.provides[provide["logical-name"] ] = {
+                    m.provides[provide["logical-name"]] = {
                         bmi = path.join(cachedir, name),
                         sourcefile = moduleinfo.sourcefile
                     }
                 end
             end
-
             assert(rule["primary-output"])
             modules[path.translate(rule["primary-output"])] = m
         end
@@ -172,18 +165,16 @@ function parse_dependency_data(target, moduleinfos, opt)
             local m = modules[path.translate(rule["primary-output"])]
             for _, r in ipairs(rule.requires) do
                 m.requires = m.requires or {}
-
                 local p = r["source-path"]
                 if not p then
                     for _, dependency in pairs(modules) do
-                        if dependency.provides and dependency.provides[r["logical-name"] ] then
-                            p = dependency.provides[r["logical-name"] ].bmi
+                        if dependency.provides and dependency.provides[r["logical-name"]] then
+                            p = dependency.provides[r["logical-name"]].bmi
                             break
                         end
                     end
                 end
-
-                m.requires[r["logical-name"] ] = {
+                m.requires[r["logical-name"]] = {
                     method = r["lookup-method"] or "by-name",
                     path = p and path.translate(p) or nil,
                     unique = r["unique-on-source-path"] or false
@@ -198,18 +189,13 @@ function _topological_sort_visit(node, nodes, modules, output)
     if node.marked then
         return
     end
-
     assert(not node.tempmarked)
-
     node.tempmarked = true
-
     local m1 = modules[node.objectfile]
-
     assert(m1.provides)
     for _, n in ipairs(nodes) do
         if not n.tempmarked then
             local m2 = modules[n.objectfile]
-
             for name, provide in pairs(m1.provides) do
                 if m2.requires and m2.requires[name] then
                     _topological_sort_visit(n, nodes, modules, output)
@@ -217,10 +203,8 @@ function _topological_sort_visit(node, nodes, modules, output)
             end
         end
     end
-
     node.tempmarked = false
     node.marked = true
-
     table.insert(output, 1, node.objectfile)
 end
 
@@ -230,7 +214,6 @@ function _topological_sort_has_node_without_mark(nodes)
             return true
         end
     end
-
     return false
 end
 
@@ -244,11 +227,9 @@ end
 
 function sort_modules_by_dependencies(objectfiles, modules)
     local output = {}
-
     local nodes  = {}
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
-
         if m.provides then
             table.append(nodes, { marked = false, tempmarked = false, objectfile = objectfile })
         end
@@ -256,7 +237,6 @@ function sort_modules_by_dependencies(objectfiles, modules)
 
     while _topological_sort_has_node_without_mark(nodes) do
         local node = _topological_sort_get_first_unmarked_node(nodes)
-
         _topological_sort_visit(node, nodes, modules, output)
     end
     return output
@@ -264,29 +244,13 @@ end
 
 function find_quote_header_file(target, sourcefile, file)
     local p = path.join(path.directory(path.absolute(sourcefile, project.directory())), file)
-
     assert(os.isfile(p))
-
     return p
 end
 
 function find_angle_header_file(target, file)
     -- check if the header is in subtarget
-
-    local modules_support
-    if target:has_tool("cxx", "clang", "clangxx") then
-        modules_support = import("clang")
-    elseif target:has_tool("cxx", "gcc", "gxx") then
-        modules_support = import("gcc")
-    elseif target:has_tool("cxx", "cl") then
-        modules_support = import("msvc")
-    else
-        local _, toolname = target:tool("cxx")
-        raise("compiler(%s): does not support c++ module!", toolname)
-    end
-
-    local headerpaths = modules_support.toolchain_include_directories(target)
-
+    local headerpaths = modules_support(target).toolchain_include_directories(target)
     for _, dep in ipairs(target:orderdeps()) do
         table.append(headerpaths, dep:scriptdir())
     end
@@ -301,7 +265,6 @@ function find_angle_header_file(target, file)
     table.join2(headerpaths, target:get("includedirs"))
 
     local p = find_file(file, headerpaths)
-
     assert(p)
     assert(os.isfile(p))
 
@@ -333,7 +296,6 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
         end
 
         local module_depname = line:match("import%s+(.+)%s*;")
-
         if module_depname then
             local module_dep = {}
 
@@ -351,9 +313,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
                 module_dep["unique-on-source-path"] = true
                 module_dep["source-path"] = find_angle_header_file(target, module_depname)
             end
-
             module_dep["logical-name"] = module_depname
-
             table.insert(module_deps, module_dep)
         end
     end
@@ -370,10 +330,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
     end
 
     rule.requires = module_deps
-
     table.append(output.rules, rule)
-
     local jsondata = json.encode(output)
-
     io.writefile(jsonfile, jsondata)
 end
