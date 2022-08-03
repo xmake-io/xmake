@@ -26,38 +26,39 @@ rule("c++.build.modules")
     add_deps("c++.build.modules.install")
 
     on_config(function (target)
+        import("modules_support.common")
+
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
         -- @see https://github.com/xmake-io/xmake/issues/1858
-        local common = import("modules_support.common")
-
-        local target_with_modules = target:sourcebatches()["c++.build.modules"] and common.contains_modules(target) or false
-        if target_with_modules then
+        if common.contains_modules(target) then
             -- @note this will cause cross-parallel builds to be disabled for all sub-dependent targets,
             -- even if some sub-targets do not contain C++ modules.
             --
             -- maybe we will have a more fine-grained configuration strategy to disable it in the future.
             target:set("policy", "build.across_targets_in_parallel", false)
 
+            -- get modules support
             local modules_support = common.modules_support(target)
 
             -- check C++20 module support
             modules_support.check_module_support(target)
 
+            -- mark this target with modules
+            target:data_set("cxx.has_modules", true)
+
             -- load parent
             modules_support.load_parent(target, opt)
-
-            target:set("cxx.has_modules", true)
         end
     end)
 
 
 rule("c++.build.modules.dependencies")
     before_build(function(target, opt) 
-        if not target:get("cxx.has_modules") then
+        if not target:data("cxx.has_modules") then
             return
         end
 
-        local common = import("modules_support.common")
+        import("modules_support.common")
         local modules_support = common.modules_support(target)
 
         -- build dependency data
@@ -77,12 +78,12 @@ rule("c++.build.modules.builder")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
-        if not target:get("cxx.has_modules") then
+        if not target:data("cxx.has_modules") then
             sourcebatch.objectfiles = {}
             return
         end
 
-        local common = import("modules_support.common")
+        import("modules_support.common")
         local modules_support = common.modules_support(target)
 
         local batch = sourcebatch
@@ -135,6 +136,10 @@ rule("c++.build.modules.install")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
     before_install(function (target)
+        if not target:data("cxx.has_modules") then
+            return
+        end
+
         local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
         if sourcebatch then 
             target:add("installfiles", sourcebatch.sourcefiles, {prefixdir = "include"})

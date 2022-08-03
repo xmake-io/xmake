@@ -25,35 +25,16 @@ import("core.project.depend")
 import("core.project.config")
 import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
-
-modulesflag = nil
-modulestsflag = nil
-implicitmodules = nil
-implicitmodulemapsflag = nil
-prebuiltmodulepathflag = nil
-
-function get_bmi_ext()
-    return ".pcm"
-end
+import("common")
 
 -- load parent target with modules files
 function load_parent(target, opt)
-    local common = import("common")
     local cachedir = common.get_cache_dir(target)
-    local stlcachedir = common.get_stlcache_dir(target)
 
-    -- add module flags
-    target:add("cxxflags", modulesflag or modulestsflag)
-
-    -- add the module cache directory
-    target:add("cxxflags", implicitmodulesflag, {force = true})
-    target:add("cxxflags", implicitmodulemapsflag, {force = true})
-
-    target:add("cxxflags", prebuiltmodulepathflag .. cachedir, prebuiltmodulepathflag .. stlcachedir, {force = true})
+    local prebuiltmodulepathflag = get_prebuiltmodulepathflag(target)
 
     for _, dep in ipairs(target:orderdeps()) do
         cachedir = common.get_cache_dir(dep)
-        target:add("cxxflags", prebuiltmodulepathflag .. cachedir, prebuiltmodulepathflag .. stlcachedir, {force = true})
         target:add("cxxflags", prebuiltmodulepathflag .. cachedir, {force = true})
     end
 end
@@ -61,68 +42,57 @@ end
 -- check C++20 module support
 function check_module_support(target)
     local compinst = compiler.load("cxx", {target = target})
+    local cachedir = common.get_cache_dir(target)
+    local stlcachedir = common.get_stlcache_dir(target)
 
-    if compinst:has_flags("-fmodules", "cxxflags", {flagskey = "clang_modules"}) then
-        modulesflag = "-fmodules"
-    end
+    -- get module and module cache flags
+    local modulesflag = get_modulesflag(target)
+    local implicitmodulesflag = get_implicitmodulesflag(target)
+    local implicitmodulemapsflag = get_implicitmodulemapsflag(target)
+    local prebuiltmodulepathflag = get_prebuiltmodulepathflag(target)
 
-    if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "clang_modules_ts"}) then
-        modulestsflag = "-fmodules-ts"
-    end
-    assert(modulesflag or modulestsflag, "compiler(clang): does not support c++ module!")
+    -- add module flags
+    target:add("cxxflags", modulesflag)
 
-    if compinst:has_flags((modulesflag or modulestsflag) .. " -fimplicit-modules", "cxxflags", {flagskey = "clang_implicit_modules"}) then
-        implicitmodulesflag = "-fimplicit-modules"
-    end
-    assert(implicitmodulesflag, "compiler(clang): does not support c++ module!")
+    -- add the module cache directory
+    target:add("cxxflags", implicitmodulesflag, {force = true})
+    target:add("cxxflags", implicitmodulemapsflag, {force = true})
 
-    if compinst:has_flags((modulesflag or modulestsflag) .. " -fimplicit-module-maps" .. os.tmpdir(), "cxxflags", {flagskey = "clang_implicit_module_path"}) then
-        implicitmodulemapsflag = "-fimplicit-module-maps"
-    end
-    assert(implicitmodulemapsflag, "compiler(clang): does not support c++ module!")
-
-    if compinst:has_flags((modulesflag or modulestsflag) .. " -fprebuilt-module-path=" .. os.tmpdir(), "cxxflags", {flagskey = "clang_prebuild_module_path"}) then
-        prebuiltmodulepathflag = "-fprebuilt-module-path="
-    end
-    assert(prebuiltmodulepathflag, "compiler(clang): does not support c++ module!")
-
-    if compinst:has_flags((modulesflag or modulestsflag) .. " -fmodules-cache-path=" .. os.tmpdir(), "cxxflags", {flagskey = "clang_modules_cache_path"}) then
-        modulecachepathflag = "-fmodules-cache-path="
-    end
-    assert(modulecachepathflag, "compiler(clang): does not support c++ module!")
-
-    if compinst:has_flags((modulesflag or modulestsflag) .. " -emit-module", "cxxflags", {flagskey = "clang_emit_module"}) then
-        emitmoduleflag = " -emit-module"
-    end
-    assert(emitmoduleflag, "compiler(clang): does not support c++ module!")
-
-    if compinst:has_flags((modulesflag or modulestsflag) .. " -fmodule-file=" .. os.tmpfile() .. get_bmi_ext(), "cxxflags", {flagskey = "clang_module_file"}) then
-        modulefileflag = "-fmodule-file="
-    end
-    assert(modulefileflag, "compiler(clang): does not support c++ module!")
-
-    if compinst:has_flags((modulesflag or modulestsflag) .. " -emit-module-interface", "cxxflags", {flagskey = "clang_emit_module_interface"}) then
-        emitmoduleinterfaceflag = "-emit-module-interface"
-    end
-    assert(emitmoduleinterfaceflag, "compiler(clang): does not support c++ module!")
+    target:add("cxxflags", prebuiltmodulepathflag .. cachedir, prebuiltmodulepathflag .. stlcachedir, {force = true})
 end
 
 function toolchain_include_directories(target)
-    if is_plat("linux") then
-        return { "/usr/include/**", "/usr/local/include/**" }
-    end
+    local includedirs = _g.includedirs 
+    if includedirs == nil then 
+        includedirs = {}
 
-    return {}
+        local gcc, toolname = target:tool("cc") 
+        assert(toolname, "clang") 
+    
+        local _, result = try {function () return os.iorunv(gcc, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end} 
+        if result then 
+            for _, line in ipairs(result:split("\n", {plain = true})) do 
+                line = line:trim() 
+                if os.isdir(line) then 
+                    table.append(includedirs, line)
+                    break 
+                elseif line:startswith("End") then 
+                    break 
+                end 
+            end 
+        end
+        _g.includedirs = includedirs or {}
+    end 
+    return includedirs
 end
 
 function generate_dependencies(target, sourcebatch, opt)
-    local common = import("common")
     local cachedir = common.get_cache_dir(target)
 
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
-			progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
+            progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
 
             local outdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, target:scriptdir()))))
             if not os.isdir(outdir) then
@@ -143,12 +113,16 @@ end
 
 -- generate target header units
 function generate_headerunits(target, batchcmds, sourcebatch, opt)
-    local common = import("common")
-
     local compinst = target:compiler("cxx")
-
     local cachedir = common.get_cache_dir(target)
     local stlcachedir = common.get_stlcache_dir(target)
+
+    assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
+
+    -- get headerunits flags
+    local modulecachepathflag = get_modulecachepathflag(target)
+    local emitmoduleflag = get_emitmoduleflag(target)
+    local modulefileflag = get_modulefileflag(target)
 
     -- build headerunits
     local objectfiles = {}
@@ -210,15 +184,18 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             table.append(private_flags, modulefileflag .. bmifile)
         end
     end
-
     return public_flags, private_flags
 end
 
 -- build module files
 function build_modules(target, batchcmds, objectfiles, modules, opt)
-    local cachedir = common.get_cache_dir(target)
-    
     local compinst = target:compiler("cxx")
+    local cachedir = common.get_cache_dir(target)
+
+    -- get modules flags
+    local modulecachepathflag = get_modulecachepathflag(target)
+    local emitmoduleinterfaceflag = get_emitmoduleinterfaceflag(target)
+    local modulefileflag = get_modulefileflag(target)
 
     -- append deps modules
     local flags = {}
@@ -267,4 +244,141 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
             end
         end
     end
+end
+
+function get_bmi_ext()
+    return ".pcm"
+end
+
+function get_modulesflag(target)
+    local modulesflag = _g.modulesflag
+    if modulesflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fmodules", "cxxflags", {flagskey = "clang_modules"}) then
+            modulesflag = "-fmodules"
+        end
+
+        if not modulesflag then
+            if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "clang_modules_ts"}) then
+                modulesflag = "-fmodules-ts"
+            end
+        end
+
+        assert(modulesflag, "compiler(clang): does not support c++ module!")
+
+        _g.modulesflag = modulesflag or false
+    end
+    return modulesflag
+end
+
+function get_implicitmodulesflag(target)
+    local implicitmodulesflag = _g.implicitmodulesflag
+    if implicitmodulesflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fimplicit-modules", "cxxflags", {flagskey = "clang_implicit_modules"}) then
+            implicitmodulesflag = "-fimplicit-modules"
+        end
+        assert(implicitmodulesflag, "compiler(clang): does not support c++ module!")
+
+        _g.implicitmodulesflag = implicitmodulesflag or false
+    end
+    return implicitmodulesflag
+end
+
+function get_implicitmodulemapsflag(target)
+    local implicitmodulemapsflag = _g.implicitmodulemapsflag
+    if implicitmodulemapsflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fimplicit-module-maps", "cxxflags", {flagskey = "clang_implicit_module_maps"}) then
+            implicitmodulemapsflag = "-fimplicit-module-maps"
+        end
+        assert(implicitmodulemapsflag, "compiler(clang): does not support c++ module!")
+
+        _g.implicitmodulemapsflag = implicitmodulemapsflag or false
+    end
+    return implicitmodulemapsflag
+end
+
+function get_prebuiltmodulepathflag(target)
+    local prebuiltmodulepathflag = _g.prebuiltmodulepathflag
+    if prebuiltmodulepathflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fprebuilt-module-path=" .. os.tmpdir(), "cxxflags", {flagskey = "clang_prebuild_module_path"}) then
+            prebuiltmodulepathflag = "-fprebuilt-module-path="
+        end
+        assert(prebuiltmodulepathflag, "compiler(clang): does not support c++ module!")
+
+        _g.prebuiltmodulepathflag = prebuiltmodulepathflag or false
+    end
+    return prebuiltmodulepathflag
+end
+
+function get_modulecachepathflag(target)
+    local modulecachepathflag = _g.modulecachepathflag
+    if modulecachepathflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fmodules-cache-path=" .. os.tmpdir(), "cxxflags", {flagskey = "clang_modules_cache_path"}) then
+            modulecachepathflag = "-fmodules-cache-path="
+        end
+        assert(modulecachepathflag, "compiler(clang): does not support c++ module!")
+
+        _g.modulecachepathflag = modulecachepathflag or false
+    end
+    return modulecachepathflag
+end
+
+function get_emitmoduleflag(target)
+    local emitmoduleflag = _g.emitmoduleflag
+    if emitmoduleflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-emit-module", "cxxflags", {flagskey = "clang_emit_module"}) then
+            emitmoduleflag = " -emit-module"
+        end
+        assert(emitmoduleflag, "compiler(clang): does not support c++ module!")
+
+        _g.emitmoduleflag = emitmoduleflag or false
+    end
+    return emitmoduleflag
+end
+
+function get_modulefileflag(target)
+    local modulefileflag = _g.modulefileflag
+    if modulefileflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fmodule-file=" .. os.tmpfile() .. get_bmi_ext(), "cxxflags", {flagskey = "clang_module_file"}) then
+            modulefileflag = "-fmodule-file="
+        end
+        assert(modulefileflag, "compiler(clang): does not support c++ module!")
+
+        _g.modulefileflag = modulefileflag or false
+    end
+    return modulefileflag
+end
+
+function get_emitmoduleinterfaceflag(target)
+    local emitmoduleinterfaceflag = _g.emitmoduleinterfaceflag
+    if emitmoduleinterfaceflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-emit-module-interface", "cxxflags", {flagskey = "clang_emit_module_interface"}) then
+            emitmoduleinterfaceflag = "-emit-module-interface"
+        end
+        assert(emitmoduleinterfaceflag, "compiler(clang): does not support c++ module!")
+
+        _g.emitmoduleinterfaceflag = emitmoduleinterfaceflag or false
+    end
+    return emitmoduleinterfaceflag
+end
+
+function has_headerunitsupport(target)
+    local support_headerunits = _g.support_headerunits
+    if support_headerunits == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support"}) and
+           compinst:has_flags("-x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support"}) then
+            support_headerunits = true
+        end
+
+        _g.support_headerunits = support_headerunits or false
+    end
+    return support_headerunits
 end

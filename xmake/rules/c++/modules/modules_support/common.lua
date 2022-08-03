@@ -1,10 +1,11 @@
 import("core.base.json")
+import("core.base.hashset")
 import("core.project.config")
 import("core.tool.compiler")
 import("core.project.project")
 import("lib.detect.find_file")
 
-local stl_headers = {
+_g.stl_headers = {
     "algorithm",
     "forward_list",
     "numbers",
@@ -86,17 +87,11 @@ local stl_headers = {
     "stdexcept"}
 
 function get_stl_headers()
-    return stl_headers
+    return hashset.from(_g.stl_headers)
 end 
 
 function is_stl_header(header)
-    for _, stl_header in ipairs(stl_headers) do
-        if stl_header == header then 
-            return true
-        end
-    end
-
-    return false
+    return get_stl_headers():has(header)
 end
 
 function get_stlcache_dir(target)
@@ -107,7 +102,6 @@ function get_stlcache_dir(target)
     if not os.isdir(stlcachedir) then
         os.mkdir(stlcachedir)
     end
-
     return path.translate(stlcachedir)
 end
 
@@ -116,7 +110,6 @@ function get_cache_dir(target)
     if not os.isdir(cachedir) then
         os.mkdir(cachedir)
     end
-
     return path.translate(cachedir)
 end
 
@@ -133,7 +126,6 @@ function patch_sourcebatch(target, sourcebatch, opt)
         table.insert(sourcebatch.objectfiles, objectfile)
         table.insert(sourcebatch.dependfiles, dependfile)
     end
-
 end
 
 function get_bmi_ext(target)
@@ -144,7 +136,6 @@ function get_bmi_ext(target)
     elseif target:has_tool("cxx", "clang", "clangxx") then
         return import("clang").get_bmi_ext()
     end
-
     assert(false)
 end
 
@@ -164,7 +155,8 @@ function modules_support(target)
 end
 
 function contains_modules(target)
-    local target_with_modules
+    local target_with_modules = target:sourcebatches()["c++.build.modules"] and true or false
+
     for _, dep in ipairs(target:orderdeps()) do
         local sourcebatches = dep:sourcebatches()
         if sourcebatches and sourcebatches["c++.build.modules"] then
@@ -195,7 +187,6 @@ function load(target, sourcebatch, opt)
             end
         end
     end
-
     return moduleinfos
 end
 
@@ -260,7 +251,6 @@ function parse_dependency_data(target, moduleinfos, opt)
             end
         end
     end 
-
     return modules
 end
 
@@ -329,7 +319,6 @@ function sort_modules_by_dependencies(objectfiles, modules)
 
         _topological_sort_visit(node, nodes, modules, output)
     end
-
     return output
 end
 

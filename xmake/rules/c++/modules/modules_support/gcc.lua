@@ -25,14 +25,7 @@ import("core.project.depend")
 import("core.project.config")
 import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
-
-modulesflag = nil
-modulemapperflag = nil
-trtbdflag = nil
-
-function get_bmi_ext()
-    return ".gcm"
-end
+import("common")
 
 -- get and create the path of module mapper
 function get_module_mapper()
@@ -53,7 +46,7 @@ function add_module_to_mapper(file, module, bmi)
     end
 
     local f = io.open(file, "a")
-    f:printf("%s %s\n", module, bmi)
+    f:print("%s %s", module, bmi)
     f:close()
 
     return true
@@ -61,63 +54,63 @@ end
 
 -- load parent target with modules files
 function load_parent(target, opt)
-    local common = import("common")
-    local cachedir = common.get_cache_dir(target)
-
-    target:add("cxxflags", modulesflag)
-    if os.isfile(get_module_mapper()) then
-        os.rm(get_module_mapper())
-    end
-    target:add("cxxflags", "-fmodule-mapper=" .. get_module_mapper(), {force = true, expand = false})
 end
 
 -- check C++20 module support
 function check_module_support(target)
     local compinst = compiler.load("cxx", {target = target})
 
-    if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "gcc_modules_ts"}) then
-        modulesflag = "-fmodules-ts"
-    end
-    assert(modulesflag, "compiler(gcc): does not support c++ module!")
+    local modulesflag = get_modulesflag(target)
+    local modulemapperflag = get_modulemapperflag(target)
 
-    if compinst:has_flags("-fmodule-mapper=" .. os.tmpfile(), "cxxflags", {flagskey = "gcc_module_mapper"}) then
-        modulemapperflag = "-fmodule-mapper="
-    end
-    assert(modulemapperflag, "compiler(gcc): does not support c++ module!")
+    target:add("cxxflags", modulesflag)
 
-    if compinst:has_flags("-fdep-format=trtbd", "cxxflags", {flagskey = "gcc_dep_format"}) then
-        trtbdflag = "-fdep-format=trtbd"
+    if os.isfile(get_module_mapper()) then
+        os.rm(get_module_mapper())
     end
-
-    if compinst:has_flags("-fdep-file=" .. os.tmpfile(), "cxxflags", {flagskey = "gcc_dep_file"}) then
-        depfileflag = "-fdep-file="
-    end
-
-    if compinst:has_flags("-fdep-output=" .. os.tmpfile() .. ".o", "cxxflags", {flagskey = "gcc_dep_output"}) then
-        depoutputflag = "-fdep-output="
-    end
+    target:add("cxxflags", modulemapperflag .. get_module_mapper(), {force = true, expand = false})
 end
 
 -- provide toolchain include dir for stl headerunit when p1689 is not supported
 function toolchain_include_directories(target)
-    if is_plat("linux") then
-        return { "/usr/include/**", "/usr/local/include/**" }
-    end
-
-    return {}
+    local includedirs = _g.includedirs 
+    if includedirs == nil then 
+        includedirs = {}
+        
+        local gcc, toolname = target:tool("cc") 
+        assert(toolname, "gcc") 
+    
+        local _, result = try {function () return os.iorunv(gcc, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end} 
+        if result then 
+            for _, line in ipairs(result:split("\n", {plain = true})) do 
+                line = line:trim() 
+                if os.isdir(line) then 
+                    table.append(includedirs, line)
+                    break 
+                elseif line:startswith("End") then 
+                    break 
+                end 
+            end 
+        end 
+        _g.includedirs = includedirs or {}
+    end 
+    return includedirs
 end
 
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
-    local common = import("common")
     local cachedir = common.get_cache_dir(target)
     local compinst = target:compiler("cxx")
     local common_args = {"-E", "-x", "c++"}
 
+    local trtbdflag = get_trtbdflag(target)
+    local depfileflag = get_depfileflag(target)
+    local depoutputflag = get_depoutputflag(target)
+
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
-			progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
+            progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
 
             local outdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, target:scriptdir()))))
             if not os.isdir(outdir) then
@@ -146,8 +139,6 @@ end
 
 -- generate target header units
 function generate_headerunits(target, batchcmds, sourcebatch, opt)
-    local common = import("common")
-
     local compinst = target:compiler("cxx")
 
     local cachedir = common.get_cache_dir(target)
@@ -213,7 +204,6 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
                 end
             end
         end
-
     end
 end
 
@@ -257,3 +247,68 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     end
 end
 
+function get_bmi_ext()
+    return ".gcm"
+end
+
+function get_modulesflag(target)
+    local modulesflag = _g.modulesflag
+    if modulesflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "gcc_modules_ts"}) then
+            modulesflag = "-fmodules-ts"
+        end
+        assert(modulesflag, "compiler(gcc): does not support c++ module!")
+        _g.modulesflag = modulesflag or false
+    end
+    return modulesflag
+end
+
+function get_modulemapperflag(target)
+    local modulemapperflag = _g.modulemapperflag
+    if modulemapperflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fmodule-mapper=" .. os.tmpfile(), "cxxflags", {flagskey = "gcc_module_mapper"}) then
+            modulemapperflag = "-fmodule-mapper="
+        end
+        assert(modulemapperflag, "compiler(gcc): does not support c++ module!")
+        _g.modulemapperflag = modulemapperflag or false
+    end
+    return modulemapperflag
+end
+
+function get_trtbdflag(target)
+    local trtbdflag = _g.trtbdflag
+    if trtbdflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fdep-format=trtbd", "cxxflags", {flagskey = "gcc_dep_format"}) then
+            trtbdflag = "-fdep-format=trtbd"
+        end
+        _g.trtbdflag = trtbdflag or false
+    end
+    return trtbdflag
+end
+
+function get_depfileflag(target)
+    local depfileflag = _g.depfileflag
+    if depfileflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fdep-file=" .. os.tmpfile(), "cxxflags", {flagskey = "gcc_dep_file"}) then
+            depfileflag = "-fdep-file="
+        end
+        _g.depfileflag = depfileflag or false
+    end
+    return depfileflag
+end
+
+function get_depoutputflag(target)
+    local depoutputflag = _g.depoutputflag
+    if depoutputflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fdep-output=" .. os.tmpfile() .. ".o", "cxxflags", {flagskey = "gcc_dep_output"}) then
+            depoutputflag = "-fdep-output="
+        end
+        _g.depoutputflag = depoutputflag or false
+    end
+    return depoutputflag
+end
