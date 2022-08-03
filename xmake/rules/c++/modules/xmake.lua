@@ -33,6 +33,8 @@ rule("c++.build.modules")
         end
 
         if target_with_modules then
+            -- we disable to build across targets in parallel, because the source files may depend on other target modules
+            -- @see https://github.com/xmake-io/xmake/issues/1858
             target:set("policy", "build.across_targets_in_parallel", false)
 
             -- import modules_support
