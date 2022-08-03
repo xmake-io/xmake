@@ -1,0 +1,11 @@
+module;
+
+export module hello;
+
+import <iostream>;
+
+export namespace hello {
+    void say(const char* str) {
+        std::cout << str << std::endl;
+    }
+}
