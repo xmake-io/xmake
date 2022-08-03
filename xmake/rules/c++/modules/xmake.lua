@@ -44,18 +44,8 @@ rule("c++.build.modules")
             -- @see https://github.com/xmake-io/xmake/issues/1858
             target:set("policy", "build.across_targets_in_parallel", false)
 
-            -- import modules_support
-            local modules_support
-            if target:has_tool("cxx", "clang", "clangxx") then
-                modules_support = import("modules_support.clang")
-            elseif target:has_tool("cxx", "gcc", "gxx") then
-                modules_support = import("modules_support.gcc")
-            elseif target:has_tool("cxx", "cl") then
-                modules_support = import("modules_support.msvc")
-            else
-                local _, toolname = target:tool("cxx")
-                raise("compiler(%s): does not support c++ module!", toolname)
-            end
+            local common = import("modules_support.common")
+            local modules_support = common.modules_support(target)
 
             -- check C++20 module support
             modules_support.check_module_support(target)
@@ -74,19 +64,8 @@ rule("c++.build.modules.dependencies")
             return
         end
 
-        local modules_support
-        if target:has_tool("cxx", "clang", "clangxx") then
-            modules_support = import("modules_support.clang")
-        elseif target:has_tool("cxx", "gcc", "gxx") then
-            modules_support = import("modules_support.gcc")
-        elseif target:has_tool("cxx", "cl") then
-            modules_support = import("modules_support.msvc")
-        else
-            local _, toolname = target:tool("cxx")
-            raise("compiler(%s): does not support c++ module!", toolname)
-        end
-
         local common = import("modules_support.common")
+        local modules_support = common.modules_support(target)
 
         -- build dependency data
         local batch = target:sourcebatches()["c++.build.modules.builder"]
@@ -110,19 +89,8 @@ rule("c++.build.modules.builder")
             return
         end
 
-        local modules_support
-        if target:has_tool("cxx", "clang", "clangxx") then
-            modules_support = import("modules_support.clang")
-        elseif target:has_tool("cxx", "gcc", "gxx") then
-            modules_support = import("modules_support.gcc")
-        elseif target:has_tool("cxx", "cl") then
-            modules_support = import("modules_support.msvc")
-        else
-            local _, toolname = target:tool("cxx")
-            raise("compiler(%s): does not support c++ module!", toolname)
-        end
-
         local common = import("modules_support.common")
+        local modules_support = common.modules_support(target)
 
         local batch = sourcebatch
 

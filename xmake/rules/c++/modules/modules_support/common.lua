@@ -148,6 +148,21 @@ function get_bmi_ext(target)
     assert(false)
 end
 
+function modules_support(target)
+    local module_builder
+    if target:has_tool("cxx", "clang", "clangxx") then
+        module_builder = import("clang", {anonymous = true})
+    elseif target:has_tool("cxx", "gcc", "gxx") then
+        module_builder = import("gcc", {anonymous = true})
+    elseif target:has_tool("cxx", "cl") then
+        module_builder = import("msvc", {anonymous = true})
+    else
+        local _, toolname = target:tool("cxx")
+        raise("compiler(%s): does not support c++ module!", toolname)
+    end
+    return module_builder
+end
+
 function load(target, sourcebatch, opt)
     local cachedir = get_cache_dir(target)
 
