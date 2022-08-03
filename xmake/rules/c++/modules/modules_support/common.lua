@@ -192,13 +192,15 @@ function _topological_sort_visit(node, nodes, modules, output)
     assert(not node.tempmarked)
     node.tempmarked = true
     local m1 = modules[node.objectfile]
-    assert(m1.provides)
+    assert(m1 and m1.provides)
     for _, n in ipairs(nodes) do
         if not n.tempmarked then
             local m2 = modules[n.objectfile]
-            for name, provide in pairs(m1.provides) do
-                if m2.requires and m2.requires[name] then
-                    _topological_sort_visit(n, nodes, modules, output)
+            if m2 then
+                for name, provide in pairs(m1.provides) do
+                    if m2.requires and m2.requires[name] then
+                        _topological_sort_visit(n, nodes, modules, output)
+                    end
                 end
             end
         end
@@ -230,8 +232,8 @@ function sort_modules_by_dependencies(objectfiles, modules)
     local nodes  = {}
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
-        if m.provides then
-            table.append(nodes, { marked = false, tempmarked = false, objectfile = objectfile })
+        if m and m.provides then
+            table.append(nodes, {marked = false, tempmarked = false, objectfile = objectfile})
         end
     end
 
@@ -255,13 +257,12 @@ function find_angle_header_file(target, file)
         table.append(headerpaths, dep:scriptdir())
     end
 
-    if project.required_packages then
-        for _, name in ipairs(target:get("packages")) do
-            local package = project.required_package(name)
-            table.join2(headerpaths, package:get("sysincludedirs"))
+    for _, pkg in ipairs(target:pkgs()) do
+        local includedirs = pkg:get("sysincludedirs") or pkg:get("includedirs")
+        if includedirs then
+            table.join2(headerpaths, includedirs)
         end
     end
-
     table.join2(headerpaths, target:get("includedirs"))
 
     local p = find_file(file, headerpaths)
