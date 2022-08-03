@@ -31,7 +31,7 @@ function load_parent(target, opt)
     local ifcsearchdirflag = get_ifcsearchdirflag(target)
 
     for _, dep in ipairs(target:orderdeps()) do
-        cachedir = common.get_cache_dir(dep)
+        cachedir = common.get_modules_cachedir(dep)
         target:add("cxxflags", {ifcsearchdirflag, cachedir}, {force = true, expand = false})
     end
 end
@@ -39,8 +39,8 @@ end
 -- check C++20 module support
 function check_module_support(target)
     local compinst = target:compiler("cxx")
-    local cachedir = common.get_cache_dir(target)
-    local stlcachedir = common.get_stlcache_dir(target)
+    local cachedir = common.get_modules_cachedir(target)
+    local stlcachedir = common.get_stlmodules_cachedir(target)
 
     -- get flags
     local modulesflag = get_modulesflag(target)
@@ -89,7 +89,7 @@ function generate_dependencies(target, sourcebatch, opt)
 
     local scandependenciesflag = get_scandependenciesflag(target)
 
-    local cachedir = common.get_cache_dir(target)
+    local cachedir = common.get_modules_cachedir(target)
     local common_args = {"/TP", scandependenciesflag}
 
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -133,8 +133,8 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
 
     assert(headerunitflag and headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
 
-    local cachedir = common.get_cache_dir(target)
-    local stlcachedir = common.get_stlcache_dir(target)
+    local cachedir = common.get_modules_cachedir(target)
+    local stlcachedir = common.get_stlmodules_cachedir(target)
 
     -- build headerunits
     local common_args = {"/TP", exportheaderflag, "/c"}
@@ -197,7 +197,7 @@ end
 
 -- build module files
 function build_modules(target, batchcmds, objectfiles, modules, opt)
-    local cachedir = common.get_cache_dir(target)
+    local cachedir = common.get_modules_cachedir(target)
 
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")

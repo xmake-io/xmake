@@ -99,7 +99,7 @@ end
 
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
-    local cachedir = common.get_cache_dir(target)
+    local cachedir = common.get_modules_cachedir(target)
     local compinst = target:compiler("cxx")
     local common_args = {"-E", "-x", "c++"}
 
@@ -141,8 +141,8 @@ end
 function generate_headerunits(target, batchcmds, sourcebatch, opt)
     local compinst = target:compiler("cxx")
 
-    local cachedir = common.get_cache_dir(target)
-    local stlcachedir = common.get_stlcache_dir(target)
+    local cachedir = common.get_modules_cachedir(target)
+    local stlcachedir = common.get_stlmodules_cachedir(target)
 
     local mapper_file = get_module_mapper()
 
@@ -209,7 +209,7 @@ end
 
 -- build module files
 function build_modules(target, batchcmds, objectfiles, modules, opt)
-    local cachedir = common.get_cache_dir(target)
+    local cachedir = common.get_modules_cachedir(target)
 
     local compinst = target:compiler("cxx")
 

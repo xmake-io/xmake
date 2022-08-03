@@ -29,12 +29,12 @@ import("common")
 
 -- load parent target with modules files
 function load_parent(target, opt)
-    local cachedir = common.get_cache_dir(target)
+    local cachedir = common.get_modules_cachedir(target)
 
     local prebuiltmodulepathflag = get_prebuiltmodulepathflag(target)
 
     for _, dep in ipairs(target:orderdeps()) do
-        cachedir = common.get_cache_dir(dep)
+        cachedir = common.get_modules_cachedir(dep)
         target:add("cxxflags", prebuiltmodulepathflag .. cachedir, {force = true})
     end
 end
@@ -42,8 +42,8 @@ end
 -- check C++20 module support
 function check_module_support(target)
     local compinst = compiler.load("cxx", {target = target})
-    local cachedir = common.get_cache_dir(target)
-    local stlcachedir = common.get_stlcache_dir(target)
+    local cachedir = common.get_modules_cachedir(target)
+    local stlcachedir = common.get_stlmodules_cachedir(target)
 
     -- get module and module cache flags
     local modulesflag = get_modulesflag(target)
@@ -87,7 +87,7 @@ function toolchain_include_directories(target)
 end
 
 function generate_dependencies(target, sourcebatch, opt)
-    local cachedir = common.get_cache_dir(target)
+    local cachedir = common.get_modules_cachedir(target)
 
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
@@ -114,8 +114,8 @@ end
 -- generate target header units
 function generate_headerunits(target, batchcmds, sourcebatch, opt)
     local compinst = target:compiler("cxx")
-    local cachedir = common.get_cache_dir(target)
-    local stlcachedir = common.get_stlcache_dir(target)
+    local cachedir = common.get_modules_cachedir(target)
+    local stlcachedir = common.get_stlmodules_cachedir(target)
 
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
 
@@ -190,7 +190,7 @@ end
 -- build module files
 function build_modules(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
-    local cachedir = common.get_cache_dir(target)
+    local cachedir = common.get_modules_cachedir(target)
 
     -- get modules flags
     local modulecachepathflag = get_modulecachepathflag(target)

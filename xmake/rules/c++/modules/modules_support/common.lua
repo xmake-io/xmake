@@ -26,7 +26,8 @@ import("core.tool.compiler")
 import("core.project.project")
 import("lib.detect.find_file")
 
-function get_stlcache_dir(target)
+-- get stl modules cache directory
+function get_stlmodules_cachedir(target)
     local stlcachedir = path.join(target:autogendir(), "stlmodules", "cache")
     if target:has_tool("cxx", "clang", "clangxx") then
         stlcachedir = path.join(config.buildir(), "stlmodules", "cache")
@@ -34,24 +35,24 @@ function get_stlcache_dir(target)
     if not os.isdir(stlcachedir) then
         os.mkdir(stlcachedir)
     end
-    return path.translate(stlcachedir)
+    return stlcachedir
 end
 
-function get_cache_dir(target)
+-- get modules cache directory
+function get_modules_cachedir(target)
     local cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
     if not os.isdir(cachedir) then
         os.mkdir(cachedir)
     end
-    return path.translate(cachedir)
+    return cachedir
 end
 
+-- patch sourcebatch
 function patch_sourcebatch(target, sourcebatch, opt)
-    local cachedir = get_cache_dir(target)
-
+    local cachedir = get_modules_cachedir(target)
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
-
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
@@ -60,17 +61,7 @@ function patch_sourcebatch(target, sourcebatch, opt)
     end
 end
 
-function get_bmi_ext(target)
-    if target:has_tool("cxx", "gcc", "gxx") then
-        return import("gcc").get_bmi_ext()
-    elseif target:has_tool("cxx", "cl") then
-        return import("msvc").get_bmi_ext()
-    elseif target:has_tool("cxx", "clang", "clangxx") then
-        return import("clang").get_bmi_ext()
-    end
-    assert(false)
-end
-
+-- get modules support
 function modules_support(target)
     local module_builder
     if target:has_tool("cxx", "clang", "clangxx") then
@@ -84,6 +75,11 @@ function modules_support(target)
         raise("compiler(%s): does not support c++ module!", toolname)
     end
     return module_builder
+end
+
+-- get bmi extension
+function get_bmi_ext(target)
+    return modules_support(target).get_bmi_ext()
 end
 
 function contains_modules(target)
@@ -100,7 +96,7 @@ function contains_modules(target)
 end
 
 function load(target, sourcebatch, opt)
-    local cachedir = get_cache_dir(target)
+    local cachedir = get_modules_cachedir(target)
 
     local moduleinfos
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -123,7 +119,7 @@ function load(target, sourcebatch, opt)
 end
 
 function parse_dependency_data(target, moduleinfos, opt)
-    local cachedir = get_cache_dir(target)
+    local cachedir = get_modules_cachedir(target)
 
     local modules
     for _, moduleinfo in ipairs(moduleinfos) do
