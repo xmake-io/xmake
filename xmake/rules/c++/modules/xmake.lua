@@ -134,6 +134,9 @@ rule("c++.build.modules.install")
 
     before_install(function (target)
         import("modules_support.common")
+
+        -- we cannot use target:data("cxx.has_modules"),
+        -- because on_config will be not called when installing targets
         if common.contains_modules(target) then
             local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
             if sourcebatch then
