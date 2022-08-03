@@ -90,9 +90,9 @@ function generate_dependencies(target, sourcebatch, opt)
     local scandependenciesflag = get_scandependenciesflag(target)
 
     local cachedir = common.get_cache_dir(target)
-    local common_args = {"/TP", scandependenciesflag}  
+    local common_args = {"/TP", scandependenciesflag}
 
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function ()
             progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
@@ -106,7 +106,7 @@ function generate_dependencies(target, sourcebatch, opt)
 
             if scandependenciesflag then
                 local args = {jsonfile, sourcefile, "/Fo" .. target:objectfile(sourcefile)}
-            
+
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile)
@@ -117,7 +117,7 @@ function generate_dependencies(target, sourcebatch, opt)
             return { moduleinfo = dependinfo }
         end, {dependfile = dependfile, files = {sourcefile}})
     end
-end 
+end
 
 -- generate target header units
 function generate_headerunits(target, batchcmds, sourcebatch, opt)
@@ -198,7 +198,7 @@ end
 -- build module files
 function build_modules(target, batchcmds, objectfiles, modules, opt)
     local cachedir = common.get_cache_dir(target)
-    
+
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
@@ -237,7 +237,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
                 batchcmds:set_depcache(target:dependfile(bmifile))
 
                 flag = {referenceflag, name .. "=" .. path.filename(bmifile)}
-            end  
+            end
 
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args, bmi_args), {envs = vcvars})
 
@@ -339,7 +339,7 @@ function get_headerunitflag(target)
     local headerunitflag = _g.headerunitflag
     if headerunitflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("/headerUnit:quote", "cxxflags", {flagskey = "cl_header_unit_quote"}) and 
+        if compinst:has_flags("/headerUnit:quote", "cxxflags", {flagskey = "cl_header_unit_quote"}) and
         compinst:has_flags("/headerUnit:angle", "cxxflags", {flagskey = "cl_header_unit_angle"}) then
             headerunitflag = "/headerUnit"
         end

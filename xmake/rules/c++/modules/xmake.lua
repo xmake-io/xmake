@@ -53,7 +53,7 @@ rule("c++.build.modules")
 
 
 rule("c++.build.modules.dependencies")
-    before_build(function(target, opt) 
+    before_build(function(target, opt)
         if not target:data("cxx.has_modules") then
             return
         end
@@ -141,7 +141,7 @@ rule("c++.build.modules.install")
         end
 
         local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
-        if sourcebatch then 
+        if sourcebatch then
             target:add("installfiles", sourcebatch.sourcefiles, {prefixdir = "include"})
         end
     end)

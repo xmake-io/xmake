@@ -88,7 +88,7 @@ _g.stl_headers = {
 
 function get_stl_headers()
     return hashset.from(_g.stl_headers)
-end 
+end
 
 function is_stl_header(header)
     return get_stl_headers():has(header)
@@ -120,7 +120,7 @@ function patch_sourcebatch(target, sourcebatch, opt)
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
 
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
         table.insert(sourcebatch.objectfiles, objectfile)
@@ -215,9 +215,9 @@ function parse_dependency_data(target, moduleinfos, opt)
                     local name = provide["logical-name"] .. get_bmi_ext(target)
                     name:replace(":", "-")
 
-                    m.provides[provide["logical-name"] ] = { 
-                        bmi = path.join(cachedir, name), 
-                        sourcefile = moduleinfo.sourcefile 
+                    m.provides[provide["logical-name"] ] = {
+                        bmi = path.join(cachedir, name),
+                        sourcefile = moduleinfo.sourcefile
                     }
                 end
             end
@@ -250,7 +250,7 @@ function parse_dependency_data(target, moduleinfos, opt)
                 }
             end
         end
-    end 
+    end
     return modules
 end
 
@@ -306,7 +306,7 @@ function sort_modules_by_dependencies(objectfiles, modules)
     local output = {}
 
     local nodes  = {}
-    for _, objectfile in ipairs(objectfiles) do 
+    for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
 
         if m.provides then
@@ -332,7 +332,7 @@ end
 
 function find_angle_header_file(target, file)
     -- check if the header is in subtarget
-    
+
     local modules_support
     if target:has_tool("cxx", "clang", "clangxx") then
         modules_support = import("clang")
@@ -420,7 +420,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
 
     if module_name then
         table.append(rule.outputs, module_name .. get_bmi_ext(target))
-      
+
         local provide = {}
         provide["logical-name"] = module_name
         provide["source-path"] = path.absolute(sourcefile, project.directory())

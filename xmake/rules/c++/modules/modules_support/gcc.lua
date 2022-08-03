@@ -73,27 +73,27 @@ end
 
 -- provide toolchain include dir for stl headerunit when p1689 is not supported
 function toolchain_include_directories(target)
-    local includedirs = _g.includedirs 
-    if includedirs == nil then 
+    local includedirs = _g.includedirs
+    if includedirs == nil then
         includedirs = {}
-        
-        local gcc, toolname = target:tool("cc") 
-        assert(toolname, "gcc") 
-    
-        local _, result = try {function () return os.iorunv(gcc, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end} 
-        if result then 
-            for _, line in ipairs(result:split("\n", {plain = true})) do 
-                line = line:trim() 
-                if os.isdir(line) then 
+
+        local gcc, toolname = target:tool("cc")
+        assert(toolname == "gcc")
+
+        local _, result = try {function () return os.iorunv(gcc, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
+        if result then
+            for _, line in ipairs(result:split("\n", {plain = true})) do
+                line = line:trim()
+                if os.isdir(line) then
                     table.append(includedirs, line)
-                    break 
-                elseif line:startswith("End") then 
-                    break 
-                end 
-            end 
-        end 
+                    break
+                elseif line:startswith("End") then
+                    break
+                end
+            end
+        end
         _g.includedirs = includedirs or {}
-    end 
+    end
     return includedirs
 end
 
@@ -107,7 +107,7 @@ function generate_dependencies(target, sourcebatch, opt)
     local depfileflag = get_depfileflag(target)
     local depoutputflag = get_depoutputflag(target)
 
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
             progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
@@ -124,9 +124,9 @@ function generate_dependencies(target, sourcebatch, opt)
                 local dfile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".d"))
 
                 local args = {sourcefile, "-MD", "-MT", jsonfile, "-MF", dfile, depfileflag .. jsonfile, trtbdflag, depoutputfile .. target:objectfile(sourcefile), "-o", ifile}
-            
+
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
-            else 
+            else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile)
             end
 
@@ -154,7 +154,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
 
             local objectfile = target:objectfile(file)
 
-            local outdir 
+            local outdir
             if headerunit.type == ":quote" then
                 outdir = path.join(cachedir, path.directory(path.relative(headerunit.path, project.directory())))
             else
@@ -210,7 +210,7 @@ end
 -- build module files
 function build_modules(target, batchcmds, objectfiles, modules, opt)
     local cachedir = common.get_cache_dir(target)
-    
+
     local compinst = target:compiler("cxx")
 
     local mapper_file = get_module_mapper()
@@ -235,7 +235,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
                     batchcmds:set_depmtime(os.mtime(bmifile))
                     batchcmds:set_depcache(target:dependfile(bmifile))
                 end
-            end  
+            end
 
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
 
