@@ -119,7 +119,7 @@ function load_moduleinfos(target, sourcebatch, opt)
                 local moduleinfo = json.decode(data.moduleinfo)
                 moduleinfo.sourcefile = sourcefile
                 if moduleinfo then
-                    table.append(moduleinfos, moduleinfo)
+                    table.insert(moduleinfos, moduleinfo)
                 end
             end
         end
@@ -233,7 +233,7 @@ function sort_modules_by_dependencies(objectfiles, modules)
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
         if m and m.provides then
-            table.append(nodes, {marked = false, tempmarked = false, objectfile = objectfile})
+            table.insert(nodes, {marked = false, tempmarked = false, objectfile = objectfile})
         end
     end
 
@@ -251,12 +251,10 @@ function find_quote_header_file(target, sourcefile, file)
 end
 
 function find_angle_header_file(target, file)
-    -- check if the header is in subtarget
-    local headerpaths = modules_support(target).toolchain_include_directories(target)
+    local headerpaths = modules_support(target).toolchain_includedirs(target)
     for _, dep in ipairs(target:orderdeps()) do
-        table.append(headerpaths, dep:scriptdir())
+        table.insert(headerpaths, dep:scriptdir())
     end
-
     for _, pkg in ipairs(target:pkgs()) do
         local includedirs = pkg:get("sysincludedirs") or pkg:get("includedirs")
         if includedirs then
@@ -264,11 +262,8 @@ function find_angle_header_file(target, file)
         end
     end
     table.join2(headerpaths, target:get("includedirs"))
-
     local p = find_file(file, headerpaths)
-    assert(p)
-    assert(os.isfile(p))
-
+    assert(p, "find <%s> not found!", file)
     return p
 end
 
@@ -320,18 +315,18 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
     end
 
     if module_name then
-        table.append(rule.outputs, module_name .. bmi_extension(target))
+        table.insert(rule.outputs, module_name .. bmi_extension(target))
 
         local provide = {}
         provide["logical-name"] = module_name
         provide["source-path"] = path.absolute(sourcefile, project.directory())
 
         rule.provides = {}
-        table.append(rule.provides, provide)
+        table.insert(rule.provides, provide)
     end
 
     rule.requires = module_deps
-    table.append(output.rules, rule)
+    table.insert(output.rules, rule)
     local jsondata = json.encode(output)
     io.writefile(jsonfile, jsondata)
 end

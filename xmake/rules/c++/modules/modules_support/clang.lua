@@ -54,20 +54,46 @@ function load(target)
     end
 end
 
--- provide toolchain include dir for stl headerunit when p1689 is not supported
-function toolchain_include_directories(target)
+-- get includedirs for stl headers
+--
+-- $ echo '#include <vector>' | clang -x c++ -E - | grep '/vector"'
+-- # 1 "/usr/include/c++/11/vector" 1 3
+-- # 58 "/usr/include/c++/11/vector" 3
+-- # 59 "/usr/include/c++/11/vector" 3
+--
+function _get_toolchain_includedirs_for_stlheaders(includedirs, clang)
+    local tmpfile = os.tmpfile() .. ".cc"
+    io.writefile(tmpfile, "#include <vector>")
+    local result = try {function () return os.iorunv(clang, {"-E", "-x", "c++", tmpfile}) end}
+    if result then
+        for _, line in ipairs(result:split("\n", {plain = true})) do
+            line = line:trim()
+            if line:startswith("#") and line:find("/vector\"", 1, true) then
+                local includedir = line:match("\"(.+)/vector\"")
+                if includedir and os.isdir(includedir) then
+                    table.insert(includedirs, includedir)
+                    break
+                end
+            end
+        end
+    end
+    os.tryrm(tmpfile)
+end
+
+-- provide toolchain include directories for stl headerunit when p1689 is not supported
+function toolchain_includedirs(target)
     local includedirs = _g.includedirs
     if includedirs == nil then
         includedirs = {}
         local clang, toolname = target:tool("cc")
         assert(toolname == "clang")
+        _get_toolchain_includedirs_for_stlheaders(includedirs, clang)
         local _, result = try {function () return os.iorunv(clang, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
                 line = line:trim()
                 if os.isdir(line) then
                     table.insert(includedirs, line)
-                    break
                 elseif line:startswith("End") then
                     break
                 end

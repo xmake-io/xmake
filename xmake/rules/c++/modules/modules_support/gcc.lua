@@ -60,20 +60,46 @@ function load(target)
     target:add("cxxflags", modulemapperflag .. _get_module_mapper(), {force = true, expand = false})
 end
 
--- provide toolchain include dir for stl headerunit when p1689 is not supported
-function toolchain_include_directories(target)
+-- get includedirs for stl headers
+--
+-- $ echo '#include <vector>' | gcc -x c++ -E - | grep '/vector"'
+-- # 1 "/usr/include/c++/11/vector" 1 3
+-- # 58 "/usr/include/c++/11/vector" 3
+-- # 59 "/usr/include/c++/11/vector" 3
+--
+function _get_toolchain_includedirs_for_stlheaders(includedirs, gcc)
+    local tmpfile = os.tmpfile() .. ".cc"
+    io.writefile(tmpfile, "#include <vector>")
+    local result = try {function () return os.iorunv(gcc, {"-E", "-x", "c++", tmpfile}) end}
+    if result then
+        for _, line in ipairs(result:split("\n", {plain = true})) do
+            line = line:trim()
+            if line:startswith("#") and line:find("/vector\"", 1, true) then
+                local includedir = line:match("\"(.+)/vector\"")
+                if includedir and os.isdir(includedir) then
+                    table.insert(includedirs, includedir)
+                    break
+                end
+            end
+        end
+    end
+    os.tryrm(tmpfile)
+end
+
+-- provide toolchain include directories for stl headerunit when p1689 is not supported
+function toolchain_includedirs(target)
     local includedirs = _g.includedirs
     if includedirs == nil then
         includedirs = {}
         local gcc, toolname = target:tool("cc")
         assert(toolname == "gcc")
+        _get_toolchain_includedirs_for_stlheaders(includedirs, gcc)
         local _, result = try {function () return os.iorunv(gcc, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
                 line = line:trim()
                 if os.isdir(line) then
                     table.insert(includedirs, line)
-                    break
                 elseif line:startswith("End") then
                     break
                 end
@@ -89,7 +115,6 @@ function generate_dependencies(target, sourcebatch, opt)
     local cachedir = common.modules_cachedir(target)
     local compinst = target:compiler("cxx")
     local common_args = {"-E", "-x", "c++"}
-
     local trtbdflag = get_trtbdflag(target)
     local depfileflag = get_depfileflag(target)
     local depoutputflag = get_depoutputflag(target)

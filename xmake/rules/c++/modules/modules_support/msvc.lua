@@ -65,7 +65,7 @@ function load(target)
 end
 
 -- provide toolchain include dir for stl headerunit when p1689 is not supported
-function toolchain_include_directories(target)
+function toolchain_includedirs(target)
     for _, toolchain_inst in ipairs(target:toolchains()) do
         if toolchain_inst:name() == "msvc" then
             local vcvars = toolchain_inst:config("vcvars")
