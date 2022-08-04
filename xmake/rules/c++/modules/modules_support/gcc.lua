@@ -243,7 +243,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     end
 end
 
-function bmi_extension()
+function get_bmi_extension()
     return ".gcm"
 end
 

@@ -89,7 +89,7 @@ end
 
 -- get bmi extension
 function bmi_extension(target)
-    return modules_support(target).bmi_extension()
+    return modules_support(target).get_bmi_extension()
 end
 
 -- this target contains module files?

@@ -48,7 +48,7 @@ function load(target)
     target:add("cxxflags", prebuiltmodulepathflag .. cachedir, prebuiltmodulepathflag .. stlcachedir, {force = true})
 
     -- add module cachedirs of all dependent targets with modules
-    -- this target maybe does not contain module files
+    -- this target maybe does not contain module files, @see https://github.com/xmake-io/xmake/issues/1858
     for _, dep in ipairs(target:orderdeps()) do
         cachedir = common.modules_cachedir(dep)
         target:add("cxxflags", prebuiltmodulepathflag .. cachedir, {force = true})
@@ -240,7 +240,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     end
 end
 
-function bmi_extension()
+function get_bmi_extension()
     return ".pcm"
 end
 

@@ -57,7 +57,7 @@ function load(target)
     end
 
     -- add module cachedirs of all dependent targets with modules
-    -- this target maybe does not contain module files
+    -- this target maybe does not contain module files, @see https://github.com/xmake-io/xmake/issues/1858
     local ifcsearchdirflag = get_ifcsearchdirflag(target)
     for _, dep in ipairs(target:orderdeps()) do
         cachedir = common.modules_cachedir(dep)
@@ -76,7 +76,7 @@ function toolchain_include_directories(target)
             break
         end
     end
-    assert(false)
+    raise("msvc toolchain includedirs not found!")
 end
 
 -- generate dependency files
@@ -84,34 +84,27 @@ function generate_dependencies(target, sourcebatch, opt)
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
-
     local scandependenciesflag = get_scandependenciesflag(target)
-
-    local cachedir = common.modules_cachedir(target)
     local common_args = {"/TP", scandependenciesflag}
-
+    local cachedir = common.modules_cachedir(target)
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function ()
             progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
-
-            local outdir = path.join(cachedir, path.directory(path.relative(sourcefile, target:scriptdir())))
-            if not os.isdir(outdir) then
-                os.mkdir(outdir)
+            local outputdir = path.join(cachedir, path.directory(path.relative(sourcefile, target:scriptdir())))
+            if not os.isdir(outputdir) then
+                os.mkdir(outputdir)
             end
 
-            local jsonfile = path.join(outdir, path.filename(sourcefile) .. ".json")
-
+            local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".json")
             if scandependenciesflag then
                 local args = {jsonfile, sourcefile, "/Fo" .. target:objectfile(sourcefile)}
-
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile)
             end
 
             local dependinfo = io.readfile(jsonfile)
-
             return { moduleinfo = dependinfo }
         end, {dependfile = dependfile, files = {sourcefile}})
     end
@@ -128,9 +121,9 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
     local headerunitflag = get_headerunitflag(target)
     local headernameflag = get_headernameflag(target)
     local ifcoutputflag = get_ifcoutputflag(target)
-
     assert(headerunitflag and headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
 
+    -- get cachedirs
     local cachedir = common.modules_cachedir(target)
     local stlcachedir = common.stlmodules_cachedir(target)
 
@@ -142,28 +135,24 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
     for _, headerunit in ipairs(sourcebatch) do
         if not headerunit.stl then
             local file = path.relative(headerunit.path, target:scriptdir())
-
             local objectfile = target:objectfile(file)
-
-            local outdir
+            local outputdir
             if headerunit.type == ":quote" then
-                outdir = path.join(cachedir, path.directory(path.relative(headerunit.path, project.directory())))
+                outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, project.directory())))
             else
-                outdir = path.join(cachedir, path.directory(headerunit.path):sub(3))
+                outputdir = path.join(cachedir, path.directory(headerunit.path):sub(3))
             end
-
-            if not os.isdir(outdir) then
-                os.mkdir(outdir)
+            if not os.isdir(outputdir) then
+                os.mkdir(outputdir)
             end
 
             local bmifilename = path.basename(objectfile) .. bmi_extension()
-
-            local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
+            local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
             if not os.isdir(path.directory(objectfile)) then
                 os.mkdir(path.directory(objectfile))
             end
 
-            local args = {headernameflag .. headerunit.type, headerunit.path, ifcoutputflag, outdir, "/Fo" .. objectfile}
+            local args = {headernameflag .. headerunit.type, headerunit.path, ifcoutputflag, outputdir, "/Fo" .. objectfile}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
 
@@ -189,7 +178,6 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             table.join2(private_flags, flag)
         end
     end
-
     return public_flags, private_flags
 end
 
@@ -215,14 +203,12 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     local common_args = {"/TP"}
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
-
         if m then
             if not os.isdir(path.directory(objectfile)) then
                 os.mkdir(path.directory(objectfile))
             end
 
             local args = {"/c", "/Fo" .. objectfile}
-
             local flag = {}
             for name, provide in pairs(m.provides) do
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
@@ -251,7 +237,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     end
 end
 
-function bmi_extension()
+function get_bmi_extension()
     return ".ifc"
 end
 
@@ -265,7 +251,7 @@ function get_modulesflag(target)
         assert(modulesflag, "compiler(msvc): does not support c++ module!")
         _g.modulesflag = modulesflag or false
     end
-    return modulesflag
+    return modulesflag or nil
 end
 
 function get_ifcoutputflag(target)
@@ -278,7 +264,7 @@ function get_ifcoutputflag(target)
         assert(ifcoutputflag, "compiler(msvc): does not support c++ module!")
         _g.ifcoutputflag = ifcoutputflag or false
     end
-    return ifcoutputflag
+    return ifcoutputflag or nil
 end
 
 function get_ifcsearchdirflag(target)
@@ -291,7 +277,7 @@ function get_ifcsearchdirflag(target)
         assert(ifcsearchdirflag, "compiler(msvc): does not support c++ module!")
         _g.ifcsearchdirflag = ifcsearchdirflag or false
     end
-    return ifcsearchdirflag
+    return ifcsearchdirflag or nil
 end
 
 function get_interfaceflag(target)
@@ -317,7 +303,7 @@ function get_referenceflag(target)
         assert(referenceflag, "compiler(msvc): does not support c++ module!")
         _g.referenceflag = referenceflag or false
     end
-    return referenceflag
+    return referenceflag or nil
 end
 
 function get_headernameflag(target)
@@ -330,7 +316,7 @@ function get_headernameflag(target)
         end
         _g.headernameflag = headernameflag or false
     end
-    return headernameflag
+    return headernameflag or nil
 end
 
 function get_headerunitflag(target)
@@ -343,12 +329,11 @@ function get_headerunitflag(target)
         end
         _g.headerunitflag = headerunitflag or false
     end
-    return headerunitflag
+    return headerunitflag or nil
 end
 
 function get_exportheaderflag(target)
     local modulesflag = get_modulesflag(target)
-
     local exportheaderflag = _g.exportheaderflag
     if exportheaderflag == nil then
         local compinst = target:compiler("cxx")
@@ -357,7 +342,7 @@ function get_exportheaderflag(target)
         end
         _g.exportheaderflag = exportheaderflag or false
     end
-    return exportheaderflag
+    return exportheaderflag or nil
 end
 
 function get_stdifcdirflag(target)
@@ -369,7 +354,7 @@ function get_stdifcdirflag(target)
         end
         _g.stdifcdirflag = stdifcdirflag or false
     end
-    return stdifcdirflag
+    return stdifcdirflag or nil
 end
 
 function get_scandependenciesflag(target)
@@ -382,16 +367,14 @@ function get_scandependenciesflag(target)
                 if os.isfile(scan_dependencies_jsonfile) then
                     ok = true
                 end
-
                 if ok and not os.isfile(scan_dependencies_jsonfile) then
                     ok = false
                 end
-
                 return ok, errors
             end}) then
             scandependenciesflag = "/scanDependencies"
         end
         _g.scandependenciesflag = scandependenciesflag or false
     end
-    return scandependenciesflag
+    return scandependenciesflag or nil
 end
