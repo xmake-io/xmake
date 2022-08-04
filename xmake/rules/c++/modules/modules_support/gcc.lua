@@ -153,6 +153,7 @@ function generate_headerunits(target, batchcmds, headerunits, opt)
 
     -- build headerunits
     local objectfiles = {}
+    local projectdir = os.projectdir()
     for _, headerunit in ipairs(headerunits) do
         if not headerunit.stl then
             local file = path.relative(headerunit.path, target:scriptdir())
@@ -160,7 +161,7 @@ function generate_headerunits(target, batchcmds, headerunits, opt)
 
             local outdir
             if headerunit.type == ":quote" then
-                outdir = path.join(cachedir, path.directory(path.relative(headerunit.path, project.directory())))
+                outdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
             else
                 outdir = path.join(cachedir, path.directory(headerunit.path))
             end
@@ -174,14 +175,14 @@ function generate_headerunits(target, batchcmds, headerunits, opt)
                 os.mkdir(path.directory(objectfile))
             end
 
-            if _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, project.directory())) then
+            if _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir)) then
                 local args = { "-c" }
                 if headerunit.type == ":quote" then
                     table.join2(args, { "-I", path.directory(headerunit.path), "-x", "c++-user-header", headerunit.name })
-                    _add_module_to_mapper(mapper_file, path.join(".", path.relative(headerunit.path, project.directory())), path.absolute(bmifile, project.directory()))
+                    _add_module_to_mapper(mapper_file, path.join(".", path.relative(headerunit.path, projectdir)), path.absolute(bmifile, projectdir))
                 elseif headerunit.type == ":angle" then
                     table.join2(args, { "-x", "c++-system-header", headerunit.name })
-                    _add_module_to_mapper(mapper_file, headerunit.name, path.absolute(bmifile, project.directory()))
+                    _add_module_to_mapper(mapper_file, headerunit.name, path.absolute(bmifile, projectdir))
                 end
 
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
@@ -193,7 +194,7 @@ function generate_headerunits(target, batchcmds, headerunits, opt)
             end
         else
             local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
-            if _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, project.directory())) then
+            if _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir)) then
                 if not os.isfile(bmifile) then
                     local args = { "-c", "-x", "c++-system-header", headerunit.name }
 
@@ -214,6 +215,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
     local mapper_file = _get_module_mapper()
     local common_args = {"-x", "c++"}
+    local projectdir = os.projectdir()
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
         if m then
@@ -226,7 +228,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
 
                 local bmifile = provide.bmi
-                if _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, project.directory())) then
+                if _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir)) then
                     table.join2(args, {"-c", provide.sourcefile})
 
                     batchcmds:add_depfiles(provide.sourcefile)

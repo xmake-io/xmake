@@ -143,6 +143,7 @@ function generate_headerunits(target, batchcmds, headerunits, opt)
     local objectfiles = {}
     local public_flags = {}
     local private_flags = {}
+    local projectdir = os.projectdir()
     for _, headerunit in ipairs(headerunits) do
         if not headerunit.stl then
             local file = path.relative(headerunit.path, target:scriptdir())
@@ -150,7 +151,7 @@ function generate_headerunits(target, batchcmds, headerunits, opt)
 
             local outdir
             if headerunit.type == ":quote" then
-                outdir = path.join(cachedir, path.directory(path.relative(headerunit.path, project.directory())))
+                outdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
             else
                 outdir = path.join(cachedir, path.directory(headerunit.path))
             end
