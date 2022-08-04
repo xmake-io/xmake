@@ -66,7 +66,7 @@ function toolchain_include_directories(target)
             for _, line in ipairs(result:split("\n", {plain = true})) do
                 line = line:trim()
                 if os.isdir(line) then
-                    table.append(includedirs, line)
+                    table.insert(includedirs, line)
                     break
                 elseif line:startswith("End") then
                     break
@@ -152,7 +152,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             batchcmds:set_depmtime(os.mtime(bmifile))
             batchcmds:set_depcache(target:dependfile(bmifile))
 
-            table.append(public_flags, modulefileflag .. bmifile)
+            table.insert(public_flags, modulefileflag .. bmifile)
         else
             local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
             if not os.isfile(bmifile) then
@@ -164,7 +164,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             batchcmds:set_depmtime(os.mtime(bmifile))
             batchcmds:set_depcache(target:dependfile(bmifile))
 
-            table.append(private_flags, modulefileflag .. bmifile)
+            table.insert(private_flags, modulefileflag .. bmifile)
         end
     end
     return public_flags, private_flags

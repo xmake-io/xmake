@@ -28,27 +28,24 @@ import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
 
 -- get and create the path of module mapper
-function get_module_mapper()
+function _get_module_mapper()
     local mapper_file = path.join(config.buildir(), "mapper.txt")
     if not os.isfile(mapper_file) then
         io.writefile(mapper_file, "")
     end
-
     return mapper_file
 end
 
 -- add a module or header unit into the mapper
-function add_module_to_mapper(file, module, bmi)
+function _add_module_to_mapper(file, module, bmi)
     for line in io.lines(file) do
         if line:startswith(module .. " ") then
             return false
         end
     end
-
     local f = io.open(file, "a")
     f:print("%s %s", module, bmi)
     f:close()
-
     return true
 end
 
@@ -56,13 +53,11 @@ end
 function load(target)
     local modulesflag = get_modulesflag(target)
     local modulemapperflag = get_modulemapperflag(target)
-
     target:add("cxxflags", modulesflag)
-
-    if os.isfile(get_module_mapper()) then
-        os.rm(get_module_mapper())
+    if os.isfile(_get_module_mapper()) then
+        os.rm(_get_module_mapper())
     end
-    target:add("cxxflags", modulemapperflag .. get_module_mapper(), {force = true, expand = false})
+    target:add("cxxflags", modulemapperflag .. _get_module_mapper(), {force = true, expand = false})
 end
 
 -- provide toolchain include dir for stl headerunit when p1689 is not supported
@@ -70,23 +65,21 @@ function toolchain_include_directories(target)
     local includedirs = _g.includedirs
     if includedirs == nil then
         includedirs = {}
-
         local gcc, toolname = target:tool("cc")
         assert(toolname == "gcc")
-
         local _, result = try {function () return os.iorunv(gcc, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
                 line = line:trim()
                 if os.isdir(line) then
-                    table.append(includedirs, line)
+                    table.insert(includedirs, line)
                     break
                 elseif line:startswith("End") then
                     break
                 end
             end
         end
-        _g.includedirs = includedirs or {}
+        _g.includedirs = includedirs
     end
     return includedirs
 end
@@ -100,7 +93,6 @@ function generate_dependencies(target, sourcebatch, opt)
     local trtbdflag = get_trtbdflag(target)
     local depfileflag = get_depfileflag(target)
     local depoutputflag = get_depoutputflag(target)
-
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
@@ -112,20 +104,16 @@ function generate_dependencies(target, sourcebatch, opt)
             end
 
             local jsonfile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".json"))
-
             if trtbdflag and depfileflag and depoutputflag then
                 local ifile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".i"))
                 local dfile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".d"))
-
                 local args = {sourcefile, "-MD", "-MT", jsonfile, "-MF", dfile, depfileflag .. jsonfile, trtbdflag, depoutputfile .. target:objectfile(sourcefile), "-o", ifile}
-
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile)
             end
 
             local dependinfo = io.readfile(jsonfile)
-
             return { moduleinfo = dependinfo }
         end, {dependfile = dependfile, files = {sourcefile}})
     end
@@ -134,18 +122,15 @@ end
 -- generate target header units
 function generate_headerunits(target, batchcmds, sourcebatch, opt)
     local compinst = target:compiler("cxx")
-
     local cachedir = common.modules_cachedir(target)
     local stlcachedir = common.stlmodules_cachedir(target)
-
-    local mapper_file = get_module_mapper()
+    local mapper_file = _get_module_mapper()
 
     -- build headerunits
     local objectfiles = {}
     for _, headerunit in ipairs(sourcebatch) do
         if not headerunit.stl then
             local file = path.relative(headerunit.path, target:scriptdir())
-
             local objectfile = target:objectfile(file)
 
             local outdir
@@ -154,26 +139,24 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             else
                 outdir = path.join(cachedir, path.directory(headerunit.path))
             end
-
             if not os.isdir(outdir) then
                 os.mkdir(outdir)
             end
 
             local bmifilename = path.basename(objectfile) .. get_bmi_extension()
-
             local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
             if not os.isdir(path.directory(objectfile)) then
                 os.mkdir(path.directory(objectfile))
             end
 
-            if add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, project.directory())) then
+            if _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, project.directory())) then
                 local args = { "-c" }
                 if headerunit.type == ":quote" then
                     table.join2(args, { "-I", path.directory(headerunit.path), "-x", "c++-user-header", headerunit.name })
-                    add_module_to_mapper(mapper_file, path.join(".", path.relative(headerunit.path, project.directory())), path.absolute(bmifile, project.directory()))
+                    _add_module_to_mapper(mapper_file, path.join(".", path.relative(headerunit.path, project.directory())), path.absolute(bmifile, project.directory()))
                 elseif headerunit.type == ":angle" then
                     table.join2(args, { "-x", "c++-system-header", headerunit.name })
-                    add_module_to_mapper(mapper_file, headerunit.name, path.absolute(bmifile, project.directory()))
+                    _add_module_to_mapper(mapper_file, headerunit.name, path.absolute(bmifile, project.directory()))
                 end
 
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
@@ -185,8 +168,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
             end
         else
             local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
-
-            if add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, project.directory())) then
+            if _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, project.directory())) then
                 if not os.isfile(bmifile) then
                     local args = { "-c", "-x", "c++-system-header", headerunit.name }
 
@@ -204,26 +186,23 @@ end
 -- build module files
 function build_modules(target, batchcmds, objectfiles, modules, opt)
     local cachedir = common.modules_cachedir(target)
-
     local compinst = target:compiler("cxx")
-
-    local mapper_file = get_module_mapper()
-    local common_args = { "-x", "c++" }
+    local mapper_file = _get_module_mapper()
+    local common_args = {"-x", "c++"}
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
-
         if m then
             if not os.isdir(path.directory(objectfile)) then
                 os.mkdir(path.directory(objectfile))
             end
 
-            local args = { "-o", objectfile }
+            local args = {"-o", objectfile}
             for name, provide in pairs(m.provides) do
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
 
                 local bmifile = provide.bmi
-                if add_module_to_mapper(mapper_file, name, path.absolute(bmifile, project.directory())) then
-                    table.join2(args, { "-c", provide.sourcefile })
+                if _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, project.directory())) then
+                    table.join2(args, {"-c", provide.sourcefile})
 
                     batchcmds:add_depfiles(provide.sourcefile)
                     batchcmds:set_depmtime(os.mtime(bmifile))
@@ -255,7 +234,7 @@ function get_modulesflag(target)
         assert(modulesflag, "compiler(gcc): does not support c++ module!")
         _g.modulesflag = modulesflag or false
     end
-    return modulesflag
+    return modulesflag or nil
 end
 
 function get_modulemapperflag(target)
@@ -268,7 +247,7 @@ function get_modulemapperflag(target)
         assert(modulemapperflag, "compiler(gcc): does not support c++ module!")
         _g.modulemapperflag = modulemapperflag or false
     end
-    return modulemapperflag
+    return modulemapperflag or nil
 end
 
 function get_trtbdflag(target)
@@ -280,7 +259,7 @@ function get_trtbdflag(target)
         end
         _g.trtbdflag = trtbdflag or false
     end
-    return trtbdflag
+    return trtbdflag or nil
 end
 
 function get_depfileflag(target)
@@ -292,7 +271,7 @@ function get_depfileflag(target)
         end
         _g.depfileflag = depfileflag or false
     end
-    return depfileflag
+    return depfileflag or nil
 end
 
 function get_depoutputflag(target)
@@ -304,5 +283,5 @@ function get_depoutputflag(target)
         end
         _g.depoutputflag = depoutputflag or false
     end
-    return depoutputflag
+    return depoutputflag or nil
 end
