@@ -37,6 +37,11 @@ function _get_module_mapper()
 end
 
 -- add a module or header unit into the mapper
+--
+-- e.g
+-- /usr/include/c++/11/iostream build/.gens/stl_headerunit/linux/x86_64/release/stlmodules/cache/iostream.gcm
+-- hello build/.gens/stl_headerunit/linux/x86_64/release/rules/modules/cache/hello.gcm
+--
 function _add_module_to_mapper(file, module, bmi)
     for line in io.lines(file) do
         if line:startswith(module .. " ") then
