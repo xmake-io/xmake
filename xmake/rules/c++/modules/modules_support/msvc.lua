@@ -196,7 +196,10 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
 
     -- append deps modules
     for _, dep in ipairs(target:orderdeps()) do
-        target:add("cxxflags", dep:data("cxx.modules.flags"), {force = true, expand = false})
+        local flags = dep:data("cxx.modules.flags")
+        if flags then
+            target:add("cxxflags", flags, {force = true, expand = false})
+        end
     end
 
     -- compile module files to bmi files

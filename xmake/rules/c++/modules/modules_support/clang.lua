@@ -208,12 +208,12 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     local modulefileflag = get_modulefileflag(target)
 
     -- append deps modules
-    local flags = {}
     for _, dep in ipairs(target:orderdeps()) do
-        table.join2(flags, dep:data("cxx.modules.flags"))
+        local flags = dep:data("cxx.modules.flags")
+        if flags then
+            target:add("cxxflags", flags, {force = true, expand = false})
+        end
     end
-    flags = table.unique(flags)
-    target:add("cxxflags", flags, {force = true, expand = false})
 
     local common_args = {modulecachepathflag .. cachedir}
     for _, objectfile in ipairs(objectfiles) do
