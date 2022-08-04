@@ -128,7 +128,7 @@ function generate_dependencies(target, sourcebatch, opt)
 end
 
 -- generate target header units
-function generate_headerunits(target, batchcmds, sourcebatch, opt)
+function generate_headerunits(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
     local cachedir = common.modules_cachedir(target)
     local stlcachedir = common.stlmodules_cachedir(target)
@@ -143,7 +143,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
     local objectfiles = {}
     local public_flags = {}
     local private_flags = {}
-    for _, headerunit in ipairs(sourcebatch) do
+    for _, headerunit in ipairs(headerunits) do
         if not headerunit.stl then
             local file = path.relative(headerunit.path, target:scriptdir())
             local objectfile = target:objectfile(file)

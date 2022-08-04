@@ -263,7 +263,6 @@ function sort_modules_by_dependencies(objectfiles, modules)
             table.insert(nodes, {marked = false, tempmarked = false, objectfile = objectfile})
         end
     end
-
     while _topological_sort_has_node_without_mark(nodes) do
         local node = _topological_sort_get_first_unmarked_node(nodes)
         _topological_sort_visit(node, nodes, modules, output)
