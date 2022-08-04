@@ -1,0 +1,4 @@
+module mod;
+void f()
+{
+}
