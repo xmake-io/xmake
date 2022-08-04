@@ -279,7 +279,7 @@ end
 function find_angle_header_file(target, file)
     local headerpaths = modules_support(target).toolchain_includedirs(target)
     for _, dep in ipairs(target:orderdeps()) do
-        table.insert(headerpaths, dep:scriptdir())
+        table.insert(headerpaths, dep:get("sysincludedirs") or dep:get("includedirs"))
     end
     for _, pkg in ipairs(target:pkgs()) do
         local includedirs = pkg:get("sysincludedirs") or pkg:get("includedirs")
