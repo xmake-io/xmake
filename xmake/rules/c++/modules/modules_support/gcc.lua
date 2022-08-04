@@ -52,12 +52,8 @@ function add_module_to_mapper(file, module, bmi)
     return true
 end
 
--- load parent target with modules files
-function load_parent(target, opt)
-end
-
--- check C++20 module support
-function check_module_support(target)
+-- load module support for the current target
+function load(target)
     local compinst = compiler.load("cxx", {target = target})
 
     local modulesflag = get_modulesflag(target)

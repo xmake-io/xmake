@@ -41,14 +41,11 @@ rule("c++.build.modules")
             -- get modules support
             local modules_support = common.modules_support(target)
 
-            -- check C++20 module support
-            modules_support.check_module_support(target)
+            -- load module support
+            modules_support.load(target)
 
             -- mark this target with modules
             target:data_set("cxx.has_modules", true)
-
-            -- load parent
-            modules_support.load_parent(target, opt)
         end
     end)
 
@@ -69,7 +66,7 @@ rule("c++.build.modules.dependencies")
         modules_support.generate_dependencies(target, sourcebatch, opt)
 
         -- load and parse module dependencies
-        local moduleinfos = common.load(target, sourcebatch, opt)
+        local moduleinfos = common.load_moduleinfos(target, sourcebatch, opt)
         local modules = common.parse_dependency_data(target, moduleinfos, opt)
         target:data_set("cxx.modules", modules)
     end)

@@ -27,20 +27,8 @@ import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
 
--- load parent target with modules files
-function load_parent(target, opt)
-    local cachedir = common.modules_cachedir(target)
-
-    local prebuiltmodulepathflag = get_prebuiltmodulepathflag(target)
-
-    for _, dep in ipairs(target:orderdeps()) do
-        cachedir = common.modules_cachedir(dep)
-        target:add("cxxflags", prebuiltmodulepathflag .. cachedir, {force = true})
-    end
-end
-
--- check C++20 module support
-function check_module_support(target)
+-- load module support for the current target
+function load(target)
     local compinst = compiler.load("cxx", {target = target})
     local cachedir = common.modules_cachedir(target)
     local stlcachedir = common.stlmodules_cachedir(target)
@@ -57,8 +45,14 @@ function check_module_support(target)
     -- add the module cache directory
     target:add("cxxflags", implicitmodulesflag, {force = true})
     target:add("cxxflags", implicitmodulemapsflag, {force = true})
-
     target:add("cxxflags", prebuiltmodulepathflag .. cachedir, prebuiltmodulepathflag .. stlcachedir, {force = true})
+
+    -- add module cachedirs of all dependent targets with modules
+    -- this target maybe does not contain module files
+    for _, dep in ipairs(target:orderdeps()) do
+        cachedir = common.modules_cachedir(dep)
+        target:add("cxxflags", prebuiltmodulepathflag .. cachedir, {force = true})
+    end
 end
 
 function toolchain_include_directories(target)

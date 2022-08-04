@@ -14,7 +14,7 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      ruki
+-- @author      ruki, Arthapz
 -- @file        msvc.lua
 --
 
@@ -26,18 +26,8 @@ import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
 
--- load parent target with modules files
-function load_parent(target, opt)
-    local ifcsearchdirflag = get_ifcsearchdirflag(target)
-
-    for _, dep in ipairs(target:orderdeps()) do
-        cachedir = common.modules_cachedir(dep)
-        target:add("cxxflags", {ifcsearchdirflag, cachedir}, {force = true, expand = false})
-    end
-end
-
--- check C++20 module support
-function check_module_support(target)
+-- load module support for the current target
+function load(target)
     local compinst = target:compiler("cxx")
     local cachedir = common.modules_cachedir(target)
     local stlcachedir = common.stlmodules_cachedir(target)
@@ -64,6 +54,14 @@ function check_module_support(target)
             end
             break
         end
+    end
+
+    -- add module cachedirs of all dependent targets with modules
+    -- this target maybe does not contain module files
+    local ifcsearchdirflag = get_ifcsearchdirflag(target)
+    for _, dep in ipairs(target:orderdeps()) do
+        cachedir = common.modules_cachedir(dep)
+        target:add("cxxflags", {ifcsearchdirflag, cachedir}, {force = true, expand = false})
     end
 end
 

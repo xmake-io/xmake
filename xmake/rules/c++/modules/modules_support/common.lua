@@ -108,7 +108,7 @@ function contains_modules(target)
 end
 
 -- load module infos
-function load(target, sourcebatch, opt)
+function load_moduleinfos(target, sourcebatch, opt)
     local moduleinfos
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
