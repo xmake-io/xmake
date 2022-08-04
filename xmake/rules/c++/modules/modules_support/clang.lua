@@ -371,8 +371,8 @@ function has_headerunitsupport(target)
     local support_headerunits = _g.support_headerunits
     if support_headerunits == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support"}) and
-           compinst:has_flags("-x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support"}) then
+        if compinst:has_flags("-x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
+           compinst:has_flags("-x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
             support_headerunits = true
         end
         _g.support_headerunits = support_headerunits or false

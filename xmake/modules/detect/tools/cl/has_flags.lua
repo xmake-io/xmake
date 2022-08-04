@@ -83,7 +83,8 @@ end
 function main(flags, opt)
 
     -- attempt to check it from the argument list
-    if _check_from_arglist(flags, opt) then
+    opt = opt or {}
+    if not opt.tryrun and _check_from_arglist(flags, opt) then
         return true
     end
 

@@ -101,10 +101,11 @@ end
 function main(flags, opt)
 
     -- is linker?
+    opt = opt or {}
     local islinker = _islinker(flags, opt)
 
     -- attempt to check it from the argument list
-    if _check_from_arglist(flags, opt, islinker) then
+    if not opt.tryrun and _check_from_arglist(flags, opt, islinker) then
         return true
     end
 
