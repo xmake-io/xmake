@@ -54,8 +54,6 @@ end
 
 -- load module support for the current target
 function load(target)
-    local compinst = compiler.load("cxx", {target = target})
-
     local modulesflag = get_modulesflag(target)
     local modulemapperflag = get_modulemapperflag(target)
 
@@ -161,7 +159,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
                 os.mkdir(outdir)
             end
 
-            local bmifilename = path.basename(objectfile) .. bmi_extension()
+            local bmifilename = path.basename(objectfile) .. get_bmi_extension()
 
             local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
             if not os.isdir(path.directory(objectfile)) then
@@ -186,7 +184,7 @@ function generate_headerunits(target, batchcmds, sourcebatch, opt)
                 batchcmds:set_depcache(target:dependfile(bmifile))
             end
         else
-            local bmifile = path.join(stlcachedir, headerunit.name .. bmi_extension())
+            local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
 
             if add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, project.directory())) then
                 if not os.isfile(bmifile) then
