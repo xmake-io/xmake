@@ -128,6 +128,33 @@ function load_moduleinfos(target, sourcebatch, opt)
 end
 
 -- parse module dependency data
+--[[
+{
+  "build/.objs/stl_headerunit/linux/x86_64/release/src/hello.mpp.o" = {
+    requires = {
+      iostream = {
+        method = "include-angle",
+        unique = true,
+        path = "/usr/include/c++/11/iostream"
+      }
+    },
+    provides = {
+      hello = {
+        bmi = "build/.gens/stl_headerunit/linux/x86_64/release/rules/modules/cache/hello.gcm",
+        sourcefile = "src/hello.mpp"
+      }
+    }
+  },
+  "build/.objs/stl_headerunit/linux/x86_64/release/src/main.cpp.o" = {
+    requires = {
+      hello = {
+        method = "by-name",
+        unique = false,
+        path = "build/.gens/stl_headerunit/linux/x86_64/release/rules/modules/cache/hello.gcm"
+      }
+    }
+  }
+}]]
 function parse_dependency_data(target, moduleinfos, opt)
     local modules
     local cachedir = modules_cachedir(target)
