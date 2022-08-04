@@ -77,7 +77,7 @@ function _get_toolchain_includedirs_for_stlheaders(includedirs, gcc)
             if line:startswith("#") and line:find("/vector\"", 1, true) then
                 local includedir = line:match("\"(.+)/vector\"")
                 if includedir and os.isdir(includedir) then
-                    table.insert(includedirs, includedir)
+                    table.insert(includedirs, path.normalize(includedir))
                     break
                 end
             end
@@ -99,7 +99,7 @@ function toolchain_includedirs(target)
             for _, line in ipairs(result:split("\n", {plain = true})) do
                 line = line:trim()
                 if os.isdir(line) then
-                    table.insert(includedirs, line)
+                    table.insert(includedirs, path.normalize(line))
                 elseif line:startswith("End") then
                     break
                 end
