@@ -112,7 +112,7 @@ function generate_dependencies(target, sourcebatch, opt)
         depend.on_changed(function()
             progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
 
-            local outdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, target:scriptdir()))))
+            local outdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, projectdir))))
             if not os.isdir(outdir) then
                 os.mkdir(outdir)
             end
