@@ -89,20 +89,18 @@ rule("c++.build.modules.builder")
         sourcebatch.dependfiles = {}
         common.patch_sourcebatch(target, sourcebatch, opt)
 
-        -- get headerunits info, TODO maybe need optimize it
+        -- get headerunits info
         local headerunits
         local modules = target:data("cxx.modules")
         for _, objectfile in ipairs(sourcebatch.objectfiles) do
-            for obj, m in pairs(modules) do
-                if obj == objectfile then
-                    for name, r in pairs(m.requires) do
-                        if r.method ~= "by-name" then
-                            headerunits = headerunits or {}
-                            local unittype = r.method == "include-angle" and ":angle" or ":quote"
-                            table.append(headerunits, {name = name, path = r.path, type = unittype, stl = stl_headers.is_stl_header(name)})
-                        end
+            local m = modules[objectfile]
+            if m then
+                for name, r in pairs(m.requires) do
+                    if r.method ~= "by-name" then
+                        headerunits = headerunits or {}
+                        local unittype = r.method == "include-angle" and ":angle" or ":quote"
+                        table.insert(headerunits, {name = name, path = r.path, type = unittype, stl = stl_headers.is_stl_header(name)})
                     end
-                    break
                 end
             end
         end
