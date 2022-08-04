@@ -99,6 +99,7 @@ function generate_dependencies(target, sourcebatch, opt)
             if scandependenciesflag then
                 local args = {jsonfile, sourcefile, "/Fo" .. target:objectfile(sourcefile)}
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+                io.cat(jsonfile)
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile)
             end

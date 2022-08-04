@@ -267,18 +267,38 @@ function find_angle_header_file(target, file)
     return p
 end
 
-function fallback_generate_dependencies(target, jsonfile, sourcefile)
-    local output = {
-        version = 0,
-        revision = 0,
-        rules = {}
-    }
-
-    local rule = {
-        outputs = {
-            jsonfile
+-- https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1689r5.html
+--[[
+{
+  "version": 1,
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "use-header.mpp.o",
+      "requires": [
+        {
+          "logical-name": "<header.hpp>",
+          "source-path": "/path/to/found/header.hpp",
+          "unique-on-source-path": true,
+          "lookup-method": "include-angle"
         }
+      ]
+    },
+    {
+      "primary-output": "header.hpp.bmi",
+      "provides": [
+        {
+          "logical-name": "header.hpp",
+          "source-path": "/path/to/found/header.hpp",
+          "unique-on-source-path": true,
+        }
+      ]
     }
+  ]
+}]]
+function fallback_generate_dependencies(target, jsonfile, sourcefile)
+    local output = {version = 0, revision = 0, rules = {}}
+    local rule = {outputs = {jsonfile}}
     rule["primary-output"] = target:objectfile(sourcefile)
 
     local module_name
@@ -290,11 +310,9 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
         if not module_name then
             module_name = line:match("export%s+module%s+(.+)%s*;")
         end
-
         local module_depname = line:match("import%s+(.+)%s*;")
         if module_depname then
             local module_dep = {}
-
             -- partition? import :xxx;
             if module_depname:startswith(":") then
                 module_depname = module_name .. module_depname
