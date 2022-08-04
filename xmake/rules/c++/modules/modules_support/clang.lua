@@ -127,12 +127,43 @@ function generate_dependencies(target, sourcebatch, opt)
     end
 end
 
--- generate target header units
-function generate_headerunits(target, batchcmds, headerunits, opt)
+-- generate target stl header units
+function generate_stl_headerunits(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
-    local cachedir = common.modules_cachedir(target)
+
+    -- get cachedirs
     local stlcachedir = common.stlmodules_cachedir(target)
+
+    -- get headerunits flags
+    local modulecachepathflag = get_modulecachepathflag(target)
+    local modulefileflag = get_modulefileflag(target)
+
+    -- build headerunits
+    local projectdir = os.projectdir()
+    local flags = {}
+    for i, headerunit in ipairs(headerunits) do
+        local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
+        if not os.isfile(bmifile) then
+            local args = {modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.path}
+            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
+        end
+
+        batchcmds:set_depmtime(os.mtime(bmifile))
+        batchcmds:set_depcache(target:dependfile(bmifile))
+
+        table.insert(flags, modulefileflag .. bmifile)
+    end
+    return flags
+end
+
+-- generate target user header units
+function generate_user_headerunits(target, batchcmds, headerunits, opt)
+    local compinst = target:compiler("cxx")
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
+
+    -- get cachedirs
+    local cachedir = common.modules_cachedir(target)
 
     -- get headerunits flags
     local modulecachepathflag = get_modulecachepathflag(target)
@@ -141,65 +172,52 @@ function generate_headerunits(target, batchcmds, headerunits, opt)
 
     -- build headerunits
     local objectfiles = {}
-    local public_flags = {}
-    local private_flags = {}
+    local flags = {}
     local projectdir = os.projectdir()
     for _, headerunit in ipairs(headerunits) do
-        if not headerunit.stl then
-            local file = path.relative(headerunit.path, target:scriptdir())
-            local objectfile = target:objectfile(file)
+        local file = path.relative(headerunit.path, target:scriptdir())
+        local objectfile = target:objectfile(file)
 
-            local outdir
-            if headerunit.type == ":quote" then
-                outdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
-            else
-                outdir = path.join(cachedir, path.directory(headerunit.path))
-            end
-            if not os.isdir(outdir) then
-                os.mkdir(outdir)
-            end
-
-            local bmifilename = path.basename(objectfile) .. get_bmi_extension()
-            local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
-            if not os.isdir(path.directory(objectfile)) then
-                os.mkdir(path.directory(objectfile))
-            end
-
-            local args = { modulecachepathflag .. cachedir, emitmoduleflag, "-c", "-o", bmifile}
-            if headerunit.type == ":quote" then
-                table.join2(args, {"-I", path.directory(headerunit.path), "-x", "c++-user-header", headerunit.path})
-            elseif headerunit.type == ":angle" then
-                table.join2(args, {"-x", "c++-system-header", headerunit.name})
-            end
-
-            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-
-            batchcmds:add_depfiles(headerunit.path)
-            batchcmds:set_depmtime(os.mtime(bmifile))
-            batchcmds:set_depcache(target:dependfile(bmifile))
-
-            table.insert(public_flags, modulefileflag .. bmifile)
+        local outdir
+        if headerunit.type == ":quote" then
+            outdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
         else
-            local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
-            if not os.isfile(bmifile) then
-                local args = {modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.path}
-                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-            end
-
-            batchcmds:set_depmtime(os.mtime(bmifile))
-            batchcmds:set_depcache(target:dependfile(bmifile))
-
-            table.insert(private_flags, modulefileflag .. bmifile)
+            outdir = path.join(cachedir, path.directory(headerunit.path))
         end
+        if not os.isdir(outdir) then
+            os.mkdir(outdir)
+        end
+
+        local bmifilename = path.basename(objectfile) .. get_bmi_extension()
+        local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
+        if not os.isdir(path.directory(objectfile)) then
+            os.mkdir(path.directory(objectfile))
+        end
+
+        local args = { modulecachepathflag .. cachedir, emitmoduleflag, "-c", "-o", bmifile}
+        if headerunit.type == ":quote" then
+            table.join2(args, {"-I", path.directory(headerunit.path), "-x", "c++-user-header", headerunit.path})
+        elseif headerunit.type == ":angle" then
+            table.join2(args, {"-x", "c++-system-header", headerunit.name})
+        end
+
+        batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+        batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
+
+        batchcmds:add_depfiles(headerunit.path)
+        batchcmds:set_depmtime(os.mtime(bmifile))
+        batchcmds:set_depcache(target:dependfile(bmifile))
+
+        table.insert(flags, modulefileflag .. bmifile)
     end
-    return public_flags, private_flags
+    return flags
 end
 
 -- build module files
 function build_modules(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
+
+    -- get cachedirs
     local cachedir = common.modules_cachedir(target)
 
     -- get modules flags

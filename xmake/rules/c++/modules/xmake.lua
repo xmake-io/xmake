@@ -91,15 +91,22 @@ rule("c++.build.modules.builder")
 
         -- get headerunits info
         local headerunits
+        local stl_headerunits
         local modules = target:data("cxx.modules")
         for _, objectfile in ipairs(sourcebatch.objectfiles) do
             local m = modules[objectfile]
             if m then
                 for name, r in pairs(m.requires) do
                     if r.method ~= "by-name" then
-                        headerunits = headerunits or {}
                         local unittype = r.method == "include-angle" and ":angle" or ":quote"
-                        table.insert(headerunits, {name = name, path = r.path, type = unittype, stl = stl_headers.is_stl_header(name)})
+
+                        if stl_headers.is_stl_header(name) then
+                            stl_headerunits = stl_headerunits or {}
+                            table.insert(stl_headerunits, {name = name, path = r.path, type = unittype})
+                        else
+                            headerunits = headerunits or {}
+                            table.insert(headerunits, {name = name, path = r.path, type = unittype,})
+                        end
                     end
                 end
             end
@@ -107,16 +114,21 @@ rule("c++.build.modules.builder")
 
         -- generate headerunits
         local headerunits_flags
-        local private_headerunits_flags
         local modules_support = common.modules_support(target)
+        -- build stl header units as other headerunits may need them
+        if stl_headerunits then
+            headerunits_flags = headerunits_flags or {}
+            table.join2(headerunits_flags, modules_support.generate_stl_headerunits(target, batchcmds, stl_headerunits, opt))
+
+            -- force STL header unit generation
+            batchcmds:runcmds(opt)
+        end
         if headerunits then
-            headerunits_flags, private_headerunits_flags = modules_support.generate_headerunits(target, batchcmds, headerunits, opt)
+            headerunits_flags = headerunits_flags or {}
+            table.join2(headerunits_flags, modules_support.generate_user_headerunits(target, batchcmds, headerunits, opt))
         end
         if headerunits_flags then
             target:add("cxxflags", headerunits_flags, {force = true, expand = false})
-        end
-        if private_headerunits_flags then
-            target:add("cxxflags", private_headerunits_flags, {force = true, expand = false})
         end
 
         -- topological sort
