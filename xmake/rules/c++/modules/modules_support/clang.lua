@@ -333,7 +333,7 @@ function get_emitmoduleflag(target)
     if emitmoduleflag == nil then
         local compinst = target:compiler("cxx")
         if compinst:has_flags("-emit-module", "cxxflags", {flagskey = "clang_emit_module"}) then
-            emitmoduleflag = " -emit-module"
+            emitmoduleflag = "-emit-module"
         end
         assert(emitmoduleflag, "compiler(clang): does not support c++ module!")
         _g.emitmoduleflag = emitmoduleflag or false
