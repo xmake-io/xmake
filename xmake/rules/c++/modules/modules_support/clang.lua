@@ -261,7 +261,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
             local bmiflags = modulefileflag .. bmifile
             target:add("cxxflags", bmiflags, {public = true, force = true})
             target:add("objectfiles", objectfile)
-            target:data_add("cxx.modules.flags", f)
+            target:data_add("cxx.modules.flags", bmiflags)
             depmtime = math.max(depmtime, os.mtime(bmifile))
         end
     end
