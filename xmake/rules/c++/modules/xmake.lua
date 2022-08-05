@@ -73,7 +73,6 @@ rule("c++.build.modules.builder")
         end
 
         import("modules_support.common")
-        import("modules_support.stl_headers")
 
         -- patch sourcebatch
         common.patch_sourcebatch(target, sourcebatch, opt)
