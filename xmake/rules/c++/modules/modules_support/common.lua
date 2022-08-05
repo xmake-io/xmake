@@ -405,3 +405,17 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
     io.writefile(jsonfile, jsondata)
 end
 
+-- generate dependencies
+function generate_dependencies(target, opt)
+
+    -- get sourcebatch
+    local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
+    patch_sourcebatch(target, sourcebatch)
+
+    -- generate dependencies
+    modules_support(target).generate_dependencies(target, sourcebatch, opt)
+
+    -- load and parse module dependencies
+    local moduleinfos = load_moduleinfos(target, sourcebatch)
+    return parse_dependency_data(target, moduleinfos)
+end

@@ -52,23 +52,11 @@ rule("c++.build.modules")
 -- build dependencies
 rule("c++.build.modules.dependencies")
     before_buildcmd(function(target, batchcmds, opt)
-        if not target:data("cxx.has_modules") then
-            return
+        if target:data("cxx.has_modules") then
+            import("modules_support.common")
+            local modules = common.generate_dependencies(target, opt)
+            target:data_set("cxx.modules", modules)
         end
-
-        -- patch sourcebatch
-        import("modules_support.common")
-        local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
-        common.patch_sourcebatch(target, sourcebatch)
-
-        -- generate dependencies
-        local modules_support = common.modules_support(target)
-        modules_support.generate_dependencies(target, sourcebatch, opt)
-
-        -- load and parse module dependencies
-        local moduleinfos = common.load_moduleinfos(target, sourcebatch)
-        local modules = common.parse_dependency_data(target, moduleinfos)
-        target:data_set("cxx.modules", modules)
     end)
 
 -- build modules
