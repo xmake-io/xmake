@@ -180,10 +180,10 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
         batchcmds:mkdir(outputdir)
 
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
-        local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
+        local bmifile = path.join(outputdir, bmifilename)
         batchcmds:mkdir(path.directory(objectfile))
 
-        local args = {headernameflag .. headerunit.type, path.normalize(headerunit.path), ifcoutputflag, outputdir, "/Fo" .. objectfile}
+        local args = {headernameflag .. headerunit.type, headerunit.path, ifcoutputflag, outputdir, "/Fo" .. objectfile}
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
         batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
 
