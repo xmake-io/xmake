@@ -174,7 +174,8 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
         if headerunit.type == ":quote" then
             outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
         else
-            outputdir = path.join(cachedir, path.directory(headerunit.path):sub(3))
+            -- if path is relative then its a subtarget path
+            outputdir = path.join(cachedir, path.is_absolute(headerunit.path) and path.directory(headerunit.path):sub(3) or headerunit.path)
         end
         batchcmds:mkdir(outputdir)
 
