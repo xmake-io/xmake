@@ -129,6 +129,8 @@ function generate_stl_headerunits(target, batchcmds, headerunits, opt)
     local common_args = {"/TP", exportheaderflag, "/c"}
     local objectfiles = {}
     local flags = {}
+    local bmifiles = {}
+    local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         if not os.isfile(bmifile) then
@@ -137,12 +139,14 @@ function generate_stl_headerunits(target, batchcmds, headerunits, opt)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args), {envs = vcvars})
         end
 
-        batchcmds:set_depmtime(os.mtime(bmifile))
-        batchcmds:set_depcache(target:dependfile(bmifile))
-
         local flag = {headerunitflag .. ":angle", headerunit.name .. "=" .. headerunit.name .. get_bmi_extension()}
         table.join2(flags, flag)
+
+        table.append(bmifiles, bmifile)
+        depmtime = math.max(depmtime, os.mtime(bmifile))
     end
+    batchcmds:set_depmtime(depmtime)
+    batchcmds:set_depcache(target:dependfile(bmifiles))
     return flags
 end
 
@@ -167,6 +171,8 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
     local objectfiles = {}
     local flags = {}
     local projectdir = os.projectdir()
+    local bmifiles = {}
+    local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
         local file = path.relative(headerunit.path, target:scriptdir())
         local objectfile = target:objectfile(file)
@@ -188,15 +194,16 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
         batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
 
         batchcmds:add_depfiles(headerunit.path)
-        batchcmds:set_depmtime(os.mtime(bmifile))
-        batchcmds:set_depcache(target:dependfile(bmifile))
-        batchcmds:set_depmtime(os.mtime(objectfile))
-        batchcmds:set_depcache(target:dependfile(objectfile))
 
         local flag = {headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir)}
         table.join2(flags, flag)
         target:add("objectfiles", objectfile)
+
+        table.append(bmifiles, bmifile)
+        depmtime = math.max(depmtime, os.mtime(bmifile))
     end
+    batchcmds:set_depmtime(depmtime)
+    batchcmds:set_depcache(target:dependfile(bmifiles))
     return flags
 end
 
@@ -221,8 +228,10 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
         end
     end
 
-    -- compile module files to bmi files
+    -- build modules
     local common_args = {"/TP"}
+    local bmifiles = {}
+    local depmtime = 0
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
         if m then
@@ -237,16 +246,13 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
                 table.join2(args, {interfaceflag, ifcoutputflag, bmifile, provide.sourcefile})
 
                 batchcmds:add_depfiles(provide.sourcefile)
-                batchcmds:set_depmtime(os.mtime(bmifile))
-                batchcmds:set_depcache(target:dependfile(bmifile))
 
                 table.join2(bmiflags, {referenceflag, name .. "=" .. path.filename(bmifile)})
+                table.append(bmifiles, bmifile)
+                depmtime = math.max(depmtime, os.mtime(bmifile))
             end
 
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args, bmi_args), {envs = vcvars})
-
-            batchcmds:set_depmtime(os.mtime(objectfile))
-            batchcmds:set_depcache(target:dependfile(objectfile))
 
             target:add("cxxflags", bmiflags, {force = true, expand = false})
             for _, f in ipairs(bmiflags) do
@@ -255,6 +261,8 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
             target:add("objectfiles", objectfile)
         end
     end
+    batchcmds:set_depmtime(depmtime)
+    batchcmds:set_depcache(target:dependfile(bmifiles))
 end
 
 function get_bmi_extension()
