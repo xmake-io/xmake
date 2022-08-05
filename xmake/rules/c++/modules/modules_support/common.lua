@@ -24,13 +24,19 @@ import("core.base.hashset")
 import("core.project.config")
 import("core.tool.compiler")
 import("core.cache.memcache", {alias = "_memcache"})
+import("core.cache.localcache", {alias = "_localcache"})
 import("core.project.project")
 import("lib.detect.find_file")
 import("stl_headers")
 
 -- get memcache
 function memcache()
-    return _memcache.cache("rule.cxx.modules")
+    return _memcache.cache("cxxmodules")
+end
+
+-- get localcache
+function localcache()
+    return _localcache.cache("cxxmodules")
 end
 
 -- get stl modules cache directory
@@ -407,9 +413,15 @@ end
 
 -- generate dependencies
 function generate_dependencies(target, sourcebatch, opt)
-    modules_support(target).generate_dependencies(target, sourcebatch, opt)
-    local moduleinfos = load_moduleinfos(target, sourcebatch)
-    return parse_dependency_data(target, moduleinfos)
+    local modules = localcache():get("modules")
+    local changed = modules_support(target).generate_dependencies(target, sourcebatch, opt)
+    if changed or modules == nil then
+        local moduleinfos = load_moduleinfos(target, sourcebatch)
+        modules = parse_dependency_data(target, moduleinfos)
+        localcache():set("modules", modules)
+        localcache():save()
+    end
+    return modules
 end
 
 -- generate headerunits for batchjobs, TODO

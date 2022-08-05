@@ -106,6 +106,7 @@ end
 
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
+    local changed = false
     local cachedir = common.modules_cachedir(target)
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
@@ -122,11 +123,13 @@ function generate_dependencies(target, sourcebatch, opt)
             -- no support of p1689 atm
             local jsonfile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".json"))
             common.fallback_generate_dependencies(target, jsonfile, sourcefile)
+            changed = true
 
             local dependinfo = io.readfile(jsonfile)
             return { moduleinfo = dependinfo }
         end, {dependfile = dependfile, files = {sourcefile}})
     end
+    return changed
 end
 
 -- generate target stl header units for batchcmds

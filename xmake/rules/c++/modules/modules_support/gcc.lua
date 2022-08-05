@@ -123,6 +123,7 @@ function generate_dependencies(target, sourcebatch, opt)
     local trtbdflag = get_trtbdflag(target)
     local depfileflag = get_depfileflag(target)
     local depoutputflag = get_depoutputflag(target)
+    local changed = false
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
@@ -144,11 +145,13 @@ function generate_dependencies(target, sourcebatch, opt)
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile)
             end
+            changed = true
 
             local dependinfo = io.readfile(jsonfile)
             return { moduleinfo = dependinfo }
         end, {dependfile = dependfile, files = {sourcefile}})
     end
+    return changed
 end
 
 -- generate target stl header units for batchcmds
