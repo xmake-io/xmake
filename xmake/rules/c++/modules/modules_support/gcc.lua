@@ -251,7 +251,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
 
             local bmifile = provide.bmi
             if _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir)) then
-                local args = {"-o", objectfile, "-c", provide.sourcefile})
+                local args = {"-o", objectfile, "-c", provide.sourcefile}
 
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
                 batchcmds:mkdir(path.directory(objectfile))
