@@ -49,9 +49,9 @@ end
 function nf_symbol(self, level)
     local kind = self:kind()
     if kind == "ld" or kind == "sh" then
-        -- emscripten requires -gsource-map when linking to map JS/wasm code back to original source
+        -- emscripten requires -g when linking to map JS/wasm code back to original source
         if level == "debug" then
-            return "-gsource-map"
+            return "-g"
         end
     end
 
