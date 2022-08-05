@@ -90,7 +90,7 @@ function generate_dependencies(target, sourcebatch, opt)
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function ()
             progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
-            local outputdir = path.join(cachedir, path.directory(path.relative(sourcefile, target:scriptdir())))
+            local outputdir = path.join(cachedir, path.directory(path.relative(sourcefile, projectdir)))
             if not os.isdir(outputdir) then
                 os.mkdir(outputdir)
             end
@@ -109,8 +109,46 @@ function generate_dependencies(target, sourcebatch, opt)
     end
 end
 
--- generate target header units
-function generate_headerunits(target, batchcmds, headerunits, opt)
+-- generate target stl header units
+function generate_stl_headerunits(target, batchcmds, headerunits, opt)
+    local compinst = target:compiler("cxx")
+    local toolchain = target:toolchain("msvc")
+    local vcvars = toolchain:config("vcvars")
+
+    -- get flags
+    local exportheaderflag = get_exportheaderflag(target)
+    local headerunitflag = get_headerunitflag(target)
+    local headernameflag = get_headernameflag(target)
+    local ifcoutputflag = get_ifcoutputflag(target)
+    assert(headerunitflag and headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
+
+    -- get cachedirs
+    local stlcachedir = common.stlmodules_cachedir(target)
+
+    -- build headerunits
+    local common_args = {"/TP", exportheaderflag, "/c"}
+    local objectfiles = {}
+    local flags = {}
+    local depmtime = 0
+    for _, headerunit in ipairs(headerunits) do
+        local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
+        if not os.isfile(bmifile) then
+            local args = {exportheaderflag, headernameflag .. ":angle", headerunit.name, ifcoutputflag, stlcachedir}
+            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args), {envs = vcvars})
+        end
+
+        local flag = {headerunitflag .. ":angle", headerunit.name .. "=" .. headerunit.name .. get_bmi_extension()}
+        table.join2(flags, flag)
+
+        depmtime = math.max(depmtime, os.mtime(bmifile))
+    end
+    batchcmds:set_depmtime(depmtime)
+    return flags
+end
+
+-- generate target user header units
+function generate_user_headerunits(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
@@ -124,61 +162,43 @@ function generate_headerunits(target, batchcmds, headerunits, opt)
 
     -- get cachedirs
     local cachedir = common.modules_cachedir(target)
-    local stlcachedir = common.stlmodules_cachedir(target)
 
     -- build headerunits
     local common_args = {"/TP", exportheaderflag, "/c"}
     local objectfiles = {}
-    local public_flags = {}
-    local private_flags = {}
+    local flags = {}
     local projectdir = os.projectdir()
+    local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
-        if not headerunit.stl then
-            local file = path.relative(headerunit.path, target:scriptdir())
-            local objectfile = target:objectfile(file)
-            local outputdir
-            if headerunit.type == ":quote" then
-                outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
-            else
-                outputdir = path.join(cachedir, path.directory(headerunit.path):sub(3))
-            end
-            if not os.isdir(outputdir) then
-                os.mkdir(outputdir)
-            end
-
-            local bmifilename = path.basename(objectfile) .. get_bmi_extension()
-            local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
-            if not os.isdir(path.directory(objectfile)) then
-                os.mkdir(path.directory(objectfile))
-            end
-
-            local args = {headernameflag .. headerunit.type, headerunit.path, ifcoutputflag, outputdir, "/Fo" .. objectfile}
-            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
-
-            batchcmds:add_depfiles(headerunit.path)
-            batchcmds:set_depmtime(os.mtime(bmifile))
-            batchcmds:set_depcache(target:dependfile(bmifile))
-            batchcmds:set_depmtime(os.mtime(objectfile))
-            batchcmds:set_depcache(target:dependfile(objectfile))
-
-            local flag = {headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir)}
-            table.join2(public_flags, flag)
-            target:add("objectfiles", objectfile)
+        local file = path.relative(headerunit.path, target:scriptdir())
+        local objectfile = target:objectfile(file)
+        local outputdir
+        if headerunit.type == ":quote" then
+            outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
         else
-            local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
-            local args = {exportheaderflag, headernameflag .. ":angle", headerunit.name, ifcoutputflag, stlcachedir}
-            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args), {envs = vcvars})
-
-            batchcmds:set_depmtime(os.mtime(bmifile))
-            batchcmds:set_depcache(target:dependfile(bmifile))
-
-            local flag = {headerunitflag .. ":angle", headerunit.name .. "=" .. headerunit.name .. get_bmi_extension()}
-            table.join2(private_flags, flag)
+            -- if path is relative then its a subtarget path
+            outputdir = path.join(cachedir, path.is_absolute(headerunit.path) and path.directory(headerunit.path):sub(3) or headerunit.path)
         end
+        batchcmds:mkdir(outputdir)
+
+        local bmifilename = path.basename(objectfile) .. get_bmi_extension()
+        local bmifile = path.join(outputdir, bmifilename)
+        batchcmds:mkdir(path.directory(objectfile))
+
+        local args = {headernameflag .. headerunit.type, headerunit.path, ifcoutputflag, outputdir, "/Fo" .. objectfile}
+        batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+        batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+
+        batchcmds:add_depfiles(headerunit.path)
+
+        local flag = {headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir)}
+        table.join2(flags, flag)
+        target:add("objectfiles", objectfile)
+
+        depmtime = math.max(depmtime, os.mtime(bmifile))
     end
-    return public_flags, private_flags
+    batchcmds:set_depmtime(depmtime)
+    return flags
 end
 
 -- build module files
@@ -202,42 +222,42 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
         end
     end
 
-    -- compile module files to bmi files
+    -- build modules
     local common_args = {"/TP"}
+    local depmtime = 0
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
-        if m then
-            if not os.isdir(path.directory(objectfile)) then
-                os.mkdir(path.directory(objectfile))
+        if m and m.provides then
+            -- assume there that provides is only one, until we encounter the case
+            local length = 0
+            local name, provide
+            for k, v in pairs(m.provides) do
+                length = length + 1
+                name = k
+                provide = v
+                if length > 1 then
+                    raise("multiple provides are not supported now!")
+                end
             end
 
-            local args = {"/c", "/Fo" .. objectfile}
-            local bmiflags = {}
-            for name, provide in pairs(m.provides) do
-                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
-
-                local bmifile = provide.bmi
-                table.join2(args, {interfaceflag, ifcoutputflag, bmifile, provide.sourcefile})
-
-                batchcmds:add_depfiles(provide.sourcefile)
-                batchcmds:set_depmtime(os.mtime(bmifile))
-                batchcmds:set_depcache(target:dependfile(bmifile))
-
-                table.join2(bmiflags, {referenceflag, name .. "=" .. path.filename(bmifile)})
-            end
-
+            local bmifile = provide.bmi
+            local args = {"/c", "/Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
+            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
+            batchcmds:mkdir(path.directory(objectfile))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args, bmi_args), {envs = vcvars})
 
-            batchcmds:set_depmtime(os.mtime(objectfile))
-            batchcmds:set_depcache(target:dependfile(objectfile))
+            batchcmds:add_depfiles(provide.sourcefile)
 
+            local bmiflags = {referenceflag, name .. "=" .. path.filename(bmifile)}
             target:add("cxxflags", bmiflags, {force = true, expand = false})
             for _, f in ipairs(bmiflags) do
                 target:data_add("cxx.modules.flags", f)
             end
             target:add("objectfiles", objectfile)
+            depmtime = math.max(depmtime, os.mtime(bmifile))
         end
     end
+    batchcmds:set_depmtime(depmtime)
 end
 
 function get_bmi_extension()

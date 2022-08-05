@@ -82,44 +82,33 @@ rule("c++.build.modules.builder")
             return
         end
 
-        -- patch sourcebatch
         import("modules_support.common")
         import("modules_support.stl_headers")
-        sourcebatch.objectfiles = {}
-        sourcebatch.dependfiles = {}
+
+        -- patch sourcebatch
         common.patch_sourcebatch(target, sourcebatch, opt)
 
         -- get headerunits info
-        local headerunits
-        local modules = target:data("cxx.modules")
-        for _, objectfile in ipairs(sourcebatch.objectfiles) do
-            local m = modules[objectfile]
-            if m then
-                for name, r in pairs(m.requires) do
-                    if r.method ~= "by-name" then
-                        headerunits = headerunits or {}
-                        local unittype = r.method == "include-angle" and ":angle" or ":quote"
-                        table.insert(headerunits, {name = name, path = r.path, type = unittype, stl = stl_headers.is_stl_header(name)})
-                    end
-                end
-            end
-        end
+        local headerunits, stl_headerunits = common.get_headerunits(target, sourcebatch)
 
         -- generate headerunits
         local headerunits_flags
-        local private_headerunits_flags
         local modules_support = common.modules_support(target)
+        -- build stl header units as other headerunits may need them
+        if stl_headerunits then
+            headerunits_flags = headerunits_flags or {}
+            table.join2(headerunits_flags, modules_support.generate_stl_headerunits(target, batchcmds, stl_headerunits, opt))
+        end
         if headerunits then
-            headerunits_flags, private_headerunits_flags = modules_support.generate_headerunits(target, batchcmds, headerunits, opt)
+            headerunits_flags = headerunits_flags or {}
+            table.join2(headerunits_flags, modules_support.generate_user_headerunits(target, batchcmds, headerunits, opt))
         end
         if headerunits_flags then
             target:add("cxxflags", headerunits_flags, {force = true, expand = false})
         end
-        if private_headerunits_flags then
-            target:add("cxxflags", private_headerunits_flags, {force = true, expand = false})
-        end
 
         -- topological sort
+        local modules = target:data("cxx.modules")
         local objectfiles = common.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
         modules_support.build_modules(target, batchcmds, objectfiles, modules, opt)
     end)

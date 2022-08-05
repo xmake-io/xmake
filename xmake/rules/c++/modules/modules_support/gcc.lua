@@ -128,7 +128,7 @@ function generate_dependencies(target, sourcebatch, opt)
         depend.on_changed(function()
             progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
 
-            local outdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, target:scriptdir()))))
+            local outdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, projectdir))))
             if not os.isdir(outdir) then
                 os.mkdir(outdir)
             end
@@ -149,107 +149,122 @@ function generate_dependencies(target, sourcebatch, opt)
     end
 end
 
--- generate target header units
-function generate_headerunits(target, batchcmds, headerunits, opt)
+-- generate target stl header units
+function generate_stl_headerunits(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
-    local cachedir = common.modules_cachedir(target)
-    local stlcachedir = common.stlmodules_cachedir(target)
     local mapper_file = _get_module_mapper()
 
+    -- get cachedirs
+    local stlcachedir = common.stlmodules_cachedir(target)
+
     -- build headerunits
-    local objectfiles = {}
     local projectdir = os.projectdir()
-    for _, headerunit in ipairs(headerunits) do
-        if not headerunit.stl then
-            local file = path.relative(headerunit.path, target:scriptdir())
-            local objectfile = target:objectfile(file)
+    local depmtime = 0
+    for i, headerunit in ipairs(headerunits) do
+        local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
+        if _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir)) then
+            local args = { "-c", "-x", "c++-system-header", headerunit.name }
 
-            local outdir
-            if headerunit.type == ":quote" then
-                outdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
-            else
-                outdir = path.join(cachedir, path.directory(headerunit.path))
-            end
-            if not os.isdir(outdir) then
-                os.mkdir(outdir)
-            end
-
-            local bmifilename = path.basename(objectfile) .. get_bmi_extension()
-            local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
-            if not os.isdir(path.directory(objectfile)) then
-                os.mkdir(path.directory(objectfile))
-            end
-
-            if _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir)) then
-                local args = { "-c" }
-                if headerunit.type == ":quote" then
-                    table.join2(args, { "-I", path.directory(headerunit.path), "-x", "c++-user-header", headerunit.name })
-                    _add_module_to_mapper(mapper_file, path.join(".", path.relative(headerunit.path, projectdir)), path.absolute(bmifile, projectdir))
-                elseif headerunit.type == ":angle" then
-                    table.join2(args, { "-x", "c++-system-header", headerunit.name })
-                    _add_module_to_mapper(mapper_file, headerunit.name, path.absolute(bmifile, projectdir))
-                end
-
-                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-
-                batchcmds:add_depfiles(headerunit.path)
-                batchcmds:set_depmtime(os.mtime(bmifile))
-                batchcmds:set_depcache(target:dependfile(bmifile))
-            end
-        else
-            local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
-            if _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir)) then
-                if not os.isfile(bmifile) then
-                    local args = { "-c", "-x", "c++-system-header", headerunit.name }
-
-                    batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-                    batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-
-                    batchcmds:set_depmtime(os.mtime(bmifile))
-                    batchcmds:set_depcache(target:dependfile(bmifile))
-                end
-            end
+            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         end
+        depmtime = math.max(depmtime, os.mtime(bmifile))
     end
+    batchcmds:set_depmtime(depmtime)
+end
+
+-- generate target user header units
+function generate_user_headerunits(target, batchcmds, headerunits, opt)
+    local compinst = target:compiler("cxx")
+    local mapper_file = _get_module_mapper()
+
+    -- get cachedirs
+    local cachedir = common.modules_cachedir(target)
+
+    -- build headerunits
+    local projectdir = os.projectdir()
+    local depmtime = 0
+    for _, headerunit in ipairs(headerunits) do
+        local file = path.relative(headerunit.path, projectdir)
+        local objectfile = target:objectfile(file)
+
+        local outdir
+        if headerunit.type == ":quote" then
+            outdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
+        else
+            outdir = path.join(cachedir, path.directory(headerunit.path))
+        end
+        batchcmds:mkdir(outdir)
+
+        local bmifilename = path.basename(objectfile) .. get_bmi_extension()
+        local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
+        batchcmds:mkdir(path.directory(objectfile))
+
+        local args = { "-c" }
+        local headerunit_path
+        if headerunit.type == ":quote" then
+            table.join2(args, { "-I", path.directory(path.relative(headerunit.path, projectdir)), "-x", "c++-user-header", headerunit.name })
+            headerunit_path = path.join(".", path.relative(headerunit.path, projectdir))
+        elseif headerunit.type == ":angle" then
+            table.join2(args, { "-x", "c++-system-header", headerunit.name })
+            -- if path is relative then its a subtarget path
+            headerunit_path = path.is_absolute(headerunit.path) and headerunit.path or path.join(".", headerunit.path)
+        end
+
+        if _add_module_to_mapper(mapper_file, headerunit_path, path.absolute(bmifile, projectdir)) then
+            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
+
+            batchcmds:add_depfiles(headerunit.path)
+        end
+        depmtime = math.max(depmtime, os.mtime(bmifile))
+    end
+    batchcmds:set_depmtime(depmtime)
 end
 
 -- build module files
 function build_modules(target, batchcmds, objectfiles, modules, opt)
-    local cachedir = common.modules_cachedir(target)
     local compinst = target:compiler("cxx")
     local mapper_file = _get_module_mapper()
     local common_args = {"-x", "c++"}
+
+    -- get cachedirs
+    local cachedir = common.modules_cachedir(target)
+
+    -- build modules
     local projectdir = os.projectdir()
+    local depmtime = 0
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
-        if m then
-            if not os.isdir(path.directory(objectfile)) then
-                os.mkdir(path.directory(objectfile))
-            end
-
-            local args = {"-o", objectfile}
-            for name, provide in pairs(m.provides) do
-                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
-
-                local bmifile = provide.bmi
-                if _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir)) then
-                    table.join2(args, {"-c", provide.sourcefile})
-
-                    batchcmds:add_depfiles(provide.sourcefile)
-                    batchcmds:set_depmtime(os.mtime(bmifile))
-                    batchcmds:set_depcache(target:dependfile(bmifile))
+        if m and m.provides then
+            -- assume there that provides is only one, until we encounter the case
+            local length = 0
+            local name, provide
+            for k, v in pairs(m.provides) do
+                length = length + 1
+                name = k
+                provide = v
+                if length > 1 then
+                    raise("multiple provides are not supported now!")
                 end
             end
 
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
+            local bmifile = provide.bmi
+            if _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir)) then
+                local args = {"-o", objectfile, "-c", provide.sourcefile}
 
-            batchcmds:set_depmtime(os.mtime(objectfile))
-            batchcmds:set_depcache(target:dependfile(objectfile))
+                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
+                batchcmds:mkdir(path.directory(objectfile))
+                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
 
-            target:add("objectfiles", objectfile)
+                batchcmds:add_depfiles(provide.sourcefile)
+                target:add("objectfiles", objectfile)
+
+                depmtime = math.max(depmtime, os.mtime(bmifile))
+            end
         end
     end
+    batchcmds:set_depmtime(depmtime)
 end
 
 function get_bmi_extension()

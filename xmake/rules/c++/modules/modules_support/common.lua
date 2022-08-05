@@ -26,6 +26,7 @@ import("core.tool.compiler")
 import("core.cache.memcache", {alias = "_memcache"})
 import("core.project.project")
 import("lib.detect.find_file")
+import("stl_headers")
 
 -- get memcache
 function memcache()
@@ -34,10 +35,7 @@ end
 
 -- get stl modules cache directory
 function stlmodules_cachedir(target)
-    local stlcachedir = path.join(target:autogendir(), "stlmodules", "cache")
-    if target:has_tool("cxx", "clang", "clangxx") then
-        stlcachedir = path.join(config.buildir(), "stlmodules", "cache")
-    end
+    local stlcachedir = path.join(config.buildir(), "stlmodules", "cache")
     if not os.isdir(stlcachedir) then
         os.mkdir(stlcachedir)
     end
@@ -53,12 +51,42 @@ function modules_cachedir(target)
     return cachedir
 end
 
+-- get headerunits info
+function get_headerunits(target, sourcebatch)
+    local headerunits
+    local stl_headerunits
+    local modules = target:data("cxx.modules")
+    for _, objectfile in ipairs(sourcebatch.objectfiles) do
+        local m = modules[objectfile]
+        if m then
+            for name, r in pairs(m.requires) do
+                if r.method ~= "by-name" then
+                    local unittype = r.method == "include-angle" and ":angle" or ":quote"
+
+                    if stl_headers.is_stl_header(name) then
+                        stl_headerunits = stl_headerunits or {}
+                        if not table.find_if(stl_headerunits, function(i, v) return v.name == name end) then
+                            table.insert(stl_headerunits, {name = name, path = r.path, type = unittype})
+                        end
+                    else
+                        headerunits = headerunits or {}
+                        if not table.find_if(headerunits, function(i, v) return v.name == name end) then
+                            table.insert(headerunits, {name = name, path = r.path, type = unittype})
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return headerunits, stl_headerunits
+end
+
 -- patch sourcebatch
 function patch_sourcebatch(target, sourcebatch, opt)
     local cachedir = modules_cachedir(target)
     sourcebatch.sourcekind = "cxx"
-    sourcebatch.objectfiles = sourcebatch.objectfiles or {}
-    sourcebatch.dependfiles = sourcebatch.dependfiles or {}
+    sourcebatch.objectfiles = {}
+    sourcebatch.dependfiles = {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
@@ -279,9 +307,12 @@ end
 function find_angle_header_file(target, file)
     local headerpaths = modules_support(target).toolchain_includedirs(target)
     for _, dep in ipairs(target:orderdeps()) do
-        table.insert(headerpaths, dep:scriptdir())
+        local includedirs = dep:get("sysincludedirs") or dep:get("includedirs")
+        if includedirs then
+            table.join2(headerpaths, includedirs)
+        end
     end
-    for _, pkg in ipairs(target:pkgs()) do
+    for _, pkg in pairs(target:pkgs()) do
         local includedirs = pkg:get("sysincludedirs") or pkg:get("includedirs")
         if includedirs then
             table.join2(headerpaths, includedirs)
