@@ -62,7 +62,6 @@ function get_headerunits(target, sourcebatch)
             for name, r in pairs(m.requires) do
                 if r.method ~= "by-name" then
                     local unittype = r.method == "include-angle" and ":angle" or ":quote"
-
                     if stl_headers.is_stl_header(name) then
                         stl_headerunits = stl_headerunits or {}
                         if not table.find_if(stl_headerunits, function(i, v) return v.name == name end) then
@@ -405,3 +404,4 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
     local jsondata = json.encode(output)
     io.writefile(jsonfile, jsondata)
 end
+

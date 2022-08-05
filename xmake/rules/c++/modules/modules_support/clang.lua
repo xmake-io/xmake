@@ -249,13 +249,11 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
             end
 
             local bmifile = provide.bmi
-
             local args = { emitmoduleinterfaceflag, "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile }
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
             batchcmds:mkdir(path.directory(objectfile))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, {bmifile}, {"-c", "-o", objectfile}))
-
             batchcmds:add_depfiles(provide.sourcefile)
 
             local bmiflags = modulefileflag .. bmifile

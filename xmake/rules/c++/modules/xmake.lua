@@ -51,7 +51,7 @@ rule("c++.build.modules")
 
 -- build dependencies
 rule("c++.build.modules.dependencies")
-    before_build(function(target, opt)
+    before_buildcmd(function(target, batchcmds, opt)
         if not target:data("cxx.has_modules") then
             return
         end

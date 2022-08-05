@@ -245,7 +245,6 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
             batchcmds:mkdir(path.directory(objectfile))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args, bmi_args), {envs = vcvars})
-
             batchcmds:add_depfiles(provide.sourcefile)
 
             local bmiflags = {referenceflag, name .. "=" .. path.filename(bmifile)}

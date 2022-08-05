@@ -214,7 +214,6 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
         if _add_module_to_mapper(mapper_file, headerunit_path, path.absolute(bmifile, projectdir)) then
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-
             batchcmds:add_depfiles(headerunit.path)
         end
         depmtime = math.max(depmtime, os.mtime(bmifile))
@@ -252,14 +251,12 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
             local bmifile = provide.bmi
             if _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir)) then
                 local args = {"-o", objectfile, "-c", provide.sourcefile}
-
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
                 batchcmds:mkdir(path.directory(objectfile))
                 batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
-
                 batchcmds:add_depfiles(provide.sourcefile)
-                target:add("objectfiles", objectfile)
 
+                target:add("objectfiles", objectfile)
                 depmtime = math.max(depmtime, os.mtime(bmifile))
             end
         end
