@@ -235,33 +235,34 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     local depmtime = 0
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
-        if m then
-            batchcmds:mkdir(path.directory(objectfile))
-
-            local args = { emitmoduleinterfaceflag }
-            local bmiflags = {}
-            local bmifiles = {}
-            for name, provide in pairs(m.provides) do
-                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
-
-                local bmifile = provide.bmi
-                table.join2(args, { "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile })
-                table.insert(bmifiles, bmifile)
-
-                batchcmds:add_depfiles(provide.sourcefile)
-
-                table.join2(bmiflags, {modulefileflag .. bmifile})
-                depmtime = math.max(depmtime, os.mtime(bmifile))
+        if m and m.provides then
+            -- assume there that provides is only one, until we encounter the case
+            local length = 0
+            local name, provide
+            for k, v in pairs(m.provides) do
+                length = length + 1
+                name = k
+                provide = v
+                if length > 1 then
+                    raise("multiple provides are not supported now!")
+                end
             end
 
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, bmifiles, {"-c", "-o", objectfile}))
+            local bmifile = provide.bmi
 
+            local args = { emitmoduleinterfaceflag, "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile }
+            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
+            batchcmds:mkdir(path.directory(objectfile))
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, {bmifile}, {"-c", "-o", objectfile}))
+
+            batchcmds:add_depfiles(provide.sourcefile)
+
+            local bmiflags = modulefileflag .. bmifile
             target:add("cxxflags", bmiflags, {public = true, force = true})
             target:add("objectfiles", objectfile)
-            for _, f in ipairs(bmiflags) do
-                target:data_add("cxx.modules.flags", f)
-            end
+            target:data_add("cxx.modules.flags", f)
+            depmtime = math.max(depmtime, os.mtime(bmifile))
         end
     end
     batchcmds:set_depmtime(depmtime)

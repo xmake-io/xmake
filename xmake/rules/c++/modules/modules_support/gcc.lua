@@ -236,25 +236,32 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     local depmtime = 0
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
-        if m then
-            batchcmds:mkdir(path.directory(objectfile))
-
-            local args = {"-o", objectfile}
-            for name, provide in pairs(m.provides) do
-                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
-
-                local bmifile = provide.bmi
-                if _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir)) then
-                    table.join2(args, {"-c", provide.sourcefile})
-
-                    batchcmds:add_depfiles(provide.sourcefile)
+        if m and m.provides then
+            -- assume there that provides is only one, until we encounter the case
+            local length = 0
+            local name, provide
+            for k, v in pairs(m.provides) do
+                length = length + 1
+                name = k
+                provide = v
+                if length > 1 then
+                    raise("multiple provides are not supported now!")
                 end
-                depmtime = math.max(depmtime, os.mtime(bmifile))
             end
 
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
+            local bmifile = provide.bmi
+            if _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir)) then
+                local args = {"-o", objectfile, "-c", provide.sourcefile})
 
-            target:add("objectfiles", objectfile)
+                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
+                batchcmds:mkdir(path.directory(objectfile))
+                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
+
+                batchcmds:add_depfiles(provide.sourcefile)
+                target:add("objectfiles", objectfile)
+
+                depmtime = math.max(depmtime, os.mtime(bmifile))
+            end
         end
     end
     batchcmds:set_depmtime(depmtime)

@@ -227,30 +227,34 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     local depmtime = 0
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
-        if m then
-            batchcmds:mkdir(path.directory(objectfile))
-
-            local args = {"/c", "/Fo" .. objectfile}
-            local bmiflags = {}
-            for name, provide in pairs(m.provides) do
-                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
-
-                local bmifile = provide.bmi
-                table.join2(args, {interfaceflag, ifcoutputflag, bmifile, provide.sourcefile})
-
-                batchcmds:add_depfiles(provide.sourcefile)
-
-                table.join2(bmiflags, {referenceflag, name .. "=" .. path.filename(bmifile)})
-                depmtime = math.max(depmtime, os.mtime(bmifile))
+        if m and m.provides then
+            -- assume there that provides is only one, until we encounter the case
+            local length = 0
+            local name, provide
+            for k, v in pairs(m.provides) do
+                length = length + 1
+                name = k
+                provide = v
+                if length > 1 then
+                    raise("multiple provides are not supported now!")
+                end
             end
 
+            local bmifile = provide.bmi
+            local args = {"/c", "/Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
+            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
+            batchcmds:mkdir(path.directory(objectfile))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args, bmi_args), {envs = vcvars})
 
+            batchcmds:add_depfiles(provide.sourcefile)
+
+            local bmiflags = {referenceflag, name .. "=" .. path.filename(bmifile)}
             target:add("cxxflags", bmiflags, {force = true, expand = false})
             for _, f in ipairs(bmiflags) do
                 target:data_add("cxx.modules.flags", f)
             end
             target:add("objectfiles", objectfile)
+            depmtime = math.max(depmtime, os.mtime(bmifile))
         end
     end
     batchcmds:set_depmtime(depmtime)
