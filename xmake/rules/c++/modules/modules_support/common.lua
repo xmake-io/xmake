@@ -406,16 +406,28 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
 end
 
 -- generate dependencies
-function generate_dependencies(target, opt)
-
-    -- get sourcebatch
-    local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
-    patch_sourcebatch(target, sourcebatch)
-
-    -- generate dependencies
+function generate_dependencies(target, sourcebatch, opt)
     modules_support(target).generate_dependencies(target, sourcebatch, opt)
-
-    -- load and parse module dependencies
     local moduleinfos = load_moduleinfos(target, sourcebatch)
     return parse_dependency_data(target, moduleinfos)
+end
+
+-- generate headerunits
+function generate_headerunits(target, batchcmds, sourcebatch, opt)
+
+    -- get headerunits info
+    local headerunits, stl_headerunits = get_headerunits(target, sourcebatch)
+
+    -- generate headerunits
+    local headerunits_flags
+    -- build stl header units as other headerunits may need them
+    if stl_headerunits then
+        headerunits_flags = headerunits_flags or {}
+        table.join2(headerunits_flags, modules_support(target).generate_stl_headerunits(target, batchcmds, stl_headerunits, opt))
+    end
+    if headerunits then
+        headerunits_flags = headerunits_flags or {}
+        table.join2(headerunits_flags, modules_support(target).generate_user_headerunits(target, batchcmds, headerunits, opt))
+    end
+    return headerunits_flags
 end

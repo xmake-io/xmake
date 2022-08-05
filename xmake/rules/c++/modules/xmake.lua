@@ -54,7 +54,9 @@ rule("c++.build.modules.dependencies")
     before_buildcmd(function(target, batchcmds, opt)
         if target:data("cxx.has_modules") then
             import("modules_support.common")
-            local modules = common.generate_dependencies(target, opt)
+            local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
+            common.patch_sourcebatch(target, sourcebatch)
+            local modules = common.generate_dependencies(target, sourcebatch, opt)
             target:data_set("cxx.modules", modules)
         end
     end)
@@ -76,27 +78,15 @@ rule("c++.build.modules.builder")
         -- patch sourcebatch
         common.patch_sourcebatch(target, sourcebatch, opt)
 
-        -- get headerunits info
-        local headerunits, stl_headerunits = common.get_headerunits(target, sourcebatch)
-
         -- generate headerunits
-        local headerunits_flags
-        local modules_support = common.modules_support(target)
-        -- build stl header units as other headerunits may need them
-        if stl_headerunits then
-            headerunits_flags = headerunits_flags or {}
-            table.join2(headerunits_flags, modules_support.generate_stl_headerunits(target, batchcmds, stl_headerunits, opt))
-        end
-        if headerunits then
-            headerunits_flags = headerunits_flags or {}
-            table.join2(headerunits_flags, modules_support.generate_user_headerunits(target, batchcmds, headerunits, opt))
-        end
+        local headerunits_flags = common.generate_headerunits(target, batchcmds, sourcebatch, opt)
         if headerunits_flags then
             target:add("cxxflags", headerunits_flags, {force = true, expand = false})
         end
 
         -- topological sort
         local modules = target:data("cxx.modules")
+        local modules_support = common.modules_support(target)
         local objectfiles = common.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
         modules_support.build_modules(target, batchcmds, objectfiles, modules, opt)
     end)
