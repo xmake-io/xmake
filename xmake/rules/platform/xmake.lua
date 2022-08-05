@@ -19,9 +19,7 @@
 --
 
 rule("platform.wasm")
-    if is_plat("wasm") then
-        add_deps("platform.wasm.installfiles")
-    end
+    add_deps("platform.wasm.installfiles")
 
 rule("platform.windows")
     if is_host("windows") then
