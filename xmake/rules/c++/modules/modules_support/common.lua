@@ -35,10 +35,7 @@ end
 
 -- get stl modules cache directory
 function stlmodules_cachedir(target)
-    local stlcachedir = path.join(target:autogendir(), "stlmodules", "cache")
-    if target:has_tool("cxx", "clang", "clangxx") then
-        stlcachedir = path.join(config.buildir(), "stlmodules", "cache")
-    end
+    local stlcachedir = path.join(config.buildir(), "stlmodules", "cache")
     if not os.isdir(stlcachedir) then
         os.mkdir(stlcachedir)
     end
