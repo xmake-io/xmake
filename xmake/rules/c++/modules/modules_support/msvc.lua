@@ -177,13 +177,13 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
             outputdir = path.join(cachedir, path.directory(headerunit.path):sub(3))
         end
         if not os.isdir(outputdir) then
-            os.mkdir(outputdir)
+            batchcmds:mkdir(outputdir)
         end
 
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
         local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
         if not os.isdir(path.directory(objectfile)) then
-            os.mkdir(path.directory(objectfile))
+            batchcmds:mkdir(path.directory(objectfile))
         end
 
         local args = {headernameflag .. headerunit.type, headerunit.path, ifcoutputflag, outputdir, "/Fo" .. objectfile}
@@ -230,7 +230,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
         local m = modules[objectfile]
         if m then
             if not os.isdir(path.directory(objectfile)) then
-                os.mkdir(path.directory(objectfile))
+                batchcmds:mkdir(path.directory(objectfile))
             end
 
             local args = {"/c", "/Fo" .. objectfile}
