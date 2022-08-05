@@ -141,7 +141,6 @@ function generate_stl_headerunits(target, batchcmds, headerunits, opt)
     -- build headerunits
     local projectdir = os.projectdir()
     local flags = {}
-    local bmifiles = {}
     local depmtime = 0
     for i, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
@@ -152,11 +151,9 @@ function generate_stl_headerunits(target, batchcmds, headerunits, opt)
         end
 
         table.insert(flags, modulefileflag .. bmifile)
-        table.insert(bmifiles, bmifile)
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
-    batchcmds:set_depcache(target:dependfile(bmifiles))
     return flags
 end
 
@@ -177,7 +174,6 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
     local objectfiles = {}
     local flags = {}
     local projectdir = os.projectdir()
-    local bmifiles = {}
     local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
         local file = path.relative(headerunit.path, target:scriptdir())
@@ -208,11 +204,9 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
         batchcmds:add_depfiles(headerunit.path)
 
         table.insert(flags, modulefileflag .. bmifile)
-        table.insert(bmifiles, bmifile)
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
-    batchcmds:set_depcache(target:dependfile(bmifiles))
     return flags
 end
 
@@ -238,7 +232,6 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
 
     -- build modules
     local common_args = {modulecachepathflag .. cachedir}
-    local bmifiles = {}
     local depmtime = 0
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
@@ -247,13 +240,13 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
 
             local args = { emitmoduleinterfaceflag }
             local bmiflags = {}
-            local bmifiles_ = {}
+            local bmifiles = {}
             for name, provide in pairs(m.provides) do
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
 
                 local bmifile = provide.bmi
                 table.join2(args, { "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile })
-                table.insert(bmifiles_, bmifile)
+                table.insert(bmifiles, bmifile)
 
                 batchcmds:add_depfiles(provide.sourcefile)
 
@@ -262,18 +255,16 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
             end
 
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, bmifiles_, {"-c", "-o", objectfile}))
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, bmifiles, {"-c", "-o", objectfile}))
 
             target:add("cxxflags", bmiflags, {public = true, force = true})
             target:add("objectfiles", objectfile)
             for _, f in ipairs(bmiflags) do
                 target:data_add("cxx.modules.flags", f)
             end
-            table.join2(bmifiles, bmifiles_)
         end
     end
     batchcmds:set_depmtime(depmtime)
-    batchcmds:set_depcache(target:dependfile(bmifiles))
 end
 
 function get_bmi_extension()
