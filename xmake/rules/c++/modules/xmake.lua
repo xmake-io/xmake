@@ -98,9 +98,6 @@ rule("c++.build.modules.builder")
         if stl_headerunits then
             headerunits_flags = headerunits_flags or {}
             table.join2(headerunits_flags, modules_support.generate_stl_headerunits(target, batchcmds, stl_headerunits, opt))
-
-            -- force STL header unit generation
-            batchcmds:runcmds(opt)
         end
         if headerunits then
             headerunits_flags = headerunits_flags or {}

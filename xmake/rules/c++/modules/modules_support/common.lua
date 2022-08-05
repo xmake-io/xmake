@@ -68,10 +68,14 @@ function get_headerunits(target, sourcebatch)
 
                     if stl_headers.is_stl_header(name) then
                         stl_headerunits = stl_headerunits or {}
-                        table.insert(stl_headerunits, {name = name, path = r.path, type = unittype})
+                        if not table.find_if(stl_headerunits, function(i, v) return v.name == name end) then
+                            table.insert(stl_headerunits, {name = name, path = r.path, type = unittype})
+                        end
                     else
                         headerunits = headerunits or {}
-                        table.insert(headerunits, {name = name, path = r.path, type = unittype})
+                        if not table.find_if(headerunits, function(i, v) return v.name == name end) then
+                            table.insert(headerunits, {name = name, path = r.path, type = unittype})
+                        end
                     end
                 end
             end
