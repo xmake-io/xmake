@@ -142,7 +142,7 @@ function generate_stl_headerunits(target, batchcmds, headerunits, opt)
         local flag = {headerunitflag .. ":angle", headerunit.name .. "=" .. headerunit.name .. get_bmi_extension()}
         table.join2(flags, flag)
 
-        table.append(bmifiles, bmifile)
+        table.insert(bmifiles, bmifile)
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -199,7 +199,7 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
         table.join2(flags, flag)
         target:add("objectfiles", objectfile)
 
-        table.append(bmifiles, bmifile)
+        table.insert(bmifiles, bmifile)
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -248,7 +248,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
                 batchcmds:add_depfiles(provide.sourcefile)
 
                 table.join2(bmiflags, {referenceflag, name .. "=" .. path.filename(bmifile)})
-                table.append(bmifiles, bmifile)
+                table.insert(bmifiles, bmifile)
                 depmtime = math.max(depmtime, os.mtime(bmifile))
             end
 

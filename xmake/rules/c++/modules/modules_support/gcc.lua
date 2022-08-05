@@ -169,7 +169,7 @@ function generate_stl_headerunits(target, batchcmds, headerunits, opt)
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         end
-        table.append(bmifiles, bmifile)
+        table.insert(bmifiles, bmifile)
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -221,7 +221,7 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
 
             batchcmds:add_depfiles(headerunit.path)
         end
-        table.append(bmifiles, bmifile)
+        table.insert(bmifiles, bmifile)
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -256,7 +256,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
 
                     batchcmds:add_depfiles(provide.sourcefile)
                 end
-                table.append(bmifiles, bmifile)
+                table.insert(bmifiles, bmifile)
                 depmtime = math.max(depmtime, os.mtime(bmifile))
             end
 

@@ -152,7 +152,7 @@ function generate_stl_headerunits(target, batchcmds, headerunits, opt)
         end
 
         table.insert(flags, modulefileflag .. bmifile)
-        table.append(bmifiles, bmifile)
+        table.insert(bmifiles, bmifile)
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -208,7 +208,7 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
         batchcmds:add_depfiles(headerunit.path)
 
         table.insert(flags, modulefileflag .. bmifile)
-        table.append(bmifiles, bmifile)
+        table.insert(bmifiles, bmifile)
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -253,7 +253,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
 
                 local bmifile = provide.bmi
                 table.join2(args, { "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile })
-                table.append(bmifiles_, bmifile)
+                table.insert(bmifiles_, bmifile)
 
                 batchcmds:add_depfiles(provide.sourcefile)
 
