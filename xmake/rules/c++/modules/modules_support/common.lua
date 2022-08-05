@@ -81,7 +81,7 @@ function get_headerunits(target, sourcebatch)
 end
 
 -- patch sourcebatch
-function patch_sourcebatch(target, sourcebatch, opt)
+function patch_sourcebatch(target, sourcebatch)
     local cachedir = modules_cachedir(target)
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = {}
@@ -135,7 +135,7 @@ function contains_modules(target)
 end
 
 -- load module infos
-function load_moduleinfos(target, sourcebatch, opt)
+function load_moduleinfos(target, sourcebatch)
     local moduleinfos
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
@@ -182,7 +182,7 @@ end
     }
   }
 }]]
-function parse_dependency_data(target, moduleinfos, opt)
+function parse_dependency_data(target, moduleinfos)
     local modules
     local cachedir = modules_cachedir(target)
     for _, moduleinfo in ipairs(moduleinfos) do

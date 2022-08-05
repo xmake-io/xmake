@@ -89,7 +89,9 @@ function generate_dependencies(target, sourcebatch, opt)
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function ()
-            progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
+            if opt.progress then
+                progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
+            end
             local outputdir = path.join(cachedir, path.directory(path.relative(sourcefile, projectdir)))
             if not os.isdir(outputdir) then
                 os.mkdir(outputdir)

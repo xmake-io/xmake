@@ -59,15 +59,15 @@ rule("c++.build.modules.dependencies")
         -- patch sourcebatch
         import("modules_support.common")
         local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
-        common.patch_sourcebatch(target, sourcebatch, opt)
+        common.patch_sourcebatch(target, sourcebatch)
 
         -- generate dependencies
         local modules_support = common.modules_support(target)
         modules_support.generate_dependencies(target, sourcebatch, opt)
 
         -- load and parse module dependencies
-        local moduleinfos = common.load_moduleinfos(target, sourcebatch, opt)
-        local modules = common.parse_dependency_data(target, moduleinfos, opt)
+        local moduleinfos = common.load_moduleinfos(target, sourcebatch)
+        local modules = common.parse_dependency_data(target, moduleinfos)
         target:data_set("cxx.modules", modules)
     end)
 
