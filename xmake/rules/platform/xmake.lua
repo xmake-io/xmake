@@ -18,6 +18,11 @@
 -- @file        xmake.lua
 --
 
+rule("platform.wasm")
+    if is_plat("wasm") then
+        add_deps("platform.wasm.installfiles")
+    end
+
 rule("platform.windows")
     if is_host("windows") then
         add_deps("platform.windows.def")
