@@ -129,8 +129,8 @@ function generate_dependencies(target, sourcebatch, opt)
     end
 end
 
--- generate target stl header units
-function generate_stl_headerunits(target, batchcmds, headerunits, opt)
+-- generate target stl header units for batchcmds
+function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
 
     -- get cachedirs
@@ -159,8 +159,8 @@ function generate_stl_headerunits(target, batchcmds, headerunits, opt)
     return flags
 end
 
--- generate target user header units
-function generate_user_headerunits(target, batchcmds, headerunits, opt)
+-- generate target user header units for batchcmds
+function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
 
@@ -212,8 +212,8 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
     return flags
 end
 
--- build module files
-function build_modules(target, batchcmds, objectfiles, modules, opt)
+-- build module files for batchcmds
+function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
 
     -- get cachedirs

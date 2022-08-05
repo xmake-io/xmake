@@ -52,10 +52,9 @@ function modules_cachedir(target)
 end
 
 -- get headerunits info
-function get_headerunits(target, sourcebatch)
+function get_headerunits(target, sourcebatch, modules)
     local headerunits
     local stl_headerunits
-    local modules = target:data("cxx.modules")
     for _, objectfile in ipairs(sourcebatch.objectfiles) do
         local m = modules[objectfile]
         if m then
@@ -281,6 +280,7 @@ function _topological_sort_get_first_unmarked_node(nodes)
     end
 end
 
+-- topological sort
 function sort_modules_by_dependencies(objectfiles, modules)
     local output = {}
     local nodes  = {}
@@ -412,22 +412,55 @@ function generate_dependencies(target, sourcebatch, opt)
     return parse_dependency_data(target, moduleinfos)
 end
 
--- generate headerunits
-function generate_headerunits(target, batchcmds, sourcebatch, opt)
+-- generate headerunits for batchjobs, TODO
+function generate_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
 
     -- get headerunits info
-    local headerunits, stl_headerunits = get_headerunits(target, sourcebatch)
+    local headerunits, stl_headerunits = get_headerunits(target, sourcebatch, modules)
 
     -- generate headerunits
-    local headerunits_flags
     -- build stl header units as other headerunits may need them
+    local headerunits_flags
     if stl_headerunits then
         headerunits_flags = headerunits_flags or {}
-        table.join2(headerunits_flags, modules_support(target).generate_stl_headerunits(target, batchcmds, stl_headerunits, opt))
+--        table.join2(headerunits_flags, modules_support(target).generate_stl_headerunits_for_batchjobs(target, batchjobs, stl_headerunits, opt))
     end
     if headerunits then
         headerunits_flags = headerunits_flags or {}
-        table.join2(headerunits_flags, modules_support(target).generate_user_headerunits(target, batchcmds, headerunits, opt))
+--        table.join2(headerunits_flags, modules_support(target).generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits, opt))
     end
     return headerunits_flags
 end
+
+-- generate headerunits for batchcmds
+function generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
+
+    -- get headerunits info
+    local headerunits, stl_headerunits = get_headerunits(target, sourcebatch, modules)
+
+    -- generate headerunits
+    -- build stl header units as other headerunits may need them
+    local headerunits_flags
+    if stl_headerunits then
+        headerunits_flags = headerunits_flags or {}
+        table.join2(headerunits_flags, modules_support(target).generate_stl_headerunits_for_batchcmds(target, batchcmds, stl_headerunits, opt))
+    end
+    if headerunits then
+        headerunits_flags = headerunits_flags or {}
+        table.join2(headerunits_flags, modules_support(target).generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt))
+    end
+    return headerunits_flags
+end
+
+-- build modules for batchjobs, TODO
+function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
+    local objectfiles = sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
+--    modules_support(target).build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
+end
+
+-- build modules for batchcmds
+function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
+    local objectfiles = sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
+    modules_support(target).build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
+end
+
