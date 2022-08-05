@@ -82,35 +82,14 @@ rule("c++.build.modules.builder")
             return
         end
 
-        -- patch sourcebatch
         import("modules_support.common")
         import("modules_support.stl_headers")
-        sourcebatch.objectfiles = {}
-        sourcebatch.dependfiles = {}
+
+        -- patch sourcebatch
         common.patch_sourcebatch(target, sourcebatch, opt)
 
         -- get headerunits info
-        local headerunits
-        local stl_headerunits
-        local modules = target:data("cxx.modules")
-        for _, objectfile in ipairs(sourcebatch.objectfiles) do
-            local m = modules[objectfile]
-            if m then
-                for name, r in pairs(m.requires) do
-                    if r.method ~= "by-name" then
-                        local unittype = r.method == "include-angle" and ":angle" or ":quote"
-
-                        if stl_headers.is_stl_header(name) then
-                            stl_headerunits = stl_headerunits or {}
-                            table.insert(stl_headerunits, {name = name, path = r.path, type = unittype})
-                        else
-                            headerunits = headerunits or {}
-                            table.insert(headerunits, {name = name, path = r.path, type = unittype,})
-                        end
-                    end
-                end
-            end
-        end
+        local headerunits, stl_headerunits = common.get_headerunits(target, sourcebatch)
 
         -- generate headerunits
         local headerunits_flags
@@ -132,6 +111,7 @@ rule("c++.build.modules.builder")
         end
 
         -- topological sort
+        local modules = target:data("cxx.modules")
         local objectfiles = common.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
         modules_support.build_modules(target, batchcmds, objectfiles, modules, opt)
     end)

@@ -26,6 +26,7 @@ import("core.tool.compiler")
 import("core.cache.memcache", {alias = "_memcache"})
 import("core.project.project")
 import("lib.detect.find_file")
+import("stl_headers")
 
 -- get memcache
 function memcache()
@@ -53,12 +54,38 @@ function modules_cachedir(target)
     return cachedir
 end
 
+-- get headerunits info
+function get_headerunits(target, sourcebatch)
+    local headerunits
+    local stl_headerunits
+    local modules = target:data("cxx.modules")
+    for _, objectfile in ipairs(sourcebatch.objectfiles) do
+        local m = modules[objectfile]
+        if m then
+            for name, r in pairs(m.requires) do
+                if r.method ~= "by-name" then
+                    local unittype = r.method == "include-angle" and ":angle" or ":quote"
+
+                    if stl_headers.is_stl_header(name) then
+                        stl_headerunits = stl_headerunits or {}
+                        table.insert(stl_headerunits, {name = name, path = r.path, type = unittype})
+                    else
+                        headerunits = headerunits or {}
+                        table.insert(headerunits, {name = name, path = r.path, type = unittype})
+                    end
+                end
+            end
+        end
+    end
+    return headerunits, stl_headerunits
+end
+
 -- patch sourcebatch
 function patch_sourcebatch(target, sourcebatch, opt)
     local cachedir = modules_cachedir(target)
     sourcebatch.sourcekind = "cxx"
-    sourcebatch.objectfiles = sourcebatch.objectfiles or {}
-    sourcebatch.dependfiles = sourcebatch.dependfiles or {}
+    sourcebatch.objectfiles = {}
+    sourcebatch.dependfiles = {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
