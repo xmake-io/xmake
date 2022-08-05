@@ -184,15 +184,11 @@ function generate_user_headerunits(target, batchcmds, headerunits, opt)
         else
             outdir = path.join(cachedir, path.directory(headerunit.path))
         end
-        if not os.isdir(outdir) then
-            batchcmds:mkdir(outdir)
-        end
+        batchcmds:mkdir(outdir)
 
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
         local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
-        if not os.isdir(path.directory(objectfile)) then
-            batchcmds:mkdir(path.directory(objectfile))
-        end
+        batchcmds:mkdir(path.directory(objectfile))
 
         local args = { modulecachepathflag .. cachedir, emitmoduleflag, "-c", "-o", bmifile}
         if headerunit.type == ":quote" then
@@ -237,9 +233,7 @@ function build_modules(target, batchcmds, objectfiles, modules, opt)
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
         if m then
-            if not os.isdir(path.directory(objectfile)) then
-                batchcmds:mkdir(path.directory(objectfile))
-            end
+            batchcmds:mkdir(path.directory(objectfile))
 
             local args = { emitmoduleinterfaceflag }
             local bmiflags = {}
