@@ -45,6 +45,19 @@ end
 function nf_rpathdir(self, dir)
 end
 
+-- make the symbol flag
+function nf_symbol(self, level)
+    local kind = self:kind()
+    if kind == "ld" or kind == "sh" then
+        -- emscripten requires -gsource-map when linking to map JS/wasm code back to original source
+        if level == "debug" then
+            return "-gsource-map"
+        end
+    end
+
+    return _super.nf_symbol(self, level)
+end
+
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
