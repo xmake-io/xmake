@@ -63,6 +63,7 @@ rule("c++")
     add_deps("utils.check.licenses")
 
     -- add platform rules
+    add_deps("platform.wasm")
     add_deps("platform.windows")
 
     -- add linker rules
