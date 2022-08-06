@@ -69,17 +69,19 @@ function load(target)
     target:add("cxxflags", "@" .. mapper_file, {force = true, expand = false})
 
     -- add stdifcdir in case of if the user want to use Microsoft modularised STL
-    local stdifcdirflag = get_stdifcdirflag(target)
-    for _, toolchain_inst in ipairs(target:toolchains()) do
-        if toolchain_inst:name() == "msvc" then
-            local vcvars = toolchain_inst:config("vcvars")
-            if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                local stdifcdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "ifc", target:is_arch("x64") and "x64" or "x86")
-                if os.isdir(stdifcdir) then
-                    target:add("cxxflags", {stdifcdirflag, winos.short_path(stdifcdir)}, {force = true, expand = false})
+    if target:values("msvc.modules.stdifcdir") then
+        local stdifcdirflag = get_stdifcdirflag(target)
+        for _, toolchain_inst in ipairs(target:toolchains()) do
+            if toolchain_inst:name() == "msvc" then
+                local vcvars = toolchain_inst:config("vcvars")
+                if vcvars.VCInstallDir and vcvars.VCToolsVersion then
+                    local stdifcdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "ifc", target:is_arch("x64") and "x64" or "x86")
+                    if os.isdir(stdifcdir) then
+                        target:add("cxxflags", {stdifcdirflag, winos.short_path(stdifcdir)}, {force = true, expand = false})
+                    end
                 end
+                break
             end
-            break
         end
     end
 
