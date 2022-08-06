@@ -448,18 +448,19 @@ end
 function generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
 
     -- get headerunits info
-    local headerunits, stl_headerunits = get_headerunits(target, sourcebatch, modules)
+    local user_headerunits, stl_headerunits = get_headerunits(target, sourcebatch, modules)
 
     -- generate headerunits
     -- build stl header units as other headerunits may need them
-    local headerunits_flags
-    if stl_headerunits then
-        headerunits_flags = headerunits_flags or {}
+    if stl_headerunits or user_headerunits then
+        local headerunits_flags = localcache():get("headerunits_flags")
+        if stl_headerunits then
+            modules_support(target).generate_stl_headerunits_for_batchcmds(target, batchcmds, stl_headerunits, opt)
         table.join2(headerunits_flags, modules_support(target).generate_stl_headerunits_for_batchcmds(target, batchcmds, stl_headerunits, opt))
-    end
-    if headerunits then
-        headerunits_flags = headerunits_flags or {}
-        table.join2(headerunits_flags, modules_support(target).generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt))
+        end
+        if user_headerunits then
+            modules_support(target).generate_user_headerunits_for_batchcmds(target, batchcmds, user_headerunits, opt)
+        end
     end
     return headerunits_flags
 end

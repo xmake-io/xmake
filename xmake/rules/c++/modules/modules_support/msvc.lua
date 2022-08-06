@@ -22,14 +22,41 @@
 import("core.tool.compiler")
 import("core.project.project")
 import("core.project.depend")
+import("core.project.config")
 import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
+
+-- get and create the path of module mapper
+function _get_module_mapper()
+    local mapper_file = path.join(config.buildir(), "mapper.txt")
+    if not os.isfile(mapper_file) then
+        io.writefile(mapper_file, "")
+    end
+    return mapper_file
+end
+
+-- add a module or header unit into the mapper
+--
+-- e.g
+-- /headerUnit:angle cstdint=cstdint.ifc
+-- /headerUnit:angle glm/mat4x4.hpp=Users\arthu\AppData\Local\.xmake\packages\g\glm\0.9.9+8\91454f3ee0be416cb9c7452970a2300f\include\glm\mat4x4.hpp.ifc
+--
+function _add_module_to_mapper(file, argument, module)
+    for line in io.lines(file) do
+        if line:startswith(argument .. " " .. module) then
+        end
+    end
+    local f = io.open(file, "a")
+    f:print("%s %s", argument, module)
+    f:close()
+end
 
 -- load module support for the current target
 function load(target)
     local cachedir = common.modules_cachedir(target)
     local stlcachedir = common.stlmodules_cachedir(target)
+    local mapper_file = _get_module_mapper()
 
     -- get flags
     local modulesflag = get_modulesflag(target)
@@ -39,6 +66,7 @@ function load(target)
     target:add("cxxflags", modulesflag)
     target:add("cxxflags", {ifcsearchdirflag, cachedir}, {force = true, expand = false})
     target:add("cxxflags", {ifcsearchdirflag, stlcachedir}, {force = true, expand = false})
+    target:add("cxxflags", "@" .. mapper_file, {force = true, expand = false})
 
     -- add stdifcdir in case of if the user want to use Microsoft modularised STL
     local stdifcdirflag = get_stdifcdirflag(target)
@@ -119,6 +147,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
+    local mapper_file = _get_module_mapper()
 
     -- get flags
     local exportheaderflag = get_exportheaderflag(target)
@@ -133,7 +162,6 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     -- build headerunits
     local common_args = {"/TP", exportheaderflag, "/c"}
     local objectfiles = {}
-    local flags = {}
     local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
@@ -141,15 +169,12 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
             local args = {exportheaderflag, headernameflag .. ":angle", headerunit.name, ifcoutputflag, stlcachedir}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args), {envs = vcvars})
+
+            _add_module_to_mapper(mapper_file, headerunitflag .. ":angle", headerunit.name .. "=" .. headerunit.name .. get_bmi_extension())
         end
-
-        local flag = {headerunitflag .. ":angle", headerunit.name .. "=" .. headerunit.name .. get_bmi_extension()}
-        table.join2(flags, flag)
-
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
-    return flags
 end
 
 -- generate target user header units for batchcmds
@@ -157,6 +182,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
+    local mapper_file = _get_module_mapper()
 
     -- get flags
     local exportheaderflag = get_exportheaderflag(target)
@@ -171,7 +197,6 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
     -- build headerunits
     local common_args = {"/TP", exportheaderflag, "/c"}
     local objectfiles = {}
-    local flags = {}
     local projectdir = os.projectdir()
     local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
@@ -191,24 +216,22 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         batchcmds:mkdir(path.directory(objectfile))
 
         local args = {headernameflag .. headerunit.type, headerunit.path, ifcoutputflag, outputdir, "/Fo" .. objectfile}
+
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
         batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
-
         batchcmds:add_depfiles(headerunit.path)
+        _add_module_to_mapper(mapper_file, headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir))
 
-        local flag = {headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir)}
-        table.join2(flags, flag)
         target:add("objectfiles", objectfile)
-
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
-    return flags
 end
 
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
     local cachedir = common.modules_cachedir(target)
+    local mapper_file = _get_module_mapper()
 
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
@@ -218,14 +241,6 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local ifcoutputflag = get_ifcoutputflag(target)
     local interfaceflag = get_interfaceflag(target)
     local referenceflag = get_referenceflag(target)
-
-    -- append deps modules
-    for _, dep in ipairs(target:orderdeps()) do
-        local flags = dep:data("cxx.modules.flags")
-        if flags then
-            target:add("cxxflags", flags, {force = true, expand = false})
-        end
-    end
 
     -- build modules
     local common_args = {"/TP"}
@@ -247,20 +262,19 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
 
             local bmifile = provide.bmi
             local args = {"/c", "/Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
+
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
             batchcmds:mkdir(path.directory(objectfile))
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args, bmi_args), {envs = vcvars})
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             batchcmds:add_depfiles(provide.sourcefile)
 
-            local bmiflags = {referenceflag, name .. "=" .. path.filename(bmifile)}
-            target:add("cxxflags", bmiflags, {force = true, expand = false})
-            for _, f in ipairs(bmiflags) do
-                target:data_add("cxx.modules.flags", f)
-            end
+            _add_module_to_mapper(mapper_file, referenceflag, name .. "=" .. path.filename(bmifile))
+
             target:add("objectfiles", objectfile)
             depmtime = math.max(depmtime, os.mtime(bmifile))
         end
     end
+
     batchcmds:set_depmtime(depmtime)
 end
 

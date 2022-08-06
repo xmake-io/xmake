@@ -165,14 +165,14 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     -- build headerunits
     local projectdir = os.projectdir()
     local depmtime = 0
-    for i, headerunit in ipairs(headerunits) do
+    for _, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
-        if _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir)) then
-            local args = { "-c", "-x", "c++-system-header", headerunit.name }
+        local args = { "-c", "-x", "c++-system-header", headerunit.name }
 
-            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-        end
+        batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+        batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
+
+        _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir))
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -216,11 +216,11 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
             headerunit_path = path.is_absolute(headerunit.path) and headerunit.path or path.join(".", headerunit.path)
         end
 
-        if _add_module_to_mapper(mapper_file, headerunit_path, path.absolute(bmifile, projectdir)) then
-            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-            batchcmds:add_depfiles(headerunit.path)
-        end
+        batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+        batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
+        batchcmds:add_depfiles(headerunit.path)
+
+        _add_module_to_mapper(mapper_file, headerunit_path, path.absolute(bmifile, projectdir))
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -254,16 +254,16 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             end
 
             local bmifile = provide.bmi
-            if _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir)) then
-                local args = {"-o", objectfile, "-c", provide.sourcefile}
-                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
-                batchcmds:mkdir(path.directory(objectfile))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
-                batchcmds:add_depfiles(provide.sourcefile)
+            local args = {"-o", objectfile, "-c", provide.sourcefile}
+            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
+            batchcmds:mkdir(path.directory(objectfile))
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
+            batchcmds:add_depfiles(provide.sourcefile)
 
-                target:add("objectfiles", objectfile)
-                depmtime = math.max(depmtime, os.mtime(bmifile))
-            end
+            _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir))
+
+            target:add("objectfiles", objectfile)
+            depmtime = math.max(depmtime, os.mtime(bmifile))
         end
     end
     batchcmds:set_depmtime(depmtime)
