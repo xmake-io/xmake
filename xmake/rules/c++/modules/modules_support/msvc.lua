@@ -170,7 +170,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args), {envs = vcvars})
 
-            _add_module_to_mapper(mapper_file, headerunitflag .. ":angle", headerunit.name .. "=" .. headerunit.name .. get_bmi_extension())
+            _add_module_to_mapper(mapper_file, headerunitflag .. ":angle", headerunit.name .. "=" .. path.filename(headerunit.name) .. get_bmi_extension())
         end
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end

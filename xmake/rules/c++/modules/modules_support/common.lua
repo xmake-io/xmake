@@ -44,6 +44,7 @@ function stlmodules_cachedir(target)
     local stlcachedir = path.join(config.buildir(), "stlmodules", "cache")
     if not os.isdir(stlcachedir) then
         os.mkdir(stlcachedir)
+        os.mkdir(path.join(stlcachedir, "experimental"))
     end
     return stlcachedir
 end

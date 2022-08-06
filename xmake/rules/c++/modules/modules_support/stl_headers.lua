@@ -103,6 +103,7 @@ function _stl_headers()
     "type_traits",
     "string_view",
     "stdexcept",
+    "condition_variable",
     "print",
     "flat_map",
     "flat_set",
@@ -127,6 +128,7 @@ function _stl_headers()
     "cwctype",
     "cfenv",
     "cmath",
+    "ctime",
     "clocale",
     "cstdio"}
 end
@@ -143,6 +145,9 @@ end
 
 -- is stl header?
 function is_stl_header(header)
+    if header:startswith("experimental/") then
+        header = header:sub(14, -1)
+    end
     return get_stl_headers():has(header)
 end
 
