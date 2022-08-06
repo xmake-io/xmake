@@ -38,7 +38,6 @@ function main()
         end
         local itemkey = valuekeys[1] .. ";MATLABROOT"
         local sdkdir = try {function () return winos.registry_query(itemkey) end}
-        -- check sdkdir is vaild
         if not sdkdir then
             return nil
         end
