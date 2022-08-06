@@ -252,7 +252,6 @@ function _topological_sort_visit(node, nodes, modules, output)
     assert(not node.tempmarked)
     node.tempmarked = true
     local m1 = modules[node.objectfile]
-    assert(m1 and m1.provides)
     for _, n in ipairs(nodes) do
         if not n.tempmarked then
             local m2 = modules[n.objectfile]
@@ -293,7 +292,7 @@ function sort_modules_by_dependencies(objectfiles, modules)
     local nodes  = {}
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
-        if m and m.provides then
+        if m then
             table.insert(nodes, {marked = false, tempmarked = false, objectfile = objectfile})
         end
     end
@@ -457,13 +456,11 @@ function generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modu
         local headerunits_flags = localcache():get("headerunits_flags")
         if stl_headerunits then
             modules_support(target).generate_stl_headerunits_for_batchcmds(target, batchcmds, stl_headerunits, opt)
-        table.join2(headerunits_flags, modules_support(target).generate_stl_headerunits_for_batchcmds(target, batchcmds, stl_headerunits, opt))
         end
         if user_headerunits then
             modules_support(target).generate_user_headerunits_for_batchcmds(target, batchcmds, user_headerunits, opt)
         end
     end
-    return headerunits_flags
 end
 
 -- build modules for batchjobs, TODO

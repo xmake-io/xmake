@@ -36,6 +36,15 @@ function _get_module_mapper()
     return mapper_file
 end
 
+-- get and create the path of linker arguments
+function _get_linker_argument_file()
+    local linker_file = path.join(config.buildir(), "linkargs.txt")
+    if not os.isfile(linker_file) then
+        io.writefile(linker_file, "")
+    end
+    return linker_file
+end
+
 -- add a module or header unit into the mapper
 --
 -- e.g
@@ -45,10 +54,27 @@ end
 function _add_module_to_mapper(file, argument, module)
     for line in io.lines(file) do
         if line:startswith(argument .. " " .. module) then
+            return
         end
     end
     local f = io.open(file, "a")
     f:print("%s %s", argument, module)
+    f:close()
+end
+
+-- add an objectfile to the linker args
+--
+-- e.g
+-- foo.obj
+--
+function _add_objectfile_to_link_arguments(file, objectfile)
+    for line in io.lines(file) do
+        if line:startswith(objectfile) then
+            return
+        end
+    end
+    local f = io.open(file, "a")
+    f:print(objectfile)
     f:close()
 end
 
@@ -57,6 +83,7 @@ function load(target)
     local cachedir = common.modules_cachedir(target)
     local stlcachedir = common.stlmodules_cachedir(target)
     local mapper_file = _get_module_mapper()
+    local linker_file = _get_linker_argument_file()
 
     -- get flags
     local modulesflag = get_modulesflag(target)
@@ -66,9 +93,15 @@ function load(target)
     target:add("cxxflags", modulesflag)
     target:add("cxxflags", {ifcsearchdirflag, cachedir}, {force = true, expand = false})
     target:add("cxxflags", {ifcsearchdirflag, stlcachedir}, {force = true, expand = false})
-    target:add("cxxflags", "@" .. mapper_file, {force = true, expand = false})
+    target:add("cxxflags", {ifcsearchdirflag, path.join(stlcachedir, "experimental")}, {force = true, expand = false})
+    target:add("cxxflags", "@" .. mapper_file, {force = true})
 
-    -- add stdifcdir in case of if the user want to use Microsoft modularised STL
+    local linker_file_flag = "@".. linker_file
+    target:add("ldflags", linker_file_flag, {force = true})
+    target:add("arflags", linker_file_flag, {force = true})
+    target:add("shflags", linker_file_flag, {force = true})
+
+    -- add stdifcdir in case of if the user ask for it
     if target:values("msvc.modules.stdifcdir") then
         local stdifcdirflag = get_stdifcdirflag(target)
         for _, toolchain_inst in ipairs(target:toolchains()) do
@@ -114,7 +147,7 @@ function generate_dependencies(target, sourcebatch, opt)
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
     local scandependenciesflag = get_scandependenciesflag(target)
-    local common_args = {"/TP", scandependenciesflag}
+    local common_args = {"-TP", scandependenciesflag}
     local cachedir = common.modules_cachedir(target)
     local changed = false
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -130,7 +163,7 @@ function generate_dependencies(target, sourcebatch, opt)
 
             local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".json")
             if scandependenciesflag then
-                local args = {jsonfile, sourcefile, "/Fo" .. target:objectfile(sourcefile)}
+                local args = {jsonfile, sourcefile, "-Fo" .. target:objectfile(sourcefile)}
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile)
@@ -150,6 +183,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
     local mapper_file = _get_module_mapper()
+    local linker_file = _get_linker_argument_file()
 
     -- get flags
     local exportheaderflag = get_exportheaderflag(target)
@@ -162,17 +196,19 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     local stlcachedir = common.stlmodules_cachedir(target)
 
     -- build headerunits
-    local common_args = {"/TP", exportheaderflag, "/c"}
+    local common_args = {"-TP", exportheaderflag, "-c"}
     local objectfiles = {}
     local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
-        if not os.isfile(bmifile) then
-            local args = {exportheaderflag, headernameflag .. ":angle", headerunit.name, ifcoutputflag, stlcachedir}
+        local objectfile = bmifile .. ".obj"
+        if not os.isfile(bmifile) or not os.isfile(objectfile) then
+            local args = {headernameflag .. ":angle", headerunit.name, ifcoutputflag, stlcachedir, "-Fo" .. objectfile}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args), {envs = vcvars})
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
 
             _add_module_to_mapper(mapper_file, headerunitflag .. ":angle", headerunit.name .. "=" .. path.filename(headerunit.name) .. get_bmi_extension())
+            _add_objectfile_to_link_arguments(linker_file, objectfile)
         end
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
@@ -185,6 +221,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
     local mapper_file = _get_module_mapper()
+    local linker_file = _get_linker_argument_file()
 
     -- get flags
     local exportheaderflag = get_exportheaderflag(target)
@@ -197,7 +234,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
     local cachedir = common.modules_cachedir(target)
 
     -- build headerunits
-    local common_args = {"/TP", exportheaderflag, "/c"}
+    local common_args = {"-TP", exportheaderflag, "-c"}
     local objectfiles = {}
     local projectdir = os.projectdir()
     local depmtime = 0
@@ -223,8 +260,8 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
         batchcmds:add_depfiles(headerunit.path)
         _add_module_to_mapper(mapper_file, headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir))
+        _add_objectfile_to_link_arguments(linker_file, objectfile)
 
-        target:add("objectfiles", objectfile)
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -245,7 +282,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local referenceflag = get_referenceflag(target)
 
     -- build modules
-    local common_args = {"/TP"}
+    local common_args = {"-TP"}
     local depmtime = 0
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
@@ -263,7 +300,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             end
 
             local bmifile = provide.bmi
-            local args = {"/c", "/Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
+            local args = {"-c", "-Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
 
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
             batchcmds:mkdir(path.directory(objectfile))
@@ -288,8 +325,8 @@ function get_modulesflag(target)
     local modulesflag = _g.modulesflag
     if modulesflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("/experimental:module", "cxxflags", {flagskey = "cl_experimental_module"}) then
-            modulesflag = "/experimental:module"
+        if compinst:has_flags("-experimental:module", "cxxflags", {flagskey = "cl_experimental_module"}) then
+            modulesflag = "-experimental:module"
         end
         assert(modulesflag, "compiler(msvc): does not support c++ module!")
         _g.modulesflag = modulesflag or false
@@ -301,8 +338,8 @@ function get_ifcoutputflag(target)
     local ifcoutputflag = _g.ifcoutputflag
     if ifcoutputflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("/ifcOutput", "cxxflags", {flagskey = "cl_ifc_output"})  then
-            ifcoutputflag = "/ifcOutput"
+        if compinst:has_flags("-ifcOutput", "cxxflags", {flagskey = "cl_ifc_output"})  then
+            ifcoutputflag = "-ifcOutput"
         end
         assert(ifcoutputflag, "compiler(msvc): does not support c++ module!")
         _g.ifcoutputflag = ifcoutputflag or false
@@ -314,8 +351,8 @@ function get_ifcsearchdirflag(target)
     local ifcsearchdirflag = _g.ifcsearchdirflag
     if ifcsearchdirflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("/ifcSearchDir", "cxxflags", {flagskey = "cl_ifc_search_dir"})  then
-            ifcsearchdirflag = "/ifcSearchDir"
+        if compinst:has_flags("-ifcSearchDir", "cxxflags", {flagskey = "cl_ifc_search_dir"})  then
+            ifcsearchdirflag = "-ifcSearchDir"
         end
         assert(ifcsearchdirflag, "compiler(msvc): does not support c++ module!")
         _g.ifcsearchdirflag = ifcsearchdirflag or false
@@ -327,8 +364,8 @@ function get_interfaceflag(target)
     local interfaceflag = _g.interfaceflag
     if interfaceflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("/interface", "cxxflags", {flagskey = "cl_interface"}) then
-            interfaceflag = "/interface"
+        if compinst:has_flags("-interface", "cxxflags", {flagskey = "cl_interface"}) then
+            interfaceflag = "-interface"
         end
         assert(interfaceflag, "compiler(msvc): does not support c++ module!")
         _g.interfaceflag = interfaceflag or false
@@ -340,8 +377,8 @@ function get_referenceflag(target)
     local referenceflag = _g.referenceflag
     if referenceflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("/reference", "cxxflags", {flagskey = "cl_reference"}) then
-            referenceflag = "/reference"
+        if compinst:has_flags("-reference", "cxxflags", {flagskey = "cl_reference"}) then
+            referenceflag = "-reference"
         end
         assert(referenceflag, "compiler(msvc): does not support c++ module!")
         _g.referenceflag = referenceflag or false
@@ -353,9 +390,9 @@ function get_headernameflag(target)
     local headernameflag = _g.headernameflag
     if headernameflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("/headerName:quote", "cxxflags", {flagskey = "cl_header_name_quote"}) and
-        compinst:has_flags("/headerName:angle", "cxxflags", {flagskey = "cl_header_name_angle"}) then
-            headernameflag = "/headerName"
+        if compinst:has_flags("-headerName:quote", "cxxflags", {flagskey = "cl_header_name_quote"}) and
+        compinst:has_flags("-headerName:angle", "cxxflags", {flagskey = "cl_header_name_angle"}) then
+            headernameflag = "-headerName"
         end
         _g.headernameflag = headernameflag or false
     end
@@ -366,9 +403,9 @@ function get_headerunitflag(target)
     local headerunitflag = _g.headerunitflag
     if headerunitflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("/headerUnit:quote", "cxxflags", {flagskey = "cl_header_unit_quote"}) and
-        compinst:has_flags("/headerUnit:angle", "cxxflags", {flagskey = "cl_header_unit_angle"}) then
-            headerunitflag = "/headerUnit"
+        if compinst:has_flags("-headerUnit:quote", "cxxflags", {flagskey = "cl_header_unit_quote"}) and
+        compinst:has_flags("-headerUnit:angle", "cxxflags", {flagskey = "cl_header_unit_angle"}) then
+            headerunitflag = "-headerUnit"
         end
         _g.headerunitflag = headerunitflag or false
     end
@@ -380,8 +417,8 @@ function get_exportheaderflag(target)
     local exportheaderflag = _g.exportheaderflag
     if exportheaderflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags(modulesflag .. " /exportHeader", "cxxflags", {flagskey = "cl_export_header"}) then
-            exportheaderflag = "/exportHeader"
+        if compinst:has_flags(modulesflag .. " -exportHeader", "cxxflags", {flagskey = "cl_export_header"}) then
+            exportheaderflag = "-exportHeader"
         end
         _g.exportheaderflag = exportheaderflag or false
     end
@@ -392,8 +429,8 @@ function get_stdifcdirflag(target)
     local stdifcdirflag = _g.stdifcdirflag
     if stdifcdirflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("/stdIfcDir", "cxxflags", {flagskey = "cl_std_ifc_dir"}) then
-            stdifcdirflag = "/stdIfcDir"
+        if compinst:has_flags("-stdIfcDir", "cxxflags", {flagskey = "cl_std_ifc_dir"}) then
+            stdifcdirflag = "-stdIfcDir"
         end
         _g.stdifcdirflag = stdifcdirflag or false
     end
@@ -405,7 +442,7 @@ function get_scandependenciesflag(target)
     if scandependenciesflag == nil then
         local compinst = target:compiler("cxx")
         local scan_dependencies_jsonfile = os.tmpfile() .. ".json"
-        if compinst:has_flags("/scanDependencies " .. scan_dependencies_jsonfile, "cxflags", {flagskey = "cl_scan_dependencies",
+        if compinst:has_flags("-scanDependencies " .. scan_dependencies_jsonfile, "cxflags", {flagskey = "cl_scan_dependencies",
             on_check = function (ok, errors)
                 if os.isfile(scan_dependencies_jsonfile) then
                     ok = true
@@ -415,7 +452,7 @@ function get_scandependenciesflag(target)
                 end
                 return ok, errors
             end}) then
-            scandependenciesflag = "/scanDependencies"
+            scandependenciesflag = "-scanDependencies"
         end
         _g.scandependenciesflag = scandependenciesflag or false
     end
