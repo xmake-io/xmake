@@ -476,5 +476,12 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
 end
 
 function append_headerunits_objectfiles(target)
-    modules_support(target).append_headerunits_objectfiles(target)
+    local cache = localcache():get("headerunit_objectfiles") or {}
+    if target:is_binary() then
+        target:add("ldflags", cache, {force = true})
+    elseif target:is_static() == "static" then
+        target:add("arflags", cache, {force = true})
+    elseif target:is_shared() == "shared" then
+        target:add("shflags", cache, {force = true})
+    end
 end

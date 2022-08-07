@@ -27,30 +27,21 @@ import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
 
--- get and create the path of module mapper
-function _get_module_mapper()
-    local mapper_file = path.join(config.buildir(), "mapper.txt")
-    if not os.isfile(mapper_file) then
-        io.writefile(mapper_file, "")
-    end
-    return mapper_file
-end
-
 -- add a module into the mapper
 --
 -- e.g
 -- -fmodule-file=foo=build/.gens/Foo/rules/modules/cache/foo.pcm
 --
-function _add_module_to_mapper(target, file, module, bmi)
+function _add_module_to_mapper(target, module, bmi)
+    local cache = common.localcache():get("mapflags") or {}
     local modulefileflag = get_modulefileflag(target)
-    for line in io.lines(file) do
-        if line:startswith(modulefileflag .. module) then
-            return
-        end
+    local mapflag = format("%s%s=%s", modulefileflag, module, bmi)
+    if table.contains(cache, mapflag) then
+        return
     end
-    local f = io.open(file, "a")
-    f:print("%s%s=%s", modulefileflag, module, bmi)
-    f:close()
+    table.insert(cache, mapflag)
+    common.localcache():set("mapflags", cache)
+    common.localcache():save("mapflags")
 end
 
 -- add a header unit into the mapper
@@ -58,7 +49,18 @@ end
 -- e.g
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/foo.hpp.pcm
 --
-function _add_headerunit_to_mapper(target, file, bmi)
+function _add_headerunit_to_mapper(target, bmi)
+    local cache = common.localcache():get("mapflags") or {}
+    local modulefileflag = get_modulefileflag(target)
+    local mapflag = format("%s%s", modulefileflag, bmi)
+    if table.contains(cache, mapflag) then
+        return
+    end
+    table.insert(cache, mapflag)
+    common.localcache():set("mapflags", cache)
+    common.localcache():save("mapflags")
+end
+
     local modulefileflag = get_modulefileflag(target)
     for line in io.lines(file) do
         if line:startswith(modulefileflag .. bmi) then
@@ -74,7 +76,6 @@ end
 function load(target)
     local cachedir = common.modules_cachedir(target)
     local stlcachedir = common.stlmodules_cachedir(target)
-    local mapper_file = _get_module_mapper()
 
     -- get module and module cache flags
     local modulesflag = get_modulesflag(target)
@@ -174,7 +175,6 @@ end
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
 
     -- get cachedirs
     local stlcachedir = common.stlmodules_cachedir(target)
@@ -195,7 +195,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
 
             -- libc++ have a builtin module mapper
             if not target:data_set("cxx.modules.use_libc++") then
-                _add_headerunit_to_mapper(target, mapper_file, bmifile)
+                _add_headerunit_to_mapper(target, bmifile)
             end
         end
         depmtime = math.max(depmtime, os.mtime(bmifile))
@@ -207,7 +207,6 @@ end
 function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
-    local mapper_file = _get_module_mapper()
 
     -- get cachedirs
     local cachedir = common.modules_cachedir(target)
@@ -248,7 +247,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
         batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         batchcmds:add_depfiles(headerunit.path)
-        _add_headerunit_to_mapper(target, mapper_file, bmifile)
+        _add_headerunit_to_mapper(target, bmifile)
 
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
@@ -258,7 +257,6 @@ end
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
 
     -- get cachedirs
     local cachedir = common.modules_cachedir(target)
@@ -298,7 +296,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, {bmifile}, {"-c", "-o", objectfile}))
             batchcmds:add_depfiles(provide.sourcefile)
 
-            _add_module_to_mapper(target, mapper_file, name, bmifile)
+            _add_module_to_mapper(target, name, bmifile)
 
             target:add("objectfiles", objectfile)
             depmtime = math.max(depmtime, os.mtime(bmifile))
@@ -459,8 +457,4 @@ function has_headerunitsupport(target)
         _g.support_headerunits = support_headerunits or false
     end
     return support_headerunits or nil
-end
-
--- no .o generated by header units on Clang
-function append_headerunits_objectfiles(target)
 end

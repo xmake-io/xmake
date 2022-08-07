@@ -27,39 +27,21 @@ import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
 
--- get and create the path of module mapper
-function _get_module_mapper()
-    local mapper_file = path.join(config.buildir(), "mapper.txt")
-    if not os.isfile(mapper_file) then
-        io.writefile(mapper_file, "")
-    end
-    return mapper_file
-end
-
--- get and create the path of linker arguments
-function _get_linker_argument_file()
-    local linker_file = path.join(config.buildir(), "linkargs.txt")
-    if not os.isfile(linker_file) then
-        io.writefile(linker_file, "")
-    end
-    return linker_file
-end
-
 -- add a module or header unit into the mapper
 --
 -- e.g
 -- /headerUnit:angle cstdint=cstdint.ifc
 -- /headerUnit:angle glm/mat4x4.hpp=Users\arthu\AppData\Local\.xmake\packages\g\glm\0.9.9+8\91454f3ee0be416cb9c7452970a2300f\include\glm\mat4x4.hpp.ifc
 --
-function _add_module_to_mapper(file, argument, module)
-    for line in io.lines(file) do
-        if line:startswith(argument .. " " .. module) then
-            return
-        end
+function _add_module_to_mapper(argument, module)
+    local cache = common.localcache():get("mapflags") or {}
+    local mapflag = format("%s %s", argument, module)
+    if table.contains(cache, mapflag) then
+        return
     end
-    local f = io.open(file, "a")
-    f:print("%s %s", argument, module)
-    f:close()
+    table.insert(cache, mapflag)
+    common.localcache():set("mapflags", cache)
+    common.localcache():save("mapflags")
 end
 
 -- add an objectfile to the linker args
@@ -67,23 +49,20 @@ end
 -- e.g
 -- foo.obj
 --
-function _add_objectfile_to_link_arguments(file, objectfile)
-    for line in io.lines(file) do
-        if line:startswith(objectfile) then
-            return
-        end
+function _add_objectfile_to_link_arguments(objectfile)
+    local cache = common.localcache():get("headerunit_objectfiles") or {}
+    if table.contains(cache, objectfile) then
+        return
     end
-    local f = io.open(file, "a")
-    f:print(objectfile)
-    f:close()
+    table.insert(cache, objectfile)
+    common.localcache():set("headerunit_objectfiles", cache)
+    common.localcache():save("headerunit_objectfiles")
 end
 
 -- load module support for the current target
 function load(target)
     local cachedir = common.modules_cachedir(target)
     local stlcachedir = common.stlmodules_cachedir(target)
-    local mapper_file = _get_module_mapper()
-    local linker_file = _get_linker_argument_file()
 
     -- get flags
     local modulesflag = get_modulesflag(target)
@@ -176,8 +155,6 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
-    local mapper_file = _get_module_mapper()
-    local linker_file = _get_linker_argument_file()
 
     -- get flags
     local exportheaderflag = get_exportheaderflag(target)
@@ -202,7 +179,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
             batchcmds:add_depfiles(headerunit.path)
 
             _add_module_to_mapper(headerunitflag .. ":angle", headerunit.name .. "=" .. path.filename(headerunit.name) .. get_bmi_extension())
-            _add_objectfile_to_link_arguments(linker_file, objectfile)
+            _add_objectfile_to_link_arguments(objectfile)
         end
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
@@ -214,8 +191,6 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
-    local mapper_file = _get_module_mapper()
-    local linker_file = _get_linker_argument_file()
 
     -- get flags
     local exportheaderflag = get_exportheaderflag(target)
@@ -254,7 +229,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         batchcmds:add_depfiles(headerunit.path)
 
         _add_module_to_mapper(headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir))
-        _add_objectfile_to_link_arguments(linker_file, objectfile)
+        _add_objectfile_to_link_arguments(objectfile)
 
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
@@ -264,7 +239,6 @@ end
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
 
@@ -277,9 +251,8 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local referenceflag = get_referenceflag(target)
 
     -- append module mapper flags
-    for line in io.lines(mapper_file) do
-        target:add("cxxflags", line, {force = true})
-    end
+    local cache = common.localcache():get("mapflags") or {}
+    target:add("cxxflags", cache, {force = true})
 
     -- build modules
     local common_args = {"-TP"}
@@ -307,7 +280,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             batchcmds:add_depfiles(provide.sourcefile)
 
-            _add_module_to_mapper(mapper_file, referenceflag, name .. "=" .. path.filename(bmifile))
+            _add_module_to_mapper(referenceflag, name .. "=" .. path.filename(bmifile))
 
             target:add("objectfiles", objectfile)
             depmtime = math.max(depmtime, os.mtime(bmifile))
@@ -457,18 +430,4 @@ function get_scandependenciesflag(target)
         _g.scandependenciesflag = scandependenciesflag or false
     end
     return scandependenciesflag or nil
-end
-
--- append .obj to final link
-function append_headerunits_objectfiles(target)
-    local linker_file = _get_linker_argument_file()
-    for line in io.lines(linker_file) do
-        if target:is_binary() then
-            target:add("ldflags", line, {force = true})
-        elseif target:is_static() == "static" then
-            target:add("arflags", line, {force = true})
-        elseif target:is_shared() == "shared" then
-            target:add("shflags", line, {force = true})
-        end
-    end
 end
