@@ -39,7 +39,7 @@ end
 -- add a module into the mapper
 --
 -- e.g
--- -fmodule-file=foo=build/.gens/Foo/rules/modules/cache/foo.ifc
+-- -fmodule-file=foo=build/.gens/Foo/rules/modules/cache/foo.pcm
 --
 function _add_module_to_mapper(target, file, module, bmi)
     local modulefileflag = get_modulefileflag(target)
@@ -56,7 +56,7 @@ end
 -- add a header unit into the mapper
 --
 -- e.g
--- -fmodule-file=build/.gens/Foo/rules/modules/cache/foo.hpp.ifc
+-- -fmodule-file=build/.gens/Foo/rules/modules/cache/foo.hpp.pcm
 --
 function _add_headerunit_to_mapper(target, file, bmi)
     local modulefileflag = get_modulefileflag(target)
