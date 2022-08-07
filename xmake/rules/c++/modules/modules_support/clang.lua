@@ -89,7 +89,6 @@ function load(target)
     target:add("cxxflags", builtinmodulemapflag, {force = true})
     target:add("cxxflags", implicitmodulesflag, {force = true})
     target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
-    -- target:add("cxxflags", prebuiltmodulepathflag .. cachedir, prebuiltmodulepathflag .. stlcachedir, {force = true})
 
     target:data_set("cxx.modules.use_libc++", table.contains(target:get("cxxflags"), "-stdlib=libc++"))
 end
@@ -347,7 +346,7 @@ function get_modulemapfileflag(target)
     local modulemapfileflag = _g.modulemapfileflag
     if modulemapfileflag == nil then
         local compinst = target:compiler("cxx")
-        local mapper_file = path.join(os.tmpdir(), "mapper.txt")
+        local mapper_file = path.join(os.tmpfile(), "mapper.txt")
         os.touch(mapper_file)
         if compinst:has_flags("-fmodule-map-file=" .. mapper_file, "cxxflags", {flagskey = "clang_module_map_file"}) then
             modulemapfileflag = "-fmodule-map-file="

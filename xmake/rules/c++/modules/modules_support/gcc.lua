@@ -173,6 +173,8 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         end
 
+        batchcmds:add_depfiles(headerunit.path)
+
         _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir))
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
