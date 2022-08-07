@@ -272,6 +272,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     -- get flags
     local ifcoutputflag = get_ifcoutputflag(target)
     local interfaceflag = get_interfaceflag(target)
+    local referenceflag = get_referenceflag(target)
 
     -- append module mapper flags
     for line in io.lines(mapper_file) do
