@@ -191,7 +191,6 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
 
     -- build headerunits
     local common_args = {"-TP", exportheaderflag, "-c"}
-    local objectfiles = {}
     local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
@@ -229,7 +228,6 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
 
     -- build headerunits
     local common_args = {"-TP", exportheaderflag, "-c"}
-    local objectfiles = {}
     local projectdir = os.projectdir()
     local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
@@ -275,7 +273,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local interfaceflag = get_interfaceflag(target)
     local referenceflag = get_referenceflag(target)
 
-    -- add 
+    -- append module mapper flags
     for line in io.lines(mapper_file) do
         target:add("cxxflags", line, {force = true})
     end
@@ -458,6 +456,7 @@ function get_scandependenciesflag(target)
     return scandependenciesflag or nil
 end
 
+-- append .obj to final link
 function append_headerunits_objectfiles(target)
     local linker_file = _get_linker_argument_file()
 
