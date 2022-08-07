@@ -51,7 +51,6 @@ end
 --
 function _add_headerunit_to_mapper(target, bmi)
     local cache = common.localcache():get("mapflags") or {}
-    local modulefileflag = get_modulefileflag(target)
     local mapflag = format("%s%s", modulefileflag, bmi)
     if table.contains(cache, mapflag) then
         return
@@ -59,17 +58,6 @@ function _add_headerunit_to_mapper(target, bmi)
     table.insert(cache, mapflag)
     common.localcache():set("mapflags", cache)
     common.localcache():save("mapflags")
-end
-
-    local modulefileflag = get_modulefileflag(target)
-    for line in io.lines(file) do
-        if line:startswith(modulefileflag .. bmi) then
-            return
-        end
-    end
-    local f = io.open(file, "a")
-    f:print("%s%s", modulefileflag, bmi)
-    f:close()
 end
 
 -- load module support for the current target
@@ -266,9 +254,8 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local emitmoduleinterfaceflag = get_emitmoduleinterfaceflag(target)
 
     -- append module mapper flags
-    for line in io.lines(mapper_file) do
-        target:add("cxxflags", line, {force = true})
-    end
+    local cache = common.localcache():get("mapflags") or {}
+    target:add("cxxflags", cache, {force = true})
 
     -- build modules
     local common_args = {modulecachepathflag .. cachedir}
@@ -338,21 +325,6 @@ function get_builtinmodulemapflag(target)
         _g.builtinmodulemapflag = builtinmodulemapflag or false
     end
     return builtinmodulemapflag or nil
-end
-
-function get_modulemapfileflag(target)
-    local modulemapfileflag = _g.modulemapfileflag
-    if modulemapfileflag == nil then
-        local compinst = target:compiler("cxx")
-        local mapper_file = path.join(os.tmpfile(), "mapper.txt")
-        os.touch(mapper_file)
-        if compinst:has_flags("-fmodule-map-file=" .. mapper_file, "cxxflags", {flagskey = "clang_module_map_file"}) then
-            modulemapfileflag = "-fmodule-map-file="
-        end
-        assert(modulemapfileflag, "compiler(clang): does not support c++ module!")
-        _g.modulemapfileflag = modulemapfileflag or false
-    end
-    return modulemapfileflag or nil
 end
 
 function get_implicitmodulesflag(target)
