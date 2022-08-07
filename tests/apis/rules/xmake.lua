@@ -148,3 +148,10 @@ target("test")
     add_files("src/index.md")
     add_files("src/test.c.in",  {rule = "c code"})
 
+    before_build(function (target)
+        print("target: before_build")
+    end)
+
+    after_build(function (target)
+        print("target: after_build")
+    end)
