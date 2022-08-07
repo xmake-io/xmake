@@ -36,10 +36,9 @@ function _get_module_mapper()
     return mapper_file
 end
 
--- add a module or header unit into the mapper
+-- add a module into the mapper
 --
 -- e.g
--- -fmodule-file=foo=build/.gens/Foo/rules/modules/cache/foo.ifc
 -- -fmodule-file=foo=build/.gens/Foo/rules/modules/cache/foo.ifc
 --
 function _add_module_to_mapper(target, file, module, bmi)
@@ -54,6 +53,22 @@ function _add_module_to_mapper(target, file, module, bmi)
     f:close()
 end
 
+-- add a header unit into the mapper
+--
+-- e.g
+-- -fmodule-file=build/.gens/Foo/rules/modules/cache/foo.hpp.ifc
+--
+function _add_headerunit_to_mapper(target, file, bmi)
+    local modulefileflag = get_modulefileflag(target)
+    for line in io.lines(file) do
+        if line:startswith(modulefileflag .. bmi) then
+            return
+        end
+    end
+    local f = io.open(file, "a")
+    f:print("%s%s", modulefileflag, bmi)
+    f:close()
+end
 
 -- load module support for the current target
 function load(target)
@@ -175,13 +190,13 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     for i, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         if not os.isfile(bmifile) then
-            local args = {modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.path}
+            local args = {modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.name}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
 
             -- libc++ have a builtin module mapper
             if not target:data_set("cxx.modules.use_libc++") then
-                _add_module_to_mapper(target, mapper_file, headerunit.name, bmifile)
+                _add_headerunit_to_mapper(target, mapper_file, bmifile)
             end
         end
         depmtime = math.max(depmtime, os.mtime(bmifile))
@@ -234,7 +249,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
         batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         batchcmds:add_depfiles(headerunit.path)
-        _add_module_to_mapper(target, mapper_file, headerunit.name, bmifile)
+        _add_headerunit_to_mapper(target, mapper_file, bmifile)
 
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
