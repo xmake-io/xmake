@@ -261,17 +261,17 @@ end
 
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
-    local cachedir = common.modules_cachedir(target)
-    local mapper_file = _get_module_mapper()
-
     local compinst = target:compiler("cxx")
+    local mapper_file = _get_module_mapper()
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
+
+    -- get cachedirs
+    local cachedir = common.modules_cachedir(target)
 
     -- get flags
     local ifcoutputflag = get_ifcoutputflag(target)
     local interfaceflag = get_interfaceflag(target)
-    local referenceflag = get_referenceflag(target)
 
     -- append module mapper flags
     for line in io.lines(mapper_file) do
