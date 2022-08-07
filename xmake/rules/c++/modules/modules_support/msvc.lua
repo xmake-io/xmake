@@ -459,13 +459,12 @@ end
 -- append .obj to final link
 function append_headerunits_objectfiles(target)
     local linker_file = _get_linker_argument_file()
-
     for line in io.lines(linker_file) do
-        if target:kind() == "binary" then
+        if target:is_binary() then
             target:add("ldflags", line, {force = true})
-        elseif target:kind() == "static" then
+        elseif target:is_static() == "static" then
             target:add("arflags", line, {force = true})
-        elseif target:kind() == "shared" then
+        elseif target:is_shared() == "shared" then
             target:add("shflags", line, {force = true})
         end
     end
