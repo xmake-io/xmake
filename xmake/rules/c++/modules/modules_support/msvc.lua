@@ -199,8 +199,9 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
             local args = {headernameflag .. ":angle", headerunit.name, ifcoutputflag, stlcachedir, "-Fo" .. objectfile}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+            batchcmds:add_depfiles(headerunit.path)
 
-            _add_module_to_mapper(mapper_file, headerunitflag .. ":angle", headerunit.name .. "=" .. path.filename(headerunit.name) .. get_bmi_extension())
+            _add_module_to_mapper(headerunitflag .. ":angle", headerunit.name .. "=" .. path.filename(headerunit.name) .. get_bmi_extension())
             _add_objectfile_to_link_arguments(linker_file, objectfile)
         end
         depmtime = math.max(depmtime, os.mtime(bmifile))
@@ -251,7 +252,8 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
         batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
         batchcmds:add_depfiles(headerunit.path)
-        _add_module_to_mapper(mapper_file, headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir))
+
+        _add_module_to_mapper(headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir))
         _add_objectfile_to_link_arguments(linker_file, objectfile)
 
         depmtime = math.max(depmtime, os.mtime(bmifile))
