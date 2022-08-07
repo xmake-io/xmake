@@ -93,13 +93,15 @@ rule("c++.build.modules.builder")
         local modules = common.generate_dependencies(target, sourcebatch, opt)
 
         -- generate headerunits
-        local headerunits_flags = common.generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
-        if headerunits_flags then
-            target:add("cxxflags", headerunits_flags, {force = true, expand = false})
-        end
+        common.generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
 
         -- build modules
         common.build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
+    end)
+
+    before_link(function(target)
+        import("modules_support.common")
+        common.append_headerunits_objectfiles(target)
     end)
 
 -- install modules

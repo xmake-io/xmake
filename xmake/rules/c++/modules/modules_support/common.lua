@@ -44,6 +44,7 @@ function stlmodules_cachedir(target)
     local stlcachedir = path.join(config.buildir(), "stlmodules", "cache")
     if not os.isdir(stlcachedir) then
         os.mkdir(stlcachedir)
+        os.mkdir(path.join(stlcachedir, "experimental"))
     end
     return stlcachedir
 end
@@ -251,7 +252,6 @@ function _topological_sort_visit(node, nodes, modules, output)
     assert(not node.tempmarked)
     node.tempmarked = true
     local m1 = modules[node.objectfile]
-    assert(m1 and m1.provides)
     for _, n in ipairs(nodes) do
         if not n.tempmarked then
             local m2 = modules[n.objectfile]
@@ -292,7 +292,7 @@ function sort_modules_by_dependencies(objectfiles, modules)
     local nodes  = {}
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
-        if m and m.provides then
+        if m then
             table.insert(nodes, {marked = false, tempmarked = false, objectfile = objectfile})
         end
     end
@@ -448,20 +448,19 @@ end
 function generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
 
     -- get headerunits info
-    local headerunits, stl_headerunits = get_headerunits(target, sourcebatch, modules)
+    local user_headerunits, stl_headerunits = get_headerunits(target, sourcebatch, modules)
 
     -- generate headerunits
     -- build stl header units as other headerunits may need them
-    local headerunits_flags
-    if stl_headerunits then
-        headerunits_flags = headerunits_flags or {}
-        table.join2(headerunits_flags, modules_support(target).generate_stl_headerunits_for_batchcmds(target, batchcmds, stl_headerunits, opt))
+    if stl_headerunits or user_headerunits then
+        local headerunits_flags = localcache():get("headerunits_flags")
+        if stl_headerunits then
+            modules_support(target).generate_stl_headerunits_for_batchcmds(target, batchcmds, stl_headerunits, opt)
+        end
+        if user_headerunits then
+            modules_support(target).generate_user_headerunits_for_batchcmds(target, batchcmds, user_headerunits, opt)
+        end
     end
-    if headerunits then
-        headerunits_flags = headerunits_flags or {}
-        table.join2(headerunits_flags, modules_support(target).generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt))
-    end
-    return headerunits_flags
 end
 
 -- build modules for batchjobs, TODO
@@ -476,3 +475,13 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
     modules_support(target).build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
 end
 
+function append_headerunits_objectfiles(target)
+    local cache = localcache():get("headerunit_objectfiles") or {}
+    if target:is_binary() then
+        target:add("ldflags", cache, {force = true})
+    elseif target:is_static() == "static" then
+        target:add("arflags", cache, {force = true})
+    elseif target:is_shared() == "shared" then
+        target:add("shflags", cache, {force = true})
+    end
+end

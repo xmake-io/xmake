@@ -27,6 +27,51 @@ import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
 
+-- add a module into the mapper
+--
+-- e.g
+-- -fmodule-file=foo=build/.gens/Foo/rules/modules/cache/foo.pcm
+--
+function _add_module_to_mapper(target, module, bmi)
+    local cache = common.localcache():get("mapflags") or {}
+    local modulefileflag = get_modulefileflag(target)
+    local mapflag = format("%s%s=%s", modulefileflag, module, bmi)
+    if table.contains(cache, mapflag) then
+        return
+    end
+    table.insert(cache, mapflag)
+    common.localcache():set("mapflags", cache)
+    common.localcache():save("mapflags")
+end
+
+-- add a header unit into the mapper
+--
+-- e.g
+-- -fmodule-file=build/.gens/Foo/rules/modules/cache/foo.hpp.pcm
+--
+function _add_headerunit_to_mapper(target, bmi)
+    local cache = common.localcache():get("mapflags") or {}
+    local modulefileflag = get_modulefileflag(target)
+    local mapflag = format("%s%s", modulefileflag, bmi)
+    if table.contains(cache, mapflag) then
+        return
+    end
+    table.insert(cache, mapflag)
+    common.localcache():set("mapflags", cache)
+    common.localcache():save("mapflags")
+end
+
+    local modulefileflag = get_modulefileflag(target)
+    for line in io.lines(file) do
+        if line:startswith(modulefileflag .. bmi) then
+            return
+        end
+    end
+    local f = io.open(file, "a")
+    f:print("%s%s", modulefileflag, bmi)
+    f:close()
+end
+
 -- load module support for the current target
 function load(target)
     local cachedir = common.modules_cachedir(target)
@@ -34,24 +79,19 @@ function load(target)
 
     -- get module and module cache flags
     local modulesflag = get_modulesflag(target)
+    local builtinmodulemapflag = get_builtinmodulemapflag(target)
     local implicitmodulesflag = get_implicitmodulesflag(target)
-    local implicitmodulemapsflag = get_implicitmodulemapsflag(target)
-    local prebuiltmodulepathflag = get_prebuiltmodulepathflag(target)
+    local noimplicitmodulemapsflag = get_noimplicitmodulemapsflag(target)
 
     -- add module flags
     target:add("cxxflags", modulesflag)
 
     -- add the module cache directory
+    target:add("cxxflags", builtinmodulemapflag, {force = true})
     target:add("cxxflags", implicitmodulesflag, {force = true})
-    target:add("cxxflags", implicitmodulemapsflag, {force = true})
-    target:add("cxxflags", prebuiltmodulepathflag .. cachedir, prebuiltmodulepathflag .. stlcachedir, {force = true})
+    target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
 
-    -- add module cachedirs of all dependent targets with modules
-    -- this target maybe does not contain module files, @see https://github.com/xmake-io/xmake/issues/1858
-    for _, dep in ipairs(target:orderdeps()) do
-        cachedir = common.modules_cachedir(dep)
-        target:add("cxxflags", prebuiltmodulepathflag .. cachedir, {force = true})
-    end
+    target:data_set("cxx.modules.use_libc++", table.contains(target:get("cxxflags"), "-stdlib=libc++"))
 end
 
 -- get includedirs for stl headers
@@ -145,21 +185,22 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
 
     -- build headerunits
     local projectdir = os.projectdir()
-    local flags = {}
     local depmtime = 0
     for i, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         if not os.isfile(bmifile) then
-            local args = {modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.path}
+            local args = {modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.name}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-        end
 
-        table.insert(flags, modulefileflag .. bmifile)
+            -- libc++ have a builtin module mapper
+            if not target:data_set("cxx.modules.use_libc++") then
+                _add_headerunit_to_mapper(target, bmifile)
+            end
+        end
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
-    return flags
 end
 
 -- generate target user header units for batchcmds
@@ -205,14 +246,12 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
 
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
         batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-
         batchcmds:add_depfiles(headerunit.path)
+        _add_headerunit_to_mapper(target, bmifile)
 
-        table.insert(flags, modulefileflag .. bmifile)
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
-    return flags
 end
 
 -- build module files for batchcmds
@@ -225,14 +264,10 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     -- get modules flags
     local modulecachepathflag = get_modulecachepathflag(target)
     local emitmoduleinterfaceflag = get_emitmoduleinterfaceflag(target)
-    local modulefileflag = get_modulefileflag(target)
 
-    -- append deps modules
-    for _, dep in ipairs(target:orderdeps()) do
-        local flags = dep:data("cxx.modules.flags")
-        if flags then
-            target:add("cxxflags", flags, {force = true, expand = false})
-        end
+    -- append module mapper flags
+    for line in io.lines(mapper_file) do
+        target:add("cxxflags", line, {force = true})
     end
 
     -- build modules
@@ -261,10 +296,9 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, {bmifile}, {"-c", "-o", objectfile}))
             batchcmds:add_depfiles(provide.sourcefile)
 
-            local bmiflags = modulefileflag .. bmifile
-            target:add("cxxflags", bmiflags, {public = true, force = true})
+            _add_module_to_mapper(target, name, bmifile)
+
             target:add("objectfiles", objectfile)
-            target:data_add("cxx.modules.flags", bmiflags)
             depmtime = math.max(depmtime, os.mtime(bmifile))
         end
     end
@@ -293,6 +327,34 @@ function get_modulesflag(target)
     return modulesflag or nil
 end
 
+function get_builtinmodulemapflag(target)
+    local builtinmodulemapflag = _g.builtinmodulemapflag
+    if builtinmodulemapflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fbuiltin-module-map", "cxxflags", {flagskey = "clang_builtin_module_map"}) then
+            builtinmodulemapflag = "-fbuiltin-module-map"
+        end
+        assert(builtinmodulemapflag, "compiler(clang): does not support c++ module!")
+        _g.builtinmodulemapflag = builtinmodulemapflag or false
+    end
+    return builtinmodulemapflag or nil
+end
+
+function get_modulemapfileflag(target)
+    local modulemapfileflag = _g.modulemapfileflag
+    if modulemapfileflag == nil then
+        local compinst = target:compiler("cxx")
+        local mapper_file = path.join(os.tmpfile(), "mapper.txt")
+        os.touch(mapper_file)
+        if compinst:has_flags("-fmodule-map-file=" .. mapper_file, "cxxflags", {flagskey = "clang_module_map_file"}) then
+            modulemapfileflag = "-fmodule-map-file="
+        end
+        assert(modulemapfileflag, "compiler(clang): does not support c++ module!")
+        _g.modulemapfileflag = modulemapfileflag or false
+    end
+    return modulemapfileflag or nil
+end
+
 function get_implicitmodulesflag(target)
     local implicitmodulesflag = _g.implicitmodulesflag
     if implicitmodulesflag == nil then
@@ -306,17 +368,17 @@ function get_implicitmodulesflag(target)
     return implicitmodulesflag or nil
 end
 
-function get_implicitmodulemapsflag(target)
-    local implicitmodulemapsflag = _g.implicitmodulemapsflag
-    if implicitmodulemapsflag == nil then
+function get_noimplicitmodulemapsflag(target)
+    local noimplicitmodulemapsflag = _g.noimplicitmodulemapsflag
+    if noimplicitmodulemapsflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fimplicit-module-maps", "cxxflags", {flagskey = "clang_implicit_module_maps"}) then
-            implicitmodulemapsflag = "-fimplicit-module-maps"
+        if compinst:has_flags("-fno-implicit-module-maps", "cxxflags", {flagskey = "clang_no_implicit_module_maps"}) then
+            noimplicitmodulemapsflag = "-fno-implicit-module-maps"
         end
-        assert(implicitmodulemapsflag, "compiler(clang): does not support c++ module!")
-        _g.implicitmodulemapsflag = implicitmodulemapsflag or false
+        assert(noimplicitmodulemapsflag, "compiler(clang): does not support c++ module!")
+        _g.noimplicitmodulemapsflag = noimplicitmodulemapsflag or false
     end
-    return implicitmodulemapsflag or nil
+    return noimplicitmodulemapsflag or nil
 end
 
 function get_prebuiltmodulepathflag(target)
@@ -388,8 +450,8 @@ function has_headerunitsupport(target)
     local support_headerunits = _g.support_headerunits
     if support_headerunits == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
-           compinst:has_flags("-x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
+        if compinst:has_flags(get_modulesflag(target) .. " -std=c++20 -x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
+           compinst:has_flags(get_modulesflag(target) .. " -std=c++20 -x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
             support_headerunits = true
         end
         _g.support_headerunits = support_headerunits or false
