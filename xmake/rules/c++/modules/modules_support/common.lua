@@ -475,3 +475,6 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
     modules_support(target).build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
 end
 
+function append_headerunits_objectfiles(target)
+    modules_support(target).append_headerunits_objectfiles(target)
+end

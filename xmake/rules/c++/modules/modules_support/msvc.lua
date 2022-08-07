@@ -94,12 +94,6 @@ function load(target)
     target:add("cxxflags", {ifcsearchdirflag, cachedir}, {force = true, expand = false})
     target:add("cxxflags", {ifcsearchdirflag, stlcachedir}, {force = true, expand = false})
     target:add("cxxflags", {ifcsearchdirflag, path.join(stlcachedir, "experimental")}, {force = true, expand = false})
-    target:add("cxxflags", "@" .. mapper_file, {force = true})
-
-    local linker_file_flag = "@".. linker_file
-    target:add("ldflags", linker_file_flag, {force = true})
-    target:add("arflags", linker_file_flag, {force = true})
-    target:add("shflags", linker_file_flag, {force = true})
 
     -- add stdifcdir in case of if the user ask for it
     if target:values("msvc.modules.stdifcdir") then
@@ -281,6 +275,11 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local interfaceflag = get_interfaceflag(target)
     local referenceflag = get_referenceflag(target)
 
+    -- add 
+    for line in io.lines(mapper_file) do
+        target:add("cxxflags", line, {force = true})
+    end
+
     -- build modules
     local common_args = {"-TP"}
     local depmtime = 0
@@ -457,4 +456,18 @@ function get_scandependenciesflag(target)
         _g.scandependenciesflag = scandependenciesflag or false
     end
     return scandependenciesflag or nil
+end
+
+function append_headerunits_objectfiles(target)
+    local linker_file = _get_linker_argument_file()
+
+    for line in io.lines(linker_file) do
+        if target:kind() == "binary" then
+            target:add("ldflags", line, {force = true})
+        elseif target:kind() == "static" then
+            target:add("arflags", line, {force = true})
+        elseif target:kind() == "shared" then
+            target:add("shflags", line, {force = true})
+        end
+    end
 end

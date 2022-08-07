@@ -99,6 +99,11 @@ rule("c++.build.modules.builder")
         common.build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
     end)
 
+    before_link(function(target)
+        import("modules_support.common")
+        common.append_headerunits_objectfiles(target)
+    end)
+
 -- install modules
 rule("c++.build.modules.install")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
