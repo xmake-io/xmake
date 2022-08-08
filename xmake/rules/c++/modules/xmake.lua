@@ -52,7 +52,6 @@ rule("c++.build.modules")
 rule("c++.build.modules.builder")
     set_sourcekinds("cxx")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
-    add_deps("c++.build.modules.dependencies")
 
     before_build(function(target, batchjobs, opt)
         local job
