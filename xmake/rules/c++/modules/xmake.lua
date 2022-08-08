@@ -53,35 +53,34 @@ rule("c++.build.modules.builder")
     set_sourcekinds("cxx")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
-    -- TODO parallel build support to accelerate `xmake build` to build modules
-    --[[
+    before_build(function(target, batchjobs, opt)
+        local job
+        if target:data("cxx.has_modules") then
+            import("modules_support.common")
+            local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
+            common.patch_sourcebatch(target, sourcebatch, opt)
+
+            -- generate headerunits
+            local modules = common.get_module_dependencies(target, sourcebatch, opt)
+            batchjobs:group_enter(target:name() .. "/generate_headerunits")
+            common.generate_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
+            job = batchjobs:group_leave()
+        end
+        return job or opt.rootjob
+    end, {batch = true})
+
+    -- parallel build support to accelerate `xmake build` to build modules
     before_build_files(function(target, batchjobs, sourcebatch, opt)
-        if not target:data("cxx.has_modules") then
-            sourcebatch.objectfiles = {}
-            return
+        if target:data("cxx.has_modules") then
+            import("modules_support.common")
+            local modules = common.get_module_dependencies(target, sourcebatch, opt)
+            common.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
         end
-
-        -- patch sourcebatch
-        import("modules_support.common")
-        common.patch_sourcebatch(target, sourcebatch, opt)
-
-        -- generate dependencies
-        local modules = common.generate_dependencies(target, sourcebatch, opt)
-
-        -- generate headerunits
-        local headerunits_flags = common.generate_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
-        if headerunits_flags then
-            target:add("cxxflags", headerunits_flags, {force = true, expand = false})
-        end
-
-        -- build modules
-        common.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
-    end, {batch = true})]]
+    end, {batch = true})
 
     -- serial compilation only, usually used to support project generator
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         if not target:data("cxx.has_modules") then
-            sourcebatch.objectfiles = {}
             return
         end
 
@@ -89,8 +88,8 @@ rule("c++.build.modules.builder")
         import("modules_support.common")
         common.patch_sourcebatch(target, sourcebatch, opt)
 
-        -- generate dependencies
-        local modules = common.generate_dependencies(target, sourcebatch, opt)
+        -- get module dependencies
+        local modules = common.get_module_dependencies(target, sourcebatch, opt)
 
         -- generate headerunits
         common.generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)

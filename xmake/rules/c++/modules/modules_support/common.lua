@@ -411,20 +411,24 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
     io.writefile(jsonfile, jsondata)
 end
 
--- generate dependencies
-function generate_dependencies(target, sourcebatch, opt)
-    local modules = localcache():get("modules")
-    local changed = modules_support(target).generate_dependencies(target, sourcebatch, opt)
-    if changed or modules == nil then
-        local moduleinfos = load_moduleinfos(target, sourcebatch)
-        modules = parse_dependency_data(target, moduleinfos)
-        localcache():set("modules", modules)
-        localcache():save()
+-- get module dependencies
+function get_module_dependencies(target, sourcebatch, opt)
+    local modules = _g.modules
+    if modules == nil then
+        modules = localcache():get("modules")
+        local changed = modules_support(target).generate_dependencies(target, sourcebatch, opt)
+        if changed or modules == nil then
+            local moduleinfos = load_moduleinfos(target, sourcebatch)
+            modules = parse_dependency_data(target, moduleinfos)
+            localcache():set("modules", modules)
+            localcache():save()
+        end
+        _g.modules = modules
     end
     return modules
 end
 
--- generate headerunits for batchjobs, TODO
+-- generate headerunits for batchjobs
 function generate_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
 
     -- get headerunits info
@@ -435,11 +439,11 @@ function generate_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modu
     local headerunits_flags
     if stl_headerunits then
         headerunits_flags = headerunits_flags or {}
---        table.join2(headerunits_flags, modules_support(target).generate_stl_headerunits_for_batchjobs(target, batchjobs, stl_headerunits, opt))
+        table.join2(headerunits_flags, modules_support(target).generate_stl_headerunits_for_batchjobs(target, batchjobs, stl_headerunits, opt))
     end
     if headerunits then
         headerunits_flags = headerunits_flags or {}
---        table.join2(headerunits_flags, modules_support(target).generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits, opt))
+        table.join2(headerunits_flags, modules_support(target).generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits, opt))
     end
     return headerunits_flags
 end
@@ -463,7 +467,7 @@ function generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modu
     end
 end
 
--- build modules for batchjobs, TODO
+-- build modules for batchjobs
 function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
     local objectfiles = sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
 --    modules_support(target).build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)

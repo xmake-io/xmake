@@ -58,6 +58,12 @@ rule("stub2")
     after_build(function (target)
         print("rule(stub2): after_build")
     end)
+    before_build_files(function (target)
+        print("rule(stub2): before_build_files")
+    end)
+    after_build_files(function (target)
+        print("rule(stub2): after_build_files")
+    end)
 
 -- define rule: stub1
 rule("stub1")
