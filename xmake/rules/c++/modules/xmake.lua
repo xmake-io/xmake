@@ -53,6 +53,7 @@ rule("c++.build.modules.builder")
     set_sourcekinds("cxx")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
+    -- generate headerunits
     -- parallel build support to accelerate `xmake build` to build headerunits
     before_build(function(target, batchjobs, opt)
         local job
@@ -60,8 +61,6 @@ rule("c++.build.modules.builder")
             import("modules_support.common")
             local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
             common.patch_sourcebatch(target, sourcebatch, opt)
-
-            -- generate headerunits
             local modules = common.get_module_dependencies(target, sourcebatch, opt)
             batchjobs:group_enter(target:name() .. "/generate_headerunits")
             common.generate_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
@@ -70,10 +69,12 @@ rule("c++.build.modules.builder")
         return job or opt.rootjob
     end, {batch = true})
 
+    -- build modules
     -- parallel build support to accelerate `xmake build` to build modules
     before_build_files(function(target, batchjobs, sourcebatch, opt)
         if target:data("cxx.has_modules") then
             import("modules_support.common")
+            common.patch_sourcebatch(target, sourcebatch, opt)
             local modules = common.get_module_dependencies(target, sourcebatch, opt)
             common.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
         else

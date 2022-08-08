@@ -469,6 +469,46 @@ function generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modu
     end
 end
 
+-- build batch jobs for module dependencies
+function _build_batchjobs_for_moduledeps(modules, batchjobs, rootjob, jobrefs, moduleinfo)
+    local targetjob_ref = jobrefs[moduleinfo.name]
+    if targetjob_ref then
+        batchjobs:add(targetjob_ref, rootjob)
+    else
+        local modulejob = batchjobs:add(moduleinfo.job, rootjob)
+        if modulejob then
+            jobrefs[moduleinfo.name] = modulejob
+            for _, depname in ipairs(moduleinfo.deps) do
+                local dep = modules[depname]
+                if dep then -- maybe nil, e.g. `import <string>;`
+                    _build_batchjobs_for_moduledeps(modules, batchjobs, modulejob, jobrefs, dep)
+                end
+            end
+        end
+    end
+end
+
+-- build batchjobs for modules
+function build_batchjobs_for_modules(modules, batchjobs, rootjob)
+    local depset = hashset.new()
+    for _, moduleinfo in pairs(modules) do
+        assert(moduleinfo.job)
+        for _, depname in ipairs(moduleinfo.deps) do
+            depset:insert(depname)
+        end
+    end
+    local modules_root = {}
+    for _, moduleinfo in pairs(modules) do
+        if not depset:has(moduleinfo.name) then
+            table.insert(modules_root, moduleinfo)
+        end
+    end
+    local jobrefs = {}
+    for _, moduleinfo in pairs(modules_root) do
+        _build_batchjobs_for_moduledeps(modules, batchjobs, rootjob, jobrefs, moduleinfo)
+    end
+end
+
 -- build modules for batchjobs
 function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
     local objectfiles = sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
@@ -481,6 +521,7 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
     modules_support(target).build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
 end
 
+-- append headerunits objectfiles to link
 function append_headerunits_objectfiles(target)
     local cache = localcache():get("headerunit_objectfiles") or {}
     if target:is_binary() then
