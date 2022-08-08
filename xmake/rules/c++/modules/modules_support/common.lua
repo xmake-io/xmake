@@ -413,18 +413,19 @@ end
 
 -- get module dependencies
 function get_module_dependencies(target, sourcebatch, opt)
-    local modules = _g.modules
+    local cachekey = target:name() .. "/" .. sourcebatch.rulename
+    local modules = memcache():get2("modules", cachekey)
     if modules == nil then
-        modules = localcache():get("modules")
+        modules = localcache():get2("modules", cachekey)
         opt.progress = opt.progress or 0
         local changed = modules_support(target).generate_dependencies(target, sourcebatch, opt)
         if changed or modules == nil then
             local moduleinfos = load_moduleinfos(target, sourcebatch)
             modules = parse_dependency_data(target, moduleinfos)
-            localcache():set("modules", modules)
+            localcache():set2("modules", cachekey, modules)
             localcache():save()
         end
-        _g.modules = modules
+        memcache():set2("modules", cachekey, modules)
     end
     return modules
 end
