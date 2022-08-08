@@ -171,10 +171,10 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
                     progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
                     local args = {"-c", "-x", "c++-system-header", headerunit.name}
                     os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-                    _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir))
                 end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
             end, {rootjob = opt.rootjob})
         end
+        _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir))
     end
 end
 
@@ -213,6 +213,13 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
     for _, headerunit in ipairs(headerunits) do
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
         local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
+        local headerunit_path
+        if headerunit.type == ":quote" then
+            headerunit_path = path.join(".", path.relative(headerunit.path, projectdir))
+        elseif headerunit.type == ":angle" then
+            -- if path is relative then its a subtarget path
+            headerunit_path = path.is_absolute(headerunit.path) and headerunit.path or path.join(".", headerunit.path)
+        end
         batchjobs:addjob(headerunit.name, function (index, total)
             depend.on_changed(function()
                 progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
@@ -234,20 +241,16 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
 
                 -- generate headerunit
                 local args = { "-c" }
-                local headerunit_path
                 if headerunit.type == ":quote" then
                     table.join2(args, { "-I", path.directory(path.relative(headerunit.path, projectdir)), "-x", "c++-user-header", headerunit.name })
-                    headerunit_path = path.join(".", path.relative(headerunit.path, projectdir))
                 elseif headerunit.type == ":angle" then
                     table.join2(args, { "-x", "c++-system-header", headerunit.name })
-                    -- if path is relative then its a subtarget path
-                    headerunit_path = path.is_absolute(headerunit.path) and headerunit.path or path.join(".", headerunit.path)
                 end
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-                _add_module_to_mapper(mapper_file, headerunit_path, path.absolute(bmifile, projectdir))
 
             end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
         end, {rootjob = opt.rootjob})
+        _add_module_to_mapper(mapper_file, headerunit_path, path.absolute(bmifile, projectdir))
     end
 end
 
@@ -294,6 +297,14 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
+end
+
+-- build module files for batchjobs
+function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
+    batchjobs:addjob("TODO", function (index, total)
+        -- TODO
+        raise("build modules not supported!")
+    end, {rootjob = opt.rootjob})
 end
 
 -- build module files for batchcmds

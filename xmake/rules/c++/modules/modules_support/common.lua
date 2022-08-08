@@ -416,6 +416,7 @@ function get_module_dependencies(target, sourcebatch, opt)
     local modules = _g.modules
     if modules == nil then
         modules = localcache():get("modules")
+        opt.progress = opt.progress or 0
         local changed = modules_support(target).generate_dependencies(target, sourcebatch, opt)
         if changed or modules == nil then
             local moduleinfos = load_moduleinfos(target, sourcebatch)
@@ -470,7 +471,7 @@ end
 -- build modules for batchjobs
 function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
     local objectfiles = sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
---    modules_support(target).build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
+    modules_support(target).build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
 end
 
 -- build modules for batchcmds
