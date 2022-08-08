@@ -211,9 +211,17 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
     local projectdir = os.projectdir()
     local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
+        local file = path.relative(headerunit.path, projectdir)
+        local objectfile = target:objectfile(file)
+        local outputdir
+        local headerunit_path
+        if headerunit.type == ":quote" then
+            outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
+        else
+            outputdir = path.join(cachedir, path.directory(headerunit.path))
+        end
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
         local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
-        local headerunit_path
         if headerunit.type == ":quote" then
             headerunit_path = path.join(".", path.relative(headerunit.path, projectdir))
         elseif headerunit.type == ":angle" then
@@ -223,14 +231,6 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
         batchjobs:addjob(headerunit.name, function (index, total)
             depend.on_changed(function()
                 progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-                local file = path.relative(headerunit.path, projectdir)
-                local objectfile = target:objectfile(file)
-                local outputdir
-                if headerunit.type == ":quote" then
-                    outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
-                else
-                    outputdir = path.join(cachedir, path.directory(headerunit.path))
-                end
                 local objectdir = path.directory(objectfile)
                 if not os.isdir(objectdir) then
                     os.mkdir(objectdir)
