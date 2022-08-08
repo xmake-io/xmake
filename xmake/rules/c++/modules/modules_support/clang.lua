@@ -198,8 +198,6 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
 
     -- get cachedirs
     local stlcachedir = common.stlmodules_cachedir(target)
-
-    -- get headerunits flags
     local modulecachepathflag = get_modulecachepathflag(target)
     local modulefileflag = get_modulefileflag(target)
 
@@ -230,8 +228,6 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
 
     -- get cachedirs
     local cachedir = common.modules_cachedir(target)
-
-    -- get headerunits flags
     local modulecachepathflag = get_modulecachepathflag(target)
     local emitmoduleflag = get_emitmoduleflag(target)
     local modulefileflag = get_modulefileflag(target)
@@ -285,8 +281,6 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
 
     -- get cachedirs
     local cachedir = common.modules_cachedir(target)
-
-    -- get headerunits flags
     local modulecachepathflag = get_modulecachepathflag(target)
     local emitmoduleflag = get_emitmoduleflag(target)
     local modulefileflag = get_modulefileflag(target)
@@ -329,14 +323,67 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
     batchcmds:set_depmtime(depmtime)
 end
 
+-- build module files for batchjobs
+function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
+    local compinst = target:compiler("cxx")
+    local cachedir = common.modules_cachedir(target)
+    local modulecachepathflag = get_modulecachepathflag(target)
+    local emitmoduleinterfaceflag = get_emitmoduleinterfaceflag(target)
+
+    -- append module mapper flags
+    local cache = common.localcache():get("mapflags") or {}
+    target:add("cxxflags", cache, {force = true})
+
+    -- build modules
+    local common_args = {modulecachepathflag .. cachedir}
+    local provided_modules = {}
+    for _, objectfile in ipairs(objectfiles) do
+        local m = modules[objectfile]
+        if m and m.provides then
+            -- assume there that provides is only one, until we encounter the case
+            local length = 0
+            local name, provide
+            for k, v in pairs(m.provides) do
+                length = length + 1
+                name = k
+                provide = v
+                if length > 1 then
+                    raise("multiple provides are not supported now!")
+                end
+            end
+
+            local bmifile = provide.bmi
+            local moduleinfo = table.copy(provide)
+            moduleinfo.job = batchjobs:newjob(provide.sourcefile, function (index, total)
+                depend.on_changed(function()
+                    progress.show((index * 100) / total, "${color.build.object}generating.cxx.module.bmi %s", name)
+                    local objectdir = path.directory(objectfile)
+                    if not os.isdir(objectdir) then
+                        os.mkdir(objectdir)
+                    end
+                    local args = {emitmoduleinterfaceflag, "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile}
+                    os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
+                    os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, {bmifile}, {"-c", "-o", objectfile}))
+                end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
+            end)
+            if m.requires then
+                moduleinfo.deps = table.keys(m.requires)
+            end
+            moduleinfo.name = name
+            provided_modules[name] = moduleinfo
+            _add_module_to_mapper(target, name, bmifile)
+            target:add("objectfiles", objectfile)
+        end
+    end
+
+    -- build batchjobs for modules
+    common.build_batchjobs_for_modules(provided_modules, batchjobs, opt.rootjob)
+end
+
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
-
-    -- get cachedirs
     local cachedir = common.modules_cachedir(target)
-
-    -- get modules flags
     local modulecachepathflag = get_modulecachepathflag(target)
     local emitmoduleinterfaceflag = get_emitmoduleinterfaceflag(target)
 
@@ -377,14 +424,6 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
         end
     end
     batchcmds:set_depmtime(depmtime)
-end
-
--- build module files for batchjobs
-function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
-    batchjobs:addjob("TODO", function (index, total)
-        -- TODO
-        raise("build modules not supported!")
-    end, {rootjob = opt.rootjob})
 end
 
 function get_bmi_extension()

@@ -306,7 +306,6 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
 
     -- build modules
     local projectdir = os.projectdir()
-    local depmtime = 0
     local provided_modules = {}
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
@@ -327,12 +326,12 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
             local moduleinfo = table.copy(provide)
             moduleinfo.job = batchjobs:newjob(provide.sourcefile, function (index, total)
                 depend.on_changed(function()
-                    local args = {"-o", objectfile, "-c", provide.sourcefile}
                     progress.show((index * 100) / total, "${color.build.object}generating.cxx.module.bmi %s", name)
                     local objectdir = path.directory(objectfile)
                     if not os.isdir(objectdir) then
                         os.mkdir(objectdir)
                     end
+                    local args = {"-o", objectfile, "-c", provide.sourcefile}
                     os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
                 end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
             end)
