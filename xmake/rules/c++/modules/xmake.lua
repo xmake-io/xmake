@@ -77,6 +77,7 @@ rule("c++.build.modules.builder")
             local modules = common.get_module_dependencies(target, sourcebatch, opt)
             common.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
         else
+            -- avoid duplicate linking of object files of non-module programs
             sourcebatch.objectfiles = {}
         end
     end, {batch = true})
@@ -96,6 +97,7 @@ rule("c++.build.modules.builder")
             -- build modules
             common.build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
         else
+            -- avoid duplicate linking of object files of non-module programs
             sourcebatch.objectfiles = {}
         end
     end)
