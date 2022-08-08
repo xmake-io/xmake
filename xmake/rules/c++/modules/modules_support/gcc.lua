@@ -162,7 +162,6 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
 
     -- build headerunits
     local projectdir = os.projectdir()
-    local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         if not os.isfile(bmifile) then
@@ -209,7 +208,6 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
 
     -- build headerunits
     local projectdir = os.projectdir()
-    local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
         local file = path.relative(headerunit.path, projectdir)
         local objectfile = target:objectfile(file)

@@ -150,6 +150,41 @@ function generate_dependencies(target, sourcebatch, opt)
     return changed
 end
 
+-- generate target stl header units for batchjobs
+function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
+    local compinst = target:compiler("cxx")
+    local toolchain = target:toolchain("msvc")
+    local vcvars = toolchain:config("vcvars")
+
+    -- get flags
+    local exportheaderflag = get_exportheaderflag(target)
+    local headerunitflag = get_headerunitflag(target)
+    local headernameflag = get_headernameflag(target)
+    local ifcoutputflag = get_ifcoutputflag(target)
+    assert(headerunitflag and headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
+
+    -- get cachedirs
+    local stlcachedir = common.stlmodules_cachedir(target)
+
+    -- build headerunits
+    local common_args = {"-TP", exportheaderflag, "-c"}
+    for _, headerunit in ipairs(headerunits) do
+        local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
+        local objectfile = bmifile .. ".obj"
+        if not os.isfile(bmifile) or not os.isfile(objectfile) then
+            batchjobs:addjob(headerunit.name, function(index, total)
+               depend.on_changed(function()
+                    progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                    local args = {headernameflag .. ":angle", headerunit.name, ifcoutputflag, stlcachedir, "-Fo" .. objectfile}
+                    os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+               end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+            end, {rootjob = opt.rootjob})
+            _add_module_to_mapper(headerunitflag .. ":angle", headerunit.name .. "=" .. path.filename(headerunit.name) .. get_bmi_extension())
+            _add_objectfile_to_link_arguments(objectfile)
+        end
+    end
+end
+
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
@@ -184,6 +219,59 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
+end
+
+-- generate target user header units for batchcmds
+function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
+    local compinst = target:compiler("cxx")
+    local toolchain = target:toolchain("msvc")
+    local vcvars = toolchain:config("vcvars")
+
+    -- get flags
+    local exportheaderflag = get_exportheaderflag(target)
+    local headerunitflag = get_headerunitflag(target)
+    local headernameflag = get_headernameflag(target)
+    local ifcoutputflag = get_ifcoutputflag(target)
+    assert(headerunitflag and headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
+
+    -- get cachedirs
+    local cachedir = common.modules_cachedir(target)
+
+    -- build headerunits
+    local common_args = {"-TP", exportheaderflag, "-c"}
+    local projectdir = os.projectdir()
+    for _, headerunit in ipairs(headerunits) do
+        local file = path.relative(headerunit.path, target:scriptdir())
+        local objectfile = target:objectfile(file)
+        local outputdir
+        if headerunit.type == ":quote" then
+            outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
+        else
+            -- if path is relative then its a subtarget path
+            outputdir = path.join(cachedir, path.is_absolute(headerunit.path) and path.directory(headerunit.path):sub(3) or headerunit.path)
+        end
+        local bmifilename = path.basename(objectfile) .. get_bmi_extension()
+        local bmifile = path.join(outputdir, bmifilename)
+        batchjobs:addjob(headerunit.name, function (index, total)
+            depend.on_changed(function()
+                progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                local objectdir = path.directory(objectfile)
+                if not os.isdir(objectdir) then
+                    os.mkdir(objectdir)
+                end
+                if not os.isdir(outputdir) then
+                    os.mkdir(outputdir)
+                end
+
+                -- generate headerunit
+                local args = {headernameflag .. headerunit.type, headerunit.path, ifcoutputflag, outputdir, "/Fo" .. objectfile}
+                os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+
+            end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+        end, {rootjob = opt.rootjob})
+        _add_module_to_mapper(headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir))
+        _add_objectfile_to_link_arguments(objectfile)
+    end
 end
 
 -- generate target user header units for batchcmds
@@ -234,6 +322,14 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
+end
+
+-- build module files for batchjobs
+function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
+    batchjobs:addjob("TODO", function (index, total)
+        -- TODO
+        raise("build modules not supported!")
+    end, {rootjob = opt.rootjob})
 end
 
 -- build module files for batchcmds
