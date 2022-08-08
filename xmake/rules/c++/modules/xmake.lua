@@ -53,6 +53,7 @@ rule("c++.build.modules.builder")
     set_sourcekinds("cxx")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
+    -- parallel build support to accelerate `xmake build` to build headerunits
     before_build(function(target, batchjobs, opt)
         local job
         if target:data("cxx.has_modules") then
