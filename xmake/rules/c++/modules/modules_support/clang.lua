@@ -163,13 +163,10 @@ end
 -- generate target stl header units for batchjobs
 function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
     local compinst = target:compiler("cxx")
-
-    -- get cachedirs
     local stlcachedir = common.stlmodules_cachedir(target)
-
-    -- get headerunits flags
     local modulecachepathflag = get_modulecachepathflag(target)
     local modulefileflag = get_modulefileflag(target)
+    assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
 
     -- build headerunits
     local projectdir = os.projectdir()
@@ -200,6 +197,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     local stlcachedir = common.stlmodules_cachedir(target)
     local modulecachepathflag = get_modulecachepathflag(target)
     local modulefileflag = get_modulefileflag(target)
+    assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
 
     -- build headerunits
     local projectdir = os.projectdir()
