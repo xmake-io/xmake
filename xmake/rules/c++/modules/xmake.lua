@@ -50,7 +50,6 @@ rule("c++.build.modules")
 
 -- build modules
 rule("c++.build.modules.builder")
-    set_sourcekinds("cxx")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
     -- parallel build support to accelerate `xmake build` to build headerunits
