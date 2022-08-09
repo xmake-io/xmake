@@ -103,9 +103,20 @@ rule("c++.build.modules.builder")
         end
     end)
 
-    before_link(function(target)
+    before_link(function (target)
         import("modules_support.common")
         common.append_headerunits_objectfiles(target)
+    end)
+
+    after_clean(function (target)
+        import("core.base.option")
+        import("modules_support.common")
+        os.tryrm(common.modules_cachedir(target))
+        if option.get("all") then
+            os.tryrm(common.stlmodules_cachedir(target))
+            common.localcache():clear()
+            common.localcache():save()
+        end
     end)
 
 -- install modules
