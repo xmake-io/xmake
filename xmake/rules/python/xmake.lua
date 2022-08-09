@@ -39,4 +39,22 @@ rule("python.library")
                 target:set("extension", ".pyd")
             end
         end
+        -- fix segmentation fault for macosx
+        -- @see https://github.com/xmake-io/xmake/issues/2177#issuecomment-1209398292
+        if target:is_plat("macosx") then
+            target:add("shflags", "-undefined dynamic_lookup", {force = true})
+            local pybind11 = target:pkg("pybind11")
+            if pybind11 then
+                local links = pybind11:get("links")
+                if links then
+                    local links_without_python = {}
+                    for _, link in ipairs(links) do
+                        if not link:startswith("python") then
+                            table.insert(links_without_python, link)
+                        end
+                    end
+                    pybind11:set("links", links_without_python)
+                end
+            end
+        end
     end)
