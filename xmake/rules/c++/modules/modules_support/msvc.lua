@@ -34,14 +34,23 @@ import("common")
 -- /headerUnit:angle glm/mat4x4.hpp=Users\arthu\AppData\Local\.xmake\packages\g\glm\0.9.9+8\91454f3ee0be416cb9c7452970a2300f\include\glm\mat4x4.hpp.ifc
 --
 function _add_module_to_mapper(argument, module)
-    local cache = common.localcache():get("mapflags") or {}
+    local mapflags = common.localcache():get("mapflags") or {}
     local mapflag = format("%s %s", argument, module)
-    if table.contains(cache, mapflag) then
+    if table.contains(mapflags, mapflag) then
         return
     end
-    table.insert(cache, mapflag)
-    common.localcache():set("mapflags", cache)
+    table.insert(mapflags, mapflag)
+    common.localcache():set("mapflags", mapflags)
+end
+
+-- flush mapflags to mapper file cache
+function _flush_mapflags_to_mapper()
     common.localcache():save("mapflags")
+end
+
+-- get mapflags from mapper
+function _get_mapflags_from_mapper()
+    return common.localcache():get("mapflags")
 end
 
 -- add an objectfile to the linker args
@@ -181,6 +190,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
             _add_objectfile_to_link_arguments(objectfile)
         end
     end
+    _flush_mapflags_to_mapper()
 end
 
 -- generate target stl header units for batchcmds
@@ -215,6 +225,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
+    _flush_mapflags_to_mapper()
 end
 
 -- generate target user header units for batchcmds
@@ -266,6 +277,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
         _add_module_to_mapper(headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir))
         _add_objectfile_to_link_arguments(objectfile)
     end
+    _flush_mapflags_to_mapper()
 end
 
 -- generate target user header units for batchcmds
@@ -314,6 +326,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
+    _flush_mapflags_to_mapper()
 end
 
 -- build module files for batchjobs
@@ -327,10 +340,6 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
     local ifcoutputflag = get_ifcoutputflag(target)
     local interfaceflag = get_interfaceflag(target)
     local referenceflag = get_referenceflag(target)
-
-    -- append module mapper flags
-    local cache = common.localcache():get("mapflags") or {}
-    target:add("cxxflags", cache, {force = true})
 
     -- build modules
     local common_args = {"-TP"}
@@ -372,6 +381,13 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
             target:add("objectfiles", objectfile)
         end
     end
+    _flush_mapflags_to_mapper()
+
+    -- append module mapper flags
+    local mapflags = _get_mapflags_from_mapper()
+    if mapflags then
+        target:add("cxxflags", mapflags, {force = true})
+    end
 
     -- build batchjobs for modules
     common.build_batchjobs_for_modules(provided_modules, batchjobs, opt.rootjob)
@@ -389,13 +405,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local interfaceflag = get_interfaceflag(target)
     local referenceflag = get_referenceflag(target)
 
-    -- append module mapper flags
-    local cache = common.localcache():get("mapflags") or {}
-    target:add("cxxflags", cache, {force = true})
-
-    -- build modules
-    local common_args = {"-TP"}
-    local depmtime = 0
+    -- we need update mapper first
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
         if m and m.provides then
@@ -412,18 +422,40 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             end
 
             local bmifile = provide.bmi
-            local args = {"-c", "-Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
+            _add_module_to_mapper(referenceflag, name .. "=" .. path.filename(bmifile))
+            target:add("objectfiles", objectfile)
+        end
+    end
+    _flush_mapflags_to_mapper()
 
+    -- append module mapper flags
+    local mapflags = _get_mapflags_from_mapper()
+    if mapflags then
+        target:add("cxxflags", mapflags, {force = true})
+    end
+
+    -- build modules
+    local common_args = {"-TP"}
+    local depmtime = 0
+    for _, objectfile in ipairs(objectfiles) do
+        local m = modules[objectfile]
+        if m and m.provides then
+            local name, provide
+            for k, v in pairs(m.provides) do
+                name = k
+                provide = v
+                break
+            end
+
+            local bmifile = provide.bmi
+            local args = {"-c", "-Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
             batchcmds:mkdir(path.directory(objectfile))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             batchcmds:add_depfiles(provide.sourcefile)
-            _add_module_to_mapper(referenceflag, name .. "=" .. path.filename(bmifile))
-            target:add("objectfiles", objectfile)
             depmtime = math.max(depmtime, os.mtime(bmifile))
         end
     end
-
     batchcmds:set_depmtime(depmtime)
 end
 
