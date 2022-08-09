@@ -31,7 +31,9 @@ import("stl_headers")
 -- add a module or an header unit into the mapper
 --
 -- e.g
--- -fmodule-file=foo=build/.gens/Foo/rules/modules/cache/foo.pcm
+-- -fmodule-file=build/.gens/Foo/rules/modules/cache/foo.pcm
+-- -fmodule-file=build/.gens/Foo/rules/modules/cache/iostream.pcm
+-- -fmodule-file=build/.gens/Foo/rules/modules/cache/bar.hpp.pcm
 --
 function _add_module_to_mapper(target, name, bmi)
     local mapflags = _get_mapflags_from_mapper(target)
@@ -42,7 +44,7 @@ function _add_module_to_mapper(target, name, bmi)
         mapflag = in_mapper
     end
     table.insert(mapflags, mapflag)
-    common.localcache():set2("in_mapper", name, mapflags)
+    common.localcache():set2("in_mapper", name, mapflag)
     common.localcache():set(_mapper_cachekey(target), mapflags)
 end
 
@@ -50,30 +52,11 @@ function _mapper_cachekey(target)
     return target:name() .. "_mapflags"
 end
 
--- add a header unit into the mapper
---
--- e.g
--- -fmodule-file=foo.hpp=build/.gens/Foo/rules/modules/cache/foo.hpp.pcm
---
-function _add_headerunit_to_mapper(target, name, bmi)
-    local mapflags = _get_mapflags_from_mapper(target)
-    local modulefileflag = get_modulefileflag(target)
-    local mapflag = format("%s%s", modulefileflag, bmi)
-    local in_mapper = common.localcache():get2("in_mapper", name)
-    if common.localcache():get2("in_mapper", name) then
-        mapflag = in_mapper
-    end
-
-    table.insert(mapflags, mapflag)
-    common.localcache():set2("in_mapper", name, mapflags)
-    common.localcache():set(_mapper_cachekey(target), mapflags)
-end
-
 -- flush mapflags to mapper file cache
 function _flush_mapflags_to_mapper(target)
     -- not using set2/get2 to flush only current target mapper
     common.localcache():save(_mapper_cachekey(target))
-    common.localcache():save("headerunits")
+    common.localcache():save("in_mapper")
 end
 
 -- get mapflags from mapper
@@ -208,7 +191,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
                 end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
                 -- libc++ have a builtin module mapper
                 if not target:data_set("cxx.modules.use_libc++") then
-                    _add_headerunit_to_mapper(target, headerunit.name, bmifile)
+                    _add_module_to_mapper(target, headerunit.name, bmifile)
                 end
             end, {rootjob = flushjob})
         end
@@ -237,7 +220,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
 
             -- libc++ have a builtin module mapper
             if not target:data_set("cxx.modules.use_libc++") then
-                _add_headerunit_to_mapper(target, headerunit.name, bmifile)
+                _add_module_to_mapper(target, headerunit.name, bmifile)
             end
         end
         depmtime = math.max(depmtime, os.mtime(bmifile))
@@ -298,7 +281,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
 
             end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
-            _add_headerunit_to_mapper(target, headerunit.name, bmifile)
+            _add_module_to_mapper(target, headerunit.name, bmifile)
         end, {rootjob = flushjob})
     end
 end
@@ -344,8 +327,8 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
         batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         batchcmds:add_depfiles(headerunit.path)
-        _add_headerunit_to_mapper(target, headerunit.name, bmifile)
-
+        _add_module_to_mapper(target, headerunit.name, bmifile)
+        
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -400,7 +383,6 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     if not target:data("cxx.add_modules_mapflags") then
                         -- append module mapper flags
                         local mapflags = _get_mapflags_from_mapper(target)
-                            print(target:name(), mapflags)
                         if mapflags then
                             target:add("cxxflags", mapflags, {force = true})
                         end
@@ -433,18 +415,13 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local modulecachepathflag = get_modulecachepathflag(target)
     local modulefileflag = get_modulefileflag(target)
 
+    -- ensure mapper is flushed
+    _flush_mapflags_to_mapper(target)
+
     -- append module mapper flags
     local mapflags = _get_mapflags_from_mapper(target)
     if mapflags then
         target:add("cxxflags", mapflags, {force = true})
-    end
-
-    -- append deps module mapper flags
-    for _, dep in ipairs(target:orderdeps()) do
-        local mapflags = _get_mapflags_from_mapper(dep)
-        if mapflags then
-            target:add("cxxflags", mapflags, {force = true})
-        end
     end
 
     -- build modules
