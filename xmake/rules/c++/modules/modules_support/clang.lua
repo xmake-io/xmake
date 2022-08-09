@@ -367,6 +367,15 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     if not os.isdir(objectdir) then
                         os.mkdir(objectdir)
                     end
+                    -- append module mapper flags first
+                    -- @note we add it at the end to ensure that the full mapflags are already stored in the mapper
+                    if not target:data("cxx.add_modules_mapflags") then
+                        local mapflags = _get_mapflags_from_mapper()
+                        if mapflags then
+                            target:add("cxxflags", mapflags, {force = true})
+                        end
+                        target:data_set("cxx.add_modules_mapflags", true)
+                    end
                     local args = {emitmoduleinterfaceflag, "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile}
                     os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
                     os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, {bmifile}, {"-c", "-o", objectfile}))
@@ -382,12 +391,6 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
         end
     end
     _flush_mapflags_to_mapper()
-
-    -- append module mapper flags
-    local mapflags = _get_mapflags_from_mapper()
-    if mapflags then
-        target:add("cxxflags", mapflags, {force = true})
-    end
 
     -- build batchjobs for modules
     common.build_batchjobs_for_modules(provided_modules, batchjobs, opt.rootjob)
