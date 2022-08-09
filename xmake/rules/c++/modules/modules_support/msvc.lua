@@ -33,11 +33,22 @@ import("common")
 -- /headerUnit:angle Foo=build/.gens/Foo/rules/modules/cache/Foo.ifc
 -- /headerUnit:angle glm/mat4x4.hpp=Users\arthu\AppData\Local\.xmake\packages\g\glm\0.9.9+8\91454f3ee0be416cb9c7452970a2300f\include\glm\mat4x4.hpp.ifc
 --
-function _add_module_to_mapper(target, argument, module)
+function _add_module_to_mapper(target, argument, module, bmifile)
     local mapflags = _get_mapflags_from_mapper(target)
-    local mapflag = format("%s %s", argument, module)
-    if table.contains(mapflags, mapflag) then
-        return
+    local mapflag = format("%s %s=%s", argument, module, bmifile)
+    local tosearch = format("%s %s=", argument, module)
+    for _, line in ipairs(mapflags) do
+        if line:startswith(tosearch) then
+            return
+        end
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local mapflags_ = _get_mapflags_from_mapper(dep)
+        for _, line in ipairs(mapflags_) do
+            if line:startswith(tosearch) then
+                return
+            end
+        end
     end
     table.insert(mapflags, mapflag)
     common.localcache():set(_mapper_cachekey(target), mapflags)
@@ -190,7 +201,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
                     end
 
                end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
-                _add_module_to_mapper(target, headerunitflag .. ":angle", headerunit.name .. "=" .. path.translate(bmifile))
+                _add_module_to_mapper(target, headerunitflag .. ":angle", headerunit.name, path.translate(bmifile))
             end, {rootjob = flushjob})
             _add_objectfile_to_link_arguments(target, objectfile)
         end
@@ -225,7 +236,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
 
             _add_objectfile_to_link_arguments(target, objectfile)
         end
-        _add_module_to_mapper(target, headerunitflag .. ":angle", headerunit.name .. "=" .. path.translate(bmifile))
+        _add_module_to_mapper(target, headerunitflag .. ":angle", headerunit.name, path.translate(bmifile))
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -285,8 +296,8 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
                     common.localcache():set2(headerunit.name, "building", false)
                 end
 
+                _add_module_to_mapper(target, headerunitflag .. headerunit.type, headerunit.name, path.translate(bmifile))
             end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
-            _add_module_to_mapper(target, headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.translate(bmifile))
         end, {rootjob = flushjob})
         _add_objectfile_to_link_arguments(target, objectfile)
     end
@@ -332,7 +343,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
         batchcmds:add_depfiles(headerunit.path)
 
-        _add_module_to_mapper(target, headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.translate(bmifile))
+        _add_module_to_mapper(target, headerunitflag .. headerunit.type, headerunit.name, path.translate(bmifile))
         _add_objectfile_to_link_arguments(target, objectfile)
 
         depmtime = math.max(depmtime, os.mtime(bmifile))
@@ -408,7 +419,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
                 end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
                 local flag = name .. "=" .. path.translate(bmifile)
-                _add_module_to_mapper(target, referenceflag, flag)
+                _add_module_to_mapper(target, referenceflag, name, path.translate(bmifile))
                 target:add("cxxflags", {referenceflag, flag}, {force = true, expand = false})
             end)
             if m.requires then
@@ -473,7 +484,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             batchcmds:add_depfiles(provide.sourcefile)
             local flag = name .. "=" .. bmifile
-            _add_module_to_mapper(target, referenceflag, flag)
+            _add_module_to_mapper(target, referenceflag, name, bmifile)
             target:add("cxxflags", {referenceflag, flag}, {force = true, expand = false})
             depmtime = math.max(depmtime, os.mtime(bmifile))
         end

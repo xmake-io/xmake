@@ -32,12 +32,23 @@ import("common")
 -- e.g
 -- -fmodule-file=foo=build/.gens/Foo/rules/modules/cache/foo.pcm
 --
-function _add_module_to_mapper(target, bmi)
+function _add_module_to_mapper(target, name, bmi)
     local mapflags = _get_mapflags_from_mapper(target)
     local modulefileflag = get_modulefileflag(target)
-    local mapflag = format("%s%s", modulefileflag, bmi)
-    if table.contains(mapflags, mapflag) then
-        return
+    local mapflag = format("%s%s=%s", modulefileflag, name, bmi)
+    local tosearch = format("%s%s=", modulefileflag, name)
+    for _, line in ipairs(mapflags) do
+        if line:startswith(tosearch) then
+            return
+        end
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local mapflags = _get_mapflags_from_mapper(dep)
+        for _, line in ipairs(mapflags_) do
+            if line:startswith(tosearch) then
+                return
+            end
+        end
     end
     table.insert(mapflags, mapflag)
     common.localcache():set2(_mapper_cachekey(target), mapflags)
@@ -50,14 +61,25 @@ end
 -- add a header unit into the mapper
 --
 -- e.g
--- -fmodule-file=build/.gens/Foo/rules/modules/cache/foo.hpp.pcm
+-- -fmodule-file=foo.hpp=build/.gens/Foo/rules/modules/cache/foo.hpp.pcm
 --
-function _add_headerunit_to_mapper(target, bmi)
+function _add_headerunit_to_mapper(target, name, bmi)
     local mapflags = _get_mapflags_from_mapper(target)
     local modulefileflag = get_modulefileflag(target)
-    local mapflag = format("%s%s", modulefileflag, bmi)
-    if table.contains(mapflags, mapflag) then
-        return
+    local mapflag = format("%s%s=%s", modulefileflag, bmi)
+    local tosearch = format("%s%s=", modulefileflag, name)
+    for _, line in ipairs(mapflags) do
+        if line:startswith(tosearch) then
+            return
+        end
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local mapflags = _get_mapflags_from_mapper(dep)
+        for _, line in ipairs(mapflags_) do
+            if line:startswith(tosearch) then
+                return
+            end
+        end
     end
     table.insert(mapflags, mapflag)
     common.localcache():set(_mapper_cachekey(target), mapflags)
@@ -412,8 +434,8 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
                     os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, {bmifile}, {"-c", "-o", objectfile}))
                 end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
-                _add_module_to_mapper(target, bmifile)
-                target:add("cxxflags", modulefileflag .. bmifile, {force = true})
+                _add_module_to_mapper(target, name, bmifile)
+                target:add("cxxflags", modulefileflag .. name .. "=" .. bmifile, {force = true})
             end)
             if m.requires then
                 moduleinfo.deps = table.keys(m.requires)
@@ -469,8 +491,8 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, {bmifile}, {"-c", "-o", objectfile}))
             batchcmds:add_depfiles(provide.sourcefile)
-            _add_module_to_mapper(target, bmifile)
-            target:add("cxxflags", modulefileflag .. bmifile, {force = true})
+            _add_module_to_mapper(target, headerunit.name, bmifile)
+            target:add("cxxflags", modulefileflag .. name .. "=" .. bmifile, {force = true})
             depmtime = math.max(depmtime, os.mtime(bmifile))
         end
     end
