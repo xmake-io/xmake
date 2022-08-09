@@ -66,7 +66,7 @@ end
 function _add_headerunit_to_mapper(target, name, bmi)
     local mapflags = _get_mapflags_from_mapper(target)
     local modulefileflag = get_modulefileflag(target)
-    local mapflag = format("%s%s=%s", modulefileflag, bmi)
+    local mapflag = format("%s%s=%s", modulefileflag, name, bmi)
     local tosearch = format("%s%s=", modulefileflag, name)
     for _, line in ipairs(mapflags) do
         if line:startswith(tosearch) then
