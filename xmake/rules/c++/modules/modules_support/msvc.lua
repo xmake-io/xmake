@@ -181,9 +181,14 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
         if not os.isfile(bmifile) or not os.isfile(objectfile) then
             batchjobs:addjob(headerunit.name, function(index, total)
                depend.on_changed(function()
-                    progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-                    local args = {headernameflag .. ":angle", headerunit.name, ifcoutputflag, stlcachedir, "-Fo" .. objectfile}
-                    os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+                    if not common.localcache():get2(headerunit.name, "building") then 
+                        common.localcache():set2(headerunit.name, "building", true)
+                        progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                        local args = {headernameflag .. ":angle", headerunit.name, ifcoutputflag, stlcachedir, "-Fo" .. objectfile}
+                        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+                        common.localcache():set2(headerunit.name, "building", false)
+                    end
+
                end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
             end, {rootjob = opt.rootjob})
             _add_module_to_mapper(headerunitflag .. ":angle", headerunit.name .. "=" .. path.filename(headerunit.name) .. get_bmi_extension())
@@ -259,18 +264,22 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
         local bmifile = path.join(outputdir, bmifilename)
         batchjobs:addjob(headerunit.name, function (index, total)
             depend.on_changed(function()
-                progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
-                local objectdir = path.directory(objectfile)
-                if not os.isdir(objectdir) then
-                    os.mkdir(objectdir)
-                end
-                if not os.isdir(outputdir) then
-                    os.mkdir(outputdir)
-                end
+                if not common.localcache():get2(headerunit.name, "building") then 
+                    common.localcache():set2(headerunit.name, "building", true)
+                    progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                    local objectdir = path.directory(objectfile)
+                    if not os.isdir(objectdir) then
+                        os.mkdir(objectdir)
+                    end
+                    if not os.isdir(outputdir) then
+                        os.mkdir(outputdir)
+                    end
 
-                -- generate headerunit
-                local args = {headernameflag .. headerunit.type, headerunit.path, ifcoutputflag, outputdir, "/Fo" .. objectfile}
-                os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+                    -- generate headerunit
+                    local args = {headernameflag .. headerunit.type, headerunit.path, ifcoutputflag, outputdir, "/Fo" .. objectfile}
+                    os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+                    common.localcache():set2(headerunit.name, "building", false)
+                end
 
             end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
         end, {rootjob = opt.rootjob})

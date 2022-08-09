@@ -61,10 +61,16 @@ rule("c++.build.modules.builder")
             import("modules_support.common")
             local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
             common.patch_sourcebatch(target, sourcebatch, opt)
+
+            -- generate headerunits
             local modules = common.get_module_dependencies(target, sourcebatch, opt)
             batchjobs:group_enter(target:name() .. "/generate_headerunits")
             common.generate_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
             job = batchjobs:group_leave()
+
+            -- append module mapper flags
+            local cache = common.localcache():get("mapflags") or {}
+            target:add("cxxflags", cache, {force = true})
         end
         return job or opt.rootjob
     end, {batch = true})
