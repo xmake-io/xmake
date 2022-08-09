@@ -50,6 +50,7 @@ end
 --
 function _add_headerunit_to_mapper(target, bmi)
     local mapflags = common.memcache():get("mapflags") or {}
+    local modulefileflag = get_modulefileflag(target)
     local mapflag = format("%s%s", modulefileflag, bmi)
     if table.contains(cache, mapflag) then
         return
@@ -363,6 +364,10 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
             moduleinfo.job = batchjobs:newjob(provide.sourcefile, function (index, total)
                 depend.on_changed(function()
                     progress.show((index * 100) / total, "${color.build.object}generating.cxx.module.bmi %s", name)
+                    local bmidir = path.directory(bmifile)
+                    if not os.isdir(bmidir) then
+                        os.mkdir(bmidir)
+                    end
                     local objectdir = path.directory(objectfile)
                     if not os.isdir(objectdir) then
                         os.mkdir(objectdir)
@@ -447,6 +452,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             local bmifile = provide.bmi
             local args = { emitmoduleinterfaceflag, "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile }
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
+            batchcmds:mkdir(path.directory(bmifile))
             batchcmds:mkdir(path.directory(objectfile))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, {bmifile}, {"-c", "-o", objectfile}))
