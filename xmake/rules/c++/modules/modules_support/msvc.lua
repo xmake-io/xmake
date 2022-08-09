@@ -34,14 +34,23 @@ import("common")
 -- /headerUnit:angle glm/mat4x4.hpp=Users\arthu\AppData\Local\.xmake\packages\g\glm\0.9.9+8\91454f3ee0be416cb9c7452970a2300f\include\glm\mat4x4.hpp.ifc
 --
 function _add_module_to_mapper(argument, module)
-    local cache = common.localcache():get("mapflags") or {}
+    local mapflags = common.localcache():get("mapflags") or {}
     local mapflag = format("%s %s", argument, module)
-    if table.contains(cache, mapflag) then
+    if table.contains(mapflags, mapflag) then
         return
     end
-    table.insert(cache, mapflag)
-    common.localcache():set("mapflags", cache)
+    table.insert(mapflags, mapflag)
+    common.localcache():set("mapflags", mapflags)
+end
+
+-- flush mapflags to mapper file cache
+function _flush_mapflags_to_mapper()
     common.localcache():save("mapflags")
+end
+
+-- get mapflags from mapper
+function _get_mapflags_from_mapper()
+    return common.localcache():get("mapflags")
 end
 
 -- add an objectfile to the linker args
@@ -150,11 +159,12 @@ function generate_dependencies(target, sourcebatch, opt)
     return changed
 end
 
--- generate target stl header units for batchcmds
-function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
+-- generate target stl header units for batchjobs
+function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
+    local stlcachedir = common.stlmodules_cachedir(target)
 
     -- get flags
     local exportheaderflag = get_exportheaderflag(target)
@@ -163,8 +173,39 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     local ifcoutputflag = get_ifcoutputflag(target)
     assert(headerunitflag and headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
 
-    -- get cachedirs
+    -- build headerunits
+    local common_args = {"-TP", exportheaderflag, "-c"}
+    for _, headerunit in ipairs(headerunits) do
+        local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
+        local objectfile = bmifile .. ".obj"
+        if not os.isfile(bmifile) or not os.isfile(objectfile) then
+            batchjobs:addjob(headerunit.name, function(index, total)
+               depend.on_changed(function()
+                    progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                    local args = {headernameflag .. ":angle", headerunit.name, ifcoutputflag, stlcachedir, "-Fo" .. objectfile}
+                    os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+               end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+            end, {rootjob = opt.rootjob})
+            _add_module_to_mapper(headerunitflag .. ":angle", headerunit.name .. "=" .. path.filename(headerunit.name) .. get_bmi_extension())
+            _add_objectfile_to_link_arguments(objectfile)
+        end
+    end
+    _flush_mapflags_to_mapper()
+end
+
+-- generate target stl header units for batchcmds
+function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
+    local compinst = target:compiler("cxx")
+    local toolchain = target:toolchain("msvc")
+    local vcvars = toolchain:config("vcvars")
     local stlcachedir = common.stlmodules_cachedir(target)
+
+    -- get flags
+    local exportheaderflag = get_exportheaderflag(target)
+    local headerunitflag = get_headerunitflag(target)
+    local headernameflag = get_headernameflag(target)
+    local ifcoutputflag = get_ifcoutputflag(target)
+    assert(headerunitflag and headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
 
     -- build headerunits
     local common_args = {"-TP", exportheaderflag, "-c"}
@@ -184,13 +225,15 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
+    _flush_mapflags_to_mapper()
 end
 
 -- generate target user header units for batchcmds
-function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
+function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
+    local cachedir = common.modules_cachedir(target)
 
     -- get flags
     local exportheaderflag = get_exportheaderflag(target)
@@ -199,8 +242,57 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
     local ifcoutputflag = get_ifcoutputflag(target)
     assert(headerunitflag and headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
 
-    -- get cachedirs
+    -- build headerunits
+    local common_args = {"-TP", exportheaderflag, "-c"}
+    local projectdir = os.projectdir()
+    for _, headerunit in ipairs(headerunits) do
+        local file = path.relative(headerunit.path, target:scriptdir())
+        local objectfile = target:objectfile(file)
+        local outputdir
+        if headerunit.type == ":quote" then
+            outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
+        else
+            -- if path is relative then its a subtarget path
+            outputdir = path.join(cachedir, path.is_absolute(headerunit.path) and path.directory(headerunit.path):sub(3) or headerunit.path)
+        end
+        local bmifilename = path.basename(objectfile) .. get_bmi_extension()
+        local bmifile = path.join(outputdir, bmifilename)
+        batchjobs:addjob(headerunit.name, function (index, total)
+            depend.on_changed(function()
+                progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                local objectdir = path.directory(objectfile)
+                if not os.isdir(objectdir) then
+                    os.mkdir(objectdir)
+                end
+                if not os.isdir(outputdir) then
+                    os.mkdir(outputdir)
+                end
+
+                -- generate headerunit
+                local args = {headernameflag .. headerunit.type, headerunit.path, ifcoutputflag, outputdir, "/Fo" .. objectfile}
+                os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+
+            end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+        end, {rootjob = opt.rootjob})
+        _add_module_to_mapper(headerunitflag .. headerunit.type, headerunit.name .. "=" .. path.relative(bmifile, cachedir))
+        _add_objectfile_to_link_arguments(objectfile)
+    end
+    _flush_mapflags_to_mapper()
+end
+
+-- generate target user header units for batchcmds
+function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
+    local compinst = target:compiler("cxx")
+    local toolchain = target:toolchain("msvc")
+    local vcvars = toolchain:config("vcvars")
     local cachedir = common.modules_cachedir(target)
+
+    -- get flags
+    local exportheaderflag = get_exportheaderflag(target)
+    local headerunitflag = get_headerunitflag(target)
+    local headernameflag = get_headernameflag(target)
+    local ifcoutputflag = get_ifcoutputflag(target)
+    assert(headerunitflag and headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
 
     -- build headerunits
     local common_args = {"-TP", exportheaderflag, "-c"}
@@ -234,15 +326,14 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
+    _flush_mapflags_to_mapper()
 end
 
--- build module files for batchcmds
-function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
+-- build module files for batchjobs
+function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
-
-    -- get cachedirs
     local cachedir = common.modules_cachedir(target)
 
     -- get flags
@@ -250,13 +341,9 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local interfaceflag = get_interfaceflag(target)
     local referenceflag = get_referenceflag(target)
 
-    -- append module mapper flags
-    local cache = common.localcache():get("mapflags") or {}
-    target:add("cxxflags", cache, {force = true})
-
     -- build modules
     local common_args = {"-TP"}
-    local depmtime = 0
+    local provided_modules = {}
     for _, objectfile in ipairs(objectfiles) do
         local m = modules[objectfile]
         if m and m.provides then
@@ -273,20 +360,106 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             end
 
             local bmifile = provide.bmi
-            local args = {"-c", "-Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
+            local moduleinfo = table.copy(provide)
+            moduleinfo.job = batchjobs:newjob(provide.sourcefile, function (index, total)
+                depend.on_changed(function()
+                    progress.show((index * 100) / total, "${color.build.object}generating.cxx.module.bmi %s", name)
+                    local objectdir = path.directory(objectfile)
+                    if not os.isdir(objectdir) then
+                        os.mkdir(objectdir)
+                    end
+                    -- append module mapper flags first
+                    -- @note we add it at the end to ensure that the full mapflags are already stored in the mapper
+                    if not target:data("cxx.add_modules_mapflags") then
+                        local mapflags = _get_mapflags_from_mapper()
+                        if mapflags then
+                            target:add("cxxflags", mapflags, {force = true})
+                        end
+                        target:data_set("cxx.add_modules_mapflags", true)
+                    end
+                    local args = {"-c", "-Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
+                    os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+                end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
+            end)
+            if m.requires then
+                moduleinfo.deps = table.keys(m.requires)
+            end
+            moduleinfo.name = name
+            provided_modules[name] = moduleinfo
+            _add_module_to_mapper(referenceflag, name .. "=" .. path.filename(bmifile))
+            target:add("objectfiles", objectfile)
+        end
+    end
+    _flush_mapflags_to_mapper()
 
+
+    -- build batchjobs for modules
+    common.build_batchjobs_for_modules(provided_modules, batchjobs, opt.rootjob)
+end
+
+-- build module files for batchcmds
+function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
+    local compinst = target:compiler("cxx")
+    local toolchain = target:toolchain("msvc")
+    local vcvars = toolchain:config("vcvars")
+    local cachedir = common.modules_cachedir(target)
+
+    -- get flags
+    local ifcoutputflag = get_ifcoutputflag(target)
+    local interfaceflag = get_interfaceflag(target)
+    local referenceflag = get_referenceflag(target)
+
+    -- we need update mapper first
+    for _, objectfile in ipairs(objectfiles) do
+        local m = modules[objectfile]
+        if m and m.provides then
+            -- assume there that provides is only one, until we encounter the case
+            local length = 0
+            local name, provide
+            for k, v in pairs(m.provides) do
+                length = length + 1
+                name = k
+                provide = v
+                if length > 1 then
+                    raise("multiple provides are not supported now!")
+                end
+            end
+
+            local bmifile = provide.bmi
+            _add_module_to_mapper(referenceflag, name .. "=" .. path.filename(bmifile))
+            target:add("objectfiles", objectfile)
+        end
+    end
+    _flush_mapflags_to_mapper()
+
+    -- append module mapper flags
+    local mapflags = _get_mapflags_from_mapper()
+    if mapflags then
+        target:add("cxxflags", mapflags, {force = true})
+    end
+
+    -- build modules
+    local common_args = {"-TP"}
+    local depmtime = 0
+    for _, objectfile in ipairs(objectfiles) do
+        local m = modules[objectfile]
+        if m and m.provides then
+            local name, provide
+            for k, v in pairs(m.provides) do
+                name = k
+                provide = v
+                break
+            end
+
+            local bmifile = provide.bmi
+            local args = {"-c", "-Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
             batchcmds:mkdir(path.directory(objectfile))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             batchcmds:add_depfiles(provide.sourcefile)
-
-            _add_module_to_mapper(referenceflag, name .. "=" .. path.filename(bmifile))
-
-            target:add("objectfiles", objectfile)
             depmtime = math.max(depmtime, os.mtime(bmifile))
         end
     end
-
     batchcmds:set_depmtime(depmtime)
 end
 

@@ -131,15 +131,15 @@ function generate_dependencies(target, sourcebatch, opt)
                 progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
             end
 
-            local outdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, projectdir))))
-            if not os.isdir(outdir) then
-                os.mkdir(outdir)
+            local outputdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, projectdir))))
+            if not os.isdir(outputdir) then
+                os.mkdir(outputdir)
             end
 
-            local jsonfile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".json"))
+            local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
             if trtbdflag and depfileflag and depoutputflag then
-                local ifile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".i"))
-                local dfile = path.translate(path.join(outdir, path.filename(sourcefile) .. ".d"))
+                local ifile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".i"))
+                local dfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".d"))
                 local args = {sourcefile, "-MD", "-MT", jsonfile, "-MF", dfile, depfileflag .. jsonfile, trtbdflag, depoutputfile .. target:objectfile(sourcefile), "-o", ifile}
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             else
@@ -154,12 +154,33 @@ function generate_dependencies(target, sourcebatch, opt)
     return changed
 end
 
+-- generate target stl header units for batchjobs
+function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
+    local compinst = target:compiler("cxx")
+    local mapper_file = _get_module_mapper()
+    local stlcachedir = common.stlmodules_cachedir(target)
+
+    -- build headerunits
+    local projectdir = os.projectdir()
+    for _, headerunit in ipairs(headerunits) do
+        local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
+        if not os.isfile(bmifile) then
+            batchjobs:addjob(headerunit.name, function (index, total)
+                depend.on_changed(function()
+                    progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                    local args = {"-c", "-x", "c++-system-header", headerunit.name}
+                    os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
+                end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+            end, {rootjob = opt.rootjob})
+        end
+        _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir))
+    end
+end
+
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
     local mapper_file = _get_module_mapper()
-
-    -- get cachedirs
     local stlcachedir = common.stlmodules_cachedir(target)
 
     -- build headerunits
@@ -172,21 +193,69 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         end
-
         batchcmds:add_depfiles(headerunit.path)
-
         _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir))
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
 end
 
+-- generate target user header units for batchjobs
+function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
+    local compinst = target:compiler("cxx")
+    local mapper_file = _get_module_mapper()
+    local cachedir = common.modules_cachedir(target)
+
+    -- build headerunits
+    local projectdir = os.projectdir()
+    for _, headerunit in ipairs(headerunits) do
+        local file = path.relative(headerunit.path, projectdir)
+        local objectfile = target:objectfile(file)
+        local outputdir
+        local headerunit_path
+        if headerunit.type == ":quote" then
+            outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
+        else
+            outputdir = path.join(cachedir, path.directory(headerunit.path))
+        end
+        local bmifilename = path.basename(objectfile) .. get_bmi_extension()
+        local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
+        if headerunit.type == ":quote" then
+            headerunit_path = path.join(".", path.relative(headerunit.path, projectdir))
+        elseif headerunit.type == ":angle" then
+            -- if path is relative then its a subtarget path
+            headerunit_path = path.is_absolute(headerunit.path) and headerunit.path or path.join(".", headerunit.path)
+        end
+        batchjobs:addjob(headerunit.name, function (index, total)
+            depend.on_changed(function()
+                progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                local objectdir = path.directory(objectfile)
+                if not os.isdir(objectdir) then
+                    os.mkdir(objectdir)
+                end
+                if not os.isdir(outputdir) then
+                    os.mkdir(outputdir)
+                end
+
+                -- generate headerunit
+                local args = { "-c" }
+                if headerunit.type == ":quote" then
+                    table.join2(args, { "-I", path.directory(path.relative(headerunit.path, projectdir)), "-x", "c++-user-header", headerunit.name })
+                elseif headerunit.type == ":angle" then
+                    table.join2(args, { "-x", "c++-system-header", headerunit.name })
+                end
+                os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
+
+            end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+        end, {rootjob = opt.rootjob})
+        _add_module_to_mapper(mapper_file, headerunit_path, path.absolute(bmifile, projectdir))
+    end
+end
+
 -- generate target user header units for batchcmds
 function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
     local mapper_file = _get_module_mapper()
-
-    -- get cachedirs
     local cachedir = common.modules_cachedir(target)
 
     -- build headerunits
@@ -195,17 +264,16 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
     for _, headerunit in ipairs(headerunits) do
         local file = path.relative(headerunit.path, projectdir)
         local objectfile = target:objectfile(file)
-
-        local outdir
+        local outputdir
         if headerunit.type == ":quote" then
-            outdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
+            outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
         else
-            outdir = path.join(cachedir, path.directory(headerunit.path))
+            outputdir = path.join(cachedir, path.directory(headerunit.path))
         end
-        batchcmds:mkdir(outdir)
+        batchcmds:mkdir(outputdir)
 
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
-        local bmifile = (outdir and path.join(outdir, bmifilename) or bmifilename)
+        local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
         batchcmds:mkdir(path.directory(objectfile))
 
         local args = { "-c" }
@@ -229,13 +297,63 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
     batchcmds:set_depmtime(depmtime)
 end
 
+-- build module files for batchjobs
+function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
+    local compinst = target:compiler("cxx")
+    local mapper_file = _get_module_mapper()
+    local common_args = {"-x", "c++"}
+    local cachedir = common.modules_cachedir(target)
+
+    -- build modules
+    local projectdir = os.projectdir()
+    local provided_modules = {}
+    for _, objectfile in ipairs(objectfiles) do
+        local m = modules[objectfile]
+        if m and m.provides then
+            -- assume there that provides is only one, until we encounter the case
+            local length = 0
+            local name, provide
+            for k, v in pairs(m.provides) do
+                length = length + 1
+                name = k
+                provide = v
+                if length > 1 then
+                    raise("multiple provides are not supported now!")
+                end
+            end
+
+            local bmifile = provide.bmi
+            local moduleinfo = table.copy(provide)
+            moduleinfo.job = batchjobs:newjob(provide.sourcefile, function (index, total)
+                depend.on_changed(function()
+                    progress.show((index * 100) / total, "${color.build.object}generating.cxx.module.bmi %s", name)
+                    local objectdir = path.directory(objectfile)
+                    if not os.isdir(objectdir) then
+                        os.mkdir(objectdir)
+                    end
+                    local args = {"-o", objectfile, "-c", provide.sourcefile}
+                    os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
+                end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
+            end)
+            if m.requires then
+                moduleinfo.deps = table.keys(m.requires)
+            end
+            moduleinfo.name = name
+            provided_modules[name] = moduleinfo
+            _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir))
+            target:add("objectfiles", objectfile)
+        end
+    end
+
+    -- build batchjobs for modules
+    common.build_batchjobs_for_modules(provided_modules, batchjobs, opt.rootjob)
+end
+
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
     local mapper_file = _get_module_mapper()
     local common_args = {"-x", "c++"}
-
-    -- get cachedirs
     local cachedir = common.modules_cachedir(target)
 
     -- build modules

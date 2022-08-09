@@ -37,25 +37,27 @@ function _clean_target(target)
     end
 end
 
--- add builtin batch jobs
-function _add_batchjobs_builtin(batchjobs, rootjob, target)
+-- add batch jobs for rules
+function _add_batchjobs_for_rules(batchjobs, rootjob, target, suffix)
 
     -- uses the rules script?
     local job, job_leaf
     for _, r in irpairs(target:orderules()) do -- reverse rules order for batchjobs:addjob()
-        local script = r:script("build")
+        local scriptname = "build" .. (suffix and ("_" .. suffix) or "")
+        local script = r:script(scriptname)
         if script then
-            if r:extraconf("build", "batch") then
-                job, job_leaf = assert(script(target, batchjobs, {rootjob = job or rootjob}), "rule(%s):on_build(): no returned job!", r:name())
+            if r:extraconf(scriptname, "batch") then
+                job, job_leaf = assert(script(target, batchjobs, {rootjob = job or rootjob}), "rule(%s):%s(): no returned job!", r:name(), scriptname)
             else
-                job = batchjobs:addjob("rule/" .. r:name() .. "/build", function (index, total)
+                job = batchjobs:addjob("rule/" .. r:name() .. "/" .. scriptname, function (index, total)
                     script(target, {progress = (index * 100) / total})
                 end, {rootjob = job or rootjob})
             end
         else
-            local buildcmd = r:script("buildcmd")
+            scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
+            local buildcmd = r:script(scriptname)
             if buildcmd then
-                job = batchjobs:addjob("rule/" .. r:name() .. "/build", function (index, total)
+                job = batchjobs:addjob("rule/" .. r:name() .. "/" .. scriptname, function (index, total)
                     local batchcmds_ = batchcmds.new({target = target})
                     buildcmd(target, batchcmds_, {progress =  (index * 100) / total})
                     batchcmds_:runcmds({dryrun = option.get("dry-run")})
@@ -63,6 +65,14 @@ function _add_batchjobs_builtin(batchjobs, rootjob, target)
             end
         end
     end
+    return job, job_leaf or job
+end
+
+-- add builtin batch jobs
+function _add_batchjobs_builtin(batchjobs, rootjob, target)
+
+    -- add batchjobs for rules
+    local job, job_leaf = _add_batchjobs_for_rules(batchjobs, rootjob, target)
 
     -- uses the builtin target script
     if not job and (target:is_static() or target:is_binary() or target:is_shared() or target:is_object()) then
@@ -125,19 +135,6 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
         if after_build then
             after_build(target, {progress = progress})
         end
-        for _, r in ipairs(target:orderules()) do
-            local after_build = r:script("build_after")
-            if after_build then
-                after_build(target, {progress = progress})
-            else
-                local after_buildcmd = r:script("buildcmd_after")
-                if after_buildcmd then
-                    local batchcmds_ = batchcmds.new({target = target})
-                    after_buildcmd(target, batchcmds_, {progress = progress})
-                    batchcmds_:runcmds({dryrun = option.get("dry-run")})
-                end
-            end
-        end
 
         -- restore environments
         if oldenvs then
@@ -146,8 +143,14 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
 
     end, {rootjob = rootjob})
 
+    -- add batchjobs for rules/build_after
+    local rules_job_build_after, rules_job_build_after_leaf = _add_batchjobs_for_rules(batchjobs, job_build_after, target, "after")
+
     -- add batch jobs for target, @note only on_build script support batch jobs
-    local job_build, job_build_leaf = _add_batchjobs(batchjobs, job_build_after, target)
+    local job_build, job_build_leaf = _add_batchjobs(batchjobs, rules_job_build_after_leaf or job_build_after, target)
+
+    -- add batchjobs for rules/build_before
+    local rules_job_build_before, rules_job_build_before_leaf = _add_batchjobs_for_rules(batchjobs, job_build_leaf, target, "before")
 
     -- add before_build job for target
     local job_build_before = batchjobs:addjob(target:name() .. "/before_build", function (index, total)
@@ -166,20 +169,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
         if before_build then
             before_build(target, {progress = progress})
         end
-        for _, r in ipairs(target:orderules()) do
-            local before_build = r:script("build_before")
-            if before_build then
-                before_build(target, {progress = progress})
-            else
-                local before_buildcmd = r:script("buildcmd_before")
-                if before_buildcmd then
-                    local batchcmds_ = batchcmds.new({target = target})
-                    before_buildcmd(target, batchcmds_, {progress = progress})
-                    batchcmds_:runcmds({dryrun = option.get("dry-run")})
-                end
-            end
-        end
-    end, {rootjob = job_build_leaf})
+    end, {rootjob = rules_job_build_before_leaf or job_build_leaf})
     return job_build_before, job_build, job_build_after
 end
 
