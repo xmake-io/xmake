@@ -1280,6 +1280,24 @@ function _instance:fileconfig_set(sourcefile, info)
     self._FILESCONFIG = filesconfig
 end
 
+-- add the config info to the given source file
+function _instance:fileconfig_add(sourcefile, info)
+    local filesconfig = self._FILESCONFIG or {}
+    local fileconfig = filesconfig[sourcefile]
+    if fileconfig then
+        for k, v in pairs(info) do
+            if fileconfig[k] then
+                fileconfig[k] = table.join(fileconfig[k], v)
+            else
+                fileconfig[k] = v
+            end
+        end
+    else
+        filesconfig[sourcefile] = info
+    end
+    self._FILESCONFIG = filesconfig
+end
+
 -- get the source files
 function _instance:sourcefiles()
 
