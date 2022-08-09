@@ -523,7 +523,8 @@ end
 
 -- append headerunits objectfiles to link
 function append_headerunits_objectfiles(target)
-    local cache = localcache():get("headerunit_objectfiles") or {}
+    local cachekey = target:name() .. "headerunit_objectfiles"
+    local cache = localcache():get(cachekey) or {}
     if target:is_binary() then
         target:add("ldflags", cache, {force = true})
     elseif target:is_static() == "static" then

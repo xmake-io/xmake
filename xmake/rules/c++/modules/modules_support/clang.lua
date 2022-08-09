@@ -182,6 +182,11 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
     local modulefileflag = get_modulefileflag(target)
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
 
+    -- flush job
+    local flushjob = batchjobs:addjob(target:name() .. "_stl_headerunits_flush_mapper", function(index, total)
+        _flush_mapflags_to_mapper(target)
+    end, {rootjob = opt.rootjob})
+
     -- build headerunits
     local projectdir = os.projectdir()
     for i, headerunit in ipairs(headerunits) do
@@ -198,7 +203,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
                 if not target:data_set("cxx.modules.use_libc++") then
                     _add_headerunit_to_mapper(target, bmifile)
                 end
-            end, {rootjob = opt.rootjob})
+            end, {rootjob = flushjob})
         end
     end
     _flush_mapflags_to_mapper(target)
@@ -245,6 +250,11 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
     local modulecachepathflag = get_modulecachepathflag(target)
     local modulefileflag = get_modulefileflag(target)
 
+    -- flush job
+    local flushjob = batchjobs:addjob(target:name() .. "_user_headerunits_flush_mapper", function(index, total)
+        _flush_mapflags_to_mapper(target)
+    end, {rootjob = opt.rootjob})
+
     -- build headerunits
     local objectfiles = {}
     local flags = {}
@@ -283,7 +293,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
 
             end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
             _add_headerunit_to_mapper(target, bmifile)
-        end, {rootjob = opt.rootjob})
+        end, {rootjob = flushjob})
     end
     _flush_mapflags_to_mapper(target)
 end
@@ -344,6 +354,11 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
     local modulecachepathflag = get_modulecachepathflag(target)
     local modulefileflag = get_modulefileflag(target)
 
+    -- flush job
+    local flushjob = batchjobs:addjob(target:name() .. "_stl_flush_mapper", function(index, total)
+        _flush_mapflags_to_mapper(target)
+    end, {rootjob = opt.rootjob})
+
     -- build modules
     local common_args = {modulecachepathflag .. cachedir}
     local provided_modules = {}
@@ -385,7 +400,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         end
 
                         -- append deps module mapper flags
-                        for _, dep in ipairs(target:deps()) do
+                        for _, dep in ipairs(target:orderdeps()) do
                             local mapflags = _get_mapflags_from_mapper(dep)
                             if mapflags then
                                 target:add("cxxflags", mapflags, {force = true})
@@ -408,10 +423,9 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
             target:add("objectfiles", objectfile)
         end
     end
-    _flush_mapflags_to_mapper(target)
 
     -- build batchjobs for modules
-    common.build_batchjobs_for_modules(provided_modules, batchjobs, opt.rootjob)
+    common.build_batchjobs_for_modules(provided_modules, batchjobs, flushjob)
 end
 
 -- build module files for batchcmds
@@ -428,7 +442,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     end
 
     -- append deps module mapper flags
-    for _, dep in ipairs(target:deps()) do
+    for _, dep in ipairs(target:orderdeps()) do
         local mapflags = _get_mapflags_from_mapper(dep)
         if mapflags then
             target:add("cxxflags", mapflags, {force = true})
