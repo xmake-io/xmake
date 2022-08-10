@@ -52,6 +52,17 @@ function _install_shared_for_package(target, pkg, outputdir)
                 -- we need reserve symlink
                 -- @see https://github.com/xmake-io/xmake/issues/1582
                 os.vcp(sopath, outputdir, {symlink = true})
+                -- https://github.com/xmake-io/xmake/issues/2665#issuecomment-1209619081
+                if os.islink(sopath) then
+                    -- relative link? e.g. libxx.so -> libxx.4.so
+                    local realitem = os.readlink(sopath)
+                    if realitem and not path.is_absolute(realitem) then
+                        local realpath = path.join(path.directory(sopath), realitem)
+                        if os.isfile(realpath) then
+                            os.vcp(realpath, outputdir)
+                        end
+                    end
+                end
                 _g.installed_libfiles[sopath] = true
             end
         end

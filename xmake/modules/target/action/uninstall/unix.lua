@@ -32,7 +32,19 @@ function _uninstall_shared_for_package(target, pkg, outputdir)
     for _, sopath in ipairs(table.wrap(pkg:get("libfiles"))) do
         if sopath:endswith(".so") or sopath:endswith(".dylib") then
             local soname = path.filename(sopath)
-            os.vrm(path.join(outputdir, soname))
+            local filepath = path.join(outputdir, soname)
+            -- https://github.com/xmake-io/xmake/issues/2665#issuecomment-1209619081
+            if os.islink(filepath) then
+                -- relative link? e.g. libxx.so -> libxx.4.so
+                local realitem = os.readlink(filepath)
+                if realitem and not path.is_absolute(realitem) then
+                    local realpath = path.join(outputdir, realitem)
+                    if os.isfile(realpath) then
+                        os.vrm(realpath)
+                    end
+                end
+            end
+            os.vrm(filepath)
         end
     end
 end
