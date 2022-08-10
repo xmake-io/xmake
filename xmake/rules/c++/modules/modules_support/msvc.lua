@@ -37,22 +37,18 @@ import("common")
 function _add_module_to_mapper(target, argument, name, bmifile, deps)
     local modulemap = _get_modulemap_from_mapper(target)
     local mapflag = {argument, name .. "=" .. bmifile}
-
     if modulemap[name] then
         return
     end
 
-    for _, t in ipairs(project:targets()) do
-        if not t:name() == target:name() then
-            local t_modulemap = _get_modulemap_from_mapper(t)
-            if t_modulemap[name] then
-                mapflag = t_modulemap[name].flag
-                break
-            end
+    if not project.targets()[target:name()] then
+        local t_modulemap = _get_modulemap_from_mapper(t)
+        if t_modulemap[name] then
+             mapflag = t_modulemap[name].flag
         end
     end
 
-    modulemap[name] =  {flag = mapflag, deps = deps}
+    modulemap[name] = {flag = mapflag, deps = deps}
     common.localcache():set2(_mapper_cachekey(target), "modulemap", modulemap)
 end
 
@@ -200,8 +196,10 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
 
                end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
                _add_module_to_mapper(target, headerunitflag .. ":angle", headerunit.name, bmifile)
+                if os.isfile(objectfile) then
+                    _add_objectfile_to_link_arguments(target, objectfile)
+                end
             end, {rootjob = flushjob})
-            _add_objectfile_to_link_arguments(target, objectfile)
         end
     end
 end
@@ -235,7 +233,9 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
             batchcmds:add_depfiles(headerunit.path)
         end
         _add_module_to_mapper(target, headerunitflag .. ":angle", headerunit.name, bmifile)
-        _add_objectfile_to_link_arguments(target, objectfile)
+        if os.isfile(objectfile) then
+            _add_objectfile_to_link_arguments(target, objectfile)
+        end
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -294,10 +294,12 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
                     os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
                 end
             _add_module_to_mapper(target, headerunitflag .. headerunit.type, headerunit.name, bmifile)
+            if os.isfile(objectfile) then
+                _add_objectfile_to_link_arguments(target, objectfile)
+            end
 
             end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
         end, {rootjob = flushjob})
-        _add_objectfile_to_link_arguments(target, objectfile)
     end
 end
 
@@ -466,7 +468,6 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local interfaceflag = get_interfaceflag(target)
     local referenceflag = get_referenceflag(target)
 
-
     -- build modules
     local common_args = {"-TP"}
     local depmtime = 0
@@ -487,7 +488,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     local flags_ = get_requiresflags(target, module.requires)
 
                     flags = flags or {}
-                    for i=1, #flags_, 2 do
+                    for i=2, #flags_, 2 do
                         if not table.contains(flags, flags_[i + 1]) then
                             table.join2(flags, {flags_[i], flags_[i + 1]})
                         end
@@ -507,7 +508,6 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     local flags
                     if module.requires then
                         local flags_ = get_requiresflags(target, module.requires)
-
                         flags = flags or {}
                         for i=1, #flags_, 2 do
                             if not table.contains(flags, flags_[i + 1]) then
@@ -677,7 +677,7 @@ function get_requiresflags(target, requires)
             if modulemap_[name] then
                 table.join2(flags, modulemap_[name].flag)
                 table.join2(flags, modulemap_[name].deps or {})
-                goto CONTINUE
+                goto continue
             end
         end
 
@@ -685,12 +685,10 @@ function get_requiresflags(target, requires)
         if modulemap[name] then
             table.join2(flags, modulemap[name].flag)
             table.join2(flags, modulemap[name].deps or {})
-            goto CONTINUE
+            goto continue
         end
 
-        --assert(false, "Missing dependency " .. name .. " for " .. target:name())
-
-        ::CONTINUE::
+        ::continue::
     end
     return flags
 end

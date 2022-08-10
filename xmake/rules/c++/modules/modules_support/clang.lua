@@ -35,26 +35,22 @@ import("stl_headers")
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/iostream.pcm
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/bar.hpp.pcm
 --
-function _add_module_to_mapper(target, name, bmi)
+function _add_module_to_mapper(target, name, bmifile, deps)
     local modulefileflag = get_modulefileflag(target)
-    local modulemap = _get_modulemap_from_mapper(target) or {}
+    local modulemap = _get_modulemap_from_mapper(target)
     local mapflag = format("%s%s", modulefileflag, bmifile)
-
     if modulemap[name] then
         return
     end
 
-    for _, t in ipairs(project:targets()) do
-        if not t:name() == target:name() then
-            local t_modulemap = _get_modulemap_from_mapper(t)
-            if t_modulemap[name] then
-                mapflag = t_modulemap[name].flag
-                break
-            end
+    if not project.targets()[target:name()] then
+        local t_modulemap = _get_modulemap_from_mapper(t)
+        if t_modulemap[name] then
+             mapflag = t_modulemap[name].flag
         end
     end
 
-    modulemap[name] =  {flag = mapflag, deps = deps}
+    modulemap[name] = {flag = mapflag, deps = deps}
     common.localcache():set2(_mapper_cachekey(target), "modulemap", modulemap)
 end
 
@@ -70,7 +66,7 @@ end
 
 -- get modulemap from mapper
 function _get_modulemap_from_mapper(target)
-    return common.localcache():get2(_mapper_cachekey(target), "modulemap")
+    return common.localcache():get2(_mapper_cachekey(target), "modulemap") or {}
 end
 
 -- load module support for the current target
@@ -129,7 +125,7 @@ function toolchain_includedirs(target)
         local _, result = try {function () return os.iorunv(clang, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
-                line = line:trim()
+                line = line:trim() 
                 if os.isdir(line) then
                     table.insert(includedirs, path.normalize(line))
                 elseif line:startswith("End") then
@@ -376,7 +372,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
                     local flags
                     if module.requires then
-                        local flags = get_requiresflags(target, module.requires)
+                        flags = get_requiresflags(target, module.requires)
                         flags = table.unique(flags)
                     end
 
@@ -440,15 +436,6 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local modulecachepathflag = get_modulecachepathflag(target)
     local modulefileflag = get_modulefileflag(target)
 
-    -- make sure mapper is flushed
-    _flush_mapper(target)
-
-    -- append module mapper flags
-    local modulemap = _get_modulemap_from_mapper(target)
-    if modulemap then
-        target:add("cxxflags", modulemap, {force = true})
-    end
-
     -- build modules
     local depmtime = 0
     local common_args = {modulecachepathflag .. cachedir}
@@ -466,7 +453,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 local args = { "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile }
                 local flags
                 if module.requires then
-                    local flags = get_requiresflags(target, module.requires)
+                    flags = get_requiresflags(target, module.requires)
                     flags = table.unique(flags)
                 end
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
@@ -613,7 +600,7 @@ function get_requiresflags(target, requires)
             if modulemap_[name] then
                 table.join2(flags, modulemap_[name].flag)
                 table.join2(flags, modulemap_[name].deps or {})
-                goto CONTINUE
+                goto continue
             end
         end
 
@@ -621,12 +608,10 @@ function get_requiresflags(target, requires)
         if modulemap[name] then
             table.join2(flags, modulemap[name].flag)
             table.join2(flags, modulemap[name].deps or {})
-            goto CONTINUE
+            goto continue
         end
 
-        --assert(false, "Missing dependency " .. name .. " for " .. target:name())
-
-        ::CONTINUE::
+        ::continue::
     end
     return flags
 end
