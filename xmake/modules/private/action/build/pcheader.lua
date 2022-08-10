@@ -22,8 +22,29 @@
 import("core.language.language")
 import("object")
 
+function config(target, langkind, opt)
+    local pcheaderfile = target:pcheaderfile(langkind)
+    if pcheaderfile then
+        local headerfile = target:autogenfile(pcheaderfile)
+        if target:is_plat("windows") and
+            target:has_tool(langkind == "cxx" and "cxx" or "cc", "cl") then
+             -- fix `#pragma once` for msvc
+             -- https://github.com/xmake-io/xmake/issues/2667
+             if not os.isfile(headerfile) then
+                io.writefile(headerfile, ([[
+#pragma system_header
+#ifdef __cplusplus
+#include "%s"
+#endif // __cplusplus
+                ]]):format(path.absolute(pcheaderfile):gsub("\\", "/")))
+            end
+            target:pcheaderfile_set(langkind, headerfile)
+        end
+    end
+end
+
 -- add batch jobs to build the precompiled header file
-function main(target, langkind, opt)
+function build(target, langkind, opt)
     local pcheaderfile = target:pcheaderfile(langkind)
     if pcheaderfile then
         local sourcefile = pcheaderfile

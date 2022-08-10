@@ -1918,6 +1918,12 @@ function _instance:pcheaderfile(langkind)
     return pcheaderfile
 end
 
+-- set the precompiled header file
+function _instance:pcheaderfile_set(langkind, headerfile)
+    self:set("p" .. langkind .. "header", headerfile)
+    self._PCOUTPUTFILES = nil
+end
+
 -- get the output of precompiled header file (xxx.h.pch)
 --
 -- @param langkind  c/cxx

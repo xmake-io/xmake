@@ -18,20 +18,10 @@
 -- @file        xmake.lua
 --
 
-rule("c.build.pcheader")
-    before_build(function (target, opt)
-        import("private.action.build.pcheader")(target, "c", opt)
-    end)
-
 rule("c.build")
     set_sourcekinds("cc")
     add_deps("c.build.pcheader", "c.build.optimization")
     on_build_files("private.action.build.object", {batch = true, distcc = true})
-
-rule("c++.build.pcheader")
-    before_build(function (target, opt)
-        import("private.action.build.pcheader")(target, "cxx", opt)
-    end)
 
 rule("c++.build")
     set_sourcekinds("cxx")
