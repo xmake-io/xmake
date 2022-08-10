@@ -43,8 +43,10 @@ rule("python.library")
         end
         -- fix segmentation fault for macosx
         -- @see https://github.com/xmake-io/xmake/issues/2177#issuecomment-1209398292
-        if target:is_plat("macosx") then
-            target:add("shflags", "-undefined dynamic_lookup", {force = true})
+        if target:is_plat("macosx", "linux") then
+            if target:is_plat("macosx") then
+                target:add("shflags", "-undefined dynamic_lookup", {force = true})
+            end
             for _, pkg in pairs(target:pkgs()) do
                 local links = pkg:get("links")
                 if links then
