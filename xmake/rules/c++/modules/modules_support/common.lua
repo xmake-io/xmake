@@ -131,7 +131,7 @@ function contains_modules(target)
     if not target_with_modules then
         for _, dep in ipairs(target:orderdeps()) do
             local sourcebatches = dep:sourcebatches()
-            if sourcebatches and sourcebatches["c++.build.modules"] then
+            if sourcebatches["c++.build.modules"] then
                 target_with_modules = true
                 break
             end
@@ -196,24 +196,28 @@ function parse_dependency_data(target, moduleinfos)
         for _, rule in ipairs(moduleinfo.rules) do
             modules = modules or {}
             local m = {}
-            for _, provide in ipairs(rule.provides) do
-                m.provides = m.provides or {}
-                assert(provide["logical-name"])
-                if provide["compiled-module-path"] then
-                    if not path.is_absolute(provide["compiled-module-path"]) then
-                        m.provides[provide["logical-name"]] = path.absolute(path.translate(provide["compiled-module-path"]))
+            if rule.provides then
+                for _, provide in ipairs(rule.provides) do
+                    m.provides = m.provides or {}
+                    assert(provide["logical-name"])
+                    if provide["compiled-module-path"] then
+                        if not path.is_absolute(provide["compiled-module-path"]) then
+                            m.provides[provide["logical-name"]] = path.absolute(path.translate(provide["compiled-module-path"]))
+                        else
+                            m.provides[provide["logical-name"]] = path.translate(provide["compiled-module-path"])
+                        end
                     else
-                        m.provides[provide["logical-name"]] = path.translate(provide["compiled-module-path"])
+                        -- assume path with name
+                        local name = provide["logical-name"] .. bmi_extension(target)
+                        name:replace(":", "-")
+                        m.provides[provide["logical-name"]] = {
+                            bmi = path.join(cachedir, name),
+                            sourcefile = moduleinfo.sourcefile
+                        }
                     end
-                else
-                    -- assume path with name
-                    local name = provide["logical-name"] .. bmi_extension(target)
-                    name:replace(":", "-")
-                    m.provides[provide["logical-name"]] = {
-                        bmi = path.join(cachedir, name),
-                        sourcefile = moduleinfo.sourcefile
-                    }
                 end
+            else
+                m.cppfile = moduleinfo.sourcefile
             end
             assert(rule["primary-output"])
             modules[path.translate(rule["primary-output"])] = m
@@ -527,9 +531,9 @@ function append_headerunits_objectfiles(target)
     local cache = localcache():get(cachekey) or {}
     if target:is_binary() then
         target:add("ldflags", cache, {force = true})
-    elseif target:is_static() == "static" then
+    elseif target:is_static() then
         target:add("arflags", cache, {force = true})
-    elseif target:is_shared() == "shared" then
+    elseif target:is_shared() then
         target:add("shflags", cache, {force = true})
     end
 end
