@@ -71,11 +71,6 @@ function _get_modulemap_from_mapper(target)
     return common.localcache():get2(_mapper_cachekey(target), "modulemap") or {}
 end
 
--- get modulenames from mapper
-function _get_modulenames_from_mapper(target)
-    return common.localcache():get2(_mapper_cachekey(target), "modulenames") or {}
-end
-
 -- add an objectfile to the linker args
 --
 -- e.g
@@ -94,12 +89,8 @@ end
 
 -- load module support for the current target
 function load(target)
-    local cachedir = common.modules_cachedir(target)
-    local stlcachedir = common.stlmodules_cachedir(target)
-
     -- get flags
     local modulesflag = get_modulesflag(target)
-    local ifcsearchdirflag = get_ifcsearchdirflag(target)
 
     -- add modules flags
     target:add("cxxflags", modulesflag)
@@ -364,7 +355,6 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
     local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
-    local cachedir = common.modules_cachedir(target)
 
     -- get flags
     local ifcoutputflag = get_ifcoutputflag(target)
@@ -378,7 +368,6 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
 
     local common_args = {"-TP"}
     local modulesjobs = {}
-    local cpp_modules = {}
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
         if module then
