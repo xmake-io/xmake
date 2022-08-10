@@ -37,23 +37,28 @@ rule("python.library")
         else
             if target:is_plat("windows") then
                 target:set("extension", ".pyd")
+            else
+                target:set("extension", ".so")
             end
         end
         -- fix segmentation fault for macosx
         -- @see https://github.com/xmake-io/xmake/issues/2177#issuecomment-1209398292
         if target:is_plat("macosx") then
             target:add("shflags", "-undefined dynamic_lookup", {force = true})
-            local pybind11 = target:pkg("pybind11")
-            if pybind11 then
-                local links = pybind11:get("links")
+            for _, pkg in pairs(target:pkgs()) do
+                local links = pkg:get("links")
                 if links then
-                    local links_without_python = {}
+                    local with_python = false
                     for _, link in ipairs(links) do
-                        if not link:startswith("python") then
-                            table.insert(links_without_python, link)
+                        if link:startswith("python") then
+                            with_python = true
+                            break
                         end
                     end
-                    pybind11:set("links", links_without_python)
+                    if with_python then
+                        pkg:set("links", nil)
+                        pkg:set("linkdirs", nil)
+                    end
                 end
             end
         end
