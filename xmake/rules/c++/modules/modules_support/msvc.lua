@@ -431,31 +431,31 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 target:add("objectfiles", objectfile)
             else
                 if module.requires then
-                    local moduleinfo = {}
-                    moduleinfo.name = module.cppfile
-                    moduleinfo.deps = table.keys(module.requires)
-                    moduleinfo.sourcefile = module.cppfile
-                    moduleinfo.job = batchjobs:newjob(module.cppfile, function(index, total) 
-                        function contains(t, v)
-                            for _, flag in pairs(t) do
-                                if table.contains(flag, v) then
-                                    return true
+                    modulesjobs[module.cppfile] = {
+                        name = module.cppfile,
+                        deps = table.keys(module.requires),
+                        sourcefile = module.cppfile,
+                        job = batchjobs:newjob(module.cppfile, function(index, total) 
+                            function contains(t, v)
+                                for _, flag in pairs(t) do
+                                    if table.contains(flag, v) then
+                                        return true
+                                    end
+                                end
+                                return false
+                            end
+                            -- append module mapper flags
+                            -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
+                            local flags_ = get_requiresflags(target, module.requires)
+                            local flags = {}
+                            for i=1, #flags_, 2 do
+                                if not contains(flags, flags_[i + 1]) then
+                                    table.insert(flags, {flags_[i], flags_[i + 1]})
                                 end
                             end
-                            return false
-                        end
-                        -- append module mapper flags
-                        -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
-                        local flags_ = get_requiresflags(target, module.requires)
-                        local flags = {}
-                        for i=1, #flags_, 2 do
-                            if not contains(flags, flags_[i + 1]) then
-                                table.insert(flags, {flags_[i], flags_[i + 1]})
-                            end
-                        end
-                        target:fileconfig_add(module.cppfile, {force = {cxxflags = flags}})
-                    end)
-                    modulesjobs[moduleinfo.name] = moduleinfo
+                            target:fileconfig_add(module.cppfile, {force = {cxxflags = flags}})
+                        end)
+                    }
                 end
             end
         end
@@ -481,7 +481,6 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     -- build modules
     local common_args = {"-TP"}
     local depmtime = 0
-    local requiresflags
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
         if module then
@@ -523,7 +522,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                         flags = flags or {}
                         for i=1, #flags_, 2 do
                             if not table.contains(flags, flags_[i + 1]) then
-                                table.join2(flags, {flags_[i], flags_[i + 1]})
+                                table.insert(flags, {flags_[i], flags_[i + 1]})
                             end
                         end
                     end
@@ -690,8 +689,6 @@ function get_requiresflags(target, requires)
                 table.join2(flags, modulemap_[name].flag)
                 table.join2(flags, modulemap_[name].deps or {})
                 goto CONTINUE
-            else
-                print(modulemap)
             end
         end
 
@@ -702,8 +699,7 @@ function get_requiresflags(target, requires)
             goto CONTINUE
         end
 
-        assert(false, "Missing dependency " .. name .. " for " .. target:name())
-
+        --assert(false, "Missing dependency " .. name .. " for " .. target:name())
 
         ::CONTINUE::
     end
