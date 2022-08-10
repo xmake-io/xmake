@@ -44,7 +44,7 @@ function _translate_arguments(arguments)
         if idx == 1 and is_host("windows") and path.extension(arg) == "" then
             arg = arg .. ".exe"
         end
-        if arg:find("-isystem", 1, true) then
+        if arg:startswith("-isystem", 1, true) then
             arg = arg:replace("-isystem", "-I")
         elseif arg:find("[%-/]external:I") then
             arg = arg:gsub("[%-/]external:I", "-I")
