@@ -45,9 +45,9 @@ function _translate_arguments(arguments)
             arg = arg .. ".exe"
         end
         if arg:startswith("-isystem-after", 1, true) then
-            arg = "-I" .. arg:sub(15, -1)
+            arg = "-I" .. arg:sub(15)
         elseif arg:startswith("-isystem", 1, true) then
-            arg = "-I" .. arg:sub(9, -1)
+            arg = "-I" .. arg:sub(9)
         elseif arg:find("[%-/]external:I") then
             arg = arg:gsub("[%-/]external:I", "-I")
         elseif arg:find("[%-/]external:W") or arg:find("[%-/]experimental:external") then
