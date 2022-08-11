@@ -396,7 +396,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         local flags_ = get_requiresflags(target, module.requires)
 
                         flags = flags or {}
-                        for i=1, #flags_, 2 do
+                        for i = 1, #flags_, 2 do
                             if not table.contains(flags, flags_[i + 1]) then
                                 table.join2(flags, {flags_[i], flags_[i + 1]})
                             end
@@ -439,7 +439,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
                             local flags_ = get_requiresflags(target, module.requires)
                             local flags = {}
-                            for i=1, #flags_, 2 do
+                            for i = 1, #flags_, 2 do
                                 if not contains(flags, flags_[i + 1]) then
                                     table.insert(flags, {flags_[i], flags_[i + 1]})
                                 end
@@ -488,7 +488,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     local flags_ = get_requiresflags(target, module.requires)
 
                     flags = flags or {}
-                    for i=2, #flags_, 2 do
+                    for i = 1, #flags_, 2 do
                         if not table.contains(flags, flags_[i + 1]) then
                             table.join2(flags, {flags_[i], flags_[i + 1]})
                         end
@@ -509,7 +509,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     if module.requires then
                         local flags_ = get_requiresflags(target, module.requires)
                         flags = flags or {}
-                        for i=1, #flags_, 2 do
+                        for i = 1, #flags_, 2 do
                             if not table.contains(flags, flags_[i + 1]) then
                                 table.insert(flags, {flags_[i], flags_[i + 1]})
                             end
