@@ -36,18 +36,10 @@ import("common")
 --
 function _add_module_to_mapper(target, argument, name, bmifile, deps)
     local modulemap = _get_modulemap_from_mapper(target)
-    local mapflag = {argument, name .. "=" .. bmifile}
     if modulemap[name] then
         return
     end
-
-    if not project.targets()[target:name()] then
-        local t_modulemap = _get_modulemap_from_mapper(t)
-        if t_modulemap[name] then
-             mapflag = t_modulemap[name].flag
-        end
-    end
-
+    local mapflag = {argument, name .. "=" .. bmifile}
     modulemap[name] = {flag = mapflag, deps = deps}
     common.localcache():set2(_mapper_cachekey(target), "modulemap", modulemap)
 end
@@ -185,7 +177,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
         local objectfile = bmifile .. ".obj"
         if not os.isfile(bmifile) or not os.isfile(objectfile) then
             batchjobs:addjob(headerunit.name, function(index, total)
-               depend.on_changed(function()
+                depend.on_changed(function()
                     -- don't build same header unit at the same time
                     if not common.memcache():get2(headerunit.name, "building") then
                         common.memcache():set2(headerunit.name, "building", true)
@@ -194,8 +186,8 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
                         os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
                     end
 
-               end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
-               _add_module_to_mapper(target, headerunitflag .. ":angle", headerunit.name, bmifile)
+                end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+                _add_module_to_mapper(target, headerunitflag .. ":angle", headerunit.name, bmifile)
                 if os.isfile(objectfile) then
                     _add_objectfile_to_link_arguments(target, objectfile)
                 end
@@ -293,11 +285,10 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
                     local args = {headernameflag .. headerunit.type, headerunit.path, ifcoutputflag, outputdir, "/Fo" .. objectfile}
                     os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
                 end
-            _add_module_to_mapper(target, headerunitflag .. headerunit.type, headerunit.name, bmifile)
-            if os.isfile(objectfile) then
-                _add_objectfile_to_link_arguments(target, objectfile)
-            end
-
+                _add_module_to_mapper(target, headerunitflag .. headerunit.type, headerunit.name, bmifile)
+                if os.isfile(objectfile) then
+                    _add_objectfile_to_link_arguments(target, objectfile)
+                end
             end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
         end, {rootjob = flushjob})
     end
@@ -394,7 +385,6 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     local flags
                     if module.requires then
                         local flags_ = get_requiresflags(target, module.requires)
-
                         flags = flags or {}
                         for i = 1, #flags_, 2 do
                             if not table.contains(flags, flags_[i + 1]) then
@@ -428,7 +418,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         sourcefile = module.cppfile,
                         job = batchjobs:newjob(module.cppfile, function(index, total)
                             function contains(t, v)
-                                for _, flag in pairs(t) do
+                                for _, flag in ipairs(t) do
                                     if table.contains(flag, v) then
                                         return true
                                     end
@@ -486,7 +476,6 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 local flags
                 if module.requires then
                     local flags_ = get_requiresflags(target, module.requires)
-
                     flags = flags or {}
                     for i = 1, #flags_, 2 do
                         if not table.contains(flags, flags_[i + 1]) then
@@ -667,6 +656,7 @@ function get_scandependenciesflag(target)
     return scandependenciesflag or nil
 end
 
+-- get requireflags from module mapper
 function get_requiresflags(target, requires)
     local flags = {}
     local modulemap = _get_modulemap_from_mapper(target)
