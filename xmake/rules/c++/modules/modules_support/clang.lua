@@ -36,20 +36,13 @@ import("stl_headers")
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/bar.hpp.pcm
 --
 function _add_module_to_mapper(target, name, bmifile, deps)
-    local modulefileflag = get_modulefileflag(target)
     local modulemap = _get_modulemap_from_mapper(target)
-    local mapflag = format("%s%s", modulefileflag, bmifile)
     if modulemap[name] then
         return
     end
 
-    if not project.targets()[target:name()] then
-        local t_modulemap = _get_modulemap_from_mapper(t)
-        if t_modulemap[name] then
-             mapflag = t_modulemap[name].flag
-        end
-    end
-
+    local modulefileflag = get_modulefileflag(target)
+    local mapflag = format("%s%s", modulefileflag, bmifile)
     modulemap[name] = {flag = mapflag, deps = deps}
     common.localcache():set2(_mapper_cachekey(target), "modulemap", modulemap)
 end
@@ -205,8 +198,6 @@ end
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
-
-    -- get cachedirs
     local stlcachedir = common.stlmodules_cachedir(target)
     local modulecachepathflag = get_modulecachepathflag(target)
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
@@ -391,7 +382,6 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, flags or {}, {bmifile}, {"-c", "-o", objectfile}))
                     end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
                     _add_module_to_mapper(target, name, bmifile, flags)
-                    target:add("cxxflags", modulefileflag .. bmifile, {force = true})
                 end)
                 if module.requires then
                     moduleinfo.deps = table.keys(module.requires)
@@ -462,7 +452,6 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, flags or {}, {bmifile}, {"-c", "-o", objectfile}))
                 batchcmds:add_depfiles(provide.sourcefile)
                 _add_module_to_mapper(target, name, bmifile)
-                target:add("cxxflags", modulefileflag .. bmifile, {force = true})
                 depmtime = math.max(depmtime, os.mtime(bmifile))
             else
                 if module.requires then
