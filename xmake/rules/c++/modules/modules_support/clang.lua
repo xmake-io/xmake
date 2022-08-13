@@ -210,7 +210,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
         -- don't build same header unit at the same time
         if not common.memcache():get2(headerunit.name, "building") then
             common.memcache():set2(headerunit.name, "building", true)
-            local args = {modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.name}
+            local args = {modulecachepathflag .. stlcachedir, "-c", "-o", path(bmifile), "-x", "c++-system-header", headerunit.name}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         end
@@ -308,7 +308,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
 
         local args = { modulecachepathflag .. cachedir, "-c", "-o", bmifile}
         if headerunit.type == ":quote" then
-            table.join2(args, {"-I", path.directory(headerunit.path), "-x", "c++-user-header", headerunit.path})
+            table.join2(args, {"-I", path(headerunit.path):directory(), "-x", "c++-user-header", path(headerunit.path)})
         elseif headerunit.type == ":angle" then
             table.join2(args, {"-x", "c++-system-header", headerunit.name})
         end
