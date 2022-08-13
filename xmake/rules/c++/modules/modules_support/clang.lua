@@ -433,7 +433,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     break
                 end
                 local bmifile = provide.bmi
-                local args = { "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile }
+                local args = {"-c", "-x", "c++-module", "--precompile", path(provide.sourcefile), "-o", path(bmifile)}
                 local requiresflags
                 if module.requires then
                     requiresflags = get_requiresflags(target, module.requires)
@@ -441,7 +441,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
                 batchcmds:mkdir(path.directory(objectfile))
                 batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, args))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, {bmifile}, {"-c", "-o", objectfile}))
+                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, path(bmifile), {"-c", "-o", path(objectfile)}))
                 batchcmds:add_depfiles(provide.sourcefile)
                 _add_module_to_mapper(target, name, bmifile)
                 depmtime = math.max(depmtime, os.mtime(bmifile))
