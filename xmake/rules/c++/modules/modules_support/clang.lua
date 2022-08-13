@@ -361,10 +361,9 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 moduleinfo.job = batchjobs:newjob(provide.sourcefile, function (index, total)
                     -- append module mapper flags first
                     -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
-                    local flags
+                    local requiresflags
                     if module.requires then
-                        flags = get_requiresflags(target, module.requires)
-                        flags = table.unique(flags)
+                        requiresflags = get_requiresflags(target, module.requires)
                     end
 
                     depend.on_changed(function()
@@ -378,10 +377,10 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             os.mkdir(objectdir)
                         end
                         local args = { "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile}
-                        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, flags or {}, args))
-                        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, flags or {}, {bmifile}, {"-c", "-o", objectfile}))
+                        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, args))
+                        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, {bmifile}, {"-c", "-o", objectfile}))
                     end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
-                    _add_module_to_mapper(target, name, bmifile, flags)
+                    _add_module_to_mapper(target, name, bmifile, requiresflags)
                 end)
                 if module.requires then
                     moduleinfo.deps = table.keys(module.requires)
@@ -396,18 +395,12 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         deps = table.keys(module.requires),
                         sourcefile = module.cppfile,
                         job = batchjobs:newjob(module.cppfile, function(index, total)
-                            function contains(t, v)
-                                for _, flag in pairs(t) do
-                                    if table.contains(flag, v) then
-                                        return true
-                                    end
-                                end
-                                return false
-                            end
                             -- append module mapper flags
                             -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
-                            local flags = get_requiresflags(target, module.requires)
-                            target:fileconfig_add(module.cppfile, {force = {cxxflags = table.unique(flags or {})}})
+                            local requiresflags = get_requiresflags(target, module.requires)
+                            if requiresflags then
+                                target:fileconfig_add(module.cppfile, {force = {cxxflags = requiresflags}})
+                            end
                         end)
                     }
                 end
@@ -441,23 +434,23 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 end
                 local bmifile = provide.bmi
                 local args = { "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile }
-                local flags
+                local requiresflags
                 if module.requires then
-                    flags = get_requiresflags(target, module.requires)
-                    flags = table.unique(flags)
+                    requiresflags = get_requiresflags(target, module.requires)
                 end
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
                 batchcmds:mkdir(path.directory(objectfile))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, flags or {}, args))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, flags or {}, {bmifile}, {"-c", "-o", objectfile}))
+                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, args))
+                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, {bmifile}, {"-c", "-o", objectfile}))
                 batchcmds:add_depfiles(provide.sourcefile)
                 _add_module_to_mapper(target, name, bmifile)
                 depmtime = math.max(depmtime, os.mtime(bmifile))
             else
                 if module.requires then
-                    local flags = get_requiresflags(target, module.requires)
-                    flags = table.unique(flags)
-                    target:fileconfig_add(module.cppfile, {force = {cxxflags = flags}})
+                    local requiresflags = get_requiresflags(target, module.requires)
+                    if requiresflags then
+                        target:fileconfig_add(module.cppfile, {force = {cxxflags = requiresflags}})
+                    end
                 end
             end
         end
@@ -602,5 +595,7 @@ function get_requiresflags(target, requires)
 
         ::continue::
     end
-    return flags
+    if #flags > 0 then
+        return table.unique(flags)
+    end
 end

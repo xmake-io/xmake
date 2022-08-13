@@ -382,17 +382,10 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 moduleinfo.job = batchjobs:newjob(provide.sourcefile, function (index, total)
                     -- append module mapper flags first
                     -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
-                    local flags
+                    local requiresflags
                     if module.requires then
-                        local flags_ = get_requiresflags(target, module.requires)
-                        flags = flags or {}
-                        for i = 1, #flags_, 2 do
-                            if not table.contains(flags, flags_[i + 1]) then
-                                table.join2(flags, {flags_[i], flags_[i + 1]})
-                            end
-                        end
+                        requiresflags = get_requiresflags(target, module.requires)
                     end
-
                     depend.on_changed(function()
                         progress.show((index * 100) / total, "${color.build.object}generating.cxx.module.bmi %s", name)
                         local objectdir = path.directory(objectfile)
@@ -400,9 +393,9 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             os.mkdir(objectdir)
                         end
                         local args = {"-c", "-Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
-                        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, flags or {}, args), {envs = vcvars})
+                        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, args), {envs = vcvars})
                     end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
-                    _add_module_to_mapper(target, referenceflag, name, bmifile, flags)
+                    _add_module_to_mapper(target, referenceflag, name, bmifile, requiresflags)
                 end)
                 if module.requires then
                     moduleinfo.deps = table.keys(module.requires)
@@ -427,14 +420,10 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             end
                             -- append module mapper flags
                             -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
-                            local flags_ = get_requiresflags(target, module.requires)
-                            local flags = {}
-                            for i = 1, #flags_, 2 do
-                                if not contains(flags, flags_[i + 1]) then
-                                    table.insert(flags, {flags_[i], flags_[i + 1]})
-                                end
+                            local requiresflags = get_requiresflags(target, module.requires)
+                            if requiresflags then
+                                target:fileconfig_add(module.cppfile, {force = {cxxflags = requiresflags}})
                             end
-                            target:fileconfig_add(module.cppfile, {force = {cxxflags = flags}})
                         end)
                     }
                 end
@@ -473,38 +462,25 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 end
 
                 -- append required modulemap flags to module
-                local flags
+                local requiresflags
                 if module.requires then
-                    local flags_ = get_requiresflags(target, module.requires)
-                    flags = flags or {}
-                    for i = 1, #flags_, 2 do
-                        if not table.contains(flags, flags_[i + 1]) then
-                            table.join2(flags, {flags_[i], flags_[i + 1]})
-                        end
-                    end
+                    requiresflags = get_requiresflags(target, module.requires)
                 end
 
                 local bmifile = provide.bmi
                 local args = {"-c", "-Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
                 batchcmds:mkdir(path.directory(objectfile))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, flags or {}, args), {envs = vcvars})
+                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, args), {envs = vcvars})
                 batchcmds:add_depfiles(provide.sourcefile)
-                _add_module_to_mapper(target, referenceflag, name, bmifile, flags)
+                _add_module_to_mapper(target, referenceflag, name, bmifile, requiresflags)
                 depmtime = math.max(depmtime, os.mtime(bmifile))
             else
                 if module.requires then
-                    local flags
-                    if module.requires then
-                        local flags_ = get_requiresflags(target, module.requires)
-                        flags = flags or {}
-                        for i = 1, #flags_, 2 do
-                            if not table.contains(flags, flags_[i + 1]) then
-                                table.insert(flags, {flags_[i], flags_[i + 1]})
-                            end
-                        end
+                    local requiresflags = get_requiresflags(target, module.requires)
+                    if requiresflags then
+                        target:fileconfig_add(module.cppfile, {force = {cxxflags = requiresflags}})
                     end
-                    target:fileconfig_add(module.cppfile, {force = {cxxflags = flags}})
                 end
             end
         end
@@ -680,5 +656,17 @@ function get_requiresflags(target, requires)
 
         ::continue::
     end
-    return flags
+    local requireflags = {}
+    local contains = {}
+    for i = 1, #flags, 2 do
+        local value = flags[i + 1]
+        if not contains[value] then
+            local key = flags[i]
+            table.insert(requireflags, {key, value})
+            contains[value] = true
+        end
+    end
+    if #requireflags > 0 then
+        return requireflags
+    end
 end
