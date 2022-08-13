@@ -384,7 +384,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
                     local requiresflags
                     if module.requires then
-                        requiresflags = get_requiresflags(target, module.requires)
+                        requiresflags = get_requiresflags(target, module.requires, {expand = true})
                     end
                     depend.on_changed(function()
                         progress.show((index * 100) / total, "${color.build.object}generating.cxx.module.bmi %s", name)
@@ -464,7 +464,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 -- append required modulemap flags to module
                 local requiresflags
                 if module.requires then
-                    requiresflags = get_requiresflags(target, module.requires)
+                    requiresflags = get_requiresflags(target, module.requires, {expand = true})
                 end
 
                 local bmifile = provide.bmi
@@ -633,7 +633,8 @@ function get_scandependenciesflag(target)
 end
 
 -- get requireflags from module mapper
-function get_requiresflags(target, requires)
+function get_requiresflags(target, requires, opt)
+    opt = opt or {}
     local flags = {}
     local modulemap = _get_modulemap_from_mapper(target)
     -- add deps required module flags
@@ -662,7 +663,12 @@ function get_requiresflags(target, requires)
         local value = flags[i + 1]
         if not contains[value] then
             local key = flags[i]
-            table.insert(requireflags, {key, value})
+            if opt.expand then
+                table.insert(requireflags, key)
+                table.insert(requireflags, value)
+            else
+                table.insert(requireflags, {key, value})
+            end
             contains[value] = true
         end
     end
