@@ -125,7 +125,7 @@ function toolchain_includedirs(target)
         local _, result = try {function () return os.iorunv(clang, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
-                line = line:trim() 
+                line = line:trim()
                 if os.isdir(line) then
                     table.insert(includedirs, path.normalize(line))
                 elseif line:startswith("End") then
@@ -185,13 +185,13 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
             batchjobs:addjob(headerunit.name, function (index, total)
                 depend.on_changed(function()
                     -- don't build same header unit at the same time
-                    if not common.memcache():get2(headerunit.name, "building") then 
+                    if not common.memcache():get2(headerunit.name, "building") then
                         common.memcache():set2(headerunit.name, "building", true)
                         progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
                         local args = {modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.name}
                         os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
                     end
-                    
+
                 end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
                 -- libc++ have a builtin module mapper
                 if not target:data_set("cxx.modules.use_libc++") then
@@ -217,7 +217,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     for i, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         -- don't build same header unit at the same time
-        if not common.memcache():get2(headerunit.name, "building") then 
+        if not common.memcache():get2(headerunit.name, "building") then
             common.memcache():set2(headerunit.name, "building", true)
             local args = {modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.name}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
@@ -327,7 +327,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         batchcmds:add_depfiles(headerunit.path)
 
         _add_module_to_mapper(target, headerunit.name, bmifile)
-        
+
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
     batchcmds:set_depmtime(depmtime)
@@ -405,7 +405,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         name = module.cppfile,
                         deps = table.keys(module.requires),
                         sourcefile = module.cppfile,
-                        job = batchjobs:newjob(module.cppfile, function(index, total) 
+                        job = batchjobs:newjob(module.cppfile, function(index, total)
                             function contains(t, v)
                                 for _, flag in pairs(t) do
                                     if table.contains(flag, v) then
@@ -595,7 +595,7 @@ function get_requiresflags(target, requires)
     local modulemap = _get_modulemap_from_mapper(target)
     -- add deps required module flags
     for name, _ in pairs(requires) do
-        for _, dep in ipairs(target:orderdeps()) do 
+        for _, dep in ipairs(target:orderdeps()) do
             local modulemap_ = _get_modulemap_from_mapper(dep)
             if modulemap_[name] then
                 table.join2(flags, modulemap_[name].flag)

@@ -187,7 +187,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
             batchjobs:addjob(headerunit.name, function(index, total)
                depend.on_changed(function()
                     -- don't build same header unit at the same time
-                    if not common.memcache():get2(headerunit.name, "building") then 
+                    if not common.memcache():get2(headerunit.name, "building") then
                         common.memcache():set2(headerunit.name, "building", true)
                         progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
                         local args = {headernameflag .. ":angle", headerunit.name, ifcoutputflag, headerunit.name:startswith("experimental/") and path.join(stlcachedir, "experimental") or stlcachedir, "-Fo" .. objectfile}
@@ -225,7 +225,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         local objectfile = bmifile .. ".obj"
         -- don't build same header unit at the same time
-        if not common.memcache():get2(headerunit.name, "building") then 
+        if not common.memcache():get2(headerunit.name, "building") then
             common.memcache():set2(headerunit.name, "building", true)
             local args = {headernameflag .. ":angle", headerunit.name, ifcoutputflag, headerunit.name:startswith("experimental/") and path.join(stlcachedir, "experimental") or stlcachedir, "-Fo" .. objectfile}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
@@ -278,7 +278,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
         local bmifile = path.join(outputdir, bmifilename)
         batchjobs:addjob(headerunit.name, function (index, total)
             depend.on_changed(function()
-                if not common.memcache():get2(headerunit.name, "building") then 
+                if not common.memcache():get2(headerunit.name, "building") then
                     common.memcache():set2(headerunit.name, "building", true)
                     progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
                     local objectdir = path.directory(objectfile)
@@ -426,7 +426,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         name = module.cppfile,
                         deps = table.keys(module.requires),
                         sourcefile = module.cppfile,
-                        job = batchjobs:newjob(module.cppfile, function(index, total) 
+                        job = batchjobs:newjob(module.cppfile, function(index, total)
                             function contains(t, v)
                                 for _, flag in pairs(t) do
                                     if table.contains(flag, v) then
@@ -672,7 +672,7 @@ function get_requiresflags(target, requires)
     local modulemap = _get_modulemap_from_mapper(target)
     -- add deps required module flags
     for name, _ in pairs(requires) do
-        for _, dep in ipairs(target:orderdeps()) do 
+        for _, dep in ipairs(target:orderdeps()) do
             local modulemap_ = _get_modulemap_from_mapper(dep)
             if modulemap_[name] then
                 table.join2(flags, modulemap_[name].flag)
