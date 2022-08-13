@@ -29,7 +29,7 @@ function _find_package_from_list(list, name, pacman, opt)
 
     -- mingw + pacman = cygpath available
     local cygpath = nil
-    local pathtomsys2 = nil
+    local pathtomsys = nil
     if is_subhost("msys") and opt.plat == "mingw" then
         cygpath = find_tool("cygpath")
         if not cygpath then
