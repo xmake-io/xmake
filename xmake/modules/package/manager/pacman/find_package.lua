@@ -29,16 +29,14 @@ function _find_package_from_list(list, name, pacman, opt)
 
     -- mingw + pacman = cygpath available
     local cygpath = nil
-    local pathtomsys2 = ""
+    local pathtomsys2 = nil
     if is_subhost("msys") and opt.plat == "mingw" then
         cygpath = find_tool("cygpath")
         if not cygpath then
             return
         end
         pathtomsys = os.iorunv(cygpath.program, {"--windows", "/"})
-        if pathtomsys:endswith("\n") then
-            pathtomsys = pathtomsys:sub(1, -2)
-        end
+        pathtomsys = pathtomsys:trim()
     end
 
     -- iterate over each file path inside the pacman package
@@ -51,10 +49,10 @@ function _find_package_from_list(list, name, pacman, opt)
                 if is_subhost("msys") and opt.plat == "mingw" then 
                     hpath = path.join(pathtomsys, line)
                     if opt.arch == "x86_64" then
-                        local basehpath = path.join(pathtomsys, "/mingw64/include")
+                        local basehpath = path.join(pathtomsys, "mingw64/include")
                         table.insert(result.includedirs, basehpath)
                     else
-                        local basehpath = path.join(pathtomsys, "/mingw32/include")
+                        local basehpath = path.join(pathtomsys, "mingw32/include")
                         table.insert(result.includedirs, basehpath)
                     end
                 end
@@ -95,7 +93,7 @@ function _find_package_from_list(list, name, pacman, opt)
         result.version = version:split('-')[1]
     else
         result = nil
-    end   
+    end
     return result
 end
 
