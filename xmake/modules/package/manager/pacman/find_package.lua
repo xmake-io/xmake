@@ -29,11 +29,14 @@ function _find_package_from_list(list, name, pacman, opt)
 
     -- mingw + pacman = cygpath available
     local cygpath = nil
+    local pathtomsys = nil
     if is_subhost("msys") and opt.plat == "mingw" then
         cygpath = find_tool("cygpath")
         if not cygpath then
             return
         end
+        pathtomsys = os.iorunv(cygpath.program, {"--windows", "/"})
+        pathtomsys = pathtomsys:trim()
     end
 
     -- iterate over each file path inside the pacman package
@@ -43,14 +46,13 @@ function _find_package_from_list(list, name, pacman, opt)
         if line:find("/include/", 1, true) and (line:endswith(".h") or line:endswith(".hpp")) then
             if not line:startswith("/usr/include/") then
                 local hpath = line
-                if is_subhost("msys") and opt.plat == "mingw" then
-                    hpath = os.iorunv(cygpath.program, {"--windows", line})
-
+                if is_subhost("msys") and opt.plat == "mingw" then 
+                    hpath = path.join(pathtomsys, line)
                     if opt.arch == "x86_64" then
-                        local basehpath = os.iorunv(cygpath.program, {"--windows", "/mingw64/include"})
+                        local basehpath = path.join(pathtomsys, "mingw64/include")
                         table.insert(result.includedirs, basehpath)
                     else
-                        local basehpath = os.iorunv(cygpath.program, {"--windows", "/mingw32/include"})
+                        local basehpath = path.join(pathtomsys, "mingw32/include")
                         table.insert(result.includedirs, basehpath)
                     end
                 end
@@ -58,7 +60,7 @@ function _find_package_from_list(list, name, pacman, opt)
             end
         -- remove lib and .a, .dll.a and .so to have the links
         elseif line:endswith(".dll.a") then -- only for mingw
-            local apath = os.iorunv(cygpath.program, {"--windows", line})
+            local apath = path.join(pathtomsys, line)
             apath = apath:trim()
             table.insert(result.linkdirs, path.directory(apath))
             table.insert(result.links, target.linkname(path.filename(apath), {plat = opt.plat}))
@@ -68,7 +70,7 @@ function _find_package_from_list(list, name, pacman, opt)
         elseif line:endswith(".a") then
             local apath = line
             if is_subhost("msys") and opt.plat == "mingw" then
-                apath = os.iorunv(cygpath.program, {"--windows", line})
+                apath = path.join(pathtomsys, line)
                 apath = apath:trim()
             end
             table.insert(result.linkdirs, path.directory(apath))
