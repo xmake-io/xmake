@@ -219,7 +219,12 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
         -- don't build same header unit at the same time
         if not common.memcache():get2(headerunit.name, "building") then
             common.memcache():set2(headerunit.name, "building", true)
-            local args = {headernameflag .. ":angle", headerunit.name, ifcoutputflag, headerunit.name:startswith("experimental/") and path.join(stlcachedir, "experimental") or stlcachedir, "-Fo" .. objectfile}
+            local args = {
+                headernameflag .. ":angle",
+                headerunit.name,
+                ifcoutputflag,
+                path(headerunit.name:startswith("experimental/") and path.join(stlcachedir, "experimental") or stlcachedir),
+                path(objectfile, function (p) return "-Fo" .. p end)}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             batchcmds:add_depfiles(headerunit.path)
@@ -468,7 +473,12 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 end
 
                 local bmifile = provide.bmi
-                local args = {"-c", "-Fo" .. objectfile, interfaceflag, ifcoutputflag, bmifile, provide.sourcefile}
+                local args = {"-c",
+                    path(objectfile, function (p) return "-Fo" .. p end),
+                    interfaceflag,
+                    ifcoutputflag,
+                    path(bmifile),
+                    path(provide.sourcefile)}
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
                 batchcmds:mkdir(path.directory(objectfile))
                 batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, args), {envs = vcvars})

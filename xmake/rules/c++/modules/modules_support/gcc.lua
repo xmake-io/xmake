@@ -189,7 +189,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     for _, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         if not os.isfile(bmifile) then
-            local args = { "-c", "-x", "c++-system-header", headerunit.name }
+            local args = {"-c", "-x", "c++-system-header", headerunit.name}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         end
@@ -276,13 +276,13 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
         batchcmds:mkdir(path.directory(objectfile))
 
-        local args = { "-c" }
+        local args = {"-c"}
         local headerunit_path
         if headerunit.type == ":quote" then
-            table.join2(args, { "-I", path.directory(path.relative(headerunit.path, projectdir)), "-x", "c++-user-header", headerunit.name })
+            table.join2(args, {"-I", path(path.relative(headerunit.path, projectdir)):directory(), "-x", "c++-user-header", headerunit.name})
             headerunit_path = path.join(".", path.relative(headerunit.path, projectdir))
         elseif headerunit.type == ":angle" then
-            table.join2(args, { "-x", "c++-system-header", headerunit.name })
+            table.join2(args, {"-x", "c++-system-header", headerunit.name})
             -- if path is relative then its a subtarget path
             headerunit_path = path.is_absolute(headerunit.path) and headerunit.path or path.join(".", headerunit.path)
         end
@@ -375,7 +375,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             end
 
             local bmifile = provide.bmi
-            local args = {"-o", objectfile, "-c", provide.sourcefile}
+            local args = {"-o", path(objectfile), "-c", path(provide.sourcefile)}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
             batchcmds:mkdir(path.directory(objectfile))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
