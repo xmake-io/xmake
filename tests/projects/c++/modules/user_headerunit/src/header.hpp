@@ -1,5 +1,5 @@
 #pragma once
 
 namespace hello {
-    extern constexpr auto FOO = "Hello";
+    constexpr auto FOO = "Hello";
 }
