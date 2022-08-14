@@ -111,6 +111,15 @@ function _make_arguments(jsonfile, arguments, sourcefile)
         table.insert(arguments_escape, _escape_path(arg))
     end
 
+    -- remove repeat
+    -- this is because some rules will repeatedly bind the same sourcekind, e.g. `rule("c++.build.modules.builder")`
+    local key = hash.uuid(os.args(arguments_escape) .. sourcefile)
+    local map = _g.map or {}
+    _g.map = map
+    if map[key] then
+        return
+    end
+
     -- make body
     jsonfile:printf(
 [[%s{
@@ -121,6 +130,7 @@ function _make_arguments(jsonfile, arguments, sourcefile)
 
     -- clear first line marks
     _g.firstline = false
+    map[key] = true
 end
 
 -- make commands for target
