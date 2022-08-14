@@ -526,56 +526,6 @@ function _add_target_compile_options(cmakelists, target, outputdir)
     end
 end
 
--- add target language standards
-function _add_target_language_standards(cmakelists, target)
-    local cstds =
-    {
-        c89         = "90"
-    ,   gnu89       = "90" -- TODO add cflags -std=gnu90 if supported
-    ,   c99         = "99"
-    ,   gnu99       = "99" -- TODO
-    ,   c11         = "11"
-    ,   gnu11       = "11" -- TODO
-    }
-    local cxxstds =
-    {
-        cxx98       = "98"
-    ,   gnuxx98     = "98" -- TODO
-    ,   cxx11       = "11"
-    ,   gnuxx11     = "11"
-    ,   cxx14       = "14"
-    ,   gnuxx14     = "14"
-    ,   cxx17       = "17"
-    ,   gnuxx17     = "17"
-    ,   cxx1z       = "17"
-    ,   gnuxx1z     = "17"
-    ,   cxx2a       = "20"
-    ,   gnuxx2a     = "20"
-    ,   cxxlatest   = "latest"
-    }
-    for _, lang in ipairs(target:get("languages")) do
-        local cstd = cstds[lang]
-        if cstd then
-            cmakelists:print("set_property(TARGET %s PROPERTY C_STANDARD %s)", target:name(), cstd)
-            if cstd == "99" or cstd == "11" then
-                cmakelists:print("if(MSVC)")
-                cmakelists:print("    target_compile_options(%s PRIVATE $<$<COMPILE_LANGUAGE:C>:-TP>)", target:name())
-                cmakelists:print("endif()")
-            end
-        end
-        local cxxstd = cxxstds[lang]
-        if cxxstd then
-            if cxxstd == "latest" then
-                cmakelists:print("if (MSVC)")
-                cmakelists:print("    target_compile_options(%s PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/std:c++latest>)", target:name())
-                cmakelists:print("endif()")
-            else
-                cmakelists:print("set_property(TARGET %s PROPERTY CXX_STANDARD %s)", target:name(), cxxstd)
-            end
-        end
-    end
-end
-
 -- add target warnings
 function _add_target_warnings(cmakelists, target)
     local flags_gcc =
@@ -1022,9 +972,6 @@ function _add_target(cmakelists, target, outputdir)
 
     -- add target compile definitions
     _add_target_compile_definitions(cmakelists, target)
-
-    -- add target language standards
-    _add_target_language_standards(cmakelists, target)
 
     -- add target compile options
     _add_target_compile_options(cmakelists, target, outputdir)
