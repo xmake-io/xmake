@@ -88,7 +88,6 @@ end
 
 -- patch sourcebatch
 function patch_sourcebatch(target, sourcebatch)
-    local cachedir = modules_cachedir(target)
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = {}
     sourcebatch.dependfiles = {}
@@ -138,11 +137,11 @@ end
 
 -- this target contains module files?
 function contains_modules(target)
-    local target_with_modules = target:sourcebatches()["c++.build.modules"] and true or false
+    local target_with_modules = target:sourcebatches()["c++.build.modules.builder"] and true or false
     if not target_with_modules then
         for _, dep in ipairs(target:orderdeps()) do
             local sourcebatches = dep:sourcebatches()
-            if sourcebatches["c++.build.modules"] then
+            if sourcebatches["c++.build.modules.builder"] then
                 target_with_modules = true
                 break
             end
