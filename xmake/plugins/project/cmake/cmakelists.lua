@@ -497,28 +497,28 @@ function _add_target_compile_options(cmakelists, target, outputdir)
                     if cxxflags then
                         cmakelists:print("set_source_files_properties("
                             .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
-                            .. " PROPERTIES COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:CXX>:\"" .. cxxflags .. "\">)")
+                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:CXX>:" .. cxxflags .. ">\")")
                     end
                     local cflags = _get_flags_from_fileconfig(fileconfig, outputdir, "cflags")
                     if cflags then
                         cmakelists:print("set_source_files_properties("
                             .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
-                            .. " PROPERTIES COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:C>:\"" .. cflags .. "\">)")
+                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:C>:" .. cflags .. ">\")")
                     end
                     local cxflags = _get_flags_from_fileconfig(fileconfig, outputdir, "cxflags")
                     if cxflags then
                         cmakelists:print("set_source_files_properties("
                             .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
-                            .. " PROPERTIES COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:C>:\"" .. cxflags .. "\">)")
+                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:C>:" .. cxflags .. ">\")")
                         cmakelists:print("set_source_files_properties("
                             .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
-                            .. " PROPERTIES COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:CXX>:\"" .. cxflags .. "\">)")
+                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:CXX>:" .. cxflags .. ">\")")
                     end
                     local cuflags = _get_flags_from_fileconfig(fileconfig, outputdir, "cuflags")
                     if cuflags then
                         cmakelists:print("set_source_files_properties("
                             .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
-                            .. " PROPERTIES COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:CUDA>:\"" .. cuflags .. "\">)")
+                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:CUDA>:" .. cuflags .. ">\")")
                     end
                 end
             end
