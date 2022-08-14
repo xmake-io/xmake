@@ -826,8 +826,8 @@ function _get_command_string(cmd, outputdir)
     end
 end
 
--- add custom command
-function _add_target_custom_command(cmakelists, target, command, suffix)
+-- add target custom commands for batchcmds
+function _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, batchcmds)
     if suffix == "before" then
         -- ADD_CUSTOM_COMMAND and PRE_BUILD did not work as I expected,
         -- so we need use add_dependencies and fake target to support it.
@@ -836,7 +836,12 @@ function _add_target_custom_command(cmakelists, target, command, suffix)
         --
         local key = target:name() .. "_" .. hash.uuid():split("-", {plain = true})[1]
         cmakelists:print("add_custom_command(OUTPUT output_%s", key)
-        cmakelists:print("    COMMAND %s", command)
+        for _, cmd in ipairs(batchcmds:cmds()) do
+            local command = _get_command_string(cmd, outputdir)
+            if command then
+                cmakelists:print("    COMMAND %s", command)
+            end
+        end
         cmakelists:print("    VERBATIM")
         cmakelists:print(")")
         cmakelists:print("add_custom_target(target_%s", key)
@@ -848,7 +853,12 @@ function _add_target_custom_command(cmakelists, target, command, suffix)
         if suffix == "after" then
             cmakelists:print("    POST_BUILD")
         end
-        cmakelists:print("    COMMAND %s", command)
+        for _, cmd in ipairs(batchcmds:cmds()) do
+            local command = _get_command_string(cmd, outputdir)
+            if command then
+                cmakelists:print("    COMMAND %s", command)
+            end
+        end
         cmakelists:print("    VERBATIM")
         cmakelists:print(")")
     end
@@ -863,12 +873,7 @@ function _add_target_custom_commands_for_target(cmakelists, target, outputdir, s
             local batchcmds_ = batchcmds.new({target = target})
             script(target, batchcmds_, {})
             if not batchcmds_:empty() then
-                for _, cmd in ipairs(batchcmds_:cmds()) do
-                    local command = _get_command_string(cmd, outputdir)
-                    if command then
-                        _add_target_custom_command(cmakelists, target, command, suffix)
-                    end
-                end
+                _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, batchcmds_)
             end
         end
     end
@@ -888,12 +893,7 @@ function _add_target_custom_commands_for_objectrules(cmakelists, target, sourceb
         local batchcmds_ = batchcmds.new({target = target})
         script(target, batchcmds_, sourcebatch, {})
         if not batchcmds_:empty() then
-            for _, cmd in ipairs(batchcmds_:cmds()) do
-                local command = _get_command_string(cmd, outputdir)
-                if command then
-                    _add_target_custom_command(cmakelists, target, command, suffix)
-                end
-            end
+            _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, batchcmds_)
         end
     end
 
@@ -907,12 +907,7 @@ function _add_target_custom_commands_for_objectrules(cmakelists, target, sourceb
                 local batchcmds_ = batchcmds.new({target = target})
                 script(target, batchcmds_, sourcefile, {})
                 if not batchcmds_:empty() then
-                    for _, cmd in ipairs(batchcmds_:cmds()) do
-                        local command = _get_command_string(cmd, outputdir)
-                        if command then
-                            _add_target_custom_command(cmakelists, target, command, suffix)
-                        end
-                    end
+                    _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, batchcmds_)
                 end
             end
         end

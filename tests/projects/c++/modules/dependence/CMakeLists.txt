@@ -11,54 +11,19 @@ project(dependence LANGUAGES CXX C)
 add_executable(dependence "")
 set_target_properties(dependence PROPERTIES OUTPUT_NAME "dependence")
 set_target_properties(dependence PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/linux/x86_64/release")
-add_custom_command(OUTPUT output_dependence_932361E8
+add_custom_command(OUTPUT output_dependence_957D597F
     COMMAND echo ${color.build.progress}[  0%]:${clear} ${color.build.object}generating.cxx.module.bmi mod
-    VERBATIM
-)
-add_custom_target(target_dependence_932361E8
-    DEPENDS output_dependence_932361E8
-)
-add_dependencies(dependence target_dependence_932361E8)
-add_custom_command(OUTPUT output_dependence_981BF74C
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/build/.objs/dependence/linux/x86_64/release/src
-    VERBATIM
-)
-add_custom_target(target_dependence_981BF74C
-    DEPENDS output_dependence_981BF74C
-)
-add_dependencies(dependence target_dependence_981BF74C)
-add_custom_command(OUTPUT output_dependence_812F1CA0
     COMMAND /usr/bin/gcc -m64 -std=c++20 -fmodules-ts -fmodule-mapper=${CMAKE_SOURCE_DIR}/build/mapper.txt -x c++ -o ${CMAKE_SOURCE_DIR}/build/.objs/dependence/linux/x86_64/release/src/mod.mpp.o -c ${CMAKE_SOURCE_DIR}/src/mod.mpp
-    VERBATIM
-)
-add_custom_target(target_dependence_812F1CA0
-    DEPENDS output_dependence_812F1CA0
-)
-add_dependencies(dependence target_dependence_812F1CA0)
-add_custom_command(OUTPUT output_dependence_A56A2AC8
     COMMAND echo ${color.build.progress}[  0%]:${clear} ${color.build.object}generating.cxx.module.bmi hello
-    VERBATIM
-)
-add_custom_target(target_dependence_A56A2AC8
-    DEPENDS output_dependence_A56A2AC8
-)
-add_dependencies(dependence target_dependence_A56A2AC8)
-add_custom_command(OUTPUT output_dependence_E41992DB
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/build/.objs/dependence/linux/x86_64/release/src
-    VERBATIM
-)
-add_custom_target(target_dependence_E41992DB
-    DEPENDS output_dependence_E41992DB
-)
-add_dependencies(dependence target_dependence_E41992DB)
-add_custom_command(OUTPUT output_dependence_EAE69E5A
     COMMAND /usr/bin/gcc -m64 -std=c++20 -fmodules-ts -fmodule-mapper=${CMAKE_SOURCE_DIR}/build/mapper.txt -x c++ -o ${CMAKE_SOURCE_DIR}/build/.objs/dependence/linux/x86_64/release/src/hello.mpp.o -c ${CMAKE_SOURCE_DIR}/src/hello.mpp
     VERBATIM
 )
-add_custom_target(target_dependence_EAE69E5A
-    DEPENDS output_dependence_EAE69E5A
+add_custom_target(target_dependence_957D597F
+    DEPENDS output_dependence_957D597F
 )
-add_dependencies(dependence target_dependence_EAE69E5A)
+add_dependencies(dependence target_dependence_957D597F)
 target_compile_options(dependence PRIVATE
     $<$<COMPILE_LANGUAGE:C>:-m64>
     $<$<COMPILE_LANGUAGE:CXX>:-m64>
