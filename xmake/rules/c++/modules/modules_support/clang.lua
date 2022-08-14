@@ -210,7 +210,9 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
         -- don't build same header unit at the same time
         if not common.memcache():get2(headerunit.name, "building") then
             common.memcache():set2(headerunit.name, "building", true)
-            local args = {modulecachepathflag .. stlcachedir, "-c", "-o", path(bmifile), "-x", "c++-system-header", headerunit.name}
+            local args = {
+                path(stlcachedir, function (p) return modulecachepathflag .. p end),
+                "-c", "-o", path(bmifile), "-x", "c++-system-header", headerunit.name}
             batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         end
@@ -306,7 +308,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
         batchcmds:mkdir(path.directory(objectfile))
 
-        local args = { modulecachepathflag .. cachedir, "-c", "-o", bmifile}
+        local args = {path(cachedir, function (p) return modulecachepathflag .. p end), "-c", "-o", path(bmifile)}
         if headerunit.type == ":quote" then
             table.join2(args, {"-I", path(headerunit.path):directory(), "-x", "c++-user-header", path(headerunit.path)})
         elseif headerunit.type == ":angle" then
@@ -421,7 +423,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
 
     -- build modules
     local depmtime = 0
-    local common_args = {modulecachepathflag .. cachedir}
+    local common_args = {path(cachedir, function (p) return modulecachepathflag .. p end)}
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
         if module then
