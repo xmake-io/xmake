@@ -713,7 +713,7 @@ function _add_target_vs_runtime(cmakelists, target)
 end
 
 -- add target link libraries
-function _add_target_link_libraries(cmakelists, target)
+function _add_target_link_libraries(cmakelists, target, outputdir)
 
     -- add links
     local links      = _get_configs_from_target(target, "links")
@@ -729,6 +729,25 @@ function _add_target_link_libraries(cmakelists, target)
         cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
         for _, link in ipairs(links) do
             cmakelists:print("    " .. link)
+        end
+        cmakelists:print(")")
+    end
+
+    -- add other object files, maybe from custom rules
+    local objectfiles_set = hashset.new()
+    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
+        if _sourcebatch_is_built(sourcebatch) then
+            for _, objectfile in ipairs(sourcebatch.objectfiles) do
+                objectfiles_set:insert(objectfile)
+            end
+        end
+    end
+    if #target:objectfiles() > objectfiles_set:size() then
+        cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
+        for _, objectfile in ipairs(target:objectfiles()) do
+            if not objectfiles_set:has(objectfile) then
+                cmakelists:print("    " .. _get_unix_path_relative_to_cmake(objectfile, outputdir))
+            end
         end
         cmakelists:print(")")
     end
@@ -1013,7 +1032,7 @@ function _add_target(cmakelists, target, outputdir)
     _add_target_vs_runtime(cmakelists, target)
 
     -- add target link libraries
-    _add_target_link_libraries(cmakelists, target)
+    _add_target_link_libraries(cmakelists, target, outputdir)
 
     -- add target link directories
     _add_target_link_directories(cmakelists, target, outputdir)
