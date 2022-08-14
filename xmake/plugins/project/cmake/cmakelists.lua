@@ -20,6 +20,7 @@
 
 -- imports
 import("core.project.project")
+import("core.project.config")
 import("core.tool.compiler")
 import("core.base.semver")
 import("core.base.hashset")
@@ -224,8 +225,18 @@ function _add_target_phony(cmakelists, target)
     cmakelists:print("")
 end
 
+-- set compiler
+function _set_target_compiler(cmakelists, target)
+    -- use custom toolchain?
+    if config.get("toolchain") or target:get("toolchains") then
+        cmakelists:print("set(CMAKE_C_COMPILER \"%s\")", target:tool("cc"))
+        cmakelists:print("set(CMAKE_CXX_COMPILER \"%s\")", target:tool("cxx"))
+    end
+end
+
 -- add target: binary
 function _add_target_binary(cmakelists, target, outputdir)
+    _set_target_compiler(cmakelists, target)
     cmakelists:print("add_executable(%s \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
     cmakelists:print("set_target_properties(%s PROPERTIES RUNTIME_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path_relative_to_cmake(target:targetdir(), outputdir))
@@ -233,6 +244,7 @@ end
 
 -- add target: static
 function _add_target_static(cmakelists, target, outputdir)
+    _set_target_compiler(cmakelists, target)
     cmakelists:print("add_library(%s STATIC \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
     cmakelists:print("set_target_properties(%s PROPERTIES ARCHIVE_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path_relative_to_cmake(target:targetdir(), outputdir))
@@ -240,6 +252,7 @@ end
 
 -- add target: shared
 function _add_target_shared(cmakelists, target, outputdir)
+    _set_target_compiler(cmakelists, target)
     cmakelists:print("add_library(%s SHARED \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
     if target:is_plat("windows") then
