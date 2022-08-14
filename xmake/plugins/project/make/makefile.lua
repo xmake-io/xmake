@@ -192,10 +192,18 @@ end
 
 -- make objects
 function _make_objects(makefile, target, sourcekind, sourcebatch, sourceflags)
-
-    -- make them
+    local handled_objects = target:data("makefile.handled_objects")
+    if not handled_objects then
+        handled_objects = {}
+        target:data_set("makefile.handled_objects", handled_objects)
+    end
     for index, objectfile in ipairs(sourcebatch.objectfiles) do
-        _make_object(makefile, target, sourcebatch.sourcefiles[index], objectfile, sourceflags)
+        -- remove repeat
+        -- this is because some rules will repeatedly bind the same sourcekind, e.g. `rule("c++.build.modules.builder")`
+        if not handled_objects[objectfile] then
+            _make_object(makefile, target, sourcebatch.sourcefiles[index], objectfile, sourceflags)
+            handled_objects[objectfile] = true
+        end
     end
 end
 

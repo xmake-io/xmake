@@ -212,13 +212,14 @@ function _add_target_sources(cmakelists, target, outputdir)
     local has_cuda = false
     cmakelists:print("target_sources(%s PRIVATE", target:name())
     for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
-        local sourcekind = sourcebatch.sourcekind
-        if sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "cu" then
+        -- we can only use rulename to filter them because sourcekind may be bound to multiple rules
+        local rulename = sourcebatch.rulename
+        if rulename == "c++.build" or rulename == "asm.build" or rulename == "cuda.build" then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 cmakelists:print("    " .. _get_unix_path(sourcefile, outputdir))
             end
         end
-        if sourcekind == "cu" then
+        if sourcebatch.sourcekind == "cu" then
             has_cuda = true
         end
     end
@@ -830,8 +831,9 @@ end
 function _add_target_custom_commands(cmakelists, target, outputdir)
     _add_target_custom_commands_for_target(cmakelists, target, outputdir, "before")
     for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
-        local sourcekind = sourcebatch.sourcekind
-        if sourcekind ~= "cc" and sourcekind ~= "cxx" and sourcekind ~= "as" then
+        -- we can only use rulename to filter them because sourcekind may be bound to multiple rules
+        local rulename = sourcebatch.rulename
+        if rulename ~= "c++.build" and rulename ~= "asm.build" and rulename ~= "cuda.build" then
             _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, outputdir, "before")
             _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, outputdir)
             _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, outputdir, "after")
