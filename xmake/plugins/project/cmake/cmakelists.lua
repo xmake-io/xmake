@@ -20,6 +20,7 @@
 
 -- imports
 import("core.project.project")
+import("core.project.config")
 import("core.tool.compiler")
 import("core.base.semver")
 import("core.base.hashset")
@@ -109,6 +110,67 @@ function _get_configs_from_target(target, name)
     return table.unique(values)
 end
 
+-- this sourcebatch is built?
+function _sourcebatch_is_built(sourcebatch)
+    -- we can only use rulename to filter them because sourcekind may be bound to multiple rules
+    local rulename = sourcebatch.rulename
+    if rulename == "c++.build" or rulename == "asm.build" or rulename == "cuda.build" then
+        return true
+    end
+end
+
+-- translate flag
+function _translate_flag(flag, outputdir)
+    if flag then
+        if path.instance_of(flag) then
+            flag = flag:clone():set(_get_unix_path_relative_to_cmake(flag:rawstr(), outputdir)):str()
+        elseif path.is_absolute(flag) then
+            flag = _get_unix_path_relative_to_cmake(flag, outputdir)
+        elseif flag:startswith("-fmodule-file=") then
+            flag = "-fmodule-file=" .. _get_unix_path_relative_to_cmake(flag:sub(15), outputdir)
+        elseif flag:startswith("-fmodule-mapper=") then
+            flag = "-fmodule-mapper=" .. _get_unix_path_relative_to_cmake(flag:sub(17), outputdir)
+        elseif flag:match("(.+)=(.+)") then
+            local k, v = flag:match("(.+)=(.+)")
+            if v and v:endswith(".ifc") then -- e.g. hello=xxx/hello.ifc
+                flag = k .. "=" .. _get_unix_path_relative_to_cmake(v, outputdir)
+            end
+        end
+    end
+    return flag
+end
+
+-- translate flags
+function _translate_flags(flags, outputdir)
+    if not flags then
+        return
+    end
+    local result = {}
+    for _, flag in ipairs(flags) do
+        if type(flag) == "table" and not path.instance_of(flag) then
+            for _, v in ipairs(flag) do
+                table.insert(result, _translate_flag(v, outputdir))
+            end
+        else
+            table.insert(result, _translate_flag(flag, outputdir))
+        end
+    end
+    return result
+end
+
+-- get flags from fileconfig
+function _get_flags_from_fileconfig(fileconfig, outputdir, name)
+    local flags = {}
+    table.join2(flags, fileconfig[name])
+    if fileconfig.force then
+        table.join2(flags, fileconfig.force[name])
+    end
+    flags = _translate_flags(flags, outputdir)
+    if #flags > 0 then
+        return table.concat(flags, " ")
+    end
+end
+
 -- add project info
 function _add_project(cmakelists, languages, outputdir)
 
@@ -163,8 +225,18 @@ function _add_target_phony(cmakelists, target)
     cmakelists:print("")
 end
 
+-- set compiler
+function _set_target_compiler(cmakelists, target)
+    -- use custom toolchain?
+    if config.get("toolchain") or target:get("toolchains") then
+        cmakelists:print("set(CMAKE_C_COMPILER \"%s\")", target:tool("cc"))
+        cmakelists:print("set(CMAKE_CXX_COMPILER \"%s\")", target:tool("cxx"))
+    end
+end
+
 -- add target: binary
 function _add_target_binary(cmakelists, target, outputdir)
+    _set_target_compiler(cmakelists, target)
     cmakelists:print("add_executable(%s \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
     cmakelists:print("set_target_properties(%s PROPERTIES RUNTIME_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path_relative_to_cmake(target:targetdir(), outputdir))
@@ -172,6 +244,7 @@ end
 
 -- add target: static
 function _add_target_static(cmakelists, target, outputdir)
+    _set_target_compiler(cmakelists, target)
     cmakelists:print("add_library(%s STATIC \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
     cmakelists:print("set_target_properties(%s PROPERTIES ARCHIVE_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path_relative_to_cmake(target:targetdir(), outputdir))
@@ -179,6 +252,7 @@ end
 
 -- add target: shared
 function _add_target_shared(cmakelists, target, outputdir)
+    _set_target_compiler(cmakelists, target)
     cmakelists:print("add_library(%s SHARED \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
     if target:is_plat("windows") then
@@ -212,13 +286,12 @@ function _add_target_sources(cmakelists, target, outputdir)
     local has_cuda = false
     cmakelists:print("target_sources(%s PRIVATE", target:name())
     for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
-        local sourcekind = sourcebatch.sourcekind
-        if sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "cu" then
+        if _sourcebatch_is_built(sourcebatch) then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 cmakelists:print("    " .. _get_unix_path(sourcefile, outputdir))
             end
         end
-        if sourcekind == "cu" then
+        if sourcebatch.sourcekind == "cu" then
             has_cuda = true
         end
     end
@@ -391,75 +464,63 @@ function _add_target_compile_definitions(cmakelists, target)
 end
 
 -- add target compile options
-function _add_target_compile_options(cmakelists, target)
+function _add_target_compile_options(cmakelists, target, outputdir)
     local cflags   = _get_configs_from_target(target, "cflags")
     local cxflags  = _get_configs_from_target(target, "cxflags")
     local cxxflags = _get_configs_from_target(target, "cxxflags")
     local cuflags  = _get_configs_from_target(target, "cuflags")
     if #cflags > 0 or #cxflags > 0 or #cxxflags > 0 or #cuflags > 0 then
         cmakelists:print("target_compile_options(%s PRIVATE", target:name())
-        for _, flag in ipairs(cflags) do
+        for _, flag in ipairs(_translate_flags(cflags, outputdir)) do
             cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
         end
-        for _, flag in ipairs(cxflags) do
+        for _, flag in ipairs(_translate_flags(cxflags, outputdir)) do
             cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
             cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
         end
-        for _, flag in ipairs(cxxflags) do
+        for _, flag in ipairs(_translate_flags(cxxflags, outputdir)) do
             cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
         end
-        for _, flag in ipairs(cuflags) do
+        for _, flag in ipairs(_translate_flags(cuflags, outputdir)) do
             cmakelists:print("    $<$<COMPILE_LANGUAGE:CUDA>:" .. flag .. ">")
         end
         cmakelists:print(")")
     end
-end
 
--- add target language standards
-function _add_target_language_standards(cmakelists, target)
-    local cstds =
-    {
-        c89         = "90"
-    ,   gnu89       = "90" -- TODO add cflags -std=gnu90 if supported
-    ,   c99         = "99"
-    ,   gnu99       = "99" -- TODO
-    ,   c11         = "11"
-    ,   gnu11       = "11" -- TODO
-    }
-    local cxxstds =
-    {
-        cxx98       = "98"
-    ,   gnuxx98     = "98" -- TODO
-    ,   cxx11       = "11"
-    ,   gnuxx11     = "11"
-    ,   cxx14       = "14"
-    ,   gnuxx14     = "14"
-    ,   cxx17       = "17"
-    ,   gnuxx17     = "17"
-    ,   cxx1z       = "17"
-    ,   gnuxx1z     = "17"
-    ,   cxx2a       = "20"
-    ,   gnuxx2a     = "20"
-    ,   cxxlatest   = "latest"
-    }
-    for _, lang in ipairs(target:get("languages")) do
-        local cstd = cstds[lang]
-        if cstd then
-            cmakelists:print("set_property(TARGET %s PROPERTY C_STANDARD %s)", target:name(), cstd)
-            if cstd == "99" or cstd == "11" then
-                cmakelists:print("if(MSVC)")
-                cmakelists:print("    target_compile_options(%s PRIVATE $<$<COMPILE_LANGUAGE:C>:-TP>)", target:name())
-                cmakelists:print("endif()")
-            end
-        end
-        local cxxstd = cxxstds[lang]
-        if cxxstd then
-            if cxxstd == "latest" then
-                cmakelists:print("if (MSVC)")
-                cmakelists:print("    target_compile_options(%s PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/std:c++latest>)", target:name())
-                cmakelists:print("endif()")
-            else
-                cmakelists:print("set_property(TARGET %s PROPERTY CXX_STANDARD %s)", target:name(), cxxstd)
+    -- add cflags/cxxflags for the specific source files
+    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
+        if _sourcebatch_is_built(sourcebatch) then
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local fileconfig = target:fileconfig(sourcefile)
+                if fileconfig then
+                    local cxxflags = _get_flags_from_fileconfig(fileconfig, outputdir, "cxxflags")
+                    if cxxflags then
+                        cmakelists:print("set_source_files_properties("
+                            .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
+                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:CXX>:" .. cxxflags .. ">\")")
+                    end
+                    local cflags = _get_flags_from_fileconfig(fileconfig, outputdir, "cflags")
+                    if cflags then
+                        cmakelists:print("set_source_files_properties("
+                            .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
+                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:C>:" .. cflags .. ">\")")
+                    end
+                    local cxflags = _get_flags_from_fileconfig(fileconfig, outputdir, "cxflags")
+                    if cxflags then
+                        cmakelists:print("set_source_files_properties("
+                            .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
+                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:C>:" .. cxflags .. ">\")")
+                        cmakelists:print("set_source_files_properties("
+                            .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
+                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:CXX>:" .. cxflags .. ">\")")
+                    end
+                    local cuflags = _get_flags_from_fileconfig(fileconfig, outputdir, "cuflags")
+                    if cuflags then
+                        cmakelists:print("set_source_files_properties("
+                            .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
+                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:CUDA>:" .. cuflags .. ">\")")
+                    end
+                end
             end
         end
     end
@@ -615,7 +676,7 @@ function _add_target_vs_runtime(cmakelists, target)
 end
 
 -- add target link libraries
-function _add_target_link_libraries(cmakelists, target)
+function _add_target_link_libraries(cmakelists, target, outputdir)
 
     -- add links
     local links      = _get_configs_from_target(target, "links")
@@ -631,6 +692,25 @@ function _add_target_link_libraries(cmakelists, target)
         cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
         for _, link in ipairs(links) do
             cmakelists:print("    " .. link)
+        end
+        cmakelists:print(")")
+    end
+
+    -- add other object files, maybe from custom rules
+    local objectfiles_set = hashset.new()
+    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
+        if _sourcebatch_is_built(sourcebatch) then
+            for _, objectfile in ipairs(sourcebatch.objectfiles) do
+                objectfiles_set:insert(objectfile)
+            end
+        end
+    end
+    if #target:objectfiles() > objectfiles_set:size() then
+        cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
+        for _, objectfile in ipairs(target:objectfiles()) do
+            if not objectfiles_set:has(objectfile) then
+                cmakelists:print("    " .. _get_unix_path_relative_to_cmake(objectfile, outputdir))
+            end
         end
         cmakelists:print(")")
     end
@@ -699,12 +779,7 @@ function _get_command_string(cmd, outputdir)
         -- @see https://github.com/xmake-io/xmake/discussions/2156
         local argv = {}
         for _, v in ipairs(cmd.argv) do
-            if path.instance_of(v) then
-                v = v:clone():set(_get_unix_path_relative_to_cmake(v:rawstr(), outputdir)):str()
-            elseif path.is_absolute(v) then
-                v = _get_unix_path_relative_to_cmake(v, outputdir)
-            end
-            table.insert(argv, v)
+            table.insert(argv, _translate_flag(v, outputdir))
         end
         local command = _get_unix_path_relative_to_cmake(cmd.program) .. " " .. os.args(argv)
         if opt and opt.curdir then
@@ -733,8 +808,8 @@ function _get_command_string(cmd, outputdir)
     end
 end
 
--- add custom command
-function _add_target_custom_command(cmakelists, target, command, suffix)
+-- add target custom commands for batchcmds
+function _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, batchcmds)
     if suffix == "before" then
         -- ADD_CUSTOM_COMMAND and PRE_BUILD did not work as I expected,
         -- so we need use add_dependencies and fake target to support it.
@@ -743,7 +818,12 @@ function _add_target_custom_command(cmakelists, target, command, suffix)
         --
         local key = target:name() .. "_" .. hash.uuid():split("-", {plain = true})[1]
         cmakelists:print("add_custom_command(OUTPUT output_%s", key)
-        cmakelists:print("    COMMAND %s", command)
+        for _, cmd in ipairs(batchcmds:cmds()) do
+            local command = _get_command_string(cmd, outputdir)
+            if command then
+                cmakelists:print("    COMMAND %s", command)
+            end
+        end
         cmakelists:print("    VERBATIM")
         cmakelists:print(")")
         cmakelists:print("add_custom_target(target_%s", key)
@@ -755,7 +835,12 @@ function _add_target_custom_command(cmakelists, target, command, suffix)
         if suffix == "after" then
             cmakelists:print("    POST_BUILD")
         end
-        cmakelists:print("    COMMAND %s", command)
+        for _, cmd in ipairs(batchcmds:cmds()) do
+            local command = _get_command_string(cmd, outputdir)
+            if command then
+                cmakelists:print("    COMMAND %s", command)
+            end
+        end
         cmakelists:print("    VERBATIM")
         cmakelists:print(")")
     end
@@ -770,12 +855,7 @@ function _add_target_custom_commands_for_target(cmakelists, target, outputdir, s
             local batchcmds_ = batchcmds.new({target = target})
             script(target, batchcmds_, {})
             if not batchcmds_:empty() then
-                for _, cmd in ipairs(batchcmds_:cmds()) do
-                    local command = _get_command_string(cmd, outputdir)
-                    if command then
-                        _add_target_custom_command(cmakelists, target, command, suffix)
-                    end
-                end
+                _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, batchcmds_)
             end
         end
     end
@@ -795,12 +875,7 @@ function _add_target_custom_commands_for_objectrules(cmakelists, target, sourceb
         local batchcmds_ = batchcmds.new({target = target})
         script(target, batchcmds_, sourcebatch, {})
         if not batchcmds_:empty() then
-            for _, cmd in ipairs(batchcmds_:cmds()) do
-                local command = _get_command_string(cmd, outputdir)
-                if command then
-                    _add_target_custom_command(cmakelists, target, command, suffix)
-                end
-            end
+            _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, batchcmds_)
         end
     end
 
@@ -814,12 +889,7 @@ function _add_target_custom_commands_for_objectrules(cmakelists, target, sourceb
                 local batchcmds_ = batchcmds.new({target = target})
                 script(target, batchcmds_, sourcefile, {})
                 if not batchcmds_:empty() then
-                    for _, cmd in ipairs(batchcmds_:cmds()) do
-                        local command = _get_command_string(cmd, outputdir)
-                        if command then
-                            _add_target_custom_command(cmakelists, target, command, suffix)
-                        end
-                    end
+                    _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, batchcmds_)
                 end
             end
         end
@@ -830,8 +900,7 @@ end
 function _add_target_custom_commands(cmakelists, target, outputdir)
     _add_target_custom_commands_for_target(cmakelists, target, outputdir, "before")
     for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
-        local sourcekind = sourcebatch.sourcekind
-        if sourcekind ~= "cc" and sourcekind ~= "cxx" and sourcekind ~= "as" then
+        if not _sourcebatch_is_built(sourcebatch) then
             _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, outputdir, "before")
             _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, outputdir)
             _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, outputdir, "after")
@@ -885,6 +954,10 @@ function _add_target(cmakelists, target, outputdir)
     -- add target dependencies
     _add_target_dependencies(cmakelists, target)
 
+    -- add target custom commands
+    -- we need call it first for running all rules, these rules will change some flags, e.g. c++modules
+    _add_target_custom_commands(cmakelists, target, outputdir)
+
     -- add target precompilied header
     _add_target_precompiled_header(cmakelists, target, outputdir)
 
@@ -900,11 +973,8 @@ function _add_target(cmakelists, target, outputdir)
     -- add target compile definitions
     _add_target_compile_definitions(cmakelists, target)
 
-    -- add target language standards
-    _add_target_language_standards(cmakelists, target)
-
     -- add target compile options
-    _add_target_compile_options(cmakelists, target)
+    _add_target_compile_options(cmakelists, target, outputdir)
 
     -- add target warnings
     _add_target_warnings(cmakelists, target)
@@ -922,16 +992,13 @@ function _add_target(cmakelists, target, outputdir)
     _add_target_vs_runtime(cmakelists, target)
 
     -- add target link libraries
-    _add_target_link_libraries(cmakelists, target)
+    _add_target_link_libraries(cmakelists, target, outputdir)
 
     -- add target link directories
     _add_target_link_directories(cmakelists, target, outputdir)
 
     -- add target link options
     _add_target_link_options(cmakelists, target)
-
-    -- add target custom commands
-    _add_target_custom_commands(cmakelists, target, outputdir)
 
     -- add target sources
     _add_target_sources(cmakelists, target, outputdir)
