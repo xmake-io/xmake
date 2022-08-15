@@ -713,18 +713,18 @@ function _make_custom_commands_item(vcxprojfile, commands, suffix)
         vcxprojfile:print("<PreLinkEvent>")
     end
     vcxprojfile:print("<Message></Message>")
-    vcxprojfile:print("<Command>setlocal")
+    local cmdstr = "setlocal"
     for _, command in ipairs(commands) do
-        vcxprojfile:print("%s", command)
+        cmdstr = cmdstr .. "\n" .. command
+        cmdstr = cmdstr .. "\nif %errorlevel% neq 0 goto :xmEnd"
     end
-    vcxprojfile:write([[if %errorlevel% neq 0 goto :xmEnd
-:xmEnd
+    cmdstr = cmdstr .. "\n" .. [[:xmEnd
 endlocal &amp; call :xmErrorLevel %errorlevel% &amp; goto :xmDone
 :xmErrorLevel
 exit /b %1
 :xmDone
-if %errorlevel% neq 0 goto :VCEnd</Command>
-]])
+if %errorlevel% neq 0 goto :VCEnd]]
+    vcxprojfile:print("<Command>%s</Command>", cmdstr)
     if suffix == "after" or suffix == "after_link" then
         vcxprojfile:print("</PostBuildEvent>")
     elseif suffix == "before" then
@@ -957,7 +957,8 @@ function _build_common_items(vsinfo, target)
         targetinfo.sourceflags = {}
         for _, sourcebatch in pairs(targetinfo.sourcebatches) do
             local sourcekind = sourcebatch.sourcekind
-            if (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "mrc") then
+            local rulename = sourcebatch.rulename
+            if (rulename == "c.build" or rulename == "c++.build" or rulename == "asm.build" or sourcekind == "mrc") then
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
 
                     -- make compiler flags
@@ -1020,12 +1021,13 @@ function _build_common_items(vsinfo, target)
         local sourceflags = {}
         for _, sourcebatch in pairs(targetinfo.sourcebatches) do
             local sourcekind = sourcebatch.sourcekind
+            local rulename = sourcebatch.rulename
             if (sourcekind == "as" or sourcekind == "mrc") then
                 -- no common flags for as/mrc files
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     sourceflags[sourcefile] = targetinfo.sourceflags[sourcefile]
                 end
-            elseif (sourcekind == "cc" or sourcekind == "cxx") then
+            elseif rulename == "c.build" or rulename == "c++.build" then -- sourcekind maybe bind multiple rules, e.g. c++modules
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     local flags = targetinfo.sourceflags[sourcefile]
                     local otherflags = {}
@@ -1313,7 +1315,8 @@ function _make_source_files(vcxprojfile, vsinfo, target)
         for _, targetinfo in ipairs(target.info) do
             for _, sourcebatch in pairs(targetinfo.sourcebatches) do
                 local sourcekind = sourcebatch.sourcekind
-                if (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "mrc" or sourcekind == "cu") then
+                local rulename = sourcebatch.rulename
+                if (rulename == "c.build" or rulename == "c++.build" or sourcekind == "as" or sourcekind == "mrc" or sourcekind == "cu") then
                     local objectfiles = sourcebatch.objectfiles
                     for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
                         local objectfile    = objectfiles[idx]
