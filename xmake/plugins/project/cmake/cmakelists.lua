@@ -577,8 +577,14 @@ function _add_target_languages(cmakelists, target)
     local languages = target:get("languages")
     if languages then
         for _, lang in ipairs(languages) do
+            local has_ext = false
+            if lang:startswith("gnu") then
+                lang = lang:sub(4)
+                has_ext = true
+            end
             local feature = features[lang] or (features[lang:replace("++", "xx")])
             if feature then
+                cmakelists:print("set_target_properties(%s PROPERTIES CXX_EXTENSIONS %s)", target:name(), has_ext and "ON" or "OFF")
                 cmakelists:print("target_compile_features(%s PRIVATE %s)", target:name(), feature)
             end
         end
