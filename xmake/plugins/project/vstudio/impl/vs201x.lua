@@ -283,7 +283,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
         local sourcekind = sourcebatch.sourcekind
         if sourcekind then
             for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local compflags = compiler.compflags(sourcefile, {target = target})
+                local compflags = compiler.compflags(sourcefile, {target = target, sourcekind = sourcekind})
                 if not firstcompflags and (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "cu") then
                     firstcompflags = compflags
                 end
