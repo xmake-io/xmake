@@ -229,8 +229,24 @@ end
 function _set_target_compiler(cmakelists, target)
     -- use custom toolchain?
     if config.get("toolchain") or target:get("toolchains") then
-        cmakelists:print("set(CMAKE_C_COMPILER \"%s\")", target:tool("cc"))
-        cmakelists:print("set(CMAKE_CXX_COMPILER \"%s\")", target:tool("cxx"))
+        local cc = target:tool("cc")
+        if cc then
+            cc = cc:gsub("\\", "/")
+            cmakelists:print("set(CMAKE_C_COMPILER \"%s\")", cc)
+        end
+        local cxx, cxx_name = target:tool("cxx")
+        if cxx then
+            if cxx_name == "clang" or cxx_name == "gcc" then
+                local dir = path.directory(cxx)
+                local name = path.filename(cxx)
+                name = name:gsub("clang$", "clang++")
+                name = name:gsub("clang%-", "clang++-")
+                name = name:gsub("gcc$", "g++")
+                name = name:gsub("gcc%-", "g++-")
+                cxx = path.join(dir, name):gsub("\\", "/")
+            end
+            cmakelists:print("set(CMAKE_CXX_COMPILER \"%s\")", cxx)
+        end
     end
 end
 
