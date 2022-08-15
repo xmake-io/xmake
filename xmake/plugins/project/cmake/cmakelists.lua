@@ -167,7 +167,7 @@ function _get_flags_from_fileconfig(fileconfig, outputdir, name)
     end
     flags = _translate_flags(flags, outputdir)
     if #flags > 0 then
-        return table.concat(flags, " ")
+        return flags
     end
 end
 
@@ -463,6 +463,34 @@ function _add_target_compile_definitions(cmakelists, target)
     end
 end
 
+-- add target source files flags
+function _add_target_sourcefiles_flags(cmakelists, target, sourcefile, name, outputdir)
+    local fileconfig = target:fileconfig(sourcefile)
+    if fileconfig then
+        local flags = _get_flags_from_fileconfig(fileconfig, outputdir, name)
+        if flags and #flags > 0 then
+            cmakelists:print("set_source_files_properties("
+                .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
+                .. " PROPERTIES COMPILE_OPTIONS")
+            local flagstrs = {}
+            for _, flag in ipairs(flags) do
+                if name == "cxxflags" then
+                    table.insert(flagstrs, "$<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
+                elseif name == "cflags" then
+                    table.insert(flagstrs, "$<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
+                elseif name == "cxflags" then
+                    table.insert(flagstrs, "$<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
+                    table.insert(flagstrs, "$<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
+                elseif name == "cuflags" then
+                    table.insert(flagstrs, "$<$<COMPILE_LANGUAGE:CUDA>:" .. flag .. ">")
+                end
+            end
+            cmakelists:print("    \"%s\"", table.concat(flagstrs, ";"))
+            cmakelists:print(")")
+        end
+    end
+end
+
 -- add target compile options
 function _add_target_compile_options(cmakelists, target, outputdir)
     local cflags   = _get_configs_from_target(target, "cflags")
@@ -491,36 +519,10 @@ function _add_target_compile_options(cmakelists, target, outputdir)
     for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
         if _sourcebatch_is_built(sourcebatch) then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local fileconfig = target:fileconfig(sourcefile)
-                if fileconfig then
-                    local cxxflags = _get_flags_from_fileconfig(fileconfig, outputdir, "cxxflags")
-                    if cxxflags then
-                        cmakelists:print("set_source_files_properties("
-                            .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
-                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:CXX>:" .. cxxflags .. ">\")")
-                    end
-                    local cflags = _get_flags_from_fileconfig(fileconfig, outputdir, "cflags")
-                    if cflags then
-                        cmakelists:print("set_source_files_properties("
-                            .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
-                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:C>:" .. cflags .. ">\")")
-                    end
-                    local cxflags = _get_flags_from_fileconfig(fileconfig, outputdir, "cxflags")
-                    if cxflags then
-                        cmakelists:print("set_source_files_properties("
-                            .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
-                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:C>:" .. cxflags .. ">\")")
-                        cmakelists:print("set_source_files_properties("
-                            .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
-                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:CXX>:" .. cxflags .. ">\")")
-                    end
-                    local cuflags = _get_flags_from_fileconfig(fileconfig, outputdir, "cuflags")
-                    if cuflags then
-                        cmakelists:print("set_source_files_properties("
-                            .. _get_unix_path_relative_to_cmake(sourcefile, outputdir)
-                            .. " PROPERTIES COMPILE_OPTIONS \"$<$<COMPILE_LANGUAGE:CUDA>:" .. cuflags .. ">\")")
-                    end
-                end
+                _add_target_sourcefiles_flags(cmakelists, target, sourcefile, "cxxflags", outputdir)
+                _add_target_sourcefiles_flags(cmakelists, target, sourcefile, "cflags", outputdir)
+                _add_target_sourcefiles_flags(cmakelists, target, sourcefile, "cxflags", outputdir)
+                _add_target_sourcefiles_flags(cmakelists, target, sourcefile, "cuflags", outputdir)
             end
         end
     end
