@@ -6,6 +6,7 @@
 
 * [#2555](https://github.com/xmake-io/xmake/issues/2555): Add fwatcher module and `xmake watch` plugin command
 * Add `xmake service --pull 'build/**' outputdir` to pull the given files in remote server
+* [#2641](https://github.com/xmake-io/xmake/pull/2641): Improve C++20 modules, support headerunits and project generators
 
 ### Changes
 
@@ -1361,6 +1362,7 @@
 
 * [#2555](https://github.com/xmake-io/xmake/issues/2555): 添加 fwatcher 模块和 `xmake watch` 插件命令
 * 添加 `xmake service --pull 'build/**' outputdir` 命令去拉取远程构建服务器上的文件
+* [#2641](https://github.com/xmake-io/xmake/pull/2641): 改进 C++20 模块, 支持 headerunits 和 project 生成
 
 ### 改进
 
