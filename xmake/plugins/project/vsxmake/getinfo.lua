@@ -468,6 +468,7 @@ function main(outputdir, vsinfo)
             localcache.clear("option")
             localcache.clear("package")
             localcache.clear("toolchain")
+            localcache.clear("cxxmodules")
 
             -- check platform
             platform.load(config.plat(), arch):check()
