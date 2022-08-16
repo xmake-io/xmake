@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.colors")
 import("core.project.project")
 import("core.project.config")
 import("core.tool.compiler")
@@ -828,7 +829,7 @@ function _get_command_string(cmd, outputdir)
     elseif kind == "mkdir" then
         return string.format("${CMAKE_COMMAND} -E make_directory %s", _get_unix_path_relative_to_cmake(cmd.dir, outputdir))
     elseif kind == "show" then
-        return string.format("echo %s", cmd.showtext)
+        return string.format("echo %s", colors.ignore(cmd.showtext))
     end
 end
 

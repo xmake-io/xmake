@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.colors")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
@@ -109,7 +110,7 @@ function _get_command_string(cmd, vcxprojdir)
         local dir = _translate_path(cmd.dir, vcxprojdir)
         return string.format("if not exist \"%s\" mkdir \"%s\"", dir, dir)
     elseif kind == "show" then
-        return string.format("echo %s", cmd.showtext)
+        return string.format("echo %s", colors.ignore(cmd.showtext))
     end
 end
 
