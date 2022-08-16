@@ -27,8 +27,14 @@ rule("c++.build.modules")
     on_config(function (target)
         import("modules_support.common")
 
+        -- we disable to build across targets in parallel, because the source files may depend on other target modules
         -- @see https://github.com/xmake-io/xmake/issues/1858
         if common.contains_modules(target) then
+            -- @note this will cause cross-parallel builds to be disabled for all sub-dependent targets,
+            -- even if some sub-targets do not contain C++ modules.
+            --
+            -- maybe we will have a more fine-grained configuration strategy to disable it in the future.
+            target:set("policy", "build.across_targets_in_parallel", false)
 
             -- get modules support
             local modules_support = common.modules_support(target)
