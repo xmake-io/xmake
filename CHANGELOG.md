@@ -15,6 +15,7 @@
 * [#2603](https://github.com/xmake-io/xmake/issues/2603): Disable `-fdirectives-only` for ccache by default
 * [#2580](https://github.com/xmake-io/xmake/issues/2580): Set stdout to line buffering
 * [#2571](https://github.com/xmake-io/xmake/issues/2571): Improve task scheduling for parallel and distributed compilation based on memory/cpu usage
+* [#2410](https://github.com/xmake-io/xmake/issues/2410): Improve cmakelists generator
 
 ### Bugs fixed
 
@@ -1371,6 +1372,7 @@
 * [#2603](https://github.com/xmake-io/xmake/issues/2603): 为 ccache 默认禁用 `-fdirectives-only`
 * [#2580](https://github.com/xmake-io/xmake/issues/2580): 设置 stdout 到 line 缓冲输出
 * [#2571](https://github.com/xmake-io/xmake/issues/2571): 改进分布式编译的调度算法，增加 cpu/memory 状态权重
+* [#2410](https://github.com/xmake-io/xmake/issues/2410): 改进 cmakelists 生成
 
 ### Bugs 修复
 
