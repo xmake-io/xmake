@@ -58,6 +58,12 @@ rule("stub2")
     after_build(function (target)
         print("rule(stub2): after_build")
     end)
+    before_build_files(function (target)
+        print("rule(stub2): before_build_files")
+    end)
+    after_build_files(function (target)
+        print("rule(stub2): after_build_files")
+    end)
 
 -- define rule: stub1
 rule("stub1")
@@ -148,3 +154,10 @@ target("test")
     add_files("src/index.md")
     add_files("src/test.c.in",  {rule = "c code"})
 
+    before_build(function (target)
+        print("target: before_build")
+    end)
+
+    after_build(function (target)
+        print("target: after_build")
+    end)

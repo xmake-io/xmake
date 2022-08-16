@@ -1280,6 +1280,38 @@ function _instance:fileconfig_set(sourcefile, info)
     self._FILESCONFIG = filesconfig
 end
 
+-- add the config info to the given source file
+function _instance:fileconfig_add(sourcefile, info)
+    local filesconfig = self._FILESCONFIG or {}
+    local fileconfig = filesconfig[sourcefile]
+    if fileconfig then
+        for k, v in pairs(info) do
+            if k == "force" then
+                -- fileconfig_add("xxx.c", {force = {cxxflags = ""}})
+                local force = fileconfig[k] or {}
+                for k2, v2 in pairs(v) do
+                    if force[k2] then
+                        force[k2] = table.join(force[k2], v2)
+                    else
+                        force[k2] = v2
+                    end
+                end
+                fileconfig[k] = force
+            else
+                -- fileconfig_add("xxx.c", {cxxflags = ""})
+                if fileconfig[k] then
+                    fileconfig[k] = table.join(fileconfig[k], v)
+                else
+                    fileconfig[k] = v
+                end
+            end
+        end
+    else
+        filesconfig[sourcefile] = info
+    end
+    self._FILESCONFIG = filesconfig
+end
+
 -- get the source files
 function _instance:sourcefiles()
 

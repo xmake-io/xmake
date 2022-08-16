@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.colors")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
@@ -109,7 +110,7 @@ function _get_command_string(cmd, vcxprojdir)
         local dir = _translate_path(cmd.dir, vcxprojdir)
         return string.format("if not exist \"%s\" mkdir \"%s\"", dir, dir)
     elseif kind == "show" then
-        return string.format("echo %s", cmd.showtext)
+        return string.format("echo %s", colors.ignore(cmd.showtext))
     end
 end
 
@@ -213,8 +214,9 @@ function _make_custom_commands(target, vcxprojdir)
     _make_custom_commands_for_target(commands, target, vcxprojdir, "before")
     _make_custom_commands_for_target(commands, target, vcxprojdir)
     for _, sourcebatch in pairs(target:sourcebatches()) do
+        local rulename = sourcebatch.rulename
         local sourcekind = sourcebatch.sourcekind
-        if sourcekind ~= "cc" and sourcekind ~= "cxx" and sourcekind ~= "as" then
+        if rulename ~= "c.build" and rulename ~= "c++.build" and rulename ~= "asm.build" and rulename ~= "cuda.build" and sourcekind ~= "mrc" then
             _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, "before")
             _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, nil)
             _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, "after")
@@ -281,10 +283,11 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     targetinfo.compargvs = {}
     for _, sourcebatch in pairs(target:sourcebatches()) do
         local sourcekind = sourcebatch.sourcekind
+        local rulename = sourcebatch.rulename
         if sourcekind then
             for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local compflags = compiler.compflags(sourcefile, {target = target})
-                if not firstcompflags and (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "cu") then
+                local compflags = compiler.compflags(sourcefile, {target = target, sourcekind = sourcekind})
+                if not firstcompflags and (rulename == "c.build" or rulename == "c++.build" or rulename == "cuda.build") then
                     firstcompflags = compflags
                 end
                 targetinfo.compflags[sourcefile] = compflags
@@ -541,6 +544,7 @@ function make(outputdir, vsinfo)
                 localcache.clear("option")
                 localcache.clear("package")
                 localcache.clear("toolchain")
+                localcache.clear("cxxmodules")
 
                 -- check platform
                 platform.load(config.plat(), arch):check()

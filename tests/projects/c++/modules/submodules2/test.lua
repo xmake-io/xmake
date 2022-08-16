@@ -1,0 +1,1 @@
+inherit(".test_base")

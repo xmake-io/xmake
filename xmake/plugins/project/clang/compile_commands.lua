@@ -113,6 +113,15 @@ function _make_arguments(jsonfile, arguments, sourcefile)
         table.insert(arguments_escape, _escape_path(arg))
     end
 
+    -- remove repeat
+    -- this is because some rules will repeatedly bind the same sourcekind, e.g. `rule("c++.build.modules.builder")`
+    local key = hash.uuid(os.args(arguments_escape) .. sourcefile)
+    local map = _g.map or {}
+    _g.map = map
+    if map[key] then
+        return
+    end
+
     -- make body
     jsonfile:printf(
 [[%s{
@@ -123,6 +132,26 @@ function _make_arguments(jsonfile, arguments, sourcefile)
 
     -- clear first line marks
     _g.firstline = false
+    map[key] = true
+end
+
+-- make commands for target
+function _make_commands_for_targetrules(jsonfile, target, suffix)
+    for _, ruleinst in ipairs(target:orderules()) do
+        local scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
+        local script = ruleinst:script(scriptname)
+        if script then
+            local batchcmds_ = batchcmds.new({target = target})
+            script(target, batchcmds_, {})
+            if not batchcmds_:empty() then
+                for _, cmd in ipairs(batchcmds_:cmds()) do
+                    if cmd.program then
+                        _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
+                    end
+                end
+            end
+        end
+    end
 end
 
 -- make commands for object rules
@@ -183,11 +212,13 @@ end
 
 -- make objects
 function _make_objects(jsonfile, target, sourcebatch)
+    _make_commands_for_targetrules(jsonfile, target, "before")
     _make_commands_for_objectrules(jsonfile, target, sourcebatch, "before")
     if not _make_commands_for_objects(jsonfile, target, sourcebatch) then
         _make_commands_for_objectrules(jsonfile, target, sourcebatch)
     end
     _make_commands_for_objectrules(jsonfile, target, sourcebatch, "after")
+    _make_commands_for_targetrules(jsonfile, target, "after")
 end
 
 -- make target
