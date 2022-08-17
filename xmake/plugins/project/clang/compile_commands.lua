@@ -30,6 +30,17 @@ function _escape_path(p)
     return os.args(p, {escape = true, nowrap = true})
 end
 
+-- this sourcebatch is built?
+function _sourcebatch_is_built(sourcebatch)
+    -- we can only use rulename to filter them because sourcekind may be bound to multiple rules
+    local rulename = sourcebatch.rulename
+    if rulename == "c.build" or rulename == "c++.build"
+        or rulename == "asm.build" or rulename == "cuda.build"
+        or rulename == "objc.build" or rulename == "objc++.build" then
+        return true
+    end
+end
+
 -- translate external/system include flags, because some tools (vscode) do not support them yet.
 -- https://github.com/xmake-io/xmake/issues/1050
 function _translate_arguments(arguments)
@@ -157,6 +168,11 @@ end
 -- make commands for object rules
 function _make_commands_for_objectrules(jsonfile, target, sourcebatch, suffix)
 
+    -- we ignore all built sourcebatches
+    if _sourcebatch_is_built(sourcebatch) then
+        return
+    end
+
     -- get rule
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
     local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
@@ -197,10 +213,12 @@ function _make_commands_for_objectrules(jsonfile, target, sourcebatch, suffix)
     end
 end
 
+
+
 -- make commands for objects
 function _make_commands_for_objects(jsonfile, target, sourcebatch)
     local sourcekind = sourcebatch.sourcekind
-    if sourcekind then
+    if sourcekind and _sourcebatch_is_built(sourcebatch) then
         for index, sourcefile in ipairs(sourcebatch.sourcefiles) do
             local objectfile = sourcebatch.objectfiles[index]
             local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
