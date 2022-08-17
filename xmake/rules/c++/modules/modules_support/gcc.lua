@@ -159,6 +159,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
     local compinst = target:compiler("cxx")
     local mapper_file = _get_module_mapper()
     local stlcachedir = common.stlmodules_cachedir(target)
+    local modulemapperflag = get_modulemapperflag(target)
 
     -- build headerunits
     local projectdir = os.projectdir()
@@ -169,11 +170,26 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
                 depend.on_changed(function()
                     progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
                     local args = {"-c", "-x", "c++-system-header", headerunit.name}
-                    os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
+                    local flags = table.join(compinst:compflags({target = target}), args)
+                    -- we need to support reading and writing mapperfile in parallel, otherwise it will be broken
+                    -- @see tests/c++/modules/stl_headerunit_cpp_only
+                    local mapper_file_tmp = os.tmpfile()
+                    os.cp(mapper_file, mapper_file_tmp)
+                    _add_module_to_mapper(mapper_file_tmp, headerunit.path, path.absolute(bmifile, projectdir))
+                    for idx, flag in ipairs(flags) do
+                        if flag:startswith(modulemapperflag) then
+                            flags[idx] = modulemapperflag .. mapper_file_tmp
+                            break
+                        end
+                    end
+                    os.vrunv(compinst:program(), flags)
+                    _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir))
+                    os.tryrm(mapper_file_tmp)
                 end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
             end, {rootjob = opt.rootjob})
+        else
+            _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir))
         end
-        _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir))
     end
 end
 
