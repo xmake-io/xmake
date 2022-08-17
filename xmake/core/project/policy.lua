@@ -51,6 +51,8 @@ function policy.policies()
             ["build.warning"]                    = {description = "Enable build warning output.", type = "boolean"},
             -- enable LTO linker-time optimization for c/c++ building.
             ["build.optimization.lto"]           = {description = "Enable LTO linker-time optimization for c/c++ building.", type = "boolean"},
+            -- enable C++ modules for C++ building, even if no .mpp is involved in the compilation
+            ["build.c++.modules"]                = {description = "Enable C++ modules for C++ building.", type = "boolean"},
             -- preprocessor configuration for ccache/distcc, we can disable linemarkers to speed up preprocess
             ["preprocessor.linemarkers"]         = {description = "Enable linemarkers for preprocessor.", default = true, type = "boolean"},
             -- preprocessor configuration for ccache/distcc, we can disable it to avoid cache object file with __DATE__, __TIME__
