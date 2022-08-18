@@ -1,4 +1,5 @@
-add_requires("libpng", "libtiff", {system = false, configs = {vs_runtime = "MD"}})
+add_requires("libpng" {system = false, configs = {vs_runtime = "MD"}})
+add_requires("libtiff", {system = false, configs = {vs_runtime = "MD", zlib = true}})
 add_requires("libwebp")
 
 add_requireconfs("libwebp",            {system = false, configs = {shared = true, vs_runtime = "MD"}})
