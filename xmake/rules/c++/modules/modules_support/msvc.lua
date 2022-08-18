@@ -44,17 +44,6 @@ function _add_module_to_mapper(target, argument, namekey, path, objectfile, bmif
     common.localcache():set2(_mapper_cachekey(target), "modulemap", modulemap)
 end
 
-function _mapper_has_unique_header(target, name)
-    local modulemap = _get_modulemap_from_mapper(target)
-    name = path.filename(name)
-
-    for n, _ in pairs(modulemap) do
-        if path.filename(n) == name then
-            return true
-        end
-    end
-end
-
 function _mapper_cachekey(target)
     return target:name() .. "_modulemap"
 end
