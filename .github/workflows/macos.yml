@@ -34,7 +34,7 @@ jobs:
 
       - name: Tests
         run: |
-          xmake lua -v -D tests/run.lua
+          xmake lua -v -D tests/run.lua depconfigs
           xrepo --version
 
       - name: Artifact
