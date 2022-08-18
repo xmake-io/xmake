@@ -466,19 +466,6 @@ function _init_requireinfo(requireinfo, package, opt)
     requireinfo.configs = requireinfo.configs or {}
     if opt.is_toplevel then
         requireinfo.is_toplevel = true
-        if not package:is_headeronly() then
-            if package:is_library() then
-                requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains")
-                if project.policy("package.inherit_external_configs") then
-                    requireinfo.configs.toolchains = requireinfo.configs.toolchains or get_config("toolchain")
-                end
-            end
-            requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or project.get("target.runtimes")
-            if project.policy("package.inherit_external_configs") then
-                requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or get_config("vs_runtime")
-            end
-            requireinfo.configs.lto = requireinfo.configs.lto or project.policy("build.optimization.lto")
-        end
     end
 end
 
@@ -488,8 +475,19 @@ function _finish_requireinfo(requireinfo, package)
     if package:is_headeronly() then
         requireinfo.configs.vs_runtime = nil
     else
-        if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
-            requireinfo.configs.vs_runtime = "MT"
+        if package:is_library() then
+            requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains")
+            if project.policy("package.inherit_external_configs") then
+                requireinfo.configs.toolchains = requireinfo.configs.toolchains or get_config("toolchain")
+            end
+        end
+        requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or project.get("target.runtimes")
+        if project.policy("package.inherit_external_configs") then
+            requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or get_config("vs_runtime")
+        end
+        requireinfo.configs.lto = requireinfo.configs.lto or project.policy("build.optimization.lto")
+        if package:is_plat("windows") then
+            requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or "MT"
         end
     end
     -- we need ensure readonly configs
