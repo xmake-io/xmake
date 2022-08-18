@@ -34,7 +34,8 @@ target("test2")
                     found = true
                 end
             end
-            assert(found, "package(zlib) not found!")
+            target:pkg("libtiff"):dump()
+            assert(found, "package(zlib_test2) not found!")
         end
     end)
 
@@ -50,6 +51,7 @@ target("test3")
                     found = true
                 end
             end
-            assert(found, "package(zlib) not found!")
+            target:pkg("libwebp"):dump()
+            assert(found, "package(zlib_test3) not found!")
         end
     end)
