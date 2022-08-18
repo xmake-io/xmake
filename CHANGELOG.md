@@ -16,6 +16,7 @@
 * [#2580](https://github.com/xmake-io/xmake/issues/2580): Set stdout to line buffering
 * [#2571](https://github.com/xmake-io/xmake/issues/2571): Improve task scheduling for parallel and distributed compilation based on memory/cpu usage
 * [#2410](https://github.com/xmake-io/xmake/issues/2410): Improve cmakelists generator
+* [#2690](https://github.com/xmake-io/xmake/issues/2690): Improve to pass toolchains to packages
 
 ### Bugs fixed
 
@@ -1373,6 +1374,7 @@
 * [#2580](https://github.com/xmake-io/xmake/issues/2580): 设置 stdout 到 line 缓冲输出
 * [#2571](https://github.com/xmake-io/xmake/issues/2571): 改进分布式编译的调度算法，增加 cpu/memory 状态权重
 * [#2410](https://github.com/xmake-io/xmake/issues/2410): 改进 cmakelists 生成
+* [#2690](https://github.com/xmake-io/xmake/issues/2690): 改机传递 toolchains 到包
 
 ### Bugs 修复
 
