@@ -106,7 +106,7 @@ rule("c++.build.modules.builder")
 
     before_link(function (target)
         import("modules_support.common")
-        common.append_headerunits_objectfiles(target)
+        common.append_dependency_objectfiles(target)
     end)
 
     after_clean(function (target)

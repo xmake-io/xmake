@@ -71,12 +71,12 @@ function get_headerunits(target, sourcebatch, modules)
                     if stl_headers.is_stl_header(name) then
                         stl_headerunits = stl_headerunits or {}
                         if not table.find_if(stl_headerunits, function(i, v) return v.name == name end) then
-                            table.insert(stl_headerunits, {name = name, path = r.path, type = unittype})
+                            table.insert(stl_headerunits, {name = name, path = r.path, type = unittype, unique = r.unique})
                         end
                     else
                         headerunits = headerunits or {}
                         if not table.find_if(headerunits, function(i, v) return v.name == name end) then
-                            table.insert(headerunits, {name = name, path = r.path, type = unittype})
+                            table.insert(headerunits, {name = name, path = r.path, type = unittype, unique = r.unique})
                         end
                     end
                 end
@@ -482,7 +482,6 @@ function generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modu
     -- generate headerunits
     -- build stl header units as other headerunits may need them
     if stl_headerunits or user_headerunits then
-        local headerunits_flags = localcache():get("headerunits_flags")
         if stl_headerunits then
             modules_support(target).generate_stl_headerunits_for_batchcmds(target, batchcmds, stl_headerunits, opt)
         end
@@ -545,14 +544,16 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
 end
 
 -- append headerunits objectfiles to link
-function append_headerunits_objectfiles(target)
-    local cachekey = target:name() .. "headerunit_objectfiles"
-    local cache = localcache():get(cachekey) or {}
-    if target:is_binary() then
-        target:add("ldflags", cache, {force = true})
-    elseif target:is_static() then
-        target:add("arflags", cache, {force = true})
-    elseif target:is_shared() then
-        target:add("shflags", cache, {force = true})
+function append_dependency_objectfiles(target)
+    local cachekey = target:name() .. "dependency_objectfiles"
+    local cache = localcache():get(cachekey)
+    if cache then 
+        if target:is_binary() then
+            target:add("ldflags", cache, {force = true})
+        elseif target:is_static() then
+            target:add("arflags", cache, {force = true})
+        elseif target:is_shared() then
+            target:add("shflags", cache, {force = true})
+        end
     end
 end
