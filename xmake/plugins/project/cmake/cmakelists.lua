@@ -246,7 +246,11 @@ function _set_target_compiler(cmakelists, target)
                 name = name:gsub("clang%-", "clang++-")
                 name = name:gsub("gcc$", "g++")
                 name = name:gsub("gcc%-", "g++-")
-                cxx = path.join(dir, name)
+                if dir ~= '.' then
+                    cxx = path.join(dir, name)
+                else
+                    cxx = name
+                end
             end
             cxx = cxx:gsub("\\", "/")
             cmakelists:print("set(CMAKE_CXX_COMPILER \"%s\")", cxx)
