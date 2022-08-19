@@ -1160,12 +1160,15 @@ function _instance:configs()
             configs = {}
             local requireinfo = self:requireinfo()
             local configs_required = requireinfo and requireinfo.configs or {}
+            local ignored_configs = hashset.from(requireinfo and requireinfo.ignored_configs or {})
             for _, name in ipairs(table.wrap(configs_defined)) do
-                local value = configs_required[name]
-                if value == nil then
-                    value = self:extraconf("configs", name, "default")
+                if not ignored_configs:has(name) then
+                    local value = configs_required[name]
+                    if value == nil then
+                        value = self:extraconf("configs", name, "default")
+                    end
+                    configs[name] = value
                 end
-                configs[name] = value
             end
         else
             configs = false

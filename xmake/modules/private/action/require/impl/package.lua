@@ -468,7 +468,6 @@ function _init_requireinfo(requireinfo, package, opt)
         requireinfo.is_toplevel = true
 
         -- we always pass some configurations from toplevel even it's headeronly, because it's library deps need inherit them
-        -- but we will reset it for headeronly package after finishing requireinfo
         -- @see https://github.com/xmake-io/xmake/issues/2688
         if package:is_library() then
             requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains")
@@ -481,17 +480,18 @@ function _init_requireinfo(requireinfo, package, opt)
             requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or get_config("vs_runtime")
         end
         requireinfo.configs.lto = requireinfo.configs.lto or project.policy("build.optimization.lto")
+
+        -- but we will ignore some configs for buildhash in the headeronly package
+        if package:is_headeronly() then
+            requireinfo.ignored_configs = {"vs_runtime", "toolchains", "lto", "pic"}
+        end
     end
 end
 
 -- finish requireinfo
 function _finish_requireinfo(requireinfo, package)
     requireinfo.configs = requireinfo.configs or {}
-    if package:is_headeronly() then
-        requireinfo.configs.vs_runtime = nil
-        requireinfo.configs.toolchains = nil
-        requireinfo.configs.lto = nil
-    else
+    if not package:is_headeronly() then
         if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
             requireinfo.configs.vs_runtime = "MT"
         end
@@ -1012,11 +1012,14 @@ function get_configs_str(package)
         if requireinfo.kind then
             table.insert(configs, requireinfo.kind)
         end
+        local ignored_configs = hashset.from(requireinfo.ignored_configs or {})
         for k, v in pairs(requireinfo.configs) do
-            if type(v) == "boolean" then
-                table.insert(configs, k .. ":" .. (v and "y" or "n"))
-            else
-                table.insert(configs, k .. ":" .. string.serialize(v, {strip = true, indent = false}))
+            if not ignored_configs:has(k) then
+                if type(v) == "boolean" then
+                    table.insert(configs, k .. ":" .. (v and "y" or "n"))
+                else
+                    table.insert(configs, k .. ":" .. string.serialize(v, {strip = true, indent = false}))
+                end
             end
         end
     end
