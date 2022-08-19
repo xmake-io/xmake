@@ -466,19 +466,21 @@ function _init_requireinfo(requireinfo, package, opt)
     requireinfo.configs = requireinfo.configs or {}
     if opt.is_toplevel then
         requireinfo.is_toplevel = true
-        if not package:is_headeronly() then
-            if package:is_library() then
-                requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains")
-                if project.policy("package.inherit_external_configs") then
-                    requireinfo.configs.toolchains = requireinfo.configs.toolchains or get_config("toolchain")
-                end
-            end
-            requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or project.get("target.runtimes")
+
+        -- we always pass some configurations from toplevel even it's headeronly, because it's library deps need inherit them
+        -- but we will reset it for headeronly package after finishing requireinfo
+        -- @see https://github.com/xmake-io/xmake/issues/2688
+        if package:is_library() then
+            requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains")
             if project.policy("package.inherit_external_configs") then
-                requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or get_config("vs_runtime")
+                requireinfo.configs.toolchains = requireinfo.configs.toolchains or get_config("toolchain")
             end
-            requireinfo.configs.lto = requireinfo.configs.lto or project.policy("build.optimization.lto")
         end
+        requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or project.get("target.runtimes")
+        if project.policy("package.inherit_external_configs") then
+            requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or get_config("vs_runtime")
+        end
+        requireinfo.configs.lto = requireinfo.configs.lto or project.policy("build.optimization.lto")
     end
 end
 
@@ -487,6 +489,8 @@ function _finish_requireinfo(requireinfo, package)
     requireinfo.configs = requireinfo.configs or {}
     if package:is_headeronly() then
         requireinfo.configs.vs_runtime = nil
+        requireinfo.configs.toolchains = nil
+        requireinfo.configs.lto = nil
     else
         if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
             requireinfo.configs.vs_runtime = "MT"
