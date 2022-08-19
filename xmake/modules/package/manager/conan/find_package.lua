@@ -64,6 +64,7 @@ end
 function main(name, opt)
 
     -- get the build info
+    opt = opt or {}
     local buildinfo_file = _conan_get_buildinfo_file(name)
     if not os.isfile(buildinfo_file) then
         return
@@ -84,15 +85,36 @@ function main(name, opt)
     local found = false
     local result = {}
     for k, v in pairs(buildinfo[plat .. "_" .. arch .. "_" .. mode]) do
-        if #table.wrap(v) > 0 then
-            result[k] = v
-            found = true
+        if not k:startswith("__") then
+            if #table.wrap(v) > 0 then
+                result[k] = v
+                found = true
+            end
         end
     end
+
     if found then
+        local libfiles = {}
         for _, linkdir in ipairs(result.linkdirs) do
             if not os.isdir(linkdir) then
                 return
+            end
+            for _, file in ipairs(os.files(path.join(linkdir, "*"))) do
+                if file:endswith(".lib") or file:endswith(".a") then
+                    result.static = true
+                    table.insert(libfiles, file)
+                elseif file:endswith(".so") or file:match(".+%.so%..+$") or file:endswith(".dylib") or file:endswith(".dll") then -- maybe symlink to libxxx.so.1
+                    result.shared = true
+                    table.insert(libfiles, file)
+                end
+            end
+        end
+        if opt.plat == "windows" or opt.plat == "mingw" then
+            for _, bindir in ipairs(buildinfo.__bindirs) do
+                for _, file in ipairs(os.files(path.join(bindir, "*.dll"))) do
+                    result.shared = true
+                    table.insert(libfiles, file)
+                end
             end
         end
         for _, includedir in ipairs(result.includedirs) do
@@ -104,6 +126,7 @@ function main(name, opt)
         if require_version ~= nil and require_version ~= "latest" then
             result.version = opt.require_version
         end
+        result.libfiles = table.unique(libfiles)
         return result
     end
 end
