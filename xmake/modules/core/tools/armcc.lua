@@ -131,10 +131,16 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
+    local depfile = dependinfo and os.tmpfile() or nil
     try
     {
         function ()
-            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, flags))
+            
+            local compflags = flags
+            if depfile then
+                compflags = table.join(compflags, "--depend", depfile)
+            end
+            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, compflags))
             return (outdata or "") .. (errdata or "")
         end,
         catch
@@ -174,6 +180,16 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                         print("")
                     end
                     cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
+                end
+                
+                -- generate the dependent includes
+                if depfile and os.isfile(depfile) then
+                    if dependinfo then
+                        dependinfo.depfiles_armcc = io.readfile(depfile, {continuation = "\\"})
+                    end
+
+                    -- remove the temporary dependent file
+                    os.tryrm(depfile)
                 end
             end
         }
