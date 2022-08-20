@@ -46,7 +46,7 @@ platform("iphoneos")
                 ,   {nil, "xcode_mobile_provision",  "kv", "auto",       "The Mobile Provision for Xcode"    }
                 ,   {nil, "target_minver",           "kv", "auto",       "The Target Minimal Version"        }
                 ,   {nil, "appledev",                "kv", nil,          "The Apple Device Type",
-                                                                         values = {"simulator", "iphone", "watchtv", "appletv"}}
+                                                                         values = {"simulator", "iphone", "watchtv", "appletv", "catalyst"}}
                 }
 
             ,   global =

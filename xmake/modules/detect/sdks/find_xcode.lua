@@ -41,7 +41,7 @@ function _find_xcode_sdkver(sdkdir, opt)
     local plat = opt.plat
     local arch = opt.arch
     local platsdkdir = nil
-    if plat == "iphoneos" then
+    if plat == "iphoneos" and opt.appledev ~= "catalyst" then
         if arch == "i386" or arch == "x86_64" then
             platsdkdir = "Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator*.*.sdk"
         else
@@ -72,6 +72,25 @@ function _find_xcode_sdkver(sdkdir, opt)
     end
 end
 
+-- find the target minver
+function _find_target_minver(sdkdir, sdkver, opt)
+    opt = opt or {}
+    local target_minver = sdkver
+    if opt.plat == "macosx" and opt.appledev ~= "catalyst" then
+        local macos_ver = macos.version()
+        if macos_ver then
+            target_minver = macos_ver:major() .. "." .. macos_ver:minor()
+        end
+    elseif opt.plat == "iphoneos" and opt.appledev == "catalyst" then
+        local platsdkdir = "Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS*.*.sdk"
+	    local dir = find_directory(platsdkdir, sdkdir)
+        if dir then
+            target_minver = dir:match("%d+%.%d+")
+        end
+    end
+    return target_minver
+end
+
 -- find the xcode toolchain
 function _find_xcode(sdkdir, opt)
 
@@ -86,6 +105,9 @@ function _find_xcode(sdkdir, opt)
     if not sdkver then
         return {}
     end
+
+    -- find the target minver
+    local target_minver = _find_target_minver(sdkdir, sdkver, opt)
 
     -- find codesign
     local codesign_identity, mobile_provision
@@ -126,7 +148,7 @@ function _find_xcode(sdkdir, opt)
             end
         end
     end
-    return {sdkdir = sdkdir, sdkver = sdkver, codesign_identity = codesign_identity, mobile_provision = mobile_provision}
+    return {sdkdir = sdkdir, sdkver = sdkver, target_minver = target_minver, codesign_identity = codesign_identity, mobile_provision = mobile_provision}
 end
 
 -- find xcode toolchain
