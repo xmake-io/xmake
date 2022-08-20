@@ -645,7 +645,6 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             if depfile and _g._HAS_MMD_MF then
                 compflags = table.join(compflags, "-MMD", "-MF", depfile)
             end
-            print(depfile)
             -- has color diagnostics? enable it
             local colors_diagnostics = _has_color_diagnostics(self)
             if colors_diagnostics then
