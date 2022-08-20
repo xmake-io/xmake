@@ -64,9 +64,8 @@ function main(depsdata)
             includefile = includefile:replace("\\:", ":", plain)
         end
         includefile = includefile:replace(space_placeholder, ' ', plain)
-        
         includefile = includefile:split(".o:", {plain = true})[2]
-        includefile = includefile:replace(' ','',plain)
+        includefile = includefile:replace(' ', '',plain)
         if #includefile > 0 then
             includefile = _normailize_dep(includefile, projectdir)
             if includefile then
