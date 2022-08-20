@@ -51,14 +51,20 @@ function init(self)
     ,   ["-std=c++17"]              = "-Xclang -std=c++17"
     ,   ["-std=c++1z"]              = "-Xclang -std=c++1z"
     ,   ["-std=c++1a"]              = "-Xclang -std=c++1a"
+    ,   ["-std=c++20"]              = "-Xclang -std=c++20"
     ,   ["-std=c++2a"]              = "-Xclang -std=c++2a"
+    ,   ["-std=c++23"]              = "-Xclang -std=c++23"
+    ,   ["-std=c++2b"]              = "-Xclang -std=c++2b"
     ,   ["-std=gnu++98"]            = "-Xclang -std=gnu++98"
     ,   ["-std=gnu++11"]            = "-Xclang -std=gnu++11"
     ,   ["-std=gnu++14"]            = "-Xclang -std=gnu++14"
     ,   ["-std=gnu++17"]            = "-Xclang -std=gnu++17"
     ,   ["-std=gnu++1z"]            = "-Xclang -std=gnu++1z"
     ,   ["-std=gnu++1a"]            = "-Xclang -std=gnu++1a"
+    ,   ["-std=gnu++20"]            = "-Xclang -std=gnu++20"
     ,   ["-std=gnu++2a"]            = "-Xclang -std=gnu++2a"
+    ,   ["-std=gnu++23"]            = "-Xclang -std=gnu++23"
+    ,   ["-std=gnu++2b"]            = "-Xclang -std=gnu++2b"
     })
 end
 
@@ -178,4 +184,3 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
         dependinfo.depfiles_cl = outdata
     end
 end
-

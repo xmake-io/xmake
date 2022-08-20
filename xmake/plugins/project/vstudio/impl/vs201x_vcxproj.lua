@@ -863,6 +863,8 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
             cxx1z     = "stdcpp17",
             cxx20     = "stdcpp20",
             cxx2a     = "stdcpplatest",
+            cxx23     = "stdcpplatest",
+            cxx2b     = "stdcpplatest",
             cxxlatest = "stdcpplatest",
             gnuxx11   = "stdcpp11",
             gnuxx14   = "stdcpp14",

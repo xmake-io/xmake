@@ -106,6 +106,8 @@
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx1z'))">stdcpp17</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx20'))">stdcpplatest</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx2a'))">stdcpplatest</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx23'))">stdcpplatest</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx2b'))">stdcpplatest</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxxlatest'))">stdcpplatest</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx11'))">stdcpp11</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx14'))">stdcpp14</LanguageStandard>
@@ -113,6 +115,8 @@
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx1z'))">stdcpp17</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx20'))">stdcpplatest</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx2a'))">stdcpplatest</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx23'))">stdcpplatest</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx2b'))">stdcpplatest</LanguageStandard>
       <PrecompiledHeader Condition="'%(PrecompiledHeader)' == '' And $(XmakePrecompiledHeader.Contains('.h'))">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'%(PrecompiledHeaderFile)' == '' And $(XmakePrecompiledHeader.Contains('.h'))">$(XmakeProjectDir)\$(XmakePrecompiledHeader)</PrecompiledHeaderFile>
       <ForcedIncludeFiles Condition="'%(ForcedIncludeFiles)' == '' And $(XmakePrecompiledHeader.Contains('.h'))">$(XmakeProjectDir)\$(XmakePrecompiledHeader);%(ForcedIncludeFiles)</ForcedIncludeFiles>
