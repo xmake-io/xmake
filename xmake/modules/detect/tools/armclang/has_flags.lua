@@ -39,12 +39,23 @@ end
 -- try running
 function _try_running(program, argv, opt)
     local errors = nil
+    local has_target
+    for _, v in ipairs(argv) do
+        if v:startswith("-target=") then
+            has_target = true
+            break
+        end
+    end
+    if not has_target then
+        table.insert(argv, 1, "-mcpu=cortex-m3")
+        table.insert(argv, 1, "-target=arm-arm-none-eabi")
+    end
     return try { function () os.runv(program, argv, opt); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
 end
 
 -- attempt to check it from the argument list
 function _check_from_arglist(flags, opt, islinker)
-    local key = "detect.tools.gcc." .. (islinker and "has_ldflags" or "has_cflags")
+    local key = "detect.tools.armclang." .. (islinker and "has_ldflags" or "has_cflags")
     local flagskey = opt.program .. "_" .. (opt.programver or "")
     local allflags = detectcache:get2(key, flagskey)
     if not allflags then
@@ -77,7 +88,7 @@ end
 function _check_try_running(flags, opt, islinker)
 
     -- make an stub source file
-    local sourcefile = path.join(os.tmpdir(), "detect", "gcc_has_flags" .. _get_extension(opt))
+    local sourcefile = path.join(os.tmpdir(), "detect", "armclang_has_flags" .. _get_extension(opt))
     if not os.isfile(sourcefile) then
         io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
     end
@@ -90,7 +101,7 @@ function _check_try_running(flags, opt, islinker)
 
     -- check flags for compiler
     -- @note we cannot use os.nuldev() as the output file, maybe run failed for some flags, e.g. --coverage
-    return _try_running(opt.program, table.join(flags, "-S", "-o", tmpfile, sourcefile), opt)
+    return _try_running(opt.program, table.join(flags, "-c", "-o", tmpfile, sourcefile), opt)
 end
 
 -- has_flags(flags)?
@@ -113,4 +124,5 @@ function main(flags, opt)
     -- try running to check it
     return _check_try_running(flags, opt, islinker)
 end
+
 
