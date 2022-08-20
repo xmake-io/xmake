@@ -135,17 +135,12 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
     try
     {
         function ()
-            -- support '--depend',I don't know how to get it,it is not implemented
-            -- if depfile and _g._HAS_MMD_MF == nil then
-            --     _g._HAS_MMD_MF = self:has_flags({"--depend", os.nuldev()}, "cxflags", { flagskey = "--depend" }) or false
-            -- end
-            _g._HAS_MMD_MF = true
-            -- -- generate includes file
+            
             local compflags = flags
-            if depfile and _g._HAS_MMD_MF then
+            if depfile then
                 compflags = table.join(compflags, "--depend", depfile)
             end
-            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, flags))
+            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, compflags))
             return (outdata or "") .. (errdata or "")
         end,
         catch
