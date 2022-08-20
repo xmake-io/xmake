@@ -200,9 +200,11 @@ function main(snippets, opt)
     -- @note we use fixed temporary filenames in order to better cache the compilation results for build_cache.
     local tmpfile = os.tmpfile(sourcecode)
     local sourcefile = tmpfile .. extension
-    local objectfile = tmpfile .. ".o"
-    local binaryfile = tmpfile .. ".b"
-    io.writefile(sourcefile, sourcecode)
+    local objectfile = os.tmpfile() .. ".o"
+    local binaryfile = objectfile:gsub("%.o$", ".b")
+    if not os.isfile(sourcefile) then
+        io.writefile(sourcefile, sourcecode)
+    end
 
     -- @note cannot cache result, all conditions will be changed
     -- attempt to compile it
@@ -237,7 +239,6 @@ function main(snippets, opt)
     }
 
     -- remove some files
-    os.tryrm(sourcefile)
     os.tryrm(objectfile)
     os.tryrm(binaryfile)
 
