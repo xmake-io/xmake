@@ -73,6 +73,21 @@ function _get_extension(opt)
     return (opt.program:endswith("++") or opt.flagkind == "cxxflags") and ".cpp" or (table.wrap(language.sourcekinds()[opt.toolkind or "cc"])[1] or ".c")
 end
 
+-- has `-S` flag?
+function _has_flag_S(opt)
+    local has_flag_S = _g.has_flag_S
+    if has_flag_S == nil then
+        if opt.program:find("armclang", 1, true) then
+            -- it is disallowed in ARM compiler
+            has_flag_S = false
+        else
+            has_flag_S = true
+        end
+        _g.has_flag_S = has_flag_S
+    end
+    return has_flag_S
+end
+
 -- try running to check flags
 function _check_try_running(flags, opt, islinker)
 
@@ -83,13 +98,18 @@ function _check_try_running(flags, opt, islinker)
     end
 
     -- check flags for linker
+    local tmpfile = os.tmpfile()
     if islinker then
-        return _try_running(opt.program, table.join(flags, "-o", os.tmpfile(), sourcefile), opt)
+        return _try_running(opt.program, table.join(flags, "-o", tmpfile, sourcefile), opt)
     end
 
     -- check flags for compiler
     -- @note we cannot use os.nuldev() as the output file, maybe run failed for some flags, e.g. --coverage
-    return _try_running(opt.program, table.join(flags, "-S", "-o", os.tmpfile(), sourcefile), opt)
+    local extraflags = {}
+    if _has_flag_S(opt) then
+        table.insert(extraflags, "-S")
+    end
+    return _try_running(opt.program, table.join(flags, extraflags, "-o", tmpfile, sourcefile), opt)
 end
 
 -- has_flags(flags)?
