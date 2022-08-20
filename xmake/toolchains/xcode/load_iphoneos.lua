@@ -29,21 +29,15 @@ function main(toolchain)
     local xcode_sdkver  = toolchain:config("xcode_sdkver")
     local xcode_sysroot = toolchain:config("xcode_sysroot")
 
+    -- is simulator?
+    local simulator = toolchain:config("appledev") == "simulator"
+
     -- init target minimal version
-    local appledev = toolchain:config("appledev")
     local target_minver = toolchain:config("target_minver")
     if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "i386") then
         target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
     end
-    if target_minver and tonumber(target_minver) < 13 and appledev == "catalyst" then
-        target_minver = "13.1"
-    end
-    local target_minver_flags
-    if appledev == "simulator" then
-        target_minver_flags = "-mios-simulator-version-min=" .. target_minver
-    else
-        target_minver_flags = "-miphoneos-version-min=" .. target_minver
-    end
+    local target_minver_flags = (simulator and "-mios-simulator-version-min=" or "-miphoneos-version-min=") .. target_minver
 
     -- init flags for c/c++
     toolchain:add("cxflags", "-arch", arch, target_minver_flags, "-isysroot", xcode_sysroot)

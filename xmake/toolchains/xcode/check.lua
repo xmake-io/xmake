@@ -74,7 +74,7 @@ function main(toolchain)
     -- save xcode sysroot directory
     local xcode_sysroot
     if xcode.sdkdir and xcode_sdkver then
-        if toolchain:is_plat("macosx") or appledev == "catalyst" then
+        if toolchain:is_plat("macosx") then
             xcode_sysroot = xcode.sdkdir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
         elseif toolchain:is_plat("iphoneos") then
             local platname = simulator and "iPhoneSimulator" or "iPhoneOS"

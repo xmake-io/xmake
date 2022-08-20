@@ -41,7 +41,7 @@ function _find_xcode_sdkver(sdkdir, opt)
     local plat = opt.plat
     local arch = opt.arch
     local platsdkdir = nil
-    if plat == "iphoneos" and opt.appledev ~= "catalyst" then
+    if plat == "iphoneos" then
         if arch == "i386" or arch == "x86_64" then
             platsdkdir = "Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator*.*.sdk"
         else
@@ -76,16 +76,20 @@ end
 function _find_target_minver(sdkdir, sdkver, opt)
     opt = opt or {}
     local target_minver = sdkver
-    if opt.plat == "macosx" and opt.appledev ~= "catalyst" then
-        local macos_ver = macos.version()
-        if macos_ver then
-            target_minver = macos_ver:major() .. "." .. macos_ver:minor()
-        end
-    elseif opt.plat == "iphoneos" and opt.appledev == "catalyst" then
-        local platsdkdir = "Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS*.*.sdk"
-	    local dir = find_directory(platsdkdir, sdkdir)
-        if dir then
-            target_minver = dir:match("%d+%.%d+")
+    if opt.plat == "macosx" then
+        if opt.appledev == "catalyst" then
+            local platsdkdir = "Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS*.*.sdk"
+            local dir = find_directory(platsdkdir, sdkdir)
+            if dir then
+                target_minver = dir:match("%d+%.%d+")
+            else
+                target_minver = "13.1"
+            end
+        else
+            local macos_ver = macos.version()
+            if macos_ver then
+                target_minver = macos_ver:major() .. "." .. macos_ver:minor()
+            end
         end
     end
     return target_minver
