@@ -20,8 +20,23 @@
 
 -- imports
 import("core.base.option")
+import("core.base.hashset")
 import("core.project.project")
 import("private.tools.vstool")
+
+-- normailize path of a dependecy
+function _normailize_dep(dep, projectdir)
+    if path.is_absolute(dep) then
+        dep = path.translate(dep)
+    else
+        dep = path.absolute(dep, projectdir)
+    end
+    if dep:startswith(projectdir) then
+        return path.relative(dep, projectdir)
+    else
+        return deps
+    end
+end
 
 -- init it
 function init(self)
@@ -95,17 +110,34 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
         }
     }
 
-    -- parse includes
-    local sourcedata = io.readfile(sourcefile)
-    if sourcedata then
+    -- try to use cl.exe to parse includes
+    -- @see https://github.com/xmake-io/xmake/issues/2562
+    local outfile = os.tmpfile() .. ".rc.out"
+    local errfile = os.tmpfile() .. ".rc.err"
+    local cl = assert(self:toolchain():tool("cxx"), "cl.exe not found!")
+    local ok = try {function () os.execv(cl, {"-E", sourcefile}, {stdout = outfile, stderr = errfile, envs = self:runenvs()}); return true end}
+    if ok and os.isfile(outfile) then
         local depfiles_rc
-        local sourcedir = path.directory(sourcefile)
-        for headerfile in sourcedata:gmatch("#include%s+[\"<](.-)[\">]") do
-            depfiles_rc = (depfiles_rc or "") .. "\n" .. path.join(sourcedir, headerfile)
+        local includeset = hashset.new()
+        local file = io.open(outfile)
+        local projectdir = os.projectdir()
+        for line in file:lines() do
+            if line:startswith("#line") then
+                local includefile = line:match("#line %d+ \"(.+)\"")
+                includefile = _normailize_dep(includefile, projectdir)
+                if includefile and not includeset:has(includefile) and path.absolute(includefile) ~= path.absolute(sourcefile) then
+                    depfiles_rc = (depfiles_rc or "") .. "\n" .. includefile
+                    includeset:insert(includefile)
+                end
+            end
         end
+        file:close()
         if dependinfo then
             dependinfo.depfiles_rc = depfiles_rc
         end
+        print(dependinfo)
     end
+    os.tryrm(outfile)
+    os.tryrm(errfile)
 end
 
