@@ -38,6 +38,16 @@ function _normailize_dep(dep, projectdir)
     end
 end
 
+-- parse include file
+function _parse_includefile(line)
+    if line:startswith("#line") then
+        return line:match("#line %d+ \"(.+)\"")
+    elseif line:find("ICON", 1, true) and line:find(".ico") then
+        -- 101 ICON "xxx.ico"
+        return line:match("ICON%s+\"(.+.ico)\"")
+    end
+end
+
 -- init it
 function init(self)
     if self:has_flags("-nologo", "mrcflags") then
@@ -122,22 +132,12 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
         local file = io.open(outfile)
         local projectdir = os.projectdir()
         for line in file:lines() do
-            if line:startswith("#line") then
-                local includefile = line:match("#line %d+ \"(.+)\"")
+            local includefile = _parse_includefile(line)
+            if includefile then
                 includefile = _normailize_dep(includefile, projectdir)
                 if includefile and not includeset:has(includefile) and path.absolute(includefile) ~= path.absolute(sourcefile) then
                     depfiles_rc = (depfiles_rc or "") .. "\n" .. includefile
                     includeset:insert(includefile)
-                end
-            elseif line:find("ICON", 1, true) and line:find(".ico") then
-                -- 101 ICON "xxx.ico"
-                local iconfile = line:match("ICON%s+\"(.+.ico)\"")
-                if iconfile then
-                    iconfile = _normailize_dep(iconfile, projectdir)
-                    if iconfile and not includeset:has(iconfile) then
-                        depfiles_rc = (depfiles_rc or "") .. "\n" .. iconfile
-                        includeset:insert(includefile)
-                    end
                 end
             end
         end
