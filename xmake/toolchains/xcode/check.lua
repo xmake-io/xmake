@@ -26,11 +26,23 @@ import("detect.sdks.find_xcode")
 -- main entry
 function main(toolchain)
 
+    -- get apple device
+    local simulator
+    local appledev = toolchain:config("appledev") or config.get("appledev")
+    if appledev and appledev == "simulator" then
+        simulator = true
+        appledev = "simulator"
+    elseif not toolchain:is_plat("macosx") and toolchain:is_arch("i386", "x86_64") then
+        simulator = true
+        appledev = "simulator"
+    end
+
     -- find xcode
     local xcode_sdkver = toolchain:config("xcode_sdkver") or config.get("xcode_sdkver")
     local xcode = find_xcode(config.get("xcode"), {force = true, verbose = true,
                                                    find_codesign = toolchain:is_global(),
                                                    sdkver = xcode_sdkver,
+                                                   appledev = appledev,
                                                    plat = toolchain:plat(),
                                                    arch = toolchain:arch()})
     if not xcode then
@@ -57,17 +69,6 @@ function main(toolchain)
                 cprint("checking for Mobile Provision of Xcode ... ${color.nothing}${text.nothing}")
             end
         end
-    end
-
-    -- get apple device
-    local simulator
-    local appledev = toolchain:config("appledev") or config.get("appledev")
-    if appledev and appledev == "simulator" then
-        simulator = true
-        appledev = "simulator"
-    elseif not toolchain:is_plat("macosx") and toolchain:is_arch("i386", "x86_64") then
-        simulator = true
-        appledev = "simulator"
     end
 
     -- save xcode sysroot directory
@@ -102,13 +103,7 @@ function main(toolchain)
     --
     local target_minver = toolchain:config("target_minver") or config.get("target_minver")
     if xcode_sdkver and not target_minver then
-        target_minver = xcode_sdkver
-        if toolchain:is_plat("macosx") then
-            local macos_ver = macos.version()
-            if macos_ver then
-                target_minver = macos_ver:major() .. "." .. macos_ver:minor()
-            end
-        end
+        target_minver = xcode.target_minver
     end
     toolchain:config_set("xcode", xcode.sdkdir)
     toolchain:config_set("xcode_sdkver", xcode_sdkver)
