@@ -229,6 +229,8 @@ function nf_language(self, stdname)
         ,   gnuxx2a     = {"-std:c++20", "-std:c++latest"}
         ,   cxx23       = {"-std:c++23", "-std:c++latest"}
         ,   gnuxx23     = {"-std:c++23", "-std:c++latest"}
+        ,   cxx2b       = {"-std:c++23", "-std:c++latest"}
+        ,   gnuxx2b     = {"-std:c++23", "-std:c++latest"}
         ,   cxxlatest   = "-std:c++latest"
         ,   gnuxxlatest = "-std:c++latest"
         }
@@ -664,4 +666,3 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         end
     end
 end
-
