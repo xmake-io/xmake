@@ -45,6 +45,8 @@ function _parse_includefile(line)
     elseif line:find("ICON", 1, true) and line:find(".ico") then
         -- 101 ICON "xxx.ico"
         return line:match("ICON%s+\"(.+.ico)\"")
+    elseif line:find("BITMAP", 1, true) and line:find(".bmp") then
+        return line:match("BITMAP%s+\"(.+.bmp)\"")
     end
 end
 
