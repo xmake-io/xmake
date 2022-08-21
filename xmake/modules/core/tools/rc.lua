@@ -129,13 +129,22 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                     depfiles_rc = (depfiles_rc or "") .. "\n" .. includefile
                     includeset:insert(includefile)
                 end
+            elseif line:find("ICON", 1, true) and line:find(".ico") then
+                -- 101 ICON "xxx.ico"
+                local iconfile = line:match("ICON%s+\"(.+.ico)\"")
+                if iconfile then
+                    iconfile = _normailize_dep(iconfile, projectdir)
+                    if iconfile and not includeset:has(iconfile) then
+                        depfiles_rc = (depfiles_rc or "") .. "\n" .. iconfile
+                        includeset:insert(includefile)
+                    end
+                end
             end
         end
         file:close()
         if dependinfo then
             dependinfo.depfiles_rc = depfiles_rc
         end
-        print(dependinfo)
     end
     os.tryrm(outfile)
     os.tryrm(errfile)
