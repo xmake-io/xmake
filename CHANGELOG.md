@@ -19,6 +19,7 @@
 * [#2410](https://github.com/xmake-io/xmake/issues/2410): Improve cmakelists generator
 * [#2690](https://github.com/xmake-io/xmake/issues/2690): Improve to pass toolchains to packages
 * [#2686](https://github.com/xmake-io/xmake/issues/2686): Support for incremental compilation and parse header file deps for keil/armcc/armclang
+* [#2562](https://github.com/xmake-io/xmake/issues/2562): Improve include deps for rc.exe
 
 ### Bugs fixed
 
@@ -1379,6 +1380,7 @@
 * [#2410](https://github.com/xmake-io/xmake/issues/2410): 改进 cmakelists 生成
 * [#2690](https://github.com/xmake-io/xmake/issues/2690): 改机传递 toolchains 到包
 * [#2686](https://github.com/xmake-io/xmake/issues/2686): 改进 armcc/armclang 支持增量编译
+* [#2562](https://github.com/xmake-io/xmake/issues/2562): 改进 rx.exe 对引用文件依赖的解析和增量编译支持
 
 ### Bugs 修复
 
