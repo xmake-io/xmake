@@ -480,11 +480,10 @@ function _init_requireinfo(requireinfo, package, opt)
             requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or get_config("vs_runtime")
         end
         requireinfo.configs.lto = requireinfo.configs.lto or project.policy("build.optimization.lto")
-
-        -- but we will ignore some configs for buildhash in the headeronly package
-        if package:is_headeronly() then
-            requireinfo.ignored_configs = {"vs_runtime", "toolchains", "lto", "pic"}
-        end
+    end
+    -- but we will ignore some configs for buildhash in the headeronly package
+    if package:is_headeronly() then
+        requireinfo.ignored_configs = {"vs_runtime", "toolchains", "lto", "pic"}
     end
 end
 
