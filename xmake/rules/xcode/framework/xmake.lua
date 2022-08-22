@@ -105,6 +105,12 @@ rule("xcode.framework")
             end
             os.vcp(target:targetfile(), contentsdir)
 
+            -- change rpath
+            local filename = path.filename(target:targetfile())
+            local targetfile = path.join(contentsdir, filename)
+            local rpath = path.relative(contentsdir, path.directory(bundledir))
+            os.vrunv("install_name_tool", {"-id", path.join("@rpath", rpath), targetfile})
+
             -- move header files
             os.tryrm(headersdir)
             os.mv(path.join(contentsdir, "Headers.tmp", target:basename()), headersdir)

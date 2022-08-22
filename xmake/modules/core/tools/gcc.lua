@@ -350,13 +350,14 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- add rpath for dylib (macho), e.g. -install_name @rpath/file.dylib
     local flags_extra = {}
-    if targetkind == "shared" and is_plat("macosx", "iphoneos", "watchos") then
+    local plat = self:plat()
+    if targetkind == "shared" and (plat == "macosx" or plat == "iphoneos" or plat == "watchos") then
         table.insert(flags_extra, "-install_name")
         table.insert(flags_extra, "@rpath/" .. path.filename(targetfile))
     end
 
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
-    if targetkind == "shared" and is_plat("mingw") then
+    if targetkind == "shared" and plat == "mingw" then
         table.insert(flags_extra, "-Wl,--out-implib," .. path.join(path.directory(targetfile), path.basename(targetfile) .. ".dll.a"))
     end
 
