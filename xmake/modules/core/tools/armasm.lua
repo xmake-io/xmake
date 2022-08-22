@@ -100,8 +100,17 @@ function nf_runtime(self, runtime)
 end
 
 -- make the define flag
+-- eg.
+-- add_defines("MACRO") -> --pd "MACRO  SETA 1
+-- add_defines("MACRO=3") -> --pd "MACRO SETA 3"
 function nf_define(self, macro)
-    return {"--pd", macro .. " SETA 1"}
+    local def = macro:split("=")
+    local key = def[1]:trim()
+    local value = "1"
+    if #def == 2 then
+        value = def[2]:trim()
+    end
+    return {"--pd", key .. " SETA " .. value}
 end
 
 -- make the includedir flag
