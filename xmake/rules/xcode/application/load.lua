@@ -47,7 +47,12 @@ function main (target)
 
     -- add frameworks
     if target:is_plat("macosx") then
-        target:add("frameworks", "AppKit")
+        local xcode = target:toolchain("xcode")
+        if xcode and xcode:config("appledev") == "catalyst" then
+            target:add("frameworks", "UIKit")
+        else
+            target:add("frameworks", "AppKit")
+        end
     else
         target:add("frameworks", "UIKit")
     end

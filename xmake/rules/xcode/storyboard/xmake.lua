@@ -65,8 +65,16 @@ rule("xcode.storyboard")
         end
         local argv = {"--errors", "--warnings", "--notices", "--auto-activate-custom-fonts", "--output-format", "human-readable-text"}
         if target:is_plat("macosx") then
-            table.insert(argv, "--target-device")
-            table.insert(argv, "mac")
+            local xcode = target:toolchain("xcode")
+            if xcode and xcode:config("appledev") == "catalyst" then
+                table.insert(argv, "--platform")
+                table.insert(argv, "macosx")
+                table.insert(argv, "--target-device")
+                table.insert(argv, "ipad")
+            else
+                table.insert(argv, "--target-device")
+                table.insert(argv, "mac")
+            end
         elseif target:is_plat("iphoneos") then
             table.insert(argv, "--target-device")
             table.insert(argv, "iphone")
