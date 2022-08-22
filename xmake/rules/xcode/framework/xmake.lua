@@ -109,7 +109,7 @@ rule("xcode.framework")
             local filename = path.filename(target:targetfile())
             local targetfile = path.join(contentsdir, filename)
             local rpath = path.relative(contentsdir, path.directory(bundledir))
-            os.vrunv("install_name_tool", {"-id", path.join("@rpath", rpath), targetfile})
+            os.vrunv("install_name_tool", {"-id", path.join("@rpath", rpath, filename), targetfile})
 
             -- move header files
             os.tryrm(headersdir)
