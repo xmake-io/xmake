@@ -100,6 +100,9 @@ function nf_runtime(self, runtime)
 end
 
 -- make the define flag
+-- eg.
+-- add_defines("MACRO") -> --pd "MACRO  SETA 1
+-- add_defines("MACRO=3") -> --pd "MACRO SETA 3"
 function nf_define(self, macro)
     local s = macro:replace(" ", "")
     local def = s:split("=")
