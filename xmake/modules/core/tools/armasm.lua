@@ -106,9 +106,9 @@ end
 function nf_define(self, macro)
     local def = macro:split("=")
     local key = def[1]:trim()
-    local value = 1
+    local value = "1"
     if #def == 2 then
-        value = def[2]
+        value = def[2]:trim()
     end
     return {"--pd", key .. " SETA " .. value}
 end
