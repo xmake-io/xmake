@@ -101,7 +101,16 @@ end
 
 -- make the define flag
 function nf_define(self, macro)
-    return {"--pd", macro .. " SETA 1"}
+    local s = macro:replace(" ", "")
+    local def = s:split("=")
+    if def[1] == nil then
+        return {"--pd", macro .. " SETA 1"}
+    end
+    local value = 1
+    if def[2] ~= nil and #def[2] > 0 then
+        value = def[2]
+    end
+    return {"--pd", def[1] .. " SETA " .. value}
 end
 
 -- make the includedir flag
