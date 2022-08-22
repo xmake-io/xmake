@@ -104,16 +104,13 @@ end
 -- add_defines("MACRO") -> --pd "MACRO  SETA 1
 -- add_defines("MACRO=3") -> --pd "MACRO SETA 3"
 function nf_define(self, macro)
-    local s = macro:replace(" ", "")
-    local def = s:split("=")
-    if def[1] == nil then
-        return {"--pd", macro .. " SETA 1"}
-    end
+    local def = macro:split("=")
+    local key = def[1]:trim()
     local value = 1
-    if def[2] ~= nil and #def[2] > 0 then
+    if #def == 2 then
         value = def[2]
     end
-    return {"--pd", def[1] .. " SETA " .. value}
+    return {"--pd", key .. " SETA " .. value}
 end
 
 -- make the includedir flag
