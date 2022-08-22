@@ -32,6 +32,7 @@ function main (target, opt)
     local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
     local contentsdir = path.absolute(target:data("xcode.bundle.contentsdir"))
     local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
+    local frameworksdir = path.join(contentsdir, "Frameworks")
 
     -- do build if changed
     depend.on_changed(function ()
@@ -46,10 +47,16 @@ function main (target, opt)
         end
         os.vcp(target:targetfile(), path.join(binarydir, path.filename(target:targetfile())))
 
-        -- copy dependent dynamic libraries, TODO copy frameworks
+        -- copy dependent dynamic libraries and frameworks
         for _, dep in ipairs(target:orderdeps()) do
             if dep:kind() == "shared" then
-                os.vcp(dep:targetfile(), binarydir)
+                local frameworkdir = dep:data("xcode.bundle.rootdir")
+                if dep:rule("xcode.framework") and frameworkdir then
+                    os.mkdir(frameworksdir)
+                    os.vcp(frameworkdir, frameworksdir, {symlink = true})
+                else
+                    os.vcp(dep:targetfile(), binarydir)
+                end
             end
         end
 
