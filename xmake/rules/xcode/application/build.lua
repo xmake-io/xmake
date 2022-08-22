@@ -35,7 +35,9 @@ function _copy_frameworks(frameworkdir, frameworksdir)
         if path.filename(filepath) == "Versions" then
             _copy_frameworks(filepath, path.join(frameworksdir, "Versions"))
         else
-            os.cp(filepath, path.join(frameworksdir, path.filename(filepath)), {symlink = true})
+            local dstpath = path.join(frameworksdir, path.filename(filepath))
+            os.tryrm(dstpath)
+            os.cp(filepath, dstpath, {symlink = true})
         end
     end
 end

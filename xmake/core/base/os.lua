@@ -82,9 +82,6 @@ function os._cp(src, dst, rootdir, opt)
         -- link file if reserve symlink
         if opt and opt.symlink and os.islink(src) then
             local reallink = os.readlink(src)
-            if os.isfile(dst) then
-                os.rm(dst)
-            end
             if not os.link(reallink, dst) then
                 return false, string.format("cannot link %s(%s) to %s, %s", src, reallink, dst, os.strerror())
             end
