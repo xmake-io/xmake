@@ -81,6 +81,16 @@ rule("xcode.info_plist")
             return maps[variable]
         end)
 
+        -- patch some entries for mac catalyst
+        local xcode = target:toolchain("xcode")
+        if xcode and xcode:config("appledev") == "catalyst" then
+            -- remove entry for "LSRequiresIPhoneOS" - not supported on macOS
+            --
+            -- <key>LSRequiresIPhoneOS</key>
+            -- <true/>
+            io.replace(info_plist_file, "<key>LSRequiresIPhoneOS</key>.-<true/>", "")
+        end
+
         -- update files and values to the dependent file
         dependinfo.files = {sourcefile}
         depend.save(dependinfo, dependfile)
