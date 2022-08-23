@@ -1382,7 +1382,7 @@
 * [#2410](https://github.com/xmake-io/xmake/issues/2410): 改进 cmakelists 生成
 * [#2690](https://github.com/xmake-io/xmake/issues/2690): 改机传递 toolchains 到包
 * [#2686](https://github.com/xmake-io/xmake/issues/2686): 改进 armcc/armclang 支持增量编译
-* [#2562](https://github.com/xmake-io/xmake/issues/2562): 改进 rx.exe 对引用文件依赖的解析和增量编译支持
+* [#2562](https://github.com/xmake-io/xmake/issues/2562): 改进 rc.exe 对引用文件依赖的解析和增量编译支持
 
 ### Bugs 修复
 
