@@ -219,19 +219,25 @@ end
 
 -- get the build environments
 function buildenvs(package, opt)
-    return _get_package_toolchains_envs(package, opt)
+    local envs = _get_package_toolchains_envs(package, opt)
+    -- we should avoid using $XMAKE_CONFIGDIR outside to cause conflicts
+    envs.XMAKE_CONFIGDIR = os.curdir()
+    return envs
 end
 
 -- install package
 function install(package, configs, opt)
 
-    -- pass local repositories
+    -- get build environments
     opt = opt or {}
+    local envs = opt.envs or buildenvs(package)
+
+    -- pass local repositories
     for _, repo in ipairs(repository.repositories()) do
         local repo_argv = {"repo"}
         _set_builtin_argv(repo_argv)
         table.join2(repo_argv, {"--add", repo:name(), repo:directory()})
-        os.vrunv("xmake", repo_argv)
+        os.vrunv("xmake", repo_argv, {envs = envs})
     end
 
     -- pass configurations
@@ -247,9 +253,6 @@ function install(package, configs, opt)
             table.insert(argv, "--" .. name .. "=" .. value)
         end
     end
-
-    -- get build environments
-    local envs = opt.envs or buildenvs(package)
 
     -- do configure
     os.vrunv("xmake", argv, {envs = envs})
