@@ -178,6 +178,7 @@ rule("mode.coverage")
             target:add("cxflags", "--coverage")
             target:add("mxflags", "--coverage")
             target:add("ldflags", "--coverage")
+            target:add("shflags", "--coverage")
         end
     end)
 
