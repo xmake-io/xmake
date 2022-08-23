@@ -31,11 +31,13 @@ import("utils.progress")
 -- os.vcp(frameworkdir, frameworksdir, {symlink = true})
 function _copy_frameworks(frameworkdir, frameworksdir)
     os.mkdir(frameworksdir)
+    local frameworkdir_dst = path.join(frameworksdir, path.filename(frameworkdir))
+    os.tryrm(frameworkdir_dst)
     for _, filepath in ipairs(os.filedirs(path.join(frameworkdir, "*"))) do
         if path.filename(filepath) == "Versions" then
-            _copy_frameworks(filepath, path.join(frameworksdir, "Versions"))
+            _copy_frameworks(filepath, frameworkdir_dst)
         else
-            local dstpath = path.join(frameworksdir, path.filename(filepath))
+            local dstpath = path.join(frameworkdir_dst, path.filename(filepath))
             os.tryrm(dstpath)
             os.cp(filepath, dstpath, {symlink = true})
         end
@@ -63,6 +65,12 @@ function main (target, opt)
             binarydir = path.join(contentsdir, "MacOS")
         end
         os.vcp(target:targetfile(), path.join(binarydir, path.filename(target:targetfile())))
+
+        -- change rpath
+        -- @see https://github.com/xmake-io/xmake/issues/2679#issuecomment-1221839215
+        local targetfile = path.join(binarydir, path.filename(target:targetfile()))
+        os.vrunv("install_name_tool", {"-delete_rpath", "@loader_path", targetfile})
+        os.vrunv("install_name_tool", {"-add_rpath", "@executable_path/../Frameworks", targetfile})
 
         -- copy dependent dynamic libraries and frameworks
         for _, dep in ipairs(target:orderdeps()) do
