@@ -25,6 +25,25 @@ import("core.project.depend")
 import("private.tools.codesign")
 import("utils.progress")
 
+-- copy frameworks with symlink
+--
+-- TODO we should improve os.cp to support for copying directory with symlink
+-- os.vcp(frameworkdir, frameworksdir, {symlink = true})
+function _copy_frameworks(frameworkdir, frameworksdir)
+    os.mkdir(frameworksdir)
+    local frameworkdir_dst = path.join(frameworksdir, path.filename(frameworkdir))
+    os.tryrm(frameworkdir_dst)
+    for _, filepath in ipairs(os.filedirs(path.join(frameworkdir, "*"))) do
+        if path.filename(filepath) == "Versions" then
+            _copy_frameworks(filepath, frameworkdir_dst)
+        else
+            local dstpath = path.join(frameworkdir_dst, path.filename(filepath))
+            os.tryrm(dstpath)
+            os.cp(filepath, dstpath, {symlink = true})
+        end
+    end
+end
+
 -- main entry
 function main (target, opt)
 
@@ -32,6 +51,7 @@ function main (target, opt)
     local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
     local contentsdir = path.absolute(target:data("xcode.bundle.contentsdir"))
     local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
+    local frameworksdir = path.join(contentsdir, "Frameworks")
 
     -- do build if changed
     depend.on_changed(function ()
@@ -46,10 +66,21 @@ function main (target, opt)
         end
         os.vcp(target:targetfile(), path.join(binarydir, path.filename(target:targetfile())))
 
-        -- copy dependent dynamic libraries, TODO copy frameworks
+        -- change rpath
+        -- @see https://github.com/xmake-io/xmake/issues/2679#issuecomment-1221839215
+        local targetfile = path.join(binarydir, path.filename(target:targetfile()))
+        os.vrunv("install_name_tool", {"-delete_rpath", "@loader_path", targetfile})
+        os.vrunv("install_name_tool", {"-add_rpath", "@executable_path/../Frameworks", targetfile})
+
+        -- copy dependent dynamic libraries and frameworks
         for _, dep in ipairs(target:orderdeps()) do
             if dep:kind() == "shared" then
-                os.vcp(dep:targetfile(), binarydir)
+                local frameworkdir = dep:data("xcode.bundle.rootdir")
+                if dep:rule("xcode.framework") and frameworkdir then
+                    _copy_frameworks(frameworkdir, frameworksdir, {symlink = true})
+                else
+                    os.vcp(dep:targetfile(), binarydir)
+                end
             end
         end
 
