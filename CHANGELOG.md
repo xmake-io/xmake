@@ -26,6 +26,7 @@
 * [#2614](https://github.com/xmake-io/xmake/issues/2614): Fix building submodules2 tests for msvc
 * [#2620](https://github.com/xmake-io/xmake/issues/2620): Fix build cache for incremental compilation
 * [#2177](https://github.com/xmake-io/xmake/issues/2177): Fix python.library segmentation fault for macosx
+* [#2708](https://github.com/xmake-io/xmake/issues/2708): Fix link error for mode.coverage rule
 * Fix rpath for macos/iphoneos frameworks and application
 
 ## v2.6.9
@@ -1388,6 +1389,7 @@
 * [#2614](https://github.com/xmake-io/xmake/issues/2614): 为 msvc 修复构建 submodules2 测试工程
 * [#2620](https://github.com/xmake-io/xmake/issues/2620): 修复构建缓存导致的增量编译问题
 * [#2177](https://github.com/xmake-io/xmake/issues/2177): 修复 python.library 在 macOS 上段错误崩溃
+* [#2708](https://github.com/xmake-io/xmake/issues/2708): 修复 mode.coverage 规则的链接错误
 * 修复 ios/macOS framework 和 application 的 rpath 加载路径
 
 ## v2.6.9
