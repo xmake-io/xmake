@@ -49,7 +49,6 @@ function main(requires_raw)
     -- attempt to install git from the builtin-packages first if git not found
     --
     if git and (not repository.pulled() or option.get("upgrade")) then
-        print("repo update")
         task.run("repo", {update = true})
     end
 
