@@ -384,6 +384,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
     local module_name_export
     local module_name_private
     local module_deps = {}
+    local module_deps_set = hashset.new()
     local sourcecode = io.readfile(sourcefile)
     sourcecode = sourcecode:gsub("//.-\n", "\n")
     sourcecode = sourcecode:gsub("/%*.-%*/", "")
@@ -400,7 +401,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
         if not module_depname and not has_module_extension(sourcefile) then
             module_depname = module_name_private
         end
-        if module_depname then
+        if module_depname and not module_deps_set:has(module_depname) then
             local module_dep = {}
             -- partition? import :xxx;
             if module_depname:startswith(":") then
@@ -418,6 +419,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
             end
             module_dep["logical-name"] = module_depname
             table.insert(module_deps, module_dep)
+            module_deps_set:insert(module_depname)
         end
     end
 
