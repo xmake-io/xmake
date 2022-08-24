@@ -20,6 +20,7 @@
 * [#2690](https://github.com/xmake-io/xmake/issues/2690): Improve to pass toolchains to packages
 * [#2686](https://github.com/xmake-io/xmake/issues/2686): Support for incremental compilation and parse header file deps for keil/armcc/armclang
 * [#2562](https://github.com/xmake-io/xmake/issues/2562): Improve include deps for rc.exe
+* Improve the default parallel building jobs number
 
 ### Bugs fixed
 
@@ -1383,6 +1384,7 @@
 * [#2690](https://github.com/xmake-io/xmake/issues/2690): 改机传递 toolchains 到包
 * [#2686](https://github.com/xmake-io/xmake/issues/2686): 改进 armcc/armclang 支持增量编译
 * [#2562](https://github.com/xmake-io/xmake/issues/2562): 改进 rc.exe 对引用文件依赖的解析和增量编译支持
+* 改进默认的并行构建任务数
 
 ### Bugs 修复
 
