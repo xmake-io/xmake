@@ -6,6 +6,6 @@ using namespace std;
 
 int main()
 {
-	Person person{ "Kole", "Webb" };
-	cout << person.getLastName() << ", " << person.getFirstName() << endl;
+    Person person{ "Kole", "Webb" };
+    cout << person.getLastName() << ", " << person.getFirstName() << endl;
 }

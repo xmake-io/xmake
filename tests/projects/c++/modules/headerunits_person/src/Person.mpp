@@ -1,6 +1,6 @@
 module;
 
-#include <cstddef> // 
+#include <cstddef>
 
 export module person;
 
