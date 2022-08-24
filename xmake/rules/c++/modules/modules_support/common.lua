@@ -381,26 +381,31 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
     local rule = {outputs = {jsonfile}}
     rule["primary-output"] = target:objectfile(sourcefile)
 
-    local module_name
+    local module_name_export
+    local module_name_private
     local module_deps = {}
+    local module_deps_set = hashset.new()
     local sourcecode = io.readfile(sourcefile)
     sourcecode = sourcecode:gsub("//.-\n", "\n")
     sourcecode = sourcecode:gsub("/%*.-%*/", "")
     for _, line in ipairs(sourcecode:split("\n", {plain = true})) do
-        if not module_name then
-            module_name = line:match("export%s+module%s+(.+)%s*;")
+        if not module_name_export then
+            module_name_export = line:match("export%s+module%s+(.+)%s*;")
+        end
+        if not module_name_private then
+            module_name_private = line:match("module%s+(.+)%s*;")
         end
         local module_depname = line:match("import%s+(.+)%s*;")
         -- we need parse module interface dep in cxx/impl_unit.cpp, e.g. hello.mpp and hello_impl.cpp
         -- @see https://github.com/xmake-io/xmake/pull/2664#issuecomment-1213167314
         if not module_depname and not has_module_extension(sourcefile) then
-            module_depname = line:match("module%s+(.+)%s*;")
+            module_depname = module_name_private
         end
-        if module_depname then
+        if module_depname and not module_deps_set:has(module_depname) then
             local module_dep = {}
             -- partition? import :xxx;
             if module_depname:startswith(":") then
-                module_depname = module_name .. module_depname
+                module_depname = (module_name_export or module_name_private or "") .. module_depname
             elseif module_depname:startswith("\"") then
                 module_depname = module_depname:sub(2, -2)
                 module_dep["lookup-method"] = "include-quote"
@@ -414,14 +419,15 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
             end
             module_dep["logical-name"] = module_depname
             table.insert(module_deps, module_dep)
+            module_deps_set:insert(module_depname)
         end
     end
 
-    if module_name then
-        table.insert(rule.outputs, module_name .. bmi_extension(target))
+    if module_name_export then
+        table.insert(rule.outputs, module_name_export .. bmi_extension(target))
 
         local provide = {}
-        provide["logical-name"] = module_name
+        provide["logical-name"] = module_name_export
         provide["source-path"] = path.absolute(sourcefile, project.directory())
 
         rule.provides = {}
