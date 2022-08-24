@@ -65,12 +65,13 @@ function _do_build_file(target, sourcefile, opt)
     local verbose = option.get("verbose")
 
     -- exists ccache or distcc?
+    -- we just show cache/distc to avoid confusion with third-party ccache/distcc
     local prefix = ""
     if build_cache.is_enabled() and build_cache.is_supported(sourcekind) then
-        prefix = "ccache "
+        prefix = "cache "
     end
     if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
-        prefix = prefix .. "distcc "
+        prefix = prefix .. "distc "
     end
 
     -- trace progress info
