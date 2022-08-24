@@ -1301,17 +1301,22 @@ end
 
 -- get the default parallel jobs number
 function os.default_njob()
-    local njob = math.ceil(os.cpuinfo().ncpu * 3 / 2)
-    if os.host() == "windows" and njob > 128 then
-        njob = 128
+    local njob
+    local ncpu = os.cpuinfo().ncpu
+    if ncpu > 2 then
+        njob = ncpu + 2
+        if os.host() == "windows" and njob > 128 then
+            njob = 128
+        end
+        if njob > 512 then
+            njob = 512
+        end
+    elseif ncpu == 2 then
+        njob = 3
+    else
+        njob = 2
     end
-    if njob > 512 then
-        njob = 512
-    end
-    if njob < 1 then
-        njob = 1
-    end
-    return njob
+    return njob or 2
 end
 
 -- read the content of symlink
