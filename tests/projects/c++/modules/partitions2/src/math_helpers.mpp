@@ -1,4 +1,4 @@
-module math:details;  // math:details implementation partition
+export module math:details;  // math:details implementation partition
 
 double someHelperFunction(double a)
 {
