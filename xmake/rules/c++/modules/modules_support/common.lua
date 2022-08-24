@@ -390,17 +390,20 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
         if not module_name then
             module_name = line:match("export%s+module%s+(.+)%s*;")
         end
+        if not module_name then
+            module_name = line:match("module%s+(.+)%s*;")
+        end
         local module_depname = line:match("import%s+(.+)%s*;")
         -- we need parse module interface dep in cxx/impl_unit.cpp, e.g. hello.mpp and hello_impl.cpp
         -- @see https://github.com/xmake-io/xmake/pull/2664#issuecomment-1213167314
         if not module_depname and not has_module_extension(sourcefile) then
-            module_depname = line:match("module%s+(.+)%s*;")
+            module_depname = module_name
         end
         if module_depname then
             local module_dep = {}
             -- partition? import :xxx;
             if module_depname:startswith(":") then
-                module_depname = module_name .. module_depname
+                module_depname = (module_name or "") .. module_depname
             elseif module_depname:startswith("\"") then
                 module_depname = module_depname:sub(2, -2)
                 module_dep["lookup-method"] = "include-quote"
