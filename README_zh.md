@@ -205,7 +205,7 @@ $ xmake f --menu
 * [用户自建仓库](https://xmake.io/#/zh-cn/package/remote_package?id=%e4%bd%bf%e7%94%a8%e8%87%aa%e5%bb%ba%e7%a7%81%e6%9c%89%e5%8c%85%e4%bb%93%e5%ba%93)
 * Conan (conan::openssl/1.1.1g)
 * Conda (conda::libpng 1.3.67)
-* Vcpkg (vcpkg:ffmpeg)
+* Vcpkg (vcpkg::ffmpeg)
 * Homebrew/Linuxbrew (brew::pcre2/libpcre2-8)
 * Pacman on archlinux/msys2 (pacman::libcurl)
 * Apt on ubuntu/debian (apt::zlib1g-dev)

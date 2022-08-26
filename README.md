@@ -196,7 +196,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * [User-built repositories](https://xmake.io/#/package/remote_package?id=using-self-built-private-package-repository)
 * Conan (conan::openssl/1.1.1g)
 * Conda (conda::libpng 1.3.67)
-* Vcpkg (vcpkg:ffmpeg)
+* Vcpkg (vcpkg::ffmpeg)
 * Homebrew/Linuxbrew (brew::pcre2/libpcre2-8)
 * Pacman on archlinux/msys2 (pacman::libcurl)
 * Apt on ubuntu/debian (apt::zlib1g-dev)
