@@ -459,41 +459,15 @@ function get_module_dependencies(target, sourcebatch, opt)
     return modules
 end
 
--- generate headerunits for batchjobs
-function generate_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
-
-    -- get headerunits info
-    local headerunits, stl_headerunits = get_headerunits(target, sourcebatch, modules)
-
-    -- generate headerunits
-    -- build stl header units as other headerunits may need them
-    local headerunits_flags
-    if stl_headerunits then
-        headerunits_flags = headerunits_flags or {}
-        table.join2(headerunits_flags, modules_support(target).generate_stl_headerunits_for_batchjobs(target, batchjobs, stl_headerunits, opt))
-    end
-    if headerunits then
-        headerunits_flags = headerunits_flags or {}
-        table.join2(headerunits_flags, modules_support(target).generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits, opt))
-    end
-    return headerunits_flags
-end
-
 -- generate headerunits for batchcmds
 function generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
-
-    -- get headerunits info
     local user_headerunits, stl_headerunits = get_headerunits(target, sourcebatch, modules)
-
-    -- generate headerunits
     -- build stl header units as other headerunits may need them
-    if stl_headerunits or user_headerunits then
-        if stl_headerunits then
-            modules_support(target).generate_stl_headerunits_for_batchcmds(target, batchcmds, stl_headerunits, opt)
-        end
-        if user_headerunits then
-            modules_support(target).generate_user_headerunits_for_batchcmds(target, batchcmds, user_headerunits, opt)
-        end
+    if stl_headerunits then
+        modules_support(target).generate_stl_headerunits_for_batchcmds(target, batchcmds, stl_headerunits, opt)
+    end
+    if user_headerunits then
+        modules_support(target).generate_user_headerunits_for_batchcmds(target, batchcmds, user_headerunits, opt)
     end
 end
 

@@ -63,9 +63,22 @@ rule("c++.build.modules.builder")
             common.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
 
             -- generate headerunits and we need do it before building modules
-            opt.rootjob = batchjobs:group_leave() or opt.rootjob
-            batchjobs:group_enter(target:name() .. "/generate_headerunits", {rootjob = opt.rootjob})
-            common.generate_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
+            local user_headerunits, stl_headerunits = common.get_headerunits(target, sourcebatch, modules)
+            if user_headerunits or stl_headerunits then
+                -- we need new group(headerunits)
+                -- e.g. group(build_modules) -> group(headerunits)
+                opt.rootjob = batchjobs:group_leave() or opt.rootjob
+                batchjobs:group_enter(target:name() .. "/generate_headerunits", {rootjob = opt.rootjob})
+                local modules_support = common.modules_support(target)
+                if stl_headerunits then
+                    -- build stl header units as other headerunits may need them
+                    -- TODO maybe we need new group(build_modules) -> group(user_headerunits) -> group(stl_headerunits)
+                    modules_support.generate_stl_headerunits_for_batchjobs(target, batchjobs, stl_headerunits, opt)
+                end
+                if user_headerunits then
+                    modules_support.generate_user_headerunits_for_batchjobs(target, batchjobs, user_headerunits, opt)
+                end
+            end
         else
             -- avoid duplicate linking of object files of non-module programs
             sourcebatch.objectfiles = {}
