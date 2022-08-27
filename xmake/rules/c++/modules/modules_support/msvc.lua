@@ -429,14 +429,6 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         deps = table.keys(module.requires),
                         sourcefile = module.cppfile,
                         job = batchjobs:newjob(module.cppfile, function(index, total)
-                            function contains(t, v)
-                                for _, flag in ipairs(t) do
-                                    if table.contains(flag, v) then
-                                        return true
-                                    end
-                                end
-                                return false
-                            end
                             -- append module mapper flags
                             -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
                             local requiresflags = get_requiresflags(target, module.requires)
