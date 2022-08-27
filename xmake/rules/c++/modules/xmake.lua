@@ -52,7 +52,6 @@ rule("c++.build.modules.builder")
     set_sourcekinds("cxx")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
-    -- build modules
     -- parallel build support to accelerate `xmake build` to build modules
     before_build_files(function(target, batchjobs, sourcebatch, opt)
         if target:data("cxx.has_modules") then
@@ -65,7 +64,7 @@ rule("c++.build.modules.builder")
 
             -- generate headerunits and we need do it before building modules
             opt.rootjob = batchjobs:group_leave() or opt.rootjob
-            batchjobs:group_enter(target:name() .. "/generate_headerunits")
+            batchjobs:group_enter(target:name() .. "/generate_headerunits", {rootjob = opt.rootjob})
             common.generate_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
         else
             -- avoid duplicate linking of object files of non-module programs
