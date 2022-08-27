@@ -161,6 +161,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
         end
 
         -- do before_build
+        -- we cannot add batchjobs for this rule scripts, @see https://github.com/xmake-io/xmake/issues/2684
         local progress = (index * 100) / total
         local before_build = target:script("build_before")
         if before_build then
