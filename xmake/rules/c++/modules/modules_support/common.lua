@@ -553,7 +553,7 @@ end
 function append_dependency_objectfiles(target)
     local cachekey = target:name() .. "dependency_objectfiles"
     local cache = localcache():get(cachekey)
-    if cache then 
+    if cache then
         if target:is_binary() then
             target:add("ldflags", cache, {force = true})
         elseif target:is_static() then

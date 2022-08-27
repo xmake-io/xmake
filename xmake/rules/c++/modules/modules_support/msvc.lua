@@ -154,7 +154,7 @@ end
 -- generate header unit module bmi for batchjobs
 function generate_headerunit_for_batchjob(target, name, flags, objectfile, index, total)
     -- don't generate same header unit bmi at the same time across targets
-    if not common.memcache():get2(name, "generating") then 
+    if not common.memcache():get2(name, "generating") then
         local compinst = target:compiler("cxx")
         local toolchain = target:toolchain("msvc")
         local vcvars = toolchain:config("vcvars")
@@ -234,7 +234,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         local objectfile = bmifile .. ".obj"
         local flags = {
-            exportheaderflag, 
+            exportheaderflag,
             headernameflag .. ":angle",
             headerunit.name,
             ifcoutputflag,
