@@ -153,7 +153,7 @@ function generate_dependencies(target, sourcebatch, opt)
             changed = true
 
             local dependinfo = io.readfile(jsonfile)
-            return { moduleinfo = dependinfo }
+            return {moduleinfo = dependinfo}
         end, {dependfile = dependfile, files = {sourcefile}})
     end
     return changed

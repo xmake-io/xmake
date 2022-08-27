@@ -148,10 +148,12 @@ end
 -- enter group
 --
 -- @param name      the group name
+-- @param opt       the options, e.g. {rootjob = ..}
 --
-function jobpool:group_enter(name)
+function jobpool:group_enter(name, opt)
+    opt = opt or {}
     assert(not self._group, "jobpool: cannot enter group(%s)!", name)
-    self._group = {name = name, group = true}
+    self._group = {name = name, group = true, rootjob = opt.rootjob}
 end
 
 -- leave group
@@ -161,8 +163,13 @@ end
 function jobpool:group_leave()
     local group = self._group
     self._group = nil
-    if group and group._parents then
-        return group
+    if group then
+        if group._parents then
+            return group
+        else
+            -- we just return the rootjob if there is not any jobs in this group
+            return group.rootjob
+        end
     end
 end
 
@@ -214,7 +221,7 @@ end
 -- tostring
 function jobpool:__tostring()
     local refs = {}
-    return string.serialize(self:_gentree(self:rootjob(), refs), {indent = 2})
+    return string.serialize(self:_gentree(self:rootjob(), refs), {indent = 2, orderkeys = true})
 end
 
 -- new a jobpool

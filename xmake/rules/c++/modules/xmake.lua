@@ -52,32 +52,33 @@ rule("c++.build.modules.builder")
     set_sourcekinds("cxx")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
-    -- generate headerunits
-    -- parallel build support to accelerate `xmake build` to build headerunits
-    before_build(function(target, batchjobs, opt)
-        local job
-        if target:data("cxx.has_modules") then
-            import("modules_support.common")
-            local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
-            common.patch_sourcebatch(target, sourcebatch, opt)
-
-            -- generate headerunits
-            local modules = common.get_module_dependencies(target, sourcebatch, opt)
-            batchjobs:group_enter(target:name() .. "/generate_headerunits")
-            common.generate_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
-            job = batchjobs:group_leave()
-        end
-        return job or opt.rootjob
-    end, {batch = true})
-
-    -- build modules
     -- parallel build support to accelerate `xmake build` to build modules
     before_build_files(function(target, batchjobs, sourcebatch, opt)
         if target:data("cxx.has_modules") then
             import("modules_support.common")
             common.patch_sourcebatch(target, sourcebatch, opt)
             local modules = common.get_module_dependencies(target, sourcebatch, opt)
+
+            -- build modules
             common.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
+
+            -- generate headerunits and we need do it before building modules
+            local user_headerunits, stl_headerunits = common.get_headerunits(target, sourcebatch, modules)
+            if user_headerunits or stl_headerunits then
+                -- we need new group(headerunits)
+                -- e.g. group(build_modules) -> group(headerunits)
+                opt.rootjob = batchjobs:group_leave() or opt.rootjob
+                batchjobs:group_enter(target:name() .. "/generate_headerunits", {rootjob = opt.rootjob})
+                local modules_support = common.modules_support(target)
+                if stl_headerunits then
+                    -- build stl header units as other headerunits may need them
+                    -- TODO maybe we need new group(build_modules) -> group(user_headerunits) -> group(stl_headerunits)
+                    modules_support.generate_stl_headerunits_for_batchjobs(target, batchjobs, stl_headerunits, opt)
+                end
+                if user_headerunits then
+                    modules_support.generate_user_headerunits_for_batchjobs(target, batchjobs, user_headerunits, opt)
+                end
+            end
         else
             -- avoid duplicate linking of object files of non-module programs
             sourcebatch.objectfiles = {}
