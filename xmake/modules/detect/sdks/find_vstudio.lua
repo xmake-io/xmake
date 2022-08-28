@@ -116,7 +116,7 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
         file:print("set VSCMD_SKIP_SENDTELEMETRY=yes")
     end
     if opt.vcvars_ver then
-        file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch,  opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+        file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
     else
         file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
     end
