@@ -906,6 +906,9 @@ static tb_void_t xm_engine_init_arch(xm_engine_t* engine)
     case PROCESSOR_ARCHITECTURE_AMD64:
         sysarch = "x64";
         break;
+    case PROCESSOR_ARCHITECTURE_ARM64:
+        sysarch = "arm64";
+        break;
     case PROCESSOR_ARCHITECTURE_ARM:
         sysarch = "arm";
         break;
@@ -919,8 +922,12 @@ static tb_void_t xm_engine_init_arch(xm_engine_t* engine)
     // get arch from compiler
     if (!sysarch)
     {
-#   ifdef TB_ARCH_x64
+#   if defined(TB_ARCH_x64)
         sysarch = "x64";
+#   elif defined(TB_ARCH_ARM64)
+        sysarch = "arm64"
+#   elif defined(TB_ARCH_ARM)
+        sysarch = "arm"
 #   else
         sysarch = "x86";
 #   endif
