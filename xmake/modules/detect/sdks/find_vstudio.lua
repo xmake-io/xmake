@@ -116,7 +116,7 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
         file:print("set VSCMD_SKIP_SENDTELEMETRY=yes")
     end
     if opt.vcvars_ver then
-        file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch,  opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+        file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
     else
         file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
     end
@@ -321,8 +321,20 @@ function _find_vstudio(opt)
             local vcvarsall_x86 = _load_vcvarsall(vcvarsall, version, "x86", opt)
             local vcvarsall_x64 = _load_vcvarsall(vcvarsall, version, "x64", opt)
 
+            -- load vcvarsall for arm64
+            local arch
+            local arch_os = os.arch()
+            if arch_os == "x64" then
+                arch = "x64_arm64"
+            elseif arch_os == "x86" then
+                arch = "x86_arm64"
+            elseif arch_os == "arm64" then
+                arch = "arm64"
+            end
+            local vcvarsall_arm64 = arch and _load_vcvarsall(vcvarsall, version, arch, opt) or nil
+
             -- save results
-            results[vsvers[version]] = {version = version, vcvarsall_bat = vcvarsall, vcvarsall = {x86 = vcvarsall_x86, x64 = vcvarsall_x64}}
+            results[vsvers[version]] = {version = version, vcvarsall_bat = vcvarsall, vcvarsall = {x86 = vcvarsall_x86, x64 = vcvarsall_x64, arm64 = vcvarsall_arm64}}
         end
     end
     return results
