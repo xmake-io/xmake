@@ -405,7 +405,9 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
             local module_dep = {}
             -- partition? import :xxx;
             if module_depname:startswith(":") then
-                module_depname = (module_name_export or module_name_private or "") .. module_depname
+                local module_name = (module_name_export or module_name_private or "")
+                module_name = module_name:split(":")[1]
+                module_depname = module_name .. module_depname
             elseif module_depname:startswith("\"") then
                 module_depname = module_depname:sub(2, -2)
                 module_dep["lookup-method"] = "include-quote"
