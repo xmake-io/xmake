@@ -320,7 +320,18 @@ function _find_vstudio(opt)
             -- load vcvarsall
             local vcvarsall_x86 = _load_vcvarsall(vcvarsall, version, "x86", opt)
             local vcvarsall_x64 = _load_vcvarsall(vcvarsall, version, "x64", opt)
-            local vcvarsall_arm64 = _load_vcvarsall(vcvarsall, version, "arm64", opt)
+
+            -- load vcvarsall for arm64
+            local arch
+            local arch_os = os.arch()
+            if arch_os == "x64" then
+                arch = "x64_arm64"
+            elseif arch_os == "x86" then
+                arch = "x86_arm64"
+            elseif arch_os == "arm64" then
+                arch = "arm64"
+            end
+            local vcvarsall_arm64 = arch and _load_vcvarsall(vcvarsall, version, arch, opt) or nil
 
             -- save results
             results[vsvers[version]] = {version = version, vcvarsall_bat = vcvarsall, vcvarsall = {x86 = vcvarsall_x86, x64 = vcvarsall_x64, arm64 = vcvarsall_arm64}}
