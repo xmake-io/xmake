@@ -28,7 +28,7 @@ platform("windows")
     set_hosts("windows")
 
     -- set archs
-    set_archs("x86", "x64")
+    set_archs("x86", "x64", "arm64")
 
     -- set formats
     set_formats("static", "$(name).lib")
