@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#2140](https://github.com/xmake-io/xmake/issues/2140): Support Windows Arm64
+
 ## v2.7.1
 
 ### New features
@@ -1367,6 +1371,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#2140](https://github.com/xmake-io/xmake/issues/2140): 支持 Windows Arm64
 
 ## v2.7.1
 
