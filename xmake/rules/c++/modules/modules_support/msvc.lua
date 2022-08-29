@@ -45,7 +45,8 @@ function _add_module_to_mapper(target, argument, namekey, path, objectfile, bmif
 end
 
 function _mapper_cachekey(target)
-    return target:name() .. "_modulemap"
+    local mode = config.mode()
+    return target:name() .. "_modulemap_" .. (mode or "")
 end
 
 -- flush mapper file cache
