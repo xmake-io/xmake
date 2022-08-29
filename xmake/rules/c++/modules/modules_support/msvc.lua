@@ -218,9 +218,9 @@ end
 
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
-    local stlcachedir = common.stlmodules_cachedir(target)
 
     -- get flags
+    local stlcachedir = common.stlmodules_cachedir(target)
     local exportheaderflag = get_exportheaderflag(target)
     local headerunitflag = get_headerunitflag(target)
     local headernameflag = get_headernameflag(target)
