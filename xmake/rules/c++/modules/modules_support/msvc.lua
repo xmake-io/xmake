@@ -64,7 +64,7 @@ end
 function _compile(target, flags)
     local compinst = target:compiler("cxx")
     local msvc = target:toolchain("msvc")
-    os.iorunv(compinst:program(), winos.cmdargv(table.join(compinst:compflags({target = target}), flags)), {envs = msvc:runenvs()})
+    os.vrunv(compinst:program(), winos.cmdargv(table.join(compinst:compflags({target = target}), flags)), {envs = msvc:runenvs()})
 end
 
 -- add an objectfile to the linker flags
