@@ -109,6 +109,17 @@ function _runcmd_execv(cmd, opt)
     end
 end
 
+-- run command: os.vexecv
+function _runcmd_vexecv(cmd, opt)
+    if cmd.program then
+        if opt.dryrun then
+            print(os.args(table.join(cmd.program, cmd.argv)))
+        else
+            os.vexecv(cmd.program, cmd.argv, cmd.opt)
+        end
+    end
+end
+
 -- run command: os.mkdir
 function _runcmd_mkdir(cmd, opt)
     local dir = cmd.dir
@@ -161,16 +172,17 @@ function _runcmd(cmd, opt)
     if not maps then
         maps =
         {
-            show  = _runcmd_show,
-            runv  = _runcmd_runv,
-            vrunv = _runcmd_vrunv,
-            execv = _runcmd_execv,
-            mkdir = _runcmd_mkdir,
-            cd    = _runcmd_cd,
-            rm    = _runcmd_rm,
-            cp    = _runcmd_cp,
-            mv    = _runcmd_mv,
-            ln    = _runcmd_ln
+            show   = _runcmd_show,
+            runv   = _runcmd_runv,
+            vrunv  = _runcmd_vrunv,
+            execv  = _runcmd_execv,
+            vexecv = _runcmd_vexecv,
+            mkdir  = _runcmd_mkdir,
+            cd     = _runcmd_cd,
+            rm     = _runcmd_rm,
+            cp     = _runcmd_cp,
+            mv     = _runcmd_mv,
+            ln     = _runcmd_ln
         }
         _g.maps = maps
     end
@@ -212,6 +224,12 @@ end
 -- add command: os.execv
 function batchcmds:execv(program, argv, opt)
     table.insert(self:cmds(), {kind = "execv", program = program, argv = argv, opt = opt})
+    self:add_depvalues(program, argv)
+end
+
+-- add command: os.vexecv
+function batchcmds:vexecv(program, argv, opt)
+    table.insert(self:cmds(), {kind = "vexecv", program = program, argv = argv, opt = opt})
     self:add_depvalues(program, argv)
 end
 
