@@ -78,6 +78,7 @@ function _stl_headers()
     "condition_variable",
     "list",
     "source_location",
+    "stacktrace",
     "unordered_set",
     "coroutine",
     "locale",
@@ -130,6 +131,7 @@ function _stl_headers()
     "cmath",
     "ctime",
     "clocale",
+    "expected",
     "cstdio"}
 end
 
