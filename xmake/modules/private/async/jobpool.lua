@@ -123,10 +123,15 @@ function jobpool:pop()
 
         -- update all parents nodes
         for _, p in ipairs(parents) do
-            p._priority = math.max(p._priority or 0, priority + 1)
-            p._deps:remove(job)
-            if p._deps:empty() and self._size > 0 then
-                table.insert(leafjobs, 1, p)
+            -- we need avoid add it the leafjobs repeatly, it will cause dead-loop when poping group job
+            -- @see https://github.com/xmake-io/xmake/issues/2740
+            if not p._leaf then
+                p._priority = math.max(p._priority or 0, priority + 1)
+                p._deps:remove(job)
+                if p._deps:empty() and self._size > 0 then
+                    p._leaf = true
+                    table.insert(leafjobs, 1, p)
+                end
             end
         end
 
@@ -185,6 +190,7 @@ function jobpool:_genleafjobs(job, leafjobs, refs)
             end
         end
     else
+        job._leaf = true
         table.insert(leafjobs, job)
     end
 end

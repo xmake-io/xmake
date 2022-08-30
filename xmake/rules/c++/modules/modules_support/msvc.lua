@@ -60,6 +60,13 @@ function _get_modulemap_from_mapper(target)
     return common.localcache():get2(_mapper_cachekey(target), "modulemap") or {}
 end
 
+-- do compile
+function _compile(target, flags)
+    local compinst = target:compiler("cxx")
+    local msvc = target:toolchain("msvc")
+    os.vrunv(compinst:program(), winos.cmdargv(table.join(compinst:compflags({target = target}), flags)), {envs = msvc:runenvs()})
+end
+
 -- add an objectfile to the linker flags
 --
 -- e.g
@@ -118,9 +125,6 @@ end
 
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
-    local compinst = target:compiler("cxx")
-    local toolchain = target:toolchain("msvc")
-    local vcvars = toolchain:config("vcvars")
     local scandependenciesflag = get_scandependenciesflag(target)
     local common_flags = {"-TP", scandependenciesflag}
     local cachedir = common.modules_cachedir(target)
@@ -139,7 +143,7 @@ function generate_dependencies(target, sourcebatch, opt)
             local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".json")
             if scandependenciesflag then
                 local flags = {jsonfile, sourcefile, "-Fo" .. target:objectfile(sourcefile)}
-                os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_flags, flags), {envs = vcvars})
+                _compile(target, table.join(common_flags, flags))
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile)
             end
@@ -156,14 +160,10 @@ end
 function generate_headerunit_for_batchjob(target, name, flags, objectfile, index, total)
     -- don't generate same header unit bmi at the same time across targets
     if not common.memcache():get2(name, "generating") then
-        local compinst = target:compiler("cxx")
-        local toolchain = target:toolchain("msvc")
-        local vcvars = toolchain:config("vcvars")
         local common_flags = {"-TP", "-c"}
-
         common.memcache():set2(name, "generating", true)
         progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", name)
-        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_flags, flags), {envs = vcvars})
+        _compile(target, table.join(common_flags, flags))
         _add_objectfile_to_link_arguments(target, objectfile)
     end
 end
@@ -171,12 +171,10 @@ end
 -- generate header unit module bmi for batchcmds
 function generate_headerunit_for_batchcmds(target, name, flags, objectfile, batchcmds, opt)
     local compinst = target:compiler("cxx")
-    local toolchain = target:toolchain("msvc")
-    local vcvars = toolchain:config("vcvars")
+    local msvc = target:toolchain("msvc")
     local common_flags = {"-TP", "-c"}
-
     batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", name)
-    batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_flags, flags), {envs = vcvars})
+    batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_flags, flags), {envs = msvc:runenvs()})
     _add_objectfile_to_link_arguments(target, objectfile)
 end
 
@@ -220,9 +218,9 @@ end
 
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
-    local stlcachedir = common.stlmodules_cachedir(target)
 
     -- get flags
+    local stlcachedir = common.stlmodules_cachedir(target)
     local exportheaderflag = get_exportheaderflag(target)
     local headerunitflag = get_headerunitflag(target)
     local headernameflag = get_headernameflag(target)
@@ -358,9 +356,6 @@ end
 
 -- build module files for batchjobs
 function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
-    local compinst = target:compiler("cxx")
-    local toolchain = target:toolchain("msvc")
-    local vcvars = toolchain:config("vcvars")
 
     -- get flags
     local ifcoutputflag = get_ifcoutputflag(target)
@@ -413,7 +408,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             bmifile,
                             provide.sourcefile
                         }
-                        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_flags, requiresflags or {}, flags), {envs = vcvars})
+                        _compile(target, table.join(common_flags, requiresflags or {}, flags))
                     end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
                     _add_module_to_mapper(target, referenceflag, name, name, objectfile, bmifile, requiresflags)
                 end)
@@ -450,8 +445,7 @@ end
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
-    local toolchain = target:toolchain("msvc")
-    local vcvars = toolchain:config("vcvars")
+    local msvc = target:toolchain("msvc")
 
     -- get flags
     local ifcoutputflag = get_ifcoutputflag(target)
@@ -487,7 +481,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     path(provide.sourcefile)}
                 batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
                 batchcmds:mkdir(path.directory(objectfile))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_flags, requiresflags or {}, flags), {envs = vcvars})
+                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_flags, requiresflags or {}, flags), {envs = msvc:runenvs()})
                 batchcmds:add_depfiles(provide.sourcefile)
                 _add_module_to_mapper(target, referenceflag, name, name, objectfile, bmifile, requiresflags)
                 depmtime = math.max(depmtime, os.mtime(bmifile))
