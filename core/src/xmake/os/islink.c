@@ -46,7 +46,16 @@ tb_int_t xm_os_islink(lua_State* lua)
     tb_check_return_val(path, 0);
 
     // is link?
-    tb_file_info_t info = {0};
-    lua_pushboolean(lua, tb_file_info(path, &info) && (info.flags & TB_FILE_FLAG_LINK));
+#if defined(TB_CONFIG_OS_WINDOWS)
+    lua_pushboolean(lua, tb_false);
+#elif defined(TB_CONFIG_POSIX_HAVE_STAT64)
+    struct stat64 st = {0};
+    lua_pushboolean(lua, !lstat64(path, &st) && S_ISLNK(st.st_mode));
+#else
+    struct stat st = {0};
+    lua_pushboolean(lua, !lstat(path, &st) && S_ISLNK(st.st_mode));
+#endif
+
+    // ok
     return 1;
 }
