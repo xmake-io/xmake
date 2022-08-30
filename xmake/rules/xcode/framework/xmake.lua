@@ -165,13 +165,16 @@ rule("xcode.framework")
     end)
 
     on_install(function (target)
+        import("xcode.application.build", {alias = "appbuild", rootdir = path.join(os.programdir(), "rules")})
         local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
         local installdir = target:installdir()
         if installdir then
             if not os.isdir(installdir) then
                 os.mkdir(installdir)
             end
-            os.vcp(bundledir, installdir)
+            -- TODO we should improve os.cp to support symlink
+            --os.vcp(bundledir, installdir, {symlink = true})
+            appbuild.copy_frameworks(bundledir, installdir)
         end
     end)
 

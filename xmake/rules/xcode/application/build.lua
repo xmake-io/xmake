@@ -29,13 +29,13 @@ import("utils.progress")
 --
 -- TODO we should improve os.cp to support for copying directory with symlink
 -- os.vcp(frameworkdir, frameworksdir, {symlink = true})
-function _copy_frameworks(frameworkdir, frameworksdir)
+function copy_frameworks(frameworkdir, frameworksdir)
     os.mkdir(frameworksdir)
     local frameworkdir_dst = path.join(frameworksdir, path.filename(frameworkdir))
     os.tryrm(frameworkdir_dst)
     for _, filepath in ipairs(os.filedirs(path.join(frameworkdir, "*"))) do
         if path.filename(filepath) == "Versions" then
-            _copy_frameworks(filepath, frameworkdir_dst)
+            copy_frameworks(filepath, frameworkdir_dst)
         else
             local dstpath = path.join(frameworkdir_dst, path.filename(filepath))
             os.tryrm(dstpath)
@@ -77,7 +77,7 @@ function main (target, opt)
             if dep:kind() == "shared" then
                 local frameworkdir = dep:data("xcode.bundle.rootdir")
                 if dep:rule("xcode.framework") and frameworkdir then
-                    _copy_frameworks(frameworkdir, frameworksdir, {symlink = true})
+                    copy_frameworks(frameworkdir, frameworksdir, {symlink = true})
                 else
                     os.vcp(dep:targetfile(), binarydir)
                 end
