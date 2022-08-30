@@ -6,6 +6,10 @@
 
 * [#2140](https://github.com/xmake-io/xmake/issues/2140): Support Windows Arm64
 
+### Bugs fixed
+
+* [#2740](https://github.com/xmake-io/xmake/issues/2740): Fix build c++ modules stuck and slower for msvc
+
 ## v2.7.1
 
 ### New features
@@ -1375,6 +1379,10 @@
 ### 新特性
 
 * [#2140](https://github.com/xmake-io/xmake/issues/2140): 支持 Windows Arm64
+
+### Bugs 修复
+
+* [#2740](https://github.com/xmake-io/xmake/issues/2740): 修复 msvc 构建 C++ modules 卡死问题
 
 ## v2.7.1
 
