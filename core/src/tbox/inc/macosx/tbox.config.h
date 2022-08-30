@@ -145,6 +145,7 @@
 #define TB_CONFIG_POSIX_HAVE_OPEN 1
 #if !defined(__arm64__) && !defined(__aarch64__)
 #   define TB_CONFIG_POSIX_HAVE_STAT64 1
+#   define TB_CONFIG_POSIX_HAVE_LSTAT64 1
 #else
 /* #undef TB_CONFIG_POSIX_HAVE_STAT64 */
 #endif
