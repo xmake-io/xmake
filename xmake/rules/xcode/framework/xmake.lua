@@ -172,9 +172,7 @@ rule("xcode.framework")
             if not os.isdir(installdir) then
                 os.mkdir(installdir)
             end
-            -- TODO we should improve os.cp to support symlink
-            --os.vcp(bundledir, installdir, {symlink = true})
-            appbuild.copy_frameworks(bundledir, installdir)
+            os.vcp(bundledir, installdir, {symlink = true})
         end
     end)
 

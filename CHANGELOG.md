@@ -6,6 +6,10 @@
 
 * [#2140](https://github.com/xmake-io/xmake/issues/2140): Support Windows Arm64
 
+### Changes
+
+* [#2745](https://github.com/xmake-io/xmake/pull/2745): Improve os.cp to support symlink
+
 ### Bugs fixed
 
 * [#2740](https://github.com/xmake-io/xmake/issues/2740): Fix build c++ modules stuck and slower for msvc
@@ -1379,6 +1383,10 @@
 ### 新特性
 
 * [#2140](https://github.com/xmake-io/xmake/issues/2140): 支持 Windows Arm64
+
+### 改进
+
+* [#2745](https://github.com/xmake-io/xmake/pull/2745): 改进 os.cp 支持符号链接复制
 
 ### Bugs 修复
 
