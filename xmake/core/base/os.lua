@@ -67,8 +67,9 @@ function os._cp(src, dst, rootdir, opt)
         end
     end
 
-    -- is file?
-    if os.isfile(src) or os.islink(src) then
+    -- is file or link?
+    local symlink = opt and opt.symlink
+    if os.isfile(src) or (symlink and os.islink(src)) then
 
         -- the destination is directory? append the filename
         if os.isdir(dst) or path.islastsep(dst) then
@@ -80,7 +81,6 @@ function os._cp(src, dst, rootdir, opt)
         end
 
         -- copy or link file
-        local symlink = opt and opt.symlink
         if not os.cpfile(src, dst, symlink) then
             local errors = os.strerror()
             if symlink and os.islink(src) then
@@ -103,7 +103,7 @@ function os._cp(src, dst, rootdir, opt)
         end
 
         -- copy directory
-        if not os.cpdir(src, dst) then
+        if not os.cpdir(src, dst, symlink) then
             return false, string.format("cannot copy directory %s to %s,  %s", src, dst, os.strerror())
         end
 
