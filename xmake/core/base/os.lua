@@ -79,16 +79,15 @@ function os._cp(src, dst, rootdir, opt)
             end
         end
 
-        -- link file if reserve symlink
-        if opt and opt.symlink and os.islink(src) then
-            local reallink = os.readlink(src)
-            if not os.link(reallink, dst) then
-                return false, string.format("cannot link %s(%s) to %s, %s", src, reallink, dst, os.strerror())
-            end
-        else
-            -- copy file
-            if not os.cpfile(src, dst) then
-                return false, string.format("cannot copy file %s to %s, %s", src, dst, os.strerror())
+        -- copy or link file
+        local symlink = opt and opt.symlink
+        if not os.cpfile(src, dst, symlink) then
+            local errors = os.strerror()
+            if symlink and os.islink(src) then
+                local reallink = os.readlink(src)
+                return false, string.format("cannot link %s(%s) to %s, %s", src, reallink, dst, errors)
+            else
+                return false, string.format("cannot copy file %s to %s, %s", src, dst, errors)
             end
         end
     -- is directory?
