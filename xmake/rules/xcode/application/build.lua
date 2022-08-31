@@ -50,7 +50,7 @@ function main (target, opt)
         -- change rpath
         -- @see https://github.com/xmake-io/xmake/issues/2679#issuecomment-1221839215
         local targetfile = path.join(binarydir, path.filename(target:targetfile()))
-        os.vrunv("install_name_tool", {"-delete_rpath", "@loader_path", targetfile})
+        try { function () os.vrunv("install_name_tool", {"-delete_rpath", "@loader_path", targetfile}) end }
         os.vrunv("install_name_tool", {"-add_rpath", "@executable_path/../Frameworks", targetfile})
 
         -- copy dependent dynamic libraries and frameworks
