@@ -39,7 +39,7 @@ function main(requires, opt)
             print("importing %s-%s %s", instance:displayname(), instance:version_str(), package.get_configs_str(instance))
             cprint("  ${yellow}<-${clear} %s", importpath)
             os.tryrm(installdir)
-            os.cp(importpath, installdir)
+            os.cp(importpath, installdir, {symlink = true})
             table.insert(packages, instance)
         end
     end

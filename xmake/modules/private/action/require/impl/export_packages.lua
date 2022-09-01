@@ -38,7 +38,7 @@ function main(requires, opt)
         if exportpath and count == 1 and instance:fetch({force = true}) then
             print("exporting %s-%s %s", instance:displayname(), instance:version_str(), package.get_configs_str(instance))
             cprint("  ${yellow}->${clear} %s", exportpath)
-            os.cp(installdir, exportpath)
+            os.cp(installdir, exportpath, {symlink = true})
             os.tryrm(path.join(exportpath, "references.txt"))
             table.insert(packages, instance)
         end
