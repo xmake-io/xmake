@@ -216,11 +216,6 @@ function _find_package(cmake, name, opt)
                 end
 
                 values = line:match("<AdditionalDependencies>(.+)</AdditionalDependencies>")
-                if not values then
-                    -- we need also parse libraries from here
-                    -- https://github.com/xmake-io/xmake/issues/1822
-                    values = line:match("<ImportLibrary>(.+)</ImportLibrary>")
-                end
                 if values then
                     for _, library in ipairs(path.splitenv(values)) do
                         -- get libfiles
