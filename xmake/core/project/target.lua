@@ -29,6 +29,7 @@ local path            = require("base/path")
 local utils           = require("base/utils")
 local table           = require("base/table")
 local baseoption      = require("base/option")
+local hashset         = require("base/hashset")
 local deprecated      = require("base/deprecated")
 local memcache        = require("cache/memcache")
 local rule            = require("project/rule")
@@ -852,21 +853,35 @@ end
 function _instance:pkgenvs()
     local pkgenvs = self._PKGENVS
     if pkgenvs == nil then
+        local pkgs = hashset.new()
         for _, pkgname in ipairs(table.wrap(self:get("packages"))) do
             local pkg = self:pkg(pkgname)
             if pkg then
-                local envs = pkg:get("envs")
-                if envs then
-                    for name, values in pairs(envs) do
-                        if type(values) == "table" then
-                            values = path.joinenv(values)
-                        end
-                        pkgenvs = pkgenvs or {}
-                        if pkgenvs[name] then
-                            pkgenvs[name] = pkgenvs[name] .. path.envsep() .. values
-                        else
-                            pkgenvs[name] = values
-                        end
+                pkgs:insert(pkg)
+            end
+        end
+        -- we can also get package envs from deps (public package)
+        -- @see https://github.com/xmake-io/xmake/issues/2729
+        for _, dep in ipairs(self:orderdeps()) do
+            for _, pkgname in ipairs(table.wrap(dep:get("packages", {interface = true}))) do
+                local pkg = dep:pkg(pkgname)
+                if pkg then
+                    pkgs:insert(pkg)
+                end
+            end
+        end
+        for _, pkg in pkgs:keys() do
+            local envs = pkg:get("envs")
+            if envs then
+                for name, values in pairs(envs) do
+                    if type(values) == "table" then
+                        values = path.joinenv(values)
+                    end
+                    pkgenvs = pkgenvs or {}
+                    if pkgenvs[name] then
+                        pkgenvs[name] = pkgenvs[name] .. path.envsep() .. values
+                    else
+                        pkgenvs[name] = values
                     end
                 end
             end
