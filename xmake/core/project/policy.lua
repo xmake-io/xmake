@@ -70,7 +70,10 @@ function policy.policies()
             -- use includes as external header files? e.g. -isystem ..
             ["package.include_external_headers"] = {description = "Use includes as external headers.", type = "boolean"},
             -- inherit the configs from the external command arguments, e.g. toolchains, `xmake f --toolchain=`
-            ["package.inherit_external_configs"] = {description = "Inherit the configs from the external command arguments.", default = true, type = "boolean"}
+            ["package.inherit_external_configs"] = {description = "Inherit the configs from the external command arguments.", default = true, type = "boolean"},
+            -- set version compatibility, if false, then new versions are always incompatible with older versions,
+            -- all packages that depend on it will generate a new buildhash, @see https://github.com/xmake-io/xmake/issues/2719
+            ["package.version_compatibility"]    = {description = "Set package version compatibility.", default = true, type = "boolean"},
         }
         policy._POLICIES = policies
     end
