@@ -284,7 +284,7 @@ function _instance:artifacts_set(artifacts_info)
             if not rootdir then
                 os.raise("package(%s): manifest.txt not found when installing artifacts!", package:displayname())
             end
-            os.cp(path.join(rootdir, "*"), package:installdir())
+            os.cp(path.join(rootdir, "*"), package:installdir(), {symlink = true})
             local manifest = package:manifest_load()
             if not manifest then
                 os.raise("package(%s): load manifest.txt failed when installing artifacts!", package:displayname())
