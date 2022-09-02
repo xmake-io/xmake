@@ -145,25 +145,19 @@ end
 
 -- remove single file or directory
 function os._rm(filedir)
-
-    -- check
     assert(filedir)
 
     -- is file or link?
     if os.isfile(filedir) or os.islink(filedir) then
-        -- remove file
         if not os.rmfile(filedir) then
             return false, string.format("cannot remove file %s %s", filedir, os.strerror())
         end
     -- is directory?
     elseif os.isdir(filedir) then
-        -- remove directory
         if not os.rmdir(filedir) then
             return false, string.format("cannot remove directory %s %s", filedir, os.strerror())
         end
     end
-
-    -- ok
     return true
 end
 
