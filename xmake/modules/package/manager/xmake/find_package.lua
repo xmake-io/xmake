@@ -76,7 +76,6 @@ function _find_package_from_repo(name, opt)
     -- get links and link directories
     local links = {}
     local linkdirs = {}
-    local libfiles = {}
     if vars.links then
         table.join2(links, vars.links)
     else
@@ -87,14 +86,12 @@ function _find_package_from_repo(name, opt)
                 if file:endswith(".lib") or file:endswith(".a") then
                     found = true
                     table.insert(links, target.linkname(path.filename(file), {plat = opt.plat}))
-                    table.insert(libfiles, file)
                 end
             end
             if not found then
-                for _, file in ipairs(os.files(path.join(installdir, "lib", "*"))) do
+                for _, file in ipairs(os.files(path.join(installdir, libdir, "*"))) do
                     if file:endswith(".so") or file:match(".+%.so%..+$") or file:endswith(".dylib") then -- maybe symlink to libxxx.so.1
                         table.insert(links, target.linkname(path.filename(file), {plat = opt.plat}))
-                        table.insert(libfiles, file)
                     end
                 end
             end
@@ -105,11 +102,24 @@ function _find_package_from_repo(name, opt)
             table.insert(linkdirs, path.join(installdir, libdir))
         end
     end
-    if opt.plat == "windows" or opt.plat == "mingw" then
-        for _, file in ipairs(os.files(path.join(installdir, "lib", "*.dll"))) do
-            result.shared = true
-            table.insert(libfiles, file)
+
+    -- get libfiles
+    local libfiles = {}
+    for _, libdir in ipairs(vars.linkdirs or "lib") do
+        for _, file in ipairs(os.files(path.join(installdir, libdir, "*"))) do
+            if file:endswith(".lib") or file:endswith(".a") then
+                result.static = true
+                table.insert(libfiles, file)
+            end
         end
+        for _, file in ipairs(os.files(path.join(installdir, libdir, "*"))) do
+            if file:endswith(".so") or file:match(".+%.so%..+$") or file:endswith(".dylib") or file:endswith("*.dll") then -- maybe symlink to libxxx.so.1
+                result.shared = true
+                table.insert(libfiles, file)
+            end
+        end
+    end
+    if opt.plat == "windows" or opt.plat == "mingw" then
         for _, file in ipairs(os.files(path.join(installdir, "bin", "*.dll"))) do
             result.shared = true
             table.insert(libfiles, file)
@@ -199,16 +209,11 @@ function _find_package_from_packagedirs(name, opt)
 
     -- register filter handler
     interp:filter():register("find_package", function (variable)
-
-        -- init maps
-        local maps =
-        {
-            arch       = opt.arch
-        ,   plat       = opt.plat
-        ,   mode       = opt.mode
+        local maps = {
+            arch = opt.arch
+        ,   plat = opt.plat
+        ,   mode = opt.mode
         }
-
-        -- get variable
         return maps[variable]
     end)
 
