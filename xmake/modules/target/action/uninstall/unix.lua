@@ -30,7 +30,7 @@ end
 -- uninstall shared libraries for package
 function _uninstall_shared_for_package(target, pkg, outputdir)
     for _, sopath in ipairs(table.wrap(pkg:get("libfiles"))) do
-        if sopath:endswith(".so") or sopath:endswith(".dylib") then
+        if sopath:endswith(".so") or sopath:match(".+%.so%..+$") or sopath:endswith(".dylib") then
             local soname = path.filename(sopath)
             local filepath = path.join(outputdir, soname)
             -- https://github.com/xmake-io/xmake/issues/2665#issuecomment-1209619081
