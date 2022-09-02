@@ -53,8 +53,6 @@ os.SYSERR_NOT_FILEDIR = 2
 
 -- copy single file or directory
 function os._cp(src, dst, rootdir, opt)
-
-    -- check
     assert(src and dst)
 
     -- reserve the source directory structure if opt.rootdir is given
@@ -111,15 +109,11 @@ function os._cp(src, dst, rootdir, opt)
     else
         return false, string.format("cannot copy file %s, file not found!", src)
     end
-
-    -- ok
     return true
 end
 
 -- move single file or directory
 function os._mv(src, dst)
-
-    -- check
     assert(src and dst)
 
     -- exists file or directory?
@@ -138,8 +132,6 @@ function os._mv(src, dst)
     else
         return false, string.format("cannot move %s to %s, file %s not found!", src, dst, os.strerror())
     end
-
-    -- ok
     return true
 end
 
