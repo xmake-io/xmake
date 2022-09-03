@@ -187,8 +187,8 @@ function nf_language(self, stdname)
         ,   gnu11       = "-std=gnu11"
         ,   c17         = "-std=c17"
         ,   gnu17       = "-std=gnu17"
-        ,   clatest     = {"-std=c17", "-std=c11", "-std=c99", "-std=c89", "-ansi"}
-        ,   gnulatest   = {"-std=gnu17", "-std=gnu11", "-std=gnu99", "-std=gnu89", "-ansi"}
+        ,   clatest     = {"-std=c2x", "-std=c17", "-std=c11", "-std=c99", "-std=c89", "-ansi"}
+        ,   gnulatest   = {"-std=c2x", "-std=gnu17", "-std=gnu11", "-std=gnu99", "-std=gnu89", "-ansi"}
         }
     end
 
