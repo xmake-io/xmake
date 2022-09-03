@@ -9,6 +9,7 @@
 ### Changes
 
 * [#2745](https://github.com/xmake-io/xmake/pull/2745): Improve os.cp to support symlink
+* [#2773](https://github.com/xmake-io/xmake/pull/2773): Improve vcpkg packages to support freebsd
 
 ### Bugs fixed
 
