@@ -75,7 +75,7 @@ function _find_package(vcpkgdir, name, opt)
     local mode = opt.mode
 	
     plat = configurations.plat(plat)
-	arch = configurations.arch(arch)
+    arch = configurations.arch(arch)
 
     -- get the vcpkg info directories
     local infodirs = {}

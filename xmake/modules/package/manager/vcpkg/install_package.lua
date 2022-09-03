@@ -48,7 +48,7 @@ function _install_for_classic(vcpkg, name, opt)
     local plat = opt.plat
     local mode = opt.mode
     plat = configurations.plat(plat)
-	arch = configurations.arch(arch)
+    arch = configurations.arch(arch)
 
     -- init triplet
     local triplet = arch .. "-" .. plat
@@ -79,7 +79,7 @@ function _install_for_manifest(vcpkg, name, opt)
     local arch = opt.arch
     local plat = opt.plat
     plat = configurations.plat(plat)
-	arch = configurations.arch(arch)
+    arch = configurations.arch(arch)
     local triplet = arch .. "-" .. plat
     if opt.plat == "windows" and configs.shared ~= true then
         triplet = triplet .. "-static"
