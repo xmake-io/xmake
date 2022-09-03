@@ -82,6 +82,8 @@ function _install_for_manifest(vcpkg, name, opt)
     local plat = opt.plat
     if plat == "macosx" then
         plat = "osx"
+    elseif plat == "bsd" then
+       plat = "freebsd"
     end
     arch = configurations.arch(arch)
     local triplet = arch .. "-" .. plat
