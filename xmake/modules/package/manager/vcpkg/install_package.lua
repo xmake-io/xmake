@@ -47,10 +47,8 @@ function _install_for_classic(vcpkg, name, opt)
     local arch = opt.arch
     local plat = opt.plat
     local mode = opt.mode
-    if plat == "macosx" then
-        plat = "osx"
-    end
-    arch = configurations.arch(arch)
+    plat = configurations.plat(plat)
+	arch = configurations.arch(arch)
 
     -- init triplet
     local triplet = arch .. "-" .. plat
@@ -80,12 +78,8 @@ function _install_for_manifest(vcpkg, name, opt)
     -- init triplet
     local arch = opt.arch
     local plat = opt.plat
-    if plat == "macosx" then
-        plat = "osx"
-    elseif plat == "bsd" then
-       plat = "freebsd"
-    end
-    arch = configurations.arch(arch)
+    plat = configurations.plat(plat)
+	arch = configurations.arch(arch)
     local triplet = arch .. "-" .. plat
     if opt.plat == "windows" and configs.shared ~= true then
         triplet = triplet .. "-static"

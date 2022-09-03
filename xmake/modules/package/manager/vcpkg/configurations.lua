@@ -37,6 +37,15 @@ function arch(arch)
     return archs[arch] or arch
 end
 
+-- get platform for vcpkg
+function plat(plat)
+    local plats = {
+        macosx          = "osx",
+        bsd             = "freebsd",
+    }
+    return plats[plat] or plat
+end
+
 -- get configurations
 function main()
     return {

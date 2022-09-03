@@ -73,10 +73,9 @@ function _find_package(vcpkgdir, name, opt)
     local arch = opt.arch
     local plat = opt.plat
     local mode = opt.mode
-    if plat == "macosx" then
-        plat = "osx"
-    end
-    arch = configurations.arch(arch)
+	
+    plat = configurations.plat(plat)
+	arch = configurations.arch(arch)
 
     -- get the vcpkg info directories
     local infodirs = {}
