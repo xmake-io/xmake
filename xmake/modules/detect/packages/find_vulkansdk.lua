@@ -19,8 +19,7 @@
 --
 
 -- imports
-import("lib.detect.find_path")
-import("lib.detect.find_library")
+import("detect.sdks.find_vulkansdk")
 
 -- find vulkansdk
 --
@@ -30,30 +29,5 @@ import("lib.detect.find_library")
 --
 function main(opt)
 
-    -- init search paths
-    local paths =
-    {
-        "$(env VK_SDK_PATH)",
-        "$(env VULKAN_SDK)"
-    }
-
-    -- find library
-    local result = {links = {}, linkdirs = {}, includedirs = {}}
-    local libname = (opt.plat == "windows" and "vulkan-1" or "vulkan")
-    local libsuffix = ((opt.plat == "windows" and opt.arch == "x86") and "lib32" or "lib")
-    local binsuffix = ((opt.plat == "windows" and opt.arch == "x86") and "bin32" or "bin")
-    local linkinfo = find_library(libname, paths, {suffixes = libsuffix})
-    if linkinfo then
-        result.sdkdir = path.directory(linkinfo.linkdir)
-        result.bindir = path.join(result.sdkdir, binsuffix)
-        table.insert(result.linkdirs, linkinfo.linkdir)
-        table.insert(result.links, libname)
-    else
-        -- not found?
-        return
-    end
-
-    -- find include
-    table.insert(result.includedirs, find_path(path.join("vulkan", "vulkan.h"), paths, {suffixes = "include"}))
-    return result
+    return find_vulkansdk()
 end
