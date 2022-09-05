@@ -36,7 +36,7 @@ rule("python.library")
                 end
             end
         else
-            if target:is_plat("windows") then
+            if target:is_plat("windows", "mingw") then
                 target:set("extension", ".pyd")
             else
                 target:set("extension", ".so")
