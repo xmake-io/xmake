@@ -948,7 +948,13 @@ end
 
 -- compatible with all previous link dependencies?
 -- @see https://github.com/xmake-io/xmake/issues/2719
-function _compatible_with_previous_linkdeps(package)
+function _compatible_with_previous_linkdeps(package, opt)
+
+    -- skip to check compatibility?
+    opt = opt or {}
+    if opt.check_compatibility == false then
+        return true
+    end
 
     -- check strict compatibility for linkdeps?
     local strict_compatibility = project.policy("package.linkdeps.strict_compatibility")
@@ -957,6 +963,12 @@ function _compatible_with_previous_linkdeps(package)
     end
     if not strict_compatibility then
         return true
+    end
+
+    -- has been checked?
+    local compatible_checked = package:data("linkdeps.compatible_checked")
+    if compatible_checked then
+        return
     end
 
     -- compute the buildhash for previous linkdeps
@@ -1015,11 +1027,11 @@ function cachedir()
 end
 
 -- this package should be install?
-function should_install(package)
+function should_install(package, opt)
     if package:is_template() then
         return false
     end
-    if package:exists() and _compatible_with_previous_linkdeps(package) then
+    if package:exists() and _compatible_with_previous_linkdeps(package, opt) then
         return false
     end
     -- we need not install it if this package need only be fetched
@@ -1034,7 +1046,7 @@ function should_install(package)
     if package:parents() then
         -- if all the packages that depend on it already exist, then there is no need to install it
         for _, parent in pairs(package:parents()) do
-            if should_install(parent) and not parent:exists() then
+            if should_install(parent, opt) and not parent:exists() then
                 return true
             end
 
