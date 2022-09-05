@@ -274,7 +274,8 @@ function main(package)
             else
 
                 -- build and install package to the install directory
-                if option.get("force") or not package:manifest_load() then
+                local force_reinstall = package:data("force_reinstall") or option.get("force")
+                if force_reinstall or not package:manifest_load() then
 
                     -- clean install directory first
                     os.tryrm(package:installdir())

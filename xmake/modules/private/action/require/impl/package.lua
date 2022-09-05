@@ -1018,6 +1018,9 @@ function _compatible_with_previous_linkdeps(package, opt)
     if not is_compatible and #compatible_tips > 0 then
         package:data_set("linkdeps.compatible_tips", compatible_tips)
     end
+    if not is_compatible then
+        package:data_set("force_reinstall", true)
+    end
     return is_compatible
 end
 
