@@ -947,6 +947,7 @@ function _must_depend_on(package, dep)
 end
 
 -- compatible with all previous link dependencies?
+-- @see https://github.com/xmake-io/xmake/issues/2719
 function _compatible_with_previous_linkdeps(package)
 
     -- check strict compatibility for linkdeps?
