@@ -768,6 +768,17 @@ function _instance:manifest_save()
         end
     end
 
+    -- save deps
+    if self:deps() then
+        manifest.deps = {}
+        for name, dep in pairs(self:deps()) do
+            manifest.deps[name] = {
+                version = dep:version_str(),
+                buildhash = dep:buildhash()
+            }
+        end
+    end
+
     -- save variables
     local vars = {}
     local apis = language.apis()
