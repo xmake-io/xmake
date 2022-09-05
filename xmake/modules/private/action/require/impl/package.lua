@@ -959,26 +959,53 @@ function _compatible_with_previous_linkdeps(package)
     end
 
     -- compute the buildhash for previous linkdeps
-    local buildhashes_prev = {}
+    local depinfos_prev = {}
+    local depnames = hashset.new()
     local manifest = package:manifest_load()
     if manifest and manifest.linkdeps then
         local deps = manifest.deps or {}
         for _, depname in ipairs(manifest.linkdeps) do
             local depinfo = deps[depname]
             if depinfo and depinfo.buildhash then
-                table.insert(buildhashes_prev, depinfo.buildhash)
+                depinfos_prev[depname] = depinfo
+                depnames:insert(depname)
             end
         end
     end
 
     -- compute the buildhash for current linkdeps
-    local buildhashes_curr = {}
+    local depinfos_curr = {}
     for _, dep in ipairs(package:linkdeps()) do
-        table.insert(buildhashes_curr, dep:buildhash())
+        depinfos_curr[dep:name()] = {
+            version = dep:version_str(),
+            buildhash = dep:buildhash()
+        }
+        depnames:insert(dep:name())
     end
 
     -- is compatible?
-    return table.concat(buildhashes_curr, "") == table.concat(buildhashes_prev)
+    local is_compatible = true
+    local compatible_tips = {}
+    for _, depname in depnames:keys() do
+        local depinfo_prev = depinfos_prev[depname]
+        local depinfo_curr = depinfos_curr[depname]
+        if depinfo_prev and depinfo_curr then
+            if depinfo_prev.buildhash ~= depinfo_curr.buildhash then
+                is_compatible = false
+                table.insert(compatible_tips, ("*%s"):format(depname))
+            end
+        elseif depinfo_prev then
+            is_compatible = false
+            table.insert(compatible_tips, ("-%s"):format(depname))
+        elseif depinfo_curr then
+            is_compatible = false
+            table.insert(compatible_tips, ("+%s"):format(depname))
+        end
+    end
+    if not is_compatible and #compatible_tips > 0 then
+        package:data_set("linkdeps.compatible_tips", compatible_tips)
+    end
+    return is_compatible
 end
 
 -- the cache directory
@@ -1059,6 +1086,10 @@ function get_configs_str(package)
                 end
             end
         end
+    end
+    local compatible_tips = package:data("linkdeps.compatible_tips")
+    if compatible_tips then
+        table.insert(configs, "deps:" .. table.concat(compatible_tips, ","))
     end
     local parents_str = _get_parents_str(package)
     if parents_str then
