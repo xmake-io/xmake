@@ -10,6 +10,7 @@
 
 * [#2745](https://github.com/xmake-io/xmake/pull/2745): Improve os.cp to support symlink
 * [#2773](https://github.com/xmake-io/xmake/pull/2773): Improve vcpkg packages to support freebsd
+* [#2778](https://github.com/xmake-io/xmake/pull/2778): Improve Improve xrepo.env for target
 
 ### Bugs fixed
 
@@ -1388,6 +1389,8 @@
 ### 改进
 
 * [#2745](https://github.com/xmake-io/xmake/pull/2745): 改进 os.cp 支持符号链接复制
+* [#2773](https://github.com/xmake-io/xmake/pull/2773): 改进 vcpkg 包安装，支持 freebsd 平台
+* [#2778](https://github.com/xmake-io/xmake/pull/2778): 改进 xrepo.env 支持 target 的运行环境加载
 
 ### Bugs 修复
 
