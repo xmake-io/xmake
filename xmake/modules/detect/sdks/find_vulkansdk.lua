@@ -19,13 +19,14 @@
 --
 
 -- imports
+import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_path")
 import("lib.detect.find_library")
 import("lib.detect.find_programver")
 
 -- find vulkan sdk info executable
-function _find_vkinfo()
+function _find_vkinfo(opt)
 
     -- init search paths
     local paths =
@@ -35,9 +36,10 @@ function _find_vkinfo()
     }
 
     -- find vulkan sdk info
+    local arch = opt.arch or config.arch() or os.arch()
     local vkinfo
     if is_host("windows") then
-        if is_arch("x86") then
+        if arch == "x86" then
             vkinfo = find_file("vulkaninfoSDK.exe", paths, {suffixes = {"bin32"}})
         else
             vkinfo = find_file("vulkaninfoSDK.exe", paths, {suffixes = {"bin"}})
@@ -58,7 +60,8 @@ end
 function main(opt)
 
     -- find vkinfo
-    local vkinfo = _find_vkinfo()
+    opt = opt or {}
+    local vkinfo = _find_vkinfo(opt)
     if not vkinfo then
         -- not found?
         return
@@ -69,13 +72,14 @@ function main(opt)
     local apiver = find_programver(vkinfo, {command = "--summary", parse = "Vulkan Instance Version: (%d+%.%d+%.%d+)"})
 
     -- initialize result
+    local arch = opt.arch or config.arch() or os.arch()
     local result = {sdkdir = sdkdir, apiversion = apiver, links = {}, linkdirs = {}, includedirs = {}}
-    local binsuffix = ((is_host("windows") and is_arch("x86")) and "bin32" or "bin")
+    local binsuffix = ((is_host("windows") and arch == "x86") and "bin32" or "bin")
     result.bindir = path.join(result.sdkdir, binsuffix)
 
     -- find library
     local libname = (is_host("windows") and "vulkan-1" or "vulkan")
-    local libsuffix = ((is_host("windows") and is_arch("x86")) and "lib32" or "lib")
+    local libsuffix = ((is_host("windows") and arch == "x86") and "lib32" or "lib")
     local linkinfo = find_library(libname, sdkdir, {suffixes = libsuffix})
     if linkinfo then
         table.insert(result.linkdirs, linkinfo.linkdir)
@@ -95,6 +99,5 @@ function main(opt)
     end
 
     -- return
-    print(result)
     return result
 end

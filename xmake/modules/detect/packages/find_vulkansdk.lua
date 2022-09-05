@@ -28,6 +28,6 @@ import("detect.sdks.find_vulkansdk")
 -- @return      see the return value of find_package()
 --
 function main(opt)
-
-    return find_vulkansdk()
+    opt = opt or {}
+    return find_vulkansdk({arch = opt.arch})
 end
