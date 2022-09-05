@@ -71,9 +71,10 @@ function policy.policies()
             ["package.include_external_headers"] = {description = "Use includes as external headers.", type = "boolean"},
             -- inherit the configs from the external command arguments, e.g. toolchains, `xmake f --toolchain=`
             ["package.inherit_external_configs"] = {description = "Inherit the configs from the external command arguments.", default = true, type = "boolean"},
-            -- set version compatibility, if false, then new versions are always incompatible with older versions,
-            -- all packages that depend on it will generate a new buildhash, @see https://github.com/xmake-io/xmake/issues/2719
-            ["package.version_compatibility"]    = {description = "Set package version compatibility.", default = true, type = "boolean"},
+            -- set strict compatibility for package dependencies
+            -- if true, then any updates to linked dependencies, such as buildhash changes due to version changes,
+            -- will force the installed packages to be recompiled and installed. @see https://github.com/xmake-io/xmake/issues/2719
+            ["package.linkdeps.strict_compatibility"] = {description = "Set strict compatibility for package dependencies.", type = "boolean"},
         }
         policy._POLICIES = policies
     end

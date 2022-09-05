@@ -946,6 +946,41 @@ function _must_depend_on(package, dep)
     end
 end
 
+-- compatible with all previous link dependencies?
+function _compatible_with_previous_linkdeps(package)
+
+    -- check strict compatibility for linkdeps?
+    local strict_compatibility = project.policy("package.linkdeps.strict_compatibility")
+    if strict_compatibility == nil then
+        strict_compatibility = package:policy("package.linkdeps.strict_compatibility")
+    end
+    if not strict_compatibility then
+        return true
+    end
+
+    -- compute the buildhash for previous linkdeps
+    local buildhashes_prev = {}
+    local manifest = package:manifest_load()
+    if manifest and manifest.linkdeps then
+        local deps = manifest.deps or {}
+        for _, depname in ipairs(manifest.linkdeps) do
+            local depinfo = deps[depname]
+            if depinfo and depinfo.buildhash then
+                table.insert(buildhashes_prev, depinfo.buildhash)
+            end
+        end
+    end
+
+    -- compute the buildhash for current linkdeps
+    local buildhashes_curr = {}
+    for _, dep in ipairs(package:linkdeps()) do
+        table.insert(buildhashes_curr, dep:buildhash())
+    end
+
+    -- is compatible?
+    return table.concat(buildhashes_curr, "") == table.concat(buildhashes_prev)
+end
+
 -- the cache directory
 function cachedir()
     return path.join(global.directory(), "cache", "packages")
@@ -953,7 +988,10 @@ end
 
 -- this package should be install?
 function should_install(package)
-    if package:is_template() or package:exists() then
+    if package:is_template() then
+        return false
+    end
+    if package:exists() and _compatible_with_previous_linkdeps(package) then
         return false
     end
     -- we need not install it if this package need only be fetched
