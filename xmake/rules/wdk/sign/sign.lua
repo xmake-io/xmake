@@ -84,6 +84,11 @@ function main(target, filepath, mode)
         table.insert(argv, "/s")
         table.insert(argv, store)
     end
+    local digest_algorithm = target:values("wdk.sign.digest_algorithm")
+    if digest_algorithm then
+        table.insert(argv, "/fd")
+        table.insert(argv, digest_algorithm)
+    end
 
     -- uses the default test certificate
     if mode == "test" and (not certfile and not thumbprint and not store) then
