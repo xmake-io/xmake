@@ -14,8 +14,8 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      jacklin
--- @file        find_matlab.lua
+-- @author      WubiCookie
+-- @file        find_matlab_runtime.lua
 --
 
 -- see https://www.mathworks.com/products/compiler/matlab-runtime.html
@@ -68,34 +68,41 @@ local invmatlabvers = {
     r2012a    = "7.17",
 }
 
--- find matlab sdk toolchains
+-- find matlab runtime sdk
 --
--- @return          the matlab sdk toolchains. e.g. {sdkdir = ..., includedirs = ..., linkdirs = ..., .. }
+-- @return          the matlab runtime sdk. e.g. {sdkdir = ..., includedirs = ..., linkdirs = ..., .. }
 --
 -- @code
 --
--- local toolchains = find_matlab(runtimeversion)
+-- local sdk = find_matlab_runtime(runtimeversion)
 --
 -- @endcode
 --
 function main(runtimeversion)
-    local result = {sdkdir = "", includedirs = {}, linkdirs = {}, links = {}}
+    runtimeversion = tostring(runtimeversion)
+    local result = {sdkdir = "", includedirs = {}, linkdirs = {}, links = {}, bindirs = {}}
     if is_host("windows") then
-        local matlabkey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB" 
+        local matlabkey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB Runtime"
         local valuekeys = winos.registry_keys(matlabkey)
         if #valuekeys == 0 then
             return nil
         end
 
+
+        local versionname = nil
+        local versionvalue = nil
+
         local itemkey = nil
         if runtimeversion == nil then
             itemkey = valuekeys[1] .. ";MATLABROOT"
         else
-            local versionname = matlabvers[runtimeversion]
+            versionname = matlabvers[runtimeversion]
             if versionname ~= nil then
+                versionvalue = invmatlabvers[versionname:lower()]
                 itemkey = matlabkey .. "\\" .. runtimeversion .. ";MATLABROOT"
             else
-                local versionvalue = invmatlabvers[runtimeversion:lower()]
+                versionvalue = invmatlabvers[runtimeversion:lower()]
+                versionname = matlabvers[versionvalue]
                 if versionvalue ~= nil then
                     itemkey = matlabkey .. "\\" .. versionvalue .. ";MATLABROOT"
                 else
@@ -112,8 +119,15 @@ function main(runtimeversion)
         if not sdkdir then
             return nil
         end
+
+        sdkdir = sdkdir .. "\\v" .. versionvalue:gsub("%.", "")
+
         result.sdkdir = sdkdir
         result.includedirs = path.join(sdkdir, "extern", "include")
+        result.bindirs = {
+            path.join(sdkdir, "bin", "win64"),
+            path.join(sdkdir, "runtime", "win64"),
+        }
         -- find lib dirs
         for _, value in ipairs(os.dirs(path.join(sdkdir, "extern", "lib", "**"))) do
             local dirbasename = path.basename(value)
