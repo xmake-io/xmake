@@ -76,10 +76,10 @@ function _replace_package(packages, instance, extinstance)
                 break
             end
         end
-        local linkdeps = rawinstance._LINKDEPS
-        for depidx, dep in ipairs(linkdeps) do
+        local librarydeps = rawinstance._LIBRARYDEPS
+        for depidx, dep in ipairs(librarydeps) do
             if dep == instance then
-                linkdeps[depidx] = extinstance
+                librarydeps[depidx] = extinstance
                 break
             end
         end

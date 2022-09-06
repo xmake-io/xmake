@@ -364,9 +364,9 @@ function _instance:plaindeps()
     return self._PLAINDEPS
 end
 
--- get link deps
-function _instance:linkdeps()
-    return self._LINKDEPS
+-- get library deps with correct link order
+function _instance:librarydeps()
+    return self._LIBRARYDEPS
 end
 
 -- get parents
@@ -758,13 +758,24 @@ function _instance:manifest_save()
     manifest.configs     = self:configs()
     manifest.envs        = self:envs()
 
-    -- save enabled link deps
-    if self:linkdeps() then
-        manifest.linkdeps = {}
-        for _, dep in ipairs(self:linkdeps()) do
+    -- save enabled library deps
+    if self:librarydeps() then
+        manifest.librarydeps = {}
+        for _, dep in ipairs(self:librarydeps()) do
             if dep:exists() then
-                table.insert(manifest.linkdeps, dep:name())
+                table.insert(manifest.librarydeps, dep:name())
             end
+        end
+    end
+
+    -- save deps
+    if self:deps() then
+        manifest.deps = {}
+        for name, dep in pairs(self:deps()) do
+            manifest.deps[name] = {
+                version = dep:version_str(),
+                buildhash = dep:buildhash()
+            }
         end
     end
 
@@ -1589,16 +1600,16 @@ function _instance:exists()
     return self._FETCHINFO ~= nil
 end
 
--- fetch link info of dependencies
-function _instance:fetch_linkdeps()
+-- fetch library dependencies
+function _instance:fetch_librarydeps()
     local fetchinfo = self:fetch()
     if not fetchinfo then
         return
     end
     fetchinfo = table.copy(fetchinfo) -- avoid the cached fetchinfo be modified
-    local linkdeps = self:linkdeps()
-    if linkdeps then
-        for _, dep in ipairs(linkdeps) do
+    local librarydeps = self:librarydeps()
+    if librarydeps then
+        for _, dep in ipairs(librarydeps) do
             local depinfo = dep:fetch()
             if depinfo then
                 for name, values in pairs(depinfo) do
@@ -1745,7 +1756,7 @@ end
 -- generate building configs for has_xxx/check_xxx
 function _instance:_generate_build_configs(configs, opt)
     opt = opt or {}
-    configs = table.join(self:fetch_linkdeps(), configs)
+    configs = table.join(self:fetch_librarydeps(), configs)
     if self:is_plat("windows") then
         local ld = self:build_getenv("ld")
         local vs_runtime = self:config("vs_runtime")

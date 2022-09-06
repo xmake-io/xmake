@@ -26,16 +26,16 @@ import("core.project.config")
 import("core.project.project")
 import("core.base.bit")
 
--- get link deps
-function _get_linkdeps(target)
-    local linkdeps = {}
+-- get library deps
+function _get_librarydeps(target)
+    local librarydeps = {}
     for _, depname in ipairs(target:get("deps")) do
         local dep = project.target(depname)
         if not ((target:is_binary() or target:is_shared()) and dep:is_static()) then
-            table.insert(linkdeps, dep:name())
+            table.insert(librarydeps, dep:name())
         end
     end
-    return linkdeps
+    return librarydeps
 end
 
 -- package binary
@@ -55,7 +55,7 @@ function _package_binary(target)
     -- generate xmake.lua
     local file = io.open(path.join(packagedir, "xmake.lua"), "w")
     if file then
-        local deps = _get_linkdeps(target)
+        local deps = _get_librarydeps(target)
         file:print("package(\"%s\")", packagename)
         local homepage = option.get("homepage")
         if homepage then
@@ -129,7 +129,7 @@ function _package_library(target)
     -- generate xmake.lua
     local file = io.open(path.join(packagedir, "xmake.lua"), "w")
     if file then
-        local deps = _get_linkdeps(target)
+        local deps = _get_librarydeps(target)
         file:print("package(\"%s\")", packagename)
         local homepage = option.get("homepage")
         if homepage then
@@ -193,7 +193,7 @@ function _package_headeronly(target)
     -- generate xmake.lua
     local file = io.open(path.join(packagedir, "xmake.lua"), "w")
     if file then
-        local deps = _get_linkdeps(target)
+        local deps = _get_librarydeps(target)
         file:print("package(\"%s\")", packagename)
         local homepage = option.get("homepage")
         if homepage then

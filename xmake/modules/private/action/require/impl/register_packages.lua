@@ -88,7 +88,7 @@ function _register_required_package(instance, required_package)
         _register_required_package_base(instance, required_package)
         _register_required_package_libs(instance, required_package)
         _register_required_package_envs(instance, envs)
-        for _, dep in ipairs(instance:linkdeps()) do
+        for _, dep in ipairs(instance:librarydeps()) do
             if instance:is_library() then
                 _register_required_package_libs(dep, required_package, true)
             end

@@ -266,7 +266,7 @@ end
 -- orderdeps: c -> b -> a
 --
 function _sort_packagedeps(package)
-    -- we must use native deps list instead of package:deps() to generate correct linkdeps
+    -- we must use native deps list instead of package:deps() to generate correct librarydeps
     local orderdeps = {}
     for _, dep in ipairs(package:plaindeps()) do
         if dep then
@@ -277,7 +277,7 @@ function _sort_packagedeps(package)
     return orderdeps
 end
 
--- sort link deps
+-- sort library deps and generate correct link order
 --
 -- e.g.
 --
@@ -286,13 +286,13 @@ end
 --
 -- orderdeps: a -> b -> c
 --
-function _sort_linkdeps(package)
-    -- we must use native deps list instead of package:deps() to generate correct linkdeps
+function _sort_librarydeps(package)
+    -- we must use native deps list instead of package:deps() to generate correct link order
     local orderdeps = {}
     for _, dep in ipairs(package:plaindeps()) do
         if dep and dep:is_library() and not dep:is_private() then
             table.insert(orderdeps, dep)
-            table.join2(orderdeps, _sort_linkdeps(dep))
+            table.join2(orderdeps, _sort_librarydeps(dep))
         end
     end
     return orderdeps
@@ -883,7 +883,7 @@ function _load_packages(requires, opt)
                     package._DEPS = packagedeps
                     package._PLAINDEPS = plaindeps
                     package._ORDERDEPS = table.unique(_sort_packagedeps(package))
-                    package._LINKDEPS = table.reverse_unique(_sort_linkdeps(package))
+                    package._LIBRARYDEPS = table.reverse_unique(_sort_librarydeps(package))
                 end
             end
 
@@ -926,7 +926,7 @@ end
 --
 function _check_package_depconflicts(package)
     local packagekeys = {}
-    for _, dep in ipairs(package:linkdeps()) do
+    for _, dep in ipairs(package:librarydeps()) do
         local key = _get_packagekey(dep:name(), dep:requireinfo())
         local prevkey = packagekeys[dep:name()]
         if prevkey then
@@ -940,10 +940,88 @@ end
 -- must depend on the given package?
 function _must_depend_on(package, dep)
     local manifest = package:manifest_load()
-    if manifest and manifest.linkdeps then
-        local linkdeps = hashset.from(manifest.linkdeps)
-        return linkdeps:has(dep:name())
+    if manifest and manifest.librarydeps then
+        local librarydeps = hashset.from(manifest.librarydeps)
+        return librarydeps:has(dep:name())
     end
+end
+
+-- compatible with all previous link dependencies?
+-- @see https://github.com/xmake-io/xmake/issues/2719
+function _compatible_with_previous_librarydeps(package, opt)
+
+    -- skip to check compatibility?
+    opt = opt or {}
+    if opt.check_compatibility == false then
+        return true
+    end
+
+    -- check strict compatibility for librarydeps?
+    local strict_compatibility = project.policy("package.librarydeps.strict_compatibility")
+    if strict_compatibility == nil then
+        strict_compatibility = package:policy("package.librarydeps.strict_compatibility")
+    end
+    if not strict_compatibility then
+        return true
+    end
+
+    -- has been checked?
+    local compatible_checked = package:data("librarydeps.compatible_checked")
+    if compatible_checked then
+        return
+    end
+
+    -- compute the buildhash for previous librarydeps
+    local depinfos_prev = {}
+    local depnames = hashset.new()
+    local manifest = package:manifest_load()
+    if manifest and manifest.librarydeps then
+        local deps = manifest.deps or {}
+        for _, depname in ipairs(manifest.librarydeps) do
+            local depinfo = deps[depname]
+            if depinfo and depinfo.buildhash then
+                depinfos_prev[depname] = depinfo
+                depnames:insert(depname)
+            end
+        end
+    end
+
+    -- compute the buildhash for current librarydeps
+    local depinfos_curr = {}
+    for _, dep in ipairs(package:librarydeps()) do
+        depinfos_curr[dep:name()] = {
+            version = dep:version_str(),
+            buildhash = dep:buildhash()
+        }
+        depnames:insert(dep:name())
+    end
+
+    -- is compatible?
+    local is_compatible = true
+    local compatible_tips = {}
+    for _, depname in depnames:keys() do
+        local depinfo_prev = depinfos_prev[depname]
+        local depinfo_curr = depinfos_curr[depname]
+        if depinfo_prev and depinfo_curr then
+            if depinfo_prev.buildhash ~= depinfo_curr.buildhash then
+                is_compatible = false
+                table.insert(compatible_tips, ("*%s"):format(depname))
+            end
+        elseif depinfo_prev then
+            is_compatible = false
+            table.insert(compatible_tips, ("-%s"):format(depname))
+        elseif depinfo_curr then
+            is_compatible = false
+            table.insert(compatible_tips, ("+%s"):format(depname))
+        end
+    end
+    if not is_compatible and #compatible_tips > 0 then
+        package:data_set("librarydeps.compatible_tips", compatible_tips)
+    end
+    if not is_compatible then
+        package:data_set("force_reinstall", true)
+    end
+    return is_compatible
 end
 
 -- the cache directory
@@ -952,8 +1030,11 @@ function cachedir()
 end
 
 -- this package should be install?
-function should_install(package)
-    if package:is_template() or package:exists() then
+function should_install(package, opt)
+    if package:is_template() then
+        return false
+    end
+    if package:exists() and _compatible_with_previous_librarydeps(package, opt) then
         return false
     end
     -- we need not install it if this package need only be fetched
@@ -968,7 +1049,7 @@ function should_install(package)
     if package:parents() then
         -- if all the packages that depend on it already exist, then there is no need to install it
         for _, parent in pairs(package:parents()) do
-            if should_install(parent) and not parent:exists() then
+            if should_install(parent, opt) and not parent:exists() then
                 return true
             end
 
@@ -1021,6 +1102,10 @@ function get_configs_str(package)
                 end
             end
         end
+    end
+    local compatible_tips = package:data("librarydeps.compatible_tips")
+    if compatible_tips then
+        table.insert(configs, "deps:" .. table.concat(compatible_tips, ","))
     end
     local parents_str = _get_parents_str(package)
     if parents_str then
