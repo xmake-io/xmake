@@ -96,7 +96,7 @@ function main(opt)
         for _, value in pairs(result.linkdirs) do
             local dirbasename = path.basename(value)
             result.links[dirbasename] = {}
-            for __, filepath in ipairs(os.files(value.."/*.lib")) do
+            for _, filepath in ipairs(os.files(value.."/*.lib")) do
                 table.insert(result.links[dirbasename], path.basename(filepath))
             end
             result.links[dirbasename] = table.unique(result.links[dirbasename])
