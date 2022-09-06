@@ -18,55 +18,8 @@
 -- @file        find_matlab_runtime.lua
 --
 
--- see https://www.mathworks.com/products/compiler/matlab-runtime.html
-local matlabvers = {
-    ["9.12"]  = "R2022a"
-,   ["9.11"]  = "R2021b"
-,   ["9.10"]  = "R2021a"
-,   ["9.9"]   = "R2020b"
-,   ["9.8"]   = "R2020a"
-,   ["9.7"]   = "R2019b"
-,   ["9.6"]   = "R2019a"
-,   ["9.5"]   = "R2018b"
-,   ["9.4"]   = "R2018a"
-,   ["9.3"]   = "R2017b"
-,   ["9.2"]   = "R2017a"
-,   ["9.1"]   = "R2016b"
-,   ["9.0.1"] = "R2016a"
-,   ["9.0"]   = "R2015b"
-,   ["8.5.1"] = "R2015aSP1"
-,   ["8.5"]   = "R2015a"
-,   ["8.4"]   = "R2014b"
-,   ["8.3"]   = "R2014a"
-,   ["8.2"]   = "R2013b"
-,   ["8.1"]   = "R2013a"
-,   ["8.0"]   = "R2012b"
-,   ["7.17"]  = "R2012a"
-}
-local invmatlabvers = {
-    r2022a    = "9.12",
-    r2021b    = "9.11",
-    r2021a    = "9.10",
-    r2020b    = "9.9",
-    r2020a    = "9.8",
-    r2019b    = "9.7",
-    r2019a    = "9.6",
-    r2018b    = "9.5",
-    r2018a    = "9.4",
-    r2017b    = "9.3",
-    r2017a    = "9.2",
-    r2016b    = "9.1",
-    r2016a    = "9.0.1",
-    r2015b    = "9.0",
-    r2015asp1 = "8.5.1",
-    r2015a    = "8.5",
-    r2014b    = "8.4",
-    r2014a    = "8.3",
-    r2013b    = "8.2",
-    r2013a    = "8.1",
-    r2012b    = "8.0",
-    r2012a    = "7.17",
-}
+-- imports
+import("detect.sdks.matlab")
 
 -- find matlab runtime sdk
 --
@@ -74,12 +27,14 @@ local invmatlabvers = {
 --
 -- @code
 --
--- local sdk = find_matlab_runtime(runtimeversion)
+-- local sdk = find_matlab_runtime(opt)
 --
 -- @endcode
 --
-function main(runtimeversion)
-    runtimeversion = tostring(runtimeversion)
+function main(opt)
+    opt = opt or {}
+    local runtime_version = opt.runtime_version and tostring(opt.runtime_version) or nil
+
     local result = {sdkdir = "", includedirs = {}, linkdirs = {}, links = {}, bindirs = {}}
     if is_host("windows") then
         local matlabkey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB Runtime"
@@ -88,29 +43,31 @@ function main(runtimeversion)
             return nil
         end
 
-
         local versionname = nil
         local versionvalue = nil
 
         local itemkey = nil
-        if runtimeversion == nil then
+        if runtime_version == nil then
+            local splitvaluekeys = valuekeys[1]:split("\\")
+            versionvalue = splitvaluekeys[#splitvaluekeys - 1]
+            versionname = matlab.versions()[versionvalue]
             itemkey = valuekeys[1] .. ";MATLABROOT"
         else
-            versionname = matlabvers[runtimeversion]
+            versionname = matlab.versions()[runtime_version]
             if versionname ~= nil then
-                versionvalue = invmatlabvers[versionname:lower()]
-                itemkey = matlabkey .. "\\" .. runtimeversion .. ";MATLABROOT"
+                versionvalue = matlab.versions_names()[versionname:lower()]
+                itemkey = matlabkey .. "\\" .. runtime_version .. ";MATLABROOT"
             else
-                versionvalue = invmatlabvers[runtimeversion:lower()]
-                versionname = matlabvers[versionvalue]
+                versionvalue = matlab.versions_names()[runtime_version:lower()]
+                versionname = matlab.versions()[versionvalue]
                 if versionvalue ~= nil then
                     itemkey = matlabkey .. "\\" .. versionvalue .. ";MATLABROOT"
                 else
                     print("allowed values are:")
-                    for k,v in pairs(matlabvers) do
+                    for k, v in pairs(matlab.versions()) do
                         print("    ", k, v)
                     end
-                    raise("MATLAB Runtime version does not exist: " .. runtimeversion)
+                    raise("MATLAB Runtime version does not exist: " .. runtime_version)
                 end
             end
         end
