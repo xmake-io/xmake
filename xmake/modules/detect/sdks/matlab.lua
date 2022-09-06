@@ -82,8 +82,5 @@ function matlab.versions_names()
     }
 end
 
-print("inside matlab.lua")
-print("matlab", matlab)
-
 -- return module
 return matlab
