@@ -18,11 +18,8 @@
 -- @file        matlab.lua
 --
 
--- define module
-local matlab = matlab or {}
-
 -- get matlab versions
-function matlab.versions()
+function versions()
 
     -- see https://www.mathworks.com/products/compiler/matlab-runtime.html
     return
@@ -53,7 +50,7 @@ function matlab.versions()
 end
 
 -- get matlab versions names
-function matlab.versions_names()
+function versions_names()
 
     return
     {
@@ -81,6 +78,3 @@ function matlab.versions_names()
     ,   r2012a    = "7.17"
     }
 end
-
--- return module
-return matlab
