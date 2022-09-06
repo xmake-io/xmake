@@ -106,7 +106,7 @@ function _make_arguments(jsonfile, arguments, sourcefile)
         for _, arg in ipairs(arguments) do
             local sourcekind = try {function () return language.sourcekind_of(path.filename(arg)) end}
             if sourcekind and os.isfile(arg) then
-                sourcefile = arg
+                sourcefile = tostring(arg)
                 break
             end
         end
