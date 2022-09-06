@@ -49,7 +49,7 @@ function _patch_pkgconfig(package)
     vprint("patching %s ..", pcfile)
 
     -- fetch package
-    local fetchinfo = package:fetch_linkdeps()
+    local fetchinfo = package:fetch_librarydeps()
     if not fetchinfo then
         return
     end

@@ -74,7 +74,7 @@ function policy.policies()
             -- set strict compatibility for package dependencies
             -- if true, then any updates to linked dependencies, such as buildhash changes due to version changes,
             -- will force the installed packages to be recompiled and installed. @see https://github.com/xmake-io/xmake/issues/2719
-            ["package.linkdeps.strict_compatibility"] = {description = "Set strict compatibility for package dependencies.", type = "boolean"},
+            ["package.librarydeps.strict_compatibility"] = {description = "Set strict compatibility for package dependencies.", type = "boolean"},
         }
         policy._POLICIES = policies
     end
