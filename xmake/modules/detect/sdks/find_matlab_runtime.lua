@@ -49,7 +49,7 @@ function main(opt)
         local itemkey = nil
         if runtime_version == nil then
             local splitvaluekeys = valuekeys[1]:split("\\")
-            versionvalue = splitvaluekeys[#splitvaluekeys - 1]
+            versionvalue = splitvaluekeys[#splitvaluekeys]
             versionname = matlab.versions()[versionvalue]
             itemkey = valuekeys[1] .. ";MATLABROOT"
         else
@@ -95,7 +95,11 @@ function main(opt)
         -- find lib
         for _, value in pairs(result.linkdirs) do
             local dirbasename = path.basename(value)
-            result.links[dirbasename] = path.join(value, "*")
+            result.links[dirbasename] = {}
+            for _, filepath in ipairs(os.files(value.."/*.lib")) do
+                table.insert(result.links[dirbasename], path.basename(filepath))
+            end
+            result.links[dirbasename] = table.unique(result.links[dirbasename])
         end
     end
     return result
