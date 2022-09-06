@@ -11,6 +11,7 @@
 * [#2745](https://github.com/xmake-io/xmake/pull/2745): Improve os.cp to support symlink
 * [#2773](https://github.com/xmake-io/xmake/pull/2773): Improve vcpkg packages to support freebsd
 * [#2778](https://github.com/xmake-io/xmake/pull/2778): Improve Improve xrepo.env for target
+* [#2783](https://github.com/xmake-io/xmake/issues/2783): Add digest algorithm option for wdk signtool
 
 ### Bugs fixed
 
@@ -1391,6 +1392,7 @@
 * [#2745](https://github.com/xmake-io/xmake/pull/2745): 改进 os.cp 支持符号链接复制
 * [#2773](https://github.com/xmake-io/xmake/pull/2773): 改进 vcpkg 包安装，支持 freebsd 平台
 * [#2778](https://github.com/xmake-io/xmake/pull/2778): 改进 xrepo.env 支持 target 的运行环境加载
+* [#2783](https://github.com/xmake-io/xmake/issues/2783): 添加摘要算法选项到 WDK 的 signtool 签名工具
 
 ### Bugs 修复
 
