@@ -37,7 +37,7 @@ function main(opt)
 
     local result = {sdkdir = "", includedirs = {}, linkdirs = {}, links = {}}
     if is_host("windows") then
-        local matlabkey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB" 
+        local matlabkey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB"
         local valuekeys = winos.registry_keys(matlabkey)
         if #valuekeys == 0 then
             return nil
@@ -80,7 +80,11 @@ function main(opt)
         -- find lib
         for _, value in pairs(result.linkdirs) do
             local dirbasename = path.basename(value)
-            result.links[dirbasename] = path.join(value, "*")
+            result.links[dirbasename] = {}
+            for __, filepath in ipairs(os.files(value.."/*.lib")) do
+                table.insert(result.links[dirbasename], path.basename(filepath))
+            end
+            result.links[dirbasename] = table.unique(result.links[dirbasename])
         end
     end
     return result
