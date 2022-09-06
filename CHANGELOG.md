@@ -5,6 +5,7 @@
 ### New features
 
 * [#2140](https://github.com/xmake-io/xmake/issues/2140): Support Windows Arm64
+* [#2719](https://github.com/xmake-io/xmake/issues/2719): Add `package.librarydeps.strict_compatibility` to strict compatibility for package linkdeps
 
 ### Changes
 
@@ -1386,6 +1387,7 @@
 ### 新特性
 
 * [#2140](https://github.com/xmake-io/xmake/issues/2140): 支持 Windows Arm64
+* [#2719](https://github.com/xmake-io/xmake/issues/2719): 添加 `package.librarydeps.strict_compatibility` 策略严格限制包依赖兼容性
 
 ### 改进
 
