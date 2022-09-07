@@ -243,17 +243,7 @@ function _package_addenvs(envs, instance)
     -- add run envs, e.g. PATH, LD_LIBRARY_PATH, DYLD_LIBRARY_PATH
     local installdir = instance:installdir()
     for name, values in pairs(instance:envs()) do
-        if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
-            for _, value in ipairs(values) do
-                if path.is_absolute(value) then
-                    _addenvs(envs, name, value)
-                else
-                    _addenvs(envs, name, path.join(installdir, value))
-                end
-            end
-        else
-            _addenvs(envs, name, table.unpack(table.wrap(values)))
-        end
+        _addenvs(envs, name, table.unpack(table.wrap(values)))
     end
 
     -- add library envs, e.g. ACLOCAL_PATH, PKG_CONFIG_PATH, CMAKE_PREFIX_PATH

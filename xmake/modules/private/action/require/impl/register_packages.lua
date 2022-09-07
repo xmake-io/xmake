@@ -25,19 +25,8 @@ import("core.project.project")
 -- envs: bin path for *.dll, program ..
 function _register_required_package_envs(instance, envs)
     for name, values in pairs(instance:envs()) do
-        if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
-            for _, value in ipairs(values) do
-                envs[name] = envs[name] or {}
-                if path.is_absolute(value) then
-                    table.insert(envs[name], value)
-                else
-                    table.insert(envs[name], path.join(instance:installdir(), value))
-                end
-            end
-        else
-            envs[name] = envs[name] or {}
-            table.join2(envs[name], values)
-        end
+        envs[name] = envs[name] or {}
+        table.join2(envs[name], values)
     end
 end
 
