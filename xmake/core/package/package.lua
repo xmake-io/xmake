@@ -841,11 +841,30 @@ function _instance:_rawenvs()
     return envs
 end
 
+-- get path environment keys
+function _instance:_pathenvs()
+    local pathenvs = self._PATHENVS
+    if pathenvs == nil then
+        pathenvs = hashset.from {
+            "PATH",
+            "LD_LIBRARY_PATH",
+            "DYLD_LIBRARY_PATH"
+        }
+        self._PATHENVS = pathenvs
+    end
+    return pathenvs
+end
+
+-- mark as path environments
+function _instance:mark_as_pathenv(name)
+    self:_pathenvs():insert(name)
+end
+
 -- get the exported environments
 function _instance:envs()
     local envs = {}
-    for name, values in pairs(instance:_rawenvs()) do
-        if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
+    for name, values in pairs(self:_rawenvs()) do
+        if self:_pathenvs():has(name) then
             local newvalues = {}
             for _, value in ipairs(values) do
                 if path.is_absolute(value) then
