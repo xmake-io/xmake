@@ -34,19 +34,17 @@ import("detect.sdks.matlab")
 function main(opt)
     opt = opt or {}
     local runtime_version = opt.runtime_version and tostring(opt.runtime_version) or nil
-
     local result = {sdkdir = "", includedirs = {}, linkdirs = {}, links = {}, bindirs = {}}
     if is_host("windows") then
         local matlabkey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB Runtime"
         local valuekeys = winos.registry_keys(matlabkey)
         if #valuekeys == 0 then
-            return nil
+            return
         end
 
-        local versionname = nil
-        local versionvalue = nil
-
-        local itemkey = nil
+        local itemkey
+        local versionname
+        local versionvalue
         if runtime_version == nil then
             local splitvaluekeys = valuekeys[1]:split("\\")
             versionvalue = splitvaluekeys[#splitvaluekeys]
@@ -74,25 +72,21 @@ function main(opt)
 
         local sdkdir = try {function () return winos.registry_query(itemkey) end}
         if not sdkdir then
-            return nil
+            return
         end
-
         sdkdir = sdkdir .. "\\v" .. versionvalue:gsub("%.", "")
-
         result.sdkdir = sdkdir
         result.includedirs = path.join(sdkdir, "extern", "include")
         result.bindirs = {
             path.join(sdkdir, "bin", "win64"),
             path.join(sdkdir, "runtime", "win64"),
         }
-        -- find lib dirs
         for _, value in ipairs(os.dirs(path.join(sdkdir, "extern", "lib", "**"))) do
             local dirbasename = path.basename(value)
             if not dirbasename:startswith("win") then
                 result.linkdirs[dirbasename] = value
             end
         end
-        -- find lib
         for _, value in pairs(result.linkdirs) do
             local dirbasename = path.basename(value)
             result.links[dirbasename] = {}
