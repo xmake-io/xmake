@@ -74,7 +74,7 @@ function policy.policies()
             -- set strict compatibility for package and it's all child packages. we can just set it in package().
             -- if true, then any updates to this package, such as buildhash changes due to version changes,
             -- will force all installed child packages to be recompiled and installed, @see https://github.com/xmake-io/xmake/issues/2719
-            ["package.strict_compatibility"] = {description = "Set strict compatibility for package and it's all child packages.", type = "boolean"},
+            ["package.strict_compatibility"]     = {description = "Set strict compatibility for package and it's all child packages.", type = "boolean"},
             -- set strict compatibility for package and it's all library dependencies. we can set it in package() and user project configuration.
             -- if true, then any updates to library dependencies, such as buildhash changes due to version changes,
             -- will force the installed packages to be recompiled and installed. @see https://github.com/xmake-io/xmake/issues/2719
