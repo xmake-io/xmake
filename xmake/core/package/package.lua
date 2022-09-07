@@ -848,7 +848,11 @@ function _instance:_pathenvs()
         pathenvs = hashset.from {
             "PATH",
             "LD_LIBRARY_PATH",
-            "DYLD_LIBRARY_PATH"
+            "DYLD_LIBRARY_PATH",
+            "PKG_CONFIG_PATH",
+            "ACLOCAL_PATH",
+            "CMAKE_PREFIX_PATH",
+            "PYTHONPATH"
         }
         self._PATHENVS = pathenvs
     end
