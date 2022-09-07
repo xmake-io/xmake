@@ -956,44 +956,50 @@ function _compatible_with_previous_librarydeps(package, opt)
         return true
     end
 
-    -- check strict compatibility for librarydeps?
-    local strict_compatibility = project.policy("package.librarydeps.strict_compatibility")
-    if strict_compatibility == nil then
-        strict_compatibility = package:policy("package.librarydeps.strict_compatibility")
-    end
-    if not strict_compatibility then
-        return true
-    end
-
     -- has been checked?
     local compatible_checked = package:data("librarydeps.compatible_checked")
     if compatible_checked then
         return
     end
 
+    -- check strict compatibility for librarydeps?
+    local strict_compatibility = project.policy("package.librarydeps.strict_compatibility")
+    if strict_compatibility == nil then
+        strict_compatibility = package:policy("package.librarydeps.strict_compatibility")
+    end
+
+    -- compute the buildhash for current librarydeps
+    local depnames = hashset.new()
+    local depinfos_curr = {}
+    for _, dep in ipairs(package:librarydeps()) do
+        if strict_compatibility or dep:policy("package.strict_compatibility") then
+            depinfos_curr[dep:name()] = {
+                version = dep:version_str(),
+                buildhash = dep:buildhash()
+            }
+            depnames:insert(dep:name())
+        end
+    end
+
     -- compute the buildhash for previous librarydeps
     local depinfos_prev = {}
-    local depnames = hashset.new()
     local manifest = package:manifest_load()
     if manifest and manifest.librarydeps then
         local deps = manifest.deps or {}
         for _, depname in ipairs(manifest.librarydeps) do
-            local depinfo = deps[depname]
-            if depinfo and depinfo.buildhash then
-                depinfos_prev[depname] = depinfo
-                depnames:insert(depname)
+            if strict_compatibility or (package:dep(depname) and package:dep(depname):policy("package.strict_compatibility")) then
+                local depinfo = deps[depname]
+                if depinfo and depinfo.buildhash then
+                    depinfos_prev[depname] = depinfo
+                    depnames:insert(depname)
+                end
             end
         end
     end
 
-    -- compute the buildhash for current librarydeps
-    local depinfos_curr = {}
-    for _, dep in ipairs(package:librarydeps()) do
-        depinfos_curr[dep:name()] = {
-            version = dep:version_str(),
-            buildhash = dep:buildhash()
-        }
-        depnames:insert(dep:name())
+    -- no any dependencies
+    if depnames:empty() then
+        return true
     end
 
     -- is compatible?
