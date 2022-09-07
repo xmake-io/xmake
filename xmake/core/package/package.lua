@@ -295,7 +295,7 @@ function _instance:artifacts_set(artifacts_info)
                 end
             end
             if manifest.envs then
-                local envs = self:envs()
+                local envs = self:_rawenvs()
                 for k, v in pairs(manifest.envs) do
                     envs[k] = v
                 end
@@ -756,7 +756,7 @@ function _instance:manifest_save()
     manifest.arch        = self:arch()
     manifest.mode        = self:mode()
     manifest.configs     = self:configs()
-    manifest.envs        = self:envs()
+    manifest.envs        = self:_rawenvs()
 
     -- save enabled library deps
     if self:librarydeps() then
@@ -821,9 +821,9 @@ function _instance:manifest_save()
     end
 end
 
--- get the exported environments
-function _instance:envs()
-    local envs = self._ENVS
+-- get the raw environments
+function _instance:_rawenvs()
+    local envs = self._RAWENVS
     if not envs then
         envs = {}
         if self:is_binary() or self:is_plat("windows", "mingw") then -- bin/*.dll for windows
@@ -836,7 +836,27 @@ function _instance:envs()
                 envs.DYLD_LIBRARY_PATH = {"lib"}
             end
         end
-        self._ENVS = envs
+        self._RAWENVS = envs
+    end
+    return envs
+end
+
+-- get the exported environments
+function _instance:envs()
+    local envs = {}
+    for name, values in pairs(instance:_rawenvs()) do
+        if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
+            local newvalues = {}
+            for _, value in ipairs(values) do
+                if path.is_absolute(value) then
+                    table.insert(newvalues, value)
+                else
+                    table.insert(newvalues, path.join(self:installdir(), value))
+                end
+            end
+            values = newvalues
+        end
+        envs[name] = values
     end
     return envs
 end
@@ -845,7 +865,7 @@ end
 function _instance:envs_load()
     local manifest = self:manifest_load()
     if manifest then
-        local envs = self:envs()
+        local envs = self:_rawenvs()
         for name, values in pairs(manifest.envs) do
             envs[name] = values
         end
@@ -856,33 +876,23 @@ end
 function _instance:envs_enter()
     local installdir = self:installdir({readonly = true})
     for name, values in pairs(self:envs()) do
-        if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
-            for _, value in ipairs(values) do
-                if path.is_absolute(value) then
-                    os.addenv(name, value)
-                else
-                    os.addenv(name, path.join(installdir, value))
-                end
-            end
-        else
-            os.addenv(name, table.unpack(table.wrap(values)))
-        end
+        os.addenv(name, table.unpack(table.wrap(values)))
     end
 end
 
 -- get the given environment variable
 function _instance:getenv(name)
-    return self:envs()[name]
+    return self:_rawenvs()[name]
 end
 
 -- set the given environment variable
 function _instance:setenv(name, ...)
-    self:envs()[name] = {...}
+    self:_rawenvs()[name] = {...}
 end
 
 -- add the given environment variable
 function _instance:addenv(name, ...)
-    self:envs()[name] = table.join(self:envs()[name] or {}, ...)
+    self:_rawenvs()[name] = table.join(self:_rawenvs()[name] or {}, ...)
 end
 
 -- get the given build environment variable
