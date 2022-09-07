@@ -14,6 +14,7 @@
 * [#2778](https://github.com/xmake-io/xmake/pull/2778): Improve Improve xrepo.env for target
 * [#2783](https://github.com/xmake-io/xmake/issues/2783): Add digest algorithm option for wdk signtool
 * [#2787](https://github.com/xmake-io/xmake/pull/2787): Improve json to support empty array
+* [#2782](https://github.com/xmake-io/xmake/pull/2782): Improve to find matlab and runtime
 
 ### Bugs fixed
 
@@ -1397,6 +1398,7 @@
 * [#2778](https://github.com/xmake-io/xmake/pull/2778): 改进 xrepo.env 支持 target 的运行环境加载
 * [#2783](https://github.com/xmake-io/xmake/issues/2783): 添加摘要算法选项到 WDK 的 signtool 签名工具
 * [#2787](https://github.com/xmake-io/xmake/pull/2787): 改进 json 支持空数组
+* [#2782](https://github.com/xmake-io/xmake/pull/2782): 改进查找 matlib sdk 和运行时
 
 ### Bugs 修复
 
