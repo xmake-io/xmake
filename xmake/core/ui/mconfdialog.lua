@@ -49,7 +49,10 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> or <Back> to go back, <?> for H
 
     -- init buttons
     self:button_add("select", "< Select >", function (v, e) self:menuconf():on_event(event.command {"cm_enter"}) end)
-    self:button_add("back", "< Back >", function (v, e) self:menuconf():on_event(event.command {"cm_back"}) end)
+    self:button_add("back", "< Back >", function (v, e)
+        self:menuconf():on_event(event.command {"cm_back"})
+        self:buttons():select(self:button("select"))
+    end)
     self:button_add("exit", "< Exit >", function (v, e) self:quit() end)
     self:button_add("help", "< Help >", function (v, e) self:show_help() end)
     self:button_add("save", "< Save >", function (v, e) self:action_on(action.ac_on_save) end)
