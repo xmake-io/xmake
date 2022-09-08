@@ -23,6 +23,7 @@ jobs:
         uses: vmactions/freebsd-vm@v0
         with:
           usesh: true
+          sync: sshfs
           mem: 4096
           copyback: false
           prepare: pkg install -y curl unzip gmake llvm gsed bash perl5
