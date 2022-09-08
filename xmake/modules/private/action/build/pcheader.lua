@@ -27,7 +27,7 @@ function config(target, langkind, opt)
     if pcheaderfile then
         local headerfile = target:autogenfile(pcheaderfile)
         if target:is_plat("windows") and
-            target:has_tool(langkind == "cxx" and "cxx" or "cc", "cl") then
+            target:has_tool(langkind == "cxx" and "cxx" or "cc", "cl", "clang_cl") then
              -- fix `#pragma once` for msvc
              -- https://github.com/xmake-io/xmake/issues/2667
              if not os.isfile(headerfile) then
