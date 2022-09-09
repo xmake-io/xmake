@@ -776,7 +776,8 @@ function os.execv(program, argv, opt)
 
         -- trace process
         if os._is_tracing_process() then
-            utils.cprint("%s: ${color.dump.string}%s %s${clear}", proc, filename, argv and os.args(argv) or "")
+            -- we cannot use cprint, it will cause dead-loop on windows, winos.version/os.iorunv
+            utils.print("%s: %s %s", proc, filename, argv and os.args(argv) or "")
         end
 
         -- wait process
