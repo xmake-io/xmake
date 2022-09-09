@@ -196,8 +196,6 @@ end
 
 -- the current host is belong to the given hosts?
 function os._is_host(host, ...)
-
-    -- no host
     if not host then
         return false
     end
@@ -212,8 +210,6 @@ end
 
 -- the current platform is belong to the given architectures?
 function os._is_arch(arch, ...)
-
-    -- no arch
     if not arch then
         return false
     end
@@ -737,10 +733,8 @@ end
 --
 function os.execv(program, argv, opt)
 
-    -- init options
-    opt = opt or {}
-
     -- is not executable program file?
+    opt = opt or {}
     local filename = tostring(program)
     if not os.isexec(program) then
 
@@ -820,10 +814,8 @@ end
 -- run command with arguments and return output and error data
 function os.iorunv(program, argv, opt)
 
-    -- init options
-    opt = opt or {}
-
     -- make temporary output and error file
+    opt = opt or {}
     local outfile = os.tmpfile()
     local errfile = os.tmpfile()
 
@@ -890,8 +882,6 @@ end
 
 -- is executable program file?
 function os.isexec(filepath)
-
-    -- check
     assert(filepath)
 
     -- TODO

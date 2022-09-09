@@ -155,8 +155,6 @@ end
 
 -- try to format
 function string.tryformat(format, ...)
-
-    -- attempt to format it
     local ok, str = pcall(string.format, format, ...)
     if ok then
         return str
