@@ -110,7 +110,11 @@ function main(toolchain)
     toolchain:config_set("target_minver", target_minver)
     toolchain:config_set("appledev", appledev)
     toolchain:configs_save()
-    cprint("checking for SDK version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), xcode_sdkver)
-    cprint("checking for Minimal target version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), target_minver)
+    if xcode_sdkver then
+        cprint("checking for SDK version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), xcode_sdkver)
+    end
+    if target_minver then
+        cprint("checking for Minimal target version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), target_minver)
+    end
     return true
 end
