@@ -63,9 +63,9 @@ function main(argv)
 
         -- package it
         if args.outputdir then
-            os.exec("xmake p -o %s %s", args.outputdir, option.get("verbose") and "-v" or "")
+            os.exec("xmake p -f oldpkg -o %s %s", args.outputdir, option.get("verbose") and "-v" or "")
         else
-            os.exec("xmake p %s", option.get("verbose") and "-v" or "")
+            os.exec("xmake p -f oldpkg %s", option.get("verbose") and "-v" or "")
         end
     end
 
