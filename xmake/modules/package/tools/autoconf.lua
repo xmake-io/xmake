@@ -60,6 +60,17 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
+-- is cross compilation?
+function _is_cross_compilation(package)
+    if not package:is_plat(os.subhost()) then
+        return true
+    end
+    if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
+        return true
+    end
+    return false
+end
+
 -- get configs
 function _get_configs(package, configs)
 
@@ -68,8 +79,8 @@ function _get_configs(package, configs)
     table.insert(configs, "--prefix=" .. _translate_paths(package, package:installdir()))
 
     -- add host for cross-complation
-    if not configs.host and not package:is_plat(os.subhost()) then
-        if package:is_plat("iphoneos") then
+    if not configs.host and _is_cross_compilation(package) then
+        if package:is_plat("iphoneos", "macosx") then
             local triples =
             {
                 arm64  = "aarch64-apple-darwin",
@@ -157,7 +168,7 @@ function buildenvs(package, opt)
     local envs = {}
     local cross = false
     local cflags, cxxflags, cppflags, asflags, ldflags, shflags, arflags
-    if package:is_plat(os.subhost()) and not package:config("toolchains") then
+    if not _is_cross_compilation(package) and not package:config("toolchains") then
         cppflags = {}
         cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
         cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
