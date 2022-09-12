@@ -470,6 +470,9 @@ function _make_vsinfo_archs()
             end
         end
         if not vsinfo_archs then
+            vsinfo_archs = toolchain.load("msvc"):config("vcarchs")
+        end
+        if not vsinfo_archs then
             vsinfo_archs = platform.archs()
         end
     end

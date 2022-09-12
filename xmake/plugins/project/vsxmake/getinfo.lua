@@ -27,6 +27,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.tool.compiler")
 import("core.tool.linker")
+import("core.tool.toolchain")
 import("core.cache.memcache")
 import("core.cache.localcache")
 import("lib.detect.find_tool")
@@ -286,6 +287,9 @@ function _make_vsinfo_archs()
             if allowed_archs then
                 vsinfo_archs = allowed_archs:to_array()
             end
+        end
+        if not vsinfo_archs then
+            vsinfo_archs = toolchain.load("msvc"):config("vcarchs")
         end
         if not vsinfo_archs then
             vsinfo_archs = platform.archs()
