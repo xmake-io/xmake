@@ -70,7 +70,7 @@ function main(argv)
     end
 
     -- package universal for iphoneos, watchos ...
-    if plat == "iphoneos" or plat == "watchos" then
+    if plat == "iphoneos" or plat == "watchos" or plat == "macosx" then
 
         -- load configure
         config.load()
