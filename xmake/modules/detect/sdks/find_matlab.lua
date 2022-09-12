@@ -33,7 +33,7 @@ import("detect.sdks.matlab")
 --
 function main(opt)
     opt = opt or {}
-    local runtime_version = opt.runtime_version and tostring(opt.runtime_version) or nil
+    local version = opt.version and tostring(opt.version) or nil
     local result = {sdkdir = "", includedirs = {}, linkdirs = {}, links = {}}
     if is_host("windows") then
         local matlabkey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB"
@@ -43,14 +43,14 @@ function main(opt)
         end
 
         local itemkey
-        if runtime_version == nil then
+        if version == nil then
             itemkey = valuekeys[1] .. ";MATLABROOT"
         else
-            local versionname = matlab.versions()[runtime_version]
+            local versionname = matlab.versions()[version]
             if versionname ~= nil then
-                itemkey = matlabkey .. "\\" .. runtime_version .. ";MATLABROOT"
+                itemkey = matlabkey .. "\\" .. version .. ";MATLABROOT"
             else
-                local versionvalue = matlab.versions_names()[runtime_version:lower()]
+                local versionvalue = matlab.versions_names()[version:lower()]
                 if versionvalue ~= nil then
                     itemkey = matlabkey .. "\\" .. versionvalue .. ";MATLABROOT"
                 else
@@ -58,7 +58,7 @@ function main(opt)
                     for k, v in pairs(matlab.versions()) do
                         print("    ", k, v)
                     end
-                    raise("MATLAB Runtime version does not exist: " .. runtime_version)
+                    raise("MATLAB Runtime version does not exist: " .. version)
                 end
             end
         end
