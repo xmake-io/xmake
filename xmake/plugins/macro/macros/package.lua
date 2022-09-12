@@ -49,19 +49,11 @@ function main(argv)
                                            , ""
                                            , "Usage: xmake macro package [options]")
 
-    -- get platform
-    local plat = args.plat
-
-    -- get archs
-    local archs = args.arch and args.arch:split(',') or platform.archs(plat)
-
     -- package all archs
+    local plat = args.plat
+    local archs = args.arch and args.arch:split(',') or platform.archs(plat)
     for _, arch in ipairs(archs) do
-
-        -- config it
         os.exec("xmake f -p %s -a %s %s -c %s", plat, arch, args.config or "", option.get("verbose") and "-v" or "")
-
-        -- package it
         if args.outputdir then
             os.exec("xmake p -f oldpkg -o %s %s", args.outputdir, option.get("verbose") and "-v" or "")
         else
@@ -72,26 +64,16 @@ function main(argv)
     -- package universal for iphoneos, watchos ...
     if plat == "iphoneos" or plat == "watchos" or plat == "macosx" then
 
-        -- load configure
         config.load()
-
-        -- enter the project directory
         os.cd(project.directory())
 
-        -- the outputdir directory
         local outputdir = args.outputdir or config.get("buildir")
-
-        -- package all targets
         for _, target in pairs(project.targets()) do
-
-            -- get all modes
             local modes = {}
             for _, modedir in ipairs(os.dirs(format("%s/%s.pkg/*/*/lib/*", outputdir, target:name()))) do
                 table.insert(modes, path.basename(modedir))
             end
             for _, mode in ipairs(table.unique(modes)) do
-
-                -- make lipo arguments
                 local lipoargs = nil
                 for _, arch in ipairs(archs) do
                     local archfile = format("%s/%s.pkg/%s/%s/lib/%s/%s", outputdir, target:name(), plat, arch:trim(), mode, path.filename(target:targetfile()))
@@ -100,14 +82,8 @@ function main(argv)
                     end
                 end
                 if lipoargs then
-
-                    -- make full lipo arguments
                     lipoargs = format("-create %s -output %s/%s.pkg/%s/universal/lib/%s/%s", lipoargs, outputdir, target:name(), plat, mode, path.filename(target:targetfile()))
-
-                    -- make universal directory
                     os.mkdir(format("%s/%s.pkg/%s/universal/lib/%s", outputdir, target:name(), plat, mode))
-
-                    -- package all archs
                     os.execv("xmake", {"l", "lipo", lipoargs})
                 end
             end
