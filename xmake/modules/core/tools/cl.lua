@@ -158,19 +158,15 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    -- only for source kind
-    local kind = self:kind()
-    if language.sourcekinds()[kind] then
-        local maps =
-        {
-            none        = "-Od"
-        ,   faster      = "-Ox"
-        ,   fastest     = "-O2 -fp:fast"
-        ,   smallest    = "-O1 -GL" -- /GL and (/OPT:REF is on by default in linker), we need enable /ltcg
-        ,   aggressive  = "-O2 -fp:fast"
-        }
-        return maps[level]
-    end
+    local maps =
+    {
+        none        = "-Od"
+    ,   faster      = "-Ox"
+    ,   fastest     = "-O2 -fp:fast"
+    ,   smallest    = "-O1 -GL" -- /GL and (/OPT:REF is on by default in linker), we need enable /ltcg
+    ,   aggressive  = "-O2 -fp:fast"
+    }
+    return maps[level]
 end
 
 -- make vs runtime flag

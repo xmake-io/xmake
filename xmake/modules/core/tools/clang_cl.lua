@@ -23,7 +23,6 @@ inherit("cl")
 import("core.base.option")
 import("core.base.tty")
 import("core.base.colors")
-import("core.language.language")
 
 -- init it
 function init(self)
@@ -93,20 +92,16 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    -- only for source kind
-    local kind = self:kind()
-    if language.sourcekinds()[kind] then
-        local maps =
-        {
-            none       = "-O0"
-        ,   fast       = "-O1"
-        ,   faster     = "-O2"
-        ,   fastest    = "-O3"
-        ,   smallest   = "-Oz" -- smaller than -Os
-        ,   aggressive = "-Ofast"
-        }
-        return maps[level]
-    end
+    local maps =
+    {
+        none       = "-O0"
+    ,   fast       = "-O1"
+    ,   faster     = "-O2"
+    ,   fastest    = "-O3"
+    ,   smallest   = "-Oz" -- smaller than -Os
+    ,   aggressive = "-Ofast"
+    }
+    return maps[level]
 end
 
 -- compile the source file
