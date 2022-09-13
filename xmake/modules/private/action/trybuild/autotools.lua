@@ -220,18 +220,18 @@ function build()
     -- generate configure
     if not os.isfile("configure") then
         if os.isfile("autogen.sh") then
-            os.vexecv("sh", {"./autogen.sh"})
+            os.vexecv("./autogen.sh", {}, {shell = true})
         elseif os.isfile("configure.ac") or os.isfile("configure.in") then
             local autoreconf = find_tool("autoreconf")
             assert(autoreconf, "autoreconf not found!")
-            os.vexecv("sh", {autoreconf.program, "--install", "--symlink"})
+            os.vexecv(autoreconf.program, {"--install", "--symlink"}, {shell = true})
         end
     end
 
     -- do configure
     local configfile = find_file("[mM]akefile", os.curdir())
     if not configfile or os.mtime(config.filepath()) > os.mtime(configfile) then
-        os.vexecv("sh", table.join("./configure", _get_configs(artifacts_dir)), {envs = _get_buildenvs()})
+        os.vexecv("./configure", _get_configs(artifacts_dir), {shell = true, envs = _get_buildenvs()})
     end
 
     -- do build

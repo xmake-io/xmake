@@ -746,6 +746,28 @@ function os.execv(program, argv, opt)
         end
     end
 
+    -- run shell file? parse `#!/usr/bin/env bash` in xx.sh
+    --
+    -- e.g. os.execv("./configure", {"--help"}) => os.execv("/usr/bin/env", {"bash", "./configure", "--help"})
+    if opt.shell and os.isfile(filename) then
+        local shellfile = filename
+        local file = io.open(filename, 'r')
+        local head = file:read("l")
+        if head and head:startswith("#!") then
+            head = head:sub(3)
+            local shellargv = {}
+            local splitinfo = head:split("%s")
+            filename = splitinfo[1]
+            if #splitinfo > 1 then
+                shellargv = table.slice(splitinfo, 2)
+            end
+            table.insert(shellargv, shellfile)
+            table.join2(shellargv, argv)
+            argv = shellargv
+        end
+        file:close()
+    end
+
     -- uses the given environments?
     local envs = nil
     if opt.envs then
