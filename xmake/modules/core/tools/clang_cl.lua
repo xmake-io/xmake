@@ -23,6 +23,7 @@ inherit("cl")
 import("core.base.option")
 import("core.base.tty")
 import("core.base.colors")
+import("core.language.language")
 
 -- init it
 function init(self)
