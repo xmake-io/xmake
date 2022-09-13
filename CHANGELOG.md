@@ -17,6 +17,7 @@
 * [#2782](https://github.com/xmake-io/xmake/pull/2782): Improve to find matlab and runtime
 * [#2793](https://github.com/xmake-io/xmake/issues/2793): Improve mconfdialog
 * [#2804](https://github.com/xmake-io/xmake/issues/2804): Support macOS arm64/x86_64 cross-compilation for installing packages
+* [#2809](https://github.com/xmake-io/xmake/issues/2809): Improve cl optimization option
 
 ### Bugs fixed
 
@@ -1403,6 +1404,7 @@
 * [#2782](https://github.com/xmake-io/xmake/pull/2782): 改进查找 matlib sdk 和运行时
 * [#2793](https://github.com/xmake-io/xmake/issues/2793): 改进 mconfdialog 配置操作体验
 * [#2804](https://github.com/xmake-io/xmake/issues/2804): 安装依赖包支持 macOS arm64/x86_64 交叉编译
+* [#2809](https://github.com/xmake-io/xmake/issues/2809): 改进 msvc 的编译优化选项
 
 ### Bugs 修复
 
