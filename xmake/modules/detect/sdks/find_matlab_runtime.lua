@@ -33,7 +33,7 @@ import("detect.sdks.matlab")
 --
 function main(opt)
     opt = opt or {}
-    local runtime_version = opt.runtime_version and tostring(opt.runtime_version) or nil
+    local version = opt.require_version and tostring(opt.require_version) or nil
     local result = {sdkdir = "", includedirs = {}, linkdirs = {}, links = {}, bindirs = {}}
     if is_host("windows") then
         local matlabkey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB Runtime"
@@ -45,18 +45,18 @@ function main(opt)
         local itemkey
         local versionname
         local versionvalue
-        if runtime_version == nil then
+        if version == nil then
             local splitvaluekeys = valuekeys[1]:split("\\")
             versionvalue = splitvaluekeys[#splitvaluekeys]
             versionname = matlab.versions()[versionvalue]
             itemkey = valuekeys[1] .. ";MATLABROOT"
         else
-            versionname = matlab.versions()[runtime_version]
+            versionname = matlab.versions()[version]
             if versionname ~= nil then
                 versionvalue = matlab.versions_names()[versionname:lower()]
-                itemkey = matlabkey .. "\\" .. runtime_version .. ";MATLABROOT"
+                itemkey = matlabkey .. "\\" .. version .. ";MATLABROOT"
             else
-                versionvalue = matlab.versions_names()[runtime_version:lower()]
+                versionvalue = matlab.versions_names()[version:lower()]
                 versionname = matlab.versions()[versionvalue]
                 if versionvalue ~= nil then
                     itemkey = matlabkey .. "\\" .. versionvalue .. ";MATLABROOT"
@@ -65,7 +65,7 @@ function main(opt)
                     for k, v in pairs(matlab.versions()) do
                         print("    ", k, v)
                     end
-                    raise("MATLAB Runtime version does not exist: " .. runtime_version)
+                    raise("MATLAB Runtime version does not exist: " .. version)
                 end
             end
         end
@@ -98,3 +98,4 @@ function main(opt)
     end
     return result
 end
+
