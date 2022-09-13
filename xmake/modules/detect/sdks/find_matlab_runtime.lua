@@ -33,7 +33,7 @@ import("detect.sdks.matlab")
 --
 function main(opt)
     opt = opt or {}
-    local version = opt.version and tostring(opt.version) or nil
+    local version = opt.require_version and tostring(opt.require_version) or nil
     local result = {sdkdir = "", includedirs = {}, linkdirs = {}, links = {}, bindirs = {}}
     if is_host("windows") then
         local matlabkey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB Runtime"
@@ -98,3 +98,4 @@ function main(opt)
     end
     return result
 end
+
