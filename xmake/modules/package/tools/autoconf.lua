@@ -392,16 +392,16 @@ function configure(package, configs, opt)
     -- generate configure file
     if not os.isfile("configure") then
         if os.isfile("autogen.sh") then
-            os.vrunv("sh", {"./autogen.sh"}, {envs = autogen_envs(package, opt)})
+            os.vrunv("./autogen.sh", {}, {shell = true, envs = autogen_envs(package, opt)})
         elseif os.isfile("configure.ac") or os.isfile("configure.in") then
             local autoreconf = find_tool("autoreconf")
             assert(autoreconf, "autoreconf not found!")
-            os.vrunv("sh", {autoreconf.program, "--install", "--symlink"}, {envs = autogen_envs(package, opt)})
+            os.vrunv(autoreconf.program, {"--install", "--symlink"}, {shell = true, envs = autogen_envs(package, opt)})
         end
     end
 
     -- pass configurations
-    local argv = {"./configure"}
+    local argv = {}
     for name, value in pairs(_get_configs(package, configs)) do
         value = tostring(value):trim()
         if value ~= "" then
@@ -414,7 +414,7 @@ function configure(package, configs, opt)
     end
 
     -- do configure
-    os.vrunv("sh", argv, {envs = envs})
+    os.vrunv("./configure", argv, {shell = true, envs = envs})
 end
 
 -- do make
