@@ -42,6 +42,10 @@ end
 
 -- build jobs
 --
+-- @param nodes     the node graph dependencies
+-- @param jobs      the jobpool object
+-- @param rootjob   the root job
+--
 -- @code
 --[[
     nodes["node1"] = {
