@@ -24,6 +24,7 @@ import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 import("private.async.runjobs")
+import("private.async.buildjobs")
 import("private.utils.batchcmds")
 
 -- add batch jobs for the custom rule
