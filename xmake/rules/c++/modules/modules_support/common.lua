@@ -27,6 +27,7 @@ import("core.cache.memcache", {alias = "_memcache"})
 import("core.cache.localcache", {alias = "_localcache"})
 import("core.project.project")
 import("lib.detect.find_file")
+import("private.async.buildjobs")
 import("stl_headers")
 
 -- get memcache
@@ -473,44 +474,9 @@ function generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modu
     end
 end
 
--- build batch jobs for module dependencies
-function _build_batchjobs_for_moduledeps(modules, batchjobs, rootjob, jobrefs, moduleinfo)
-    local targetjob_ref = jobrefs[moduleinfo.name]
-    if targetjob_ref then
-        batchjobs:add(targetjob_ref, rootjob)
-    else
-        local modulejob = batchjobs:add(moduleinfo.job, rootjob)
-        if modulejob then
-            jobrefs[moduleinfo.name] = modulejob
-            for _, depname in ipairs(moduleinfo.deps) do
-                local dep = modules[depname]
-                if dep then -- maybe nil, e.g. `import <string>;`
-                    _build_batchjobs_for_moduledeps(modules, batchjobs, modulejob, jobrefs, dep)
-                end
-            end
-        end
-    end
-end
-
 -- build batchjobs for modules
 function build_batchjobs_for_modules(modules, batchjobs, rootjob)
-    local depset = hashset.new()
-    for _, moduleinfo in pairs(modules) do
-        assert(moduleinfo.job)
-        for _, depname in ipairs(moduleinfo.deps) do
-            depset:insert(depname)
-        end
-    end
-    local modules_root = {}
-    for _, moduleinfo in pairs(modules) do
-        if not depset:has(moduleinfo.name) then
-            table.insert(modules_root, moduleinfo)
-        end
-    end
-    local jobrefs = {}
-    for _, moduleinfo in pairs(modules_root) do
-        _build_batchjobs_for_moduledeps(modules, batchjobs, rootjob, jobrefs, moduleinfo)
-    end
+    return buildjobs(modules, batchjobs, rootjob)
 end
 
 -- build modules for batchjobs
