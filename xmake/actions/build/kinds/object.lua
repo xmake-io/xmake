@@ -121,8 +121,42 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suff
     end
 end
 
+-- build sourcebatch groups for target
+function _build_sourcebatch_groups_for_target(sourcebatch_groups, target, sourcebatches)
+    local sourcebatch_group = sourcebatch_groups[1]
+    for _, sourcebatch in pairs(sourcebatches) do
+        table.insert(sourcebatch_group, {
+                target = target,
+                sourcebatch = sourcebatch
+            })
+    end
+end
+
+-- build sourcebatch groups for rules
+function _build_sourcebatch_groups_for_rules(sourcebatch_groups, target, sourcebatches)
+    local sourcebatch_group = sourcebatch_groups[1]
+    for _, sourcebatch in pairs(sourcebatches) do
+        local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
+        local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+        table.insert(sourcebatch_group, {
+                rule = ruleinst,
+                sourcebatch = sourcebatch
+            })
+    end
+end
+
+-- build sourcebatch groups by rule dependencies order
+function _build_sourcebatch_groups(target, sourcebatches)
+    local sourcebatch_groups = {{}}
+    _build_sourcebatch_groups_for_target(sourcebatch_groups, target, sourcebatches)
+    _build_sourcebatch_groups_for_rules(sourcebatch_groups, target, sourcebatches)
+end
+
 -- add batch jobs for building source files
 function add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, sourcebatches)
+
+    -- build sourcebatch groups first
+    local sourcebatch_groups = _build_sourcebatch_groups(target, sourcebatches)
 
     -- add batch jobs for build_after
     batchjobs:group_enter(target:name() .. "/after_build_files")
