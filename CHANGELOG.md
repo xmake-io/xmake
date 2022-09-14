@@ -6,6 +6,7 @@
 
 * [#2140](https://github.com/xmake-io/xmake/issues/2140): Support Windows Arm64
 * [#2719](https://github.com/xmake-io/xmake/issues/2719): Add `package.librarydeps.strict_compatibility` to strict compatibility for package linkdeps
+* [#2810](https://github.com/xmake-io/xmake/pull/2810): Support os.execv to run shell script file
 
 ### Changes
 
@@ -1393,6 +1394,7 @@
 
 * [#2140](https://github.com/xmake-io/xmake/issues/2140): 支持 Windows Arm64
 * [#2719](https://github.com/xmake-io/xmake/issues/2719): 添加 `package.librarydeps.strict_compatibility` 策略严格限制包依赖兼容性
+* [#2810](https://github.com/xmake-io/xmake/pull/2810): 支持 os.execv 去执行 shell 脚本文件
 
 ### 改进
 
