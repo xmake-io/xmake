@@ -26,12 +26,31 @@ import("core.project.project")
 import("private.async.runjobs")
 import("private.utils.batchcmds")
 
+-- get rule
+function _get_rule(rulename)
+    local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+    return ruleinst
+end
+
+-- get max depth of rule
+function _get_rule_max_depth(ruleinst, depth)
+    for _, depname in ipairs(ruleinst:get("deps")) do
+        local dep = _get_rule(depname)
+        local dep_depth = depth
+        if ruleinst:extraconf("deps", depname, "order") then
+            dep_depth = dep_depth + 1
+        end
+        return _get_rule_max_depth(dep, dep_depth)
+    end
+    return depth
+end
+
 -- add batch jobs for the custom rule
 function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix)
 
     -- get rule
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
-    local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+    local ruleinst = _get_rule(rulename)
 
     -- add batch jobs for xx_build_files
     local scriptname = "build_files" .. (suffix and ("_" .. suffix) or "")
@@ -151,10 +170,15 @@ end
 
 -- build sourcebatch groups for rules
 function _build_sourcebatch_groups_for_rules(groups, target, sourcebatches)
-    local group = groups[1]
     for _, sourcebatch in pairs(sourcebatches) do
         local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
-        local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+        local ruleinst = _get_rule(rulename)
+        local depth = _get_rule_max_depth(ruleinst, 1)
+        local group = groups[depth]
+        if group == nil then
+            group = {}
+            groups[depth] = group
+        end
         local item = group[rulename] or {}
         item.rule = ruleinst
         item.sourcebatch = sourcebatch
@@ -167,6 +191,9 @@ function _build_sourcebatch_groups(target, sourcebatches)
     local groups = {{}}
     _build_sourcebatch_groups_for_target(groups, target, sourcebatches)
     _build_sourcebatch_groups_for_rules(groups, target, sourcebatches)
+    if #groups > 0 then
+        groups = table.reverse(groups)
+    end
     return groups
 end
 
