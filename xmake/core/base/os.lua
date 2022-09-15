@@ -754,16 +754,23 @@ function os.execv(program, argv, opt)
         local file = io.open(filename, 'r')
         local head = file:read("l")
         if head and head:startswith("#!") then
-            head = head:sub(3)
-            local shellargv = {}
-            local splitinfo = head:split("%s")
-            filename = splitinfo[1]
-            if #splitinfo > 1 then
-                shellargv = table.slice(splitinfo, 2)
+            -- we cannot run /bin/sh directly on msys2/cygwin
+            local subhost = os.subhost()
+            if subhost == "msys" or subhost == "cygwin" then
+                filename = "sh"
+                argv = table.join(shellfile, argv)
+            else
+                head = head:sub(3)
+                local shellargv = {}
+                local splitinfo = head:split("%s")
+                filename = splitinfo[1]
+                if #splitinfo > 1 then
+                    shellargv = table.slice(splitinfo, 2)
+                end
+                table.insert(shellargv, shellfile)
+                table.join2(shellargv, argv)
+                argv = shellargv
             end
-            table.insert(shellargv, shellfile)
-            table.join2(shellargv, argv)
-            argv = shellargv
         end
         file:close()
     end
