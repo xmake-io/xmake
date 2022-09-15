@@ -92,6 +92,18 @@ function _has_scripts_for_target(target, suffix)
     end
 end
 
+-- has scripts for group
+function _has_scripts_for_group(group, suffix)
+    for _, item in pairs(group) do
+        if item.target and _has_scripts_for_target(item.target, suffix) then
+            return true
+        end
+        if item.rule and _has_scripts_for_rule(item.rule, suffix) then
+            return true
+        end
+    end
+end
+
 -- add batch jobs for the custom rule
 function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix)
 
@@ -249,31 +261,37 @@ function add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, sourcebatches
     local groups = _build_sourcebatch_groups(target, sourcebatches)
 
     -- add batch jobs for build_after
-    local groups_root = rootjob
+    local groups_root
     local groups_leaf = rootjob
     for idx, group in ipairs(groups) do
-        batchjobs:group_enter(target:name() .. "/after_build_files" .. idx)
-        _add_batchjobs_for_group(batchjobs, groups_leaf, target, group, "after")
-        groups_leaf = batchjobs:group_leave() or groups_leaf
-        if idx == 1 then
-            groups_root = groups_leaf
+        if _has_scripts_for_group(group, "after") then
+            batchjobs:group_enter(target:name() .. "/after_build_files" .. idx)
+            _add_batchjobs_for_group(batchjobs, groups_leaf, target, group, "after")
+            groups_leaf = batchjobs:group_leave() or groups_leaf
+            groups_root = groups_root or groups_leaf
         end
     end
 
     -- add batch jobs for build
     for idx, group in ipairs(groups) do
-        batchjobs:group_enter(target:name() .. "/build_files" .. idx)
-        _add_batchjobs_for_group(batchjobs, groups_leaf, target, group)
-        groups_leaf = batchjobs:group_leave() or groups_leaf
+        if _has_scripts_for_group(group) then
+            batchjobs:group_enter(target:name() .. "/build_files" .. idx)
+            _add_batchjobs_for_group(batchjobs, groups_leaf, target, group)
+            groups_leaf = batchjobs:group_leave() or groups_leaf
+            groups_root = groups_root or groups_leaf
+        end
     end
 
     -- add batch jobs for build_before
     for idx, group in ipairs(groups) do
-        batchjobs:group_enter(target:name() .. "/before_build_files" .. idx)
-        _add_batchjobs_for_group(batchjobs, groups_leaf, target, group, "before")
-        groups_leaf = batchjobs:group_leave() or groups_leaf
+        if _has_scripts_for_group(group, "before") then
+            batchjobs:group_enter(target:name() .. "/before_build_files" .. idx)
+            _add_batchjobs_for_group(batchjobs, groups_leaf, target, group, "before")
+            groups_leaf = batchjobs:group_leave() or groups_leaf
+            groups_root = groups_root or groups_leaf
+        end
     end
-    return groups_leaf, groups_root
+    return groups_leaf, groups_root or groups_leaf
 end
 
 -- add batch jobs for building object files
