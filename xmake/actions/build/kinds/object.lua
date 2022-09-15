@@ -243,7 +243,10 @@ function _build_sourcebatch_groups_for_rules(groups, target, sourcebatches)
     end
 end
 
--- build sourcebatch groups by rule dependencies order
+-- build sourcebatch groups by rule dependencies order, e.g. `add_deps("qt.ui", {order = true})`
+--
+-- @see https://github.com/xmake-io/xmake/issues/2814
+--
 function _build_sourcebatch_groups(target, sourcebatches)
     local groups = {{}}
     _build_sourcebatch_groups_for_target(groups, target, sourcebatches)
