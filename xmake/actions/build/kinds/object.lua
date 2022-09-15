@@ -235,7 +235,6 @@ function _build_sourcebatch_groups_for_rules(groups, target, sourcebatches)
         local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
         local ruleinst = _get_rule(rulename)
         local depth = _get_rule_max_depth(ruleinst, 1)
-        print(rulename, depth)
         local group = groups[depth]
         if group == nil then
             group = {}
@@ -259,10 +258,6 @@ function _build_sourcebatch_groups(target, sourcebatches)
     if #groups > 0 then
         groups = table.reverse(groups)
     end
-    --[[
-    for idx, group in ipairs(groups) do
-        print(idx, table.keys(group))
-    end]]
     return groups
 end
 
