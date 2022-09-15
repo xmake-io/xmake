@@ -47,6 +47,28 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
+-- is cross compilation?
+function _is_cross_compilation(package)
+    if not package:is_plat(os.subhost()) then
+        return true
+    end
+    if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
+        return true
+    end
+    return false
+end
+
+-- get cross file
+function _get_cross_file(package, opt)
+    local crossfile = path.join(_get_buildir(package, opt), "cross_file.txt")
+    if not os.isfile(crossfile) then
+        local file = io.open(crossfile, "w")
+        file:print("")
+        file:close()
+    end
+    return crossfile
+end
+
 -- get configs
 function _get_configs(package, configs, opt)
 
@@ -71,6 +93,11 @@ function _get_configs(package, configs, opt)
     -- add vs_runtime flags
     if package:is_plat("windows") then
         table.insert(configs, "-Db_vscrt=" .. package:config("vs_runtime"):lower())
+    end
+
+    -- add cross file
+    if _is_cross_compilation(package) then
+        table.insert(configs, "--cross-file=" .. _get_cross_file(package, opt))
     end
 
     -- add build directory
