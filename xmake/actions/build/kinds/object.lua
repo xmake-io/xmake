@@ -45,6 +45,53 @@ function _get_rule_max_depth(ruleinst, depth)
     return depth
 end
 
+-- has scripts for the custom rule
+function _has_scripts_for_rule(ruleinst, suffix)
+
+    -- add batch jobs for xx_build_files
+    local scriptname = "build_files" .. (suffix and ("_" .. suffix) or "")
+    local script = ruleinst:script(scriptname)
+    if script then
+        return true
+    end
+
+    -- add batch jobs for xx_build_file
+    scriptname = "build_file" .. (suffix and ("_" .. suffix) or "")
+    script = ruleinst:script(scriptname)
+    if script then
+        return true
+    end
+
+    -- add batch jobs for xx_buildcmd_files
+    scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
+    script = ruleinst:script(scriptname)
+    if script then
+        return true
+    end
+
+    -- add batch jobs for xx_buildcmd_file
+    scriptname = "buildcmd_file" .. (suffix and ("_" .. suffix) or "")
+    script = ruleinst:script(scriptname)
+    if script then
+        return true
+    end
+end
+
+-- has scripts for target
+function _has_scripts_for_target(target, suffix)
+    local scriptname = "build_files" .. (suffix and ("_" .. suffix) or "")
+    local script = target:script(scriptname)
+    if script then
+        return true
+    else
+        scriptname = "build_file" .. (suffix and ("_" .. suffix) or "")
+        script = target:script(scriptname)
+        if script then
+            return true
+        end
+    end
+end
+
 -- add batch jobs for the custom rule
 function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix)
 
@@ -142,20 +189,13 @@ end
 
 -- add batch jobs for group
 function _add_batchjobs_for_group(batchjobs, rootjob, target, group, suffix)
-    local did_on_targets = _g.did_on_targets
-    if not did_on_targets then
-        did_on_targets = {}
-        _g.did_on_targets = did_on_targets
-    end
     for _, item in pairs(group) do
         local sourcebatch = item.sourcebatch
         if item.target then
-            if _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suffix) and not suffix then
-                did_on_targets[sourcebatch] = true
-            end
+            _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suffix)
         end
         -- override on_xxx script in target? we need ignore rule scripts
-        if item.rule and (suffix or not did_on_targets[sourcebatch]) then
+        if item.rule and (suffix or not _has_scripts_for_target(target, suffix)) then
             _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix)
         end
     end
