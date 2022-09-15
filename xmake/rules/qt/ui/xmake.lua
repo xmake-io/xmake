@@ -20,6 +20,7 @@
 
 rule("qt.ui")
     add_deps("qt.env")
+    add_deps("qt.moc", {order = true})
     set_extensions(".ui")
     on_load(function (target)
 

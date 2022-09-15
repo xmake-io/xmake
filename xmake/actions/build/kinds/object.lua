@@ -34,15 +34,19 @@ end
 
 -- get max depth of rule
 function _get_rule_max_depth(ruleinst, depth)
+    local max_depth = depth
     for _, depname in ipairs(ruleinst:get("deps")) do
         local dep = _get_rule(depname)
         local dep_depth = depth
         if ruleinst:extraconf("deps", depname, "order") then
             dep_depth = dep_depth + 1
         end
-        return _get_rule_max_depth(dep, dep_depth)
+        local cur_depth = _get_rule_max_depth(dep, dep_depth)
+        if cur_depth > max_depth then
+            max_depth = cur_depth
+        end
     end
-    return depth
+    return max_depth
 end
 
 -- has scripts for the custom rule
@@ -231,6 +235,7 @@ function _build_sourcebatch_groups_for_rules(groups, target, sourcebatches)
         local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
         local ruleinst = _get_rule(rulename)
         local depth = _get_rule_max_depth(ruleinst, 1)
+        print(rulename, depth)
         local group = groups[depth]
         if group == nil then
             group = {}
@@ -254,6 +259,10 @@ function _build_sourcebatch_groups(target, sourcebatches)
     if #groups > 0 then
         groups = table.reverse(groups)
     end
+    --[[
+    for idx, group in ipairs(groups) do
+        print(idx, table.keys(group))
+    end]]
     return groups
 end
 
