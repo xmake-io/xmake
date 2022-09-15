@@ -121,67 +121,83 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suff
     end
 end
 
+-- add batch jobs for group
+function _add_batchjobs_for_group(batchjobs, rootjob, target, group, suffix)
+    for _, item in pairs(group) do
+        if item.target then
+            _add_batchjobs_for_target(batchjobs, rootjob, target, item.sourcebatch, suffix)
+        end
+        if item.rule then
+            _add_batchjobs_for_rule(batchjobs, rootjob, target, item.sourcebatch, suffix)
+        end
+    end
+end
+
 -- build sourcebatch groups for target
-function _build_sourcebatch_groups_for_target(sourcebatch_groups, target, sourcebatches)
-    local sourcebatch_group = sourcebatch_groups[1]
+function _build_sourcebatch_groups_for_target(groups, target, sourcebatches)
+    local group = groups[1]
     for _, sourcebatch in pairs(sourcebatches) do
-        table.insert(sourcebatch_group, {
-                target = target,
-                sourcebatch = sourcebatch
-            })
+        local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
+        local item = group[rulename] or {}
+        item.target = target
+        item.sourcebatch = sourcebatch
+        group[rulename] = item
     end
 end
 
 -- build sourcebatch groups for rules
-function _build_sourcebatch_groups_for_rules(sourcebatch_groups, target, sourcebatches)
-    local sourcebatch_group = sourcebatch_groups[1]
+function _build_sourcebatch_groups_for_rules(groups, target, sourcebatches)
+    local group = groups[1]
     for _, sourcebatch in pairs(sourcebatches) do
         local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
         local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
-        table.insert(sourcebatch_group, {
-                rule = ruleinst,
-                sourcebatch = sourcebatch
-            })
+        local item = group[rulename] or {}
+        item.rule = ruleinst
+        item.sourcebatch = sourcebatch
+        group[rulename] = item
     end
 end
 
 -- build sourcebatch groups by rule dependencies order
 function _build_sourcebatch_groups(target, sourcebatches)
-    local sourcebatch_groups = {{}}
-    _build_sourcebatch_groups_for_target(sourcebatch_groups, target, sourcebatches)
-    _build_sourcebatch_groups_for_rules(sourcebatch_groups, target, sourcebatches)
+    local groups = {{}}
+    _build_sourcebatch_groups_for_target(groups, target, sourcebatches)
+    _build_sourcebatch_groups_for_rules(groups, target, sourcebatches)
+    return groups
 end
 
 -- add batch jobs for building source files
 function add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, sourcebatches)
 
     -- build sourcebatch groups first
-    local sourcebatch_groups = _build_sourcebatch_groups(target, sourcebatches)
+    local groups = _build_sourcebatch_groups(target, sourcebatches)
 
     -- add batch jobs for build_after
-    batchjobs:group_enter(target:name() .. "/after_build_files")
-    for _, sourcebatch in pairs(sourcebatches) do
-        _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, "after")
-        _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, "after")
-    end
-    local job_build_after = batchjobs:group_leave() or rootjob
-
-    -- add source batches
-    batchjobs:group_enter(target:name() .. "/build_files")
-    for _, sourcebatch in pairs(sourcebatches) do
-        if not _add_batchjobs_for_target(batchjobs, job_build_after, target, sourcebatch) then
-            _add_batchjobs_for_rule(batchjobs, job_build_after, target, sourcebatch)
+    local groups_root = rootjob
+    local groups_leaf = rootjob
+    for idx, group in ipairs(groups) do
+        batchjobs:group_enter(target:name() .. "/after_build_files" .. idx)
+        _add_batchjobs_for_group(batchjobs, groups_leaf, target, group, "after")
+        groups_leaf = batchjobs:group_leave() or groups_leaf
+        if idx == 1 then
+            groups_root = groups_leaf
         end
     end
-    local job_build = batchjobs:group_leave() or job_build_after
 
-    -- add source batches with custom rules before building other sources
-    batchjobs:group_enter(target:name() .. "/before_build_files")
-    for _, sourcebatch in pairs(sourcebatches) do
-        _add_batchjobs_for_rule(batchjobs, job_build, target, sourcebatch, "before")
-        _add_batchjobs_for_target(batchjobs, job_build, target, sourcebatch, "before")
+    -- add batch jobs for build
+    for idx, group in ipairs(groups) do
+        batchjobs:group_enter(target:name() .. "/build_files" .. idx)
+        _add_batchjobs_for_group(batchjobs, groups_leaf, target, group)
+        groups_leaf = batchjobs:group_leave() or groups_leaf
     end
-    return batchjobs:group_leave() or job_build, job_build_after
+
+    -- add batch jobs for build_before
+    for idx, group in ipairs(groups) do
+        batchjobs:group_enter(target:name() .. "/before_build_files" .. idx)
+        _add_batchjobs_for_group(batchjobs, groups_leaf, target, group, "before")
+        groups_leaf = batchjobs:group_leave() or groups_leaf
+    end
+    return groups_leaf, groups_root
 end
 
 -- add batch jobs for building object files
