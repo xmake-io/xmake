@@ -33,9 +33,10 @@ target("test")
     before_build_file(function (target, sourcefile)
         print("target.before_build_file: %s", sourcefile)
     end)
+    --[[
     on_build_file(function (target, sourcefile)
         print("target.on_build_file: %s", sourcefile)
-    end)
+    end)]]
     after_build_file(function (target, sourcefile)
         print("target.after_build_file: %s", sourcefile)
     end)
