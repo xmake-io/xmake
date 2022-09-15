@@ -78,6 +78,30 @@ function _get_cross_file(package, opt)
     if not os.isfile(crossfile) then
         local file = io.open(crossfile, "w")
         file:print("[binaries]")
+        local cc = package:build_getenv("cc")
+        if cc then
+            file:print("c='%s'", cc)
+        end
+        local cxx = package:build_getenv("cxx")
+        if cxx then
+            file:print("cpp='%s'", cxx)
+        end
+        local ld = package:build_getenv("ld")
+        if ld then
+            file:print("ld='%s'", ld)
+        end
+        local ar = package:build_getenv("ar")
+        if ar then
+            file:print("ar='%s'", ar)
+        end
+        local strip = package:build_getenv("strip")
+        if strip then
+            file:print("strip='%s'", strip)
+        end
+        local ranlib = package:build_getenv("ranlib")
+        if ranlib then
+            file:print("ranlib='%s'", ranlib)
+        end
         local cmake = find_tool("cmake")
         if cmake then
             file:print("cmake='%s'", cmake.program)
