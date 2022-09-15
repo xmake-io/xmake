@@ -58,12 +58,34 @@ function _is_cross_compilation(package)
     return false
 end
 
+-- get pkg-config
+function _get_pkgconfig(package)
+    if package:is_plat("windows") then
+        local pkgconf = find_tool("pkgconf")
+        if pkgconf then
+            return pkgconf.program
+        end
+    end
+    local pkgconfig = find_tool("pkg-config")
+    if pkgconfig then
+        return pkgconfig.program
+    end
+end
+
 -- get cross file
 function _get_cross_file(package, opt)
     local crossfile = path.join(_get_buildir(package, opt), "cross_file.txt")
     if not os.isfile(crossfile) then
         local file = io.open(crossfile, "w")
-        file:print("")
+        file:print("[binaries]")
+        local cmake = find_tool("cmake")
+        if cmake then
+            file:print("cmake='%s'", cmake.program)
+        end
+        local pkgconfig = _get_pkgconfig(package)
+        if pkgconfig then
+            file:print("pkgconfig='%s'", pkgconfig)
+        end
         file:close()
     end
     return crossfile
@@ -191,6 +213,7 @@ function buildenvs(package, opt)
                 envs.PKG_CONFIG = pkgconf.program
             end
         end
+    --[[
     else
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
         local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
@@ -222,6 +245,7 @@ function buildenvs(package, opt)
         envs.ARFLAGS   = table.concat(arflags, ' ')
         envs.LDFLAGS   = table.concat(ldflags, ' ')
         envs.SHFLAGS   = table.concat(shflags, ' ')
+    ]]
     end
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
