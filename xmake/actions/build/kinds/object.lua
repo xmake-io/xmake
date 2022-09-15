@@ -142,16 +142,21 @@ end
 
 -- add batch jobs for group
 function _add_batchjobs_for_group(batchjobs, rootjob, target, group, suffix)
+    local did_on_targets = _g.did_on_targets
+    if not did_on_targets then
+        did_on_targets = {}
+        _g.did_on_targets = did_on_targets
+    end
     for _, item in pairs(group) do
-        local ignore_rule = false
+        local sourcebatch = item.sourcebatch
         if item.target then
-            if _add_batchjobs_for_target(batchjobs, rootjob, target, item.sourcebatch, suffix) and not suffix then
-                -- override on_xxx script in target? we need ignore rule scripts
-                ignore_rule = true
+            if _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suffix) and not suffix then
+                did_on_targets[sourcebatch] = true
             end
         end
-        if item.rule and not ignore_rule then
-            _add_batchjobs_for_rule(batchjobs, rootjob, target, item.sourcebatch, suffix)
+        -- override on_xxx script in target? we need ignore rule scripts
+        if item.rule and (suffix or not did_on_targets[sourcebatch]) then
+            _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix)
         end
     end
 end
