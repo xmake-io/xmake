@@ -167,6 +167,7 @@ function _get_cross_file(buildir)
             file:print("endian = 'little'")
         elseif is_plat("android") then
             -- TODO
+            raise("android has been not supported now!")
         elseif is_plat("mingw") then
             local cpu
             local cpu_family

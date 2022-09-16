@@ -181,6 +181,7 @@ function _get_cross_file(package, opt)
             file:print("endian = 'little'")
         elseif package:is_plat("android") then
             -- TODO
+            raise("android has been not supported now!")
         elseif package:is_plat("mingw") then
             local cpu
             local cpu_family
