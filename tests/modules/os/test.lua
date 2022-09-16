@@ -49,6 +49,23 @@ function test_cp_mvdir_into_another_dir(t)
     t:require(os.mclock() >= tm)
 end
 
+function test_cp_symlink(t)
+    if is_subhost("windows") then
+        return
+    end
+    os.touch("test1")
+    os.ln("test1", "test2")
+    t:require(os.isfile("test1"))
+    t:require(os.isfile("test2"))
+    t:require(os.islink("test2"))
+    os.cp("test2", "test3")
+    t:require(os.isfile("test3"))
+    t:require(not os.islink("test3"))
+    os.cp("test2", "test4", {symlink = true})
+    t:require(os.isfile("test4"))
+    t:require(os.islink("test4"))
+end
+
 function test_setenv(t)
     -- get mclock
     local tm = os.mclock()
@@ -111,3 +128,4 @@ function test_args(t)
     t:are_equal(os.args('-DTEST=hello'), '-DTEST=hello') -- irreversible
     t:are_equal(os.args({'-DTEST="hello world"', '-DTEST2="hello world2"'}), '"-DTEST=\\\"hello world\\\"" "-DTEST2=\\\"hello world2\\\""')
 end
+
