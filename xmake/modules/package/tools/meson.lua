@@ -165,7 +165,7 @@ function _get_cross_file(package, opt)
                 cpu = "i686"
                 cpu_family = "x86"
             else
-                raise("unsupprted arch(%s)", package:arch())
+                raise("unsupported arch(%s)", package:arch())
             end
             file:print("system = 'windows'")
             file:print("cpu_family = '%s'", cpu_family)
