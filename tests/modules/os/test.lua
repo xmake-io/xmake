@@ -81,6 +81,9 @@ function test_cp_symlink(t)
     os.tryrm("dir")
     os.tryrm("dir2")
     os.tryrm("dir3")
+    t:require(not os.exists("test1"))
+    t:require(not os.exists("test2"))
+    t:require(not os.exists("dir"))
 end
 
 function test_setenv(t)
