@@ -81,19 +81,20 @@ function _get_cross_file(buildir)
         file:print("[binaries]")
         local cc = _get_buildenv("cc")
         if cc then
-            file:print("c='%s'", cc)
+            -- we need split it, maybe is `xcrun -sdk iphoneos clang`
+            file:print("c=['%s']", table.concat(os.argv(cc), "', '"))
         end
         local cxx = _get_buildenv("cxx")
         if cxx then
-            file:print("cpp='%s'", cxx)
+            file:print("cpp=['%s']", table.concat(os.argv(cxx), "', '"))
         end
         local ld = _get_buildenv("ld")
         if ld then
-            file:print("ld='%s'", ld)
+            file:print("ld=['%s']", table.concat(os.argv(ld), "', '"))
         end
         local ar = _get_buildenv("ar")
         if ar then
-            file:print("ar='%s'", ar)
+            file:print("ar=['%s']", table.concat(os.argv(ar), "', '"))
         end
         local strip = _get_buildenv("strip")
         if strip then

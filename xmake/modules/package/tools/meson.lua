@@ -82,19 +82,20 @@ function _get_cross_file(package, opt)
         file:print("[binaries]")
         local cc = package:build_getenv("cc")
         if cc then
-            file:print("c='%s'", cc)
+            -- we need split it, maybe is `xcrun -sdk iphoneos clang`
+            file:print("c=['%s']", table.concat(os.argv(cc), "', '"))
         end
         local cxx = package:build_getenv("cxx")
         if cxx then
-            file:print("cpp='%s'", cxx)
+            file:print("cpp=['%s']", table.concat(os.argv(cxx), "', '"))
         end
         local ld = package:build_getenv("ld")
         if ld then
-            file:print("ld='%s'", ld)
+            file:print("ld=['%s']", table.concat(os.argv(ld), "', '"))
         end
         local ar = package:build_getenv("ar")
         if ar then
-            file:print("ar='%s'", ar)
+            file:print("ar=['%s']", table.concat(os.argv(ar), "', '"))
         end
         local strip = package:build_getenv("strip")
         if strip then
