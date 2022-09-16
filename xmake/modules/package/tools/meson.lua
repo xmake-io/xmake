@@ -197,6 +197,11 @@ function _get_cross_file(package, opt)
             file:print("cpu_family = '%s'", cpu_family)
             file:print("cpu = '%s'", cpu)
             file:print("endian = 'little'")
+        elseif package:is_plat("wasm") then
+            file:print("system = 'emscripten'")
+            file:print("cpu_family = 'wasm32'")
+            file:print("cpu = 'wasm32'")
+            file:print("endian = 'little'")
         elseif package:is_plat("cross") and package:targetos() then
             local cpu = package:arch()
             if package:is_arch("arm64") then
