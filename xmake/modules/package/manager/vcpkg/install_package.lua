@@ -57,6 +57,8 @@ function _install_for_classic(vcpkg, name, opt)
         if configs.vs_runtime and configs.vs_runtime:startswith("MD") then
             triplet = triplet .. "-md"
         end
+    elseif opt.plat == "mingw" then
+        triplet = triplet .. (configs.shared ~= true and "-static" or "-dynamic")
     end
 
     -- init argv
@@ -86,6 +88,8 @@ function _install_for_manifest(vcpkg, name, opt)
         if configs.vs_runtime and configs.vs_runtime:startswith("MD") then
             triplet = triplet .. "-md"
         end
+    elseif opt.plat == "mingw" then
+        triplet = triplet .. (configs.shared ~= true and "-static" or "-dynamic")
     end
 
     -- init argv
