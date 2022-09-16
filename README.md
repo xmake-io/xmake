@@ -124,6 +124,13 @@ If you don't want to use the script to install xmake, see [Installation Guide](h
 
 An official xmake package repository exists at: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 
+## Create project
+
+```bash
+$ xmake create hello
+$ cd hello
+```
+
 ## Build project
 
 ```bash
