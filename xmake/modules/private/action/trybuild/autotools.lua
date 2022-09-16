@@ -254,7 +254,9 @@ end
 -- detect build-system and configuration file
 function detect()
     if not is_subhost("windows") then
-        return find_file("configure", os.curdir()) or find_file("configure.ac", os.curdir())
+        return find_file("configure", os.curdir()) or
+               find_file("configure.ac", os.curdir()) or
+               find_file("autogen.sh", os.curir())
     end
 end
 
