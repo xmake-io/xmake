@@ -193,6 +193,15 @@ function _get_configs(artifacts_dir)
                 x86_64 = "x86_64-w64-mingw32"
             }
             table.insert(configs, "--host=" .. (triples[config.arch()] or triples.i386))
+        elseif is_plat("cross") then
+            local host = config.arch()
+            if is_arch("arm64") then
+                host = "aarch64"
+            elseif is_arch("arm.*") then
+                host = "arm"
+            end
+            host = host .. "-" .. (get_config("target_os") or "linux")
+            table.insert(configs, "--host=" .. host)
         else
             raise("autotools: unknown platform(%s)!", config.plat())
         end
