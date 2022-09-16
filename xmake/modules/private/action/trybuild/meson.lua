@@ -143,7 +143,27 @@ function _get_cross_file(buildir)
         -- host machine
         file:print("[host_machine]")
         if is_plat("iphoneos", "macosx") then
-            -- TODO
+            local cpu
+            local cpu_family
+            if is_arch("arm64") then
+                cpu = "aarch64"
+                cpu_family = "aarch64"
+            elseif is_arch("armv7") then
+                cpu = "arm"
+                cpu_family = "arm"
+            elseif is_arch("x64", "x86_64") then
+                cpu = "x86_64"
+                cpu_family = "x86_64"
+            elseif is_arch("x86", "i386") then
+                cpu = "i686"
+                cpu_family = "x86"
+            else
+                raise("unsupported arch(%s)", config.arch())
+            end
+            file:print("system = 'darwin'")
+            file:print("cpu_family = '%s'", cpu_family)
+            file:print("cpu = '%s'", cpu)
+            file:print("endian = 'little'")
         elseif is_plat("android") then
             -- TODO
         elseif is_plat("mingw") then
