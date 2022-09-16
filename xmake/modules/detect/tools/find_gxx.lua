@@ -37,13 +37,8 @@ import("lib.detect.find_programver")
 --
 function main(opt)
 
-    -- init options
     opt = opt or {}
-
-    -- find program
     local program = find_program(opt.program or "g++", opt)
-
-    -- find program version
     local version = nil
     if program and opt and opt.version then
         version = find_programver(program, opt)
@@ -57,7 +52,5 @@ function main(opt)
             is_clang = true
         end
     end
-
-    -- ok?
     return program, version, (is_clang and "clangxx" or "gxx")
 end
