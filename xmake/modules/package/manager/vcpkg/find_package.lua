@@ -65,17 +65,20 @@ end
 
 function _find_package(vcpkgdir, name, opt)
 
+    -- get configs
+    local configs = opt.configs or {}
+
     -- fix name, e.g. ffmpeg[x264] as ffmpeg
     -- @see https://github.com/xmake-io/xmake/issues/925
     name = name:gsub("%[.-%]", "")
 
-    -- get arch, plat and mode
+    -- init triplet
     local arch = opt.arch
     local plat = opt.plat
     local mode = opt.mode
-
     plat = configurations.plat(plat)
     arch = configurations.arch(arch)
+    local triplet = configurations.triplet(configs, plat, arch)
 
     -- get the vcpkg info directories
     local infodirs = {}
@@ -85,16 +88,6 @@ function _find_package(vcpkgdir, name, opt)
     table.join2(infodirs, path.join(vcpkgdir, "installed", "vcpkg", "info"))
 
     -- find the package info file, e.g. zlib_1.2.11-3_x86-windows[-static].list
-    local triplet = arch .. "-" .. plat
-    local configs = opt.configs or {}
-    if opt.plat == "windows" and configs.shared ~= true then
-        triplet = triplet .. "-static"
-        if configs.vs_runtime and configs.vs_runtime:startswith("MD") then
-            triplet = triplet .. "-md"
-        end
-    elseif opt.plat == "mingw" then
-        triplet = triplet .. (configs.shared ~= true and "-static" or "-dynamic")
-    end
     local infofile = find_file(format("%s_*_%s.list", name, triplet), infodirs)
     if not infofile then
         return

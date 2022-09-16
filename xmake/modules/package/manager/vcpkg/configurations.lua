@@ -46,6 +46,21 @@ function plat(plat)
     return plats[plat] or plat
 end
 
+-- get triplet
+function triplet(configs, plat, arch)
+    configs = configs or {}
+    local triplet = arch .. "-" .. plat
+    if plat == "windows" and configs.shared ~= true then
+        triplet = triplet .. "-static"
+        if configs.vs_runtime and configs.vs_runtime:startswith("MD") then
+            triplet = triplet .. "-md"
+        end
+    elseif plat == "mingw" then
+        triplet = triplet .. (configs.shared ~= true and "-static" or "-dynamic")
+    end
+    return triplet
+end
+
 -- get configurations
 function main()
     return {
