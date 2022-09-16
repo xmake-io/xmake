@@ -66,7 +66,7 @@ end
 -- get the build environments
 function _get_buildenvs()
     local envs = {}
-    if is_plat(os.subhost()) then
+    if not _is_cross_compilation() then
         local cflags   = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cflags"))
         local cxxflags = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cxxflags"))
         local asflags  = table.copy(table.wrap(_get_buildenv("asflags")))
@@ -131,6 +131,17 @@ function _get_buildenvs()
     return envs
 end
 
+-- is cross compilation?
+function _is_cross_compilation()
+    if not is_plat(os.subhost()) then
+        return true
+    end
+    if is_plat("macosx") and not is_arch(os.subarch()) then
+        return true
+    end
+    return false
+end
+
 -- get configs
 function _get_configs(artifacts_dir)
 
@@ -147,8 +158,8 @@ function _get_configs(artifacts_dir)
     end
 
     -- add host for cross-complation
-    if not is_plat(os.subhost()) then
-        if is_plat("iphoneos") then
+    if _is_cross_compilation() then
+        if is_plat("iphoneos", "macosx") then
             local triples =
             {
                 arm64  = "aarch64-apple-darwin",
