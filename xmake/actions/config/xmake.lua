@@ -217,13 +217,13 @@ task("config")
                     {nil, "trybuild",   "kv", nil       , "Enable try-build mode and set the third-party buildsystem tool.",
                                                             "e.g.",
                                                             "    - xmake f --trybuild=auto; xmake",
-                                                            "    - xmake f --trybuild=autotools -p android --ndk=xxx; xmake",
+                                                            "    - xmake f --trybuild=autoconf -p android --ndk=xxx; xmake",
                                                             "",
                                                             "the third-party buildsystems:"
-                                                        ,   values = {"auto", "make", "autotools", "cmake", "scons", "meson", "bazel", "ninja", "msbuild", "xcodebuild", "ndkbuild"}},
+                                                        ,   values = {"auto", "make", "autoconf", "cmake", "scons", "meson", "bazel", "ninja", "msbuild", "xcodebuild", "ndkbuild"}},
                     {nil, "tryconfigs", "kv", nil       ,   "Set the extra configurations of the third-party buildsystem for the try-build mode.",
                                                             "e.g.",
-                                                            "    - xmake f --trybuild=autotools --tryconfigs='--enable-shared=no'"},
+                                                            "    - xmake f --trybuild=autoconf --tryconfigs='--enable-shared=no'"},
                     {'o', "buildir",    "kv", "build"   , "Set build directory."},
                     {},
                     {nil, "target",     "v" , nil       , "Configure for the given target."

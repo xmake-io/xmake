@@ -18,27 +18,13 @@
 -- @file        xmake.lua
 --
 
--- define task
 task("build")
-
-    -- set category
     set_category("main")
-
-    -- on run
     on_run("main")
-
-    -- set menu
     set_menu {
-                -- usage
                 usage = "xmake [task] [options] [target]"
-
-                -- description
             ,   description = "Build targets if no given tasks."
-
-                -- xmake b
             ,   shortname = 'b'
-
-                -- options
             ,   options =
                 {
                     {'b', "build",      "k",  nil   , "Build target. This is default building mode and optional."     }

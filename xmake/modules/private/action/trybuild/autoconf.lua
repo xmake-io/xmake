@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        autotools.lua
+-- @file        autoconf.lua
 --
 
 -- imports
@@ -245,7 +245,7 @@ function _get_configs(artifacts_dir)
             host = host .. "-" .. (get_config("target_os") or "linux")
             table.insert(configs, "--host=" .. host)
         else
-            raise("autotools: unknown platform(%s)!", config.plat())
+            raise("autoconf: unknown platform(%s)!", config.plat())
         end
     end
     return configs
@@ -256,7 +256,7 @@ function detect()
     if not is_subhost("windows") then
         return find_file("configure", os.curdir()) or
                find_file("configure.ac", os.curdir()) or
-               find_file("autogen.sh", os.curir())
+               find_file("autogen.sh", os.curdir())
     end
 end
 
