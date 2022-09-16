@@ -66,6 +66,7 @@ end
 -- get the build environments
 function _get_buildenvs()
     local envs = {}
+    local cross = false
     if not _is_cross_compilation() then
         local cflags   = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cflags"))
         local cxxflags = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cxxflags"))
@@ -82,6 +83,7 @@ function _get_buildenvs()
         envs.ASFLAGS   = table.concat(asflags, ' ')
         envs.LDFLAGS   = table.concat(ldflags, ' ')
     else
+        cross = true
         local cflags   = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cflags"))
         local cxxflags = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cxxflags"))
         envs.CC        = _get_buildenv("cc")
@@ -97,11 +99,11 @@ function _get_buildenvs()
         envs.ARFLAGS   = table.concat(table.wrap(_get_buildenv("arflags")), ' ')
         envs.LDFLAGS   = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
         envs.SHFLAGS   = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
-        if #envs.ARFLAGS == 0 then
-            if envs.AR and envs.AR:endswith("ar") then
-                envs.ARFLAGS = "-cr"
-            end
-        end
+    end
+
+    -- cross-compilation? pass the full build environments
+    if cross then
+        local ar = envs.AR
         if is_plat("mingw") then
             -- fix linker error, @see https://github.com/xmake-io/xmake/issues/574
             -- libtool: line 1855: lib: command not found
@@ -123,8 +125,48 @@ function _get_buildenvs()
                 envs.CPP      = _translate_windows_bin_path(envs.CPP)
                 envs.RANLIB   = _translate_windows_bin_path(envs.RANLIB)
             end
+        elseif is_plat("cross") or (ar and ar:find("ar")) then
+            -- only for cross-toolchain
+            envs.CXX = _get_buildenv("cxx")
+            if not envs.ARFLAGS or envs.ARFLAGS == "" then
+                envs.ARFLAGS = "-cr"
+            end
+        end
+
+        -- we should use ld as linker
+        --
+        -- @see
+        -- https://github.com/xmake-io/xmake-repo/pull/1043
+        -- https://github.com/libexpat/libexpat/issues/312
+        -- https://github.com/xmake-io/xmake/issues/2195
+        local ld = envs.LD
+        if ld then
+            local dir = path.directory(ld)
+            local name = path.filename(ld)
+            name = name:gsub("clang%+%+$", "ld")
+            name = name:gsub("clang%+%+%-%d+", "ld")
+            name = name:gsub("clang$", "ld")
+            name = name:gsub("clang%-%d+", "ld")
+            name = name:gsub("gcc$", "ld")
+            name = name:gsub("gcc-%d+", "ld")
+            name = name:gsub("g%+%+$", "ld")
+            name = name:gsub("g%+%+%-%d+", "ld")
+            envs.LD = dir and path.join(dir, name) or name
+        end
+        -- we need use clang++ as cxx, autoconf will use it as linker
+        -- https://github.com/xmake-io/xmake/issues/2170
+        local cxx = envs.CXX
+        if cxx then
+            local dir = path.directory(cxx)
+            local name = path.filename(cxx)
+            name = name:gsub("clang$", "clang++")
+            name = name:gsub("clang%-", "clang++-")
+            name = name:gsub("gcc$", "g++")
+            name = name:gsub("gcc%-", "g++-")
+            envs.CXX = dir and path.join(dir, name) or name
         end
     end
+
     if option.get("verbose") then
         print(envs)
     end
