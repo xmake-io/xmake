@@ -29,7 +29,7 @@ Environment:
 
 
 EVT_WDF_INTERRUPT_SYNCHRONIZE SerialDecrementRTSCounter;
- 
+
 BOOLEAN
 SerialSetDTR(
     IN WDFINTERRUPT  Interrupt,
@@ -71,7 +71,7 @@ Return Value:
     return FALSE;
 
 }
-
+
 BOOLEAN
 SerialClrDTR(
     IN WDFINTERRUPT  Interrupt,
@@ -113,7 +113,7 @@ Return Value:
     return FALSE;
 
 }
-
+
 BOOLEAN
 SerialSetRTS(
     IN WDFINTERRUPT  Interrupt,
@@ -155,7 +155,7 @@ Return Value:
     return FALSE;
 
 }
-
+
 BOOLEAN
 SerialClrRTS(
     IN WDFINTERRUPT  Interrupt,
@@ -197,7 +197,7 @@ Return Value:
     return FALSE;
 
 }
-
+
 BOOLEAN
 SerialSetupNewHandFlow(
     IN PSERIAL_DEVICE_EXTENSION Extension,
@@ -663,7 +663,7 @@ Return Value:
     return FALSE;
 
 }
-
+
 BOOLEAN
 SerialSetHandFlow(
     IN WDFINTERRUPT  Interrupt,
@@ -710,7 +710,7 @@ Return Value:
     return FALSE;
 
 }
-
+
 BOOLEAN
 SerialTurnOnBreak(
     IN WDFINTERRUPT  Interrupt,
@@ -764,7 +764,7 @@ Return Value:
     return FALSE;
 
 }
-
+
 BOOLEAN
 SerialTurnOffBreak(
     IN WDFINTERRUPT  Interrupt,
@@ -851,7 +851,7 @@ Return Value:
     return FALSE;
 
 }
-
+
 BOOLEAN
 SerialPretendXoff(
     IN WDFINTERRUPT  Interrupt,
@@ -903,7 +903,7 @@ Return Value:
     return FALSE;
 
 }
-
+
 BOOLEAN
 SerialPretendXon(
     IN WDFINTERRUPT  Interrupt,
@@ -971,7 +971,7 @@ Return Value:
     return FALSE;
 
 }
-
+
 VOID
 SerialHandleReducedIntBuffer(
     IN PSERIAL_DEVICE_EXTENSION Extension
@@ -1045,7 +1045,7 @@ Return Value:
     }
 
 }
-
+
 VOID
 SerialProdXonXoff(
     IN PSERIAL_DEVICE_EXTENSION Extension,
@@ -1109,7 +1109,7 @@ Return Value:
     }
 
 }
-
+
 ULONG
 SerialHandleModemUpdate(
     IN PSERIAL_DEVICE_EXTENSION Extension,
@@ -1433,7 +1433,7 @@ Return Value:
 
     return ((ULONG)ModemStatus);
 }
-
+
 BOOLEAN
 SerialPerhapsLowerRTS(
     IN WDFINTERRUPT  Interrupt,
@@ -1554,7 +1554,7 @@ Return Value:
 
     return FALSE;
 }
-
+
 VOID
 SerialStartTimerLowerRTS(
     IN WDFDPC Dpc
@@ -1629,7 +1629,7 @@ Return Value:
     SerialDbgPrintEx(TRACE_LEVEL_INFORMATION, DBG_IOCTLS, "<SerialStartTimerLowerRTS\n");
 
 }
-
+
 VOID
 SerialInvokePerhapsLowerRTS(
     IN WDFTIMER Timer
@@ -1666,7 +1666,7 @@ Return Value:
         );
 
 }
-
+
 BOOLEAN
 SerialDecrementRTSCounter(
     IN WDFINTERRUPT  Interrupt,

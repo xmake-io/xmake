@@ -91,10 +91,10 @@ PVOID LocalMmMapIoSpace(
     if (pMmMapIoSpaceEx != NULL){
         //
         // Call WIN10 API if available
-        //        
+        //
         return pMmMapIoSpaceEx(PhysicalAddress,
                                NumberOfBytes,
-                               PAGE_READWRITE | PAGE_NOCACHE); 
+                               PAGE_READWRITE | PAGE_NOCACHE);
     }
 
     //
@@ -103,7 +103,7 @@ PVOID LocalMmMapIoSpace(
     // is not present. MmMapIoSpaceEx is available starting in WIN10.
     //
     #pragma warning(suppress: 30029)
-    return MmMapIoSpace(PhysicalAddress, NumberOfBytes, MmNonCached); 
+    return MmMapIoSpace(PhysicalAddress, NumberOfBytes, MmNonCached);
 }
 
 NTSTATUS
@@ -689,7 +689,7 @@ Return Value:
        ExFreePool(deviceExtension->InterruptReadBuffer);
        deviceExtension->InterruptReadBuffer = NULL;
     }
-    
+
     //
     // Update the global configuration count for serial device.
     //
@@ -1462,16 +1462,16 @@ Return Value:
 
     // __WARNING_IRQ_SET_TOO_HIGH:  we are calling interrupt synchronize routine directly. Suppress it because interrupt is not connected yet.
     // __WARNING_INVALID_PARAM_VALUE_1: Interrupt is UNREFERENCED_PARAMETER, so it can be NULL
-#pragma warning(suppress: __WARNING_IRQ_SET_TOO_HIGH; suppress: __WARNING_INVALID_PARAM_VALUE_1) 
+#pragma warning(suppress: __WARNING_IRQ_SET_TOO_HIGH; suppress: __WARNING_INVALID_PARAM_VALUE_1)
     SerialReset(NULL, pDevExt);
 
-#pragma warning(suppress: __WARNING_IRQ_SET_TOO_HIGH; suppress: __WARNING_INVALID_PARAM_VALUE_1) 
+#pragma warning(suppress: __WARNING_IRQ_SET_TOO_HIGH; suppress: __WARNING_INVALID_PARAM_VALUE_1)
     SerialMarkClose(NULL, pDevExt);
 
-#pragma warning(suppress: __WARNING_IRQ_SET_TOO_HIGH; suppress: __WARNING_INVALID_PARAM_VALUE_1) 
+#pragma warning(suppress: __WARNING_IRQ_SET_TOO_HIGH; suppress: __WARNING_INVALID_PARAM_VALUE_1)
     SerialClrRTS(NULL, pDevExt);
 
-#pragma warning(suppress: __WARNING_IRQ_SET_TOO_HIGH; suppress: __WARNING_INVALID_PARAM_VALUE_1) 
+#pragma warning(suppress: __WARNING_IRQ_SET_TOO_HIGH; suppress: __WARNING_INVALID_PARAM_VALUE_1)
     SerialClrDTR(NULL, pDevExt);
 
     //
@@ -2033,7 +2033,7 @@ Return Value:
     if(stringHandle) {
         WdfObjectDelete(stringHandle);
     }
-    
+
     return status;
 }
 
@@ -2751,10 +2751,10 @@ Return Value:
     RtlInitUnicodeString(&funcName, L"KeQueryActiveGroupCount");
     fnKeQueryActiveGroupCount = (PFN_KE_GET_ACTIVE_GROUP_COUNT)
         MmGetSystemRoutineAddress(&funcName);
-    
+
     if (fnKeQueryActiveGroupCount != NULL) {
         groupCount = fnKeQueryActiveGroupCount();
-        
+
         //
         // Make sure there is at least one group for the boot processor.
         //
@@ -2762,7 +2762,7 @@ Return Value:
             groupCount = 1;
         }
     }
-    
+
     if (groupCount <= SERIAL_PREFERRED_INTERRUPT_GROUP) {
         group = groupCount - 1;
     }
@@ -2787,7 +2787,7 @@ Return Value:
             groupAffinity = (KAFFINITY)1;
         }
     }
-    
+
     //
     // Initialize group.
     //

@@ -60,7 +60,7 @@ public:
     //
     // The factory method used to create an instance of this driver.
     //
-    
+
     static
     HRESULT
     CreateInstance(

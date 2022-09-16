@@ -2968,7 +2968,7 @@ Return Value:
 --*/
 {
     ULONG SpecialHandlingFlag = 0;
-    
+
     TracePrint((TRACE_LEVEL_VERBOSE,
                 TRACE_FLAG_GENERAL,
                 "DsmpSetNewPath (DevInfo %p): Entering function.\n",
@@ -2983,7 +2983,7 @@ Return Value:
         DsmpSetLBForPathRemovalALUA(DsmContext, FailingDevice, NULL, SpecialHandlingFlag);
     }
 
-  
+
     TracePrint((TRACE_LEVEL_VERBOSE,
                 TRACE_FLAG_GENERAL,
                 "DsmpSetNewPath (DevInfo %p): Exiting function with path (failGroup) %p.\n",
@@ -3285,7 +3285,7 @@ DsmpDecrementCounters(
     if (InterlockedCompareExchange(&FailGroup->NumberOfRequestsInFlight, 0, 0) > 0) {
 
         if(InterlockedDecrement(&FailGroup->NumberOfRequestsInFlight) == 0){
-                
+
             //
             // If the inflight requests on the path is zero, if needed path can be removed.
             //
@@ -3696,7 +3696,7 @@ Return Value:
             }
 
             if (isRead || isWrite) {
-                
+
                 if (groupEntry->UseCacheForLeastBlocks) {
 
                     bytes = SrbGetDataTransferLength(Srb);
@@ -3731,7 +3731,7 @@ Return Value:
                             "DsmpGetPath (DsmIds %p): Sequential IO, so using same path %p for LeastBlocks.\n",
                             DsmList,
                             failGroup));
-                    } 
+                    }
                 }
 
             } else {
@@ -4000,7 +4000,7 @@ Return Value:
     DSM_ASSERT(groupEntry->GroupSig == DSM_GROUP_SIG);
     //
     // useMpioPathId is BOOLEAN (0 or 1) since MPIO_IOCTL_FLAG_USE_PATHID = 1
-    // But since MPIO_IOCTL_FLAG_USE_SCSIADDRESS = 0x2, 
+    // But since MPIO_IOCTL_FLAG_USE_SCSIADDRESS = 0x2,
     // useScsiAddress could have a value of 2 if set. Use logical NOT to make boolean before comparing below
     //
     DSM_ASSERT(useMpioPathId == !useScsiAddress);
@@ -5045,7 +5045,7 @@ Return Value:
                 "DsmpGetAnyActivePath (Group %p): Exiting function with DevInfo %p\n",
                 Group,
                 candidateDevInfo));
-                
+
     return candidateDevInfo;
 }
 
@@ -5268,7 +5268,7 @@ Return Value:
                 "DsmpFindStandbyPathToActivate (Group %p): Exiting function with devInfo %p.\n",
                 Group,
                 candidateDevInfo));
-                
+
     return candidateDevInfo;
 }
 
@@ -5383,7 +5383,7 @@ Return Value:
                 "DsmpFindStandbyPathToActivateALUA (Group %p): Exiting function with devInfo %p.\n",
                 Group,
                 candidateDevInfo));
-                
+
     return candidateDevInfo;
 }
 
@@ -5521,7 +5521,7 @@ Return Value:
     PDSM_DEVICE_INFO devInfo;
     DSM_LOAD_BALANCE_TYPE newLoadBalancePolicy;
     ULONG SpecialHandlingFlag = 0;
-    
+
     TracePrint((TRACE_LEVEL_VERBOSE,
                 TRACE_FLAG_WMI,
                 "DsmpSetLBForDsmPolicyAdjustment (DsmContext %p): Entering function.\n",
@@ -5749,7 +5749,7 @@ Return Value:
                 } else {
 
                     //
-                    // Default LB type:                    
+                    // Default LB type:
                     // is Round Robin if ALUA is not supported, or if ALUA support is implicit but access is symmetric,
                     // else Round Robin With Subset (since in ALUA, all paths aren't in A/O).
                     //
@@ -6502,7 +6502,7 @@ Arguements:
         function will run the load balance policy on the given Group and not
         the Group from the RemovedDeviceInfo.  This should only be used when
         it's impossible to get a pointer to the RemovedDeviceInfo.
-        
+
     SpecialHandlingFlag - Flags to indicate any special handling requirement
 
 Return Value:
@@ -6683,7 +6683,7 @@ Arguements:
         function will run the load balance policy on the given Group and not
         the Group from the RemovedDeviceInfo.  This should only be used when
         it's impossible to get a pointer to the RemovedDeviceInfo.
-        
+
     SpecialHandlingFlag - Flags to indicate any special handling requirement
 
 Return Value:
@@ -6890,7 +6890,7 @@ Arguements:
     DsmContext is the DSM context
 
     FailingDeviceInfo is the device info for the path on which IO failed
-    
+
     SpecialHandlingFlag - Flags to indicate any special handling requirement
 
 Return Value:
@@ -6978,7 +6978,7 @@ Return Value:
                 TRACE_FLAG_RW,
                 "DsmpSetLBForPathFailingALUA (DevInfo %p): Entering function.\n",
                 FailingDeviceInfo));
-                
+
     if (MarkDevInfoFailed) {
         if (!(DsmpIsDeviceFailedState(FailingDeviceInfo->State))) {
 
@@ -6995,7 +6995,7 @@ Return Value:
                     FailingDeviceInfo->State,
                     __LINE__));
     }
-    
+
     group = FailingDeviceInfo->Group;
 
     if (group->LoadBalanceType < DSM_LB_FAILOVER ||
@@ -7292,7 +7292,7 @@ Return Value:
                     group->PathToBeUsed));
 
     } else {
-    
+
         InterlockedExchangePointer(&(group->PathToBeUsed), NULL);
         TracePrint((TRACE_LEVEL_WARNING,
                     TRACE_FLAG_RW,
@@ -7529,7 +7529,7 @@ Return Value:
                                     //
                                     inflightRTPG = InterlockedCompareExchange((LONG volatile*)&group->InFlightRTPG, 1, 0);
                                     if (inflightRTPG) {
-                                    
+
                                         DsmpFreePool(targetPortGroupsInfo);
                                         ExFreeToNPagedLookasideList(&DsmContext->CompletionContextList, completionContext);
                                         DsmpFreePool(srb);
@@ -7576,15 +7576,15 @@ Return Value:
                                                             "DsmpSetPathForIoRetryALUA (DevInfo %p): Throttle before RTPG failed. Failing path %p.\n",
                                                             FailingDeviceInfo,
                                                             FailingDeviceInfo->FailGroup->PathId));
-                                                
+
                                                 InterlockedDecrement((LONG volatile*)&FailingDeviceInfo->Group->Throttled);
                                             }
                                         } else {
-                                        
+
                                             //
                                             // Currently we don't expect this to happen
                                             //
-                                            NT_ASSERT(FALSE);                                        
+                                            NT_ASSERT(FALSE);
                                         }
 
 
@@ -7645,8 +7645,8 @@ Return Value:
                                                                 deviceInfo));
                                                 }
 
-                                            } 
-                                            
+                                            }
+
                                             InterlockedDecrement((LONG volatile*)&group->InFlightRTPG);
                                         }
                                     }
@@ -8577,7 +8577,7 @@ Return Value:
         ExReleaseSpinLockExclusive(&(context->CompletionContext->DsmContext->DsmContextLock), irql);
     }
 
-    
+
     //
     // Resume IO if we throttled requests.
     //
@@ -8607,12 +8607,12 @@ Return Value:
                         DeviceObject));
         }
 
-    } 
+    }
 
     if (decrementRTPGcount) {
-        
+
         //
-        // Resetting InFlightRTPG after resume so that we don't get into situation where 
+        // Resetting InFlightRTPG after resume so that we don't get into situation where
         // new DsmpSetPathForIoRetryALUA caller thread finds that InFlightRTPG is not set but Throttled is set
         //
         ULONG count = InterlockedCompareExchange((LONG volatile*)&group->InFlightRTPG, 0, 1);
@@ -8623,9 +8623,9 @@ Return Value:
         NT_ASSERT(count);
 
         UNREFERENCED_PARAMETER(count);
-        
+
     }
-    
+
     //
     // Free the allocations.
     //
@@ -8748,7 +8748,7 @@ Return Value:
     ULONGLONG saKey;
     ULONGLONG resKey;
     ULONG SpecialHandlingFlag = 0;
-    
+
     UNREFERENCED_PARAMETER(Event);
 
     TracePrint((TRACE_LEVEL_VERBOSE,
@@ -9324,7 +9324,7 @@ Return Value:
     UCHAR senseInfoBufferLength = 0;
     BOOLEAN srbCopySucceeded = FALSE;
     ULONG SpecialHandlingFlag = 0;
-    
+
     UNREFERENCED_PARAMETER(Event);
 
     TracePrint((TRACE_LEVEL_VERBOSE,

@@ -57,8 +57,8 @@ WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(REQUEST_CONTEXT, GetRequestContext)
 DRIVER_INITIALIZE DriverEntry;
 
 //
-// Don't use EVT_WDF_DRIVER_DEVICE_ADD for NonPnpDeviceAdd even though 
-// the signature is same because this is not an event called by the 
+// Don't use EVT_WDF_DRIVER_DEVICE_ADD for NonPnpDeviceAdd even though
+// the signature is same because this is not an event called by the
 // framework.
 //
 NTSTATUS

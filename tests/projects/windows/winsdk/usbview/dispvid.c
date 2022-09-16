@@ -259,7 +259,7 @@ BOOL
 DisplayVCInputTerminal (
     PVIDEO_INPUT_TERMINAL   VidITDesc,
     PSTRING_DESCRIPTOR_NODE StringDescs,
-    DEVICE_POWER_STATE      LatestDevicePowerState    
+    DEVICE_POWER_STATE      LatestDevicePowerState
     );
 
 BOOL
@@ -521,9 +521,9 @@ DisplayVideoDescriptor (
 #endif
 
 #ifdef H264_SUPPORT
-            case MAX_TYPE_UNIT+1:   
+            case MAX_TYPE_UNIT+1:
             // for H.264, the bDescriptorSubtype = 7, which is equal to MAX_TYPE_UNIT
-            // so now MAX_TYPE_UNIT needs to be set to 8 
+            // so now MAX_TYPE_UNIT needs to be set to 8
             //(TODO: need to change nt\sdpublic\internal\drivers\inc\uvcdesc.h's define
             // of MAX_TYPE_UNIT from7 to 8, and ad the type for H.264 = 8)
 #else
@@ -897,7 +897,7 @@ DisplayVCHeader (
     }
     AppendTextBuffer("wTotalLength:                    0x%04X", VCInterfaceDesc->wTotalLength);
 
-    // Verify the total interface size (size of this header and all descriptors 
+    // Verify the total interface size (size of this header and all descriptors
     //   following until and not including the first endpoint)
     uSize = GetVCInterfaceSize(VCInterfaceDesc);
     if (uSize != VCInterfaceDesc->wTotalLength) {
@@ -906,21 +906,21 @@ DisplayVCHeader (
     } else {
         AppendTextBuffer("  -> Validated\r\n");
     }
-    AppendTextBuffer("dwClockFreq:                 0x%08X", 
+    AppendTextBuffer("dwClockFreq:                 0x%08X",
         VCInterfaceDesc->dwClockFreq);
-    if (gDoAnnotation)  
+    if (gDoAnnotation)
     {
-        AppendTextBuffer(" = (%d) Hz", VCInterfaceDesc->dwClockFreq); 
+        AppendTextBuffer(" = (%d) Hz", VCInterfaceDesc->dwClockFreq);
     }
-    AppendTextBuffer("\r\nbInCollection:                     0x%02X\r\n", 
+    AppendTextBuffer("\r\nbInCollection:                     0x%02X\r\n",
         VCInterfaceDesc->bInCollection);
 
     // baInterfaceNr is a variable length field
     // Size is in bInCollection
-    for (i = 1, pData = (PUCHAR) &VCInterfaceDesc->bInCollection; 
+    for (i = 1, pData = (PUCHAR) &VCInterfaceDesc->bInCollection;
         i <= VCInterfaceDesc->bInCollection; i++, pData++)
     {
-        AppendTextBuffer("baInterfaceNr[%d]:                  0x%02X\r\n", 
+        AppendTextBuffer("baInterfaceNr[%d]:                  0x%02X\r\n",
             i, *pData);
     }
 
@@ -930,7 +930,7 @@ DisplayVCHeader (
         //@@TestCase B2.1 (also in Descript.c)
         //@@ERROR
         //@@Descriptor Field - bLength
-        //@@The declared length in the device descriptor is less than required length in 
+        //@@The declared length in the device descriptor is less than required length in
         //@@  the USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bLength of %d incorrect, should be %d\r\n",
             VCInterfaceDesc->bLength, uSize);
@@ -962,8 +962,8 @@ DisplayVCHeader (
     //@@Not yet implemented - Priority 1
     //@@Descriptor Field - baInterfaceNr
     //@@We should test to verify each interface number is valid?
-    //    for (i=0; i<VCInterfaceDesc->bInCollection; i++) 
-    //      {AppendTextBuffer("baInterfaceNr[%d]:                  0x%02X\r\n", i+1, 
+    //    for (i=0; i<VCInterfaceDesc->bInCollection; i++)
+    //      {AppendTextBuffer("baInterfaceNr[%d]:                  0x%02X\r\n", i+1,
     //        VCInterfaceDesc->baInterfaceNr[i]);}
 
 
@@ -1016,25 +1016,25 @@ DisplayVCInputTerminal (
     AppendTextBuffer("wTerminalType:                   0x%04X", VidITDesc->wTerminalType);
     if(gDoAnnotation)
     {
-        pStr = GetStringFromList(slInputTermTypes, 
+        pStr = GetStringFromList(slInputTermTypes,
                 sizeof(slInputTermTypes) / sizeof(STRINGLIST),
-                VidITDesc->wTerminalType, 
+                VidITDesc->wTerminalType,
                 "Invalid Input Terminal Type");
-        AppendTextBuffer(" = (%s)", pStr); 
+        AppendTextBuffer(" = (%s)", pStr);
     }
     AppendTextBuffer("\r\n");
-    
+
     AppendTextBuffer("bAssocTerminal:                    0x%02X\r\n", VidITDesc->bAssocTerminal);
     AppendTextBuffer("iTerminal:                         0x%02X\r\n", VidITDesc->iTerminal);
     if (gDoAnnotation)
     {
         if (VidITDesc->iTerminal)
         {
-            // if executing this code, the configuration descriptor has been 
+            // if executing this code, the configuration descriptor has been
             // obtained.  If a device is suspended, then its configuration
-            // descriptor was not obtained and we do not want errors to be 
+            // descriptor was not obtained and we do not want errors to be
             // displayed when string descriptors were not obtained.
-            DisplayStringDescriptor(VidITDesc->iTerminal, StringDescs, LatestDevicePowerState); 
+            DisplayStringDescriptor(VidITDesc->iTerminal, StringDescs, LatestDevicePowerState);
         }
     }
 
@@ -1043,7 +1043,7 @@ DisplayVCInputTerminal (
         //@@TestCase B3.1  (also in Descript.c)
         //@@ERROR
         //@@Descriptor Field - bLength
-        //@@The declared length in the device descriptor is less than required length in 
+        //@@The declared length in the device descriptor is less than required length in
         //@@  the USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bLength of %d is too small\r\n", VidITDesc->bLength);
         OOPS();
@@ -1131,11 +1131,11 @@ DisplayVCOutputTerminal (
     AppendTextBuffer("wTerminalType:                   0x%04X", VidOTDesc->wTerminalType);
     if(gDoAnnotation)
     {
-        pStr = GetStringFromList(slOutputTermTypes, 
+        pStr = GetStringFromList(slOutputTermTypes,
                 sizeof(slOutputTermTypes) / sizeof(STRINGLIST),
-                VidOTDesc->wTerminalType, 
+                VidOTDesc->wTerminalType,
                 "Invalid Output Terminal Type");
-        AppendTextBuffer(" = (%s)", pStr); 
+        AppendTextBuffer(" = (%s)", pStr);
     }
     AppendTextBuffer("\r\n");
     AppendTextBuffer("bAssocTerminal:                    0x%02X\r\n", VidOTDesc->bAssocTerminal);
@@ -1145,9 +1145,9 @@ DisplayVCOutputTerminal (
     {
         if (VidOTDesc->iTerminal)
         {
-            // if executing this code, the configuration descriptor has been 
+            // if executing this code, the configuration descriptor has been
             // obtained.  If a device is suspended, then its configuration
-            // descriptor was not obtained and we do not want errors to be 
+            // descriptor was not obtained and we do not want errors to be
             // displayed when string descriptors were not obtained.
             DisplayStringDescriptor(VidOTDesc->iTerminal, StringDescs, LatestDevicePowerState);
         }
@@ -1158,7 +1158,7 @@ DisplayVCOutputTerminal (
         //@@TestCase B4.1  (also in Descript.c)
         //@@ERROR
         //@@Descriptor Field - bLength
-        //@@The declared length in the device descriptor is less than required length in 
+        //@@The declared length in the device descriptor is less than required length in
         //@@  the USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bLength of %d is too small\r\n", VidOTDesc->bLength);
         OOPS();
@@ -1252,7 +1252,7 @@ DisplayVCMediaTransInputTerminal(
     bLength = SizeOfVideoInputMTT(MediaTransportInDesc);
 
     AppendTextBuffer("===>Additional Media Transport Input Terminal Data\r\n");
-    AppendTextBuffer("bControlSize:                      0x%02X\r\n", 
+    AppendTextBuffer("bControlSize:                      0x%02X\r\n",
         MediaTransportInDesc->bControlSize);
 
     // point to bControlSize
@@ -1263,12 +1263,12 @@ DisplayVCMediaTransInputTerminal(
         {
         UINT  uBitIndex  = 0;
         BYTE  cCheckBit = 0;
-        BYTE  cMask = 1; 
+        BYTE  cMask = 1;
 
         AppendTextBuffer("bmControls : ");
         VDisplayBytes(pData + 1, *pData);
-        
-        // map the first control    
+
+        // map the first control
         for ( ; uBitIndex < 8; uBitIndex++ )
             {
             cCheckBit = cMask & *(pData + 1);
@@ -1277,9 +1277,9 @@ DisplayVCMediaTransInputTerminal(
                 uBitIndex,
                 cCheckBit ? 1 : 0,
                 cCheckBit ? "yes - " : " no - ",
-                GetStringFromList(slMediaTransportControls, 
+                GetStringFromList(slMediaTransportControls,
                     sizeof(slMediaTransportControls) / sizeof(STRINGLIST),
-                    cMask, 
+                    cMask,
                     "Invalid MediaTransportCtrl bmControl value"));
 
             cMask = cMask << 1;
@@ -1294,12 +1294,12 @@ DisplayVCMediaTransInputTerminal(
         {
         UINT  uBitIndex  = 0;
         BYTE  cCheckBit = 0;
-        BYTE  cMask = 1; 
+        BYTE  cMask = 1;
 
         AppendTextBuffer("bmControls : ");
         VDisplayBytes(pData + 1, *pData);
-        
-        // map the first control    
+
+        // map the first control
         for ( ; uBitIndex < 8; uBitIndex++ )
             {
             cCheckBit = cMask & *(pData + 1);
@@ -1308,18 +1308,18 @@ DisplayVCMediaTransInputTerminal(
                 uBitIndex,
                 cCheckBit ? 1 : 0,
                 cCheckBit ? "yes - " : " no - ",
-                GetStringFromList(slMediaTransportModes1, 
+                GetStringFromList(slMediaTransportModes1,
                     sizeof(slMediaTransportModes1) / sizeof(STRINGLIST),
-                    cMask, 
+                    cMask,
                     "Invalid MediaTransportMode value"));
 
             cMask = cMask << 1;
             }
-        
+
         // Is there a second control?
         if (1 < * pData)
             {
-            // map the second control   
+            // map the second control
             for ( uBitIndex = 8, cMask = 1; uBitIndex < 16; uBitIndex++ )
                 {
                 cCheckBit = cMask & *(pData + 2);
@@ -1328,9 +1328,9 @@ DisplayVCMediaTransInputTerminal(
                     uBitIndex,
                     cCheckBit ? 1 : 0,
                     cCheckBit ? "yes - " : " no - ",
-                    GetStringFromList(slMediaTransportModes2, 
+                    GetStringFromList(slMediaTransportModes2,
                         sizeof(slMediaTransportModes2) / sizeof(STRINGLIST),
-                        cMask, 
+                        cMask,
                         "Invalid MediaTransportMode value"));
 
                 cMask = cMask << 1;
@@ -1339,7 +1339,7 @@ DisplayVCMediaTransInputTerminal(
         // Is there a third control?
         if (2 < * pData)
             {
-            // map the third control    
+            // map the third control
             for ( uBitIndex = 16, cMask = 1; uBitIndex < 24; uBitIndex++ )
                 {
                 cCheckBit = cMask & *(pData + 3);
@@ -1348,9 +1348,9 @@ DisplayVCMediaTransInputTerminal(
                     uBitIndex,
                     cCheckBit ? 1 : 0,
                     cCheckBit ? "yes - " : " no - ",
-                    GetStringFromList(slMediaTransportModes3, 
+                    GetStringFromList(slMediaTransportModes3,
                         sizeof(slMediaTransportModes3) / sizeof(STRINGLIST),
-                        cMask, 
+                        cMask,
                         "Invalid MediaTransportMode value"));
 
                 cMask = cMask << 1;
@@ -1359,7 +1359,7 @@ DisplayVCMediaTransInputTerminal(
         // Is there a fourth control?
         if (3 < * pData)
             {
-            // map the fourth control   
+            // map the fourth control
             for ( uBitIndex = 24, cMask = 1; uBitIndex < 32; uBitIndex++ )
                 {
                 cCheckBit = cMask & *(pData + 4);
@@ -1368,9 +1368,9 @@ DisplayVCMediaTransInputTerminal(
                     uBitIndex,
                     cCheckBit ? 1 : 0,
                     cCheckBit ? "yes - " : " no - ",
-                    GetStringFromList(slMediaTransportModes4, 
+                    GetStringFromList(slMediaTransportModes4,
                         sizeof(slMediaTransportModes4) / sizeof(STRINGLIST),
-                        cMask, 
+                        cMask,
                         "Invalid MediaTransportMode value"));
 
                 cMask = cMask << 1;
@@ -1379,7 +1379,7 @@ DisplayVCMediaTransInputTerminal(
         // Is there a fifth control?
         if (4 < * pData)
             {
-            // map the fifth control   
+            // map the fifth control
             for ( uBitIndex = 32, cMask = 1; uBitIndex < 40; uBitIndex++ )
                 {
                 cCheckBit = cMask & *(pData + 5);
@@ -1388,9 +1388,9 @@ DisplayVCMediaTransInputTerminal(
                     uBitIndex,
                     cCheckBit ? 1 : 0,
                     cCheckBit ? "yes - " : " no - ",
-                    GetStringFromList(slMediaTransportModes5, 
+                    GetStringFromList(slMediaTransportModes5,
                         sizeof(slMediaTransportModes5) / sizeof(STRINGLIST),
-                        cMask, 
+                        cMask,
                         "Invalid MediaTransportMode value"));
 
                 cMask = cMask << 1;
@@ -1398,13 +1398,13 @@ DisplayVCMediaTransInputTerminal(
             }
     }
 
-    // The size of a Media Transport Descriptor is 
+    // The size of a Media Transport Descriptor is
     //   the size of the Descriptor plus
     //   (bControlSize - 1) plus
     //   IF bmControls & 1 THEN 1 (bTransportModeSize) plus
     //   bTransportModeSize
-    //   
-//    p = sizeof(VIDEO_INPUT_MTT) + 
+    //
+//    p = sizeof(VIDEO_INPUT_MTT) +
 //        (MediaTransportInDesc->bControlSize - 1);
 //    if (MediaTransportInDesc->bmControls[0] & 1)
 //        p += 1 + (*pData);
@@ -1440,7 +1440,7 @@ DisplayVCMediaTransOutputTerminal(
     PUCHAR pData = NULL;
 
     AppendTextBuffer("===>Additional Media Transport Output Terminal Data\r\n");
-    AppendTextBuffer("bControlSize:                      0x%02X\r\n", 
+    AppendTextBuffer("bControlSize:                      0x%02X\r\n",
         MediaTransportOutDesc->bControlSize);
 
     // point to bControlSize
@@ -1451,12 +1451,12 @@ DisplayVCMediaTransOutputTerminal(
         {
         UINT  uBitIndex  = 0;
         BYTE  cCheckBit = 0;
-        BYTE  cMask = 1; 
+        BYTE  cMask = 1;
 
         AppendTextBuffer("bmControls : ");
         VDisplayBytes(pData + 1, *pData);
-        
-        // map the first control    
+
+        // map the first control
         for ( ; uBitIndex < 8; uBitIndex++ )
             {
             cCheckBit = cMask & *(pData + 1);
@@ -1465,9 +1465,9 @@ DisplayVCMediaTransOutputTerminal(
                 uBitIndex,
                 cCheckBit ? 1 : 0,
                 cCheckBit ? "yes - " : " no - ",
-                GetStringFromList(slMediaTransportControls, 
+                GetStringFromList(slMediaTransportControls,
                     sizeof(slMediaTransportControls) / sizeof(STRINGLIST),
-                    cMask, 
+                    cMask,
                     "Invalid MediaTransportCtrl bmControl value"));
 
             cMask = cMask << 1;
@@ -1482,12 +1482,12 @@ DisplayVCMediaTransOutputTerminal(
         {
         UINT  uBitIndex  = 0;
         BYTE  cCheckBit = 0;
-        BYTE  cMask = 1; 
+        BYTE  cMask = 1;
 
         AppendTextBuffer("bmControls : ");
         VDisplayBytes(pData + 1, *pData);
-        
-        // map the first control    
+
+        // map the first control
         for ( ; uBitIndex < 8; uBitIndex++ )
             {
             cCheckBit = cMask & *(pData + 1);
@@ -1496,18 +1496,18 @@ DisplayVCMediaTransOutputTerminal(
                 uBitIndex,
                 cCheckBit ? 1 : 0,
                 cCheckBit ? "yes - " : " no - ",
-                GetStringFromList(slMediaTransportModes1, 
+                GetStringFromList(slMediaTransportModes1,
                     sizeof(slMediaTransportModes1) / sizeof(STRINGLIST),
-                    cMask, 
+                    cMask,
                     "Invalid MediaTransportMode value"));
 
             cMask = cMask << 1;
             }
-        
+
         // Is there a second control?
         if (1 < * pData)
             {
-            // map the second control   
+            // map the second control
             for ( uBitIndex = 8, cMask = 1; uBitIndex < 16; uBitIndex++ )
                 {
                 cCheckBit = cMask & *(pData + 2);
@@ -1516,9 +1516,9 @@ DisplayVCMediaTransOutputTerminal(
                     uBitIndex,
                     cCheckBit ? 1 : 0,
                     cCheckBit ? "yes - " : " no - ",
-                    GetStringFromList(slMediaTransportModes2, 
+                    GetStringFromList(slMediaTransportModes2,
                         sizeof(slMediaTransportModes2) / sizeof(STRINGLIST),
-                        cMask, 
+                        cMask,
                         "Invalid MediaTransportMode value"));
 
                 cMask = cMask << 1;
@@ -1527,7 +1527,7 @@ DisplayVCMediaTransOutputTerminal(
         // Is there a third control?
         if (2 < * pData)
             {
-            // map the third control    
+            // map the third control
             for ( uBitIndex = 16, cMask = 1; uBitIndex < 24; uBitIndex++ )
                 {
                 cCheckBit = cMask & *(pData + 3);
@@ -1536,9 +1536,9 @@ DisplayVCMediaTransOutputTerminal(
                     uBitIndex,
                     cCheckBit ? 1 : 0,
                     cCheckBit ? "yes - " : " no - ",
-                    GetStringFromList(slMediaTransportModes3, 
+                    GetStringFromList(slMediaTransportModes3,
                         sizeof(slMediaTransportModes3) / sizeof(STRINGLIST),
-                        cMask, 
+                        cMask,
                         "Invalid MediaTransportMode value"));
 
                 cMask = cMask << 1;
@@ -1547,7 +1547,7 @@ DisplayVCMediaTransOutputTerminal(
         // Is there a fourth control?
         if (3 < * pData)
             {
-            // map the fourth control   
+            // map the fourth control
             for ( uBitIndex = 24, cMask = 1; uBitIndex < 32; uBitIndex++ )
                 {
                 cCheckBit = cMask & *(pData + 4);
@@ -1556,9 +1556,9 @@ DisplayVCMediaTransOutputTerminal(
                     uBitIndex,
                     cCheckBit ? 1 : 0,
                     cCheckBit ? "yes - " : " no - ",
-                    GetStringFromList(slMediaTransportModes4, 
+                    GetStringFromList(slMediaTransportModes4,
                         sizeof(slMediaTransportModes4) / sizeof(STRINGLIST),
-                        cMask, 
+                        cMask,
                         "Invalid MediaTransportMode value"));
 
                 cMask = cMask << 1;
@@ -1567,7 +1567,7 @@ DisplayVCMediaTransOutputTerminal(
         // Is there a fifth control?
         if (4 < * pData)
             {
-            // map the fourth control   
+            // map the fourth control
             for ( uBitIndex = 32, cMask = 1; uBitIndex < 40; uBitIndex++ )
                 {
                 cCheckBit = cMask & *(pData + 5);
@@ -1576,9 +1576,9 @@ DisplayVCMediaTransOutputTerminal(
                     uBitIndex,
                     cCheckBit ? 1 : 0,
                     cCheckBit ? "yes - " : " no - ",
-                    GetStringFromList(slMediaTransportModes5, 
+                    GetStringFromList(slMediaTransportModes5,
                         sizeof(slMediaTransportModes5) / sizeof(STRINGLIST),
-                        cMask, 
+                        cMask,
                         "Invalid MediaTransportMode value"));
 
                 cMask = cMask << 1;
@@ -1586,13 +1586,13 @@ DisplayVCMediaTransOutputTerminal(
             }
     }
 
-    // The size of a Media Transport Descriptor is 
+    // The size of a Media Transport Descriptor is
     //   the size of the Descriptor plus
     //   (bControlSize - 1) plus
     //   IF bmControls & 1 THEN 1 (bTransportModeSize) plus
     //   bTransportModeSize
-    //   
-    p = sizeof(VIDEO_OUTPUT_MTT) + 
+    //
+    p = sizeof(VIDEO_OUTPUT_MTT) +
         (MediaTransportOutDesc->bControlSize - 1);
     if (MediaTransportOutDesc->bmControls[0] & 1)
         p += 1 + (*pData);
@@ -1640,12 +1640,12 @@ DisplayVCCameraTerminal(
         {
         UINT  uBitIndex  = 0;
         BYTE  cCheckBit = 0;
-        BYTE  cMask = 1; 
+        BYTE  cMask = 1;
 
         AppendTextBuffer("bmControls : ");
         VDisplayBytes(pData + 1, *pData);
-        
-        // map the first control    
+
+        // map the first control
         for ( ; uBitIndex < 8; uBitIndex++ )
             {
             cCheckBit = cMask & *(pData + 1);
@@ -1654,18 +1654,18 @@ DisplayVCCameraTerminal(
                 uBitIndex,
                 cCheckBit ? 1 : 0,
                 cCheckBit ? "yes - " : " no - ",
-                GetStringFromList(slCameraControl1, 
+                GetStringFromList(slCameraControl1,
                     sizeof(slCameraControl1) / sizeof(STRINGLIST),
-                    cMask, 
+                    cMask,
                     "Invalid CamCtrl bmControl value"));
 
             cMask = cMask << 1;
             }
-        
+
         // Is there a second control?
         if (1 < * pData)
             {
-            // map the second control   
+            // map the second control
             for ( uBitIndex = 8, cMask = 1; uBitIndex < 16; uBitIndex++ )
                 {
                 cCheckBit = cMask & *(pData + 2);
@@ -1674,9 +1674,9 @@ DisplayVCCameraTerminal(
                     uBitIndex,
                     cCheckBit ? 1 : 0,
                     cCheckBit ? "yes - " : " no - ",
-                    GetStringFromList(slCameraControl2, 
+                    GetStringFromList(slCameraControl2,
                         sizeof(slCameraControl2) / sizeof(STRINGLIST),
-                        cMask, 
+                        cMask,
                         "Invalid CamCtrl bmControl value"));
 
                 cMask = cMask << 1;
@@ -1685,7 +1685,7 @@ DisplayVCCameraTerminal(
         // Is there a third control?
         if (2 < * pData)
             {
-            // map the third control    
+            // map the third control
             for ( uBitIndex = 16, cMask = 1; uBitIndex < 24; uBitIndex++ )
                 {
                 cCheckBit = cMask & *(pData + 3);
@@ -1694,9 +1694,9 @@ DisplayVCCameraTerminal(
                     uBitIndex,
                     cCheckBit ? 1 : 0,
                     cCheckBit ? "yes - " : " no - ",
-                    GetStringFromList(slCameraControl3, 
+                    GetStringFromList(slCameraControl3,
                         sizeof(slCameraControl3) / sizeof(STRINGLIST),
-                        cMask, 
+                        cMask,
                         "Invalid CamCtrl bmControl value"));
 
                 cMask = cMask << 1;
@@ -1710,7 +1710,7 @@ DisplayVCCameraTerminal(
         //@@TestCase B7.1 (also in Descript.c)
         //@@ERROR
         //@@Descriptor Field - bLength
-        //@@The descriptor should be the size of the descriptor structure 
+        //@@The descriptor should be the size of the descriptor structure
         //@@  plus the number of controls
         AppendTextBuffer("*!*ERROR:  bLength of %d incorrect, should be %d\r\n",
             CameraDesc->bLength, p);
@@ -1784,16 +1784,16 @@ DisplayVCSelectorUnit (
     AppendTextBuffer("bDescriptorSubtype:                0x%02X\r\n", VidSelectorDesc->bDescriptorSubtype);
     AppendTextBuffer("bUnitID:                           0x%02X\r\n", VidSelectorDesc->bUnitID);
     AppendTextBuffer("bNrInPins:                         0x%02X\r\n", VidSelectorDesc->bNrInPins);
-    if (gDoAnnotation) 
+    if (gDoAnnotation)
     {
         AppendTextBuffer("===>List of Connected Unit and Terminal ID's\r\n");
     }
     // baSourceID is a variable length field
     // Size is in bNrInPins, must be at least 1 (so index starts at 1)
-    for (i = 1, pData = (PUCHAR) &VidSelectorDesc->baSourceID; 
+    for (i = 1, pData = (PUCHAR) &VidSelectorDesc->baSourceID;
         i <= VidSelectorDesc->bNrInPins; i++, pData++)
     {
-        AppendTextBuffer("baSourceID[%d]:                     0x%02X\r\n", 
+        AppendTextBuffer("baSourceID[%d]:                     0x%02X\r\n",
             i, *pData);
     }
 
@@ -1804,9 +1804,9 @@ DisplayVCSelectorUnit (
     {
         if (*pData)
         {
-            // if executing this code, the configuration descriptor has been 
+            // if executing this code, the configuration descriptor has been
             // obtained.  If a device is suspended, then its configuration
-            // descriptor was not obtained and we do not want errors to be 
+            // descriptor was not obtained and we do not want errors to be
             // displayed when string descriptors were not obtained.
             DisplayStringDescriptor(*pData, StringDescs, LatestDevicePowerState);
         }
@@ -1848,7 +1848,7 @@ DisplayVCSelectorUnit (
 
     // baSourceID is a variable length field
     // Size is in bNrInPins, must be at least 1 (so index starts at 1)
-    for (i = 1, pData = (PUCHAR) &VidSelectorDesc->baSourceID; 
+    for (i = 1, pData = (PUCHAR) &VidSelectorDesc->baSourceID;
         i <= VidSelectorDesc->bNrInPins; i++, pData++)
     {
         if (*pData < 1)
@@ -1908,12 +1908,12 @@ DisplayVCProcessingUnit (
     {
         UINT  uBitIndex  = 0;
         BYTE  cCheckBit = 0;
-        BYTE  cMask = 1; 
+        BYTE  cMask = 1;
 
         AppendTextBuffer("bmControls : ");
         VDisplayBytes(pData + 1, *pData);
-        
-        // map the first control    
+
+        // map the first control
         for ( ; uBitIndex < 8; uBitIndex++ )
         {
             cCheckBit = cMask & *(pData + 1);
@@ -1922,18 +1922,18 @@ DisplayVCProcessingUnit (
                 uBitIndex,
                 cCheckBit ? 1 : 0,
                 cCheckBit ? "yes - " : " no - ",
-                GetStringFromList(slProcessorControls1, 
+                GetStringFromList(slProcessorControls1,
                     sizeof(slProcessorControls1) / sizeof(STRINGLIST),
-                    cMask, 
+                    cMask,
                     "Invalid PU bmControl value"));
 
             cMask = cMask << 1;
         }
-        
+
         // Is there a second control?
         if (1 < * pData)
         {
-            // map the second control   
+            // map the second control
             for ( uBitIndex = 8, cMask = 1; uBitIndex < 16; uBitIndex++ )
             {
                 cCheckBit = cMask & *(pData + 2);
@@ -1942,19 +1942,19 @@ DisplayVCProcessingUnit (
                     uBitIndex,
                     cCheckBit ? 1 : 0,
                     cCheckBit ? "yes - " : " no - ",
-                    GetStringFromList(slProcessorControls2, 
+                    GetStringFromList(slProcessorControls2,
                         sizeof(slProcessorControls2) / sizeof(STRINGLIST),
-                        cMask, 
+                        cMask,
                         "Invalid PU bmControl value"));
 
                 cMask = cMask << 1;
             }
         }
-        
+
         // Is there a third control?
         if (2 < * pData)
         {
-            // map the third control 
+            // map the third control
             for ( uBitIndex = 16, cMask = 1; uBitIndex < 24; uBitIndex++ )
             {
                 cCheckBit = cMask & *(pData + 3);
@@ -1963,9 +1963,9 @@ DisplayVCProcessingUnit (
                     uBitIndex,
                     cCheckBit ? 1 : 0,
                     cCheckBit ? "yes - " : " no - ",
-                    GetStringFromList(slProcessorControls3, 
+                    GetStringFromList(slProcessorControls3,
                         sizeof(slProcessorControls3) / sizeof(STRINGLIST),
-                        cMask, 
+                        cMask,
                         "Invalid PU bmControl value"));
 
                 cMask = cMask << 1;
@@ -1991,9 +1991,9 @@ DisplayVCProcessingUnit (
     {
         if (*pData)
         {
-            // if executing this code, the configuration descriptor has been 
+            // if executing this code, the configuration descriptor has been
             // obtained.  If a device is suspended, then its configuration
-            // descriptor was not obtained and we do not want errors to be 
+            // descriptor was not obtained and we do not want errors to be
             // displayed when string descriptors were not obtained.
             DisplayStringDescriptor(*pData, StringDescs, LatestDevicePowerState);
         }
@@ -2004,14 +2004,14 @@ DisplayVCProcessingUnit (
     {
         UINT  uBitIndex  = 0;
         BYTE  cCheckBit = 0;
-        BYTE  cMask = 1; 
+        BYTE  cMask = 1;
 
         pData = (PUCHAR) VidProcessingDesc + (VidProcessingDesc->bLength - 1);
 
         AppendTextBuffer("bmVideoStandards :                 ");
         VDisplayBytes(pData, 1);
 
-        // map the first control    
+        // map the first control
         for ( ; uBitIndex < 8; uBitIndex++ )
         {
             cCheckBit = cMask & *(pData);
@@ -2020,9 +2020,9 @@ DisplayVCProcessingUnit (
                 uBitIndex,
                 cCheckBit ? 1 : 0,
                 cCheckBit ? "yes - " : " no - ",
-                GetStringFromList(slProcessorVideoStandards, 
+                GetStringFromList(slProcessorVideoStandards,
                     sizeof(slProcessorVideoStandards) / sizeof(STRINGLIST),
-                    cMask, 
+                    cMask,
                     "Invalid PU bmVideoStandards value"));
 
             cMask = cMask << 1;
@@ -2106,16 +2106,16 @@ DisplayVCExtensionUnit (
     AppendTextBuffer("guidExtensionCode:                 %S\r\n", szGUID);
     AppendTextBuffer("bNumControls:                      0x%02X\r\n", VidExtensionDesc->bNumControls);
     AppendTextBuffer("bNrInPins:                         0x%02X\r\n", VidExtensionDesc->bNrInPins);
-    if (gDoAnnotation) 
-    { 
+    if (gDoAnnotation)
+    {
         AppendTextBuffer("===>List of Connected Units and Terminal ID's\r\n");
     }
     // baSourceID is a variable length field
     // Size is in bNrInPins, must be at least 1 (so index starts at 1)
-    for (i = 1, pData = (PUCHAR) &VidExtensionDesc->baSourceID; 
+    for (i = 1, pData = (PUCHAR) &VidExtensionDesc->baSourceID;
         i <= VidExtensionDesc->bNrInPins; i++, pData++)
     {
-        AppendTextBuffer("baSourceID[%d]:                     0x%02X\r\n", 
+        AppendTextBuffer("baSourceID[%d]:                     0x%02X\r\n",
             i, *pData);
     }
     // point to bControlSize (address of bNrInPins plus number of fields in bNrInPins
@@ -2135,9 +2135,9 @@ DisplayVCExtensionUnit (
         {
             UINT  uBitIndex  = 0;
             BYTE  cCheckBit = 0;
-            BYTE  cMask = 1; 
-            
-            // map byte    
+            BYTE  cMask = 1;
+
+            // map byte
             for ( ; uBitIndex < 8; uBitIndex++ )
                 {
                 cCheckBit = cMask & *(pData + i);
@@ -2149,7 +2149,7 @@ DisplayVCExtensionUnit (
                     "Vendor-Specific (Optional)");
 
                 cMask = cMask << 1;
-                }        
+                }
         }
     }
 
@@ -2166,15 +2166,15 @@ DisplayVCExtensionUnit (
     }
 
     // size of descriptor struct size (23) + bNrInPins + bControlSize + iExtension size
-    // 
-//  p = (sizeof(VIDEO_EXTENSION_UNIT) 
+    //
+//  p = (sizeof(VIDEO_EXTENSION_UNIT)
 //      + VidExtensionDesc->bNrInPins + bControlSize + 1);
     if (VidExtensionDesc->bLength != bLength)
     {
         //@@TestCase B10.1 (also in Descript.c)
         //@@ERROR
         //@@Descriptor Field - bLength
-        //@@The declared length in the device descriptor is not equal to the 
+        //@@The declared length in the device descriptor is not equal to the
         //@@  required length in the USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bLength of 0x%02X incorrect, should be 0x%02X\r\n",
             VidExtensionDesc->bLength, p);
@@ -2204,7 +2204,7 @@ DisplayVCExtensionUnit (
         OOPS();
     }
 
-    for (i = 1, pData = (PUCHAR) &VidExtensionDesc->baSourceID; 
+    for (i = 1, pData = (PUCHAR) &VidExtensionDesc->baSourceID;
         i <= VidExtensionDesc->bNrInPins; i++, pData++)
     {
         if (*pData == 0)
@@ -2252,13 +2252,13 @@ DisplayVidInHeader (
         AppendTextBuffer("  -> Validated\r\n");
     }
 
-    AppendTextBuffer("bEndpointAddress:                  0x%02X", 
+    AppendTextBuffer("bEndpointAddress:                  0x%02X",
         VidInHeaderDesc->bEndpointAddress);
-    if (USB_ENDPOINT_DIRECTION_IN(VidInHeaderDesc->bEndpointAddress)) 
+    if (USB_ENDPOINT_DIRECTION_IN(VidInHeaderDesc->bEndpointAddress))
     {
         if (gDoAnnotation)
-        { 
-            AppendTextBuffer("  -> Direction: IN - EndpointID: %d", 
+        {
+            AppendTextBuffer("  -> Direction: IN - EndpointID: %d",
                 (VidInHeaderDesc->bEndpointAddress & 0x0F));
         }
         AppendTextBuffer("\r\n");
@@ -2269,9 +2269,9 @@ DisplayVidInHeader (
         AppendTextBuffer("  -> Dynamic Format Change %sSupported",
             ! (VidInHeaderDesc->bmInfo & 0x01) ? "not " : " ");
     }
-    AppendTextBuffer("\r\nbTerminalLink:                     0x%02X\r\n", 
+    AppendTextBuffer("\r\nbTerminalLink:                     0x%02X\r\n",
         VidInHeaderDesc->bTerminalLink);
-    AppendTextBuffer("bStillCaptureMethod:               0x%02X", 
+    AppendTextBuffer("bStillCaptureMethod:               0x%02X",
         VidInHeaderDesc->bStillCaptureMethod);
 
     // globally save the StillMethod, then verify value
@@ -2287,35 +2287,35 @@ DisplayVidInHeader (
         if (gDoAnnotation)
         {
             AppendTextBuffer("  -> Invalid Still Capture Method");
-        } 
+        }
     }
     else
     {
         if (0 == StillMethod)
-        {   
+        {
             AppendTextBuffer("  -> No Still Capture");
         }
         else
         {
-        AppendTextBuffer("  -> Still Capture Method %d", 
+        AppendTextBuffer("  -> Still Capture Method %d",
             VidInHeaderDesc->bStillCaptureMethod);
         }
     }
 
-    AppendTextBuffer("\r\nbTriggerSupport:                   0x%02X", 
+    AppendTextBuffer("\r\nbTriggerSupport:                   0x%02X",
         VidInHeaderDesc->bTriggerSupport);
     if(gDoAnnotation)
     {
         AppendTextBuffer("  -> ");
-        if (! VidInHeaderDesc->bTriggerSupport) 
+        if (! VidInHeaderDesc->bTriggerSupport)
             AppendTextBuffer("No ");
         AppendTextBuffer("Hardware Triggering Support");
     }
     AppendTextBuffer("\r\n");
 
-    AppendTextBuffer("bTriggerUsage:                     0x%02X", 
+    AppendTextBuffer("bTriggerUsage:                     0x%02X",
         VidInHeaderDesc->bTriggerUsage);
-    if (gDoAnnotation) 
+    if (gDoAnnotation)
     {
         if (VidInHeaderDesc->bTriggerSupport != 0)
             {
@@ -2326,7 +2326,7 @@ DisplayVidInHeader (
         }
     }
 
-    AppendTextBuffer("\r\nbControlSize:                      0x%02X\r\n", 
+    AppendTextBuffer("\r\nbControlSize:                      0x%02X\r\n",
         VidInHeaderDesc->bControlSize);
 
     // are there formats to display?
@@ -2335,7 +2335,7 @@ DisplayVidInHeader (
         UINT   uFormatIndex  = 1;
         UINT   uBitIndex  = 0;
         BYTE   cCheckBit = 0;
-        BYTE   cMask = 1; 
+        BYTE   cMask = 1;
 
         // There are (bNumFormats) bmaControls fields, each with size (bControlSize)
         pData = (PUCHAR) &(VidInHeaderDesc->bControlSize);
@@ -2355,8 +2355,8 @@ DisplayVidInHeader (
             else
                 {
                 VDisplayBytes(pData, VidInHeaderDesc->bControlSize);
-        
-                // map the first control    
+
+                // map the first control
                 for (uBitIndex  = 0, cMask = 1; uBitIndex < 8; uBitIndex++ )
                     {
                     cCheckBit = cMask & *(pData);
@@ -2365,9 +2365,9 @@ DisplayVidInHeader (
                         uBitIndex,
                         cCheckBit ? 1 : 0,
                         cCheckBit ? "yes - " : " no - ",
-                        GetStringFromList(slInputHeaderControls, 
+                        GetStringFromList(slInputHeaderControls,
                             sizeof(slInputHeaderControls) / sizeof(STRINGLIST),
-                            cMask, 
+                            cMask,
                             "Invalid Control value"));
 
                     cMask = cMask << 1;
@@ -2376,16 +2376,16 @@ DisplayVidInHeader (
             pData += VidInHeaderDesc->bControlSize;
             }
     }
-    
-    p = (sizeof(VIDEO_STREAMING_INPUT_HEADER) + 
+
+    p = (sizeof(VIDEO_STREAMING_INPUT_HEADER) +
         (VidInHeaderDesc->bNumFormats * VidInHeaderDesc->bControlSize));
-    if (VidInHeaderDesc->bLength != p) 
+    if (VidInHeaderDesc->bLength != p)
     {
         //@@TestCase B11.2  (also in Descript.c)
         //@@ERROR
         //@@Descriptor Field - bLength
-        //@@The descriptor should be the size of the descriptor structure 
-        //@@  plus the number of formats times the size of each format 
+        //@@The descriptor should be the size of the descriptor structure
+        //@@  plus the number of formats times the size of each format
         AppendTextBuffer("*!*ERROR:  bLength of %d incorrect, should be %d\r\n",
             VidInHeaderDesc->bLength, p);
         OOPS();
@@ -2514,7 +2514,7 @@ DisplayVidOutHeader (
         // point to first bmaControls
         pControls++;
 
-        // Size of UVC 1.1 Video Output Header is 1.0 size 
+        // Size of UVC 1.1 Video Output Header is 1.0 size
         //  plus 1 (bControlSize field) plus (number of formats * bControlSize)
         bLength += 1 + (VidOutHeaderDesc->bNumFormats * bControlSize);
 
@@ -2527,7 +2527,7 @@ DisplayVidOutHeader (
             UINT   uFormatIndex  = 1;
             UINT   uBitIndex  = 0;
             BYTE   cCheckBit = 0;
-            BYTE   cMask = 1; 
+            BYTE   cMask = 1;
 
             // There are (bNumFormats) bmaControls fields, each with size (bControlSize)
             for ( ; uFormatIndex <= VidOutHeaderDesc->bNumFormats; uFormatIndex++, pControls ++)
@@ -2542,8 +2542,8 @@ DisplayVidOutHeader (
                 else
                 {
                     VDisplayBytes(pControls, bControlSize);
-            
-                    // map the first control    
+
+                    // map the first control
                     for (uBitIndex  = 0, cMask = 1; uBitIndex < 8; uBitIndex++ )
                     {
                         cCheckBit = cMask & *(pControls);
@@ -2552,9 +2552,9 @@ DisplayVidOutHeader (
                             uBitIndex,
                             cCheckBit ? 1 : 0,
                             cCheckBit ? "yes - " : " no - ",
-                            GetStringFromList(slOutputHeaderControls, 
+                            GetStringFromList(slOutputHeaderControls,
                                 sizeof(slOutputHeaderControls) / sizeof(STRINGLIST),
-                                cMask, 
+                                cMask,
                                 "Invalid control value"));
 
                         cMask = cMask << 1;
@@ -2569,7 +2569,7 @@ DisplayVidOutHeader (
         //@@TestCase B12.1  (also in Descript.c)
         //@@ERROR
         //@@Descriptor Field - bLength
-        //@@The declared length in the device descriptor is not equal to the 
+        //@@The declared length in the device descriptor is not equal to the
         //@@  required length in the USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bLength of %d incorrect, should be %d\r\n",
             VidOutHeaderDesc->bLength,
@@ -2665,7 +2665,7 @@ DisplayStillImageFrame (
     AppendTextBuffer("bDescriptorType:                   0x%02X\r\n", StillFrameDesc->bDescriptorType);
     AppendTextBuffer("bDescriptorSubtype:                0x%02X\r\n", StillFrameDesc->bDescriptorSubtype);
     AppendTextBuffer("bEndpointAddress:                  0x%02X\r\n", StillFrameDesc->bEndpointAddress);
-    AppendTextBuffer("bNumImageSizePatterns:             0x%02X\r\n", 
+    AppendTextBuffer("bNumImageSizePatterns:             0x%02X\r\n",
         StillFrameDesc->bNumImageSizePatterns);
     if (StillFrameDesc->bNumImageSizePatterns < 1)
     {
@@ -2681,7 +2681,7 @@ DisplayStillImageFrame (
     // point to first StillFrameDesc->dwStillImage structure
     pXY = (VIDEO_STILL_IMAGE_RECT *) &StillFrameDesc->aStillRect[0];
 
-    for (i = 1; i <= StillFrameDesc->bNumImageSizePatterns; i++, pXY++) 
+    for (i = 1; i <= StillFrameDesc->bNumImageSizePatterns; i++, pXY++)
     {
         AppendTextBuffer("wWidth[%d]:                       0x%04X\r\n",
             i, pXY->wWidth);
@@ -2694,10 +2694,10 @@ DisplayStillImageFrame (
     uNumComp = *pbCurr;
 
     AppendTextBuffer("bNumCompressionPattern:            0x%02X\r\n", *pbCurr++);
-    for (i = 1; i <= uNumComp; i++) 
+    for (i = 1; i <= uNumComp; i++)
     {
-        AppendTextBuffer("bCompression[%d]:                   0x%02X\r\n", 
-            i, *pbCurr++); 
+        AppendTextBuffer("bCompression[%d]:                   0x%02X\r\n",
+            i, *pbCurr++);
     }
 
     switch(StillMethod) {
@@ -2747,9 +2747,9 @@ DisplayStillImageFrame (
                 "This should be non-zero when using StillMethod 3.\r\n",
                 (StillFrameDesc->bEndpointAddress));
             OOPS(); }
-        if (gDoAnnotation) 
+        if (gDoAnnotation)
         {
-            AppendTextBuffer("  -> Direction: IN - EndpointID: %d", 
+            AppendTextBuffer("  -> Direction: IN - EndpointID: %d",
                 (StillFrameDesc->bEndpointAddress & 0x0F));
         }
         AppendTextBuffer("\r\n");
@@ -2835,7 +2835,7 @@ DisplayColorMatching (
 
 //*****************************************************************************
 //
-// DisplayUncompressedFormat() 
+// DisplayUncompressedFormat()
 //
 //*****************************************************************************
 
@@ -2865,13 +2865,13 @@ DisplayUncompressedFormat (
     AppendTextBuffer("guidFormat:                        %S", szGUID);
 
     pStr = VidFormatGUIDCodeToName((REFGUID) &UnCompFormatDesc->guidFormat);
-    if ( pStr )   
+    if ( pStr )
     {
         if ( gDoAnnotation )
         {
             AppendTextBuffer(" = %s Format", pStr);
         }
-    } 
+    }
     AppendTextBuffer("\r\n");
     AppendTextBuffer("bBitsPerPixel:                     0x%02X\r\n", UnCompFormatDesc->bBitsPerPixel);
     AppendTextBuffer("bDefaultFrameIndex:                0x%02X\r\n", UnCompFormatDesc->bDefaultFrameIndex);
@@ -2881,7 +2881,7 @@ DisplayUncompressedFormat (
         //@@TestCase B15.1 (descript.c line 925)
         //@@ERROR
         //@@Descriptor Field - bLength
-        //@@The declared length in the device descriptor is not equal to the required 
+        //@@The declared length in the device descriptor is not equal to the required
         //@@length in the USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bLength of %d incorrect, should be %d\r\n",
             UnCompFormatDesc->bLength,
@@ -2904,7 +2904,7 @@ DisplayUncompressedFormat (
         //@@TestCase B15.3 (descript.c line 930)
         //@@ERROR
         //@@Descriptor Field - bNumFrameDescriptors
-        //@@bNumFrameDescriptors is set to zero which is not in accordance with the 
+        //@@bNumFrameDescriptors is set to zero which is not in accordance with the
         //@@USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bNumFrameDescriptors = 0, must have at least 1 Frame descriptor\r\n");
         OOPS();
@@ -2930,7 +2930,7 @@ DisplayUncompressedFormat (
         OOPS();
     }
 
-    if (UnCompFormatDesc->bDefaultFrameIndex == 0 || UnCompFormatDesc->bDefaultFrameIndex > 
+    if (UnCompFormatDesc->bDefaultFrameIndex == 0 || UnCompFormatDesc->bDefaultFrameIndex >
         UnCompFormatDesc->bNumFrameDescriptors)
     {
         //@@TestCase B15.6 (desctipt.c line 945)
@@ -2943,28 +2943,28 @@ DisplayUncompressedFormat (
         OOPS();
     }
 
-    AppendTextBuffer("bAspectRatioX:                     0x%02X\r\n", 
+    AppendTextBuffer("bAspectRatioX:                     0x%02X\r\n",
         UnCompFormatDesc->bAspectRatioX);
-    AppendTextBuffer("bAspectRatioY:                     0x%02X", 
+    AppendTextBuffer("bAspectRatioY:                     0x%02X",
         UnCompFormatDesc->bAspectRatioY);
 
-    if (((UnCompFormatDesc->bmInterlaceFlags & 0x01) && 
-        (UnCompFormatDesc->bAspectRatioY != 0 && 
+    if (((UnCompFormatDesc->bmInterlaceFlags & 0x01) &&
+        (UnCompFormatDesc->bAspectRatioY != 0 &&
         UnCompFormatDesc->bAspectRatioX != 0)))
     {
-        if(gDoAnnotation) 
+        if(gDoAnnotation)
         {
             AppendTextBuffer("  -> Aspect Ratio is set for a %d:%d display",
-                (UnCompFormatDesc->bAspectRatioX),(UnCompFormatDesc->bAspectRatioY));   
-        } 
-        else 
+                (UnCompFormatDesc->bAspectRatioX),(UnCompFormatDesc->bAspectRatioY));
+        }
+        else
         {
             if (UnCompFormatDesc->bAspectRatioY != 0 || UnCompFormatDesc->bAspectRatioX != 0)
             {
                 //@@TestCase B15.7
                 //@@ERROR
                 //@@Descriptor Field - bAspectRatioX, bAspectRatioY
-                //@@Verify that that bAspectRatioX and bAspectRatioY are  set to zero 
+                //@@Verify that that bAspectRatioX and bAspectRatioY are  set to zero
                 //@@  if stream is non-interlaced
                 AppendTextBuffer("\r\n*!*ERROR:  Both bAspectRatioX and bAspectRatioY "\
                     "must equal 0 if stream is non-interlaced");
@@ -2972,27 +2972,27 @@ DisplayUncompressedFormat (
             }
         }
     }
-    AppendTextBuffer("\r\nbmInterlaceFlags:                  0x%02X\r\n", 
+    AppendTextBuffer("\r\nbmInterlaceFlags:                  0x%02X\r\n",
         UnCompFormatDesc->bmInterlaceFlags);
 
-    if (gDoAnnotation) 
+    if (gDoAnnotation)
     {
-        AppendTextBuffer("     D0    = 0x%02X Interlaced stream or variable: %s\r\n", 
+        AppendTextBuffer("     D0    = 0x%02X Interlaced stream or variable: %s\r\n",
             (UnCompFormatDesc->bmInterlaceFlags & 1),
             (UnCompFormatDesc->bmInterlaceFlags & 1) ? "Yes" : "No");
-        AppendTextBuffer("     D1    = 0x%02X Fields per frame: %s\r\n", 
+        AppendTextBuffer("     D1    = 0x%02X Fields per frame: %s\r\n",
             ((UnCompFormatDesc->bmInterlaceFlags >> 1) & 1),
             ((UnCompFormatDesc->bmInterlaceFlags >> 1) & 1) ? "1 field" : "2 fields");
-        AppendTextBuffer("     D2    = 0x%02X Field 1 first: %s\r\n", 
+        AppendTextBuffer("     D2    = 0x%02X Field 1 first: %s\r\n",
             ((UnCompFormatDesc->bmInterlaceFlags >> 2) & 1),
             ((UnCompFormatDesc->bmInterlaceFlags >> 2) & 1) ? "Yes" : "No");
         //@@TestCase B15.9
         //@@Not yet implemented - Priority 1
         //@@Descriptor Field - bmInterlaceFlags
         //@@Validate that reserved bits (D3) are set to zero.
-        AppendTextBuffer("     D3    = 0x%02X Reserved%s\r\n", 
+        AppendTextBuffer("     D3    = 0x%02X Reserved%s\r\n",
             ((UnCompFormatDesc->bmInterlaceFlags >> 3) & 1),
-            ((UnCompFormatDesc->bmInterlaceFlags >> 3) & 1) ? 
+            ((UnCompFormatDesc->bmInterlaceFlags >> 3) & 1) ?
             "\r\n*!*ERROR: Reserved to 0" : "" );
         AppendTextBuffer("     D4..5 = 0x%02X Field patterns  ->",
             ((UnCompFormatDesc->bmInterlaceFlags >> 4) & 3));
@@ -3038,11 +3038,11 @@ DisplayUncompressedFormat (
     //@@TestCase B15.11
     //@@Not yet implemented - Priority 1
     //@@Descriptor Field - bCopyProtect
-    //@@Question - Are their reserved bits and should we validate that 
+    //@@Question - Are their reserved bits and should we validate that
     //@@  reserved bits are set to zero?
-    AppendTextBuffer("\r\nbCopyProtect:                      0x%02X", 
+    AppendTextBuffer("\r\nbCopyProtect:                      0x%02X",
         UnCompFormatDesc->bCopyProtect);
-    if (gDoAnnotation)  
+    if (gDoAnnotation)
     {
         if (UnCompFormatDesc->bCopyProtect)
             AppendTextBuffer("  -> Duplication Restricted");
@@ -3079,10 +3079,10 @@ DisplayUncompressedFrameType (
     //@@DisplayUncompressedFrameType -Uncompressed Frame
 
     AppendTextBuffer("\r\n          ===>Video Streaming Uncompressed Frame Type Descriptor<===\r\n");
-    if (gDoAnnotation) 
+    if (gDoAnnotation)
     {
         if(UnCompFrameDesc->bFrameIndex == g_chUNCFrameDefault)
-        { 
+        {
             AppendTextBuffer("          --->This is the Default (optimum) Frame index\r\n");
         }
     }
@@ -3103,7 +3103,7 @@ DisplayUncompressedFrameType (
 
     // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
 
-    AppendTextBuffer("dwDefaultFrameInterval:      0x%08X = %lf mSec (%4.2f Hz)\r\n", 
+    AppendTextBuffer("dwDefaultFrameInterval:      0x%08X = %lf mSec (%4.2f Hz)\r\n",
         UnCompFrameDesc->dwDefaultFrameInterval,
         ((double)UnCompFrameDesc->dwDefaultFrameInterval)/10000.0,
         (10000000.0/((double)UnCompFrameDesc->dwDefaultFrameInterval))
@@ -3115,7 +3115,7 @@ DisplayUncompressedFrameType (
         //@@TestCase B15.1 (descript.c line 925)
         //@@ERROR
         //@@Descriptor Field - bLength
-        //@@The declared length in the device descriptor is not equal to the required 
+        //@@The declared length in the device descriptor is not equal to the required
         //@@length in the USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bLength of %d incorrect, should be %d\r\n",
             UnCompFrameDesc->bLength, bLength);
@@ -3127,7 +3127,7 @@ DisplayUncompressedFrameType (
         //@@TestCase B16.2 (descript.c line 991)
         //@@ERROR
         //@@Descriptor Field - bFrameIndex
-        //@@bFrameIndex must be nonzero 
+        //@@bFrameIndex must be nonzero
         AppendTextBuffer("*!*ERROR:  bFrameIndex = 0, this is a 1 based index\r\n");
         OOPS();
     }
@@ -3187,9 +3187,9 @@ DisplayUncompressedFrameType (
         AppendTextBuffer("*!*ERROR:  dwMinBitRate should be less than dwMaxBitRate\r\n");
         OOPS();
     }
-    else 
+    else
     {
-        if (UnCompFrameDesc->bFrameIntervalType == 1 && 
+        if (UnCompFrameDesc->bFrameIntervalType == 1 &&
             UnCompFrameDesc->dwMinBitRate != UnCompFrameDesc->dwMaxBitRate)
         {
             //@@TestCase B16.9
@@ -3257,12 +3257,12 @@ DisplayUnComContinuousFrameType(
     // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
 
 
-    AppendTextBuffer("dwMinFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n", 
+    AppendTextBuffer("dwMinFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n",
         dwMinFrameInterval,
         ((double)dwMinFrameInterval)/10000.0,
         (ULONG)(10000000.0/((double)dwMinFrameInterval) + 0.5));
-    
-    AppendTextBuffer("dwMaxFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n", 
+
+    AppendTextBuffer("dwMaxFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n",
         dwMaxFrameInterval,
         ((double)dwMaxFrameInterval)/10000.0,
         (ULONG)(10000000.0/((double)dwMaxFrameInterval) + 0.5));
@@ -3367,7 +3367,7 @@ DisplayUnComDiscreteFrameType(
 
 
         // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
-        AppendTextBuffer("dwFrameInterval[%d]:          0x%08X = %lf mSec (%4.2f Hz)\r\n", 
+        AppendTextBuffer("dwFrameInterval[%d]:          0x%08X = %lf mSec (%4.2f Hz)\r\n",
             iNdex, *ulFrameInterval,
             ((double)*ulFrameInterval)/10000.0,
             (10000000.0/((double)*ulFrameInterval))
@@ -3422,7 +3422,7 @@ DisplayMJPEGFormat (
         //@@TestCase B19.1 (descript.c line 1098)
         //@@ERROR
         //@@Descriptor Field - bLength
-        //@@The declared length in the device descriptor is not equal to the 
+        //@@The declared length in the device descriptor is not equal to the
         //@@  required length in the USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bLength of %d incorrect, should be %d\r\n",
             MJPEGFormatDesc->bLength,
@@ -3435,7 +3435,7 @@ DisplayMJPEGFormat (
         //@@TestCase B19.2 (descript.c line 1103)
         //@@ERROR
         //@@Descriptor Field - bFormatIndex
-        //@@bFormatIndex is set to zero which is not in accordance with 
+        //@@bFormatIndex is set to zero which is not in accordance with
         //@@  the USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bFormatIndex must be non-zero\r\n");
         OOPS();
@@ -3446,41 +3446,41 @@ DisplayMJPEGFormat (
         //@@TestCase B19.3 (descript.c line 1108)
         //@@ERROR
         //@@Descriptor Field - bNumFrameDescriptors
-        //@@bNumFrameDescriptors is set to zero which is not in accordance 
+        //@@bNumFrameDescriptors is set to zero which is not in accordance
         //@@  with the USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bNumFrameDescriptors must be non-zero\r\n");
         OOPS();
     }
 
-    AppendTextBuffer("bmFlags:                           0x%02X", 
+    AppendTextBuffer("bmFlags:                           0x%02X",
         (MJPEGFormatDesc->bmFlags & 0x01));
 
     //@@TestCase B19.4
     //@@Not yet implemented - Priority 1
     //@@Descriptor Field - bmFlags
     //@@We should validate that reserved bits are set to zero.
-    if (gDoAnnotation) 
+    if (gDoAnnotation)
     {
         if(MJPEGFormatDesc->bmFlags & 0x01)
-        { 
+        {
             AppendTextBuffer("  -> Sample Size is Fixed");
         }
         else
-        { 
+        {
             AppendTextBuffer("  -> Sample Size is Not Fixed");
         }
     }
-    AppendTextBuffer("\r\nbDefaultFrameIndex:                0x%02X\r\n", 
+    AppendTextBuffer("\r\nbDefaultFrameIndex:                0x%02X\r\n",
         MJPEGFormatDesc->bDefaultFrameIndex);
 
-    if (MJPEGFormatDesc->bDefaultFrameIndex == 0 || 
-        MJPEGFormatDesc->bDefaultFrameIndex > 
+    if (MJPEGFormatDesc->bDefaultFrameIndex == 0 ||
+        MJPEGFormatDesc->bDefaultFrameIndex >
         MJPEGFormatDesc->bNumFrameDescriptors)
     {
         //@@TestCase B19.5  (descript.c line 1113)
         //@@ERROR
         //@@Descriptor Field - bDefaultFrameIndex
-        //@@bDefaultFrameIndex is not in the domain of constrained by 
+        //@@bDefaultFrameIndex is not in the domain of constrained by
         //@@  bNumFrameDescriptors
         AppendTextBuffer("*!*ERROR:  bDefaultFrameIndex 0x%02X invalid, should "\
             "be between 1 and 0x%02x/r/n",
@@ -3489,56 +3489,56 @@ DisplayMJPEGFormat (
         OOPS();
     }
 
-    AppendTextBuffer("bAspectRatioX:                     0x%02X\r\n", 
+    AppendTextBuffer("bAspectRatioX:                     0x%02X\r\n",
         MJPEGFormatDesc->bAspectRatioX);
-    AppendTextBuffer("bAspectRatioY:                     0x%02X", 
+    AppendTextBuffer("bAspectRatioY:                     0x%02X",
         MJPEGFormatDesc->bAspectRatioY);
 
-    if(((MJPEGFormatDesc->bmInterlaceFlags & 0x01) && 
-        ((MJPEGFormatDesc->bAspectRatioY != 0) && 
-        (MJPEGFormatDesc->bAspectRatioX != 0))))    
+    if(((MJPEGFormatDesc->bmInterlaceFlags & 0x01) &&
+        ((MJPEGFormatDesc->bAspectRatioY != 0) &&
+        (MJPEGFormatDesc->bAspectRatioX != 0))))
     {
         if (gDoAnnotation)
         {
-            AppendTextBuffer("  -> Aspect Ratio is set for a %d:%d display", 
+            AppendTextBuffer("  -> Aspect Ratio is set for a %d:%d display",
                 (MJPEGFormatDesc->bAspectRatioX), (MJPEGFormatDesc->bAspectRatioY));
         }
     }
-    else 
+    else
     {
         if (MJPEGFormatDesc->bAspectRatioY != 0 || MJPEGFormatDesc->bAspectRatioX != 0)
         {
             //@@TestCase B19.6
             //@@ERROR
             //@@Descriptor Field - bAspectRatioX and bAspectRatioY
-            //@@Verify that that bAspectRatioX and bAspectRatioY are  set to zero 
+            //@@Verify that that bAspectRatioX and bAspectRatioY are  set to zero
             //@@  if stream is non-interlaced
             AppendTextBuffer("\r\n*!*ERROR:  bAspectRatioX and bAspectRatioY must "\
                 "be 0 if stream non-Interlaced");
             OOPS();
         }
     }
-    AppendTextBuffer("\r\nbmInterlaceFlags:                  0x%02X\r\n", 
+    AppendTextBuffer("\r\nbmInterlaceFlags:                  0x%02X\r\n",
         MJPEGFormatDesc->bmInterlaceFlags);
 
     if (gDoAnnotation)
     {
-        AppendTextBuffer("     D00   = %x %sInterlaced stream or variable\r\n", 
+        AppendTextBuffer("     D00   = %x %sInterlaced stream or variable\r\n",
             (MJPEGFormatDesc->bmInterlaceFlags & 1),
             (MJPEGFormatDesc->bmInterlaceFlags & 1) ? "" : " non-");
-        AppendTextBuffer("     D01   = %x %s per frame\r\n", 
+        AppendTextBuffer("     D01   = %x %s per frame\r\n",
             ((MJPEGFormatDesc->bmInterlaceFlags >> 1) & 1),
             ((MJPEGFormatDesc->bmInterlaceFlags >> 1) & 1) ? " 1 field" : " 2 fields");
-        AppendTextBuffer("     D02   = %x  Field 1 %sfirst\r\n", 
+        AppendTextBuffer("     D02   = %x  Field 1 %sfirst\r\n",
             ((MJPEGFormatDesc->bmInterlaceFlags >> 2) & 1),
             ((MJPEGFormatDesc->bmInterlaceFlags >> 2) & 1) ? "" : "not ");
         //@@TestCase B19.7
         //@@Not yet implemented - Priority 1
         //@@Descriptor Field - bmInterlaceFlags
         //@@Validate that reserved bits (D3) are set to zero.
-        AppendTextBuffer("     D03   = %x  Reserved%s\r\n", 
+        AppendTextBuffer("     D03   = %x  Reserved%s\r\n",
             ((MJPEGFormatDesc->bmInterlaceFlags >> 3) & 1),
-            ((MJPEGFormatDesc->bmInterlaceFlags >> 3) & 1) ? 
+            ((MJPEGFormatDesc->bmInterlaceFlags >> 3) & 1) ?
             "\r\n*!*ERROR: non zero" : "" );
         AppendTextBuffer("     D4..5 = %x  Field patterns  ->",
             ((MJPEGFormatDesc->bmInterlaceFlags >> 4) & 3));
@@ -3583,11 +3583,11 @@ DisplayMJPEGFormat (
     //@@TestCase B19.9
     //@@Not yet implemented - Priority 1
     //@@Descriptor Field - bCopyProtect
-    //@@Question - Are their reserved bits and should we validate that 
+    //@@Question - Are their reserved bits and should we validate that
     //@@  reserved bits are set to zero?
-    AppendTextBuffer("\r\nbCopyProtect:                      0x%02X", 
+    AppendTextBuffer("\r\nbCopyProtect:                      0x%02X",
         MJPEGFormatDesc->bCopyProtect);
-    if (gDoAnnotation) 
+    if (gDoAnnotation)
     {
         if (MJPEGFormatDesc->bCopyProtect)
             AppendTextBuffer("  -> Duplication Restricted");
@@ -3620,10 +3620,10 @@ DisplayMJPEGFrameType (
     bLength = SizeOfVideoFrameMjpeg(MJPEGFrameDesc);
 
     AppendTextBuffer("\r\n          ===>Video Streaming MJPEG Frame Type Descriptor<===\r\n");
-    if (gDoAnnotation) 
+    if (gDoAnnotation)
     {
         if(MJPEGFrameDesc->bFrameIndex == g_chMJPEGFrameDefault)
-        { 
+        {
             AppendTextBuffer("          --->This is the Default (optimum) Frame index\r\n");
         }
     }
@@ -3645,7 +3645,7 @@ DisplayMJPEGFrameType (
 
     // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
 
-    AppendTextBuffer("dwDefaultFrameInterval:      0x%08X = %lf mSec (%4.2f Hz)\r\n", 
+    AppendTextBuffer("dwDefaultFrameInterval:      0x%08X = %lf mSec (%4.2f Hz)\r\n",
         MJPEGFrameDesc->dwDefaultFrameInterval,
         ((double)MJPEGFrameDesc->dwDefaultFrameInterval)/10000.0,
         (10000000.0/((double)MJPEGFrameDesc->dwDefaultFrameInterval))
@@ -3796,12 +3796,12 @@ DisplayMJPEGContinuousFrameType(
     // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
 
 
-    AppendTextBuffer("dwMinFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n", 
+    AppendTextBuffer("dwMinFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n",
         dwMinFrameInterval,
         ((double)dwMinFrameInterval)/10000.0,
         (ULONG)(10000000.0/((double)dwMinFrameInterval) + 0.5));
-    
-    AppendTextBuffer("dwMaxFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n", 
+
+    AppendTextBuffer("dwMaxFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n",
         dwMaxFrameInterval,
         ((double)dwMaxFrameInterval)/10000.0,
         (ULONG)(10000000.0/((double)dwMaxFrameInterval) + 0.5));
@@ -3907,7 +3907,7 @@ DisplayMJPEGDiscreteFrameType(
 
 
         // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
-        AppendTextBuffer("dwFrameInterval[%d]:          0x%08X = %lf mSec (%4.2f Hz)\r\n", 
+        AppendTextBuffer("dwFrameInterval[%d]:          0x%08X = %lf mSec (%4.2f Hz)\r\n",
             iNdex, *ulFrameInterval,
             ((double)*ulFrameInterval)/10000.0,
             (10000000.0/((double)*ulFrameInterval))
@@ -4115,13 +4115,13 @@ DisplayMPEG2TSFormat (
         i++;
         AppendTextBuffer("guidStrideFormat:                  %S", szGUID);
         pStr = VidFormatGUIDCodeToName((REFGUID) pStrideGuid);
-        if(gDoAnnotation)   
+        if(gDoAnnotation)
         {
             if (pStr)
             {
                 AppendTextBuffer(" = %s Format", pStr);
             }
-        } 
+        }
         AppendTextBuffer("\r\n");
         bLength = sizeof(VIDEO_FORMAT_MPEG2TS) + sizeof(GUID);
     }
@@ -4244,13 +4244,13 @@ DisplayStreamPayload (
     AppendTextBuffer("guidFormat:                        %S", szGUID);
 
     pStr = VidFormatGUIDCodeToName((REFGUID) &StreamPayloadDesc->guidFormat);
-    if(gDoAnnotation)   
+    if(gDoAnnotation)
     {
         if (pStr)
         {
             AppendTextBuffer(" = %s Format", pStr);
         }
-    } 
+    }
     AppendTextBuffer("\r\n");
     AppendTextBuffer("dwPacketLength:                    0x%02X\r\n", StreamPayloadDesc->dwPacketLength);
 
@@ -4302,10 +4302,10 @@ DisplayDVFormat (
     AppendTextBuffer("bFormatIndex:                      0x%02X\r\n", DVFormatDesc->bFormatIndex);
     AppendTextBuffer("dwMaxVideoFrameBufferSize:   0x%08X\r\n", DVFormatDesc->dwMaxVideoFrameBufferSize);
     AppendTextBuffer("bFormatType:                       0x%02X\r\n", DVFormatDesc->bFormatType);
-    if (gDoAnnotation)  
+    if (gDoAnnotation)
     {
         AppendTextBuffer("     D0..6 = Format Type  ->");
-        switch(DVFormatDesc->bFormatType & 0x03) 
+        switch(DVFormatDesc->bFormatType & 0x03)
         {
            case 0x00:
                AppendTextBuffer(" SD-DV\r\n");
@@ -4344,7 +4344,7 @@ DisplayDVFormat (
         //@@ERROR
         //@@Descriptor Field - bFormatIndex
         //@@bFormatIndex invalid
-        AppendTextBuffer("*!*ERROR:  bFormatIndex of 0x%02X is invalid\r\n", 
+        AppendTextBuffer("*!*ERROR:  bFormatIndex of 0x%02X is invalid\r\n",
             DVFormatDesc->bFormatIndex);
         OOPS();
     }
@@ -4355,7 +4355,7 @@ DisplayDVFormat (
         //@@ERROR
         //@@Descriptor Field - dwMaxVideoFrameBufferSize
         //@@dwMaxVideoFrameBufferSize invalid
-        AppendTextBuffer("*!*ERROR:  dwMaxVideoFrameBufferSize of 0x%02X is invalid\r\n", 
+        AppendTextBuffer("*!*ERROR:  dwMaxVideoFrameBufferSize of 0x%02X is invalid\r\n",
             DVFormatDesc->dwMaxVideoFrameBufferSize);
         OOPS();
     }
@@ -4528,10 +4528,10 @@ DisplayVendorVidFrameType (
     bLength = SizeOfVideoFrameVendor(VendorVidFrameDesc);
 
     AppendTextBuffer("\r\n          ===>Video Streaming Vendor Video Frame Type Descriptor<===\r\n");
-    if (gDoAnnotation) 
+    if (gDoAnnotation)
     {
         if(VendorVidFrameDesc->bFrameIndex == g_chVendorFrameDefault)
-        { 
+        {
             AppendTextBuffer("          --->This is the Default (optimum) Frame index\r\n");
         }
     }
@@ -4587,7 +4587,7 @@ DisplayVendorVidFrameType (
 
     // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
 
-    AppendTextBuffer("dwDefaultFrameInterval:      0x%08X = %lf mSec (%4.2f Hz)\r\n", 
+    AppendTextBuffer("dwDefaultFrameInterval:      0x%08X = %lf mSec (%4.2f Hz)\r\n",
         VendorVidFrameDesc->dwDefaultFrameInterval,
         ((double)VendorVidFrameDesc->dwDefaultFrameInterval)/10000.0,
         (10000000.0/((double)VendorVidFrameDesc->dwDefaultFrameInterval))
@@ -4645,7 +4645,7 @@ DisplayVendorVidFrameType (
     }
     else
     {
-        if (VendorVidFrameDesc->bFrameIntervalType == 1 && 
+        if (VendorVidFrameDesc->bFrameIntervalType == 1 &&
             VendorVidFrameDesc->dwMinBitRate != VendorVidFrameDesc->dwMaxBitRate)
         {
             //@@TestCase B29.9
@@ -4726,12 +4726,12 @@ DisplayVendorVidContinuousFrameType(
     // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
 
 
-    AppendTextBuffer("dwMinFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n", 
+    AppendTextBuffer("dwMinFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n",
         dwMinFrameInterval,
         ((double)dwMinFrameInterval)/10000.0,
         (ULONG)(10000000.0/((double)dwMinFrameInterval) + 0.5));
-    
-    AppendTextBuffer("dwMaxFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n", 
+
+    AppendTextBuffer("dwMaxFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n",
         dwMaxFrameInterval,
         ((double)dwMaxFrameInterval)/10000.0,
         (ULONG)(10000000.0/((double)dwMaxFrameInterval) + 0.5));
@@ -4836,7 +4836,7 @@ DisplayVendorVidDiscreteFrameType(
 
 
         // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
-        AppendTextBuffer("dwFrameInterval[%d]:          0x%08X = %lf mSec (%4.2f Hz)\r\n", 
+        AppendTextBuffer("dwFrameInterval[%d]:          0x%08X = %lf mSec (%4.2f Hz)\r\n",
             iNdex, *ulFrameInterval,
             ((double)*ulFrameInterval)/10000.0,
             (10000000.0/((double)*ulFrameInterval))
@@ -4867,7 +4867,7 @@ DisplayVendorVidDiscreteFrameType(
 
 //*****************************************************************************
 //
-// DisplayFramePayloadFormat() 
+// DisplayFramePayloadFormat()
 //
 //*****************************************************************************
 
@@ -4897,13 +4897,13 @@ DisplayFramePayloadFormat (
     AppendTextBuffer("guidFormat:                        %S", szGUID);
 
     pStr = VidFormatGUIDCodeToName((REFGUID) &FramePayloadFormatDesc->guidFormat);
-    if ( pStr )   
+    if ( pStr )
     {
         if ( gDoAnnotation )
         {
             AppendTextBuffer(" = %s Format", pStr);
         }
-    } 
+    }
     AppendTextBuffer("\r\n");
     AppendTextBuffer("bBitsPerPixel:                     0x%02X\r\n", FramePayloadFormatDesc->bBitsPerPixel);
     AppendTextBuffer("bDefaultFrameIndex:                0x%02X\r\n", FramePayloadFormatDesc->bDefaultFrameIndex);
@@ -4912,7 +4912,7 @@ DisplayFramePayloadFormat (
     {
         //@@ERROR
         //@@Descriptor Field - bLength
-        //@@The declared length in the device descriptor is not equal to the required 
+        //@@The declared length in the device descriptor is not equal to the required
         //@@length in the USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bLength of %d incorrect, should be %d\r\n",
             FramePayloadFormatDesc->bLength,
@@ -4933,7 +4933,7 @@ DisplayFramePayloadFormat (
     {
         //@@ERROR
         //@@Descriptor Field - bNumFrameDescriptors
-        //@@bNumFrameDescriptors is set to zero which is not in accordance with the 
+        //@@bNumFrameDescriptors is set to zero which is not in accordance with the
         //@@USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bNumFrameDescriptors = 0, must have at least 1 Frame descriptor\r\n");
         OOPS();
@@ -4957,7 +4957,7 @@ DisplayFramePayloadFormat (
         OOPS();
     }
 
-    if (FramePayloadFormatDesc->bDefaultFrameIndex == 0 || FramePayloadFormatDesc->bDefaultFrameIndex > 
+    if (FramePayloadFormatDesc->bDefaultFrameIndex == 0 || FramePayloadFormatDesc->bDefaultFrameIndex >
         FramePayloadFormatDesc->bNumFrameDescriptors)
     {
         //@@ERROR
@@ -4969,27 +4969,27 @@ DisplayFramePayloadFormat (
         OOPS();
     }
 
-    AppendTextBuffer("bAspectRatioX:                     0x%02X\r\n", 
+    AppendTextBuffer("bAspectRatioX:                     0x%02X\r\n",
         FramePayloadFormatDesc->bAspectRatioX);
-    AppendTextBuffer("bAspectRatioY:                     0x%02X", 
+    AppendTextBuffer("bAspectRatioY:                     0x%02X",
         FramePayloadFormatDesc->bAspectRatioY);
 
-    if (((FramePayloadFormatDesc->bmInterlaceFlags & 0x01) && 
-        (FramePayloadFormatDesc->bAspectRatioY != 0 && 
+    if (((FramePayloadFormatDesc->bmInterlaceFlags & 0x01) &&
+        (FramePayloadFormatDesc->bAspectRatioY != 0 &&
         FramePayloadFormatDesc->bAspectRatioX != 0)))
     {
-        if(gDoAnnotation) 
+        if(gDoAnnotation)
         {
             AppendTextBuffer("  -> Aspect Ratio is set for a %d:%d display",
-                (FramePayloadFormatDesc->bAspectRatioX),(FramePayloadFormatDesc->bAspectRatioY));   
-        } 
-        else 
+                (FramePayloadFormatDesc->bAspectRatioX),(FramePayloadFormatDesc->bAspectRatioY));
+        }
+        else
         {
             if (FramePayloadFormatDesc->bAspectRatioY != 0 || FramePayloadFormatDesc->bAspectRatioX != 0)
             {
                 //@@ERROR
                 //@@Descriptor Field - bAspectRatioX, bAspectRatioY
-                //@@Verify that that bAspectRatioX and bAspectRatioY are  set to zero 
+                //@@Verify that that bAspectRatioX and bAspectRatioY are  set to zero
                 //@@  if stream is non-interlaced
                 AppendTextBuffer("\r\n*!*ERROR:  Both bAspectRatioX and bAspectRatioY "\
                     "must equal 0 if stream is non-interlaced");
@@ -4997,25 +4997,25 @@ DisplayFramePayloadFormat (
             }
         }
     }
-    AppendTextBuffer("\r\nbmInterlaceFlags:                  0x%02X\r\n", 
+    AppendTextBuffer("\r\nbmInterlaceFlags:                  0x%02X\r\n",
         FramePayloadFormatDesc->bmInterlaceFlags);
 
-    if (gDoAnnotation) 
+    if (gDoAnnotation)
     {
-        AppendTextBuffer("     D0    = 0x%02X Interlaced stream or variable: %s\r\n", 
+        AppendTextBuffer("     D0    = 0x%02X Interlaced stream or variable: %s\r\n",
             (FramePayloadFormatDesc->bmInterlaceFlags & 1),
             (FramePayloadFormatDesc->bmInterlaceFlags & 1) ? "Yes" : "No");
-        AppendTextBuffer("     D1    = 0x%02X Fields per frame: %s\r\n", 
+        AppendTextBuffer("     D1    = 0x%02X Fields per frame: %s\r\n",
             ((FramePayloadFormatDesc->bmInterlaceFlags >> 1) & 1),
             ((FramePayloadFormatDesc->bmInterlaceFlags >> 1) & 1) ? "1 field" : "2 fields");
-        AppendTextBuffer("     D2    = 0x%02X Field 1 first: %s\r\n", 
+        AppendTextBuffer("     D2    = 0x%02X Field 1 first: %s\r\n",
             ((FramePayloadFormatDesc->bmInterlaceFlags >> 2) & 1),
             ((FramePayloadFormatDesc->bmInterlaceFlags >> 2) & 1) ? "Yes" : "No");
         //@@Descriptor Field - bmInterlaceFlags
         //@@Validate that reserved bits (D3) are set to zero.
-        AppendTextBuffer("     D3    = 0x%02X Reserved%s\r\n", 
+        AppendTextBuffer("     D3    = 0x%02X Reserved%s\r\n",
             ((FramePayloadFormatDesc->bmInterlaceFlags >> 3) & 1),
-            ((FramePayloadFormatDesc->bmInterlaceFlags >> 3) & 1) ? 
+            ((FramePayloadFormatDesc->bmInterlaceFlags >> 3) & 1) ?
             "\r\n*!*ERROR: Reserved to 0" : "" );
         AppendTextBuffer("     D4..5 = 0x%02X Field patterns  ->",
             ((FramePayloadFormatDesc->bmInterlaceFlags >> 4) & 3));
@@ -5057,11 +5057,11 @@ DisplayFramePayloadFormat (
     }
 
     //@@Descriptor Field - bCopyProtect
-    //@@Question - Are their reserved bits and should we validate that 
+    //@@Question - Are their reserved bits and should we validate that
     //@@  reserved bits are set to zero?
-    AppendTextBuffer("\r\nbCopyProtect:                      0x%02X", 
+    AppendTextBuffer("\r\nbCopyProtect:                      0x%02X",
         FramePayloadFormatDesc->bCopyProtect);
-    if (gDoAnnotation)  
+    if (gDoAnnotation)
     {
         if (FramePayloadFormatDesc->bCopyProtect)
             AppendTextBuffer("  -> Duplication Restricted");
@@ -5070,9 +5070,9 @@ DisplayFramePayloadFormat (
     }
 
     //@@Descriptor Field - bVariableSize
-    AppendTextBuffer("\r\nbVariableSize:                     0x%02X", 
+    AppendTextBuffer("\r\nbVariableSize:                     0x%02X",
         FramePayloadFormatDesc->bVariableSize);
-    if (gDoAnnotation)  
+    if (gDoAnnotation)
     {
         if (FramePayloadFormatDesc->bVariableSize)
             AppendTextBuffer("  -> Variable Size");
@@ -5112,10 +5112,10 @@ DisplayFramePayloadFrame (
     //@@DisplayFramePayloadFrame -Frame Based Payload Frame
 
     AppendTextBuffer("\r\n          ===>Video Streaming Frame Based Payload Frame Type Descriptor<===\r\n");
-    if (gDoAnnotation) 
+    if (gDoAnnotation)
     {
         if(FramePayloadFrameDesc->bFrameIndex == g_chFrameBasedFrameDefault)
-        { 
+        {
             AppendTextBuffer("          --->This is the Default (optimum) Frame index\r\n");
         }
     }
@@ -5135,7 +5135,7 @@ DisplayFramePayloadFrame (
 
     // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
 
-    AppendTextBuffer("dwDefaultFrameInterval:      0x%08X = %lf mSec (%4.2f Hz)\r\n", 
+    AppendTextBuffer("dwDefaultFrameInterval:      0x%08X = %lf mSec (%4.2f Hz)\r\n",
         FramePayloadFrameDesc->dwDefaultFrameInterval,
         ((double)FramePayloadFrameDesc->dwDefaultFrameInterval)/10000.0,
         (10000000.0/((double)FramePayloadFrameDesc->dwDefaultFrameInterval))
@@ -5146,7 +5146,7 @@ DisplayFramePayloadFrame (
     {
         //@@ERROR
         //@@Descriptor Field - bLength
-        //@@The declared length in the device descriptor is not equal to the required 
+        //@@The declared length in the device descriptor is not equal to the required
         //@@length in the USB Video Device Specification
         AppendTextBuffer("*!*ERROR:  bLength of %d incorrect, should be %d\r\n",
             FramePayloadFrameDesc->bLength, bLength);
@@ -5157,7 +5157,7 @@ DisplayFramePayloadFrame (
     {
         //@@ERROR
         //@@Descriptor Field - bFrameIndex
-        //@@bFrameIndex must be nonzero 
+        //@@bFrameIndex must be nonzero
         AppendTextBuffer("*!*ERROR:  bFrameIndex = 0, this is a 1 based index\r\n");
         OOPS();
     }
@@ -5210,9 +5210,9 @@ DisplayFramePayloadFrame (
         AppendTextBuffer("*!*ERROR:  dwMinBitRate should be less than dwMaxBitRate\r\n");
         OOPS();
     }
-    else 
+    else
     {
-        if (FramePayloadFrameDesc->bFrameIntervalType == 1 && 
+        if (FramePayloadFrameDesc->bFrameIntervalType == 1 &&
             FramePayloadFrameDesc->dwMinBitRate != FramePayloadFrameDesc->dwMaxBitRate)
         {
             //@@WARNING
@@ -5275,12 +5275,12 @@ DisplayFramePayloadContinuousFrameType(
     // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
 
 
-    AppendTextBuffer("dwMinFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n", 
+    AppendTextBuffer("dwMinFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n",
         dwMinFrameInterval,
         ((double)dwMinFrameInterval)/10000.0,
         (ULONG)(10000000.0/((double)dwMinFrameInterval) + 0.5));
-    
-    AppendTextBuffer("dwMaxFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n", 
+
+    AppendTextBuffer("dwMaxFrameInterval:          0x%08X = %lf mSec (%d Hz)\r\n",
         dwMaxFrameInterval,
         ((double)dwMaxFrameInterval)/10000.0,
         (ULONG)(10000000.0/((double)dwMaxFrameInterval) + 0.5));
@@ -5378,7 +5378,7 @@ DisplayFramePayloadDiscreteFrameType(
 
 
         // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
-        AppendTextBuffer("dwFrameInterval[%d]:          0x%08X = %lf mSec (%4.2f Hz)\r\n", 
+        AppendTextBuffer("dwFrameInterval[%d]:          0x%08X = %lf mSec (%4.2f Hz)\r\n",
             iNdex, *ulFrameInterval,
             ((double)*ulFrameInterval)/10000.0,
             (10000000.0/((double)*ulFrameInterval))
@@ -5489,17 +5489,17 @@ VidFormatGUIDCodeToName (
     if (IsEqualGUID(VidFormatGUIDCode, (REFGUID) &YUY2_Format))
     {
         return (PCHAR) &"YUY2";
-    } 
+    }
     if (IsEqualGUID(VidFormatGUIDCode, (REFGUID) &NV12_Format))
     {
         return (PCHAR) &"NV12";
-    } 
+    }
 #ifdef H264_SUPPORT
     //  GUID pH264 = H264_Format;
     if (IsEqualGUID(VidFormatGUIDCode, (REFGUID) &H264_Format))
     {
         return (PCHAR) &"H.264";
-    } 
+    }
 #endif
 
     return FALSE;

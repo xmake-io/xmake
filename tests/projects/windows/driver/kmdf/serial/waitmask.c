@@ -307,7 +307,7 @@ Return Value:
 
     return FALSE;
 }
-
+
 BOOLEAN
 SerialGiveWaitToIsr(
     IN WDFINTERRUPT Interrupt,
@@ -412,7 +412,7 @@ Return Value:
 
     return FALSE;
 }
-
+
 BOOLEAN
 SerialFinishOldWait(
     IN WDFINTERRUPT  Interrupt,
@@ -543,7 +543,7 @@ Return Value:
 
 }
 
-
+
 VOID
 SerialCompleteWait(
     IN WDFDPC Dpc

@@ -29,9 +29,9 @@ Environment:
 
 --*/
 
-        
+
 #include <DriverSpecs.h>
-_Analysis_mode_(_Analysis_code_type_user_code_)  
+_Analysis_mode_(_Analysis_code_type_user_code_)
 
 #include <windows.h>
 

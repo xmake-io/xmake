@@ -853,7 +853,7 @@ doTrasmitStuff:;
     return ServicedAnInterrupt;
 
 }
-
+
 VOID
 SerialPutChar(
     IN PSERIAL_DEVICE_EXTENSION Extension,
@@ -1220,7 +1220,7 @@ Return Value:
     }
 
 }
-
+
 UCHAR
 SerialProcessLSR(
     IN PSERIAL_DEVICE_EXTENSION Extension

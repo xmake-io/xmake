@@ -39,7 +39,7 @@ DRIVER_INITIALIZE DriverEntry;
 EVT_WDF_DRIVER_DEVICE_ADD SerialEvtDeviceAdd;
 EVT_WDF_OBJECT_CONTEXT_CLEANUP SerialEvtDriverContextCleanup;
 EVT_WDF_DEVICE_CONTEXT_CLEANUP SerialEvtDeviceContextCleanup;
-    
+
 EVT_WDF_DEVICE_D0_ENTRY SerialEvtDeviceD0Entry;
 EVT_WDF_DEVICE_D0_EXIT SerialEvtDeviceD0Exit;
 EVT_WDF_DEVICE_D0_ENTRY_POST_INTERRUPTS_ENABLED SerialEvtDeviceD0EntryPostInterruptsEnabled;
@@ -113,7 +113,7 @@ SerialGetNextWrite(
 EVT_WDFDEVICE_WDM_IRP_PREPROCESS SerialWdmDeviceFileCreate;
 EVT_WDFDEVICE_WDM_IRP_PREPROCESS SerialWdmFileClose;
 EVT_WDFDEVICE_WDM_IRP_PREPROCESS SerialFlush;
-    
+
 EVT_WDFDEVICE_WDM_IRP_PREPROCESS SerialQueryInformationFile;
 EVT_WDFDEVICE_WDM_IRP_PREPROCESS SerialSetInformationFile;
 
@@ -173,7 +173,7 @@ EVT_WDF_REQUEST_CANCEL SerialCancelWait;
 
 
 EVT_WDF_INTERRUPT_SYNCHRONIZE SerialPurgeInterruptBuff;
-    
+
 VOID
 SerialPurgeRequests(
     IN WDFQUEUE QueueToClean,
@@ -574,7 +574,7 @@ typedef struct _SERIAL_IOCTL_SYNC {
 // Prototypes and defines to handle processor groups.
 //
 typedef
-USHORT  
+USHORT
 (*PFN_KE_GET_ACTIVE_GROUP_COUNT)(
     VOID
     );

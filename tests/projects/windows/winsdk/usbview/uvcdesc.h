@@ -15,7 +15,7 @@
 
 
 // USB Video Device Class Code
-#define USB_DEVICE_CLASS_VIDEO     0x0E 
+#define USB_DEVICE_CLASS_VIDEO     0x0E
 
 // Video sub-classes
 #define SUBCLASS_UNDEFINED              0x00
@@ -36,7 +36,7 @@
 #define OUTPUT_TERMINAL 0x03
 #define SELECTOR_UNIT   0x04
 #define PROCESSING_UNIT 0x05
-#define EXTENSION_UNIT  0x06 
+#define EXTENSION_UNIT  0x06
 #define MAX_TYPE_UNIT   0x07
 
 // Video Class-Specific VS Interface Descriptor Subtypes
@@ -262,7 +262,7 @@
 #define SCR_LENGTH 6 // Length of SCR field in bytes
 
 // USB Video Status Codes (Request Error Code Control)
-#define USBVIDEO_RE_STATUS_NOERROR          0x00  
+#define USBVIDEO_RE_STATUS_NOERROR          0x00
 #define USBVIDEO_RE_STATUS_NOT_READY        0x01
 #define USBVIDEO_RE_STATUS_WRONG_STATE      0x02
 #define USBVIDEO_RE_STATUS_POWER            0x03
@@ -447,7 +447,7 @@ typedef struct {
     UCHAR bTerminalID;          // Constant uniquely identifying the Terminal
     USHORT wTerminalType;       // Sensor type
     UCHAR bAssocTerminal;       // ID of associated output terminal
-    UCHAR iTerminal;            // Index of string descriptor        
+    UCHAR iTerminal;            // Index of string descriptor
     USHORT wObjectiveFocalLengthMin; // Min focal length for zoom
     USHORT wObjectiveFocalLengthMax; // Max focal length for zoom
     USHORT wOcularFocalLength;  // Ocular focal length for zoom
@@ -467,7 +467,7 @@ typedef struct {
     UCHAR bTerminalID;          // Constant uniquely identifying the Terminal
     USHORT wTerminalType;       // Media Transport type
     UCHAR bAssocTerminal;       // ID of associated output terminal
-    UCHAR iTerminal;            // Index of string descriptor    
+    UCHAR iTerminal;            // Index of string descriptor
     UCHAR bControlSize;         // Size of bmControls field
     UCHAR bmControls[];         // Bitmap of controls supported
 } VIDEO_INPUT_MTT, *PVIDEO_INPUT_MTT;
@@ -478,7 +478,7 @@ __inline size_t SizeOfVideoInputMTT(_In_ PVIDEO_INPUT_MTT pDesc)
     UCHAR bTransportModeSize;
     PUCHAR pbCurr;
 
-    pbCurr = pDesc->bmControls + pDesc->bControlSize; 
+    pbCurr = pDesc->bmControls + pDesc->bControlSize;
     bTransportModeSize = *pbCurr;
 
     return sizeof(VIDEO_INPUT_MTT) + pDesc->bControlSize + 1 + bTransportModeSize;
@@ -495,8 +495,8 @@ typedef struct {
     UCHAR bTerminalID;          // Constant uniquely identifying the Terminal
     USHORT wTerminalType;       // Media Transport type
     UCHAR bAssocTerminal;       // ID of associated output terminal
-    UCHAR bSourceID;            // ID of source unit/terminal    
-    UCHAR iTerminal;            // Index of string descriptor    
+    UCHAR bSourceID;            // ID of source unit/terminal
+    UCHAR iTerminal;            // Index of string descriptor
     UCHAR bControlSize;         // Size of bmControls field
     UCHAR bmControls[];         // Bitmap of controls supported
 } VIDEO_OUTPUT_MTT, *PVIDEO_OUTPUT_MTT;
@@ -507,7 +507,7 @@ __inline size_t SizeOfVideoOutputMTT(_In_ PVIDEO_OUTPUT_MTT pDesc)
     UCHAR bTransportModeSize;
     PUCHAR pbCurr;
 
-    pbCurr = pDesc->bmControls + pDesc->bControlSize; 
+    pbCurr = pDesc->bmControls + pDesc->bControlSize;
     bTransportModeSize = *pbCurr;
 
     return sizeof(VIDEO_OUTPUT_MTT) + pDesc->bControlSize + 1+ bTransportModeSize;
@@ -544,7 +544,7 @@ typedef struct {
 
 #define SIZEOF_VIDEO_PROCESSING_UNIT(pDesc) \
     (sizeof(VIDEO_PROCESSING_UNIT) + 1 + (pDesc)->bControlSize)
-    
+
 
 // VideoControl Extension Unit Descriptor
 typedef struct {
@@ -565,7 +565,7 @@ __inline size_t SizeOfVideoExtensionUnit(PVIDEO_EXTENSION_UNIT pDesc)
     PUCHAR pbCurr;
 
     // baSourceID is an array, and hence understood to be an address
-    pbCurr = pDesc->baSourceID + pDesc->bNrInPins; 
+    pbCurr = pDesc->baSourceID + pDesc->bNrInPins;
     if (((ULONG_PTR) pbCurr < (ULONG_PTR) pDesc->baSourceID) ||
         (ULONG_PTR) pbCurr >= (ULONG_PTR)((UCHAR *) pDesc + pDesc->bLength))
         return 0;
@@ -575,7 +575,7 @@ __inline size_t SizeOfVideoExtensionUnit(PVIDEO_EXTENSION_UNIT pDesc)
 }
 
 #define SIZEOF_VIDEO_EXTENSION_UNIT(pDesc) SizeOfVideoExtensionUnit(pDesc)
-    
+
 
 // Class-specific Interrupt Endpoint Descriptor
 typedef struct {
@@ -595,14 +595,14 @@ typedef struct _VIDEO_STREAMING_INPUT_HEADER
     UCHAR bDescriptorType;      // CS_INTERFACE descriptor type
     UCHAR bDescriptorSubtype;   // VS_INPUT_HEADER descriptor subtype
     UCHAR bNumFormats;
-    USHORT wTotalLength;    
+    USHORT wTotalLength;
     UCHAR bEndpointAddress;
     UCHAR bmInfo;
     UCHAR bTerminalLink;
     UCHAR bStillCaptureMethod;
     UCHAR bTriggerSupport;
     UCHAR bTriggerUsage;
-    UCHAR bControlSize;    
+    UCHAR bControlSize;
     UCHAR bmaControls[];
 } VIDEO_STREAMING_INPUT_HEADER, *PVIDEO_STREAMING_INPUT_HEADER;
 
@@ -617,7 +617,7 @@ typedef struct _VIDEO_STREAMING_OUTPUT_HEADER
     UCHAR bDescriptorType;
     UCHAR bDescriptorSubtype;
     UCHAR bNumFormats;
-    USHORT wTotalLength;    
+    USHORT wTotalLength;
     UCHAR bEndpointAddress;
     UCHAR bTerminalLink;
 } VIDEO_STREAMING_OUTPUT_HEADER, *PVIDEO_STREAMING_OUTPUT_HEADER;
@@ -638,7 +638,7 @@ typedef struct _VIDEO_STILL_IMAGE_FRAME
     UCHAR bDescriptorType;
     UCHAR bDescriptorSubtype;
     UCHAR bEndpointAddress;
-    UCHAR bNumImageSizePatterns;    
+    UCHAR bNumImageSizePatterns;
     VIDEO_STILL_IMAGE_RECT aStillRect[];
 } VIDEO_STILL_IMAGE_FRAME, *PVIDEO_STILL_IMAGE_FRAME;
 
@@ -650,9 +650,9 @@ __inline size_t SizeOfVideoStillImageFrame(PVIDEO_STILL_IMAGE_FRAME pDesc)
     pbCurr = (PUCHAR) pDesc->aStillRect + (sizeof(VIDEO_STILL_IMAGE_RECT) * pDesc->bNumImageSizePatterns);
     bNumCompressionPatterns = *pbCurr;
 
-    return (sizeof(VIDEO_STILL_IMAGE_FRAME) + 
+    return (sizeof(VIDEO_STILL_IMAGE_FRAME) +
            (sizeof(VIDEO_STILL_IMAGE_RECT) * pDesc->bNumImageSizePatterns) +
-           1 + bNumCompressionPatterns);                   
+           1 + bNumCompressionPatterns);
 }
 
 #define SIZEOF_VIDEO_STILL_IMAGE_FRAME(pDesc) SizeOfVideoStillImageFrame(pDesc)
@@ -763,7 +763,7 @@ typedef struct _VIDEO_FRAME_MJPEG
 
 
 __inline size_t SizeOfVideoFrameMjpeg(_In_ PVIDEO_FRAME_MJPEG pDesc)
-{  
+{
     if (pDesc->bFrameIntervalType == 0) { // Continuous
         return sizeof(VIDEO_FRAME_MJPEG) + (3 * sizeof(ULONG));
     }
@@ -813,7 +813,7 @@ typedef struct _VIDEO_FRAME_VENDOR
 } VIDEO_FRAME_VENDOR, *PVIDEO_FRAME_VENDOR;
 
 __inline size_t SizeOfVideoFrameVendor(_In_ PVIDEO_FRAME_VENDOR pDesc)
-{    
+{
     if (pDesc->bFrameIntervalType == 0) { // Continuous
         return sizeof(VIDEO_FRAME_VENDOR) + (3 * sizeof(ULONG));
     }
@@ -833,7 +833,7 @@ typedef struct _VIDEO_FORMAT_DV
     UCHAR bDescriptorSubtype;
     UCHAR bFormatIndex;
     ULONG dwMaxVideoFrameBufferSize;
-    UCHAR bFormatType;    
+    UCHAR bFormatType;
 } VIDEO_FORMAT_DV, *PVIDEO_FORMAT_DV;
 
 #define SIZEOF_VIDEO_FORMAT_DV(pDesc) sizeof(VIDEO_FORMAT_DV)
@@ -848,7 +848,7 @@ typedef struct _VIDEO_FORMAT_MPEG2TS
     UCHAR bFormatIndex;
     UCHAR bDataOffset;
     UCHAR bPacketLength;
-    UCHAR bStrideLength;    
+    UCHAR bStrideLength;
 } VIDEO_FORMAT_MPEG2TS, *PVIDEO_FORMAT_MPEG2TS;
 
 #define SIZEOF_VIDEO_FORMAT_MPEG2TS(pDesc) sizeof(VIDEO_FORMAT_MPEG2TS)
@@ -863,7 +863,7 @@ typedef struct _VIDEO_FORMAT_MPEG1SS
     UCHAR bFormatIndex;
     UCHAR bPacketLength;
     UCHAR bPackLength;
-    UCHAR bPackDataType;    
+    UCHAR bPackDataType;
 } VIDEO_FORMAT_MPEG1SS, *PVIDEO_FORMAT_MPEG1SS;
 
 #define SIZEOF_VIDEO_FORMAT_MPEG1SS(pDesc) sizeof(VIDEO_FORMAT_MPEG1SS)
@@ -1096,7 +1096,7 @@ typedef struct _VS_PROBE_COMMIT_CONTROL2
 } VS_PROBE_COMMIT_CONTROL2, *PVS_PROBE_COMMIT_CONTROL2;
 
 #pragma pack( pop, vdc_descriptor_structs )
-#pragma warning( default : 4200 ) 
+#pragma warning( default : 4200 )
 
 
 //

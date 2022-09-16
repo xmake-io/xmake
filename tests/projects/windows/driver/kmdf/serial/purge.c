@@ -119,7 +119,7 @@ Return Value:
     return;
 
 }
-
+
 BOOLEAN
 SerialPurgeInterruptBuff(
     IN WDFINTERRUPT  Interrupt,

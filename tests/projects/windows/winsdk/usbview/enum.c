@@ -1,5 +1,5 @@
 /*++
-    
+
 Copyright (c) 1997-2011 Microsoft Corporation
 
 Module Name:
@@ -42,8 +42,8 @@ Abstract:
     to a port, send the hub an IOCTL_USB_GET_NODE_CONNECTION_NAME request
     to get the symbolic link name of the hub attached to the downstream
     port.  If there is a hub attached to the downstream port, recurse to
-    step (2).  
-    
+    step (2).
+
     GetAllStringDescriptors()
     GetConfigDescriptor()
     Create a node in the TreeView to represent each hub port
@@ -143,18 +143,18 @@ GetBOSDescriptor (
     ULONG   ConnectionIndex
     );
 
-DWORD 
+DWORD
 GetHostControllerPowerMap(
-    HANDLE hHCDev, 
+    HANDLE hHCDev,
     PUSBHOSTCONTROLLERINFO hcInfo);
 
-DWORD 
+DWORD
 GetHostControllerInfo(
-    HANDLE hHCDev, 
+    HANDLE hHCDev,
     PUSBHOSTCONTROLLERINFO hcInfo);
 
-PCHAR WideStrToMultiStr ( 
-     _In_reads_bytes_(cbWideStr) PWCHAR WideStr, 
+PCHAR WideStrToMultiStr (
+     _In_reads_bytes_(cbWideStr) PWCHAR WideStr,
      _In_ size_t                   cbWideStr
      );
 
@@ -196,7 +196,7 @@ EnumerateAllDevices();
 
 void
 EnumerateAllDevicesWithGuid(
-    PDEVICE_GUID_LIST DeviceList, 
+    PDEVICE_GUID_LIST DeviceList,
     LPGUID Guid
     );
 
@@ -654,7 +654,7 @@ EnumerateHub (
     ULONG                   nBytes = 0;
     BOOL                    success = 0;
     DWORD                   dwSizeOfLeafName = 0;
-    CHAR                    leafName[512] = {0}; 
+    CHAR                    leafName[512] = {0};
     HRESULT                 hr = S_OK;
     size_t                  cchHeader = 0;
     size_t                  cchFullHubName = 0;
@@ -850,11 +850,11 @@ EnumerateHub (
     if (ConnectionInfo)
     {
         StringCchPrintf(leafName, dwSizeOfLeafName, "[Port%d] ", ConnectionInfo->ConnectionIndex);
-        StringCchCat(leafName, 
-            dwSizeOfLeafName, 
+        StringCchCat(leafName,
+            dwSizeOfLeafName,
             ConnectionStatuses[ConnectionInfo->ConnectionStatus]);
-        StringCchCatN(leafName, 
-            dwSizeOfLeafName, 
+        StringCchCatN(leafName,
+            dwSizeOfLeafName,
             " :  ",
             sizeof(" :  "));
     }
@@ -865,8 +865,8 @@ EnumerateHub (
         hr = StringCbLength(DevProps->DeviceDesc, MAX_DRIVER_KEY_NAME, &cbDeviceDesc);
         if(SUCCEEDED(hr))
         {
-            StringCchCatN(leafName, 
-                    dwSizeOfLeafName, 
+            StringCchCatN(leafName,
+                    dwSizeOfLeafName,
                     DevProps->DeviceDesc,
                     cbDeviceDesc);
         }
@@ -876,18 +876,18 @@ EnumerateHub (
         if(ConnectionInfo != NULL)
         {
             // External hub
-            StringCchCatN(leafName, 
-                    dwSizeOfLeafName, 
+            StringCchCatN(leafName,
+                    dwSizeOfLeafName,
                     HubName,
                     cbHubName);
         }
         else
         {
             // Root hub
-            StringCchCatN(leafName, 
-                    dwSizeOfLeafName, 
+            StringCchCatN(leafName,
+                    dwSizeOfLeafName,
                     "RootHub",
-                    sizeof("RootHub")); 
+                    sizeof("RootHub"));
         }
     }
 
@@ -1062,7 +1062,7 @@ EnumerateHubPorts (
             break;
         }
 
-        connectionInfoExV2 = (PUSB_NODE_CONNECTION_INFORMATION_EX_V2) 
+        connectionInfoExV2 = (PUSB_NODE_CONNECTION_INFORMATION_EX_V2)
                                     ALLOC(sizeof(USB_NODE_CONNECTION_INFORMATION_EX_V2));
 
         if (connectionInfoExV2 == NULL)
@@ -1071,7 +1071,7 @@ EnumerateHubPorts (
             FREE(connectionInfoEx);
             break;
         }
-        
+
         //
         // Now query USBHUB for the structures
         // for this port.  This will tell us if a device is attached to this
@@ -1090,7 +1090,7 @@ EnumerateHubPorts (
                                   &nBytes,
                                   NULL);
 
-        if (success && nBytes == sizeof(USB_PORT_CONNECTOR_PROPERTIES)) 
+        if (success && nBytes == sizeof(USB_PORT_CONNECTOR_PROPERTIES))
         {
             pPortConnectorProps = (PUSB_PORT_CONNECTOR_PROPERTIES)
                                         ALLOC(portConnectorProps.ActualLength);
@@ -1098,7 +1098,7 @@ EnumerateHubPorts (
             if (pPortConnectorProps != NULL)
             {
                 pPortConnectorProps->ConnectionIndex = index;
-                
+
                 success = DeviceIoControl(hHubDevice,
                                           IOCTL_USB_GET_PORT_CONNECTOR_PROPERTIES,
                                           pPortConnectorProps,
@@ -1115,7 +1115,7 @@ EnumerateHubPorts (
                 }
             }
         }
-        
+
         connectionInfoExV2->ConnectionIndex = index;
         connectionInfoExV2->Length = sizeof(USB_NODE_CONNECTION_INFORMATION_EX_V2);
         connectionInfoExV2->SupportedUsbProtocols.Usb300 = 1;
@@ -1129,7 +1129,7 @@ EnumerateHubPorts (
                                   &nBytes,
                                   NULL);
 
-        if (!success || nBytes < sizeof(USB_NODE_CONNECTION_INFORMATION_EX_V2)) 
+        if (!success || nBytes < sizeof(USB_NODE_CONNECTION_INFORMATION_EX_V2))
         {
             FREE(connectionInfoExV2);
             connectionInfoExV2 = NULL;
@@ -1154,17 +1154,17 @@ EnumerateHubPorts (
             // of superspeed, we overwrite the value if the super speed
             // data structures are available and indicate the device is operating
             // at SuperSpeed.
-            // 
-            
-            if (connectionInfoEx->Speed == UsbHighSpeed 
-                && connectionInfoExV2 != NULL 
+            //
+
+            if (connectionInfoEx->Speed == UsbHighSpeed
+                && connectionInfoExV2 != NULL
                 && (connectionInfoExV2->Flags.DeviceIsOperatingAtSuperSpeedOrHigher ||
                     connectionInfoExV2->Flags.DeviceIsOperatingAtSuperSpeedPlusOrHigher))
             {
                 connectionInfoEx->Speed = UsbSuperSpeed;
             }
-        } 
-        else 
+        }
+        else
         {
             PUSB_NODE_CONNECTION_INFORMATION    connectionInfo = NULL;
 
@@ -1177,7 +1177,7 @@ EnumerateHubPorts (
 
             connectionInfo = (PUSB_NODE_CONNECTION_INFORMATION)ALLOC(nBytes);
 
-            if (connectionInfo == NULL) 
+            if (connectionInfo == NULL)
             {
                 OOPS();
 
@@ -1190,7 +1190,7 @@ EnumerateHubPorts (
                 {
                     FREE(connectionInfoExV2);
                 }
-                continue;                
+                continue;
             }
 
             connectionInfo->ConnectionIndex = index;
@@ -1361,7 +1361,7 @@ EnumerateHubPorts (
                     FREE(bosDesc);
                 }
                 FREE(connectionInfoEx);
-                
+
                 if (pPortConnectorProps != NULL)
                 {
                     FREE(pPortConnectorProps);
@@ -1386,8 +1386,8 @@ EnumerateHubPorts (
             StringCchPrintf(leafName, sizeof(leafName), "[Port%d] ", index);
 
             // Add error description if ConnectionStatus is other than NoDeviceConnected / DeviceConnected
-            StringCchCat(leafName, 
-                sizeof(leafName), 
+            StringCchCat(leafName,
+                sizeof(leafName),
                 ConnectionStatuses[connectionInfoEx->ConnectionStatus]);
 
             if (DevProps)
@@ -1400,12 +1400,12 @@ EnumerateHubPorts (
                     OOPS();
                 }
                 dwSizeOfLeafName = sizeof(leafName);
-                StringCchCatN(leafName, 
-                    dwSizeOfLeafName - 1, 
+                StringCchCatN(leafName,
+                    dwSizeOfLeafName - 1,
                     " :  ",
                     sizeof(" :  "));
-                StringCchCatN(leafName, 
-                    dwSizeOfLeafName - 1, 
+                StringCchCatN(leafName,
+                    dwSizeOfLeafName - 1,
                     DevProps->DeviceDesc,
                     cchDeviceDesc );
             }
@@ -1453,8 +1453,8 @@ EnumerateHubPorts (
 //
 //*****************************************************************************
 
-PCHAR WideStrToMultiStr ( 
-                         _In_reads_bytes_(cbWideStr) PWCHAR WideStr, 
+PCHAR WideStrToMultiStr (
+                         _In_reads_bytes_(cbWideStr) PWCHAR WideStr,
                          _In_ size_t                   cbWideStr
                          )
 {
@@ -1875,7 +1875,7 @@ PCHAR GetHCDDriverKeyName (
     //
     // Convert the driver key name
     // Pass the length of the DriverKeyName string
-    // 
+    //
 
     driverKeyNameA = WideStrToMultiStr(driverKeyNameW->DriverKeyName, nBytes - sizeof(USB_HCD_DRIVERKEY_NAME) + sizeof(WCHAR));
 
@@ -2508,7 +2508,7 @@ GetAllStringDescriptors (
         // historically USBView made this query, so the query should be safe for
         // video devices.
         //
-        for (uIndex = 1; SUCCEEDED(hr) && (uIndex < NUM_STRING_DESC_TO_GET); uIndex++) 
+        for (uIndex = 1; SUCCEEDED(hr) && (uIndex < NUM_STRING_DESC_TO_GET); uIndex++)
         {
             hr = GetStringDescriptors(hHubDevice,
                                       ConnectionIndex,
@@ -2521,7 +2521,7 @@ GetAllStringDescriptors (
 
     return supportedLanguagesString;
 }
-            
+
 
 
 //*****************************************************************************
@@ -2783,7 +2783,7 @@ CleanupItem (
         //
         // All structures except DEVICE_INFO_NODE are free'd up here. DEVICE_INFO_NODE structures are free'd while
         // destroying device info lists (ClearDeviceList())
-        // 
+        //
         switch (*(PUSBDEVICEINFOTYPE)info)
         {
             case HostControllerInfo:
@@ -2889,9 +2889,9 @@ CleanupItem (
             FREE(ConnectionInfoEx);
         }
 
-        if (HubInfoEx) 
+        if (HubInfoEx)
         {
-            FREE(HubInfoEx);        
+            FREE(HubInfoEx);
         }
 
         if (PortConnectorProps)
@@ -2923,9 +2923,9 @@ CleanupItem (
 //
 //*****************************************************************************
 
-DWORD 
+DWORD
 GetHostControllerPowerMap(
-    HANDLE hHCDev, 
+    HANDLE hHCDev,
     PUSBHOSTCONTROLLERINFO hcInfo)
 {
     USBUSER_POWER_INFO_REQUEST UsbPowerInfoRequest;
@@ -2936,7 +2936,7 @@ GetHostControllerPowerMap(
     int                        nIndex = 0;
     int                        nPowerState = WdmUsbPowerSystemWorking;
 
-    for ( ; nPowerState <= WdmUsbPowerSystemShutdown; nIndex++, nPowerState++) 
+    for ( ; nPowerState <= WdmUsbPowerSystemShutdown; nIndex++, nPowerState++)
     {
         // zero initialize our request
         memset(&UsbPowerInfoRequest, 0, sizeof(UsbPowerInfoRequest));
@@ -2977,10 +2977,10 @@ GetHostControllerPowerMap(
 void
 EnumerateAllDevices()
 {
-    EnumerateAllDevicesWithGuid(&gDeviceList, 
+    EnumerateAllDevicesWithGuid(&gDeviceList,
                                 (LPGUID)&GUID_DEVINTERFACE_USB_DEVICE);
 
-    EnumerateAllDevicesWithGuid(&gHubList, 
+    EnumerateAllDevicesWithGuid(&gHubList,
                                 (LPGUID)&GUID_DEVINTERFACE_USB_HUB);
 }
 
@@ -3000,9 +3000,9 @@ EnumerateAllDevices()
 //
 //*****************************************************************************
 
-DWORD 
+DWORD
 GetHostControllerInfo(
-    HANDLE hHCDev, 
+    HANDLE hHCDev,
     PUSBHOSTCONTROLLERINFO hcInfo)
 {
     USBUSER_CONTROLLER_INFO_0 UsbControllerInfo;
@@ -3111,7 +3111,7 @@ GetDeviceProperty(
 
 void
 EnumerateAllDevicesWithGuid(
-    PDEVICE_GUID_LIST DeviceList, 
+    PDEVICE_GUID_LIST DeviceList,
     LPGUID Guid
     )
 {
@@ -3193,7 +3193,7 @@ EnumerateAllDevicesWithGuid(
                 }
 
                 pNode->DeviceInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
-        
+
                 success = SetupDiEnumDeviceInterfaces(DeviceList->DeviceInfo,
                                                       0,
                                                       Guid,
@@ -3205,23 +3205,23 @@ EnumerateAllDevicesWithGuid(
                     OOPS();
                     break;
                 }
-             
+
                 success = SetupDiGetDeviceInterfaceDetail(DeviceList->DeviceInfo,
                                                           &pNode->DeviceInterfaceData,
                                                           NULL,
                                                           0,
                                                           &requiredLength,
                                                           NULL);
-        
+
                 error = GetLastError();
-                
+
                 if (!success && error != ERROR_INSUFFICIENT_BUFFER)
                 {
                     FreeDeviceInfoNode(&pNode);
                     OOPS();
                     break;
                 }
-                
+
                 pNode->DeviceDetailData = ALLOC(requiredLength);
 
                 if (pNode->DeviceDetailData == NULL)
@@ -3230,9 +3230,9 @@ EnumerateAllDevicesWithGuid(
                     OOPS();
                     break;
                 }
-                
+
                 pNode->DeviceDetailData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
-                
+
                 success = SetupDiGetDeviceInterfaceDetail(DeviceList->DeviceInfo,
                                                           &pNode->DeviceInterfaceData,
                                                           pNode->DeviceDetailData,
@@ -3244,8 +3244,8 @@ EnumerateAllDevicesWithGuid(
                     FreeDeviceInfoNode(&pNode);
                     OOPS();
                     break;
-                }        
-        
+                }
+
                 InsertTailList(&DeviceList->ListHead, &pNode->ListEntry);
             }
         }
@@ -3270,7 +3270,7 @@ AcquireDevicePowerState(
 
     pNode->LatestDevicePowerState = bResult ? cmPowerData.PD_MostRecentPowerState : PowerDeviceUnspecified;
 
-    return pNode->LatestDevicePowerState; 
+    return pNode->LatestDevicePowerState;
 }
 
 
@@ -3360,7 +3360,7 @@ FindMatchingDeviceNodeForDriverName(
 
         pEntry = pEntry->Flink;
     }
-    
+
     return NULL;
 }
 

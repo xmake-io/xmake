@@ -2922,7 +2922,7 @@ Return Value :
         RtlZeroMemory(queryTable, sizeof(queryTable));
 
         queryTable[0].Flags = RTL_QUERY_REGISTRY_DIRECT |
-                              RTL_QUERY_REGISTRY_REQUIRED | 
+                              RTL_QUERY_REGISTRY_REQUIRED |
                               RTL_QUERY_REGISTRY_TYPECHECK;
         queryTable[0].Name = DSM_LOAD_BALANCE_POLICY;
         queryTable[0].EntryContext = LoadBalanceType;
@@ -3194,7 +3194,7 @@ Return Value :
         RtlZeroMemory(queryTable, sizeof(queryTable));
 
         queryTable[0].Flags = RTL_QUERY_REGISTRY_DIRECT |
-                              RTL_QUERY_REGISTRY_REQUIRED | 
+                              RTL_QUERY_REGISTRY_REQUIRED |
                               RTL_QUERY_REGISTRY_TYPECHECK;
         queryTable[0].Name = DSM_LOAD_BALANCE_POLICY;
         queryTable[0].EntryContext = LoadBalanceType;
@@ -3351,7 +3351,7 @@ Return Value :
     RtlZeroMemory(queryTable, sizeof(queryTable));
 
     queryTable[0].Flags = RTL_QUERY_REGISTRY_DIRECT |
-                          RTL_QUERY_REGISTRY_REQUIRED | 
+                          RTL_QUERY_REGISTRY_REQUIRED |
                           RTL_QUERY_REGISTRY_TYPECHECK;
     queryTable[0].Name = DSM_LOAD_BALANCE_POLICY;
     queryTable[0].EntryContext = LoadBalanceType;
@@ -4842,7 +4842,7 @@ Return Value:
             RtlZeroMemory(queryTable, sizeof(queryTable));
 
             queryTable[0].Flags = RTL_QUERY_REGISTRY_DIRECT |
-                                  RTL_QUERY_REGISTRY_REQUIRED | 
+                                  RTL_QUERY_REGISTRY_REQUIRED |
                                   RTL_QUERY_REGISTRY_TYPECHECK;
             queryTable[0].Name = DSM_PATH_WEIGHT;
             queryTable[0].EntryContext = PathWeight;
@@ -4869,7 +4869,7 @@ Return Value:
             RtlZeroMemory(queryTable, sizeof(queryTable));
 
             queryTable[0].Flags = RTL_QUERY_REGISTRY_DIRECT |
-                                    RTL_QUERY_REGISTRY_REQUIRED | 
+                                    RTL_QUERY_REGISTRY_REQUIRED |
                                     RTL_QUERY_REGISTRY_TYPECHECK;
             queryTable[0].Name = DSM_PRIMARY_PATH;
             queryTable[0].EntryContext = PrimaryPath;
@@ -4889,7 +4889,7 @@ Return Value:
                 RtlZeroMemory(queryTable, sizeof(queryTable));
 
                 queryTable[0].Flags = RTL_QUERY_REGISTRY_DIRECT |
-                                        RTL_QUERY_REGISTRY_REQUIRED | 
+                                        RTL_QUERY_REGISTRY_REQUIRED |
                                         RTL_QUERY_REGISTRY_TYPECHECK;
                 queryTable[0].Name = DSM_OPTIMIZED_PATH;
                 queryTable[0].EntryContext = OptimizedPath;

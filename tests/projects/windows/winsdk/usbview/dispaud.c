@@ -391,9 +391,9 @@ DisplayACInputTerminal (
 
     AppendTextBuffer("wTerminalType:                   0x%04X",
                      ITDesc->wTerminalType);
-    pStr = GetStringFromList(slAudioTerminalTypes, 
+    pStr = GetStringFromList(slAudioTerminalTypes,
             sizeof(slAudioTerminalTypes) / sizeof(STRINGLIST),
-            ITDesc->wTerminalType, 
+            ITDesc->wTerminalType,
             "Invalid AC Input Terminal Type");
     AppendTextBuffer(" (%s)\r\n", pStr);
 
@@ -453,9 +453,9 @@ DisplayACOutputTerminal (
     AppendTextBuffer("wTerminalType:                   0x%04X",
                      OTDesc->wTerminalType);
 
-    pStr = GetStringFromList(slAudioTerminalTypes, 
+    pStr = GetStringFromList(slAudioTerminalTypes,
             sizeof(slAudioTerminalTypes) / sizeof(STRINGLIST),
-            OTDesc->wTerminalType, 
+            OTDesc->wTerminalType,
             "Invalid AC Output Terminal Type");
     AppendTextBuffer(" (%s)\r\n", pStr);
 
@@ -930,9 +930,9 @@ DisplayASGeneral (
     AppendTextBuffer("wFormatTag:                      0x%04X",
                      GeneralDesc->wFormatTag);
 
-    pStr = GetStringFromList(slAudioFormatTypes, 
+    pStr = GetStringFromList(slAudioFormatTypes,
             sizeof(slAudioFormatTypes) / sizeof(STRINGLIST),
-            GeneralDesc->wFormatTag, 
+            GeneralDesc->wFormatTag,
             "Invalid AC Format Type");
     AppendTextBuffer(" (%s)\r\n", pStr);
 

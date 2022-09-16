@@ -63,7 +63,7 @@ public:
     //
     // The factory method used to create an instance of this driver.
     //
-    
+
     static
     HRESULT
     CreateInstance(
@@ -87,7 +87,7 @@ public:
         )
     {
         UNREFERENCED_PARAMETER( FxWdfDriver );
-    
+
         return S_OK;
     }
 
@@ -114,7 +114,7 @@ public:
     //
     // IUnknown methods.
     //
-    // We have to implement basic ones here that redirect to the 
+    // We have to implement basic ones here that redirect to the
     // base class becuase of the multiple inheritance.
     //
 
@@ -127,7 +127,7 @@ public:
     {
         return __super::AddRef();
     }
-    
+
     _At_(this, __drv_freesMem(object))
     virtual
     ULONG

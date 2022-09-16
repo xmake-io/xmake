@@ -8,7 +8,7 @@
 #ifdef H264_SUPPORT
 
 //*****************************************************************************
-// G L O B A L S    
+// G L O B A L S
 //*****************************************************************************
 // H.264 format
 UCHAR g_expectedNumberOfH264FrameDescriptors = 0;
@@ -24,10 +24,10 @@ UCHAR g_numberOfUncompressedFrameFrameDescriptors = 0;
 
 //*****************************************************************************
 //
-// external function prototypes 
+// external function prototypes
 //
 //*****************************************************************************
-extern VOID VDisplayBytes (PUCHAR Data, USHORT Len ); 
+extern VOID VDisplayBytes (PUCHAR Data, USHORT Len );
 
 //*****************************************************************************
 //
@@ -46,7 +46,7 @@ STRINGLIST slSliceModes[]=
     {0x80,      "Reserved",                                        ""},
 };
 
-   
+
 STRINGLIST slSyncFrameTypes[]=
 {
     {1,         "Reset"           ,                                                                      ""},
@@ -203,7 +203,7 @@ char * commaPrintNumber( ULONG number )
     char * pOutputString = &retbuf[ sizeof(retbuf)-1 ];
     *pOutputString = '\0';
 
-    do 
+    do
     {
         // for every 3rd digit, add a comma to the output string
         if ( ( digitCount%3 ) == 0 && ( digitCount != 0 ) )
@@ -213,7 +213,7 @@ char * commaPrintNumber( ULONG number )
         *--pOutputString = '0' + number % 10;
         number /= 10;
         digitCount++;
-    } 
+    }
     while( number != 0 );
 
     return pOutputString;
@@ -226,10 +226,10 @@ char * commaPrintNumber( ULONG number )
 // Note that USB is always oriented Little Endian (least significant byte
 // at the lowest address).
 //
-// Inputs: 
-// PUCHAR pData - pointer to least significant byte of the data 
+// Inputs:
+// PUCHAR pData - pointer to least significant byte of the data
 // UCHAR  byteCount - number of bytes to print in the pData data buffer
-// char * stringLabel - string label to print for user's to identify the data type  
+// char * stringLabel - string label to print for user's to identify the data type
 //
 //*****************************************************************************
 void DisplayBitmapData(_In_reads_(byteCount) PUCHAR pData, UCHAR byteCount,  _In_ char * stringLabel)
@@ -271,10 +271,10 @@ void DisplayBitmapData(_In_reads_(byteCount) PUCHAR pData, UCHAR byteCount,  _In
 // This calls GetSTringFromList() to insert a string that corresonds to
 // the bit value being print.
 //
-// Inputs: 
-// PUCHAR pData - pointer to least significant byte of the data 
+// Inputs:
+// PUCHAR pData - pointer to least significant byte of the data
 // UCHAR  byteCount - number of bytes to print in the pData data buffer
-// char * stringLabel - string label to print for user's to identify the data type  
+// char * stringLabel - string label to print for user's to identify the data type
 // STRINGLIST stringList - string table in which to look up bitmap strings
 // ULONG numEntriesInTable - number of entrys (strings) in the table
 //*****************************************************************************
@@ -305,9 +305,9 @@ void DisplayBitmapDataWithStrings( _In_reads_(byteCount) PUCHAR pData, UCHAR byt
                 bitIndex + 8 * byteIndex, // increment bit count
                 checkBit ? 1 : 0,
                 checkBit ? "yes - " : " no - ",
-                   GetStringFromList(stringList, 
+                   GetStringFromList(stringList,
                         numEntriesInTable,
-                        stringMask, 
+                        stringMask,
                         "Reserved"));
 
             byteMask = byteMask << 1;
@@ -345,42 +345,42 @@ BOOL DisplayVCH264Format( _In_reads_(sizeof(VIDEO_FORMAT_H264)) PVIDEO_FORMAT_H2
     // handle bResolutionScaling
     if (  H264FormatDesc->bResolutionScaling == 0 )
     {
-         AppendTextBuffer("bResolutionScaling:         0x%02X = %d, Not Supported\r\n", 
-            H264FormatDesc->bResolutionScaling, 
+         AppendTextBuffer("bResolutionScaling:         0x%02X = %d, Not Supported\r\n",
+            H264FormatDesc->bResolutionScaling,
             H264FormatDesc->bResolutionScaling );
     }
     else if ( H264FormatDesc->bResolutionScaling == 1 )
      {
-         AppendTextBuffer("bResolutionScaling:         0x%02X = %d, Limited to 1.5 or 2.0 scaling in both directions, while maintaining the aspect ratio.\r\n", 
-            H264FormatDesc->bResolutionScaling, 
+         AppendTextBuffer("bResolutionScaling:         0x%02X = %d, Limited to 1.5 or 2.0 scaling in both directions, while maintaining the aspect ratio.\r\n",
+            H264FormatDesc->bResolutionScaling,
             H264FormatDesc->bResolutionScaling );
     }
     else if ( H264FormatDesc->bResolutionScaling == 2 )
      {
-         AppendTextBuffer("bResolutionScaling:         0x%02X = %d, Limited to 1.0, 1.5 or 2.0 scaling in either direction.\r\n", 
-            H264FormatDesc->bResolutionScaling, 
+         AppendTextBuffer("bResolutionScaling:         0x%02X = %d, Limited to 1.0, 1.5 or 2.0 scaling in either direction.\r\n",
+            H264FormatDesc->bResolutionScaling,
             H264FormatDesc->bResolutionScaling );
     }
     else if ( H264FormatDesc->bResolutionScaling == 3 )
      {
-         AppendTextBuffer("bResolutionScaling:         0x%02X = %d, Limited to resolutions reported by the associated Frame Descriptors\r\n", 
-            H264FormatDesc->bResolutionScaling, 
+         AppendTextBuffer("bResolutionScaling:         0x%02X = %d, Limited to resolutions reported by the associated Frame Descriptors\r\n",
+            H264FormatDesc->bResolutionScaling,
             H264FormatDesc->bResolutionScaling );
     }
     else if ( H264FormatDesc->bResolutionScaling == 4 )
      {
-         AppendTextBuffer("bResolutionScaling:         0x%02X = %d, Arbitrary scaling\r\n", 
-            H264FormatDesc->bResolutionScaling, 
+         AppendTextBuffer("bResolutionScaling:         0x%02X = %d, Arbitrary scaling\r\n",
+            H264FormatDesc->bResolutionScaling,
             H264FormatDesc->bResolutionScaling );
     }
     else // 5 ... 255
     {
-         AppendTextBuffer("bResolutionScaling:         0x%02X = %d, Reserved \r\n", 
-            H264FormatDesc->bResolutionScaling, 
+         AppendTextBuffer("bResolutionScaling:         0x%02X = %d, Reserved \r\n",
+            H264FormatDesc->bResolutionScaling,
             H264FormatDesc->bResolutionScaling );
     }
- 
-     // handle bSimulcastSupport 
+
+     // handle bSimulcastSupport
     if ( H264FormatDesc->bSimulcastSupport == 0 )
     {
         AppendTextBuffer("bSimulcastSupport:                 0x%02X = %d, one stream\r\n",
@@ -401,9 +401,9 @@ BOOL DisplayVCH264Format( _In_reads_(sizeof(VIDEO_FORMAT_H264)) PVIDEO_FORMAT_H2
             H264FormatDesc->bSimulcastSupport );
     }
 
-    
+
     DisplayBitmapDataWithStrings( &(H264FormatDesc->bmSupportedRateControlModes), sizeof(H264FormatDesc->bmSupportedRateControlModes), "bmSupportedRateControlModes",   slRateControlModes, sizeof(slRateControlModes)/sizeof(STRINGLIST) );
-   
+
     // Note that USB is Little Endian according to the UVC 2.0 spec
 
 
@@ -412,16 +412,16 @@ BOOL DisplayVCH264Format( _In_reads_(sizeof(VIDEO_FORMAT_H264)) PVIDEO_FORMAT_H2
         H264FormatDesc->wMaxMBperSecOneResolutionNoScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecOneResolutionNoScalability) );
 
-    AppendTextBuffer("wMaxMBperSecTwoResolutionsNoScalability:                0x%04X (%s MB/sec)\r\n", 
-        H264FormatDesc->wMaxMBperSecTwoResolutionsNoScalability, 
+    AppendTextBuffer("wMaxMBperSecTwoResolutionsNoScalability:                0x%04X (%s MB/sec)\r\n",
+        H264FormatDesc->wMaxMBperSecTwoResolutionsNoScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecTwoResolutionsNoScalability) );
 
     AppendTextBuffer("wMaxMBperSecThreeResolutionsNoScalability:              0x%04X (%s MB/sec)\r\n",
         H264FormatDesc->wMaxMBperSecThreeResolutionsNoScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecThreeResolutionsNoScalability) );
 
-    AppendTextBuffer("wMaxMBperSecFourResolutionsNoScalability:               0x%04X (%s MB/sec)\r\n", 
-        H264FormatDesc->wMaxMBperSecFourResolutionsNoScalability, 
+    AppendTextBuffer("wMaxMBperSecFourResolutionsNoScalability:               0x%04X (%s MB/sec)\r\n",
+        H264FormatDesc->wMaxMBperSecFourResolutionsNoScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecFourResolutionsNoScalability) );
 
     // Resolutions with temporal scalability
@@ -429,16 +429,16 @@ BOOL DisplayVCH264Format( _In_reads_(sizeof(VIDEO_FORMAT_H264)) PVIDEO_FORMAT_H2
         H264FormatDesc->wMaxMBperSecOneResolutionTemporalScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecOneResolutionTemporalScalability) );
 
-    AppendTextBuffer("wMaxMBperSecTwoResolutionsTemporalScalability:          0x%04X (%s MB/sec)\r\n", 
-        H264FormatDesc->wMaxMBperSecTwoResolutionsTemporalScalability, 
+    AppendTextBuffer("wMaxMBperSecTwoResolutionsTemporalScalability:          0x%04X (%s MB/sec)\r\n",
+        H264FormatDesc->wMaxMBperSecTwoResolutionsTemporalScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecTwoResolutionsTemporalScalability) );
 
     AppendTextBuffer("wMaxMBperSecThreeResolutionsTemporalScalability:        0x%04X (%s MB/sec)\r\n",
         H264FormatDesc->wMaxMBperSecThreeResolutionsTemporalScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecThreeResolutionsTemporalScalability) );
 
-    AppendTextBuffer("wMaxMBperSecFourResolutionsTemporalScalability:         0x%04X (%s MB/sec)\r\n", 
-        H264FormatDesc->wMaxMBperSecFourResolutionsTemporalScalability, 
+    AppendTextBuffer("wMaxMBperSecFourResolutionsTemporalScalability:         0x%04X (%s MB/sec)\r\n",
+        H264FormatDesc->wMaxMBperSecFourResolutionsTemporalScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecFourResolutionsTemporalScalability) );
 
     // Resolutions with temporal and quality scalability
@@ -446,8 +446,8 @@ BOOL DisplayVCH264Format( _In_reads_(sizeof(VIDEO_FORMAT_H264)) PVIDEO_FORMAT_H2
         H264FormatDesc->wMaxMBperSecOneResolutionTemporalQualityScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecOneResolutionTemporalQualityScalability) );
 
-    AppendTextBuffer("wMaxMBperSecTwoResolutionsTemporalQualityScalability:   0x%04X (%s MB/sec)\r\n", 
-        H264FormatDesc->wMaxMBperSecTwoResolutionsTemporalQualityScalability, 
+    AppendTextBuffer("wMaxMBperSecTwoResolutionsTemporalQualityScalability:   0x%04X (%s MB/sec)\r\n",
+        H264FormatDesc->wMaxMBperSecTwoResolutionsTemporalQualityScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecTwoResolutionsTemporalQualityScalability) );
 
 
@@ -455,8 +455,8 @@ BOOL DisplayVCH264Format( _In_reads_(sizeof(VIDEO_FORMAT_H264)) PVIDEO_FORMAT_H2
         H264FormatDesc->wMaxMBperSecThreeResolutionsTemporalQualityScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecThreeResolutionsTemporalQualityScalability) );
 
-    AppendTextBuffer("wMaxMBperSecFourResolutionsTemporalQualityScalability:  0x%04X (%s MB/sec)\r\n", 
-        H264FormatDesc->wMaxMBperSecFourResolutionsTemporalQualityScalability, 
+    AppendTextBuffer("wMaxMBperSecFourResolutionsTemporalQualityScalability:  0x%04X (%s MB/sec)\r\n",
+        H264FormatDesc->wMaxMBperSecFourResolutionsTemporalQualityScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecFourResolutionsTemporalQualityScalability) );
 
     // Resolutions with temporal and spatial scalability
@@ -464,8 +464,8 @@ BOOL DisplayVCH264Format( _In_reads_(sizeof(VIDEO_FORMAT_H264)) PVIDEO_FORMAT_H2
         H264FormatDesc->wMaxMBperSecOneResolutionTemporalSpatialScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecOneResolutionTemporalSpatialScalability) );
 
-    AppendTextBuffer("wMaxMBperSecTwoResolutionsTemporalSpatialScalability:   0x%04X (%s MB/sec)\r\n", 
-        H264FormatDesc->wMaxMBperSecTwoResolutionsTemporalSpatialScalability, 
+    AppendTextBuffer("wMaxMBperSecTwoResolutionsTemporalSpatialScalability:   0x%04X (%s MB/sec)\r\n",
+        H264FormatDesc->wMaxMBperSecTwoResolutionsTemporalSpatialScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecTwoResolutionsTemporalSpatialScalability) );
 
 
@@ -473,8 +473,8 @@ BOOL DisplayVCH264Format( _In_reads_(sizeof(VIDEO_FORMAT_H264)) PVIDEO_FORMAT_H2
         H264FormatDesc->wMaxMBperSecThreeResolutionsTemporalSpatialScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecThreeResolutionsTemporalSpatialScalability) );
 
-    AppendTextBuffer("wMaxMBperSecFourResolutionsTemporalSpatialScalability:  0x%04X (%s MB/sec)\r\n", 
-        H264FormatDesc->wMaxMBperSecFourResolutionsTemporalSpatialScalability, 
+    AppendTextBuffer("wMaxMBperSecFourResolutionsTemporalSpatialScalability:  0x%04X (%s MB/sec)\r\n",
+        H264FormatDesc->wMaxMBperSecFourResolutionsTemporalSpatialScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecFourResolutionsTemporalSpatialScalability) );
 
    // Resolutions with full scalability
@@ -482,16 +482,16 @@ BOOL DisplayVCH264Format( _In_reads_(sizeof(VIDEO_FORMAT_H264)) PVIDEO_FORMAT_H2
         H264FormatDesc->wMaxMBperSecOneResolutionFullScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecOneResolutionFullScalability) );
 
-    AppendTextBuffer("wMaxMBperSecTwoResolutionsFullScalability:              0x%04X (%s MB/sec)\r\n", 
-        H264FormatDesc->wMaxMBperSecTwoResolutionsFullScalability, 
+    AppendTextBuffer("wMaxMBperSecTwoResolutionsFullScalability:              0x%04X (%s MB/sec)\r\n",
+        H264FormatDesc->wMaxMBperSecTwoResolutionsFullScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecTwoResolutionsFullScalability) );
 
     AppendTextBuffer("wMaxMBperSecThreeResolutionsFullScalability:            0x%04X (%s MB/sec)\r\n",
         H264FormatDesc->wMaxMBperSecThreeResolutionsFullScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecThreeResolutionsFullScalability) );
 
-    AppendTextBuffer("wMaxMBperSecFourResolutionsFullScalability:             0x%04X (%s MB/sec)\r\n", 
-        H264FormatDesc->wMaxMBperSecFourResolutionsFullScalability, 
+    AppendTextBuffer("wMaxMBperSecFourResolutionsFullScalability:             0x%04X (%s MB/sec)\r\n",
+        H264FormatDesc->wMaxMBperSecFourResolutionsFullScalability,
         commaPrintNumber(1000*H264FormatDesc->wMaxMBperSecFourResolutionsFullScalability) );
 
 
@@ -520,31 +520,31 @@ BOOL DisplayVCH264FrameType( _In_reads_(sizeof(VIDEO_FRAME_H264)) PVIDEO_FRAME_H
     AppendTextBuffer("wSARwidth:                       0x%04X = %d\r\n", H264FrameDesc->wSARwidth,            H264FrameDesc->wSARwidth);
     AppendTextBuffer("wSARheight:                      0x%04X = %d\r\n", H264FrameDesc->wSARheight,           H264FrameDesc->wSARheight);
     AppendTextBuffer("wProfile:                        0x%04X - %s\r\n", H264FrameDesc->wProfile,
-        GetStringFromList( slProfiles,                                  // string table                                    
+        GetStringFromList( slProfiles,                                  // string table
                            sizeof(slProfiles)/sizeof(STRINGLIST),       // number of strings in the table
                            H264FrameDesc->wProfile,                     // index of string we want to look up in the string table
                            "Unknown profile" ) );                       // string to use if the lookup fails
-   
-    AppendTextBuffer("bLevelIDC:                       0x%02X = %d = Level %01.01lf \r\n", 
+
+    AppendTextBuffer("bLevelIDC:                       0x%02X = %d = Level %01.01lf \r\n",
         H264FrameDesc->bLevelIDC, H264FrameDesc->bLevelIDC, H264FrameDesc->bLevelIDC/10.0 );
-    
+
     AppendTextBuffer("wConstrainedToolset:             0x%04X %s\r\n", H264FrameDesc->wConstrainedToolset,
         ((H264FrameDesc->wConstrainedToolset == 0) ? "- Reserved" : "*!*ERROR: field is reserved and should be zero"));
 
     DisplayBitmapDataWithStrings( H264FrameDesc->bmSupportedUsages, sizeof(H264FrameDesc->bmSupportedUsages), "bmSupportedUsages", slUsage, sizeof(slUsage)/sizeof(STRINGLIST) );
     DisplayBitmapDataWithStrings( H264FrameDesc->bmCapabilities, sizeof(H264FrameDesc->bmCapabilities), "bmCapabilities",         slCapabilities, sizeof(slCapabilities)/sizeof(STRINGLIST) );
-    
 
-    // bmSVCCapabilities[4]      
+
+    // bmSVCCapabilities[4]
     AppendTextBuffer("%s : ", "bmSVCCapabilities");
     VDisplayBytes( &(H264FrameDesc->bmSVCCapabilities[0]), sizeof(H264FrameDesc->bmSVCCapabilities)  );
-    AppendTextBuffer("     D2..D0   = %d  Maximum number of temporal layers = %d\r\n", 
-        H264FrameDesc->bmSVCCapabilities[0] & 0x7, 
+    AppendTextBuffer("     D2..D0   = %d  Maximum number of temporal layers = %d\r\n",
+        H264FrameDesc->bmSVCCapabilities[0] & 0x7,
         (H264FrameDesc->bmSVCCapabilities[0] & 0x7) + 1 );
     AppendTextBuffer("     D3       = %d %s - Rewrite Support\r\n", (H264FrameDesc->bmSVCCapabilities[0] & 0x8) >> 3,
         ((H264FrameDesc->bmSVCCapabilities[0] & 0x8) >> 3) ? "yes" : " no" );
-    AppendTextBuffer("     D6..D4   = %d  Maximum number of CGS layers = %d\r\n", 
-        (H264FrameDesc->bmSVCCapabilities[0] & 0x70) >> 4, 
+    AppendTextBuffer("     D6..D4   = %d  Maximum number of CGS layers = %d\r\n",
+        (H264FrameDesc->bmSVCCapabilities[0] & 0x70) >> 4,
         ((H264FrameDesc->bmSVCCapabilities[0] & 0x70) >> 4) + 1 );
 
     value = ( H264FrameDesc->bmSVCCapabilities[1] << 8 ) | H264FrameDesc->bmSVCCapabilities[0];
@@ -555,14 +555,14 @@ BOOL DisplayVCH264FrameType( _In_reads_(sizeof(VIDEO_FRAME_H264)) PVIDEO_FRAME_H
     AppendTextBuffer("     D10      = %d %s - Additional SNR scalability support in spatial enhancement layers\r\n",
         (H264FrameDesc->bmSVCCapabilities[1] & 0x4) >> 2,
         ((H264FrameDesc->bmSVCCapabilities[1] & 0x4) >> 2) ? "yes" : " no");
-    AppendTextBuffer("     D13..D11 = %d  Maximum number of spatial layers = %d\r\n", 
-        (H264FrameDesc->bmSVCCapabilities[1] & 0x38) >> 3, 
+    AppendTextBuffer("     D13..D11 = %d  Maximum number of spatial layers = %d\r\n",
+        (H264FrameDesc->bmSVCCapabilities[1] & 0x38) >> 3,
         ((H264FrameDesc->bmSVCCapabilities[1] & 0x38) >> 3) + 1 );
 
     value = ( H264FrameDesc->bmSVCCapabilities[3] << 16 ) | ( H264FrameDesc->bmSVCCapabilities[2] << 8 ) | H264FrameDesc->bmSVCCapabilities[1];
     value >>= 6; // get bit 14 at LSB
     for ( i = 0; i < 18; i++ )   // bits 31...14
-    {    
+    {
         AppendTextBuffer("     D%02d      = %d %s - Reserved \r\n", 14 + i, value & 0x1, (value & 0x1) ? "yes" : " no"  );
         value >>= 1;
     }
@@ -570,20 +570,20 @@ BOOL DisplayVCH264FrameType( _In_reads_(sizeof(VIDEO_FRAME_H264)) PVIDEO_FRAME_H
     // bmMVCCapabilities[4]
     AppendTextBuffer("%s : ", "bmMVCCapabilities");
     VDisplayBytes( &(H264FrameDesc->bmMVCCapabilities[0]), sizeof(H264FrameDesc->bmMVCCapabilities)  );
-    AppendTextBuffer("     D2..D0   = %d  Maximum number of temporal layers = %d\r\n", 
-        H264FrameDesc->bmMVCCapabilities[0] & 0x7, 
+    AppendTextBuffer("     D2..D0   = %d  Maximum number of temporal layers = %d\r\n",
+        H264FrameDesc->bmMVCCapabilities[0] & 0x7,
         ((H264FrameDesc->bmMVCCapabilities[0] & 0x7) + 1) );
 
      value =  (H264FrameDesc->bmMVCCapabilities[1] << 8) |  H264FrameDesc->bmMVCCapabilities[0];
      value >>= 3;    // shift bit 3 right so that it ends up in the lsb of value
      value &= 0xff;
-     AppendTextBuffer("     D10..D3  = %d  Maximum number of view components = %d\r\n", 
+     AppendTextBuffer("     D10..D3  = %d  Maximum number of view components = %d\r\n",
         value, value + 1);
 
      value = (  (H264FrameDesc->bmMVCCapabilities[3] << 16) | (H264FrameDesc->bmMVCCapabilities[2] << 8) |  H264FrameDesc->bmMVCCapabilities[1] );
      value >>= 3;    // shift bit 11 right so that it ends up in the lsb of value
      for ( i = 0; i < 21; i++ )   // bits 31...11
-    {                    
+    {
         AppendTextBuffer("     D%02d      = %d %s - Reserved \r\n", 11 + i, value & 0x1, (value & 0x1) ? "yes" : " no" );
         value >>= 1;
     }
@@ -601,10 +601,10 @@ BOOL DisplayVCH264FrameType( _In_reads_(sizeof(VIDEO_FRAME_H264)) PVIDEO_FRAME_H
     AppendTextBuffer("bNumFrameIntervals:              0x%02X = %d\r\n", H264FrameDesc->bNumFrameIntervals, H264FrameDesc->bNumFrameIntervals);
 
 
-    // frame interval 100 ns units.  
-    
+    // frame interval 100 ns units.
+
     //To convert the frame interval to seconds we would divide by 10,000,000.
-    // 100 ns = 10^(-7) seconds = 1/10,000,000 
+    // 100 ns = 10^(-7) seconds = 1/10,000,000
 
     // To convert the frame interval to Hz, we divide by 10,000,000 and then take the inverse
 
