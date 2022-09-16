@@ -156,7 +156,21 @@ function _get_cross_file(package, opt)
         elseif package:is_plat("android") then
             -- TODO
         elseif package:is_plat("mingw") then
-            -- TODO
+            local cpu
+            local cpu_family
+            if package:is_arch("x64", "x86_64") then
+                cpu = "x86_64"
+                cpu_family = "x86_64"
+            elseif package:is_arch("x86", "i386") then
+                cpu = "i686"
+                cpu_family = "x86"
+            else
+                raise("unsupprted arch(%s)", package:arch())
+            end
+            file:print("system = 'windows'")
+            file:print("cpu_family = '%s'", cpu_family)
+            file:print("cpu = '%s'", cpu)
+            file:print("endian = 'little'")
         elseif package:is_plat("cross") and package:targetos() then
             local cpu = package:arch()
             if package:is_arch("arm64") then
