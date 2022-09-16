@@ -183,6 +183,11 @@ function _get_cross_file(buildir)
             file:print("cpu_family = '%s'", cpu_family)
             file:print("cpu = '%s'", cpu)
             file:print("endian = 'little'")
+        elseif is_plat("wasm") then
+            file:print("system = 'emscripten'")
+            file:print("cpu_family = 'wasm32'")
+            file:print("cpu = 'wasm32'")
+            file:print("endian = 'little'")
         elseif is_plat("cross") then
             local cpu = config.arch()
             if is_arch("arm64") then
