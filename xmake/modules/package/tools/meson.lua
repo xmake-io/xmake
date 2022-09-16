@@ -47,6 +47,149 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
+-- is cross compilation?
+function _is_cross_compilation(package)
+    if not package:is_plat(os.subhost()) then
+        return true
+    end
+    if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
+        return true
+    end
+    return false
+end
+
+-- get pkg-config
+function _get_pkgconfig(package)
+    if package:is_plat("windows") then
+        local pkgconf = find_tool("pkgconf")
+        if pkgconf then
+            return pkgconf.program
+        end
+    end
+    local pkgconfig = find_tool("pkg-config")
+    if pkgconfig then
+        return pkgconfig.program
+    end
+end
+
+-- get cross file
+function _get_cross_file(package, opt)
+    opt = opt or {}
+    local crossfile = path.join(_get_buildir(package, opt), "cross_file.txt")
+    if not os.isfile(crossfile) then
+        local file = io.open(crossfile, "w")
+        -- binaries
+        file:print("[binaries]")
+        local cc = package:build_getenv("cc")
+        if cc then
+            file:print("c='%s'", cc)
+        end
+        local cxx = package:build_getenv("cxx")
+        if cxx then
+            file:print("cpp='%s'", cxx)
+        end
+        local ld = package:build_getenv("ld")
+        if ld then
+            file:print("ld='%s'", ld)
+        end
+        local ar = package:build_getenv("ar")
+        if ar then
+            file:print("ar='%s'", ar)
+        end
+        local strip = package:build_getenv("strip")
+        if strip then
+            file:print("strip='%s'", strip)
+        end
+        local ranlib = package:build_getenv("ranlib")
+        if ranlib then
+            file:print("ranlib='%s'", ranlib)
+        end
+        local cmake = find_tool("cmake")
+        if cmake then
+            file:print("cmake='%s'", cmake.program)
+        end
+        local pkgconfig = _get_pkgconfig(package)
+        if pkgconfig then
+            file:print("pkgconfig='%s'", pkgconfig)
+        end
+        file:print("")
+
+        -- properties
+        file:print("[properties]")
+        file:print("skip_sanity_check = true")
+        local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
+        local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
+        local asflags  = table.wrap(package:build_getenv("asflags"))
+        local arflags  = table.wrap(package:build_getenv("arflags"))
+        local ldflags  = table.wrap(package:build_getenv("ldflags"))
+        local shflags  = table.wrap(package:build_getenv("shflags"))
+        table.join2(cflags,   opt.cflags)
+        table.join2(cflags,   opt.cxflags)
+        table.join2(cxxflags, opt.cxxflags)
+        table.join2(cxxflags, opt.cxflags)
+        table.join2(asflags,  opt.asflags)
+        table.join2(ldflags,  opt.ldflags)
+        table.join2(shflags,  opt.shflags)
+        table.join2(cflags,   _get_cflags_from_packagedeps(package, opt))
+        table.join2(cxxflags, _get_cflags_from_packagedeps(package, opt))
+        table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
+        table.join2(shflags,  _get_ldflags_from_packagedeps(package, opt))
+        if #cflags > 0 then
+            file:print("c_args=['%s']", table.concat(cflags, "', '"))
+        end
+        if #cxxflags > 0 then
+            file:print("cpp_args=['%s']", table.concat(cxxflags, "', '"))
+        end
+        local linkflags = table.join(ldflags or {}, shflags)
+        if #linkflags > 0 then
+            file:print("c_link_args=['%s']", table.concat(linkflags, "', '"))
+            file:print("cpp_link_args=['%s']", table.concat(linkflags, "', '"))
+        end
+        file:print("")
+
+        -- host machine
+        file:print("[host_machine]")
+        if opt.host_machine then
+            file:print("%s", opt.host_machine)
+        elseif package:is_plat("iphoneos", "macosx") then
+            -- TODO
+        elseif package:is_plat("android") then
+            -- TODO
+        elseif package:is_plat("mingw") then
+            local cpu
+            local cpu_family
+            if package:is_arch("x64", "x86_64") then
+                cpu = "x86_64"
+                cpu_family = "x86_64"
+            elseif package:is_arch("x86", "i386") then
+                cpu = "i686"
+                cpu_family = "x86"
+            else
+                raise("unsupported arch(%s)", package:arch())
+            end
+            file:print("system = 'windows'")
+            file:print("cpu_family = '%s'", cpu_family)
+            file:print("cpu = '%s'", cpu)
+            file:print("endian = 'little'")
+        elseif package:is_plat("cross") and package:targetos() then
+            local cpu = package:arch()
+            if package:is_arch("arm64") then
+                cpu = "aarch64"
+            elseif package:is_arch("arm.*") then
+                cpu = "arm"
+            end
+            local cpu_family = cpu
+            file:print("system = '%s'", package:targetos() or "linux")
+            file:print("cpu_family = '%s'", cpu_family)
+            file:print("cpu = '%s'", cpu)
+            file:print("endian = 'little'")
+        end
+        file:print("")
+        file:close()
+    end
+    return crossfile
+end
+
 -- get configs
 function _get_configs(package, configs, opt)
 
@@ -71,6 +214,11 @@ function _get_configs(package, configs, opt)
     -- add vs_runtime flags
     if package:is_plat("windows") then
         table.insert(configs, "-Db_vscrt=" .. package:config("vs_runtime"):lower())
+    end
+
+    -- add cross file
+    if _is_cross_compilation(package) then
+        table.insert(configs, "--cross-file=" .. _get_cross_file(package, opt))
     end
 
     -- add build directory
@@ -164,37 +312,6 @@ function buildenvs(package, opt)
                 envs.PKG_CONFIG = pkgconf.program
             end
         end
-    else
-        local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
-        local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
-        local asflags  = table.wrap(package:build_getenv("asflags"))
-        local arflags  = table.wrap(package:build_getenv("arflags"))
-        local ldflags  = table.wrap(package:build_getenv("ldflags"))
-        local shflags  = table.wrap(package:build_getenv("shflags"))
-        table.join2(cflags,   opt.cflags)
-        table.join2(cflags,   opt.cxflags)
-        table.join2(cxxflags, opt.cxxflags)
-        table.join2(cxxflags, opt.cxflags)
-        table.join2(asflags,  opt.asflags)
-        table.join2(ldflags,  opt.ldflags)
-        table.join2(shflags,  opt.shflags)
-        table.join2(cflags,   _get_cflags_from_packagedeps(package, opt))
-        table.join2(cxxflags, _get_cflags_from_packagedeps(package, opt))
-        table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
-        table.join2(shflags,  _get_ldflags_from_packagedeps(package, opt))
-        envs.CC        = package:build_getenv("cc")
-        envs.AS        = package:build_getenv("as")
-        envs.AR        = package:build_getenv("ar")
-        envs.LD        = package:build_getenv("ld")
-        envs.LDSHARED  = package:build_getenv("sh")
-        envs.CPP       = package:build_getenv("cpp")
-        envs.RANLIB    = package:build_getenv("ranlib")
-        envs.CFLAGS    = table.concat(cflags, ' ')
-        envs.CXXFLAGS  = table.concat(cxxflags, ' ')
-        envs.ASFLAGS   = table.concat(asflags, ' ')
-        envs.ARFLAGS   = table.concat(arflags, ' ')
-        envs.LDFLAGS   = table.concat(ldflags, ' ')
-        envs.SHFLAGS   = table.concat(shflags, ' ')
     end
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
