@@ -104,6 +104,12 @@ function _get_cross_file(package, opt)
         if ranlib then
             file:print("ranlib='%s'", ranlib)
         end
+        if package:is_plat("mingw") then
+            local mrc = package:build_getenv("mrc")
+            if mrc then
+                file:print("windres='%s'", mrc)
+            end
+        end
         local cmake = find_tool("cmake")
         if cmake then
             file:print("cmake='%s'", cmake.program)
