@@ -120,9 +120,8 @@ function _get_cross_file(package, opt)
         end
         file:print("")
 
-        -- properties
-        file:print("[properties]")
-        file:print("skip_sanity_check = true")
+        -- built-in options
+        file:print("[built-in options]")
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
         local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
         local asflags  = table.wrap(package:build_getenv("asflags"))
