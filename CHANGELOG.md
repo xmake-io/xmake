@@ -8,7 +8,7 @@
 * [#2719](https://github.com/xmake-io/xmake/issues/2719): Add `package.librarydeps.strict_compatibility` to strict compatibility for package linkdeps
 * [#2810](https://github.com/xmake-io/xmake/pull/2810): Support os.execv to run shell script file
 * [#2817](https://github.com/xmake-io/xmake/pull/2817): Improve rule to support dependence order
-* [#2824](https://github.com/xmake-io/xmake/pull/2824): Pass cross-file to meson.install
+* [#2824](https://github.com/xmake-io/xmake/pull/2824): Pass cross-file to meson.install and trybuild
 
 ### Changes
 
@@ -1398,7 +1398,7 @@
 * [#2719](https://github.com/xmake-io/xmake/issues/2719): 添加 `package.librarydeps.strict_compatibility` 策略严格限制包依赖兼容性
 * [#2810](https://github.com/xmake-io/xmake/pull/2810): 支持 os.execv 去执行 shell 脚本文件
 * [#2817](https://github.com/xmake-io/xmake/pull/2817): 改进规则支持依赖顺序执行
-* [#2824](https://github.com/xmake-io/xmake/pull/2824): 传递 cross-file 交叉编译环境给 meson.install
+* [#2824](https://github.com/xmake-io/xmake/pull/2824): 传递 cross-file 交叉编译环境给 meson.install 和 trybuild
 
 ### 改进
 

@@ -181,7 +181,6 @@ function _get_cross_file(buildir)
     return crossfile
 end
 
-
 -- get configs
 function _get_configs(artifacts_dir, buildir)
 
