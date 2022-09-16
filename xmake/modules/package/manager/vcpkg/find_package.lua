@@ -73,7 +73,7 @@ function _find_package(vcpkgdir, name, opt)
     local arch = opt.arch
     local plat = opt.plat
     local mode = opt.mode
-	
+
     plat = configurations.plat(plat)
     arch = configurations.arch(arch)
 
@@ -87,11 +87,13 @@ function _find_package(vcpkgdir, name, opt)
     -- find the package info file, e.g. zlib_1.2.11-3_x86-windows[-static].list
     local triplet = arch .. "-" .. plat
     local configs = opt.configs or {}
-    if plat == "windows" and configs.shared ~= true then
+    if opt.plat == "windows" and configs.shared ~= true then
         triplet = triplet .. "-static"
         if configs.vs_runtime and configs.vs_runtime:startswith("MD") then
             triplet = triplet .. "-md"
         end
+    elseif opt.plat == "mingw" then
+        triplet = triplet .. (configs.shared ~= true and "-static" or "-dynamic")
     end
     local infofile = find_file(format("%s_*_%s.list", name, triplet), infodirs)
     if not infofile then
