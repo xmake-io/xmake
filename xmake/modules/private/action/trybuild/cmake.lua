@@ -90,10 +90,19 @@ function _get_configs_for_appleos(configs)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
+    -- https://cmake.org/cmake/help/v3.17/manual/cmake-toolchains.7.html#id25
     if is_plat("watchos") then
-        envs.CMAKE_SYSTEM_NAME     = "watchOS"
-    else
-        envs.CMAKE_SYSTEM_NAME     = "iOS"
+        envs.CMAKE_SYSTEM_NAME = "watchOS"
+        if is_arch("x86_64", "i386") then
+            envs.CMAKE_OSX_SYSROOT = "watchsimulator"
+        end
+    elseif is_plat("iphoneos") then
+        envs.CMAKE_SYSTEM_NAME = "iOS"
+        if is_arch("x86_64", "i386") then
+            envs.CMAKE_OSX_SYSROOT = "iphonesimulator"
+        end
+    elseif is_plat("macosx") then
+        envs.CMAKE_SYSTEM_NAME = "Darwin"
     end
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
@@ -196,7 +205,9 @@ function _get_configs(artifacts_dir)
         _get_configs_for_windows(configs)
     elseif is_plat("android") then
         _get_configs_for_android(configs)
-    elseif is_plat("iphoneos", "watchos") then
+    elseif is_plat("iphoneos", "watchos") or
+        -- for cross-compilation on macOS, @see https://github.com/xmake-io/xmake/issues/2804
+        (is_plat("macosx") and not is_arch(os.subarch())) then
         _get_configs_for_appleos(configs)
     elseif is_plat("mingw") then
         _get_configs_for_mingw(configs)
