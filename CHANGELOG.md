@@ -21,6 +21,7 @@
 * [#2793](https://github.com/xmake-io/xmake/issues/2793): Improve mconfdialog
 * [#2804](https://github.com/xmake-io/xmake/issues/2804): Support macOS arm64/x86_64 cross-compilation for installing packages
 * [#2809](https://github.com/xmake-io/xmake/issues/2809): Improve cl optimization option
+* Improve trybuild for meson/cmake/autotools
 
 ### Bugs fixed
 
@@ -1411,6 +1412,7 @@
 * [#2793](https://github.com/xmake-io/xmake/issues/2793): 改进 mconfdialog 配置操作体验
 * [#2804](https://github.com/xmake-io/xmake/issues/2804): 安装依赖包支持 macOS arm64/x86_64 交叉编译
 * [#2809](https://github.com/xmake-io/xmake/issues/2809): 改进 msvc 的编译优化选项
+* 改进 trybuild 模式，为 meson/autotools/cmake 提供更好的交叉编译支持
 
 ### Bugs 修复
 
