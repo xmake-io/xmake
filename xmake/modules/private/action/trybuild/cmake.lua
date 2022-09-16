@@ -104,9 +104,10 @@ function _get_configs_for_appleos(configs)
     elseif is_plat("macosx") then
         envs.CMAKE_SYSTEM_NAME = "Darwin"
     end
-    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
-    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
-    envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY   = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE   = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_FRAMEWORK = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM   = "NEVER"
     -- avoid install bundle targets
     envs.CMAKE_MACOSX_BUNDLE       = "NO"
     for k, v in pairs(envs) do
