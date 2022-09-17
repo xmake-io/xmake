@@ -489,7 +489,7 @@ function get_builtinmodulemapflag(target)
     if builtinmodulemapflag == nil then
         local compinst = target:compiler("cxx")
         if compinst:has_flags("-fbuiltin-module-map", "cxxflags", {flagskey = "clang_builtin_module_map"}) then
-            if is_plat("windows", "mingw") then
+            if target:is_plat("windows", "mingw") then
                 builtinmodulemapflag = ""
             else
                 builtinmodulemapflag = "-fbuiltin-module-map"
