@@ -27,6 +27,15 @@ rule("xcode.bundle")
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
 
+        -- generate binary as bundle, we cannot set `-shared` or `-dynamiclib`
+        target:set("kind", "binary")
+
+        -- set target info for bundle
+        target:set("filename", target:basename())
+    end)
+
+    on_config(function (target)
+
         -- get bundle directory
         local targetdir = target:targetdir()
         local bundledir = path.join(targetdir, target:basename() .. ".bundle")
@@ -42,12 +51,13 @@ rule("xcode.bundle")
         target:data_set("xcode.bundle.contentsdir", contentsdir)
         target:data_set("xcode.bundle.resourcesdir", resourcesdir)
 
-        -- set target info for bundle
-        target:set("filename", target:basename())
-
-        -- generate binary as bundle, we cannot set `-shared` or `-dynamiclib`
-        target:set("kind", "binary")
-        target:add("ldflags", "-bundle", {force = true})
+        -- add bundle flags
+        local linker = target:linker():name()
+        if linker == "swiftc" then
+            target:add("ldflags", "-Xlinker -bundle", {force = true})
+        else
+            target:add("ldflags", "-bundle", {force = true})
+        end
 
         -- register clean files for `xmake clean`
         target:add("cleanfiles", bundledir)
