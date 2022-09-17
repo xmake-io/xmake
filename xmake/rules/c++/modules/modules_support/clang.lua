@@ -489,7 +489,11 @@ function get_builtinmodulemapflag(target)
     if builtinmodulemapflag == nil then
         local compinst = target:compiler("cxx")
         if compinst:has_flags("-fbuiltin-module-map", "cxxflags", {flagskey = "clang_builtin_module_map"}) then
-            builtinmodulemapflag = "-fbuiltin-module-map"
+            if is_plat("windows", "mingw") then
+                builtinmodulemapflag = ""
+            else
+                builtinmodulemapflag = "-fbuiltin-module-map"
+            end
         end
         assert(builtinmodulemapflag, "compiler(clang): does not support c++ module!")
         _g.builtinmodulemapflag = builtinmodulemapflag or false
