@@ -50,7 +50,7 @@ function test_cp_mvdir_into_another_dir(t)
 end
 
 function test_cp_symlink(t)
-    if is_subhost("windows") then
+    if is_host("windows") then
         return
     end
     os.touch("test1")
