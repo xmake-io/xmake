@@ -487,11 +487,15 @@ end
 function get_builtinmodulemapflag(target)
     local builtinmodulemapflag = _g.builtinmodulemapflag
     if builtinmodulemapflag == nil then
-        local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fbuiltin-module-map", "cxxflags", {flagskey = "clang_builtin_module_map"}) then
-            builtinmodulemapflag = "-fbuiltin-module-map"
+        -- this flag seems clang on mingw doesn't distribute it
+        -- @see https://github.com/xmake-io/xmake/pull/2833
+        if not target:is_plat("mingw") then
+            local compinst = target:compiler("cxx")
+            if compinst:has_flags("-fbuiltin-module-map", "cxxflags", {flagskey = "clang_builtin_module_map"}) then
+                builtinmodulemapflag = "-fbuiltin-module-map"
+            end
+            assert(builtinmodulemapflag, "compiler(clang): does not support c++ module!")
         end
-        assert(builtinmodulemapflag, "compiler(clang): does not support c++ module!")
         _g.builtinmodulemapflag = builtinmodulemapflag or false
     end
     return builtinmodulemapflag or nil
