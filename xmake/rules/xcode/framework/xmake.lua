@@ -129,9 +129,6 @@ rule("xcode.framework")
                     i = i + 1
                 end
             end
-            if not os.isdir(resourcesdir) then
-                os.mkdir(resourcesdir)
-            end
 
             -- link Versions/Current -> Versions/A
             -- only for macos, @see https://github.com/xmake-io/xmake/issues/2765
@@ -148,9 +145,8 @@ rule("xcode.framework")
                 os.tryrm(target_filename)
                 os.tryrm("Info.plist")
                 os.ln("Versions/Current/Headers", "Headers")
-                os.ln("Versions/Current/Resources", "Resources")
-                if target:is_plat("iphoneos", "watchos") and os.isfile("Versions/Current/Resources/Info.plist") then
-                    os.ln("Versions/Current/Resources/Info.plist", "Info.plist")
+                if os.isdir(resourcesdir) then
+                    os.ln("Versions/Current/Resources", "Resources")
                 end
                 os.ln(path.join("Versions/Current", target_filename), target_filename)
                 os.cd(oldir)
