@@ -1,4 +1,4 @@
-#define HAVE_${module}_H 
+#define HAVE_${module}_H
 #define HELLO "${hello} ${ARCH} ${PLAT}"
 
 ${define FOO_ENABLE}

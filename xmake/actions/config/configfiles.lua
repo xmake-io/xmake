@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.semver")
 import("core.project.config")
+import("core.project.depend")
 import("core.project.project")
 import("core.platform.platform")
 import("lib.detect.find_tool")
@@ -311,17 +312,19 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
 end
 
 -- the main entry function
-function main()
+function main(opt)
 
     -- enter project directory
+    opt = opt or {}
     local oldir = os.cd(project.directory())
 
-    -- get all configuration files
-    local configfiles = _get_configfiles()
-
     -- generate all configuration files
+    local configfiles = _get_configfiles()
     for dstfile, srcinfo in pairs(configfiles) do
-        _generate_configfile(srcinfo.srcfile, dstfile, srcinfo.fileinfo, srcinfo.targets)
+        depend.on_changed(function ()
+            _generate_configfile(srcinfo.srcfile, dstfile, srcinfo.fileinfo, srcinfo.targets)
+        end, {files = srcinfo.srcfile,
+              always_changed = opt.force})
     end
 
     -- leave project directory
