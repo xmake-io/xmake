@@ -432,8 +432,8 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         _check_targets(targetname)
 
         -- update the config files
+        generate_configfiles({force = recheck})
         if recheck then
-            generate_configfiles()
             generate_configheader()
         end
 
