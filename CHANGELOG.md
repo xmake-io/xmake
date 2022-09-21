@@ -22,6 +22,7 @@
 * [#2804](https://github.com/xmake-io/xmake/issues/2804): Support macOS arm64/x86_64 cross-compilation for installing packages
 * [#2809](https://github.com/xmake-io/xmake/issues/2809): Improve cl optimization option
 * Improve trybuild for meson/cmake/autoconf
+* [#2846](https://github.com/xmake-io/xmake/discussions/2846): Improve to generate config files
 
 ### Bugs fixed
 
@@ -1413,6 +1414,7 @@
 * [#2804](https://github.com/xmake-io/xmake/issues/2804): 安装依赖包支持 macOS arm64/x86_64 交叉编译
 * [#2809](https://github.com/xmake-io/xmake/issues/2809): 改进 msvc 的编译优化选项
 * 改进 trybuild 模式，为 meson/autoconf/cmake 提供更好的交叉编译支持
+* [#2846](https://github.com/xmake-io/xmake/discussions/2846): 改进对 configfiles 的生成
 
 ### Bugs 修复
 
