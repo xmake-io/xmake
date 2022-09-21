@@ -108,7 +108,9 @@ module_exit(hello_exit);
         end
         local result, errors = try {function () return os.iorunv(make.program, argv, {curdir = tmpdir}) end}
         if result then
-            for _, line in ipairs(result:split("\n", {plain = true})) do
+            -- we can also split ';' for the muliple commands
+            for _, line in ipairs(result:split("[\n;]")) do
+                line = line:trim()
                 if line:endswith("stub.c") then
                     local include_cflag = false
                     for _, cflag in ipairs(line:split("%s+")) do
@@ -271,7 +273,7 @@ function link(target, opt)
         -- generate target.mod.c
         local orderfile = path.join(path.directory(targetfile_o), "modules.order")
         local symversfile = path.join(path.directory(targetfile_o), "Module.symvers")
-        argv = {"-m", "-a", "-o", symversfile, "-e", "-N", "-T", "-"}
+        argv = {"-m", "-a", "-o", symversfile, "-e", "-N", "-w", "-T", "-"}
         io.writefile(orderfile, targetfile_o .. "\n")
         os.vrunv(modpost, argv, {stdin = orderfile})
 
