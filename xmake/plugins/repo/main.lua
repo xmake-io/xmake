@@ -47,7 +47,7 @@ function _add(name, url, branch, is_global)
     -- clone repository
     if not os.isdir(url) then
         local remoteurl = proxy.mirror(url) or url
-        git.clone(remoteurl, {verbose = option.get("verbose"), branch = branch or "master", outputdir = repodir})
+        git.clone(remoteurl, {verbose = option.get("verbose"), branch = branch, outputdir = repodir})
     end
 
     -- trace
@@ -100,13 +100,13 @@ function _update()
                     -- only update the local repository with the remote url
                     if not os.isdir(repo:url()) then
                         vprint("pulling repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
-                        git.pull({verbose = option.get("verbose"), branch = repo:branch() or "master", repodir = repodir})
+                        git.pull({verbose = option.get("verbose"), branch = repo:branch(), repodir = repodir})
                         io.save(path.join(repodir, "updated"), {})
                     end
                 else
                     vprint("cloning repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
                     local remoteurl = proxy.mirror(repo:url()) or repo:url()
-                    git.clone(remoteurl, {verbose = option.get("verbose"), branch = repo:branch() or "master", outputdir = repodir})
+                    git.clone(remoteurl, {verbose = option.get("verbose"), branch = repo:branch(), outputdir = repodir})
                     io.save(path.join(repodir, "updated"), {})
                 end
                 pulled[repodir] = true
