@@ -9,6 +9,7 @@
 * [#2810](https://github.com/xmake-io/xmake/pull/2810): Support os.execv to run shell script file
 * [#2817](https://github.com/xmake-io/xmake/pull/2817): Improve rule to support dependence order
 * [#2824](https://github.com/xmake-io/xmake/pull/2824): Pass cross-file to meson.install and trybuild
+* [#2856](https://github.com/xmake-io/xmake/pull/2856): Improve to debug package using the debug source directory
 
 ### Changes
 
@@ -1401,6 +1402,7 @@
 * [#2810](https://github.com/xmake-io/xmake/pull/2810): 支持 os.execv 去执行 shell 脚本文件
 * [#2817](https://github.com/xmake-io/xmake/pull/2817): 改进规则支持依赖顺序执行
 * [#2824](https://github.com/xmake-io/xmake/pull/2824): 传递 cross-file 交叉编译环境给 meson.install 和 trybuild
+* [#2856](https://github.com/xmake-io/xmake/pull/2856): xrepo 支持从当前指定源码目录调试程序
 
 ### 改进
 
