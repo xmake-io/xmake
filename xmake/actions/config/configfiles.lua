@@ -299,6 +299,8 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
                 if io.readfile(dstfile_tmp) ~= io.readfile(dstfile) then
                     os.cp(dstfile_tmp, dstfile)
                     generated = true
+                else
+                    os.touch(dstfile, {mtime = os.time()})
                 end
             else
                 os.cp(dstfile_tmp, dstfile)
@@ -324,6 +326,7 @@ function main(opt)
         depend.on_changed(function ()
             _generate_configfile(srcinfo.srcfile, dstfile, srcinfo.fileinfo, srcinfo.targets)
         end, {files = srcinfo.srcfile,
+              lastmtime = os.mtime(dstfile),
               always_changed = opt.force})
     end
 
