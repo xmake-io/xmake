@@ -258,6 +258,14 @@ function main(package)
         {
             function ()
 
+                -- use debug source directory directly?
+                local debugdir = package:is_toplevel() and option.get("debugdir") or nil
+                if debugdir then
+                    package:set("sourcedir", debugdir)
+                    tty.erase_line_to_start().cr()
+                    return true
+                end
+
                 -- download package
                 local sourcedir = "source"
                 local script = package:script("download")

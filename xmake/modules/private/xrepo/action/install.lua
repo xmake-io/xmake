@@ -66,7 +66,7 @@ function menu_options()
         {nil, "target_minver", "kv", nil, "The Target Minimal Version"       },
         {nil, "appledev",      "kv", nil, "The Apple Device Type"            },
         {category = "Debug Configuration"                                    },
-        {'s', "sourcedir",     "kv", nil, "The source directory of the current package for debugging. It will enable --force/--shallow by default."},
+        {'d', "debugdir",      "kv", nil, "The source directory of the current package for debugging. It will enable --force/--shallow by default."},
         {category = "Other Configuration"                                    },
         {nil, "force",         "k",  nil, "Force to reinstall all package dependencies."},
         {nil, "shallow",       "k",  nil, "Does not install dependent packages."},
@@ -126,6 +126,7 @@ function _install_packages(packages)
     if packagefile then
         subdir = subdir .. "-" .. hash.uuid(packagefile):split('-')[1]
     end
+    local origindir = os.curdir()
     local workdir = path.join(os.tmpdir(), "xrepo", subdir)
     if not os.isdir(workdir) then
         os.mkdir(workdir)
@@ -231,11 +232,10 @@ function _install_packages(packages)
         table.insert(require_argv, "--linkjobs=" .. option.get("linkjobs"))
     end
     local is_debug = false
-    local sourcedir = option.get("sourcedir")
+    local sourcedir = option.get("debugdir")
     if sourcedir then
         is_debug = true
-        table.insert(require_argv, "-s")
-        table.insert(require_argv, path.absolute(sourcedir))
+        table.insert(require_argv, "--debugdir=" .. path.absolute(sourcedir, origindir))
     end
     if option.get("force") or is_debug then
         table.insert(require_argv, "--force")
