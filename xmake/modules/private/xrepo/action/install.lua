@@ -65,6 +65,8 @@ function menu_options()
         {nil, "xcode_sdkver",  "kv", nil, "The SDK Version for Xcode"        },
         {nil, "target_minver", "kv", nil, "The Target Minimal Version"       },
         {nil, "appledev",      "kv", nil, "The Apple Device Type"            },
+        {category = "Debug Configuration"                                    },
+        {'s', "sourcedir",     "kv", nil, "The source directory of the current package for debugging. It will enable --force/--shallow by default."},
         {category = "Other Configuration"                                    },
         {nil, "force",         "k",  nil, "Force to reinstall all package dependencies."},
         {nil, "shallow",       "k",  nil, "Does not install dependent packages."},
@@ -228,13 +230,20 @@ function _install_packages(packages)
     if option.get("linkjobs") then
         table.insert(require_argv, "--linkjobs=" .. option.get("linkjobs"))
     end
-    if option.get("force") then
+    local is_debug = false
+    local sourcedir = option.get("sourcedir")
+    if sourcedir then
+        is_debug = true
+        table.insert(require_argv, "-s")
+        table.insert(require_argv, path.absolute(sourcedir))
+    end
+    if option.get("force") or is_debug then
         table.insert(require_argv, "--force")
     end
-    if option.get("shallow") then
+    if option.get("shallow") or is_debug then
         table.insert(require_argv, "--shallow")
     end
-    if option.get("build") then
+    if option.get("build") or is_debug then
         table.insert(require_argv, "--build")
     end
     local extra = {system = false}
