@@ -2082,8 +2082,13 @@ function _instance:tool(toolkind)
         if program and not toolname then
             local pos = program:find('@', 1, true)
             if pos then
-                toolname = program:sub(1, pos - 1)
-                program = program:sub(pos + 1)
+                -- we need ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
+                -- https://github.com/xmake-io/xmake/issues/2853
+                local prefix = program:sub(1, pos - 1)
+                if prefix and not prefix:find("[/\\]") then
+                    toolname = prefix
+                    program = program:sub(pos + 1)
+                end
             end
         end
 
