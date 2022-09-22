@@ -162,12 +162,12 @@ static tb_float_t xm_os_cpuinfo_usagerate()
                  */
                 if (fgets(line, sizeof(line), fp) && !tb_strncmp(line, "cpu ", 4))
                 {
-                    tb_int64_t user, nice, sys, idle, iowait, irq, softirq, steal, guest, guest_nice;
+                    long long user, nice, sys, idle, iowait, irq, softirq, steal, guest, guest_nice;
                     if (10 == sscanf(line, "cpu  %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld",
                             &user, &nice, &sys, &idle, &iowait, &irq, &softirq, &steal, &guest, &guest_nice))
                     {
-                        tb_int64_t active = user + nice + sys + irq + softirq + steal + guest + guest_nice;
-                        tb_int64_t total = user + nice + sys + idle + iowait + irq + softirq + steal + guest + guest_nice;
+                        tb_int64_t active = (tb_int64_t)(user + nice + sys + irq + softirq + steal + guest + guest_nice);
+                        tb_int64_t total = (tb_int64_t)(user + nice + sys + idle + iowait + irq + softirq + steal + guest + guest_nice);
                         if (total_prev > 0 && active_prev > 0)
                         {
                             tb_int64_t total_diff = total - total_prev;
