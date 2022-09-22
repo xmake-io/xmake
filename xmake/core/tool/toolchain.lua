@@ -428,8 +428,13 @@ function _instance:_checktool(toolkind, toolpath)
     if toolpath then
         local pos = toolpath:find('@', 1, true)
         if pos then
-            toolname = toolpath:sub(1, pos - 1)
-            program = toolpath:sub(pos + 1)
+            -- we need ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
+            -- https://github.com/xmake-io/xmake/issues/2853
+            local prefix = toolpath:sub(1, pos - 1)
+            if prefix and not prefix:find("[/\\]") then
+                toolname = prefix
+                program = toolpath:sub(pos + 1)
+            end
         end
     end
 
