@@ -75,6 +75,82 @@ function detect()
     end
 end
 
+-- get common configs
+function _get_common_configs(argv)
+    table.insert(argv, "--shallow")
+    table.insert(argv, "-v")
+    if option.get("diagnosis") then
+        table.insert(argv, "-D")
+    end
+    if config.get("plat") then
+        table.insert(argv, "-p")
+        table.insert(argv, config.get("plat"))
+    end
+    if config.get("arch") then
+        table.insert(argv, "-a")
+        table.insert(argv, config.get("arch"))
+    end
+    if config.get("mode") then
+        table.insert(argv, "-m")
+        table.insert(argv, config.get("mode"))
+    end
+    if config.get("kind") then
+        table.insert(argv, "-k")
+        table.insert(argv, config.get("kind"))
+    end
+    if config.get("toolchain") then
+        table.insert(argv, "--toolchain=" .. config.get("toolchain"))
+    end
+    if config.get("vs_runtime") then
+        table.insert(argv, "-f")
+        table.insert(argv, "vs_runtime='" .. config.get("vs_runtime") .. "'")
+    end
+end
+
+-- get install configs
+function _get_install_configs(argv)
+
+    -- cross compilation
+    if config.get("sdk") then
+        table.insert(argv, "--sdk=" .. config.get("sdk"))
+    end
+
+    -- android
+    if config.get("ndk") then
+        table.insert(argv, "--ndk=" .. config.get("ndk"))
+    end
+
+    -- mingw
+    if config.get("mingw") then
+        table.insert(argv, "--mingw=" .. config.get("mingw"))
+    end
+
+    -- msvc
+    if config.get("vs") then
+        table.insert(argv, "--vs=" .. config.get("vs"))
+    end
+    if config.get("vs_toolset") then
+        table.insert(argv, "--vs_toolset=" .. config.get("vs_toolset"))
+    end
+    if config.get("vs_sdkver") then
+        table.insert(argv, "--vs_sdkver=" .. config.get("vs_sdkver"))
+    end
+
+    -- xcode
+    if config.get("xcode") then
+        table.insert(argv, "--xcode=" .. config.get("xcode"))
+    end
+    if config.get("xcode_sdkver") then
+        table.insert(argv, "--xcode_sdkver=" .. config.get("xcode_sdkver"))
+    end
+    if config.get("target_minver") then
+        table.insert(argv, "--target_minver=" .. config.get("target_minver"))
+    end
+    if config.get("appledev") then
+        table.insert(argv, "--appledev=" .. config.get("appledev"))
+    end
+end
+
 -- do clean
 function clean()
 end
@@ -89,10 +165,9 @@ function build()
     local package = assert(_g.package, "package not found!")
 
     -- do install for building
-    local argv = {"install", "-v"}
-    if option.get("diagnosis") then
-        table.insert(argv, "-D")
-    end
+    local argv = {"install"}
+    _get_common_configs(argv)
+    _get_install_configs(argv)
     table.insert(argv, "-d")
     table.insert(argv, ".")
     table.insert(argv, package.name .. " " .. package.version)
@@ -100,10 +175,8 @@ function build()
 
     -- do export
     local artifacts_dir = _get_artifacts_dir()
-    local argv = {"export", "-v", "--shallow"}
-    if option.get("diagnosis") then
-        table.insert(argv, "-D")
-    end
+    local argv = {"export"}
+    _get_common_configs(argv)
     table.insert(argv, "-o")
     table.insert(argv, artifacts_dir)
     table.insert(argv, package.name .. " " .. package.version)
