@@ -80,6 +80,7 @@ end
 
 -- get common configs
 function _get_common_configs(argv)
+    table.insert(argv, "-y")
     table.insert(argv, "--shallow")
     table.insert(argv, "-v")
     if option.get("diagnosis") then
