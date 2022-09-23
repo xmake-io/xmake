@@ -114,6 +114,12 @@ end
 -- get install configs
 function _get_install_configs(argv)
 
+    -- pass jobs
+    if option.get("jobs") then
+        table.insert(argv, "-j")
+        table.insert(argv, option.get("jobs"))
+    end
+
     -- cross compilation
     if config.get("sdk") then
         table.insert(argv, "--sdk=" .. config.get("sdk"))
