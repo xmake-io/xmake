@@ -10,6 +10,7 @@
 * [#2817](https://github.com/xmake-io/xmake/pull/2817): Improve rule to support dependence order
 * [#2824](https://github.com/xmake-io/xmake/pull/2824): Pass cross-file to meson.install and trybuild
 * [#2856](https://github.com/xmake-io/xmake/pull/2856): Improve to debug package using the debug source directory
+* [#2859](https://github.com/xmake-io/xmake/issues/2859): Improve trybuild to build 3rd source library using xmake-repo scripts
 
 ### Changes
 
@@ -1403,6 +1404,7 @@
 * [#2817](https://github.com/xmake-io/xmake/pull/2817): 改进规则支持依赖顺序执行
 * [#2824](https://github.com/xmake-io/xmake/pull/2824): 传递 cross-file 交叉编译环境给 meson.install 和 trybuild
 * [#2856](https://github.com/xmake-io/xmake/pull/2856): xrepo 支持从当前指定源码目录调试程序
+* [#2859](https://github.com/xmake-io/xmake/issues/2859): 改进对三方库的 trybuild 构建，利用 xmake-repo 仓库脚本更加智能化地构建三方库
 
 ### 改进
 
