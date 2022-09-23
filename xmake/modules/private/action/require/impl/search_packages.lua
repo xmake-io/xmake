@@ -19,7 +19,7 @@
 --
 
 -- search packages from repositories
-function _search_packages(name)
+function _search_packages(name, opt)
 
     -- get package manager name
     local manager_name, package_name = table.unpack(name:split("::", {plain = true, strict = true}))
@@ -32,7 +32,7 @@ function _search_packages(name)
 
     -- search packages
     local packages = {}
-    local result = import("package.manager." .. manager_name .. ".search_package", {anonymous = true})(package_name)
+    local result = import("package.manager." .. manager_name .. ".search_package", {anonymous = true})(package_name, opt)
     if result then
         table.join2(packages, result)
     end
@@ -40,10 +40,10 @@ function _search_packages(name)
 end
 
 -- search packages
-function main(names)
+function main(names, opt)
     local results = {}
     for _, name in ipairs(names) do
-        local packages = _search_packages(name)
+        local packages = _search_packages(name, opt)
         if packages then
             results[name] = packages
         end

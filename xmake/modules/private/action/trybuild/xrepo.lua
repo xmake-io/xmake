@@ -64,13 +64,16 @@ function detect()
     end
 
     -- search packages
-    -- TODO search the given version
     local result
-    for name, packages in pairs(search_packages(packagename)) do
+    for name, packages in pairs(search_packages(packagename, {require_version = version and version:rawstr() or nil})) do
         if #packages > 0 then
             local package = packages[1]
             _g.package = package
-            return ("%s %s in %s"):format(package.name, package.version, package.reponame)
+            if package.version then
+                return ("%s %s in %s"):format(package.name, package.version, package.reponame)
+            else
+                return ("%s in %s"):format(package.name, package.reponame)
+            end
         end
     end
 end
@@ -170,7 +173,11 @@ function build()
     _get_install_configs(argv)
     table.insert(argv, "-d")
     table.insert(argv, ".")
-    table.insert(argv, package.name .. " " .. package.version)
+    if package.version then
+        table.insert(argv, package.name .. " " .. package.version)
+    else
+        table.insert(argv, package.name)
+    end
     os.vexecv(xrepo.program, argv)
 
     -- do export
@@ -179,7 +186,11 @@ function build()
     _get_common_configs(argv)
     table.insert(argv, "-o")
     table.insert(argv, artifacts_dir)
-    table.insert(argv, package.name .. " " .. package.version)
+    if package.version then
+        table.insert(argv, package.name .. " " .. package.version)
+    else
+        table.insert(argv, package.name)
+    end
     os.vexecv(xrepo.program, argv)
     cprint("output to ${bright}%s", artifacts_dir)
     cprint("${color.success}build ok!")
