@@ -649,7 +649,7 @@ function _build_for_make(package, configs, opt)
     end
     local jobs = _get_parallel_njobs(opt)
     table.insert(argv, "-j" .. jobs)
-    if option.get("verbose") then
+    if option.get("diagnosis") then
         table.insert(argv, "VERBOSE=1")
     end
     if is_host("bsd") then
@@ -727,7 +727,7 @@ end
 function _install_for_make(package, configs, opt)
     local jobs = _get_parallel_njobs(opt)
     local argv = {"-j" .. jobs}
-    if option.get("verbose") then
+    if option.get("diagnosis") then
         table.insert(argv, "VERBOSE=1")
     end
     if is_host("bsd") then

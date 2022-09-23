@@ -444,7 +444,7 @@ function build(package, configs, opt)
     opt = opt or {}
     local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
     local argv = {"-j" .. njob}
-    if option.get("verbose") then
+    if option.get("diagnosis") then
         table.insert(argv, "V=1")
     end
     if opt.makeconfigs then
@@ -471,7 +471,7 @@ function install(package, configs, opt)
 
     -- do install
     local argv = {"install"}
-    if option.get("verbose") then
+    if option.get("diagnosis") then
         table.insert(argv, "V=1")
     end
     if opt.makeconfigs then
