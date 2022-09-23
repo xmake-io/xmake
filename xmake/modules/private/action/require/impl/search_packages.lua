@@ -41,8 +41,6 @@ end
 
 -- search packages
 function main(names)
-
-    -- search all names
     local results = {}
     for _, name in ipairs(names) do
         local packages = _search_packages(name)
