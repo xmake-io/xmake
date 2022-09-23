@@ -54,7 +54,7 @@ function detect()
         if pos then
             packagename = dirname:sub(1, pos - 1)
             if packagename:endswith("-") or packagename:endswith("_") then
-                packagename = packagename:sub(1, #packagename - 1)
+                packagename = packagename:sub(1, #packagename - 1):lower()
             end
         end
     end
@@ -65,15 +65,28 @@ function detect()
 
     -- search packages
     local result
-    for name, packages in pairs(search_packages(packagename, {require_version = version and version:rawstr() or nil})) do
-        if #packages > 0 then
-            local package = packages[1]
-            _g.package = package
-            if package.version then
-                return ("%s %s in %s"):format(package.name, package.version, package.reponame)
-            else
-                return ("%s in %s"):format(package.name, package.reponame)
+    local packages_found = search_packages(packagename, {require_version = version and version:rawstr() or nil})
+    for name, packages in pairs(packages_found) do
+        for _, package in ipairs(packages) do
+            if package.name == packagename then
+                result = package
+                break
             end
+        end
+    end
+    if not result then
+        for name, packages in pairs(packages_found) do
+            if #packages > 0 then
+                result = packages[1]
+            end
+        end
+    end
+    if result then
+        _g.package = result
+        if result.version then
+            return ("%s %s in %s"):format(result.name, result.version, result.reponame)
+        else
+            return ("%s in %s"):format(result.name, result.reponame)
         end
     end
 end
