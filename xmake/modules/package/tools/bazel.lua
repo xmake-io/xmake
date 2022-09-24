@@ -20,29 +20,27 @@
 
 -- imports
 import("core.base.option")
-import("core.project.config")
-import("lib.detect.find_file")
+import("core.tool.toolchain")
 import("lib.detect.find_tool")
 
--- detect build-system and configuration file
-function detect()
-    return find_file("BUILD", os.curdir()) or find_file("BUILD.bazel", os.curdir())
+-- get configs
+function _get_configs(package, configs)
+    local configs = configs or {}
+    return configs
 end
 
--- do clean
-function clean()
-    local bazel = assert(find_tool("bazel"), "bazel not found!")
-    os.vexecv(bazel.program, {"clean"})
+-- get the build environments
+function buildenvs(package, opt)
 end
 
--- do build
-function build()
-
-    -- only support the current subsystem host platform now!
-    assert(is_subhost(config.plat()), "bazel: %s not supported!", config.plat())
-
-    -- do build
+-- build package
+function build(package, configs, opt)
+    opt = opt or {}
     local bazel = assert(find_tool("bazel"), "bazel not found!")
-    os.vexecv(bazel.program, {"build"})
-    cprint("${color.success}build ok!")
+    local argv = {"build"}
+    configs = _get_configs(package, configs)
+    if configs then
+        table.join2(argv, configs)
+    end
+    os.vrunv(bazel.program, argv, {envs = opt.envs or buildenvs(package, opt)})
 end
