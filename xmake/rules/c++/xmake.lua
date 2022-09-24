@@ -25,7 +25,8 @@ rule("c.build")
 
 rule("c++.build")
     set_sourcekinds("cxx")
-    add_deps("c++.build.pcheader", "c++.build.modules", "c++.build.optimization")
+    add_deps("c++.build.pcheader", "c++.build.optimization")
+    add_deps("c++.build.modules", {order = true})
     on_build_files("private.action.build.object", {batch = true, distcc = true})
 
 rule("c++")

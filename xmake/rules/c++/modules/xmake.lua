@@ -53,7 +53,7 @@ rule("c++.build.modules.builder")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
     -- parallel build support to accelerate `xmake build` to build modules
-    before_build_files(function(target, batchjobs, sourcebatch, opt)
+    on_build_files(function(target, batchjobs, sourcebatch, opt)
         if target:data("cxx.has_modules") then
             import("modules_support.common")
             common.patch_sourcebatch(target, sourcebatch, opt)
@@ -86,7 +86,7 @@ rule("c++.build.modules.builder")
     end, {batch = true})
 
     -- serial compilation only, usually used to support project generator
-    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
+    on_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         if target:data("cxx.has_modules") then
             import("modules_support.common")
 
