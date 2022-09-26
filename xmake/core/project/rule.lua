@@ -150,6 +150,7 @@ function rule.apis()
             "rule.set_extensions"
         ,   "rule.set_sourcekinds"
         ,   "rule.set_kind"
+        ,   "rule.set_base"
             -- rule.add_xxx
         ,   "rule.add_deps"
         ,   "rule.add_imports"
@@ -214,14 +215,31 @@ function rule.new(name, info)
     return instance
 end
 
+-- get the base rule
+function rule:base()
+    return self._BASE
+end
+
 -- get the rule info
 function rule:get(name)
-    return self._INFO:get(name)
+    local value = self._INFO:get(name)
+    if value == nil and self:base() then
+        value = self:base():get(name)
+    end
+    if value ~= nil then
+        return value
+    end
 end
 
 -- get the extra configuration
 function rule:extraconf(name, item, key)
-    return self._INFO:extraconf(name, item, key)
+    local value = self._INFO:extraconf(name, item, key)
+    if value == nil and self:base() then
+        value = self:base():extraconf(name)
+    end
+    if value ~= nil then
+        return value
+    end
 end
 
 -- get the rule name
