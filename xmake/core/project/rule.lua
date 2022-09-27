@@ -29,6 +29,7 @@ local utils          = require("base/utils")
 local table          = require("base/table")
 local global         = require("base/global")
 local interpreter    = require("base/interpreter")
+local instance_deps  = require("base/private/instance_deps")
 local config         = require("project/config")
 local sandbox        = require("sandbox/sandbox")
 local sandbox_os     = require("sandbox/modules/os")
@@ -44,6 +45,13 @@ end
 
 -- build deps
 function _instance:_build_deps()
+    local instances = rule.rules()
+    if rule._project() then
+        instances = table.join(rule.rules(), rule._project().rules())
+    end
+    self._DEPS      = self._DEPS or {}
+    self._ORDERDEPS = self._ORDERDEPS or {}
+    instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:name()})
 end
 
 -- clone rule
@@ -234,6 +242,11 @@ function rule._interpreter()
     -- save interpreter
     rule._INTERPRETER = interp
     return interp
+end
+
+-- get project
+function rule._project()
+    return rule._PROJECT
 end
 
 -- load rule

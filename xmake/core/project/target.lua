@@ -859,7 +859,7 @@ function _instance:orderpkgs(opt)
     local packages = self:_memcache():get(cachekey)
     if not packages then
         packages = {}
-        local requires = self._PROJECT.required_packages()
+        local requires = target._project().required_packages()
         if requires then
             for _, packagename in ipairs(table.wrap(self:get("packages", opt))) do
                 local pkg = requires[packagename]
@@ -1220,7 +1220,7 @@ function _instance:filerules(sourcefile)
         if filerules then
             override = filerules.override
             for _, rulename in ipairs(table.wrap(filerules)) do
-                local r = self._PROJECT.rule(rulename) or rule.rule(rulename)
+                local r = target._project().rule(rulename) or rule.rule(rulename)
                 if r then
                     table.insert(rules, r)
                 end
@@ -2062,8 +2062,8 @@ function _instance:toolchains()
                 toolchain_opt.plat = self:plat()
                 local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
                 -- attempt to load toolchain from project
-                if not toolchain_inst and self._PROJECT then
-                    toolchain_inst = self._PROJECT.toolchain(name, toolchain_opt)
+                if not toolchain_inst and target._project() then
+                    toolchain_inst = target._project().toolchain(name, toolchain_opt)
                 end
                 if not toolchain_inst then
                     os.raise(errors)
@@ -2158,6 +2158,11 @@ function _instance:has_tool(toolkind, ...)
             end
         end
     end
+end
+
+-- get project
+function target._project()
+    return target._PROJECT
 end
 
 -- get target apis

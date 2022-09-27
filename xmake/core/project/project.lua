@@ -50,8 +50,10 @@ local language              = require("language/language")
 local sandbox_os            = require("sandbox/modules/os")
 local sandbox_module        = require("sandbox/modules/import/core/sandbox/module")
 
--- register project to platform
+-- register project to platform, rule and target
 platform._PROJECT = project
+target._PROJECT = project
+rule._PROJECT = project
 
 -- the current os is belong to the given os?
 function project._api_is_os(interp, ...)
