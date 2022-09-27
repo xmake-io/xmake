@@ -18,6 +18,13 @@ rule("xx")
             table.insert(sourcebatch.objectfiles, objectfile)
             table.insert(sourcebatch.dependfiles, dependfile)
         end
+
+        -- force as c++ source file
+        if target:is_plat("windows") then
+            target:add("cxxflags", "/TP")
+        else
+            target:add("cxxflags", "-x c++")
+        end
     end)
 
 target("test")

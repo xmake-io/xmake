@@ -67,13 +67,13 @@ function _instance:get(name)
     return self._INFO:get(name)
 end
 
--- set the value to the package info
+-- set the value to the rule info
 function _instance:set(name, ...)
     self._INFO:apival_set(name, ...)
     self:_invalidate(name)
 end
 
--- add the value to the package info
+-- add the value to the rule info
 function _instance:add(name, ...)
     self._INFO:apival_add(name, ...)
     self:_invalidate(name)
