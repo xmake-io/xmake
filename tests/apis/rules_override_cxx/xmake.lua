@@ -1,8 +1,14 @@
-rule("xx.build")
-    set_base("c++.build")
-    set_extensions(".xx")
+rule("xx")
+    add_deps("c++")
     on_load(function (target)
-        local sourcebatch = target:sourcebatches()["xx.build"]
+
+        -- add .xx
+        local rule = target:rule("c++.build"):clone()
+        rule:set("extensions", ".xx")
+        target:rule_set("c++.build", rule)
+
+        -- patch sourcebatch for .xx
+        local sourcebatch = target:sourcebatches()["c++.build"]
         sourcebatch.sourcekind = "cxx"
         sourcebatch.objectfiles = {}
         sourcebatch.dependfiles = {}
@@ -12,15 +18,10 @@ rule("xx.build")
             table.insert(sourcebatch.objectfiles, objectfile)
             table.insert(sourcebatch.dependfiles, dependfile)
         end
-        target:add("cxxflags", "-x c++")
     end)
-
-rule("xx")
-    set_base("c++")
-    add_deps("xx.build")
 
 target("test")
     set_kind("binary")
     add_rules("xx")
-    add_files("src/*.xx")
+    add_files("src/*.xx", "src/*.cc")
 
