@@ -350,16 +350,7 @@ function project._load_targets()
     for _, t in pairs(targets) do
 
         -- load rules from target and language
-        --
-        -- e.g.
-        --
-        -- a.deps = b
-        -- b.deps = c
-        --
-        -- orderules: c -> b -> a
-        --
-        t._RULES      = t._RULES or {}
-        t._ORDERULES  = t._ORDERULES or {}
+        t._RULES = t._RULES or {}
         local rulenames = {}
         local extensions = {}
         table.join2(rulenames, t:get("rules"))
@@ -381,13 +372,8 @@ function project._load_targets()
                 if r:kind() == "target" then
                     t._RULES[rulename] = r
                     for _, deprule in ipairs(r:orderdeps()) do
-                        local name = deprule:name()
-                        if not t._RULES[name] then
-                            t._RULES[name] = deprule
-                            table.insert(t._ORDERULES, deprule)
-                        end
+                        t._RULES[deprule:name()] = deprule
                     end
-                    table.insert(t._ORDERULES, r)
                 end
             else
                 return nil, nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
