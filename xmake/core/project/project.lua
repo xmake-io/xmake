@@ -328,13 +328,13 @@ function project._load_targets()
     local requires = project.required_packages()
     local ok, errors = project._load(true)
     if not ok then
-        return nil, nil, errors
+        return nil, errors
     end
 
     -- load targets
     local results, errors = project._load_scope("target", true, true)
     if not results then
-        return nil, nil, errors
+        return nil, errors
     end
 
     -- make targets
@@ -376,44 +376,24 @@ function project._load_targets()
                     end
                 end
             else
-                return nil, nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
+                return nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
         end
 
         -- @note it's deprecated, please use on_load instead of before_load
         ok, errors = t:_load_before()
         if not ok then
-            return nil, nil, errors
+            return nil, errors
         end
 
         -- we need call on_load() before building deps/rules,
         -- so we can use `target:add("deps", "xxx")` to add deps in on_load
         ok, errors = t:_load()
         if not ok then
-            return nil, nil, errors
-        end
-
-        -- load deps
-        t._DEPS      = t._DEPS or {}
-        t._ORDERDEPS = t._ORDERDEPS or {}
-        instance_deps.load_deps(t, targets, t._DEPS, t._ORDERDEPS, {t:name()})
-    end
-
-    -- sort targets for all deps
-    local targetrefs = {}
-    local ordertargets = {}
-    for _, t in pairs(targets) do
-        project._sort_targets(targets, ordertargets, targetrefs, t)
-    end
-
-    -- do after_load() for targets
-    for _, t in ipairs(ordertargets) do
-        ok, errors = t:_load_after()
-        if not ok then
-            return nil, nil, errors
+            return nil, errors
         end
     end
-    return targets, ordertargets
+    return targets
 end
 
 -- load options
@@ -547,20 +527,6 @@ function project._load_packages()
 
     -- load packages
     return project._load_scope("package", true, false)
-end
-
--- sort targets for all deps
-function project._sort_targets(targets, ordertargets, targetrefs, target)
-    for _, depname in ipairs(table.wrap(target:get("deps"))) do
-        local targetinst = targets[depname]
-        if targetinst then
-            project._sort_targets(targets, ordertargets, targetrefs, targetinst)
-        end
-    end
-    if not targetrefs[target:name()] then
-        targetrefs[target:name()] = true
-        table.insert(ordertargets, target)
-    end
 end
 
 -- get project memcache
@@ -900,19 +866,23 @@ end
 
 -- add the given target
 function project.target_add(t)
+    local targets = project.targets()
+    if targets then
+        targets[t:name()] = t
+        project._memcache():set("ordertargets", nil)
+    end
 end
 
 -- get targets
 function project.targets()
     local targets = project._memcache():get("targets")
     if not targets then
-        local ordertargets, errors
-        targets, ordertargets, errors = project._load_targets()
+        local errors
+        targets, errors = project._load_targets()
         if errors then
             os.raise(errors)
         end
         project._memcache():set("targets", targets)
-        project._memcache():set("ordertargets", ordertargets)
     end
     return targets
 end
@@ -921,9 +891,20 @@ end
 function project.ordertargets()
     local ordertargets = project._memcache():get("ordertargets")
     if not ordertargets then
-        -- ensure ordertargets to be cached
-        project.targets()
-        ordertargets = project._memcache():get("ordertargets")
+        local targets = project.targets()
+        ordertargets = {}
+        local targets_unique = {}
+        for _, t in pairs(targets) do
+            for _, dep in ipairs(t:orderdeps()) do
+                local name = dep:name()
+                if not targets_unique[name] then
+                    targets_unique[name] = dep
+                    table.insert(ordertargets, dep)
+                end
+            end
+            table.insert(ordertargets, t)
+        end
+        project._memcache():set("ordertargets", ordertargets)
     end
     return ordertargets
 end

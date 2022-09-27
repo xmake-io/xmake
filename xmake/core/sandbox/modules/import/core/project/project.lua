@@ -71,6 +71,24 @@ sandbox_core_project.tmpdir               = project.tmpdir
 sandbox_core_project.tmpfile              = project.tmpfile
 sandbox_core_project.is_loaded            = project.is_loaded
 
+-- load project targets
+function sandbox_core_project._load_targets()
+    local loaded = sandbox_core_project._TARGETS_LOADED
+    if not loaded then
+        -- do after_load() for targets
+        -- @note we cannot call it in project.targets(),
+        -- because we maybe will call project.targets() in after_load
+        for _, t in ipairs(project.ordertargets()) do
+            local ok, errors = t:_load_after()
+            if not ok then
+                return false, errors
+            end
+        end
+        sandbox_core_project._TARGETS_LOADED = true
+    end
+    return true
+end
+
 -- check project options
 function sandbox_core_project.check()
 
@@ -169,6 +187,33 @@ function sandbox_core_project.chdir(projectdir, projectfile)
     xmake._PROJECT_DIR = path.directory(projectfile)
     xmake._WORKING_DIR = xmake._PROJECT_DIR
     config._DIRECTORY = nil
+end
+
+-- get project target
+function sandbox_core_project.target(name)
+    local ok, errors = sandbox_core_project._load_targets()
+    if not ok then
+        raise(errors)
+    end
+    return project.target(name)
+end
+
+-- get project targets
+function sandbox_core_project.targets()
+    local ok, errors = sandbox_core_project._load_targets()
+    if not ok then
+        raise(errors)
+    end
+    return project.targets()
+end
+
+-- get project order targets
+function sandbox_core_project.ordertargets()
+    local ok, errors = sandbox_core_project._load_targets()
+    if not ok then
+        raise(errors)
+    end
+    return project.ordertargets()
 end
 
 -- return module

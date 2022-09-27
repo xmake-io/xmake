@@ -31,6 +31,7 @@ local table           = require("base/table")
 local baseoption      = require("base/option")
 local hashset         = require("base/hashset")
 local deprecated      = require("base/deprecated")
+local instance_deps   = require("base/private/instance_deps")
 local memcache        = require("cache/memcache")
 local rule            = require("project/rule")
 local option          = require("project/option")
@@ -274,6 +275,19 @@ function _instance:_invalidate(name)
     -- we need flush the source files cache if target/files are modified, e.g. `target:add("files", "xxx.c")`
     if name == "files" then
         self._SOURCEFILES = nil
+    elseif name == "deps" then
+        self._DEPS = nil
+        self._ORDERDEPS = nil
+    end
+end
+
+-- build deps
+function _instance:_build_deps()
+    if target._project() then
+        local instances = target._project().targets()
+        self._DEPS      = self._DEPS or {}
+        self._ORDERDEPS = self._ORDERDEPS or {}
+        instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:name()})
     end
 end
 
@@ -282,8 +296,11 @@ function _instance:_is_loaded()
     return self._LOADED
 end
 
--- clone target
+-- clone target, @note we can just call it in after_load()
 function _instance:clone()
+    if not self:_is_loaded() or self._LOADED_AFTER then
+        os.raise("please call target:clone() in after_load().", self:name())
+    end
     local instance = target.new(self:name(), self._INFO:clone())
     if self._DEPS then
         instance._DEPS = table.clone(self._DEPS)
@@ -303,6 +320,8 @@ function _instance:clone()
     if self._SOURCEFILES then
         instance._SOURCEFILES = table.clone(self._SOURCEFILES)
     end
+    instance._LOADED = self._LOADED
+    instance._LOADED_AFTER = true
     return instance
 end
 
@@ -695,6 +714,9 @@ function _instance:deps()
     if not self:_is_loaded() then
         os.raise("please call target:deps() or target:dep() in after_load()!")
     end
+    if self._DEPS == nil then
+        self:_build_deps()
+    end
     return self._DEPS
 end
 
@@ -702,6 +724,9 @@ end
 function _instance:orderdeps()
     if not self:_is_loaded() then
         os.raise("please call target:orderdeps() in after_load()!")
+    end
+    if self._DEPS == nil then
+        self:_build_deps()
     end
     return self._ORDERDEPS
 end
