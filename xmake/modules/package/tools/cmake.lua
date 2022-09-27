@@ -287,6 +287,10 @@ function _get_configs_for_windows(package, configs, opt)
         table.insert(configs, "-A")
         if package:is_arch("x86", "i386") then
             table.insert(configs, "Win32")
+        elseif package:is_arch("arm64") then
+            table.insert(configs, "ARM64")
+        elseif package:is_arch("arm.*") then
+            table.insert(configs, "ARM")
         else
             table.insert(configs, "x64")
         end
