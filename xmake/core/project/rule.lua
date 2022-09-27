@@ -34,6 +34,18 @@ local sandbox        = require("sandbox/sandbox")
 local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
+-- invalidate the previous cache
+function _instance:_invalidate(name)
+    if name == "deps" then
+        self._DEPS = nil
+        self._ORDERDEPS = nil
+    end
+end
+
+-- build deps
+function _instance:_build_deps()
+end
+
 -- get the base rule
 function _instance:base()
     return self._BASE
@@ -42,8 +54,7 @@ end
 -- clone rule
 function _instance:clone()
     local instance = rule.new(self:name(), self._INFO:clone())
-    -- TODO
-    instance._RULES = self._RULES
+    instance._DEPS = self._DEPS
     instance._ORDERDEPS = self._ORDERDEPS
     return instance
 end
@@ -62,11 +73,13 @@ end
 -- set the value to the package info
 function _instance:set(name, ...)
     self._INFO:apival_set(name, ...)
+    self:_invalidate(name)
 end
 
 -- add the value to the package info
 function _instance:add(name, ...)
     self._INFO:apival_add(name, ...)
+    self:_invalidate(name)
 end
 
 -- get the extra configuration
@@ -105,11 +118,17 @@ end
 
 -- get rule deps
 function _instance:deps()
+    if self._DEPS == nil then
+        self:_build_deps()
+    end
     return self._DEPS
 end
 
 -- get rule order deps
 function _instance:orderdeps()
+    if self._DEPS == nil then
+        self:_build_deps()
+    end
     return self._ORDERDEPS
 end
 
