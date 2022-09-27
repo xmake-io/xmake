@@ -713,9 +713,9 @@ function _instance:rule(name)
 end
 
 -- set rule
-function _instance:rule_set(name, ruleinst)
+function _instance:rule_add(r)
     self._RULES = self._RULES or {}
-    self._RULES[name] = ruleinst
+    self._RULES[r:name()] = r
     self._ORDERULES = nil
 end
 

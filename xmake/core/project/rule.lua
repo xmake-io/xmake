@@ -89,6 +89,11 @@ function _instance:name()
     return self._NAME
 end
 
+-- set the rule name
+function _instance:name_set(name)
+    self._NAME = name
+end
+
 -- get the rule kind
 --
 -- current supported kind:
