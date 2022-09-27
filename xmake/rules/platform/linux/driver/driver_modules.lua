@@ -259,7 +259,7 @@ function link(target, opt)
 
         -- generate target.mod
         local targetfile_mod = targetfile_o:gsub("%.o$", ".mod")
-        io.writefile(targetfile_mod, table.concat(objectfiles, " ") .. "\n\n")
+        io.writefile(targetfile_mod, table.concat(objectfiles, "\n") .. "\n\n")
 
         -- generate .sourcename.o.cmd
         -- we need only touch an empty file, otherwise modpost command will raise error.
