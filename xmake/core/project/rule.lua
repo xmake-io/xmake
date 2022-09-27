@@ -46,11 +46,6 @@ end
 function _instance:_build_deps()
 end
 
--- get the base rule
-function _instance:base()
-    return self._BASE
-end
-
 -- clone rule
 function _instance:clone()
     local instance = rule.new(self:name(), self._INFO:clone())
@@ -61,13 +56,7 @@ end
 
 -- get the rule info
 function _instance:get(name)
-    local value = self._INFO:get(name)
-    if value == nil and self:base() then
-        value = self:base():get(name)
-    end
-    if value ~= nil then
-        return value
-    end
+    return self._INFO:get(name)
 end
 
 -- set the value to the package info
@@ -84,13 +73,7 @@ end
 
 -- get the extra configuration
 function _instance:extraconf(name, item, key)
-    local value = self._INFO:extraconf(name, item, key)
-    if value == nil and self:base() then
-        value = self:base():extraconf(name)
-    end
-    if value ~= nil then
-        return value
-    end
+    return self._INFO:extraconf(name, item, key)
 end
 
 -- get the rule name
@@ -309,7 +292,6 @@ function rule.apis()
             "rule.set_extensions"
         ,   "rule.set_sourcekinds"
         ,   "rule.set_kind"
-        ,   "rule.set_base"
             -- rule.add_xxx
         ,   "rule.add_deps"
         ,   "rule.add_imports"
@@ -400,19 +382,11 @@ function rule.rules()
         end
 
         -- make rule instances
-        local instances = {}
+        rules = {}
         for rulename, ruleinfo in pairs(ruleinfos) do
             local instance = rule.new(rulename, ruleinfo)
-            instances[rulename] = instance
+            rules[rulename] = instance
         end
-
-        -- load rule deps
-        for _, instance in pairs(instances)  do
-            instance._DEPS      = instance._DEPS or {}
-            instance._ORDERDEPS = instance._ORDERDEPS or {}
-            rule._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS)
-        end
-        rules = instances
         rule._RULES = rules
     end
     return rules

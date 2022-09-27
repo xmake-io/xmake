@@ -288,18 +288,6 @@ function project._load_rules()
     for rulename, ruleinfo in pairs(results) do
         rules[rulename] = rule.new(rulename, ruleinfo)
     end
-
-    -- load rule deps
-    local instances = table.join(rule.rules(), rules)
-    for _, instance in pairs(instances)  do
-        instance._DEPS      = instance._DEPS or {}
-        instance._ORDERDEPS = instance._ORDERDEPS or {}
-        local base = instance:get("base")
-        if base then
-            instance._BASE = instances[base]
-        end
-        instance_deps.load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS, {instance:name()})
-    end
     return rules
 end
 
