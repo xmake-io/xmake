@@ -5,7 +5,7 @@ rule("xx")
         -- add .xx
         local rule = target:rule("c++.build"):clone()
         rule:set("extensions", ".xx")
-        target:rule_set("c++.build", rule)
+        target:rule_add(rule)
 
         -- patch sourcebatch for .xx
         local sourcebatch = target:sourcebatches()["c++.build"]
