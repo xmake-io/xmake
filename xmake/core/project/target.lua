@@ -685,7 +685,24 @@ end
 
 -- get target ordered rules
 function _instance:orderules()
-    return self._ORDERULES
+    local rules = self._RULES
+    local orderules = self._ORDERULES
+    if orderules == nil and rules then
+        orderules = {}
+        local rules_unique = {}
+        for _, r in pairs(rules) do
+            for _, deprule in ipairs(r:orderdeps()) do
+                local name = deprule:name()
+                if not rules_unique[name] then
+                    rules_unique[name] = deprule
+                    table.insert(orderules, deprule)
+                end
+            end
+            table.insert(orderules, r)
+        end
+        self._ORDERULES = orderules
+    end
+    return orderules
 end
 
 -- get target rule from the given rule name
@@ -693,6 +710,13 @@ function _instance:rule(name)
     if self._RULES then
         return self._RULES[name]
     end
+end
+
+-- set rule
+function _instance:rule_set(name, ruleinst)
+    self._RULES = self._RULES or {}
+    self._RULES[name] = ruleinst
+    self._ORDERULES = nil
 end
 
 -- is phony target?

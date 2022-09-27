@@ -34,6 +34,7 @@ local hashset               = require("base/hashset")
 local baseoption            = require("base/option")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
+local instance_deps         = require("base/private/instance_deps")
 local memcache              = require("cache/memcache")
 local rule                  = require("project/rule")
 local target                = require("project/target")
@@ -207,39 +208,6 @@ function project._load(force, disable_filter)
     return true
 end
 
--- load deps for instance: e.g. option, target and rule
---
--- e.g.
---
--- a.deps = b
--- b.deps = c
---
--- orderdeps: c -> b -> a
---
-function project._load_deps(instance, instances, deps, orderdeps, depspath)
-    for _, dep in ipairs(table.wrap(instance:get("deps"))) do
-        local depinst = instances[dep]
-        if depinst then
-            local depspath_sub
-            if depspath then
-                for idx, name in ipairs(depspath) do
-                    if name == dep then
-                        local circular_deps = table.slice(depspath, idx)
-                        table.insert(circular_deps, dep)
-                        os.raise("circular dependency(%s) detected!", table.concat(circular_deps, ", "))
-                    end
-                end
-                depspath_sub = table.join(depspath, dep)
-            end
-            project._load_deps(depinst, instances, deps, orderdeps, depspath_sub)
-            if not deps[dep] then
-                deps[dep] = depinst
-                table.insert(orderdeps, depinst)
-            end
-        end
-    end
-end
-
 -- load scope from the project file
 function project._load_scope(scope_kind, deduplicate, enable_filter)
 
@@ -330,7 +298,7 @@ function project._load_rules()
         if base then
             instance._BASE = instances[base]
         end
-        project._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS, {instance:name()})
+        instance_deps.load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS, {instance:name()})
     end
     return rules
 end
@@ -452,7 +420,7 @@ function project._load_targets()
         -- load deps
         t._DEPS      = t._DEPS or {}
         t._ORDERDEPS = t._ORDERDEPS or {}
-        project._load_deps(t, targets, t._DEPS, t._ORDERDEPS, {t:name()})
+        instance_deps.load_deps(t, targets, t._DEPS, t._ORDERDEPS, {t:name()})
     end
 
     -- sort targets for all deps
@@ -545,7 +513,7 @@ function project._load_options(disable_filter)
     for _, opt in pairs(options) do
         opt._DEPS      = opt._DEPS or {}
         opt._ORDERDEPS = opt._ORDERDEPS or {}
-        project._load_deps(opt, options, opt._DEPS, opt._ORDERDEPS, {opt:name()})
+        instance_deps.load_deps(opt, options, opt._DEPS, opt._ORDERDEPS, {opt:name()})
     end
     return options
 end

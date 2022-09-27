@@ -39,6 +39,15 @@ function _instance:base()
     return self._BASE
 end
 
+-- clone rule
+function _instance:clone()
+    local instance = rule.new(self:name(), self._INFO:clone())
+    -- TODO
+    instance._RULES = self._RULES
+    instance._ORDERDEPS = self._ORDERDEPS
+    return instance
+end
+
 -- get the rule info
 function _instance:get(name)
     local value = self._INFO:get(name)
