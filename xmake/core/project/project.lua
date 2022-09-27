@@ -340,7 +340,7 @@ function project._load_targets()
     -- make targets
     local targets = {}
     for targetname, targetinfo in pairs(results) do
-        local t = target.new(targetname, targetinfo, project)
+        local t = target.new(targetname, targetinfo)
         if t and (t:get("enabled") == nil or t:get("enabled") == true) then
             targets[targetname] = t
         end
@@ -896,6 +896,10 @@ end
 function project.target(name)
     local targets = project.targets()
     return targets and targets[name]
+end
+
+-- add the given target
+function project.target_add(t)
 end
 
 -- get targets

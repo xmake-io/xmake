@@ -48,11 +48,10 @@ local sandbox         = require("sandbox/sandbox")
 local sandbox_module  = require("sandbox/modules/import/core/sandbox/module")
 
 -- new a target instance
-function _instance.new(name, info, project)
+function _instance.new(name, info)
     local instance     = table.inherit(_instance)
     instance._NAME     = name
     instance._INFO     = info
-    instance._PROJECT  = project
     instance._CACHEID  = 1
     return instance
 end
@@ -283,6 +282,30 @@ function _instance:_is_loaded()
     return self._LOADED
 end
 
+-- clone target
+function _instance:clone()
+    local instance = target.new(self:name(), self._INFO:clone())
+    if self._DEPS then
+        instance._DEPS = table.clone(self._DEPS)
+    end
+    if self._ORDERDEPS then
+        instance._ORDERDEPS = table.clone(self._ORDERDEPS)
+    end
+    if self._RULES then
+        instance._RULES = table.clone(self._RULES)
+    end
+    if self._ORDERULES then
+        instance._ORDERULES = table.clone(self._ORDERULES)
+    end
+    if self._DATA then
+        instance._DATA = table.clone(self._DATA)
+    end
+    if self._SOURCEFILES then
+        instance._SOURCEFILES = table.clone(self._SOURCEFILES)
+    end
+    return instance
+end
+
 -- get the target info
 --
 -- e.g.
@@ -489,6 +512,11 @@ end
 -- get the target name
 function _instance:name()
     return self._NAME
+end
+
+-- set the target name
+function _instance:name_set(name)
+    self._NAME = name
 end
 
 -- get the target kind
