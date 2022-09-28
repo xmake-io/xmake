@@ -31,6 +31,7 @@
 ### Bugs fixed
 
 * [#2740](https://github.com/xmake-io/xmake/issues/2740): Fix build c++ modules stuck and slower for msvc
+* [#2875](https://github.com/xmake-io/xmake/issues/2875): Fix build linux driver error
 
 ## v2.7.1
 
@@ -1427,6 +1428,7 @@
 ### Bugs 修复
 
 * [#2740](https://github.com/xmake-io/xmake/issues/2740): 修复 msvc 构建 C++ modules 卡死问题
+* [#2875](https://github.com/xmake-io/xmake/issues/2875): 修复构建 linux 驱动错误
 
 ## v2.7.1
 
