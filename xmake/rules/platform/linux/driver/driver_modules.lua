@@ -53,7 +53,7 @@ end
 
 -- get cflags from make
 function _get_cflags_from_make(target, sdkdir)
-    local key = target:plat() .. target:arch()
+    local key = sdkdir
     local cflags = memcache.get2("linux.driver", key, "cflags")
     local ldflags_o = memcache.get2("linux.driver", key, "ldflags_o")
     local ldflags_ko = memcache.get2("linux.driver", key, "ldflags_ko")
@@ -179,6 +179,8 @@ module_exit(hello_exit);
         end
         os.tryrm(tmpdir)
         memcache.set2("linux.driver", key, "cflags", cflags or false)
+        memcache.set2("linux.driver", key, "ldflags_o", ldflags_o or false)
+        memcache.set2("linux.driver", key, "ldflags_ko", ldflags_ko or false)
     end
     return cflags or nil, ldflags_o or nil, ldflags_ko or nil
 end
