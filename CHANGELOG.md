@@ -11,6 +11,7 @@
 * [#2824](https://github.com/xmake-io/xmake/pull/2824): Pass cross-file to meson.install and trybuild
 * [#2856](https://github.com/xmake-io/xmake/pull/2856): Improve to debug package using the debug source directory
 * [#2859](https://github.com/xmake-io/xmake/issues/2859): Improve trybuild to build 3rd source library using xmake-repo scripts
+* [#2879](https://github.com/xmake-io/xmake/issues/2879): Support for dynamic creation and injection of rules and targets in script scope
 
 ### Changes
 
@@ -25,6 +26,7 @@
 * [#2809](https://github.com/xmake-io/xmake/issues/2809): Improve cl optimization option
 * Improve trybuild for meson/cmake/autoconf
 * [#2846](https://github.com/xmake-io/xmake/discussions/2846): Improve to generate config files
+* [#2866](https://github.com/xmake-io/xmake/issues/2866): Better control over the order of execution of rules
 
 ### Bugs fixed
 
@@ -1405,6 +1407,7 @@
 * [#2824](https://github.com/xmake-io/xmake/pull/2824): 传递 cross-file 交叉编译环境给 meson.install 和 trybuild
 * [#2856](https://github.com/xmake-io/xmake/pull/2856): xrepo 支持从当前指定源码目录调试程序
 * [#2859](https://github.com/xmake-io/xmake/issues/2859): 改进对三方库的 trybuild 构建，利用 xmake-repo 仓库脚本更加智能化地构建三方库
+* [#2879](https://github.com/xmake-io/xmake/issues/2879): 更好的动态创建和配置 target 和 rule
 
 ### 改进
 
@@ -1419,6 +1422,7 @@
 * [#2809](https://github.com/xmake-io/xmake/issues/2809): 改进 msvc 的编译优化选项
 * 改进 trybuild 模式，为 meson/autoconf/cmake 提供更好的交叉编译支持
 * [#2846](https://github.com/xmake-io/xmake/discussions/2846): 改进对 configfiles 的生成
+* [#2866](https://github.com/xmake-io/xmake/issues/2866): 更好地控制 rule 规则执行顺序
 
 ### Bugs 修复
 
