@@ -153,7 +153,19 @@ function table.append(array, ...)
     return array
 end
 
--- copy the table to self
+-- clone table
+function table.clone(self)
+    local result
+    if type(self) == "table" then
+        result = {}
+        for k, v in pairs(self) do
+            result[k] = v
+        end
+    end
+    return result
+end
+
+-- copy the table (deprecated, please use table.clone)
 function table.copy(copied)
     local result = {}
     copied = copied or {}

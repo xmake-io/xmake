@@ -34,6 +34,7 @@ local hashset               = require("base/hashset")
 local baseoption            = require("base/option")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
+local instance_deps         = require("base/private/instance_deps")
 local memcache              = require("cache/memcache")
 local rule                  = require("project/rule")
 local target                = require("project/target")
@@ -49,8 +50,10 @@ local language              = require("language/language")
 local sandbox_os            = require("sandbox/modules/os")
 local sandbox_module        = require("sandbox/modules/import/core/sandbox/module")
 
--- register project to platform
+-- register project to platform, rule and target
 platform._PROJECT = project
+target._PROJECT = project
+rule._PROJECT = project
 
 -- the current os is belong to the given os?
 function project._api_is_os(interp, ...)
@@ -207,39 +210,6 @@ function project._load(force, disable_filter)
     return true
 end
 
--- load deps for instance: e.g. option, target and rule
---
--- e.g.
---
--- a.deps = b
--- b.deps = c
---
--- orderdeps: c -> b -> a
---
-function project._load_deps(instance, instances, deps, orderdeps, depspath)
-    for _, dep in ipairs(table.wrap(instance:get("deps"))) do
-        local depinst = instances[dep]
-        if depinst then
-            local depspath_sub
-            if depspath then
-                for idx, name in ipairs(depspath) do
-                    if name == dep then
-                        local circular_deps = table.slice(depspath, idx)
-                        table.insert(circular_deps, dep)
-                        os.raise("circular dependency(%s) detected!", table.concat(circular_deps, ", "))
-                    end
-                end
-                depspath_sub = table.join(depspath, dep)
-            end
-            project._load_deps(depinst, instances, deps, orderdeps, depspath_sub)
-            if not deps[dep] then
-                deps[dep] = depinst
-                table.insert(orderdeps, depinst)
-            end
-        end
-    end
-end
-
 -- load scope from the project file
 function project._load_scope(scope_kind, deduplicate, enable_filter)
 
@@ -320,14 +290,6 @@ function project._load_rules()
     for rulename, ruleinfo in pairs(results) do
         rules[rulename] = rule.new(rulename, ruleinfo)
     end
-
-    -- load rule deps
-    local instances = table.join(rule.rules(), rules)
-    for _, instance in pairs(instances)  do
-        instance._DEPS      = instance._DEPS or {}
-        instance._ORDERDEPS = instance._ORDERDEPS or {}
-        project._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS, {instance:name()})
-    end
     return rules
 end
 
@@ -366,19 +328,19 @@ function project._load_targets()
     local requires = project.required_packages()
     local ok, errors = project._load(true)
     if not ok then
-        return nil, nil, errors
+        return nil, errors
     end
 
     -- load targets
     local results, errors = project._load_scope("target", true, true)
     if not results then
-        return nil, nil, errors
+        return nil, errors
     end
 
     -- make targets
     local targets = {}
     for targetname, targetinfo in pairs(results) do
-        local t = target.new(targetname, targetinfo, project)
+        local t = target.new(targetname, targetinfo)
         if t and (t:get("enabled") == nil or t:get("enabled") == true) then
             targets[targetname] = t
         end
@@ -388,16 +350,7 @@ function project._load_targets()
     for _, t in pairs(targets) do
 
         -- load rules from target and language
-        --
-        -- e.g.
-        --
-        -- a.deps = b
-        -- b.deps = c
-        --
-        -- orderules: c -> b -> a
-        --
-        t._RULES      = t._RULES or {}
-        t._ORDERULES  = t._ORDERULES or {}
+        t._RULES = t._RULES or {}
         local rulenames = {}
         local extensions = {}
         table.join2(rulenames, t:get("rules"))
@@ -419,53 +372,28 @@ function project._load_targets()
                 if r:kind() == "target" then
                     t._RULES[rulename] = r
                     for _, deprule in ipairs(r:orderdeps()) do
-                        local name = deprule:name()
-                        if not t._RULES[name] then
-                            t._RULES[name] = deprule
-                            table.insert(t._ORDERULES, deprule)
-                        end
+                        t._RULES[deprule:name()] = deprule
                     end
-                    table.insert(t._ORDERULES, r)
                 end
             else
-                return nil, nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
+                return nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
         end
 
         -- @note it's deprecated, please use on_load instead of before_load
         ok, errors = t:_load_before()
         if not ok then
-            return nil, nil, errors
+            return nil, errors
         end
 
         -- we need call on_load() before building deps/rules,
         -- so we can use `target:add("deps", "xxx")` to add deps in on_load
         ok, errors = t:_load()
         if not ok then
-            return nil, nil, errors
-        end
-
-        -- load deps
-        t._DEPS      = t._DEPS or {}
-        t._ORDERDEPS = t._ORDERDEPS or {}
-        project._load_deps(t, targets, t._DEPS, t._ORDERDEPS, {t:name()})
-    end
-
-    -- sort targets for all deps
-    local targetrefs = {}
-    local ordertargets = {}
-    for _, t in pairs(targets) do
-        project._sort_targets(targets, ordertargets, targetrefs, t)
-    end
-
-    -- do after_load() for targets
-    for _, t in ipairs(ordertargets) do
-        ok, errors = t:_load_after()
-        if not ok then
-            return nil, nil, errors
+            return nil, errors
         end
     end
-    return targets, ordertargets
+    return targets
 end
 
 -- load options
@@ -541,7 +469,7 @@ function project._load_options(disable_filter)
     for _, opt in pairs(options) do
         opt._DEPS      = opt._DEPS or {}
         opt._ORDERDEPS = opt._ORDERDEPS or {}
-        project._load_deps(opt, options, opt._DEPS, opt._ORDERDEPS, {opt:name()})
+        instance_deps.load_deps(opt, options, opt._DEPS, opt._ORDERDEPS, {opt:name()})
     end
     return options
 end
@@ -599,20 +527,6 @@ function project._load_packages()
 
     -- load packages
     return project._load_scope("package", true, false)
-end
-
--- sort targets for all deps
-function project._sort_targets(targets, ordertargets, targetrefs, target)
-    for _, depname in ipairs(table.wrap(target:get("deps"))) do
-        local targetinst = targets[depname]
-        if targetinst then
-            project._sort_targets(targets, ordertargets, targetrefs, targetinst)
-        end
-    end
-    if not targetrefs[target:name()] then
-        targetrefs[target:name()] = true
-        table.insert(ordertargets, target)
-    end
 end
 
 -- get project memcache
@@ -950,17 +864,38 @@ function project.target(name)
     return targets and targets[name]
 end
 
+-- add the given target, @note if the target name is the same, it will be replaced
+function project.target_add(t)
+    local targets = project.targets()
+    if targets then
+        targets[t:name()] = t
+        project._memcache():set("ordertargets", nil)
+    end
+end
+
 -- get targets
 function project.targets()
+    local loading = false
     local targets = project._memcache():get("targets")
     if not targets then
-        local ordertargets, errors
-        targets, ordertargets, errors = project._load_targets()
+        local errors
+        targets, errors = project._load_targets()
         if errors then
             os.raise(errors)
         end
         project._memcache():set("targets", targets)
-        project._memcache():set("ordertargets", ordertargets)
+        loading = true
+    end
+    if loading then
+        -- do after_load() for targets
+        -- @note we must call it after finishing to cache targets
+        -- because we maybe will call project.targets() in after_load, we need avoid dead recursion loop
+        for _, t in ipairs(project.ordertargets()) do
+            local ok, errors = t:_load_after()
+            if not ok then
+                os.raise(errors or string.format("load target %s failed", t:name()))
+            end
+        end
     end
     return targets
 end
@@ -969,9 +904,13 @@ end
 function project.ordertargets()
     local ordertargets = project._memcache():get("ordertargets")
     if not ordertargets then
-        -- ensure ordertargets to be cached
-        project.targets()
-        ordertargets = project._memcache():get("ordertargets")
+        local targets = project.targets()
+        ordertargets = {}
+        local targetrefs = {}
+        for _, t in pairs(targets) do
+            instance_deps.sort_deps(targets, ordertargets, targetrefs, t)
+        end
+        project._memcache():set("ordertargets", ordertargets)
     end
     return ordertargets
 end

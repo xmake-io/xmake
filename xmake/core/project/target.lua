@@ -31,6 +31,7 @@ local table           = require("base/table")
 local baseoption      = require("base/option")
 local hashset         = require("base/hashset")
 local deprecated      = require("base/deprecated")
+local instance_deps   = require("base/private/instance_deps")
 local memcache        = require("cache/memcache")
 local rule            = require("project/rule")
 local option          = require("project/option")
@@ -48,11 +49,10 @@ local sandbox         = require("sandbox/sandbox")
 local sandbox_module  = require("sandbox/modules/import/core/sandbox/module")
 
 -- new a target instance
-function _instance.new(name, info, project)
+function _instance.new(name, info)
     local instance     = table.inherit(_instance)
     instance._NAME     = name
     instance._INFO     = info
-    instance._PROJECT  = project
     instance._CACHEID  = 1
     return instance
 end
@@ -275,12 +275,54 @@ function _instance:_invalidate(name)
     -- we need flush the source files cache if target/files are modified, e.g. `target:add("files", "xxx.c")`
     if name == "files" then
         self._SOURCEFILES = nil
+    elseif name == "deps" then
+        self._DEPS = nil
+        self._ORDERDEPS = nil
+    end
+end
+
+-- build deps
+function _instance:_build_deps()
+    if target._project() then
+        local instances = target._project().targets()
+        self._DEPS      = self._DEPS or {}
+        self._ORDERDEPS = self._ORDERDEPS or {}
+        instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:name()})
     end
 end
 
 -- is loaded?
 function _instance:_is_loaded()
     return self._LOADED
+end
+
+-- clone target, @note we can just call it in after_load()
+function _instance:clone()
+    if not self:_is_loaded() or self._LOADED_AFTER then
+        os.raise("please call target:clone() in after_load().", self:name())
+    end
+    local instance = target.new(self:name(), self._INFO:clone())
+    if self._DEPS then
+        instance._DEPS = table.clone(self._DEPS)
+    end
+    if self._ORDERDEPS then
+        instance._ORDERDEPS = table.clone(self._ORDERDEPS)
+    end
+    if self._RULES then
+        instance._RULES = table.clone(self._RULES)
+    end
+    if self._ORDERULES then
+        instance._ORDERULES = table.clone(self._ORDERULES)
+    end
+    if self._DATA then
+        instance._DATA = table.clone(self._DATA)
+    end
+    if self._SOURCEFILES then
+        instance._SOURCEFILES = table.clone(self._SOURCEFILES)
+    end
+    instance._LOADED = self._LOADED
+    instance._LOADED_AFTER = true
+    return instance
 end
 
 -- get the target info
@@ -491,6 +533,11 @@ function _instance:name()
     return self._NAME
 end
 
+-- set the target name
+function _instance:name_set(name)
+    self._NAME = name
+end
+
 -- get the target kind
 function _instance:kind()
     return self:get("kind") or "binary"
@@ -667,6 +714,9 @@ function _instance:deps()
     if not self:_is_loaded() then
         os.raise("please call target:deps() or target:dep() in after_load()!")
     end
+    if self._DEPS == nil then
+        self:_build_deps()
+    end
     return self._DEPS
 end
 
@@ -674,6 +724,9 @@ end
 function _instance:orderdeps()
     if not self:_is_loaded() then
         os.raise("please call target:orderdeps() in after_load()!")
+    end
+    if self._DEPS == nil then
+        self:_build_deps()
     end
     return self._ORDERDEPS
 end
@@ -685,7 +738,17 @@ end
 
 -- get target ordered rules
 function _instance:orderules()
-    return self._ORDERULES
+    local rules = self._RULES
+    local orderules = self._ORDERULES
+    if orderules == nil and rules then
+        orderules = {}
+        local rulerefs = {}
+        for _, r in pairs(rules) do
+            instance_deps.sort_deps(rules, orderules, rulerefs, r)
+        end
+        self._ORDERULES = orderules
+    end
+    return orderules
 end
 
 -- get target rule from the given rule name
@@ -693,6 +756,16 @@ function _instance:rule(name)
     if self._RULES then
         return self._RULES[name]
     end
+end
+
+-- add rule
+--
+-- @note If a rule has the same name as a built-in rule,
+-- it will be replaced in the target:rules() and target:orderules(), but will be not replaced globally in the project.rules()
+function _instance:rule_add(r)
+    self._RULES = self._RULES or {}
+    self._RULES[r:name()] = r
+    self._ORDERULES = nil
 end
 
 -- is phony target?
@@ -835,7 +908,7 @@ function _instance:orderpkgs(opt)
     local packages = self:_memcache():get(cachekey)
     if not packages then
         packages = {}
-        local requires = self._PROJECT.required_packages()
+        local requires = target._project().required_packages()
         if requires then
             for _, packagename in ipairs(table.wrap(self:get("packages", opt))) do
                 local pkg = requires[packagename]
@@ -1196,7 +1269,7 @@ function _instance:filerules(sourcefile)
         if filerules then
             override = filerules.override
             for _, rulename in ipairs(table.wrap(filerules)) do
-                local r = self._PROJECT.rule(rulename) or rule.rule(rulename)
+                local r = target._project().rule(rulename) or rule.rule(rulename)
                 if r then
                     table.insert(rules, r)
                 end
@@ -2038,8 +2111,8 @@ function _instance:toolchains()
                 toolchain_opt.plat = self:plat()
                 local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
                 -- attempt to load toolchain from project
-                if not toolchain_inst and self._PROJECT then
-                    toolchain_inst = self._PROJECT.toolchain(name, toolchain_opt)
+                if not toolchain_inst and target._project() then
+                    toolchain_inst = target._project().toolchain(name, toolchain_opt)
                 end
                 if not toolchain_inst then
                     os.raise(errors)
@@ -2134,6 +2207,11 @@ function _instance:has_tool(toolkind, ...)
             end
         end
     end
+end
+
+-- get project
+function target._project()
+    return target._PROJECT
 end
 
 -- get target apis
