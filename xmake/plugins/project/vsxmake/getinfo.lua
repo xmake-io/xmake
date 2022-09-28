@@ -35,39 +35,7 @@ import("private.action.run.make_runenvs")
 import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
-
--- escape special chars in msbuild file
-function _escape(str)
-    if not str then
-        return nil
-    end
-
-    local map =
-    {
-         ["%"] = "%25" -- Referencing metadata
-    ,    ["$"] = "%24" -- Referencing properties
-    ,    ["@"] = "%40" -- Referencing item lists
-    ,    ["'"] = "%27" -- Conditions and other expressions
-    ,    [";"] = "%3B" -- List separator
-    ,    ["?"] = "%3F" -- Wildcard character for file names in Include and Exclude attributes
-    ,    ["*"] = "%2A" -- Wildcard character for use in file names in Include and Exclude attributes
-    -- html entities
-    ,    ["\""] = "&quot;"
-    ,    ["<"] = "&lt;"
-    ,    [">"] = "&gt;"
-    ,    ["&"] = "&amp;"
-    }
-
-    return (string.gsub(str, "[%%%$@';%?%*\"<>&]", function (c) return assert(map[c]) end))
-end
-
-function _vs_arch(arch)
-    if arch == 'x86' or arch == 'i386' then return "Win32" end
-    if arch == 'x86_64' then return "x64" end
-    if arch:startswith('arm64') then return "ARM64" end
-    if arch:startswith('arm') then return "ARM" end
-    return arch
-end
+import("vsutils")
 
 -- strip dot directories, e.g. ..\..\.. => ..
 -- @see https://github.com/xmake-io/xmake/issues/2039
@@ -91,11 +59,11 @@ function _make_dirs(dir)
         end
         if path.is_absolute(dir) then
             if dir:startswith(project.directory()) then
-                return path.join("$(XmakeProjectDir)", _escape(path.relative(dir, project.directory())))
+                return path.join("$(XmakeProjectDir)", vsutils.escape(path.relative(dir, project.directory())))
             end
-            return _escape(dir)
+            return vsutils.escape(dir)
         end
-        return path.join("$(XmakeProjectDir)", _escape(dir))
+        return path.join("$(XmakeProjectDir)", vsutils.escape(dir))
     end
     local r = {}
     for k, v in ipairs(dir) do
@@ -110,7 +78,7 @@ function _make_arrs(arr)
         return ""
     end
     if type(arr) == "string" then
-        return _escape(arr)
+        return vsutils.escape(arr)
     end
     local r = {}
     for k, v in ipairs(arr) do
@@ -138,7 +106,7 @@ function _make_targetinfo(mode, arch, target)
         mode = mode
     ,   arch = arch
     ,   plat = config.get("plat")
-    ,   vsarch = _vs_arch(arch)
+    ,   vsarch = vsutils.vsarch(arch)
     ,   sdkver = config.get("vs_sdkver")
     }
 
@@ -152,8 +120,8 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.default       = tostring(target:is_default())
 
     -- save target file
-    targetinfo.basename      = _escape(target:basename())
-    targetinfo.filename      = _escape(target:filename())
+    targetinfo.basename      = vsutils.escape(target:basename())
+    targetinfo.filename      = vsutils.escape(target:filename())
 
     -- save dirs
     targetinfo.targetdir     = _make_dirs(target:get("targetdir"))
@@ -543,18 +511,18 @@ function main(outputdir, vsinfo)
         target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, projectdir) end)
         for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
             local dir = _make_filter(f, target, root)
-            local escaped_f = _escape(f)
+            local escaped_f = vsutils.escape(f)
             target._paths[f] =
             {
                 -- @see https://github.com/xmake-io/xmake/issues/2077
                 path = path.is_absolute(escaped_f) and escaped_f or "$(XmakeProjectDir)\\" .. escaped_f,
-                dir = _escape(dir)
+                dir = vsutils.escape(dir)
             }
             while dir and dir ~= "." do
                 if not dirs[dir] then
                     dirs[dir] =
                     {
-                        dir = _escape(dir),
+                        dir = vsutils.escape(dir),
                         dir_id = hash.uuid4(dir)
                     }
                 end
