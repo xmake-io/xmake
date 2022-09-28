@@ -35,7 +35,7 @@ import("private.action.run.make_runenvs")
 import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
-import("vsutils")
+import("vstudio.impl.vsutils", {rootdir = path.join(os.programdir(), "plugins", "project")})
 
 -- strip dot directories, e.g. ..\..\.. => ..
 -- @see https://github.com/xmake-io/xmake/issues/2039
