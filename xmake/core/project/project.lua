@@ -875,6 +875,7 @@ end
 
 -- get targets
 function project.targets()
+    local loading = false
     local targets = project._memcache():get("targets")
     if not targets then
         local errors
@@ -883,6 +884,18 @@ function project.targets()
             os.raise(errors)
         end
         project._memcache():set("targets", targets)
+        loading = true
+    end
+    if loading then
+        -- do after_load() for targets
+        -- @note we must call it after finishing to cache targets
+        -- because we maybe will call project.targets() in after_load, we need avoid dead recursion loop
+        for _, t in ipairs(project.ordertargets()) do
+            local ok, errors = t:_load_after()
+            if not ok then
+                os.raise(errors or string.format("load target %s failed", t:name()))
+            end
+        end
     end
     return targets
 end
