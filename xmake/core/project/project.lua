@@ -864,7 +864,7 @@ function project.target(name)
     return targets and targets[name]
 end
 
--- add the given target
+-- add the given target, @note if the target name is the same, it will be replaced
 function project.target_add(t)
     local targets = project.targets()
     if targets then
@@ -893,16 +893,9 @@ function project.ordertargets()
     if not ordertargets then
         local targets = project.targets()
         ordertargets = {}
-        local targets_unique = {}
+        local targetrefs = {}
         for _, t in pairs(targets) do
-            for _, dep in ipairs(t:orderdeps()) do
-                local name = dep:name()
-                if not targets_unique[name] then
-                    targets_unique[name] = dep
-                    table.insert(ordertargets, dep)
-                end
-            end
-            table.insert(ordertargets, t)
+            instance_deps.sort_deps(targets, ordertargets, targetrefs, t)
         end
         project._memcache():set("ordertargets", ordertargets)
     end

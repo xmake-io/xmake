@@ -24,8 +24,9 @@ local instance_deps = instance_deps or {}
 -- load modules
 local option = require("base/option")
 local string = require("base/string")
+local table = require("base/table")
 
--- load deps for instance: e.g. option, target and rule
+-- load deps for instance: e.g. option, instance and rule
 --
 -- e.g.
 --
@@ -55,6 +56,20 @@ function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath)
                 table.insert(orderdeps, depinst)
             end
         end
+    end
+end
+
+-- sort instances for all deps
+function instance_deps.sort_deps(instances, orderinstances, instancerefs, instance)
+    for _, depname in ipairs(table.wrap(instance:get("deps"))) do
+        local instanceinst = instances[depname]
+        if instanceinst then
+            instance_deps.sort_deps(instances, orderinstances, instancerefs, instanceinst)
+        end
+    end
+    if not instancerefs[instance:name()] then
+        instancerefs[instance:name()] = true
+        table.insert(orderinstances, instance)
     end
 end
 

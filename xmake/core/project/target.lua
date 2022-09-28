@@ -742,16 +742,9 @@ function _instance:orderules()
     local orderules = self._ORDERULES
     if orderules == nil and rules then
         orderules = {}
-        local rules_unique = {}
+        local rulerefs = {}
         for _, r in pairs(rules) do
-            for _, deprule in ipairs(r:orderdeps()) do
-                local name = deprule:name()
-                if not rules_unique[name] then
-                    rules_unique[name] = deprule
-                    table.insert(orderules, deprule)
-                end
-            end
-            table.insert(orderules, r)
+            instance_deps.sort_deps(rules, orderules, rulerefs, r)
         end
         self._ORDERULES = orderules
     end
@@ -765,7 +758,10 @@ function _instance:rule(name)
     end
 end
 
--- set rule
+-- add rule
+--
+-- @note If a rule has the same name as a built-in rule,
+-- it will be replaced in the target:rules() and target:orderules(), but will be not replaced globally in the project.rules()
 function _instance:rule_add(r)
     self._RULES = self._RULES or {}
     self._RULES[r:name()] = r
