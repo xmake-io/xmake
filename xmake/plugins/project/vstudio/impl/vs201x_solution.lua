@@ -21,15 +21,7 @@
 -- imports
 import("core.project.project")
 import("vsfile")
-
--- get vs arch
-function _vs_arch(arch)
-    if arch == 'x86' or arch == 'i386' then return "Win32" end
-    if arch == 'x86_64' then return "x64" end
-    if arch:startswith('arm64') then return "ARM64" end
-    if arch:startswith('arm') then return "ARM" end
-    return arch
-end
+import("vsutils")
 
 -- make header
 function _make_header(slnfile, vsinfo)
@@ -105,7 +97,7 @@ function _make_global(slnfile, vsinfo)
     for targetname, target in pairs(project.targets()) do
         for _, mode in ipairs(vsinfo.modes) do
             for _, arch in ipairs(vsinfo.archs) do
-                local vs_arch = _vs_arch(arch)
+                local vs_arch = vsutils.vsarch(arch)
                 slnfile:print("{%s}.%s|%s.ActiveCfg = %s|%s", hash.uuid4(targetname), mode, arch, mode, vs_arch)
                 slnfile:print("{%s}.%s|%s.Build.0 = %s|%s", hash.uuid4(targetname), mode, arch, mode, vs_arch)
             end

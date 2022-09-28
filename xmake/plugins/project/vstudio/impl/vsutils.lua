@@ -42,3 +42,13 @@ function escape(str)
 
     return (string.gsub(str, "[%%%$@';%?%*\"<>&]", function (c) return assert(map[c]) end))
 end
+
+-- get vs arch
+function vsarch(arch)
+    if arch == 'x86' or arch == 'i386' then return "Win32" end
+    if arch == 'x86_64' then return "x64" end
+    if arch:startswith('arm64') then return "ARM64" end
+    if arch:startswith('arm') then return "ARM" end
+    return arch
+end
+

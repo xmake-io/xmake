@@ -230,7 +230,7 @@ end
 function _make_targetinfo(mode, arch, target, vcxprojdir)
 
     -- init target info
-    local targetinfo = { mode = mode, arch = (arch == "x86" and "Win32" or "x64") }
+    local targetinfo = { mode = mode, arch = vsutils.vsarch(arch) }
 
     -- get sdk version
     local msvc = toolchain.load("msvc")
