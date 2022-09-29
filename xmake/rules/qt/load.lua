@@ -39,7 +39,11 @@ function _link(target, linkdirs, framework, qt_sdkver)
         if qt_sdkver:ge("5.0") then
             framework = "Qt" .. qt_sdkver:major() .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
         else -- for qt4.x, e.g. QtGui4.lib
-            framework = "Qt" .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "") .. qt_sdkver:major()
+            if target:is_plat("windows", "mingw") then
+                framework = "Qt" .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "") .. qt_sdkver:major()
+            else 
+                framework = "Qt" .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "") 
+            end
         end
         if target:is_plat("android") then --> -lQt5Core_armeabi/-lQt5CoreDebug_armeabi for 5.14.x
             local libinfo = find_library(framework .. "_" .. config.arch(), linkdirs)
