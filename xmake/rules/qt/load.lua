@@ -39,7 +39,7 @@ function _link(target, linkdirs, framework, qt_sdkver)
         if qt_sdkver:ge("5.0") then
             framework = "Qt" .. qt_sdkver:major() .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
         else -- for qt4.x, e.g. QtGui4.lib
-            if target:is_plat("windows") or target:is_plat("mingw") then
+            if target:is_plat("windows", "mingw") then
                 framework = "Qt" .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "") .. qt_sdkver:major()
             else 
                 framework = "Qt" .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "") 
