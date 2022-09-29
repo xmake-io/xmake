@@ -128,7 +128,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             end
 
             -- do compile
-            return os.iorunv(compargv(self, sourcefile, objectfile, compflags))
+            local program, argv = compargv(self, sourcefile, objectfile, compflags)
+            return os.iorunv(program, argv, {envs = self:runenvs()})
         end,
         catch
         {
