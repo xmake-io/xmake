@@ -298,7 +298,7 @@ end
 
 -- clone target, @note we can just call it in after_load()
 function _instance:clone()
-    if not self:_is_loaded() or self._LOADED_AFTER then
+    if not self:_is_loaded() then
         os.raise("please call target:clone() in after_load().", self:name())
     end
     local instance = target.new(self:name(), self._INFO:clone())
