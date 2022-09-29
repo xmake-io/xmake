@@ -246,6 +246,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 $ xmake show -l toolchains
 xcode         Xcode IDE
 msvc          Microsoft Visual C/C++ Compiler
+clang-cl      LLVM Clang C/C++ Compiler compatible with msvc
 yasm          The Yasm Modular Assembler
 clang         A C language family frontend for LLVM
 go            Go Programming Language Compiler

@@ -12,6 +12,7 @@
 * [#2856](https://github.com/xmake-io/xmake/pull/2856): Improve to debug package using the debug source directory
 * [#2859](https://github.com/xmake-io/xmake/issues/2859): Improve trybuild to build 3rd source library using xmake-repo scripts
 * [#2879](https://github.com/xmake-io/xmake/issues/2879): Support for dynamic creation and injection of rules and targets in script scope
+* Add clang-cl toolchain
 
 ### Changes
 
@@ -1410,6 +1411,7 @@
 * [#2856](https://github.com/xmake-io/xmake/pull/2856): xrepo 支持从当前指定源码目录调试程序
 * [#2859](https://github.com/xmake-io/xmake/issues/2859): 改进对三方库的 trybuild 构建，利用 xmake-repo 仓库脚本更加智能化地构建三方库
 * [#2879](https://github.com/xmake-io/xmake/issues/2879): 更好的动态创建和配置 target 和 rule
+* 添加 clang-cl 工具链
 
 ### 改进
 
