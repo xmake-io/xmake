@@ -137,7 +137,9 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             local includefile = _parse_includefile(line)
             if includefile then
                 includefile = _normailize_dep(includefile, projectdir)
-                if includefile and not includeset:has(includefile) and path.absolute(includefile) ~= path.absolute(sourcefile) then
+                if includefile and not includeset:has(includefile)
+                    and path.absolute(includefile) ~= path.absolute(sourcefile)
+                    and os.isfile(includefile) then
                     depfiles_rc = (depfiles_rc or "") .. "\n" .. includefile
                     includeset:insert(includefile)
                 end
