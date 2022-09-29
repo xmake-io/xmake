@@ -413,6 +413,8 @@ function _preprocess(program, argv, opt)
     local skipped = 0
     local objectfile
     local pdbfile
+    local sourcefile = argv[#argv]
+    local extension = path.extension(sourcefile)
     for _, flag in ipairs(argv) do
         if flag:startswith("-Fo") or flag:startswith("/Fo") then
             objectfile = flag:sub(4)
@@ -433,10 +435,13 @@ function _preprocess(program, argv, opt)
         -- get compiler flags
         if flag == "-showIncludes" or flag == "/showIncludes" or
            (flag:startswith("-I") and #flag > 2) or (flag:startswith("/I") and #flag > 2) or
+           flag:startswith("-external:") or flag:startswith("/external:") then
+            skipped = 1
+        -- @note we cannot ignore precompiled flags when compiling pch, @see https://github.com/xmake-io/xmake/issues/2885
+        elseif not extension:startswith(".h") and (
            flag:startswith("-Yu") or flag:startswith("/Yu") or
            flag:startswith("-FI") or flag:startswith("/FI") or
-           flag:startswith("-Fp") or flag:startswith("/Fp") or
-           flag:startswith("-external:") or flag:startswith("/external:") then
+           flag:startswith("-Fp") or flag:startswith("/Fp")) then
             skipped = 1
         elseif flag == "-I" or flag == "-sourceDependencies" or flag == "/sourceDependencies" then
             skipped = 2
@@ -450,7 +455,6 @@ function _preprocess(program, argv, opt)
             table.insert(flags, flag)
         end
     end
-    local sourcefile = argv[#argv]
     assert(objectfile and sourcefile, "%s: iorunv(%s): invalid arguments!", self, program)
 
     -- is precompiled header?
