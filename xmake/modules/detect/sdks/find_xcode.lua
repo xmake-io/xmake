@@ -87,7 +87,7 @@ function _find_target_minver(sdkdir, sdkver, opt)
             end
         else
             local macos_ver = macos.version()
-            if macos_ver then
+            if macos_ver and (not sdkver or macos_ver:le(sdkver)) then
                 target_minver = macos_ver:major() .. "." .. macos_ver:minor()
             end
         end
