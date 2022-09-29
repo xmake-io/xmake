@@ -32,6 +32,7 @@
 
 * [#2740](https://github.com/xmake-io/xmake/issues/2740): Fix build c++ modules stuck and slower for msvc
 * [#2875](https://github.com/xmake-io/xmake/issues/2875): Fix build linux driver error
+* [#2885](https://github.com/xmake-io/xmake/issues/2885): Fix pch not found with msvc/ccache
 
 ## v2.7.1
 
@@ -1429,6 +1430,7 @@
 
 * [#2740](https://github.com/xmake-io/xmake/issues/2740): 修复 msvc 构建 C++ modules 卡死问题
 * [#2875](https://github.com/xmake-io/xmake/issues/2875): 修复构建 linux 驱动错误
+* [#2885](https://github.com/xmake-io/xmake/issues/2885): 修复 ccache 下，msvc 编译 pch 失败问题
 
 ## v2.7.1
 
