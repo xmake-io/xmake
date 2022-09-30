@@ -94,12 +94,11 @@ end
 function nf_optimize(self, level)
     local maps =
     {
-        none       = "-O0"
-    ,   fast       = "-O1"
-    ,   faster     = "-O2"
-    ,   fastest    = "-O3"
-    ,   smallest   = "-Oz" -- smaller than -Os
-    ,   aggressive = "-Ofast"
+        none        = "-Od"
+    ,   faster      = "-Ox"
+    ,   fastest     = "-O2 -fp:fast"
+    ,   smallest    = "-O1"
+    ,   aggressive  = "-O2 -fp:fast"
     }
     return maps[level]
 end
