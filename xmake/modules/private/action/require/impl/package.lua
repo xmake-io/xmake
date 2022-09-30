@@ -481,8 +481,8 @@ function _init_requireinfo(requireinfo, package, opt)
         end
         requireinfo.configs.lto = requireinfo.configs.lto or project.policy("build.optimization.lto")
     end
-    -- but we will ignore some configs for buildhash in the headeronly package
-    if package:is_headeronly() then
+    -- but we will ignore some configs for buildhash in the headeronly and host/binary package
+    if package:is_headeronly() or (package:is_binary() and not package:is_cross()) then
         requireinfo.ignored_configs = {"vs_runtime", "toolchains", "lto", "pic"}
     end
 end
