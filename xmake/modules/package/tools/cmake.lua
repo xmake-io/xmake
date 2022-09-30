@@ -615,7 +615,7 @@ function buildenvs(package, opt)
     local CMAKE_LIBRARY_PATH = {}
     local CMAKE_INCLUDE_PATH = {}
     local CMAKE_PREFIX_PATH  = {}
-    for _, dep in ipairs(package:orderdeps()) do
+    for _, dep in ipairs(package:librarydeps()) do
         if dep:is_system() then
             local fetchinfo = dep:fetch()
             if fetchinfo then
