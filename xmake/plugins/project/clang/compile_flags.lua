@@ -34,7 +34,7 @@ function _make_object(target, flags, sourcefile, objectfile)
     for i, flag in ipairs(arguments) do
         -- only export the -I*/-D* flags
         if flag == "-I" or flag == "/I" or flag == "-isystem" then
-            table.insert(flags, flag .. " " .. arguments[i + 1])
+            table.insert(flags, flag .. arguments[i + 1])
         elseif flag:find('^-[ID]') or flag:find("-isystem", 1, true) then
             table.insert(flags, flag)
         end
