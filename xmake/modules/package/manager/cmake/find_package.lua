@@ -254,7 +254,6 @@ function _find_package(cmake, name, opt)
         results.defines     = table.unique(defines)
         results.libfiles    = table.unique(libfiles)
         results.includedirs = table.unique(includedirs)
-        print(results)
         return results
     end
 end
