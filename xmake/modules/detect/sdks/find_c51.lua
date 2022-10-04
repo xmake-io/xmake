@@ -17,7 +17,7 @@
 --
 -- @author      DawnMagnet
 -- @file        find_c51.lua
--- 
+--
 
 -- imports
 import("lib.detect.find_path")
@@ -96,12 +96,12 @@ function main(sdkdir, opt)
 
     -- attempt to load cache first
     local key = "detect.sdks.find_c51"
-    
+
     local cacheinfo = detectcache:get(key) or {}
     if not opt.force and cacheinfo.c51 and cacheinfo.c51.sdkdir and os.isdir(cacheinfo.c51.sdkdir) then
         return cacheinfo.c51
     end
-    
+
     -- find c51
     local c51 = _find_c51(sdkdir or config.get("sdk"))
     if c51 then
