@@ -925,13 +925,16 @@ end
 -- cannot be detected at present and can only be resolved by the user
 --
 function _check_package_depconflicts(package)
+    local packages = {}
     local packagekeys = {}
     for _, dep in ipairs(package:librarydeps()) do
         local key = _get_packagekey(dep:name(), dep:requireinfo())
         local prevkey = packagekeys[dep:name()]
         if prevkey then
-            assert(key == prevkey, "package(%s): conflict dependences with package(%s)!", key, prevkey)
+            local prevpkg = packages[dep:name()]
+            assert(key == prevkey, "package(%s in %s): conflict dependences with package(%s in %s)!", key, package:name(), prevkey, prevpkg:name())
         else
+            packages[dep:name()] = package
             packagekeys[dep:name()] = key
         end
     end
