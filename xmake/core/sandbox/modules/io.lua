@@ -203,11 +203,7 @@ end
 
 -- get std file
 function sandbox_io.stdfile(filepath)
-
-    -- check
     assert(filepath)
-
-    -- open it
     local file, errors = io.stdfile(filepath)
     if not file then
         raise(errors)
@@ -229,14 +225,8 @@ end
 
 -- open file
 function sandbox_io.open(filepath, mode, opt)
-
-    -- check
     assert(filepath)
-
-    -- format it first
     filepath = vformat(filepath)
-
-    -- open it
     local file, errors = io.open(filepath, mode, opt)
     if not file then
         raise(errors)
@@ -258,14 +248,8 @@ end
 
 -- open file lock
 function sandbox_io.openlock(filepath)
-
-    -- check
     assert(filepath)
-
-    -- format it first
     filepath = vformat(filepath)
-
-    -- open lock
     local lock, errors = io.openlock(filepath)
     if not lock then
         raise(errors)
@@ -287,33 +271,19 @@ end
 
 -- load object from the given file
 function sandbox_io.load(filepath, opt)
-
-    -- check
     assert(filepath)
-
-    -- format it first
     filepath = vformat(filepath)
-
-    -- done
     local result, errors = io.load(filepath, opt)
     if errors ~= nil then
         raise(errors)
     end
-
-    -- ok
     return result
 end
 
 -- save object the the given filepath
 function sandbox_io.save(filepath, object, opt)
-
-    -- check
     assert(filepath)
-
-    -- format it first
     filepath = vformat(filepath)
-
-    -- done
     local ok, errors = io.save(filepath, object, opt)
     if not ok then
         raise(errors)
@@ -322,20 +292,12 @@ end
 
 -- read all data from file
 function sandbox_io.readfile(filepath, opt)
-
-    -- check
     assert(filepath)
-
-    -- format it first
     filepath = vformat(filepath)
-
-    -- done
     local result, errors = io.readfile(filepath, opt)
     if not result then
         raise(errors)
     end
-
-    -- ok
     return result
 end
 
@@ -367,14 +329,8 @@ end
 
 -- write all data to file
 function sandbox_io.writefile(filepath, data, opt)
-
-    -- check
     assert(filepath)
-
-    -- format it first
     filepath = vformat(filepath)
-
-    -- done
     local ok, errors = io.writefile(filepath, data, opt)
     if not ok then
         raise(errors)
@@ -393,27 +349,15 @@ end
 
 -- cat the given file
 function sandbox_io.cat(filepath, linecount, opt)
-
-    -- check
     assert(filepath)
-
-    -- format it first
     filepath = vformat(filepath)
-
-    -- cat it
     io.cat(filepath, linecount, opt)
 end
 
 -- tail the given file
 function sandbox_io.tail(filepath, linecount, opt)
-
-    -- check
     assert(filepath)
-
-    -- format it first
     filepath = vformat(filepath)
-
-    -- tail it
     io.tail(filepath, linecount, opt)
 end
 
