@@ -18,12 +18,15 @@
 -- @file        unix.lua
 --
 
+-- imports
+import("private.action.clean.remove_files")
+
 -- uninstall headers
 function _uninstall_headers(target, opt)
     local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
     local _, dstheaders = target:headerfiles(includedir, {installonly = true})
     for _, dstheader in ipairs(dstheaders) do
-        os.vrm(dstheader)
+        remove_files(dstheader, {emptydir = true})
     end
 end
 
@@ -44,7 +47,7 @@ function _uninstall_shared_for_package(target, pkg, outputdir)
                     end
                 end
             end
-            os.vrm(filepath)
+            remove_files(filepath, {emptydir = true})
         end
     end
 end
