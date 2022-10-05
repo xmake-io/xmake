@@ -170,14 +170,8 @@ end
 
 -- gsub the given file and return replaced data
 function sandbox_io.gsub(filepath, pattern, replace, opt)
-
-    -- check
     assert(filepath)
-
-    -- format it first
     filepath = vformat(filepath)
-
-    -- replace all
     local data, count, errors = io.gsub(filepath, pattern, replace, opt)
     if not data then
         raise(errors)
@@ -185,21 +179,26 @@ function sandbox_io.gsub(filepath, pattern, replace, opt)
     return data, count
 end
 
--- replace text of the given file and return replaced data
+-- replace text of the given file and return new data
 function sandbox_io.replace(filepath, pattern, replace, opt)
-
-    -- check
     assert(filepath)
-
-    -- format it first
     filepath = vformat(filepath)
-
-    -- replace all
     local data, count, errors = io.replace(filepath, pattern, replace, opt)
     if not data then
         raise(errors)
     end
     return data, count
+end
+
+-- insert text before line number in the given file and return new data
+function sandbox_io.insert(filepath, lineidx, text, opt)
+    assert(filepath)
+    filepath = vformat(filepath)
+    local data, errors = io.insert(filepath, lineidx, text, opt)
+    if not data then
+        raise(errors)
+    end
+    return data
 end
 
 -- get std file
