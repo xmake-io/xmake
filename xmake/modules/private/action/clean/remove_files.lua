@@ -23,7 +23,7 @@ import("core.base.option")
 
 -- remove the given files or (empty) directories
 function main(filedirs, opt)
-    opt or {}
+    opt = opt or {}
     for _, filedir in ipairs(filedirs) do
         os.tryrm(filedir)
         if option.get("all") or opt.emptydir then
