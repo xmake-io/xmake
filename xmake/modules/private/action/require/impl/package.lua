@@ -554,7 +554,6 @@ function _merge_requireinfo(requireinfo, requirepath)
         if requireconf_extra then
             -- preprocess requireconf_extra, (debug, override ..)
             local override = requireconf_extra.override
-            requireconf_extra.override = nil
             if requireconf_extra.debug then
                 requireconf_extra.configs = requireconf_extra.configs or {}
                 requireconf_extra.configs.debug = true
