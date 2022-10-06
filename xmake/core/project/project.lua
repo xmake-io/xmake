@@ -501,15 +501,6 @@ function project._load_requires()
             instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
         end
 
-        -- @deprecated discard scripts in extrainfo, we need not it now (e.g. on_load ..)
-        if extrainfo then
-            for k, v in pairs(extrainfo) do
-                if type(v) == "function" then
-                    extrainfo[k] = nil
-                end
-            end
-        end
-
         -- add require info
         requires[alias or packagename] = instance
     end
