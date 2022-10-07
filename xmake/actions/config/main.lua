@@ -213,6 +213,17 @@ function _load_package_rules_for_target(target, packages)
 end
 
 -- load rules in the required packages for targets
+-- @see https://github.com/xmake-io/xmake/issues/2374
+--
+-- @code
+-- add_requires("zlib", {system = false})
+-- target("test")
+--    set_kind("binary")
+--    add_files("src/*.cpp")
+--    add_packages("zlib")
+--    add_rules("@zlib/test")
+-- @endcode
+--
 function _load_package_rules_for_targets()
     local packages = project.required_packages()
     if not packages then
