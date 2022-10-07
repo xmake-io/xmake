@@ -166,6 +166,11 @@ function _instance:enable(enabled)
     self:set("__enabled", enabled)
 end
 
+-- get the given rule
+function _instance:rule(name)
+    return self:rules()[name]
+end
+
 -- get package rules
 function _instance:rules()
     local rules = self._RULES
@@ -190,6 +195,7 @@ function _instance:rules()
         -- make rule instances
         rules = {}
         for rulename, ruleinfo in pairs(ruleinfos) do
+            rulename = "@" .. self:name() .. "/" .. rulename
             local instance = rule.new(rulename, ruleinfo)
             rules[rulename] = instance
         end

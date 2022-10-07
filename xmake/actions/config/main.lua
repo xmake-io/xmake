@@ -196,11 +196,32 @@ function _config_targets(targetname)
     end
 end
 
--- load rules in the required packages
-function _load_package_rules()
-    for _, pkginfo in pairs(project.required_packages()) do
-        print(pkginfo:name())
-        print(table.keys(pkginfo:rules()))
+-- load rules in the required packages for target
+function _load_package_rules_for_target(target, packages)
+    for _, rulename in ipairs(target:get("rules")) do
+        local packagename = rulename:match("@(.-)/")
+        if packagename then
+            local pkginfo = packages[packagename]
+            if pkginfo then
+                local r = pkginfo:rule(rulename)
+                if r then
+                    target:rule_add(r)
+                end
+            end
+        end
+    end
+end
+
+-- load rules in the required packages for targets
+function _load_package_rules_for_targets()
+    local packages = project.required_packages()
+    if not packages then
+        return
+    end
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _load_package_rules_for_target(target, packages)
+        end
     end
 end
 
@@ -450,8 +471,8 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
             _check_target_toolchains()
         end
 
-        -- load package rules
-        _load_package_rules()
+        -- load package rules for targets
+        _load_package_rules_for_targets()
 
         -- config targets
         _config_targets(targetname)
