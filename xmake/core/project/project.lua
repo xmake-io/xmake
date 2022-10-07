@@ -495,11 +495,11 @@ function project._load_requires()
         end
 
         -- load it from cache first (@note will discard scripts in extrainfo)
-        local instance = project_package.load(alias or packagename)
+        local name = alias or packagename
+        local instance = project_package.load(name)
         if not instance then
-            instance = table.inherit(project_package)
-            instance._NAME = alias or packagename
-            instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
+            local info = {__requirestr = requirestr, __extrainfo = extrainfo}
+            instance = project_package.load_withinfo(name, info)
         end
 
         -- add require info

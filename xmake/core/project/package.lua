@@ -209,19 +209,17 @@ function package._cache()
     return localcache.cache("package")
 end
 
--- load the requires info from the cache
+-- load the package from the cache
 function package.load(name)
-
-    -- check
-    assert(name)
-
-    -- get info
     local info = package._cache():get(name)
     if info == nil then
         return
     end
+    return package.load_withinfo(name, info)
+end
 
-    -- init package instance
+-- load package from the give package info
+function package.load_withinfo(name, info)
     local instance = table.inherit(_instance)
     instance._INFO = info
     instance._NAME = name

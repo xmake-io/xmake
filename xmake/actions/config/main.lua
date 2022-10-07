@@ -197,11 +197,11 @@ function _config_targets(targetname)
 end
 
 -- load rules in the required packages for target
-function _load_package_rules_for_target(target, packages)
+function _load_package_rules_for_target(target)
     for _, rulename in ipairs(target:get("rules")) do
         local packagename = rulename:match("@(.-)/")
         if packagename then
-            local pkginfo = packages[packagename]
+            local pkginfo = project.required_package(packagename)
             if pkginfo then
                 local r = pkginfo:rule(rulename)
                 if r then
@@ -225,13 +225,9 @@ end
 -- @endcode
 --
 function _load_package_rules_for_targets()
-    local packages = project.required_packages()
-    if not packages then
-        return
-    end
     for _, target in ipairs(project.ordertargets()) do
         if target:is_enabled() then
-            _load_package_rules_for_target(target, packages)
+            _load_package_rules_for_target(target)
         end
     end
 end
