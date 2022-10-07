@@ -49,7 +49,7 @@ function init(self)
     -- we need check it for clang/gcc with window target
     -- @see https://github.com/xmake-io/xmake/issues/1392
     --
-    if not is_plat("windows", "mingw") and self:has_flags("-fPIC", "cxflags") then
+    if not self:is_plat("windows", "mingw") and self:has_flags("-fPIC", "cxflags") then
         self:add("shflags", "-fPIC")
         self:add("shared.cxflags", "-fPIC")
     end
@@ -69,7 +69,7 @@ function init(self)
     })
 
     -- for macho target
-    if is_plat("macosx") or is_plat("iphoneos") then
+    if self:is_plat("macosx", "iphoneos") then
         self:add("mapflags", {
             ["-s"] = "-Wl,-x"
         })
@@ -82,7 +82,7 @@ function nf_strip(self, level, target)
         debug = "-Wl,-S"
     ,   all   = "-s"
     }
-    if target:is_plat("macosx", "iphoneos") then
+    if self:is_plat("macosx", "iphoneos") then
         maps.all = "-Wl,-x"
     end
     return maps[level]
@@ -350,14 +350,13 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- add rpath for dylib (macho), e.g. -install_name @rpath/file.dylib
     local flags_extra = {}
-    local plat = self:plat()
-    if targetkind == "shared" and (plat == "macosx" or plat == "iphoneos" or plat == "watchos") then
+    if targetkind == "shared" and self:is_plat("macosx", "iphoneos", "watchos") then
         table.insert(flags_extra, "-install_name")
         table.insert(flags_extra, "@rpath/" .. path.filename(targetfile))
     end
 
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
-    if targetkind == "shared" and plat == "mingw" then
+    if targetkind == "shared" and self:is_plat("mingw") then
         table.insert(flags_extra, "-Wl,--out-implib," .. path.join(path.directory(targetfile), path.basename(targetfile) .. ".dll.a"))
     end
 

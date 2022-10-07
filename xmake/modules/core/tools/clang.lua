@@ -29,7 +29,7 @@ function init(self)
     _super.init(self)
 
     -- add cuflags
-    if not is_plat("windows", "mingw") then
+    if not self:is_plat("windows", "mingw") then
         self:add("shared.cuflags", "-fPIC")
     end
 
@@ -135,7 +135,7 @@ function nf_symbol(self, level)
     local kind = self:kind()
     if kind == "ld" or kind == "sh" then
         -- clang/windows need add `-g` to linker to generate pdb symbol file
-        if self:plat() == "windows" and level == "debug" then
+        if self:is_plat("windows") and level == "debug" then
             return "-g"
         end
     else
