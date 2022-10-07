@@ -34,7 +34,7 @@ function init(self)
     self:set("dcshflags", "-shared")
 
     -- add -fPIC for shared
-    if not is_plat("windows", "mingw") then
+    if not self:is_plat("windows", "mingw") then
         self:add("dcshflags", "-fPIC")
         self:add("shared.dcflags", "-fPIC")
     end
@@ -59,7 +59,7 @@ end
 
 -- make the strip flag
 function nf_strip(self, level)
-    if self:plat() ~= "windows" then
+    if not self:is_plat("windows") then
         local maps = {
             debug = "-L-S",
             all   = "-L-s"
@@ -78,24 +78,22 @@ end
 
 -- make the warning flag
 function nf_warning(self, level)
-    local maps =
-    {
-        none        = "-d"
-    ,   less        = "-w"
-    ,   more        = "-w -wi"
-    ,   all         = "-w -wi"
-    ,   everything  = "-w -wi"
-    ,   error       = "-de"
+    local maps = {
+        none        = "-d",
+        less        = "-w",
+        more        = "-w -wi",
+        all         = "-w -wi",
+        everything  = "-w -wi",
+        error       = "-de"
     }
     return maps[level]
 end
 
 -- make the vector extension flag
 function nf_vectorext(self, extension)
-    local maps =
-    {
-        avx         = "-mcpu=avx"
-    ,   avx2        = "-mcpu=avx"
+    local maps = {
+        avx  = "-mcpu=avx",
+        avx2 = "-mcpu=avx"
     }
     return maps[extension]
 end
@@ -112,7 +110,7 @@ end
 
 -- make the link flag
 function nf_link(self, lib)
-    if self:plat() == "windows" then
+    if self:is_plat("windows") then
         return "-L" .. lib .. ".lib"
     else
         return "-L-l" .. lib
@@ -126,7 +124,7 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    if self:plat() == "windows" then
+    if self:is_plat("windows") then
         return {"-L-libpath:" .. dir}
     else
         return {"-L-L" .. dir}
@@ -151,7 +149,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
 
     -- add rpath for dylib (macho), e.g. -install_name @rpath/file.dylib
     local flags_extra = {}
-    if targetkind == "shared" and is_plat("macosx") then
+    if targetkind == "shared" and self:is_plat("macosx") then
         table.insert(flags_extra, "-L-install_name")
         table.insert(flags_extra, "-L@rpath/" .. path.filename(targetfile))
     end
