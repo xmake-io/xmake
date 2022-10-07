@@ -133,14 +133,16 @@ end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
-    dir = path.translate(dir)
-    if self:has_flags("-L-rpath=" .. dir, "ldflags") then
-        return {"-L-rpath=" .. (dir:gsub("@[%w_]+", function (name)
-            local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
-            return maps[name]
-        end))}
-    elseif self:has_flags("-L-rpath -L" .. dir, "ldflags") then
-        return {"-L-rpath", "-L" .. (dir:gsub("%$ORIGIN", "@loader_path"))}
+    if not self:is_plat("windows") then
+        dir = path.translate(dir)
+        if self:has_flags("-L-rpath=" .. dir, "ldflags") then
+            return {"-L-rpath=" .. (dir:gsub("@[%w_]+", function (name)
+                local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
+                return maps[name]
+            end))}
+        elseif self:has_flags("-L-rpath -L" .. dir, "ldflags") then
+            return {"-L-rpath", "-L" .. (dir:gsub("%$ORIGIN", "@loader_path"))}
+        end
     end
 end
 
