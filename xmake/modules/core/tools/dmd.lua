@@ -31,10 +31,13 @@ function init(self)
     self:set("dcarflags", "-lib")
 
     -- init shflags
-    self:set("dcshflags", "-shared", "-fPIC")
+    self:set("dcshflags", "-shared")
 
-    -- init dcflags for the kind: shared
-    self:set("shared.dcflags", "-fPIC")
+    -- add -fPIC for shared
+    if not is_plat("windows", "mingw") then
+        self:add("dcshflags", "-fPIC")
+        self:add("shared.dcflags", "-fPIC")
+    end
 end
 
 -- make the optimize flag
@@ -56,18 +59,18 @@ end
 
 -- make the strip flag
 function nf_strip(self, level)
-    local maps =
-    {
-        debug       = "-L-S"
-    ,   all         = "-L-s"
-    }
-    return maps[level]
+    if self:plat() ~= "windows" then
+        local maps = {
+            debug = "-L-S",
+            all   = "-L-s"
+        }
+        return maps[level]
+    end
 end
 
 -- make the symbol flag
 function nf_symbol(self, level)
-    local maps =
-    {
+    local maps = {
         debug = "-g -debug"
     }
     return maps[level]
@@ -109,7 +112,11 @@ end
 
 -- make the link flag
 function nf_link(self, lib)
-    return "-L-l" .. lib
+    if self:plat() == "windows" then
+        return "-L" .. lib .. ".lib"
+    else
+        return "-L-l" .. lib
+    end
 end
 
 -- make the syslink flag
@@ -119,7 +126,11 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return {"-L-L" .. dir}
+    if self:plat() == "windows" then
+        return {"-L-libpath:" .. dir}
+    else
+        return {"-L-L" .. dir}
+    end
 end
 
 -- make the rpathdir flag
