@@ -485,7 +485,7 @@ function project._load_requires()
     for _, requirestr in ipairs(table.wrap(requires_str)) do
 
         -- get the package name
-        local packagename = requirestr:split('%s')[1]
+        local packagename = requirestr:split("%s")[1]
 
         -- get alias
         local alias = nil
