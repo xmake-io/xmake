@@ -196,6 +196,14 @@ function _config_targets(targetname)
     end
 end
 
+-- load rules in the required packages
+function _load_package_rules()
+    for _, pkginfo in pairs(project.required_packages()) do
+        print(pkginfo:name())
+        print(table.keys(pkginfo:rules()))
+    end
+end
+
 -- find default mode
 function _find_default_mode()
     local mode = config.mode()
@@ -441,6 +449,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         if recheck then
             _check_target_toolchains()
         end
+
+        -- load package rules
+        _load_package_rules()
 
         -- config targets
         _config_targets(targetname)

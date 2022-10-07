@@ -275,30 +275,6 @@ function rule._load(filepath)
     return results
 end
 
--- load deps
---
--- e.g.
---
--- a.deps = b
--- b.deps = c
---
--- orderdeps: c -> b -> a
---
-function rule._load_deps(self, rules, deps, orderdeps)
-
-    -- get dep rules
-    for _, dep in ipairs(table.wrap(self:get("deps"))) do
-        local deprule = rules[dep]
-        if deprule then
-            rule._load_deps(deprule, rules, deps, orderdeps)
-            if not deps[dep] then
-                deps[dep] = deprule
-                table.insert(orderdeps, deprule)
-            end
-        end
-    end
-end
-
 -- get rule apis
 function rule.apis()
 
@@ -386,7 +362,7 @@ function rule.rules()
         local ruleinfos = {}
         local dirs = rule._directories()
         for _, dir in ipairs(dirs) do
-            local files = os.match(path.join(dir, "**/xmake.lua"))
+            local files = os.files(path.join(dir, "**/xmake.lua"))
             if files then
                 for _, filepath in ipairs(files) do
                     local results, errors = rule._load(filepath)

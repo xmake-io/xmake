@@ -375,7 +375,8 @@ function project._load_targets()
                         t._RULES[deprule:name()] = deprule
                     end
                 end
-            else
+            -- we need ignore `@package/rulename`, it will be loaded later
+            elseif not rulename:match("@.-/") then
                 return nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
         end

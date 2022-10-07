@@ -20,6 +20,7 @@
 
 -- define module
 local package = {}
+local _instance = _instance or {}
 
 -- load modules
 local io         = require("base/io")
@@ -27,24 +28,20 @@ local os         = require("base/os")
 local path       = require("base/path")
 local table      = require("base/table")
 local utils      = require("base/utils")
-local config     = require("project/config")
 local semver     = require("base/semver")
+local rule       = require("project/rule")
+local config     = require("project/config")
 local sandbox    = require("sandbox/sandbox")
 local localcache = require("cache/localcache")
 
--- get cache
-function package._cache()
-    return localcache.cache("package")
-end
-
 -- save the requires info to the cache
-function package:save()
+function _instance:save()
     package._cache():set(self:name(), self._INFO)
     package._cache():save()
 end
 
 -- clear the package
-function package:clear()
+function _instance:clear()
     local info = self._INFO
     if info then
         for k, v in pairs(info) do
@@ -56,22 +53,22 @@ function package:clear()
 end
 
 -- dump this package
-function package:dump()
+function _instance:dump()
     utils.dump(self._INFO)
 end
 
 -- get the require info
-function package:get(infoname)
+function _instance:get(infoname)
     return self._INFO[infoname]
 end
 
 -- get the require name
-function package:name()
+function _instance:name()
     return self._NAME
 end
 
 -- get the package version
-function package:version()
+function _instance:version()
 
     -- get it from cache first
     if self._VERSION ~= nil then
@@ -89,37 +86,37 @@ function package:version()
 end
 
 -- get the package license
-function package:license()
+function _instance:license()
     return self:get("license")
 end
 
 -- has static libraries?
-function package:has_static()
+function _instance:has_static()
     return self:get("static")
 end
 
 -- has shared libraries?
-function package:has_shared()
+function _instance:has_shared()
     return self:get("shared")
 end
 
 -- get the require string
-function package:requirestr()
+function _instance:requirestr()
     return self:get("__requirestr")
 end
 
 -- get the install directory
-function package:installdir()
+function _instance:installdir()
     return self:get("__installdir")
 end
 
 -- get library files
-function package:libraryfiles()
+function _instance:libraryfiles()
     return self:get("libfiles")
 end
 
 -- get the extra info from the given name
-function package:extra(name)
+function _instance:extra(name)
     local extrainfo = self:extrainfo()
     if extrainfo then
         return extrainfo[name]
@@ -127,12 +124,12 @@ function package:extra(name)
 end
 
 -- get the extra info
-function package:extrainfo()
+function _instance:extrainfo()
     return self:get("__extrainfo")
 end
 
 -- set the value to the requires info
-function package:set(name_or_info, ...)
+function _instance:set(name_or_info, ...)
     if type(name_or_info) == "string" then
         local args = ...
         if args ~= nil then
@@ -148,7 +145,7 @@ function package:set(name_or_info, ...)
 end
 
 -- add the value to the requires info
-function package:add(name_or_info, ...)
+function _instance:add(name_or_info, ...)
     if type(name_or_info) == "string" then
         local info = table.wrap(self._INFO[name_or_info])
         self._INFO[name_or_info] = table.unwrap(table.unique(table.join(info, ...)))
@@ -160,16 +157,50 @@ function package:add(name_or_info, ...)
 end
 
 -- this require info is enabled?
-function package:enabled()
+function _instance:enabled()
     return self:get("__enabled")
 end
 
 -- enable or disable this require info
---
--- @param enabled   enable it?
---
-function package:enable(enabled)
+function _instance:enable(enabled)
     self:set("__enabled", enabled)
+end
+
+-- get package rules
+function _instance:rules()
+    local rules = self._RULES
+    if rules == nil then
+        local ruleinfos = {}
+        local installdir = self:installdir()
+        local rulesdir = path.join(installdir, "rules")
+        if os.isdir(rulesdir) then
+            local files = os.match(path.join(rulesdir, "**.lua"))
+            if files then
+                for _, filepath in ipairs(files) do
+                    local results, errors = rule._load(filepath)
+                    if results then
+                        table.join2(ruleinfos, results)
+                    else
+                        os.raise(errors)
+                    end
+                end
+            end
+        end
+
+        -- make rule instances
+        rules = {}
+        for rulename, ruleinfo in pairs(ruleinfos) do
+            local instance = rule.new(rulename, ruleinfo)
+            rules[rulename] = instance
+        end
+        self._RULES = rules
+    end
+    return rules
+end
+
+-- get cache
+function package._cache()
+    return localcache.cache("package")
 end
 
 -- load the requires info from the cache
@@ -185,7 +216,7 @@ function package.load(name)
     end
 
     -- init package instance
-    local instance = table.inherit(package)
+    local instance = table.inherit(_instance)
     instance._INFO = info
     instance._NAME = name
     return instance
