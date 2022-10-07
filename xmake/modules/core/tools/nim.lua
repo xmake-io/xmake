@@ -90,7 +90,7 @@ end
 
 -- make the strip flag
 function nf_strip(self, level, target)
-    if target:is_plat("linux", "macosx", "bsd") then
+    if self:is_plat("linux", "macosx", "bsd") then
         if level == "debug" or level == "all" then
             return "--passL:-s"
         end
@@ -104,7 +104,7 @@ end
 
 -- make the link flag
 function nf_link(self, lib, target)
-    if target:is_plat("windows") then
+    if self:is_plat("windows") then
         return "--passL:" .. lib .. ".lib"
     else
         return "--passL:-l" .. lib
@@ -113,7 +113,7 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir, target)
-    if target:is_plat("windows") then
+    if self:is_plat("windows") then
         return {"--passL:-libpath:" .. path.translate(dir)}
     else
         return {"--passL:-L" .. path.translate(dir)}
@@ -135,7 +135,7 @@ function buildargv(self, sourcefiles, targetkind, targetfile, flags)
         table.insert(flags_extra, "--passC:-DPreMain=PreMain_" .. uniquekey)
         table.insert(flags_extra, "--passC:-DPreMainInner=PreMainInner_" .. uniquekey)
     end
-    if targetkind ~= "static" and is_plat("windows") then
+    if targetkind ~= "static" and self:is_plat("windows") then
         -- fix link flags for windows
         -- @see https://github.com/nim-lang/Nim/issues/19033
         local flags_new = {}

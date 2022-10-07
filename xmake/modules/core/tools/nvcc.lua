@@ -31,7 +31,7 @@ import("utils.progress")
 function init(self)
 
     -- init cuflags
-    if not is_plat("windows", "mingw") then
+    if not self:is_plat("windows", "mingw") then
         self:set("shared.cuflags", "-Xcompiler -fPIC")
         self:set("binary.cuflags", "-Xcompiler -fPIE")
     end
@@ -59,7 +59,7 @@ function nf_symbol(self, level, target)
     local flags = nil
     if level == "debug" then
         flags = {"-g", "-lineinfo"}
-        if is_plat("windows") then
+        if self:is_plat("windows") then
             local host_flags = nil
             local symbolfile = nil
             if target and target.symbolfile then
@@ -136,7 +136,7 @@ function nf_warning(self, level)
     -- for gcc/clang, or any gnu compatible compiler on *nix
     --
     local host_warning = nil
-    if is_plat("windows") then
+    if self:is_plat("windows") then
         host_warning = cl_maps[level]
     else
         host_warning = gcc_clang_maps[level]
@@ -269,7 +269,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
     end
 
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
-    if targetkind == "shared" and is_plat("mingw") then
+    if targetkind == "shared" and self:is_plat("mingw") then
         table.insert(flags_extra, "-Xlinker")
         table.insert(flags_extra, "-Wl,--out-implib," .. path.join(path.directory(targetfile), path.basename(targetfile) .. ".dll.a"))
     end

@@ -31,7 +31,7 @@ function init(self)
     self:set("shflags", "-shared")
 
     -- add -fPIC for shared
-    if not is_plat("windows", "mingw") then
+    if not self:is_plat("windows", "mingw") then
         self:add("shflags", "-fPIC")
         self:add("shared.cxflags", "-fPIC")
     end
@@ -43,7 +43,7 @@ function nf_strip(self, level, target)
         debug = "-S"
     ,   all   = "-s"
     }
-    if target:is_plat("macosx", "iphoneos") then
+    if self:is_plat("macosx", "iphoneos") then
         maps.all   = "-Wl,-x"
         maps.debug = "-Wl,-S"
     end
