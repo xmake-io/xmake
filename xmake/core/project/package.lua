@@ -172,6 +172,7 @@ function _instance:rule(name)
 end
 
 -- get package rules
+-- @see https://github.com/xmake-io/xmake/issues/2374
 function _instance:rules()
     local rules = self._RULES
     if rules == nil then
