@@ -364,7 +364,21 @@ function rule.new(name, info, opt)
     instance._INFO = info
     instance._PACKAGE = opt.package
     if opt.package then
-        -- replace deps in package
+        -- replace deps in package, @bar -> @zlib/bar
+        -- @see https://github.com/xmake-io/xmake/issues/2374
+        --
+        -- packages/z/zlib/rules/foo.lua
+        -- @code
+        -- rule("foo")
+        --     add_deps("@bar")
+        -- @endcode
+        --
+        -- package/z/zlib/rules/foo.lua
+        -- @code
+        -- rule("bar")
+        --     ...
+        -- @endcode
+        --
         local deps = {}
         for _, depname in ipairs(table.wrap(instance:get("deps"))) do
             -- @xxx -> @package/xxx

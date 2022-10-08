@@ -206,6 +206,9 @@ function _load_package_rules_for_target(target)
                 local r = pkginfo:rule(rulename)
                 if r then
                     target:rule_add(r)
+                    for _, dep in pairs(r:deps()) do
+                        target:rule_add(dep)
+                    end
                 end
             end
         end
