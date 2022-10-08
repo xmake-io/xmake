@@ -35,6 +35,11 @@ local sandbox        = require("sandbox/sandbox")
 local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
+-- get package
+function _instance:_package()
+    return self._PACKAGE
+end
+
 -- invalidate the previous cache
 function _instance:_invalidate(name)
     if name == "deps" then
@@ -45,9 +50,12 @@ end
 
 -- build deps
 function _instance:_build_deps()
-    local instances = rule.rules()
+    local instances = table.clone(rule.rules())
     if rule._project() then
-        instances = table.join(rule.rules(), rule._project().rules())
+        table.join2(instances, rule._project().rules())
+    end
+    if self:_package() then
+        table.join2(instances, self:_package():rules())
     end
     self._DEPS      = self._DEPS or {}
     self._ORDERDEPS = self._ORDERDEPS or {}
@@ -59,6 +67,7 @@ function _instance:clone()
     local instance = rule.new(self:name(), self._INFO:clone())
     instance._DEPS = self._DEPS
     instance._ORDERDEPS = self._ORDERDEPS
+    instance._PACKAGE = self._PACKAGE
     return instance
 end
 
@@ -82,6 +91,11 @@ end
 -- get the extra configuration
 function _instance:extraconf(name, item, key)
     return self._INFO:extraconf(name, item, key)
+end
+
+-- set the extra configuration
+function _instance:extraconf_set(name, item, key, value)
+    return self._INFO:extraconf_set(name, item, key, value)
 end
 
 -- get the rule name
@@ -343,10 +357,33 @@ function rule.apis()
 end
 
 -- new a rule instance
-function rule.new(name, info)
+function rule.new(name, info, opt)
+    opt = opt or {}
     local instance = table.inherit(_instance)
     instance._NAME = name
     instance._INFO = info
+    instance._PACKAGE = opt.package
+    if opt.package then
+        -- replace deps in package
+        local deps = {}
+        for _, depname in ipairs(table.wrap(instance:get("deps"))) do
+            -- @xxx -> @package/xxx
+            if depname:startswith("@") and not depname:find("/", 1, true) then
+                depname = "@" .. opt.package:name() .. "/" .. depname:sub(2)
+            end
+            table.insert(deps, depname)
+        end
+        deps = table.unwrap(deps)
+        if deps and #deps > 0 then
+            instance:set("deps", deps)
+        end
+        for depname, extraconf in pairs(table.wrap(instance:extraconf("deps"))) do
+            if depname:startswith("@") and not depname:find("/", 1, true) then
+                depname = "@" .. opt.package:name() .. "/" .. depname:sub(2)
+                instance:extraconf_set("deps", depname, extraconf)
+            end
+        end
+    end
     return instance
 end
 

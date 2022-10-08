@@ -67,16 +67,6 @@ function _instance:name()
     return self._NAME
 end
 
--- get raw package name
-function _instance:package_name()
-    local packagename = self._PACKAGE_NAME
-    if not packagename then
-        packagename = self:requirestr():split("%s")[1]
-        self._PACKAGE_NAME = packagename
-    end
-    return packagename
-end
-
 -- get the package version
 function _instance:version()
 
@@ -206,7 +196,7 @@ function _instance:rules()
         rules = {}
         for rulename, ruleinfo in pairs(ruleinfos) do
             rulename = "@" .. self:name() .. "/" .. rulename
-            local instance = rule.new(rulename, ruleinfo)
+            local instance = rule.new(rulename, ruleinfo, {package = self})
             rules[rulename] = instance
         end
         self._RULES = rules
