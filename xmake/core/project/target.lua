@@ -876,24 +876,28 @@ function _instance:orderopts(opt)
 end
 
 -- get the enabled package
-function _instance:pkg(name)
-    return self:pkgs()[name]
+function _instance:pkg(name, opt)
+    return self:pkgs(opt)[name]
 end
 
 -- get the enabled packages
-function _instance:pkgs()
-
-    -- attempt to get it from cache first
-    if self._PKGS_ENABLED then
-        return self._PKGS_ENABLED
+function _instance:pkgs(opt)
+    opt = opt or {}
+    local cachekey = "pkgs"
+    if opt.public then
+        cachekey = cachekey .. "_public"
+    elseif opt.interface then
+        cachekey = cachekey .. "_interface"
     end
-
-    -- load packages if be enabled
-    self._PKGS_ENABLED = {}
-    for _, pkg in ipairs(self:orderpkgs()) do
-        self._PKGS_ENABLED[pkg:name()] = pkg
+    local packages = self:_memcache():get(cachekey)
+    if not packages then
+        packages = {}
+        for _, pkg in ipairs(self:orderpkgs(opt)) do
+            packages[pkg:name()] = pkg
+        end
+        self:_memcache():set(cachekey, packages)
     end
-    return self._PKGS_ENABLED
+    return packages
 end
 
 -- get the required packages with {interface|public = ..}
