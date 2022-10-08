@@ -375,7 +375,8 @@ function project._load_targets()
                         t._RULES[deprule:name()] = deprule
                     end
                 end
-            else
+            -- we need ignore `@package/rulename`, it will be loaded later
+            elseif not rulename:match("@.-/") then
                 return nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
         end
@@ -484,7 +485,7 @@ function project._load_requires()
     for _, requirestr in ipairs(table.wrap(requires_str)) do
 
         -- get the package name
-        local packagename = requirestr:split('%s')[1]
+        local packagename = requirestr:split("%s")[1]
 
         -- get alias
         local alias = nil
@@ -494,11 +495,11 @@ function project._load_requires()
         end
 
         -- load it from cache first (@note will discard scripts in extrainfo)
-        local instance = project_package.load(alias or packagename)
+        local name = alias or packagename
+        local instance = project_package.load(name)
         if not instance then
-            instance = table.inherit(project_package)
-            instance._NAME = alias or packagename
-            instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
+            local info = {__requirestr = requirestr, __extrainfo = extrainfo}
+            instance = project_package.load_withinfo(name, info)
         end
 
         -- add require info

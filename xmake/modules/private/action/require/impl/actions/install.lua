@@ -299,6 +299,12 @@ function main(package)
                         filter.call(script, package, {oldenvs = oldenvs})
                     end
 
+                    -- install rules
+                    local rulesdir = path.join(package:scriptdir(), "rules")
+                    if os.isdir(rulesdir) then
+                        os.cp(rulesdir, package:installdir())
+                    end
+
                     -- leave the environments of all package dependencies
                     os.setenvs(oldenvs)
 

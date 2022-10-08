@@ -196,6 +196,45 @@ function _config_targets(targetname)
     end
 end
 
+-- load rules in the required packages for target
+function _load_package_rules_for_target(target)
+    for _, rulename in ipairs(target:get("rules")) do
+        local packagename = rulename:match("@(.-)/")
+        if packagename then
+            local pkginfo = project.required_package(packagename)
+            if pkginfo then
+                local r = pkginfo:rule(rulename)
+                if r then
+                    target:rule_add(r)
+                    for _, dep in pairs(r:deps()) do
+                        target:rule_add(dep)
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- load rules in the required packages for targets
+-- @see https://github.com/xmake-io/xmake/issues/2374
+--
+-- @code
+-- add_requires("zlib", {system = false})
+-- target("test")
+--    set_kind("binary")
+--    add_files("src/*.cpp")
+--    add_packages("zlib")
+--    add_rules("@zlib/test")
+-- @endcode
+--
+function _load_package_rules_for_targets()
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _load_package_rules_for_target(target)
+        end
+    end
+end
+
 -- find default mode
 function _find_default_mode()
     local mode = config.mode()
@@ -441,6 +480,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         if recheck then
             _check_target_toolchains()
         end
+
+        -- load package rules for targets
+        _load_package_rules_for_targets()
 
         -- config targets
         _config_targets(targetname)
