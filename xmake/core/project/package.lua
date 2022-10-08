@@ -197,6 +197,12 @@ function _instance:rules()
         for rulename, ruleinfo in pairs(ruleinfos) do
             rulename = "@" .. self:name() .. "/" .. rulename
             local instance = rule.new(rulename, ruleinfo, {package = self})
+            if instance:script("load") then
+                utils.warning("we cannot add `on_load()` in package rule(%s), please use `on_config()` instead of it!", rulename)
+            end
+            if instance:script("load_after") then
+                utils.warning("we cannot add `after_load()` in package rule(%s), please use `on_config()` instead of it!", rulename)
+            end
             rules[rulename] = instance
         end
         self._RULES = rules
