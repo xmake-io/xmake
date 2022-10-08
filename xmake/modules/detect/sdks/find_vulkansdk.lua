@@ -25,18 +25,51 @@ import("lib.detect.find_path")
 import("lib.detect.find_library")
 import("lib.detect.find_programver")
 
--- find vulkan sdk info executable
-function _find_vkinfo(opt)
+-- find vulkansdk
+--
+-- @param opt   the package options. e.g. see the options of find_package()
+--
+-- @return      see the return value of find_package()
+--
+function main(opt)
 
-    -- init search paths
+    -- init option
+    opt = opt or {}
+
+    -- init search configs
     local paths =
     {
         "$(env VK_SDK_PATH)",
         "$(env VULKAN_SDK)"
     }
-
-    -- find vulkan sdk info
     local arch = opt.arch or config.arch() or os.arch()
+    local binsuffix = ((is_host("windows") and arch == "x86") and "bin32" or "bin")
+    local libname = (is_host("windows") and "vulkan-1" or "vulkan")
+    local libsuffix = ((is_host("windows") and arch == "x86") and "lib32" or "lib")
+
+    -- find library
+    local result = {links = {}, linkdirs = {}, includedirs = {}}
+    local linkinfo = find_library(libname, paths, {suffixes = {libsuffix}})
+    if linkinfo then
+        result.sdkdir = path.directory(linkinfo.linkdir)
+        result.bindir = path.join(result.sdkdir, binsuffix)
+        table.insert(result.linkdirs, linkinfo.linkdir)
+        table.insert(result.links, libname)
+    else
+        -- not found?
+        return
+    end
+
+    -- find headers
+    local incdir = find_path(path.join("vulkan", "vulkan.h"), paths, {suffixes = {"include"}})
+    if incdir then
+        table.insert(result.includedirs, incdir)
+    else
+        -- not found?
+        return
+    end
+
+    -- find api version
     local vkinfo
     if is_host("windows") then
         if arch == "x86" then
@@ -47,55 +80,9 @@ function _find_vkinfo(opt)
     elseif is_host("linux") then
         vkinfo = find_file("vulkaninfo", paths, {suffixes = {"bin"}})
     end
-
-    return vkinfo
-end
-
--- find vulkansdk
---
--- @param opt   the package options. e.g. see the options of find_package()
---
--- @return      see the return value of find_package()
---
-function main(opt)
-
-    -- find vkinfo
-    opt = opt or {}
-    local vkinfo = _find_vkinfo(opt)
-    if not vkinfo then
-        -- not found?
-        return
-    end
-    local sdkdir = path.directory(path.directory(vkinfo))
-
-    -- find api version
-    local apiver = find_programver(vkinfo, {command = "--summary", parse = "Vulkan Instance Version: (%d+%.%d+%.%d+)"})
-
-    -- initialize result
-    local arch = opt.arch or config.arch() or os.arch()
-    local result = {sdkdir = sdkdir, apiversion = apiver, links = {}, linkdirs = {}, includedirs = {}}
-    local binsuffix = ((is_host("windows") and arch == "x86") and "bin32" or "bin")
-    result.bindir = path.join(result.sdkdir, binsuffix)
-
-    -- find library
-    local libname = (is_host("windows") and "vulkan-1" or "vulkan")
-    local libsuffix = ((is_host("windows") and arch == "x86") and "lib32" or "lib")
-    local linkinfo = find_library(libname, sdkdir, {suffixes = libsuffix})
-    if linkinfo then
-        table.insert(result.linkdirs, linkinfo.linkdir)
-        table.insert(result.links, libname)
-    else
-        -- not found?
-        return
-    end
-
-    -- find headers
-    local incdir = find_path(path.join("vulkan", "vulkan.h"), sdkdir, {suffixes = {"include"}})
-    if incdir then
-        table.insert(result.includedirs, incdir)
-    else
-        -- not found?
-        return
+    if vkinfo then
+        local apiver = find_programver(vkinfo, {command = "--summary", parse = "Vulkan Instance Version: (%d+%.%d+%.%d+)"})
+        result.apiversion = apiver
     end
 
     -- return
