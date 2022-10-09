@@ -35,6 +35,7 @@ import("detect.tools.find_vsjitdebugger")
 function _run_gdb(program, argv, opt)
 
     -- find gdb
+    opt = opt or {}
     local gdb = find_gdb({program = config.get("debugger")})
     if not gdb then
         return false
@@ -46,7 +47,7 @@ function _run_gdb(program, argv, opt)
     table.insert(argv, 1, "--args")
 
     -- run it
-    os.execv(gdb, argv, opt)
+    os.execv(gdb, argv, table.join(opt, {exclusive = true}))
     return true
 end
 
@@ -54,6 +55,7 @@ end
 function _run_cudagdb(program, argv, opt)
 
     -- find cudagdb
+    opt = opt or {}
     local gdb = find_cudagdb({program = config.get("debugger")})
     if not gdb then
         return false
@@ -65,7 +67,7 @@ function _run_cudagdb(program, argv, opt)
     table.insert(argv, 1, "--args")
 
     -- run it
-    os.execv(gdb, argv, opt)
+    os.execv(gdb, argv, table.join(opt, {exclusive = true}))
     return true
 end
 
@@ -73,6 +75,7 @@ end
 function _run_lldb(program, argv, opt)
 
     -- find lldb
+    opt = opt or {}
     local lldb = find_lldb({program = config.get("debugger")})
     if not lldb then
         return false
@@ -91,7 +94,7 @@ function _run_lldb(program, argv, opt)
     end
 
     -- run it
-    os.execv(names[1], argv, opt)
+    os.execv(names[1], argv, table.join(opt, {exclusive = true}))
     return true
 end
 
