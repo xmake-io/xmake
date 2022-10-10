@@ -1286,7 +1286,7 @@ function _instance:filerules(sourcefile)
     end
 
     -- load all rules for this target with sourcekinds and extensions
-    local key2rules = self._KEY2RULES
+    local key2rules = self:_memcache():get("key2rules")
     if not key2rules then
         key2rules = {}
         for _, r in pairs(table.wrap(self:rules())) do
@@ -1304,7 +1304,7 @@ function _instance:filerules(sourcefile)
                 table.insert(key2rules[extension], r)
             end
         end
-        self._KEY2RULES = key2rules
+        self:_memcache():set("key2rules", key2rules)
     end
 
     -- get target rules from the given sourcekind or extension
