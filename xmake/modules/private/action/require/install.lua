@@ -35,7 +35,7 @@ function _check_missing_packages(packages)
     local packages_missing = {}
     local optional_missing = {}
     for _, instance in ipairs(packages) do
-        if package.should_install(instance, {check_compatibility = false}) or (instance:is_fetchonly() and not instance:exists()) then
+        if package.should_install(instance, {install_finished = true}) or (instance:is_fetchonly() and not instance:exists()) then
             if instance:is_optional() then
                 optional_missing[instance:name()] = instance
             else

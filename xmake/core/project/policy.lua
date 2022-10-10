@@ -67,6 +67,8 @@ function policy.policies()
             ["package.fetch_only"]               = {description = "Only fetch packages on system.", type = "boolean"},
             -- only install packages from remote
             ["package.install_only"]             = {description = "Only install packages from remote.", type = "boolean"},
+            -- always install packages every time
+            ["package.install_always"]           = {description = "Always install packages every time.", type = "boolean"},
             -- use includes as external header files? e.g. -isystem ..
             ["package.include_external_headers"] = {description = "Use includes as external headers.", type = "boolean"},
             -- inherit the configs from the external command arguments, e.g. toolchains, `xmake f --toolchain=`

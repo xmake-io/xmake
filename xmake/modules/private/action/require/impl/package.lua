@@ -949,9 +949,9 @@ end
 -- @see https://github.com/xmake-io/xmake/issues/2719
 function _compatible_with_previous_librarydeps(package, opt)
 
-    -- skip to check compatibility?
+    -- skip to check compatibility if installation has been finished
     opt = opt or {}
-    if opt.check_compatibility == false then
+    if opt.install_finished then
         return true
     end
 
@@ -1036,8 +1036,12 @@ end
 
 -- this package should be install?
 function should_install(package, opt)
+    opt = opt or {}
     if package:is_template() then
         return false
+    end
+    if not opt.install_finished and package:policy("package.install_always") then
+        return true
     end
     if package:exists() and _compatible_with_previous_librarydeps(package, opt) then
         return false
