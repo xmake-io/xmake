@@ -898,7 +898,7 @@ function _add_target_custom_commands_for_objectrules(cmakelists, target, sourceb
 
     -- get rule
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
-    local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+    local ruleinst = assert(target:rule(rulename) or project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
 
     -- generate commands for xx_buildcmd_files
     local scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")

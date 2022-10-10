@@ -158,7 +158,7 @@ function _make_custom_commands_for_objectrules(commands, target, sourcebatch, vc
 
     -- get rule
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
-    local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+    local ruleinst = assert(target:rule(rulename) or project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
 
     -- generate commands for xx_buildcmd_files
     local scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
@@ -505,6 +505,45 @@ function _config_targets()
     end
 end
 
+-- load rules in the required packages for target
+function _load_package_rules_for_target(target)
+    for _, rulename in ipairs(target:get("rules")) do
+        local packagename = rulename:match("@(.-)/")
+        if packagename then
+            local pkginfo = project.required_package(packagename)
+            if pkginfo then
+                local r = pkginfo:rule(rulename)
+                if r then
+                    target:rule_add(r)
+                    for _, dep in pairs(r:deps()) do
+                        target:rule_add(dep)
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- load rules in the required packages for targets
+-- @see https://github.com/xmake-io/xmake/issues/2374
+--
+-- @code
+-- add_requires("zlib", {system = false})
+-- target("test")
+--    set_kind("binary")
+--    add_files("src/*.cpp")
+--    add_packages("zlib")
+--    add_rules("@zlib/test")
+-- @endcode
+--
+function _load_package_rules_for_targets()
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _load_package_rules_for_target(target)
+        end
+    end
+end
+
 -- make vstudio project
 function make(outputdir, vsinfo)
 
@@ -557,6 +596,9 @@ function make(outputdir, vsinfo)
 
                 -- install and update requires
                 install_requires()
+
+                -- load package rules for targets
+                _load_package_rules_for_targets()
 
                 -- config targets
                 _config_targets()
