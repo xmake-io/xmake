@@ -1000,6 +1000,15 @@ function interpreter:api_register_scope(...)
             -- enter root scope
             scopes._CURRENT = nil
             scopes._CURRENT_KIND = nil
+        -- with scope function?
+        --
+        -- e.g.
+        --
+        --  target("foo", function ()
+        --      set_kind("binary")
+        --      add_files("src/*.cpp")
+        --  end)
+        --
         elseif scope_info and type(scope_info) == "function" then
 
             -- configure scope info
