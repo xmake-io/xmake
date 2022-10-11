@@ -1000,6 +1000,14 @@ function interpreter:api_register_scope(...)
             -- enter root scope
             scopes._CURRENT = nil
             scopes._CURRENT_KIND = nil
+        elseif scope_info and type(scope_info) == "function" then
+
+            -- configure scope info
+            scope_info()
+
+            -- enter root scope
+            scopes._CURRENT = nil
+            scopes._CURRENT_KIND = nil
         end
     end
 
