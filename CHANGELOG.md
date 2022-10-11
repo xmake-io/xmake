@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* A new optional configuration syntax. It is LSP friendly, automatically calls target_end() to achieve scope isolation.
+
 ## v2.7.2
 
 ### New features
@@ -1403,6 +1407,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* 一种新的可选域配置语法，对 LSP 友好，并且支持域隔离。
 
 ## v2.7.2
 
