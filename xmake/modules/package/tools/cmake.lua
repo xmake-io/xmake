@@ -112,6 +112,16 @@ function _get_msvc_runenvs(package)
     return os.joinenvs(_get_msvc(package):runenvs())
 end
 
+-- get vs arch
+function _get_vsarch(package)
+    local arch = package:arch()
+    if arch == 'x86' or arch == 'i386' then return "Win32" end
+    if arch == 'x86_64' then return "x64" end
+    if arch:startswith('arm64') then return "ARM64" end
+    if arch:startswith('arm') then return "ARM" end
+    return arch
+end
+
 -- get cflags from package deps
 function _get_cflags_from_packagedeps(package, opt)
     local result = {}
@@ -728,7 +738,7 @@ function _build_for_msvc(package, configs, opt)
     os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild",
             (jobs ~= nil and format("-m:%d", jobs) or "-m"),
             "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
-            "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+            "-p:Platform=" .. _get_vsarch(package)}, {envs = runenvs})
 end
 
 -- do build for make
@@ -793,7 +803,7 @@ function _install_for_msvc(package, configs, opt)
     os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "/nr:false",
         (jobs ~= nil and format("-m:%d", jobs) or "-m"),
         "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
-        "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+        "-p:Platform=" .. _get_vsarch(package)}, {envs = runenvs})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
         os.vrunv(msbuild.program, {projfile, "/property:configuration=" .. (package:is_debug() and "Debug" or "Release")}, {envs = runenvs})
