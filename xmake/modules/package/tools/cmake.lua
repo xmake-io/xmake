@@ -72,6 +72,34 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
+-- is cross compilation?
+function _is_cross_compilation(package)
+    if not package:is_plat(os.subhost()) then
+        return true
+    end
+    if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
+        return true
+    end
+    return false
+end
+
+-- is the toolchain compatible with the host?
+function _is_toolchain_compatible_with_host(package)
+    local toolchains = package:config("toolchains")
+    if toolchains then
+        toolchains = table.wrap(toolchains)
+        if is_host("linux", "macosx", "bsd") then
+            for _, name in ipairs(toolchains) do
+                if name:startswith("clang") or name:startswith("gcc") then
+                    return true
+                end
+            end
+        elseif is_host("windows") and table.contains(toolchains, "msvc") then
+            return true
+        end
+    end
+end
+
 -- get msvc
 function _get_msvc(package)
     local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
@@ -509,6 +537,57 @@ function _get_configs_for_cross(package, configs, opt)
     end
 end
 
+-- get configs for host toolchain
+function _get_configs_for_host_toolchain(package, configs, opt)
+    opt = opt or {}
+    opt.cross                      = true
+    local envs                     = {}
+    local sdkdir                   = _translate_paths(package:build_getenv("sdk"))
+    envs.CMAKE_C_COMPILER          = _translate_bin_path(package:build_getenv("cc"))
+    envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
+    envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
+    envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
+    -- https://github.com/xmake-io/xmake-repo/pull/1096
+    local cxx = envs.CMAKE_CXX_COMPILER
+    if cxx and package:has_tool("cxx", "clang", "gcc") then
+        local dir = path.directory(cxx)
+        local name = path.filename(cxx)
+        name = name:gsub("clang$", "clang++")
+        name = name:gsub("clang%-", "clang++-")
+        name = name:gsub("gcc$", "g++")
+        name = name:gsub("gcc%-", "g++-")
+        envs.CMAKE_CXX_COMPILER = _translate_bin_path(dir and path.join(dir, name) or name)
+    end
+    -- @note The link command line is set in Modules/CMake{C,CXX,Fortran}Information.cmake and defaults to using the compiler, not CMAKE_LINKER,
+    -- so we need set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
+    --
+    -- https://github.com/xmake-io/xmake-repo/pull/1039
+    -- https://stackoverflow.com/questions/1867745/cmake-use-a-custom-linker/25274328#25274328
+    envs.CMAKE_LINKER              = _translate_bin_path(package:build_getenv("ld"))
+    if package:has_tool("ld", "gxx", "clangxx") then
+        envs.CMAKE_CXX_LINK_EXECUTABLE = "<CMAKE_LINKER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
+    end
+    envs.CMAKE_RANLIB              = _translate_bin_path(package:build_getenv("ranlib"))
+    envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
+    envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
+    envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
+    envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
+    envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
+    envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
+    -- we need not set it as cross compilation if we just pass toolchain
+    -- https://github.com/xmake-io/xmake/issues/2170
+    if not package:is_plat(os.subhost()) then
+        envs.CMAKE_SYSTEM_NAME     = "Linux"
+    else
+        if package:config("pic") ~= false then
+            table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+        end
+    end
+    for k, v in pairs(envs) do
+        table.insert(configs, "-D" .. k .. "=" .. v)
+    end
+end
+
 -- get cmake generator for msvc
 function _get_cmake_generator_for_msvc(package)
     local vsvers =
@@ -591,9 +670,16 @@ function _get_configs(package, configs, opt)
         _get_configs_for_mingw(package, configs, opt)
     elseif package:is_plat("wasm") then
         _get_configs_for_wasm(package, configs, opt)
-    elseif not package:is_plat(os.subhost()) or
-        package:config("toolchains") then -- we need pass toolchains
+    elseif _is_cross_compilation(package) then
         _get_configs_for_cross(package, configs, opt)
+    elseif package:config("toolchains") then
+        -- we still need find system libraries,
+        -- it just pass toolchain environments if the toolchain is compatible with host
+        if _is_toolchain_compatible_with_host(package) then
+            _get_configs_for_host_toolchain(package, configs, opt)
+        else
+            _get_configs_for_cross(package, configs, opt)
+        end
     else
         _get_configs_for_generic(package, configs, opt)
     end
