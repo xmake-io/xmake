@@ -61,7 +61,7 @@ import("private.action.require.uninstall")
 function _load_project()
 
     -- config it first
-    task.run("config", {require = false})
+    task.run("config", {require = false}, {disable_dump = true})
 
     -- enter project directory
     os.cd(project.directory())
