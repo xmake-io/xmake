@@ -67,11 +67,8 @@ function _search_packages(packages)
 
     -- do configure first
     local config_argv = {"f", "-c"}
-    if option.get("verbose") then
-        table.insert(config_argv, "-v")
-    end
     if option.get("diagnosis") then
-        table.insert(config_argv, "-D")
+        table.insert(config_argv, "-vD")
     end
     os.vrunv("xmake", config_argv)
 

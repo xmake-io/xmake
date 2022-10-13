@@ -107,11 +107,8 @@ function _export_packages(packages)
 
     -- do configure first
     local config_argv = {"f", "-c", "--require=n"}
-    if option.get("verbose") then
-        table.insert(config_argv, "-v")
-    end
     if option.get("diagnosis") then
-        table.insert(config_argv, "-D")
+        table.insert(config_argv, "-vD")
     end
     if option.get("plat") then
         table.insert(config_argv, "-p")
