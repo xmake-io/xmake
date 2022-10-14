@@ -1608,15 +1608,21 @@ function interpreter:api_builtin_includes(...)
     local subpaths_matched = {}
     for _, subpath in ipairs(subpaths) do
         -- find the given files from the project directory
+        local found = false
         local files = os.match(subpath, not subpath:endswith(".lua"))
         if files and #files > 0 then
             table.join2(subpaths_matched, files)
+            found = true
         elseif not path.is_absolute(subpath) then
             -- attempt to find files from programdir/includes/*.lua
             files = os.files(path.join(os.programdir(), "includes", subpath))
             if files and #files > 0 then
                 table.join2(subpaths_matched, files)
+                found = true
             end
+        end
+        if not found then
+            utils.warning("includes(\"%s\") cannot find any files!", subpath)
         end
     end
 
