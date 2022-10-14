@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.global")
 import("core.tool.toolchain")
 import("core.project.project")
 import("core.package.repository")
@@ -139,6 +140,13 @@ end
 
 -- set some builtin global options from the parent xmake
 function _set_builtin_argv(argv)
+    -- if the package cache directory is modified,
+    -- we need to force the project directory to be specified to avoid interference by the upper level xmake.lua.
+    local cachedir = os.getenv("XMAKE_PKG_CACHEDIR") or global.get("pkg_cachedir")
+    if cachedir then
+        table.insert(argv, "-P")
+        table.insert(argv, os.curdir())
+    end
     for _, name in ipairs({"diagnosis", "verbose", "quiet", "yes", "confirm", "root"}) do
         local value = option.get(name)
         if type(value) == "boolean" then
