@@ -417,8 +417,16 @@ function _instance:get_from_pkgs(name, opt)
         -- uses them instead of the builtin configs if exists extra package config
         -- e.g. `add_packages("xxx", {links = "xxx"})`
         local configinfo = self:pkgconfig(pkg:name())
-        if configinfo and configinfo[name] then
-            table.join2(values, configinfo[name])
+        if configinfo and configinfo.components then
+            local components = table.wrap(pkg:get("components"))
+            for _, component_name in ipairs(table.wrap(configinfo.components)) do
+                local info = components[component_name]
+                if info then
+                    table.join2(values, info[name] or pkg:get(name))
+                end
+            end
+        elseif configinfo and configinfo[name] then
+             table.join2(values, configinfo[name])
         else
             -- uses the builtin package configs
             table.join2(values, pkg:get(name))
