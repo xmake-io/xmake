@@ -423,6 +423,9 @@ function _instance:get_from_pkgs(name, opt)
                 local info = components[component_name]
                 if info then
                     table.join2(values, info[name] or pkg:get(name))
+                else
+                    local components_str = table.concat(table.wrap(configinfo.components), ", ")
+                    utils.warning("unknown component(%s) in add_packages(%s, {components = {%s}})", component_name, pkg:name(), components_str)
                 end
             end
         elseif configinfo and configinfo[name] then
