@@ -643,7 +643,14 @@ function _instance:policy(name)
             end
         end
     end
-    return policy.check(name, policies and policies[name])
+    local value
+    if policies then
+        value = policies[name]
+    end
+    if value == nil and target._project() then
+        value = target._project().policy(name)
+    end
+    return policy.check(name, value)
 end
 
 -- get the base name of target file
