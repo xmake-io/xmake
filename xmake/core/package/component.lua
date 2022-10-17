@@ -32,15 +32,14 @@ local option         = require("base/option")
 local hashset        = require("base/hashset")
 local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
-local memcache       = require("cache/memcache")
-local config         = require("project/config")
+local language       = require("language/language")
 
 -- new an instance
 function _instance.new(name, opt)
     opt = opt or {}
     local instance = table.inherit(_instance)
     instance._NAME    = name
-    instance._INFO    = nil -- TODO
+    instance._INFO    = scopeinfo.new("component", {}, {interpreter = component._interpreter()})
     instance._PACKAGE = opt.package
     return instance
 end
@@ -88,6 +87,29 @@ end
 function _instance:extraconf_set(name, item, key, value)
     return self._INFO:extraconf_set(name, item, key, value)
 end
+
+-- the interpreter
+function component._interpreter()
+    local interp = component._INTERPRETER
+    if not interp then
+        interp = interpreter.new()
+        interp:api_define(component.apis())
+        interp:api_define(language.apis())
+        component._INTERPRETER = interp
+    end
+    return interp
+end
+
+-- get component apis
+function component.apis()
+    return {
+        values = {
+            -- component.add_xxx
+           "component.add_extsources"
+        }
+    }
+end
+
 
 -- new component
 function component.new(name, opt)

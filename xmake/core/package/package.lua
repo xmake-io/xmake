@@ -1992,26 +1992,13 @@ end
 
 -- the interpreter
 function package._interpreter()
-
-    -- the interpreter has been initialized? return it directly
-    if package._INTERPRETER then
-        return package._INTERPRETER
+    local interp = package._INTERPRETER
+    if not interp then
+        interp = interpreter.new()
+        interp:api_define(package.apis())
+        interp:api_define(language.apis())
+        package._INTERPRETER = interp
     end
-
-    -- init interpreter
-    local interp = interpreter.new()
-    assert(interp)
-
-    -- define apis
-    interp:api_define(package.apis())
-
-    -- define apis for language
-    interp:api_define(language.apis())
-
-    -- save interpreter
-    package._INTERPRETER = interp
-
-    -- ok?
     return interp
 end
 
