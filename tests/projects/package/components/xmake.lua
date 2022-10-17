@@ -56,7 +56,7 @@ package("sfml")
         add_configs("main",       {description = "Link to the sfml-main library", default = true, type = "boolean"})
     end
 
-    add_components("graphics", function (package, component)
+    on_components("graphics", function (package, component)
         local e = package:config("shared") and "" or "-s"
         component:add("links", "sfml-graphics" .. e)
         if package:is_plat("windows", "mingw") and not package:config("shared") then
@@ -65,7 +65,7 @@ package("sfml")
         end
     end)
 
-    add_components("window", function (package, component)
+    on_components("window", function (package, component)
         local e = package:config("shared") and "" or "-s"
         component:add("links", "sfml-window" .. e)
         if package:is_plat("windows", "mingw") and not package:config("shared") then
@@ -73,7 +73,7 @@ package("sfml")
         end
     end)
 
-    add_components("audio", function (package, component)
+    on_component("audio", function (package, component)
         local e = package:config("shared") and "" or "-s"
         component:add("links", "sfml-audio" .. e)
         if package:is_plat("windows", "mingw") and not package:config("shared") then
@@ -81,7 +81,7 @@ package("sfml")
         end
     end)
 
-    add_components("network", function (package, component)
+    on_component("network", function (package, component)
         local e = package:config("shared") and "" or "-s"
         component:add("links", "sfml-network" .. e)
         if package:is_plat("windows", "mingw") and not package:config("shared") then
@@ -89,7 +89,7 @@ package("sfml")
         end
     end)
 
-    add_components("system", function (package, component)
+    on_component("system", function (package, component)
         local e = package:config("shared") and "" or "-s"
         component:add("links", "sfml-system" .. e)
         if package:is_plat("windows", "mingw") then
@@ -97,17 +97,15 @@ package("sfml")
         end
     end)
 
-    if is_plat("windows", "mingw") then
-        add_components("main", function (package, component)
-            if package:is_plat("windows", "mingw") then
-                local main_module = "sfml-main"
-                if package:debug() then
-                    main_module = main_module .. "-d"
-                end
-                component:add("links", main_module)
+    on_component("main", function (package, component)
+        if package:is_plat("windows", "mingw") then
+            local main_module = "sfml-main"
+            if package:debug() then
+                main_module = main_module .. "-d"
             end
-        end)
-    end
+            component:add("links", main_module)
+        end
+    end)
 
     on_load("windows", "linux", "macosx", "mingw", function (package)
         if package:is_plat("windows", "linux") then
@@ -118,17 +116,24 @@ package("sfml")
             package:add("defines", "SFML_STATIC")
         end
 
-        if package:config("window") or package:config("graphics") then
-            if package:is_plat("linux") then
+        if package:is_plat("linux") then
+            if package:config("window") or package:config("graphics") then
                 package:add("deps", "libx11", "libxext", "libxrandr", "libxrender", "freetype", "eudev")
                 package:add("deps", "opengl", "glx", {optional = true})
             end
-        end
-        if package:config("audio") then
-            if package:is_plat("linux") then
+            if package:config("audio") then
                 package:add("deps", "libogg", "libflac", "libvorbis", "openal-soft")
             end
         end
+        for _, component in ipairs("graphics", "window", "audio", "network") do
+            if package:config(component) then
+                package:add("components", component)
+            end
+        end
+        if package:is_plat("windows", "mingw") and package:config("main") then
+            package:add("components", "main")
+        end
+        package:add("components", "system")
     end)
 
     on_install("windows", "linux", function (package)
