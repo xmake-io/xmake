@@ -125,7 +125,7 @@ package("sfml")
                 package:add("deps", "libogg", "libflac", "libvorbis", "openal-soft")
             end
         end
-        for _, component in ipairs("graphics", "window", "audio", "network") do
+        for _, component in ipairs({"graphics", "window", "audio", "network"}) do
             if package:config(component) then
                 package:add("components", component)
             end
