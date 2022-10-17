@@ -36,11 +36,12 @@ local memcache       = require("cache/memcache")
 local config         = require("project/config")
 
 -- new an instance
-function _instance.new(name, info, opt)
+function _instance.new(name, opt)
     opt = opt or {}
     local instance = table.inherit(_instance)
-    instance._NAME = name
-    instance._INFO = info
+    instance._NAME    = name
+    instance._INFO    = nil -- TODO
+    instance._PACKAGE = opt.package
     return instance
 end
 
@@ -52,6 +53,11 @@ end
 -- get the type: component
 function _instance:type()
     return "component"
+end
+
+-- get the it's package
+function _instance:package()
+    return self._PACKAGE
 end
 
 -- get the component configuration
@@ -84,8 +90,8 @@ function _instance:extraconf_set(name, item, key, value)
 end
 
 -- new component
-function component.new(name, info, opt)
-    return _instance.new(name, info, opt)
+function component.new(name, opt)
+    return _instance.new(name, opt)
 end
 
 -- return module

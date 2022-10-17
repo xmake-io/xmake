@@ -41,6 +41,7 @@ local config         = require("project/config")
 local policy         = require("project/policy")
 local platform       = require("platform/platform")
 local platform_menu  = require("platform/menu")
+local component      = require("package/component")
 local language       = require("language/language")
 local language_menu  = require("language/menu")
 local sandbox        = require("sandbox/sandbox")
@@ -1752,6 +1753,24 @@ function _instance:resourcedir(name)
     if resource and resource.url then
         return path.join(self:cachedir(), "resources", name, (path.filename(resource.url):gsub("%?.+$", "")) .. ".dir")
     end
+end
+
+-- get the given package component
+function _instance:component(name)
+    return self:components()[name]
+end
+
+-- get package components
+function _instance:components()
+    local components = self._COMPONENTS
+    if not components then
+        components = {}
+        for _, name in ipairs(table.wrap(self:get("components"))) do
+            components[name] = component.new(name, {package = self})
+        end
+        self._COMPONENTS = components
+    end
+    return components
 end
 
 -- generate lto configs
