@@ -28,11 +28,37 @@ import("core.language.language")
 import("lib.detect.find_file")
 import("lib.detect.find_library")
 
--- find result from vars
-function _find_result_from_vars(name, vars, opt)
-    opt = opt or {}
-    vars = vars or {}
-    local installdir = opt.installdir
+-- find package from the repository (maybe only include and no links)
+function _find_package_from_repo(name, opt)
+
+    -- check options
+    if not opt.require_version or not opt.buildhash then
+        return
+    end
+
+    -- find the manifest file of package, e.g. ~/.xmake/packages/z/zlib/1.1.12/ed41d5327fad3fc06fe376b4a94f62ef/manifest.txt
+    local packagedirs = {}
+    if opt.installdir then
+        table.insert(packagedirs, opt.installdir)
+    else
+        table.insert(packagedirs, path.join(package.installdir(), name:lower():sub(1, 1), name:lower(), opt.require_version, opt.buildhash))
+    end
+    local manifest_file = find_file("manifest.txt", packagedirs)
+    if not manifest_file then
+        return
+    end
+
+    -- load manifest info
+    local manifest = io.load(manifest_file)
+    if not manifest then
+        return
+    end
+
+    -- get manifest variables
+    local vars = manifest.vars or {}
+
+    -- get install directory of this package
+    local installdir = path.directory(manifest_file)
 
     -- save includedirs to result (maybe only include and no links)
     local result = {}
@@ -50,8 +76,21 @@ function _find_result_from_vars(name, vars, opt)
     -- get links and link directories
     local links = {}
     local linkdirs = {}
+    local components = opt.components
     if vars.links then
         table.join2(links, vars.links)
+    elseif components and manifest.components then
+        -- get links from components
+        local vars = manifest.components.vars
+        if vars then
+            for _, component_name in ipairs(components) do
+                local component_vars = vars[component_name]
+                if component_vars and component_vars.links then
+                    table.join2(links, component_vars.links)
+                end
+            end
+        end
+        links = table.reverse_unique(links)
     else
         -- we scan links automatically
         local found = false
@@ -126,7 +165,7 @@ function _find_result_from_vars(name, vars, opt)
         end
     end
     if result.links then
-        result.links = table.unique(result.links)
+        result.links = table.reverse_unique(result.links)
     end
     if result.linkdirs then
         result.linkdirs = table.unique(result.linkdirs)
@@ -141,40 +180,17 @@ function _find_result_from_vars(name, vars, opt)
             result[name] = values
         end
     end
-    return result
-end
 
--- find package from the repository (maybe only include and no links)
-function _find_package_from_repo(name, opt)
-
-    -- check options
-    if not opt.require_version or not opt.buildhash then
-        return
+    -- save components
+    if result and components and manifest.components then
+        local vars = manifest.components.vars
+        if vars then
+            for _, component_name in ipairs(components) do
+                result.components = result.components or {}
+                result.components[component_name] = vars[component_name]
+            end
+        end
     end
-
-    -- find the manifest file of package, e.g. ~/.xmake/packages/z/zlib/1.1.12/ed41d5327fad3fc06fe376b4a94f62ef/manifest.txt
-    local packagedirs = {}
-    if opt.installdir then
-        table.insert(packagedirs, opt.installdir)
-    else
-        table.insert(packagedirs, path.join(package.installdir(), name:lower():sub(1, 1), name:lower(), opt.require_version, opt.buildhash))
-    end
-    local manifest_file = find_file("manifest.txt", packagedirs)
-    if not manifest_file then
-        return
-    end
-
-    -- load manifest info
-    local manifest = io.load(manifest_file)
-    if not manifest then
-        return
-    end
-
-    -- get install directory of this package
-    local installdir = path.directory(manifest_file)
-
-    -- find result from the global vars
-    local result = _find_result_from_vars(name, manifest.vars, {installdir = installdir})
 
     -- update the project references file
     if result then
