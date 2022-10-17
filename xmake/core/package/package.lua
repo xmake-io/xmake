@@ -2074,6 +2074,7 @@ function package.apis()
         ,   "package.add_imports"
         ,   "package.add_configs"
         ,   "package.add_extsources"
+        ,   "package.add_components"
         }
     ,   script =
         {
@@ -2083,6 +2084,7 @@ function package.apis()
         ,   "package.on_download"
         ,   "package.on_install"
         ,   "package.on_test"
+        ,   "package.on_component"
         }
     ,   keyvalues =
         {
