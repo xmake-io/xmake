@@ -1519,7 +1519,8 @@ end
 
 -- get object file from source file
 function _instance:objectfile(sourcefile)
-    return self:autogenfile(sourcefile, {rootdir = self:objectdir(), filename = target.filename(path.filename(sourcefile), "object", {plat = self:plat(), arch = self:arch()})})
+    return self:autogenfile(sourcefile, {rootdir = self:objectdir(),
+        filename = target.filename(path.filename(sourcefile), "object", {plat = self:plat(), arch = self:arch()})})
 end
 
 -- get the object files
