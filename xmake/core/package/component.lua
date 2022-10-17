@@ -33,6 +33,7 @@ local hashset        = require("base/hashset")
 local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local language       = require("language/language")
+local sandbox        = require("sandbox/sandbox")
 
 -- new an instance
 function _instance.new(name, opt)
@@ -88,6 +89,34 @@ function _instance:extraconf_set(name, item, key, value)
     return self._INFO:extraconf_set(name, item, key, value)
 end
 
+-- get on_component script
+function _instance:_on_component()
+    local script = self:package():get("component")
+    local result = nil
+    if type(script) == "function" then
+        result = script
+    elseif type(script) == "table" then
+        result = script[self:name()]
+        result = result or script["__generic__"]
+    end
+    return result
+end
+
+-- load this component
+function _instance:_load()
+    local loaded = self._LOADED
+    if not loaded then
+        local script = self:_on_component()
+        if script then
+            local ok, errors = sandbox.load(script, self:package(), self)
+            if not ok then
+                os.raise("load component(%s) failed, %s", self:name(), errors or "unknown errors")
+            end
+        end
+        self._LOADED = true
+    end
+end
+
 -- the interpreter
 function component._interpreter()
     local interp = component._INTERPRETER
@@ -109,7 +138,6 @@ function component.apis()
         }
     }
 end
-
 
 -- new component
 function component.new(name, opt)
