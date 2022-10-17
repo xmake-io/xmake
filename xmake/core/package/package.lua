@@ -295,6 +295,19 @@ function _instance:artifacts_set(artifacts_info)
                     package:set(k, v)
                 end
             end
+            if manifest.components then
+                local vars = manifest.components.vars
+                if vars then
+                    for component_name, component_vars in pairs(vars) do
+                        local comp = package:component(component_name)
+                        if comp then
+                            for k, v in pairs(component_vars) do
+                                comp:set(k, v)
+                            end
+                        end
+                    end
+                end
+            end
             if manifest.envs then
                 local envs = self:_rawenvs()
                 for k, v in pairs(manifest.envs) do
@@ -780,19 +793,34 @@ function _instance:manifest_save()
         end
     end
 
-    -- save variables
-    local vars = {}
+    -- save global variables and component variables
+    local vars
+    local components
     local apis = language.apis()
     for _, apiname in ipairs(table.join(apis.values, apis.paths)) do
         if apiname:startswith("package.add_") or apiname:startswith("package.set_")  then
             local name = apiname:sub(13)
             local value = self:get(name)
             if value ~= nil then
+                vars = vars or {}
                 vars[name] = value
+            end
+            for _, component_name in ipairs(self:get("components")) do
+                local comp = self:component(component_name)
+                if comp then
+                    local component_value = comp:get(name)
+                    if component_value ~= nil then
+                        components = components or {}
+                        components.vars = components.vars or {}
+                        components.vars[component_name] = components.vars[component_name] or {}
+                        components.vars[component_name][name] = component_value
+                    end
+                end
             end
         end
     end
     manifest.vars = vars
+    manifest.components = components
 
     -- save repository
     local repo = self:repo()
