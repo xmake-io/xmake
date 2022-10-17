@@ -56,7 +56,7 @@ package("sfml")
         add_configs("main",       {description = "Link to the sfml-main library", default = true, type = "boolean"})
     end
 
-    on_components("graphics", function (package, component)
+    on_component("graphics", function (package, component)
         local e = package:config("shared") and "" or "-s"
         component:add("links", "sfml-graphics" .. e)
         if package:is_plat("windows", "mingw") and not package:config("shared") then
@@ -65,7 +65,7 @@ package("sfml")
         end
     end)
 
-    on_components("window", function (package, component)
+    on_component("window", function (package, component)
         local e = package:config("shared") and "" or "-s"
         component:add("links", "sfml-window" .. e)
         if package:is_plat("windows", "mingw") and not package:config("shared") then
