@@ -6,6 +6,10 @@
 
 * A new optional configuration syntax. It is LSP friendly, automatically calls target_end() to achieve scope isolation.
 
+### Changes
+
+* [#2925](https://github.com/xmake-io/xmake/issues/2925): Improve doxygen plugin
+
 ## v2.7.2
 
 ### New features
@@ -1411,6 +1415,10 @@
 ### 新特性
 
 * 一种新的可选域配置语法，对 LSP 友好，并且支持域隔离。
+
+### 改进
+
+* [#2925](https://github.com/xmake-io/xmake/issues/2925): 改进 doxygen 插件
 
 ## v2.7.2
 
