@@ -164,14 +164,8 @@ function _find_package_from_repo(name, opt)
             result.libfiles = table.join(result.libfiles or {}, path.join(libinfo.linkdir, libinfo.filename))
         end
     end
-    if result.links then
-        result.links = table.reverse_unique(result.links)
-    end
-    if result.linkdirs then
-        result.linkdirs = table.unique(result.linkdirs)
-    end
     if result.libfiles then
-        result.libfiles = table.unique(table.join(result.libfiles, libfiles))
+        result.libfiles = table.join(result.libfiles, libfiles)
     end
 
     -- inherit the other prefix variables
@@ -182,25 +176,45 @@ function _find_package_from_repo(name, opt)
     end
 
     -- save components
-    if result and components and manifest.components then
+    if components and manifest.components then
         local vars = manifest.components.vars
         if vars then
             for _, component_name in ipairs(components) do
-                result.components = result.components or {}
-                result.components[component_name] = vars[component_name]
+                local comp = vars[component_name]
+                if comp then
+                    result.components = result.components or {}
+                    result.components[component_name] = comp
+
+                    -- merge component values to root
+                    for k, v in pairs(comp) do
+                        if k ~= "links" then
+                            result[k] = table.join(result[k] or {}, v)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- remove repeat values
+    for _, k in ipairs(table.keys(result)) do
+        local v = result[k]
+        if type(v) == "table" then
+            if k == "links" or k == "syslinks" or k == "frameworks" then
+                result[k] = table.reverse_unique(v)
+            else
+                result[k] = table.unique(v)
             end
         end
     end
 
     -- update the project references file
-    if result then
-        local projectdir = os.projectdir()
-        if projectdir and os.isdir(projectdir) then
-            local references_file = path.join(installdir, "references.txt")
-            local references = os.isfile(references_file) and io.load(references_file) or {}
-            references[projectdir] = os.date("%y%m%d")
-            io.save(references_file, references)
-        end
+    local projectdir = os.projectdir()
+    if projectdir and os.isdir(projectdir) then
+        local references_file = path.join(installdir, "references.txt")
+        local references = os.isfile(references_file) and io.load(references_file) or {}
+        references[projectdir] = os.date("%y%m%d")
+        io.save(references_file, references)
     end
 
     -- get version and license
@@ -296,8 +310,6 @@ function _find_package_from_packagedirs(name, opt)
             result[infoname] = packageinfo:get(infoname)
         end
     end
-
-    -- ok?
     return result
 end
 
