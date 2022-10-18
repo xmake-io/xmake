@@ -423,7 +423,7 @@ function _instance:get_from_pkgs(name, opt)
             for _, component_name in ipairs(table.wrap(configinfo.components)) do
                 local info = components[component_name]
                 if info then
-                    table.join2(components_values, info[name])-- or pkg:get(name))
+                    table.join2(components_values, info[name])
                 else
                     local components_str = table.concat(table.wrap(configinfo.components), ", ")
                     utils.warning("unknown component(%s) in add_packages(%s, {components = {%s}})", component_name, pkg:name(), components_str)
