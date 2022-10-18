@@ -805,7 +805,7 @@ function _instance:manifest_save()
                 vars = vars or {}
                 vars[name] = value
             end
-            for _, component_name in ipairs(self:get("components")) do
+            for _, component_name in ipairs(table.wrap(self:get("components"))) do
                 local comp = self:component(component_name)
                 if comp then
                     local component_value = comp:get(name)
