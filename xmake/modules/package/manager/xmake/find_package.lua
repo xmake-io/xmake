@@ -183,11 +183,11 @@ function _find_package_from_repo(name, opt)
     end
 
     -- inherit the other prefix variables
-    local components_base = {includedirs = result.includedirs, linkdirs = result.linkdirs}
+    local components_base = {includedirs = table.clone(result.includedirs), linkdirs = table.clone(result.linkdirs)}
     for name, values in pairs(vars) do
         if name ~= "links" and name ~= "linkdirs" and name ~= "includedirs" then
             result[name] = values
-            components_base[name] = values
+            components_base[name] = table.clone(values)
         end
     end
 

@@ -1482,12 +1482,21 @@ function _instance:_fetch_library(opt)
             end
         end
         if fetchinfo then
+            local components_base = fetchinfo.components and fetchinfo.components.__base
             if opt.external then
                 fetchinfo.sysincludedirs = fetchinfo.sysincludedirs or fetchinfo.includedirs
                 fetchinfo.includedirs = nil
+                if components_base then
+                    components_base.sysincludedirs = components_base.sysincludedirs or components_base.includedirs
+                    components_base.includedirs = nil
+                end
             else
                 fetchinfo.includedirs = fetchinfo.includedirs or fetchinfo.sysincludedirs
                 fetchinfo.sysincludedirs = nil
+                if components_base then
+                    components_base.includedirs = components_base.includedirs or components_base.sysincludedirs
+                    components_base.sysincludedirs = nil
+                end
             end
         end
         if fetchinfo and option.get("verbose") then
