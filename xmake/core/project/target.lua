@@ -419,20 +419,14 @@ function _instance:get_from_pkgs(name, opt)
         -- e.g. `add_packages("sfml", {components = {"graphics", "window"}})`
         if configinfo and configinfo.components then
             local components = table.wrap(pkg:get("components"))
-            local components_values = {}
-            for _, component_name in ipairs(table.wrap(configinfo.components)) do
+            for _, component_name in ipairs(table.join(configinfo.components, "__base")) do
                 local info = components[component_name]
                 if info then
-                    table.join2(components_values, info[name])
+                    table.join2(values, info[name])
                 else
                     local components_str = table.concat(table.wrap(configinfo.components), ", ")
                     utils.warning("unknown component(%s) in add_packages(%s, {components = {%s}})", component_name, pkg:name(), components_str)
                 end
-            end
-            if #components_values > 0 then
-                table.join2(values, components_values)
-            else
-                table.join2(values, pkg:get(name))
             end
         -- get values instead of the builtin configs if exists extra package config
         -- e.g. `add_packages("xxx", {links = "xxx"})`
