@@ -28,6 +28,20 @@ import("core.language.language")
 import("lib.detect.find_file")
 import("lib.detect.find_library")
 
+-- deduplicate values
+function _deduplicate_values(values)
+    for _, k in ipairs(table.keys(values)) do
+        local v = values[k]
+        if type(v) == "table" then
+            if k == "links" or k == "syslinks" or k == "frameworks" then
+                values[k] = table.reverse_unique(v)
+            else
+                values[k] = table.unique(v)
+            end
+        end
+    end
+end
+
 -- find package from the repository (maybe only include and no links)
 function _find_package_from_repo(name, opt)
 
@@ -169,20 +183,24 @@ function _find_package_from_repo(name, opt)
     end
 
     -- inherit the other prefix variables
+    local components_base = {includedirs = result.includedirs, linkdirs = result.linkdirs}
     for name, values in pairs(vars) do
         if name ~= "links" and name ~= "linkdirs" and name ~= "includedirs" then
             result[name] = values
+            components_base[name] = values
         end
     end
 
-    -- save components
+    -- get component values
     if components and manifest.components then
         local vars = manifest.components.vars
         if vars then
+            _deduplicate_values(components_base)
+            result.components = result.components or {}
+            result.components.__base = components_base
             for _, component_name in ipairs(components) do
                 local comp = vars[component_name]
                 if comp then
-                    result.components = result.components or {}
                     result.components[component_name] = comp
 
                     -- merge component values to root
@@ -196,17 +214,8 @@ function _find_package_from_repo(name, opt)
         end
     end
 
-    -- remove repeat values
-    for _, k in ipairs(table.keys(result)) do
-        local v = result[k]
-        if type(v) == "table" then
-            if k == "links" or k == "syslinks" or k == "frameworks" then
-                result[k] = table.reverse_unique(v)
-            else
-                result[k] = table.unique(v)
-            end
-        end
-    end
+    -- deduplicate result
+    _deduplicate_values(result)
 
     -- update the project references file
     local projectdir = os.projectdir()
