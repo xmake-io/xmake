@@ -246,6 +246,12 @@ function main(requires_raw)
             end
         end
 
+        -- show components
+        local components = instance:get("components")
+        if components then
+            cprint("      -> ${color.dump.string_quote}components${clear}: %s", table.concat(table.wrap(components), ", "))
+        end
+
         -- show references
         local references = instance:references()
         if references then
