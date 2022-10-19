@@ -1811,6 +1811,45 @@ function _instance:components()
     return components
 end
 
+-- get package dependencies of components
+function _instance:components_deps()
+    local components_deps = self._COMPONENTS_DEPS
+    if not components_deps then
+        components_deps = {}
+        for _, name in ipairs(table.wrap(self:get("components"))) do
+            components_deps[name] = self:extraconf("components", name, "deps")
+        end
+        self._COMPONENTS_DEPS = component_deps
+    end
+    return components_deps
+end
+
+-- get package components list with dependencies order
+function _instance:components_orderlist()
+    local components_orderlist = self._COMPONENTS_ORDERLIST
+    if not components_orderlist then
+        components_orderlist = {}
+        for _, name in ipairs(table.wrap(self:get("components"))) do
+            table.insert(components_orderlist, name)
+            table.join2(components_orderlist, self:_sort_componentdeps(name))
+        end
+        components_orderlist = table.reverse_unique(components_orderlist)
+        self._COMPONENTS_ORDERLIST = components_orderlist
+    end
+    return components_orderlist
+end
+
+-- sort component deps
+function _instance:_sort_componentdeps(name)
+    local orderdeps = {}
+    local plaindeps = self:components_deps() and self:components_deps()[name]
+    for _, dep in ipairs(table.wrap(plaindeps)) do
+        table.insert(orderdeps, dep)
+        table.join2(orderdeps, self:_sort_componentdeps(dep))
+    end
+    return orderdeps
+end
+
 -- generate lto configs
 function _instance:_generate_lto_configs(sourcekind)
 

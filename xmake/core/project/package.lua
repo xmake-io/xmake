@@ -23,16 +23,17 @@ local package = {}
 local _instance = _instance or {}
 
 -- load modules
-local io         = require("base/io")
-local os         = require("base/os")
-local path       = require("base/path")
-local table      = require("base/table")
-local utils      = require("base/utils")
-local semver     = require("base/semver")
-local rule       = require("project/rule")
-local config     = require("project/config")
-local sandbox    = require("sandbox/sandbox")
-local localcache = require("cache/localcache")
+local io            = require("base/io")
+local os            = require("base/os")
+local path          = require("base/path")
+local table         = require("base/table")
+local utils         = require("base/utils")
+local semver        = require("base/semver")
+local rule          = require("project/rule")
+local config        = require("project/config")
+local sandbox       = require("sandbox/sandbox")
+local localcache    = require("cache/localcache")
+local instance_deps = require("base/private/instance_deps")
 
 -- save the requires info to the cache
 function _instance:save()
@@ -50,6 +51,7 @@ function _instance:clear()
             end
         end
     end
+    self._COMPONENT_DEPS = nil
 end
 
 -- dump this package
@@ -121,13 +123,30 @@ function _instance:components()
 end
 
 -- get components list with link order
-function _instance:components_list()
-    return self:get("__components_list")
+function _instance:components_orderlist()
+    return self:get("__components_orderlist")
 end
 
--- get private components
-function _instance:components_private()
-    return self:get("__components_private")
+-- get the dependencies of components
+function _instance:components_deps()
+    return self:get("__components_deps")
+end
+
+-- get order dependencies of the given component
+function _instance:component_orderdeps(name)
+    local component_orderdeps = self._COMPONENT_ORDERDEPS
+    if not component_orderdeps then
+        component_orderdeps = {}
+        self._COMPONENT_ORDERDEPS = component_orderdeps
+    end
+
+    -- expand dependencies
+    local orderdeps = component_orderdeps[name]
+    if not orderdeps then
+        orderdeps = table.reverse_unique(self:_sort_componentdeps(name))
+        component_orderdeps[name] = orderdeps
+    end
+    return orderdeps
 end
 
 -- get the extra info from the given name
@@ -224,6 +243,17 @@ function _instance:rules()
         self._RULES = rules
     end
     return rules
+end
+
+-- sort component deps
+function _instance:_sort_componentdeps(name)
+    local orderdeps = {}
+    local plaindeps = self:components_deps() and self:components_deps()[name]
+    for _, dep in ipairs(table.wrap(plaindeps)) do
+        table.insert(orderdeps, dep)
+        table.join2(orderdeps, self:_sort_componentdeps(dep))
+    end
+    return orderdeps
 end
 
 -- get cache

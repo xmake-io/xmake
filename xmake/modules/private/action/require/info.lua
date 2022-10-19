@@ -252,10 +252,11 @@ function main(requires_raw)
             cprint("      -> ${color.dump.string_quote}components${clear}: ")
             for _, comp in ipairs(components) do
                 cprintf("         -> ${cyan}%s${clear}: ", comp)
-                if instance:extraconf("components", comp, "private") then
-                    print("(private)")
+                local plaindeps = instance:extraconf("components", comp, "deps")
+                if plaindeps then
+                    print("%s", table.concat(table.wrap(plaindeps), ", "))
                 else
-                    print("(public)")
+                    print("")
                 end
             end
         end

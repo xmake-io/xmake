@@ -5,12 +5,12 @@ add_requires("sfml")
 target("graphics")
     set_kind("static")
     add_files("src/graphics.cpp")
-    add_packages("sfml", {components = {"graphics", "window"}, public = true})
+    add_packages("sfml", {components = "graphics", public = true})
 
 target("network")
     set_kind("static")
     add_files("src/network.cpp")
-    add_packages("sfml", {components = {"network"}, public = true})
+    add_packages("sfml", {components = "network", public = true})
 
 target("test")
     set_kind("binary")
@@ -125,15 +125,23 @@ package("sfml")
                 package:add("deps", "libogg", "libflac", "libvorbis", "openal-soft")
             end
         end
+        package:add("components", "system")
         for _, component in ipairs({"graphics", "window", "audio", "network"}) do
             if package:config(component) then
-                package:add("components", component)
+                local deps = {}
+                table.insert(deps, "system")
+                if component == "graphics" then
+                    table.insert(deps, "window")
+                end
+                if package:is_plat("windows", "mingw") and package:config("main") then
+                    table.insert(deps, "main")
+                end
+                package:add("components", component, {deps = deps})
             end
         end
         if package:is_plat("windows", "mingw") and package:config("main") then
-            package:add("components", "main", {private = true})
+            package:add("components", "main")
         end
-        package:add("components", "system", {private = true})
     end)
 
     on_install("windows", "linux", function (package)

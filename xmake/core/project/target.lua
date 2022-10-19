@@ -418,15 +418,18 @@ function _instance:get_from_pkgs(name, opt)
         -- get values from package components
         -- e.g. `add_packages("sfml", {components = {"graphics", "window"}})`
         if configinfo and configinfo.components then
-            local components_enabled = hashset.from(table.wrap(configinfo.components))
-            for _, comp in ipairs(table.wrap(pkg:components_private())) do
+            local components_enabled = hashset.new()
+            for _, comp in ipairs(table.wrap(configinfo.components)) do
                 components_enabled:insert(comp)
+                for _, dep in ipairs(table.wrap(pkg:component_orderdeps(comp))) do
+                    components_enabled:insert(dep)
+                end
             end
             components_enabled:insert("__base")
             -- if we can't find the values from the component, we need to fall back to __base to find them.
             -- it contains some common values of all components
             local components = table.wrap(pkg:components())
-            for _, component_name in ipairs(table.join(pkg:components_list(), "__base")) do
+            for _, component_name in ipairs(table.join(pkg:components_orderlist(), "__base")) do
                 if components_enabled:has(component_name) then
                     local info = components[component_name]
                     if info then
