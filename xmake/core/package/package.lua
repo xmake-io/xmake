@@ -1512,7 +1512,16 @@ function _instance:_fetch_library(opt)
             end
             table.insert(fetchnames, self:name())
             for _, fetchname in ipairs(fetchnames) do
-                fetchinfo = self:find_package(fetchname, opt)
+                local components_extsources = {}
+                for name, comp in pairs(self:components()) do
+                    for _, extsource in ipairs(table.wrap(comp:get("extsources"))) do
+                        if fetchname:split("::")[1] == extsource:split("::")[1] then
+                            components_extsources[name] = extsource
+                            break
+                        end
+                    end
+                end
+                fetchinfo = self:find_package(fetchname, table.join(opt, {components_extsources = components_extsources}))
                 if fetchinfo then
                     break
                 end
@@ -1558,6 +1567,7 @@ function _instance:find_package(name, opt)
                               arch = self:arch(),
                               configs = table.join(self:configs(), opt.configs),
                               components = self:components_orderlist(),
+                              components_extsources = opt.components_extsources,
                               buildhash = self:buildhash(), -- for xmake package or 3rd package manager, e.g. go:: ..
                               cachekey = opt.cachekey or "fetch_package_system",
                               external = opt.external,

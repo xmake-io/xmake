@@ -56,6 +56,10 @@ package("sfml")
         add_configs("main",       {description = "Link to the sfml-main library", default = true, type = "boolean"})
     end
 
+    if is_plat("macosx") then
+        add_extsources("brew::sfml")
+    end
+
     on_component("graphics", function (package, component)
         local e = package:config("shared") and "" or "-s"
         component:add("links", "sfml-graphics" .. e)
@@ -63,6 +67,7 @@ package("sfml")
             component:add("links", "freetype")
             component:add("syslinks", "opengl32", "gdi32", "user32", "advapi32")
         end
+        component:add("extsources", "brew::sfml/sfml-graphics")
     end)
 
     on_component("window", function (package, component)
@@ -71,6 +76,7 @@ package("sfml")
         if package:is_plat("windows", "mingw") and not package:config("shared") then
             component:add("syslinks", "opengl32", "gdi32", "user32", "advapi32")
         end
+        component:add("extsources", "brew::sfml/sfml-window")
     end)
 
     on_component("audio", function (package, component)
@@ -79,6 +85,7 @@ package("sfml")
         if package:is_plat("windows", "mingw") and not package:config("shared") then
             component:add("links", "openal32", "flac", "vorbisenc", "vorbisfile", "vorbis", "ogg")
         end
+        component:add("extsources", "brew::sfml/sfml-audio")
     end)
 
     on_component("network", function (package, component)
@@ -87,6 +94,8 @@ package("sfml")
         if package:is_plat("windows", "mingw") and not package:config("shared") then
             component:add("syslinks", "ws2_32")
         end
+        component:add("extsources", "brew::sfml/sfml-network")
+        component:add("extsources", "apt::sfml-network")
     end)
 
     on_component("system", function (package, component)
@@ -95,6 +104,7 @@ package("sfml")
         if package:is_plat("windows", "mingw") then
             component:add("syslinks", "winmm")
         end
+        component:add("extsources", "brew::sfml/sfml-system")
     end)
 
     on_component("main", function (package, component)
