@@ -59,14 +59,14 @@ function _register_required_package_libs(instance, required_package, is_deps)
             -- save components list
             if components then
                 required_package:set("__components_list", instance:get("components"))
-                local components_default = {}
+                local components_private = {}
                 for _, comp in ipairs(instance:get("components")) do
-                    if instance:extraconf("components", comp, "default") then
-                        table.insert(components_default, comp)
+                    if instance:extraconf("components", comp, "private") then
+                        table.insert(components_private, comp)
                     end
                 end
-                if #components_default > 0 then
-                    required_package:set("__components_default", components_default)
+                if #components_private > 0 then
+                    required_package:set("__components_private", components_private)
                 end
             end
 

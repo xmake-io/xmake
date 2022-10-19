@@ -249,7 +249,15 @@ function main(requires_raw)
         -- show components
         local components = instance:get("components")
         if components then
-            cprint("      -> ${color.dump.string_quote}components${clear}: %s", table.concat(table.wrap(components), ", "))
+            cprint("      -> ${color.dump.string_quote}components${clear}: ")
+            for _, comp in ipairs(components) do
+                cprintf("         -> ${cyan}%s${clear}: ", comp)
+                if instance:extraconf("components", comp, "private") then
+                    print("(private)")
+                else
+                    print("(public)")
+                end
+            end
         end
 
         -- show references

@@ -125,9 +125,9 @@ function _instance:components_list()
     return self:get("__components_list")
 end
 
--- get default components
-function _instance:components_default()
-    return self:get("__components_default")
+-- get private components
+function _instance:components_private()
+    return self:get("__components_private")
 end
 
 -- get the extra info from the given name

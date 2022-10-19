@@ -419,7 +419,7 @@ function _instance:get_from_pkgs(name, opt)
         -- e.g. `add_packages("sfml", {components = {"graphics", "window"}})`
         if configinfo and configinfo.components then
             local components_enabled = hashset.from(table.wrap(configinfo.components))
-            for _, comp in ipairs(table.wrap(pkg:components_default())) do
+            for _, comp in ipairs(table.wrap(pkg:components_private())) do
                 components_enabled:insert(comp)
             end
             components_enabled:insert("__base")

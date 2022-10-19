@@ -131,9 +131,9 @@ package("sfml")
             end
         end
         if package:is_plat("windows", "mingw") and package:config("main") then
-            package:add("components", "main", {default = true})
+            package:add("components", "main", {private = true})
         end
-        package:add("components", "system", {default = true})
+        package:add("components", "system", {private = true})
     end)
 
     on_install("windows", "linux", function (package)
