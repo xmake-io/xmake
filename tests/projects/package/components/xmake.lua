@@ -57,7 +57,7 @@ package("sfml")
     end
 
     if is_plat("macosx") then
-        add_extsources("brew::sfml")
+        add_extsources("brew::sfml/sfml-all")
     end
 
     on_component("graphics", function (package, component)

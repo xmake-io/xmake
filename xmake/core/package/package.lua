@@ -1515,8 +1515,9 @@ function _instance:_fetch_library(opt)
                 local components_extsources = {}
                 for name, comp in pairs(self:components()) do
                     for _, extsource in ipairs(table.wrap(comp:get("extsources"))) do
-                        if fetchname:split("::")[1] == extsource:split("::")[1] then
-                            components_extsources[name] = extsource
+                        local extsource_info = extsource:split("::")
+                        if fetchname:split("::")[1] == extsource_info[1] then
+                            components_extsources[name] = extsource_info[2]
                             break
                         end
                     end
