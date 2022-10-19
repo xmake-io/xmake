@@ -1,5 +1,4 @@
--- Configure xmake.conf with the actual environment variables.
-set_toolchains("envs", "gnu-rm")
+set_toolchains("gnu-rm")
 
 add_rules("mode.debug", "mode.release")
 

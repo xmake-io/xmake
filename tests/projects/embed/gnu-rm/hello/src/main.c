@@ -2,5 +2,5 @@ int foo(int x);
 
 int main()
 {
-	return foo(1);
+    return foo(1);
 }
