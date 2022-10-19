@@ -1,6 +1,7 @@
-set_toolchains("gnu-rm")
-
 add_rules("mode.debug", "mode.release")
+
+add_requires("gnu-rm")
+set_toolchains("@gnu-rm")
 
 target("foo")
     add_rules("gnu-rm.static")
@@ -9,7 +10,6 @@ target("foo")
 target("hello")
     add_deps("foo")
     add_rules("gnu-rm.binary")
-    set_kind("binary")
     add_files("src/*.c", "src/*.s")
     add_files("src/*.ld")
     add_includedirs("src/lib/cmsis")
