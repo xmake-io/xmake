@@ -5,7 +5,7 @@ add_requires("sfml")
 target("graphics")
     set_kind("static")
     add_files("src/graphics.cpp")
-    add_packages("sfml", {components = {"graphics", "system"}, public = true})
+    add_packages("sfml", {components = {"graphics", "window", "system"}, public = true})
 
 target("network")
     set_kind("static")
