@@ -418,16 +418,23 @@ function _instance:get_from_pkgs(name, opt)
         -- get values from package components
         -- e.g. `add_packages("sfml", {components = {"graphics", "window"}})`
         if configinfo and configinfo.components then
+            local components_enabled = hashset.from(table.wrap(configinfo.components))
+            for _, comp in ipairs(table.wrap(pkg:components_default())) do
+                components_enabled:insert(comp)
+            end
+            components_enabled:insert("__base")
             -- if we can't find the values from the component, we need to fall back to __base to find them.
             -- it contains some common values of all components
-            local components = table.wrap(pkg:get("components"))
-            for _, component_name in ipairs(table.join(configinfo.components, "__base")) do
-                local info = components[component_name]
-                if info then
-                    table.join2(values, info[name])
-                else
-                    local components_str = table.concat(table.wrap(configinfo.components), ", ")
-                    utils.warning("unknown component(%s) in add_packages(%s, {components = {%s}})", component_name, pkg:name(), components_str)
+            local components = table.wrap(pkg:components())
+            for _, component_name in ipairs(table.join(pkg:components_list(), "__base")) do
+                if components_enabled:has(component_name) then
+                    local info = components[component_name]
+                    if info then
+                        table.join2(values, info[name])
+                    else
+                        local components_str = table.concat(table.wrap(configinfo.components), ", ")
+                        utils.warning("unknown component(%s) in add_packages(%s, {components = {%s}})", component_name, pkg:name(), components_str)
+                    end
                 end
             end
         -- get values instead of the builtin configs if exists extra package config

@@ -5,12 +5,12 @@ add_requires("sfml")
 target("graphics")
     set_kind("static")
     add_files("src/graphics.cpp")
-    add_packages("sfml", {components = {"graphics", "window", "system"}, public = true})
+    add_packages("sfml", {components = {"graphics", "window"}, public = true})
 
 target("network")
     set_kind("static")
     add_files("src/network.cpp")
-    add_packages("sfml", {components = {"network", "system"}, public = true})
+    add_packages("sfml", {components = {"network"}, public = true})
 
 target("test")
     set_kind("binary")
@@ -131,9 +131,9 @@ package("sfml")
             end
         end
         if package:is_plat("windows", "mingw") and package:config("main") then
-            package:add("components", "main")
+            package:add("components", "main", {default = true})
         end
-        package:add("components", "system")
+        package:add("components", "system", {default = true})
     end)
 
     on_install("windows", "linux", function (package)

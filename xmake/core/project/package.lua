@@ -115,6 +115,21 @@ function _instance:libraryfiles()
     return self:get("libfiles")
 end
 
+-- get components
+function _instance:components()
+    return self:get("components")
+end
+
+-- get components list with link order
+function _instance:components_list()
+    return self:get("__components_list")
+end
+
+-- get default components
+function _instance:components_default()
+    return self:get("__components_default")
+end
+
 -- get the extra info from the given name
 function _instance:extra(name)
     local extrainfo = self:extrainfo()

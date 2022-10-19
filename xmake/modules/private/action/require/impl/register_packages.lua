@@ -56,6 +56,20 @@ function _register_required_package_libs(instance, required_package, is_deps)
             fetchinfo.components = nil
             required_package:add(fetchinfo)
 
+            -- save components list
+            if components then
+                required_package:set("__components_list", instance:get("components"))
+                local components_default = {}
+                for _, comp in ipairs(instance:get("components")) do
+                    if instance:extraconf("components", comp, "default") then
+                        table.insert(components_default, comp)
+                    end
+                end
+                if #components_default > 0 then
+                    required_package:set("__components_default", components_default)
+                end
+            end
+
             -- merge into the components values
             local required_components = required_package:get("components")
             if required_components then
