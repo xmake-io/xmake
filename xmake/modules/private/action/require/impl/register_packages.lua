@@ -59,6 +59,7 @@ function _register_required_package_libs(instance, required_package, is_deps)
             -- merge into the components values
             local required_components = required_package:get("components")
             if required_components then
+                fetchinfo.libfiles = nil
                 local components_base = required_components.__base or {}
                 for k, v in pairs(fetchinfo) do
                     local values = table.wrap(components_base[k])
