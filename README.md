@@ -190,7 +190,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 
 ### Download and build
 
-<img src="https://xmake.io/assets/img/index/package_manage.png" width="650px" />
+<img src="https://xmake.io/assets/img/index/package.gif" width="650px" />
 
 ### Processing architecture
 

@@ -199,7 +199,7 @@ $ xmake f --menu
 
 ### 下载和编译
 
-<img src="https://xmake.io/assets/img/index/package_manage.png" width="650px" />
+<img src="https://xmake.io/assets/img/index/package.gif" width="650px" />
 
 ### 架构和流程
 
