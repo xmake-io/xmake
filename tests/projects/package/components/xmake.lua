@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("sfml", {system = false})
+add_requires("sfml")
 
 target("graphics")
     set_kind("static")
