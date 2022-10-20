@@ -26,6 +26,7 @@ import("utils.progress")
 
 -- init it
 function init(self)
+    self:add("asflags", "-nologo")
 end
 
 -- make the symbol flag
@@ -59,46 +60,6 @@ function nf_optimize(self, level)
     return maps[level]
 end
 
--- make the language flag
-function nf_language(self, stdname)
-
-    -- the stdc maps
-    if _g.cmaps == nil then
-        _g.cmaps =
-        {
-            ansi        = "-c89"
-        ,   c89         = "-c89"
-        ,   gnu89       = "-c89"
-        ,   c99         = "-c99"
-        ,   gnu99       = "-c99"
-        ,   c11         = "-c11"
-        ,   gnu11       = "-c11"
-        ,   clatest     = {"-c11", "-c99", "-c89"}
-        ,   gnulatest   = {"-c11", "-c99", "-c89"}
-        }
-    end
-    local maps = _g.cmaps
-    local result = maps[stdname]
-    if type(result) == "table" then
-        for _, v in ipairs(result) do
-            if self:has_flags(v, "cxflags") then
-                result = v
-                maps[stdname] = result
-                return result
-            end
-        end
-    else
-        return result
-    end
-end
-
--- make runtime flag
-function nf_runtime(self, runtime)
-    if runtime == "microlib" then
-        return {"--pd", "__MICROLIB SETA 1"}
-    end
-end
-
 -- make the define flag
 -- eg.
 -- add_defines("MACRO") -> --pd "MACRO  SETA 1
@@ -110,12 +71,12 @@ function nf_define(self, macro)
     if #def == 2 then
         value = def[2]:trim()
     end
-    return {"--pd", key .. " SETA " .. value}
+    return {"-pd", key .. " SETA " .. value}
 end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return {"-I" .. dir}
+    return {"-i", dir}
 end
 
 -- make the sysincludedir flag
