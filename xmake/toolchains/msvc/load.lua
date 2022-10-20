@@ -46,10 +46,14 @@ function main(toolchain)
     toolchain:set("toolset", "cc",  "cl.exe")
     toolchain:set("toolset", "cxx", "cl.exe")
     toolchain:set("toolset", "mrc", "rc.exe")
-    if toolchain:is_arch("x64") then
-        toolchain:set("toolset", "as",  "ml64.exe")
-    else
+    if toolchain:is_arch("x86") then
         toolchain:set("toolset", "as",  "ml.exe")
+    elseif toolchain:is_arch("arm64") then
+        toolchain:set("toolset", "as",  "armasm64.exe")
+    elseif toolchain:is_arch("arm.*") then
+        toolchain:set("toolset", "as",  "armasm.exe")
+    else
+        toolchain:set("toolset", "as",  "ml64.exe")
     end
     toolchain:set("toolset", "ld",  "link.exe")
     toolchain:set("toolset", "sh",  "link.exe")
