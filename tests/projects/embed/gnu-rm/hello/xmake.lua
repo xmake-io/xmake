@@ -2,6 +2,8 @@ add_rules("mode.debug", "mode.release")
 
 add_requires("gnu-rm")
 set_toolchains("@gnu-rm")
+set_plat("cross")
+set_arch("armv7")
 
 target("foo")
     add_rules("gnu-rm.static")
