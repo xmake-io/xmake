@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("sfml")
+add_requires("sfml", {system = false})
 
 target("graphics")
     set_kind("static")
@@ -67,6 +67,7 @@ package("sfml")
             component:add("links", "freetype")
             component:add("syslinks", "opengl32", "gdi32", "user32", "advapi32")
         end
+        component:add("deps", "window", "system")
         component:add("extsources", "brew::sfml/sfml-graphics")
     end)
 
@@ -76,6 +77,7 @@ package("sfml")
         if package:is_plat("windows", "mingw") and not package:config("shared") then
             component:add("syslinks", "opengl32", "gdi32", "user32", "advapi32")
         end
+        component:add("deps", "system")
         component:add("extsources", "brew::sfml/sfml-window")
     end)
 
@@ -85,6 +87,7 @@ package("sfml")
         if package:is_plat("windows", "mingw") and not package:config("shared") then
             component:add("links", "openal32", "flac", "vorbisenc", "vorbisfile", "vorbis", "ogg")
         end
+        component:add("deps", "system")
         component:add("extsources", "brew::sfml/sfml-audio")
     end)
 
@@ -94,6 +97,7 @@ package("sfml")
         if package:is_plat("windows", "mingw") and not package:config("shared") then
             component:add("syslinks", "ws2_32")
         end
+        component:add("deps", "system")
         component:add("extsources", "brew::sfml/sfml-network")
         component:add("extsources", "apt::sfml-network")
     end)
@@ -103,6 +107,9 @@ package("sfml")
         component:add("links", "sfml-system" .. e)
         if package:is_plat("windows", "mingw") then
             component:add("syslinks", "winmm")
+        end
+        if package:is_plat("windows", "mingw") and package:config("main") then
+            component:add("deps", "main")
         end
         component:add("extsources", "brew::sfml/sfml-system")
     end)
@@ -138,15 +145,7 @@ package("sfml")
         package:add("components", "system")
         for _, component in ipairs({"graphics", "window", "audio", "network"}) do
             if package:config(component) then
-                local deps = {}
-                table.insert(deps, "system")
-                if component == "graphics" then
-                    table.insert(deps, "window")
-                end
-                if package:is_plat("windows", "mingw") and package:config("main") then
-                    table.insert(deps, "main")
-                end
-                package:add("components", component, {deps = deps})
+                package:add("components", component)
             end
         end
         if package:is_plat("windows", "mingw") and package:config("main") then

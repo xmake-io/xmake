@@ -1828,7 +1828,7 @@ function _instance:components_deps()
     if not components_deps then
         components_deps = {}
         for _, name in ipairs(table.wrap(self:get("components"))) do
-            components_deps[name] = self:extraconf("components", name, "deps")
+            components_deps[name] = self:extraconf("components", name, "deps") or self:component(name):get("deps")
         end
         self._COMPONENTS_DEPS = component_deps
     end
