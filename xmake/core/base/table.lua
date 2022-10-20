@@ -155,7 +155,7 @@ end
 
 -- clone table
 function table.clone(self)
-    local result
+    local result = self
     if type(self) == "table" then
         result = {}
         for k, v in pairs(self) do

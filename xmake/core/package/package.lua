@@ -9,7 +9,7 @@
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific package governing permissions and
+-- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
@@ -41,6 +41,7 @@ local config         = require("project/config")
 local policy         = require("project/policy")
 local platform       = require("platform/platform")
 local platform_menu  = require("platform/menu")
+local component      = require("package/component")
 local language       = require("language/language")
 local language_menu  = require("language/menu")
 local sandbox        = require("sandbox/sandbox")
@@ -292,6 +293,19 @@ function _instance:artifacts_set(artifacts_info)
             if manifest.vars then
                 for k, v in pairs(manifest.vars) do
                     package:set(k, v)
+                end
+            end
+            if manifest.components then
+                local vars = manifest.components.vars
+                if vars then
+                    for component_name, component_vars in pairs(vars) do
+                        local comp = package:component(component_name)
+                        if comp then
+                            for k, v in pairs(component_vars) do
+                                comp:set(k, v)
+                            end
+                        end
+                    end
                 end
             end
             if manifest.envs then
@@ -779,19 +793,34 @@ function _instance:manifest_save()
         end
     end
 
-    -- save variables
-    local vars = {}
+    -- save global variables and component variables
+    local vars
+    local components
     local apis = language.apis()
     for _, apiname in ipairs(table.join(apis.values, apis.paths)) do
         if apiname:startswith("package.add_") or apiname:startswith("package.set_")  then
             local name = apiname:sub(13)
             local value = self:get(name)
             if value ~= nil then
+                vars = vars or {}
                 vars[name] = value
+            end
+            for _, component_name in ipairs(table.wrap(self:get("components"))) do
+                local comp = self:component(component_name)
+                if comp then
+                    local component_value = comp:get(name)
+                    if component_value ~= nil then
+                        components = components or {}
+                        components.vars = components.vars or {}
+                        components.vars[component_name] = components.vars[component_name] or {}
+                        components.vars[component_name][name] = component_value
+                    end
+                end
             end
         end
     end
     manifest.vars = vars
+    manifest.components = components
 
     -- save repository
     local repo = self:repo()
@@ -1453,12 +1482,21 @@ function _instance:_fetch_library(opt)
             end
         end
         if fetchinfo then
+            local components_base = fetchinfo.components and fetchinfo.components.__base
             if opt.external then
                 fetchinfo.sysincludedirs = fetchinfo.sysincludedirs or fetchinfo.includedirs
                 fetchinfo.includedirs = nil
+                if components_base then
+                    components_base.sysincludedirs = components_base.sysincludedirs or components_base.includedirs
+                    components_base.includedirs = nil
+                end
             else
                 fetchinfo.includedirs = fetchinfo.includedirs or fetchinfo.sysincludedirs
                 fetchinfo.sysincludedirs = nil
+                if components_base then
+                    components_base.includedirs = components_base.includedirs or components_base.sysincludedirs
+                    components_base.sysincludedirs = nil
+                end
             end
         end
         if fetchinfo and option.get("verbose") then
@@ -1474,7 +1512,17 @@ function _instance:_fetch_library(opt)
             end
             table.insert(fetchnames, self:name())
             for _, fetchname in ipairs(fetchnames) do
-                fetchinfo = self:find_package(fetchname, opt)
+                local components_extsources = {}
+                for name, comp in pairs(self:components()) do
+                    for _, extsource in ipairs(table.wrap(comp:get("extsources"))) do
+                        local extsource_info = extsource:split("::")
+                        if fetchname:split("::")[1] == extsource_info[1] then
+                            components_extsources[name] = extsource_info[2]
+                            break
+                        end
+                    end
+                end
+                fetchinfo = self:find_package(fetchname, table.join(opt, {components_extsources = components_extsources}))
                 if fetchinfo then
                     break
                 end
@@ -1519,6 +1567,8 @@ function _instance:find_package(name, opt)
                               plat = self:plat(),
                               arch = self:arch(),
                               configs = table.join(self:configs(), opt.configs),
+                              components = self:components_orderlist(),
+                              components_extsources = opt.components_extsources,
                               buildhash = self:buildhash(), -- for xmake package or 3rd package manager, e.g. go:: ..
                               cachekey = opt.cachekey or "fetch_package_system",
                               external = opt.external,
@@ -1754,6 +1804,81 @@ function _instance:resourcedir(name)
     end
 end
 
+-- get the given package component
+function _instance:component(name)
+    return self:components()[name]
+end
+
+-- get package components
+--
+-- .e.g. add_components("graphics", "windows")
+--
+function _instance:components()
+    local components = self._COMPONENTS
+    if not components then
+        components = {}
+        for _, name in ipairs(table.wrap(self:get("components"))) do
+            components[name] = component.new(name, {package = self})
+        end
+        self._COMPONENTS = components
+    end
+    return components
+end
+
+-- get package dependencies of components
+--
+-- @see https://github.com/xmake-io/xmake/issues/2636#issuecomment-1284787681
+--
+-- @code
+-- add_components("graphics", {deps = "window"})
+-- @endcode
+--
+-- or
+--
+-- @code
+-- on_component(function (package, component))
+--     component:add("deps", "window")
+-- end)
+-- @endcode
+--
+function _instance:components_deps()
+    local components_deps = self._COMPONENTS_DEPS
+    if not components_deps then
+        components_deps = {}
+        for _, name in ipairs(table.wrap(self:get("components"))) do
+            components_deps[name] = self:extraconf("components", name, "deps") or self:component(name):get("deps")
+        end
+        self._COMPONENTS_DEPS = component_deps
+    end
+    return components_deps
+end
+
+-- get package components list with dependencies order
+function _instance:components_orderlist()
+    local components_orderlist = self._COMPONENTS_ORDERLIST
+    if not components_orderlist then
+        components_orderlist = {}
+        for _, name in ipairs(table.wrap(self:get("components"))) do
+            table.insert(components_orderlist, name)
+            table.join2(components_orderlist, self:_sort_componentdeps(name))
+        end
+        components_orderlist = table.reverse_unique(components_orderlist)
+        self._COMPONENTS_ORDERLIST = components_orderlist
+    end
+    return components_orderlist
+end
+
+-- sort component deps
+function _instance:_sort_componentdeps(name)
+    local orderdeps = {}
+    local plaindeps = self:components_deps() and self:components_deps()[name]
+    for _, dep in ipairs(table.wrap(plaindeps)) do
+        table.insert(orderdeps, dep)
+        table.join2(orderdeps, self:_sort_componentdeps(dep))
+    end
+    return orderdeps
+end
+
 -- generate lto configs
 function _instance:_generate_lto_configs(sourcekind)
 
@@ -1973,26 +2098,13 @@ end
 
 -- the interpreter
 function package._interpreter()
-
-    -- the interpreter has been initialized? return it directly
-    if package._INTERPRETER then
-        return package._INTERPRETER
+    local interp = package._INTERPRETER
+    if not interp then
+        interp = interpreter.new()
+        interp:api_define(package.apis())
+        interp:api_define(language.apis())
+        package._INTERPRETER = interp
     end
-
-    -- init interpreter
-    local interp = interpreter.new()
-    assert(interp)
-
-    -- define apis
-    interp:api_define(package.apis())
-
-    -- define apis for language
-    interp:api_define(language.apis())
-
-    -- save interpreter
-    package._INTERPRETER = interp
-
-    -- ok?
     return interp
 end
 
@@ -2074,6 +2186,7 @@ function package.apis()
         ,   "package.add_imports"
         ,   "package.add_configs"
         ,   "package.add_extsources"
+        ,   "package.add_components"
         }
     ,   script =
         {
@@ -2083,6 +2196,7 @@ function package.apis()
         ,   "package.on_download"
         ,   "package.on_install"
         ,   "package.on_test"
+        ,   "package.on_component"
         }
     ,   keyvalues =
         {

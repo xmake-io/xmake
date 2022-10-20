@@ -47,19 +47,10 @@ function _brew_pkg_rootdir()
     return brew_pkg_rootdir or nil
 end
 
--- find package from the brew package manager
---
--- @param name  the package name, e.g. zlib, pcre/libpcre16
--- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
---
-function main(name, opt)
-
-    -- find the prefix directory of brew
-    local brew_pkg_rootdir = _brew_pkg_rootdir()
-    if not brew_pkg_rootdir then
-        return
-    end
-    brew_pkg_rootdir = path.join(brew_pkg_rootdir, opt.plat == "macosx" and "Cellar" or "opt")
+-- find package from pkg-config
+function _find_package_from_pkgconfig(name, opt)
+    opt = opt or {}
+    local brew_pkg_rootdir = opt.brew_pkg_rootdir
 
     -- parse name, e.g. pcre/libpcre16
     local nameinfo = name:split('/')
@@ -92,9 +83,51 @@ function main(name, opt)
             end
         end
     end
+    return result
+end
+
+-- find package from the brew package manager
+--
+-- @param name  the package name, e.g. zlib, pcre/libpcre16
+-- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
+--
+function main(name, opt)
+
+    -- find the prefix directory of brew
+    opt = opt or {}
+    local brew_pkg_rootdir = _brew_pkg_rootdir()
+    if not brew_pkg_rootdir then
+        return
+    end
+    brew_pkg_rootdir = path.join(brew_pkg_rootdir, opt.plat == "macosx" and "Cellar" or "opt")
+
+    -- find package from pkg-config
+    local result = _find_package_from_pkgconfig(name,
+        table.join(opt, {brew_pkg_rootdir = brew_pkg_rootdir}))
+
+    -- find components
+    local components
+    local components_extsources = opt.components_extsources
+    for _, comp in ipairs(opt.components) do
+        local extsource = components_extsources and components_extsources[comp]
+        if extsource then
+            local component_result = _find_package_from_pkgconfig(extsource,
+                table.join(opt, {brew_pkg_rootdir = brew_pkg_rootdir}))
+            if component_result then
+                components = components or {}
+                components[comp] = component_result
+            end
+        end
+    end
+    if components then
+        result = result or {}
+        result.components = components
+        components.__base = {}
+    end
 
     -- find package from xxx/lib, xxx/include
     if not result then
+        local nameinfo = name:split('/')
         local pkgdir = find_path("lib", path.join(brew_pkg_rootdir, nameinfo[1], "*"))
         if pkgdir then
             local links = {}

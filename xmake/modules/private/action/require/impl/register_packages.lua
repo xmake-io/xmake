@@ -34,7 +34,7 @@ end
 -- libs: includedirs, links, linkdirs ...
 function _register_required_package_libs(instance, required_package, is_deps)
     if instance:is_library() then
-        local fetchinfo = instance:fetch()
+        local fetchinfo = table.clone(instance:fetch())
         if fetchinfo then
             fetchinfo.name    = nil
             if is_deps then
@@ -50,7 +50,31 @@ function _register_required_package_libs(instance, required_package, is_deps)
                 fetchinfo.static  = nil
                 fetchinfo.shared  = nil
             end
+
+            -- merge into the root values
+            local components = fetchinfo.components
+            fetchinfo.components = nil
             required_package:add(fetchinfo)
+
+            -- save components list and dependencies
+            if components then
+                required_package:set("__components_deps", instance:components_deps())
+                required_package:set("__components_orderlist", instance:components_orderlist())
+            end
+
+            -- merge into the components values
+            local required_components = required_package:get("components")
+            if required_components then
+                fetchinfo.libfiles = nil
+                local components_base = required_components.__base or {}
+                for k, v in pairs(fetchinfo) do
+                    local values = table.wrap(components_base[k])
+                    components_base[k] = table.unwrap(table.unique(table.join(values, v)))
+                end
+                required_components.__base = components_base
+            else
+                required_package:set("components", components)
+            end
         end
     end
 end

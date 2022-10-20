@@ -31,6 +31,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y ruby ruby-dev rubygems build-essential llvm
+          sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev
 
       - name: Tests
         run: |

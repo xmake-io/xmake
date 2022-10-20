@@ -28,6 +28,20 @@ import("core.language.language")
 import("lib.detect.find_file")
 import("lib.detect.find_library")
 
+-- deduplicate values
+function _deduplicate_values(values)
+    for _, k in ipairs(table.keys(values)) do
+        local v = values[k]
+        if type(v) == "table" then
+            if k == "links" or k == "syslinks" or k == "frameworks" then
+                values[k] = table.reverse_unique(v)
+            else
+                values[k] = table.unique(v)
+            end
+        end
+    end
+end
+
 -- find package from the repository (maybe only include and no links)
 function _find_package_from_repo(name, opt)
 
@@ -76,8 +90,21 @@ function _find_package_from_repo(name, opt)
     -- get links and link directories
     local links = {}
     local linkdirs = {}
+    local components = opt.components
     if vars.links then
         table.join2(links, vars.links)
+    elseif components and manifest.components then
+        -- get links from components
+        local vars = manifest.components.vars
+        if vars then
+            for _, component_name in ipairs(components) do
+                local component_vars = vars[component_name]
+                if component_vars and component_vars.links then
+                    table.join2(links, component_vars.links)
+                end
+            end
+        end
+        links = table.reverse_unique(links)
     else
         -- we scan links automatically
         local found = false
@@ -151,29 +178,52 @@ function _find_package_from_repo(name, opt)
             result.libfiles = table.join(result.libfiles or {}, path.join(libinfo.linkdir, libinfo.filename))
         end
     end
-    if result.links then
-        result.links = table.unique(result.links)
-    end
     if result.libfiles then
-        result.libfiles = table.unique(table.join(result.libfiles, libfiles))
+        result.libfiles = table.join(result.libfiles, libfiles)
     end
 
     -- inherit the other prefix variables
+    local components_base = {includedirs = table.clone(result.includedirs), linkdirs = table.clone(result.linkdirs)}
     for name, values in pairs(vars) do
         if name ~= "links" and name ~= "linkdirs" and name ~= "includedirs" then
             result[name] = values
+            components_base[name] = table.clone(values)
         end
     end
 
-    -- update the project references file
-    if result then
-        local projectdir = os.projectdir()
-        if projectdir and os.isdir(projectdir) then
-            local references_file = path.join(installdir, "references.txt")
-            local references = os.isfile(references_file) and io.load(references_file) or {}
-            references[projectdir] = os.date("%y%m%d")
-            io.save(references_file, references)
+    -- get component values
+    if components and manifest.components then
+        local vars = manifest.components.vars
+        if vars then
+            _deduplicate_values(components_base)
+            result.components = result.components or {}
+            result.components.__base = components_base
+            for _, component_name in ipairs(components) do
+                local comp = vars[component_name]
+                if comp then
+                    result.components[component_name] = comp
+
+                    -- merge component values to root
+                    for k, v in pairs(comp) do
+                        if k ~= "links" then
+                            result[k] = table.join(result[k] or {}, v)
+                        end
+                    end
+                end
+            end
         end
+    end
+
+    -- deduplicate result
+    _deduplicate_values(result)
+
+    -- update the project references file
+    local projectdir = os.projectdir()
+    if projectdir and os.isdir(projectdir) then
+        local references_file = path.join(installdir, "references.txt")
+        local references = os.isfile(references_file) and io.load(references_file) or {}
+        references[projectdir] = os.date("%y%m%d")
+        io.save(references_file, references)
     end
 
     -- get version and license
@@ -269,8 +319,6 @@ function _find_package_from_packagedirs(name, opt)
             result[infoname] = packageinfo:get(infoname)
         end
     end
-
-    -- ok?
     return result
 end
 

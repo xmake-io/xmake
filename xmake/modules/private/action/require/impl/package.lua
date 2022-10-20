@@ -832,6 +832,11 @@ function _load_package(packagename, requireinfo, opt)
         on_load(package)
     end
 
+    -- load all components
+    for _, component in pairs(package:components()) do
+        component:_load()
+    end
+
     -- load environments from the manifest to enable the environments of on_install()
     package:envs_load()
 

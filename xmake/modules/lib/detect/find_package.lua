@@ -112,6 +112,11 @@ function main(name, opt)
         if result and result.includedirs and opt.external then
             result.sysincludedirs = result.includedirs
             result.includedirs = nil
+            local components_base = result.components and result.components.__base
+            if components_base then
+                components_base.sysincludedirs = components_base.includedirs
+                components_base.includedirs = nil
+            end
         end
 
         -- cache result
