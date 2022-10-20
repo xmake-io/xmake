@@ -1810,6 +1810,9 @@ function _instance:component(name)
 end
 
 -- get package components
+--
+-- .e.g. add_components("graphics", "windows")
+--
 function _instance:components()
     local components = self._COMPONENTS
     if not components then
@@ -1823,6 +1826,21 @@ function _instance:components()
 end
 
 -- get package dependencies of components
+--
+-- @see https://github.com/xmake-io/xmake/issues/2636#issuecomment-1284787681
+--
+-- @code
+-- add_components("graphics", {deps = "window"})
+-- @endcode
+--
+-- or
+--
+-- @code
+-- on_component(function (package, component))
+--     component:add("deps", "window")
+-- end)
+-- @endcode
+--
 function _instance:components_deps()
     local components_deps = self._COMPONENTS_DEPS
     if not components_deps then
