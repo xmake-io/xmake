@@ -7,6 +7,7 @@
 * A new optional configuration syntax. It is LSP friendly, automatically calls target_end() to achieve scope isolation.
 * [#2944](https://github.com/xmake-io/xmake/issues/2944): Add `gnu-rm.binary` and `gnu-rm.static` rules and tests for embed project
 * [#2636](https://github.com/xmake-io/xmake/issues/2636): Support package components
+* Support armasm/armasm64 for msvc
 
 ### Changes
 
@@ -1424,6 +1425,7 @@
 * 一种新的可选域配置语法，对 LSP 友好，并且支持域隔离。
 * [#2944](https://github.com/xmake-io/xmake/issues/2944): 为嵌入式工程添加 `gnu-rm.binary` 和 `gnu-rm.static` 规则和测试工程
 * [#2636](https://github.com/xmake-io/xmake/issues/2636): 支持包组件
+* 支持 msvc 的 armasm/armasm64 
 
 ### 改进
 
