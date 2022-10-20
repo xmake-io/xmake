@@ -125,7 +125,7 @@ function _make_global(slnfile, vsinfo)
                 local key = group_name .. (group_name_sub or "")
                 local group_name_sub = group_names[idx + 1]
                 if group_name_sub and not subgroups[key] then
-                    slnfile:print("{%s} = {%s}", hash.uuid4(group_name_sub), hash.uuid4("group." .. group_name))
+                    slnfile:print("{%s} = {%s}", hash.uuid4("group." .. group_name_sub), hash.uuid4("group." .. group_name))
                     subgroups[key] = true
                 end
             end

@@ -283,7 +283,7 @@ function _make_vsinfo_groups()
                     group.group = name
                     group.group_id = hash.uuid4("group." .. name)
                     if idx > 1 then
-                        group_deps["group_dep." .. name] = {current_id = group.group_id, parent_id = hash.uuid4(group_names[idx - 1])}
+                        group_deps["group_dep." .. name] = {current_id = group.group_id, parent_id = hash.uuid4("group." .. group_names[idx - 1])}
                     end
                     groups["group." .. name] = group
                 end
