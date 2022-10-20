@@ -61,5 +61,3 @@ rule("gnu-rm.object")
         target:set("kind", "object")
     end)
 
-rule("gnu-rm.console")
-    add_deps("gnu-rm.binary")
