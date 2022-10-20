@@ -49,9 +49,9 @@ function main(toolchain)
     if toolchain:is_arch("x86") then
         toolchain:set("toolset", "as",  "ml.exe")
     elseif toolchain:is_arch("arm64") then
-        toolchain:set("toolset", "as",  "armasm64.exe")
+        toolchain:set("toolset", "as",  "armasm64_msvc@armasm64.exe")
     elseif toolchain:is_arch("arm.*") then
-        toolchain:set("toolset", "as",  "armasm.exe")
+        toolchain:set("toolset", "as",  "armasm_msvc@armasm.exe")
     else
         toolchain:set("toolset", "as",  "ml64.exe")
     end
