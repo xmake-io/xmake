@@ -124,6 +124,8 @@ If you don't want to use the script to install xmake, see [Installation Guide](h
 
 An official xmake package repository exists at: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 
+<img src="https://xmake.io/assets/img/index/package.gif" width="650px" />
+
 ## Create project
 
 ```bash
@@ -187,10 +189,6 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 |cmake(gen+ninja) | 4.458s+1m54.868s | cmake(gen+ninja) | 0.988s+38.022s |
 
 ## Package management
-
-### Download and build
-
-<img src="https://xmake.io/assets/img/index/package.gif" width="650px" />
 
 ### Processing architecture
 

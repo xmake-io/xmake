@@ -132,6 +132,8 @@ Invoke-Expression (Invoke-Webrequest 'https://xmake.io/psget.text' -UseBasicPars
 
 官方的xmake包管理仓库: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 
+<img src="https://xmake.io/assets/img/index/package.gif" width="650px" />
+
 ## 创建工程
 
 ```bash
@@ -196,10 +198,6 @@ $ xmake f --menu
 
 
 ## 包依赖管理
-
-### 下载和编译
-
-<img src="https://xmake.io/assets/img/index/package.gif" width="650px" />
 
 ### 架构和流程
 
