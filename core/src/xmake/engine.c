@@ -619,6 +619,13 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
     tb_bool_t ok = tb_false;
     do
     {
+        // get it from the environment variable first
+        if (tb_environment_first("XMAKE_PROGRAM_FILE", path, maxn) && tb_file_info(path, tb_null))
+        {
+            ok = tb_true;
+            break;
+        }
+
 #if defined(TB_CONFIG_OS_WINDOWS)
         // get the executale file path as program directory
         tb_wchar_t buf[TB_PATH_MAXN] = {0};
@@ -647,7 +654,8 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
         tb_uint32_t bufsize = (tb_uint32_t)maxn;
         if (!_NSGetExecutablePath(path, &bufsize))
             ok = tb_true;
-#elif defined(TB_CONFIG_OS_BSD)
+#elif defined(TB_CONFIG_OS_BSD) && defined(KERN_PROC_PATHNAME)
+        // only for freebsd, https://github.com/xmake-io/xmake/issues/2948
         tb_int_t mib[4];  mib[0] = CTL_KERN;  mib[1] = KERN_PROC;  mib[2] = KERN_PROC_PATHNAME;  mib[3] = -1;
         size_t size = maxn;
         if (sysctl(mib, 4, path, &size, tb_null, 0) == 0 && size < maxn)
@@ -662,6 +670,23 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
         {
             path[size] = '\0';
             ok = tb_true;
+        }
+#else
+        static tb_char_t const* s_paths[] =
+        {
+            "~/.local/bin/xmake",
+            "/usr/local/bin/xmake",
+            "/usr/bin/xmake"
+        };
+        for (tb_size_t i = 0; i < tb_arrayn(s_paths); i++)
+        {
+            tb_char_t const* p = s_paths[i];
+            if (tb_file_info(p, tb_null))
+            {
+                tb_strlcpy(path, p, maxn);
+                ok = tb_true;
+                break;
+            }
         }
 #endif
 

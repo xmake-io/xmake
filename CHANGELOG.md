@@ -10,6 +10,7 @@
 ### Changes
 
 * [#2925](https://github.com/xmake-io/xmake/issues/2925): Improve doxygen plugin
+* [#2948](https://github.com/xmake-io/xmake/issues/2948): Support OpenBSD
 
 ## v2.7.2
 
@@ -1421,6 +1422,7 @@
 ### 改进
 
 * [#2925](https://github.com/xmake-io/xmake/issues/2925): 改进 doxygen 插件
+* [#2948](https://github.com/xmake-io/xmake/issues/2948): 支持 OpenBSD
 
 ## v2.7.2
 
