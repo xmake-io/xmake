@@ -62,6 +62,9 @@ package("sfml")
 
     on_component("graphics", function (package, component)
         local e = package:config("shared") and "" or "-s"
+        if package:debug() then
+            e = e .. "-d"
+        end
         component:add("links", "sfml-graphics" .. e)
         if package:is_plat("windows", "mingw") and not package:config("shared") then
             component:add("links", "freetype")
@@ -73,6 +76,9 @@ package("sfml")
 
     on_component("window", function (package, component)
         local e = package:config("shared") and "" or "-s"
+        if package:debug() then
+            e = e .. "-d"
+        end
         component:add("links", "sfml-window" .. e)
         if package:is_plat("windows", "mingw") and not package:config("shared") then
             component:add("syslinks", "opengl32", "gdi32", "user32", "advapi32")
@@ -83,6 +89,9 @@ package("sfml")
 
     on_component("audio", function (package, component)
         local e = package:config("shared") and "" or "-s"
+        if package:debug() then
+            e = e .. "-d"
+        end
         component:add("links", "sfml-audio" .. e)
         if package:is_plat("windows", "mingw") and not package:config("shared") then
             component:add("links", "openal32", "flac", "vorbisenc", "vorbisfile", "vorbis", "ogg")
@@ -93,6 +102,9 @@ package("sfml")
 
     on_component("network", function (package, component)
         local e = package:config("shared") and "" or "-s"
+        if package:debug() then
+            e = e .. "-d"
+        end
         component:add("links", "sfml-network" .. e)
         if package:is_plat("windows", "mingw") and not package:config("shared") then
             component:add("syslinks", "ws2_32")
@@ -104,6 +116,9 @@ package("sfml")
 
     on_component("system", function (package, component)
         local e = package:config("shared") and "" or "-s"
+        if package:debug() then
+            e = e .. "-d"
+        end
         component:add("links", "sfml-system" .. e)
         if package:is_plat("windows", "mingw") then
             component:add("syslinks", "winmm")
