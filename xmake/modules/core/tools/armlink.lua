@@ -49,8 +49,17 @@ function nf_runtime(self, runtime)
 end
 
 -- make the link arguments list
-function linkargv(self, objectfiles, targetkind, targetfile, flags)
-    return self:program(), table.join("-o", targetfile, objectfiles, flags)
+function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
+    opt = opt or {}
+    local argv = table.join("-o", targetfile, objectfiles, flags)
+    if is_host("windows") and not opt.rawargs then
+        argv = winos.cmdargv(argv, {escape = true})
+        if #argv > 0 and argv[1] and argv[1]:startswith("@") then
+            argv[1] = argv[1]:replace("@", "", {plain = true})
+            table.insert(argv, 1, "--via")
+        end
+    end
+    return self:program(), argv
 end
 
 -- link the target file
