@@ -707,6 +707,14 @@ function buildenvs(package, opt)
         envs = _get_msvc_runenvs(package)
     end
 
+    -- we need pass pkgconf for windows/mingw without msys2/cygwin
+    if package:is_plat("windows", "mingw") and is_subhost("windows") then
+        local pkgconf = find_tool("pkgconf")
+        if pkgconf then
+            envs.PKG_CONFIG = pkgconf.program
+        end
+    end
+
     -- add environments for cmake/find_packages
     local CMAKE_LIBRARY_PATH = {}
     local CMAKE_INCLUDE_PATH = {}
