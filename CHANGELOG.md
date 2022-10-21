@@ -17,6 +17,7 @@
 ### Bugs fixed
 
 * [#2949](https://github.com/xmake-io/xmake/issues/2949): Fix vs group
+* [#2952](https://github.com/xmake-io/xmake/issues/2952): Fix armlink for long args
 
 ## v2.7.2
 
@@ -1435,6 +1436,7 @@
 ### Bugs 修复
 
 * [#2949](https://github.com/xmake-io/xmake/issues/2949): 修复 vs 分组
+* [#2952](https://github.com/xmake-io/xmake/issues/2952): 修复 armlink 处理长命令失败问题
 
 ## v2.7.2
 
