@@ -244,8 +244,9 @@ function _get_configs(package, configs, opt)
     end
 
     -- add vs_runtime flags
-    if package:is_plat("windows") then
-        table.insert(configs, "-Db_vscrt=" .. package:config("vs_runtime"):lower())
+    local vs_runtime = package:config("vs_runtime")
+    if package:is_plat("windows") and vs_runtime then
+        table.insert(configs, "-Db_vscrt=" .. vs_runtime:lower())
     end
 
     -- add cross file
