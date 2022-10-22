@@ -40,8 +40,8 @@ function main(opt)
 
     -- init options
     opt = opt or {}
-    opt.check = opt.check or "-version"
-    opt.command = opt.command or "-version"
+    opt.check = opt.check or "-h"
+    opt.command = opt.command or "--version"
 
     -- find program
     local program = find_program(opt.program or "llvm-ar", opt)
@@ -51,7 +51,5 @@ function main(opt)
     if program and opt.version then
         version = find_programver(program, opt)
     end
-
-    -- ok?
     return program, version
 end
