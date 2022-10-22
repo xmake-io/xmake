@@ -35,16 +35,16 @@ function _make_projects(slnfile, vsinfo)
     -- make all targets
     local groups = {}
     local targets = {}
+    local default_targets = {}
     local vctool = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
-    for targetname, target in pairs(project.targets()) do
+    for targetname, target in pairs(project.ordertargets()) do
         -- we need set startup project for default or binary target
         -- @see https://github.com/xmake-io/xmake/issues/1249
         if target:get("default") == true then
-            table.insert(targets, 1, target)
+            table.insert(default_targets, target)
         elseif target:is_binary() then
-            local first_target = targets[1]
-            if not first_target or first_target:is_default() then
-                table.insert(targets, 1, target)
+            if #default_targets == 0 then
+                table.insert(default_targets, target)
             else
                 table.insert(targets, target)
             end
@@ -52,6 +52,9 @@ function _make_projects(slnfile, vsinfo)
             table.insert(targets, target)
         end
     end
+    table.sort(targets, function (a, b) return a:name() < b:name() end)
+    targets = table.join(default_targets, targets)
+
     for _, target in ipairs(targets) do
         local targetname = target:name()
         slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcxproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid4(targetname))
@@ -69,10 +72,17 @@ function _make_projects(slnfile, vsinfo)
         end
     end
 
+    -- sort groups to stabilize generation
+    local orderedgroups = {}
+    for group_name, group_uuid in pairs(groups) do
+        table.insert(orderedgroups, { name = group_name, uuid = group_uuid })
+    end
+    table.sort(orderedgroups, function (a, b) return a.name < b.name end)
+
     -- make all groups
     local project_group_uuid = "2150E333-8FDC-42A3-9474-1A3956D46DE8"
-    for group_name, group_uuid in pairs(groups) do
-        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\", \"{%s}\"", project_group_uuid, group_name, group_name, group_uuid)
+    for _, group in ipairs(orderedgroups) do
+        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\", \"{%s}\"", project_group_uuid, group.name, group.name, group.uuid)
         slnfile:leave("EndProject")
     end
 end
@@ -94,7 +104,7 @@ function _make_global(slnfile, vsinfo)
 
     -- add project configuration platforms
     slnfile:enter("GlobalSection(ProjectConfigurationPlatforms) = postSolution")
-    for targetname, target in pairs(project.targets()) do
+    for targetname, target in pairs(project.ordertargets()) do
         for _, mode in ipairs(vsinfo.modes) do
             for _, arch in ipairs(vsinfo.archs) do
                 local vs_arch = vsutils.vsarch(arch)
@@ -113,12 +123,12 @@ function _make_global(slnfile, vsinfo)
     -- add project groups
     slnfile:enter("GlobalSection(NestedProjects) = preSolution")
     local subgroups = {}
-    for targetname, target in pairs(project.targets()) do
+    for _, target in ipairs(project.ordertargets()) do
         local group_path = target:get("group")
         if group_path then
             -- target -> group
             local group_name = path.filename(group_path)
-            slnfile:print("{%s} = {%s}", hash.uuid4(targetname), hash.uuid4("group." .. group_name))
+            slnfile:print("{%s} = {%s}", hash.uuid4(target:name()), hash.uuid4("group." .. group_name))
             -- group -> group -> ...
             local group_names = path.split(group_path)
             for idx, group_name in ipairs(group_names) do

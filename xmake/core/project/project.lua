@@ -896,7 +896,8 @@ end
 function project.ordertargets()
     local ordertargets = project._memcache():get("ordertargets")
     if not ordertargets then
-        local targets = project.targets()
+        local targets = table.values(project.targets())
+        table.sort(targets, function (a,b) return a:name() < b:name() end)
         ordertargets = {}
         local targetrefs = {}
         for _, t in pairs(targets) do

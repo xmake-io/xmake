@@ -953,6 +953,7 @@ function _instance:orderpkgs(opt)
                 end
             end
         end
+        table.sort(packages, function (a, b) return a:name() < b:name() end)
         self:_memcache():set(cachekey, packages)
     end
     return packages

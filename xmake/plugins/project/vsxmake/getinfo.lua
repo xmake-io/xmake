@@ -172,6 +172,7 @@ function _make_targetinfo(mode, arch, target)
         end
     end
     for k, v in pairs(addrunenvs) do
+        table.sort(v)
         if k:upper() == "PATH" then
             runenvs[k] = _make_dirs(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
@@ -187,6 +188,7 @@ function _make_targetinfo(mode, arch, target)
                 runenvs[k] = v[1]
             end
         else
+            table.sort(v)
             runenvs[k] = path.joinenv(v)
         end
     end
@@ -194,6 +196,8 @@ function _make_targetinfo(mode, arch, target)
     for k, v in pairs(runenvs) do
         table.insert(runenvstr, k .. "=" .. v)
     end
+    table.sort(runenvstr)
+
     targetinfo.runenvs = table.concat(runenvstr, "\n")
 
     local runargs = target:get("runargs")
@@ -431,9 +435,11 @@ function main(outputdir, vsinfo)
 
     -- init modes
     vsinfo.modes = _make_vsinfo_modes()
+    table.sort(vsinfo.modes)
 
     -- init archs
     vsinfo.archs = _make_vsinfo_archs()
+    table.sort(vsinfo.archs)
 
     -- init groups
     local groups, group_deps = _make_vsinfo_groups()
@@ -449,6 +455,7 @@ function main(outputdir, vsinfo)
             table.insert(flags, "--" .. k .. "=" .. tostring(v))
         end
     end
+    table.sort(flags)
     vsinfo.configflags = os.args(flags)
 
     -- load targets
@@ -534,6 +541,10 @@ function main(outputdir, vsinfo)
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
+                -- sort them to stabilize generation
+                table.sort(_target.sourcefiles)
+                table.sort(_target.headerfiles)
+
                 -- save file groups
                 _target.filegroups = target:get("filegroups")
                 _target.filegroups_extraconf = target:extraconf("filegroups")
@@ -582,13 +593,13 @@ function main(outputdir, vsinfo)
     -- we need set startup project for default or binary target
     -- @see https://github.com/xmake-io/xmake/issues/1249
     local targetnames = {}
+    local default_targetnames = {}
     for targetname, target in table.orderpairs(project.targets()) do
         if target:get("default") == true then
-            table.insert(targetnames, 1, targetname)
+            table.insert(default_targetnames, targetname)
         elseif target:is_binary() then
-            local first_target = targetnames[1] and project.target(targetnames[1])
-            if not first_target or first_target:is_default() then
-                table.insert(targetnames, 1, targetname)
+            if #default_targetnames == 0 then
+                table.insert(default_targetnames, targetname)
             else
                 table.insert(targetnames, targetname)
             end
@@ -596,7 +607,9 @@ function main(outputdir, vsinfo)
             table.insert(targetnames, targetname)
         end
     end
-    vsinfo.targets = targetnames
+    table.sort(targetnames)
+    vsinfo.targets = table.join(default_targetnames, targetnames)
+
     vsinfo._targets = targets
     return vsinfo
 end

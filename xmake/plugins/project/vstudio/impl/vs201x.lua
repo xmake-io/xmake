@@ -335,8 +335,9 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
         end
     end
     for k, v in pairs(addrunenvs) do
+        table.sort(v)
         if k:upper() == "PATH" then
-            runenvs[k] = _translate_path(v, vcxprojdir) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
+            runenvs[k] = _translate_path(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
             runenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
         end
@@ -345,11 +346,12 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
         if #v == 1 then
             v = v[1]
             if path.is_absolute(v) and v:startswith(project.directory()) then
-                runenvs[k] = _translate_path(v, vcxprojdir)
+                runenvs[k] = _translate_path(v)
             else
                 runenvs[k] = v[1]
             end
         else
+            table.sort(v)
             runenvs[k] = path.joinenv(v)
         end
     end
@@ -357,6 +359,8 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     for k, v in pairs(runenvs) do
         table.insert(runenvstr, k .. "=" .. v)
     end
+    table.sort(runenvstr)
+
     targetinfo.runenvs = table.concat(runenvstr, "\n")
 
     -- use mfc? save the mfc runtime kind
@@ -555,9 +559,11 @@ function make(outputdir, vsinfo)
 
     -- init modes
     vsinfo.modes = _make_vsinfo_modes()
+    table.sort(vsinfo.modes)
 
     -- init archs
     vsinfo.archs = _make_vsinfo_archs()
+    table.sort(vsinfo.archs)
 
     -- load targets
     local targets = {}
@@ -635,6 +641,10 @@ function make(outputdir, vsinfo)
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
+
+                -- sort them to stabilize generation
+                table.sort(_target.sourcefiles)
+                table.sort(_target.headerfiles)
 
                 -- save file groups
                 _target.filegroups = target:get("filegroups")

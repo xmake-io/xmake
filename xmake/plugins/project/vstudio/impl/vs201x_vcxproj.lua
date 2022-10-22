@@ -1330,12 +1330,19 @@ function _make_source_files(vcxprojfile, vsinfo, target)
             end
         end
 
-        -- make source files
+        -- order source file infos
+        local ordered_sourceinfos = {}
         for sourcefile, sourceinfo in pairs(sourceinfos) do
-            if #sourceinfo == #target.info then
-                _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourceinfo)
+            table.insert(ordered_sourceinfos, { file = sourcefile, info = sourceinfo })
+        end
+        table.sort(ordered_sourceinfos, function (a, b) return a.file < b.file end)
+
+        -- make source files
+        for _, source in ipairs(ordered_sourceinfos) do
+            if #source.info == #target.info then
+                _make_source_file_forall(vcxprojfile, vsinfo, target, source.file, source.info)
             else
-                _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sourceinfo)
+                _make_source_file_forspec(vcxprojfile, vsinfo, target, source.file, source.info)
             end
         end
 
