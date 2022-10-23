@@ -980,7 +980,9 @@ function _instance:pkgenvs()
                 end
             end
         end
-        for _, pkg in pkgs:keys() do
+        local orderedpkgs = pkgs:to_array()
+        table.sort(orderedpkgs, function (a, b) return a:name() < b:name() end)
+        for _, pkg in ipairs(orderedpkgs) do
             local envs = pkg:get("envs")
             if envs then
                 for name, values in pairs(envs) do

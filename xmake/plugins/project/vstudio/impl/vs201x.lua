@@ -335,7 +335,6 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
         end
     end
     for k, v in pairs(addrunenvs) do
-        table.sort(v)
         if k:upper() == "PATH" then
             runenvs[k] = _translate_path(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
@@ -351,7 +350,6 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
                 runenvs[k] = v[1]
             end
         else
-            table.sort(v)
             runenvs[k] = path.joinenv(v)
         end
     end

@@ -37,7 +37,7 @@ function _make_projects(slnfile, vsinfo)
     local targets = {}
     local default_targets = {}
     local vctool = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
-    for targetname, target in pairs(project.ordertargets()) do
+    for _, target in ipairs(project.ordertargets()) do
         -- we need set startup project for default or binary target
         -- @see https://github.com/xmake-io/xmake/issues/1249
         if target:get("default") == true then
@@ -104,7 +104,7 @@ function _make_global(slnfile, vsinfo)
 
     -- add project configuration platforms
     slnfile:enter("GlobalSection(ProjectConfigurationPlatforms) = postSolution")
-    for targetname, target in pairs(project.ordertargets()) do
+    for _, target in ipairs(project.ordertargets()) do
         for _, mode in ipairs(vsinfo.modes) do
             for _, arch in ipairs(vsinfo.archs) do
                 local vs_arch = vsutils.vsarch(arch)
