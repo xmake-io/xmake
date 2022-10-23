@@ -162,7 +162,10 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
 
         -- check hash
         if sourcehash and sourcehash ~= hash.sha256(packagefile) then
-            raise("unmatched checksum!")
+            if package:is_precompiled() then
+                wprint("perhaps the local binary repository is not up to date, please run `xrepo update-repo` to update it and try again!")
+            end
+            raise("unmatched checksum, current hash(%s) != original hash(%s)", hash.sha256(packagefile):sub(1, 8), sourcehash:sub(1, 8))
         end
     end
 
