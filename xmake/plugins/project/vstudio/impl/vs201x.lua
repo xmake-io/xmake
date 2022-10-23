@@ -336,7 +336,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     end
     for k, v in pairs(addrunenvs) do
         if k:upper() == "PATH" then
-            runenvs[k] = _translate_path(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
+            runenvs[k] = _translate_path(v, vcxprojdir) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
             runenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
         end
@@ -345,7 +345,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
         if #v == 1 then
             v = v[1]
             if path.is_absolute(v) and v:startswith(project.directory()) then
-                runenvs[k] = _translate_path(v)
+                runenvs[k] = _translate_path(v, vcxprojdir)
             else
                 runenvs[k] = v[1]
             end
@@ -557,11 +557,13 @@ function make(outputdir, vsinfo)
 
     -- init modes
     vsinfo.modes = _make_vsinfo_modes()
-    table.sort(vsinfo.modes)
 
     -- init archs
     vsinfo.archs = _make_vsinfo_archs()
+
+    -- sort modes and archs to stabilize generation
     table.sort(vsinfo.archs)
+    table.sort(vsinfo.modes)
 
     -- load targets
     local targets = {}
