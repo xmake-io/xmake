@@ -55,7 +55,15 @@ function _checkout(package, url, sourcedir, url_alias)
     end
 
     -- we can use local package from the search directories directly if network is too slow
-    local localdir = find_directory(package:name() .. archive.extension(url), core_package.searchdirs())
+    local localdir
+    local searchnames = {package:name() .. archive.extension(url),
+                         path.basename(url_filename(url))}
+    for _, searchname in ipairs(searchnames) do
+        localdir = find_directory(searchname, core_package.searchdirs())
+        if localdir then
+            break
+        end
+    end
     if localdir and os.isdir(path.join(localdir, ".git")) then
         git.clean({repodir = localdir, force = true, all = true})
         git.reset({repodir = localdir, hard = true})
@@ -308,7 +316,16 @@ function main(package)
                             local searchnames = hashset.new()
                             for _, url_failed in ipairs(urls_failed) do
                                 cprint("  ${yellow}- %s", url_failed)
-                                searchnames:insert(url_filename(url_failed))
+                                if git.checkurl(url_failed) then
+                                    searchnames:insert(package:name() .. archive.extension(url_failed))
+                                    searchnames:insert(path.basename(url_filename(url_failed)))
+                                else
+                                    local extension = archive.extension(url_failed)
+                                    if extension then
+                                        searchnames:insert(package:name() .. "-" .. package:version_str() .. extension)
+                                    end
+                                    searchnames:insert(url_filename(url_failed))
+                                end
                             end
                             cprint("to the local search directories: ${bright}%s", table.concat(table.wrap(core_package.searchdirs()), path.envsep()))
                             cprint("  ${bright}- %s", table.concat(searchnames:to_array(), ", "))

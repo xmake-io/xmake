@@ -154,11 +154,16 @@ function main(requires_raw)
         local searchnames = hashset.new()
         for _, url in ipairs(instance:urls()) do
             url = filter.handle(url, instance)
-            local extension = archive.extension(url)
-            if extension then
-                searchnames:insert(instance:name() .. "-" .. instance:version_str() .. extension)
+            if git.checkurl(url) then
+                searchnames:insert(instance:name() .. archive.extension(url))
+                searchnames:insert(path.basename(url_filename(url)))
+            else
+                local extension = archive.extension(url)
+                if extension then
+                    searchnames:insert(instance:name() .. "-" .. instance:version_str() .. extension)
+                end
+                searchnames:insert(url_filename(url))
             end
-            searchnames:insert(url_filename(url))
         end
         cprint("      -> ${color.dump.string_quote}searchnames${clear}: %s", table.concat(searchnames:to_array(), ", "))
 
