@@ -25,9 +25,9 @@ jobs:
           usesh: true
           mem: 4096
           copyback: false
-          prepare: pkg install -y curl unzip gmake llvm gsed bash perl5
+          prepare: pkg_add curl unzip gmake llvm gsed bash perl5
           run: |
-            gmake -j4
+            gmake -j4 BUILD_ARCH=x86_64
             gmake install
             export XMAKE_ROOT=y
             xrepo --version

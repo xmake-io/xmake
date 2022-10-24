@@ -135,7 +135,7 @@ static tb_bool_t xm_os_meminfo_stats(tb_int_t* ptotalsize, tb_int_t* pavailsize)
         *pavailsize = (tb_int_t)(statex.ullAvailPhys / (1024 * 1024));
         return tb_true;
     }
-#elif defined(TB_CONFIG_OS_BSD)
+#elif defined(TB_CONFIG_OS_BSD) && !defined(__OpenBSD__)
     unsigned long totalsize;
     size_t size = sizeof(totalsize);
     if (sysctlbyname("hw.physmem", &totalsize, &size, tb_null, 0) != 0)
