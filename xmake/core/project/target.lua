@@ -982,7 +982,7 @@ function _instance:pkgenvs()
         for _, pkg in pkgs:orderkeys() do
             local envs = pkg:get("envs")
             if envs then
-                for name, values in pairs(envs) do
+                for name, values in table.orderpairs(envs) do
                     if type(values) == "table" then
                         values = path.joinenv(values)
                     end
