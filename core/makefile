@@ -158,12 +158,14 @@ BUILD_ARCH	:=$(if $(findstring msys,$(PLAT)),$(MSYSARCH),$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring cygwin,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring macosx,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring linux,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring bsd,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring bsd,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring iphoneos,$(PLAT)),arm64,$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring android,$(PLAT)),armv7,$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring i686,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring x32,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring x64,$(BUILD_ARCH)),x86_64,$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring amd64,$(BUILD_ARCH)),x86_64,$(BUILD_ARCH))
 
 # on termux/ci
 ifneq ($(TERMUX_ARCH),)
@@ -295,7 +297,7 @@ base_LIBPATH	:=
 base_LIBNAMES	:=
 base_LIBNAMES	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi )
 base_LIBNAMES	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi )
-base_LIBNAMES	+= m dl pthread
+base_LIBNAMES	+= m pthread
 endif
 
 # get branch and commit

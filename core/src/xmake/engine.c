@@ -52,7 +52,7 @@
  */
 #if defined(TB_CONFIG_OS_LINUX)
 #   define XM_PROC_SELF_FILE        "/proc/self/exe"
-#elif defined(TB_CONFIG_OS_BSD)
+#elif defined(TB_CONFIG_OS_BSD) && !defined(__OpenBSD__)
 #   if defined(__FreeBSD__)
 #       define XM_PROC_SELF_FILE    "/proc/curproc/file"
 #   elif defined(__NetBSD__)
