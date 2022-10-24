@@ -24,7 +24,7 @@ import("core.project.project")
 -- register required package environments
 -- envs: bin path for *.dll, program ..
 function _register_required_package_envs(instance, envs)
-    for name, values in pairs(instance:envs()) do
+    for name, values in table.orderpairs(instance:envs()) do
         envs[name] = envs[name] or {}
         table.join2(envs[name], values)
     end
@@ -67,7 +67,7 @@ function _register_required_package_libs(instance, required_package, is_deps)
             if required_components then
                 fetchinfo.libfiles = nil
                 local components_base = required_components.__base or {}
-                for k, v in pairs(fetchinfo) do
+                for k, v in table.orderpairs(fetchinfo) do
                     local values = table.wrap(components_base[k])
                     components_base[k] = table.unwrap(table.unique(table.join(values, v)))
                 end
