@@ -979,7 +979,7 @@ function _instance:pkgenvs()
                 end
             end
         end
-        for _, pkg in pkgs:keys() do
+        for _, pkg in pkgs:orderkeys() do
             local envs = pkg:get("envs")
             if envs then
                 for name, values in pairs(envs) do

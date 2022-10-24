@@ -109,10 +109,53 @@ function hashset_impl:to_array()
 end
 
 -- iterate keys of hashtable
--- for _, key in instance:keys() do ... end
+--
+-- @code
+-- for _, key in instance:keys() do
+--   ...
+-- end
+-- @endcode
+--
 function hashset_impl:keys()
-    return function (table, key)
-        local k, _ = next(table._DATA, key)
+    return function (t, key)
+        local k, _ = next(t._DATA, key)
+        if k == hashset._NIL then
+            return k, nil
+        else
+            return k, k
+        end
+    end, self, nil
+end
+
+-- order keys iterator
+--
+-- @code
+-- for _, key in instance:orderkeys() do
+--   ...
+-- end
+-- @endcode
+--
+function hashset_impl:orderkeys()
+    local orderkeys = table.keys(self._DATA)
+    table.sort(orderkeys, function (a, b)
+        if a == hashset._NIL then
+            a = math.inf
+        end
+        if b == hashset._NIL then
+            b = math.inf
+        end
+        if type(a) == "table" then
+            a = tostring(a)
+        end
+        if type(b) == "table" then
+            b = tostring(b)
+        end
+        return a < b
+    end)
+    local i = 1
+    return function (t, k)
+        k = orderkeys[i]
+        i = i + 1
         if k == hashset._NIL then
             return k, nil
         else
