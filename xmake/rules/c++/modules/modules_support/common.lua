@@ -224,7 +224,9 @@ function parse_dependency_data(target, moduleinfos)
                     else
                         -- assume path with name
                         local name = provide["logical-name"] .. bmi_extension(target)
-                        name:replace(":", "-")
+                        -- partition ":" character is invalid path character on windows
+                        -- @see https://github.com/xmake-io/xmake/issues/2954
+                        name = name:replace(":", "-")
                         m.provides[provide["logical-name"]] = {
                             bmi = path.join(cachedir, name),
                             sourcefile = moduleinfo.sourcefile
