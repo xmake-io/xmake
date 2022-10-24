@@ -379,6 +379,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         if not os.isdir(objectdir) then
                             os.mkdir(objectdir)
                         end
+                        bmifile = string.gsub(bmifile, ":", "-")
                         local args = { "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile}
                         os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, args))
                         os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, {bmifile}, {"-c", "-o", objectfile}))
