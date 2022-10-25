@@ -13,6 +13,7 @@
 
 * [#2925](https://github.com/xmake-io/xmake/issues/2925): Improve doxygen plugin
 * [#2948](https://github.com/xmake-io/xmake/issues/2948): Support OpenBSD
+* Add `xmake g --insecure-ssl` option to disable ssl certificate when downloading packages
 
 ### Bugs fixed
 
@@ -1433,6 +1434,7 @@
 
 * [#2925](https://github.com/xmake-io/xmake/issues/2925): 改进 doxygen 插件
 * [#2948](https://github.com/xmake-io/xmake/issues/2948): 支持 OpenBSD
+* 添加 `xmake g --insecure-ssl` 配置选项去禁用 ssl 证书检测
 
 ### Bugs 修复
 
