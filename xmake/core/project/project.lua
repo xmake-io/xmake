@@ -899,7 +899,7 @@ function project.ordertargets()
         local targets = project.targets()
         ordertargets = {}
         local targetrefs = {}
-        for _, t in pairs(targets) do
+        for _, t in table.orderpairs(targets) do
             instance_deps.sort_deps(targets, ordertargets, targetrefs, t)
         end
         project._memcache():set("ordertargets", ordertargets)
