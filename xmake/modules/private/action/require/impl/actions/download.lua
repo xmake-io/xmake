@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.global")
 import("core.base.tty")
 import("core.base.hashset")
 import("core.project.config")
@@ -156,7 +157,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
                 -- we can use local package from the search directories directly if network is too slow
                 os.cp(localfile, packagefile)
             else
-                http.download(url, packagefile)
+                http.download(url, packagefile, {insecure = global.get("insecure-ssl")})
             end
         end
 

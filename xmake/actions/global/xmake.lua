@@ -41,9 +41,10 @@ task("global")
 
                     -- network configuration
                     {category = "Network Configuration"},
-                    {nil, "network",        "kv", "public"  , "Set the network mode."
+                    {nil, "network",        "kv", "public" , "Set the network mode."
                                                            , values = {"public", "private"}                               },
-                    {'x', "proxy",          "kv", nil       , "Use proxy on given port. [protocol://]host[:port]"
+                    {nil, "insecure-ssl",   "k", nil       , "Disable to check ssl certificates for downloading."         },
+                    {'x', "proxy",          "kv", nil      , "Use proxy on given port. [protocol://]host[:port]"
                                                            , "    e.g."
                                                            , "    - xmake g --proxy='http://host:port'"
                                                            , "    - xmake g --proxy='https://host:port'"
