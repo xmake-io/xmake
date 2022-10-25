@@ -1191,7 +1191,7 @@ function project.modes()
         modes = allowed_modes:to_array()
     else
         modes = {}
-        for _, target in pairs(table.wrap(project.targets())) do
+        for _, target in table.orderpairs(table.wrap(project.targets())) do
             for _, rule in ipairs(target:orderules()) do
                 local name = rule:name()
                 if name:startswith("mode.") then
