@@ -636,6 +636,10 @@ function make(outputdir, vsinfo)
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
+                -- sort them to stabilize generation
+                table.sort(_target.sourcefiles)
+                table.sort(_target.headerfiles)
+
                 -- save file groups
                 _target.filegroups = target:get("filegroups")
                 _target.filegroups_extraconf = target:extraconf("filegroups")
