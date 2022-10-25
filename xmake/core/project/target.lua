@@ -775,7 +775,7 @@ function _instance:orderules()
     if orderules == nil and rules then
         orderules = {}
         local rulerefs = {}
-        for _, r in pairs(rules) do
+        for _, r in table.orderpairs(rules) do
             instance_deps.sort_deps(rules, orderules, rulerefs, r)
         end
         self._ORDERULES = orderules
