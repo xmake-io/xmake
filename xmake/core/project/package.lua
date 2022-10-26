@@ -256,6 +256,12 @@ function _instance:_sort_componentdeps(name)
     return orderdeps
 end
 
+-- we need sort package set keys by this string
+-- @see https://github.com/xmake-io/xmake/pull/2971#issuecomment-1290052169
+function _instance:__tostring()
+    return "<package: " .. self:name() .. ">"
+end
+
 -- get cache
 function package._cache()
     return localcache.cache("package")

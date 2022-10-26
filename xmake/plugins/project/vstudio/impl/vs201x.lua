@@ -213,7 +213,7 @@ function _make_custom_commands(target, vcxprojdir)
     local commands = {}
     _make_custom_commands_for_target(commands, target, vcxprojdir, "before")
     _make_custom_commands_for_target(commands, target, vcxprojdir)
-    for _, sourcebatch in pairs(target:sourcebatches()) do
+    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
         local rulename = sourcebatch.rulename
         local sourcekind = sourcebatch.sourcekind
         if rulename ~= "c.build" and rulename ~= "c++.build" and rulename ~= "asm.build" and rulename ~= "cuda.build" and sourcekind ~= "mrc" then
@@ -281,7 +281,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     local firstcompflags = nil
     targetinfo.compflags = {}
     targetinfo.compargvs = {}
-    for _, sourcebatch in pairs(target:sourcebatches()) do
+    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
         local sourcekind = sourcebatch.sourcekind
         local rulename = sourcebatch.rulename
         if sourcekind then
@@ -324,24 +324,24 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     -- save runenvs
     local runenvs = {}
     local addrunenvs, setrunenvs = make_runenvs(target)
-    for k, v in pairs(target:pkgenvs()) do
+    for k, v in table.orderpairs(target:pkgenvs()) do
         addrunenvs = addrunenvs or {}
         addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
     end
     for _, dep in ipairs(target:orderdeps()) do
-        for k, v in pairs(dep:pkgenvs()) do
+        for k, v in table.orderpairs(dep:pkgenvs()) do
             addrunenvs = addrunenvs or {}
             addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
         end
     end
-    for k, v in pairs(addrunenvs) do
+    for k, v in table.orderpairs(addrunenvs) do
         if k:upper() == "PATH" then
             runenvs[k] = _translate_path(v, vcxprojdir) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
             runenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
         end
     end
-    for k, v in pairs(setrunenvs) do
+    for k, v in table.orderpairs(setrunenvs) do
         if #v == 1 then
             v = v[1]
             if path.is_absolute(v) and v:startswith(project.directory()) then
@@ -354,7 +354,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
         end
     end
     local runenvstr = {}
-    for k, v in pairs(runenvs) do
+    for k, v in table.orderpairs(runenvs) do
         table.insert(runenvstr, k .. "=" .. v)
     end
     targetinfo.runenvs = table.concat(runenvstr, "\n")
@@ -612,7 +612,7 @@ function make(outputdir, vsinfo)
             os.cd(project.directory())
 
             -- save targets
-            for targetname, target in pairs(project.targets()) do
+            for targetname, target in table.orderpairs(project.targets()) do
 
                 -- make target with the given mode and arch
                 targets[targetname] = targets[targetname] or {}
@@ -636,6 +636,10 @@ function make(outputdir, vsinfo)
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
+                -- sort them to stabilize generation
+                table.sort(_target.sourcefiles)
+                table.sort(_target.headerfiles)
+
                 -- save file groups
                 _target.filegroups = target:get("filegroups")
                 _target.filegroups_extraconf = target:extraconf("filegroups")
@@ -650,7 +654,7 @@ function make(outputdir, vsinfo)
     vs201x_solution.make(vsinfo)
 
     -- make .vcxproj
-    for _, target in pairs(targets) do
+    for _, target in table.orderpairs(targets) do
         vs201x_vcxproj.make(vsinfo, target)
         vs201x_vcxproj_filters.make(vsinfo, target)
     end

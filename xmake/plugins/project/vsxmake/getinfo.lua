@@ -161,24 +161,24 @@ function _make_targetinfo(mode, arch, target)
     -- save runenvs
     local runenvs = {}
     local addrunenvs, setrunenvs = make_runenvs(target)
-    for k, v in pairs(target:pkgenvs()) do
+    for k, v in table.orderpairs(target:pkgenvs()) do
         addrunenvs = addrunenvs or {}
         addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
     end
     for _, dep in ipairs(target:orderdeps()) do
-        for k, v in pairs(dep:pkgenvs()) do
+        for k, v in table.orderpairs(dep:pkgenvs()) do
             addrunenvs = addrunenvs or {}
             addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
         end
     end
-    for k, v in pairs(addrunenvs) do
+    for k, v in table.orderpairs(addrunenvs) do
         if k:upper() == "PATH" then
             runenvs[k] = _make_dirs(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
             runenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
         end
     end
-    for k, v in pairs(setrunenvs) do
+    for k, v in table.orderpairs(setrunenvs) do
         if #v == 1 then
             v = v[1]
             if path.is_absolute(v) and v:startswith(project.directory()) then
@@ -191,7 +191,7 @@ function _make_targetinfo(mode, arch, target)
         end
     end
     local runenvstr = {}
-    for k, v in pairs(runenvs) do
+    for k, v in table.orderpairs(runenvs) do
         table.insert(runenvstr, k .. "=" .. v)
     end
     targetinfo.runenvs = table.concat(runenvstr, "\n")
@@ -272,7 +272,7 @@ end
 function _make_vsinfo_groups()
     local groups = {}
     local group_deps = {}
-    for targetname, target in pairs(project.targets()) do
+    for targetname, target in table.orderpairs(project.targets()) do
         local group_path = target:get("group")
         if group_path then
             local group_name = path.filename(group_path)
@@ -442,7 +442,7 @@ function main(outputdir, vsinfo)
 
     -- init config flags
     local flags = {}
-    for k, v in pairs(localcache.get("config", "options")) do
+    for k, v in table.orderpairs(localcache.get("config", "options")) do
         if k ~= "plat" and k ~= "mode" and k ~= "arch" and k ~= "clean" and k ~= "buildir" then
             table.insert(flags, "--" .. k .. "=" .. tostring(v))
         end
@@ -502,7 +502,7 @@ function main(outputdir, vsinfo)
             os.cd(project.directory())
 
             -- save targets
-            for targetname, target in pairs(project.targets()) do
+            for targetname, target in table.orderpairs(project.targets()) do
 
                 -- https://github.com/xmake-io/xmake/issues/2337
                 target:data_set("plugin.project.kind", "vsxmake")
@@ -532,6 +532,10 @@ function main(outputdir, vsinfo)
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
+                -- sort them to stabilize generation
+                table.sort(_target.sourcefiles)
+                table.sort(_target.headerfiles)
+
                 -- save file groups
                 _target.filegroups = target:get("filegroups")
                 _target.filegroups_extraconf = target:extraconf("filegroups")
@@ -542,7 +546,7 @@ function main(outputdir, vsinfo)
         end
     end
     os.cd(oldir)
-    for _, target in pairs(targets) do
+    for _, target in table.orderpairs(targets) do
         target._paths = {}
         local dirs = {}
         local projectdir = project.directory()

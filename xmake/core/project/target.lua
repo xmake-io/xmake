@@ -775,7 +775,7 @@ function _instance:orderules()
     if orderules == nil and rules then
         orderules = {}
         local rulerefs = {}
-        for _, r in pairs(rules) do
+        for _, r in table.orderpairs(rules) do
             instance_deps.sort_deps(rules, orderules, rulerefs, r)
         end
         self._ORDERULES = orderules
@@ -979,10 +979,10 @@ function _instance:pkgenvs()
                 end
             end
         end
-        for _, pkg in pkgs:keys() do
+        for _, pkg in pkgs:orderkeys() do
             local envs = pkg:get("envs")
             if envs then
-                for name, values in pairs(envs) do
+                for name, values in table.orderpairs(envs) do
                     if type(values) == "table" then
                         values = path.joinenv(values)
                     end

@@ -440,6 +440,9 @@ end
 --   TODO
 -- end
 function table.orderpairs(t)
+    if type(t) ~= "table" then
+        t = t ~= nil and {t} or {}
+    end
     local orderkeys = table.orderkeys(t)
     local i = 1
     return function (t, k)

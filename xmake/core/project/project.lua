@@ -899,7 +899,7 @@ function project.ordertargets()
         local targets = project.targets()
         ordertargets = {}
         local targetrefs = {}
-        for _, t in pairs(targets) do
+        for _, t in table.orderpairs(targets) do
             instance_deps.sort_deps(targets, ordertargets, targetrefs, t)
         end
         project._memcache():set("ordertargets", ordertargets)
@@ -1191,7 +1191,7 @@ function project.modes()
         modes = allowed_modes:to_array()
     else
         modes = {}
-        for _, target in pairs(table.wrap(project.targets())) do
+        for _, target in table.orderpairs(table.wrap(project.targets())) do
             for _, rule in ipairs(target:orderules()) do
                 local name = rule:name()
                 if name:startswith("mode.") then
