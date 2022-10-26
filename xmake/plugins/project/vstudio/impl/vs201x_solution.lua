@@ -36,7 +36,7 @@ function _make_projects(slnfile, vsinfo)
     local groups = {}
     local targets = {}
     local vctool = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
-    for targetname, target in pairs(project.targets()) do
+    for targetname, target in table.orderpairs(project.targets()) do
         -- we need set startup project for default or binary target
         -- @see https://github.com/xmake-io/xmake/issues/1249
         if target:get("default") == true then
@@ -71,7 +71,7 @@ function _make_projects(slnfile, vsinfo)
 
     -- make all groups
     local project_group_uuid = "2150E333-8FDC-42A3-9474-1A3956D46DE8"
-    for group_name, group_uuid in pairs(groups) do
+    for group_name, group_uuid in table.orderpairs(groups) do
         slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\", \"{%s}\"", project_group_uuid, group_name, group_name, group_uuid)
         slnfile:leave("EndProject")
     end
@@ -94,7 +94,7 @@ function _make_global(slnfile, vsinfo)
 
     -- add project configuration platforms
     slnfile:enter("GlobalSection(ProjectConfigurationPlatforms) = postSolution")
-    for targetname, target in pairs(project.targets()) do
+    for targetname, target in table.orderpairs(project.targets()) do
         for _, mode in ipairs(vsinfo.modes) do
             for _, arch in ipairs(vsinfo.archs) do
                 local vs_arch = vsutils.vsarch(arch)
@@ -113,7 +113,7 @@ function _make_global(slnfile, vsinfo)
     -- add project groups
     slnfile:enter("GlobalSection(NestedProjects) = preSolution")
     local subgroups = {}
-    for targetname, target in pairs(project.targets()) do
+    for targetname, target in table.orderpairs(project.targets()) do
         local group_path = target:get("group")
         if group_path then
             -- target -> group
