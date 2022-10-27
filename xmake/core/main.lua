@@ -124,6 +124,11 @@ function main._init()
     scheduler:enable(false)
 
     -- get project directory and project file from the argument option
+    --
+    -- @note we need to put `-P` in the first argument avoid option.parse() parsing errors
+    -- e.g. `xmake f -c -P xxx` will be parsed as `-c=-P`, it's incorrect.
+    --
+    -- maybe we will improve this later
     local options, err = main._basicparse()
     if not options then
         return false, err
