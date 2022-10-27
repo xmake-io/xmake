@@ -28,6 +28,14 @@ local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
 
+-- get the function key
+function profiler:_func_key(funcinfo)
+    local name = funcinfo.name or 'anonymous'
+    local line = funcinfo.linedefined or 0
+    local source = funcinfo.short_src or 'C_FUNC'
+    return name .. source .. line
+end
+
 -- get the function title
 function profiler:_func_title(funcinfo)
     local name = funcinfo.name or 'anonymous'
@@ -41,16 +49,16 @@ end
 
 -- get the function report
 function profiler:_func_report(funcinfo)
-    local title = self:_func_title(funcinfo)
-    local report = self._REPORTS_BY_TITLE[title]
+    local key = self:_func_key(funcinfo)
+    local report = self._REPORTS_BY_TITLE[key]
     if not report then
         report =
         {
-            title       = self:_func_title(funcinfo)
+            funcinfo    = funcinfo
         ,   callcount   = 0
         ,   totaltime   = 0
         }
-        self._REPORTS_BY_TITLE[title] = report
+        self._REPORTS_BY_TITLE[key] = report
         table.insert(self._REPORTS, report)
     end
     return report
@@ -143,7 +151,7 @@ function profiler:stop()
             end
 
             -- trace
-            utils.print("%6.3f, %6.2f%%, %7d, %s", report.totaltime, percent, report.callcount, report.title)
+            utils.print("%6.3f, %6.2f%%, %7d, %s", report.totaltime, percent, report.callcount, self:_func_title(report.funcinfo))
         end
    end
 end
