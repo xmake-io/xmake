@@ -133,7 +133,6 @@ function main._init()
     if not options then
         return false, err
     end
-    print("options.project", options.project)
 
     -- init project paths only for xmake engine
     if xmake._NAME == "xmake" then
