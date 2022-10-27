@@ -142,6 +142,7 @@ end
 function _set_builtin_argv(argv)
     -- if the package cache directory is modified,
     -- we need to force the project directory to be specified to avoid interference by the upper level xmake.lua.
+    -- and we also need to put `-P` in the first argument to avoid option.parse() parsing errors
     local cachedir = os.getenv("XMAKE_PKG_CACHEDIR") or global.get("pkg_cachedir")
     if cachedir then
         table.insert(argv, "-P")
@@ -249,8 +250,11 @@ function install(package, configs, opt)
     end
 
     -- pass configurations
-    local argv = {"f", "-y", "-c"}
+    -- we need to put `-P` in the first argument of _set_builtin_argv() to avoid option.parse() parsing errors
+    local argv = {"f"}
     _set_builtin_argv(argv)
+    table.insert(argv, "-y")
+    table.insert(argv, "-c")
     for name, value in pairs(_get_configs(package, configs)) do
         value = tostring(value):trim()
         if type(name) == "number" then

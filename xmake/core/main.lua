@@ -125,9 +125,11 @@ function main._init()
 
     -- get project directory and project file from the argument option
     local options, err = main._basicparse()
+    utils.dump(options)
     if not options then
         return false, err
     end
+    print("options.project", options.project)
 
     -- init project paths only for xmake engine
     if xmake._NAME == "xmake" then
