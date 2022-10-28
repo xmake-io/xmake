@@ -50,7 +50,7 @@ end
 -- get the function report
 function profiler:_func_report(funcinfo)
     local key = self:_func_key(funcinfo)
-    local report = self._REPORTS_BY_TITLE[key]
+    local report = self._REPORTS_BY_KEY[key]
     if not report then
         report =
         {
@@ -58,7 +58,7 @@ function profiler:_func_report(funcinfo)
         ,   callcount   = 0
         ,   totaltime   = 0
         }
-        self._REPORTS_BY_TITLE[key] = report
+        self._REPORTS_BY_KEY[key] = report
         table.insert(self._REPORTS, report)
     end
     return report
@@ -110,9 +110,9 @@ function profiler:start()
     if mode and mode == "trace" then
         debug.sethook(profiler._tracing_handler, 'cr', 0)
     else
-        self._REPORTS           = {}
-        self._REPORTS_BY_TITLE  = {}
-        self._STARTIME = os.clock()
+        self._REPORTS        = self._REPORTS or {}
+        self._REPORTS_BY_KEY = self._REPORTS_BY_KEY or {}
+        self._STARTIME       = self._STARTIME or os.clock()
         debug.sethook(profiler._profiling_handler, 'cr', 0)
     end
 end

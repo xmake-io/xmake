@@ -275,26 +275,20 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     -- run task
     scheduler:enable(true)
     scheduler:co_start_named("xmake " .. taskname, function ()
-
-        -- start profiling
-        if profiler:enabled() then
-            profiler:start()
-        end
-
-        -- do task
         local ok, errors = taskinst:run()
         if not ok then
             os.raise(errors)
         end
 
-        -- stop profiling
-        if profiler:enabled() then
-            profiler:stop()
-        end
     end)
     ok, errors = scheduler:runloop()
     if not ok then
         return main._exit(ok, errors)
+    end
+
+    -- stop profiling
+    if profiler:enabled() then
+        profiler:stop()
     end
 
     -- exit normally

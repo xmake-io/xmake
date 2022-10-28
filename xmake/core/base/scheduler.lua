@@ -360,6 +360,18 @@ function scheduler:_co_groups_resume()
     return resumed_count
 end
 
+-- get profiler
+function scheduler:_profiler()
+    local profiler = self._PROFILE
+    if profiler == nil then
+        profiler = require("base/profiler")
+        if not profiler:enabled() then
+            profiler = false
+        end
+    end
+    return profiler or nil
+end
+
 -- start a new coroutine task
 function scheduler:co_start(cotask, ...)
     return self:co_start_named(nil, cotask, ...)
@@ -383,6 +395,10 @@ function scheduler:co_start_withopt(opt, cotask, ...)
     -- start coroutine
     local co
     co = _coroutine.new(coname, coroutine.create(function(...)
+        local profiler = self:_profiler()
+        if profiler and profiler:enabled() then
+            profiler:start()
+        end
         self:_co_curdir_update()
         self:_co_curenvs_update()
         cotask(...)
