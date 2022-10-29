@@ -257,10 +257,15 @@ function _make_vsinfo_archs()
             end
         end
         if not vsinfo_archs then
-            vsinfo_archs = toolchain.load("msvc"):config("vcarchs")
-        end
-        if not vsinfo_archs then
-            vsinfo_archs = platform.archs()
+            local default_archs = toolchain.load("msvc"):config("vcarchs")
+            if not default_archs then
+                default_archs = platform.archs()
+            end
+            if default_archs then
+                default_archs = hashset.from(table.wrap(default_archs))
+                default_archs:remove("arm64")
+                vsinfo_archs = default_archs:to_array()
+            end
         end
     end
     if not vsinfo_archs or #vsinfo_archs == 0 then
