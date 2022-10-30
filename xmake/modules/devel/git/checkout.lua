@@ -40,10 +40,12 @@ function main(commit, opt)
     opt = opt or {}
     local git = assert(find_tool("git"), "git not found!")
     local argv = {}
-
-    if opt.fsmonitor ~= nil then
+    if opt.fsmonitor then
         table.insert(argv, "-c")
-        table.insert(argv, "core.fsmonitor=" .. tostring(opt.fsmonitor))
+        table.insert(argv, "core.fsmonitor=true")
+    else
+        table.insert(argv, "-c")
+        table.insert(argv, "core.fsmonitor=false")
     end
 
     table.insert(argv, "checkout")
