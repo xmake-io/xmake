@@ -44,7 +44,12 @@ function main(opt)
     local git = assert(find_tool("git"), "git not found!")
 
     -- init argv
-    local argv = {"reset"}
+    local argv = {}
+    if opt.fsmonitor ~= nil then
+        table.insert(argv, "-c")
+        table.insert(argv, "core.fsmonitor=" .. tostring(opt.fsmonitor))
+    end
+    table.insert(argv, "reset")
 
     -- verbose?
     if not option.get("verbose") then

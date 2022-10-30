@@ -44,7 +44,13 @@ function main(opt)
     local git = assert(find_tool("git"), "git not found!")
 
     -- init argv
-    local argv = {"submodule", "update"}
+    local argv = {}
+    if opt.fsmonitor ~= nil then
+        table.insert(argv, "-c")
+        table.insert(argv, "core.fsmonitor=" .. tostring(opt.fsmonitor))
+    end
+    table.insert(argv, "submodule")
+    table.insert(argv, "update")
     for _, name in ipairs({"init", "remote", "force", "checkout", "merge", "rebase", "recursive"}) do
         if opt[name] then
             table.insert(argv, "--" .. name)

@@ -45,7 +45,12 @@ function main(opt)
     local git = assert(find_tool("git"), "git not found!")
 
     -- init argv
-    local argv = {"pull"}
+    local argv = {}
+    if opt.fsmonitor ~= nil then
+        table.insert(argv, "-c")
+        table.insert(argv, "core.fsmonitor=" .. tostring(opt.fsmonitor))
+    end
+    table.insert(argv, "pull")
 
     -- set remote
     table.insert(argv, opt.remote or "origin")

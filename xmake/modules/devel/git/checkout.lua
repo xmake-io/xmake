@@ -39,6 +39,14 @@ import("lib.detect.find_tool")
 function main(commit, opt)
     opt = opt or {}
     local git = assert(find_tool("git"), "git not found!")
-    local argv = {"checkout", commit}
+    local argv = {}
+
+    if opt.fsmonitor ~= nil then
+        table.insert(argv, "-c")
+        table.insert(argv, "core.fsmonitor=" .. tostring(opt.fsmonitor))
+    end
+
+    table.insert(argv, "checkout")
+    table.insert(argv, commit)
     os.vrunv(git.program, argv, {curdir = opt.repodir})
 end

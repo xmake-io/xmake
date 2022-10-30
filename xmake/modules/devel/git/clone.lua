@@ -77,6 +77,12 @@ function main(url, opt)
         table.insert(argv, "core.longpaths=true")
     end
 
+    -- set fsmonitor
+    if opt.fsmonitor ~= nil then
+        table.insert(argv, "-c")
+        table.insert(argv, "core.fsmonitor=" .. tostring(opt.fsmonitor))
+    end
+
     -- set outputdir
     if opt.outputdir then
         table.insert(argv, path.translate(opt.outputdir))
