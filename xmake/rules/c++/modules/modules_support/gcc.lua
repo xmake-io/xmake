@@ -349,8 +349,13 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     if not os.isdir(objectdir) then
                         os.mkdir(objectdir)
                     end
-                    local args = {"-o", objectfile, "-c", provide.sourcefile}
-                    os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
+
+                    -- do compile
+                    local dependinfo = {}
+                    local compflags = table.join(compinst:compflags({target = target}), common_args)
+                    assert(compinst:compile(provide.sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
+                    return dependinfo
+
                 end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
             end)
             if m.requires then
