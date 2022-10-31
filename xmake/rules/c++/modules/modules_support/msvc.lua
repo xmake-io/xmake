@@ -683,7 +683,7 @@ function get_requiresflags(target, requires, opt)
     local flags = {}
     local modulemap = _get_modulemap_from_mapper(target)
     -- add deps required module flags
-    for name, _ in pairs(requires) do
+    for name, _ in table.orderpairs(requires) do
         for _, dep in ipairs(target:orderdeps()) do
             local modulemap_ = _get_modulemap_from_mapper(dep)
             if modulemap_[name] then
