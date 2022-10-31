@@ -378,7 +378,8 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 _build_modulefile(target, provide.sourcefile, {
                     objectfile = objectfile,
                     dependfile = target:dependfile(bmifile),
-                    bmifile = bmifile, name = name, progress = (index * 100) / total})
+                    name = name,
+                    progress = (index * 100) / total})
             end)
             if m.requires then
                 moduleinfo.deps = table.keys(m.requires)

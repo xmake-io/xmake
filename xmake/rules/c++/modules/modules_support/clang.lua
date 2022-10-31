@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.tool.compiler")
 import("core.project.project")
 import("core.project.depend")
@@ -106,6 +107,47 @@ function _get_toolchain_includedirs_for_stlheaders(includedirs, clang)
         end
     end
     os.tryrm(tmpfile)
+end
+
+-- build module file
+function _build_modulefile(target, sourcefile, opt)
+    local objectfile = opt.objectfile
+    local dependfile = opt.dependfile
+    local compinst = compiler.load("cxx", {target = target})
+    local compflags = compinst:compflags({target = target})
+    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+
+    -- need build this object?
+    local dryrun = option.get("dry-run")
+    local depvalues = {compinst:program(), compflags}
+    local lastmtime = os.isfile(objectfile) and os.mtime(dependfile) or 0
+    if not dryrun and not depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
+        return
+    end
+
+    local bmifile = opt.bmifile
+    local common_args = opt.common_args
+    local requiresflags = opt.requiresflags
+    local bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags or {})
+    local objflags = table.join(compflags, common_args, requiresflags or {})
+
+    -- trace
+    progress.show(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", opt.name)
+    vprint(compinst:compcmd(sourcefile, bmifile, {compflags = bmiflags, rawargs = true}))
+    vprint(compinst:compcmd(bmifile, objectfile, {compflags = objflags, rawargs = true}))
+
+    if not dryrun then
+
+        -- do compile
+        dependinfo.files = {}
+        assert(compinst:compile(sourcefile, bmifile, {dependinfo = dependinfo, compflags = bmiflags}))
+        assert(compinst:compile(bmifile, objectfile, {compflags = objflags}))
+
+        -- update files and values to the dependent file
+        dependinfo.values = depvalues
+        table.join2(dependinfo.files, sourcefile)
+        depend.save(dependinfo, dependfile)
+    end
 end
 
 -- provide toolchain include directories for stl headerunit when p1689 is not supported
@@ -369,20 +411,15 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         requiresflags = get_requiresflags(target, module.requires)
                     end
 
-                    depend.on_changed(function()
-                        progress.show((index * 100) / total, "${color.build.object}generating.cxx.module.bmi %s", name)
-                        local bmidir = path.directory(bmifile)
-                        if not os.isdir(bmidir) then
-                            os.mkdir(bmidir)
-                        end
-                        local objectdir = path.directory(objectfile)
-                        if not os.isdir(objectdir) then
-                            os.mkdir(objectdir)
-                        end
-                        local args = { "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile}
-                        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, args))
-                        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, {bmifile}, {"-c", "-o", objectfile}))
-                    end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
+                    _build_modulefile(target, provide.sourcefile, {
+                        objectfile = objectfile,
+                        dependfile = target:dependfile(bmifile),
+                        bmifile = bmifile,
+                        name = name,
+                        common_args = common_args,
+                        requiresflags = requiresflags,
+                        progress = (index * 100) / total})
+
                     _add_module_to_mapper(target, name, bmifile, requiresflags)
                 end)
                 if module.requires then
