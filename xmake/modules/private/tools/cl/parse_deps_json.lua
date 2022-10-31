@@ -80,15 +80,54 @@ function _normailize_dep(dep, projectdir)
 end
 
 -- parse depsfiles from string
+--
+--[[
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\users\ruki\desktop\user_headerunit\src\main.cpp",
+        "ProvidedModule": "",
+        "Includes": [],
+        "ImportedModules": [
+            {
+                "Name": "hello",
+                "BMI": "c:\users\ruki\desktop\user_headerunit\src\hello.ifc"
+            }
+        ],
+        "ImportedHeaderUnits": [
+            {
+                "Header": "c:\users\ruki\desktop\user_headerunit\src\header.hpp",
+                "BMI": "c:\users\ruki\desktop\user_headerunit\src\header.hpp.ifc"
+            }
+        ]
+    }
+}]]
 function main(depsdata)
 
     -- decode json data first
     depsdata = json.decode(depsdata)
 
     -- get includes
-    local includes
-    if depsdata and depsdata.Data then
-        includes = depsdata.Data.Includes
+    local data
+    if depsdata then
+        data = depsdata.Data
+    end
+    if data then
+        includes = data.Includes
+        for _, item in ipairs(data.ImportedModules) do
+            local bmifile = item.BMI
+            if bmifile then
+                includes = includes or {}
+                table.insert(includes, bmifile)
+            end
+        end
+        for _, item in ipairs(data.ImportedHeaderUnits) do
+            local bmifile = item.BMI
+            if bmifile then
+                includes = includes or {}
+                table.insert(includes, bmifile)
+            end
+        end
     end
 
     -- translate it
