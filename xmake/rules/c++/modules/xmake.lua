@@ -36,6 +36,14 @@ rule("c++.build.modules")
             -- maybe we will have a more fine-grained configuration strategy to disable it in the future.
             target:set("policy", "build.across_targets_in_parallel", false)
 
+            -- disable ccache for this target
+            --
+            -- Caching can affect incremental compilation, for example
+            -- by interfering with the results of depfile generation for msvc.
+            --
+            -- @see https://github.com/xmake-io/xmake/issues/3000
+            target:set("policy", "build.ccache", false)
+
             -- get modules support
             local modules_support = common.modules_support(target)
 

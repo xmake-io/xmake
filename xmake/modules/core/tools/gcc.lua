@@ -555,6 +555,7 @@ end
 
 -- do compile
 function _compile(self, sourcefile, objectfile, compflags, opt)
+    opt = opt or {}
     local program, argv = compargv(self, sourcefile, objectfile, compflags)
     local function _compile_fallback()
         return os.iorunv(program, argv, {envs = self:runenvs()})
@@ -564,7 +565,7 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
         cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
             preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
             tool = self, remote = true})
-    elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
+    elseif build_cache.is_enabled(opt.target) and build_cache.is_supported(self:kind()) then
         cppinfo = build_cache.build(program, argv, {envs = self:runenvs(),
             preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
             tool = self})
@@ -614,7 +615,7 @@ function compargv(self, sourcefile, objectfile, flags)
 end
 
 -- compile the source file
-function compile(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))

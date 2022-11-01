@@ -21,11 +21,22 @@
 -- imports
 import("core.base.bytes")
 import("core.base.hashset")
+import("core.cache.memcache")
 import("core.project.config")
 import("core.project.policy")
 import("core.project.project")
 import("private.service.client_config")
 import("private.service.remote_cache.client", {alias = "remote_cache_client"})
+
+-- get memcache
+function _memcache()
+    local cache = _g.memcache
+    if not cache then
+        cache = memcache.cache("build_cache")
+        _g.memcache = cache
+    end
+    return cache
+end
 
 -- get exist info
 function _get_existinfo()
@@ -38,21 +49,27 @@ function _get_existinfo()
 end
 
 -- is enabled?
-function is_enabled()
-    local build_cache = _g.build_cache
-    if build_cache == nil then
-        if build_cache == nil and os.isfile(os.projectfile()) then
+function is_enabled(target)
+    local key = tostring(target or "all")
+    local result = _memcache():get2("enabled", key)
+    if result == nil then
+        -- target may be option instance
+        if target and target.policy then
+            result = target:policy("build.ccache")
+        end
+        if result == nil and os.isfile(os.projectfile()) then
             local policy = project.policy("build.ccache")
             if policy ~= nil then
-                build_cache = policy
+                result = policy
             end
         end
-        if build_cache == nil then
-            build_cache = config.get("ccache") or false
+        if result == nil then
+            result = config.get("ccache")
         end
-        _g.build_cache = build_cache
+        result = result or false
+        _memcache():set2("enabled", key)
     end
-    return build_cache or false
+    return result
 end
 
 -- is supported?
