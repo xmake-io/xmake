@@ -604,6 +604,13 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
     return self:program(), table.join("-c", pchflags, "-o", pcoutputfile, pcheaderfile)
 end
 
+-- get modules cache directory
+function _modules_cachedir(target)
+    if target and target.autogendir then -- we need ignore option instance
+        return path.join(target:autogendir(), "rules", "modules", "cache")
+    end
+end
+
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
     -- precompiled header?
@@ -621,6 +628,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
+    opt = opt or {}
     local depfile = dependinfo and os.tmpfile() or nil
     try
     {
@@ -706,6 +714,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                 if depfile and os.isfile(depfile) then
                     if dependinfo then
                         dependinfo.depfiles_gcc = io.readfile(depfile, {continuation = "\\"})
+                        dependinfo.modules_cachedir = _modules_cachedir(opt.target)
                     end
 
                     -- remove the temporary dependent file
