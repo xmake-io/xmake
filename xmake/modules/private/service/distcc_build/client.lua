@@ -244,7 +244,7 @@ function distcc_build_client:compile(program, argv, opt)
         -- get objectfile from the build cache first
         local cached = false
         local cachekey
-        if build_cache.is_enabled() then
+        if build_cache.is_enabled(opt.target) then
             cachekey = build_cache.cachekey(program, cppinfo, opt.envs)
             local objectfile_cached, objectfile_infofile = build_cache.get(cachekey)
             if objectfile_cached then
@@ -341,7 +341,7 @@ function distcc_build_client:compile(program, argv, opt)
             else
                 compile(program, cppinfo, opt)
             end
-            if build_cache.is_enabled() then
+            if build_cache.is_enabled(opt.target) then
                 local cachekey = build_cache.cachekey(program, cppinfo, opt.envs)
                 if cachekey then
                     local extrainfo

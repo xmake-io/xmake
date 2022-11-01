@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.tool.compiler")
 import("core.project.project")
 import("core.project.depend")
@@ -81,6 +82,46 @@ function _add_objectfile_to_link_arguments(target, objectfile)
     table.insert(cache, path.translate(objectfile))
     common.localcache():set(cachekey, cache)
     common.localcache():save(cachekey)
+end
+
+-- build module file
+function _build_modulefile(target, sourcefile, opt)
+    local objectfile = opt.objectfile
+    local dependfile = opt.dependfile
+    local compinst = compiler.load("cxx", {target = target})
+    local compflags = compinst:compflags({target = target})
+    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+
+    -- need build this object?
+    local dryrun = option.get("dry-run")
+    local depvalues = {compinst:program(), compflags}
+    local lastmtime = os.isfile(objectfile) and os.mtime(dependfile) or 0
+    if not dryrun and not depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
+        return
+    end
+
+    -- init flags
+    local requiresflags = opt.requiresflags
+    local interfaceflag = opt.interfaceflag
+    local ifcoutputflag = opt.ifcoutputflag
+    local bmifile = opt.bmifile
+    local flags = table.join("-TP", requiresflags or {}, interfaceflag, ifcoutputflag, bmifile, compflags)
+
+    -- trace
+    progress.show(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", opt.name)
+    vprint(compinst:compcmd(sourcefile, objectfile, {compflags = flags, rawargs = true}))
+
+    if not dryrun then
+
+        -- do compile
+        dependinfo.files = {}
+        assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = flags}))
+
+        -- update files and values to the dependent file
+        dependinfo.values = depvalues
+        table.join2(dependinfo.files, sourcefile)
+        depend.save(dependinfo, dependfile)
+    end
 end
 
 -- load module support for the current target
@@ -367,7 +408,6 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
         _flush_mapper(target)
     end, {rootjob = opt.rootjob})
 
-    local common_flags = {"-TP"}
     local modulesjobs = {}
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
@@ -394,22 +434,17 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     if module.requires then
                         requiresflags = get_requiresflags(target, module.requires, {expand = true})
                     end
-                    depend.on_changed(function()
-                        progress.show((index * 100) / total, "${color.build.object}generating.cxx.module.bmi %s", name)
-                        local objectdir = path.directory(objectfile)
-                        if not os.isdir(objectdir) then
-                            os.mkdir(objectdir)
-                        end
-                        local flags = {
-                            "-c",
-                            "-Fo" .. objectfile,
-                            interfaceflag,
-                            ifcoutputflag,
-                            bmifile,
-                            provide.sourcefile
-                        }
-                        _compile(target, table.join(common_flags, requiresflags or {}, flags))
-                    end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
+
+                    _build_modulefile(target, provide.sourcefile, {
+                        objectfile = objectfile,
+                        dependfile = target:dependfile(bmifile),
+                        name = name,
+                        bmifile = bmifile,
+                        requiresflags = requiresflags,
+                        interfaceflag = interfaceflag,
+                        ifcoutputflag = ifcoutputflag,
+                        progress = (index * 100) / total})
+
                     _add_module_to_mapper(target, referenceflag, name, name, objectfile, bmifile, requiresflags)
                 end)
                 if module.requires then
@@ -648,7 +683,7 @@ function get_requiresflags(target, requires, opt)
     local flags = {}
     local modulemap = _get_modulemap_from_mapper(target)
     -- add deps required module flags
-    for name, _ in pairs(requires) do
+    for name, _ in table.orderpairs(requires) do
         for _, dep in ipairs(target:orderdeps()) do
             local modulemap_ = _get_modulemap_from_mapper(dep)
             if modulemap_[name] then

@@ -555,6 +555,7 @@ end
 
 -- do compile
 function _compile(self, sourcefile, objectfile, compflags, opt)
+    opt = opt or {}
     local program, argv = compargv(self, sourcefile, objectfile, compflags)
     local function _compile_fallback()
         return os.iorunv(program, argv, {envs = self:runenvs()})
@@ -564,7 +565,7 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
         cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
             preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
             tool = self, remote = true})
-    elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
+    elseif build_cache.is_enabled(opt.target) and build_cache.is_supported(self:kind()) then
         cppinfo = build_cache.build(program, argv, {envs = self:runenvs(),
             preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
             tool = self})
@@ -603,6 +604,13 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
     return self:program(), table.join("-c", pchflags, "-o", pcoutputfile, pcheaderfile)
 end
 
+-- get modules cache directory
+function _modules_cachedir(target)
+    if target and target.autogendir and target:data("cxx.has_modules") then -- we need ignore option instance
+        return path.join(target:autogendir(), "rules", "modules", "cache")
+    end
+end
+
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
     -- precompiled header?
@@ -614,12 +622,13 @@ function compargv(self, sourcefile, objectfile, flags)
 end
 
 -- compile the source file
-function compile(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
     -- compile it
+    opt = opt or {}
     local depfile = dependinfo and os.tmpfile() or nil
     try
     {
@@ -705,6 +714,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 if depfile and os.isfile(depfile) then
                     if dependinfo then
                         dependinfo.depfiles_gcc = io.readfile(depfile, {continuation = "\\"})
+                        dependinfo.modules_cachedir = _modules_cachedir(opt.target)
                     end
 
                     -- remove the temporary dependent file

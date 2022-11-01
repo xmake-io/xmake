@@ -514,6 +514,7 @@ end
 
 -- do compile
 function _compile(self, sourcefile, objectfile, compflags, opt)
+    opt = opt or {}
     local function _compile_fallback()
         local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
         return vstool.iorunv(program, argv, {envs = self:runenvs()})
@@ -524,7 +525,7 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
         cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
             preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
             target = opt.target, tool = self, remote = true})
-    elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
+    elseif build_cache.is_enabled(opt.target) and build_cache.is_supported(self:kind()) then
         local program, argv = compargv(self, sourcefile, objectfile, compflags, table.join(opt, {rawargs = true}))
         cppinfo = build_cache.build(program, argv, {envs = self:runenvs(),
             preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
