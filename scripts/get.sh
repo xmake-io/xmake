@@ -230,6 +230,7 @@ write_profile()
 install_profile()
 {
     if [ ! -d ~/.xmake ]; then mkdir ~/.xmake; fi
+    prefix=${prefix//$USER/\$USER}
     echo "export XMAKE_ROOTDIR=\"$prefix/bin\"" > ~/.xmake/profile
     echo 'export PATH="$XMAKE_ROOTDIR:$PATH"' >> ~/.xmake/profile
     if [ -f "$projectdir/scripts/register-completions.sh" ]; then
