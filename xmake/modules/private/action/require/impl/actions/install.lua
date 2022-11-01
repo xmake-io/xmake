@@ -201,7 +201,12 @@ function _fix_paths_for_precompiled_package(package)
             local filepattern = path.join(package:installdir(), filepat)
             for _, file in ipairs(os.files(filepattern)) do
                 if remote_prefix then
-                    io.replace(file, remote_prefix, local_prefix, {plain = true})
+                    local _, count = io.replace(file, remote_prefix, local_prefix, {plain = true})
+                    -- maybe we need translate path seperator
+                    -- @see https://github.com/xmake-io/xmake/discussions/3008
+                    if count == 0 and is_host("windows") then
+                        io.replace(file, (remote_prefix:gsub("\\", "/")), local_prefix:gsub("\\", "/"), {plain = true})
+                    end
                 else
                     for _, search_pattern in ipairs(pat.search_pattern) do
                         _fix_path_for_file(file, search_pattern)
