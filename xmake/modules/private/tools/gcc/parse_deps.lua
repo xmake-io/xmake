@@ -96,6 +96,8 @@ function main(depsdata, opt)
     end
     -- with c++ modules (gcc):
     -- CXX_IMPORTS += bar.c++m cat.c++m\
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/3000
     opt = opt or {}
     if opt.modules_cachedir and line:find("CXX_IMPORTS += ", 1, true) then
         local modulefiles = line:split("CXX_IMPORTS += ", plain)[2]
