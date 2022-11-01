@@ -606,7 +606,7 @@ end
 
 -- get modules cache directory
 function _modules_cachedir(target)
-    if target and target.autogendir then -- we need ignore option instance
+    if target and target.autogendir and target:data("cxx.has_modules") then -- we need ignore option instance
         return path.join(target:autogendir(), "rules", "modules", "cache")
     end
 end
