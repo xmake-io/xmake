@@ -68,9 +68,7 @@ end
 function load(target)
     -- get module and module cache flags
     local modulesflag = get_modulesflag(target)
-    local builtinmodulemapflag = get_builtinmodulemapflag(target)
     local implicitmodulesflag = get_implicitmodulesflag(target)
-    local noimplicitmodulemapsflag = get_noimplicitmodulemapsflag(target)
 
     -- add module flags
     target:add("cxxflags", modulesflag)
@@ -78,27 +76,35 @@ function load(target)
     -- add the module cache directory
     target:add("cxxflags", builtinmodulemapflag, {force = true})
     target:add("cxxflags", implicitmodulesflag, {force = true})
-    target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
+    target:add("cxxflags", "-fvisibility=default", {force = true})
 
     target:data_set("cxx.modules.use_libc++", table.contains(target:get("cxxflags"), "-stdlib=libc++"))
+    target:add("ldflags", "-lc++")
+
+    -- Find clang module maps based on the binary installation
+    local clang_path, error = os.iorun("which clang")
+    local module_map_paths, error = os.iorunv("find", {"-L", clang_path:gsub("/bin/clang\n", ""), "-name", "module.modulemap"})
+    for _, line in ipairs(module_map_paths:split("\n", {plain = true})) do
+        target:add("includedirs", path.normalize(line:gsub("/module.modulemap", "")))
+    end
 end
 
 -- get includedirs for stl headers
 --
--- $ echo '#include <vector>' | clang -x c++ -E - | grep '/vector"'
--- # 1 "/usr/include/c++/11/vector" 1 3
--- # 58 "/usr/include/c++/11/vector" 3
--- # 59 "/usr/include/c++/11/vector" 3
+-- $ echo '#include <version>' | clang -x c++ -E - | grep '/version"'
+-- # 1 "/usr/include/c++/11/version" 1 3
+-- # 58 "/usr/include/c++/11/version" 3
+-- # 59 "/usr/include/c++/11/version" 3
 --
 function _get_toolchain_includedirs_for_stlheaders(includedirs, clang)
-    local tmpfile = os.tmpfile() .. ".cc"
-    io.writefile(tmpfile, "#include <vector>")
-    local result = try {function () return os.iorunv(clang, {"-E", "-x", "c++", tmpfile}) end}
+    local tmpfile = os.tmpfile() .. ".cpp"
+    io.writefile(tmpfile, "#include <version>")
+    local result = try {function () return os.iorunv(clang, {"-E", "-Wp,-v", "-xc", tmpfile}) end}
     if result then
         for _, line in ipairs(result:split("\n", {plain = true})) do
             line = line:trim()
-            if line:startswith("#") and line:find("/vector\"", 1, true) then
-                local includedir = line:match("\"(.+)/vector\"")
+            if line:startswith("#") and line:find("/version\"", 1, true) then
+                local includedir = line:match("\"(.+)/version\"")
                 if includedir and os.isdir(includedir) then
                     table.insert(includedirs, path.normalize(includedir))
                     break
