@@ -145,7 +145,7 @@ end
 function nf_warning(self, level)
     local maps =
     {
-        none       = "-W0"
+        none       = "-w"
     ,   less       = "-W1"
     ,   more       = "-W3"
     ,   all        = "-W3" -- = "-Wall" will enable too more warnings
