@@ -37,7 +37,18 @@ function sandbox_lib_detect_find_path._find(filedir, name)
         local filepath = results[1]
         if filepath then
             -- we need translate name first, https://github.com/xmake-io/xmake-repo/issues/1315
-            local p = filepath:find(path.pattern(path.translate(name)))
+	    local to_search = path.pattern(path.translate(name))
+
+	    -- need to find the last occurrence of substring to_search within filepath
+            local last_index = 0
+	    local idx = 0
+            while true do
+              idx = filepath:find(to_search, idx+1)
+              if idx == nil then break end
+              last_index = idx
+            end
+           
+            local p = filepath:find(to_search, last_index)
             if p then
                 filepath = path.translate(filepath:sub(1, p - 1))
                 if os.isdir(filepath) then
