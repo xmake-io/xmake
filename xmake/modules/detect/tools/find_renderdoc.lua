@@ -62,7 +62,7 @@ function main(opt)
     end
 
     -- find program
-    local program = find_program(opt.program or "renderdoc", opt)
+    local program = find_program(opt.program or "qrenderdoc", opt)
 
     -- find program version
     local version = nil
