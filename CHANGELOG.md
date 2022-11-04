@@ -8,6 +8,7 @@
 * [#2944](https://github.com/xmake-io/xmake/issues/2944): Add `gnu-rm.binary` and `gnu-rm.static` rules and tests for embed project
 * [#2636](https://github.com/xmake-io/xmake/issues/2636): Support package components
 * Support armasm/armasm64 for msvc
+* [#3023](https://github.com/xmake-io/xmake/pull/3023): Add support for debugging with renderdoc
 
 ### Changes
 
@@ -1431,6 +1432,7 @@
 * [#2944](https://github.com/xmake-io/xmake/issues/2944): 为嵌入式工程添加 `gnu-rm.binary` 和 `gnu-rm.static` 规则和测试工程
 * [#2636](https://github.com/xmake-io/xmake/issues/2636): 支持包组件
 * 支持 msvc 的 armasm/armasm64
+* [#3023](https://github.com/xmake-io/xmake/pull/3023): 改进 xmake run -d，添加 renderdoc 调试器支持
 
 ### 改进
 
