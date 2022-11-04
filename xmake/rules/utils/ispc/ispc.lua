@@ -41,8 +41,8 @@ rule("utils.ispc")
         end
 
         local headersdir = path.join(target:autogendir(), "rules", "utils", "ispc", "headers")
-        local objectdir = path.join(target:autogendir(), "rules", "utils", "ispc", "objs")
-        local objectfile = path.join(objectdir, path.filename(target:objectfile(sourcefile_ispc)))
+        local objectfile = target:objectfile(sourcefile_ispc)
+        local objectdir = path.directory(objectfile)
 
         local headersfile
         local header_extension = target:extraconf("rules", "utils.ispc", "header_extension")
