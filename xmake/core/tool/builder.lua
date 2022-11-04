@@ -158,7 +158,7 @@ function builder:_add_flags_from_flagkind(flags, target, flagkind, opt)
         --
         local for_this_tool = true
         local flagconf = extraconf and extraconf[flag]
-        if flag:find("::", 1, true) then
+        if type(flag) == "string" and flag:find("::", 1, true) then
             for_this_tool = false
             local splitinfo = flag:split("::", {plain = true})
             local toolname = splitinfo[1]
