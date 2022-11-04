@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #ifdef _MSC_VER
 import std.core;
 #else
@@ -8,6 +6,8 @@ import std;
 
 import my_module;
 
+using namespace std;
+
 int main(int argc, char** argv) {
-    printf("sum: %d\n", my_sum(1, 1));
+    cout << my_sum(1, 1) << endl;
 }
