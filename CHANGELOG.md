@@ -9,6 +9,9 @@
 * [#2636](https://github.com/xmake-io/xmake/issues/2636): Support package components
 * Support armasm/armasm64 for msvc
 * [#3023](https://github.com/xmake-io/xmake/pull/3023): Add support for debugging with renderdoc
+* [#3022](https://github.com/xmake-io/xmake/issues/3022): Add flags for specific compilers and linkers
+* [#3025](https://github.com/xmake-io/xmake/pull/3025): C++ exception enabled/disabled switch method
+* [#3017](https://github.com/xmake-io/xmake/pull/3017): Support ispc compiler
 
 ### Changes
 
@@ -1434,6 +1437,9 @@
 * [#2636](https://github.com/xmake-io/xmake/issues/2636): 支持包组件
 * 支持 msvc 的 armasm/armasm64
 * [#3023](https://github.com/xmake-io/xmake/pull/3023): 改进 xmake run -d，添加 renderdoc 调试器支持
+* [#3022](https://github.com/xmake-io/xmake/issues/3022): 为特定编译器添加 flags
+* [#3025](https://github.com/xmake-io/xmake/pull/3025): 新增 C++ 异常接口配置
+* [#3017](https://github.com/xmake-io/xmake/pull/3017): 支持 ispc 编译器规则
 
 ### 改进
 
