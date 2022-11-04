@@ -65,8 +65,5 @@ function main(toolchain)
             _add_vsenv(toolchain, name)
         end
     end
-
-    -- add some default flags
-    toolchain:add("clang_cl.cxxflags", "/EHsc")
 end
 

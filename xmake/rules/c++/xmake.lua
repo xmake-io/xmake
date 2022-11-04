@@ -27,6 +27,12 @@ rule("c++.build")
     set_sourcekinds("cxx")
     add_deps("c++.build.pcheader", "c++.build.modules", "c++.build.optimization")
     on_build_files("private.action.build.object", {batch = true, distcc = true})
+    on_config(function (target)
+        -- we enable c++ exceptions by default
+        if target:is_plat("windows") and not target:get("exceptions") then
+            target:set("exceptions", "cxx")
+        end
+    end)
 
 rule("c++")
 
