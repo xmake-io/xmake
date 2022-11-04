@@ -1,18 +1,14 @@
 rule("utils.ispc")
     set_extensions(".ispc")
-    add_deps("utils.inherit.links")
 
     on_load(function (target)
         local header_outputdir = path.join(target:autogendir(), "ispc_headers")
-        local obj_outputdir = path.join(target:autogendir(), "ispc_objs")
-        os.mkdir(target:autogendir())
         os.mkdir(header_outputdir)
-        os.mkdir(obj_outputdir)
         target:add("includedirs", header_outputdir, {public = true})
     end)
     before_buildcmd_file(function (target, batchcmds, sourcefile_ispc, opt)
         import("lib.detect.find_tool")
-        ispc = find_tool("ispc")
+        local ispc = find_tool("ispc")
         assert(ispc, "ispc not found!")
 
         local flags = {}
@@ -49,29 +45,30 @@ rule("utils.ispc")
             obj_extension = ".obj"
         end
 
-        local header_outputdir = path.join(target:autogendir(), "ispc_headers")
-        local obj_outputdir = path.join(target:autogendir(), "ispc_objs")
-        local obj_file = path.join(obj_outputdir, path.filename(sourcefile_ispc) .. obj_extension)
+        local headersdir = path.join(target:autogendir(), "ispc_headers")
+        local objectdir = path.join(target:autogendir(), "ispc_objs")
+        local objectfile = path.join(objectdir, path.filename(sourcefile_ispc) .. obj_extension)
+        batchcmds:mkdir(objectdir)
 
-        local header_file
+        local headersfile
         local header_extension = target:extraconf("rules", "utils.ispc", "header_extension")
         if header_extension then
-            header_file = path.join(header_outputdir, path.basename(sourcefile_ispc) .. header_extension)
+            headersfile = path.join(headersdir, path.basename(sourcefile_ispc) .. header_extension)
         else
-            header_file = path.join(header_outputdir, path.filename(sourcefile_ispc) .. ".h")
+            headersfile = path.join(headersdir, path.filename(sourcefile_ispc) .. ".h")
         end
 
-        batchcmds:show_progress(opt.progress, "${color.build.object}cache compiling %s", sourcefile_ispc)
-        batchcmds:vrunv(ispc.program, table.join2(flags,
-            {"-o", obj_file,
-            "-h", header_file,
-            path.join(os.projectdir(), sourcefile_ispc)}))
+        table.insert(flags, "-o")
+        table.insert(flags, path(objectfile))
+        table.insert(flags, "-h")
+        table.insert(flags, path(headersfile))
+        table.insert(flags, path(sourcefile_ispc))
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling %s", sourcefile_ispc)
+        batchcmds:vrunv(ispc.program, flags)
 
-        table.insert(target:objectfiles(), obj_file)
+        table.insert(target:objectfiles(), objectfile)
 
-        batchcmds:add_depfiles(sourcefile_ispc)
-        batchcmds:set_depmtime(os.mtime(obj_file))
-        batchcmds:set_depcache(target:dependfile(obj_file))
-        batchcmds:set_depmtime(os.mtime(header_file))
-        batchcmds:set_depcache(target:dependfile(header_file))
+        batchcmds:add_depfiles(sourcefile_ispc, headersfile)
+        batchcmds:set_depmtime(os.mtime(objectfile))
+        batchcmds:set_depcache(target:dependfile(objectfile))
     end)
