@@ -66,21 +66,41 @@ end
 
 -- load module support for the current target
 function load(target)
-    -- get module and module cache flags
     local modulesflag = get_modulesflag(target)
     local builtinmodulemapflag = get_builtinmodulemapflag(target)
     local implicitmodulesflag = get_implicitmodulesflag(target)
-    local noimplicitmodulemapsflag = get_noimplicitmodulemapsflag(target)
 
     -- add module flags
     target:add("cxxflags", modulesflag)
-
-    -- add the module cache directory
     target:add("cxxflags", builtinmodulemapflag, {force = true})
     target:add("cxxflags", implicitmodulesflag, {force = true})
-    target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
 
-    target:data_set("cxx.modules.use_libc++", table.contains(target:get("cxxflags"), "-stdlib=libc++"))
+    -- fix default visibility for functions and variables [-fvisibility] differs in PCH file vs. current file
+    -- module.pcm cannot be loaded due to a configuration mismatch with the current compilation.
+    --
+    -- it will happen in binary target depend ont shared target with modules, and enable release mode at same time.
+    local dep_symbols
+    local has_shared_deps = false
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:is_shared() then
+            dep_symbols = dep:get("symbols")
+            has_shared_deps = true
+            break
+        end
+    end
+    if has_shared_deps then
+        target:set("symbols", dep_symbols and dep_symbols or "none")
+    end
+
+    -- if use libc++, we need install libc++ and libc++abi
+    --
+    -- on ubuntu:
+    -- sudo apt install libc++-dev libc++abi-15-dev
+    --
+    target:data_set("cxx.modules.use_libc++", table.contains(target:get("cxxflags"), "-stdlib=libc++", "clang::-stdlib=libc++"))
+    if target:data("cxx.modules.use_libc++") then
+        target:add("syslinks", "c++")
+    end
 end
 
 -- get includedirs for stl headers
@@ -93,6 +113,10 @@ end
 function _get_toolchain_includedirs_for_stlheaders(includedirs, clang)
     local tmpfile = os.tmpfile() .. ".cc"
     io.writefile(tmpfile, "#include <vector>")
+    local argv = {"-E", "-x", "c++", tmpfile}
+    if target:data("cxx.modules.use_libc++") then
+        table.insert(argv, 1, "-stdlib=libc++")
+    end
     local result = try {function () return os.iorunv(clang, {"-E", "-x", "c++", tmpfile}) end}
     if result then
         for _, line in ipairs(result:split("\n", {plain = true})) do
