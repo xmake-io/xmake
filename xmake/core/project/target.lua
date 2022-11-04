@@ -2284,6 +2284,7 @@ function target.apis()
         ,   "target.set_languages"
         ,   "target.set_toolchains"
         ,   "target.set_runargs"
+        ,   "target.set_exceptions"
             -- target.add_xxx
         ,   "target.add_deps"
         ,   "target.add_rules"

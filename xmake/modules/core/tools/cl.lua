@@ -298,6 +298,19 @@ function nf_sysincludedir(self, dir)
     end
 end
 
+-- make the exception flag
+--
+-- e.g.
+-- set_exceptions("cxx")
+-- set_exceptions("no-cxx")
+function nf_exception(self, exp)
+    local maps = {
+        cxx = "/EHsc",
+        ["no-cxx"] = "/EHsc-"
+    }
+    return maps[exp]
+end
+
 -- make the c precompiled header flag
 function nf_pcheader(self, pcheaderfile, target)
 
