@@ -17,6 +17,7 @@
 * Add `xmake g --insecure-ssl=y` option to disable ssl certificate when downloading packages
 * [#2971](https://github.com/xmake-io/xmake/pull/2971): Stabilize vs and vsxmake project generation
 * [#3000](https://github.com/xmake-io/xmake/issues/3000): Incremental compilation support for modules
+* [#3016](https://github.com/xmake-io/xmake/pull/3016): Improve clang/msvc to better support std modules
 
 ### Bugs fixed
 
@@ -1441,6 +1442,7 @@
 * 添加 `xmake g --insecure-ssl=y` 配置选项去禁用 ssl 证书检测
 * [#2971](https://github.com/xmake-io/xmake/pull/2971): 使 vs/vsxmake 工程生成的结果每次保持一致
 * [#3000](https://github.com/xmake-io/xmake/issues/3000): 改进 C++ 模块构建支持，实现增量编译支持
+* [#3016](https://github.com/xmake-io/xmake/pull/3016): 改进 clang/msvc 去更好地支持 std 模块
 
 ### Bugs 修复
 
