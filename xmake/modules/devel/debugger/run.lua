@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.json")
 import("core.base.option")
 import("core.project.config")
 import("detect.tools.find_cudagdb")
@@ -30,6 +31,7 @@ import("detect.tools.find_x64dbg")
 import("detect.tools.find_ollydbg")
 import("detect.tools.find_devenv")
 import("detect.tools.find_vsjitdebugger")
+import("detect.tools.find_renderdoc")
 
 -- run gdb
 function _run_gdb(program, argv, opt)
@@ -212,6 +214,53 @@ function _run_devenv(program, argv, opt)
     return true
 end
 
+-- run renderdoc
+function _run_renderdoc(program, argv, opt)
+
+    -- find renderdoc
+    local renderdoc = find_renderdoc({program = config.get("debugger")})
+    if not renderdoc then
+        return false
+    end
+
+    -- build capture settings
+    local settings = {
+        rdocCaptureSettings = 1,
+        settings = {
+            autoStart = false,
+            commandLine = table.concat(table.wrap(argv), " "),
+            environment = json.mark_as_array({}),
+            executable = program,
+            inject = false,
+            numQueuedFrames = 0,
+            queuedFrameCap = 0,
+            workingDir = opt.curdir and path.absolute(opt.curdir) or "",
+            options = {
+                allowFullscreen = true,
+                allowVSync = true,
+                apiValidation = false,
+                captureAllCmdLists = false,
+                captureCallstacks = false,
+                captureCallstacksOnlyDraws = false,
+                debugOutputMute = true,
+                delayForDebugger = 0,
+                hookIntoChildren = false,
+                refAllResources = false,
+                verifyBufferAccess = false
+            }
+        }
+    }
+
+    -- save to temporary file
+    local capturefile = os.tmpfile() .. ".cap"
+    json.savefile(capturefile, settings)
+
+    -- run renderdoc
+    opt.detach = true
+    os.execv(renderdoc, { capturefile }, opt)
+    return true
+end
+
 -- run program with debugger
 --
 -- @param program   the program name
@@ -235,6 +284,7 @@ function main(program, argv, opt)
     ,   {"gdb"         , _run_gdb}
     ,   {"cudagdb"     , _run_cudagdb}
     ,   {"cudamemcheck", _run_cudamemcheck}
+    ,   {"renderdoc"   , _run_renderdoc}
     }
 
     -- for windows target or on windows?
