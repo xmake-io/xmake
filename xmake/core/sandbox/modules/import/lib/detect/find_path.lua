@@ -37,7 +37,7 @@ function sandbox_lib_detect_find_path._find(filedir, name)
         local filepath = results[1]
         if filepath then
             -- we need translate name first, https://github.com/xmake-io/xmake-repo/issues/1315
-            local p = filepath:find(path.pattern(path.translate(name)))
+	    local p = filepath:lastof(path.pattern(path.translate(name)))
             if p then
                 filepath = path.translate(filepath:sub(1, p - 1))
                 if os.isdir(filepath) then
