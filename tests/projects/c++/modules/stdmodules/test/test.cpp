@@ -1,5 +1,11 @@
 #include <stdio.h>
+
+#ifdef _MSC_VER
+import std.core;
+#else
 import std;
+#endif
+
 import my_module;
 
 int main(int argc, char** argv) {

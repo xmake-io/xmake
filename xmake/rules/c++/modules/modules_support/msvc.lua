@@ -126,25 +126,30 @@ end
 
 -- load module support for the current target
 function load(target)
-    -- get flags
-    local modulesflag = get_modulesflag(target)
 
     -- add modules flags
+    local modulesflag = get_modulesflag(target)
     target:add("cxxflags", modulesflag)
 
     -- add stdifcdir in case of if the user ask for it
-    if target:values("msvc.modules.stdifcdir") then
-        local stdifcdirflag = get_stdifcdirflag(target)
-        for _, toolchain_inst in ipairs(target:toolchains()) do
-            if toolchain_inst:name() == "msvc" then
-                local vcvars = toolchain_inst:config("vcvars")
-                if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                    local stdifcdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "ifc", target:is_arch("x64") and "x64" or "x86")
+    local stdifcdirflag = get_stdifcdirflag(target)
+    if stdifcdirflag then
+        local msvc = target:toolchain("msvc")
+        if msvc then
+            local vcvars = msvc:config("vcvars")
+            if vcvars.VCInstallDir and vcvars.VCToolsVersion then
+                local arch
+                if target:is_arch("x64", "x86_64") then
+                    arch = "x64"
+                elseif target:is_arch("x86", "i386") then
+                    arch = "x86"
+                end
+                if arch then
+                    local stdifcdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "ifc", arch)
                     if os.isdir(stdifcdir) then
                         target:add("cxxflags", {stdifcdirflag, winos.short_path(stdifcdir)}, {force = true, expand = false})
                     end
                 end
-                break
             end
         end
     end
