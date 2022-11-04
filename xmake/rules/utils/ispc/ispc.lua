@@ -6,10 +6,10 @@ rule("utils.ispc")
         os.mkdir(headersdir)
         target:add("includedirs", headersdir, {public = true})
     end)
+    
     before_buildcmd_file(function (target, batchcmds, sourcefile_ispc, opt)
         import("lib.detect.find_tool")
-        local ispc = find_tool("ispc")
-        assert(ispc, "ispc not found!")
+        local ispc = assert(find_tool("ispc"), "ispc not found!")
 
         local flags = {}
         if target:values("ispc.flags") then
@@ -43,7 +43,6 @@ rule("utils.ispc")
         local headersdir = path.join(target:autogendir(), "rules", "utils", "ispc", "headers")
         local objectfile = target:objectfile(sourcefile_ispc)
         local objectdir = path.directory(objectfile)
-
         local headersfile
         local header_extension = target:extraconf("rules", "utils.ispc", "header_extension")
         if header_extension then
@@ -57,7 +56,8 @@ rule("utils.ispc")
         table.insert(flags, "-h")
         table.insert(flags, path(headersfile))
         table.insert(flags, path(sourcefile_ispc))
-        batchcmds:show_progress(opt.progress, "${color.build.object}compiling %s", sourcefile_ispc)
+        
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.ispc %s", sourcefile_ispc)
         batchcmds:mkdir(objectdir)
         batchcmds:vrunv(ispc.program, flags)
 
