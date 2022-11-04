@@ -302,6 +302,27 @@ function nf_frameworkdir(self, frameworkdir)
     return {"-F" .. path.translate(frameworkdir)}
 end
 
+-- make the exception flag
+--
+-- e.g.
+-- set_exceptions("cxx")
+-- set_exceptions("objc")
+-- set_exceptions("no-cxx")
+-- set_exceptions("no-objc")
+-- set_exceptions("cxx", "objc")
+function nf_exception(self, exp)
+    local maps = {
+        cxx = "-fcxx-exceptions",
+        ["no-cxx"] = "-fno-cxx-exceptions",
+        objc = "-fobjc-exceptions",
+        ["no-objc"] = "-fno-objc-exceptions"
+    }
+    local value = maps[exp]
+    if value then
+        return {exp:startswith("no-") and "-fno-exceptions" or "-fexceptions", value}
+    end
+end
+
 -- make the c precompiled header flag
 function nf_pcheader(self, pcheaderfile, target)
     if self:kind() == "cc" then
