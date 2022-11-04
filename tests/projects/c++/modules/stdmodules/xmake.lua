@@ -1,7 +1,7 @@
 add_rules("mode.debug", "mode.release")
 set_languages("c++20")
 
-add_cxxflags("-stdlib=libc++")
+add_cxxflags("clang::-stdlib=libc++")
 target("mod")
     set_kind("shared")
     add_files("src/*.cpp", "src/*.mpp")

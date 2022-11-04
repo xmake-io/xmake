@@ -49,8 +49,8 @@ function builder:_targetkind()
     return self._TARGETKIND
 end
 
--- map gcc flag to the given builder flag
-function builder:_mapflag(flag, flagkind, mapflags, auto_ignore_flags)
+-- map flag implementation
+function builder:_mapflag_impl(flag, flagkind, mapflags, auto_ignore_flags)
 
     -- attempt to map it directly
     local flag_mapped = mapflags[flag]
@@ -76,9 +76,24 @@ function builder:_mapflag(flag, flagkind, mapflags, auto_ignore_flags)
     end
 end
 
--- map gcc flags to the given builder flags
-function builder:_mapflags(flags, flagkind, target)
+-- map flag
+function builder:_mapflag(flag, flagkind, target)
+    local mapflags = self:get("mapflags")
+    local auto_map_flags = target and target.policy and target:policy("check.auto_map_flags")
+    local auto_ignore_flags = target and target.policy and target:policy("check.auto_ignore_flags")
+    if mapflags and (auto_map_flags ~= false) then
+        return self:_mapflag_impl(flag, flagkind, mapflags, auto_ignore_flags)
+    else
+        if auto_ignore_flags == false or self:has_flags(flag, flagkind) then
+            return flag
+        else
+            utils.warning("add_%s(\"%s\") is ignored, please pass `{force = true}` or call `set_policy(\"check.auto_ignore_flags\", false)` if you want to set it.", flagkind, flag)
+        end
+    end
+end
 
+-- map flags
+function builder:_mapflags(flags, flagkind, target)
     local results = {}
     local mapflags = self:get("mapflags")
     local auto_map_flags = target and target.policy and target:policy("check.auto_map_flags")
@@ -86,7 +101,7 @@ function builder:_mapflags(flags, flagkind, target)
     flags = table.wrap(flags)
     if mapflags and (auto_map_flags ~= false) then
         for _, flag in pairs(flags) do
-            local flag_mapped = self:_mapflag(flag, flagkind, mapflags, auto_ignore_flags)
+            local flag_mapped = self:_mapflag_impl(flag, flagkind, mapflags, auto_ignore_flags)
             if flag_mapped then
                 table.insert(results, flag_mapped)
             end
@@ -132,19 +147,42 @@ end
 function builder:_add_flags_from_flagkind(flags, target, flagkind, opt)
     local targetflags = target:get(flagkind, opt)
     local extraconf   = target:extraconf(flagkind)
-    if extraconf then
-        for _, flag in ipairs(table.wrap(targetflags)) do
-            -- @note we need join the single flag with shallow mode, aboid expand table values
-            -- e.g. add_cflags({"-I", "/tmp/xxx foo"}, {force = true, expand = false})
-            local flagconf = extraconf[flag]
-            if flagconf and flagconf.force then
-                table.shallow_join2(flags, flag)
+    for _, flag in ipairs(table.wrap(targetflags)) do
+        -- does this flag belong to this tool?
+        -- @see https://github.com/xmake-io/xmake/issues/3022
+        --
+        -- e.g.
+        -- for all: add_cxxflags("-g")
+        -- only for clang: add_cxxflags("clang::-stdlib=libc++")
+        -- only for clang and multiple flags: add_cxxflags("-stdlib=libc++", "-DFOO", {tools = "clang"})
+        --
+        local for_this_tool = true
+        local flagconf = extraconf[flag]
+        if flag:find("::", 1, true) then
+            for_this_tool = false
+            local splitinfo = flag:split("::", {plain = true})
+            local toolname = splitinfo[1]
+            if toolname == self:name() then
+                flag = splitinfo[2]
+                for_this_tool = true
+            end
+        elseif flagconf and flagconf.tools then
+            for_this_tool = table.contains(table.wrap(flagconf.tools), self:name())
+        end
+
+        if for_this_tool then
+            if extraconf then
+                -- @note we need join the single flag with shallow mode, aboid expand table values
+                -- e.g. add_cflags({"-I", "/tmp/xxx foo"}, {force = true, expand = false})
+                if flagconf and flagconf.force then
+                    table.shallow_join2(flags, flag)
+                else
+                    table.shallow_join2(flags, self:_mapflag(flag, flagkind, target))
+                end
             else
                 table.shallow_join2(flags, self:_mapflag(flag, flagkind, target))
             end
         end
-    else
-        table.join2(flags, self:_mapflags(targetflags, flagkind, target))
     end
 end
 
