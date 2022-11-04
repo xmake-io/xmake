@@ -157,7 +157,7 @@ function builder:_add_flags_from_flagkind(flags, target, flagkind, opt)
         -- only for clang and multiple flags: add_cxxflags("-stdlib=libc++", "-DFOO", {tools = "clang"})
         --
         local for_this_tool = true
-        local flagconf = extraconf[flag]
+        local flagconf = extraconf and extraconf[flag]
         if flag:find("::", 1, true) then
             for_this_tool = false
             local splitinfo = flag:split("::", {plain = true})
