@@ -311,16 +311,7 @@ end
 -- set_exceptions("no-objc")
 -- set_exceptions("cxx", "objc")
 function nf_exception(self, exp)
-    local maps = {
-        cxx = "-fcxx-exceptions",
-        ["no-cxx"] = "-fno-cxx-exceptions",
-        objc = "-fobjc-exceptions",
-        ["no-objc"] = "-fno-objc-exceptions"
-    }
-    local value = maps[exp]
-    if value then
-        return {exp:startswith("no-") and "-fno-exceptions" or "-fexceptions", value}
-    end
+    return exp:startswith("no-") and "-fno-exceptions" or "-fexceptions"
 end
 
 -- make the c precompiled header flag

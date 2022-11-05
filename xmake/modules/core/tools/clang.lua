@@ -142,3 +142,25 @@ function nf_symbol(self, level)
         return _super.nf_symbol(self, level)
     end
 end
+
+-- make the exception flag
+--
+-- e.g.
+-- set_exceptions("cxx")
+-- set_exceptions("objc")
+-- set_exceptions("no-cxx")
+-- set_exceptions("no-objc")
+-- set_exceptions("cxx", "objc")
+function nf_exception(self, exp)
+    local maps = {
+        cxx = "-fcxx-exceptions",
+        ["no-cxx"] = "-fno-cxx-exceptions",
+        objc = "-fobjc-exceptions",
+        ["no-objc"] = "-fno-objc-exceptions"
+    }
+    local value = maps[exp]
+    if value then
+        return {exp:startswith("no-") and "-fno-exceptions" or "-fexceptions", value}
+    end
+end
+
