@@ -1143,6 +1143,7 @@ function _instance:autogenfile(sourcefile, opt)
     if path.is_absolute(relativedir) and os.host() == "windows" then
         -- remove C:\\ and whitespaces
         -- e.g. C:\\Program Files (x64)\\xxx\Windows.h
+        -- @see https://github.com/xmake-io/xmake/issues/3021
         relativedir = hash.uuid4(relativedir):gsub("%-", ""):lower()
     end
     relativedir = relativedir:gsub("%.%.", "__")
