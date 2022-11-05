@@ -213,7 +213,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 
 ### Package management features
 
-* The official repository provides nearly 500+ packages with one-click compilation on all platforms
+* The official repository provides nearly 700+ packages with one-click compilation on all platforms
 * Full platform package support, support for cross-compiled dependent packages
 * Support package virtual environment using `xrepo env shell`
 * Precompiled package acceleration for Windows
