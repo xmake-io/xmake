@@ -26,6 +26,7 @@ local _instance = _instance or {}
 local bit             = require("base/bit")
 local os              = require("base/os")
 local path            = require("base/path")
+local hash            = require("base/hash")
 local utils           = require("base/utils")
 local table           = require("base/table")
 local baseoption      = require("base/option")
@@ -1140,7 +1141,9 @@ function _instance:autogenfile(sourcefile, opt)
     -- we need replace '..' to '__' in this case
     --
     if path.is_absolute(relativedir) and os.host() == "windows" then
-        relativedir = relativedir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
+        -- remove C:\\ and whitespaces
+        -- e.g. C:\\Program Files (x64)\\xxx\Windows.h
+        relativedir = hash.uuid4(relativedir):gsub("%-", ""):lower()
     end
     relativedir = relativedir:gsub("%.%.", "__")
     local rootdir = (opt and opt.rootdir) and opt.rootdir or self:autogendir()
