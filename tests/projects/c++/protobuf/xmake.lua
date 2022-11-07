@@ -5,6 +5,7 @@ target("test")
     set_kind("binary")
     set_languages("c++11")
     add_packages("protobuf-cpp")
+    add_rules("protobuf.cpp")
     add_files("src/*.cpp")
-    add_files("src/**.proto", {rules = "protobuf.cpp", proto_rootdir = "src"})
+    add_files("src/**.proto", {proto_rootdir = "src"})
 
