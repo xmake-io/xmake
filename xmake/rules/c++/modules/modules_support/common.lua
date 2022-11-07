@@ -267,7 +267,7 @@ function _parse_dependencies_data(target, moduleinfos)
 end
 
 -- check circular dependencies for the given module
-function _check_circular_dependencies_of_module(name, moduledeps, depspath)
+function _check_circular_dependencies_of_module(name, moduledeps, modulesources, depspath)
     for _, dep in ipairs(moduledeps[name]) do
         local depinfo = moduledeps[dep]
         if depinfo then
@@ -277,12 +277,19 @@ function _check_circular_dependencies_of_module(name, moduledeps, depspath)
                     if name == dep then
                         local circular_deps = table.slice(depspath, idx)
                         table.insert(circular_deps, dep)
-                        os.raise("circular modules dependency(%s) detected!", table.concat(circular_deps, ", "))
+                        local sourceinfo = ""
+                        for _, circular_depname in ipairs(circular_deps) do
+                            local sourcefile = modulesources[circular_depname]
+                            if sourcefile then
+                                sourceinfo = sourceinfo .. ("\n  -> module(%s) in %s"):format(circular_depname, sourcefile)
+                            end
+                        end
+                        os.raise("circular modules dependency(%s) detected!%s", table.concat(circular_deps, ", "), sourceinfo)
                     end
                 end
                 depspath_sub = table.join(depspath, dep)
             end
-            _check_circular_dependencies_of_module(dep, moduledeps, depspath_sub)
+            _check_circular_dependencies_of_module(dep, moduledeps, modulesources, depspath_sub)
         end
     end
 end
@@ -291,10 +298,12 @@ end
 -- @see https://github.com/xmake-io/xmake/issues/3031
 function _check_circular_dependencies(modules)
     local moduledeps = {}
+    local modulesources = {}
     for _, mod in pairs(modules) do
         if mod then
             if mod.provides and mod.requires then
-                for name, _ in pairs(mod.provides) do
+                for name, provide in pairs(mod.provides) do
+                    modulesources[name] = provide.sourcefile
                     local deps = moduledeps[name]
                     if deps then
                         table.join2(deps, mod.requires)
@@ -306,7 +315,7 @@ function _check_circular_dependencies(modules)
         end
     end
     for name, _ in pairs(moduledeps) do
-        _check_circular_dependencies_of_module(name, moduledeps, {name})
+        _check_circular_dependencies_of_module(name, moduledeps, modulesources, {name})
     end
 end
 
