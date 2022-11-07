@@ -288,6 +288,7 @@ function _check_circular_dependencies_of_module(name, moduledeps, depspath)
 end
 
 -- check circular dependencies
+-- @see https://github.com/xmake-io/xmake/issues/3031
 function _check_circular_dependencies(modules)
     local moduledeps = {}
     for _, mod in pairs(modules) do
