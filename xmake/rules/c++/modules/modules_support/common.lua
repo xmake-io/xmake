@@ -203,7 +203,7 @@ end
     }
   }
 }]]
-function parse_dependency_data(target, moduleinfos)
+function _parse_dependencies_data(target, moduleinfos)
     local modules
     local cachedir = modules_cachedir(target)
     for _, moduleinfo in ipairs(moduleinfos) do
@@ -264,6 +264,49 @@ function parse_dependency_data(target, moduleinfos)
         end
     end
     return modules
+end
+
+-- check circular dependencies for the given module
+function _check_circular_dependencies_of_module(name, moduledeps, depspath)
+    for _, dep in ipairs(moduledeps[name]) do
+        local depinfo = moduledeps[dep]
+        if depinfo then
+            local depspath_sub
+            if depspath then
+                for idx, name in ipairs(depspath) do
+                    if name == dep then
+                        local circular_deps = table.slice(depspath, idx)
+                        table.insert(circular_deps, dep)
+                        os.raise("circular modules dependency(%s) detected!", table.concat(circular_deps, ", "))
+                    end
+                end
+                depspath_sub = table.join(depspath, dep)
+            end
+            _check_circular_dependencies_of_module(dep, moduledeps, depspath_sub)
+        end
+    end
+end
+
+-- check circular dependencies
+function _check_circular_dependencies(modules)
+    local moduledeps = {}
+    for _, mod in pairs(modules) do
+        if mod then
+            if mod.provides and mod.requires then
+                for name, _ in pairs(mod.provides) do
+                    local deps = moduledeps[name]
+                    if deps then
+                        table.join2(deps, mod.requires)
+                    else
+                        moduledeps[name] = table.keys(mod.requires)
+                    end
+                end
+            end
+        end
+    end
+    for name, _ in pairs(moduledeps) do
+        _check_circular_dependencies_of_module(name, moduledeps, {name})
+    end
 end
 
 function _topological_sort_visit(node, nodes, modules, output)
@@ -455,7 +498,10 @@ function get_module_dependencies(target, sourcebatch, opt)
         local changed = modules_support(target).generate_dependencies(target, sourcebatch, opt)
         if changed or modules == nil then
             local moduleinfos = load_moduleinfos(target, sourcebatch)
-            modules = parse_dependency_data(target, moduleinfos)
+            modules = _parse_dependencies_data(target, moduleinfos)
+            if modules then
+                _check_circular_dependencies(modules)
+            end
             localcache():set2("modules", cachekey, modules)
             localcache():save()
         end
