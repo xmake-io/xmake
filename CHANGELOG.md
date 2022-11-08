@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.7.3
+
 ### New features
 
 * A new optional configuration syntax. It is LSP friendly, automatically calls target_end() to achieve scope isolation.
@@ -1430,6 +1432,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.7.3
 
 ### 新特性
 
