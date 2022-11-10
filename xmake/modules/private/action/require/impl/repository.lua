@@ -65,13 +65,14 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
     end
 
     -- lock commit
+    local ok
     if locked_repo.commit and os.isdir(path.join(repodir_local, ".git")) then
         lastcommit = lastcommit or try {function()
             return git.lastcommit({repodir = repodir_local})
         end}
         if locked_repo.commit ~= lastcommit then
             -- try checkout to the given commit
-            local ok = try {function () git.checkout(locked_repo.commit, {verbose = option.get("verbose"), repodir = repodir_local}); return true end}
+            ok = try {function () git.checkout(locked_repo.commit, {verbose = option.get("verbose"), repodir = repodir_local}); return true end}
             if not ok then
                 if global.get("network") ~= "private" then
                     -- pull the latest commit
@@ -84,6 +85,8 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
                     return
                 end
             end
+        else
+            ok = true
         end
     end
 
@@ -162,10 +165,7 @@ function packagedir(packagename, opt)
 
         -- find the package directory from the locked repository
         if locked_repo then
-            local dir, repo = _get_packagedir_from_locked_repo(packagename, locked_repo)
-            if dir and repo then
-                foundir = {dir, repo}
-            end
+            foundir = _get_packagedir_from_locked_repo(packagename, locked_repo)
         end
 
         -- find the package directory from repositories
