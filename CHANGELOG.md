@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Bugs fixed
+
+* Fix requires-lock bug
+
 ## v2.7.3
 
 ### New features
@@ -1432,6 +1436,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs 修复
+
+* 修复 requires-lock 问题
 
 ## v2.7.3
 
