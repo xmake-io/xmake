@@ -69,5 +69,16 @@ function main()
         table.insert(argv, "--style=" .. option.get("style"))
     end
 
+    -- inplace flag
+    table.insert(argv,"-i")
+    -- set file to format
+    if option.get("file") then
+        table.insert(argv, option.get("file"))
+    end
+
+    -- format files
+    os.vrunv(clang_format.program, argv, {curdir = project.directory()})
+    cprint("${color.success}formatting complete")
+
     os.setenvs(oldenvs)
 end
