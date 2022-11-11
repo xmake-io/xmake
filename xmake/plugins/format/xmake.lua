@@ -30,17 +30,14 @@ task("format")
     -- set menu
     set_menu {
                 -- usage
-                usage = "xmake format [options] [arguments]"
-
+                usage = "xmake format [options] [arguments]",
                 -- description
-            ,   description = "Format the current project."
-
+                description = "Format the current project.",
                 -- options
-            ,   options =
-                {
-                    {'s', "style",  "kv", nil,      "Set the path of.clang-format file, a coding style"..
-                                                    "(LLVM, Google, Chromium, Mozilla, WebKit) or key value string" }
-                ,   {nil, "create-style", "kv", nil,    "Create a .clang-format file from a coding style" },
+                options = {
+                    {'s', "style",  "kv", nil,      "Set the path of .clang-format file, a coding style"..
+                                                    "(LLVM, Google, Chromium, Mozilla, WebKit) or key value string" },
+                   {nil, "create-style", "kv", nil,    "Create a .clang-format file from a coding style" },
                     {'f', "file", "v", "*.cpp *.h *.hpp", "Set file path or glob pattern"}
                 }
             }
