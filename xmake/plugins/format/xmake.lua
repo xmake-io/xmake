@@ -37,7 +37,7 @@ task("format")
                 options = {
                     {'s', "style",  "kv", nil,      "Set the path of .clang-format file, a coding style"..
                                                     "(LLVM, Google, Chromium, Mozilla, WebKit) or key value string" },
-                   {nil, "create-style", "kv", nil,    "Create a .clang-format file from a coding style" },
+                    {nil, "create-style", "kv", nil,    "Create a .clang-format file from a coding style" },
                     {'f', "file", "v", "*.cpp *.h *.hpp", "Set file path or glob pattern"}
                 }
             }

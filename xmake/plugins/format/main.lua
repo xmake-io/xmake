@@ -59,8 +59,8 @@ function main()
     if option.get("create-style") then
         table.insert(argv, "--style=" .. option.get("create-style"))
         table.insert(argv, "--dump-config")
-        local outdata, errdata = os.iorunv(clang_format.program, argv)
-        io.writefile(".clang-format", outdata, {curdir = project.directory()})
+        local projectdir = project.directory()
+        os.execv(clang_format.program, argv, {stdout = path.join(projectdir, ".clang-format"), curdir = projectdir})
         return
     end 
 
@@ -70,7 +70,7 @@ function main()
     end
 
     -- inplace flag
-    table.insert(argv,"-i")
+    table.insert(argv, "-i")
     -- set file to format
     if option.get("file") then
         table.insert(argv, option.get("file"))
