@@ -53,13 +53,12 @@ function main()
     end
     assert(clang_format, "clang-format not found!")
 
-    local argv = {}
-
     -- create style file
+    local argv = {}
+    local projectdir = project.directory()
     if option.get("create-style") then
         table.insert(argv, "--style=" .. option.get("create-style"))
         table.insert(argv, "--dump-config")
-        local projectdir = project.directory()
         os.execv(clang_format.program, argv, {stdout = path.join(projectdir, ".clang-format"), curdir = projectdir})
         return
     end 
@@ -71,13 +70,14 @@ function main()
 
     -- inplace flag
     table.insert(argv, "-i")
+    
     -- set file to format
     if option.get("file") then
         table.insert(argv, option.get("file"))
     end
 
     -- format files
-    os.vrunv(clang_format.program, argv, {curdir = project.directory()})
+    os.vrunv(clang_format.program, argv, {curdir = projectdir})
     cprint("${color.success}formatting complete")
 
     os.setenvs(oldenvs)
