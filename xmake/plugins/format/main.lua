@@ -56,12 +56,12 @@ function main()
     -- create style file
     local argv = {}
     local projectdir = project.directory()
-    if option.get("create-style") then
-        table.insert(argv, "--style=" .. option.get("create-style"))
+    if option.get("create") then
+        table.insert(argv, "--style=" .. (option.get("style") or "Google"))
         table.insert(argv, "--dump-config")
         os.execv(clang_format.program, argv, {stdout = path.join(projectdir, ".clang-format"), curdir = projectdir})
         return
-    end 
+    end
 
     -- set style file
     if option.get("style") then
@@ -70,7 +70,7 @@ function main()
 
     -- inplace flag
     table.insert(argv, "-i")
-    
+
     -- set file to format
     if option.get("file") then
         table.insert(argv, option.get("file"))
