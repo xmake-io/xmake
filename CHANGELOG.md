@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#3049](https://github.com/xmake-io/xmake/pull/3049): Add `xmake format` plugin
+
 ### Bugs fixed
 
 * Fix requires-lock bug
@@ -1436,6 +1440,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#3049](https://github.com/xmake-io/xmake/pull/3049): 添加 `xmake format` 插件
 
 ### Bugs 修复
 
