@@ -37,8 +37,8 @@ end
 -- make the strip flag
 function nf_strip(self, level)
     local maps = {
-        debug  = "--strip"
-    ,   all    = "--strip"
+        debug  = "-fstrip"
+    ,   all    = {"-fstrip", "-dead_strip"}
     }
     return maps[level]
 end
