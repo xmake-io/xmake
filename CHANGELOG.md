@@ -6,6 +6,10 @@
 
 * [#3049](https://github.com/xmake-io/xmake/pull/3049): Add `xmake format` plugin
 
+### Changes
+
+* [#3056](https://github.com/xmake-io/xmake/issues/3056): Improve zig support
+
 ### Bugs fixed
 
 * Fix requires-lock bug
@@ -1444,6 +1448,10 @@
 ### 新特性
 
 * [#3049](https://github.com/xmake-io/xmake/pull/3049): 添加 `xmake format` 插件
+
+### 改进
+
+* [#3056](https://github.com/xmake-io/xmake/issues/3056): 改进 Zig 支持
 
 ### Bugs 修复
 
