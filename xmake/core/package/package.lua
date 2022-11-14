@@ -1430,7 +1430,7 @@ function _instance:_fetch_tool(opt)
         fetchinfo = on_fetch(self, {force = opt.force,
                                     system = opt.system,
                                     require_version = opt.require_version})
-        if opt.require_version and opt.require_version:find(".", 1, true) then
+        if fetchinfo and opt.require_version and opt.require_version:find(".", 1, true) then
             local version = type(fetchinfo) == "table" and fetchinfo.version
             if not (version and (version == opt.require_version or semver.satisfies(version, opt.require_version))) then
                 fetchinfo = nil
@@ -1479,8 +1479,8 @@ function _instance:_fetch_library(opt)
                                     system = opt.system,
                                     external = opt.external,
                                     require_version = opt.require_version})
-        if opt.require_version and opt.require_version:find(".", 1, true) then
-            local version = fetchinfo and fetchinfo.version
+        if fetchinfo and opt.require_version and opt.require_version:find(".", 1, true) then
+            local version = fetchinfo.version
             if not (version and (version == opt.require_version or semver.satisfies(version, opt.require_version))) then
                 fetchinfo = nil
             end
