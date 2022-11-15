@@ -250,7 +250,6 @@ function buildenvs(package, opt)
     if package:is_plat("linux") and package:config("pic") ~= false then
         table.insert(cflags, "-fPIC")
         table.insert(cxxflags, "-fPIC")
-        table.insert(asflags, "-fPIC")
     end
     if package:config("lto") then
         table.join2(cflags, package:_generate_lto_configs("cc").cflags)
