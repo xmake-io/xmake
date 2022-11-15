@@ -9,6 +9,7 @@
 ### Changes
 
 * [#3056](https://github.com/xmake-io/xmake/issues/3056): Improve zig support
+* [#3060](https://github.com/xmake-io/xmake/issues/3060): Improve to detect msys2 for clang toolchains envirnoment
 
 ### Bugs fixed
 
@@ -1452,6 +1453,7 @@
 ### 改进
 
 * [#3056](https://github.com/xmake-io/xmake/issues/3056): 改进 Zig 支持
+* [#3060](https://github.com/xmake-io/xmake/issues/3060): 改进支持 msys2 的环境探测
 
 ### Bugs 修复
 
