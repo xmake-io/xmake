@@ -895,8 +895,10 @@ static tb_void_t xm_engine_init_host(xm_engine_t* engine)
         tb_char_t data[64] = {0};
         if (tb_environment_first("MSYSTEM", data, sizeof(data)))
         {
-            // on msys or msys/mingw64 or msys/mingw32?
-            if (!tb_strnicmp(data, "mingw", 5) || !tb_stricmp(data, "msys"))
+            // on msys?
+            if (!tb_strnicmp(data, "mingw", 5) // mingw32/64 on msys2
+                || !tb_strnicmp(data, "clang", 5) // clang32/64 on msys2, @see https://github.com/xmake-io/xmake/issues/3060
+                || !tb_stricmp(data, "msys"))  // on msys2
                 subhost = "msys";
         }
     }
