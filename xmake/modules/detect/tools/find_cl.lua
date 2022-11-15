@@ -38,7 +38,18 @@ function main(opt)
 
     -- init options
     opt         = opt or {}
-    opt.check   = opt.check or function (program) os.runv(program, {}, {envs = opt.envs}) end
+    opt.check   = opt.check or function (program)
+        local ok = try { function () os.runv(program, {}, {envs = opt.envs}); return true end }
+        if not ok then
+            -- @see https://github.com/xmake-io/xmake/issues/3057
+            local objectfile = os.tmpfile() .. ".obj"
+            local sourcefile = os.tmpfile() .. ".c"
+            io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+            os.runv(program, {"-c", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
+            os.rm(objectfile)
+            os.rm(sourcefile)
+        end
+    end
 
     -- find program
     local program = find_program(opt.program or "cl.exe", opt)
