@@ -904,8 +904,10 @@ function _get_parents_str(package)
     local parents = package:parents()
     if parents then
         local parentnames = {}
-        for _, parent in pairs(parents) do
-            table.insert(parentnames, parent:displayname())
+        for _, parentpkgs in pairs(parents) do
+            for _, parent in ipairs(parentpkgs) do
+                table.insert(parentnames, parent:displayname())
+            end
         end
         if #parentnames == 0 then
             return
@@ -1062,23 +1064,25 @@ function should_install(package, opt)
     end
     if package:parents() then
         -- if all the packages that depend on it already exist, then there is no need to install it
-        for _, parent in pairs(package:parents()) do
-            if should_install(parent, opt) and not parent:exists() then
-                return true
-            end
-
-            -- if the existing parent package is already using it,
-            -- then even if it is an optional package, you must make sure to install it
-            --
-            -- @see https://github.com/xmake-io/xmake/issues/1460
-            --
-            if parent:exists() and not option.get("force") and _must_depend_on(parent, package) then
-                -- mark this package as non-optional because parent package need it
-                local requireinfo = package:requireinfo()
-                if requireinfo.optional then
-                    requireinfo.optional = nil
+        for _, parentpkgs in pairs(package:parents()) do
+            for _, parent in ipairs(parentpkgs) do
+                if should_install(parent, opt) and not parent:exists() then
+                    return true
                 end
-                return true
+
+                -- if the existing parent package is already using it,
+                -- then even if it is an optional package, you must make sure to install it
+                --
+                -- @see https://github.com/xmake-io/xmake/issues/1460
+                --
+                if parent:exists() and not option.get("force") and _must_depend_on(parent, package) then
+                    -- mark this package as non-optional because parent package need it
+                    local requireinfo = package:requireinfo()
+                    if requireinfo.optional then
+                        requireinfo.optional = nil
+                    end
+                    return true
+                end
             end
         end
     else

@@ -390,9 +390,14 @@ end
 
 -- add parents
 function _instance:parents_add(...)
+    self._PARENTS = self._PARENTS or {}
     for _, parent in ipairs({...}) do
-        self._PARENTS = self._PARENTS or {}
-        self._PARENTS[parent:name()] = parent
+        local parentpkgs = self._PARENTS[parent:name()]
+        if not parentpkgs then
+            parentpkgs = {}
+            self._PARENTS[parent:name()] = parentpkgs
+        end
+        table.insert(parentpkgs, parent)
     end
 end
 
