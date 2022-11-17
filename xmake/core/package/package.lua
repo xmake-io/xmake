@@ -384,20 +384,41 @@ function _instance:librarydeps()
 end
 
 -- get parents
-function _instance:parents()
-    return self._PARENTS
+function _instance:parents(packagename)
+    local parents = self._PARENTS
+    if parents then
+        if packagename then
+            return parents[packagename]
+        else
+            local results = self._PARENTS_PLAIN
+            if not results then
+                results = {}
+                for _, parentpkgs in pairs(parents) do
+                    table.join2(results, parentpkgs)
+                end
+                results = table.unique(results)
+                self._PARENTS_PLAIN = results
+            end
+            if #results > 0 then
+                return results
+            end
+        end
+    end
 end
 
 -- add parents
 function _instance:parents_add(...)
     self._PARENTS = self._PARENTS or {}
     for _, parent in ipairs({...}) do
+        -- maybe multiple parents will depend on it
+        -- @see https://github.com/xmake-io/xmake/issues/3065
         local parentpkgs = self._PARENTS[parent:name()]
         if not parentpkgs then
             parentpkgs = {}
             self._PARENTS[parent:name()] = parentpkgs
         end
         table.insert(parentpkgs, parent)
+        self._PARENTS_PLAIN = nil
     end
 end
 
