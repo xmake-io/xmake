@@ -15,6 +15,7 @@
 ### Bugs fixed
 
 * Fix requires-lock bug
+* [#3065](https://github.com/xmake-io/xmake/issues/3065): Fix missing package dependences
 
 ## v2.7.3
 
@@ -1460,6 +1461,7 @@
 ### Bugs 修复
 
 * 修复 requires-lock 问题
+* [#3065](https://github.com/xmake-io/xmake/issues/3065): 修复部分依赖包没有被安装的问题
 
 ## v2.7.3
 
