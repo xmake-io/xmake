@@ -399,7 +399,9 @@ function _instance:parents(packagename)
                 results = table.unique(results)
                 self._PARENTS_PLAIN = results
             end
-            return results
+            if #results > 0 then
+                return results
+            end
         end
     end
 end
