@@ -16,6 +16,7 @@
 
 * Fix requires-lock bug
 * [#3065](https://github.com/xmake-io/xmake/issues/3065): Fix missing package dependences
+* [#3082](https://github.com/xmake-io/xmake/issues/3082): Fix build.ninja generator
 
 ## v2.7.3
 
@@ -1462,6 +1463,7 @@
 
 * 修复 requires-lock 问题
 * [#3065](https://github.com/xmake-io/xmake/issues/3065): 修复部分依赖包没有被安装的问题
+* [#3082](https://github.com/xmake-io/xmake/issues/3082): 修复 build.ninja 生成器
 
 ## v2.7.3
 
