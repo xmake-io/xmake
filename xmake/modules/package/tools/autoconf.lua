@@ -71,6 +71,20 @@ function _is_cross_compilation(package)
     return false
 end
 
+-- has `--with-pic`?
+function _has_with_pic()
+    local has_with_pic = _g.has_with_pic
+    if has_with_pic == nil then
+        local result = try {function() return os.iorunv("./configure", {"--help"}, {shell = true}) end}
+        if result and result:find("--with-pic", 1, true) then
+            has_with_pic = true
+        end
+        has_with_pic = has_with_pic or false
+        _g.has_with_pic = has_with_pic
+    end
+    return has_with_pic
+end
+
 -- get configs
 function _get_configs(package, configs)
 
@@ -124,6 +138,10 @@ function _get_configs(package, configs)
             host = host .. "-" .. package:targetos()
             table.insert(configs, "--host=" .. host)
         end
+    end
+    if package:is_plat("linux", "bsd") and
+        package:config("pic") ~= false and _has_with_pic() then
+        table.insert(configs, "--with-pic")
     end
     return configs
 end
@@ -247,7 +265,8 @@ function buildenvs(package, opt)
         envs.CPP       = package:build_getenv("cpp")
         envs.RANLIB    = package:build_getenv("ranlib")
     end
-    if package:is_plat("linux") and package:config("pic") ~= false then
+    if package:is_plat("linux", "bsd") and
+        package:config("pic") ~= false and not _has_with_pic() then
         table.insert(cflags, "-fPIC")
         table.insert(cxxflags, "-fPIC")
     end
@@ -386,9 +405,6 @@ function configure(package, configs, opt)
     -- init options
     opt = opt or {}
 
-    -- get envs
-    local envs = opt.envs or buildenvs(package, opt)
-
     -- generate configure file
     if not os.isfile("configure") then
         if os.isfile("autogen.sh") then
@@ -399,6 +415,9 @@ function configure(package, configs, opt)
             os.vrunv(autoreconf.program, {"--install", "--symlink"}, {shell = true, envs = autogen_envs(package, opt)})
         end
     end
+
+    -- get envs
+    local envs = opt.envs or buildenvs(package, opt)
 
     -- pass configurations
     local argv = {}
