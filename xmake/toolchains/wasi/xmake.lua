@@ -41,7 +41,7 @@ toolchain("wasi")
 
     -- check toolchain
     on_check(function (toolchain)
-        return import("lib.detect.find_tool")("clang")
+        return import("lib.detect.find_tool")("clang", {paths = toolchain:bindir()})
     end)
 
     -- on load
