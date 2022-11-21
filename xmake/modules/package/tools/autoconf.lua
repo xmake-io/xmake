@@ -74,7 +74,7 @@ end
 
 -- get memcache
 function _memcache()
-    return memcache("package.tools.autoconf")
+    return memcache.cache("package.tools.autoconf")
 end
 
 -- has `--with-pic`?
