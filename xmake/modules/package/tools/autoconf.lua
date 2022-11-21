@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.tool.linker")
 import("core.tool.compiler")
+import("core.cache.memcache")
 import("lib.detect.find_tool")
 
 -- translate paths
@@ -71,16 +72,21 @@ function _is_cross_compilation(package)
     return false
 end
 
+-- get memcache
+function _memcache()
+    return memcache("package.tools.autoconf")
+end
+
 -- has `--with-pic`?
-function _has_with_pic()
-    local has_with_pic = _g.has_with_pic
+function _has_with_pic(package)
+    local has_with_pic = _memcache():get2(tostring(package), "with_pic")
     if has_with_pic == nil then
         local result = try {function() return os.iorunv("./configure", {"--help"}, {shell = true}) end}
         if result and result:find("--with-pic", 1, true) then
             has_with_pic = true
         end
         has_with_pic = has_with_pic or false
-        _g.has_with_pic = has_with_pic
+        _memcache():set2(tostring(package), "with_pic", has_with_pic)
     end
     return has_with_pic
 end
@@ -140,7 +146,7 @@ function _get_configs(package, configs)
         end
     end
     if package:is_plat("linux", "bsd") and
-        package:config("pic") ~= false and _has_with_pic() then
+        package:config("pic") ~= false and _has_with_pic(package) then
         table.insert(configs, "--with-pic")
     end
     return configs
@@ -266,7 +272,7 @@ function buildenvs(package, opt)
         envs.RANLIB    = package:build_getenv("ranlib")
     end
     if package:is_plat("linux", "bsd") and
-        package:config("pic") ~= false and not _has_with_pic() then
+        package:config("pic") ~= false and not _has_with_pic(package) then
         table.insert(cflags, "-fPIC")
         table.insert(cxxflags, "-fPIC")
     end
