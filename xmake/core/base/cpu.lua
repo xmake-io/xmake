@@ -75,7 +75,13 @@ function cpu._march_intel()
         end
 
         -- big cores
-        if cpu_model == 140 then
+        if cpu_model == 183 then
+            return "Raptor Lake"
+        elseif cpu_model == 151 or cpu_model == 154 then
+            return "Alder Lake"
+        elseif cpu_model == 167 then
+            return "Rocket Lake"
+        elseif cpu_model == 140 then
             return "Tiger Lake"
         elseif cpu_model == 126 or cpu_model == 125 then
             return "Ice Lake"
