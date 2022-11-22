@@ -32,9 +32,6 @@ import("private.action.require.impl.environment")
 -- add repository url
 function _add(name, url, branch, is_global)
 
-    -- add url
-    repository.add(name, url, branch, is_global)
-
     -- remove previous repository if exists
     local repodir = path.join(repository.directory(is_global), name)
     if os.isdir(repodir) then
@@ -49,6 +46,9 @@ function _add(name, url, branch, is_global)
         local remoteurl = proxy.mirror(url) or url
         git.clone(remoteurl, {verbose = option.get("verbose"), branch = branch, outputdir = repodir})
     end
+
+    -- add url
+    repository.add(name, url, branch, is_global)
 
     -- trace
     cprint("${color.success}add %s repository(%s): %s%s ok!", (is_global and "global" or "local"), name, url, branch and (" " .. branch) or "")
