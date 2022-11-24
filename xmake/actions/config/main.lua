@@ -51,6 +51,7 @@ function _option_filter(name)
     ,   require     = true
     ,   export      = true
     ,   import      = true
+    ,   check       = true
     }
     return not options[name]
 end
@@ -65,7 +66,7 @@ function _need_check(changed)
 
     -- clean?
     if not changed then
-        changed = option.get("clean")
+        changed = option.get("clean") or option.get("check")
     end
 
     -- check for all project files
@@ -426,8 +427,12 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     local recheck = _need_check(options_changed or not configcache_loaded or autogen)
     if recheck then
 
-        -- clear and flush local cache to disk
-        localcache.clear("config")
+        -- clear cached configuration
+        if option.get("clean") then
+            localcache.clear("config")
+        end
+
+        -- clear detection cache
         localcache.clear("detect")
         localcache.clear("option")
         localcache.clear("package")
