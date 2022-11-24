@@ -18,6 +18,7 @@
 * [#3065](https://github.com/xmake-io/xmake/issues/3065): Fix missing package dependences
 * [#3082](https://github.com/xmake-io/xmake/issues/3082): Fix build.ninja generator
 * [#3092](https://github.com/xmake-io/xmake/issues/3092): Fix xrepo add-repo error handing
+* [#3013](https://github.com/xmake-io/xmake/issues/3013): Fix and support windows UNC path
 
 ## v2.7.3
 
@@ -1466,6 +1467,7 @@
 * [#3065](https://github.com/xmake-io/xmake/issues/3065): 修复部分依赖包没有被安装的问题
 * [#3082](https://github.com/xmake-io/xmake/issues/3082): 修复 build.ninja 生成器
 * [#3092](https://github.com/xmake-io/xmake/issues/3092): 修复 xrepo add-repo 添加失败逻辑
+* [#3013](https://github.com/xmake-io/xmake/issues/3013): 修复支持 windows UNC 路径
 
 ## v2.7.3
 
