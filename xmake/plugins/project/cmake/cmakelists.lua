@@ -784,9 +784,7 @@ function _add_target_link_options(cmakelists, target)
     if #ldflags > 0 or #shflags > 0 then
         local flags = {}
         for _, flag in ipairs(table.unique(table.join(ldflags, shflags))) do
-            if target:linker():has_flags(flag) then
-                table.insert(flags, flag)
-            end
+            table.insert(flags, flag)
         end
         if #flags > 0 then
             local cmake_minver = _get_cmake_minver()
