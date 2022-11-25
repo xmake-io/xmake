@@ -52,6 +52,9 @@ tb_int_t xm_os_strerror(lua_State* lua)
         case TB_STATE_SYSERROR_NOT_PERM:
             strerr = "Permission denied";
             break;
+        case TB_STATE_SYSERROR_NOT_ACCESS:
+            strerr = "Not access because it is busy";
+            break;
         case TB_STATE_SYSERROR_NOT_FILEDIR:
             strerr = "No such file or directory";
             break;
