@@ -359,5 +359,17 @@ function winos.registry_values(keypath)
     end
 end
 
+-- inherit handles in CreateProcess safely?
+-- https://github.com/xmake-io/xmake/issues/2902#issuecomment-1326934902
+--
+function winos.inherit_handles_safely()
+    local inherit_handles_safely = winos._INHERIT_HANDLES_SAFELY
+    if inherit_handles_safely == nil then
+        inherit_handles_safely = winos.version():ge("win7") or false
+        winos._INHERIT_HANDLES_SAFELY = inherit_handles_safely
+    end
+    return inherit_handles_safely
+end
+
 -- return module: winos
 return winos
