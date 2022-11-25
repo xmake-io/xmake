@@ -20,6 +20,7 @@
 * [#3092](https://github.com/xmake-io/xmake/issues/3092): Fix xrepo add-repo error handing
 * [#3013](https://github.com/xmake-io/xmake/issues/3013): Fix and support windows UNC path
 * [#2902](https://github.com/xmake-io/xmake/issues/2902): Fix file not access by another process occupied
+* [#3074](https://github.com/xmake-io/xmake/issues/3074): Fix CMakelists generator
 
 ## v2.7.3
 
@@ -1470,6 +1471,7 @@
 * [#3092](https://github.com/xmake-io/xmake/issues/3092): 修复 xrepo add-repo 添加失败逻辑
 * [#3013](https://github.com/xmake-io/xmake/issues/3013): 修复支持 windows UNC 路径
 * [#2902](https://github.com/xmake-io/xmake/issues/2902): 修复文件被其他子进程占用问题
+* [#3074](https://github.com/xmake-io/xmake/issues/3074): 修复 CMakelists 生成器链接参数设置不对问题
 
 ## v2.7.3
 
