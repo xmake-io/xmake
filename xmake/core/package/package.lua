@@ -1976,6 +1976,10 @@ function _instance:_generate_build_configs(configs, opt)
             end
         end
     end
+    -- enable exceptions for msvc by default
+    if opt.sourcekind == "cxx" and configs.exceptions == nil and self:has_tool("cxx", "cl") then
+        configs.exceptions = "cxx"
+    end
     if configs and (configs.ldflags or configs.shflags) then
         configs.force = {ldflags = configs.ldflags, shflags = configs.shflags}
         configs.ldflags = nil
