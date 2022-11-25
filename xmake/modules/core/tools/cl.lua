@@ -500,16 +500,24 @@ function _preprocess(program, argv, opt)
     end
     table.insert(cppflags, sourcefile)
     return try{ function()
-        local outfile = os.tmpfile() .. ".i.out"
+        -- https://github.com/xmake-io/xmake/issues/2902#issuecomment-1326934902
+        local outfile = cppfile
         local errfile = os.tmpfile() .. ".i.err"
+        local inherit_handles_safely = true
+        if not winos.inherit_handles_safely() then
+            outfile = os.tmpfile() .. ".i.out"
+            inherit_handles_safely = false
+        end
         os.execv(program, winos.cmdargv(cppflags), table.join(opt, {stdout = outfile, stderr = errfile}))
         local errdata
         if os.isfile(errfile) then
             errdata = io.readfile(errfile)
         end
-        os.cp(outfile, cppfile)
         os.tryrm(errfile)
-        os.tryrm(outfile)
+        if not inherit_handles_safely then
+            os.cp(outfile, cppfile)
+            os.tryrm(outfile)
+        end
         -- includes information will be output to stderr instead of stdout now
         return {outdata = errdata, errdata = errdata,
                 sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags,
