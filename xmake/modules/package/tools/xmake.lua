@@ -138,8 +138,7 @@ function _get_configs(package, configs, opt)
     end
     local buildir = opt.buildir or package:buildir()
     if buildir then
-        table.insert(configs, "-o")
-        table.insert(configs, buildir)
+        table.insert(configs, "--buildir=" .. buildir)
     end
     return configs
 end
