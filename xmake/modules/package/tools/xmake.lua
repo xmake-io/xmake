@@ -37,7 +37,8 @@ function _get_config_from_toolchains(package, name)
 end
 
 -- get configs
-function _get_configs(package, configs)
+function _get_configs(package, configs, opt)
+    opt = opt or {}
     local configs  = configs or {}
     local cflags   = table.join(table.wrap(package:config("cflags")),   get_config("cflags"))
     local cxflags  = table.join(table.wrap(package:config("cxflags")),  get_config("cxflags"))
@@ -134,6 +135,11 @@ function _get_configs(package, configs)
     end
     if ldflags and #ldflags > 0 then
         table.insert(configs, "--ldflags=" .. table.concat(ldflags, ' '))
+    end
+    local buildir = opt.buildir or package:buildir()
+    if buildir then
+        table.insert(configs, "-o")
+        table.insert(configs, buildir)
     end
     return configs
 end
@@ -255,7 +261,7 @@ function install(package, configs, opt)
     _set_builtin_argv(argv)
     table.insert(argv, "-y")
     table.insert(argv, "-c")
-    for name, value in pairs(_get_configs(package, configs)) do
+    for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if type(name) == "number" then
             if value ~= "" then
