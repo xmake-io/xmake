@@ -18,11 +18,6 @@
 -- @file        event.lua
 --
 
---[[ Console User Interface (cui) ]-----------------------------------------
-Author: Tiago Dionizio (tiago.dionizio AT gmail.com)
-$Id: event.lua 18 2007-06-21 20:43:52Z tngd $
---------------------------------------------------------------------------]]
-
 -- load modules
 local log    = require("ui/log")
 local object = require("ui/object")
