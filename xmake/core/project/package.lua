@@ -107,9 +107,33 @@ function _instance:requirestr()
     return self:get("__requirestr")
 end
 
+-- get the require configuration from the given name
+--
+-- e.g.
+--
+-- add_requires("xxx", {system = true, configs = {shared = true}})
+--
+-- local configs = pkg:requireconf()
+-- local system = pkg:requireconf("system")
+-- local shared = pkg:requireconf("configs", "shared")
+--
+function _instance:requireconf(name, key)
+    local requireconfs = self:get("__requireconfs")
+    local value = requireconfs
+    if name then
+        value = requireconfs and requireconfs[name] or nil
+        if value and key then
+            value = value[key]
+        end
+    end
+    return value
+end
+
 -- get the install directory
+-- @see https://github.com/xmake-io/xmake/issues/3106
 function _instance:installdir()
-    return self:get("__installdir")
+    return self:get("installdir")
+        or self:get("__installdir") -- deprecated
 end
 
 -- get library files
@@ -132,6 +156,25 @@ function _instance:components_deps()
     return self:get("__components_deps")
 end
 
+-- get other extra information from package/on_fetch
+--
+-- e.g.
+--
+-- @code
+-- package("xxx")
+--     on_fetch(function (package)
+--         return {includedirs = "", links = "", extra = {foo = ""}}
+--     end)
+--
+-- @endcode
+function _instance:extra(name)
+    local extra = self:get("extra")
+    if extra and name then
+        extra = extra[name]
+    end
+    return extra
+end
+
 -- get order dependencies of the given component
 function _instance:component_orderdeps(name)
     local component_orderdeps = self._COMPONENT_ORDERDEPS
@@ -147,19 +190,6 @@ function _instance:component_orderdeps(name)
         component_orderdeps[name] = orderdeps
     end
     return orderdeps
-end
-
--- get the extra info from the given name
-function _instance:extra(name)
-    local extrainfo = self:extrainfo()
-    if extrainfo then
-        return extrainfo[name]
-    end
-end
-
--- get the extra info
-function _instance:extrainfo()
-    return self:get("__extrainfo")
 end
 
 -- set the value to the requires info

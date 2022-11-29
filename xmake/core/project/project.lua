@@ -487,18 +487,18 @@ function project._load_requires()
         -- get the package name
         local packagename = requirestr:split("%s")[1]
 
-        -- get alias
+        -- get alias and requireconfs
         local alias = nil
-        local extrainfo = requires_extra[requirestr]
-        if extrainfo then
-            alias = extrainfo.alias
+        local requireconfs = requires_extra[requirestr]
+        if requireconfs then
+            alias = requireconfs.alias
         end
 
-        -- load it from cache first (@note will discard scripts in extrainfo)
+        -- load it from cache first
         local name = alias or packagename
         local instance = project_package.load(name)
         if not instance then
-            local info = {__requirestr = requirestr, __extrainfo = extrainfo}
+            local info = {__requirestr = requirestr, __requireconfs = requireconfs}
             instance = project_package.load_withinfo(name, info)
         end
 
