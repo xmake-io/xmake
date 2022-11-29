@@ -36,7 +36,7 @@ function _register_required_package_libs(instance, required_package, is_deps)
     if instance:is_library() then
         local fetchinfo = table.clone(instance:fetch())
         if fetchinfo then
-            fetchinfo.name    = nil
+            fetchinfo.name = nil
             if is_deps then
                 -- we need only reserve license for root package
                 --
@@ -49,6 +49,8 @@ function _register_required_package_libs(instance, required_package, is_deps)
                 fetchinfo.version = nil
                 fetchinfo.static  = nil
                 fetchinfo.shared  = nil
+                fetchinfo.installdir = nil
+                fetchinfo.extra = nil
             end
 
             -- merge into the root values
@@ -82,7 +84,7 @@ end
 -- register the base info of required package
 function _register_required_package_base(instance, required_package)
     if not instance:is_system() and not instance:is_thirdparty() then
-        required_package:set("__installdir", instance:installdir())
+        required_package:set("installdir", instance:installdir())
     end
 end
 
