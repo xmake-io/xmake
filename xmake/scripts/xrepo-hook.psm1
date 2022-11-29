@@ -17,7 +17,7 @@ function Enter-XrepoEnvironment {
     begin {
         $script:xrepoOldEnvs = (Get-ChildItem -Path Env:);
 
-        if ($bnd -eq $Null) {
+        if (-not $bnd) {
             & $Env:XMAKE_EXE lua private.xrepo.action.env.info config;
             if (-not $?) {
                 Exit 1;
