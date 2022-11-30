@@ -179,17 +179,7 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
                 for name, value in pairs(opt:get("configvar")) do
                     if variables[name] == nil then
                         variables[name] = table.unwrap(value)
-                        variables["__extraconf_" .. name] = target:extraconf("configvar." .. name, value)
-                    end
-                end
-            end
-
-            -- get variables from the target.packages
-            for _, pkg in ipairs(target:orderpkgs()) do
-                for name, value in pairs(pkg:get("configvar")) do
-                    if variables[name] == nil then
-                        variables[name] = table.unwrap(value)
-                        variables["__extraconf_" .. name] = target:extraconf("configvar." .. name, value)
+                        variables["__extraconf_" .. name] = opt:extraconf("configvar." .. name, value)
                     end
                 end
             end
