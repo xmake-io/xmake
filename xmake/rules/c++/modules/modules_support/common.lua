@@ -385,7 +385,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
     local module_name_private
     local module_deps = {}
     local module_deps_set = hashset.new()
-    local sourcecode = preprocess_file(sourcefile)
+    local sourcecode = preprocess_file(sourcefile) or io.readfile(sourcefile)
     sourcecode = sourcecode:gsub("//.-\n", "\n")
     sourcecode = sourcecode:gsub("/%*.-%*/", "")
     for _, line in ipairs(sourcecode:split("\n", {plain = true})) do

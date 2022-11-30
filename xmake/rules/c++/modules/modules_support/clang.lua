@@ -152,8 +152,12 @@ function generate_dependencies(target, sourcebatch, opt)
             local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
             common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                 local compinst = target:compiler("cxx")
+                local defines = {}
+                for _, define in ipairs(target:get("defines")) do
+                    table.insert(defines, "-D" .. define)
+                end
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                os.vrunv(compinst:program(), {"-E", "-x", "c++", file,  "-o", ifile})
+                os.vrunv(compinst:program(), table.join(defines, {"-E", "-x", "c++", file,  "-o", ifile}))
                 return io.readfile(ifile)
             end)
             changed = true

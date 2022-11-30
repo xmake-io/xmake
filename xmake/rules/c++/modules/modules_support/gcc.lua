@@ -146,8 +146,13 @@ function generate_dependencies(target, sourcebatch, opt)
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
+                    local compinst = target:compiler("cxx")
+                    local defines = {}
+                    for _, define in ipairs(target:get("defines")) do
+                        table.insert(defines, "-D" .. define)
+                    end
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    os.vrunv(compinst:program(), {"-E", "-x", "c++", file,  "-o", ifile})
+                    os.vrunv(compinst:program(), table.join(defines, {get_cppversionflag(target), "-E", "-x", "c++", file,  "-o", ifile}))
                     return io.readfile(ifile)
                 end)
             end
@@ -476,4 +481,14 @@ function get_depoutputflag(target)
         _g.depoutputflag = depoutputflag or false
     end
     return depoutputflag or nil
+end
+
+function get_cppversionflag(target)
+    local cppversionflag = _g.cppversionflag
+    if cppversionflag == nil then
+        local compinst = target:compiler("cxx")
+        local flags = compinst:compflags({target = target})
+        cppversionflag = table.find_if(flags, function(v) string.startswith(v, "-std=c++") end) or "-std=c++20"
+    end
+    return cppversionflag or nil
 end
