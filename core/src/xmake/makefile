@@ -202,14 +202,8 @@ xmake_INC_DIRS 		    += \
                         ../sv/sv/include \
 						../lz4/lz4/lib \
 						../xxhash
-ifeq ($(RUNTIME),luajit)
-xmake_INC_DIRS 			+= ../luajit/luajit/src
-xmake_CXFLAGS 			+= -DUSE_LUAJIT
-endif
-ifeq ($(RUNTIME),lua)
 xmake_INC_DIRS 			+= ../lua/lua
 xmake_CXFLAGS 			+= -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_3
-endif
 xmake_CXFLAGS 			+= -DXM_CONFIG_VERSION_BRANCH="\"$(BRANCH)\""
 xmake_CXFLAGS 			+= -DXM_CONFIG_VERSION_COMMIT="\"$(COMMIT)\""
 

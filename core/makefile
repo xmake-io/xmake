@@ -280,11 +280,8 @@ base_LIBNAMES	:=
 base_LIBNAMES	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi )
 base_LIBNAMES	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi )
 base_LIBNAMES	+= $(shell if { cat detect/tbox.c | $(CC) -xc - -ltbox -o /dev/null 2>/dev/null; }; then echo tbox; fi )
-base_LIBNAMES	+= $(shell if { cat detect/lua-cjson.c | $(CC) -xc - -llua5.1-cjson -lluajit-5.1 -o /dev/null 2>/dev/null; }; then echo lua5.1-cjson; fi )
+base_LIBNAMES	+= $(shell if { cat detect/lua-cjson.c | $(CC) -xc - -llua5.1-cjson -llua -o /dev/null 2>/dev/null; }; then echo lua5.1-cjson; fi )
 base_LIBNAMES	+= $(shell if { cat detect/sv.c | $(CC) -xc - -lsv -o /dev/null 2>/dev/null; }; then echo sv; fi )
-ifeq ($(LUAJIT_SYSTEM),y)
-base_LIBNAMES	+= $(shell if { cat detect/luajit.c | $(CC) -xc - $(shell pkg-config --libs --cflags luajit) -o /dev/null 2>/dev/null; }; then echo luajit-5.1; fi )
-endif
 ifneq ($(TERMUX_ARCH),) # on termux/ci?
 base_LIBNAMES	+= m dl
 else
@@ -306,19 +303,6 @@ BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
 endif
 ifeq ($(COMMIT),)
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null)
-endif
-
-# check jit compiler
-ifeq ($(PLAT),linux)
-luajit_JIT :=$(shell if [ -f "/etc/redhat-release" ]; then echo "nojit"; else echo "jit"; fi )
-ifeq ($(BUILD_ARCH),mips64) # maybe it is not very stable yet, we need to disable it
-luajit_JIT :=nojit
-endif
-else
-luajit_JIT :=jit
-endif
-ifeq ($(PLAT),iphoneos)
-luajit_JIT :=nojit
 endif
 
 # select package directory
@@ -372,7 +356,6 @@ config : .null
 	@$(ECHO) "	  distcc:\t\t"$(DISTCC)
 	@$(ECHO) "	  branch:\t\t"$(BRANCH)
 	@$(ECHO) "	  commit:\t\t"$(COMMIT)
-	@$(ECHO) "	  luajit:\t\t"$(luajit_JIT)
 	@$(ECHO) ""
 	@$(ECHO) "packages:"
 	@$(ECHO) ""$(foreach name, $(PKG_NAMES), $(call MAKE_PACKAGE_INFO,$(name)))
@@ -380,7 +363,6 @@ config : .null
 	@$(ECHO) "directories:"
 	@$(ECHO) "	  install:\t\t"$(abspath $(INSTALL))
 	@$(ECHO) "	  package:\t\t"$(PACKAGE)
-	@$(ECHO) "	  backend:\t\t"$(RUNTIME)
 	@$(ECHO) ""
 	@$(ECHO) "toolchains:"
 	@$(ECHO) "	  bin:\t\t"$(BIN)
@@ -476,10 +458,6 @@ config : .null
 	@$(ECHO) "export MIPS"								>> .config.mak
 	@$(ECHO) "export SPARC"								>> .config.mak
 	@$(ECHO) ""											>> .config.mak
-	@$(ECHO) "# backend"								>> .config.mak
-	@$(ECHO) "RUNTIME ="$(RUNTIME)						>> .config.mak
-	@$(ECHO) "export RUNTIME"							>> .config.mak
-	@$(ECHO) ""											>> .config.mak
 	@$(ECHO) "# demo"									>> .config.mak
 	@$(ECHO) "DEMO ="$(DEMO)							>> .config.mak
 	@$(ECHO) "export DEMO"								>> .config.mak
@@ -528,8 +506,6 @@ config : .null
 	@$(ECHO) "export base_INCFLAGS"						>> .config.mak
 	@$(ECHO) "export base_LIBFLAGS"						>> .config.mak
 	@$(ECHO) ""											>> .config.mak
-	@$(ECHO) "luajit_JIT =$(luajit_JIT)"				>> .config.mak
-	@$(ECHO) "export luajit_JIT"						>> .config.mak
 
 # ######################################################################################
 # help
