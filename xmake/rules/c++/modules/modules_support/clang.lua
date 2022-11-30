@@ -150,7 +150,12 @@ function generate_dependencies(target, sourcebatch, opt)
 
             -- no support of p1689 atm
             local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
-            common.fallback_generate_dependencies(target, jsonfile, sourcefile)
+            common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
+                local compinst = target:compiler("cxx")
+                local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
+                os.vrunv(compinst:program(), {"-E", "-x", "c++", file,  "-o", ifile})
+                return io.readfile(ifile)
+            end)
             changed = true
 
             local dependinfo = io.readfile(jsonfile)

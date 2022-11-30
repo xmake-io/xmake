@@ -376,7 +376,7 @@ end
     }
   ]
 }]]
-function fallback_generate_dependencies(target, jsonfile, sourcefile)
+function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess_file)
     local output = {version = 0, revision = 0, rules = {}}
     local rule = {outputs = {jsonfile}}
     rule["primary-output"] = target:objectfile(sourcefile)
@@ -385,7 +385,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
     local module_name_private
     local module_deps = {}
     local module_deps_set = hashset.new()
-    local sourcecode = io.readfile(sourcefile)
+    local sourcecode = preprocess_file(sourcefile)
     sourcecode = sourcecode:gsub("//.-\n", "\n")
     sourcecode = sourcecode:gsub("/%*.-%*/", "")
     for _, line in ipairs(sourcecode:split("\n", {plain = true})) do
