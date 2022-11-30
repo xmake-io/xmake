@@ -280,11 +280,8 @@ base_LIBNAMES	:=
 base_LIBNAMES	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi )
 base_LIBNAMES	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi )
 base_LIBNAMES	+= $(shell if { cat detect/tbox.c | $(CC) -xc - -ltbox -o /dev/null 2>/dev/null; }; then echo tbox; fi )
-base_LIBNAMES	+= $(shell if { cat detect/lua-cjson.c | $(CC) -xc - -llua5.1-cjson -lluajit-5.1 -o /dev/null 2>/dev/null; }; then echo lua5.1-cjson; fi )
+base_LIBNAMES	+= $(shell if { cat detect/lua-cjson.c | $(CC) -xc - -llua5.1-cjson -llua -o /dev/null 2>/dev/null; }; then echo lua5.1-cjson; fi )
 base_LIBNAMES	+= $(shell if { cat detect/sv.c | $(CC) -xc - -lsv -o /dev/null 2>/dev/null; }; then echo sv; fi )
-ifeq ($(LUAJIT_SYSTEM),y)
-base_LIBNAMES	+= $(shell if { cat detect/luajit.c | $(CC) -xc - $(shell pkg-config --libs --cflags luajit) -o /dev/null 2>/dev/null; }; then echo luajit-5.1; fi )
-endif
 ifneq ($(TERMUX_ARCH),) # on termux/ci?
 base_LIBNAMES	+= m dl
 else

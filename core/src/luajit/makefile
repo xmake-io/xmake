@@ -108,15 +108,15 @@ GENARCH := x86
 endif
 GENPLAT := windows
 luajit_OBJ_FILES 		+= \
-						autogen/$(GENPLAT)/$(luajit_JIT)/$(GENARCH)/lj_vm
+						luajit/autogen/$(GENPLAT)/$(luajit_JIT)/$(GENARCH)/lj_vm
 else
 luajit_ASM_FILES 		+= \
-						autogen/$(GENPLAT)/$(luajit_JIT)/$(GENARCH)/lj_vm
+						luajit/autogen/$(GENPLAT)/$(luajit_JIT)/$(GENARCH)/lj_vm
 endif
 
 # includes
 luajit_INC_DIRS 		+= \
-						autogen/$(GENPLAT)/$(luajit_JIT)/$(GENARCH)
+						luajit/autogen/$(GENPLAT)/$(luajit_JIT)/$(GENARCH)
 
 # disable jit compiler
 ifeq ($(luajit_JIT),nojit)
@@ -136,13 +136,6 @@ luajit_ASFLAGS 			+= -fPIE
 luajit_CXFLAGS 			+= -fPIE
 endif
 endif
-
-# use given system library?
-luajit_C_FILES 			:= $(if $(findstring luajit,$(base_LIBNAMES)),,$(luajit_C_FILES))
-luajit_ASM_FILES 		:= $(if $(findstring luajit,$(base_LIBNAMES)),,$(luajit_ASM_FILES))
-luajit_INC_FILES 		:= $(if $(findstring luajit,$(base_LIBNAMES)),,$(luajit_INC_FILES))
-luajit_OBJ_FILES 		:= $(if $(findstring luajit,$(base_LIBNAMES)),,$(luajit_OBJ_FILES))
-
 
 # suffix
 include $(PRO_DIR)/suffix.mak

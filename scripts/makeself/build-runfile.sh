@@ -33,6 +33,7 @@ cd $tmpdir/xmake || exit
 rm -rf ./core/src/tbox/tbox/src/demo
 rm -rf ./core/src/tbox/tbox/src/tbox/platform/windows
 rm -rf ./core/src/pdcurses
+rm -rf ./core/src/luajit
 
 # prepare info texts
 cd $tmpdir

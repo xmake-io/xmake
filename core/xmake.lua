@@ -98,7 +98,10 @@ if is_plat("windows") then
 end
 
 -- add projects
-includes("src/lua-cjson", "src/sv","src/luajit", "src/lua", "src/lz4", "src/tbox", "src/xmake", "src/demo")
+includes("src/lua-cjson", "src/sv", "src/lua", "src/lz4", "src/tbox", "src/xmake", "src/demo")
+if is_config("runtime", "luajit") then
+    includes("src/luajit")
+end
 if is_plat("windows") then
     includes("src/pdcurses")
 end
