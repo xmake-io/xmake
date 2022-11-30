@@ -141,7 +141,11 @@ function generate_dependencies(target, sourcebatch, opt)
                 local flags = {jsonfile, sourcefile, "-Fo" .. target:objectfile(sourcefile)}
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_flags, flags), {envs = vcvars})
             else
-                common.fallback_generate_dependencies(target, jsonfile, sourcefile)
+                common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
+                    local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
+                    os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), {"/TP", "/P", file,  "/Fi" .. ifile}))
+                    return io.readfile(ifile)
+                end)
             end
             changed = true
 
