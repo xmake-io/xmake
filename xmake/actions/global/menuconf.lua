@@ -89,6 +89,7 @@ function app:_filter_option(name)
     ,   help        = true
     ,   clean       = true
     ,   menu        = true
+    ,   check       = true
     }
     return not options[name]
 end

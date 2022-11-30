@@ -95,6 +95,7 @@ function app:_filter_option(name)
     ,   menu        = true
     ,   import      = true
     ,   export      = true
+    ,   check       = true
     }
     return not options[name] and not project.option(name)
 end

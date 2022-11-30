@@ -128,6 +128,7 @@ xmake_C_FILES 			+= \
 						semver/satisfies \
 						semver/select \
 						semver/semver \
+						curses/curses \
 						readline/readline \
 						readline/history_list \
 						readline/add_history \

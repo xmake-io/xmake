@@ -21,14 +21,6 @@ which can be obtained at:
   * HOMEPAGE:
     * http://pdcurses.org/
 
-This product depends on 'lcurses/cui', Lua Console User Interface,
-which can be obtained at:
-
-  * LICENSE:
-    * core/src/lcurses/LICENSE (MIT License)
-  * HOMEPAGE:
-    * http://lua-cui.sourceforge.net/
-
 This product depends on 'libsv', Public domain semantic versioning in c,
 which can be obtained at:
 
