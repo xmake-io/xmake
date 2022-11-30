@@ -4,11 +4,11 @@ target("xmake")
     set_kind("static")
 
     -- add deps
-    if has_config("curses") or has_config("pdcurses") then
-        add_deps("lcurses")
-    end
     add_deps("sv", "lua-cjson", "lz4", "tbox")
     add_deps(get_config("runtime"))
+    if is_plat("windows") and has_config("pdcurses") then
+        add_deps("pdcurses")
+    end
 
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")
@@ -39,7 +39,13 @@ target("xmake")
     -- add options
     add_options("readline")
     if is_plat("windows") then
-        add_defines("UNICODE", "_UNICODE")
+        add_options("pdcurses")
+    else
+        add_options("curses")
     end
 
+    -- add defines
+    if is_plat("windows") then
+        add_defines("UNICODE", "_UNICODE")
+    end
 

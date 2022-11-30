@@ -286,10 +286,8 @@ tb_int_t xm_libc_setbyte(lua_State* lua);
 tb_int_t xm_tty_term_mode(lua_State* lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
-// register curses
-__tb_extern_c_enter__
-tb_int_t xm_curses_register(lua_State* lua);
-__tb_extern_c_leave__
+// register curses functions
+tb_int_t xm_lua_curses_register(lua_State* lua, tb_char_t const* module);
 #endif
 
 // open cjson
@@ -1108,8 +1106,7 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
         // bind curses
-        xm_curses_register(engine->lua);
-        lua_setglobal(engine->lua, "curses");
+        xm_lua_curses_register(engine->lua, "curses");
 #endif
 
         // bind cjson

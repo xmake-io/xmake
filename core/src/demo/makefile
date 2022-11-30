@@ -9,10 +9,6 @@ demo_CXFLAGS 		+= -D__tb_prefix__=\"xmake\"
 demo_LIBS 			+= xmake$(DTYPE)
 demo_LIB_DIRS 		+= ../xmake
 
-# lcurses
-demo_LIBS 			+= lcurses$(DTYPE)
-demo_LIB_DIRS 		+= ../lcurses
-
 # tbox
 tbox_DTYPE 			:= $(if $(findstring tbox,$(base_LIBNAMES)),,$(DTYPE))
 demo_LIBS 			+= tbox$(tbox_DTYPE)
