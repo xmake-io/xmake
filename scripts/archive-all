@@ -12,7 +12,7 @@ if [ -d $tmpdir ]; then
 fi
 mkdir $tmpdir
 
-# clone xmake repo 
+# clone xmake repo
 cp -r $xmakeroot $tmpdir/repo
 cd $tmpdir/repo
 git reset --hard HEAD

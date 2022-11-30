@@ -108,15 +108,15 @@ GENARCH := x86
 endif
 GENPLAT := windows
 luajit_OBJ_FILES 		+= \
-						autogen/$(GENPLAT)/$(luajit_JIT)/$(GENARCH)/lj_vm
+						luajit/autogen/$(GENPLAT)/$(luajit_JIT)/$(GENARCH)/lj_vm
 else
 luajit_ASM_FILES 		+= \
-						autogen/$(GENPLAT)/$(luajit_JIT)/$(GENARCH)/lj_vm
+						luajit/autogen/$(GENPLAT)/$(luajit_JIT)/$(GENARCH)/lj_vm
 endif
 
 # includes
 luajit_INC_DIRS 		+= \
-						autogen/$(GENPLAT)/$(luajit_JIT)/$(GENARCH)
+						luajit/autogen/$(GENPLAT)/$(luajit_JIT)/$(GENARCH)
 
 # disable jit compiler
 ifeq ($(luajit_JIT),nojit)
