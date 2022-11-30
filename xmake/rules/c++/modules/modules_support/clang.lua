@@ -110,7 +110,7 @@ end
 -- # 58 "/usr/include/c++/11/vector" 3
 -- # 59 "/usr/include/c++/11/vector" 3
 --
-function _get_toolchain_includedirs_for_stlheaders(includedirs, clang)
+function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     local tmpfile = os.tmpfile() .. ".cc"
     io.writefile(tmpfile, "#include <vector>")
     local argv = {"-E", "-x", "c++", tmpfile}
@@ -181,7 +181,7 @@ function toolchain_includedirs(target)
         includedirs = {}
         local clang, toolname = target:tool("cc")
         assert(toolname == "clang")
-        _get_toolchain_includedirs_for_stlheaders(includedirs, clang)
+        _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
         local _, result = try {function () return os.iorunv(clang, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
