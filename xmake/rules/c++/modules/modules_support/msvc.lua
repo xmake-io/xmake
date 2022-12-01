@@ -509,7 +509,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         if common.has_module_extension(module.cppfile) then
                             _build_modulefile(target, module.cppfile, {
                                 objectfile = objectfile,
-                                dependfile = target:dependfile(module.cppfile),
+                                dependfile = target:dependfile(objectfile),
                                 requiresflags = requiresflags,
                                 progress = (index * 100) / total})
                             target:add("objectfiles", objectfile)

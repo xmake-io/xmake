@@ -430,7 +430,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     job = batchjobs:newjob(m.cppfile, function(index, total)
                         _build_modulefile(target, m.cppfile, {
                             objectfile = objectfile,
-                            dependfile = target:dependfile(m.cppfile),
+                            dependfile = target:dependfile(objectfile),
                             progress = (index * 100) / total})
                         target:add("objectfiles", objectfile)
                     end)
