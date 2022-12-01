@@ -199,8 +199,26 @@ function generate_dependencies(target, sourcebatch, opt)
                     for _, define in ipairs(target:get("defines")) do
                         table.insert(defines, "/D" .. define)
                     end
+                    local _includedirs = {}
+                    for _, dep in ipairs(target:orderdeps()) do
+                        local includedir = dep:get("sysincludedirs") or dep:get("includedirs")
+                        if includedir then
+                            table.join2(includedirs, includedir)
+                        end
+                    end
+                    for _, pkg in pairs(target:pkgs()) do
+                        local includedir = pkg:get("sysincludedirs") or pkg:get("includedirs")
+                        if includedir then
+                            table.join2(includedirs, includedir)
+                        end
+                    end
+                    local includedirs = {}
+                    for i, includedir in pairs(_includedirs) do
+                        table.insert(includedirs, "/I")
+                        table.insert(includedirs, includedir)
+                    end
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    os.vrunv(compinst:program(), table.join(defines, {"/nologo", get_cppversionflag(target), "/P", "-TP", file,  "/Fi" .. ifile}), {envs = toolchain:runenvs()})
+                    os.vrunv(compinst:program(), table.join(includedirs, defines, {"/nologo", get_cppversionflag(target), "/P", "-TP", file,  "/Fi" .. ifile}), {envs = toolchain:runenvs()})
                     local content = io.readfile(ifile)
                     os.rm(ifile)
                     return content

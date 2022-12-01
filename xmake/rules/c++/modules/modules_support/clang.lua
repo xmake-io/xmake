@@ -219,11 +219,27 @@ function generate_dependencies(target, sourcebatch, opt)
             common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                 local compinst = target:compiler("cxx")
                 local defines = {}
-                for _, define in ipairs(target:get("defines")) do
+                for _, define in pairs(target:get("defines")) do
                     table.insert(defines, "-D" .. define)
                 end
+                local includedirs = {}
+                for _, dep in ipairs(target:orderdeps()) do
+                    local includedir = dep:get("sysincludedirs") or dep:get("includedirs")
+                    if includedir then
+                        table.join2(includedirs, includedir)
+                    end
+                end
+                for _, pkg in pairs(target:pkgs()) do
+                    local includedir = pkg:get("sysincludedirs") or pkg:get("includedirs")
+                    if includedir then
+                        table.join2(includedirs, includedir)
+                    end
+                end
+                for i, includedir in pairs(includedirs) do
+                    includedirs[i] = "-I" .. includedir
+                end
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                os.vrunv(compinst:program(), table.join(defines, {"-E", "-x", "c++", file, "-o", ifile}))
+                os.vrunv(compinst:program(), table.join(includedirs, defines, {"-E", "-x", "c++", file, "-o", ifile}))
                 local content = io.readfile(ifile)
                 os.rm(ifile)
                 return content
