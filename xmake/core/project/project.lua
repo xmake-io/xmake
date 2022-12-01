@@ -1274,10 +1274,9 @@ function project.allowed_archs(plat)
                     splitplat = splitinfo[1]
                     splitarch = splitinfo[2]
                 elseif #splitinfo == 1 then
-                    splitplat = ""
                     splitarch = allowed_arch
                 end
-                if plat == splitplat then
+                if plat == splitplat or splitplat == nil then
                     if not allowed_archs_set then
                         allowed_archs_set = hashset.new()
                     end
