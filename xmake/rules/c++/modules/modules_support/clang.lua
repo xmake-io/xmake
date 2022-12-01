@@ -157,7 +157,7 @@ function generate_dependencies(target, sourcebatch, opt)
                     table.insert(defines, "-D" .. define)
                 end
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                os.vrunv(compinst:program(), table.join(defines, {"-E", "-x", "c++", file,  "-o", ifile}))
+                os.vrunv(compinst:program(), table.join(defines, {"-E", "-x", "c++", file, "-o", ifile}))
                 return io.readfile(ifile)
             end)
             changed = true
