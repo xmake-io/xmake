@@ -224,7 +224,9 @@ function generate_dependencies(target, sourcebatch, opt)
                 end
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
                 os.vrunv(compinst:program(), table.join(defines, {"-E", "-x", "c++", file, "-o", ifile}))
-                return io.readfile(ifile)
+                local content = io.readfile(ifile)
+                os.rm(ifile)
+                return content
             end)
             changed = true
 

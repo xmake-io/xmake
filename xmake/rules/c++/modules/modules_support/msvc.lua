@@ -171,7 +171,6 @@ end
 
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
-    local compinst = target:compiler("cxx")
     local toolchain = target:toolchain("msvc")
     local vcvars = toolchain:config("vcvars")
     local scandependenciesflag = get_scandependenciesflag(target)
@@ -202,7 +201,9 @@ function generate_dependencies(target, sourcebatch, opt)
                     end
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
                     os.vrunv(compinst:program(), table.join(defines, {"/nologo", get_cppversionflag(target), "/P", file,  "/Fi" .. ifile}), {envs = vcvars})
-                    return io.readfile(ifile)
+                    local content = io.readfile(ifile)
+                    os.rm(ifile)
+                    return content
                 end)
             end
             changed = true
