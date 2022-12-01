@@ -179,7 +179,7 @@ function toolchain_includedirs(target)
     local includedirs = _g.includedirs
     if includedirs == nil then
         includedirs = {}
-        local clang, toolname = target:tool("cc")
+        local clang, toolname = target:tool("cxx")
         assert(toolname == "clang")
         _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
         local _, result = try {function () return os.iorunv(clang, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}

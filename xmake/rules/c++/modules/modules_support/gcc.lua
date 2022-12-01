@@ -132,7 +132,7 @@ function toolchain_includedirs(target)
     local includedirs = _g.includedirs
     if includedirs == nil then
         includedirs = {}
-        local gcc, toolname = target:tool("cc")
+        local gcc, toolname = target:tool("cxx")
         assert(toolname == "gcc")
         _get_toolchain_includedirs_for_stlheaders(includedirs, gcc)
         local _, result = try {function () return os.iorunv(gcc, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
