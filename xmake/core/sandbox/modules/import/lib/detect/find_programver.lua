@@ -32,6 +32,10 @@ local project     = require("project/project")
 local detectcache = require("cache/detectcache")
 local sandbox     = require("sandbox/sandbox")
 local raise       = require("sandbox/modules/raise")
+local scheduler   = require("sandbox/modules/import/core/base/scheduler")
+
+-- globals
+local checking  = nil
 
 -- find program version
 --
@@ -55,6 +59,14 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     -- init options
     opt = opt or {}
 
+    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
+    local coroutine_running = scheduler.co_running()
+    if coroutine_running then
+        while checking ~= nil and checking == program do
+            scheduler.co_yield()
+        end
+    end
+
     -- init cachekey
     local cachekey = "find_programver"
     if opt.cachekey then
@@ -68,6 +80,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     end
 
     -- attempt to get version output info
+    checking = coroutine_running and program or nil
     local ok = false
     local outdata = nil
     local command = opt.command
@@ -79,6 +92,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     else
         ok, outdata = os.iorunv(program, {command or "--version"}, {envs = opt.envs})
     end
+    checking = nil
 
     -- find version info
     if ok and outdata and #outdata > 0 then

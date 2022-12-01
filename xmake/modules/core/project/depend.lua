@@ -29,7 +29,7 @@ import("private.tools.armcc.parse_deps", {alias = "parse_deps_armcc"})
 
 -- load depfiles
 function _load_depfiles(parser, dependinfo, depfiles)
-    depfiles = parser(depfiles)
+    depfiles = parser(depfiles, dependinfo)
     if depfiles then
         if dependinfo.files then
             table.join2(dependinfo.files, depfiles)

@@ -814,7 +814,7 @@ typedef struct _DSM_DEVICE_INFO {
     // NOTE: Descriptor should be the LAST field in this structure
     //
     STORAGE_DEVICE_DESCRIPTOR Descriptor;
-    
+
 } DSM_DEVICE_INFO, *PDSM_DEVICE_INFO;
 
 typedef enum _DSM_DEFAULT_LB_POLICY_TYPE {
@@ -902,7 +902,7 @@ typedef struct _DSM_GROUP_ENTRY {
     // Flag to indicate whether or not to use same path for sequential IO
     // when employing Least Blocks load balance policy.
     //
-    BOOLEAN UseCacheForLeastBlocks;    
+    BOOLEAN UseCacheForLeastBlocks;
 
     //
     // Flag used to indicate if a throttle request succeeded.

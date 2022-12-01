@@ -28,6 +28,17 @@ import("core.tool.compiler")
 import("lib.detect.find_tool")
 import("lib.detect.find_toolname")
 
+-- this sourcebatch is built?
+function _sourcebatch_is_built(sourcebatch)
+    -- we can only use rulename to filter them because sourcekind may be bound to multiple rules
+    local rulename = sourcebatch.rulename
+    if rulename == "c.build" or rulename == "c++.build"
+        or rulename == "asm.build" or rulename == "cuda.build"
+        or rulename == "objc.build" or rulename == "objc++.build" then
+        return true
+    end
+end
+
 -- add header
 function _add_header(ninjafile)
     ninjafile:print([[# this is the build file for project %s
@@ -265,8 +276,8 @@ function _add_build_for_target(ninjafile, target)
     ninjafile:print("")
 
     -- build target objects
-    for _, sourcebatch in pairs(target:sourcebatches()) do
-        if sourcebatch.sourcekind then
+    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
+        if _sourcebatch_is_built(sourcebatch) then
             _add_build_for_objects(ninjafile, target, sourcebatch)
         end
     end

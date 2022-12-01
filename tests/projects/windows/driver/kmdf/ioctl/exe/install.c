@@ -155,7 +155,7 @@ Return Value:
         if (err == ERROR_SUCCESS_REBOOT_REQUIRED) {
             printf("System needs to be rebooted, before the driver installation can proceed.\n");
         }
-        
+
         return  FALSE;
     }
 
@@ -742,7 +742,7 @@ LoadWdfCoInstaller(
         if (FAILED( StringCchCat(szCurDir, MAX_PATH, tempCoinstallerName) )) {
             break;
         }
-        
+
         library = LoadLibrary(szCurDir);
 
         if (library == NULL) {

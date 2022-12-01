@@ -21,15 +21,7 @@
 -- imports
 import("core.project.project")
 import("vsfile")
-
--- get vs arch
-function _vs_arch(arch)
-    if arch == 'x86' or arch == 'i386' then return "Win32" end
-    if arch == 'x86_64' then return "x64" end
-    if arch:startswith('arm64') then return "ARM64" end
-    if arch:startswith('arm') then return "ARM" end
-    return arch
-end
+import("vsutils")
 
 -- make header
 function _make_header(slnfile, vsinfo)
@@ -44,7 +36,7 @@ function _make_projects(slnfile, vsinfo)
     local groups = {}
     local targets = {}
     local vctool = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
-    for targetname, target in pairs(project.targets()) do
+    for targetname, target in table.orderpairs(project.targets()) do
         -- we need set startup project for default or binary target
         -- @see https://github.com/xmake-io/xmake/issues/1249
         if target:get("default") == true then
@@ -79,7 +71,7 @@ function _make_projects(slnfile, vsinfo)
 
     -- make all groups
     local project_group_uuid = "2150E333-8FDC-42A3-9474-1A3956D46DE8"
-    for group_name, group_uuid in pairs(groups) do
+    for group_name, group_uuid in table.orderpairs(groups) do
         slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\", \"{%s}\"", project_group_uuid, group_name, group_name, group_uuid)
         slnfile:leave("EndProject")
     end
@@ -102,10 +94,10 @@ function _make_global(slnfile, vsinfo)
 
     -- add project configuration platforms
     slnfile:enter("GlobalSection(ProjectConfigurationPlatforms) = postSolution")
-    for targetname, target in pairs(project.targets()) do
+    for targetname, target in table.orderpairs(project.targets()) do
         for _, mode in ipairs(vsinfo.modes) do
             for _, arch in ipairs(vsinfo.archs) do
-                local vs_arch = _vs_arch(arch)
+                local vs_arch = vsutils.vsarch(arch)
                 slnfile:print("{%s}.%s|%s.ActiveCfg = %s|%s", hash.uuid4(targetname), mode, arch, mode, vs_arch)
                 slnfile:print("{%s}.%s|%s.Build.0 = %s|%s", hash.uuid4(targetname), mode, arch, mode, vs_arch)
             end
@@ -121,7 +113,7 @@ function _make_global(slnfile, vsinfo)
     -- add project groups
     slnfile:enter("GlobalSection(NestedProjects) = preSolution")
     local subgroups = {}
-    for targetname, target in pairs(project.targets()) do
+    for targetname, target in table.orderpairs(project.targets()) do
         local group_path = target:get("group")
         if group_path then
             -- target -> group
@@ -133,7 +125,7 @@ function _make_global(slnfile, vsinfo)
                 local key = group_name .. (group_name_sub or "")
                 local group_name_sub = group_names[idx + 1]
                 if group_name_sub and not subgroups[key] then
-                    slnfile:print("{%s} = {%s}", hash.uuid4(group_name_sub), hash.uuid4("group." .. group_name))
+                    slnfile:print("{%s} = {%s}", hash.uuid4("group." .. group_name_sub), hash.uuid4("group." .. group_name))
                     subgroups[key] = true
                 end
             end

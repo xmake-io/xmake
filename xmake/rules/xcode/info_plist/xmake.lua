@@ -52,7 +52,13 @@ rule("xcode.info_plist")
         progress.show(opt.progress, "${color.build.object}processing.xcode.$(mode) %s", sourcefile)
 
         -- process and generate Info.plist
-        local info_plist_file = path.join(target:rule("xcode.framework") and resourcesdir or contentsdir, path.filename(sourcefile))
+        -- https://github.com/xmake-io/xmake/issues/2765#issuecomment-1251738622
+        local info_plist_file
+        if target:rule("xcode.framework") and target:is_plat("macosx") then
+            info_plist_file = path.join(resourcesdir, path.filename(sourcefile))
+        else
+            info_plist_file = path.join(contentsdir, path.filename(sourcefile))
+        end
         local maps =
         {
             DEVELOPMENT_LANGUAGE = "en",

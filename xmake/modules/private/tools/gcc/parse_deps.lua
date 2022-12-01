@@ -54,7 +54,7 @@ end
 --  src/tbox/libc/string/../../prefix/../config.h \
 --  build/iphoneos/x86_64/release/tbox.config.h \
 --
--- with c++ modules:
+-- with c++ modules (gcc):
 -- build/.objs/dependence/linux/x86_64/release/src/foo.mpp.o: src/foo.mpp\
 -- build/.objs/dependence/linux/x86_64/release/src/foo.mpp.o  gcm.cache/foo.gcm: bar.c++m cat.c++m\
 -- foo.c++m: gcm.cache/foo.gcm\
@@ -62,7 +62,7 @@ end
 -- gcm.cache/foo.gcm:|  build/.objs/dependence/linux/x86_64/release/src/foo.mpp.o\
 -- CXX_IMPORTS += bar.c++m cat.c++m\
 --
-function main(depsdata)
+function main(depsdata, opt)
 
     -- we assume there is only one valid line
     local block = 0
@@ -85,11 +85,33 @@ function main(depsdata)
             end
         else
             includefile = includefile:replace(space_placeholder, ' ', plain)
-            includefile = includefile:split("\n", {plain = true})[1]
+            includefile = includefile:split("\n", plain)[1]
             if #includefile > 0 then
                 includefile = _normailize_dep(includefile, projectdir)
                 if includefile then
                     results:insert(includefile)
+                end
+            end
+        end
+    end
+    -- with c++ modules (gcc):
+    -- CXX_IMPORTS += bar.c++m cat.c++m\
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/3000
+    opt = opt or {}
+    if opt.modules_cachedir and line:find("CXX_IMPORTS += ", 1, true) then
+        local modulefiles = line:split("CXX_IMPORTS += ", plain)[2]
+        if modulefiles then
+            for _, modulefile in ipairs(modulefiles:split(' ', plain)) do
+                modulefile = modulefile:replace(".c++m", ".gcm", plain)
+                if #modulefile > 0 then
+                    if not path.is_absolute(modulefile) then
+                        modulefile = path.absolute(modulefile, opt.modules_cachedir)
+                    end
+                    modulefile = _normailize_dep(modulefile, projectdir)
+                    if modulefile then
+                        results:insert(modulefile)
+                    end
                 end
             end
         end

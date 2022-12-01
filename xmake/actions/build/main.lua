@@ -35,6 +35,18 @@ import("statistics")
 import("private.cache.build_cache")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 
+-- try building it
+function _do_try_build(configfile, tool, trybuild, trybuild_detected, targetname)
+    if configfile and tool and (trybuild or utils.confirm({default = true,
+            description = "${bright}" .. path.filename(configfile) .. "${clear} found, try building it or you can run `${bright}xmake f --trybuild=${clear}` to set buildsystem"})) then
+        if not trybuild then
+            task.run("config", {target = targetname, trybuild = trybuild_detected})
+        end
+        tool.build()
+        return true
+    end
+end
+
 -- do build for the third-party buildsystem
 function _try_build()
 
@@ -59,25 +71,18 @@ function _try_build()
         else
             raise("unknown build tool: %s", trybuild)
         end
+        return _do_try_build(configfile, tool, trybuild, trybuild_detected, targetname)
     else
-        for _, name in ipairs({"autotools", "cmake", "meson", "scons", "bazel", "msbuild", "xcodebuild", "make", "ninja", "ndkbuild"}) do
+        for _, name in ipairs({"xrepo", "autoconf", "cmake", "meson", "scons", "bazel", "msbuild", "xcodebuild", "make", "ninja", "ndkbuild"}) do
             tool = import("private.action.trybuild." .. name, {anonymous = true})
             configfile = tool.detect()
             if configfile then
                 trybuild_detected = name
-                break
+                if _do_try_build(configfile, tool, trybuild, trybuild_detected, targetname) then
+                    return true
+                end
             end
         end
-    end
-
-    -- try building it
-    if configfile and tool and (trybuild or utils.confirm({default = true,
-            description = "${bright}" .. path.filename(configfile) .. "${clear} found, try building it or you can run `${bright}xmake f --trybuild=${clear}` to set buildsystem"})) then
-        if not trybuild then
-            task.run("config", {target = targetname, trybuild = trybuild_detected})
-        end
-        tool.build()
-        return true
     end
 end
 

@@ -38,6 +38,7 @@ toolchain("llvm")
     set_toolset("ar",     "llvm-ar")
     set_toolset("ranlib", "llvm-ranlib")
     set_toolset("strip",  "llvm-strip")
+    set_toolset("mrc",    "llvm-rc")
 
     -- check toolchain
     on_check("check")

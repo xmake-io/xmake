@@ -154,11 +154,16 @@ function main(requires_raw)
         local searchnames = hashset.new()
         for _, url in ipairs(instance:urls()) do
             url = filter.handle(url, instance)
-            local extension = archive.extension(url)
-            if extension then
-                searchnames:insert(instance:name() .. "-" .. instance:version_str() .. extension)
+            if git.checkurl(url) then
+                searchnames:insert(instance:name() .. archive.extension(url))
+                searchnames:insert(path.basename(url_filename(url)))
+            else
+                local extension = archive.extension(url)
+                if extension then
+                    searchnames:insert(instance:name() .. "-" .. instance:version_str() .. extension)
+                end
+                searchnames:insert(url_filename(url))
             end
-            searchnames:insert(url_filename(url))
         end
         cprint("      -> ${color.dump.string_quote}searchnames${clear}: %s", table.concat(searchnames:to_array(), ", "))
 
@@ -242,6 +247,21 @@ function main(requires_raw)
                     if configs_extra.values then
                         cprint("            -> values: %s", string.serialize(configs_extra.values, true))
                     end
+                end
+            end
+        end
+
+        -- show components
+        local components = instance:get("components")
+        if components then
+            cprint("      -> ${color.dump.string_quote}components${clear}: ")
+            for _, comp in ipairs(components) do
+                cprintf("         -> ${cyan}%s${clear}: ", comp)
+                local plaindeps = instance:extraconf("components", comp, "deps")
+                if plaindeps then
+                    print("%s", table.concat(table.wrap(plaindeps), ", "))
+                else
+                    print("")
                 end
             end
         end

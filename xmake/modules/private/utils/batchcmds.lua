@@ -212,25 +212,21 @@ end
 -- add command: os.runv
 function batchcmds:runv(program, argv, opt)
     table.insert(self:cmds(), {kind = "runv", program = program, argv = argv, opt = opt})
-    self:add_depvalues(program, argv)
 end
 
 -- add command: os.vrunv
 function batchcmds:vrunv(program, argv, opt)
     table.insert(self:cmds(), {kind = "vrunv", program = program, argv = argv, opt = opt})
-    self:add_depvalues(program, argv)
 end
 
 -- add command: os.execv
 function batchcmds:execv(program, argv, opt)
     table.insert(self:cmds(), {kind = "execv", program = program, argv = argv, opt = opt})
-    self:add_depvalues(program, argv)
 end
 
 -- add command: os.vexecv
 function batchcmds:vexecv(program, argv, opt)
     table.insert(self:cmds(), {kind = "vexecv", program = program, argv = argv, opt = opt})
-    self:add_depvalues(program, argv)
 end
 
 -- add command: compiler.compile

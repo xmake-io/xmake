@@ -40,6 +40,7 @@ toolchain("clang" .. suffix)
     set_toolset("mm", "clang" .. suffix)
     set_toolset("mxx", "clang" .. suffix, "clang++" .. suffix)
     set_toolset("as", "clang" .. suffix)
+    set_toolset("mrc", "llvm-rc")
 
     on_check(function (toolchain)
         return import("lib.detect.find_tool")("clang" .. suffix)

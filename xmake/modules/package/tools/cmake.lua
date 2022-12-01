@@ -72,6 +72,34 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
+-- is cross compilation?
+function _is_cross_compilation(package)
+    if not package:is_plat(os.subhost()) then
+        return true
+    end
+    if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
+        return true
+    end
+    return false
+end
+
+-- is the toolchain compatible with the host?
+function _is_toolchain_compatible_with_host(package)
+    local toolchains = package:config("toolchains")
+    if toolchains then
+        toolchains = table.wrap(toolchains)
+        if is_host("linux", "macosx", "bsd") then
+            for _, name in ipairs(toolchains) do
+                if name:startswith("clang") or name:startswith("gcc") then
+                    return true
+                end
+            end
+        elseif is_host("windows") and table.contains(toolchains, "msvc") then
+            return true
+        end
+    end
+end
+
 -- get msvc
 function _get_msvc(package)
     local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
@@ -82,6 +110,16 @@ end
 -- get msvc run environments
 function _get_msvc_runenvs(package)
     return os.joinenvs(_get_msvc(package):runenvs())
+end
+
+-- get vs arch
+function _get_vsarch(package)
+    local arch = package:arch()
+    if arch == 'x86' or arch == 'i386' then return "Win32" end
+    if arch == 'x86_64' then return "x64" end
+    if arch:startswith('arm64') then return "ARM64" end
+    if arch:startswith('arm') then return "ARM" end
+    return arch
 end
 
 -- get cflags from package deps
@@ -287,6 +325,10 @@ function _get_configs_for_windows(package, configs, opt)
         table.insert(configs, "-A")
         if package:is_arch("x86", "i386") then
             table.insert(configs, "Win32")
+        elseif package:is_arch("arm64") then
+            table.insert(configs, "ARM64")
+        elseif package:is_arch("arm.*") then
+            table.insert(configs, "ARM")
         else
             table.insert(configs, "x64")
         end
@@ -366,11 +408,13 @@ function _get_configs_for_appleos(package, configs, opt)
         if package:is_arch("x86_64", "i386") then
             envs.CMAKE_OSX_SYSROOT = "watchsimulator"
         end
-    else
+    elseif package:is_plat("iphoneos") then
         envs.CMAKE_SYSTEM_NAME = "iOS"
         if package:is_arch("x86_64", "i386") then
             envs.CMAKE_OSX_SYSROOT = "iphonesimulator"
         end
+    elseif package:is_plat("macosx") then
+        envs.CMAKE_SYSTEM_NAME = "Darwin"
     end
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY   = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE   = "BOTH"
@@ -503,6 +547,57 @@ function _get_configs_for_cross(package, configs, opt)
     end
 end
 
+-- get configs for host toolchain
+function _get_configs_for_host_toolchain(package, configs, opt)
+    opt = opt or {}
+    opt.cross                      = true
+    local envs                     = {}
+    local sdkdir                   = _translate_paths(package:build_getenv("sdk"))
+    envs.CMAKE_C_COMPILER          = _translate_bin_path(package:build_getenv("cc"))
+    envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
+    envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
+    envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
+    -- https://github.com/xmake-io/xmake-repo/pull/1096
+    local cxx = envs.CMAKE_CXX_COMPILER
+    if cxx and package:has_tool("cxx", "clang", "gcc") then
+        local dir = path.directory(cxx)
+        local name = path.filename(cxx)
+        name = name:gsub("clang$", "clang++")
+        name = name:gsub("clang%-", "clang++-")
+        name = name:gsub("gcc$", "g++")
+        name = name:gsub("gcc%-", "g++-")
+        envs.CMAKE_CXX_COMPILER = _translate_bin_path(dir and path.join(dir, name) or name)
+    end
+    -- @note The link command line is set in Modules/CMake{C,CXX,Fortran}Information.cmake and defaults to using the compiler, not CMAKE_LINKER,
+    -- so we need set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
+    --
+    -- https://github.com/xmake-io/xmake-repo/pull/1039
+    -- https://stackoverflow.com/questions/1867745/cmake-use-a-custom-linker/25274328#25274328
+    envs.CMAKE_LINKER              = _translate_bin_path(package:build_getenv("ld"))
+    if package:has_tool("ld", "gxx", "clangxx") then
+        envs.CMAKE_CXX_LINK_EXECUTABLE = "<CMAKE_LINKER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
+    end
+    envs.CMAKE_RANLIB              = _translate_bin_path(package:build_getenv("ranlib"))
+    envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
+    envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
+    envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
+    envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
+    envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
+    envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
+    -- we need not set it as cross compilation if we just pass toolchain
+    -- https://github.com/xmake-io/xmake/issues/2170
+    if not package:is_plat(os.subhost()) then
+        envs.CMAKE_SYSTEM_NAME     = "Linux"
+    else
+        if package:config("pic") ~= false then
+            table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+        end
+    end
+    for k, v in pairs(envs) do
+        table.insert(configs, "-D" .. k .. "=" .. v)
+    end
+end
+
 -- get cmake generator for msvc
 function _get_cmake_generator_for_msvc(package)
     local vsvers =
@@ -577,15 +672,24 @@ function _get_configs(package, configs, opt)
         _get_configs_for_windows(package, configs, opt)
     elseif package:is_plat("android") then
         _get_configs_for_android(package, configs, opt)
-    elseif package:is_plat("iphoneos", "watchos") then
+    elseif package:is_plat("iphoneos", "watchos") or
+        -- for cross-compilation on macOS, @see https://github.com/xmake-io/xmake/issues/2804
+        (package:is_plat("macosx") and not package:is_arch(os.subarch())) then
         _get_configs_for_appleos(package, configs, opt)
     elseif package:is_plat("mingw") then
         _get_configs_for_mingw(package, configs, opt)
     elseif package:is_plat("wasm") then
         _get_configs_for_wasm(package, configs, opt)
-    elseif not package:is_plat(os.subhost()) or
-        package:config("toolchains") then -- we need pass toolchains
+    elseif _is_cross_compilation(package) then
         _get_configs_for_cross(package, configs, opt)
+    elseif package:config("toolchains") then
+        -- we still need find system libraries,
+        -- it just pass toolchain environments if the toolchain is compatible with host
+        if _is_toolchain_compatible_with_host(package) then
+            _get_configs_for_host_toolchain(package, configs, opt)
+        else
+            _get_configs_for_cross(package, configs, opt)
+        end
     else
         _get_configs_for_generic(package, configs, opt)
     end
@@ -603,11 +707,19 @@ function buildenvs(package, opt)
         envs = _get_msvc_runenvs(package)
     end
 
+    -- we need pass pkgconf for windows/mingw without msys2/cygwin
+    if package:is_plat("windows", "mingw") and is_subhost("windows") then
+        local pkgconf = find_tool("pkgconf")
+        if pkgconf then
+            envs.PKG_CONFIG = pkgconf.program
+        end
+    end
+
     -- add environments for cmake/find_packages
     local CMAKE_LIBRARY_PATH = {}
     local CMAKE_INCLUDE_PATH = {}
     local CMAKE_PREFIX_PATH  = {}
-    for _, dep in ipairs(package:orderdeps()) do
+    for _, dep in ipairs(package:librarydeps()) do
         if dep:is_system() then
             local fetchinfo = dep:fetch()
             if fetchinfo then
@@ -634,7 +746,7 @@ function _build_for_msvc(package, configs, opt)
     os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild",
             (jobs ~= nil and format("-m:%d", jobs) or "-m"),
             "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
-            "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+            "-p:Platform=" .. _get_vsarch(package)}, {envs = runenvs})
 end
 
 -- do build for make
@@ -645,7 +757,7 @@ function _build_for_make(package, configs, opt)
     end
     local jobs = _get_parallel_njobs(opt)
     table.insert(argv, "-j" .. jobs)
-    if option.get("verbose") then
+    if option.get("diagnosis") then
         table.insert(argv, "VERBOSE=1")
     end
     if is_host("bsd") then
@@ -699,7 +811,7 @@ function _install_for_msvc(package, configs, opt)
     os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "/nr:false",
         (jobs ~= nil and format("-m:%d", jobs) or "-m"),
         "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
-        "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+        "-p:Platform=" .. _get_vsarch(package)}, {envs = runenvs})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
         os.vrunv(msbuild.program, {projfile, "/property:configuration=" .. (package:is_debug() and "Debug" or "Release")}, {envs = runenvs})
@@ -723,7 +835,7 @@ end
 function _install_for_make(package, configs, opt)
     local jobs = _get_parallel_njobs(opt)
     local argv = {"-j" .. jobs}
-    if option.get("verbose") then
+    if option.get("diagnosis") then
         table.insert(argv, "VERBOSE=1")
     end
     if is_host("bsd") then

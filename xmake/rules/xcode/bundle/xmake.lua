@@ -42,15 +42,24 @@ rule("xcode.bundle")
         target:data_set("xcode.bundle.contentsdir", contentsdir)
         target:data_set("xcode.bundle.resourcesdir", resourcesdir)
 
-        -- set target info for bundle
-        target:set("filename", target:basename())
+        -- register clean files for `xmake clean`
+        target:add("cleanfiles", bundledir)
 
         -- generate binary as bundle, we cannot set `-shared` or `-dynamiclib`
         target:set("kind", "binary")
-        target:add("ldflags", "-bundle", {force = true})
 
-        -- register clean files for `xmake clean`
-        target:add("cleanfiles", bundledir)
+        -- set target info for bundle
+        target:set("filename", target:basename())
+    end)
+
+    on_config(function (target)
+        -- add bundle flags
+        local linker = target:linker():name()
+        if linker == "swiftc" then
+            target:add("ldflags", "-Xlinker -bundle", {force = true})
+        else
+            target:add("ldflags", "-bundle", {force = true})
+        end
     end)
 
     after_build(function (target, opt)

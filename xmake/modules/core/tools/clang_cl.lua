@@ -92,19 +92,14 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-
-    -- the maps
     local maps =
     {
-        none       = "-O0"
-    ,   fast       = "-O1"
-    ,   faster     = "-O2"
-    ,   fastest    = "-O3"
-    ,   smallest   = "-Os"
-    ,   aggressive = "-Ofast"
+        none        = "-Od"
+    ,   faster      = "-Ox"
+    ,   fastest     = "-O2 -fp:fast"
+    ,   smallest    = "-O1"
+    ,   aggressive  = "-O2 -fp:fast"
     }
-
-    -- make it
     return maps[level]
 end
 
@@ -132,7 +127,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             end
 
             -- do compile
-            return os.iorunv(compargv(self, sourcefile, objectfile, compflags))
+            local program, argv = compargv(self, sourcefile, objectfile, compflags)
+            return os.iorunv(program, argv, {envs = self:runenvs()})
         end,
         catch
         {

@@ -42,10 +42,8 @@ tb_int_t xm_os_isdir(lua_State* lua)
     tb_char_t const* path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
-    // done os.isdir(path)
+    // is directory?
     tb_file_info_t info = {0};
     lua_pushboolean(lua, tb_file_info(path, &info) && (info.type == TB_FILE_TYPE_DIRECTORY));
-
-    // ok
     return 1;
 }

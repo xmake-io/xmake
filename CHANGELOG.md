@@ -4,7 +4,89 @@
 
 ### New features
 
+* [#3049](https://github.com/xmake-io/xmake/pull/3049): Add `xmake format` plugin
+
+### Changes
+
+* [#3056](https://github.com/xmake-io/xmake/issues/3056): Improve zig support
+* [#3060](https://github.com/xmake-io/xmake/issues/3060): Improve to detect msys2 for clang toolchains envirnoment
+* [#3071](https://github.com/xmake-io/xmake/issues/3071): Support rc for llvm/clang toolchain
+
+### Bugs fixed
+
+* Fix requires-lock bug
+* [#3065](https://github.com/xmake-io/xmake/issues/3065): Fix missing package dependences
+* [#3082](https://github.com/xmake-io/xmake/issues/3082): Fix build.ninja generator
+* [#3092](https://github.com/xmake-io/xmake/issues/3092): Fix xrepo add-repo error handing
+* [#3013](https://github.com/xmake-io/xmake/issues/3013): Fix and support windows UNC path
+* [#2902](https://github.com/xmake-io/xmake/issues/2902): Fix file not access by another process occupied
+* [#3074](https://github.com/xmake-io/xmake/issues/3074): Fix CMakelists generator
+* Fix tools/xmake package build directory
+
+## v2.7.3
+
+### New features
+
+* A new optional configuration syntax. It is LSP friendly, automatically calls target_end() to achieve scope isolation.
+* [#2944](https://github.com/xmake-io/xmake/issues/2944): Add `gnu-rm.binary` and `gnu-rm.static` rules and tests for embed project
+* [#2636](https://github.com/xmake-io/xmake/issues/2636): Support package components
+* Support armasm/armasm64 for msvc
+* [#3023](https://github.com/xmake-io/xmake/pull/3023): Add support for debugging with renderdoc
+* [#3022](https://github.com/xmake-io/xmake/issues/3022): Add flags for specific compilers and linkers
+* [#3025](https://github.com/xmake-io/xmake/pull/3025): C++ exception enabled/disabled switch method
+* [#3017](https://github.com/xmake-io/xmake/pull/3017): Support ispc compiler
+
+### Changes
+
+* [#2925](https://github.com/xmake-io/xmake/issues/2925): Improve doxygen plugin
+* [#2948](https://github.com/xmake-io/xmake/issues/2948): Support OpenBSD
+* Add `xmake g --insecure-ssl=y` option to disable ssl certificate when downloading packages
+* [#2971](https://github.com/xmake-io/xmake/pull/2971): Stabilize vs and vsxmake project generation
+* [#3000](https://github.com/xmake-io/xmake/issues/3000): Incremental compilation support for modules
+* [#3016](https://github.com/xmake-io/xmake/pull/3016): Improve clang/msvc to better support std modules
+
+### Bugs fixed
+
+* [#2949](https://github.com/xmake-io/xmake/issues/2949): Fix vs group
+* [#2952](https://github.com/xmake-io/xmake/issues/2952): Fix armlink for long args
+* [#2954](https://github.com/xmake-io/xmake/issues/2954): Fix c++ module partitions path issue
+* [#3033](https://github.com/xmake-io/xmake/issues/3033): Detect circular modules dependency
+
+## v2.7.2
+
+### New features
+
 * [#2140](https://github.com/xmake-io/xmake/issues/2140): Support Windows Arm64
+* [#2719](https://github.com/xmake-io/xmake/issues/2719): Add `package.librarydeps.strict_compatibility` to strict compatibility for package linkdeps
+* [#2810](https://github.com/xmake-io/xmake/pull/2810): Support os.execv to run shell script file
+* [#2817](https://github.com/xmake-io/xmake/pull/2817): Improve rule to support dependence order
+* [#2824](https://github.com/xmake-io/xmake/pull/2824): Pass cross-file to meson.install and trybuild
+* [#2856](https://github.com/xmake-io/xmake/pull/2856): Improve to debug package using the debug source directory
+* [#2859](https://github.com/xmake-io/xmake/issues/2859): Improve trybuild to build 3rd source library using xmake-repo scripts
+* [#2879](https://github.com/xmake-io/xmake/issues/2879): Support for dynamic creation and injection of rules and targets in script scope
+* [#2374](https://github.com/xmake-io/xmake/issues/2374): Allow xmake package to embed rules and scripts
+* Add clang-cl toolchain
+
+### Changes
+
+* [#2745](https://github.com/xmake-io/xmake/pull/2745): Improve os.cp to support symlink
+* [#2773](https://github.com/xmake-io/xmake/pull/2773): Improve vcpkg packages to support freebsd
+* [#2778](https://github.com/xmake-io/xmake/pull/2778): Improve Improve xrepo.env for target
+* [#2783](https://github.com/xmake-io/xmake/issues/2783): Add digest algorithm option for wdk signtool
+* [#2787](https://github.com/xmake-io/xmake/pull/2787): Improve json to support empty array
+* [#2782](https://github.com/xmake-io/xmake/pull/2782): Improve to find matlab and runtime
+* [#2793](https://github.com/xmake-io/xmake/issues/2793): Improve mconfdialog
+* [#2804](https://github.com/xmake-io/xmake/issues/2804): Support macOS arm64/x86_64 cross-compilation for installing packages
+* [#2809](https://github.com/xmake-io/xmake/issues/2809): Improve cl optimization option
+* Improve trybuild for meson/cmake/autoconf
+* [#2846](https://github.com/xmake-io/xmake/discussions/2846): Improve to generate config files
+* [#2866](https://github.com/xmake-io/xmake/issues/2866): Better control over the order of execution of rules
+
+### Bugs fixed
+
+* [#2740](https://github.com/xmake-io/xmake/issues/2740): Fix build c++ modules stuck and slower for msvc
+* [#2875](https://github.com/xmake-io/xmake/issues/2875): Fix build linux driver error
+* [#2885](https://github.com/xmake-io/xmake/issues/2885): Fix pch not found with msvc/ccache
 
 ## v2.7.1
 
@@ -1374,7 +1456,89 @@
 
 ### 新特性
 
+* [#3049](https://github.com/xmake-io/xmake/pull/3049): 添加 `xmake format` 插件
+
+### 改进
+
+* [#3056](https://github.com/xmake-io/xmake/issues/3056): 改进 Zig 支持
+* [#3060](https://github.com/xmake-io/xmake/issues/3060): 改进支持 msys2 的环境探测
+* [#3071](https://github.com/xmake-io/xmake/issues/3071): 为 llvm/clang 工具链支持 rc 编译
+
+### Bugs 修复
+
+* 修复 requires-lock 问题
+* [#3065](https://github.com/xmake-io/xmake/issues/3065): 修复部分依赖包没有被安装的问题
+* [#3082](https://github.com/xmake-io/xmake/issues/3082): 修复 build.ninja 生成器
+* [#3092](https://github.com/xmake-io/xmake/issues/3092): 修复 xrepo add-repo 添加失败逻辑
+* [#3013](https://github.com/xmake-io/xmake/issues/3013): 修复支持 windows UNC 路径
+* [#2902](https://github.com/xmake-io/xmake/issues/2902): 修复文件被其他子进程占用问题
+* [#3074](https://github.com/xmake-io/xmake/issues/3074): 修复 CMakelists 生成器链接参数设置不对问题
+* 修复 tools/xmake 包安装构建目录
+
+## v2.7.3
+
+### 新特性
+
+* 一种新的可选域配置语法，对 LSP 友好，并且支持域隔离。
+* [#2944](https://github.com/xmake-io/xmake/issues/2944): 为嵌入式工程添加 `gnu-rm.binary` 和 `gnu-rm.static` 规则和测试工程
+* [#2636](https://github.com/xmake-io/xmake/issues/2636): 支持包组件
+* 支持 msvc 的 armasm/armasm64
+* [#3023](https://github.com/xmake-io/xmake/pull/3023): 改进 xmake run -d，添加 renderdoc 调试器支持
+* [#3022](https://github.com/xmake-io/xmake/issues/3022): 为特定编译器添加 flags
+* [#3025](https://github.com/xmake-io/xmake/pull/3025): 新增 C++ 异常接口配置
+* [#3017](https://github.com/xmake-io/xmake/pull/3017): 支持 ispc 编译器规则
+
+### 改进
+
+* [#2925](https://github.com/xmake-io/xmake/issues/2925): 改进 doxygen 插件
+* [#2948](https://github.com/xmake-io/xmake/issues/2948): 支持 OpenBSD
+* 添加 `xmake g --insecure-ssl=y` 配置选项去禁用 ssl 证书检测
+* [#2971](https://github.com/xmake-io/xmake/pull/2971): 使 vs/vsxmake 工程生成的结果每次保持一致
+* [#3000](https://github.com/xmake-io/xmake/issues/3000): 改进 C++ 模块构建支持，实现增量编译支持
+* [#3016](https://github.com/xmake-io/xmake/pull/3016): 改进 clang/msvc 去更好地支持 std 模块
+
+### Bugs 修复
+
+* [#2949](https://github.com/xmake-io/xmake/issues/2949): 修复 vs 分组
+* [#2952](https://github.com/xmake-io/xmake/issues/2952): 修复 armlink 处理长命令失败问题
+* [#2954](https://github.com/xmake-io/xmake/issues/2954): 修复 c++ module partitions 路径无效问题
+* [#3033](https://github.com/xmake-io/xmake/issues/3033): 探测循环模块依赖
+
+## v2.7.2
+
+### 新特性
+
 * [#2140](https://github.com/xmake-io/xmake/issues/2140): 支持 Windows Arm64
+* [#2719](https://github.com/xmake-io/xmake/issues/2719): 添加 `package.librarydeps.strict_compatibility` 策略严格限制包依赖兼容性
+* [#2810](https://github.com/xmake-io/xmake/pull/2810): 支持 os.execv 去执行 shell 脚本文件
+* [#2817](https://github.com/xmake-io/xmake/pull/2817): 改进规则支持依赖顺序执行
+* [#2824](https://github.com/xmake-io/xmake/pull/2824): 传递 cross-file 交叉编译环境给 meson.install 和 trybuild
+* [#2856](https://github.com/xmake-io/xmake/pull/2856): xrepo 支持从当前指定源码目录调试程序
+* [#2859](https://github.com/xmake-io/xmake/issues/2859): 改进对三方库的 trybuild 构建，利用 xmake-repo 仓库脚本更加智能化地构建三方库
+* [#2879](https://github.com/xmake-io/xmake/issues/2879): 更好的动态创建和配置 target 和 rule
+* [#2374](https://github.com/xmake-io/xmake/issues/2374): 允许 xmake 包中引入自定义规则
+* 添加 clang-cl 工具链
+
+### 改进
+
+* [#2745](https://github.com/xmake-io/xmake/pull/2745): 改进 os.cp 支持符号链接复制
+* [#2773](https://github.com/xmake-io/xmake/pull/2773): 改进 vcpkg 包安装，支持 freebsd 平台
+* [#2778](https://github.com/xmake-io/xmake/pull/2778): 改进 xrepo.env 支持 target 的运行环境加载
+* [#2783](https://github.com/xmake-io/xmake/issues/2783): 添加摘要算法选项到 WDK 的 signtool 签名工具
+* [#2787](https://github.com/xmake-io/xmake/pull/2787): 改进 json 支持空数组
+* [#2782](https://github.com/xmake-io/xmake/pull/2782): 改进查找 matlib sdk 和运行时
+* [#2793](https://github.com/xmake-io/xmake/issues/2793): 改进 mconfdialog 配置操作体验
+* [#2804](https://github.com/xmake-io/xmake/issues/2804): 安装依赖包支持 macOS arm64/x86_64 交叉编译
+* [#2809](https://github.com/xmake-io/xmake/issues/2809): 改进 msvc 的编译优化选项
+* 改进 trybuild 模式，为 meson/autoconf/cmake 提供更好的交叉编译支持
+* [#2846](https://github.com/xmake-io/xmake/discussions/2846): 改进对 configfiles 的生成
+* [#2866](https://github.com/xmake-io/xmake/issues/2866): 更好地控制 rule 规则执行顺序
+
+### Bugs 修复
+
+* [#2740](https://github.com/xmake-io/xmake/issues/2740): 修复 msvc 构建 C++ modules 卡死问题
+* [#2875](https://github.com/xmake-io/xmake/issues/2875): 修复构建 linux 驱动错误
+* [#2885](https://github.com/xmake-io/xmake/issues/2885): 修复 ccache 下，msvc 编译 pch 失败问题
 
 ## v2.7.1
 

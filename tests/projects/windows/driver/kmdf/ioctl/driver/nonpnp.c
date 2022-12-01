@@ -164,7 +164,7 @@ Return Value:
     // software device.
     //
     status = NonPnpDeviceAdd(hDriver, pInit);
-    
+
     return status;
 }
 
@@ -311,17 +311,17 @@ Return Value:
     //attributes.ExecutionLevel = WdfExecutionLevelPassive;
 
     //
-    // By default, Static Driver Verifier (SDV) displays a warning if it 
-    // doesn't find the EvtIoStop callback on a power-managed queue. 
-    // The 'assume' below causes SDV to suppress this warning. If the driver 
+    // By default, Static Driver Verifier (SDV) displays a warning if it
+    // doesn't find the EvtIoStop callback on a power-managed queue.
+    // The 'assume' below causes SDV to suppress this warning. If the driver
     // has not explicitly set PowerManaged to WdfFalse, the framework creates
-    // power-managed queues when the device is not a filter driver.  Normally 
+    // power-managed queues when the device is not a filter driver.  Normally
     // the EvtIoStop is required for power-managed queues, but for this driver
-    // it is not needed b/c the driver doesn't hold on to the requests or 
-    // forward them to other drivers. This driver completes the requests 
-    // directly in the queue's handlers. If the EvtIoStop callback is not 
+    // it is not needed b/c the driver doesn't hold on to the requests or
+    // forward them to other drivers. This driver completes the requests
+    // directly in the queue's handlers. If the EvtIoStop callback is not
     // implemented, the framework waits for all driver-owned requests to be
-    // done before moving in the Dx/sleep states or before removing the 
+    // done before moving in the Dx/sleep states or before removing the
     // device, which is the correct behavior for this type of driver.
     // If the requests were taking an indeterminate amount of time to complete,
     // or if the driver forwarded the requests to a lower driver/another stack,
@@ -847,7 +847,7 @@ Return Value:
         Hexdump((TRACE_LEVEL_VERBOSE,  DBG_IOCTL, "Data from User : %!HEXDUMP!\n",
                         log_xstr(inBuf, (USHORT)InputBufferLength)));
         PrintChars(inBuf, InputBufferLength  );
- 
+
 
         status = WdfRequestRetrieveOutputBuffer(Request, 0, &outBuf, &bufSize);
         if(!NT_SUCCESS(status)) {
@@ -1175,7 +1175,7 @@ Return Value:
     // pointers in the request context.
     //
 
-    #pragma prefast(suppress:6387, "If inBuf==NULL at this point, then inBufLen==0")    
+    #pragma prefast(suppress:6387, "If inBuf==NULL at this point, then inBufLen==0")
     status = WdfRequestProbeAndLockUserBufferForRead(Request,
                             inBuf,
                             inBufLen,

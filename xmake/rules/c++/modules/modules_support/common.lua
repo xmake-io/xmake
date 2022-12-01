@@ -27,6 +27,7 @@ import("core.cache.memcache", {alias = "_memcache"})
 import("core.cache.localcache", {alias = "_localcache"})
 import("core.project.project")
 import("lib.detect.find_file")
+import("private.async.buildjobs")
 import("stl_headers")
 
 -- get memcache
@@ -202,7 +203,7 @@ end
     }
   }
 }]]
-function parse_dependency_data(target, moduleinfos)
+function _parse_dependencies_data(target, moduleinfos)
     local modules
     local cachedir = modules_cachedir(target)
     for _, moduleinfo in ipairs(moduleinfos) do
@@ -223,7 +224,9 @@ function parse_dependency_data(target, moduleinfos)
                     else
                         -- assume path with name
                         local name = provide["logical-name"] .. bmi_extension(target)
-                        name:replace(":", "-")
+                        -- partition ":" character is invalid path character on windows
+                        -- @see https://github.com/xmake-io/xmake/issues/2954
+                        name = name:replace(":", "-")
                         m.provides[provide["logical-name"]] = {
                             bmi = path.join(cachedir, name),
                             sourcefile = moduleinfo.sourcefile
@@ -261,6 +264,59 @@ function parse_dependency_data(target, moduleinfos)
         end
     end
     return modules
+end
+
+-- check circular dependencies for the given module
+function _check_circular_dependencies_of_module(name, moduledeps, modulesources, depspath)
+    for _, dep in ipairs(moduledeps[name]) do
+        local depinfo = moduledeps[dep]
+        if depinfo then
+            local depspath_sub
+            if depspath then
+                for idx, name in ipairs(depspath) do
+                    if name == dep then
+                        local circular_deps = table.slice(depspath, idx)
+                        table.insert(circular_deps, dep)
+                        local sourceinfo = ""
+                        for _, circular_depname in ipairs(circular_deps) do
+                            local sourcefile = modulesources[circular_depname]
+                            if sourcefile then
+                                sourceinfo = sourceinfo .. ("\n  -> module(%s) in %s"):format(circular_depname, sourcefile)
+                            end
+                        end
+                        os.raise("circular modules dependency(%s) detected!%s", table.concat(circular_deps, ", "), sourceinfo)
+                    end
+                end
+                depspath_sub = table.join(depspath, dep)
+            end
+            _check_circular_dependencies_of_module(dep, moduledeps, modulesources, depspath_sub)
+        end
+    end
+end
+
+-- check circular dependencies
+-- @see https://github.com/xmake-io/xmake/issues/3031
+function _check_circular_dependencies(modules)
+    local moduledeps = {}
+    local modulesources = {}
+    for _, mod in pairs(modules) do
+        if mod then
+            if mod.provides and mod.requires then
+                for name, provide in pairs(mod.provides) do
+                    modulesources[name] = provide.sourcefile
+                    local deps = moduledeps[name]
+                    if deps then
+                        table.join2(deps, mod.requires)
+                    else
+                        moduledeps[name] = table.keys(mod.requires)
+                    end
+                end
+            end
+        end
+    end
+    for name, _ in pairs(moduledeps) do
+        _check_circular_dependencies_of_module(name, moduledeps, modulesources, {name})
+    end
 end
 
 function _topological_sort_visit(node, nodes, modules, output)
@@ -452,7 +508,10 @@ function get_module_dependencies(target, sourcebatch, opt)
         local changed = modules_support(target).generate_dependencies(target, sourcebatch, opt)
         if changed or modules == nil then
             local moduleinfos = load_moduleinfos(target, sourcebatch)
-            modules = parse_dependency_data(target, moduleinfos)
+            modules = _parse_dependencies_data(target, moduleinfos)
+            if modules then
+                _check_circular_dependencies(modules)
+            end
             localcache():set2("modules", cachekey, modules)
             localcache():save()
         end
@@ -473,44 +532,9 @@ function generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modu
     end
 end
 
--- build batch jobs for module dependencies
-function _build_batchjobs_for_moduledeps(modules, batchjobs, rootjob, jobrefs, moduleinfo)
-    local targetjob_ref = jobrefs[moduleinfo.name]
-    if targetjob_ref then
-        batchjobs:add(targetjob_ref, rootjob)
-    else
-        local modulejob = batchjobs:add(moduleinfo.job, rootjob)
-        if modulejob then
-            jobrefs[moduleinfo.name] = modulejob
-            for _, depname in ipairs(moduleinfo.deps) do
-                local dep = modules[depname]
-                if dep then -- maybe nil, e.g. `import <string>;`
-                    _build_batchjobs_for_moduledeps(modules, batchjobs, modulejob, jobrefs, dep)
-                end
-            end
-        end
-    end
-end
-
 -- build batchjobs for modules
 function build_batchjobs_for_modules(modules, batchjobs, rootjob)
-    local depset = hashset.new()
-    for _, moduleinfo in pairs(modules) do
-        assert(moduleinfo.job)
-        for _, depname in ipairs(moduleinfo.deps) do
-            depset:insert(depname)
-        end
-    end
-    local modules_root = {}
-    for _, moduleinfo in pairs(modules) do
-        if not depset:has(moduleinfo.name) then
-            table.insert(modules_root, moduleinfo)
-        end
-    end
-    local jobrefs = {}
-    for _, moduleinfo in pairs(modules_root) do
-        _build_batchjobs_for_moduledeps(modules, batchjobs, rootjob, jobrefs, moduleinfo)
-    end
+    return buildjobs(modules, batchjobs, rootjob)
 end
 
 -- build modules for batchjobs

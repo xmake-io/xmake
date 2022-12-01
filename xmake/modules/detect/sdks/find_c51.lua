@@ -17,7 +17,7 @@
 --
 -- @author      DawnMagnet
 -- @file        find_c51.lua
--- 
+--
 
 -- imports
 import("lib.detect.find_path")
@@ -34,7 +34,7 @@ function _find_sdkdir(sdkdir)
     if sdkdir then
         table.insert(paths, 1, sdkdir)
     end
-    local result = find_path("C51", paths)
+    local result = find_path("..\\C51", paths)
     if not result then
         -- find it from some logical drives paths
         paths = {}
@@ -65,15 +65,13 @@ function _find_c51(sdkdir)
     end
 
     -- c51(exe) sdk directory
-    local sdkdir_c51 = path.join(sdkdir, "c51")
-    if os.isdir(sdkdir_c51) and os.isfile(path.join(sdkdir_c51, "bin", "c51.exe")) then
-        result.sdkdir_c51 = sdkdir_c51
+    if os.isfile(path.join(sdkdir, "bin", "c51.exe")) then
+        result.sdkdir_c51 = sdkdir
     end
 
-    -- a51 sdk directory
-    local sdkdir_a51 = path.join(sdkdir, "a51")
-    if os.isdir(sdkdir_a51) and os.isfile(path.join(sdkdir_a51, "bin", "a51.exe")) then
-        result.sdkdir_a51 = sdkdir_a51
+    -- a51(exe) sdk directory
+    if os.isfile(path.join(sdkdir, "bin", "a51.exe")) then
+        result.sdkdir_a51 = sdkdir
     end
     return result
 end
@@ -98,12 +96,12 @@ function main(sdkdir, opt)
 
     -- attempt to load cache first
     local key = "detect.sdks.find_c51"
-    
+
     local cacheinfo = detectcache:get(key) or {}
     if not opt.force and cacheinfo.c51 and cacheinfo.c51.sdkdir and os.isdir(cacheinfo.c51.sdkdir) then
         return cacheinfo.c51
     end
-    
+
     -- find c51
     local c51 = _find_c51(sdkdir or config.get("sdk"))
     if c51 then

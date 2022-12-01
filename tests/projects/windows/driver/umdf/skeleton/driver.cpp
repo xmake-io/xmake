@@ -1,5 +1,5 @@
 /*++
- 
+
 Copyright (C) Microsoft Corporation, All Rights Reserved.
 
 Module Name:
@@ -8,7 +8,7 @@ Module Name:
 
 Abstract:
 
-    This module contains the implementation of the UMDF Skeleton Sample's 
+    This module contains the implementation of the UMDF Skeleton Sample's
     core driver callback object.
 
 Environment:
@@ -25,10 +25,10 @@ CMyDriver::CreateInstance(
     _Out_ PCMyDriver *Driver
     )
 /*++
- 
+
   Routine Description:
 
-    This static method is invoked in order to create and initialize a new 
+    This static method is invoked in order to create and initialize a new
     instance of the driver class.  The caller should arrange for the object
     to be released when it is no longer in use.
 
@@ -55,27 +55,27 @@ CMyDriver::CreateInstance(
     {
         return E_OUTOFMEMORY;
     }
-        
+
     //
     // Initialize the callback object.
     //
 
     hr = driver->Initialize();
 
-    if (SUCCEEDED(hr)) 
+    if (SUCCEEDED(hr))
     {
         //
-        // Store a pointer to the new, initialized object in the output 
+        // Store a pointer to the new, initialized object in the output
         // parameter.
         //
 
         *Driver = driver;
     }
-    else 
+    else
     {
 
         //
-        // Release the reference on the driver object to get it to delete 
+        // Release the reference on the driver object to get it to delete
         // itself.
         //
 
@@ -90,11 +90,11 @@ CMyDriver::Initialize(
     VOID
     )
 /*++
- 
+
   Routine Description:
 
     This method is called to initialize a newly created driver callback object
-    before it is returned to the creator.  Unlike the constructor, the 
+    before it is returned to the creator.  Unlike the constructor, the
     Initialize method contains operations which could potentially fail.
 
   Arguments:
@@ -116,7 +116,7 @@ CMyDriver::QueryInterface(
     _Out_ PVOID *Interface
     )
 /*++
- 
+
   Routine Description:
 
     This method returns a pointer to the requested interface on the callback
@@ -152,7 +152,7 @@ CMyDriver::OnDeviceAdd(
     _In_ IWDFDeviceInitialize *FxDeviceInit
     )
 /*++
- 
+
   Routine Description:
 
     The FX invokes this method when it wants to install our driver on a device
@@ -177,15 +177,15 @@ CMyDriver::OnDeviceAdd(
     PCMyDevice device = NULL;
 
     //
-    // TODO: Do any per-device initialization (reading settings from the 
-    //       registry for example) that's necessary before creating your 
-    //       device callback object here.  Otherwise you can leave such 
-    //       initialization to the initialization of the device event 
+    // TODO: Do any per-device initialization (reading settings from the
+    //       registry for example) that's necessary before creating your
+    //       device callback object here.  Otherwise you can leave such
+    //       initialization to the initialization of the device event
     //       handler.
     //
 
     //
-    // Create a new instance of our device callback object 
+    // Create a new instance of our device callback object
     //
 
     hr = CMyDevice::CreateInstance(FxWdfDriver, FxDeviceInit, &device);
@@ -196,17 +196,17 @@ CMyDriver::OnDeviceAdd(
     //
 
     //
-    // If that succeeded then call the device's construct method.  This 
+    // If that succeeded then call the device's construct method.  This
     // allows the device to create any queues or other structures that it
     // needs now that the corresponding fx device object has been created.
     //
 
-    if (SUCCEEDED(hr)) 
+    if (SUCCEEDED(hr))
     {
         hr = device->Configure();
     }
 
-    // 
+    //
     // Release the reference on the device callback object now that it's been
     // associated with an fx device object.
     //

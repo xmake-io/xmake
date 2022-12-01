@@ -32,13 +32,13 @@ using namespace System::Diagnostics::CodeAnalysis;
 
 namespace Microsoft
 {
-    namespace Kits 
+    namespace Kits
     {
         namespace Samples
         {
             namespace Usb
             {
-                // Justification : C++ Compiler cannot enforce ClsCompliant 
+                // Justification : C++ Compiler cannot enforce ClsCompliant
                 [module: SuppressMessage("Microsoft.Design", "CA1014:MarkAssembliesWithClsCompliant")]
 
                 // Justification : The naming of the following types are based on native USB types
@@ -108,7 +108,7 @@ namespace Microsoft
                 [module: SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId="usbview")];
                 [module: SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId="usbview")];
 
-                // Justification: The version of XSD which is used to generate the objects does not support Collections. 
+                // Justification: The version of XSD which is used to generate the objects does not support Collections.
                 [module: SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Scope="member", Target="Microsoft.Kits.Samples.Usb.UsbBosDescriptorType.#UsbSuperSpeedExtensionDescriptor")];
                 [module: SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Scope="member", Target="Microsoft.Kits.Samples.Usb.UsbBosDescriptorType.#UsbUsb20ExtensionDescriptor")];
                 [module: SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Scope="member", Target="Microsoft.Kits.Samples.Usb.UsbBosDescriptorType.#UnknownDescriptor")];

@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.tool.linker")
 import("core.tool.compiler")
+import("core.cache.memcache")
 import("lib.detect.find_tool")
 
 -- translate paths
@@ -60,6 +61,36 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
+-- is cross compilation?
+function _is_cross_compilation(package)
+    if not package:is_plat(os.subhost()) then
+        return true
+    end
+    if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
+        return true
+    end
+    return false
+end
+
+-- get memcache
+function _memcache()
+    return memcache.cache("package.tools.autoconf")
+end
+
+-- has `--with-pic`?
+function _has_with_pic(package)
+    local has_with_pic = _memcache():get2(tostring(package), "with_pic")
+    if has_with_pic == nil then
+        local result = try {function() return os.iorunv("./configure", {"--help"}, {shell = true}) end}
+        if result and result:find("--with-pic", 1, true) then
+            has_with_pic = true
+        end
+        has_with_pic = has_with_pic or false
+        _memcache():set2(tostring(package), "with_pic", has_with_pic)
+    end
+    return has_with_pic
+end
+
 -- get configs
 function _get_configs(package, configs)
 
@@ -68,8 +99,8 @@ function _get_configs(package, configs)
     table.insert(configs, "--prefix=" .. _translate_paths(package, package:installdir()))
 
     -- add host for cross-complation
-    if not configs.host and not package:is_plat(os.subhost()) then
-        if package:is_plat("iphoneos") then
+    if not configs.host and _is_cross_compilation(package) then
+        if package:is_plat("iphoneos", "macosx") then
             local triples =
             {
                 arm64  = "aarch64-apple-darwin",
@@ -114,6 +145,10 @@ function _get_configs(package, configs)
             table.insert(configs, "--host=" .. host)
         end
     end
+    if package:is_plat("linux", "bsd") and
+        package:config("pic") ~= false and _has_with_pic(package) then
+        table.insert(configs, "--with-pic")
+    end
     return configs
 end
 
@@ -157,7 +192,7 @@ function buildenvs(package, opt)
     local envs = {}
     local cross = false
     local cflags, cxxflags, cppflags, asflags, ldflags, shflags, arflags
-    if package:is_plat(os.subhost()) and not package:config("toolchains") then
+    if not _is_cross_compilation(package) and not package:config("toolchains") then
         cppflags = {}
         cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
         cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
@@ -236,7 +271,8 @@ function buildenvs(package, opt)
         envs.CPP       = package:build_getenv("cpp")
         envs.RANLIB    = package:build_getenv("ranlib")
     end
-    if package:is_plat("linux") and package:config("pic") ~= false then
+    if package:is_plat("linux", "bsd") and
+        package:config("pic") ~= false and not _has_with_pic(package) then
         table.insert(cflags, "-fPIC")
         table.insert(cxxflags, "-fPIC")
     end
@@ -325,7 +361,7 @@ function buildenvs(package, opt)
     end
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
-    for _, dep in ipairs(package:orderdeps()) do
+    for _, dep in ipairs(package:librarydeps()) do
         local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
         if os.isdir(pkgconfig) then
             table.insert(PKG_CONFIG_PATH, pkgconfig)
@@ -350,7 +386,7 @@ function autogen_envs(package, opt)
     local envs = {NOCONFIGURE = "yes"}
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
-    for _, dep in ipairs(package:orderdeps()) do
+    for _, dep in ipairs(package:librarydeps()) do
         local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
         if os.isdir(pkgconfig) then
             table.insert(PKG_CONFIG_PATH, pkgconfig)
@@ -375,22 +411,22 @@ function configure(package, configs, opt)
     -- init options
     opt = opt or {}
 
-    -- get envs
-    local envs = opt.envs or buildenvs(package, opt)
-
     -- generate configure file
     if not os.isfile("configure") then
         if os.isfile("autogen.sh") then
-            os.vrunv("sh", {"./autogen.sh"}, {envs = autogen_envs(package, opt)})
+            os.vrunv("./autogen.sh", {}, {shell = true, envs = autogen_envs(package, opt)})
         elseif os.isfile("configure.ac") or os.isfile("configure.in") then
             local autoreconf = find_tool("autoreconf")
             assert(autoreconf, "autoreconf not found!")
-            os.vrunv("sh", {autoreconf.program, "--install", "--symlink"}, {envs = autogen_envs(package, opt)})
+            os.vrunv(autoreconf.program, {"--install", "--symlink"}, {shell = true, envs = autogen_envs(package, opt)})
         end
     end
 
+    -- get envs
+    local envs = opt.envs or buildenvs(package, opt)
+
     -- pass configurations
-    local argv = {"./configure"}
+    local argv = {}
     for name, value in pairs(_get_configs(package, configs)) do
         value = tostring(value):trim()
         if value ~= "" then
@@ -403,7 +439,7 @@ function configure(package, configs, opt)
     end
 
     -- do configure
-    os.vrunv("sh", argv, {envs = envs})
+    os.vrunv("./configure", argv, {shell = true, envs = envs})
 end
 
 -- do make
@@ -433,7 +469,7 @@ function build(package, configs, opt)
     opt = opt or {}
     local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
     local argv = {"-j" .. njob}
-    if option.get("verbose") then
+    if option.get("diagnosis") then
         table.insert(argv, "V=1")
     end
     if opt.makeconfigs then
@@ -460,7 +496,7 @@ function install(package, configs, opt)
 
     -- do install
     local argv = {"install"}
-    if option.get("verbose") then
+    if option.get("diagnosis") then
         table.insert(argv, "V=1")
     end
     if opt.makeconfigs then

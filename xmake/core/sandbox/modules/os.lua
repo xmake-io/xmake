@@ -164,9 +164,9 @@ function sandbox_os.vln(srcpath, dstpath)
 end
 
 -- try to copy file or directory
-function sandbox_os.trycp(srcpath, dstpath)
+function sandbox_os.trycp(srcpath, dstpath, opt)
     assert(srcpath and dstpath)
-    return os.cp(vformat(srcpath), vformat(dstpath))
+    return os.cp(vformat(srcpath), vformat(dstpath), opt)
 end
 
 -- try to move file or directory

@@ -39,8 +39,16 @@ import("branch", {alias = "git_branch"})
 function main(url, opt)
     opt = opt or {}
     local git = assert(find_tool("git"), "git not found!")
-
-    local argv = {"push", url}
+    local argv = {}
+    if opt.fsmonitor then
+        table.insert(argv, "-c")
+        table.insert(argv, "core.fsmonitor=true")
+    else
+        table.insert(argv, "-c")
+        table.insert(argv, "core.fsmonitor=false")
+    end
+    table.insert(argv, "push")
+    table.insert(argv, url)
     if opt.force then
         table.insert(argv, "--force")
     end

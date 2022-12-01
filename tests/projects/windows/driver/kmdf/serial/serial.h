@@ -515,7 +515,7 @@ typedef struct _SERIAL_FIRMWARE_DATA {
 //
 #define SERIAL_BAD_VALUE ((ULONG)-1)
 
-
+
 typedef struct _SERIAL_DEVICE_STATE {
    //
    // TRUE if we need to set the state to open
@@ -1417,7 +1417,7 @@ do                                                                \
         LineControl                                               \
         );                                                        \
 } WHILE (0)
-
+
 //
 // Reads the divisor latch register.  The divisor latch register
 // is used to control the baud rate of the 8250.
@@ -1456,7 +1456,7 @@ do                                                                \
         LineControl                                               \
         );                                                        \
 } WHILE (0)
-
+
 //
 // This macro reads the interrupt enable register.
 //
@@ -1467,7 +1467,7 @@ do                                                                \
 //
 #define READ_INTERRUPT_ENABLE(Extension, BaseAddress)                     \
     (Extension->SerialReadUChar((BaseAddress)+INTERRUPT_ENABLE_REGISTER))
-
+
 //
 // This macro writes the interrupt enable register.
 //
@@ -1486,7 +1486,7 @@ do                                                                \
         Values                                                    \
         );                                                        \
 } WHILE (0)
-
+
 //
 // This macro disables all interrupts on the hardware.
 //
@@ -1501,7 +1501,7 @@ do                                                \
 {                                                 \
     WRITE_INTERRUPT_ENABLE(Extension, BaseAddress,0);        \
 } WHILE (0)
-
+
 //
 // This macro enables all interrupts on the hardware.
 //
@@ -1522,7 +1522,7 @@ do                                                \
         );                                        \
                                                   \
 } WHILE (0)
-
+
 //
 // This macro reads the interrupt identification register
 //
@@ -1539,7 +1539,7 @@ do                                                \
 //
 #define READ_INTERRUPT_ID_REG(Extension, BaseAddress)                          \
     (Extension->SerialReadUChar((BaseAddress)+INTERRUPT_IDENT_REGISTER))
-
+
 //
 // This macro reads the modem control register
 //
@@ -1551,7 +1551,7 @@ do                                                \
 //
 #define READ_MODEM_CONTROL(Extension, BaseAddress)                          \
     (Extension->SerialReadUChar((BaseAddress)+MODEM_CONTROL_REGISTER))
-
+
 //
 // This macro reads the modem status register
 //
@@ -1563,7 +1563,7 @@ do                                                \
 //
 #define READ_MODEM_STATUS(Extension, BaseAddress)                          \
     (Extension->SerialReadUChar((BaseAddress)+MODEM_STATUS_REGISTER))
-
+
 //
 // This macro reads a value out of the receive buffer
 //
@@ -1575,7 +1575,7 @@ do                                                \
 //
 #define READ_RECEIVE_BUFFER(Extension, BaseAddress)                          \
     (Extension->SerialReadUChar((BaseAddress)+RECEIVE_BUFFER_REGISTER))
-
+
 //
 // This macro reads the line status register
 //
@@ -1587,7 +1587,7 @@ do                                                \
 //
 #define READ_LINE_STATUS(Extension, BaseAddress)                          \
     (Extension->SerialReadUChar((BaseAddress)+LINE_STATUS_REGISTER))
-
+
 //
 // This macro writes the line control register
 //
@@ -1605,7 +1605,7 @@ do                                                               \
         (NewLineControl)                                         \
         );                                                       \
 } WHILE (0)
-
+
 //
 // This macro reads the line control register
 //
@@ -1618,7 +1618,7 @@ do                                                               \
 #define READ_LINE_CONTROL(Extension, BaseAddress)           \
     (Extension->SerialReadUChar((BaseAddress)+LINE_CONTROL_REGISTER))
 
-
+
 //
 // This macro writes to the transmit register
 //
@@ -1638,7 +1638,7 @@ do                                                             \
         (TransmitChar)                                         \
         );                                                     \
 } WHILE (0)
-
+
 //
 // This macro writes to the transmit FIFO register
 //
@@ -1661,7 +1661,7 @@ do                                                             \
         (TxN)                                                  \
         );                                                     \
 } WHILE (0)
-
+
 //
 // This macro writes to the control register
 //
@@ -1681,7 +1681,7 @@ do                                                             \
         (ControlValue)                                         \
         );                                                     \
 } WHILE (0)
-
+
 //
 // This macro writes to the modem control register
 //

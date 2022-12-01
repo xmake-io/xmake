@@ -18,11 +18,6 @@
 -- @file        curses.lua
 --
 
---[[ Console User Interface (cui) ]-----------------------------------------
-Author: Tiago Dionizio (tngd@mega.ist.utl.pt)
-$Id: core.lua 18 2007-06-21 20:43:52Z tngd $
---------------------------------------------------------------------------]]
-
 -- define module: curses
 local curses = curses or {}
 

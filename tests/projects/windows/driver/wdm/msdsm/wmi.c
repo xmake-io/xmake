@@ -970,7 +970,7 @@ Return Value:
     PMPIO_DSM_Path_V2 dsmPath;
     PDSM_FAILOVER_GROUP foGroup;
     ULONG SpecialHandlingFlag = 0;
-    
+
     UNREFERENCED_PARAMETER(InBufferSize);
 
     TracePrint((TRACE_LEVEL_VERBOSE,
@@ -1550,7 +1550,7 @@ Return Value:
     ULONGLONG preferredPath = (ULONGLONG)((ULONG_PTR)MAXULONG);
     ULONG devInfoIndex;
     ULONG SpecialHandlingFlag = 0;
-    
+
     TracePrint((TRACE_LEVEL_VERBOSE,
                 TRACE_FLAG_WMI,
                 "DsmpClearLoadBalancePolicy (DsmIds %p): Entering function.\n",
@@ -1792,7 +1792,7 @@ Return Value:
     BOOLEAN sendSTPG = FALSE;
     ULONGLONG preferredPath = (ULONGLONG)((ULONG_PTR)MAXULONG);
     ULONG SpecialHandlingFlag = 0;
-    
+
     TracePrint((TRACE_LEVEL_VERBOSE,
                 TRACE_FLAG_WMI,
                 "DsmpSetLoadBalancePolicy (DsmIds %p): Entering function.\n",

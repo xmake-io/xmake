@@ -18,43 +18,72 @@
 -- @file        find_matlab.lua
 --
 
+-- imports
+import("detect.sdks.matlab")
+
 -- find matlab sdk toolchains
 --
 -- @return          the matlab sdk toolchains. e.g. {sdkdir = ..., includedirs = ..., linkdirs = ..., .. }
 --
 -- @code
 --
--- local toolchains = find_matlab()
+-- local toolchains = find_matlab(opt)
 --
 -- @endcode
 --
-function main()
+function main(opt)
+    opt = opt or {}
+    local version = opt.require_version and tostring(opt.require_version) or nil
     local result = {sdkdir = "", includedirs = {}, linkdirs = {}, links = {}}
     if is_host("windows") then
-        local matlabkey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB" 
+        local matlabkey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB"
         local valuekeys = winos.registry_keys(matlabkey)
         if #valuekeys == 0 then
-            return nil
+            return
         end
-        local itemkey = valuekeys[1] .. ";MATLABROOT"
+
+        local itemkey
+        if version == nil then
+            itemkey = valuekeys[1] .. ";MATLABROOT"
+        else
+            local versionname = matlab.versions()[version]
+            if versionname ~= nil then
+                itemkey = matlabkey .. "\\" .. version .. ";MATLABROOT"
+            else
+                local versionvalue = matlab.versions_names()[version:lower()]
+                if versionvalue ~= nil then
+                    itemkey = matlabkey .. "\\" .. versionvalue .. ";MATLABROOT"
+                else
+                    print("allowed values are:")
+                    for k, v in pairs(matlab.versions()) do
+                        print("    ", k, v)
+                    end
+                    raise("MATLAB Runtime version does not exist: " .. version)
+                end
+            end
+        end
+
         local sdkdir = try {function () return winos.registry_query(itemkey) end}
         if not sdkdir then
-            return nil
+            return
         end
         result.sdkdir = sdkdir
         result.includedirs = path.join(sdkdir, "extern", "include")
-        -- find lib dirs
         for _, value in ipairs(os.dirs(path.join(sdkdir, "extern", "lib", "**"))) do
             local dirbasename = path.basename(value)
             if not dirbasename:startswith("win") then
                 result.linkdirs[dirbasename] = value
             end
         end
-        -- find lib
         for _, value in pairs(result.linkdirs) do
             local dirbasename = path.basename(value)
-            result.links[dirbasename] = path.join(value, "*")
+            result.links[dirbasename] = {}
+            for _, filepath in ipairs(os.files(value.."/*.lib")) do
+                table.insert(result.links[dirbasename], path.basename(filepath))
+            end
+            result.links[dirbasename] = table.unique(result.links[dirbasename])
         end
     end
     return result
 end
+

@@ -51,14 +51,6 @@ function program:init(name, argv)
         curses.mousemask(curses.ALL_MOUSE_EVENTS)
     end
 
-    -- to filter characters being output to the screen
-    -- this will filter all characters where a chtype or chstr is used
-    curses.map_output(true)
-
-    -- on WIN32 ALT keys need to be mapped, so to make sure you get the wanted keys,
-    -- only makes sense when using keypad(true) and echo(false)
-    curses.map_keyboard(true)
-
     -- init colors
     if (curses.has_colors()) then
         curses.start_color()

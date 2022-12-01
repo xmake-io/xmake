@@ -80,6 +80,11 @@ function _curl_download(tool, url, outputfile, opt)
         table.insert(argv, user_agent)
     end
 
+    -- ignore to check ssl certificates
+    if opt.insecure then
+        table.insert(argv, "-k")
+    end
+
     -- continue to download?
     if opt.continue then
         table.insert(argv, "-C")
@@ -138,6 +143,11 @@ function _wget_download(tool, url, outputfile, opt)
         end
         table.insert(argv, "-U")
         table.insert(argv, user_agent)
+    end
+
+    -- ignore to check ssl certificates
+    if opt.insecure then
+        table.insert(argv, "--no-check-certificate")
     end
 
     -- continue to download?

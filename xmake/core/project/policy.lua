@@ -67,10 +67,20 @@ function policy.policies()
             ["package.fetch_only"]               = {description = "Only fetch packages on system.", type = "boolean"},
             -- only install packages from remote
             ["package.install_only"]             = {description = "Only install packages from remote.", type = "boolean"},
+            -- always install packages every time
+            ["package.install_always"]           = {description = "Always install packages every time.", type = "boolean"},
             -- use includes as external header files? e.g. -isystem ..
             ["package.include_external_headers"] = {description = "Use includes as external headers.", type = "boolean"},
             -- inherit the configs from the external command arguments, e.g. toolchains, `xmake f --toolchain=`
-            ["package.inherit_external_configs"] = {description = "Inherit the configs from the external command arguments.", default = true, type = "boolean"}
+            ["package.inherit_external_configs"] = {description = "Inherit the configs from the external command arguments.", default = true, type = "boolean"},
+            -- set strict compatibility for package and it's all child packages. we can just set it in package().
+            -- if true, then any updates to this package, such as buildhash changes due to version changes,
+            -- will force all installed child packages to be recompiled and installed, @see https://github.com/xmake-io/xmake/issues/2719
+            ["package.strict_compatibility"]     = {description = "Set strict compatibility for package and it's all child packages.", type = "boolean"},
+            -- set strict compatibility for package and it's all library dependencies. we can set it in package() and user project configuration.
+            -- if true, then any updates to library dependencies, such as buildhash changes due to version changes,
+            -- will force the installed packages to be recompiled and installed. @see https://github.com/xmake-io/xmake/issues/2719
+            ["package.librarydeps.strict_compatibility"] = {description = "Set strict compatibility for package and it's all library dependencies.", type = "boolean"}
         }
         policy._POLICIES = policies
     end

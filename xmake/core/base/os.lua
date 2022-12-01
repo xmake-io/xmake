@@ -53,8 +53,6 @@ os.SYSERR_NOT_FILEDIR = 2
 
 -- copy single file or directory
 function os._cp(src, dst, rootdir, opt)
-
-    -- check
     assert(src and dst)
 
     -- reserve the source directory structure if opt.rootdir is given
@@ -67,8 +65,9 @@ function os._cp(src, dst, rootdir, opt)
         end
     end
 
-    -- is file?
-    if os.isfile(src) or os.islink(src) then
+    -- is file or link?
+    local symlink = opt and opt.symlink
+    if os.isfile(src) or (symlink and os.islink(src)) then
 
         -- the destination is directory? append the filename
         if os.isdir(dst) or path.islastsep(dst) then
@@ -79,16 +78,14 @@ function os._cp(src, dst, rootdir, opt)
             end
         end
 
-        -- link file if reserve symlink
-        if opt and opt.symlink and os.islink(src) then
-            local reallink = os.readlink(src)
-            if not os.link(reallink, dst) then
-                return false, string.format("cannot link %s(%s) to %s, %s", src, reallink, dst, os.strerror())
-            end
-        else
-            -- copy file
-            if not os.cpfile(src, dst) then
-                return false, string.format("cannot copy file %s to %s, %s", src, dst, os.strerror())
+        -- copy or link file
+        if not os.cpfile(src, dst, symlink) then
+            local errors = os.strerror()
+            if symlink and os.islink(src) then
+                local reallink = os.readlink(src)
+                return false, string.format("cannot link %s(%s) to %s, %s", src, reallink, dst, errors)
+            else
+                return false, string.format("cannot copy file %s to %s, %s", src, dst, errors)
             end
         end
     -- is directory?
@@ -104,7 +101,7 @@ function os._cp(src, dst, rootdir, opt)
         end
 
         -- copy directory
-        if not os.cpdir(src, dst) then
+        if not os.cpdir(src, dst, symlink) then
             return false, string.format("cannot copy directory %s to %s,  %s", src, dst, os.strerror())
         end
 
@@ -112,15 +109,11 @@ function os._cp(src, dst, rootdir, opt)
     else
         return false, string.format("cannot copy file %s, file not found!", src)
     end
-
-    -- ok
     return true
 end
 
 -- move single file or directory
 function os._mv(src, dst)
-
-    -- check
     assert(src and dst)
 
     -- exists file or directory?
@@ -139,32 +132,24 @@ function os._mv(src, dst)
     else
         return false, string.format("cannot move %s to %s, file %s not found!", src, dst, os.strerror())
     end
-
-    -- ok
     return true
 end
 
 -- remove single file or directory
 function os._rm(filedir)
-
-    -- check
     assert(filedir)
 
     -- is file or link?
     if os.isfile(filedir) or os.islink(filedir) then
-        -- remove file
         if not os.rmfile(filedir) then
             return false, string.format("cannot remove file %s %s", filedir, os.strerror())
         end
     -- is directory?
     elseif os.isdir(filedir) then
-        -- remove directory
         if not os.rmdir(filedir) then
             return false, string.format("cannot remove directory %s %s", filedir, os.strerror())
         end
     end
-
-    -- ok
     return true
 end
 
@@ -211,8 +196,6 @@ end
 
 -- the current host is belong to the given hosts?
 function os._is_host(host, ...)
-
-    -- no host
     if not host then
         return false
     end
@@ -227,8 +210,6 @@ end
 
 -- the current platform is belong to the given architectures?
 function os._is_arch(arch, ...)
-
-    -- no arch
     if not arch then
         return false
     end
@@ -752,10 +733,8 @@ end
 --
 function os.execv(program, argv, opt)
 
-    -- init options
-    opt = opt or {}
-
     -- is not executable program file?
+    opt = opt or {}
     local filename = tostring(program)
     if not os.isexec(program) then
 
@@ -765,6 +744,36 @@ function os.execv(program, argv, opt)
         if #splitinfo > 1 then
             argv = table.join(table.slice(splitinfo, 2), argv)
         end
+    end
+
+    -- run shell file? parse `#!/usr/bin/env bash` in xx.sh
+    --
+    -- e.g. os.execv("./configure", {"--help"}) => os.execv("/usr/bin/env", {"bash", "./configure", "--help"})
+    if opt.shell and os.isfile(filename) then
+        local shellfile = filename
+        local file = io.open(filename, 'r')
+        local head = file:read("l")
+        if head and head:startswith("#!") then
+            -- we cannot run `/bin/sh` directly on msys2/cygwin
+            -- because `/bin/sh` is not real file path, maybe we need convert it.
+            local subhost = os.subhost()
+            if subhost == "msys" or subhost == "cygwin" then
+                filename = "sh"
+                argv = table.join(shellfile, argv)
+            else
+                head = head:sub(3)
+                local shellargv = {}
+                local splitinfo = head:split("%s")
+                filename = splitinfo[1]
+                if #splitinfo > 1 then
+                    shellargv = table.slice(splitinfo, 2)
+                end
+                table.insert(shellargv, shellfile)
+                table.join2(shellargv, argv)
+                argv = shellargv
+            end
+        end
+        file:close()
     end
 
     -- uses the given environments?
@@ -788,7 +797,14 @@ function os.execv(program, argv, opt)
     end
 
     -- init open options
-    local openopt = {envs = envs, stdin = opt.stdin, stdout = opt.stdout, stderr = opt.stderr, curdir = opt.curdir, detach = opt.detach}
+    local openopt = {
+        envs = envs,
+        stdin = opt.stdin,
+        stdout = opt.stdout,
+        stderr = opt.stderr,
+        curdir = opt.curdir,
+        detach = opt.detach,
+        exclusive = opt.exclusive}
 
     -- open command
     local ok = -1
@@ -797,7 +813,8 @@ function os.execv(program, argv, opt)
 
         -- trace process
         if os._is_tracing_process() then
-            utils.cprint("%s: ${color.dump.string}%s %s${clear}", proc, filename, argv and os.args(argv) or "")
+            -- we cannot use cprint, it will cause dead-loop on windows, winos.version/os.iorunv
+            utils.print("%s: %s %s", proc, filename, argv and os.args(argv) or "")
         end
 
         -- wait process
@@ -835,10 +852,8 @@ end
 -- run command with arguments and return output and error data
 function os.iorunv(program, argv, opt)
 
-    -- init options
-    opt = opt or {}
-
     -- make temporary output and error file
+    opt = opt or {}
     local outfile = os.tmpfile()
     local errfile = os.tmpfile()
 
@@ -905,8 +920,6 @@ end
 
 -- is executable program file?
 function os.isexec(filepath)
-
-    -- check
     assert(filepath)
 
     -- TODO

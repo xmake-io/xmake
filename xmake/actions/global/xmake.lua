@@ -26,7 +26,8 @@ task("global")
                 description = "Configure the global options for xmake.",
                 shortname = 'g',
                 options = {
-                    {'c', "clean",          "k" , nil       , "Clean the cached configure and configure all again."       },
+                    {'c', "clean",          "k",  nil       , "Clean the cached user configs and detection cache."},
+                    {nil, "check",          "k",  nil       , "Just ignore detection cache and force to check all, it will reserve the cached user configs."},
                     {nil, "menu",           "k" , nil       , "Configure with a menu-driven user interface."              },
                     {category = "."},
                     {nil, "theme",          "kv", "default" , "The theme name."
@@ -41,9 +42,10 @@ task("global")
 
                     -- network configuration
                     {category = "Network Configuration"},
-                    {nil, "network",        "kv", "public"  , "Set the network mode."
+                    {nil, "network",        "kv", "public" , "Set the network mode."
                                                            , values = {"public", "private"}                               },
-                    {'x', "proxy",          "kv", nil       , "Use proxy on given port. [protocol://]host[:port]"
+                    {nil, "insecure-ssl",   "kv", nil      , "Disable to check ssl certificates for downloading."         },
+                    {'x', "proxy",          "kv", nil      , "Use proxy on given port. [protocol://]host[:port]"
                                                            , "    e.g."
                                                            , "    - xmake g --proxy='http://host:port'"
                                                            , "    - xmake g --proxy='https://host:port'"

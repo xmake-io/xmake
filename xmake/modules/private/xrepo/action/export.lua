@@ -42,6 +42,7 @@ function menu_options()
                                        "    - xrepo export -f \"vs_runtime='MD'\" zlib",
                                        "    - xrepo export -f \"regex=true,thread=true\" boost"},
         {},
+        {nil, "includes",   "kv", nil, "Includes extra lua configuration files."},
         {nil, "toolchain",  "kv", nil, "Set the toolchain name."             },
         {nil, "shallow",    "k",  nil, "Does not export dependent packages."},
         {'o', "packagedir", "kv", "packages","Set the exported packages directory."},
@@ -86,8 +87,15 @@ function _export_packages(packages)
         end
     end
 
-    local oldir = os.curdir()
+    -- add includes to rcfiles
+    local rcfiles = {}
+    local includes = option.get("includes")
+    if includes then
+        table.join2(rcfiles, path.splitenv(includes))
+    end
+
     -- enter working project directory
+    local oldir = os.curdir()
     local subdir = "working"
     if packagefile then
         subdir = subdir .. "-" .. hash.uuid(packagefile):split('-')[1]
@@ -107,11 +115,8 @@ function _export_packages(packages)
 
     -- do configure first
     local config_argv = {"f", "-c", "--require=n"}
-    if option.get("verbose") then
-        table.insert(config_argv, "-v")
-    end
     if option.get("diagnosis") then
-        table.insert(config_argv, "-D")
+        table.insert(config_argv, "-vD")
     end
     if option.get("plat") then
         table.insert(config_argv, "-p")
@@ -134,7 +139,11 @@ function _export_packages(packages)
         table.insert(config_argv, "-k")
         table.insert(config_argv, kind)
     end
-    os.vrunv("xmake", config_argv)
+    local envs = {}
+    if #rcfiles > 0 then
+        envs.XMAKE_RCFILES = path.joinenv(rcfiles)
+    end
+    os.vrunv("xmake", config_argv, {envs = envs})
 
     -- do export
     local require_argv = {"require", "--export"}
@@ -182,7 +191,7 @@ function _export_packages(packages)
         end
         table.join2(require_argv, packages)
     end
-    os.vexecv("xmake", require_argv)
+    os.vexecv("xmake", require_argv, {envs = envs})
 end
 
 -- export packages in current project

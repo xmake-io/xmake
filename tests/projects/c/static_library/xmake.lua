@@ -1,12 +1,12 @@
 add_rules("mode.release", "mode.debug")
 
-target("static_library_c")
+target("foo")
     set_kind("static")
-    add_files("src/interface.c")
+    add_files("src/foo.c")
 
-target("test")
+target("demo")
     set_kind("binary")
-    add_deps("static_library_c")
-    add_files("src/test.c")
+    add_deps("foo")
+    add_files("src/main.c")
 
 

@@ -29,7 +29,7 @@ function init(self)
     _super.init(self)
 
     -- add cuflags
-    if not is_plat("windows", "mingw") then
+    if not self:is_plat("windows", "mingw") then
         self:add("shared.cuflags", "-fPIC")
     end
 
@@ -135,10 +135,32 @@ function nf_symbol(self, level)
     local kind = self:kind()
     if kind == "ld" or kind == "sh" then
         -- clang/windows need add `-g` to linker to generate pdb symbol file
-        if self:plat() == "windows" and level == "debug" then
+        if self:is_plat("windows") and level == "debug" then
             return "-g"
         end
     else
         return _super.nf_symbol(self, level)
     end
 end
+
+-- make the exception flag
+--
+-- e.g.
+-- set_exceptions("cxx")
+-- set_exceptions("objc")
+-- set_exceptions("no-cxx")
+-- set_exceptions("no-objc")
+-- set_exceptions("cxx", "objc")
+function nf_exception(self, exp)
+    local maps = {
+        cxx = "-fcxx-exceptions",
+        ["no-cxx"] = "-fno-cxx-exceptions",
+        objc = "-fobjc-exceptions",
+        ["no-objc"] = "-fno-objc-exceptions"
+    }
+    local value = maps[exp]
+    if value then
+        return {exp:startswith("no-") and "-fno-exceptions" or "-fexceptions", value}
+    end
+end
+

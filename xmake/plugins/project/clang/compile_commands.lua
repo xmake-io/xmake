@@ -63,10 +63,6 @@ function _translate_arguments(arguments)
             arg = arg:gsub("[%-/]external:I", "-I")
         elseif arg:find("[%-/]external:W") or arg:find("[%-/]experimental:external") then
             arg = nil
-        -- escape '"' for the defines
-        -- https://github.com/xmake-io/xmake/issues/1506
-        elseif arg:find("^-D") then
-            arg = arg:gsub("\"", "\\\"")
         end
         -- @see use msvc-style flags for msvc to support language-server better
         -- https://github.com/xmake-io/xmake/issues/1284
@@ -106,7 +102,7 @@ function _make_arguments(jsonfile, arguments, sourcefile)
         for _, arg in ipairs(arguments) do
             local sourcekind = try {function () return language.sourcekind_of(path.filename(arg)) end}
             if sourcekind and os.isfile(arg) then
-                sourcefile = arg
+                sourcefile = tostring(arg)
                 break
             end
         end
@@ -175,7 +171,7 @@ function _make_commands_for_objectrules(jsonfile, target, sourcebatch, suffix)
 
     -- get rule
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
-    local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+    local ruleinst = assert(target:rule(rulename) or project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
 
     -- generate commands for xx_buildcmd_files
     local scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")

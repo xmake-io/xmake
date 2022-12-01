@@ -393,7 +393,7 @@ DEFINE_GUID(NV12_Format,0x3231564EL,0x0000,0x0010,0x80,0x00,0x00,0xAA,0x00,0x38,
 DEFINE_GUID(H264_Format,0x34363248, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71);
 #endif
 
-// The following flags/variables are all initialized in Display.c InitializePerDeviceSettings() 
+// The following flags/variables are all initialized in Display.c InitializePerDeviceSettings()
 //
 // Save the default frame from the MJPEG, Uncompressed, Vendor and Frame Based Format descriptor
 // Check for this when processing the individual Frame descriptors
@@ -422,7 +422,7 @@ DWORD dwConfigIndex;
 int gDeviceSpeed;
 
 // Save the current Configuration starting and ending addresses
-// Used in ValidateDescAddress() 
+// Used in ValidateDescAddress()
 //
 PUSB_CONFIGURATION_DESCRIPTOR   g_pConfigDesc;
 PSTRING_DESCRIPTOR_NODE         g_pStringDescs;
@@ -462,13 +462,13 @@ EXTERN_C PCHAR GetLangIDString(USHORT idLang);
 EXTERN_C UINT GetConfigurationSize (PUSBDEVICEINFO info);
 EXTERN_C PUSB_COMMON_DESCRIPTOR
 GetNextDescriptor(
-    _In_reads_bytes_(TotalLength) 
+    _In_reads_bytes_(TotalLength)
         PUSB_COMMON_DESCRIPTOR FirstDescriptor,
     _In_
         ULONG TotalLength,
-    _In_ 
+    _In_
         PUSB_COMMON_DESCRIPTOR StartDescriptor,
-    _In_ long 
+    _In_ long
         DescriptorType
     );
 
@@ -547,7 +547,7 @@ EXTERN_C PCHAR GetControllerFlavorString(
             );
 
 EXTERN_C ULONG GetEhciDebugPort(
-            ULONG vendorId, 
+            ULONG vendorId,
             ULONG deviceId
             );
 
@@ -636,7 +636,7 @@ MyCheckForLeaks (
 
 PUSB_DEVICE_PNP_STRINGS
 DriverNameToDeviceProperties(
-    _In_reads_bytes_(cbDriverName) PCHAR   DriverName, 
+    _In_reads_bytes_(cbDriverName) PCHAR   DriverName,
     _In_ size_t                       cbDriverName
     );
 

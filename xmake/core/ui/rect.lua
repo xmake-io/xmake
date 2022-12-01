@@ -19,11 +19,6 @@
 -- @file        rect.lua
 --
 
---[[ Console User Interface (cui) ]-----------------------------------------
-Author: Tiago Dionizio (tiago.dionizio AT gmail.com)
-$Id: rect.lua 18 2007-06-21 20:43:52Z tngd $
---------------------------------------------------------------------------]]
-
 -- load modules
 local point  = require("ui/point")
 local object = require("ui/object")

@@ -54,7 +54,22 @@ rule("utils.symbols.export_list")
             end
         end
         assert(exportsymbols and #exportsymbols > 0, 'rule("utils.symbols.export_list"): no exported symbols!')
-        if target:has_tool("ld", "link") then
+        local linkername = target:linker():name()
+        if linkername == "dmd" then
+            if target:is_plat("windows") then
+                exportkind = "def"
+                exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.def")
+                target:add("shflags", "-L/def:" .. exportfile, {force = true})
+            elseif target:is_plat("macosx", "iphoneos", "watchos", "appletvos") then
+                exportkind = "apple"
+                exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.exp")
+                target:add("shflags", {"-L-exported_symbols_list", "-L" .. exportfile}, {force = true, expand = false})
+            else
+                exportkind = "ver"
+                exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.map")
+                target:add("shflags", "-L--version-script=" .. exportfile, {force = true})
+            end
+        elseif target:has_tool("ld", "link") then
             exportkind = "def"
             exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.def")
             target:add("shflags", "/def:" .. exportfile, {force = true})
@@ -67,10 +82,6 @@ rule("utils.symbols.export_list")
             exportkind = "ver"
             exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.map")
             target:add("shflags", "-Wl,--version-script=" .. exportfile, {force = true})
-        elseif target:has_tool("ld", "dmd") or target:has_tool("sh", "dmd") then
-            exportkind = "ver"
-            exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.map")
-            target:add("shflags", "-L--version-script=" .. exportfile, {force = true})
         elseif target:has_tool("ld", "ld") or target:has_tool("sh", "ld") then
             exportkind = "ver"
             exportfile = path.join(target:autogendir(), "rules", "symbols", "export_list.map")

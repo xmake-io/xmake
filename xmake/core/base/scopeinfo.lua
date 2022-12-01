@@ -666,7 +666,7 @@ end
 
 -- clone a new instance from the current
 function _instance:clone()
-    return _instance.new(self:kind(), self:info(), {interpreter = self:interpreter(), deduplicate = self._DEDUPLICATE, enable_filter = self._ENABLE_FILTER})
+    return _instance.new(self:kind(), table.clone(self:info()), {interpreter = self:interpreter(), deduplicate = self._DEDUPLICATE, enable_filter = self._ENABLE_FILTER})
 end
 
 -- new a scope instance

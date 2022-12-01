@@ -165,16 +165,17 @@ task("config")
                 description = "Configure the project.",
                 shortname = 'f',
                 options = {
-                    {'c', "clean",      "k",  nil       ,   "Clean the cached configure and configure all again."},
+                    {'c', "clean",      "k",  nil       ,   "Clean the cached user configs and detection cache."},
+                    {nil, "check",      "k",  nil       ,   "Just ignore detection cache and force to check all, it will reserve the cached user configs."},
                     {nil, "export",     "kv", nil       ,   "Export the current configuration to the given file."
                                                         ,   "    e.g."
                                                         ,   "    - xmake f -m debug -xxx=y --export=build/config.txt"},
-                    {nil, "import",     "kv", nil       ,   "Import configuration from the given file."
+                    {nil, "import",     "kv", nil       ,   "Import configs from the given file."
                                                         ,   "    e.g."
                                                         ,   "    - xmake f -import=build/config.txt"},
                     {nil, "menu",       "k",  nil       ,   "Configure project with a menu-driven user interface."},
                     {category = "."},
-                    {'p', "plat",       "kv", "auto"    , "Compile for the given platform.", values = _plat_values},
+                    {'p', "plat",       "kv", "auto"    ,   "Compile for the given platform.", values = _plat_values},
                     {'a', "arch",       "kv", "auto"    ,   "Compile for the given architecture.", _arch_description, values = _arch_values},
                     {'m', "mode",       "kv", "auto" ,      "Compile for the given mode.", values = _mode_values},
                     {'k', "kind",       "kv", "static"  ,   "Compile for the given target kind.", values = {"static", "shared", "binary"}},
@@ -217,13 +218,13 @@ task("config")
                     {nil, "trybuild",   "kv", nil       , "Enable try-build mode and set the third-party buildsystem tool.",
                                                             "e.g.",
                                                             "    - xmake f --trybuild=auto; xmake",
-                                                            "    - xmake f --trybuild=autotools -p android --ndk=xxx; xmake",
+                                                            "    - xmake f --trybuild=autoconf -p android --ndk=xxx; xmake",
                                                             "",
                                                             "the third-party buildsystems:"
-                                                        ,   values = {"auto", "make", "autotools", "cmake", "scons", "meson", "bazel", "ninja", "msbuild", "xcodebuild", "ndkbuild"}},
+                                                        ,   values = {"auto", "make", "autoconf", "cmake", "scons", "meson", "bazel", "ninja", "msbuild", "xcodebuild", "ndkbuild", "xrepo"}},
                     {nil, "tryconfigs", "kv", nil       ,   "Set the extra configurations of the third-party buildsystem for the try-build mode.",
                                                             "e.g.",
-                                                            "    - xmake f --trybuild=autotools --tryconfigs='--enable-shared=no'"},
+                                                            "    - xmake f --trybuild=autoconf --tryconfigs='--enable-shared=no'"},
                     {'o', "buildir",    "kv", "build"   , "Set build directory."},
                     {},
                     {nil, "target",     "v" , nil       , "Configure for the given target."

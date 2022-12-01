@@ -49,8 +49,14 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> or <Back> to go back, <?> for H
 
     -- init buttons
     self:button_add("select", "< Select >", function (v, e) self:menuconf():on_event(event.command {"cm_enter"}) end)
-    self:button_add("back", "< Back >", function (v, e) self:menuconf():on_event(event.command {"cm_back"}) end)
-    self:button_add("exit", "< Exit >", function (v, e) self:quit() end)
+    self:button_add("back", "< Back >", function (v, e)
+        self:menuconf():on_event(event.command {"cm_back"})
+        self:buttons():select(self:button("select"))
+    end)
+    self:button_add("exit", "< Exit >", function (v, e)
+        self:show_exit([[Did you wish to save your new configuration?
+(Pressing <Esc> to continue your configuration.)]])
+    end)
     self:button_add("help", "< Help >", function (v, e) self:show_help() end)
     self:button_add("save", "< Save >", function (v, e) self:action_on(action.ac_on_save) end)
     self:buttons():select(self:button("select"))
@@ -259,6 +265,23 @@ function mconfdialog:searchdialog()
     return self._SEARCHDIALOG
 end
 
+-- get exit dialog
+function mconfdialog:exitdialog()
+    if not self._EXITDIALOG then
+        local exitdialog = textdialog:new("mconfdialog.exit", rect{0, 0, math.min(60, self:width() - 8), math.min(7, self:height())}, "")
+        exitdialog:background_set(self:frame():background())
+        exitdialog:frame():background_set("cyan")
+        exitdialog:button_add("Yes", "< Yes >", function (v)
+            self:action_on(action.ac_on_save)
+        end)
+        exitdialog:button_add("No", "< No >", function (v) self:quit() end)
+        exitdialog:option_set("scrollable", false)
+        exitdialog:button_select("Yes")
+        self._EXITDIALOG = exitdialog
+    end
+    return self._EXITDIALOG
+end
+
 -- search configs via the given text
 function mconfdialog:search(configs, text)
     local results = {}
@@ -334,6 +357,17 @@ function mconfdialog:show_result(text)
         self:insert(dialog_result, {centerx = true, centery = true})
     else
         self:select(dialog_result)
+    end
+end
+
+-- show exit dialog
+function mconfdialog:show_exit(text)
+    local dialog_exit = self:exitdialog()
+    dialog_exit:text():text_set(text)
+    if not self:view("mconfdialog.exit") then
+        self:insert(dialog_exit, {centerx = true, centery = true})
+    else
+        self:select(dialog_exit)
     end
 end
 

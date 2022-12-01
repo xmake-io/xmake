@@ -53,7 +53,7 @@ end
 
 -- get cflags from make
 function _get_cflags_from_make(target, sdkdir)
-    local key = target:plat() .. target:arch()
+    local key = sdkdir .. target:arch()
     local cflags = memcache.get2("linux.driver", key, "cflags")
     local ldflags_o = memcache.get2("linux.driver", key, "ldflags_o")
     local ldflags_ko = memcache.get2("linux.driver", key, "ldflags_ko")
@@ -108,7 +108,9 @@ module_exit(hello_exit);
         end
         local result, errors = try {function () return os.iorunv(make.program, argv, {curdir = tmpdir}) end}
         if result then
-            for _, line in ipairs(result:split("\n", {plain = true})) do
+            -- we can also split ';' for the muliple commands
+            for _, line in ipairs(result:split("[\n;]")) do
+                line = line:trim()
                 if line:endswith("stub.c") then
                     local include_cflag = false
                     for _, cflag in ipairs(line:split("%s+")) do
@@ -177,6 +179,8 @@ module_exit(hello_exit);
         end
         os.tryrm(tmpdir)
         memcache.set2("linux.driver", key, "cflags", cflags or false)
+        memcache.set2("linux.driver", key, "ldflags_o", ldflags_o or false)
+        memcache.set2("linux.driver", key, "ldflags_ko", ldflags_ko or false)
     end
     return cflags or nil, ldflags_o or nil, ldflags_ko or nil
 end
@@ -257,7 +261,7 @@ function link(target, opt)
 
         -- generate target.mod
         local targetfile_mod = targetfile_o:gsub("%.o$", ".mod")
-        io.writefile(targetfile_mod, table.concat(objectfiles, " ") .. "\n\n")
+        io.writefile(targetfile_mod, table.concat(objectfiles, "\n") .. "\n\n")
 
         -- generate .sourcename.o.cmd
         -- we need only touch an empty file, otherwise modpost command will raise error.
@@ -271,7 +275,7 @@ function link(target, opt)
         -- generate target.mod.c
         local orderfile = path.join(path.directory(targetfile_o), "modules.order")
         local symversfile = path.join(path.directory(targetfile_o), "Module.symvers")
-        argv = {"-m", "-a", "-o", symversfile, "-e", "-N", "-T", "-"}
+        argv = {"-m", "-a", "-o", symversfile, "-e", "-N", "-w", "-T", "-"}
         io.writefile(orderfile, targetfile_o .. "\n")
         os.vrunv(modpost, argv, {stdin = orderfile})
 

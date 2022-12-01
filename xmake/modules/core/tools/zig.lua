@@ -37,8 +37,8 @@ end
 -- make the strip flag
 function nf_strip(self, level)
     local maps = {
-        debug  = "--strip"
-    ,   all    = "--strip"
+        debug  = "-fstrip"
+    ,   all    = {"-fstrip", "-dead_strip"}
     }
     return maps[level]
 end
@@ -89,7 +89,7 @@ end
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
     dir = path.translate(dir)
-    if is_plat("macosx") then
+    if self:is_plat("macosx") then
         return {"-rpath", (dir:gsub("%$ORIGIN", "@loader_path"))}
     else
         return {"-rpath", (dir:gsub("@[%w_]+", function (name)

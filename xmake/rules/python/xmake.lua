@@ -23,6 +23,7 @@ rule("python.library")
     on_config(function (target)
         target:set("kind", "shared")
         target:set("prefixname", "")
+        target:add("runenvs", "PYTHONPATH", target:targetdir())
         local soabi = target:extraconf("rules", "python.library", "soabi")
         if soabi then
             import("lib.detect.find_tool")
@@ -35,7 +36,7 @@ rule("python.library")
                 end
             end
         else
-            if target:is_plat("windows") then
+            if target:is_plat("windows", "mingw") then
                 target:set("extension", ".pyd")
             else
                 target:set("extension", ".so")

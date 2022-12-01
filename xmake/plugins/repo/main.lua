@@ -32,9 +32,6 @@ import("private.action.require.impl.environment")
 -- add repository url
 function _add(name, url, branch, is_global)
 
-    -- add url
-    repository.add(name, url, branch, is_global)
-
     -- remove previous repository if exists
     local repodir = path.join(repository.directory(is_global), name)
     if os.isdir(repodir) then
@@ -47,8 +44,11 @@ function _add(name, url, branch, is_global)
     -- clone repository
     if not os.isdir(url) then
         local remoteurl = proxy.mirror(url) or url
-        git.clone(remoteurl, {verbose = option.get("verbose"), branch = branch or "master", outputdir = repodir})
+        git.clone(remoteurl, {verbose = option.get("verbose"), branch = branch, outputdir = repodir})
     end
+
+    -- add url
+    repository.add(name, url, branch, is_global)
 
     -- trace
     cprint("${color.success}add %s repository(%s): %s%s ok!", (is_global and "global" or "local"), name, url, branch and (" " .. branch) or "")
@@ -100,13 +100,13 @@ function _update()
                     -- only update the local repository with the remote url
                     if not os.isdir(repo:url()) then
                         vprint("pulling repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
-                        git.pull({verbose = option.get("verbose"), branch = repo:branch() or "master", repodir = repodir})
+                        git.pull({verbose = option.get("verbose"), branch = repo:branch(), repodir = repodir})
                         io.save(path.join(repodir, "updated"), {})
                     end
                 else
                     vprint("cloning repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
                     local remoteurl = proxy.mirror(repo:url()) or repo:url()
-                    git.clone(remoteurl, {verbose = option.get("verbose"), branch = repo:branch() or "master", outputdir = repodir})
+                    git.clone(remoteurl, {verbose = option.get("verbose"), branch = repo:branch(), outputdir = repodir})
                     io.save(path.join(repodir, "updated"), {})
                 end
                 pulled[repodir] = true
@@ -118,7 +118,7 @@ function _update()
     if option.get("verbose") then
         task()
     else
-        runjobs("update repo", task, {progress = true})
+        runjobs("update repo", task, {progress = true, isolate = true})
     end
 
     -- leave environment

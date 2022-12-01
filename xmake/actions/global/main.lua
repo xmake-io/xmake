@@ -70,7 +70,7 @@ function main()
     global.save()
 
     -- clear detect cache
-    if option.get("clean") then
+    if option.get("clean") or option.get("check") then
         global_detectcache:clear()
         global_detectcache:save()
     end

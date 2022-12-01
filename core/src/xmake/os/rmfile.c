@@ -42,9 +42,7 @@ tb_int_t xm_os_rmfile(lua_State* lua)
     tb_char_t const* path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
-    // done os.rmfile(path)
+    // do remove
     lua_pushboolean(lua, tb_file_remove(path));
-
-    // ok
     return 1;
 }

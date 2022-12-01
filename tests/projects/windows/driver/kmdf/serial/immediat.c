@@ -150,7 +150,7 @@ Return Value:
                      "<SerialStartImmediate\n");
 
 }
-
+
 VOID
 SerialCompleteImmediate(
     IN WDFDPC Dpc
@@ -181,7 +181,7 @@ SerialCompleteImmediate(
     SerialDbgPrintEx(TRACE_LEVEL_INFORMATION, DBG_IOCTLS, "<SerialCompleteImmediate\n");
 
 }
-
+
 VOID
 SerialTimeoutImmediate(
     IN WDFTIMER Timer
@@ -210,7 +210,7 @@ SerialTimeoutImmediate(
 
     SerialDbgPrintEx(TRACE_LEVEL_INFORMATION, DBG_IOCTLS, "<SerialTimeoutImmediate\n");
 }
-
+
 VOID
 SerialGetNextImmediate(
     IN WDFREQUEST *CurrentOpRequest,
@@ -270,7 +270,7 @@ Return Value:
 
     SerialCompleteRequest(oldRequest, reqContext->Status, reqContext->Information);
 }
-
+
 VOID
 SerialCancelImmediate(
     IN WDFREQUEST Request
@@ -315,7 +315,7 @@ Return Value:
         );
 
 }
-
+
 BOOLEAN
 SerialGiveImmediateToIsr(
     IN WDFINTERRUPT  Interrupt,
@@ -397,7 +397,7 @@ Return Value:
     return FALSE;
 
 }
-
+
 BOOLEAN
 SerialGrabImmediateFromIsr(
     IN WDFINTERRUPT  Interrupt,

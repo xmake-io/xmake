@@ -33,8 +33,8 @@ rule("xcode.framework")
         target:data_set("xcode.bundle.rootdir", bundledir)
 
         -- get contents and resources directory
-        local contentsdir = path.join(bundledir, "Versions", "A")
-        local resourcesdir = path.join(bundledir, "Versions", "A", "Resources")
+        local contentsdir = target:is_plat("macosx") and path.join(bundledir, "Versions", "A") or bundledir
+        local resourcesdir = path.join(contentsdir, "Resources")
         target:data_set("xcode.bundle.contentsdir", contentsdir)
         target:data_set("xcode.bundle.resourcesdir", resourcesdir)
 
@@ -129,32 +129,31 @@ rule("xcode.framework")
                     i = i + 1
                 end
             end
-            if not os.isdir(resourcesdir) then
-                os.mkdir(resourcesdir)
-            end
 
             -- link Versions/Current -> Versions/A
-            local oldir = os.cd(path.join(bundledir, "Versions"))
-            os.tryrm("Current")
-            os.ln("A", "Current")
+            -- only for macos, @see https://github.com/xmake-io/xmake/issues/2765
+            if target:is_plat("macosx") then
+                local oldir = os.cd(path.join(bundledir, "Versions"))
+                os.tryrm("Current")
+                os.ln("A", "Current")
 
-            -- link bundledir/* -> Versions/Current/*
-            local target_filename = path.filename(target:targetfile())
-            os.cd(bundledir)
-            os.tryrm("Headers")
-            os.tryrm("Resources")
-            os.tryrm(target_filename)
-            os.tryrm("Info.plist")
-            os.ln("Versions/Current/Headers", "Headers")
-            os.ln("Versions/Current/Resources", "Resources")
-            if target:is_plat("iphoneos", "watchos") and os.isfile("Versions/Current/Resources/Info.plist") then
-                os.ln("Versions/Current/Resources/Info.plist", "Info.plist")
+                -- link bundledir/* -> Versions/Current/*
+                local target_filename = path.filename(target:targetfile())
+                os.cd(bundledir)
+                os.tryrm("Headers")
+                os.tryrm("Resources")
+                os.tryrm(target_filename)
+                os.tryrm("Info.plist")
+                os.ln("Versions/Current/Headers", "Headers")
+                if os.isdir(resourcesdir) then
+                    os.ln("Versions/Current/Resources", "Resources")
+                end
+                os.ln(path.join("Versions/Current", target_filename), target_filename)
+                os.cd(oldir)
             end
-            os.ln(path.join("Versions/Current", target_filename), target_filename)
-            os.cd(oldir)
 
             -- do codesign, only for dynamic library
-            if target:kind() == "shared" then
+            if target:is_shared() then
                 local codesign_identity = target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity")
                 if target:is_plat("macosx") or (target:is_plat("iphoneos") and target:is_arch("x86_64", "i386")) then
                     codesign_identity = nil
@@ -165,13 +164,14 @@ rule("xcode.framework")
     end)
 
     on_install(function (target)
+        import("xcode.application.build", {alias = "appbuild", rootdir = path.join(os.programdir(), "rules")})
         local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
         local installdir = target:installdir()
         if installdir then
             if not os.isdir(installdir) then
                 os.mkdir(installdir)
             end
-            os.vcp(bundledir, installdir)
+            os.vcp(bundledir, installdir, {symlink = true})
         end
     end)
 

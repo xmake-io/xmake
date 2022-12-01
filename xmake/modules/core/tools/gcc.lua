@@ -49,7 +49,7 @@ function init(self)
     -- we need check it for clang/gcc with window target
     -- @see https://github.com/xmake-io/xmake/issues/1392
     --
-    if not is_plat("windows", "mingw") and self:has_flags("-fPIC", "cxflags") then
+    if not self:is_plat("windows", "mingw") and self:has_flags("-fPIC", "cxflags") then
         self:add("shflags", "-fPIC")
         self:add("shared.cxflags", "-fPIC")
     end
@@ -69,7 +69,7 @@ function init(self)
     })
 
     -- for macho target
-    if is_plat("macosx") or is_plat("iphoneos") then
+    if self:is_plat("macosx", "iphoneos") then
         self:add("mapflags", {
             ["-s"] = "-Wl,-x"
         })
@@ -82,7 +82,7 @@ function nf_strip(self, level, target)
         debug = "-Wl,-S"
     ,   all   = "-s"
     }
-    if target:is_plat("macosx", "iphoneos") then
+    if self:is_plat("macosx", "iphoneos") then
         maps.all = "-Wl,-x"
     end
     return maps[level]
@@ -187,8 +187,8 @@ function nf_language(self, stdname)
         ,   gnu11       = "-std=gnu11"
         ,   c17         = "-std=c17"
         ,   gnu17       = "-std=gnu17"
-        ,   clatest     = {"-std=c17", "-std=c11", "-std=c99", "-std=c89", "-ansi"}
-        ,   gnulatest   = {"-std=gnu17", "-std=gnu11", "-std=gnu99", "-std=gnu89", "-ansi"}
+        ,   clatest     = {"-std=c2x", "-std=c17", "-std=c11", "-std=c99", "-std=c89", "-ansi"}
+        ,   gnulatest   = {"-std=c2x", "-std=gnu17", "-std=gnu11", "-std=gnu99", "-std=gnu89", "-ansi"}
         }
     end
 
@@ -302,6 +302,18 @@ function nf_frameworkdir(self, frameworkdir)
     return {"-F" .. path.translate(frameworkdir)}
 end
 
+-- make the exception flag
+--
+-- e.g.
+-- set_exceptions("cxx")
+-- set_exceptions("objc")
+-- set_exceptions("no-cxx")
+-- set_exceptions("no-objc")
+-- set_exceptions("cxx", "objc")
+function nf_exception(self, exp)
+    return exp:startswith("no-") and "-fno-exceptions" or "-fexceptions"
+end
+
 -- make the c precompiled header flag
 function nf_pcheader(self, pcheaderfile, target)
     if self:kind() == "cc" then
@@ -350,14 +362,13 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- add rpath for dylib (macho), e.g. -install_name @rpath/file.dylib
     local flags_extra = {}
-    local plat = self:plat()
-    if targetkind == "shared" and (plat == "macosx" or plat == "iphoneos" or plat == "watchos") then
+    if targetkind == "shared" and self:is_plat("macosx", "iphoneos", "watchos") then
         table.insert(flags_extra, "-install_name")
         table.insert(flags_extra, "@rpath/" .. path.filename(targetfile))
     end
 
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
-    if targetkind == "shared" and plat == "mingw" then
+    if targetkind == "shared" and self:is_plat("mingw") then
         table.insert(flags_extra, "-Wl,--out-implib," .. path.join(path.directory(targetfile), path.basename(targetfile) .. ".dll.a"))
     end
 
@@ -371,10 +382,18 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 end
 
 -- link the target file
+--
+-- maybe we need use os.vrunv() to show link output when enable verbose information
+-- @see https://github.com/xmake-io/xmake/discussions/2916
+--
 function link(self, objectfiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
-    os.runv(program, argv, {envs = self:runenvs()})
+    if option.get("verbose") then
+        os.execv(program, argv, {envs = self:runenvs()})
+    else
+        os.runv(program, argv, {envs = self:runenvs()})
+    end
 end
 
 -- has color diagnostics?
@@ -548,6 +567,7 @@ end
 
 -- do compile
 function _compile(self, sourcefile, objectfile, compflags, opt)
+    opt = opt or {}
     local program, argv = compargv(self, sourcefile, objectfile, compflags)
     local function _compile_fallback()
         return os.iorunv(program, argv, {envs = self:runenvs()})
@@ -557,7 +577,7 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
         cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
             preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
             tool = self, remote = true})
-    elseif build_cache.is_enabled() and build_cache.is_supported(self:kind()) then
+    elseif build_cache.is_enabled(opt.target) and build_cache.is_supported(self:kind()) then
         cppinfo = build_cache.build(program, argv, {envs = self:runenvs(),
             preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
             tool = self})
@@ -596,6 +616,13 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
     return self:program(), table.join("-c", pchflags, "-o", pcoutputfile, pcheaderfile)
 end
 
+-- get modules cache directory
+function _modules_cachedir(target)
+    if target and target.autogendir and target:data("cxx.has_modules") then -- we need ignore option instance
+        return path.join(target:autogendir(), "rules", "modules", "cache")
+    end
+end
+
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
     -- precompiled header?
@@ -607,12 +634,13 @@ function compargv(self, sourcefile, objectfile, flags)
 end
 
 -- compile the source file
-function compile(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
     -- compile it
+    opt = opt or {}
     local depfile = dependinfo and os.tmpfile() or nil
     try
     {
@@ -698,6 +726,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 if depfile and os.isfile(depfile) then
                     if dependinfo then
                         dependinfo.depfiles_gcc = io.readfile(depfile, {continuation = "\\"})
+                        dependinfo.modules_cachedir = _modules_cachedir(opt.target)
                     end
 
                     -- remove the temporary dependent file

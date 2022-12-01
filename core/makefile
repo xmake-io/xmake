@@ -158,12 +158,14 @@ BUILD_ARCH	:=$(if $(findstring msys,$(PLAT)),$(MSYSARCH),$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring cygwin,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring macosx,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring linux,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring bsd,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring bsd,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring iphoneos,$(PLAT)),arm64,$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring android,$(PLAT)),armv7,$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring i686,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring x32,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
 BUILD_ARCH	:=$(if $(findstring x64,$(BUILD_ARCH)),x86_64,$(BUILD_ARCH))
+BUILD_ARCH	:=$(if $(findstring amd64,$(BUILD_ARCH)),x86_64,$(BUILD_ARCH))
 
 # on termux/ci
 ifneq ($(TERMUX_ARCH),)
@@ -278,11 +280,8 @@ base_LIBNAMES	:=
 base_LIBNAMES	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi )
 base_LIBNAMES	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi )
 base_LIBNAMES	+= $(shell if { cat detect/tbox.c | $(CC) -xc - -ltbox -o /dev/null 2>/dev/null; }; then echo tbox; fi )
-base_LIBNAMES	+= $(shell if { cat detect/lua-cjson.c | $(CC) -xc - -llua5.1-cjson -lluajit-5.1 -o /dev/null 2>/dev/null; }; then echo lua5.1-cjson; fi )
+base_LIBNAMES	+= $(shell if { cat detect/lua-cjson.c | $(CC) -xc - -llua5.1-cjson -llua -o /dev/null 2>/dev/null; }; then echo lua5.1-cjson; fi )
 base_LIBNAMES	+= $(shell if { cat detect/sv.c | $(CC) -xc - -lsv -o /dev/null 2>/dev/null; }; then echo sv; fi )
-ifeq ($(LUAJIT_SYSTEM),y)
-base_LIBNAMES	+= $(shell if { cat detect/luajit.c | $(CC) -xc - $(shell pkg-config --libs --cflags luajit) -o /dev/null 2>/dev/null; }; then echo luajit-5.1; fi )
-endif
 ifneq ($(TERMUX_ARCH),) # on termux/ci?
 base_LIBNAMES	+= m dl
 else
@@ -295,7 +294,7 @@ base_LIBPATH	:=
 base_LIBNAMES	:=
 base_LIBNAMES	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi )
 base_LIBNAMES	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi )
-base_LIBNAMES	+= m dl pthread
+base_LIBNAMES	+= m pthread
 endif
 
 # get branch and commit

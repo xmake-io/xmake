@@ -18,19 +18,22 @@
 -- @file        unix.lua
 --
 
+-- imports
+import("private.action.clean.remove_files")
+
 -- uninstall headers
 function _uninstall_headers(target, opt)
     local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
     local _, dstheaders = target:headerfiles(includedir, {installonly = true})
     for _, dstheader in ipairs(dstheaders) do
-        os.vrm(dstheader)
+        remove_files(dstheader, {emptydir = true})
     end
 end
 
 -- uninstall shared libraries for package
 function _uninstall_shared_for_package(target, pkg, outputdir)
     for _, sopath in ipairs(table.wrap(pkg:get("libfiles"))) do
-        if sopath:endswith(".so") or sopath:endswith(".dylib") then
+        if sopath:endswith(".so") or sopath:match(".+%.so%..+$") or sopath:endswith(".dylib") then
             local soname = path.filename(sopath)
             local filepath = path.join(outputdir, soname)
             -- https://github.com/xmake-io/xmake/issues/2665#issuecomment-1209619081
@@ -44,7 +47,7 @@ function _uninstall_shared_for_package(target, pkg, outputdir)
                     end
                 end
             end
-            os.vrm(filepath)
+            remove_files(filepath, {emptydir = true})
         end
     end
 end

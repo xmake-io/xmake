@@ -19,7 +19,7 @@
 --
 
 rule("c.unity_build")
-    after_load(function (target)
+    on_config(function (target)
         import("unity_build")
         local sourcebatches = target:sourcebatches()
         if sourcebatches then
@@ -41,7 +41,7 @@ rule("c.unity_build")
     end)
 
 rule("c++.unity_build")
-    after_load(function (target)
+    on_config(function (target)
         import("unity_build")
         local sourcebatches = target:sourcebatches()
         if sourcebatches then

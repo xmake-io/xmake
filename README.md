@@ -124,6 +124,15 @@ If you don't want to use the script to install xmake, see [Installation Guide](h
 
 An official xmake package repository exists at: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 
+<img src="https://xmake.io/assets/img/index/package.gif" width="650px" />
+
+## Create project
+
+```bash
+$ xmake create hello
+$ cd hello
+```
+
 ## Build project
 
 ```bash
@@ -181,10 +190,6 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 
 ## Package management
 
-### Download and build
-
-<img src="https://xmake.io/assets/img/index/package_manage.png" width="650px" />
-
 ### Processing architecture
 
 <img src="https://xmake.io/assets/img/index/package_arch.png" width="650px" />
@@ -208,7 +213,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 
 ### Package management features
 
-* The official repository provides nearly 500+ packages with one-click compilation on all platforms
+* The official repository provides nearly 700+ packages with one-click compilation on all platforms
 * Full platform package support, support for cross-compiled dependent packages
 * Support package virtual environment using `xrepo env shell`
 * Precompiled package acceleration for Windows
@@ -239,6 +244,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 $ xmake show -l toolchains
 xcode         Xcode IDE
 msvc          Microsoft Visual C/C++ Compiler
+clang-cl      LLVM Clang C/C++ Compiler compatible with msvc
 yasm          The Yasm Modular Assembler
 clang         A C language family frontend for LLVM
 go            Go Programming Language Compiler

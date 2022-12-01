@@ -104,7 +104,7 @@ end
 function buildargv(self, sourcefiles, targetkind, targetfile, flags)
     -- add rpath for dylib (macho), e.g. -install_name @rpath/file.dylib
     local flags_extra = {}
-    if targetkind == "shared" and is_plat("macosx", "iphoneos", "watchos") then
+    if targetkind == "shared" and self:is_plat("macosx", "iphoneos", "watchos") then
         table.insert(flags_extra, "-C")
         table.insert(flags_extra, "link-arg=-Xlinker")
         table.insert(flags_extra, "-C")

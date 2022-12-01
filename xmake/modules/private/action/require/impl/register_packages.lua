@@ -24,20 +24,9 @@ import("core.project.project")
 -- register required package environments
 -- envs: bin path for *.dll, program ..
 function _register_required_package_envs(instance, envs)
-    for name, values in pairs(instance:envs()) do
-        if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
-            for _, value in ipairs(values) do
-                envs[name] = envs[name] or {}
-                if path.is_absolute(value) then
-                    table.insert(envs[name], value)
-                else
-                    table.insert(envs[name], path.join(instance:installdir(), value))
-                end
-            end
-        else
-            envs[name] = envs[name] or {}
-            table.join2(envs[name], values)
-        end
+    for name, values in table.orderpairs(instance:envs()) do
+        envs[name] = envs[name] or {}
+        table.join2(envs[name], values)
     end
 end
 
@@ -45,9 +34,9 @@ end
 -- libs: includedirs, links, linkdirs ...
 function _register_required_package_libs(instance, required_package, is_deps)
     if instance:is_library() then
-        local fetchinfo = instance:fetch()
+        local fetchinfo = table.clone(instance:fetch())
         if fetchinfo then
-            fetchinfo.name    = nil
+            fetchinfo.name = nil
             if is_deps then
                 -- we need only reserve license for root package
                 --
@@ -60,8 +49,34 @@ function _register_required_package_libs(instance, required_package, is_deps)
                 fetchinfo.version = nil
                 fetchinfo.static  = nil
                 fetchinfo.shared  = nil
+                fetchinfo.installdir = nil
+                fetchinfo.extra = nil
             end
+
+            -- merge into the root values
+            local components = fetchinfo.components
+            fetchinfo.components = nil
             required_package:add(fetchinfo)
+
+            -- save components list and dependencies
+            if components then
+                required_package:set("__components_deps", instance:components_deps())
+                required_package:set("__components_orderlist", instance:components_orderlist())
+            end
+
+            -- merge into the components values
+            local required_components = required_package:get("components")
+            if required_components then
+                fetchinfo.libfiles = nil
+                local components_base = required_components.__base or {}
+                for k, v in table.orderpairs(fetchinfo) do
+                    local values = table.wrap(components_base[k])
+                    components_base[k] = table.unwrap(table.unique(table.join(values, v)))
+                end
+                required_components.__base = components_base
+            else
+                required_package:set("components", components)
+            end
         end
     end
 end
@@ -69,7 +84,7 @@ end
 -- register the base info of required package
 function _register_required_package_base(instance, required_package)
     if not instance:is_system() and not instance:is_thirdparty() then
-        required_package:set("__installdir", instance:installdir())
+        required_package:set("installdir", instance:installdir())
     end
 end
 
@@ -88,7 +103,7 @@ function _register_required_package(instance, required_package)
         _register_required_package_base(instance, required_package)
         _register_required_package_libs(instance, required_package)
         _register_required_package_envs(instance, envs)
-        for _, dep in ipairs(instance:linkdeps()) do
+        for _, dep in ipairs(instance:librarydeps()) do
             if instance:is_library() then
                 _register_required_package_libs(dep, required_package, true)
             end

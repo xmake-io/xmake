@@ -27,6 +27,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.tool.toolchain")
 import("lib.detect.find_tool")
+import("private.action.run.make_runenvs")
 import("private.action.require.impl.package")
 import("private.action.require.impl.utils.get_requires")
 
@@ -242,17 +243,7 @@ function _package_addenvs(envs, instance)
     -- add run envs, e.g. PATH, LD_LIBRARY_PATH, DYLD_LIBRARY_PATH
     local installdir = instance:installdir()
     for name, values in pairs(instance:envs()) do
-        if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
-            for _, value in ipairs(values) do
-                if path.is_absolute(value) then
-                    _addenvs(envs, name, value)
-                else
-                    _addenvs(envs, name, path.join(installdir, value))
-                end
-            end
-        else
-            _addenvs(envs, name, table.unpack(table.wrap(values)))
-        end
+        _addenvs(envs, name, table.unpack(table.wrap(values)))
     end
 
     -- add library envs, e.g. ACLOCAL_PATH, PKG_CONFIG_PATH, CMAKE_PREFIX_PATH
@@ -306,6 +297,11 @@ function _target_addenvs(envs)
             else
                 _addenvs(envs, "DYLD_LIBRARY_PATH", target:targetdir())
             end
+        end
+        -- add run environments
+        local addrunenvs = make_runenvs(target)
+        for name, values in pairs(addrunenvs) do
+            _addenvs(envs, name, table.unpack(table.wrap(values)))
         end
     end
 end

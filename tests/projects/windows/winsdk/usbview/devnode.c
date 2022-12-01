@@ -22,7 +22,7 @@
   Returns FALSE if the matching DevNode is not found and TRUE if found
 
  *****************************************************************************/
-BOOL 
+BOOL
 DriverNameToDeviceInst(
     _In_reads_bytes_(cbDriverName) PCHAR DriverName,
     _In_ size_t cbDriverName,
@@ -103,7 +103,7 @@ DriverNameToDeviceInst(
             // This could be an error, or indication that all devices have been
             // processed. Either way the desired device was not found.
             //
-            
+
             done = TRUE;
             break;
         }
@@ -116,7 +116,7 @@ DriverNameToDeviceInst(
                                     &deviceInfoData,
                                     SPDRP_DRIVER,
                                     &buf);
-        
+
         // If the DriverName value matches, return the DeviceInstance
         //
         if (bResult == TRUE && buf != NULL && _stricmp(pDriverName, buf) == 0)
@@ -163,9 +163,9 @@ Done:
   The caller should free the returned structure using FREE() macro
 
  *****************************************************************************/
-PUSB_DEVICE_PNP_STRINGS 
-DriverNameToDeviceProperties( 
-        _In_reads_bytes_(cbDriverName) PCHAR  DriverName, 
+PUSB_DEVICE_PNP_STRINGS
+DriverNameToDeviceProperties(
+        _In_reads_bytes_(cbDriverName) PCHAR  DriverName,
         _In_ size_t cbDriverName
         )
 {
@@ -200,17 +200,17 @@ DriverNameToDeviceProperties(
                                         &len);
     lastError = GetLastError();
 
-    
+
     if (status != FALSE && lastError != ERROR_INSUFFICIENT_BUFFER)
     {
         status = FALSE;
         goto Done;
     }
-    
+
     //
     // An extra byte is required for the terminating character
     //
-    
+
     len++;
     DevProps->DeviceId = ALLOC(len);
 
@@ -234,14 +234,14 @@ DriverNameToDeviceProperties(
                                &deviceInfoData,
                                SPDRP_DEVICEDESC,
                                &DevProps->DeviceDesc);
-    
+
     if (status == FALSE)
     {
         goto Done;
     }
-    
 
-    //    
+
+    //
     // We don't fail if the following registry query fails as these fields are additional information only
     //
 

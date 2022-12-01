@@ -228,7 +228,7 @@ EvtWmiQueryPortHWData(
     if (OutBufferSize < *BufferUsed) {
         return STATUS_INSUFFICIENT_RESOURCES;
     }
-    
+
     *(PSERIAL_WMI_HW_DATA)OutBuffer = pDevExt->WmiHwData;
 
     return STATUS_SUCCESS;

@@ -18,7 +18,9 @@ jobs:
     steps:
       - name: Prepare build tools
         run: |
+          pacman -Syu --noconfirm --needed openssl
           pacman -Sy --noconfirm --needed glibc git base-devel perl make unzip
+          pacman -Sy --noconfirm --needed mesa gcc-fortran glu
           git config --global --add safe.directory /__w/xmake/xmake
 
       - uses: actions/checkout@v2

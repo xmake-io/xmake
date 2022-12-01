@@ -49,7 +49,7 @@ function _patch_pkgconfig(package)
     vprint("patching %s ..", pcfile)
 
     -- fetch package
-    local fetchinfo = package:fetch_linkdeps()
+    local fetchinfo = package:fetch_librarydeps()
     if not fetchinfo then
         return
     end
@@ -201,7 +201,12 @@ function _fix_paths_for_precompiled_package(package)
             local filepattern = path.join(package:installdir(), filepat)
             for _, file in ipairs(os.files(filepattern)) do
                 if remote_prefix then
-                    io.replace(file, remote_prefix, local_prefix, {plain = true})
+                    local _, count = io.replace(file, remote_prefix, local_prefix, {plain = true})
+                    -- maybe we need translate path seperator
+                    -- @see https://github.com/xmake-io/xmake/discussions/3008
+                    if count == 0 and is_host("windows") then
+                        io.replace(file, (remote_prefix:gsub("\\", "/")), local_prefix:gsub("\\", "/"), {plain = true})
+                    end
                 else
                     for _, search_pattern in ipairs(pat.search_pattern) do
                         _fix_path_for_file(file, search_pattern)
@@ -274,7 +279,8 @@ function main(package)
             else
 
                 -- build and install package to the install directory
-                if option.get("force") or not package:manifest_load() then
+                local force_reinstall = package:data("force_reinstall") or option.get("force")
+                if force_reinstall or not package:manifest_load() then
 
                     -- clean install directory first
                     os.tryrm(package:installdir())
@@ -296,6 +302,12 @@ function main(package)
                     -- do install
                     if script ~= nil then
                         filter.call(script, package, {oldenvs = oldenvs})
+                    end
+
+                    -- install rules
+                    local rulesdir = path.join(package:scriptdir(), "rules")
+                    if os.isdir(rulesdir) then
+                        os.cp(rulesdir, package:installdir())
                     end
 
                     -- leave the environments of all package dependencies

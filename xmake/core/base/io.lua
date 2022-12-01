@@ -684,29 +684,48 @@ function io.gsub(filepath, pattern, replace, opt)
     return data, count
 end
 
--- replace text of the given file and return replaced data
+-- replace text of the given file and return new file data
 function io.replace(filepath, pattern, replace, opt)
-
-    -- init option
     opt = opt or {}
-
-    -- read all data from file
     local data, errors = io.readfile(filepath, opt)
     if not data then return nil, 0, errors end
 
-    -- replace it
     local count = 0
     if type(data) == "string" then
         data, count = data:replace(pattern, replace, opt)
     else
         return nil, 0, string.format("data is not string!")
     end
-
-    -- replace ok?
     if count ~= 0 then
-        -- write all data to file
         local ok, errors = io.writefile(filepath, data, opt)
         if not ok then return nil, 0, errors end
+    end
+    return data, count
+end
+
+-- insert text before line number in the given file and return new file data
+function io.insert(filepath, lineidx, text, opt)
+    opt = opt or {}
+    local data, errors = io.readfile(filepath, opt)
+    if not data then return nil, errors end
+
+    local newdata
+    if type(data) == "string" then
+        newdata = {}
+        for idx, line in ipairs(data:split("\n")) do
+            if idx == lineidx then
+                table.insert(newdata, text)
+            end
+            table.insert(newdata, line)
+        end
+    else
+        return nil, string.format("data is not string!")
+    end
+    if newdata and #newdata > 0 then
+        local rn = data:find("\r\n", 1, true)
+        data = table.concat(newdata, rn and "\r\n" or "\n")
+        local ok, errors = io.writefile(filepath, data, opt)
+        if not ok then return nil, errors end
     end
     return data, count
 end

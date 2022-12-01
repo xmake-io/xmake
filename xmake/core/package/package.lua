@@ -9,7 +9,7 @@
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific package governing permissions and
+-- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
@@ -41,6 +41,7 @@ local config         = require("project/config")
 local policy         = require("project/policy")
 local platform       = require("platform/platform")
 local platform_menu  = require("platform/menu")
+local component      = require("package/component")
 local language       = require("language/language")
 local language_menu  = require("language/menu")
 local sandbox        = require("sandbox/sandbox")
@@ -284,7 +285,7 @@ function _instance:artifacts_set(artifacts_info)
             if not rootdir then
                 os.raise("package(%s): manifest.txt not found when installing artifacts!", package:displayname())
             end
-            os.cp(path.join(rootdir, "*"), package:installdir())
+            os.cp(path.join(rootdir, "*"), package:installdir(), {symlink = true})
             local manifest = package:manifest_load()
             if not manifest then
                 os.raise("package(%s): load manifest.txt failed when installing artifacts!", package:displayname())
@@ -294,8 +295,21 @@ function _instance:artifacts_set(artifacts_info)
                     package:set(k, v)
                 end
             end
+            if manifest.components then
+                local vars = manifest.components.vars
+                if vars then
+                    for component_name, component_vars in pairs(vars) do
+                        local comp = package:component(component_name)
+                        if comp then
+                            for k, v in pairs(component_vars) do
+                                comp:set(k, v)
+                            end
+                        end
+                    end
+                end
+            end
             if manifest.envs then
-                local envs = self:envs()
+                local envs = self:_rawenvs()
                 for k, v in pairs(manifest.envs) do
                     envs[k] = v
                 end
@@ -364,21 +378,47 @@ function _instance:plaindeps()
     return self._PLAINDEPS
 end
 
--- get link deps
-function _instance:linkdeps()
-    return self._LINKDEPS
+-- get library deps with correct link order
+function _instance:librarydeps()
+    return self._LIBRARYDEPS
 end
 
 -- get parents
-function _instance:parents()
-    return self._PARENTS
+function _instance:parents(packagename)
+    local parents = self._PARENTS
+    if parents then
+        if packagename then
+            return parents[packagename]
+        else
+            local results = self._PARENTS_PLAIN
+            if not results then
+                results = {}
+                for _, parentpkgs in pairs(parents) do
+                    table.join2(results, parentpkgs)
+                end
+                results = table.unique(results)
+                self._PARENTS_PLAIN = results
+            end
+            if #results > 0 then
+                return results
+            end
+        end
+    end
 end
 
 -- add parents
 function _instance:parents_add(...)
+    self._PARENTS = self._PARENTS or {}
     for _, parent in ipairs({...}) do
-        self._PARENTS = self._PARENTS or {}
-        self._PARENTS[parent:name()] = parent
+        -- maybe multiple parents will depend on it
+        -- @see https://github.com/xmake-io/xmake/issues/3065
+        local parentpkgs = self._PARENTS[parent:name()]
+        if not parentpkgs then
+            parentpkgs = {}
+            self._PARENTS[parent:name()] = parentpkgs
+        end
+        table.insert(parentpkgs, parent)
+        self._PARENTS_PLAIN = nil
     end
 end
 
@@ -572,9 +612,13 @@ end
 
 -- is cross-compilation?
 function _instance:is_cross()
-    if self:is_plat("windows", "mingw") and os.host() == "windows" then
-        -- always false on windows host
-        return false
+    if os.host() == "windows" then
+        if self:is_plat("windows") and
+            self:is_arch(os.arch()) then -- maybe cross-compilation for arm64 on x86/x64
+            return false
+        elseif self:is_plat("mingw") then
+            return false
+        end
     end
     if not self:is_plat(os.host()) and not self:is_plat(os.subhost()) then
         return true
@@ -756,31 +800,57 @@ function _instance:manifest_save()
     manifest.arch        = self:arch()
     manifest.mode        = self:mode()
     manifest.configs     = self:configs()
-    manifest.envs        = self:envs()
+    manifest.envs        = self:_rawenvs()
 
-    -- save enabled link deps
-    if self:linkdeps() then
-        manifest.linkdeps = {}
-        for _, dep in ipairs(self:linkdeps()) do
+    -- save enabled library deps
+    if self:librarydeps() then
+        manifest.librarydeps = {}
+        for _, dep in ipairs(self:librarydeps()) do
             if dep:exists() then
-                table.insert(manifest.linkdeps, dep:name())
+                table.insert(manifest.librarydeps, dep:name())
             end
         end
     end
 
-    -- save variables
-    local vars = {}
+    -- save deps
+    if self:deps() then
+        manifest.deps = {}
+        for name, dep in pairs(self:deps()) do
+            manifest.deps[name] = {
+                version = dep:version_str(),
+                buildhash = dep:buildhash()
+            }
+        end
+    end
+
+    -- save global variables and component variables
+    local vars
+    local components
     local apis = language.apis()
     for _, apiname in ipairs(table.join(apis.values, apis.paths)) do
         if apiname:startswith("package.add_") or apiname:startswith("package.set_")  then
             local name = apiname:sub(13)
             local value = self:get(name)
             if value ~= nil then
+                vars = vars or {}
                 vars[name] = value
+            end
+            for _, component_name in ipairs(table.wrap(self:get("components"))) do
+                local comp = self:component(component_name)
+                if comp then
+                    local component_value = comp:get(name)
+                    if component_value ~= nil then
+                        components = components or {}
+                        components.vars = components.vars or {}
+                        components.vars[component_name] = components.vars[component_name] or {}
+                        components.vars[component_name][name] = component_value
+                    end
+                end
             end
         end
     end
     manifest.vars = vars
+    manifest.components = components
 
     -- save repository
     local repo = self:repo()
@@ -810,9 +880,9 @@ function _instance:manifest_save()
     end
 end
 
--- get the exported environments
-function _instance:envs()
-    local envs = self._ENVS
+-- get the raw environments
+function _instance:_rawenvs()
+    local envs = self._RAWENVS
     if not envs then
         envs = {}
         if self:is_binary() or self:is_plat("windows", "mingw") then -- bin/*.dll for windows
@@ -825,7 +895,50 @@ function _instance:envs()
                 envs.DYLD_LIBRARY_PATH = {"lib"}
             end
         end
-        self._ENVS = envs
+        self._RAWENVS = envs
+    end
+    return envs
+end
+
+-- get path environment keys
+function _instance:_pathenvs()
+    local pathenvs = self._PATHENVS
+    if pathenvs == nil then
+        pathenvs = hashset.from {
+            "PATH",
+            "LD_LIBRARY_PATH",
+            "DYLD_LIBRARY_PATH",
+            "PKG_CONFIG_PATH",
+            "ACLOCAL_PATH",
+            "CMAKE_PREFIX_PATH",
+            "PYTHONPATH"
+        }
+        self._PATHENVS = pathenvs
+    end
+    return pathenvs
+end
+
+-- mark as path environments
+function _instance:mark_as_pathenv(name)
+    self:_pathenvs():insert(name)
+end
+
+-- get the exported environments
+function _instance:envs()
+    local envs = {}
+    for name, values in pairs(self:_rawenvs()) do
+        if self:_pathenvs():has(name) then
+            local newvalues = {}
+            for _, value in ipairs(values) do
+                if path.is_absolute(value) then
+                    table.insert(newvalues, value)
+                else
+                    table.insert(newvalues, path.join(self:installdir(), value))
+                end
+            end
+            values = newvalues
+        end
+        envs[name] = values
     end
     return envs
 end
@@ -834,7 +947,7 @@ end
 function _instance:envs_load()
     local manifest = self:manifest_load()
     if manifest then
-        local envs = self:envs()
+        local envs = self:_rawenvs()
         for name, values in pairs(manifest.envs) do
             envs[name] = values
         end
@@ -845,33 +958,23 @@ end
 function _instance:envs_enter()
     local installdir = self:installdir({readonly = true})
     for name, values in pairs(self:envs()) do
-        if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
-            for _, value in ipairs(values) do
-                if path.is_absolute(value) then
-                    os.addenv(name, value)
-                else
-                    os.addenv(name, path.join(installdir, value))
-                end
-            end
-        else
-            os.addenv(name, table.unpack(table.wrap(values)))
-        end
+        os.addenv(name, table.unpack(table.wrap(values)))
     end
 end
 
 -- get the given environment variable
 function _instance:getenv(name)
-    return self:envs()[name]
+    return self:_rawenvs()[name]
 end
 
 -- set the given environment variable
 function _instance:setenv(name, ...)
-    self:envs()[name] = {...}
+    self:_rawenvs()[name] = {...}
 end
 
 -- add the given environment variable
 function _instance:addenv(name, ...)
-    self:envs()[name] = table.join(self:envs()[name] or {}, ...)
+    self:_rawenvs()[name] = table.join(self:_rawenvs()[name] or {}, ...)
 end
 
 -- get the given build environment variable
@@ -1353,7 +1456,7 @@ function _instance:_fetch_tool(opt)
         fetchinfo = on_fetch(self, {force = opt.force,
                                     system = opt.system,
                                     require_version = opt.require_version})
-        if opt.require_version and opt.require_version:find(".", 1, true) then
+        if fetchinfo and opt.require_version and opt.require_version:find(".", 1, true) then
             local version = type(fetchinfo) == "table" and fetchinfo.version
             if not (version and (version == opt.require_version or semver.satisfies(version, opt.require_version))) then
                 fetchinfo = nil
@@ -1402,19 +1505,28 @@ function _instance:_fetch_library(opt)
                                     system = opt.system,
                                     external = opt.external,
                                     require_version = opt.require_version})
-        if opt.require_version and opt.require_version:find(".", 1, true) then
-            local version = fetchinfo and fetchinfo.version
+        if fetchinfo and opt.require_version and opt.require_version:find(".", 1, true) then
+            local version = fetchinfo.version
             if not (version and (version == opt.require_version or semver.satisfies(version, opt.require_version))) then
                 fetchinfo = nil
             end
         end
         if fetchinfo then
+            local components_base = fetchinfo.components and fetchinfo.components.__base
             if opt.external then
                 fetchinfo.sysincludedirs = fetchinfo.sysincludedirs or fetchinfo.includedirs
                 fetchinfo.includedirs = nil
+                if components_base then
+                    components_base.sysincludedirs = components_base.sysincludedirs or components_base.includedirs
+                    components_base.includedirs = nil
+                end
             else
                 fetchinfo.includedirs = fetchinfo.includedirs or fetchinfo.sysincludedirs
                 fetchinfo.sysincludedirs = nil
+                if components_base then
+                    components_base.includedirs = components_base.includedirs or components_base.sysincludedirs
+                    components_base.sysincludedirs = nil
+                end
             end
         end
         if fetchinfo and option.get("verbose") then
@@ -1430,7 +1542,17 @@ function _instance:_fetch_library(opt)
             end
             table.insert(fetchnames, self:name())
             for _, fetchname in ipairs(fetchnames) do
-                fetchinfo = self:find_package(fetchname, opt)
+                local components_extsources = {}
+                for name, comp in pairs(self:components()) do
+                    for _, extsource in ipairs(table.wrap(comp:get("extsources"))) do
+                        local extsource_info = extsource:split("::")
+                        if fetchname:split("::")[1] == extsource_info[1] then
+                            components_extsources[name] = extsource_info[2]
+                            break
+                        end
+                    end
+                end
+                fetchinfo = self:find_package(fetchname, table.join(opt, {components_extsources = components_extsources}))
                 if fetchinfo then
                     break
                 end
@@ -1475,6 +1597,8 @@ function _instance:find_package(name, opt)
                               plat = self:plat(),
                               arch = self:arch(),
                               configs = table.join(self:configs(), opt.configs),
+                              components = self:components_orderlist(),
+                              components_extsources = opt.components_extsources,
                               buildhash = self:buildhash(), -- for xmake package or 3rd package manager, e.g. go:: ..
                               cachekey = opt.cachekey or "fetch_package_system",
                               external = opt.external,
@@ -1589,16 +1713,16 @@ function _instance:exists()
     return self._FETCHINFO ~= nil
 end
 
--- fetch link info of dependencies
-function _instance:fetch_linkdeps()
+-- fetch library dependencies
+function _instance:fetch_librarydeps()
     local fetchinfo = self:fetch()
     if not fetchinfo then
         return
     end
     fetchinfo = table.copy(fetchinfo) -- avoid the cached fetchinfo be modified
-    local linkdeps = self:linkdeps()
-    if linkdeps then
-        for _, dep in ipairs(linkdeps) do
+    local librarydeps = self:librarydeps()
+    if librarydeps then
+        for _, dep in ipairs(librarydeps) do
             local depinfo = dep:fetch()
             if depinfo then
                 for name, values in pairs(depinfo) do
@@ -1710,6 +1834,81 @@ function _instance:resourcedir(name)
     end
 end
 
+-- get the given package component
+function _instance:component(name)
+    return self:components()[name]
+end
+
+-- get package components
+--
+-- .e.g. add_components("graphics", "windows")
+--
+function _instance:components()
+    local components = self._COMPONENTS
+    if not components then
+        components = {}
+        for _, name in ipairs(table.wrap(self:get("components"))) do
+            components[name] = component.new(name, {package = self})
+        end
+        self._COMPONENTS = components
+    end
+    return components
+end
+
+-- get package dependencies of components
+--
+-- @see https://github.com/xmake-io/xmake/issues/2636#issuecomment-1284787681
+--
+-- @code
+-- add_components("graphics", {deps = "window"})
+-- @endcode
+--
+-- or
+--
+-- @code
+-- on_component(function (package, component))
+--     component:add("deps", "window")
+-- end)
+-- @endcode
+--
+function _instance:components_deps()
+    local components_deps = self._COMPONENTS_DEPS
+    if not components_deps then
+        components_deps = {}
+        for _, name in ipairs(table.wrap(self:get("components"))) do
+            components_deps[name] = self:extraconf("components", name, "deps") or self:component(name):get("deps")
+        end
+        self._COMPONENTS_DEPS = component_deps
+    end
+    return components_deps
+end
+
+-- get package components list with dependencies order
+function _instance:components_orderlist()
+    local components_orderlist = self._COMPONENTS_ORDERLIST
+    if not components_orderlist then
+        components_orderlist = {}
+        for _, name in ipairs(table.wrap(self:get("components"))) do
+            table.insert(components_orderlist, name)
+            table.join2(components_orderlist, self:_sort_componentdeps(name))
+        end
+        components_orderlist = table.reverse_unique(components_orderlist)
+        self._COMPONENTS_ORDERLIST = components_orderlist
+    end
+    return components_orderlist
+end
+
+-- sort component deps
+function _instance:_sort_componentdeps(name)
+    local orderdeps = {}
+    local plaindeps = self:components_deps() and self:components_deps()[name]
+    for _, dep in ipairs(table.wrap(plaindeps)) do
+        table.insert(orderdeps, dep)
+        table.join2(orderdeps, self:_sort_componentdeps(dep))
+    end
+    return orderdeps
+end
+
 -- generate lto configs
 function _instance:_generate_lto_configs(sourcekind)
 
@@ -1745,10 +1944,20 @@ end
 -- generate building configs for has_xxx/check_xxx
 function _instance:_generate_build_configs(configs, opt)
     opt = opt or {}
-    configs = table.join(self:fetch_linkdeps(), configs)
+    configs = table.join(self:fetch_librarydeps(), configs)
     if self:is_plat("windows") then
         local ld = self:build_getenv("ld")
         local vs_runtime = self:config("vs_runtime")
+        -- since we are ignoring the vs_runtime of the headeronly library,
+        -- we can only get the vs_runtime from the dependency library to detect the link.
+        if self:is_headeronly() and not vs_runtime and self:librarydeps() then
+            for _, dep in ipairs(self:librarydeps()) do
+                if dep:is_plat("windows") and dep:config("vs_runtime") then
+                    vs_runtime = dep:config("vs_runtime")
+                    break
+                end
+            end
+        end
         if vs_runtime and ld and path.basename(ld:lower()) == "link" then -- for msvc?
             configs.cxflags = table.wrap(configs.cxflags)
             table.insert(configs.cxflags, "/" .. vs_runtime)
@@ -1766,6 +1975,10 @@ function _instance:_generate_build_configs(configs, opt)
                 table.join2(configs[k], v)
             end
         end
+    end
+    -- enable exceptions for msvc by default
+    if opt.sourcekind == "cxx" and configs.exceptions == nil and self:has_tool("cxx", "cl") then
+        configs.exceptions = "cxx"
     end
     if configs and (configs.ldflags or configs.shflags) then
         configs.force = {ldflags = configs.ldflags, shflags = configs.shflags}
@@ -1919,26 +2132,13 @@ end
 
 -- the interpreter
 function package._interpreter()
-
-    -- the interpreter has been initialized? return it directly
-    if package._INTERPRETER then
-        return package._INTERPRETER
+    local interp = package._INTERPRETER
+    if not interp then
+        interp = interpreter.new()
+        interp:api_define(package.apis())
+        interp:api_define(language.apis())
+        package._INTERPRETER = interp
     end
-
-    -- init interpreter
-    local interp = interpreter.new()
-    assert(interp)
-
-    -- define apis
-    interp:api_define(package.apis())
-
-    -- define apis for language
-    interp:api_define(language.apis())
-
-    -- save interpreter
-    package._INTERPRETER = interp
-
-    -- ok?
     return interp
 end
 
@@ -2020,6 +2220,7 @@ function package.apis()
         ,   "package.add_imports"
         ,   "package.add_configs"
         ,   "package.add_extsources"
+        ,   "package.add_components"
         }
     ,   script =
         {
@@ -2029,6 +2230,7 @@ function package.apis()
         ,   "package.on_download"
         ,   "package.on_install"
         ,   "package.on_test"
+        ,   "package.on_component"
         }
     ,   keyvalues =
         {

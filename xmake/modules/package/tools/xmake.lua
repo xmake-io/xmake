@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.global")
 import("core.tool.toolchain")
 import("core.project.project")
 import("core.package.repository")
@@ -36,7 +37,8 @@ function _get_config_from_toolchains(package, name)
 end
 
 -- get configs
-function _get_configs(package, configs)
+function _get_configs(package, configs, opt)
+    opt = opt or {}
     local configs  = configs or {}
     local cflags   = table.join(table.wrap(package:config("cflags")),   get_config("cflags"))
     local cxflags  = table.join(table.wrap(package:config("cxflags")),  get_config("cxflags"))
@@ -134,11 +136,23 @@ function _get_configs(package, configs)
     if ldflags and #ldflags > 0 then
         table.insert(configs, "--ldflags=" .. table.concat(ldflags, ' '))
     end
+    local buildir = opt.buildir or package:buildir()
+    if buildir then
+        table.insert(configs, "--buildir=" .. buildir)
+    end
     return configs
 end
 
 -- set some builtin global options from the parent xmake
 function _set_builtin_argv(argv)
+    -- if the package cache directory is modified,
+    -- we need to force the project directory to be specified to avoid interference by the upper level xmake.lua.
+    -- and we also need to put `-P` in the first argument to avoid option.parse() parsing errors
+    local cachedir = os.getenv("XMAKE_PKG_CACHEDIR") or global.get("pkg_cachedir")
+    if cachedir then
+        table.insert(argv, "-P")
+        table.insert(argv, os.curdir())
+    end
     for _, name in ipairs({"diagnosis", "verbose", "quiet", "yes", "confirm", "root"}) do
         local value = option.get(name)
         if type(value) == "boolean" then
@@ -241,9 +255,12 @@ function install(package, configs, opt)
     end
 
     -- pass configurations
-    local argv = {"f", "-y", "-c"}
+    -- we need to put `-P` in the first argument of _set_builtin_argv() to avoid option.parse() parsing errors
+    local argv = {"f"}
     _set_builtin_argv(argv)
-    for name, value in pairs(_get_configs(package, configs)) do
+    table.insert(argv, "-y")
+    table.insert(argv, "-c")
+    for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if type(name) == "number" then
             if value ~= "" then

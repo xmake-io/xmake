@@ -92,6 +92,26 @@ function _instance:arch()
     return self._ARCH
 end
 
+-- the current target is belong to the given platforms?
+function _instance:is_plat(...)
+    local plat = self:plat()
+    for _, v in ipairs(table.join(...)) do
+        if v and plat == v then
+            return true
+        end
+    end
+end
+
+-- the current target is belong to the given architectures?
+function _instance:is_arch(...)
+    local arch = self:arch()
+    for _, v in ipairs(table.join(...)) do
+        if v and arch:find("^" .. v:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
+end
+
 -- get the tool program
 function _instance:program()
     return self._PROGRAM
@@ -186,8 +206,13 @@ function tool.load(kind, opt)
     if program then
         local pos = program:find('@', 1, true)
         if pos then
-            toolname = program:sub(1, pos - 1)
-            program = program:sub(pos + 1)
+            -- we need ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
+            -- https://github.com/xmake-io/xmake/issues/2853
+            local prefix = program:sub(1, pos - 1)
+            if prefix and not prefix:find("[/\\]") then
+                toolname = prefix
+                program = program:sub(pos + 1)
+            end
         end
     end
 

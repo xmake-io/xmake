@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.semver")
 import("core.project.config")
+import("core.project.depend")
 import("core.project.project")
 import("core.platform.platform")
 import("lib.detect.find_tool")
@@ -178,17 +179,7 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
                 for name, value in pairs(opt:get("configvar")) do
                     if variables[name] == nil then
                         variables[name] = table.unwrap(value)
-                        variables["__extraconf_" .. name] = target:extraconf("configvar." .. name, value)
-                    end
-                end
-            end
-
-            -- get variables from the target.packages
-            for _, pkg in ipairs(target:orderpkgs()) do
-                for name, value in pairs(pkg:get("configvar")) do
-                    if variables[name] == nil then
-                        variables[name] = table.unwrap(value)
-                        variables["__extraconf_" .. name] = target:extraconf("configvar." .. name, value)
+                        variables["__extraconf_" .. name] = opt:extraconf("configvar." .. name, value)
                     end
                 end
             end
@@ -298,6 +289,8 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
                 if io.readfile(dstfile_tmp) ~= io.readfile(dstfile) then
                     os.cp(dstfile_tmp, dstfile)
                     generated = true
+                else
+                    os.touch(dstfile, {mtime = os.time()})
                 end
             else
                 os.cp(dstfile_tmp, dstfile)
@@ -311,17 +304,20 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
 end
 
 -- the main entry function
-function main()
+function main(opt)
 
     -- enter project directory
+    opt = opt or {}
     local oldir = os.cd(project.directory())
 
-    -- get all configuration files
-    local configfiles = _get_configfiles()
-
     -- generate all configuration files
+    local configfiles = _get_configfiles()
     for dstfile, srcinfo in pairs(configfiles) do
-        _generate_configfile(srcinfo.srcfile, dstfile, srcinfo.fileinfo, srcinfo.targets)
+        depend.on_changed(function ()
+            _generate_configfile(srcinfo.srcfile, dstfile, srcinfo.fileinfo, srcinfo.targets)
+        end, {files = srcinfo.srcfile,
+              lastmtime = os.mtime(dstfile),
+              always_changed = opt.force})
     end
 
     -- leave project directory

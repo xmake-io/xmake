@@ -1331,7 +1331,7 @@ function _make_source_files(vcxprojfile, vsinfo, target)
         end
 
         -- make source files
-        for sourcefile, sourceinfo in pairs(sourceinfos) do
+        for sourcefile, sourceinfo in table.orderpairs(sourceinfos) do
             if #sourceinfo == #target.info then
                 _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourceinfo)
             else

@@ -124,6 +124,11 @@ function main._init()
     scheduler:enable(false)
 
     -- get project directory and project file from the argument option
+    --
+    -- @note we need to put `-P` in the first argument avoid option.parse() parsing errors
+    -- e.g. `xmake f -c -P xxx` will be parsed as `-c=-P`, it's incorrect.
+    --
+    -- maybe we will improve this later
     local options, err = main._basicparse()
     if not options then
         return false, err
@@ -243,11 +248,6 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
         end
     end
 
-    -- start profiling
-    if profiler:enabled() then
-        profiler:start()
-    end
-
     -- show help?
     if main._show_help() then
         return main._exit(true)
@@ -279,6 +279,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
         if not ok then
             os.raise(errors)
         end
+
     end)
     ok, errors = scheduler:runloop()
     if not ok then

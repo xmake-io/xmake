@@ -26,7 +26,9 @@ local json      = require("base/json")
 local raise     = require("sandbox/modules/raise")
 
 -- inherit some builtin interfaces
-sandbox_core_base_json.null = json.null
+sandbox_core_base_json.null               = json.null
+sandbox_core_base_json.mark_as_array      = json.mark_as_array
+sandbox_core_base_json.is_marked_as_array = json.is_marked_as_array
 
 -- decode the json string to the lua table
 function sandbox_core_base_json.decode(jsonstr, opt)

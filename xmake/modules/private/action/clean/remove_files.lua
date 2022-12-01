@@ -22,15 +22,11 @@
 import("core.base.option")
 
 -- remove the given files or (empty) directories
-function main(filedirs)
-
+function main(filedirs, opt)
+    opt = opt or {}
     for _, filedir in ipairs(filedirs) do
-
-        -- remove it first
         os.tryrm(filedir)
-
-        -- remove all?
-        if option.get("all") then
+        if option.get("all") or opt.emptydir then
             -- remove it if the parent directory is empty
             local parentdir = path.directory(filedir)
             while parentdir and os.isdir(parentdir) and os.emptydir(parentdir) do

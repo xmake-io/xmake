@@ -26,10 +26,13 @@ local _instance = _instance or {}
 local bit             = require("base/bit")
 local os              = require("base/os")
 local path            = require("base/path")
+local hash            = require("base/hash")
 local utils           = require("base/utils")
 local table           = require("base/table")
 local baseoption      = require("base/option")
+local hashset         = require("base/hashset")
 local deprecated      = require("base/deprecated")
+local instance_deps   = require("base/private/instance_deps")
 local memcache        = require("cache/memcache")
 local rule            = require("project/rule")
 local option          = require("project/option")
@@ -47,11 +50,10 @@ local sandbox         = require("sandbox/sandbox")
 local sandbox_module  = require("sandbox/modules/import/core/sandbox/module")
 
 -- new a target instance
-function _instance.new(name, info, project)
+function _instance.new(name, info)
     local instance     = table.inherit(_instance)
     instance._NAME     = name
     instance._INFO     = info
-    instance._PROJECT  = project
     instance._CACHEID  = 1
     return instance
 end
@@ -274,12 +276,54 @@ function _instance:_invalidate(name)
     -- we need flush the source files cache if target/files are modified, e.g. `target:add("files", "xxx.c")`
     if name == "files" then
         self._SOURCEFILES = nil
+    elseif name == "deps" then
+        self._DEPS = nil
+        self._ORDERDEPS = nil
+    end
+end
+
+-- build deps
+function _instance:_build_deps()
+    if target._project() then
+        local instances = target._project().targets()
+        self._DEPS      = self._DEPS or {}
+        self._ORDERDEPS = self._ORDERDEPS or {}
+        instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:name()})
     end
 end
 
 -- is loaded?
 function _instance:_is_loaded()
     return self._LOADED
+end
+
+-- clone target, @note we can just call it in after_load()
+function _instance:clone()
+    if not self:_is_loaded() then
+        os.raise("please call target:clone() in after_load().", self:name())
+    end
+    local instance = target.new(self:name(), self._INFO:clone())
+    if self._DEPS then
+        instance._DEPS = table.clone(self._DEPS)
+    end
+    if self._ORDERDEPS then
+        instance._ORDERDEPS = table.clone(self._ORDERDEPS)
+    end
+    if self._RULES then
+        instance._RULES = table.clone(self._RULES)
+    end
+    if self._ORDERULES then
+        instance._ORDERULES = table.clone(self._ORDERULES)
+    end
+    if self._DATA then
+        instance._DATA = table.clone(self._DATA)
+    end
+    if self._SOURCEFILES then
+        instance._SOURCEFILES = table.clone(self._SOURCEFILES)
+    end
+    instance._LOADED = self._LOADED
+    instance._LOADED_AFTER = true
+    return instance
 end
 
 -- get the target info
@@ -371,13 +415,38 @@ end
 function _instance:get_from_pkgs(name, opt)
     local values = {}
     for _, pkg in ipairs(self:orderpkgs(opt)) do
-        -- uses them instead of the builtin configs if exists extra package config
-        -- e.g. `add_packages("xxx", {links = "xxx"})`
         local configinfo = self:pkgconfig(pkg:name())
-        if configinfo and configinfo[name] then
-            table.join2(values, configinfo[name])
+        -- get values from package components
+        -- e.g. `add_packages("sfml", {components = {"graphics", "window"}})`
+        if configinfo and configinfo.components and pkg:components() then
+            local components_enabled = hashset.new()
+            for _, comp in ipairs(table.wrap(configinfo.components)) do
+                components_enabled:insert(comp)
+                for _, dep in ipairs(table.wrap(pkg:component_orderdeps(comp))) do
+                    components_enabled:insert(dep)
+                end
+            end
+            components_enabled:insert("__base")
+            -- if we can't find the values from the component, we need to fall back to __base to find them.
+            -- it contains some common values of all components
+            local components = table.wrap(pkg:components())
+            for _, component_name in ipairs(table.join(pkg:components_orderlist(), "__base")) do
+                if components_enabled:has(component_name) then
+                    local info = components[component_name]
+                    if info then
+                        table.join2(values, info[name])
+                    else
+                        local components_str = table.concat(table.wrap(configinfo.components), ", ")
+                        utils.warning("unknown component(%s) in add_packages(%s, {components = {%s}})", component_name, pkg:name(), components_str)
+                    end
+                end
+            end
+        -- get values instead of the builtin configs if exists extra package config
+        -- e.g. `add_packages("xxx", {links = "xxx"})`
+        elseif configinfo and configinfo[name] then
+             table.join2(values, configinfo[name])
         else
-            -- uses the builtin package configs
+            -- get values from the builtin package configs
             table.join2(values, pkg:get(name))
         end
     end
@@ -490,6 +559,11 @@ function _instance:name()
     return self._NAME
 end
 
+-- set the target name
+function _instance:name_set(name)
+    self._NAME = name
+end
+
 -- get the target kind
 function _instance:kind()
     return self:get("kind") or "binary"
@@ -595,7 +669,14 @@ function _instance:policy(name)
             end
         end
     end
-    return policy.check(name, policies and policies[name])
+    local value
+    if policies then
+        value = policies[name]
+    end
+    if value == nil and target._project() then
+        value = target._project().policy(name)
+    end
+    return policy.check(name, value)
 end
 
 -- get the base name of target file
@@ -666,6 +747,9 @@ function _instance:deps()
     if not self:_is_loaded() then
         os.raise("please call target:deps() or target:dep() in after_load()!")
     end
+    if self._DEPS == nil then
+        self:_build_deps()
+    end
     return self._DEPS
 end
 
@@ -673,6 +757,9 @@ end
 function _instance:orderdeps()
     if not self:_is_loaded() then
         os.raise("please call target:orderdeps() in after_load()!")
+    end
+    if self._DEPS == nil then
+        self:_build_deps()
     end
     return self._ORDERDEPS
 end
@@ -684,7 +771,17 @@ end
 
 -- get target ordered rules
 function _instance:orderules()
-    return self._ORDERULES
+    local rules = self._RULES
+    local orderules = self._ORDERULES
+    if orderules == nil and rules then
+        orderules = {}
+        local rulerefs = {}
+        for _, r in table.orderpairs(rules) do
+            instance_deps.sort_deps(rules, orderules, rulerefs, r)
+        end
+        self._ORDERULES = orderules
+    end
+    return orderules
 end
 
 -- get target rule from the given rule name
@@ -692,6 +789,16 @@ function _instance:rule(name)
     if self._RULES then
         return self._RULES[name]
     end
+end
+
+-- add rule
+--
+-- @note If a rule has the same name as a built-in rule,
+-- it will be replaced in the target:rules() and target:orderules(), but will be not replaced globally in the project.rules()
+function _instance:rule_add(r)
+    self._RULES = self._RULES or {}
+    self._RULES[r:name()] = r
+    self._ORDERULES = nil
 end
 
 -- is phony target?
@@ -802,24 +909,28 @@ function _instance:orderopts(opt)
 end
 
 -- get the enabled package
-function _instance:pkg(name)
-    return self:pkgs()[name]
+function _instance:pkg(name, opt)
+    return self:pkgs(opt)[name]
 end
 
 -- get the enabled packages
-function _instance:pkgs()
-
-    -- attempt to get it from cache first
-    if self._PKGS_ENABLED then
-        return self._PKGS_ENABLED
+function _instance:pkgs(opt)
+    opt = opt or {}
+    local cachekey = "pkgs"
+    if opt.public then
+        cachekey = cachekey .. "_public"
+    elseif opt.interface then
+        cachekey = cachekey .. "_interface"
     end
-
-    -- load packages if be enabled
-    self._PKGS_ENABLED = {}
-    for _, pkg in ipairs(self:orderpkgs()) do
-        self._PKGS_ENABLED[pkg:name()] = pkg
+    local packages = self:_memcache():get(cachekey)
+    if not packages then
+        packages = {}
+        for _, pkg in ipairs(self:orderpkgs(opt)) do
+            packages[pkg:name()] = pkg
+        end
+        self:_memcache():set(cachekey, packages)
     end
-    return self._PKGS_ENABLED
+    return packages
 end
 
 -- get the required packages with {interface|public = ..}
@@ -834,7 +945,7 @@ function _instance:orderpkgs(opt)
     local packages = self:_memcache():get(cachekey)
     if not packages then
         packages = {}
-        local requires = self._PROJECT.required_packages()
+        local requires = target._project().required_packages()
         if requires then
             for _, packagename in ipairs(table.wrap(self:get("packages", opt))) do
                 local pkg = requires[packagename]
@@ -852,21 +963,35 @@ end
 function _instance:pkgenvs()
     local pkgenvs = self._PKGENVS
     if pkgenvs == nil then
+        local pkgs = hashset.new()
         for _, pkgname in ipairs(table.wrap(self:get("packages"))) do
             local pkg = self:pkg(pkgname)
             if pkg then
-                local envs = pkg:get("envs")
-                if envs then
-                    for name, values in pairs(envs) do
-                        if type(values) == "table" then
-                            values = path.joinenv(values)
-                        end
-                        pkgenvs = pkgenvs or {}
-                        if pkgenvs[name] then
-                            pkgenvs[name] = pkgenvs[name] .. path.envsep() .. values
-                        else
-                            pkgenvs[name] = values
-                        end
+                pkgs:insert(pkg)
+            end
+        end
+        -- we can also get package envs from deps (public package)
+        -- @see https://github.com/xmake-io/xmake/issues/2729
+        for _, dep in ipairs(self:orderdeps()) do
+            for _, pkgname in ipairs(table.wrap(dep:get("packages", {interface = true}))) do
+                local pkg = dep:pkg(pkgname)
+                if pkg then
+                    pkgs:insert(pkg)
+                end
+            end
+        end
+        for _, pkg in pkgs:orderkeys() do
+            local envs = pkg:get("envs")
+            if envs then
+                for name, values in table.orderpairs(envs) do
+                    if type(values) == "table" then
+                        values = path.joinenv(values)
+                    end
+                    pkgenvs = pkgenvs or {}
+                    if pkgenvs[name] then
+                        pkgenvs[name] = pkgenvs[name] .. path.envsep() .. values
+                    else
+                        pkgenvs[name] = values
                     end
                 end
             end
@@ -1016,7 +1141,10 @@ function _instance:autogenfile(sourcefile, opt)
     -- we need replace '..' to '__' in this case
     --
     if path.is_absolute(relativedir) and os.host() == "windows" then
-        relativedir = relativedir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
+        -- remove C:\\ and whitespaces
+        -- e.g. C:\\Program Files (x64)\\xxx\Windows.h
+        -- @see https://github.com/xmake-io/xmake/issues/3021
+        relativedir = hash.uuid4(relativedir):gsub("%-", ""):lower()
     end
     relativedir = relativedir:gsub("%.%.", "__")
     local rootdir = (opt and opt.rootdir) and opt.rootdir or self:autogendir()
@@ -1181,7 +1309,7 @@ function _instance:filerules(sourcefile)
         if filerules then
             override = filerules.override
             for _, rulename in ipairs(table.wrap(filerules)) do
-                local r = self._PROJECT.rule(rulename) or rule.rule(rulename)
+                local r = target._project().rule(rulename) or rule.rule(rulename)
                 if r then
                     table.insert(rules, r)
                 end
@@ -1194,7 +1322,7 @@ function _instance:filerules(sourcefile)
     end
 
     -- load all rules for this target with sourcekinds and extensions
-    local key2rules = self._KEY2RULES
+    local key2rules = self:_memcache():get("key2rules")
     if not key2rules then
         key2rules = {}
         for _, r in pairs(table.wrap(self:rules())) do
@@ -1212,7 +1340,7 @@ function _instance:filerules(sourcefile)
                 table.insert(key2rules[extension], r)
             end
         end
-        self._KEY2RULES = key2rules
+        self:_memcache():set("key2rules", key2rules)
     end
 
     -- get target rules from the given sourcekind or extension
@@ -1420,7 +1548,8 @@ end
 
 -- get object file from source file
 function _instance:objectfile(sourcefile)
-    return self:autogenfile(sourcefile, {rootdir = self:objectdir(), filename = target.filename(path.filename(sourcefile), "object", {plat = self:plat(), arch = self:arch()})})
+    return self:autogenfile(sourcefile, {rootdir = self:objectdir(),
+        filename = target.filename(path.filename(sourcefile), "object", {plat = self:plat(), arch = self:arch()})})
 end
 
 -- get the object files
@@ -2023,8 +2152,8 @@ function _instance:toolchains()
                 toolchain_opt.plat = self:plat()
                 local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
                 -- attempt to load toolchain from project
-                if not toolchain_inst and self._PROJECT then
-                    toolchain_inst = self._PROJECT.toolchain(name, toolchain_opt)
+                if not toolchain_inst and target._project() then
+                    toolchain_inst = target._project().toolchain(name, toolchain_opt)
                 end
                 if not toolchain_inst then
                     os.raise(errors)
@@ -2067,8 +2196,13 @@ function _instance:tool(toolkind)
         if program and not toolname then
             local pos = program:find('@', 1, true)
             if pos then
-                toolname = program:sub(1, pos - 1)
-                program = program:sub(pos + 1)
+                -- we need ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
+                -- https://github.com/xmake-io/xmake/issues/2853
+                local prefix = program:sub(1, pos - 1)
+                if prefix and not prefix:find("[/\\]") then
+                    toolname = prefix
+                    program = program:sub(pos + 1)
+                end
             end
         end
 
@@ -2116,6 +2250,11 @@ function _instance:has_tool(toolkind, ...)
     end
 end
 
+-- get project
+function target._project()
+    return target._PROJECT
+end
+
 -- get target apis
 function target.apis()
 
@@ -2149,6 +2288,7 @@ function target.apis()
         ,   "target.set_languages"
         ,   "target.set_toolchains"
         ,   "target.set_runargs"
+        ,   "target.set_exceptions"
             -- target.add_xxx
         ,   "target.add_deps"
         ,   "target.add_rules"

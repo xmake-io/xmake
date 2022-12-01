@@ -30,6 +30,9 @@
  */
 #include "prefix.h"
 #include "../io/prefix.h"
+#if defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD)
+#   include <signal.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -105,6 +108,7 @@ tb_int_t xm_process_openv(lua_State* lua)
     tb_process_attr_t attr = {0};
 
     // get option arguments
+    tb_bool_t          exclusive = tb_false;
     tb_size_t          envn = 0;
     tb_char_t const*   envs[1024] = {0};
     tb_char_t const*   inpath  = tb_null;
@@ -123,6 +127,13 @@ tb_int_t xm_process_openv(lua_State* lua)
         lua_gettable(lua, 3);
         if (lua_toboolean(lua, -1))
             attr.flags |= TB_PROCESS_FLAG_DETACH;
+        lua_pop(lua, 1);
+
+        // is exclusive?
+        lua_pushstring(lua, "exclusive");
+        lua_gettable(lua, 3);
+        if (lua_toboolean(lua, -1))
+            exclusive = tb_true;
         lua_pop(lua, 1);
 
         // get curdir
@@ -317,6 +328,16 @@ tb_int_t xm_process_openv(lua_State* lua)
 
     // set the new environments
     if (envn > 0) attr.envp = envs;
+
+    /* we need ignore SIGINT and SIGQUIT if we enter exclusive mode
+     * @see https://github.com/xmake-io/xmake/discussions/2893
+     */
+#if defined(SIGINT)
+    if (exclusive) signal(SIGINT, SIG_IGN);
+#endif
+#if defined(SIGQUIT)
+    if (exclusive) signal(SIGQUIT, SIG_IGN);
+#endif
 
     // init process
     tb_process_ref_t process = (tb_process_ref_t)tb_process_init(shellname, argv, &attr);

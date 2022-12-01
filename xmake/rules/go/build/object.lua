@@ -27,7 +27,7 @@ import("utils.progress")
 
 -- build the source files
 function main(target, sourcebatch, opt)
-    
+
     -- get source files and kind
     local sourcefiles = sourcebatch.sourcefiles
     local sourcekind  = sourcebatch.sourcekind

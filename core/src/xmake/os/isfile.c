@@ -42,10 +42,8 @@ tb_int_t xm_os_isfile(lua_State* lua)
     tb_char_t const* path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
-    // done os.isfile(path)
+    // is file?
     tb_file_info_t info = {0};
     lua_pushboolean(lua, tb_file_info(path, &info) && (info.type == TB_FILE_TYPE_FILE));
-
-    // ok
     return 1;
 }

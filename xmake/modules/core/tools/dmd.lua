@@ -31,10 +31,13 @@ function init(self)
     self:set("dcarflags", "-lib")
 
     -- init shflags
-    self:set("dcshflags", "-shared", "-fPIC")
+    self:set("dcshflags", "-shared")
 
-    -- init dcflags for the kind: shared
-    self:set("shared.dcflags", "-fPIC")
+    -- add -fPIC for shared
+    if not self:is_plat("windows", "mingw") then
+        self:add("dcshflags", "-fPIC")
+        self:add("shared.dcflags", "-fPIC")
+    end
 end
 
 -- make the optimize flag
@@ -56,18 +59,18 @@ end
 
 -- make the strip flag
 function nf_strip(self, level)
-    local maps =
-    {
-        debug       = "-L-S"
-    ,   all         = "-L-s"
-    }
-    return maps[level]
+    if not self:is_plat("windows") then
+        local maps = {
+            debug = "-L-S",
+            all   = "-L-s"
+        }
+        return maps[level]
+    end
 end
 
 -- make the symbol flag
 function nf_symbol(self, level)
-    local maps =
-    {
+    local maps = {
         debug = "-g -debug"
     }
     return maps[level]
@@ -75,24 +78,22 @@ end
 
 -- make the warning flag
 function nf_warning(self, level)
-    local maps =
-    {
-        none        = "-d"
-    ,   less        = "-w"
-    ,   more        = "-w -wi"
-    ,   all         = "-w -wi"
-    ,   everything  = "-w -wi"
-    ,   error       = "-de"
+    local maps = {
+        none        = "-d",
+        less        = "-w",
+        more        = "-w -wi",
+        all         = "-w -wi",
+        everything  = "-w -wi",
+        error       = "-de"
     }
     return maps[level]
 end
 
 -- make the vector extension flag
 function nf_vectorext(self, extension)
-    local maps =
-    {
-        avx         = "-mcpu=avx"
-    ,   avx2        = "-mcpu=avx"
+    local maps = {
+        avx  = "-mcpu=avx",
+        avx2 = "-mcpu=avx"
     }
     return maps[extension]
 end
@@ -109,7 +110,11 @@ end
 
 -- make the link flag
 function nf_link(self, lib)
-    return "-L-l" .. lib
+    if self:is_plat("windows") then
+        return "-L" .. lib .. ".lib"
+    else
+        return "-L-l" .. lib
+    end
 end
 
 -- make the syslink flag
@@ -119,19 +124,25 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return {"-L-L" .. dir}
+    if self:is_plat("windows") then
+        return {"-L-libpath:" .. dir}
+    else
+        return {"-L-L" .. dir}
+    end
 end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
-    dir = path.translate(dir)
-    if self:has_flags("-L-rpath=" .. dir, "ldflags") then
-        return {"-L-rpath=" .. (dir:gsub("@[%w_]+", function (name)
-            local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
-            return maps[name]
-        end))}
-    elseif self:has_flags("-L-rpath -L" .. dir, "ldflags") then
-        return {"-L-rpath", "-L" .. (dir:gsub("%$ORIGIN", "@loader_path"))}
+    if not self:is_plat("windows") then
+        dir = path.translate(dir)
+        if self:has_flags("-L-rpath=" .. dir, "ldflags") then
+            return {"-L-rpath=" .. (dir:gsub("@[%w_]+", function (name)
+                local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
+                return maps[name]
+            end))}
+        elseif self:has_flags("-L-rpath -L" .. dir, "ldflags") then
+            return {"-L-rpath", "-L" .. (dir:gsub("%$ORIGIN", "@loader_path"))}
+        end
     end
 end
 
@@ -140,7 +151,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
 
     -- add rpath for dylib (macho), e.g. -install_name @rpath/file.dylib
     local flags_extra = {}
-    if targetkind == "shared" and is_plat("macosx") then
+    if targetkind == "shared" and self:is_plat("macosx") then
         table.insert(flags_extra, "-L-install_name")
         table.insert(flags_extra, "-L@rpath/" .. path.filename(targetfile))
     end

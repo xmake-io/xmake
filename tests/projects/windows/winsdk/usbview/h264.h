@@ -4,7 +4,7 @@
 
 //*****************************************************************************
 //
-// external variables 
+// external variables
 //
 //*****************************************************************************
 extern UCHAR g_expectedNumberOfH264FrameDescriptors;
@@ -34,8 +34,8 @@ extern UCHAR g_numberOfUncompressedFrameFrameDescriptors;
 
 
 // definitions take from the proposed UVC 1.5 spec
-#define VS_FORMAT_H264  0x13  
-#define VS_FRAME_H264   0x14  
+#define VS_FORMAT_H264  0x13
+#define VS_FRAME_H264   0x14
 
 
 // Video Class-Specific VC Interface Descriptor Subtypes
@@ -52,7 +52,7 @@ extern UCHAR g_numberOfUncompressedFrameFrameDescriptors;
 // VideoStreaming H.264 Format Descriptor
 #pragma pack(push, 1)       // pack on a 1 byte boundary
 typedef struct _VIDEO_FORMAT_H264
-{                                                                   // offset (in bytes):          
+{                                                                   // offset (in bytes):
     UCHAR bLength;                                                  // 0
     UCHAR bDescriptorType;                                          // 1
     UCHAR bDescriptorSubtype;                                       // 2
@@ -102,7 +102,7 @@ typedef struct _VIDEO_FORMAT_H264
 #pragma warning(disable:4200) // Zero sized array
 
 typedef struct _VIDEO_FRAME_H264
-{                                               // offset (in bytes):          
+{                                               // offset (in bytes):
     UCHAR  bLength;                             // 0
     UCHAR  bDescriptorType;                     // 1
     UCHAR  bDescriptorSubtype;                  // 2
@@ -133,7 +133,7 @@ typedef struct _VIDEO_FRAME_H264
 #pragma warning(push)
 #pragma warning(disable:4200) // Zero sized array
 typedef struct //_VIDEO_ENCODING_UNIT
-{                                               // offset (in bytes):           
+{                                               // offset (in bytes):
     UCHAR bLength;                              // 0
     UCHAR bDescriptorType;                      // 1
     UCHAR bDescriptorSubtype;                   // 2

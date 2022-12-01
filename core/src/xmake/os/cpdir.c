@@ -43,9 +43,13 @@ tb_int_t xm_os_cpdir(lua_State* lua)
     tb_char_t const* dst = luaL_checkstring(lua, 2);
     tb_check_return_val(src && dst, 0);
 
-    // done os.cpdir(src, dst)
-    lua_pushboolean(lua, tb_directory_copy(src, dst));
+    // init copy flags
+    tb_size_t flags = TB_FILE_COPY_NONE;
+    tb_bool_t is_symlink = lua_toboolean(lua, 3);
+    if (is_symlink)
+        flags |= TB_FILE_COPY_LINK;
 
-    // ok
+    // do copy
+    lua_pushboolean(lua, tb_directory_copy(src, dst, flags));
     return 1;
 }

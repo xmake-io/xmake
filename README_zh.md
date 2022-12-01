@@ -132,6 +132,15 @@ Invoke-Expression (Invoke-Webrequest 'https://xmake.io/psget.text' -UseBasicPars
 
 官方的xmake包管理仓库: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 
+<img src="https://xmake.io/assets/img/index/package.gif" width="650px" />
+
+## 创建工程
+
+```bash
+$ xmake create hello
+$ cd hello
+```
+
 ## 构建工程
 
 ```bash
@@ -190,10 +199,6 @@ $ xmake f --menu
 
 ## 包依赖管理
 
-### 下载和编译
-
-<img src="https://xmake.io/assets/img/index/package_manage.png" width="650px" />
-
 ### 架构和流程
 
 <img src="https://xmake.io/assets/img/index/package_arch.png" width="650px" />
@@ -217,7 +222,7 @@ $ xmake f --menu
 
 ### 包管理特性
 
-* 官方仓库提供近 500+ 常用包，真正做到全平台一键下载集成编译
+* 官方仓库提供近 700+ 常用包，真正做到全平台一键下载集成编译
 * 全平台包支持，支持交叉编译的依赖包集成
 * 支持包虚拟环境管理和加载，`xrepo env shell`
 * Windows 云端预编译包加速
@@ -248,6 +253,7 @@ $ xmake f --menu
 $ xmake show -l toolchains
 xcode         Xcode IDE
 msvc          Microsoft Visual C/C++ Compiler
+clang-cl      LLVM Clang C/C++ Compiler compatible with msvc
 yasm          The Yasm Modular Assembler
 clang         A C language family frontend for LLVM
 go            Go Programming Language Compiler

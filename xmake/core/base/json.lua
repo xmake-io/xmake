@@ -29,6 +29,20 @@ local utils = require("base/utils")
 -- export null
 json.null = cjson.null
 
+-- support empty array
+-- @see https://github.com/mpx/lua-cjson/issues/11
+function json.mark_as_array(luatable)
+    local mt = getmetatable(luatable) or {}
+    mt.__is_cjson_array = true
+    return setmetatable(luatable, mt)
+end
+
+-- is marked as array?
+function json.is_marked_as_array(luatable)
+    local mt = getmetatable(luatable)
+    return mt and mt.__is_cjson_array
+end
+
 -- decode json string to the lua table
 --
 -- @param jsonstr       the json string

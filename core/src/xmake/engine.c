@@ -52,7 +52,7 @@
  */
 #if defined(TB_CONFIG_OS_LINUX)
 #   define XM_PROC_SELF_FILE        "/proc/self/exe"
-#elif defined(TB_CONFIG_OS_BSD)
+#elif defined(TB_CONFIG_OS_BSD) && !defined(__OpenBSD__)
 #   if defined(__FreeBSD__)
 #       define XM_PROC_SELF_FILE    "/proc/curproc/file"
 #   elif defined(__NetBSD__)
@@ -286,10 +286,8 @@ tb_int_t xm_libc_setbyte(lua_State* lua);
 tb_int_t xm_tty_term_mode(lua_State* lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
-// register curses
-__tb_extern_c_enter__
-tb_int_t xm_curses_register(lua_State* lua);
-__tb_extern_c_leave__
+// register curses functions
+tb_int_t xm_lua_curses_register(lua_State* lua, tb_char_t const* module);
 #endif
 
 // open cjson
@@ -619,6 +617,13 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
     tb_bool_t ok = tb_false;
     do
     {
+        // get it from the environment variable first
+        if (tb_environment_first("XMAKE_PROGRAM_FILE", path, maxn) && tb_file_info(path, tb_null))
+        {
+            ok = tb_true;
+            break;
+        }
+
 #if defined(TB_CONFIG_OS_WINDOWS)
         // get the executale file path as program directory
         tb_wchar_t buf[TB_PATH_MAXN] = {0};
@@ -647,7 +652,8 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
         tb_uint32_t bufsize = (tb_uint32_t)maxn;
         if (!_NSGetExecutablePath(path, &bufsize))
             ok = tb_true;
-#elif defined(TB_CONFIG_OS_BSD)
+#elif defined(TB_CONFIG_OS_BSD) && defined(KERN_PROC_PATHNAME)
+        // only for freebsd, https://github.com/xmake-io/xmake/issues/2948
         tb_int_t mib[4];  mib[0] = CTL_KERN;  mib[1] = KERN_PROC;  mib[2] = KERN_PROC_PATHNAME;  mib[3] = -1;
         size_t size = maxn;
         if (sysctl(mib, 4, path, &size, tb_null, 0) == 0 && size < maxn)
@@ -662,6 +668,23 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
         {
             path[size] = '\0';
             ok = tb_true;
+        }
+#else
+        static tb_char_t const* s_paths[] =
+        {
+            "~/.local/bin/xmake",
+            "/usr/local/bin/xmake",
+            "/usr/bin/xmake"
+        };
+        for (tb_size_t i = 0; i < tb_arrayn(s_paths); i++)
+        {
+            tb_char_t const* p = s_paths[i];
+            if (tb_file_info(p, tb_null))
+            {
+                tb_strlcpy(path, p, maxn);
+                ok = tb_true;
+                break;
+            }
         }
 #endif
 
@@ -870,8 +893,10 @@ static tb_void_t xm_engine_init_host(xm_engine_t* engine)
         tb_char_t data[64] = {0};
         if (tb_environment_first("MSYSTEM", data, sizeof(data)))
         {
-            // on msys or msys/mingw64 or msys/mingw32?
-            if (!tb_strnicmp(data, "mingw", 5) || !tb_stricmp(data, "msys"))
+            // on msys?
+            if (!tb_strnicmp(data, "mingw", 5) // mingw32/64 on msys2
+                || !tb_strnicmp(data, "clang", 5) // clang32/64 on msys2, @see https://github.com/xmake-io/xmake/issues/3060
+                || !tb_stricmp(data, "msys"))  // on msys2
                 subhost = "msys";
         }
     }
@@ -1081,8 +1106,7 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
         // bind curses
-        xm_curses_register(engine->lua);
-        lua_setglobal(engine->lua, "curses");
+        xm_lua_curses_register(engine->lua, "curses");
 #endif
 
         // bind cjson

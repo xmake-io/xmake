@@ -43,30 +43,19 @@ end
 
 -- get the language configure
 function _instance:get(name)
-
-    -- the info
     local info = self._INFO:info()
-
-    -- get if from info first
     local value = info[name]
     if value ~= nil then
         return value
     end
 
-    -- load _g
     if self._g == nil and info.load ~= nil then
-
-        -- load it
         local ok, results = sandbox.load(info.load)
         if not ok then
             os.raise(results)
         end
-
-        -- save _g
         self._g = results
     end
-
-    -- get it from _g
     return self._g[name]
 end
 
@@ -82,8 +71,6 @@ end
 
 -- get the source extensions
 function _instance:extensions()
-
-    -- attempt to get it from cache
     if self._EXTENSIONS then
         return self._EXTENSIONS
     end
@@ -96,10 +83,7 @@ function _instance:extensions()
         end
     end
 
-    -- cache it
     self._EXTENSIONS = extensions
-
-    -- get it
     return extensions
 end
 
@@ -197,8 +181,6 @@ function _instance:nameflags()
 
     -- cache this results
     self._NAMEFLAGS = results
-
-    -- ok?
     return results
 end
 

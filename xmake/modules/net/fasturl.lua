@@ -21,53 +21,31 @@
 -- imports
 import("ping")
 
--- parse host from url
+-- http[s]://xxx.com/.. or git@git.xxx.com:xxx/xxx.git
 function _parse_host(url)
-
-    -- init host cache
     _g._URLHOSTS = _g._URLHOSTS or {}
-
-    -- http[s]://xxx.com/.. or git@git.xxx.com:xxx/xxx.git
     local host = _g._URLHOSTS[url] or url:match("://(.-)/") or url:match("@(.-):")
-
-    -- save to cache
     _g._URLHOSTS[url] = host
-
-    -- ok
     return host
 end
 
--- add urls
 function add(urls)
-
-    -- get current ping info
     local pinginfo = _g._PINGINFO or {}
-
-    -- add ping hosts
     _g._PINGHOSTS = _g._PINGHOSTS or {}
     for _, url in ipairs(urls) do
-
-        -- parse host
         local host = _parse_host(url)
-
-        -- this host has not been tested?
         if host and not pinginfo[host] then
             table.insert(_g._PINGHOSTS, host)
         end
     end
 end
 
--- sort urls
 function sort(urls)
 
     -- ping hosts
     local pinghosts = table.unique(_g._PINGHOSTS or {})
     if pinghosts and #pinghosts > 0 then
-
-        -- ping them and test speed, enable cache by default
         local pinginfo = ping(pinghosts)
-
-        -- merge to ping info
         _g._PINGINFO = table.join(_g._PINGINFO or {}, pinginfo)
     end
 
@@ -79,10 +57,7 @@ function sort(urls)
         return a < b
     end)
 
-    -- clear hosts
     _g._PINGHOSTS = {}
-
-    -- ok
     return urls
 end
 

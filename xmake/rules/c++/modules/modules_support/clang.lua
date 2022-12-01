@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.tool.compiler")
 import("core.project.project")
 import("core.project.depend")
@@ -65,21 +66,41 @@ end
 
 -- load module support for the current target
 function load(target)
-    -- get module and module cache flags
     local modulesflag = get_modulesflag(target)
     local builtinmodulemapflag = get_builtinmodulemapflag(target)
     local implicitmodulesflag = get_implicitmodulesflag(target)
-    local noimplicitmodulemapsflag = get_noimplicitmodulemapsflag(target)
 
     -- add module flags
     target:add("cxxflags", modulesflag)
-
-    -- add the module cache directory
     target:add("cxxflags", builtinmodulemapflag, {force = true})
     target:add("cxxflags", implicitmodulesflag, {force = true})
-    target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
 
-    target:data_set("cxx.modules.use_libc++", table.contains(target:get("cxxflags"), "-stdlib=libc++"))
+    -- fix default visibility for functions and variables [-fvisibility] differs in PCH file vs. current file
+    -- module.pcm cannot be loaded due to a configuration mismatch with the current compilation.
+    --
+    -- it will happen in binary target depend ont shared target with modules, and enable release mode at same time.
+    local dep_symbols
+    local has_shared_deps = false
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:is_shared() then
+            dep_symbols = dep:get("symbols")
+            has_shared_deps = true
+            break
+        end
+    end
+    if has_shared_deps then
+        target:set("symbols", dep_symbols and dep_symbols or "none")
+    end
+
+    -- if use libc++, we need install libc++ and libc++abi
+    --
+    -- on ubuntu:
+    -- sudo apt install libc++-dev libc++abi-15-dev
+    --
+    target:data_set("cxx.modules.use_libc++", table.contains(target:get("cxxflags"), "-stdlib=libc++", "clang::-stdlib=libc++"))
+    if target:data("cxx.modules.use_libc++") then
+        target:add("syslinks", "c++")
+    end
 end
 
 -- get includedirs for stl headers
@@ -89,9 +110,13 @@ end
 -- # 58 "/usr/include/c++/11/vector" 3
 -- # 59 "/usr/include/c++/11/vector" 3
 --
-function _get_toolchain_includedirs_for_stlheaders(includedirs, clang)
+function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     local tmpfile = os.tmpfile() .. ".cc"
     io.writefile(tmpfile, "#include <vector>")
+    local argv = {"-E", "-x", "c++", tmpfile}
+    if target:data("cxx.modules.use_libc++") then
+        table.insert(argv, 1, "-stdlib=libc++")
+    end
     local result = try {function () return os.iorunv(clang, {"-E", "-x", "c++", tmpfile}) end}
     if result then
         for _, line in ipairs(result:split("\n", {plain = true})) do
@@ -108,14 +133,55 @@ function _get_toolchain_includedirs_for_stlheaders(includedirs, clang)
     os.tryrm(tmpfile)
 end
 
+-- build module file
+function _build_modulefile(target, sourcefile, opt)
+    local objectfile = opt.objectfile
+    local dependfile = opt.dependfile
+    local compinst = compiler.load("cxx", {target = target})
+    local compflags = compinst:compflags({target = target})
+    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+
+    -- need build this object?
+    local dryrun = option.get("dry-run")
+    local depvalues = {compinst:program(), compflags}
+    local lastmtime = os.isfile(objectfile) and os.mtime(dependfile) or 0
+    if not dryrun and not depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
+        return
+    end
+
+    local bmifile = opt.bmifile
+    local common_args = opt.common_args
+    local requiresflags = opt.requiresflags
+    local bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags or {})
+    local objflags = table.join(compflags, common_args, requiresflags or {})
+
+    -- trace
+    progress.show(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", opt.name)
+    vprint(compinst:compcmd(sourcefile, bmifile, {compflags = bmiflags, rawargs = true}))
+    vprint(compinst:compcmd(bmifile, objectfile, {compflags = objflags, rawargs = true}))
+
+    if not dryrun then
+
+        -- do compile
+        dependinfo.files = {}
+        assert(compinst:compile(sourcefile, bmifile, {dependinfo = dependinfo, compflags = bmiflags}))
+        assert(compinst:compile(bmifile, objectfile, {compflags = objflags}))
+
+        -- update files and values to the dependent file
+        dependinfo.values = depvalues
+        table.join2(dependinfo.files, sourcefile)
+        depend.save(dependinfo, dependfile)
+    end
+end
+
 -- provide toolchain include directories for stl headerunit when p1689 is not supported
 function toolchain_includedirs(target)
     local includedirs = _g.includedirs
     if includedirs == nil then
         includedirs = {}
-        local clang, toolname = target:tool("cc")
+        local clang, toolname = target:tool("cxx")
         assert(toolname == "clang")
-        _get_toolchain_includedirs_for_stlheaders(includedirs, clang)
+        _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
         local _, result = try {function () return os.iorunv(clang, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
@@ -378,20 +444,15 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         requiresflags = get_requiresflags(target, module.requires)
                     end
 
-                    depend.on_changed(function()
-                        progress.show((index * 100) / total, "${color.build.object}generating.cxx.module.bmi %s", name)
-                        local bmidir = path.directory(bmifile)
-                        if not os.isdir(bmidir) then
-                            os.mkdir(bmidir)
-                        end
-                        local objectdir = path.directory(objectfile)
-                        if not os.isdir(objectdir) then
-                            os.mkdir(objectdir)
-                        end
-                        local args = { "-c", "-x", "c++-module", "--precompile", provide.sourcefile, "-o", bmifile}
-                        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, args))
-                        os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, {bmifile}, {"-c", "-o", objectfile}))
-                    end, {dependfile = target:dependfile(bmifile), files = {provide.sourcefile}})
+                    _build_modulefile(target, provide.sourcefile, {
+                        objectfile = objectfile,
+                        dependfile = target:dependfile(bmifile),
+                        bmifile = bmifile,
+                        name = name,
+                        common_args = common_args,
+                        requiresflags = requiresflags,
+                        progress = (index * 100) / total})
+
                     _add_module_to_mapper(target, name, bmifile, requiresflags)
                 end)
                 if module.requires then
@@ -496,11 +557,15 @@ end
 function get_builtinmodulemapflag(target)
     local builtinmodulemapflag = _g.builtinmodulemapflag
     if builtinmodulemapflag == nil then
-        local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fbuiltin-module-map", "cxxflags", {flagskey = "clang_builtin_module_map"}) then
-            builtinmodulemapflag = "-fbuiltin-module-map"
+        -- this flag seems clang on mingw doesn't distribute it
+        -- @see https://github.com/xmake-io/xmake/pull/2833
+        if not target:is_plat("mingw") then
+            local compinst = target:compiler("cxx")
+            if compinst:has_flags("-fbuiltin-module-map", "cxxflags", {flagskey = "clang_builtin_module_map"}) then
+                builtinmodulemapflag = "-fbuiltin-module-map"
+            end
+            assert(builtinmodulemapflag, "compiler(clang): does not support c++ module!")
         end
-        assert(builtinmodulemapflag, "compiler(clang): does not support c++ module!")
         _g.builtinmodulemapflag = builtinmodulemapflag or false
     end
     return builtinmodulemapflag or nil

@@ -504,7 +504,7 @@ PDSM_FAILOVER_GROUP
 DsmpGetPath(
     _In_ IN PDSM_CONTEXT DsmContext,
     _In_ IN PDSM_IDS DsmList,
-    _In_ IN PSCSI_REQUEST_BLOCK Srb,    
+    _In_ IN PSCSI_REQUEST_BLOCK Srb,
     _In_ IN ULONG SpecialHandlingFlag
     );
 
@@ -1415,7 +1415,7 @@ Return Value:
 
         case STATUS_INVALID_DEVICE_REQUEST:
             return SRB_STATUS_BAD_FUNCTION;
- 
+
         case STATUS_INSUFFICIENT_RESOURCES:
             return SRB_STATUS_INTERNAL_ERROR;
 

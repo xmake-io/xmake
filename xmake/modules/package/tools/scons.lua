@@ -63,7 +63,7 @@ function buildenvs(package, opt)
     end
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
-    for _, dep in ipairs(package:orderdeps()) do
+    for _, dep in ipairs(package:librarydeps()) do
         local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
         if os.isdir(pkgconfig) then
             table.insert(PKG_CONFIG_PATH, pkgconfig)

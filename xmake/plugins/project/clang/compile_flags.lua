@@ -24,23 +24,19 @@ import("core.project.project")
 import("core.language.language")
 
 -- make the object
-function _make_object(target, sourcefile, objectfile)
+function _make_object(target, flags, sourcefile, objectfile)
 
     -- get the source file kind
     local sourcekind = language.sourcekind_of(sourcefile)
-
-    -- make the object for the *.o/obj? ignore it directly
-    if sourcekind == "obj" or sourcekind == "lib" then
-        return
-    end
 
     -- get compile arguments
     local arguments = compiler.compflags(sourcefile, {target = target})
     for i, flag in ipairs(arguments) do
         -- only export the -I*/-D* flags
-        if not g_flags[flag] and string.find(flag, '^-[ID]') then
-            g_flags[flag] = true
-            table.insert(g_flags, flag)
+        if flag == "-I" or flag == "/I" or flag == "-isystem" then
+            table.insert(flags, flag .. arguments[i + 1])
+        elseif flag:find('^-[ID]') or flag:find("-isystem", 1, true) then
+            table.insert(flags, flag)
         end
     end
 
@@ -49,14 +45,14 @@ function _make_object(target, sourcefile, objectfile)
 end
 
 -- make objects
-function _make_objects(target, sourcekind, sourcebatch)
+function _make_objects(target, flags, sourcekind, sourcebatch)
     for index, objectfile in ipairs(sourcebatch.objectfiles) do
-        _make_object(target, sourcebatch.sourcefiles[index], objectfile)
+        _make_object(target, flags, sourcebatch.sourcefiles[index], objectfile)
     end
 end
 
 -- make target
-function _make_target(target)
+function _make_target(target, flags)
 
     -- TODO
     -- disable precompiled header first
@@ -67,19 +63,20 @@ function _make_target(target)
     for _, sourcebatch in pairs(target:sourcebatches()) do
         local sourcekind = sourcebatch.sourcekind
         if sourcekind then
-            _make_objects(target, sourcekind, sourcebatch)
+            _make_objects(target, flags, sourcekind, sourcebatch)
         end
     end
 end
 
 -- make all
-function _make_all()
+function _make_all(flags)
     _g.firstline = true
     for _, target in pairs(project.targets()) do
         if not target:is_phony() and target:is_default() then
-            _make_target(target)
+            _make_target(target, flags)
         end
     end
+    return table.unique(flags)
 end
 
 -- generate compilation databases for clang-based tools(compile_flags.txt)
@@ -93,12 +90,12 @@ function make(outputdir)
     local oldir = os.cd(os.projectdir())
 
     -- make all
-    g_flags = {}
-    _make_all()
+    local flags = {}
+    flags = _make_all(flags)
 
     -- write to file
     local flagfile = io.open(path.join(outputdir, "compile_flags.txt"), "w")
-    for i, flag in ipairs(g_flags) do
+    for i, flag in ipairs(flags) do
         flagfile:write(flag, '\n')
     end
     flagfile:close()

@@ -27,6 +27,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.tool.compiler")
 import("core.tool.linker")
+import("core.tool.toolchain")
 import("core.cache.memcache")
 import("core.cache.localcache")
 import("lib.detect.find_tool")
@@ -34,39 +35,7 @@ import("private.action.run.make_runenvs")
 import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
-
--- escape special chars in msbuild file
-function _escape(str)
-    if not str then
-        return nil
-    end
-
-    local map =
-    {
-         ["%"] = "%25" -- Referencing metadata
-    ,    ["$"] = "%24" -- Referencing properties
-    ,    ["@"] = "%40" -- Referencing item lists
-    ,    ["'"] = "%27" -- Conditions and other expressions
-    ,    [";"] = "%3B" -- List separator
-    ,    ["?"] = "%3F" -- Wildcard character for file names in Include and Exclude attributes
-    ,    ["*"] = "%2A" -- Wildcard character for use in file names in Include and Exclude attributes
-    -- html entities
-    ,    ["\""] = "&quot;"
-    ,    ["<"] = "&lt;"
-    ,    [">"] = "&gt;"
-    ,    ["&"] = "&amp;"
-    }
-
-    return (string.gsub(str, "[%%%$@';%?%*\"<>&]", function (c) return assert(map[c]) end))
-end
-
-function _vs_arch(arch)
-    if arch == 'x86' or arch == 'i386' then return "Win32" end
-    if arch == 'x86_64' then return "x64" end
-    if arch:startswith('arm64') then return "ARM64" end
-    if arch:startswith('arm') then return "ARM" end
-    return arch
-end
+import("vstudio.impl.vsutils", {rootdir = path.join(os.programdir(), "plugins", "project")})
 
 -- strip dot directories, e.g. ..\..\.. => ..
 -- @see https://github.com/xmake-io/xmake/issues/2039
@@ -90,11 +59,11 @@ function _make_dirs(dir)
         end
         if path.is_absolute(dir) then
             if dir:startswith(project.directory()) then
-                return path.join("$(XmakeProjectDir)", _escape(path.relative(dir, project.directory())))
+                return path.join("$(XmakeProjectDir)", vsutils.escape(path.relative(dir, project.directory())))
             end
-            return _escape(dir)
+            return vsutils.escape(dir)
         end
-        return path.join("$(XmakeProjectDir)", _escape(dir))
+        return path.join("$(XmakeProjectDir)", vsutils.escape(dir))
     end
     local r = {}
     for k, v in ipairs(dir) do
@@ -109,7 +78,7 @@ function _make_arrs(arr)
         return ""
     end
     if type(arr) == "string" then
-        return _escape(arr)
+        return vsutils.escape(arr)
     end
     local r = {}
     for k, v in ipairs(arr) do
@@ -137,7 +106,7 @@ function _make_targetinfo(mode, arch, target)
         mode = mode
     ,   arch = arch
     ,   plat = config.get("plat")
-    ,   vsarch = _vs_arch(arch)
+    ,   vsarch = vsutils.vsarch(arch)
     ,   sdkver = config.get("vs_sdkver")
     }
 
@@ -151,8 +120,8 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.default       = tostring(target:is_default())
 
     -- save target file
-    targetinfo.basename      = _escape(target:basename())
-    targetinfo.filename      = _escape(target:filename())
+    targetinfo.basename      = vsutils.escape(target:basename())
+    targetinfo.filename      = vsutils.escape(target:filename())
 
     -- save dirs
     targetinfo.targetdir     = _make_dirs(target:get("targetdir"))
@@ -192,24 +161,24 @@ function _make_targetinfo(mode, arch, target)
     -- save runenvs
     local runenvs = {}
     local addrunenvs, setrunenvs = make_runenvs(target)
-    for k, v in pairs(target:pkgenvs()) do
+    for k, v in table.orderpairs(target:pkgenvs()) do
         addrunenvs = addrunenvs or {}
         addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
     end
     for _, dep in ipairs(target:orderdeps()) do
-        for k, v in pairs(dep:pkgenvs()) do
+        for k, v in table.orderpairs(dep:pkgenvs()) do
             addrunenvs = addrunenvs or {}
             addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
         end
     end
-    for k, v in pairs(addrunenvs) do
+    for k, v in table.orderpairs(addrunenvs) do
         if k:upper() == "PATH" then
             runenvs[k] = _make_dirs(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
             runenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
         end
     end
-    for k, v in pairs(setrunenvs) do
+    for k, v in table.orderpairs(setrunenvs) do
         if #v == 1 then
             v = v[1]
             if path.is_absolute(v) and v:startswith(project.directory()) then
@@ -222,7 +191,7 @@ function _make_targetinfo(mode, arch, target)
         end
     end
     local runenvstr = {}
-    for k, v in pairs(runenvs) do
+    for k, v in table.orderpairs(runenvs) do
         table.insert(runenvstr, k .. "=" .. v)
     end
     targetinfo.runenvs = table.concat(runenvstr, "\n")
@@ -288,7 +257,15 @@ function _make_vsinfo_archs()
             end
         end
         if not vsinfo_archs then
-            vsinfo_archs = platform.archs()
+            local default_archs = toolchain.load("msvc"):config("vcarchs")
+            if not default_archs then
+                default_archs = platform.archs()
+            end
+            if default_archs then
+                default_archs = hashset.from(table.wrap(default_archs))
+                default_archs:remove("arm64")
+                vsinfo_archs = default_archs:to_array()
+            end
         end
     end
     if not vsinfo_archs or #vsinfo_archs == 0 then
@@ -300,23 +277,21 @@ end
 function _make_vsinfo_groups()
     local groups = {}
     local group_deps = {}
-    for targetname, target in pairs(project.targets()) do
-        if not target:is_phony() then
-            local group_path = target:get("group")
-            if group_path then
-                local group_name = path.filename(group_path)
-                local group_names = path.split(group_path)
-                for idx, name in ipairs(group_names) do
-                    local group = groups["group." .. name] or {}
-                    group.group = name
-                    group.group_id = hash.uuid4("group." .. name)
-                    if idx > 1 then
-                        group_deps["group_dep." .. name] = {current_id = group.group_id, parent_id = hash.uuid4(group_names[idx - 1])}
-                    end
-                    groups["group." .. name] = group
+    for targetname, target in table.orderpairs(project.targets()) do
+        local group_path = target:get("group")
+        if group_path then
+            local group_name = path.filename(group_path)
+            local group_names = path.split(group_path)
+            for idx, name in ipairs(group_names) do
+                local group = groups["group." .. name] or {}
+                group.group = name
+                group.group_id = hash.uuid4("group." .. name)
+                if idx > 1 then
+                    group_deps["group_dep." .. name] = {current_id = group.group_id, parent_id = hash.uuid4("group." .. group_names[idx - 1])}
                 end
-                group_deps["group_dep.target." .. targetname] = {current_id = hash.uuid4(targetname), parent_id = groups["group." .. group_name].group_id}
+                groups["group." .. name] = group
             end
+            group_deps["group_dep.target." .. targetname] = {current_id = hash.uuid4(targetname), parent_id = groups["group." .. group_name].group_id}
         end
     end
     return groups, group_deps
@@ -341,6 +316,45 @@ function _config_targets()
     for _, target in ipairs(project.ordertargets()) do
         if target:is_enabled() then
             _config_target(target)
+        end
+    end
+end
+
+-- load rules in the required packages for target
+function _load_package_rules_for_target(target)
+    for _, rulename in ipairs(target:get("rules")) do
+        local packagename = rulename:match("@(.-)/")
+        if packagename then
+            local pkginfo = project.required_package(packagename)
+            if pkginfo then
+                local r = pkginfo:rule(rulename)
+                if r then
+                    target:rule_add(r)
+                    for _, dep in pairs(r:deps()) do
+                        target:rule_add(dep)
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- load rules in the required packages for targets
+-- @see https://github.com/xmake-io/xmake/issues/2374
+--
+-- @code
+-- add_requires("zlib", {system = false})
+-- target("test")
+--    set_kind("binary")
+--    add_files("src/*.cpp")
+--    add_packages("zlib")
+--    add_rules("@zlib/test")
+-- @endcode
+--
+function _load_package_rules_for_targets()
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _load_package_rules_for_target(target)
         end
     end
 end
@@ -433,7 +447,7 @@ function main(outputdir, vsinfo)
 
     -- init config flags
     local flags = {}
-    for k, v in pairs(localcache.get("config", "options")) do
+    for k, v in table.orderpairs(localcache.get("config", "options")) do
         if k ~= "plat" and k ~= "mode" and k ~= "arch" and k ~= "clean" and k ~= "buildir" then
             table.insert(flags, "--" .. k .. "=" .. tostring(v))
         end
@@ -479,6 +493,9 @@ function main(outputdir, vsinfo)
             -- install and update requires
             install_requires()
 
+            -- load package rules for targets
+            _load_package_rules_for_targets()
+
             -- config targets
             _config_targets()
 
@@ -490,7 +507,7 @@ function main(outputdir, vsinfo)
             os.cd(project.directory())
 
             -- save targets
-            for targetname, target in pairs(project.targets()) do
+            for targetname, target in table.orderpairs(project.targets()) do
 
                 -- https://github.com/xmake-io/xmake/issues/2337
                 target:data_set("plugin.project.kind", "vsxmake")
@@ -520,6 +537,10 @@ function main(outputdir, vsinfo)
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
+                -- sort them to stabilize generation
+                table.sort(_target.sourcefiles)
+                table.sort(_target.headerfiles)
+
                 -- save file groups
                 _target.filegroups = target:get("filegroups")
                 _target.filegroups_extraconf = target:extraconf("filegroups")
@@ -530,7 +551,7 @@ function main(outputdir, vsinfo)
         end
     end
     os.cd(oldir)
-    for _, target in pairs(targets) do
+    for _, target in table.orderpairs(targets) do
         target._paths = {}
         local dirs = {}
         local projectdir = project.directory()
@@ -539,18 +560,18 @@ function main(outputdir, vsinfo)
         target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, projectdir) end)
         for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
             local dir = _make_filter(f, target, root)
-            local escaped_f = _escape(f)
+            local escaped_f = vsutils.escape(f)
             target._paths[f] =
             {
                 -- @see https://github.com/xmake-io/xmake/issues/2077
                 path = path.is_absolute(escaped_f) and escaped_f or "$(XmakeProjectDir)\\" .. escaped_f,
-                dir = _escape(dir)
+                dir = vsutils.escape(dir)
             }
             while dir and dir ~= "." do
                 if not dirs[dir] then
                     dirs[dir] =
                     {
-                        dir = _escape(dir),
+                        dir = vsutils.escape(dir),
                         dir_id = hash.uuid4(dir)
                     }
                 end

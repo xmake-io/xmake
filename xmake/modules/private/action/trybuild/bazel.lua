@@ -26,7 +26,7 @@ import("lib.detect.find_tool")
 
 -- detect build-system and configuration file
 function detect()
-    return find_file("BUILD", os.curdir())
+    return find_file("BUILD", os.curdir()) or find_file("BUILD.bazel", os.curdir())
 end
 
 -- do clean

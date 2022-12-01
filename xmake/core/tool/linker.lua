@@ -103,15 +103,11 @@ function linker._load_tool(targetkind, sourcekinds, target)
     if not linkerinfo then
         return nil, firsterror
     end
-
-    -- done
     return linkertool, linkerinfo
 end
 
 -- load the linker from the given target kind
 function linker.load(targetkind, sourcekinds, target)
-
-    -- check
     assert(sourcekinds)
 
     -- wrap sourcekinds first

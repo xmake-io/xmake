@@ -8,7 +8,7 @@ Module Name:
 
 Abstract:
 
-    This module contains implementations for the functions and methods 
+    This module contains implementations for the functions and methods
     used for providing COM support.
 
 Environment:
@@ -33,7 +33,7 @@ CUnknown::CUnknown(
   Routine Description:
 
     Constructor for an instance of the CUnknown class.  This simply initializes
-    the reference count of the object to 1.  The caller is expected to 
+    the reference count of the object to 1.  The caller is expected to
     call Release() if it wants to delete the object once it has been allocated.
 
   Arguments:
@@ -56,11 +56,11 @@ CUnknown::QueryInterface(
     _Out_ PVOID *Object
     )
 /*++
- 
+
   Routine Description:
 
     This method provides the basic support for query interface on CUnknown.
-    If the interface requested is IUnknown it references the object and 
+    If the interface requested is IUnknown it references the object and
     returns an interface pointer.  Otherwise it returns an error.
 
   Arguments:
@@ -92,10 +92,10 @@ CUnknown::QueryIUnknown(
     VOID
     )
 /*++
- 
+
   Routine Description:
 
-    This helper method references the object and returns a pointer to the 
+    This helper method references the object and returns a pointer to the
     object's IUnknown interface.
 
     This allows other methods to convert a CUnknown pointer into an IUnknown
@@ -122,7 +122,7 @@ CUnknown::AddRef(
     VOID
     )
 /*++
- 
+
   Routine Description:
 
     This method adds one to the object's reference count.
@@ -148,7 +148,7 @@ CUnknown::Release(
     VOID
    )
 /*++
- 
+
   Routine Description:
 
     This method subtracts one to the object's reference count.  If the count
@@ -161,8 +161,8 @@ CUnknown::Release(
   Return Value:
 
     The new reference count.   If the caller uses this value it should only be
-    to check for zero (i.e. this call caused or will cause deletion) or 
-    non-zero (i.e. some other call may have caused deletion, but this one 
+    to check for zero (i.e. this call caused or will cause deletion) or
+    non-zero (i.e. some other call may have caused deletion, but this one
     didn't).
 
 --*/
@@ -191,14 +191,14 @@ CClassFactory::QueryIClassFactory(
     VOID
     )
 /*++
- 
+
   Routine Description:
 
-    This helper method references the object and returns a pointer to the 
+    This helper method references the object and returns a pointer to the
     object's IClassFactory interface.
 
-    This allows other methods to convert a CClassFactory pointer into an 
-    IClassFactory pointer without a typecast and without dealing with the 
+    This allows other methods to convert a CClassFactory pointer into an
+    IClassFactory pointer without a typecast and without dealing with the
     return value QueryInterface.
 
   Arguments:
@@ -221,7 +221,7 @@ CClassFactory::QueryInterface(
     _Out_ PVOID *Object
     )
 /*++
- 
+
   Routine Description:
 
     This method attempts to retrieve the requested interface from the object.
@@ -268,7 +268,7 @@ CClassFactory::CreateInstance(
     _Out_ PVOID *Object
     )
 /*++
- 
+
   Routine Description:
 
     This COM method is the factory routine - it creates instances of the driver
@@ -279,7 +279,7 @@ CClassFactory::CreateInstance(
     OuterObject - only used for aggregation, which our driver callback class
                   does not support.
 
-    InterfaceId - the interface ID the caller would like to get from our 
+    InterfaceId - the interface ID the caller would like to get from our
                   new object.
 
     Object - a location to store the referenced interface pointer to the new
@@ -299,7 +299,7 @@ CClassFactory::CreateInstance(
 
     hr = CMyDriver::CreateInstance(&driver);
 
-    if (SUCCEEDED(hr)) 
+    if (SUCCEEDED(hr))
     {
         hr = driver->QueryInterface(InterfaceId, Object);
         driver->Release();
@@ -314,11 +314,11 @@ CClassFactory::LockServer(
     _In_ BOOL Lock
     )
 /*++
- 
+
   Routine Description:
 
     This COM method can be used to keep the DLL in memory.  However since the
-    driver's DllCanUnloadNow function always returns false, this has little 
+    driver's DllCanUnloadNow function always returns false, this has little
     effect.  Still it tracks the number of lock and unlock operations.
 
   Arguments:
@@ -334,8 +334,8 @@ CClassFactory::LockServer(
     if (Lock)
     {
         InterlockedIncrement(&s_LockCount);
-    } 
-    else 
+    }
+    else
     {
         InterlockedDecrement(&s_LockCount);
     }

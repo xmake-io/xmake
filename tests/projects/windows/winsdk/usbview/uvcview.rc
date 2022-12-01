@@ -121,12 +121,12 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRINGBASE              "Base string"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STANDARD_FONT           "Courier"
     IDS_STANDARD_FONT_HEIGHT    "\13"
@@ -148,5 +148,5 @@ BEGIN
     IDS_USBVIEW_INTERNAL_ERROR      "An internal error occured, please report this as a bug\n"
     IDS_USBVIEW_SAVED_TO            "Usbview information saved to file : [%1]\n"
     IDS_USBVIEW_INVALID_FILENAME    "The argument : [%1] is invalid or incomplete.\n"
-END 
+END
 

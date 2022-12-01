@@ -1,10 +1,11 @@
 module;
 #include <cstdio>
+import "header.hpp";
 
 export module hello;
 
 export namespace hello {
     void say(const char *arg) {
-        printf("%s\n", arg);
+        printf("%s: %s\n", FOO, arg);
     }
 }

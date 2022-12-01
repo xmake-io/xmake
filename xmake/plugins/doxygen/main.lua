@@ -22,23 +22,42 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
-import("detect.tools.find_doxygen")
+import("lib.detect.find_tool")
+import("private.action.require.impl.packagenv")
+import("private.action.require.impl.install_packages")
 
 -- main
 function main()
 
+    -- load configuration
+    config.load()
+
+    -- enter the environments of doxygen
+    local oldenvs = packagenv.enter("doxygen")
+
     -- find doxygen
-    local doxygen = find_doxygen()
+    local packages = {}
+    local doxygen = find_tool("doxygen")
+    if not doxygen then
+        table.join2(packages, install_packages("doxygen"))
+    end
+
+    -- enter the environments of installed packages
+    for _, instance in ipairs(packages) do
+        instance:envs_enter()
+    end
+
+    -- we need force to detect and flush detect cache after loading all environments
+    if not doxygen then
+        doxygen = find_tool("doxygen", {force = true})
+    end
     assert(doxygen, "doxygen not found!")
 
     -- generate doxyfile first
     local doxyfile = path.join(os.tmpdir(), "doxyfile")
 
     -- generate the default doxyfile
-    os.run("%s -g %s", doxygen, doxyfile)
-
-    -- load configure
-    config.load()
+    os.vrunv(doxygen.program, {"-g", doxyfile})
 
     -- enable recursive
     --
@@ -61,11 +80,7 @@ function main()
     --
     local outputdir = option.get("outputdir") or config.get("buildir") or "build"
     if outputdir then
-
-        -- update the doxyfile
         io.gsub(doxyfile, "OUTPUT_DIRECTORY%s-=.-\n", format("OUTPUT_DIRECTORY = %s\n", outputdir))
-
-        -- ensure the output directory
         os.mkdir(outputdir)
     end
 
@@ -90,23 +105,14 @@ function main()
     -- check
     assert(os.isfile(doxyfile), "%s not found!", doxyfile)
 
-    -- enter the project directory
-    os.cd(project.directory())
-
     -- trace
     cprint("generating ..${beer}")
 
     -- generate document
-    if option.get("verbose") then
-        os.exec("%s %s", doxygen, doxyfile)
-    else
-        os.run("%s %s", doxygen, doxyfile)
-    end
-
-    -- leave the project directory
-    os.cd("-")
+    os.vrunv(doxygen.program, {doxyfile}, {curdir = project.directory()})
 
     -- trace
     cprint("${bright green}result: ${default green}%s/html/index.html", outputdir)
     cprint("${color.success}doxygen ok!")
+    os.setenvs(oldenvs)
 end

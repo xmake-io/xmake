@@ -65,6 +65,8 @@ function menu_options()
         {nil, "xcode_sdkver",  "kv", nil, "The SDK Version for Xcode"        },
         {nil, "target_minver", "kv", nil, "The Target Minimal Version"       },
         {nil, "appledev",      "kv", nil, "The Apple Device Type"            },
+        {category = "Debug Configuration"                                    },
+        {'d', "debugdir",      "kv", nil, "The source directory of the current package for debugging. It will enable --force/--shallow by default."},
         {category = "Other Configuration"                                    },
         {nil, "force",         "k",  nil, "Force to reinstall all package dependencies."},
         {nil, "shallow",       "k",  nil, "Does not install dependent packages."},
@@ -124,6 +126,7 @@ function _install_packages(packages)
     if packagefile then
         subdir = subdir .. "-" .. hash.uuid(packagefile):split('-')[1]
     end
+    local origindir = os.curdir()
     local workdir = path.join(os.tmpdir(), "xrepo", subdir)
     if not os.isdir(workdir) then
         os.mkdir(workdir)
@@ -142,11 +145,8 @@ function _install_packages(packages)
 
     -- do configure first
     local config_argv = {"f", "-c", "--require=n"}
-    if option.get("verbose") then
-        table.insert(config_argv, "-v")
-    end
     if option.get("diagnosis") then
-        table.insert(config_argv, "-D")
+        table.insert(config_argv, "-vD")
     end
     if option.get("plat") then
         table.insert(config_argv, "-p")
@@ -228,22 +228,28 @@ function _install_packages(packages)
     if option.get("linkjobs") then
         table.insert(require_argv, "--linkjobs=" .. option.get("linkjobs"))
     end
-    if option.get("force") then
+    local is_debug = false
+    local sourcedir = option.get("debugdir")
+    if sourcedir then
+        is_debug = true
+        table.insert(require_argv, "--debugdir=" .. path.absolute(sourcedir, origindir))
+    end
+    if option.get("force") or is_debug then
         table.insert(require_argv, "--force")
     end
-    if option.get("shallow") then
+    if option.get("shallow") or is_debug then
         table.insert(require_argv, "--shallow")
     end
-    if option.get("build") then
+    if option.get("build") or is_debug then
         table.insert(require_argv, "--build")
     end
     local extra = {system = false}
     if mode == "debug" then
         extra.debug = true
     end
-    if kind == "shared" then
+    if option.get("kind") then
         extra.configs = extra.configs or {}
-        extra.configs.shared = true
+        extra.configs.shared = kind == "shared"
     end
     local configs = option.get("configs")
     if configs then

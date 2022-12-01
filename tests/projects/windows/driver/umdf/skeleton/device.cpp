@@ -1,5 +1,5 @@
 /*++
- 
+
 Copyright (C) Microsoft Corporation, All Rights Reserved.
 
 Module Name:
@@ -31,10 +31,10 @@ CMyDevice::CreateInstance(
     _Out_ PCMyDevice *Device
     )
 /*++
- 
+
   Routine Description:
 
-    This method creates and initializs an instance of the skeleton driver's 
+    This method creates and initializs an instance of the skeleton driver's
     device callback object.
 
   Arguments:
@@ -69,11 +69,11 @@ CMyDevice::CreateInstance(
 
     hr = device->Initialize(FxDriver, FxDeviceInit);
 
-    if (SUCCEEDED(hr)) 
+    if (SUCCEEDED(hr))
     {
         *Device = device;
-    } 
-    else 
+    }
+    else
     {
         device->Release();
     }
@@ -87,7 +87,7 @@ CMyDevice::Initialize(
     _In_ IWDFDeviceInitialize * FxDeviceInit
     )
 /*++
- 
+
   Routine Description:
 
     This method initializes the device callback object and creates the
@@ -96,7 +96,7 @@ CMyDevice::Initialize(
     The method should perform any device-specific configuration that:
         *  could fail (these can't be done in the constructor)
         *  must be done before the partner object is created -or-
-        *  can be done after the partner object is created and which aren't 
+        *  can be done after the partner object is created and which aren't
            influenced by any device-level parameters the parent (the driver
            in this case) might set.
 
@@ -114,7 +114,7 @@ CMyDevice::Initialize(
     HRESULT hr;
 
     //
-    // Configure things like the locking model before we go to create our 
+    // Configure things like the locking model before we go to create our
     // partner device.
     //
 
@@ -125,24 +125,24 @@ CMyDevice::Initialize(
     FxDeviceInit->SetLockingConstraint(None);
 
     //
-    // TODO: If you're writing a filter driver then indicate that here. 
+    // TODO: If you're writing a filter driver then indicate that here.
     //
     // FxDeviceInit->SetFilter();
     //
-        
+
     //
-    // TODO: Any per-device initialization which must be done before 
+    // TODO: Any per-device initialization which must be done before
     //       creating the partner object.
     //
 
     //
-    // Create a new FX device object and assign the new callback object to 
+    // Create a new FX device object and assign the new callback object to
     // handle any device level events that occur.
     //
 
     //
     // QueryIUnknown references the IUnknown interface that it returns
-    // (which is the same as referencing the device).  We pass that to 
+    // (which is the same as referencing the device).  We pass that to
     // CreateDevice, which takes its own reference if everything works.
     //
 
@@ -158,13 +158,13 @@ CMyDevice::Initialize(
     // If that succeeded then set our FxDevice member variable.
     //
 
-    if (SUCCEEDED(hr)) 
+    if (SUCCEEDED(hr))
     {
         m_FxDevice = fxDevice;
 
         //
         // Drop the reference we got from CreateDevice.  Since this object
-        // is partnered with the framework object they have the same 
+        // is partnered with the framework object they have the same
         // lifespan - there is no need for an additional reference.
         //
 
@@ -179,11 +179,11 @@ CMyDevice::Configure(
     VOID
     )
 /*++
- 
+
   Routine Description:
 
-    This method is called after the device callback object has been initialized 
-    and returned to the driver.  It would setup the device's queues and their 
+    This method is called after the device callback object has been initialized
+    and returned to the driver.  It would setup the device's queues and their
     corresponding callback objects.
 
   Arguments:
@@ -209,16 +209,16 @@ CMyDevice::QueryInterface(
     _Out_ PVOID *Object
     )
 /*++
- 
+
   Routine Description:
 
     This method is called to get a pointer to one of the object's callback
-    interfaces.  
+    interfaces.
 
     Since the skeleton driver doesn't support any of the device events, this
     method simply calls the base class's BaseQueryInterface.
 
-    If the skeleton is extended to include device event interfaces then this 
+    If the skeleton is extended to include device event interfaces then this
     method must be changed to check the IID and return pointers to them as
     appropriate.
 

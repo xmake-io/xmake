@@ -3,8 +3,8 @@
 _realname=xmake
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=2.3.1
-pkgrel=2
+pkgver=2.7.1
+pkgrel=1
 pkgdesc="A make-like build utility based on Lua (mingw-w64)"
 arch=('any')
 url="https://github.com/xmake-io/xmake"

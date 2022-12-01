@@ -24,7 +24,7 @@ Environment:
 #endif
 
 //
-// Include the WUDF DDI 
+// Include the WUDF DDI
 //
 
 #include "wudfddi.h"

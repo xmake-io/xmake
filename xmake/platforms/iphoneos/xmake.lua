@@ -21,12 +21,7 @@
 platform("iphoneos")
     set_os("ios")
     set_hosts("macosx")
-
-    if os.arch() == "arm64" then -- on apple m1 device
-        set_archs("arm64", "x86_64")
-    else
-        set_archs("arm64", "armv7", "armv7s", "i386", "x86_64")
-    end
+    set_archs("arm64", "x86_64")
 
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")

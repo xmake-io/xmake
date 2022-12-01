@@ -51,6 +51,7 @@ function _option_filter(name)
     ,   require     = true
     ,   export      = true
     ,   import      = true
+    ,   check       = true
     }
     return not options[name]
 end
@@ -65,7 +66,7 @@ function _need_check(changed)
 
     -- clean?
     if not changed then
-        changed = option.get("clean")
+        changed = option.get("clean") or option.get("check")
     end
 
     -- check for all project files
@@ -193,6 +194,45 @@ function _config_targets(targetname)
             _config_target(dep)
         end
         _config_target(target)
+    end
+end
+
+-- load rules in the required packages for target
+function _load_package_rules_for_target(target)
+    for _, rulename in ipairs(target:get("rules")) do
+        local packagename = rulename:match("@(.-)/")
+        if packagename then
+            local pkginfo = project.required_package(packagename)
+            if pkginfo then
+                local r = pkginfo:rule(rulename)
+                if r then
+                    target:rule_add(r)
+                    for _, dep in pairs(r:deps()) do
+                        target:rule_add(dep)
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- load rules in the required packages for targets
+-- @see https://github.com/xmake-io/xmake/issues/2374
+--
+-- @code
+-- add_requires("zlib", {system = false})
+-- target("test")
+--    set_kind("binary")
+--    add_files("src/*.cpp")
+--    add_packages("zlib")
+--    add_rules("@zlib/test")
+-- @endcode
+--
+function _load_package_rules_for_targets()
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _load_package_rules_for_target(target)
+        end
     end
 end
 
@@ -387,8 +427,12 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     local recheck = _need_check(options_changed or not configcache_loaded or autogen)
     if recheck then
 
-        -- clear and flush local cache to disk
-        localcache.clear("config")
+        -- clear cached configuration
+        if option.get("clean") then
+            localcache.clear("config")
+        end
+
+        -- clear detection cache
         localcache.clear("detect")
         localcache.clear("option")
         localcache.clear("package")
@@ -432,8 +476,8 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         _check_targets(targetname)
 
         -- update the config files
+        generate_configfiles({force = recheck})
         if recheck then
-            generate_configfiles()
             generate_configheader()
         end
 
@@ -441,6 +485,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         if recheck then
             _check_target_toolchains()
         end
+
+        -- load package rules for targets
+        _load_package_rules_for_targets()
 
         -- config targets
         _config_targets(targetname)

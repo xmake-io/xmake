@@ -26,7 +26,7 @@ import("core.language.language")
 
 -- init it
 function init(self)
-    if not is_plat("windows", "mingw") then
+    if not self:is_plat("windows", "mingw") then
         self:add("shared.pcflags", "-Cg")
     end
 end
@@ -58,7 +58,7 @@ end
 -- make the symbol flag
 function nf_symbol(self, level)
     if level == "debug" and self:kind() == "pc" then
-        if self:plat() == "windows" then
+        if self:is_plat("windows") then
             return {"-gw3", "-WN"}
         else
             return "-gw3"

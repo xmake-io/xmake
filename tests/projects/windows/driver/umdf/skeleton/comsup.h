@@ -33,11 +33,11 @@ typedef class CClassFactory *PCClassFactory;
 // classes.
 //
 
-class CUnknown : public IUnknown 
+class CUnknown : public IUnknown
 {
 
 //
-// Private data members and methods.  These are only accessible by the methods 
+// Private data members and methods.  These are only accessible by the methods
 // of this class.
 //
 private:
@@ -50,13 +50,13 @@ private:
     LONG m_ReferenceCount;
 
 //
-// Protected data members and methods.  These are accessible by the subclasses 
+// Protected data members and methods.  These are accessible by the subclasses
 // but not by other classes.
 //
 protected:
 
     //
-    // The constructor and destructor are protected to ensure that only the 
+    // The constructor and destructor are protected to ensure that only the
     // subclasses of CUnknown can create and destroy instances.
     //
 
@@ -65,8 +65,8 @@ protected:
         );
 
     //
-    // The destructor MUST be virtual.  Since any instance of a CUnknown 
-    // derived class should only be deleted from within CUnknown::Release, 
+    // The destructor MUST be virtual.  Since any instance of a CUnknown
+    // derived class should only be deleted from within CUnknown::Release,
     // the destructor MUST be virtual or only CUnknown::~CUnknown will get
     // invoked on deletion.
     //
@@ -74,7 +74,7 @@ protected:
     // called, make sure you haven't deleted the virtual destructor here.
     //
 
-    virtual 
+    virtual
     ~CUnknown(
         VOID
         )
@@ -107,7 +107,7 @@ public:
     AddRef(
         VOID
         );
-    
+
     virtual
     ULONG
     STDMETHODCALLTYPE
@@ -125,15 +125,15 @@ public:
 };
 
 //
-// Class factory support class.  Create an instance of this from your 
-// DllGetClassObject method and modify the implementation to create 
+// Class factory support class.  Create an instance of this from your
+// DllGetClassObject method and modify the implementation to create
 // an instance of your driver event handler class.
 //
 
-class CClassFactory : public CUnknown, public IClassFactory 
+class CClassFactory : public CUnknown, public IClassFactory
 {
 //
-// Private data members and methods.  These are only accessible by the methods 
+// Private data members and methods.  These are only accessible by the methods
 // of this class.
 //
 private:

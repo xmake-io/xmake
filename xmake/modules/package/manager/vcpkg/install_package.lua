@@ -43,23 +43,12 @@ function _install_for_classic(vcpkg, name, opt)
     -- get configs
     local configs = opt.configs or {}
 
-    -- get arch, plat and mode
+    -- init triplet
     local arch = opt.arch
     local plat = opt.plat
-    local mode = opt.mode
-    if plat == "macosx" then
-        plat = "osx"
-    end
+    plat = configurations.plat(plat)
     arch = configurations.arch(arch)
-
-    -- init triplet
-    local triplet = arch .. "-" .. plat
-    if opt.plat == "windows" and configs.shared ~= true then
-        triplet = triplet .. "-static"
-        if configs.vs_runtime and configs.vs_runtime:startswith("MD") then
-            triplet = triplet .. "-md"
-        end
-    end
+    local triplet = configurations.triplet(configs, plat, arch)
 
     -- init argv
     local argv = {"install", name .. ":" .. triplet}
@@ -80,17 +69,9 @@ function _install_for_manifest(vcpkg, name, opt)
     -- init triplet
     local arch = opt.arch
     local plat = opt.plat
-    if plat == "macosx" then
-        plat = "osx"
-    end
+    plat = configurations.plat(plat)
     arch = configurations.arch(arch)
-    local triplet = arch .. "-" .. plat
-    if opt.plat == "windows" and configs.shared ~= true then
-        triplet = triplet .. "-static"
-        if configs.vs_runtime and configs.vs_runtime:startswith("MD") then
-            triplet = triplet .. "-md"
-        end
-    end
+    local triplet = configurations.triplet(configs, plat, arch)
 
     -- init argv
     local argv = {"--feature-flags=\"versions\"", "install", "--x-wait-for-lock", "--triplet", triplet}
