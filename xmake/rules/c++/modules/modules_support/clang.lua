@@ -133,8 +133,45 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     os.tryrm(tmpfile)
 end
 
--- build module file
+-- build interface module file
 function _build_modulefile(target, sourcefile, opt)
+    local objectfile = opt.objectfile
+    local dependfile = opt.dependfile
+    local compinst = compiler.load("cxx", {target = target})
+    local compflags = compinst:compflags({target = target})
+    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+
+    -- need build this object?
+    local dryrun = option.get("dry-run")
+    local depvalues = {compinst:program(), compflags}
+    local lastmtime = os.isfile(objectfile) and os.mtime(dependfile) or 0
+    if not dryrun and not depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
+        return
+    end
+
+    -- init flags
+    local requiresflags = opt.requiresflags
+    local flags = table.join({"-x", "c++"}, requiresflags or {}, compflags)
+
+    -- trace
+    progress.show(opt.progress, "${color.build.object}build.cxx.module %s", sourcefile)
+    vprint(compinst:compcmd(sourcefile, objectfile, {compflags = flags, rawargs = true}))
+
+    if not dryrun then
+
+        -- do compile
+        dependinfo.files = {}
+        assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = flags}))
+
+        -- update files and values to the dependent file
+        dependinfo.values = depvalues
+        table.join2(dependinfo.files, sourcefile)
+        depend.save(dependinfo, dependfile)
+    end
+end
+
+-- build module file
+function _build_interfacemodulefile(target, sourcefile, opt)
     local objectfile = opt.objectfile
     local dependfile = opt.dependfile
     local compinst = compiler.load("cxx", {target = target})
@@ -435,7 +472,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         requiresflags = get_requiresflags(target, module.requires)
                     end
 
-                    _build_modulefile(target, provide.sourcefile, {
+                    _build_interfacemodulefile(target, provide.sourcefile, {
                         objectfile = objectfile,
                         dependfile = target:dependfile(bmifile),
                         bmifile = bmifile,
@@ -453,21 +490,31 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 modulesjobs[name] = moduleinfo
                 target:add("objectfiles", objectfile)
             else
-                if module.requires then
-                    modulesjobs[module.cppfile] = {
-                        name = module.cppfile,
-                        deps = table.keys(module.requires),
-                        sourcefile = module.cppfile,
-                        job = batchjobs:newjob(module.cppfile, function(index, total)
+                modulesjobs[module.cppfile] = {
+                    name = module.cppfile,
+                    deps = table.keys(module.requires or {}),
+                    sourcefile = module.cppfile,
+                    job = batchjobs:newjob(module.cppfile, function(index, total)
+                        local requiresflags
+                        if module.requires then
+                            requiresflags = get_requiresflags(target, module.requires)
+                        end
+
+                        if common.has_module_extension(module.cppfile) then
+                            _build_modulefile(target, module.cppfile, {
+                                objectfile = objectfile,
+                                dependfile = target:dependfile(module.cppfile),
+                                requiresflags = requiresflags,
+                                progress = (index * 100) / total})
+                            target:add("objectfiles", objectfile)
+                        elseif requiresflags then
                             -- append module mapper flags
                             -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
                             local requiresflags = get_requiresflags(target, module.requires)
-                            if requiresflags then
-                                target:fileconfig_add(module.cppfile, {force = {cxxflags = requiresflags}})
-                            end
-                        end)
-                    }
-                end
+                            target:fileconfig_add(module.cppfile, {force = {cxxflags = requiresflags}})
+                        end
+                    end)
+                }
             end
         end
     end
@@ -510,11 +557,21 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 _add_module_to_mapper(target, name, bmifile)
                 depmtime = math.max(depmtime, os.mtime(bmifile))
             else
+                local requiresflags
                 if module.requires then
-                    local requiresflags = get_requiresflags(target, module.requires)
-                    if requiresflags then
-                        target:fileconfig_add(module.cppfile, {force = {cxxflags = requiresflags}})
-                    end
+                    requiresflags = get_requiresflags(target, module.requires)
+                end
+
+                if common.has_module_extension(module.cppfile) then
+                    local flags = {"-o", path(objectfile), "-c", path(module.cppfile)}
+                    batchcmds:show_progress(opt.progress, "${color.build.object}build.cxx.module %s", module.cppfile)
+                    batchcmds:mkdir(path.directory(objectfile))
+                    batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), requiresflags or {}, flags))
+                    batchcmds:add_depfiles(module.cppfile)
+                    target:add("objectfiles", objectfile)
+                    depmtime = math.max(depmtime, os.mtime(objectfile))
+                elseif requiresflags then
+                    target:fileconfig_add(module.cppfile, {force = {cxxflags = requiresflags}})
                 end
             end
         end
