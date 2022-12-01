@@ -517,6 +517,7 @@ function get_cppversionflag(target)
         local compinst = target:compiler("cxx")
         local flags = compinst:compflags({target = target})
         cppversionflag = table.find_if(flags, function(v) string.startswith(v, "-std=c++") end) or "-std=c++20"
+        _g.cppversionflag = cppversionflag
     end
     return cppversionflag or nil
 end
