@@ -84,7 +84,7 @@ function _add_objectfile_to_link_arguments(target, objectfile)
     common.localcache():save(cachekey)
 end
 
--- build interface module file
+-- build module file
 function _build_modulefile(target, sourcefile, opt)
     local objectfile = opt.objectfile
     local dependfile = opt.dependfile

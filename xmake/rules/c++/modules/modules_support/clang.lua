@@ -133,7 +133,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     os.tryrm(tmpfile)
 end
 
--- build interface module file
+-- build module file
 function _build_modulefile(target, sourcefile, opt)
     local objectfile = opt.objectfile
     local dependfile = opt.dependfile
@@ -170,7 +170,7 @@ function _build_modulefile(target, sourcefile, opt)
     end
 end
 
--- build module file
+-- build interface module file
 function _build_interfacemodulefile(target, sourcefile, opt)
     local objectfile = opt.objectfile
     local dependfile = opt.dependfile
