@@ -208,6 +208,8 @@ end
 
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
+    local toolchain = target:toolchain("msvc")
+    local scandependenciesflag = nil -- get_scandependenciesflag(target)
     local scandependenciesflag = get_scandependenciesflag(target)
     local common_flags = {"-TP", scandependenciesflag}
     local cachedir = common.modules_cachedir(target)
@@ -228,7 +230,36 @@ function generate_dependencies(target, sourcebatch, opt)
                 local flags = {jsonfile, sourcefile, "-Fo" .. target:objectfile(sourcefile)}
                 _compile(target, table.join(common_flags, flags))
             else
-                common.fallback_generate_dependencies(target, jsonfile, sourcefile)
+                common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
+                    local compinst = target:compiler("cxx")
+                    local defines = {}
+                    for _, define in ipairs(target:get("defines")) do
+                        table.insert(defines, "/D" .. define)
+                    end
+                    local _includedirs = {}
+                    for _, dep in ipairs(target:orderdeps()) do
+                        local includedir = dep:get("sysincludedirs") or dep:get("includedirs")
+                        if includedir then
+                            table.join2(includedirs, includedir)
+                        end
+                    end
+                    for _, pkg in pairs(target:pkgs()) do
+                        local includedir = pkg:get("sysincludedirs") or pkg:get("includedirs")
+                        if includedir then
+                            table.join2(includedirs, includedir)
+                        end
+                    end
+                    local includedirs = {}
+                    for i, includedir in pairs(_includedirs) do
+                        table.insert(includedirs, "/I")
+                        table.insert(includedirs, includedir)
+                    end
+                    local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
+                    os.vrunv(compinst:program(), table.join(includedirs, defines, {"/nologo", get_cppversionflag(target), "/P", "-TP", file,  "/Fi" .. ifile}), {envs = toolchain:runenvs()})
+                    local content = io.readfile(ifile)
+                    os.rm(ifile)
+                    return content
+                end)
             end
             changed = true
 
@@ -788,4 +819,14 @@ function get_requiresflags(target, requires, opt)
     if #requireflags > 0 then
         return requireflags
     end
+end
+
+function get_cppversionflag(target)
+    local cppversionflag = _g.cppversionflag
+    if cppversionflag == nil then
+        local compinst = target:compiler("cxx")
+        local flags = compinst:compflags({target = target})
+        cppversionflag = table.find_if(flags, function(v) string.startswith(v, "/std:c++") end) or "/std:c++latest"
+    end
+    return cppversionflag or nil
 end

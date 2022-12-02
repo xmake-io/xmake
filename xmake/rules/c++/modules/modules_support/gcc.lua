@@ -212,7 +212,34 @@ function generate_dependencies(target, sourcebatch, opt)
                 local args = {sourcefile, "-MD", "-MT", jsonfile, "-MF", dfile, depfileflag .. jsonfile, trtbdflag, depoutputfile .. target:objectfile(sourcefile), "-o", ifile}
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
             else
-                common.fallback_generate_dependencies(target, jsonfile, sourcefile)
+                common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
+                    local compinst = target:compiler("cxx")
+                    local defines = {}
+                    for _, define in ipairs(target:get("defines")) do
+                        table.insert(defines, "-D" .. define)
+                    end
+                    local includedirs = {}
+                    for _, dep in ipairs(target:orderdeps()) do
+                        local includedir = dep:get("sysincludedirs") or dep:get("includedirs")
+                        if includedir then
+                            table.join2(includedirs, includedir)
+                        end
+                    end
+                    for _, pkg in pairs(target:pkgs()) do
+                        local includedir = pkg:get("sysincludedirs") or pkg:get("includedirs")
+                        if includedir then
+                            table.join2(includedirs, includedir)
+                        end
+                    end
+                    for i, includedir in pairs(includedirs) do
+                        includedirs[i] = "-I" .. includedir
+                    end
+                    local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
+                    os.vrunv(compinst:program(), table.join(includedirs, defines, {get_cppversionflag(target), "-E", "-x", "c++", file,  "-o", ifile}))
+                    local content = io.readfile(ifile)
+                    os.rm(ifile)
+                    return content
+                end)
             end
             changed = true
 
@@ -556,4 +583,15 @@ function get_depoutputflag(target)
         _g.depoutputflag = depoutputflag or false
     end
     return depoutputflag or nil
+end
+
+function get_cppversionflag(target)
+    local cppversionflag = _g.cppversionflag
+    if cppversionflag == nil then
+        local compinst = target:compiler("cxx")
+        local flags = compinst:compflags({target = target})
+        cppversionflag = table.find_if(flags, function(v) string.startswith(v, "-std=c++") end) or "-std=c++20"
+        _g.cppversionflag = cppversionflag
+    end
+    return cppversionflag or nil
 end

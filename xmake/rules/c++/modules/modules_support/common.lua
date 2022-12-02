@@ -432,7 +432,7 @@ end
     }
   ]
 }]]
-function fallback_generate_dependencies(target, jsonfile, sourcefile)
+function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess_file)
     local output = {version = 0, revision = 0, rules = {}}
     local rule = {outputs = {jsonfile}}
     rule["primary-output"] = target:objectfile(sourcefile)
@@ -441,15 +441,15 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
     local module_name_private
     local module_deps = {}
     local module_deps_set = hashset.new()
-    local sourcecode = io.readfile(sourcefile)
+    local sourcecode = preprocess_file(sourcefile) or io.readfile(sourcefile)
     sourcecode = sourcecode:gsub("//.-\n", "\n")
     sourcecode = sourcecode:gsub("/%*.-%*/", "")
     for _, line in ipairs(sourcecode:split("\n", {plain = true})) do
         if not module_name_export then
-            module_name_export = line:match("export%s+module%s+(.+)%s*;")
+            module_name_export = line:match("export%s+module%s+(.+)%s*;") or line:match("export%s+__preprocessed_module%s+(.+)%s*;")
         end
         if not module_name_private then
-            module_name_private = line:match("module%s+(.+)%s*;")
+            module_name_private = line:match("module%s+(.+)%s*;") or line:match("__preprocessed_module%s+(.+)%s*;")
         end
         local module_depname = line:match("import%s+(.+)%s*;")
         -- we need parse module interface dep in cxx/impl_unit.cpp, e.g. hello.mpp and hello_impl.cpp
@@ -487,6 +487,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile)
         local provide = {}
         provide["logical-name"] = module_name_export
         provide["source-path"] = path.absolute(sourcefile, project.directory())
+        provide["is-interface"] = true
 
         rule.provides = {}
         table.insert(rule.provides, provide)
