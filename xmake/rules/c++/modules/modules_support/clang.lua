@@ -154,7 +154,7 @@ function _build_modulefile(target, sourcefile, opt)
     local flags = table.join({"-x", "c++"}, requiresflags or {}, compflags)
 
     -- trace
-    progress.show(opt.progress, "${color.build.object}build.cxx.module %s", sourcefile)
+    progress.show(opt.progress, "${color.build.object}compiling.module.$(mode) %s", sourcefile)
     vprint(compinst:compcmd(sourcefile, objectfile, {compflags = flags, rawargs = true}))
 
     if not dryrun then
@@ -193,7 +193,7 @@ function _build_interfacemodulefile(target, sourcefile, opt)
     local objflags = table.join(compflags, common_args, requiresflags or {})
 
     -- trace
-    progress.show(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", opt.name)
+    progress.show(opt.progress, "${color.build.object}compiling.module.$(mode) %s", opt.name)
     vprint(compinst:compcmd(sourcefile, bmifile, {compflags = bmiflags, rawargs = true}))
     vprint(compinst:compcmd(bmifile, objectfile, {compflags = objflags, rawargs = true}))
 
@@ -243,7 +243,7 @@ function generate_dependencies(target, sourcebatch, opt)
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
             if opt.progress then
-                progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
+                progress.show(opt.progress, "${color.build.object}generating.module.deps %s", sourcefile)
             end
 
             local outputdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, projectdir))))
@@ -311,7 +311,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
                     -- don't build same header unit at the same time
                     if not common.memcache():get2(headerunit.name, "building") then
                         common.memcache():set2(headerunit.name, "building", true)
-                        progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                        progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
                         local args = {modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.name}
                         os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
                     end
@@ -344,7 +344,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
             local args = {
                 path(stlcachedir, function (p) return modulecachepathflag .. p end),
                 "-c", "-o", path(bmifile), "-x", "c++-system-header", headerunit.name}
-            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         end
         -- libc++ have a builtin module mapper
@@ -387,7 +387,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
         local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
         batchjobs:addjob(headerunit.name, function (index, total)
             depend.on_changed(function()
-                progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
                 local objectdir = path.directory(objectfile)
                 if not os.isdir(objectdir) then
                     os.mkdir(objectdir)
@@ -446,7 +446,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
             table.join2(args, {"-x", "c++-system-header", headerunit.name})
         end
 
-        batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
         batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         batchcmds:add_depfiles(headerunit.path)
 
@@ -576,7 +576,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 if module.requires then
                     requiresflags = get_requiresflags(target, module.requires)
                 end
-                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
+                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name)
                 batchcmds:mkdir(path.directory(objectfile))
                 batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, args))
                 batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, path(bmifile), {"-c", "-o", path(objectfile)}))
@@ -591,7 +591,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
 
                 if common.has_module_extension(module.cppfile) then
                     local flags = {"-o", path(objectfile), "-c", path(module.cppfile)}
-                    batchcmds:show_progress(opt.progress, "${color.build.object}build.cxx.module %s", module.cppfile)
+                    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", module.cppfile)
                     batchcmds:mkdir(path.directory(objectfile))
                     batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), requiresflags or {}, flags))
                     batchcmds:add_depfiles(module.cppfile)

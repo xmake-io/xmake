@@ -229,7 +229,8 @@ function _parse_dependencies_data(target, moduleinfos)
                         name = name:replace(":", "-")
                         m.provides[provide["logical-name"]] = {
                             bmi = path.join(cachedir, name),
-                            sourcefile = moduleinfo.sourcefile
+                            sourcefile = moduleinfo.sourcefile,
+                            interface = provide["is-interface"]
                         }
                     end
                 end

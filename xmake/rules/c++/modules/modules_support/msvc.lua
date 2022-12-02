@@ -101,51 +101,10 @@ function _build_modulefile(target, sourcefile, opt)
     end
 
     -- init flags
-    local requiresflags = opt.requiresflags
-    local flags = table.join("-TP", requiresflags or {}, compflags)
+    local flags = table.join("-TP", compflags, opt.flags or {})
 
     -- trace
-    progress.show(opt.progress, "${color.build.object}build.cxx.module %s", sourcefile)
-    vprint(compinst:compcmd(sourcefile, objectfile, {compflags = flags, rawargs = true}))
-
-    if not dryrun then
-
-        -- do compile
-        dependinfo.files = {}
-        assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = flags}))
-
-        -- update files and values to the dependent file
-        dependinfo.values = depvalues
-        table.join2(dependinfo.files, sourcefile)
-        depend.save(dependinfo, dependfile)
-    end
-end
-
--- build interface module file
-function _build_interfacemodulefile(target, sourcefile, opt)
-    local objectfile = opt.objectfile
-    local dependfile = opt.dependfile
-    local compinst = compiler.load("cxx", {target = target})
-    local compflags = compinst:compflags({target = target})
-    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-
-    -- need build this object?
-    local dryrun = option.get("dry-run")
-    local depvalues = {compinst:program(), compflags}
-    local lastmtime = os.isfile(objectfile) and os.mtime(dependfile) or 0
-    if not dryrun and not depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
-        return
-    end
-
-    -- init flags
-    local requiresflags = opt.requiresflags
-    local interfaceflag = opt.interfaceflag
-    local ifcoutputflag = opt.ifcoutputflag
-    local bmifile = opt.bmifile
-    local flags = table.join("-TP", requiresflags or {}, interfaceflag, ifcoutputflag, bmifile, compflags)
-
-    -- trace
-    progress.show(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", opt.name)
+    progress.show(opt.progress, "${color.build.object}compiling.module.$(mode) %s", opt.name)
     vprint(compinst:compcmd(sourcefile, objectfile, {compflags = flags, rawargs = true}))
 
     if not dryrun then
@@ -217,7 +176,7 @@ function generate_dependencies(target, sourcebatch, opt)
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function ()
             if opt.progress then
-                progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
+                progress.show(opt.progress, "${color.build.object}generating.module.deps %s", sourcefile)
             end
             local outputdir = path.join(cachedir, path.directory(path.relative(sourcefile, projectdir)))
             if not os.isdir(outputdir) then
@@ -276,7 +235,7 @@ function generate_headerunit_for_batchjob(target, name, flags, objectfile, index
     if not common.memcache():get2(name, "generating") then
         local common_flags = {"-TP", "-c"}
         common.memcache():set2(name, "generating", true)
-        progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", name)
+        progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", name)
         _compile(target, table.join(common_flags, flags))
         _add_objectfile_to_link_arguments(target, objectfile)
     end
@@ -287,7 +246,7 @@ function generate_headerunit_for_batchcmds(target, name, flags, objectfile, batc
     local compinst = target:compiler("cxx")
     local msvc = target:toolchain("msvc")
     local common_flags = {"-TP", "-c"}
-    batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", name)
+    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.headerunit.$(mode) %s", name)
     batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_flags, flags), {envs = msvc:runenvs()})
     _add_objectfile_to_link_arguments(target, objectfile)
 end
@@ -508,14 +467,15 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         requiresflags = get_requiresflags(target, module.requires, {expand = true})
                     end
 
-                    _build_interfacemodulefile(target, provide.sourcefile, {
+                    local flags = {ifcoutputflag, bmifile}
+                    table.join2(flags, requiresflags or {})
+                    table.join2(flags, provide.interface and interfaceflag or {})
+
+                    _build_modulefile(target, provide.sourcefile, {
                         objectfile = objectfile,
                         dependfile = target:dependfile(bmifile),
                         name = name,
-                        bmifile = bmifile,
-                        requiresflags = requiresflags,
-                        interfaceflag = interfaceflag,
-                        ifcoutputflag = ifcoutputflag,
+                        flags = flags,
                         progress = (index * 100) / total})
 
                     _add_module_to_mapper(target, referenceflag, name, name, objectfile, bmifile, requiresflags)
@@ -541,7 +501,8 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             _build_modulefile(target, module.cppfile, {
                                 objectfile = objectfile,
                                 dependfile = target:dependfile(objectfile),
-                                requiresflags = requiresflags,
+                                name = module.cppfile,
+                                flags = requiresflags or {},
                                 progress = (index * 100) / total})
                             target:add("objectfiles", objectfile)
                         elseif requiresflags then
@@ -597,7 +558,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     ifcoutputflag,
                     path(bmifile),
                     path(provide.sourcefile)}
-                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
+                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name)
                 batchcmds:mkdir(path.directory(objectfile))
                 batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_flags, requiresflags or {}, flags), {envs = msvc:runenvs()})
                 batchcmds:add_depfiles(provide.sourcefile)
@@ -614,7 +575,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     local flags = {"-c",
                         path(objectfile, function (p) return "-Fo" .. p end),
                         path(module.cppfile)}
-                    batchcmds:show_progress(opt.progress, "${color.build.object}build.cxx.module %s", module.cppfile)
+                    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", module.cppfile)
                     batchcmds:mkdir(path.directory(objectfile))
                     batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), requiresflags or {}, flags), {envs = msvc:runenvs()})
                     batchcmds:add_depfiles(module.cppfile)
