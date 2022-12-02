@@ -208,8 +208,7 @@ end
 
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
-    local toolchain = target:toolchain("msvc")
-    local scandependenciesflag = nil -- get_scandependenciesflag(target)
+    local msvc = target:toolchain("msvc")
     local scandependenciesflag = get_scandependenciesflag(target)
     local common_flags = {"-TP", scandependenciesflag}
     local cachedir = common.modules_cachedir(target)
@@ -255,7 +254,8 @@ function generate_dependencies(target, sourcebatch, opt)
                         table.insert(includedirs, includedir)
                     end
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    os.vrunv(compinst:program(), table.join(includedirs, defines, {"/nologo", get_cppversionflag(target), "/P", "-TP", file,  "/Fi" .. ifile}), {envs = toolchain:runenvs()})
+                    os.vrunv(compinst:program(), table.join(includedirs, defines,
+                        {"/nologo", get_cppversionflag(target), "/P", "-TP", file,  "/Fi" .. ifile}), {envs = msvc:runenvs()})
                     local content = io.readfile(ifile)
                     os.rm(ifile)
                     return content
