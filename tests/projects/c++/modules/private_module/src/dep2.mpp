@@ -1,0 +1,7 @@
+export module dep2;
+
+import dep1;
+
+export int i() {
+    return m();
+}
