@@ -96,7 +96,7 @@ function nf_optimize(self, level)
     {
         none        = "-Od"
     ,   faster      = "-Ox"
-    ,   fastest     = "-O2 -fp:fast"
+    ,   fastest     = "-O2"
     ,   smallest    = "-O1"
     ,   aggressive  = "-O2 -fp:fast"
     }
