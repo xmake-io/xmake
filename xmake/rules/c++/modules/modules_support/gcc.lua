@@ -457,7 +457,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 end
             end
             local flags = {"-x", "c++","-c", path(cppfile), "-o", path(objectfile)}
-            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name)
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
             batchcmds:mkdir(path.directory(objectfile))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), flags))
             batchcmds:add_depfiles(cppfile)

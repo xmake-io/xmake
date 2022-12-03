@@ -462,12 +462,15 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
             end
             local moduleinfo = table.copy(provide) or {}
             local flags = {"-TP"}
-            table.join2(flags, (provide and provide.interface) and interfaceflag or {})
             local dependfile = target:dependfile(objectfile)
 
             if provide then
                 table.join2(flags, {ifcoutputflag, provide.bmi})
                 dependfile = target:dependfile(provide.bmi)
+
+                if provide.interface then
+                    table.insert(flags, interfaceflag)
+                end
             end
 
             table.join2(moduleinfo, {
@@ -481,19 +484,19 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     if module.requires then
                         requiresflags = get_requiresflags(target, module.requires, {expand = true})
                     end
-                    table.join2(flags, requiresflags or {})
+                    local _flags = table.join(flags, requiresflags or {})
 
                     if provide or common.has_module_extension(cppfile) then
                         _build_modulefile(target, cppfile, {
                             objectfile = objectfile,
                             dependfile = dependfile,
                             name = name or module.cppfile,
-                            flags = flags,
+                            flags = _flags,
                             progress = (index * 100) / total})
                         target:add("objectfiles", objectfile)
-                    else
-                        local flags = get_requiresflags(target, module.requires)
-                        target:fileconfig_add(cppfile, {force = {cxxflags = flags}})
+                    elseif requiresflags then
+                        requiresflags = get_requiresflags(target, module.requires)
+                        target:fileconfig_add(cppfile, {force = {cxxflags = table.join(flags, requiresflags)}})
                     end
 
                     if provide then
@@ -523,59 +526,49 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
         if module then
+            local cppfile = module.cppfile
+            local name, provide
             if module.provides then
-                local name, provide
                 local length = 0
                 for k, v in pairs(module.provides) do
                     length = length + 1
                     name = k
                     provide = v
+                    cppfile = provide.sourcefile
                     if length > 1 then
                         raise("multiple provides are not supported now!")
                     end
                     break
                 end
+            end
+            -- append required modulemap flags to module
+            local requiresflags
+            if module.requires then
+                requiresflags = get_requiresflags(target, module.requires, {expand = true})
+            end
 
-                -- append required modulemap flags to module
-                local requiresflags
-                if module.requires then
-                    requiresflags = get_requiresflags(target, module.requires, {expand = true})
+            local flags = table.join({"-TP", "-c", path(cppfile), path(objectfile, function (p) return "-Fo" .. p end)})
+            if provide or common.has_module_extension(cppfile) then
+                if provide then
+                    table.join2(flags, {ifcoutputflag, path(provide.bmi)})
+
+                    if provide.interface then
+                        table.insert(flags, interfaceflag)
+                    end
                 end
 
-                local bmifile = provide.bmi
-                local flags = {"-TP", "-c",
-                    path(objectfile, function (p) return "-Fo" .. p end),
-                    ifcoutputflag,
-                    path(bmifile),
-                    path(provide.sourcefile)}
-                table.join2(flags, requiresflags or {})
-                table.join2(flags, provide.interface and interfaceflag or {})
-                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name)
+                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
                 batchcmds:mkdir(path.directory(objectfile))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), flags), {envs = msvc:runenvs()})
-                batchcmds:add_depfiles(provide.sourcefile)
+                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), table.join(flags, requiresflags or {})), {envs = msvc:runenvs()})
+                batchcmds:add_depfiles(cppfile)
                 target:add("objectfiles", objectfile)
-                _add_module_to_mapper(target, referenceflag, name, name, objectfile, bmifile, requiresflags)
-                depmtime = math.max(depmtime, os.mtime(bmifile))
-            else
-                local requiresflags
-                if module.requires then
-                    requiresflags = get_requiresflags(target, module.requires, {expand = true})
+                if provide then
+                    _add_module_to_mapper(target, referenceflag, name, name, objectfile, provide.bmi, requiresflags)
                 end
-
-                if common.has_module_extension(module.cppfile) then
-                    local flags = {"-c",
-                        path(objectfile, function (p) return "-Fo" .. p end),
-                        path(module.cppfile)}
-                    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", module.cppfile)
-                    batchcmds:mkdir(path.directory(objectfile))
-                    batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), requiresflags or {}, flags), {envs = msvc:runenvs()})
-                    batchcmds:add_depfiles(module.cppfile)
-                    target:add("objectfiles", objectfile)
-                    depmtime = math.max(depmtime, os.mtime(objectfile))
-                elseif requiresflags then
-                    target:fileconfig_add(module.cppfile, {force = {cxxflags = requiresflags}})
-                end
+                depmtime = math.max(depmtime, os.mtime(provide and provide.bmi or objectfile))
+            elseif requiresflags then
+                requiresflags = get_requiresflags(target, module.requires)
+                target:fileconfig_add(cppfile, {force = {cxxflags = table.join(flags, requiresflags)}})
             end
         end
     end
