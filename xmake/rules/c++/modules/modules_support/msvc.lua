@@ -443,23 +443,28 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
     local modulesjobs = {}
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
+        local cppfile = module.cppfile
         if module then
+            local name, provide
             if module.provides then
                 -- assume there that provides is only one, until we encounter the case
                 local length = 0
-                local name, provide
                 for k, v in pairs(module.provides) do
                     length = length + 1
                     name = k
                     provide = v
+                    cppfile = provide.sourcefile
                     if length > 1 then
                         raise("multiple provides are not supported now!")
                     end
                 end
-
-                local bmifile = provide.bmi
-                local moduleinfo = table.copy(provide)
-                moduleinfo.job = batchjobs:newjob(provide.sourcefile, function (index, total)
+            end
+            local moduleinfo = table.copy(provide) or {}
+            table.join2(moduleinfo, {
+                name = name or cppfile,
+                deps = table.keys(module.requires or {}),
+                sourcefile = cppfile,
+                job = batchjobs:newjob(name or cppfile, function(index, total)
                     -- append module mapper flags first
                     -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
                     local requiresflags
@@ -467,53 +472,35 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         requiresflags = get_requiresflags(target, module.requires, {expand = true})
                     end
 
-                    local flags = {ifcoutputflag, bmifile}
+                    local flags = {"-TP"}
                     table.join2(flags, requiresflags or {})
-                    table.join2(flags, provide.interface and interfaceflag or {})
+                    table.join2(flags, (provide and provide.interface) and interfaceflag or {})
 
-                    _build_modulefile(target, provide.sourcefile, {
-                        objectfile = objectfile,
-                        dependfile = target:dependfile(bmifile),
-                        name = name,
-                        flags = flags,
-                        progress = (index * 100) / total})
+                    local fileconfig = target:fileconfig(cppfile)
+                    local dependfile = target:dependfile(objectfile)
+                    if provide then
+                        table.join2(flags, {ifcoutputflag, provide.bmi})
+                        dependfile = target:dependfile(provide and provide.bmi or objectfile)
+                    end
 
-                    _add_module_to_mapper(target, referenceflag, name, name, objectfile, bmifile, requiresflags)
-                end)
-                if module.requires then
-                    moduleinfo.deps = table.keys(module.requires)
-                end
-                moduleinfo.name = name
-                modulesjobs[name] = moduleinfo
-                target:add("objectfiles", objectfile)
-            else
-                modulesjobs[module.cppfile] = {
-                    name = module.cppfile,
-                    deps = table.keys(module.requires or {}),
-                    sourcefile = module.cppfile,
-                    job = batchjobs:newjob(module.cppfile, function(index, total)
-                        local requiresflags
-                        if module.requires then
-                            requiresflags = get_requiresflags(target, module.requires, {expand = true})
-                        end
+                    if provide then
+                        _build_modulefile(target, cppfile, {
+                            objectfile = objectfile,
+                            dependfile = dependfile,
+                            name = name or module.cppfile,
+                            flags = flags,
+                            progress = (index * 100) / total})
+                        target:add("objectfiles", objectfile)
+                    else
+                        local flags = get_requiresflags(target, module.requires)
+                        target:fileconfig_add(cppfile, {force = {cxxflags = flags}})
+                    end
 
-                        if common.has_module_extension(module.cppfile) then
-                            _build_modulefile(target, module.cppfile, {
-                                objectfile = objectfile,
-                                dependfile = target:dependfile(objectfile),
-                                name = module.cppfile,
-                                flags = requiresflags or {},
-                                progress = (index * 100) / total})
-                            target:add("objectfiles", objectfile)
-                        elseif requiresflags then
-                            -- append module mapper flags
-                            -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
-                            local requiresflags = get_requiresflags(target, module.requires)
-                            target:fileconfig_add(module.cppfile, {force = {cxxflags = requiresflags}})
-                        end
-                    end)
-                }
-            end
+                    if provide then
+                        _add_module_to_mapper(target, referenceflag, name, name, objectfile, provide.bmi, requiresflags)
+                    end
+                end)})
+            modulesjobs[name or cppfile] = moduleinfo
         end
     end
 
@@ -532,7 +519,6 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local referenceflag = get_referenceflag(target)
 
     -- build modules
-    local common_flags = {"-TP"}
     local depmtime = 0
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
@@ -552,15 +538,16 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 end
 
                 local bmifile = provide.bmi
-                local flags = {"-c",
+                local flags = {"-TP", "-c",
                     path(objectfile, function (p) return "-Fo" .. p end),
-                    interfaceflag,
                     ifcoutputflag,
                     path(bmifile),
                     path(provide.sourcefile)}
+                table.join2(flags, requiresflags or {})
+                table.join2(flags, provide.interface and interfaceflag or {})
                 batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name)
                 batchcmds:mkdir(path.directory(objectfile))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_flags, requiresflags or {}, flags), {envs = msvc:runenvs()})
+                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), flags), {envs = msvc:runenvs()})
                 batchcmds:add_depfiles(provide.sourcefile)
                 target:add("objectfiles", objectfile)
                 _add_module_to_mapper(target, referenceflag, name, name, objectfile, bmifile, requiresflags)
