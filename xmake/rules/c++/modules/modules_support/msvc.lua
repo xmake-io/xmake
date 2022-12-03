@@ -457,6 +457,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     if length > 1 then
                         raise("multiple provides are not supported now!")
                     end
+                    break
                 end
             end
             local moduleinfo = table.copy(provide) or {}
@@ -524,9 +525,14 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
         if module then
             if module.provides then
                 local name, provide
+                local length = 0
                 for k, v in pairs(module.provides) do
+                    length = length + 1
                     name = k
                     provide = v
+                    if length > 1 then
+                        raise("multiple provides are not supported now!")
+                    end
                     break
                 end
 

@@ -43,7 +43,7 @@ function _add_module_to_mapper(target, name, bmifile, deps)
     end
 
     local modulefileflag = get_modulefileflag(target)
-    local mapflag = format("%s%s", modulefileflag, bmifile)
+    local mapflag = modulefileflag .. bmifile
     modulemap[name] = {flag = mapflag, deps = deps}
     common.localcache():set2(_mapper_cachekey(target), "modulemap", modulemap)
 end
@@ -489,6 +489,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     if length > 1 then
                         raise("multiple provides are not supported now!")
                     end
+                    break
                 end
             end
             local moduleinfo = table.copy(provide) or {}
@@ -497,7 +498,6 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 deps = table.keys(module.requires or {}),
                 sourcefile = cppfile,
                 job = batchjobs:newjob(name or cppfile, function(index, total)
-                    -- append module mapper flags first
                     -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
                     local requiresflags
                     if module.requires then
@@ -534,8 +534,6 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
         end
     end
 
-    print(modulesjobs)
-
     -- build batchjobs for modules
     common.build_batchjobs_for_modules(modulesjobs, batchjobs, flushjob)
 end
@@ -545,52 +543,50 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local compinst = target:compiler("cxx")
     local cachedir = common.modules_cachedir(target)
     local modulecachepathflag = get_modulecachepathflag(target)
-    local modulefileflag = get_modulefileflag(target)
 
     -- build modules
     local depmtime = 0
-    local common_args = {path(cachedir, function (p) return modulecachepathflag .. p end)}
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
         if module then
+            local cppfile = module.cppfile
+            local name, provide
             if module.provides then
-                local name, provide
+                local length = 0
                 for k, v in pairs(module.provides) do
+                    length = length + 1
                     name = k
                     provide = v
+                    cppfile = provide.sourcefile
+                    if length > 1 then
+                        raise("multiple provides are not supported now!")
+                    end
                     break
                 end
-                local bmifile = provide.bmi
-                local args = {"-c", "-x", "c++-module", "--precompile", path(provide.sourcefile), "-o", path(bmifile)}
-                local requiresflags
-                if module.requires then
-                    requiresflags = get_requiresflags(target, module.requires)
-                end
-                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name)
-                batchcmds:mkdir(path.directory(objectfile))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, args))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, requiresflags or {}, path(bmifile), {"-c", "-o", path(objectfile)}))
-                batchcmds:add_depfiles(provide.sourcefile)
-                _add_module_to_mapper(target, name, bmifile)
-                depmtime = math.max(depmtime, os.mtime(bmifile))
-            else
-                local requiresflags
-                if module.requires then
-                    requiresflags = get_requiresflags(target, module.requires)
-                end
-
-                if common.has_module_extension(module.cppfile) then
-                    local flags = {"-o", path(objectfile), "-c", path(module.cppfile)}
-                    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", module.cppfile)
-                    batchcmds:mkdir(path.directory(objectfile))
-                    batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), requiresflags or {}, flags))
-                    batchcmds:add_depfiles(module.cppfile)
-                    target:add("objectfiles", objectfile)
-                    depmtime = math.max(depmtime, os.mtime(objectfile))
-                elseif requiresflags then
-                    target:fileconfig_add(module.cppfile, {force = {cxxflags = requiresflags}})
-                end
             end
+            local requiresflags
+            if module.requires then
+                requiresflags = get_requiresflags(target, module.requires)
+            end
+
+            local flags = table.join({path(cachedir, function (p) return modulecachepathflag .. p end)}, requiresflags or {})
+            if provide or common.has_module_extension(cppfile) then
+                local file = provide and path(provide.bmi) or path(cppfile)
+
+                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
+                batchcmds:mkdir(path.directory(objectfile))
+                if provide then
+                    batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), flags, {"-x", "c++-module", "--precompile", "-c", path(cppfile), "-o", path(provide.bmi)}))
+                    _add_module_to_mapper(target, name, provide.bmi)
+                end
+                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), flags, not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}))
+                target:add("objectfiles", objectfile)
+            elseif requiresflags then
+                target:fileconfig_add(cppfile, {force = {cxxflags = requiresflags}})
+            end
+
+            batchcmds:add_depfiles(cppfile)
+            depmtime = math.max(depmtime, os.mtime(objectfile))
         end
     end
     batchcmds:set_depmtime(depmtime)
