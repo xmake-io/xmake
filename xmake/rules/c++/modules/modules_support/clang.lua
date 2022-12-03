@@ -460,13 +460,13 @@ end
 
 -- build module files for batchjobs
 function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
-    local compinst = target:compiler("cxx")
+
+    -- get flags
     local cachedir = common.modules_cachedir(target)
     local modulecachepathflag = get_modulecachepathflag(target)
-    local modulefileflag = get_modulefileflag(target)
 
     -- flush job
-    local flushjob = batchjobs:addjob(target:name() .. "_stl_flush_mapper", function(index, total)
+    local flushjob = batchjobs:addjob(target:name() .. "_modules", function(index, total)
         _flush_mapper(target)
     end, {rootjob = opt.rootjob})
 
@@ -476,22 +476,27 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
         if module then
+            local cppfile = module.cppfile
+            local name, provide
             if module.provides then
                 -- assume there that provides is only one, until we encounter the case
                 local length = 0
-                local name, provide
                 for k, v in pairs(module.provides) do
                     length = length + 1
                     name = k
                     provide = v
+                    cppfile = provide.sourcefile
                     if length > 1 then
                         raise("multiple provides are not supported now!")
                     end
                 end
-
-                local bmifile = provide.bmi
-                local moduleinfo = table.copy(provide)
-                moduleinfo.job = batchjobs:newjob(provide.sourcefile, function (index, total)
+            end
+            local moduleinfo = table.copy(provide) or {}
+            table.join2(moduleinfo, {
+                name = name or cppfile,
+                deps = table.keys(module.requires or {}),
+                sourcefile = cppfile,
+                job = batchjobs:newjob(name or cppfile, function(index, total)
                     -- append module mapper flags first
                     -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
                     local requiresflags
@@ -499,52 +504,37 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         requiresflags = get_requiresflags(target, module.requires)
                     end
 
-                    _build_interfacemodulefile(target, provide.sourcefile, {
-                        objectfile = objectfile,
-                        dependfile = target:dependfile(bmifile),
-                        bmifile = bmifile,
-                        name = name,
-                        common_args = common_args,
-                        requiresflags = requiresflags,
-                        progress = (index * 100) / total})
+                    if provide then
+                        local bmifile = provide.bmi
+                        _build_interfacemodulefile(target, provide.sourcefile, {
+                            objectfile = objectfile,
+                            dependfile = target:dependfile(bmifile),
+                            bmifile = bmifile,
+                            name = name,
+                            common_args = common_args,
+                            requiresflags = requiresflags,
+                            progress = (index * 100) / total})
+                        target:add("objectfiles", objectfile)
 
-                    _add_module_to_mapper(target, name, bmifile, requiresflags)
-                end)
-                if module.requires then
-                    moduleinfo.deps = table.keys(module.requires)
-                end
-                moduleinfo.name = name
-                modulesjobs[name] = moduleinfo
-                target:add("objectfiles", objectfile)
-            else
-                modulesjobs[module.cppfile] = {
-                    name = module.cppfile,
-                    deps = table.keys(module.requires or {}),
-                    sourcefile = module.cppfile,
-                    job = batchjobs:newjob(module.cppfile, function(index, total)
-                        local requiresflags
-                        if module.requires then
-                            requiresflags = get_requiresflags(target, module.requires)
-                        end
-
-                        if common.has_module_extension(module.cppfile) then
-                            _build_modulefile(target, module.cppfile, {
+                        _add_module_to_mapper(target, name, bmifile, requiresflags)
+                    else
+                        if common.has_module_extension(cppfile) then
+                            _build_modulefile(target, cppfile, {
                                 objectfile = objectfile,
                                 dependfile = target:dependfile(objectfile),
                                 requiresflags = requiresflags,
                                 progress = (index * 100) / total})
                             target:add("objectfiles", objectfile)
                         elseif requiresflags then
-                            -- append module mapper flags
-                            -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
-                            local requiresflags = get_requiresflags(target, module.requires)
-                            target:fileconfig_add(module.cppfile, {force = {cxxflags = requiresflags}})
+                            target:fileconfig_add(cppfile, {force = {cxxflags = requiresflags}})
                         end
-                    end)
-                }
-            end
+                    end
+                end)})
+            modulesjobs[name or cppfile] = moduleinfo
         end
     end
+
+    print(modulesjobs)
 
     -- build batchjobs for modules
     common.build_batchjobs_for_modules(modulesjobs, batchjobs, flushjob)

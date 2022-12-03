@@ -460,6 +460,15 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 end
             end
             local moduleinfo = table.copy(provide) or {}
+            local flags = {"-TP"}
+            table.join2(flags, (provide and provide.interface) and interfaceflag or {})
+            local dependfile = target:dependfile(objectfile)
+
+            if provide then
+                table.join2(flags, {ifcoutputflag, provide.bmi})
+                dependfile = target:dependfile(provide.bmi)
+            end
+
             table.join2(moduleinfo, {
                 name = name or cppfile,
                 deps = table.keys(module.requires or {}),
@@ -471,16 +480,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     if module.requires then
                         requiresflags = get_requiresflags(target, module.requires, {expand = true})
                     end
-
-                    local flags = {"-TP"}
                     table.join2(flags, requiresflags or {})
-                    table.join2(flags, (provide and provide.interface) and interfaceflag or {})
-
-                    local dependfile = target:dependfile(objectfile)
-                    if provide then
-                        table.join2(flags, {ifcoutputflag, provide.bmi})
-                        dependfile = target:dependfile(provide.bmi)
-                    end
 
                     if provide or common.has_module_extension(cppfile) then
                         _build_modulefile(target, cppfile, {

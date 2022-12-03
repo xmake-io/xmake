@@ -402,13 +402,13 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 end
             end
             local moduleinfo = table.copy(provide) or {}
+            local dependfile = (provide and provide.bmi) and target:dependfile(provide.bmi) or target:dependfile(objectfile)
             table.join2(moduleinfo, {
                 name = name or cppfile,
                 deps = table.keys(module.requires or {}),
                 sourcefile = cppfile,
                 job = batchjobs:newjob(name or cppfile, function(index, total)
 
-                    local dependfile = (provide and provide.bmi) and target:dependfile(provide.bmi) or target:dependfile(objectfile)
                     if provide or common.has_module_extension(cppfile) then
                         _build_modulefile(target, cppfile, {
                             objectfile = objectfile,
@@ -424,6 +424,8 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
             modulesjobs[name or cppfile] = moduleinfo
         end
     end
+
+    print(modulesjobs)
 
     -- build batchjobs for modules
     common.build_batchjobs_for_modules(modulesjobs, batchjobs, opt.rootjob)
