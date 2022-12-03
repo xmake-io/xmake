@@ -72,7 +72,7 @@ function main()
     table.insert(argv, "-i")
 
     -- set file to format
-    if option.get("file") then
+    if option.get("files") then
         -- list of files/path to format
         local files = option.get("file"):split(" ")
         for _, f in ipairs(files) do
@@ -86,11 +86,11 @@ function main()
         for targetname, target in pairs(project.targets()) do
             -- source files
             for _, source in ipairs(target:sourcefiles()) do
-                table.insert(argv, path.join(projectdir,source))
+                table.insert(argv, path.join(projectdir, source))
             end
             -- header files
-            for _, header in ipairs(target:sourcefiles()) do
-                table.insert(argv, path.join(projectdir,header))
+            for _, header in ipairs(target:headerfiles()) do
+                table.insert(argv, path.join(projectdir, header))
             end
         end
     end
