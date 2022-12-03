@@ -434,47 +434,38 @@ end
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
     local mapper_file = _get_module_mapper()
-    local common_args = {"-x", "c++"}
-    local cachedir = common.modules_cachedir(target)
 
     -- build modules
     local projectdir = os.projectdir()
     local depmtime = 0
     for _, objectfile in ipairs(objectfiles) do
-        local m = modules[objectfile]
-        if m then
-            if m.provides then
-                -- assume there that provides is only one, until we encounter the case
+        local module = modules[objectfile]
+        if module then
+            local cppfile = module.cppfile
+            local name, provide
+            if module.provides then
                 local length = 0
-                local name, provide
-                for k, v in pairs(m.provides) do
+                for k, v in pairs(module.provides) do
                     length = length + 1
                     name = k
                     provide = v
+                    cppfile = provide.sourcefile
                     if length > 1 then
                         raise("multiple provides are not supported now!")
                     end
                     break
                 end
-
-                local bmifile = provide.bmi
-                local args = {"-o", path(objectfile), "-c", path(provide.sourcefile)}
-                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name)
-                batchcmds:mkdir(path.directory(objectfile))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
-                batchcmds:add_depfiles(provide.sourcefile)
-                _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir))
-                target:add("objectfiles", objectfile)
-                depmtime = math.max(depmtime, os.mtime(bmifile))
-            elseif common.has_module_extension(m.cppfile) then
-                local args = {"-o", path(objectfile), "-c", path(m.cppfile)}
-                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", m.cppfile)
-                batchcmds:mkdir(path.directory(objectfile))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-                batchcmds:add_depfiles(m.cppfile)
-                target:add("objectfiles", objectfile)
-                depmtime = math.max(depmtime, os.mtime(objectfile))
             end
+            local flags = {"-x", "c++","-c", path(cppfile), "-o", path(objectfile)}
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name)
+            batchcmds:mkdir(path.directory(objectfile))
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), flags))
+            batchcmds:add_depfiles(cppfile)
+            target:add("objectfiles", objectfile)
+            if provide then
+                _add_module_to_mapper(mapper_file, name, path.absolute(provide.bmi, projectdir))
+            end
+            depmtime = math.max(depmtime, os.mtime(provide and provide.bmi or objectfile))
         end
     end
     batchcmds:set_depmtime(depmtime)
