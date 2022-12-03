@@ -379,58 +379,49 @@ end
 -- build module files for batchjobs
 function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
     local mapper_file = _get_module_mapper()
-    local cachedir = common.modules_cachedir(target)
 
     -- build modules
     local projectdir = os.projectdir()
     local modulesjobs = {}
     for _, objectfile in ipairs(objectfiles) do
-        local m = modules[objectfile]
-        if m then
-            if m.provides then
+        local module = modules[objectfile]
+        if module then
+            local cppfile = module.cppfile
+            local name, provide
+            if module.provides then
                 -- assume there that provides is only one, until we encounter the case
                 local length = 0
-                local name, provide
-                for k, v in pairs(m.provides) do
+                for k, v in pairs(module.provides) do
                     length = length + 1
                     name = k
                     provide = v
+                    cppfile = provide.sourcefile
                     if length > 1 then
                         raise("multiple provides are not supported now!")
                     end
                 end
+            end
+            local moduleinfo = table.copy(provide) or {}
+            table.join2(moduleinfo, {
+                name = name or cppfile,
+                deps = table.keys(module.requires or {}),
+                sourcefile = cppfile,
+                job = batchjobs:newjob(name or cppfile, function(index, total)
 
-                local bmifile = provide.bmi
-                local moduleinfo = table.copy(provide)
-                moduleinfo.job = batchjobs:newjob(provide.sourcefile, function (index, total)
-                    _build_modulefile(target, provide.sourcefile, {
-                        objectfile = objectfile,
-                        dependfile = target:dependfile(bmifile),
-                        name = name,
-                        progress = (index * 100) / total})
-                end)
-                if m.requires then
-                    moduleinfo.deps = table.keys(m.requires)
-                end
-                moduleinfo.name = name
-                modulesjobs[name] = moduleinfo
-                _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir))
-                target:add("objectfiles", objectfile)
-            elseif common.has_module_extension(m.cppfile) then
-                modulesjobs[m.cppfile] = {
-                    name = m.cppfile,
-                    deps = table.keys(m.requires or {}),
-                    sourcefile = m.cppfile,
-                    job = batchjobs:newjob(m.cppfile, function(index, total)
-                        _build_modulefile(target, m.cppfile, {
+                    local dependfile = (provide and provide.bmi) and target:dependfile(provide.bmi) or target:dependfile(objectfile)
+                    if provide or common.has_module_extension(cppfile) then
+                        _build_modulefile(target, cppfile, {
                             objectfile = objectfile,
-                            dependfile = target:dependfile(objectfile),
-                            name = m.cppfile,
+                            dependfile = dependfile,
+                            name = name or cppfile,
                             progress = (index * 100) / total})
                         target:add("objectfiles", objectfile)
-                    end)
-                }
+                    end
+                end)})
+            if provide then
+                _add_module_to_mapper(mapper_file, name, path.absolute(provide.bmi, projectdir))
             end
+            modulesjobs[name or cppfile] = moduleinfo
         end
     end
 

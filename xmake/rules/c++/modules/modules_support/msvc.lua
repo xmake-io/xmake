@@ -443,8 +443,8 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
     local modulesjobs = {}
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
-        local cppfile = module.cppfile
         if module then
+            local cppfile = module.cppfile
             local name, provide
             if module.provides then
                 -- assume there that provides is only one, until we encounter the case
@@ -476,14 +476,13 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     table.join2(flags, requiresflags or {})
                     table.join2(flags, (provide and provide.interface) and interfaceflag or {})
 
-                    local fileconfig = target:fileconfig(cppfile)
                     local dependfile = target:dependfile(objectfile)
                     if provide then
                         table.join2(flags, {ifcoutputflag, provide.bmi})
-                        dependfile = target:dependfile(provide and provide.bmi or objectfile)
+                        dependfile = target:dependfile(provide.bmi)
                     end
 
-                    if provide then
+                    if provide or common.has_module_extension(cppfile) then
                         _build_modulefile(target, cppfile, {
                             objectfile = objectfile,
                             dependfile = dependfile,
