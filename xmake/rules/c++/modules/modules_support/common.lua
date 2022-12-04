@@ -444,7 +444,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
     local module_deps_set = hashset.new()
     local sourcecode = preprocess_file(sourcefile) or io.readfile(sourcefile)
     local fileconfig = target:fileconfig(sourcefile)
-    local internalpartition = (fileconfig and fileconfig.values) and fileconfig.values["msvc.internalpartition"] or false
+    local internalpartition = (fileconfig and fileconfig.values) and fileconfig.values["internalpartition"] or false
     sourcecode = sourcecode:gsub("//.-\n", "\n")
     sourcecode = sourcecode:gsub("/%*.-%*/", "")
     for _, line in ipairs(sourcecode:split("\n", {plain = true})) do

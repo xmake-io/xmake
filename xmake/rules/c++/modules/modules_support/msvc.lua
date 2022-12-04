@@ -470,7 +470,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 dependfile = target:dependfile(provide.bmi)
 
                 local fileconfig = target:fileconfig(provide.sourcefile)
-                if fileconfig and fileconfig.values and fileconfig.values["msvc.internalpartition"] then
+                if not provide.interface then
                     assert(internalpartitionflag, "/internalPartition not supported !")
                     table.insert(flags, internalpartitionflag)
                 elseif provide.interface then
@@ -559,7 +559,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     table.join2(flags, {ifcoutputflag, path(provide.bmi)})
 
                     local fileconfig = target:fileconfig(cppfile)
-                    if fileconfig and fileconfig.values and fileconfig.values["msvc.internalpartition"] then
+                    if not provide.interface then
                         assert(internalpartitionflag, "/internalPartition not supported !")
                         table.insert(flags, internalpartitionflag)
                     elseif provide.interface then
