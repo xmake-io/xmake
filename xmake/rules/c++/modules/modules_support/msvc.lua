@@ -207,6 +207,7 @@ function generate_dependencies(target, sourcebatch, opt)
                             table.join2(includedirs, includedir)
                         end
                     end
+                    local includedirs = {}
                     for i, includedir in pairs(_includedirs) do
                         table.insert(includedirs, "/I")
                         table.insert(includedirs, includedir)
