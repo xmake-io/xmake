@@ -483,6 +483,10 @@ function _get_configs_for_wasm(package, configs, opt)
         table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. emscripten_cmakefile)
     end
     assert(emscripten_cmakefile, "Emscripten.cmake not found!")
+    if is_subhost("windows") then
+        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
+        table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. _translate_paths(path.join(mingw, "bin", "mingw32-make.exe")))
+    end
     _get_configs_for_generic(package, configs, opt)
 end
 
@@ -645,6 +649,9 @@ function _get_configs_for_generator(package, configs, opt)
     elseif package:is_plat("windows") then
         table.insert(configs, "-G")
         table.insert(configs, _get_cmake_generator_for_msvc(package))
+    elseif package:is_plat("wasm") and is_subhost("windows") then
+        table.insert(configs, "-G")
+        table.insert(configs, "MinGW Makefiles")
     else
         table.insert(configs, "-G")
         table.insert(configs, "Unix Makefiles")
@@ -841,7 +848,7 @@ function _install_for_make(package, configs, opt)
     if is_host("bsd") then
         os.vrunv("gmake", argv)
         os.vrunv("gmake", {"install"})
-    elseif is_subhost("windows") and package:is_plat("mingw") then
+    elseif is_subhost("windows") and package:is_plat("mingw", "wasm") then
         local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
         local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
         os.vrunv(mingw_make, argv)
