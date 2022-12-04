@@ -443,6 +443,8 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
     local module_deps = {}
     local module_deps_set = hashset.new()
     local sourcecode = preprocess_file(sourcefile) or io.readfile(sourcefile)
+    local fileconfig = target:fileconfig(sourcefile)
+    local internalpartition = (fileconfig and fileconfig.values) and fileconfig.values["msvc.internalpartition"] or false
     sourcecode = sourcecode:gsub("//.-\n", "\n")
     sourcecode = sourcecode:gsub("/%*.-%*/", "")
     for _, line in ipairs(sourcecode:split("\n", {plain = true})) do
@@ -451,6 +453,9 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
         end
         if not module_name_private then
             module_name_private = line:match("module%s+(.+)%s*;") or line:match("__preprocessed_module%s+(.+)%s*;")
+        end
+        if internalpartition then
+            module_name_export = module_name_private
         end
         local module_depname = line:match("import%s+(.+)%s*;")
         -- we need parse module interface dep in cxx/impl_unit.cpp, e.g. hello.mpp and hello_impl.cpp
@@ -488,7 +493,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
         local provide = {}
         provide["logical-name"] = module_name_export
         provide["source-path"] = path.absolute(sourcefile, project.directory())
-        provide["is-interface"] = true
+        provide["is-interface"] = not internalpartition
 
         rule.provides = {}
         table.insert(rule.provides, provide)
