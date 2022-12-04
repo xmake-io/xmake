@@ -111,40 +111,7 @@ function _build_modulefile(target, sourcefile, opt)
     end
 
     -- trace
-    progress.show(opt.progress, "${color.build.object}build.cxx.module %s", sourcefile)
-    vprint(compinst:compcmd(sourcefile, objectfile, {compflags = compflags, rawargs = true}))
-
-    if not dryrun then
-
-        -- do compile
-        dependinfo.files = {}
-        assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
-
-        -- update files and values to the dependent file
-        dependinfo.values = depvalues
-        table.join2(dependinfo.files, sourcefile)
-        depend.save(dependinfo, dependfile)
-    end
-end
-
--- build interface module file
-function _build_interfacemodulefile(target, sourcefile, opt)
-    local objectfile = opt.objectfile
-    local dependfile = opt.dependfile
-    local compinst = compiler.load("cxx", {target = target})
-    local compflags = table.join("-x", "c++", compinst:compflags({target = target}))
-    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-
-    -- need build this object?
-    local dryrun = option.get("dry-run")
-    local depvalues = {compinst:program(), compflags}
-    local lastmtime = os.isfile(objectfile) and os.mtime(dependfile) or 0
-    if not dryrun and not depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
-        return
-    end
-
-    -- trace
-    progress.show(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", opt.name)
+    progress.show(opt.progress, "${color.build.object}compiling.module.$(mode) %s", opt.name)
     vprint(compinst:compcmd(sourcefile, objectfile, {compflags = compflags, rawargs = true}))
 
     if not dryrun then
@@ -197,7 +164,7 @@ function generate_dependencies(target, sourcebatch, opt)
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
             if opt.progress then
-                progress.show(opt.progress, "${color.build.object}generating.cxx.module.deps %s", sourcefile)
+                progress.show(opt.progress, "${color.build.object}generating.module.deps %s", sourcefile)
             end
 
             local outputdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, projectdir))))
@@ -264,7 +231,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
         if not os.isfile(bmifile) then
             batchjobs:addjob(headerunit.name, function (index, total)
                 depend.on_changed(function()
-                    progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                    progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
                     local args = {"-c", "-x", "c++-system-header", headerunit.name}
                     local flags = table.join(compinst:compflags({target = target}), args)
                     -- we need to support reading and writing mapperfile in parallel, otherwise it will be broken
@@ -302,7 +269,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         if not os.isfile(bmifile) then
             local args = {"-c", "-x", "c++-system-header", headerunit.name}
-            batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         end
         batchcmds:add_depfiles(headerunit.path)
@@ -340,7 +307,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
         end
         batchjobs:addjob(headerunit.name, function (index, total)
             depend.on_changed(function()
-                progress.show((index * 100) / total, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+                progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
                 local objectdir = path.directory(objectfile)
                 if not os.isdir(objectdir) then
                     os.mkdir(objectdir)
@@ -399,7 +366,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
             headerunit_path = path.is_absolute(headerunit.path) and headerunit.path or path.join(".", headerunit.path)
         end
 
-        batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.headerunit.bmi %s", headerunit.name)
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
         batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
         batchcmds:add_depfiles(headerunit.path)
 
@@ -412,57 +379,50 @@ end
 -- build module files for batchjobs
 function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
     local mapper_file = _get_module_mapper()
-    local cachedir = common.modules_cachedir(target)
 
     -- build modules
     local projectdir = os.projectdir()
     local modulesjobs = {}
     for _, objectfile in ipairs(objectfiles) do
-        local m = modules[objectfile]
-        if m then
-            if m.provides then
+        local module = modules[objectfile]
+        if module then
+            local cppfile = module.cppfile
+            local name, provide
+            if module.provides then
                 -- assume there that provides is only one, until we encounter the case
                 local length = 0
-                local name, provide
-                for k, v in pairs(m.provides) do
+                for k, v in pairs(module.provides) do
                     length = length + 1
                     name = k
                     provide = v
+                    cppfile = provide.sourcefile
                     if length > 1 then
                         raise("multiple provides are not supported now!")
                     end
+                    break
                 end
+            end
+            local moduleinfo = table.copy(provide) or {}
+            local dependfile = (provide and provide.bmi) and target:dependfile(provide.bmi) or target:dependfile(objectfile)
+            table.join2(moduleinfo, {
+                name = name or cppfile,
+                deps = table.keys(module.requires or {}),
+                sourcefile = cppfile,
+                job = batchjobs:newjob(name or cppfile, function(index, total)
 
-                local bmifile = provide.bmi
-                local moduleinfo = table.copy(provide)
-                moduleinfo.job = batchjobs:newjob(provide.sourcefile, function (index, total)
-                    _build_interfacemodulefile(target, provide.sourcefile, {
-                        objectfile = objectfile,
-                        dependfile = target:dependfile(bmifile),
-                        name = name,
-                        progress = (index * 100) / total})
-                end)
-                if m.requires then
-                    moduleinfo.deps = table.keys(m.requires)
-                end
-                moduleinfo.name = name
-                modulesjobs[name] = moduleinfo
-                _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir))
-                target:add("objectfiles", objectfile)
-            elseif common.has_module_extension(m.cppfile) then
-                modulesjobs[m.cppfile] = {
-                    name = m.cppfile,
-                    deps = table.keys(m.requires or {}),
-                    sourcefile = m.cppfile,
-                    job = batchjobs:newjob(m.cppfile, function(index, total)
-                        _build_modulefile(target, m.cppfile, {
+                    if provide or common.has_module_extension(cppfile) then
+                        _build_modulefile(target, cppfile, {
                             objectfile = objectfile,
-                            dependfile = target:dependfile(objectfile),
+                            dependfile = dependfile,
+                            name = name or cppfile,
                             progress = (index * 100) / total})
                         target:add("objectfiles", objectfile)
-                    end)
-                }
+                    end
+                end)})
+            if provide then
+                _add_module_to_mapper(mapper_file, name, path.absolute(provide.bmi, projectdir))
             end
+            modulesjobs[name or cppfile] = moduleinfo
         end
     end
 
@@ -474,46 +434,38 @@ end
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
     local mapper_file = _get_module_mapper()
-    local common_args = {"-x", "c++"}
-    local cachedir = common.modules_cachedir(target)
 
     -- build modules
     local projectdir = os.projectdir()
     local depmtime = 0
     for _, objectfile in ipairs(objectfiles) do
-        local m = modules[objectfile]
-        if m then
-            if m.provides then
-                -- assume there that provides is only one, until we encounter the case
+        local module = modules[objectfile]
+        if module then
+            local cppfile = module.cppfile
+            local name, provide
+            if module.provides then
                 local length = 0
-                local name, provide
-                for k, v in pairs(m.provides) do
+                for k, v in pairs(module.provides) do
                     length = length + 1
                     name = k
                     provide = v
+                    cppfile = provide.sourcefile
                     if length > 1 then
                         raise("multiple provides are not supported now!")
                     end
+                    break
                 end
-
-                local bmifile = provide.bmi
-                local args = {"-o", path(objectfile), "-c", path(provide.sourcefile)}
-                batchcmds:show_progress(opt.progress, "${color.build.object}generating.cxx.module.bmi %s", name)
-                batchcmds:mkdir(path.directory(objectfile))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args))
-                batchcmds:add_depfiles(provide.sourcefile)
-                _add_module_to_mapper(mapper_file, name, path.absolute(bmifile, projectdir))
-                target:add("objectfiles", objectfile)
-                depmtime = math.max(depmtime, os.mtime(bmifile))
-            elseif common.has_module_extension(m.cppfile) then
-                local args = {"-o", path(objectfile), "-c", path(m.cppfile)}
-                batchcmds:show_progress(opt.progress, "${color.build.object}build.cxx.module %s", m.cppfile)
-                batchcmds:mkdir(path.directory(objectfile))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
-                batchcmds:add_depfiles(m.cppfile)
-                target:add("objectfiles", objectfile)
-                depmtime = math.max(depmtime, os.mtime(objectfile))
             end
+            local flags = {"-x", "c++","-c", path(cppfile), "-o", path(objectfile)}
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
+            batchcmds:mkdir(path.directory(objectfile))
+            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), flags))
+            batchcmds:add_depfiles(cppfile)
+            target:add("objectfiles", objectfile)
+            if provide then
+                _add_module_to_mapper(mapper_file, name, path.absolute(provide.bmi, projectdir))
+            end
+            depmtime = math.max(depmtime, os.mtime(provide and provide.bmi or objectfile))
         end
     end
     batchcmds:set_depmtime(depmtime)
