@@ -466,16 +466,8 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
             local dependfile = target:dependfile(objectfile)
 
             if provide then
-                table.join2(flags, {ifcoutputflag, provide.bmi})
+                table.join2(flags, {ifcoutputflag, path(provide.bmi), provide.interface and interfaceflag or internalpartitionflag})
                 dependfile = target:dependfile(provide.bmi)
-
-                local fileconfig = target:fileconfig(provide.sourcefile)
-                if not provide.interface then
-                    assert(internalpartitionflag, "/internalPartition not supported !")
-                    table.insert(flags, internalpartitionflag)
-                elseif provide.interface then
-                    table.insert(flags, interfaceflag)
-                end
             end
 
             table.join2(moduleinfo, {
@@ -556,15 +548,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             local flags = table.join({"-TP", "-c", path(cppfile), path(objectfile, function (p) return "-Fo" .. p end)})
             if provide or common.has_module_extension(cppfile) then
                 if provide then
-                    table.join2(flags, {ifcoutputflag, path(provide.bmi)})
-
-                    local fileconfig = target:fileconfig(cppfile)
-                    if not provide.interface then
-                        assert(internalpartitionflag, "/internalPartition not supported !")
-                        table.insert(flags, internalpartitionflag)
-                    elseif provide.interface then
-                        table.insert(flags, interfaceflag)
-                    end
+                    table.join2(flags, {ifcoutputflag, path(provide.bmi), provide.interface and interfaceflag or internalpartitionflag})
                 end
 
                 batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
