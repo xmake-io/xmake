@@ -141,7 +141,17 @@ rule("c++.build.modules.install")
         if common.contains_modules(target) then
             local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
             if sourcebatch then
-                target:add("installfiles", sourcebatch.sourcefiles, {prefixdir = "include"})
+                for _, sourcefile in sourcebatch.sourcefiles do
+                    local prefixdir = "modules"
+                    local fileconfig = target:fileconfig(sourcefile)
+                    if fileconfig and fileconfig.prefixdir then
+                        prefixdir = fileconfig.prefixdir
+                    end
+                    local install = (fileconfig and not fileconfig.install) and false or true
+                    if install then
+                        target:add("installfiles", sourcefile, {prefixdir = prefixdir})
+                    end
+                end
             end
         end
     end)
