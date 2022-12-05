@@ -13,6 +13,7 @@
 * [#3071](https://github.com/xmake-io/xmake/issues/3071): Support rc for llvm/clang toolchain
 * [#3122](https://github.com/xmake-io/xmake/pull/3122): Generate dependencies of preprocessed modules to avoid importing #ifdef import
 * [#3125](https://github.com/xmake-io/xmake/pull/3125): Compile private C++20 modules
+* [#3133](https://github.com/xmake-io/xmake/pull/3133): Add support of internal partitions
 
 ### Bugs fixed
 
@@ -1467,6 +1468,7 @@
 * [#3071](https://github.com/xmake-io/xmake/issues/3071): 为 llvm/clang 工具链支持 rc 编译
 * [#3122](https://github.com/xmake-io/xmake/pull/3122): 改进 c++20 模块依赖图的源码分析，支持预处理
 * [#3125](https://github.com/xmake-io/xmake/pull/3125): 增加私有 C++20 模块的编译支持
+* [#3133](https://github.com/xmake-io/xmake/pull/3133): 增加 internal partitions 模块支持
 
 ### Bugs 修复
 
