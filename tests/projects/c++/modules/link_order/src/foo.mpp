@@ -1,0 +1,5 @@
+export module duplicate;
+
+export int value1() {
+    return 0;
+}
