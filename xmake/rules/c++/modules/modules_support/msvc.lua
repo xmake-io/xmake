@@ -194,20 +194,21 @@ function generate_dependencies(target, sourcebatch, opt)
                     for _, define in ipairs(target:get("defines")) do
                         table.insert(defines, "/D" .. define)
                     end
-                    local includedirs = table.join({}, target:get("includedirs"))
+                    local _includedirs = table.join({}, target:get("includedirs"))
                     for _, dep in ipairs(target:orderdeps()) do
                         local includedir = dep:get("sysincludedirs") or dep:get("includedirs")
                         if includedir then
-                            table.join2(includedirs, includedir)
+                            table.join2(_includedirs, includedir)
                         end
                     end
                     for _, pkg in pairs(target:pkgs()) do
                         local includedir = pkg:get("sysincludedirs") or pkg:get("includedirs")
                         if includedir then
-                            table.join2(includedirs, includedir)
+                            table.join2(_includedirs, includedir)
                         end
                     end
-                    for i, includedir in pairs(_includedirs) do
+                    local includedirs = {}
+                    for _, includedir in pairs(_includedirs) do
                         table.insert(includedirs, "/I")
                         table.insert(includedirs, includedir)
                     end
