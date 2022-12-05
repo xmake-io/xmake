@@ -1,0 +1,9 @@
+export module hello;
+
+import :part_internal;
+
+export namespace hello {
+    void say(const char* str) {
+        say_internal(str);
+    }
+}

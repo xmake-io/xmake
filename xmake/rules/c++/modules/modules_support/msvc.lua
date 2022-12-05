@@ -433,6 +433,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
     local ifcoutputflag = get_ifcoutputflag(target)
     local interfaceflag = get_interfaceflag(target)
     local referenceflag = get_referenceflag(target)
+    local internalpartitionflag = get_internalpartitionflag(target)
 
     -- flush job
     local flushjob = batchjobs:addjob(target:name() .. "_modules", function(index, total)
@@ -464,12 +465,8 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
             local dependfile = target:dependfile(objectfile)
 
             if provide then
-                table.join2(flags, {ifcoutputflag, provide.bmi})
+                table.join2(flags, {ifcoutputflag, path(provide.bmi), provide.interface and interfaceflag or internalpartitionflag})
                 dependfile = target:dependfile(provide.bmi)
-
-                if provide.interface then
-                    table.insert(flags, interfaceflag)
-                end
             end
 
             table.join2(moduleinfo, {
@@ -519,6 +516,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local ifcoutputflag = get_ifcoutputflag(target)
     local interfaceflag = get_interfaceflag(target)
     local referenceflag = get_referenceflag(target)
+    local internalpartitionflag = get_internalpartitionflag(target)
 
     -- build modules
     local depmtime = 0
@@ -549,11 +547,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             local flags = table.join({"-TP", "-c", path(cppfile), path(objectfile, function (p) return "-Fo" .. p end)})
             if provide or common.has_module_extension(cppfile) then
                 if provide then
-                    table.join2(flags, {ifcoutputflag, path(provide.bmi)})
-
-                    if provide.interface then
-                        table.insert(flags, interfaceflag)
-                    end
+                    table.join2(flags, {ifcoutputflag, path(provide.bmi), provide.interface and interfaceflag or internalpartitionflag})
                 end
 
                 batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
@@ -774,4 +768,16 @@ function get_cppversionflag(target)
         cppversionflag = table.find_if(flags, function(v) string.startswith(v, "/std:c++") end) or "/std:c++latest"
     end
     return cppversionflag or nil
+end
+
+function get_internalpartitionflag(target)
+    local internalpartitionflag = _g.internalpartitionflag
+    if internalpartitionflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-internalPartition", "cxxflags", {flagskey = "cl_internal_partition"}) then
+            internalpartitionflag = "-internalPartition"
+        end
+        _g.internalpartitionflag = internalpartitionflag or false
+    end
+    return internalpartitionflag or nil
 end

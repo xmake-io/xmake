@@ -1,0 +1,11 @@
+module;
+
+#include <cstdio>
+
+module hello:part_internal;
+
+namespace hello {
+    void say_internal(const char *str) {
+        printf("%s\n", str);
+    } 
+}
