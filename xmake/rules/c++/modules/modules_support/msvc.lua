@@ -194,7 +194,7 @@ function generate_dependencies(target, sourcebatch, opt)
                     for _, define in ipairs(target:get("defines")) do
                         table.insert(defines, "/D" .. define)
                     end
-                    local _includedirs = {}
+                    local includedirs = table.join({}, target:get("includedirs"))
                     for _, dep in ipairs(target:orderdeps()) do
                         local includedir = dep:get("sysincludedirs") or dep:get("includedirs")
                         if includedir then
@@ -207,7 +207,6 @@ function generate_dependencies(target, sourcebatch, opt)
                             table.join2(includedirs, includedir)
                         end
                     end
-                    local includedirs = {}
                     for i, includedir in pairs(_includedirs) do
                         table.insert(includedirs, "/I")
                         table.insert(includedirs, includedir)
