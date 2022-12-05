@@ -29,8 +29,8 @@ import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
 
 -- get and create the path of module mapper
-function _get_module_mapper()
-    local mapper_file = path.join(config.buildir(), "mapper.txt")
+function _get_module_mapper(target)
+    local mapper_file = path.join(config.buildir(), target:name(), "mapper.txt")
     if not os.isfile(mapper_file) then
         io.writefile(mapper_file, "")
     end
@@ -60,12 +60,20 @@ function load(target)
     local modulesflag = get_modulesflag(target)
     local modulemapperflag = get_modulemapperflag(target)
     target:add("cxxflags", modulesflag)
-    if os.isfile(_get_module_mapper()) then
-        os.rm(_get_module_mapper())
+    if os.isfile(_get_module_mapper(target)) then
+        os.rm(_get_module_mapper(target))
     end
-    target:add("cxxflags", modulemapperflag .. _get_module_mapper(), {force = true, expand = false})
+    target:add("cxxflags", modulemapperflag .. _get_module_mapper(target), {force = true, expand = false})
     -- fix cxxabi issue, @see https://github.com/xmake-io/xmake/issues/2716#issuecomment-1225057760
     target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=0")
+    local deps_mappers
+    for _, dep in ipairs(target:orderdeps()) do
+        deps_mappers = deps_mappers or {}
+        table.insert(deps_mappers, 1, modulemapperflag .. _get_module_mapper(dep))
+    end
+    if deps_mappers then
+        target:add("cxxflags", deps_mappers, {force = true, expand = false})
+    end
 end
 
 -- get includedirs for stl headers
@@ -220,7 +228,7 @@ end
 -- generate target stl header units for batchjobs
 function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
+    local mapper_file = _get_module_mapper(target)
     local stlcachedir = common.stlmodules_cachedir(target)
     local modulemapperflag = get_modulemapperflag(target)
 
@@ -259,7 +267,7 @@ end
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
+    local mapper_file = _get_module_mapper(target)
     local stlcachedir = common.stlmodules_cachedir(target)
 
     -- build headerunits
@@ -282,7 +290,7 @@ end
 -- generate target user header units for batchjobs
 function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
+    local mapper_file = _get_module_mapper(target)
     local cachedir = common.modules_cachedir(target)
 
     -- build headerunits
@@ -334,7 +342,7 @@ end
 -- generate target user header units for batchcmds
 function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
+    local mapper_file = _get_module_mapper(target)
     local cachedir = common.modules_cachedir(target)
 
     -- build headerunits
@@ -378,7 +386,7 @@ end
 
 -- build module files for batchjobs
 function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
-    local mapper_file = _get_module_mapper()
+    local mapper_file = _get_module_mapper(target)
 
     -- build modules
     local projectdir = os.projectdir()
@@ -433,7 +441,7 @@ end
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
+    local mapper_file = _get_module_mapper(target)
 
     -- build modules
     local projectdir = os.projectdir()
