@@ -55,6 +55,15 @@ function _add_module_to_mapper(file, module, bmi)
     return true
 end
 
+function _get_module_from_mapper(file, module)
+    for line in io.lines(file) do
+        if line:startswith(module .. " ") then
+            return line:split(" ", {plain = true})
+        end
+    end
+    return nil
+end
+
 -- load module support for the current target
 function load(target)
     local modulesflag = get_modulesflag(target)
@@ -417,6 +426,20 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 deps = table.keys(module.requires or {}),
                 sourcefile = cppfile,
                 job = batchjobs:newjob(name or cppfile, function(index, total)
+                    -- append dependencies module now to ensures deps modulemap is filled
+                    for required, _ in pairs(module.requires) do
+                        local m
+                        for _, dep in ipairs(target:orderdeps()) do
+                            m = _get_module_from_mapper(_get_module_mapper(dep), required)
+                            if m then
+                                break
+                            end
+                        end
+                        if m then
+                            _add_module_to_mapper(mapper_file, m[1], m[2])
+                            break
+                        end
+                    end
 
                     if provide or common.has_module_extension(cppfile) then
                         _build_modulefile(target, cppfile, {
