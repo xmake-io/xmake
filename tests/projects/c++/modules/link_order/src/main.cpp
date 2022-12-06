@@ -1,5 +1,5 @@
 import duplicate;
 
 int main() {
-    return VALUE();
+    return value();
 }

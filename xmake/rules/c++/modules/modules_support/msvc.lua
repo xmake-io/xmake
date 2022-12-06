@@ -719,12 +719,19 @@ function get_requiresflags(target, requires, opt)
     local flags = {}
     local modulemap = _get_modulemap_from_mapper(target)
     -- add deps required module flags
+    local already_mapped_modules = {}
     for name, _ in table.orderpairs(requires) do
+        -- if already in flags, continue
+        if already_mapped_modules[name] then
+            goto continue
+        end
+
         for _, dep in ipairs(target:orderdeps()) do
             local modulemap_ = _get_modulemap_from_mapper(dep)
             if modulemap_[name] then
                 table.join2(flags, modulemap_[name].flag)
                 table.join2(flags, modulemap_[name].deps or {})
+                already_mapped_modules[name] = true
                 if os.isfile(modulemap_[name].objectfile) then
                     _add_objectfile_to_link_arguments(target, modulemap_[name].objectfile)
                 end

@@ -1,5 +1,5 @@
 export module duplicate;
 
-export int value1() {
+export int value() {
     return 0;
 }
