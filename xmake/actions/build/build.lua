@@ -218,7 +218,7 @@ function get_batchjobs(targetname, group_pattern)
         local targets = {}
         for _, target in pairs(project.targets()) do
             local group = target:get("group")
-            if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
+            if (target:is_enabled() and target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
                 for _, depname in ipairs(target:get("deps")) do
                     depset:insert(depname)
                 end
