@@ -24,6 +24,7 @@
 * [#3013](https://github.com/xmake-io/xmake/issues/3013): Fix and support windows UNC path
 * [#2902](https://github.com/xmake-io/xmake/issues/2902): Fix file not access by another process occupied
 * [#3074](https://github.com/xmake-io/xmake/issues/3074): Fix CMakelists generator
+* [#3141](https://github.com/xmake-io/xmake/pull/3141): Fix import order on GCC and force it on clang and msvc #3141
 * Fix tools/xmake package build directory
 
 ## v2.7.3
@@ -1479,6 +1480,7 @@
 * [#3013](https://github.com/xmake-io/xmake/issues/3013): 修复支持 windows UNC 路径
 * [#2902](https://github.com/xmake-io/xmake/issues/2902): 修复文件被其他子进程占用问题
 * [#3074](https://github.com/xmake-io/xmake/issues/3074): 修复 CMakelists 生成器链接参数设置不对问题
+* [#3141](https://github.com/xmake-io/xmake/pull/3141): 修复 C++ 模块的导入顺序
 * 修复 tools/xmake 包安装构建目录
 
 ## v2.7.3
