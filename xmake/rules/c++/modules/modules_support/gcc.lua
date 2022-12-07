@@ -29,8 +29,8 @@ import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
 
 -- get and create the path of module mapper
-function _get_module_mapper()
-    local mapper_file = path.join(config.buildir(), "mapper.txt")
+function _get_module_mapper(target)
+    local mapper_file = path.join(config.buildir(), target:name(), "mapper.txt")
     if not os.isfile(mapper_file) then
         io.writefile(mapper_file, "")
     end
@@ -55,15 +55,23 @@ function _add_module_to_mapper(file, module, bmi)
     return true
 end
 
+function _get_module_from_mapper(file, module)
+    for line in io.lines(file) do
+        if line:startswith(module .. " ") then
+            return line:split(" ", {plain = true})
+        end
+    end
+    return nil
+end
+
 -- load module support for the current target
 function load(target)
     local modulesflag = get_modulesflag(target)
     local modulemapperflag = get_modulemapperflag(target)
-    target:add("cxxflags", modulesflag)
-    if os.isfile(_get_module_mapper()) then
-        os.rm(_get_module_mapper())
+    if os.isfile(_get_module_mapper(target)) then
+        os.rm(_get_module_mapper(target))
     end
-    target:add("cxxflags", modulemapperflag .. _get_module_mapper(), {force = true, expand = false})
+    target:add("cxxflags", {modulesflag, modulemapperflag .. path.translate(_get_module_mapper(target))}, {force = true, expand = false})
     -- fix cxxabi issue, @see https://github.com/xmake-io/xmake/issues/2716#issuecomment-1225057760
     target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=0")
 end
@@ -99,7 +107,8 @@ function _build_modulefile(target, sourcefile, opt)
     local objectfile = opt.objectfile
     local dependfile = opt.dependfile
     local compinst = compiler.load("cxx", {target = target})
-    local compflags = table.join("-x", "c++", compinst:compflags({target = target}))
+    local modulemapperflag = get_modulemapperflag(target)
+    local compflags = table.join("-x", "c++", modulemapperflag .. path.translate(_get_module_mapper(target)), compinst:compflags({target = target}))
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
     -- need build this object?
@@ -220,7 +229,7 @@ end
 -- generate target stl header units for batchjobs
 function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
+    local mapper_file = _get_module_mapper(target)
     local stlcachedir = common.stlmodules_cachedir(target)
     local modulemapperflag = get_modulemapperflag(target)
 
@@ -259,7 +268,7 @@ end
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
+    local mapper_file = _get_module_mapper(target)
     local stlcachedir = common.stlmodules_cachedir(target)
 
     -- build headerunits
@@ -282,7 +291,7 @@ end
 -- generate target user header units for batchjobs
 function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
+    local mapper_file = _get_module_mapper(target)
     local cachedir = common.modules_cachedir(target)
 
     -- build headerunits
@@ -334,7 +343,7 @@ end
 -- generate target user header units for batchcmds
 function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
+    local mapper_file = _get_module_mapper(target)
     local cachedir = common.modules_cachedir(target)
 
     -- build headerunits
@@ -378,7 +387,7 @@ end
 
 -- build module files for batchjobs
 function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
-    local mapper_file = _get_module_mapper()
+    local mapper_file = _get_module_mapper(target)
 
     -- build modules
     local projectdir = os.projectdir()
@@ -409,6 +418,20 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 deps = table.keys(module.requires or {}),
                 sourcefile = cppfile,
                 job = batchjobs:newjob(name or cppfile, function(index, total)
+                    -- append dependencies module now to ensures deps modulemap is filled
+                    for required, _ in pairs(module.requires) do
+                        local m
+                        for _, dep in ipairs(target:orderdeps()) do
+                            m = _get_module_from_mapper(_get_module_mapper(dep), required)
+                            if m then
+                                break
+                            end
+                        end
+                        if m then
+                            _add_module_to_mapper(mapper_file, m[1], m[2])
+                            break
+                        end
+                    end
 
                     if provide or common.has_module_extension(cppfile) then
                         _build_modulefile(target, cppfile, {
@@ -433,7 +456,8 @@ end
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
     local compinst = target:compiler("cxx")
-    local mapper_file = _get_module_mapper()
+    local modulemapperflag = get_modulemapperflag(target)
+    local mapper_file = _get_module_mapper(target)
 
     -- build modules
     local projectdir = os.projectdir()
@@ -456,7 +480,21 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     break
                 end
             end
-            local flags = {"-x", "c++","-c", path(cppfile), "-o", path(objectfile)}
+            -- append dependencies module now to ensures deps modulemap is filled
+            for required, _ in pairs(module.requires) do
+                local m
+                for _, dep in ipairs(target:orderdeps()) do
+                    m = _get_module_from_mapper(_get_module_mapper(dep), required)
+                    if m then
+                        break
+                    end
+                end
+                if m then
+                    _add_module_to_mapper(mapper_file, m[1], m[2])
+                    break
+                end
+            end
+            local flags = {"-x", "c++", "-c", path(cppfile), "-o", path(objectfile)}
             batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
             batchcmds:mkdir(path.directory(objectfile))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), flags))
