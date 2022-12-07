@@ -40,3 +40,20 @@ platform("wasm")
     -- set toolchains
     set_toolchains("emcc")
 
+    -- set menu
+    set_menu {
+        config =
+        {
+            {category = "Emscripten Configuration"                    }
+        ,   {nil, "emsdk", "kv", nil, "emsdk directory" }
+        ,   {nil, "emscripten", "kv", nil, "emscripten directory" }
+        }
+    ,   global =
+        {
+            {category = "Emscripten Configuration"                    }
+        ,   {nil, "emsdk", "kv", nil, "emsdk directory" }
+        ,   {nil, "emscripten", "kv", nil, "emscripten directory" }
+        }
+    }
+
+

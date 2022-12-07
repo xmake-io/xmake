@@ -21,6 +21,7 @@
 -- imports
 import("core.tool.compiler")
 import("lib.detect.find_program")
+import("detect.sdks.find_emscripten")
 
 -- check
 function _check(program)
@@ -61,6 +62,17 @@ function main(opt)
     -- init options
     opt       = opt or {}
     opt.check = opt.check or _check
+
+    -- init the search directories
+    local paths = {}
+    local emscriptendir = find_emscripten()
+    if emscriptendir then
+        table.insert(paths, emscriptendir.sdkdir)
+    end
+
+    -- find program
+    opt.paths = paths
+    opt.envs  = {PATH = os.getenv("PATH")}
 
     -- find program
     return find_program(opt.program or (is_host("windows") and "emar.bat" or "emar"), opt)
