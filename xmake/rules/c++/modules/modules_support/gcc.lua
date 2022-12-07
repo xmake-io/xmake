@@ -67,10 +67,11 @@ end
 -- load module support for the current target
 function load(target)
     local modulesflag = get_modulesflag(target)
-    target:add("cxxflags", modulesflag)
+    local modulemapperflag = get_modulemapperflag(target)
     if os.isfile(_get_module_mapper(target)) then
         os.rm(_get_module_mapper(target))
     end
+    target:add("cxxflags", {modulesflag, modulemapperflag .. path.translate(_get_module_mapper(target))}, {force = true, expand = false})
     -- fix cxxabi issue, @see https://github.com/xmake-io/xmake/issues/2716#issuecomment-1225057760
     target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=0")
 end
@@ -493,7 +494,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     break
                 end
             end
-            local flags = {"-x", "c++", modulemapperflag .. path.translate(_get_module_mapper(target)),"-c", path(cppfile), "-o", path(objectfile)}
+            local flags = {"-x", "c++", "-c", path(cppfile), "-o", path(objectfile)}
             batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
             batchcmds:mkdir(path.directory(objectfile))
             batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), flags))
