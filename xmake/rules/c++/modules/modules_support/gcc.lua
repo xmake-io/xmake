@@ -55,13 +55,13 @@ function _add_module_to_mapper(file, module, bmi)
     return true
 end
 
+-- get a module from mapper
 function _get_module_from_mapper(file, module)
     for line in io.lines(file) do
         if line:startswith(module .. " ") then
             return line:split(" ", {plain = true})
         end
     end
-    return nil
 end
 
 -- load module support for the current target
