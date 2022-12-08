@@ -104,7 +104,9 @@ function main()
 
                     -- release privilege
                     privilege.store()
-                    if ok then return end
+                    if ok then
+                        return
+                    end
                 end
 
                 -- continue to install with administrator permission?

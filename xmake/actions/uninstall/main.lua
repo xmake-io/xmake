@@ -51,23 +51,17 @@ function main()
                     local ok = try
                     {
                         function ()
-
-                            -- uninstall target
                             uninstall(targetname)
-
-                            -- trace
                             cprint("${color.success}uninstall ok!")
-
-                            -- ok
                             return true
                         end
                     }
 
                     -- release privilege
                     privilege.store()
-
-                    -- ok?
-                    if ok then return end
+                    if ok then
+                        return
+                    end
                 end
 
                 -- continue to uninstall with administrator permission?
