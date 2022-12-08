@@ -107,8 +107,7 @@ function _build_modulefile(target, sourcefile, opt)
     local objectfile = opt.objectfile
     local dependfile = opt.dependfile
     local compinst = compiler.load("cxx", {target = target})
-    local modulemapperflag = get_modulemapperflag(target)
-    local compflags = table.join("-x", "c++", modulemapperflag .. path.translate(_get_module_mapper(target)), compinst:compflags({target = target}))
+    local compflags = table.join("-x", "c++", compinst:compflags({target = target}))
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
     -- need build this object?

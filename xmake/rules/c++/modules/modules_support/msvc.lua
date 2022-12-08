@@ -732,9 +732,6 @@ function get_requiresflags(target, requires, opt)
                 table.join2(flags, modulemap_[name].flag)
                 table.join2(flags, modulemap_[name].deps or {})
                 already_mapped_modules[name] = true
-                if os.isfile(modulemap_[name].objectfile) then
-                    _add_objectfile_to_link_arguments(target, modulemap_[name].objectfile)
-                end
                 goto continue
             end
         end
