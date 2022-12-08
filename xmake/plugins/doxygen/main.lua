@@ -30,7 +30,7 @@ import("private.action.require.impl.install_packages")
 function _generate_doxyfile()
 
     -- generate the default doxyfile
-    local doxyfile = path.join(os.tmpdir(), "doxyfile")
+    local doxyfile = path.join(project.directory(), "doxyfile")
     os.vrunv(doxygen.program, {"-g", doxyfile})
 
     -- enable recursive
@@ -56,15 +56,6 @@ function _generate_doxyfile()
     if outputdir then
         io.gsub(doxyfile, "OUTPUT_DIRECTORY%s-=.-\n", format("OUTPUT_DIRECTORY = %s\n", outputdir))
         os.mkdir(outputdir)
-    end
-
-    -- set the project version
-    --
-    -- PROJECT_NUMBER =
-    --
-    local version = project.version()
-    if version then
-        io.gsub(doxyfile, "PROJECT_NUMBER%s-=.-\n", format("PROJECT_NUMBER = %s\n", version))
     end
 
     -- set the project name
@@ -110,6 +101,15 @@ function main()
         doxyfile = _generate_doxyfile()
     end
     assert(os.isfile(doxyfile), "%s not found!", doxyfile)
+
+    -- set the project version
+    --
+    -- PROJECT_NUMBER =
+    --
+    local version = project.version()
+    if version then
+        io.gsub(doxyfile, "PROJECT_NUMBER%s-=.-\n", format("PROJECT_NUMBER = %s\n", version))
+    end
 
     -- generate document
     cprint("generating ..${beer}")
