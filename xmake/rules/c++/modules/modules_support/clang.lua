@@ -133,7 +133,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     os.tryrm(tmpfile)
 end
 
--- build module file
+-- build interface module file
 function _build_modulefile(target, sourcefile, opt)
     local objectfile = opt.objectfile
     local dependfile = opt.dependfile
@@ -149,60 +149,31 @@ function _build_modulefile(target, sourcefile, opt)
         return
     end
 
-    -- init flags
-    local requiresflags = opt.requiresflags
-    local flags = table.join({"-x", "c++"}, requiresflags or {}, compflags)
-
-    -- trace
-    progress.show(opt.progress, "${color.build.object}compiling.module.$(mode) %s", sourcefile)
-    vprint(compinst:compcmd(sourcefile, objectfile, {compflags = flags, rawargs = true}))
-
-    if not dryrun then
-
-        -- do compile
-        dependinfo.files = {}
-        assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = flags}))
-
-        -- update files and values to the dependent file
-        dependinfo.values = depvalues
-        table.join2(dependinfo.files, sourcefile)
-        depend.save(dependinfo, dependfile)
-    end
-end
-
--- build interface module file
-function _build_interfacemodulefile(target, sourcefile, opt)
-    local objectfile = opt.objectfile
-    local dependfile = opt.dependfile
-    local compinst = compiler.load("cxx", {target = target})
-    local compflags = compinst:compflags({target = target})
-    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-
-    -- need build this object?
-    local dryrun = option.get("dry-run")
-    local depvalues = {compinst:program(), compflags}
-    local lastmtime = os.isfile(objectfile) and os.mtime(dependfile) or 0
-    if not dryrun and not depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
-        return
-    end
-
-    local bmifile = opt.bmifile
     local common_args = opt.common_args
     local requiresflags = opt.requiresflags
-    local bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags or {})
-    local objflags = table.join(compflags, common_args, requiresflags or {})
 
     -- trace
-    progress.show(opt.progress, "${color.build.object}compiling.module.$(mode) %s", opt.name)
-    vprint(compinst:compcmd(sourcefile, bmifile, {compflags = bmiflags, rawargs = true}))
-    vprint(compinst:compcmd(bmifile, objectfile, {compflags = objflags, rawargs = true}))
+    progress.show(opt.progress, "${color.build.object}compiling.module.$(mode) %s", opt.provide and opt.provide.name or sourcefile)
+
+    local bmifile
+    local bmiflags
+    if opt.provide then
+        bmifile = opt.provide.bmifile
+        bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags or {})
+        vprint(compinst:compcmd(sourcefile, bmifile, {compflags = bmiflags, rawargs = true}))
+    end
+
+    local objflags = table.join(compflags, common_args, requiresflags or {})
+    vprint(compinst:compcmd(bmifile or sourcefile, objectfile, {compflags = objflags, rawargs = true}))
 
     if not dryrun then
 
         -- do compile
         dependinfo.files = {}
-        assert(compinst:compile(sourcefile, bmifile, {dependinfo = dependinfo, compflags = bmiflags}))
-        assert(compinst:compile(bmifile, objectfile, {compflags = objflags}))
+        if opt.provide then
+            assert(compinst:compile(sourcefile, bmifile, {dependinfo = dependinfo, compflags = bmiflags}))
+        end
+        assert(compinst:compile(bmifile or sourcefile, objectfile, {compflags = objflags}))
 
         -- update files and values to the dependent file
         dependinfo.values = depvalues
@@ -504,30 +475,22 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         requiresflags = get_requiresflags(target, module.requires)
                     end
 
-                    if provide then
-                        local bmifile = provide.bmi
-                        _build_interfacemodulefile(target, provide.sourcefile, {
+                    if provide or common.has_module_extension(cppfile) then
+                        local bmifile = provide and provide.bmi
+                        _build_modulefile(target, provide and provide.sourcefile or cppfile, {
                             objectfile = objectfile,
-                            dependfile = target:dependfile(bmifile),
-                            bmifile = bmifile,
-                            name = name,
+                            dependfile = target:dependfile(bmifile or objectfile),
+                            provide = provide and {bmifile = bmifile, name = name},
                             common_args = common_args,
                             requiresflags = requiresflags,
                             progress = (index * 100) / total})
                         target:add("objectfiles", objectfile)
 
-                        _add_module_to_mapper(target, name, bmifile, requiresflags)
-                    else
-                        if common.has_module_extension(cppfile) then
-                            _build_modulefile(target, cppfile, {
-                                objectfile = objectfile,
-                                dependfile = target:dependfile(objectfile),
-                                requiresflags = requiresflags,
-                                progress = (index * 100) / total})
-                            target:add("objectfiles", objectfile)
-                        elseif requiresflags then
-                            target:fileconfig_add(cppfile, {force = {cxxflags = requiresflags}})
+                        if provide then
+                            _add_module_to_mapper(target, name, bmifile, requiresflags)
                         end
+                    elseif requiresflags then
+                        target:fileconfig_add(cppfile, {force = {cxxflags = requiresflags}})
                     end
                 end)})
             modulesjobs[name or cppfile] = moduleinfo
