@@ -149,6 +149,7 @@ function _build_modulefile(target, sourcefile, opt)
         return
     end
 
+    -- init flags
     local common_args = opt.common_args
     local requiresflags = opt.requiresflags
 
@@ -163,7 +164,7 @@ function _build_modulefile(target, sourcefile, opt)
         vprint(compinst:compcmd(sourcefile, bmifile, {compflags = bmiflags, rawargs = true}))
     end
 
-    local objflags = table.join(compflags, common_args, requiresflags or {})
+    local objflags = table.join(compflags, common_args, requiresflags or {}, (bmifile == nil) and {"-x", "c++"} or {})
     vprint(compinst:compcmd(bmifile or sourcefile, objectfile, {compflags = objflags, rawargs = true}))
 
     if not dryrun then
