@@ -389,9 +389,7 @@ end
 function _instance:get_from_deps(name, opt)
     local values = {}
     local orderdeps = self:orderdeps()
-    local total = #orderdeps
-    for idx, _ in ipairs(orderdeps) do
-        local dep = orderdeps[total + 1 - idx]
+    for _, dep in ipairs(orderdeps) do
         local depinherit = self:extraconf("deps", dep:name(), "inherit")
         if depinherit == nil or depinherit then
             table.join2(values, dep:get(name, opt))
