@@ -164,7 +164,7 @@ function generate_dependencies(target, sourcebatch, opt)
     local cachedir = common.modules_cachedir(target)
     local compinst = target:compiler("cxx")
     local common_args = {"-E", "-x", "c++"}
-    local trtbdflag = get_trtbdflag(target)
+    local depformatflag = get_depflag(target, "p1689r5") or get_depflag(target, "trtbd")
     local depfileflag = get_depfileflag(target)
     local depoutputflag = get_depoutputflag(target)
     local changed = false
@@ -181,11 +181,17 @@ function generate_dependencies(target, sourcebatch, opt)
             end
 
             local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
-            if trtbdflag and depfileflag and depoutputflag then
+            if depformatflag and depfileflag and depoutputflag then
                 local ifile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".i"))
                 local dfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".d"))
-                local args = {sourcefile, "-MD", "-MT", jsonfile, "-MF", dfile, depfileflag .. jsonfile, trtbdflag, depoutputfile .. target:objectfile(sourcefile), "-o", ifile}
-                os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_args, args), {envs = vcvars})
+                local args = {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depformatflag, depfileflag .. jsonfile, depoutputflag .. target:objectfile(sourcefile), "-o", ifile}
+                local compflags = compinst:compflags({target = target})
+                -- module mapper flag force gcc to check the imports but this is not wanted at this stage
+                local modulemapperflag = get_modulemapperflag(target) .. path.translate(_get_module_mapper(target))
+                table.remove(compflags, table.unpack(table.find(compflags, modulemapperflag)))
+                os.vrunv(compinst:program(), table.join(compflags, common_args, args))
+                os.rm(ifile)
+                os.rm(dfile)
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                     local compinst = target:compiler("cxx")
@@ -210,7 +216,7 @@ function generate_dependencies(target, sourcebatch, opt)
                         includedirs[i] = "-I" .. includedir
                     end
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    os.vrunv(compinst:program(), table.join(includedirs, defines, {get_cppversionflag(target), "-E", "-x", "c++", file,  "-o", ifile}))
+                    os.vrunv(compinst:program(), table.join(common_args, includedirs, defines, {get_cppversionflag(target), file,  "-o", ifile}))
                     local content = io.readfile(ifile)
                     os.rm(ifile)
                     return content
@@ -538,23 +544,29 @@ function get_modulemapperflag(target)
     return modulemapperflag or nil
 end
 
-function get_trtbdflag(target)
-    local trtbdflag = _g.trtbdflag
-    if trtbdflag == nil then
+function get_depflag(target, format)
+    local depflag = _g.depflag
+    if depflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fdep-format=trtbd", "cxxflags", {flagskey = "gcc_dep_format"}) then
-            trtbdflag = "-fdep-format=trtbd"
+        if compinst:has_flags("-fdep-format=" .. format, "cxxflags", {flagskey = "gcc_dep_format"}) then
+            depflag = "-fdep-format=" .. format
         end
-        _g.trtbdflag = trtbdflag or false
+        _g.depflag = depflag or false
     end
-    return trtbdflag or nil
+    return depflag or nil
 end
 
 function get_depfileflag(target)
     local depfileflag = _g.depfileflag
     if depfileflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fdep-file=" .. os.tmpfile(), "cxxflags", {flagskey = "gcc_dep_file"}) then
+        if compinst:has_flags("-fdep-file=" .. os.tmpfile(), "cxxflags", {flagskey = "gcc_dep_file",
+         on_check = function (ok, errors)
+             if errors:find("cc1plus: error: to generate dependencies") then
+                ok = true
+             end
+             return ok, errors
+        end}) then
             depfileflag = "-fdep-file="
         end
         _g.depfileflag = depfileflag or false
@@ -566,7 +578,13 @@ function get_depoutputflag(target)
     local depoutputflag = _g.depoutputflag
     if depoutputflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-fdep-output=" .. os.tmpfile() .. ".o", "cxxflags", {flagskey = "gcc_dep_output"}) then
+        if compinst:has_flags("-fdep-output=" .. os.tmpfile() .. ".o", "cxxflags", {flagskey = "gcc_dep_output",
+         on_check = function (ok, errors)
+             if errors:find("cc1plus: error: to generate dependencies") then
+                ok = true
+             end
+             return ok, errors
+        end}) then
             depoutputflag = "-fdep-output="
         end
         _g.depoutputflag = depoutputflag or false
