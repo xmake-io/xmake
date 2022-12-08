@@ -29,7 +29,7 @@ import("privilege.sudo")
 import("install")
 
 -- check targets
-function _check_targets(targetname)
+function _check_targets(targetname, group_pattern)
 
     -- get targets
     local targets = {}
