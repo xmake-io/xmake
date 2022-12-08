@@ -26,7 +26,58 @@ import("lib.detect.find_tool")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 
--- main
+-- generate doxyfile
+function _generate_doxyfile()
+
+    -- generate the default doxyfile
+    local doxyfile = path.join(os.tmpdir(), "doxyfile")
+    os.vrunv(doxygen.program, {"-g", doxyfile})
+
+    -- enable recursive
+    --
+    -- RECURSIVE = YES
+    --
+    io.gsub(doxyfile, "RECURSIVE%s-=%s-NO", "RECURSIVE = YES")
+
+    -- set the source directory
+    --
+    -- INPUT = xxx
+    --
+    local srcdir = option.get("srcdir")
+    if srcdir and os.isdir(srcdir) then
+        io.gsub(doxyfile, "INPUT%s-=.-\n", format("INPUT = %s\n", srcdir))
+    end
+
+    -- set the output directory
+    --
+    -- OUTPUT_DIRECTORY =
+    --
+    local outputdir = option.get("outputdir") or config.buildir()
+    if outputdir then
+        io.gsub(doxyfile, "OUTPUT_DIRECTORY%s-=.-\n", format("OUTPUT_DIRECTORY = %s\n", outputdir))
+        os.mkdir(outputdir)
+    end
+
+    -- set the project version
+    --
+    -- PROJECT_NUMBER =
+    --
+    local version = project.version()
+    if version then
+        io.gsub(doxyfile, "PROJECT_NUMBER%s-=.-\n", format("PROJECT_NUMBER = %s\n", version))
+    end
+
+    -- set the project name
+    --
+    -- PROJECT_NAME =
+    --
+    local name = project.name()
+    if name then
+        io.gsub(doxyfile, "PROJECT_NAME%s-=.-\n", format("PROJECT_NAME = %s\n", name))
+    end
+    return doxyfile
+end
+
 function main()
 
     -- load configuration
@@ -53,65 +104,18 @@ function main()
     end
     assert(doxygen, "doxygen not found!")
 
-    -- generate doxyfile first
-    local doxyfile = path.join(os.tmpdir(), "doxyfile")
-
-    -- generate the default doxyfile
-    os.vrunv(doxygen.program, {"-g", doxyfile})
-
-    -- enable recursive
-    --
-    -- RECURSIVE = YES
-    --
-    io.gsub(doxyfile, "RECURSIVE%s-=%s-NO", "RECURSIVE = YES")
-
-    -- set the source directory
-    --
-    -- INPUT = xxx
-    --
-    local srcdir = option.get("srcdir")
-    if srcdir and os.isdir(srcdir) then
-        io.gsub(doxyfile, "INPUT%s-=.-\n", format("INPUT = %s\n", srcdir))
+    -- get doxyfile first
+    local doxyfile = "doxyfile"
+    if not os.isfile(doxyfile) then
+        doxyfile = _generate_doxyfile()
     end
-
-    -- set the output directory
-    --
-    -- OUTPUT_DIRECTORY =
-    --
-    local outputdir = option.get("outputdir") or config.get("buildir") or "build"
-    if outputdir then
-        io.gsub(doxyfile, "OUTPUT_DIRECTORY%s-=.-\n", format("OUTPUT_DIRECTORY = %s\n", outputdir))
-        os.mkdir(outputdir)
-    end
-
-    -- set the project version
-    --
-    -- PROJECT_NUMBER =
-    --
-    local version = project.version()
-    if version then
-        io.gsub(doxyfile, "PROJECT_NUMBER%s-=.-\n", format("PROJECT_NUMBER = %s\n", version))
-    end
-
-    -- set the project name
-    --
-    -- PROJECT_NAME =
-    --
-    local name = project.name()
-    if name then
-        io.gsub(doxyfile, "PROJECT_NAME%s-=.-\n", format("PROJECT_NAME = %s\n", name))
-    end
-
-    -- check
     assert(os.isfile(doxyfile), "%s not found!", doxyfile)
 
-    -- trace
-    cprint("generating ..${beer}")
-
     -- generate document
+    cprint("generating ..${beer}")
     os.vrunv(doxygen.program, {doxyfile}, {curdir = project.directory()})
 
-    -- trace
+    -- done
     cprint("${bright green}result: ${default green}%s/html/index.html", outputdir)
     cprint("${color.success}doxygen ok!")
     os.setenvs(oldenvs)
