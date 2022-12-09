@@ -5,6 +5,7 @@
 ### New features
 
 * [#3049](https://github.com/xmake-io/xmake/pull/3049): Add `xmake format` plugin
+* Add `plugin.compile_commands.autoupdate` rule
 
 ### Changes
 
@@ -1461,6 +1462,7 @@
 ### 新特性
 
 * [#3049](https://github.com/xmake-io/xmake/pull/3049): 添加 `xmake format` 插件
+* 添加 `plugin.compile_commands.autoupdate` 规则
 
 ### 改进
 
