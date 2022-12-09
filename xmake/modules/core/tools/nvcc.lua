@@ -168,8 +168,8 @@ end
 
 -- make vs runtime flag
 function nf_runtime(self, vs_runtime)
-    if vs_runtime then
-        return (' -Xcompiler "-' .. vs_runtime .. '"'):trim()
+    if self:is_plat("windows") and vs_runtime then
+        return '-Xcompiler "-' .. vs_runtime .. '"'
     end
 end
 
