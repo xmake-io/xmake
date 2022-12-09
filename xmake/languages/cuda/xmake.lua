@@ -39,6 +39,7 @@ language("cuda")
         ,   "target.vectorexts:check"
         ,   "target.includedirs"
         ,   "target.languages"
+        ,   "target.runtimes"
         ,   "target.defines"
         ,   "target.undefines"
         ,   "toolchain.includedirs"

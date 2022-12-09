@@ -166,6 +166,13 @@ function nf_optimize(self, level)
     end
 end
 
+-- make vs runtime flag
+function nf_runtime(self, vs_runtime)
+    if vs_runtime then
+        return (' -Xcompiler "-' .. vs_runtime .. '"'):trim()
+    end
+end
+
 -- make the language flag
 function nf_language(self, stdname)
 
