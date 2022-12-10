@@ -46,13 +46,11 @@ platform("wasm")
         {
             {category = "Emscripten Configuration"                    }
         ,   {nil, "emsdk", "kv", nil, "emsdk directory" }
-        ,   {nil, "emscripten", "kv", nil, "emscripten directory" }
         }
     ,   global =
         {
             {category = "Emscripten Configuration"                    }
         ,   {nil, "emsdk", "kv", nil, "emsdk directory" }
-        ,   {nil, "emscripten", "kv", nil, "emscripten directory" }
         }
     }
 

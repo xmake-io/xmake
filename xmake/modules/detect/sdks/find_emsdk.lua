@@ -52,8 +52,20 @@ function _find_emsdk(sdkdir)
         return {}
     end
 
+    -- find emscripten toolchain directory
+    local emscripten
+
+    local subdirs = {}
+    table.insert(subdirs, path.join("upstream", "emscripten"))
+
+    local emcc = find_file("emcc", sdkdir, {suffixes = subdirs})
+    if emcc then
+        emscripten = path.directory(emcc)
+    end
+
     -- ok?
-    return {sdkdir = sdkdir}
+    return {sdkdir = sdkdir, emscripten = emscripten}
+
 end
 
 -- find emsdk directory
