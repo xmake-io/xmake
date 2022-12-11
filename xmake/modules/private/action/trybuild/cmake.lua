@@ -151,14 +151,11 @@ end
 
 -- get configs for wasm
 function _get_configs_for_wasm(configs)
-    local emsdk = os.getenv("EMSDK")
-    local emscripten_cmakefile
-    if emsdk and os.isdir(emsdk) then
-        emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk, "*", "emscripten/cmake/Modules/Platform"))
-    end
-    if emscripten_cmakefile then
-        table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. emscripten_cmakefile)
-    end
+    local emsdk = find_emsdk()
+    assert(emsdk and emsdk.emscripten, "emscripten not found!")
+    local emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk.emscripten, "cmake/Modules/Platform"))
+    assert(emscripten_cmakefile, "Emscripten.cmake not found!")
+    table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. emscripten_cmakefile)
     assert(emscripten_cmakefile, "Emscripten.cmake not found!")
     _get_configs_for_generic(configs)
 end

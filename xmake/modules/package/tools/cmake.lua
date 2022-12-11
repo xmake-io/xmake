@@ -27,6 +27,7 @@ import("core.tool.compiler")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 import("package.tools.ninja")
+import("detect.sdks.find_emsdk")
 
 -- get the number of parallel jobs
 function _get_parallel_njobs(opt)
@@ -474,15 +475,11 @@ end
 
 -- get configs for wasm
 function _get_configs_for_wasm(package, configs, opt)
-    local emsdk = os.getenv("EMSDK")
-    local emscripten_cmakefile
-    if emsdk and os.isdir(emsdk) then
-        emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk, "*", "emscripten/cmake/Modules/Platform"))
-    end
-    if emscripten_cmakefile then
-        table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. emscripten_cmakefile)
-    end
+    local emsdk = find_emsdk()
+    assert(emsdk and emsdk.emscripten, "emscripten not found!")
+    local emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk.emscripten, "cmake/Modules/Platform"))
     assert(emscripten_cmakefile, "Emscripten.cmake not found!")
+    table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. emscripten_cmakefile)
     if is_subhost("windows") then
         local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
         table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. _translate_paths(path.join(mingw, "bin", "mingw32-make.exe")))
