@@ -21,7 +21,7 @@
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
-import("detect.sdks.find_emscripten")
+import("detect.sdks.find_emsdk")
 
 -- find emxx
 --
@@ -42,15 +42,12 @@ function main(opt)
     opt = opt or {}
 
     -- init the search directories
-    local paths = {}
-    local emscriptendir = find_emscripten()
-    if emscriptendir then
-        table.insert(paths, emscriptendir.sdkdir)
+    local emsdk = find_emsdk()
+    if emsdk and emsdk.emscripten then
+        local paths = {}
+        table.insert(paths, emsdk.emscripten)
+        opt.paths = paths
     end
-
-    -- find program
-    opt.paths = paths
-    opt.envs  = {PATH = os.getenv("PATH")}
 
     -- find program
     local program = find_program(opt.program or (is_host("windows") and "em++.bat" or "em++"), opt)
