@@ -166,6 +166,13 @@ function nf_optimize(self, level)
     end
 end
 
+-- make vs runtime flag
+function nf_runtime(self, vs_runtime)
+    if self:is_plat("windows") and vs_runtime then
+        return '-Xcompiler "-' .. vs_runtime .. '"'
+    end
+end
+
 -- make the language flag
 function nf_language(self, stdname)
 
