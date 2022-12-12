@@ -132,7 +132,15 @@ function load(target)
         local languages = table.join({}, target:get("languages"))
         local disable_on = { "c++11", "cxx11", "c++14", "cxx14", "c++17", "cxx17", "c++20", "cxx20"}
         local iscpp23 = table.find_if(languages, function(_, v) for _, flag in pairs(disable_on) do if v:find(flag) then return false end end return true end)
-        target:set("values", "c++.msvc.enable_std_import", iscpp23)
+        local stdmodulesdir
+        local msvc = target:toolchain("msvc")
+        if msvc then
+            local vcvars = msvc:config("vcvars")
+            if vcvars.VCInstallDir and vcvars.VCToolsVersion then
+                stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
+            end
+        end
+        target:set("values", "c++.msvc.enable_std_import", iscpp23 and os.isdir(stdmodulesdir))
     end
 
     -- add stdifcdir in case of if the user ask for it
