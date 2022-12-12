@@ -78,6 +78,7 @@ function _escape_path_in_flag(target, flag)
             flag = _escape_path(flag)
         end
     end
+    return flag
 end
 
 -- get unix path
