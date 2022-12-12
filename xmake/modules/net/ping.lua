@@ -35,7 +35,7 @@ function _ping(ping, host)
     end
     local timeval = "65535"
     if data then
-        timeval = data:match("time=([%d%s%.]-)ms", 1, true) or data:match("=([%d%s%.]-)ms TTL", 1, true) or "65535"
+        timeval = data:match("time[=<]([%d%s%.]-)ms", 1, true) or data:match("[=<]([%d%s%.]-)ms TTL", 1, true) or "65535"
     end
     if timeval then
         timeval = tonumber(timeval:trim())
