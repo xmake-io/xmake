@@ -61,10 +61,29 @@ function _translate_path(filepath, outputdir)
     end
 end
 
+-- escape path
+function _escape_path(filepath)
+    if is_host("windows") then
+        filepath = filepath:gsub('\\', '/')
+    end
+    return filepath
+end
+
+-- escape path in flag
+-- @see https://github.com/xmake-io/xmake/issues/3161
+function _escape_path_in_flag(target, flag)
+    if is_host("windows") and target:has_tool("cc", "cl") then
+        -- e.g. /ManifestInput:xx, /def:xxx
+        if flag:find(":", 1, true) then
+            flag = _escape_path(flag)
+        end
+    end
+end
+
 -- get unix path
 function _get_unix_path(filepath, outputdir)
     filepath = _translate_path(filepath, outputdir)
-    filepath = path.translate(filepath):gsub('\\', '/')
+    filepath = _escape_path(path.translate(filepath))
     return os.args(filepath)
 end
 
@@ -524,16 +543,20 @@ function _add_target_compile_options(cmakelists, target, outputdir)
     if #cflags > 0 or #cxflags > 0 or #cxxflags > 0 or #cuflags > 0 then
         cmakelists:print("target_compile_options(%s PRIVATE", target:name())
         for _, flag in ipairs(_translate_flags(cflags, outputdir)) do
+            flag = _escape_path_in_flag(target, flag)
             cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
         end
         for _, flag in ipairs(_translate_flags(cxflags, outputdir)) do
+            flag = _escape_path_in_flag(target, flag)
             cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
             cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
         end
         for _, flag in ipairs(_translate_flags(cxxflags, outputdir)) do
+            flag = _escape_path_in_flag(target, flag)
             cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
         end
         for _, flag in ipairs(_translate_flags(cuflags, outputdir)) do
+            flag = _escape_path_in_flag(target, flag)
             cmakelists:print("    $<$<COMPILE_LANGUAGE:CUDA>:" .. flag .. ">")
         end
         cmakelists:print(")")
@@ -794,6 +817,7 @@ function _add_target_link_options(cmakelists, target)
                 cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
             end
             for _, flag in ipairs(flags) do
+                flag = _escape_path_in_flag(target, flag)
                 cmakelists:print("    " .. flag)
             end
             cmakelists:print(")")
