@@ -515,6 +515,7 @@ function get_module_dependencies(target, sourcebatch, opt)
         if changed or modules == nil then
             local moduleinfos = load_moduleinfos(target, sourcebatch)
             modules = _parse_dependencies_data(target, moduleinfos)
+            modules = table.join(modules or {}, modules_support(target).get_stdmodules(target))
             if modules then
                 _check_circular_dependencies(modules)
             end
