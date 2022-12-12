@@ -1,6 +1,6 @@
 module my_module;
 
-#ifdef _MSC_VER
+#ifdef MSVC_MODULES
 import std.core;
 #else
 import std;
