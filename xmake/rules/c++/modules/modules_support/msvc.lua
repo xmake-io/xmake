@@ -155,6 +155,8 @@ function load(target)
                     arch = "x64"
                 elseif target:is_arch("x86", "i386") then
                     arch = "x86"
+                elseif target:is_arch("arm64") then
+                    arch = "arm64"
                 end
                 if arch then
                     local mode = is_mode("release") and "Release" or "Debug"

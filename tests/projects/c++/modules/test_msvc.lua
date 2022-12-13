@@ -23,7 +23,7 @@ function stdimport_support()
         if msvc and msvc:check() then
             local vcvars = msvc:config("vcvars")
             if vcvars and vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                stdifcdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
+                stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
             end
         end
         return os.isdir(stdmodulesdir or "")
