@@ -28,16 +28,12 @@ import("lib.detect.find_file")
 
 -- find sdk directory
 function _find_emsdkdir(sdkdir)
-
-    -- try to find emsdk.py
     local paths = {}
     if sdkdir then
         table.insert(paths, sdkdir)
     end
     table.insert(paths, "$(env EMSDK)")
     local emsdk = find_file("emsdk.py", paths, {suffixes = subdirs})
-
-    -- get sdk directory
     if emsdk then
         return path.directory(emsdk)
     end
@@ -54,16 +50,12 @@ function _find_emsdk(sdkdir)
 
     -- find emscripten toolchain directory
     local emscripten
-
     local subdirs = {}
     table.insert(subdirs, path.join("upstream", "emscripten"))
-
     local emcc = find_file("emcc", sdkdir, {suffixes = subdirs})
     if emcc then
         emscripten = path.directory(emcc)
     end
-
-    -- ok?
     return {sdkdir = sdkdir, emscripten = emscripten}
 
 end
@@ -96,18 +88,12 @@ function main(sdkdir, opt)
     -- find sdk
     local sdk = _find_emsdk(sdkdir or config.get("emsdk") or global.get("emsdk"))
     if sdk and sdk.sdkdir then
-
-        -- save to config
         config.set("emsdk", sdk.sdkdir, {force = true, readonly = true})
-
-        -- trace
         if opt.verbose or option.get("verbose") then
             cprint("checking for emsdk directory ... ${color.success}%s", sdk.sdkdir)
         end
 
     else
-
-        -- trace
         if opt.verbose or option.get("verbose") then
             cprint("checking for emsdk directory ... ${color.nothing}${text.nothing}")
         end

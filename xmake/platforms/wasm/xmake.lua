@@ -44,13 +44,13 @@ platform("wasm")
     set_menu {
         config =
         {
-            {category = "Emscripten Configuration"                    }
-        ,   {nil, "emsdk", "kv", nil, "emsdk directory" }
+            {category = "Emscripten Configuration"          }
+        ,   {nil, "emsdk", "kv", nil, "The emsdk directory" }
         }
     ,   global =
         {
-            {category = "Emscripten Configuration"                    }
-        ,   {nil, "emsdk", "kv", nil, "emsdk directory" }
+            {category = "Emscripten Configuration"          }
+        ,   {nil, "emsdk", "kv", nil, "The emsdk directory" }
         }
     }
 
