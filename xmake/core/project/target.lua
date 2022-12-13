@@ -416,10 +416,10 @@ function _instance:get_from_pkgs(name, opt)
         local configinfo = self:pkgconfig(pkg:name())
         -- get values from package components
         -- e.g. `add_packages("sfml", {components = {"graphics", "window"}})`
-        local components_default = pkg:components_default()
-        if configinfo and (configinfo.components or components_default) and pkg:components() then
+        local selected_components = configinfo and configinfo.components or pkg:components_default()
+        if selected_components and pkg:components() then
             local components_enabled = hashset.new()
-            for _, comp in ipairs(table.wrap(configinfo.components or components_default)) do
+            for _, comp in ipairs(table.wrap(selected_components)) do
                 components_enabled:insert(comp)
                 for _, dep in ipairs(table.wrap(pkg:component_orderdeps(comp))) do
                     components_enabled:insert(dep)
