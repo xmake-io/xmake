@@ -1883,6 +1883,36 @@ function _instance:components_deps()
     return components_deps
 end
 
+-- get default components
+--
+-- @see https://github.com/xmake-io/xmake/issues/3164
+--
+-- @code
+-- add_components("graphics", {default = true})
+-- @endcode
+--
+-- or
+--
+-- @code
+-- on_component(function (package, component))
+--     component:set("default", true)
+-- end)
+-- @endcode
+--
+function _instance:components_default()
+    local components_default = self._COMPONENTS_DEFAULT
+    if not components_default then
+        for _, name in ipairs(table.wrap(self:get("components"))) do
+            if self:extraconf("components", name, "default") or self:component(name):get("default") then
+                components_default = components_default or {}
+                table.insert(components_default, name)
+            end
+        end
+        self._COMPONENTS_DEFAULT = components_default or false
+    end
+    return components_default or nil
+end
+
 -- get package components list with dependencies order
 function _instance:components_orderlist()
     local components_orderlist = self._COMPONENTS_ORDERLIST
