@@ -419,7 +419,7 @@ function _instance:get_from_pkgs(name, opt)
         local components_default = pkg:components_default()
         if configinfo and (configinfo.components or components_default) and pkg:components() then
             local components_enabled = hashset.new()
-            for _, comp in ipairs(table.join(configinfo.components or {}, components_default)) do
+            for _, comp in ipairs(table.wrap(configinfo.components or components_default)) do
                 components_enabled:insert(comp)
                 for _, dep in ipairs(table.wrap(pkg:component_orderdeps(comp))) do
                     components_enabled:insert(dep)
