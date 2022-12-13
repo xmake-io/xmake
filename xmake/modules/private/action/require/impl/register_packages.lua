@@ -61,6 +61,7 @@ function _register_required_package_libs(instance, required_package, is_deps)
             -- save components list and dependencies
             if components then
                 required_package:set("__components_deps", instance:components_deps())
+                required_package:set("__components_default", instance:components_default())
                 required_package:set("__components_orderlist", instance:components_orderlist())
             end
 

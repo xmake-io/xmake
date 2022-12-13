@@ -146,6 +146,11 @@ function _instance:components()
     return self:get("components")
 end
 
+-- get default components
+function _instance:components_default()
+    return self:get("__components_default")
+end
+
 -- get components list with link order
 function _instance:components_orderlist()
     return self:get("__components_orderlist")
