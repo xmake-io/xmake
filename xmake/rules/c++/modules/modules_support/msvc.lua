@@ -79,7 +79,7 @@ function _add_objectfile_to_link_arguments(target, objectfile)
     if table.contains(cache, objectfile) then
         return
     end
-    table.insert(cache, path.translate(objectfile))
+    table.insert(cache, objectfile)
     common.localcache():set(cachekey, cache)
     common.localcache():save(cachekey)
 end
@@ -519,7 +519,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             name = name or module.cppfile,
                             flags = _flags,
                             progress = (index * 100) / total})
-                        _add_objectfile_to_link_arguments(target, objectfile)
+                        _add_objectfile_to_link_arguments(target, path(objectfile))
                     elseif requiresflags then
                         requiresflags = get_requiresflags(target, module.requires)
                         target:fileconfig_add(cppfile, {force = {cxxflags = table.join(flags, requiresflags)}})
@@ -584,7 +584,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 batchcmds:mkdir(path.directory(objectfile))
                 batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), table.join(flags, requiresflags or {})), {envs = msvc:runenvs()})
                 batchcmds:add_depfiles(cppfile)
-                _add_objectfile_to_link_arguments(target, objectfile)
+                _add_objectfile_to_link_arguments(target, path(objectfile))
                 if provide then
                     _add_module_to_mapper(target, referenceflag, name, name, objectfile, provide.bmi, requiresflags)
                 end
