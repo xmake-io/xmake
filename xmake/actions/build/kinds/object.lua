@@ -177,6 +177,22 @@ end
 -- add batch jobs for target
 function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suffix)
 
+    -- we just build sourcebatch with on_build_files scripts
+    --
+    -- for example, c++.build and c++.build.modules.builder rules have same sourcefiles,
+    -- but we just build it for c++.build
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/3171
+    --
+    local rulename = sourcebatch.rulename
+    if rulename then
+        local ruleinst = _get_rule(target, rulename)
+        if not ruleinst:script("build_file") and
+            not ruleinst:script("build_files") then
+            return
+        end
+    end
+
     -- add batch jobs
     local scriptname = "build_files" .. (suffix and ("_" .. suffix) or "")
     local script = target:script(scriptname)
