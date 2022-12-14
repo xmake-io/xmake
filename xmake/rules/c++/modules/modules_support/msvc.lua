@@ -25,6 +25,7 @@ import("core.project.project")
 import("core.project.depend")
 import("core.project.config")
 import("core.base.hashset")
+import("core.base.semver")
 import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
@@ -130,48 +131,27 @@ function load(target)
     -- enable std modules if c++23 by defaults
     if target:values("c++.msvc.enable_std_import") == nil then
         local languages = table.join({}, target:get("languages"))
-        local disable_on = { "c++11", "cxx11", "c++14", "cxx14", "c++17", "cxx17", "c++20", "cxx20"}
-        local iscpp23 = table.find_if(languages, function(_, v) for _, flag in pairs(disable_on) do if v:find(flag) then return false end end return true end)
-        local stdmodulesdir
-        local msvc = target:toolchain("msvc")
-        if msvc then
-            local vcvars = msvc:config("vcvars")
-            if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
-            end
-        end
-        target:set("values", "c++.msvc.enable_std_import", iscpp23 and os.isdir(stdmodulesdir))
-    end
-
-    -- add stdifcdir in case of if the user ask for it
-    local stdifcdirflag = get_stdifcdirflag(target)
-    if stdifcdirflag and target:values("c++.msvc.enable_std_ifc") then
-        local msvc = target:toolchain("msvc")
-        if msvc then
-            local vcvars = msvc:config("vcvars")
-            if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                local arch
-                if target:is_arch("x64", "x86_64") then
-                    arch = "x64"
-                elseif target:is_arch("x86", "i386") then
-                    arch = "x86"
-                elseif target:is_arch("arm64") then
-                    arch = "arm64"
-                end
-                if arch then
-                    local mode = is_mode("release") and "Release" or "Debug"
-                    local stdifcdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "ifc", arch)
-                    if os.isdir(stdifcdir) then
-                        target:add("cxxflags", {stdifcdirflag, winos.short_path(stdifcdir)}, {force = true, expand = false})
-                        target:add("linkdirs", path.join(stdifcdir, mode))
-                        target:add("links", "std")
+        local iscpp23 = false
+        for _, language in pairs(languages) do
+            if language:find("c++") or language:find("cxx") then
+                iscpp23 = true
+                for _, version in pairs({"11", "14", "17", "20"}) do
+                    if language:find(version) then
+                        iscpp23 = false
+                        break
                     end
                 end
             end
         end
-
-        -- can't enable c++23 std modules and msvc specifics std modules
-        target:set("values", "c++.msvc.enable_std_import", false)
+        local stdmodulesdir
+        local msvc = target:toolchain("msvc")
+        if msvc then
+            local vcvars = msvc:config("vcvars")
+            if vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.35") then
+                stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
+            end
+        end
+        target:set("values", "c++.msvc.enable_std_import", iscpp23 and os.isdir(stdmodulesdir))
     end
 end
 
@@ -550,6 +530,13 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local referenceflag = get_referenceflag(target)
     local internalpartitionflag = get_internalpartitionflag(target)
 
+    if target:values("c++.msvc.enable_std_import") then
+        for objectfile, module in pairs(get_stdmodules(target)) do
+            table.insert(objectfiles, objectfile)
+            modules[objectfile] = module
+        end
+    end
+
     -- build modules
     local depmtime = 0
     for _, objectfile in ipairs(objectfiles) do
@@ -736,18 +723,6 @@ function get_exportheaderflag(target)
         _g.exportheaderflag = exportheaderflag or false
     end
     return exportheaderflag or nil
-end
-
-function get_stdifcdirflag(target)
-    local stdifcdirflag = _g.stdifcdirflag
-    if stdifcdirflag == nil then
-        local compinst = target:compiler("cxx")
-        if compinst:has_flags("-stdIfcDir", "cxxflags", {flagskey = "cl_std_ifc_dir"}) then
-            stdifcdirflag = "-stdIfcDir"
-        end
-        _g.stdifcdirflag = stdifcdirflag or false
-    end
-    return stdifcdirflag or nil
 end
 
 function get_scandependenciesflag(target)
