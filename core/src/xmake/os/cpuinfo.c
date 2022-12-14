@@ -134,7 +134,6 @@ static tb_float_t xm_os_cpuinfo_usagerate()
     tb_float_t usagerate = 0;
     if (tb_file_info("/proc/stat", tb_null))
     {
-        tb_bool_t ok = tb_false;
         FILE* fp = fopen("/proc/stat", "r");
         if (fp)
         {
