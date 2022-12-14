@@ -46,7 +46,7 @@ includes "src/lua"
 includes "src/lua-cjson"
 includes "src/sv"
 includes "src/lz4"
-#includes "src/tbox"
+includes "src/tbox"
 #includes "src/xmake"
 #includes "src/demo"
 #if is_config "runtime" "luajit" then
