@@ -42,9 +42,9 @@ option "curses"
 option_end
 
 # add projects
-#includes "src/lua-cjson"
+includes "src/lua"
+includes "src/lua-cjson"
 #includes "src/sv"
-#includes "src/lua"
 #includes "src/lz4"
 #includes "src/tbox"
 #includes "src/xmake"
