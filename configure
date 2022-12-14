@@ -1377,6 +1377,43 @@ _get_target_file() {
     _ret="${targetfile}"
 }
 
+# get target librarydeps
+_get_target_librarydeps_impl() {
+    local name="${1}"
+    local librarydeps=""
+    local dep=""
+    _get_target_item "${name}" "deps"; local deps="${_ret}"
+    for dep in ${deps}; do
+        _get_target_item "${dep}" "kind"; local dep_kind="${_ret}"
+        if test_eq "${dep_kind}" "static" || test_eq "${dep_kind}" "shared"; then
+            librarydeps="${librarydeps} ${dep}"
+            _get_target_librarydeps_impl "${dep}"; local dep_librarydeps="${_ret}"
+            if test_nz "${dep_librarydeps}"; then
+                librarydeps="${librarydeps} ${dep_librarydeps}"
+            fi
+        fi
+    done
+    _ret="${librarydeps}"
+}
+
+_get_target_librarydeps() {
+    local name="${1}"
+    _get_target_item "${name}" "librarydeps"; local librarydeps="${_ret}"
+    if test_z "${librarydeps}" && test_nq "${librarydeps}" "__none__"; then
+        _get_target_librarydeps_impl "${name}"; librarydeps="${_ret}"
+        if test_nz "${librarydeps}"; then
+            _dedup_reverse "${librarydeps}"; librarydeps="${_ret}"
+            _set_target_item "${name}" "librarydeps" "${librarydeps}"
+        else
+            _set_target_item "${name}" "librarydeps" "__none__"
+        fi
+    fi
+    if test_eq "${librarydeps}" "__none__"; then
+        librarydeps=""
+    fi
+    _ret="${librarydeps}"
+}
+
 # get sourcefiles in target
 _get_target_sourcefiles() {
     local name="${1}"
@@ -1422,7 +1459,7 @@ _get_target_abstract_flags() {
         _get_target_item "${name}" "${itemname}"; values="${_ret}"
 
         # get values from target deps
-        _get_target_item "${name}" "deps"; local deps="${_ret}"
+        _get_target_librarydeps "${name}"; local deps="${_ret}"
         local dep=""
         for dep in ${deps}; do
             _get_target_item "${dep}" "kind"; local dep_kind="${_ret}"
@@ -1548,7 +1585,7 @@ _get_target_linker_flags() {
     fi
 
     # get flags from target deps
-    _get_target_item "${name}" "deps"; local deps="${_ret}"
+    _get_target_librarydeps "${name}"; local deps="${_ret}"
     local dep=""
     for dep in ${deps}; do
         _get_target_item "${dep}" "kind"; local dep_kind="${_ret}"

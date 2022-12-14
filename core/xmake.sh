@@ -49,7 +49,7 @@ includes "src/sv"
 includes "src/lz4"
 includes "src/tbox"
 includes "src/xmake"
-#includes "src/demo"
+includes "src/demo"
 #if is_config "runtime" "luajit" then
 #    includes "src/luajit"
 #fi
