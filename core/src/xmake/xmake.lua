@@ -1,11 +1,8 @@
 target("xmake")
-
-    -- make as a static library
     set_kind("static")
 
     -- add deps
-    add_deps("sv", "lua-cjson", "lz4", "tbox")
-    add_deps(get_config("runtime"))
+    add_deps("sv", "lua-cjson", "lua", "lz4", "tbox")
     if is_plat("windows") and has_config("pdcurses") then
         add_deps("pdcurses")
     end

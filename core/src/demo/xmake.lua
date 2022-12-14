@@ -31,7 +31,7 @@ target("demo")
         add_ldflags("/export:malloc", "/export:free", "/export:memmove")
     elseif is_plat("android") then
         add_links("m", "c")
-    elseif is_plat("macosx") then
+    elseif is_plat("macosx") and is_config("runtime", "luajit") then
         add_ldflags("-all_load", "-pagezero_size 10000", "-image_base 100000000")
     elseif is_plat("mingw") then
         add_ldflags("-static-libgcc", {force = true})
