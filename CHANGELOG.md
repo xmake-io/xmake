@@ -6,6 +6,7 @@
 
 * [#3049](https://github.com/xmake-io/xmake/pull/3049): Add `xmake format` plugin
 * Add `plugin.compile_commands.autoupdate` rule
+* [#3172](https://github.com/xmake-io/xmake/pull/3172): Add xmake.sh
 
 ### Changes
 
@@ -1464,6 +1465,7 @@
 
 * [#3049](https://github.com/xmake-io/xmake/pull/3049): 添加 `xmake format` 插件
 * 添加 `plugin.compile_commands.autoupdate` 规则
+* [#3172](https://github.com/xmake-io/xmake/pull/3172): 添加 xmake.sh
 
 ### 改进
 
