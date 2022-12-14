@@ -12,6 +12,9 @@ set_languages "c99"
 # add defines
 add_defines "_GNU_SOURCE=1"  "_FILE_OFFSET_BITS=64"  "_LARGEFILE_SOURCE"
 
+# disable some compiler errors
+add_cxflags "-Wno-error=deprecated-declarations" "-fno-strict-aliasing" "-Wno-error=nullability-completeness" "-Wno-error=parentheses-equality"
+
 # add build modes
 if is_mode "debug"; then
     set_symbols "debug"
@@ -31,14 +34,12 @@ option "readline"
     add_links "readline"
     add_cincludes "readline/readline.h"
     add_cfuncs "readline"
-#    add_defines("XM_CONFIG_API_HAVE_READLINE")
 
 # the curses option
 option "curses"
     set_description "Enable or disable curses library"
     add_links "curses"
     add_cincludes "curses.h"
-#    add_defines "XM_CONFIG_API_HAVE_CURSES"
 option_end
 
 # add projects
@@ -47,7 +48,7 @@ includes "src/lua-cjson"
 includes "src/sv"
 includes "src/lz4"
 includes "src/tbox"
-#includes "src/xmake"
+includes "src/xmake"
 #includes "src/demo"
 #if is_config "runtime" "luajit" then
 #    includes "src/luajit"
