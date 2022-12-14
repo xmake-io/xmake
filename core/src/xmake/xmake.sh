@@ -50,11 +50,12 @@ target "xmake"
 
     # enable readline
     if has_config "readline"; then
-        add_defines "XM_CONFIG_API_HAVE_READLINE"
+        add_defines "XM_CONFIG_API_HAVE_READLINE" "{public}"
+        add_links "readline" "{public}"
     fi
 
     # enable curses
     if has_config "curses"; then
-        add_defines "XM_CONFIG_API_HAVE_CURSES"
+        add_defines "XM_CONFIG_API_HAVE_CURSES" "{public}"
+        add_links "curses" "{public}"
     fi
-
