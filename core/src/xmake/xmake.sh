@@ -4,12 +4,7 @@ target "xmake"
     set_kind "static"
 
     # add deps
-    add_deps "sv" "lua_cjson" "lz4" "tbox"
-    if is_config "runtime" "luajit"; then
-        add_deps "luajit"
-    else
-        add_deps "lua"
-    fi
+    add_deps "sv" "lua_cjson" "lua" "lz4" "tbox"
 
     # add defines
     add_defines "__tb_prefix__=\"xmake\""

@@ -1,7 +1,7 @@
 target("lua-cjson")
     set_kind("static")
     set_warnings("all")
-    add_deps(get_config("runtime"))
+    add_deps("lua")
     if is_plat("windows") then
         set_languages("c89")
     end

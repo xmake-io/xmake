@@ -1,9 +1,6 @@
 #!/bin/sh
 
 target "lua"
-    if ! is_config "runtime" "lua"; then
-        set_default false
-    fi
     set_kind "static"
     set_warnings "all"
 
