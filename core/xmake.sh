@@ -3,8 +3,8 @@
 set_project "xmake"
 set_version "2.7.3" "%Y%m%d%H%M"
 
-# set warning all as error
-set_warnings "all" "error"
+# set warning all
+set_warnings "all"
 
 # set language: c99
 set_languages "c99"
@@ -13,7 +13,9 @@ set_languages "c99"
 add_defines "_GNU_SOURCE=1"  "_FILE_OFFSET_BITS=64"  "_LARGEFILE_SOURCE"
 
 # disable some compiler errors
-add_cxflags "-Wno-error=deprecated-declarations" "-fno-strict-aliasing" "-Wno-error=nullability-completeness" "-Wno-error=parentheses-equality"
+if is_plat "macosx"; then
+    add_cxflags "-Wno-error=deprecated-declarations" "-fno-strict-aliasing" "-Wno-error=nullability-completeness" "-Wno-error=parentheses-equality"
+fi
 
 # add build modes
 if is_mode "debug"; then
