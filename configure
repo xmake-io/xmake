@@ -931,7 +931,9 @@ option() {
         fi
         return
     fi
-    _xmake_sh_options="${_xmake_sh_options} ${name}"
+    if ! _map_has "options" "${name}_name"; then
+        _xmake_sh_options="${_xmake_sh_options} ${name}"
+    fi
     _map_set "options" "${name}_name" "${name}"
     _map_set "options" "${name}_description" "${description}"
     _map_set "options" "${name}_default" "${default}"
@@ -1207,7 +1209,9 @@ target() {
     if ! ${_loading_targets}; then
         return
     fi
-    _xmake_sh_targets="${_xmake_sh_targets} ${name}"
+    if ! _map_has "targets" "${name}_name"; then
+        _xmake_sh_targets="${_xmake_sh_targets} ${name}"
+    fi
     _map_set "targets" "${name}_name" "${name}"
     return 0
 }
