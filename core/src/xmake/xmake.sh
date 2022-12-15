@@ -2,6 +2,7 @@
 
 target "xmake"
     set_kind "static"
+    set_default false
 
     # add deps
     add_deps "sv" "lua_cjson" "lua" "lz4" "tbox"

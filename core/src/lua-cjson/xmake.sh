@@ -2,6 +2,7 @@
 
 target "lua_cjson"
     set_kind "static"
+    set_default false
     set_warnings "all"
     add_deps "lua"
     add_files "lua-cjson/dtoa.c"

@@ -2,6 +2,7 @@
 
 target "lz4"
     set_kind "static"
+    set_default false
     set_warnings "all"
     add_includedirs "lz4/lib" "{public}"
     add_files "lz4/lib/lz4.c"

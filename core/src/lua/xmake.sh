@@ -2,6 +2,7 @@
 
 target "lua"
     set_kind "static"
+    set_default false
     set_warnings "all"
 
     # add include directories

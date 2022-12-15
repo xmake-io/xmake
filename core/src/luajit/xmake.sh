@@ -32,6 +32,7 @@ jit_autogendir="luajit/autogen/${jit_plat}/${jit_dir}/${jit_arch}"
 
 target "lua"
     set_kind "static"
+    set_default false
     set_warnings "all"
 
     # add include directories

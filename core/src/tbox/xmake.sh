@@ -7,9 +7,10 @@ set_config "float" true
 set_config "demo" false
 
 includes "tbox/src"
-target_end
 
-set_configvar "TB_CONFIG_MODULE_HAVE_HASH" 1
-set_configvar "TB_CONFIG_MODULE_HAVE_CHARSET" 1
-set_configvar "TB_CONFIG_FORCE_UTF8" 1
-set_configvar "TB_CONFIG_TYPE_HAVE_FLOAT" 1
+target "tbox"
+    set_default false
+    set_configvar "TB_CONFIG_MODULE_HAVE_HASH" 1
+    set_configvar "TB_CONFIG_MODULE_HAVE_CHARSET" 1
+    set_configvar "TB_CONFIG_FORCE_UTF8" 1
+    set_configvar "TB_CONFIG_TYPE_HAVE_FLOAT" 1
