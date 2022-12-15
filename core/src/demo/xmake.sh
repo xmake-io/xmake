@@ -24,3 +24,4 @@ target "demo"
 
     # add install files
     add_installfiles "${projectdir}/(xmake/**.lua)" "share"
+    add_installfiles "${projectdir}/scripts/xrepo.sh" "bin" "xrepo"

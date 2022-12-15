@@ -110,11 +110,17 @@ string_split() {
             1) _ret="$1";;
             2) _ret="$2";;
             3) _ret="$3";;
+            4) _ret="$4";;
+            5) _ret="$5";;
+            6) _ret="$6";;
         esac
     else
         _ret="$1"
         _ret2="$2"
         _ret3="$3"
+        _ret4="$4"
+        _ret5="$5"
+        _ret6="$6"
     fi
     IFS="${oldifs}"
 }
@@ -1735,6 +1741,7 @@ _add_target_installpaths() {
     local key="$1"
     local filepattern="${2}"
     local prefixdir="${3}"
+    local filename=${4}
 
     # get root directory, e.g. "src/foo/(*.h)" -> "src/foo"
     local rootdir=""
@@ -1770,7 +1777,7 @@ _add_target_installpaths() {
     fi
     for file in ${files}; do
         path_relative "${xmake_sh_projectdir}" "${file}"; file="${_ret}"
-        _add_target_item "${_xmake_sh_target_current}" "${key}" "${file}:${rootdir}:${prefixdir}"
+        _add_target_item "${_xmake_sh_target_current}" "${key}" "${file}:${rootdir}:${prefixdir}:${filename}"
     done
 }
 
@@ -3756,7 +3763,10 @@ _gmake_add_install_target() {
             local srcheaderfile="${_ret}"
             local rootdir="${_ret2}"
             local prefixdir="${_ret3}"
-            path_filename "${srcheaderfile}"; local filename="${_ret}"
+            local filename="${_ret4}"
+            if test_z "${filename}"; then
+                path_filename "${srcheaderfile}"; filename="${_ret}"
+            fi
             local dstheaderdir="${includedir}"
             if test_nz "${prefixdir}"; then
                 dstheaderdir="${dstheaderdir}/${prefixdir}"
@@ -3780,7 +3790,10 @@ _gmake_add_install_target() {
             local srcinstallfile="${_ret}"
             local rootdir="${_ret2}"
             local prefixdir="${_ret3}"
-            path_filename "${srcinstallfile}"; local filename="${_ret}"
+            local filename="${_ret4}"
+            if test_z "${filename}"; then
+                path_filename "${srcinstallfile}"; filename="${_ret}"
+            fi
             local dstinstalldir="${installdir}"
             if test_nz "${prefixdir}"; then
                 dstinstalldir="${dstinstalldir}/${prefixdir}"
