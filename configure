@@ -273,6 +273,9 @@ path_basename() {
 # we avoid use `dirname -- ${1}`, because it's too slow
 path_directory() {
     local path="${1}"
+    if test_z "${path}"; then
+        raise "invalid empty path in path_directory()."
+    fi
     local oldifs="${IFS}"
     IFS='/'
     set -- ${path}
@@ -317,27 +320,40 @@ path_is_absolute() {
 
 # get relative path, e.g $(path_relative ${rootdir} ${absolute_path}`
 path_relative() {
-    local source=$1
-    local target=$2
+    local source="${1}"
+    local target="${2}"
+    if test_z "${source}" || test_z "${target}"; then
+        raise "invalid empty path in path_relative()"
+    fi
 
-    local common_part=$source
+    # patch missing "./"
+    source=${source#./}
+    source=${source#.}
+    target=${target#./}
+    target=${target#.}
+    if test_z "${source}"; then
+        _ret="${target}"
+        return
+    fi
+
+    # find common path
     local result=""
-
+    local common_part=$source
     while test_eq "${target#$common_part}" "${target}"; do
         # no match, means that candidate common part is not correct
         # go up one level (reduce common part)
         path_directory "${common_part}"; common_part="${_ret}"
         # and record that we went back, with correct / handling
-        if test_z $result; then
+        if test_z "${result}"; then
             result=".."
         else
-            result="../$result"
+            result="../${result}"
         fi
     done
 
-    if test_eq $common_part "/"; then
+    if test_eq "${common_part}" "/"; then
         # special case for root (no common path)
-        result="$result/"
+        result="${result}/"
     fi
 
     # since we now have identified the common part,
@@ -345,14 +361,18 @@ path_relative() {
     local forward_part="${target#$common_part}"
 
     # and now stick all parts together
-    if test_nz $result && test_nz $forward_part; then
-        result="$result$forward_part"
-    elif test_nz $forward_part; then
-        # remote extra '/', e.g. "/xxx" => "xxx"
+    if test_nz "${result}" && test_nz "${forward_part}"; then
+        result="${result}${forward_part}"
+    elif test_nz "${forward_part}"; then
         result="${forward_part#*/}"
     fi
 
-    _ret="$result"
+    # same directory?
+    if test_z "${result}" && test_eq "${source}" "${target}"; then
+        result="."
+    fi
+
+    _ret="${result}"
 }
 
 path_sourcekind() {

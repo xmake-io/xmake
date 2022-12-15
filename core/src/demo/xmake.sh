@@ -22,4 +22,5 @@ target "demo"
         add_ldflags "-static-libgcc"
     fi
 
-
+    # add install files
+    add_installfiles "${projectdir}/(xmake/**.lua)" "share"
