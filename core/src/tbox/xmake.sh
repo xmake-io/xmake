@@ -8,6 +8,16 @@ set_config "demo" false
 
 includes "tbox/src"
 
+hide_options() {
+    local name=""
+    local options="demo small micro float info exception deprecated force_utf8 xml zip hash regex object charset database coroutine"
+    for name in $options; do
+        option "${name}"
+            set_showmenu false
+    done
+}
+hide_options
+
 target "tbox"
     set_default false
     set_configvar "TB_CONFIG_MODULE_HAVE_HASH" 1

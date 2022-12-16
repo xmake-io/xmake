@@ -32,14 +32,12 @@ option "runtime" "Use luajit or lua runtime" "lua"
 
 # the readline option
 option "readline"
-    set_description "Enable or disable readline library"
     add_links "readline"
     add_cincludes "readline/readline.h"
     add_cfuncs "readline"
 
 # the curses option
 option "curses"
-    set_description "Enable or disable curses library"
     add_links "curses"
     add_cincludes "curses.h"
 option_end
