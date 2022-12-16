@@ -130,16 +130,15 @@ function load(target)
 
     -- enable std modules if c++23 by defaults
     if target:values("c++.msvc.enable_std_import") == nil then
-        local languages = table.join({}, target:get("languages"))
-        local iscpp23 = false
-        for _, language in pairs(languages) do
-            if language:find("c++") or language:find("cxx") then
-                iscpp23 = true
-                for _, version in pairs({"11", "14", "17", "20"}) do
-                    if language:find(version) then
-                        iscpp23 = false
-                        break
-                    end
+        local languages = target:get("languages")
+        local isatleastcpp23 = false
+        for _, language in ipairs(languages) do
+            if language:startswith("c++") or language:startswith("cxx") then
+                isatleastcpp23 = true
+                local version = tonumber(language:match("%d+"))
+                if not version or version <= 20 then
+                    isatleastcpp23 = false
+                    break
                 end
             end
         end
@@ -151,7 +150,7 @@ function load(target)
                 stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
             end
         end
-        target:set("values", "c++.msvc.enable_std_import", iscpp23 and os.isdir(stdmodulesdir))
+        target:set("values", "c++.msvc.enable_std_import", isatleastcpp23 and os.isdir(stdmodulesdir))
     end
 end
 
