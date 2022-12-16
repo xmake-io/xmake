@@ -3642,9 +3642,21 @@ _gmake_add_build_target() {
     _get_flagname "${toolkind}"; local flagname="${_ret}"
     flagname="${target}_${flagname}"
 
+    # get depfiles
+    local dep=""
+    local depfiles=""
+    for dep in ${deps}; do
+        _get_target_file "${dep}"; local depfile="${_ret}"
+        if test_nz "${depfiles}"; then
+            depfiles="${depfiles} ${depfile}"
+        else
+            depfiles="${depfile}"
+        fi
+    done
+
     # link target
     echo "${target}: ${targetfile}" >> "${xmake_sh_makefile}"
-    echo "${targetfile}: ${deps}${objectfiles}" >> "${xmake_sh_makefile}"
+    echo "${targetfile}: ${depfiles}${objectfiles}" >> "${xmake_sh_makefile}"
     print "\t@echo linking.${_target_mode} ${targetfile}" >> "${xmake_sh_makefile}"
     case "${toolname}" in
         gcc) _gmake_add_build_target_for_gcc_clang "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
@@ -3661,6 +3673,7 @@ _gmake_add_build_target() {
 }
 
 _gmake_add_build_targets() {
+    local target=""
     local defaults=""
     for target in ${_xmake_sh_targets}; do
         if _is_target_default "${target}"; then
@@ -3687,6 +3700,7 @@ _gmake_add_run_target() {
 }
 
 _gmake_add_run_targets() {
+    local target=""
     local targets=""
     for target in ${_xmake_sh_targets}; do
         _get_target_item "${target}" "kind"; local kind="${_ret}"
@@ -3709,6 +3723,7 @@ _gmake_add_run() {
 
 _gmake_add_clean_target() {
     local target=${1}
+    local objectfile=""
     _get_target_file "${target}"; local targetfile="${_ret}"
     _get_target_objectfiles "${target}"; local objectfiles="${_ret}"
     print "\t@rm ${targetfile}" >> "${xmake_sh_makefile}"
@@ -3718,6 +3733,7 @@ _gmake_add_clean_target() {
 }
 
 _gmake_add_clean_targets() {
+    local target=""
     local targets=""
     for target in ${_xmake_sh_targets}; do
         if _is_target_default "${target}"; then
@@ -3757,6 +3773,7 @@ _gmake_add_install_target() {
     # install header files
     _get_target_item "${target}" "headerfiles"; local headerfiles="${_ret}"
     if test_nz "${headerfiles}"; then
+        local srcheaderfile=""
         local includedir="${installdir}/${_install_includedir_default}"
         for srcheaderfile in ${headerfiles}; do
             string_split "${srcheaderfile}" ":"
@@ -3785,6 +3802,7 @@ _gmake_add_install_target() {
     # install user files
     _get_target_item "${target}" "installfiles"; local installfiles="${_ret}"
     if test_nz "${installfiles}"; then
+        local srcinstallfile=""
         for srcinstallfile in ${installfiles}; do
             string_split "${srcinstallfile}" ":"
             local srcinstallfile="${_ret}"
@@ -3811,6 +3829,7 @@ _gmake_add_install_target() {
 }
 
 _gmake_add_install_targets() {
+    local target=""
     local targets=""
     for target in ${_xmake_sh_targets}; do
         if _is_target_default "${target}"; then
