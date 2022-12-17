@@ -72,7 +72,7 @@ option_find_lua() {
     option_end
 }
 
-# the lua option
+# the luajit option
 option "luajit"
     add_cfuncs "lua_pushstring"
     add_cincludes "lua.h" "lualib.h" "lauxlib.h"
@@ -87,6 +87,19 @@ option_find_luajit() {
     option_end
 }
 
+# the lz4 option
+option "lz4"
+    add_cfuncs "LZ4F_compressFrame"
+    add_cincludes "lz4.h" "lz4frame.h"
+    before_check "option_find_lz4"
+option_end
+
+option_find_lz4() {
+    option "lz4"
+        add_cflags `pkg-config --cflags liblz4 2>/dev/null`
+        add_ldflags `pkg-config --libs liblz4 2>/dev/null`
+    option_end
+}
 
 # add projects
 if ! has_config "lua"; then
@@ -99,8 +112,10 @@ fi
 if ! has_config "lua_cjson"; then
     includes "src/lua-cjson"
 fi
+if ! has_config "lz4"; then
+    includes "src/lz4"
+fi
 includes "src/sv"
-includes "src/lz4"
 includes "src/tbox"
 includes "src/xmake"
 includes "src/demo"
