@@ -4,7 +4,9 @@ target "lua_cjson"
     set_kind "static"
     set_default false
     set_warnings "all"
-    if has_config "lua"; then
+    if is_config "runtime" "luajit" && has_config "luajit"; then
+        add_options "luajit" "{public}"
+    elif has_config "lua"; then
         add_options "lua" "{public}"
     else
         add_deps "lua"

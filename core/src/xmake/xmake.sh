@@ -6,7 +6,7 @@ target "xmake"
 
     # add deps
     add_deps "sv" "lz4" "tbox"
-    local libs="lua_cjson lua"
+    local libs="lua_cjson"
     for lib in $libs; do
         if has_config "$lib"; then
             add_options "$lib" "{public}"
@@ -14,6 +14,13 @@ target "xmake"
             add_deps "$lib"
         fi
     done
+    if is_config "runtime" "luajit" && has_config "luajit"; then
+        add_options "luajit" "{public}"
+    elif has_config "lua"; then
+        add_options "lua" "{public}"
+    else
+        add_deps "lua"
+    fi
 
     # add defines
     add_defines "__tb_prefix__=\"xmake\""

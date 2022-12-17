@@ -2351,7 +2351,7 @@ add_options() {
     for name in $@; do
         if has_config "${name}"; then
             local itemname=""
-            local itemnames="includedirs linkdirs links cflags cxflags cxxflags ldflags"
+            local itemnames="includedirs linkdirs links defines cflags cxflags cxxflags ldflags"
             for itemname in ${itemnames}; do
                 _get_option_item "${name}" "${itemname}"; local values="${_ret}"
                 if test_nz "${values}"; then

@@ -67,6 +67,22 @@ option_find_lua() {
     option_end
 }
 
+# the lua option
+option "luajit"
+    add_cfuncs "lua_pushstring"
+    add_cincludes "lua.h" "lualib.h" "lauxlib.h"
+    add_defines "USE_LUAJIT"
+    before_check "option_find_luajit"
+option_end
+
+option_find_luajit() {
+    option "luajit"
+        add_cflags `pkg-config --cflags luajit 2>/dev/null`
+        add_ldflags `pkg-config --libs luajit 2>/dev/null`
+    option_end
+}
+
+
 # add projects
 if ! has_config "lua"; then
     if is_config "runtime" "luajit"; then
