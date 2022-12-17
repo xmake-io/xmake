@@ -14,6 +14,7 @@ hide_options() {
     for name in $options; do
         option "${name}"
             set_showmenu false
+        option_end
     done
 }
 hide_options
