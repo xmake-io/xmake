@@ -42,8 +42,15 @@ option "curses"
     add_cincludes "curses.h"
 option_end
 
+# the lua-cjson option
+option "lua_cjson"
+    add_links "cjson"
+option_end
+
 # add projects
-includes "src/lua-cjson"
+if ! has_config "lua_cjson"; then
+    includes "src/lua-cjson"
+fi
 includes "src/sv"
 includes "src/lz4"
 includes "src/tbox"
