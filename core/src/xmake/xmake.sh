@@ -22,6 +22,9 @@ target "xmake"
         add_deps "lua"
     fi
 
+    # add options
+    add_options "readline" "curses" "{public}"
+
     # add defines
     add_defines "__tb_prefix__=\"xmake\""
     if is_mode "debug"; then
@@ -59,14 +62,3 @@ target "xmake"
         add_files "winos/*.c"
     fi
 
-    # enable readline
-    if has_config "readline"; then
-        add_defines "XM_CONFIG_API_HAVE_READLINE" "{public}"
-        add_links "readline" "{public}"
-    fi
-
-    # enable curses
-    if has_config "curses"; then
-        add_defines "XM_CONFIG_API_HAVE_CURSES" "{public}"
-        add_links "curses" "{public}"
-    fi
