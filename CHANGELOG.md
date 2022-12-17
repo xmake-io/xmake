@@ -29,6 +29,7 @@
 * [#3074](https://github.com/xmake-io/xmake/issues/3074): Fix CMakelists generator
 * [#3141](https://github.com/xmake-io/xmake/pull/3141): Fix import order on GCC and force it on clang and msvc #3141
 * Fix tools/xmake package build directory
+* [#3159](https://github.com/xmake-io/xmake/issues/3159): Fix compile_commands for CLion
 
 ## v2.7.3
 
@@ -1488,6 +1489,7 @@
 * [#3074](https://github.com/xmake-io/xmake/issues/3074): 修复 CMakelists 生成器链接参数设置不对问题
 * [#3141](https://github.com/xmake-io/xmake/pull/3141): 修复 C++ 模块的导入顺序
 * 修复 tools/xmake 包安装构建目录
+* [#3159](https://github.com/xmake-io/xmake/issues/3159): 为 CLion 修复 compile_commands
 
 ## v2.7.3
 
