@@ -129,7 +129,7 @@ function load(target)
     target:add("cxxflags", modulesflag)
 
     -- enable std modules if c++23 by defaults
-    if target:values("c++.msvc.enable_std_import") == nil then
+    if target:data("c++.msvc.enable_std_import") == nil then
         local languages = target:get("languages")
         local isatleastcpp23 = false
         for _, language in ipairs(languages) do
@@ -150,7 +150,7 @@ function load(target)
                 stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
             end
         end
-        target:set("values", "c++.msvc.enable_std_import", isatleastcpp23 and os.isdir(stdmodulesdir))
+        target:data_set("c++.msvc.enable_std_import", isatleastcpp23 and os.isdir(stdmodulesdir))
     end
 end
 
@@ -444,7 +444,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
         _flush_mapper(target)
     end, {rootjob = opt.rootjob})
 
-    if target:values("c++.msvc.enable_std_import") then
+    if target:data("c++.msvc.enable_std_import") then
         for objectfile, module in pairs(get_stdmodules(target)) do
             table.insert(objectfiles, objectfile)
             modules[objectfile] = module
@@ -529,7 +529,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local referenceflag = get_referenceflag(target)
     local internalpartitionflag = get_internalpartitionflag(target)
 
-    if target:values("c++.msvc.enable_std_import") then
+    if target:data("c++.msvc.enable_std_import") then
         for objectfile, module in pairs(get_stdmodules(target)) do
             table.insert(objectfiles, objectfile)
             modules[objectfile] = module
@@ -592,7 +592,7 @@ function get_stdmodules(target)
     local modules = {}
 
     -- build c++23 standard modules if needed
-    if target:values("c++.msvc.enable_std_import") then
+    if target:data("c++.msvc.enable_std_import") then
         local msvc = target:toolchain("msvc")
         if msvc then
             local vcvars = msvc:config("vcvars")
