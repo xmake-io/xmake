@@ -61,6 +61,7 @@ option_end
 option "lua"
     add_cfuncs "lua_pushstring"
     add_cincludes "lua.h" "lualib.h" "lauxlib.h"
+    add_defines "LUA_COMPAT_5_1" "LUA_COMPAT_5_2" "LUA_COMPAT_5_3"
     before_check "option_find_lua"
 option_end
 
