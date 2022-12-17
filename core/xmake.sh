@@ -44,8 +44,21 @@ option_end
 
 # the lua-cjson option
 option "lua_cjson"
-    add_links "cjson"
+    add_links "lua5.1-cjson"
+    add_csnippets "
+int luaopen_cjson(void *l);\n
+void test() {\n
+    luaopen_cjson(0);\n
+}
+"
 option_end
+add_lua_cjson() {
+    if has_config "lua_cjson"; then
+        add_links "lua5.1-cjson" "{public}"
+    else
+        add_deps "lua_cjson"
+    fi
+}
 
 # add projects
 if ! has_config "lua_cjson"; then

@@ -6,11 +6,7 @@ target "xmake"
 
     # add deps
     add_deps "sv" "lua" "lz4" "tbox"
-    if has_config "lua_cjson"; then
-        add_links "cjson" "{public}"
-    else
-        add_deps "lua_cjson"
-    fi
+    add_lua_cjson
 
     # add defines
     add_defines "__tb_prefix__=\"xmake\""
