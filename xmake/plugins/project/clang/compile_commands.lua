@@ -88,7 +88,13 @@ function _translate_arguments(arguments)
             is_include = true
         end
         if arg then
-            table.insert(args, arg)
+            -- split "/usr/bin/xcrun -sdk macosx clang"
+            -- @see https://github.com/xmake-io/xmake/issues/3159
+            if idx == 1 and arg:find(" ", 1, true) then
+                table.join2(args, os.argv(arg))
+            else
+                table.insert(args, arg)
+            end
         end
     end
     return args
