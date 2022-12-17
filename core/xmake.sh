@@ -52,15 +52,29 @@ void test() {\n
 }
 "
 option_end
-add_lua_cjson() {
-    if has_config "lua_cjson"; then
-        add_links "lua5.1-cjson" "{public}"
-    else
-        add_deps "lua_cjson"
-    fi
+
+# the lua option
+option "lua"
+    add_cfuncs "lua_pushstring"
+    add_cincludes "lua.h" "lualib.h" "lauxlib.h"
+    before_check "option_find_lua"
+option_end
+
+option_find_lua() {
+    option "lua"
+        add_cflags `pkg-config --cflags lua5.4 2>/dev/null`
+        add_ldflags `pkg-config --libs lua5.4 2>/dev/null`
+    option_end
 }
 
 # add projects
+if ! has_config "lua"; then
+    if is_config "runtime" "luajit"; then
+        includes "src/luajit"
+    else
+        includes "src/lua"
+    fi
+fi
 if ! has_config "lua_cjson"; then
     includes "src/lua-cjson"
 fi
@@ -69,10 +83,4 @@ includes "src/lz4"
 includes "src/tbox"
 includes "src/xmake"
 includes "src/demo"
-if is_config "runtime" "luajit"; then
-    includes "src/luajit"
-else
-    includes "src/lua"
-fi
-
 

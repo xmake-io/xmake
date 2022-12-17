@@ -4,7 +4,11 @@ target "lua_cjson"
     set_kind "static"
     set_default false
     set_warnings "all"
-    add_deps "lua"
+    if has_config "lua"; then
+        add_options "lua" "{public}"
+    else
+        add_deps "lua"
+    fi
     add_files "lua-cjson/dtoa.c"
     add_files "lua-cjson/lua_cjson.c"
     add_files "lua-cjson/strbuf.c"
