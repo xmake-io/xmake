@@ -1,8 +1,4 @@
-#ifdef _MSC_VER
-import std.core;
-#else
 import std;
-#endif
 
 import my_module;
 

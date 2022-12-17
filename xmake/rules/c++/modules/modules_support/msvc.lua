@@ -25,6 +25,7 @@ import("core.project.project")
 import("core.project.depend")
 import("core.project.config")
 import("core.base.hashset")
+import("core.base.semver")
 import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
@@ -79,7 +80,7 @@ function _add_objectfile_to_link_arguments(target, objectfile)
     if table.contains(cache, objectfile) then
         return
     end
-    table.insert(cache, path.translate(objectfile))
+    table.insert(cache, objectfile)
     common.localcache():set(cachekey, cache)
     common.localcache():save(cachekey)
 end
@@ -127,27 +128,29 @@ function load(target)
     local modulesflag = get_modulesflag(target)
     target:add("cxxflags", modulesflag)
 
-    -- add stdifcdir in case of if the user ask for it
-    local stdifcdirflag = get_stdifcdirflag(target)
-    if stdifcdirflag then
-        local msvc = target:toolchain("msvc")
-        if msvc then
-            local vcvars = msvc:config("vcvars")
-            if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                local arch
-                if target:is_arch("x64", "x86_64") then
-                    arch = "x64"
-                elseif target:is_arch("x86", "i386") then
-                    arch = "x86"
-                end
-                if arch then
-                    local stdifcdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "ifc", arch)
-                    if os.isdir(stdifcdir) then
-                        target:add("cxxflags", {stdifcdirflag, winos.short_path(stdifcdir)}, {force = true, expand = false})
-                    end
+    -- enable std modules if c++23 by defaults
+    if target:data("c++.msvc.enable_std_import") == nil then
+        local languages = target:get("languages")
+        local isatleastcpp23 = false
+        for _, language in ipairs(languages) do
+            if language:startswith("c++") or language:startswith("cxx") then
+                isatleastcpp23 = true
+                local version = tonumber(language:match("%d+"))
+                if not version or version <= 20 then
+                    isatleastcpp23 = false
+                    break
                 end
             end
         end
+        local stdmodulesdir
+        local msvc = target:toolchain("msvc")
+        if msvc then
+            local vcvars = msvc:config("vcvars")
+            if vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.35") then
+                stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
+            end
+        end
+        target:data_set("c++.msvc.enable_std_import", isatleastcpp23 and os.isdir(stdmodulesdir))
     end
 end
 
@@ -441,6 +444,13 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
         _flush_mapper(target)
     end, {rootjob = opt.rootjob})
 
+    if target:data("c++.msvc.enable_std_import") then
+        for objectfile, module in pairs(get_stdmodules(target)) do
+            table.insert(objectfiles, objectfile)
+            modules[objectfile] = module
+        end
+    end
+
     local modulesjobs = {}
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
@@ -490,7 +500,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             name = name or module.cppfile,
                             flags = _flags,
                             progress = (index * 100) / total})
-                        target:add("objectfiles", objectfile)
+                        _add_objectfile_to_link_arguments(target, path(objectfile))
                     elseif requiresflags then
                         requiresflags = get_requiresflags(target, module.requires)
                         target:fileconfig_add(cppfile, {force = {cxxflags = table.join(flags, requiresflags)}})
@@ -518,6 +528,13 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     local interfaceflag = get_interfaceflag(target)
     local referenceflag = get_referenceflag(target)
     local internalpartitionflag = get_internalpartitionflag(target)
+
+    if target:data("c++.msvc.enable_std_import") then
+        for objectfile, module in pairs(get_stdmodules(target)) do
+            table.insert(objectfiles, objectfile)
+            modules[objectfile] = module
+        end
+    end
 
     -- build modules
     local depmtime = 0
@@ -555,7 +572,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 batchcmds:mkdir(path.directory(objectfile))
                 batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), table.join(flags, requiresflags or {})), {envs = msvc:runenvs()})
                 batchcmds:add_depfiles(cppfile)
-                target:add("objectfiles", objectfile)
+                _add_objectfile_to_link_arguments(target, path(objectfile))
                 if provide then
                     _add_module_to_mapper(target, referenceflag, name, name, objectfile, provide.bmi, requiresflags)
                 end
@@ -569,6 +586,34 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
 
     batchcmds:set_depmtime(depmtime)
     _flush_mapper(target)
+end
+
+function get_stdmodules(target)
+    local modules = {}
+
+    -- build c++23 standard modules if needed
+    if target:data("c++.msvc.enable_std_import") then
+        local msvc = target:toolchain("msvc")
+        if msvc then
+            local vcvars = msvc:config("vcvars")
+            if vcvars.VCInstallDir and vcvars.VCToolsVersion then
+                local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
+                assert(stdmodulesdir, "Can't enable C++23 std modules, directory missing !")
+
+                local stlcachedir = common.stlmodules_cachedir(target)
+                local modulefile = path.join(stdmodulesdir, "std.ixx")
+                local bmifile = path.join(stlcachedir, "std.ixx" .. get_bmi_extension())
+                local objfile = bmifile .. ".obj"
+                modules[objfile] = {provides = {std = {interface = true, sourcefile = modulefile, bmi = bmifile}}}
+                stlcachedir = common.stlmodules_cachedir(target)
+                modulefile = path.join(stdmodulesdir, "std.compat.ixx")
+                bmifile = path.join(stlcachedir, "std.compat.ixx" .. get_bmi_extension())
+                objfile = bmifile .. ".obj"
+                modules[objfile] = {provides = {["std.compat"] = {interface = true, sourcefile = modulefile, bmi = bmifile}}, requires = {std = {unique = false, method = "by-name"}}}
+            end
+        end
+    end
+    return modules
 end
 
 function get_bmi_extension()
@@ -677,18 +722,6 @@ function get_exportheaderflag(target)
         _g.exportheaderflag = exportheaderflag or false
     end
     return exportheaderflag or nil
-end
-
-function get_stdifcdirflag(target)
-    local stdifcdirflag = _g.stdifcdirflag
-    if stdifcdirflag == nil then
-        local compinst = target:compiler("cxx")
-        if compinst:has_flags("-stdIfcDir", "cxxflags", {flagskey = "cl_std_ifc_dir"}) then
-            stdifcdirflag = "-stdIfcDir"
-        end
-        _g.stdifcdirflag = stdifcdirflag or false
-    end
-    return stdifcdirflag or nil
 end
 
 function get_scandependenciesflag(target)

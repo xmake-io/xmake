@@ -514,6 +514,12 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
     batchcmds:set_depmtime(depmtime)
 end
 
+-- not supported atm
+function get_stdmodules(target)
+    local modules = {}
+    return modules
+end
+
 function get_bmi_extension()
     return ".gcm"
 end
