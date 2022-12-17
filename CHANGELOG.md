@@ -7,6 +7,7 @@
 * [#3049](https://github.com/xmake-io/xmake/pull/3049): Add `xmake format` plugin
 * Add `plugin.compile_commands.autoupdate` rule
 * [#3172](https://github.com/xmake-io/xmake/pull/3172): Add xmake.sh
+* [#3168](https://github.com/xmake-io/xmake/pull/3168): add support of C++23 standard modules on msvc
 
 ### Changes
 
@@ -1467,6 +1468,7 @@
 * [#3049](https://github.com/xmake-io/xmake/pull/3049): 添加 `xmake format` 插件
 * 添加 `plugin.compile_commands.autoupdate` 规则
 * [#3172](https://github.com/xmake-io/xmake/pull/3172): 添加 xmake.sh
+* [#3168](https://github.com/xmake-io/xmake/pull/3168): 为 msvc 添加 C++23 标准模块支持
 
 ### 改进
 
