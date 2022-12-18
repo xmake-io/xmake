@@ -519,8 +519,8 @@ _map() {
 #}
 
 _map_get() {
-    local name=${1}
-    local key=${2}
+    local name="${1}"
+    local key="${2}"
     local value=$(eval echo \$_map_${name}_value_${key})
     if test_eq "${value}" "__empty__"; then
         value=""
@@ -529,8 +529,8 @@ _map_get() {
 }
 
 _map_has() {
-    local name=${1}
-    local key=${2}
+    local name="${1}"
+    local key="${2}"
     local value=$(eval echo \$_map_${name}_value_${key})
     if test_nz "${value}"; then
         return 0
@@ -539,9 +539,9 @@ _map_has() {
 }
 
 _map_set() {
-    local name=${1}
-    local key=${2}
-    local value=${3}
+    local name="${1}"
+    local key="${2}"
+    local value="${3}"
 #    if ! _map_has ${name} ${key}; then
 #        _map_count "options"; local count="${_ret}"
 #        eval _map_${name}_count=$((${count} + 1))
@@ -553,8 +553,8 @@ _map_set() {
 }
 
 #_map_remove() {
-#    local name=${1}
-#    local key=${2}
+#    local name="${1}"
+#    local key="${2}"
 #    if _map_has ${name} ${key}; then
 #        _map_count "options"; local count="${_ret}"
 #        eval _map_${name}_count=$((${count} - 1))
@@ -572,7 +572,7 @@ _map_set() {
 #}
 
 #_map_keys() {
-#    local name=${1}
+#    local name="${1}"
 #    local keys=$(eval echo \$_map_${name}_keys)
 #    _ret="${keys}"
 #}
