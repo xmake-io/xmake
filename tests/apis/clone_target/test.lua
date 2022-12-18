@@ -1,3 +1,3 @@
 function main()
-    os.exec("xmake")
+    os.exec("xmake -vD")
 end
