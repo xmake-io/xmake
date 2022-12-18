@@ -39,12 +39,12 @@ local table = require("base/table")
 -- if they're target, their links order is reverse(orderdeps), e.g. foo-> a -> d -> b -> c
 --
 function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath)
-    local deps = table.wrap(instance:get("deps"))
-    local total = #deps
-    for idx, _ in ipairs(deps) do
+    local plaindeps = table.wrap(instance:get("deps"))
+    local total = #plaindeps
+    for idx, _ in ipairs(plaindeps) do
         -- we reverse to get the flat dependencies in order to ensure the correct linking order
         -- @see https://github.com/xmake-io/xmake/issues/3144
-        local dep = deps[total + 1 - idx]
+        local dep = plaindeps[total + 1 - idx]
         local depinst = instances[dep]
         if depinst then
             local depspath_sub
