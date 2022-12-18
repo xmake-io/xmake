@@ -5,8 +5,8 @@ target "xmake"
     set_default false
 
     # add deps
-    add_deps "sv" "tbox"
-    local libs="lua_cjson lz4"
+    add_deps "tbox"
+    local libs="lua_cjson lz4 sv"
     for lib in $libs; do
         if has_config "$lib"; then
             add_options "$lib" "{public}"

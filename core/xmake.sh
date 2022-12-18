@@ -101,6 +101,27 @@ option_find_lz4() {
     option_end
 }
 
+# the sv option
+option "sv"
+    add_cfuncs "semver_tryn"
+    add_cincludes "semver.h"
+    before_check "option_find_sv"
+option_end
+
+option_find_sv() {
+    option "sv"
+        local dirs="/usr/local /usr"
+        for dir in $dirs; do
+            if test -f "${dir}/lib/libsv.a"; then
+                add_linkdirs "${dir}/lib"
+                add_includedirs "${dir}/include/sv"
+                break
+            fi
+        done
+    option_end
+}
+
+
 # add projects
 if ! has_config "lua"; then
     if is_config "runtime" "luajit"; then
@@ -115,7 +136,9 @@ fi
 if ! has_config "lz4"; then
     includes "src/lz4"
 fi
-includes "src/sv"
+if ! has_config "sv"; then
+    includes "src/sv"
+fi
 includes "src/tbox"
 includes "src/xmake"
 includes "src/demo"
