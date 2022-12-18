@@ -105,6 +105,7 @@ option_find_lz4() {
 option "sv"
     add_cfuncs "semver_tryn"
     add_cincludes "semver.h"
+    add_links "sv"
     before_check "option_find_sv"
 option_end
 
@@ -121,6 +122,26 @@ option_find_sv() {
     option_end
 }
 
+# the tbox option
+option "tbox"
+    add_cfuncs "tb_exit" "tb_md5_init" "tb_charset_conv_data"
+    add_cincludes "tbox/tbox.h"
+    add_links "tbox"
+    before_check "option_find_tbox"
+option_end
+
+option_find_tbox() {
+    option "tbox"
+        local dirs="/usr/local /usr"
+        for dir in $dirs; do
+            if test -f "${dir}/lib/libtbox.a"; then
+                add_linkdirs "${dir}/lib"
+                add_includedirs "${dir}/include"
+                break
+            fi
+        done
+    option_end
+}
 
 # add projects
 if ! has_config "lua"; then
@@ -139,7 +160,9 @@ fi
 if ! has_config "sv"; then
     includes "src/sv"
 fi
-includes "src/tbox"
+if ! has_config "tbox"; then
+    includes "src/tbox"
+fi
 includes "src/xmake"
 includes "src/demo"
 

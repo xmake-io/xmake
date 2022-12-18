@@ -1139,8 +1139,7 @@ add_cfuncs() {
     if ! ${_loading_options}; then
         return
     fi
-    local cfuncs="${1}"
-    _add_option_item "${_xmake_sh_option_current}" "cfuncs" "${cfuncs}"
+    _add_option_item "${_xmake_sh_option_current}" "cfuncs" "${@}"
 }
 
 # add cxxfuncs in option
@@ -1148,8 +1147,7 @@ add_cxxfuncs() {
     if ! ${_loading_options}; then
         return
     fi
-    local cxxfuncs="${1}"
-    _add_option_item "${_xmake_sh_option_current}" "cxxfuncs" "${cxxfuncs}"
+    _add_option_item "${_xmake_sh_option_current}" "cxxfuncs" "${@}"
 }
 
 # add cincludes in option
