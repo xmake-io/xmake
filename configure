@@ -1508,7 +1508,11 @@ _get_target_abstract_flags() {
             fi
         done
     fi
-    _get_abstract_flags "${toolkind}" "${toolname}" "${itemname}" "${values}"
+    if test_nz "${values}"; then
+        _get_abstract_flags "${toolkind}" "${toolname}" "${itemname}" "${values}"
+    else
+        _ret=""
+    fi
 }
 
 # get toolchain flags for ar in target
