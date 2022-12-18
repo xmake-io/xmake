@@ -5,7 +5,24 @@ target "xmake"
     set_default false
 
     # add deps
-    add_deps "sv" "lua_cjson" "lua" "lz4" "tbox"
+    local libs="lua_cjson lz4 sv tbox"
+    for lib in $libs; do
+        if has_config "$lib"; then
+            add_options "$lib" "{public}"
+        else
+            add_deps "$lib"
+        fi
+    done
+    if is_config "runtime" "luajit" && has_config "luajit"; then
+        add_options "luajit" "{public}"
+    elif has_config "lua"; then
+        add_options "lua" "{public}"
+    else
+        add_deps "lua"
+    fi
+
+    # add options
+    add_options "readline" "curses" "{public}"
 
     # add defines
     add_defines "__tb_prefix__=\"xmake\""
@@ -44,14 +61,3 @@ target "xmake"
         add_files "winos/*.c"
     fi
 
-    # enable readline
-    if has_config "readline"; then
-        add_defines "XM_CONFIG_API_HAVE_READLINE" "{public}"
-        add_links "readline" "{public}"
-    fi
-
-    # enable curses
-    if has_config "curses"; then
-        add_defines "XM_CONFIG_API_HAVE_CURSES" "{public}"
-        add_links "curses" "{public}"
-    fi
