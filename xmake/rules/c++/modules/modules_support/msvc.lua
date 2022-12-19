@@ -70,6 +70,7 @@ function _compile(target, flags)
 end
 
 -- do compile for batchcmds
+-- @note we need use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
 function _batchcmds_compile(batchcmds, target, flags)
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({target = target})
