@@ -162,9 +162,9 @@ function _remove_packages(packages)
     if mode == "debug" then
         extra.debug = true
     end
-    if kind == "shared" then
+    if kind then
         extra.configs = extra.configs or {}
-        extra.configs.shared = true
+        extra.configs.shared = kind == "shared"
     end
     local configs = option.get("configs")
     if configs then

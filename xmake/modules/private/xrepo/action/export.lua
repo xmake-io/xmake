@@ -170,9 +170,9 @@ function _export_packages(packages)
     if mode == "debug" then
         extra.debug = true
     end
-    if kind == "shared" then
+    if kind then
         extra.configs = extra.configs or {}
-        extra.configs.shared = true
+        extra.configs.shared = kind == "shared"
     end
     local configs = option.get("configs")
     if configs then
@@ -216,12 +216,14 @@ function _export_current_packages(packages)
         require_argv.packagedir = packagedir
     end
     local extra = {system = false}
+    local mode  = option.get("mode")
     if mode == "debug" then
         extra.debug = true
     end
-    if kind == "shared" then
+    local kind = option.get("kind")
+    if kind then
         extra.configs = extra.configs or {}
-        extra.configs.shared = true
+        extra.configs.shared = kind == "shared"
     end
     local configs = option.get("configs")
     if configs then

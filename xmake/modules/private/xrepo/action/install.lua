@@ -247,7 +247,7 @@ function _install_packages(packages)
     if mode == "debug" then
         extra.debug = true
     end
-    if option.get("kind") then
+    if kind then
         extra.configs = extra.configs or {}
         extra.configs.shared = kind == "shared"
     end
