@@ -25,3 +25,10 @@ target "demo"
     # add install files
     add_installfiles "${projectdir}/(xmake/**.lua)" "share"
     add_installfiles "${projectdir}/scripts/xrepo.sh" "bin" "xrepo"
+
+    # add syslinks
+    if is_plat "mingw" "msys" "cygwin"; then
+        add_syslinks "ws2_32" "pthread" "m"
+    else
+        add_syslinks "pthread" "dl" "m" "c"
+    fi

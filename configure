@@ -2804,7 +2804,7 @@ _toolchain_linkcmd() {
 
 # try make
 _toolchain_try_make() {
-    local program=${1}
+    local program="${1}"
     if _os_runv "${program}" "--version"; then
         return 0
     fi
@@ -2813,7 +2813,7 @@ _toolchain_try_make() {
 
 # try ninja
 _toolchain_try_ninja() {
-    local program=${1}
+    local program="${1}"
     if _os_runv "${program}" "--version"; then
         return 0
     fi
@@ -2828,8 +2828,8 @@ _toolchain_try_gcc() {
         return 1
     fi
 
-    local kind=${1}
-    local program=${2}
+    local kind="${1}"
+    local program="${2}"
     if _os_runv "${program}" "--version"; then
         _toolchain_try_gcc_result="ok"
         return 0
@@ -2846,8 +2846,8 @@ _toolchain_try_gxx() {
         return 1
     fi
 
-    local kind=${1}
-    local program=${2}
+    local kind="${1}"
+    local program="${2}"
     if _os_runv "${program}" "--version"; then
         _toolchain_try_gxx_result="ok"
         return 0
@@ -2864,8 +2864,8 @@ _toolchain_try_clang() {
         return 1
     fi
 
-    local kind=${1}
-    local program=${2}
+    local kind="${1}"
+    local program="${2}"
     if _os_runv "${program}" "--version"; then
         _toolchain_try_clang_result="ok"
         return 0
@@ -2882,8 +2882,8 @@ _toolchain_try_clangxx() {
         return 1
     fi
 
-    local kind=${1}
-    local program=${2}
+    local kind="${1}"
+    local program="${2}"
     if _os_runv "${program}" "--version"; then
         _toolchain_try_clangxx_result="ok"
         return 0
@@ -2892,10 +2892,10 @@ _toolchain_try_clangxx() {
     return 1
 }
 
-# TODO try ar
+# try ar
 _toolchain_try_ar() {
-    local kind=${1}
-    local program=${2}
+    local kind="${1}"
+    local program="${2}"
 
     # generate the source file
     _os_tmpfile
@@ -2921,9 +2921,9 @@ _toolchain_try_ar() {
 
 # try program
 _toolchain_try_program() {
-    local toolchain=${1}
-    local kind=${2}
-    local program=${3}
+    local toolchain="${1}"
+    local kind="${2}"
+    local program="${3}"
     local ok=false
     path_toolname "${program}"; local toolname="${_ret}"
     case "${toolname}" in
