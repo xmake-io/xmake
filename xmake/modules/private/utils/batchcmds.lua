@@ -253,7 +253,26 @@ function batchcmds:compile(sourcefiles, objectfile, opt)
         sourcekind = language.sourcekind_of(tostring(sourcefiles))
     end
     local compiler_inst = compiler.load(sourcekind, opt)
-    local program, argv = compiler_inst:compargv(sourcefiles, path(objectfile), opt)
+    local _, argv = compiler_inst:compargv(sourcefiles, path(objectfile), opt)
+
+    -- add compilation command and bind run environments of compiler
+    self:mkdir(path.directory(objectfile))
+    self:compilev(argv, table.join({sourcekind = sourcekind, compiler = compiler_inst}, opt))
+end
+
+-- add command: compiler.compilev
+function batchcmds:compilev(argv, opt)
+
+    -- bind target if exists
+    opt = opt or {}
+    opt.target = self._TARGET
+
+    -- load compiler and get compilation command
+    local compiler_inst = opt.compiler
+    if not compiler_inst then
+        local sourcekind = opt.sourcekind
+        compiler_inst = compiler.load(sourcekind, opt)
+    end
 
     -- we need translate path for the project generator
     for idx, item in ipairs(argv) do
@@ -269,8 +288,7 @@ function batchcmds:compile(sourcefiles, objectfile, opt)
     end
 
     -- add compilation command and bind run environments of compiler
-    self:mkdir(path.directory(objectfile))
-    self:vrunv(program, argv, {envs = table.join(compiler_inst:runenvs(), opt.envs)})
+    self:vrunv(compiler_inst:program(), argv, {envs = table.join(compiler_inst:runenvs(), opt.envs)})
 end
 
 -- add command: linker.link

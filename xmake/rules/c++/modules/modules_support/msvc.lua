@@ -73,7 +73,7 @@ end
 function _batchcmds_compile(batchcmds, target, flags)
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({target = target})
-    batchcmds:vrunv(compinst:program(), table.join(compflags or {}, flags), {envs = compinst:runenvs()})
+    batchcmds:compilev(table.join(compflags or {}, flags), {compiler = compinst, sourcekind = "cxx"})
 end
 
 -- add an objectfile to the linker flags
