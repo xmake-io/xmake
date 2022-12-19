@@ -133,6 +133,14 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     os.tryrm(tmpfile)
 end
 
+-- do compile for batchcmds
+-- @note we need use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
+function _batchcmds_compile(batchcmds, target, flags)
+    local compinst = target:compiler("cxx")
+    local compflags = compinst:compflags({target = target})
+    batchcmds:compilev(table.join(compflags or {}, flags), {compiler = compinst, sourcekind = "cxx"})
+end
+
 -- build module file
 function _build_modulefile(target, sourcefile, opt)
     local objectfile = opt.objectfile
@@ -300,7 +308,6 @@ end
 
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
-    local compinst = target:compiler("cxx")
     local stlcachedir = common.stlmodules_cachedir(target)
     local modulecachepathflag = get_modulecachepathflag(target)
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
@@ -313,11 +320,11 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
         -- don't build same header unit at the same time
         if not common.memcache():get2(headerunit.name, "building") then
             common.memcache():set2(headerunit.name, "building", true)
-            local args = {
+            local flags = {
                 path(stlcachedir, function (p) return modulecachepathflag .. p end),
                 "-c", "-o", path(bmifile), "-x", "c++-system-header", headerunit.name}
             batchcmds:show_progress(opt.progress, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
+            _batchcmds_compile(batchcmds, target, flags)
         end
         -- libc++ have a builtin module mapper
         if not target:data_set("cxx.modules.use_libc++") then
@@ -385,7 +392,6 @@ end
 
 -- generate target user header units for batchcmds
 function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
-    local compinst = target:compiler("cxx")
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
 
     -- get cachedirs
@@ -411,15 +417,15 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
         batchcmds:mkdir(path.directory(objectfile))
 
-        local args = {path(cachedir, function (p) return modulecachepathflag .. p end), "-c", "-o", path(bmifile)}
+        local flags = {path(cachedir, function (p) return modulecachepathflag .. p end), "-c", "-o", path(bmifile)}
         if headerunit.type == ":quote" then
-            table.join2(args, {"-I", path(headerunit.path):directory(), "-x", "c++-user-header", path(headerunit.path)})
+            table.join2(flags, {"-I", path(headerunit.path):directory(), "-x", "c++-user-header", path(headerunit.path)})
         elseif headerunit.type == ":angle" then
-            table.join2(args, {"-x", "c++-system-header", headerunit.name})
+            table.join2(flags, {"-x", "c++-system-header", headerunit.name})
         end
 
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
-        batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
+        _batchcmds_compile(batchcmds, target, flags)
         batchcmds:add_depfiles(headerunit.path)
 
         _add_module_to_mapper(target, headerunit.name, bmifile)
@@ -504,7 +510,6 @@ end
 
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
-    local compinst = target:compiler("cxx")
     local cachedir = common.modules_cachedir(target)
     local modulecachepathflag = get_modulecachepathflag(target)
 
@@ -540,10 +545,12 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
                 batchcmds:mkdir(path.directory(objectfile))
                 if provide then
-                    batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), flags, {"-x", "c++-module", "--precompile", "-c", path(cppfile), "-o", path(provide.bmi)}))
+                    _batchcmds_compile(batchcmds, target, table.join(flags,
+                        {"-x", "c++-module", "--precompile", "-c", path(cppfile), "-o", path(provide.bmi)}))
                     _add_module_to_mapper(target, name, provide.bmi)
                 end
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), flags, not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}))
+                _batchcmds_compile(batchcmds, target, table.join(flags,
+                    not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}))
                 target:add("objectfiles", objectfile)
             elseif requiresflags then
                 target:fileconfig_add(cppfile, {force = {cxxflags = requiresflags}})

@@ -102,6 +102,14 @@ function _get_toolchain_includedirs_for_stlheaders(includedirs, gcc)
     os.tryrm(tmpfile)
 end
 
+-- do compile for batchcmds
+-- @note we need use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
+function _batchcmds_compile(batchcmds, target, flags)
+    local compinst = target:compiler("cxx")
+    local compflags = compinst:compflags({target = target})
+    batchcmds:compilev(table.join(compflags or {}, flags), {compiler = compinst, sourcekind = "cxx"})
+end
+
 -- build module file
 function _build_modulefile(target, sourcefile, opt)
     local objectfile = opt.objectfile
@@ -272,7 +280,6 @@ end
 
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
-    local compinst = target:compiler("cxx")
     local mapper_file = _get_module_mapper(target)
     local stlcachedir = common.stlmodules_cachedir(target)
 
@@ -282,9 +289,9 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     for _, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         if not os.isfile(bmifile) then
-            local args = {"-c", "-x", "c++-system-header", headerunit.name}
+            local flags = {"-c", "-x", "c++-system-header", headerunit.name}
             batchcmds:show_progress(opt.progress, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
+            _batchcmds_compile(batchcmds, target, flags)
         end
         batchcmds:add_depfiles(headerunit.path)
         _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir))
@@ -347,7 +354,6 @@ end
 
 -- generate target user header units for batchcmds
 function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
-    local compinst = target:compiler("cxx")
     local mapper_file = _get_module_mapper(target)
     local cachedir = common.modules_cachedir(target)
 
@@ -369,19 +375,19 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
         batchcmds:mkdir(path.directory(objectfile))
 
-        local args = {"-c"}
+        local flags = {"-c"}
         local headerunit_path
         if headerunit.type == ":quote" then
-            table.join2(args, {"-I", path(path.relative(headerunit.path, projectdir)):directory(), "-x", "c++-user-header", headerunit.name})
+            table.join2(flags, {"-I", path(path.relative(headerunit.path, projectdir)):directory(), "-x", "c++-user-header", headerunit.name})
             headerunit_path = path.join(".", path.relative(headerunit.path, projectdir))
         elseif headerunit.type == ":angle" then
-            table.join2(args, {"-x", "c++-system-header", headerunit.name})
+            table.join2(flags, {"-x", "c++-system-header", headerunit.name})
             -- if path is relative then its a subtarget path
             headerunit_path = path.is_absolute(headerunit.path) and headerunit.path or path.join(".", headerunit.path)
         end
 
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
-        batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
+        _batchcmds_compile(batchcmds, target, flags)
         batchcmds:add_depfiles(headerunit.path)
 
         _add_module_to_mapper(mapper_file, headerunit_path, path.absolute(bmifile, projectdir))
@@ -460,7 +466,6 @@ end
 
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
-    local compinst = target:compiler("cxx")
     local modulemapperflag = get_modulemapperflag(target)
     local mapper_file = _get_module_mapper(target)
 
@@ -502,7 +507,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             local flags = {"-x", "c++", "-c", path(cppfile), "-o", path(objectfile)}
             batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
             batchcmds:mkdir(path.directory(objectfile))
-            batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), flags))
+            _batchcmds_compile(batchcmds, target, flags)
             batchcmds:add_depfiles(cppfile)
             target:add("objectfiles", objectfile)
             if provide then
