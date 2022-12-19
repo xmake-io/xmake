@@ -6,6 +6,7 @@ set_config "force_utf8" true
 set_config "float" true
 set_config "demo" false
 
+check_interfaces_enabled=false
 includes "tbox/src"
 
 hide_options() {
@@ -25,3 +26,4 @@ target "tbox"
     set_configvar "TB_CONFIG_MODULE_HAVE_CHARSET" 1
     set_configvar "TB_CONFIG_FORCE_UTF8" 1
     set_configvar "TB_CONFIG_TYPE_HAVE_FLOAT" 1
+    add_includedirs "inc/${plat}" "{public}"
