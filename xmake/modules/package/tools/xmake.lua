@@ -63,6 +63,10 @@ function _get_configs(package, configs, opt)
         if appledev then
             table.insert(configs, "--appledev=" .. appledev)
         end
+        local target_minver = get_config("target_minver")
+        if target_minver then
+            table.insert(configs, "--target_minver=" .. target_minver)
+        end
     elseif package:is_plat("cross") then
         local cross = _get_config_from_toolchains(package, "cross") or get_config("cross")
         if cross then
