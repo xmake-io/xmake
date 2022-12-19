@@ -69,6 +69,13 @@ function _compile(target, flags)
     os.vrunv(compinst:program(), winos.cmdargv(table.join(compinst:compflags({target = target}), flags)), {envs = msvc:runenvs()})
 end
 
+-- do compile for batchcmds
+function _batchcmds_compile(batchcmds, target, flags)
+    local compinst = target:compiler("cxx")
+    local compflags = compinst:compflags({target = target})
+    batchcmds:vrunv(compinst:program(), table.join(compflags or {}, flags), {envs = compinst:runenvs()})
+end
+
 -- add an objectfile to the linker flags
 --
 -- e.g
@@ -246,11 +253,9 @@ end
 
 -- generate header unit module bmi for batchcmds
 function generate_headerunit_for_batchcmds(target, name, flags, objectfile, batchcmds, opt)
-    local compinst = target:compiler("cxx")
-    local msvc = target:toolchain("msvc")
     local common_flags = {"-TP", "-c"}
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.headerunit.$(mode) %s", name)
-    batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), common_flags, flags), {envs = msvc:runenvs()})
+    _batchcmds_compile(batchcmds, target, table.join(common_flags, flags))
     _add_objectfile_to_link_arguments(target, objectfile)
 end
 
@@ -520,8 +525,6 @@ end
 
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
-    local compinst = target:compiler("cxx")
-    local msvc = target:toolchain("msvc")
 
     -- get flags
     local ifcoutputflag = get_ifcoutputflag(target)
@@ -570,7 +573,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
 
                 batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
                 batchcmds:mkdir(path.directory(objectfile))
-                batchcmds:vrunv(compinst:program(), table.join(compinst:compflags({target = target}), table.join(flags, requiresflags or {})), {envs = msvc:runenvs()})
+                _batchcmds_compile(batchcmds, target, table.join(flags, requiresflags or {}))
                 batchcmds:add_depfiles(cppfile)
                 _add_objectfile_to_link_arguments(target, path(objectfile))
                 if provide then
