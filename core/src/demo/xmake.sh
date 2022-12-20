@@ -25,7 +25,6 @@ target "demo"
     # add install files
     add_installfiles "${projectdir}/(xmake/**.lua)" "share"
     add_installfiles "${projectdir}/(xmake/scripts/**.sh)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/**.lua)" "share"
     add_installfiles "${projectdir}/(xmake/scripts/**.cmake)" "share"
     add_installfiles "${projectdir}/(xmake/scripts/**.pl)" "share"
     add_installfiles "${projectdir}/(xmake/scripts/**.cpp)" "share"
