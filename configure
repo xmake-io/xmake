@@ -201,11 +201,10 @@ _os_tmpfile() {
 
 # try run program
 _os_runv() {
-    local cmd="${@}"
     if ${xmake_sh_diagnosis}; then
-        ${cmd}
+        ${@}
     else
-        ${cmd} >/dev/null 2>&1
+        ${@} >/dev/null 2>&1
     fi
     local ok=$?
     if test "${ok}" -ne "0"; then
@@ -216,10 +215,9 @@ _os_runv() {
 
 # try run program and get output
 _os_iorunv() {
-    local cmd="${@}"
     _os_tmpfile
     local tmpfile="${_ret}"
-    ${cmd} >"${tmpfile}" 2>&1
+    ${@} >"${tmpfile}" 2>&1
     local ok=$?
     if test "${ok}" -ne "0"; then
         _ret=""
@@ -521,17 +519,17 @@ _map() {
 _map_get() {
     local name="${1}"
     local key="${2}"
-    local value=$(eval echo \$_map_${name}_value_${key})
-    if test_eq "${value}" "__empty__"; then
-        value=""
+    _ret=$(eval echo \$_map_${name}_value_${key})
+    if test_eq "${_ret}" "__empty__"; then
+        _ret=""
     fi
-    _ret="${value}"
 }
 
 _map_has() {
     local name="${1}"
     local key="${2}"
-    local value=$(eval echo \$_map_${name}_value_${key})
+    local value=""
+    value=$(eval echo \$_map_${name}_value_${key})
     if test_nz "${value}"; then
         return 0
     fi
@@ -2229,11 +2227,10 @@ set_symbols() {
 
 # set languages in target
 set_languages() {
-    local languages="${@}"
     if ${_loading_targets} && test_z "${_xmake_sh_option_current}"; then
-        _set_target_item "${_xmake_sh_target_current}" "languages" "${languages}"
+        _set_target_item "${_xmake_sh_target_current}" "languages" "${@}"
     elif ${_loading_options} && test_nz "${_xmake_sh_option_current}"; then
-        _set_option_item "${_xmake_sh_option_current}" "languages" "${languages}"
+        _set_option_item "${_xmake_sh_option_current}" "languages" "${@}"
     fi
 }
 
@@ -3453,7 +3450,8 @@ _generate_configfile() {
     fi
 
     # replace git variables
-    local content=$(cat "${configfile_in}")
+    local content=""
+    content=$(cat "${configfile_in}")
     if string_contains "${content}" "GIT_"; then
         _os_iorunv "git" "describe" "--tags"; local git_tag="${_ret}"
         if test_nz "${git_tag}"; then
