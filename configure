@@ -462,8 +462,9 @@ _dedup() {
 # .e.g "hello world hello how are you world" -> hello how are you world
 _dedup_reverse() {
     local result=""
-    local list=$(echo "${1}" | awk '{for (i = NF; i > 0; --i) if (!seen[$i]++) printf $i " "}')
+    local list=""
     local item=""
+    list=$(echo "${1}" | awk '{for (i = NF; i > 0; --i) if (!seen[$i]++) printf $i " "}')
     for item in ${list}; do
         result="${item} ${result}"
     done
