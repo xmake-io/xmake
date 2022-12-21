@@ -87,12 +87,12 @@ function _find_candidates(candidates, find)
 end
 
 function _complete_task(tasks, name)
-    local has_candidate = false
-    for _, v in ipairs(_find_candidates((table.keys(tasks)), name)) do
-        _print_candidate(true, "%s", v)
-        has_candidate = true
+    local found_candidates = {}
+    for i, v in ipairs(_find_candidates((table.keys(tasks)), name)) do
+        table.insert(found_candidates, { value = v, description = tasks[v].description })
     end
-    return has_candidate
+    _print_candidates(has_candidate, found_candidates)
+    return #found_candidates > 0 
 end
 
 -- complete values of kv
