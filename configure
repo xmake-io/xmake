@@ -253,15 +253,11 @@ _os_date() {
 # we avoid use `basename`, because it's slow
 path_filename() {
     local path="${1}"
-    local oldifs="${IFS}"
-    IFS='/'
-    set -- ${path}
-    local filename=""
-    for item in $@; do
-        filename="$item"
-    done
-    _ret="${filename}"
-    IFS="${oldifs}"
+    if test_eq "${path}" "/"; then
+        _ret="/"
+    else
+        _ret="${path##*/}"
+    fi
 }
 
 path_extension() {
