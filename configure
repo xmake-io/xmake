@@ -3455,35 +3455,28 @@ _generate_configfile() {
     content=$(cat "${configfile_in}")
     if string_contains "${content}" "GIT_"; then
         _os_iorunv "git" "describe" "--tags"; local git_tag="${_ret}"
-        if test_nz "${git_tag}"; then
-            _vprint_configvar_value "GIT_TAG" "${git_tag}"
-            _replace_configvar_value "GIT_TAG" "${git_tag}"; patterns="${_ret};${patterns}"
-        fi
+        _vprint_configvar_value "GIT_TAG" "${git_tag}"
+        _replace_configvar_value "GIT_TAG" "${git_tag}"; patterns="${_ret};${patterns}"
+
         _os_iorunv "git" "describe" "--tags" "--long"; local git_tag_long="${_ret}"
-        if test_nz "${git_tag_long}"; then
-            _vprint_configvar_value "GIT_TAG_LONG" "${git_tag_long}"
-            _replace_configvar_value "GIT_TAG_LONG" "${git_tag_long}"; patterns="${_ret};${patterns}"
-        fi
+        _vprint_configvar_value "GIT_TAG_LONG" "${git_tag_long}"
+        _replace_configvar_value "GIT_TAG_LONG" "${git_tag_long}"; patterns="${_ret};${patterns}"
+
         _os_iorunv "git" "rev-parse" "--abbrev-ref" "HEAD"; local git_branch="${_ret}"
-        if test_nz "${git_branch}"; then
-            _vprint_configvar_value "GIT_BRANCH" "${git_branch}"
-            _replace_configvar_value "GIT_BRANCH" "${git_branch}"; patterns="${_ret};${patterns}"
-        fi
+        _vprint_configvar_value "GIT_BRANCH" "${git_branch}"
+        _replace_configvar_value "GIT_BRANCH" "${git_branch}"; patterns="${_ret};${patterns}"
+
         _os_iorunv "git" "rev-parse" "--short" "HEAD"; local git_commit="${_ret}"
-        if test_nz "${git_commit}"; then
-            _vprint_configvar_value "GIT_COMMIT" "${git_commit}"
-            _replace_configvar_value "GIT_COMMIT" "${git_commit}"; patterns="${_ret};${patterns}"
-        fi
+        _vprint_configvar_value "GIT_COMMIT" "${git_commit}"
+        _replace_configvar_value "GIT_COMMIT" "${git_commit}"; patterns="${_ret};${patterns}"
+
         _os_iorunv "git" "rev-parse" "HEAD"; local git_commit_long="${_ret}"
-        if test_nz "${git_commit_long}"; then
-            _vprint_configvar_value "GIT_COMMIT_LONG" "${git_commit_long}"
-            _replace_configvar_value "GIT_COMMIT_LONG" "${git_commit_long}"; patterns="${_ret};${patterns}"
-        fi
+        _vprint_configvar_value "GIT_COMMIT_LONG" "${git_commit_long}"
+        _replace_configvar_value "GIT_COMMIT_LONG" "${git_commit_long}"; patterns="${_ret};${patterns}"
+
         _os_iorunv "log" "-1" "--date=format:%Y%m%d%H%M%S" "--format=%ad"; local git_commit_date="${_ret}"
-        if test_nz "${git_commit_date}"; then
-            _vprint_configvar_value "GIT_COMMIT_DATE" "${git_commit_date}"
-            _replace_configvar_value "GIT_COMMIT_DATE" "${git_commit_date}"; patterns="${_ret};${patterns}"
-        fi
+        _vprint_configvar_value "GIT_COMMIT_DATE" "${git_commit_date}"
+        _replace_configvar_value "GIT_COMMIT_DATE" "${git_commit_date}"; patterns="${_ret};${patterns}"
     fi
 
     # replace configvars in target
