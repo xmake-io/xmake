@@ -27,7 +27,7 @@ jobs:
           copyback: false
           prepare: pkg install -y curl unzip gmake llvm gsed bash perl5
           run: |
-            ./configure --verbose --diagnosis
+            ./configure
             gmake -j4
             gmake install
             export XMAKE_ROOT=y

@@ -24,17 +24,8 @@ target "demo"
 
     # add install files
     add_installfiles "${projectdir}/(xmake/**.lua)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/**.sh)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/**.cmake)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/**.pl)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/**.cpp)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/gitignore)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/PkgInfo)" "share"
-    add_installfiles "${projectdir}/(xmake/templates/**.c)" "share"
-    add_installfiles "${projectdir}/(xmake/templates/**.cpp)" "share"
-    add_installfiles "${projectdir}/(xmake/templates/**.m)" "share"
-    add_installfiles "${projectdir}/(xmake/templates/**.mm)" "share"
-    add_installfiles "${projectdir}/(xmake/templates/**.h)" "share"
+    add_installfiles "${projectdir}/(xmake/scripts/**)" "share"
+    add_installfiles "${projectdir}/(xmake/templates/**)" "share"
     add_installfiles "${projectdir}/scripts/xrepo.sh" "bin" "xrepo"
 
     # add syslinks
