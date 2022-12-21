@@ -34,7 +34,7 @@ function enter()
 
     -- unzip or 7zip is necessary
     if not find_tool("unzip") and not find_tool("7z") then
-        raise("unzip or 7zip not found! we need install it first")
+        raise("failed to find unzip or 7zip! please install one of them first")
     end
 
     -- enter the environments of git
