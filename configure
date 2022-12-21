@@ -280,23 +280,9 @@ path_directory() {
     if test_z "${path}"; then
         raise "invalid empty path in path_directory()."
     fi
-    local oldifs="${IFS}"
-    IFS='/'
-    set -- ${path}
-    local dir=""
-    local first=true
-    local startswith_sep=false
-    while test $# != 1; do
-        local item="${1}"
-        if test_nz "${item}"; then
-            dir="${dir}/${item}"
-        elif $first; then
-            startswith_sep=true
-        fi
-        first=false
-        shift
-    done
-    if $startswith_sep; then
+    path="${path%/}"
+    local dir="${path%/*}"
+    if string_startswith "${path}" "/"; then
         if test_z "${dir}"; then
             dir="/"
         fi
@@ -307,7 +293,6 @@ path_directory() {
         fi
     fi
     _ret="${dir}"
-    IFS="${oldifs}"
 }
 
 # e.g. path_filename_fromdir "/tmp/file" "/tmp" -> "file"
