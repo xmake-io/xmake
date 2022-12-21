@@ -31,6 +31,8 @@ local platform       = require("platform/platform")
 
 -- the remote build client is connected?
 --
+-- this implementation is from remote_build_client.is_connected(), but we can not call it by module/import
+--
 -- @see https://github.com/xmake-io/xmake/issues/3187
 function _remote_build_is_connected()
     -- the current process is in service? we cannot enable it
