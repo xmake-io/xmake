@@ -236,9 +236,9 @@ _os_find() {
     local depth="${3}"
     if test_nz "${depth}"; then
         if is_host "macosx"; then
-            _ret=$(find "${dir}" -type f -depth "${depth}" -name "${name}")
+            _ret=$(find "${dir}" -depth "${depth}" -type f -name "${name}")
         else
-            _ret=$(find "${dir}" -type f -maxdepth "${depth}" -mindepth "${depth}" -name "${name}")
+            _ret=$(find "${dir}" -maxdepth "${depth}" -mindepth "${depth}" -type f -name "${name}")
         fi
     else
         _ret=$(find "${dir}" -type f -name "${name}")
