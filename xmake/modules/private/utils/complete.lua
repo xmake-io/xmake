@@ -22,10 +22,12 @@
 import("core.base.option")
 import("core.base.task")
 import("core.base.cli")
+import("core.base.json")
 
 local raw_words = {}
 local raw_config
 local position = 0
+local no_json = false
 local use_spaces = true
 local no_key = false
 local reenter = false
@@ -40,6 +42,16 @@ function _print_candidate(is_complate, ...)
             print("")
         end
     end
+end
+
+function _print_candidates(is_complate, candidates)
+    if to_json then 
+        printf("%s", json.encode(candidates))
+    else
+        for _, v in ipairs(candidates) do
+            _print_candidate(is_complate, "%s", v.value)
+        end
+    end 
 end
 
 function _find_candidates(candidates, find)
@@ -291,6 +303,9 @@ function main(pos, config, ...)
     end
     if raw_config:find("debug", 1, true) then
         debug = true
+    end
+    if raw_config:find("json", 1, true) then
+        to_json = true
     end
 
     local word = table.concat(raw_words, " ") or ""
