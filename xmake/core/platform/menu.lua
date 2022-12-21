@@ -22,16 +22,37 @@
 local menu          = menu or {}
 
 -- load modules
-local os            = require("base/os")
-local path          = require("base/path")
-local utils         = require("base/utils")
-local table         = require("base/table")
-local platform      = require("platform/platform")
+local os             = require("base/os")
+local path           = require("base/path")
+local utils          = require("base/utils")
+local table          = require("base/table")
+local config         = require("project/config")
+local platform       = require("platform/platform")
+
+-- the remote build client is connected?
+--
+-- @see https://github.com/xmake-io/xmake/issues/3187
+function _remote_build_is_connected()
+    -- the current process is in service? we cannot enable it
+    if os.getenv("XMAKE_IN_SERVICE") then
+        return false
+    end
+    local projectdir = os.projectdir()
+    local projectfile = os.projectfile()
+    if projectfile and os.isfile(projectfile) and projectdir then
+        local workdir = path.join(config.directory(), "remote_build")
+        local statusfile = path.join(workdir, "status.txt")
+        if os.isfile(statusfile) then
+            local status = io.load(statusfile)
+            if status and status.connected then
+                return true
+            end
+        end
+    end
+end
 
 -- get the option menu for action: xmake config or global
 function menu.options(action)
-
-    -- check
     assert(action)
 
     -- get all platforms
@@ -51,7 +72,7 @@ function menu.options(action)
 
         -- get menu of the supported platform on the current host
         local menu = instance:menu()
-        if menu and os.is_host(table.unpack(table.wrap(instance:hosts()))) then
+        if menu and (os.is_host(table.unpack(table.wrap(instance:hosts()))) or _remote_build_is_connected()) then
 
             -- get the options for this action
             local options = menu[action]
