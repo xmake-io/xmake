@@ -18,6 +18,7 @@
 * [#3125](https://github.com/xmake-io/xmake/pull/3125): Compile private C++20 modules
 * [#3133](https://github.com/xmake-io/xmake/pull/3133): Add support of internal partitions
 * [#3146](https://github.com/xmake-io/xmake/issues/3146): Add default components for packages
+* [#3192](https://github.com/xmake-io/xmake/issues/3192): JSON output for auto complete
 
 ### Bugs fixed
 
@@ -1479,6 +1480,7 @@
 * [#3125](https://github.com/xmake-io/xmake/pull/3125): 增加私有 C++20 模块的编译支持
 * [#3133](https://github.com/xmake-io/xmake/pull/3133): 增加 internal partitions 模块支持
 * [#3146](https://github.com/xmake-io/xmake/issues/3146): 添加默认包组件支持
+* [#3192](https://github.com/xmake-io/xmake/issues/3192): 为 auto complete 增加 json 输出支持
 
 ### Bugs 修复
 
