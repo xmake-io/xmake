@@ -22,24 +22,35 @@
 import("core.base.option")
 import("core.base.task")
 import("core.base.cli")
+import("core.base.json")
 
 local raw_words = {}
 local raw_config
 local position = 0
+local no_json = false
 local use_spaces = true
 local no_key = false
 local reenter = false
 
-function _print_candidate(is_complate, ...)
-    local candidate = format(...)
-    if candidate and #candidate ~= 0 then
-        printf(candidate)
-        if use_spaces and is_complate then
+function _print_candidate(candidate)
+    if candidate.value and #candidate.value ~= 0 then
+        printf(candidate.value)
+        if use_spaces and candidate.is_complete then
             print(" ")
         else
             print("")
         end
     end
+end
+
+function _print_candidates(candidates)
+    if to_json then 
+        print(json.encode(candidates))
+    else
+        for _, v in ipairs(candidates) do
+            _print_candidate(v)
+        end
+    end 
 end
 
 function _find_candidates(candidates, find)
@@ -75,12 +86,12 @@ function _find_candidates(candidates, find)
 end
 
 function _complete_task(tasks, name)
-    local has_candidate = false
-    for _, v in ipairs(_find_candidates((table.keys(tasks)), name)) do
-        _print_candidate(true, "%s", v)
-        has_candidate = true
+    local found_candidates = {}
+    for i, v in ipairs(_find_candidates((table.keys(tasks)), name)) do
+        table.insert(found_candidates, { value = v, is_complete = true, description = tasks[v].description })
     end
-    return has_candidate
+    _print_candidates(found_candidates)
+    return #found_candidates > 0 
 end
 
 -- complete values of kv
@@ -110,13 +121,15 @@ function _complete_option_kv_v(options, current, completing, name, value)
     end
 
     -- match values starts with value first
+    local found_candidates = {}
     for _, v in ipairs(_find_candidates(values, value)) do
         if no_key then
-            _print_candidate(true, "%s", v)
+            table.insert(found_candidates, { value = v, is_complete = true })
         else
-            _print_candidate(true, "--%s=%s", name, v)
+            table.insert(found_candidates, { value = format("--%s=%s", name, v), is_complete = true })
         end
     end
+    _print_candidates(found_candidates)
 
     -- whether any candidates has been found, finish complete since we don't have more info
     return true
@@ -131,11 +144,13 @@ function _complete_option_kv_k(options, current, completing, name)
             opcandi[opt[2]] = opt
         end
     end
-
+    local found_candidates = {}
     for _, k in ipairs(_find_candidates((table.keys(opcandi)), name)) do
         local opt = opcandi[k]
-        _print_candidate((opt[3] == "k"), (opt[3] == "k") and "--%s" or "--%s=", opt[2])
+        local name = format((opt[3] == "k") and "--%s" or "--%s=", opt[2])
+        table.insert(found_candidates, { value = name, description = opt[5], is_complete = (opt[3] == "k") })
     end
+    _print_candidates(found_candidates)
 
     return true
 end
@@ -179,7 +194,7 @@ function _complete_option_v(options, current, completing)
             optvs = v
         end
     end
-
+    local found_candidates = {}
     if opt then
         -- show candidates of values
         local values = opt.values
@@ -188,14 +203,12 @@ function _complete_option_v(options, current, completing)
         end
         for _, v in ipairs(values) do
             if tostring(v):startswith(completing) then
-                _print_candidate(true, "%s", v)
+                table.insert(found_candidates, { value = v, is_complete = true })
             end
         end
-        return true
     end
 
-    if optvs then
-
+    if optvs and #found_candidates == 0 then
         -- show candidates of values
         local values = optvs.values
         if type(values) == "function" then
@@ -203,13 +216,12 @@ function _complete_option_v(options, current, completing)
         end
         for _, v in ipairs(values) do
             if tostring(v):startswith(completing) then
-                _print_candidate(true, "%s", v)
+                table.insert(found_candidates, { value = v, is_complete = true })
             end
         end
-        return true
     end
-
-    return false
+    _print_candidates(found_candidates)
+    return #found_candidates > 0
 end
 
 function _complete_option(options, segs, completing)
@@ -291,6 +303,9 @@ function main(pos, config, ...)
     end
     if raw_config:find("debug", 1, true) then
         debug = true
+    end
+    if raw_config:find("json", 1, true) then
+        to_json = true
     end
 
     local word = table.concat(raw_words, " ") or ""
