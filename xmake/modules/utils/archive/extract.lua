@@ -415,7 +415,7 @@ function main(archivefile, outputdir, opt)
         extractors =
         {
             -- tar supports .zip on macOS but does not on Linux
-            [".zip"]        = is_host("macosx") and {_extract_using_unzip, _extract_using_tar, _extract_using_7z} or {_extract_using_unzip, _extract_using_7z},
+            [".zip"]        = is_host("macosx") and {_extract_using_unzip, _extract_using_tar, _extract_using_7z} or {_extract_using_unzip, _extract_using_7z}
         ,   [".7z"]         = {_extract_using_7z}
         ,   [".gz"]         = {_extract_using_gzip, _extract_using_tar, _extract_using_7z}
         ,   [".xz"]         = {_extract_using_xz, _extract_using_tar, _extract_using_7z}
