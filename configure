@@ -201,11 +201,10 @@ _os_tmpfile() {
 
 # try run program
 _os_runv() {
-    local cmd="${@}"
     if ${xmake_sh_diagnosis}; then
-        ${cmd}
+        ${@}
     else
-        ${cmd} >/dev/null 2>&1
+        ${@} >/dev/null 2>&1
     fi
     local ok=$?
     if test "${ok}" -ne "0"; then
@@ -216,10 +215,9 @@ _os_runv() {
 
 # try run program and get output
 _os_iorunv() {
-    local cmd="${@}"
     _os_tmpfile
     local tmpfile="${_ret}"
-    ${cmd} >"${tmpfile}" 2>&1
+    ${@} >"${tmpfile}" 2>&1
     local ok=$?
     if test "${ok}" -ne "0"; then
         _ret=""
@@ -238,12 +236,12 @@ _os_find() {
     local depth="${3}"
     if test_nz "${depth}"; then
         if is_host "macosx"; then
-            _ret=$(find "${dir}" -depth "${depth}" -name "${name}")
+            _ret=$(find "${dir}" -depth "${depth}" -type f -name "${name}")
         else
-            _ret=$(find "${dir}" -maxdepth "${depth}" -mindepth "${depth}" -name "${name}")
+            _ret=$(find "${dir}" -maxdepth "${depth}" -mindepth "${depth}" -type f -name "${name}")
         fi
     else
-        _ret=$(find "${dir}" -name "${name}")
+        _ret=$(find "${dir}" -type f -name "${name}")
     fi
 }
 
@@ -255,15 +253,11 @@ _os_date() {
 # we avoid use `basename`, because it's slow
 path_filename() {
     local path="${1}"
-    local oldifs="${IFS}"
-    IFS='/'
-    set -- ${path}
-    local filename=""
-    for item in $@; do
-        filename="$item"
-    done
-    _ret="${filename}"
-    IFS="${oldifs}"
+    if test_eq "${path}" "/"; then
+        _ret="/"
+    else
+        _ret="${path##*/}"
+    fi
 }
 
 path_extension() {
@@ -282,23 +276,9 @@ path_directory() {
     if test_z "${path}"; then
         raise "invalid empty path in path_directory()."
     fi
-    local oldifs="${IFS}"
-    IFS='/'
-    set -- ${path}
-    local dir=""
-    local first=true
-    local startswith_sep=false
-    while test $# != 1; do
-        local item="${1}"
-        if test_nz "${item}"; then
-            dir="${dir}/${item}"
-        elif $first; then
-            startswith_sep=true
-        fi
-        first=false
-        shift
-    done
-    if $startswith_sep; then
+    path="${path%/}"
+    local dir="${path%/*}"
+    if string_startswith "${path}" "/"; then
         if test_z "${dir}"; then
             dir="/"
         fi
@@ -309,7 +289,6 @@ path_directory() {
         fi
     fi
     _ret="${dir}"
-    IFS="${oldifs}"
 }
 
 # e.g. path_filename_fromdir "/tmp/file" "/tmp" -> "file"
@@ -464,8 +443,9 @@ _dedup() {
 # .e.g "hello world hello how are you world" -> hello how are you world
 _dedup_reverse() {
     local result=""
-    local list=$(echo "${1}" | awk '{for (i = NF; i > 0; --i) if (!seen[$i]++) printf $i " "}')
+    local list=""
     local item=""
+    list=$(echo "${1}" | awk '{for (i = NF; i > 0; --i) if (!seen[$i]++) printf $i " "}')
     for item in ${list}; do
         result="${item} ${result}"
     done
@@ -519,19 +499,19 @@ _map() {
 #}
 
 _map_get() {
-    local name=${1}
-    local key=${2}
-    local value=$(eval echo \$_map_${name}_value_${key})
-    if test_eq "${value}" "__empty__"; then
-        value=""
+    local name="${1}"
+    local key="${2}"
+    _ret=$(eval echo \$_map_${name}_value_${key})
+    if test_eq "${_ret}" "__empty__"; then
+        _ret=""
     fi
-    _ret="${value}"
 }
 
 _map_has() {
-    local name=${1}
-    local key=${2}
-    local value=$(eval echo \$_map_${name}_value_${key})
+    local name="${1}"
+    local key="${2}"
+    local value=""
+    value=$(eval echo \$_map_${name}_value_${key})
     if test_nz "${value}"; then
         return 0
     fi
@@ -539,9 +519,9 @@ _map_has() {
 }
 
 _map_set() {
-    local name=${1}
-    local key=${2}
-    local value=${3}
+    local name="${1}"
+    local key="${2}"
+    local value="${3}"
 #    if ! _map_has ${name} ${key}; then
 #        _map_count "options"; local count="${_ret}"
 #        eval _map_${name}_count=$((${count} + 1))
@@ -553,8 +533,8 @@ _map_set() {
 }
 
 #_map_remove() {
-#    local name=${1}
-#    local key=${2}
+#    local name="${1}"
+#    local key="${2}"
 #    if _map_has ${name} ${key}; then
 #        _map_count "options"; local count="${_ret}"
 #        eval _map_${name}_count=$((${count} - 1))
@@ -572,7 +552,7 @@ _map_set() {
 #}
 
 #_map_keys() {
-#    local name=${1}
+#    local name="${1}"
 #    local keys=$(eval echo \$_map_${name}_keys)
 #    _ret="${keys}"
 #}
@@ -631,6 +611,8 @@ fi
 _target_plat_default=${os_host}
 if is_host "msys"; then
     _target_plat_default="mingw"
+elif is_host "freebsd"; then
+    _target_plat_default="bsd"
 fi
 _target_arch_default=${os_arch}
 _target_mode_default="release"
@@ -2227,11 +2209,10 @@ set_symbols() {
 
 # set languages in target
 set_languages() {
-    local languages="${@}"
     if ${_loading_targets} && test_z "${_xmake_sh_option_current}"; then
-        _set_target_item "${_xmake_sh_target_current}" "languages" "${languages}"
+        _set_target_item "${_xmake_sh_target_current}" "languages" "${@}"
     elif ${_loading_options} && test_nz "${_xmake_sh_option_current}"; then
-        _set_option_item "${_xmake_sh_option_current}" "languages" "${languages}"
+        _set_option_item "${_xmake_sh_option_current}" "languages" "${@}"
     fi
 }
 
@@ -2804,7 +2785,7 @@ _toolchain_linkcmd() {
 
 # try make
 _toolchain_try_make() {
-    local program=${1}
+    local program="${1}"
     if _os_runv "${program}" "--version"; then
         return 0
     fi
@@ -2813,7 +2794,7 @@ _toolchain_try_make() {
 
 # try ninja
 _toolchain_try_ninja() {
-    local program=${1}
+    local program="${1}"
     if _os_runv "${program}" "--version"; then
         return 0
     fi
@@ -2828,8 +2809,8 @@ _toolchain_try_gcc() {
         return 1
     fi
 
-    local kind=${1}
-    local program=${2}
+    local kind="${1}"
+    local program="${2}"
     if _os_runv "${program}" "--version"; then
         _toolchain_try_gcc_result="ok"
         return 0
@@ -2846,8 +2827,8 @@ _toolchain_try_gxx() {
         return 1
     fi
 
-    local kind=${1}
-    local program=${2}
+    local kind="${1}"
+    local program="${2}"
     if _os_runv "${program}" "--version"; then
         _toolchain_try_gxx_result="ok"
         return 0
@@ -2864,8 +2845,8 @@ _toolchain_try_clang() {
         return 1
     fi
 
-    local kind=${1}
-    local program=${2}
+    local kind="${1}"
+    local program="${2}"
     if _os_runv "${program}" "--version"; then
         _toolchain_try_clang_result="ok"
         return 0
@@ -2882,8 +2863,8 @@ _toolchain_try_clangxx() {
         return 1
     fi
 
-    local kind=${1}
-    local program=${2}
+    local kind="${1}"
+    local program="${2}"
     if _os_runv "${program}" "--version"; then
         _toolchain_try_clangxx_result="ok"
         return 0
@@ -2892,10 +2873,10 @@ _toolchain_try_clangxx() {
     return 1
 }
 
-# TODO try ar
+# try ar
 _toolchain_try_ar() {
-    local kind=${1}
-    local program=${2}
+    local kind="${1}"
+    local program="${2}"
 
     # generate the source file
     _os_tmpfile
@@ -2921,9 +2902,9 @@ _toolchain_try_ar() {
 
 # try program
 _toolchain_try_program() {
-    local toolchain=${1}
-    local kind=${2}
-    local program=${3}
+    local toolchain="${1}"
+    local kind="${2}"
+    local program="${3}"
     local ok=false
     path_toolname "${program}"; local toolname="${_ret}"
     case "${toolname}" in
@@ -3451,38 +3432,32 @@ _generate_configfile() {
     fi
 
     # replace git variables
-    local content=$(cat "${configfile_in}")
+    local content=""
+    content=$(cat "${configfile_in}")
     if string_contains "${content}" "GIT_"; then
         _os_iorunv "git" "describe" "--tags"; local git_tag="${_ret}"
-        if test_nz "${git_tag}"; then
-            _vprint_configvar_value "GIT_TAG" "${git_tag}"
-            _replace_configvar_value "GIT_TAG" "${git_tag}"; patterns="${_ret};${patterns}"
-        fi
+        _vprint_configvar_value "GIT_TAG" "${git_tag}"
+        _replace_configvar_value "GIT_TAG" "${git_tag}"; patterns="${_ret};${patterns}"
+
         _os_iorunv "git" "describe" "--tags" "--long"; local git_tag_long="${_ret}"
-        if test_nz "${git_tag_long}"; then
-            _vprint_configvar_value "GIT_TAG_LONG" "${git_tag_long}"
-            _replace_configvar_value "GIT_TAG_LONG" "${git_tag_long}"; patterns="${_ret};${patterns}"
-        fi
+        _vprint_configvar_value "GIT_TAG_LONG" "${git_tag_long}"
+        _replace_configvar_value "GIT_TAG_LONG" "${git_tag_long}"; patterns="${_ret};${patterns}"
+
         _os_iorunv "git" "rev-parse" "--abbrev-ref" "HEAD"; local git_branch="${_ret}"
-        if test_nz "${git_branch}"; then
-            _vprint_configvar_value "GIT_BRANCH" "${git_branch}"
-            _replace_configvar_value "GIT_BRANCH" "${git_branch}"; patterns="${_ret};${patterns}"
-        fi
+        _vprint_configvar_value "GIT_BRANCH" "${git_branch}"
+        _replace_configvar_value "GIT_BRANCH" "${git_branch}"; patterns="${_ret};${patterns}"
+
         _os_iorunv "git" "rev-parse" "--short" "HEAD"; local git_commit="${_ret}"
-        if test_nz "${git_commit}"; then
-            _vprint_configvar_value "GIT_COMMIT" "${git_commit}"
-            _replace_configvar_value "GIT_COMMIT" "${git_commit}"; patterns="${_ret};${patterns}"
-        fi
+        _vprint_configvar_value "GIT_COMMIT" "${git_commit}"
+        _replace_configvar_value "GIT_COMMIT" "${git_commit}"; patterns="${_ret};${patterns}"
+
         _os_iorunv "git" "rev-parse" "HEAD"; local git_commit_long="${_ret}"
-        if test_nz "${git_commit_long}"; then
-            _vprint_configvar_value "GIT_COMMIT_LONG" "${git_commit_long}"
-            _replace_configvar_value "GIT_COMMIT_LONG" "${git_commit_long}"; patterns="${_ret};${patterns}"
-        fi
+        _vprint_configvar_value "GIT_COMMIT_LONG" "${git_commit_long}"
+        _replace_configvar_value "GIT_COMMIT_LONG" "${git_commit_long}"; patterns="${_ret};${patterns}"
+
         _os_iorunv "log" "-1" "--date=format:%Y%m%d%H%M%S" "--format=%ad"; local git_commit_date="${_ret}"
-        if test_nz "${git_commit_date}"; then
-            _vprint_configvar_value "GIT_COMMIT_DATE" "${git_commit_date}"
-            _replace_configvar_value "GIT_COMMIT_DATE" "${git_commit_date}"; patterns="${_ret};${patterns}"
-        fi
+        _vprint_configvar_value "GIT_COMMIT_DATE" "${git_commit_date}"
+        _replace_configvar_value "GIT_COMMIT_DATE" "${git_commit_date}"; patterns="${_ret};${patterns}"
     fi
 
     # replace configvars in target
@@ -3558,6 +3533,10 @@ _gmake_add_header() {
 _gmake_add_switches() {
     echo "ifneq (\$(VERBOSE),1)" >> "${xmake_sh_makefile}"
     echo "V=@" >> "${xmake_sh_makefile}"
+    echo "endif" >> "${xmake_sh_makefile}"
+    echo "" >> "${xmake_sh_makefile}"
+    echo "ifeq (\$(PREFIX),)" >> "${xmake_sh_makefile}"
+    echo "PREFIX=${_install_prefix_default}" >> "${xmake_sh_makefile}"
     echo "endif" >> "${xmake_sh_makefile}"
     echo "" >> "${xmake_sh_makefile}"
 }
@@ -3783,7 +3762,7 @@ _gmake_add_install_target() {
     path_filename "${targetfile}"; local filename="${_ret}"
     _get_target_item "${target}" "installdir"; local installdir="${_ret}"
     if test_z "${installdir}"; then
-        installdir=${_install_prefix_default}
+        installdir="\$(PREFIX)"
     fi
 
     # install target file

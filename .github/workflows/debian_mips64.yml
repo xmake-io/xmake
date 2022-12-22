@@ -28,7 +28,7 @@ jobs:
             "uname -a &&
             apt update &&
             cd /github/workspace &&
-            ./scripts/get.sh __local__ &&
+            ./scripts/get2.sh __local__ &&
             source ~/.xmake/profile &&
             export XMAKE_ROOT=y &&
             export XMAKE_TMPDIR=/tmp &&
