@@ -371,12 +371,7 @@ end
 -- extract archive file using extractors
 function _extract(archivefile, outputdir, extension, extractors, opt)
     for _, extract in ipairs(extractors) do
-        local ok = try
-        {
-            function ()
-                return extract(archivefile, outputdir, extension, opt)
-            end
-        }
+        local ok = try {function () return extract(archivefile, outputdir, extension, opt) end}
         if ok then
             return true
         end
