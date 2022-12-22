@@ -201,7 +201,7 @@ fi
 
 # do install
 if [ "x$prefix" != "x" ]; then
-    $make install || raise "install failed!"
+    $make install PREFIX="$prefix" || raise "install failed!"
 else
     $sudoprefix $make install || raise "install failed!"
 fi
