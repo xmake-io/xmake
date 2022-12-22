@@ -543,6 +543,9 @@ function _get_configs_for_cross(package, configs, opt)
     envs.CMAKE_OSX_SYSROOT = ""
     -- Avoid cmake to add the flags -search_paths_first and -headerpad_max_install_names on macOS
     envs.HAVE_FLAG_SEARCH_PATHS_FIRST = "0"
+    -- Avoids finding host include/library path
+    envs.CMAKE_FIND_USE_CMAKE_SYSTEM_PATH = "0"
+    envs.CMAKE_FIND_USE_INSTALL_PREFIX = "0"
     for k, v in pairs(envs) do
         table.insert(configs, "-D" .. k .. "=" .. v)
     end
