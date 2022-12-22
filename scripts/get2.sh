@@ -186,23 +186,21 @@ else
     fi
 fi
 
-# do configure
-if [ "$prefix" = "" ]; then
+# do build
+if [ "x$prefix" = "x" ]; then
     prefix=~/.local
 fi
-if [ "x$prefix" != x ]; then
-    ./configure --prefix="$prefix" || raise "configure failed!"
-else
-    ./configure || raise "configure failed!"
-fi
-
-# do build
 if [ 'x__install_only__' != "x$2" ]; then
+    if [ "x$prefix" != "x" ]; then
+        ./configure --prefix="$prefix" || raise "configure failed!"
+    else
+        ./configure || raise "configure failed!"
+    fi
     $make || raise "make failed!"
 fi
 
 # do install
-if [ "x$prefix" != x ]; then
+if [ "x$prefix" != "x" ]; then
     $make install || raise "install failed!"
 else
     $sudoprefix $make install || raise "install failed!"

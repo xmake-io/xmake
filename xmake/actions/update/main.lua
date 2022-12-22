@@ -209,8 +209,11 @@ function _install(sourcedir)
                         raise("the installer(%s) not found!", win_installer_name)
                     end
                 else
-                    os.vrun("make build")
-                    process.openv("./scripts/get.sh", {"__local__", "__install_only__"}, {stdout = os.tmpfile(), stderr = os.tmpfile(), detach = true}):close()
+                    if os.isfile("./configure") then
+                        os.vrun("./configure")
+                    end
+                    os.vrun("make")
+                    process.openv("./scripts/get2.sh", {"__local__", "__install_only__"}, {stdout = os.tmpfile(), stderr = os.tmpfile(), detach = true}):close()
                 end
                 return true
             end,
