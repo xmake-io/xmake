@@ -3535,6 +3535,10 @@ _gmake_add_switches() {
     echo "V=@" >> "${xmake_sh_makefile}"
     echo "endif" >> "${xmake_sh_makefile}"
     echo "" >> "${xmake_sh_makefile}"
+    echo "ifeq (\$(PREFIX),)" >> "${xmake_sh_makefile}"
+    echo "PREFIX=${_install_prefix_default}" >> "${xmake_sh_makefile}"
+    echo "endif" >> "${xmake_sh_makefile}"
+    echo "" >> "${xmake_sh_makefile}"
 }
 
 _gmake_add_flags() {
@@ -3758,7 +3762,7 @@ _gmake_add_install_target() {
     path_filename "${targetfile}"; local filename="${_ret}"
     _get_target_item "${target}" "installdir"; local installdir="${_ret}"
     if test_z "${installdir}"; then
-        installdir=${_install_prefix_default}
+        installdir="\$(PREFIX)"
     fi
 
     # install target file
