@@ -32,11 +32,10 @@ local use_spaces = true
 local no_key = false
 local reenter = false
 
-function _print_candidate(is_complate, ...)
-    local candidate = format(...)
-    if candidate and #candidate ~= 0 then
-        printf(candidate)
-        if use_spaces and is_complate then
+function _print_candidate(candidate)
+    if candidate.value and #candidate.value ~= 0 then
+        printf(candidate.value)
+        if use_spaces and candidate.is_complete then
             print(" ")
         else
             print("")
@@ -44,12 +43,12 @@ function _print_candidate(is_complate, ...)
     end
 end
 
-function _print_candidates(is_complate, candidates)
+function _print_candidates(candidates)
     if to_json then 
-        printf("%s", json.encode(candidates))
+        print(json.encode(candidates))
     else
         for _, v in ipairs(candidates) do
-            _print_candidate(is_complate, "%s", v.value)
+            _print_candidate(v)
         end
     end 
 end
@@ -89,9 +88,9 @@ end
 function _complete_task(tasks, name)
     local found_candidates = {}
     for i, v in ipairs(_find_candidates((table.keys(tasks)), name)) do
-        table.insert(found_candidates, { value = v, description = tasks[v].description })
+        table.insert(found_candidates, { value = v, is_complete = true, description = tasks[v].description })
     end
-    _print_candidates(has_candidate, found_candidates)
+    _print_candidates(found_candidates)
     return #found_candidates > 0 
 end
 
