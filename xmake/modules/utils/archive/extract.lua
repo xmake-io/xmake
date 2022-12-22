@@ -399,7 +399,7 @@ function main(archivefile, outputdir, opt)
         -- tar/windows can not extract .bz2 ...
         extractors =
         {
-            [".zip"]        = {_extract_using_7z, _extract_using_unzip}
+            [".zip"]        = {_extract_using_7z, _extract_using_unzip, _extract_using_tar}
         ,   [".7z"]         = {_extract_using_7z}
         ,   [".gz"]         = {_extract_using_7z, _extract_using_gzip, _extract_using_tar}
         ,   [".xz"]         = {_extract_using_7z, _extract_using_xz, _extract_using_tar}
@@ -414,7 +414,8 @@ function main(archivefile, outputdir, opt)
     else
         extractors =
         {
-            [".zip"]        = {_extract_using_unzip, _extract_using_7z}
+            -- tar supports .zip on macOS but does not on Linux
+            [".zip"]        = is_host("macosx") and {_extract_using_unzip, _extract_using_tar, _extract_using_7z} or {_extract_using_unzip, _extract_using_7z},
         ,   [".7z"]         = {_extract_using_7z}
         ,   [".gz"]         = {_extract_using_gzip, _extract_using_tar, _extract_using_7z}
         ,   [".xz"]         = {_extract_using_xz, _extract_using_tar, _extract_using_7z}
