@@ -603,9 +603,6 @@ is_host() {
 
 # detect host architecture
 os_arch=`uname -m | tr '[A-Z]' '[a-z]'`
-if is_host "msys" && test_nz "${MSYSTEM_CARCH}"; then
-    os_arch="${MSYSTEM_CARCH}"
-fi
 if test_eq "${os_arch}" "i686"; then
     os_arch="i386"
 fi
@@ -618,6 +615,12 @@ elif is_host "freebsd"; then
     _target_plat_default="bsd"
 fi
 _target_arch_default=${os_arch}
+if is_host "msys" && test_nz "${MSYSTEM_CARCH}"; then
+    _target_arch_default="${MSYSTEM_CARCH}"
+fi
+if test_eq "${_target_arch_default}" "i686"; then
+    _target_arch_default="i386"
+fi
 _target_mode_default="release"
 
 # set the default project generator and build program
