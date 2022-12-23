@@ -603,6 +603,9 @@ is_host() {
 
 # detect host architecture
 os_arch=`uname -m | tr '[A-Z]' '[a-z]'`
+if is_host "msys" && test_nz "${MSYSTEM_CARCH}"; then
+    os_arch="${MSYSTEM_CARCH}"
+fi
 if test_eq "${os_arch}" "i686"; then
     os_arch="i386"
 fi
