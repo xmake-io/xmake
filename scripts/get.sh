@@ -196,7 +196,7 @@ if [ 'x__install_only__' != "x$2" ]; then
     else
         ./configure || raise "configure failed!"
     fi
-    $make || raise "make failed!"
+    $make -j`nproc` || raise "make failed!"
 fi
 
 # do install
