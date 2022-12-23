@@ -25,6 +25,11 @@ else
     set_strip "all"
     set_symbols "hidden"
     set_optimizes "smallest"
+    if is_plat "macosx"; then
+        add_cxflags "-flto"
+        add_mxflags "-flto"
+        add_ldflags "-flto"
+    fi
 fi
 
 # the runtime option, lua or luajit
