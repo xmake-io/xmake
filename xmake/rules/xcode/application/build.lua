@@ -69,6 +69,7 @@ function main (target, opt)
         end
 
         -- copy PkgInfo to the contents directory
+        os.mkdir(resourcesdir)
         os.vcp(path.join(os.programdir(), "scripts", "PkgInfo"), resourcesdir)
 
         -- copy resource files to the resources directory
