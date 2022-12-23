@@ -3305,6 +3305,7 @@ mode="${_target_mode}"
 
 # load targets
 _load_targets() {
+    echo "analyzing project configuration .."
     _loading_options=false
     _loading_toolchains=false
     _loading_targets=true
