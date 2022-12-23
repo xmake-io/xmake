@@ -40,8 +40,9 @@ jobs:
         shell: msys2 {0}
         run: |
           cd /C/_
-          make build
-          make install PREFIX=${{ matrix.prefix }}
+          ./configure --prefix=${{ matrix.prefix }}
+          make
+          make install
           xmake --version
 
       - name: Tests

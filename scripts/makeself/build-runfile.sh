@@ -28,7 +28,7 @@ cp -r ./xmake $tmpdir/xmake/xmake
 cp -r ./core $tmpdir/xmake
 cp ./scripts/*.sh $tmpdir/xmake/scripts
 cp ./*.md $tmpdir/xmake
-cp makefile $tmpdir/xmake
+cp configure $tmpdir/xmake
 cd $tmpdir/xmake || exit
 rm -rf ./core/src/tbox/tbox/src/demo
 rm -rf ./core/src/tbox/tbox/src/tbox/platform/windows
