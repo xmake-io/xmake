@@ -14,7 +14,8 @@ configure-stamp:
 build: build-stamp
 build-stamp: configure-stamp
 	dh_testdir
-	make build
+	./configure
+	make
 	touch $@
 clean:
 	dh_testdir
@@ -30,7 +31,7 @@ install: build
 	mkdir -p $(prefix)/bin
 	mkdir -p $(prefix)/share
 	cp -r $(CURDIR)/xmake $(prefix)/share
-	cp -p $(CURDIR)/core/src/demo/demo.b $(prefix)/bin/xmake
+	cp -p $(CURDIR)/build/xmake $(prefix)/bin/xmake
 	chmod 755 $(prefix)/bin/xmake
 	cp -p $(CURDIR)/scripts/xrepo.sh $(prefix)/bin/xrepo
 	chmod 755 $(prefix)/bin/xrepo
