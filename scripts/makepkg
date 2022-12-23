@@ -48,12 +48,13 @@ if [ `uname` == "Darwin" ]; then
 fi
 
 # build first
-make build
+./configure
+make
 
 # make dep package using fpm
 fpm -s dir -t $target -n xmake -v $version -m "<waruqi@gmail.com>" --description "A cross-platform build utility based on Lua" --url "xmake.io" --license Apache \
         xmake=/usr/local/share/ \
-        core/src/demo/demo.b=/usr/local/bin/xmake \
+        build/xmake=/usr/local/bin/xmake \
         scripts/xrepo.sh=/usr/local/bin/xrepo
 if [ "$target" == "osxpkg" ]; then
     mv "xmake-$version.pkg" "$artifactsdir/xmake.pkg"
