@@ -213,7 +213,7 @@ function _install(sourcedir)
                         os.vrun("./configure")
                     end
                     os.vrun("make")
-                    process.openv("./scripts/get2.sh", {"__local__", "__install_only__"}, {stdout = os.tmpfile(), stderr = os.tmpfile(), detach = true}):close()
+                    process.openv("./scripts/get.sh", {"__local__", "__install_only__"}, {stdout = os.tmpfile(), stderr = os.tmpfile(), detach = true}):close()
                 end
                 return true
             end,

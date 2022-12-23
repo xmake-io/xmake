@@ -88,19 +88,6 @@ if [ 'x__local__' != "x$branch" ]; then
     fi
 fi
 
-if [ "$1" = "__uninstall__" ]
-then
-    # uninstall
-    makefile=$(remote_get_content $gitrepo_raw/makefile)
-    while which xmake >/dev/null 2>&1
-    do
-        pre=$(which xmake | sed 's/\/bin\/xmake$//')
-        # don't care if make exists -- if there's no make, how xmake built and installed?
-        echo "$makefile" | $make -f - uninstall prefix="$pre" 2>/dev/null || echo "$makefile" | $sudoprefix $make -f - uninstall prefix="$pre" || exit $?
-    done
-    exit
-fi
-
 # below is installation
 # print a LOGO!
 echo 'xmake, A cross-platform build utility based on Lua.   '
@@ -116,7 +103,7 @@ echo '   👉  Manual: https://xmake.io/#/getting_started     '
 echo '   🙏  Donate: https://xmake.io/#/sponsor             '
 echo '                                                      '
 
-my_exit(){
+raise() {
     rv=$?
     if [ "x$1" != x ]
     then
@@ -131,8 +118,8 @@ my_exit(){
     fi
     exit "$rv"
 }
-test_tools()
-{
+
+test_tools() {
     prog='#include <stdio.h>\nint main(){return 0;}'
     {
         git --version &&
@@ -147,8 +134,8 @@ test_tools()
         }
     } >/dev/null 2>&1
 }
-install_tools()
-{
+
+install_tools() {
     { apt --version >/dev/null 2>&1 && $sudoprefix apt install -y git build-essential libreadline-dev ccache; } ||
     { yum --version >/dev/null 2>&1 && $sudoprefix yum install -y git readline-devel ccache bzip2 && $sudoprefix yum groupinstall -y 'Development Tools'; } ||
     { zypper --version >/dev/null 2>&1 && $sudoprefix zypper --non-interactive install git readline-devel ccache && $sudoprefix zypper --non-interactive install -t pattern devel_C_C++; } ||
@@ -161,14 +148,14 @@ install_tools()
     { xbps-install --version >/dev/null 2>&1 && $sudoprefix xbps-install -Sy git base-devel ccache; } #void
 
 }
-test_tools || { install_tools && test_tools; } || my_exit "$(echo -e 'Dependencies Installation Fail\nThe getter currently only support these package managers\n\t* apt\n\t* yum\n\t* zypper\n\t* pacman\n\t* portage\n\t* xbps\n Please install following dependencies manually:\n\t* git\n\t* build essential like `make`, `gcc`, etc\n\t* libreadline-dev (readline-devel)\n\t* ccache (optional)')" 1
+test_tools || { install_tools && test_tools; } || raise "$(echo -e 'Dependencies Installation Fail\nThe getter currently only support these package managers\n\t* apt\n\t* yum\n\t* zypper\n\t* pacman\n\t* portage\n\t* xbps\n Please install following dependencies manually:\n\t* git\n\t* build essential like `make`, `gcc`, etc\n\t* libreadline-dev (readline-devel)\n\t* ccache (optional)')" 1
 projectdir=$tmpdir
 if [ 'x__local__' = "x$branch" ]; then
     if [ -d '.git' ]; then
         git submodule update --init --recursive
     fi
     cp -r . $projectdir
-    cd $projectdir || my_exit 'Chdir Error'
+    cd $projectdir || raise 'Chdir Error'
 elif [ 'x__run__' = "x$branch" ]; then
     version=$(git ls-remote --tags "$gitrepo" | tail -c 7)
     if xz --version >/dev/null 2>&1
@@ -190,45 +177,40 @@ elif [ 'x__run__' = "x$branch" ]; then
 else
     echo "cloning $gitrepo $branch .."
     if [ x != "x$2" ]; then
-        git clone --depth=50 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
-        cd $projectdir || my_exit 'Chdir Error'
+        git clone --depth=50 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || raise "$(echo -e 'Clone Fail\nCheck your network or branch name')"
+        cd $projectdir || raise 'Chdir Error'
         git checkout -qf "$2"
-        cd - || my_exit 'Chdir Error'
+        cd - || raise 'Chdir Error'
     else
-        git clone --depth=1 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
+        git clone --depth=1 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || raise "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     fi
 fi
 
 # do build
-if [ 'x__install_only__' != "x$2" ]; then
-    $make -C $projectdir --no-print-directory build
-    rv=$?
-    if [ $rv -ne 0 ]
-    then
-        $make -C $projectdir/core --no-print-directory error
-        my_exit "$(echo -e 'Build Fail\nDetail:\n' | cat - /tmp/xmake.out)" $rv
-    fi
-fi
-
-# make bytecodes
-#XMAKE_PROGRAM_DIR="$projectdir/xmake" \
-#$projectdir/core/src/demo/demo.b l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' $projectdir/xmake || my_exit 'generate bytecode failed!'
-
-# do install
-if [ "$prefix" = "" ]; then
+if [ "x$prefix" = "x" ]; then
     prefix=~/.local
 fi
-if [ "x$prefix" != x ]; then
-    $make -C $projectdir --no-print-directory install prefix="$prefix"|| my_exit 'Install Fail'
-else
-    $sudoprefix $make -C $projectdir --no-print-directory install || my_exit 'Install Fail'
+if [ 'x__install_only__' != "x$2" ]; then
+    if [ "x$prefix" != "x" ]; then
+        ./configure --prefix="$prefix" || raise "configure failed!"
+    else
+        ./configure || raise "configure failed!"
+    fi
+    $make || raise "make failed!"
 fi
-write_profile()
-{
+
+# do install
+if [ "x$prefix" != "x" ]; then
+    $make install PREFIX="$prefix" || raise "install failed!"
+else
+    $sudoprefix $make install || raise "install failed!"
+fi
+
+write_profile() {
     grep -sq ".xmake/profile" $1 || echo -e "\n# >>> xmake >>>\n[[ -s \"\$HOME/.xmake/profile\" ]] && source \"\$HOME/.xmake/profile\" # load xmake profile\n# <<< xmake <<<" >> $1
 }
-install_profile()
-{
+
+install_profile() {
     if [ ! -d ~/.xmake ]; then mkdir ~/.xmake; fi
     echo "export XMAKE_ROOTDIR=\"$prefix/bin\"" > ~/.xmake/profile
     echo 'export PATH="$XMAKE_ROOTDIR:$PATH"' >> ~/.xmake/profile
@@ -263,3 +245,17 @@ if xmake --version >/dev/null 2>&1; then xmake --version; else
     echo "Reload shell profile by running the following command now!"
     echo -e "\x1b[1msource ~/.xmake/profile\x1b[0m"
 fi
+
+# do uninstall
+if [ "$1" = "__uninstall__" ]; then
+    while which xmake >/dev/null 2>&1
+    do
+        if [ "x$prefix" != x ]; then
+            $make uninstall || raise "install failed!"
+        else
+            $sudoprefix $make uninstall || raise "install failed!"
+        fi
+    done
+    exit
+fi
+
