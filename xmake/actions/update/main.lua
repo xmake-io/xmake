@@ -212,7 +212,7 @@ function _install(sourcedir)
                     if os.isfile("./configure") then
                         os.vrun("./configure")
                     end
-                    os.vrun("make")
+                    os.vrunv("make", {"-j4"})
                     process.openv("./scripts/get.sh", {"__local__", "__install_only__"}, {stdout = os.tmpfile(), stderr = os.tmpfile(), detach = true}):close()
                 end
                 return true
