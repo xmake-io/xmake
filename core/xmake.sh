@@ -46,6 +46,17 @@ option "curses"
     add_defines "XM_CONFIG_API_HAVE_CURSES"
 option_end
 
+# the atomic option
+# @note some systems need link atomic, e.g. raspberrypi
+option "atomic"
+    add_links "atomic"
+    add_csnippets "
+void test() {\n
+    int v;\n
+    __atomic_load(&v,&v,0);\n
+}"
+option_end
+
 # the lua-cjson option
 option "lua_cjson"
     add_links "lua5.1-cjson"

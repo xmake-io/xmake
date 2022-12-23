@@ -29,6 +29,7 @@ target "demo"
     add_installfiles "${projectdir}/scripts/xrepo.sh" "bin" "xrepo"
 
     # add syslinks
+    add_options "atomic"
     if is_plat "mingw" "msys" "cygwin"; then
         add_syslinks "ws2_32" "pthread" "m"
     elif is_plat "bsd"; then
