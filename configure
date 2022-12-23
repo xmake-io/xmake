@@ -23,7 +23,7 @@
 #
 xmake_sh_projectdir=$(X= cd -- "$(dirname -- "$0")" && pwd -P)
 xmake_sh_buildir="build"
-xmake_sh_version="1.0.3"
+xmake_sh_version="1.0.5"
 xmake_sh_verbose=false
 xmake_sh_diagnosis=false
 xmake_sh_copyright="Copyright (C) 2022-present Ruki Wang, tboox.org, xmake.io."
