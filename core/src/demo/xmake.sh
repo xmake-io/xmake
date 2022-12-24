@@ -34,6 +34,8 @@ target "demo"
         add_syslinks "ws2_32" "pthread" "m"
     elif is_plat "bsd"; then
         add_syslinks "pthread" "m"
+    elif is_plat "termux"; then
+        add_syslinks "m" "dl"
     else
         add_syslinks "pthread" "dl" "m" "c"
     fi
