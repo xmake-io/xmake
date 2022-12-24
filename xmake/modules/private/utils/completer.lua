@@ -14,15 +14,13 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      OpportunityLiu
+-- @author      OpportunityLiu, glcraft
 -- @file        complete.lua
 --
 
 -- imports
 import("core.base.option")
 import("core.base.cli")
-
-
 
 local completer = {}
 
