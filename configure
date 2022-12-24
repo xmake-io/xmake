@@ -618,8 +618,6 @@ if is_host "msys"; then
     _target_plat_default="mingw"
 elif is_host "freebsd"; then
     _target_plat_default="bsd"
-elif test_nz "${TERMUX_ARCH}"; then
-    _target_plat_default="termux"
 fi
 
 # set the default target architecture
