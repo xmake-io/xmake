@@ -5,6 +5,60 @@
 
 set -o pipefail
 
+#-----------------------------------------------------------------------------
+# some helper functions
+#
+
+raise() {
+    echo "$@" 1>&2 ; exit 1
+}
+
+test_z() {
+    if test "x${1}" = "x"; then
+        return 0
+    fi
+    return 1
+}
+
+test_nz() {
+    if test "x${1}" != "x"; then
+        return 0
+    fi
+    return 1
+}
+
+test_eq() {
+    if test "x${1}" = "x${2}"; then
+        return 0
+    fi
+    return 1
+}
+
+test_nq() {
+    if test "x${1}" != "x${2}"; then
+        return 0
+    fi
+    return 1
+}
+
+#-----------------------------------------------------------------------------
+# prepare
+#
+
+# print a LOGO!
+echo 'xmake, A cross-platform build utility based on Lua.   '
+echo 'Copyright (C) 2015-present Ruki Wang, tboox.org, xmake.io'
+echo '                         _                            '
+echo '    __  ___ __  __  __ _| | ______                    '
+echo '    \ \/ / |  \/  |/ _  | |/ / __ \                   '
+echo '     >  <  | \__/ | /_| |   <  ___/                   '
+echo '    /_/\_\_|_|  |_|\__ \|_|\_\____|                   '
+echo '                         by ruki, xmake.io            '
+echo '                                                      '
+echo '   👉  Manual: https://xmake.io/#/getting_started     '
+echo '   🙏  Donate: https://xmake.io/#/sponsor             '
+echo '                                                      '
+
 # has sudo?
 if [ 0 -ne "$(id -u)" ]; then
     if sudo --version >/dev/null 2>&1
@@ -66,7 +120,7 @@ get_fast_host() {
 
 # get branch
 branch=__run__
-if [ x != "x$1" ]; then
+if test_nz "$1"; then
     brancharr=($1)
     if [ ${#brancharr[@]} -eq 1 ]
     then
@@ -76,9 +130,9 @@ if [ x != "x$1" ]; then
 fi
 
 # get fasthost and git repository
-if [ 'x__local__' != "x$branch" ]; then
+if test_nq "$branch" "__local__"; then
     fasthost=$(get_fast_host)
-    if [ "$fasthost" == "gitee.com" ]; then
+    if test_eq "$fasthost" "gitee.com"; then
         gitrepo="https://gitee.com/tboox/xmake.git"
         gitrepo_raw="https://gitee.com/tboox/xmake/raw/master"
     else
@@ -88,36 +142,9 @@ if [ 'x__local__' != "x$branch" ]; then
     fi
 fi
 
-# below is installation
-# print a LOGO!
-echo 'xmake, A cross-platform build utility based on Lua.   '
-echo 'Copyright (C) 2015-present Ruki Wang, tboox.org, xmake.io'
-echo '                         _                            '
-echo '    __  ___ __  __  __ _| | ______                    '
-echo '    \ \/ / |  \/  |/ _  | |/ / __ \                   '
-echo '     >  <  | \__/ | /_| |   <  ___/                   '
-echo '    /_/\_\_|_|  |_|\__ \|_|\_\____|                   '
-echo '                         by ruki, xmake.io            '
-echo '                                                      '
-echo '   👉  Manual: https://xmake.io/#/getting_started     '
-echo '   🙏  Donate: https://xmake.io/#/sponsor             '
-echo '                                                      '
-
-raise() {
-    rv=$?
-    if [ "x$1" != x ]
-    then
-        echo -ne '\x1b[41;37m'
-        echo "$1"
-        echo -ne '\x1b[0m'
-    fi
-    rm -rf $tmpdir 2>/dev/null
-    if [ "x$2" != x ]
-    then
-        if [ $rv -eq 0 ];then rv=$2;fi
-    fi
-    exit "$rv"
-}
+#-----------------------------------------------------------------------------
+# install tools
+#
 
 test_tools() {
     prog='#include <stdio.h>\nint main(){return 0;}'
@@ -149,14 +176,18 @@ install_tools() {
 
 }
 test_tools || { install_tools && test_tools; } || raise "$(echo -e 'Dependencies Installation Fail\nThe getter currently only support these package managers\n\t* apt\n\t* yum\n\t* zypper\n\t* pacman\n\t* portage\n\t* xbps\n Please install following dependencies manually:\n\t* git\n\t* build essential like `make`, `gcc`, etc\n\t* libreadline-dev (readline-devel)\n\t* ccache (optional)')" 1
+
+#-----------------------------------------------------------------------------
+# install xmake
+#
+
 projectdir=$tmpdir
-if [ 'x__local__' = "x$branch" ]; then
+if test_eq "$branch" "__local__"; then
     if [ -d '.git' ]; then
         git submodule update --init --recursive
     fi
     cp -r . $projectdir
-    cd $projectdir || raise 'Chdir Error'
-elif [ 'x__run__' = "x$branch" ]; then
+elif test_eq "$branch" "__run__"; then
     version=$(git ls-remote --tags "$gitrepo" | tail -c 7)
     if xz --version >/dev/null 2>&1
     then
@@ -174,36 +205,41 @@ elif [ 'x__run__' = "x$branch" ]; then
         remote_get_content "$runfile_url" > $projectdir/xmake.run
     fi
     sh $projectdir/xmake.run --noexec --target $projectdir
-    cd $projectdir || raise 'Chdir Error'
 else
     echo "cloning $gitrepo $branch .."
-    if [ x != "x$2" ]; then
-        git clone --depth=50 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || raise "$(echo -e 'Clone Fail\nCheck your network or branch name')"
-        cd $projectdir || raise 'Chdir Error'
+    if test_nz "$2"; then
+        git clone --depth=50 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || raise "clone failed, check your network or branch name"
+        cd $projectdir || raise 'chdir failed!'
         git checkout -qf "$2"
-        cd - || raise 'Chdir Error'
+        cd - || raise 'chdir failed!'
     else
-        git clone --depth=1 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || raise "$(echo -e 'Clone Fail\nCheck your network or branch name')"
+        git clone --depth=1 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || raise "clone failed, check your network or branch name"
     fi
 fi
 
 # do build
-if [ 'x__install_only__' != "x$2" ]; then
-    if [ -f "./configure" ]; then
+if test_nq "$2" "__install_only__"; then
+    if [ -f "$projectdir/configure" ]; then
+        cd $projectdir || raise 'chdir failed!'
         ./configure || raise "configure failed!"
+        cd - || raise 'chdir failed!'
     fi
-    $make -j`nproc` || raise "make failed!"
+    $make -C $projectdir --no-print-directory -j`nproc` || raise "make failed!"
 fi
 
 # do install
-if [ "x$prefix" = "x" ]; then
+if test_z "$prefix"; then
     prefix=~/.local
 fi
-if [ "x$prefix" != "x" ]; then
-    $make install PREFIX="$prefix" || raise "install failed!"
+if test_nz "$prefix"; then
+    $make -C $projectdir --no-print-directory install PREFIX="$prefix" || raise "install failed!"
 else
-    $sudoprefix $make install || raise "install failed!"
+    $sudoprefix $make -C $projectdir --no-print-directory install || raise "install failed!"
 fi
+
+#-----------------------------------------------------------------------------
+# install profile
+#
 
 write_profile() {
     grep -sq ".xmake/profile" $1 || echo -e "\n# >>> xmake >>>\n[[ -s \"\$HOME/.xmake/profile\" ]] && source \"\$HOME/.xmake/profile\" # load xmake profile\n# <<< xmake <<<" >> $1
@@ -243,18 +279,5 @@ if xmake --version >/dev/null 2>&1; then xmake --version; else
     xmake --version
     echo "Reload shell profile by running the following command now!"
     echo -e "\x1b[1msource ~/.xmake/profile\x1b[0m"
-fi
-
-# do uninstall
-if [ "$1" = "__uninstall__" ]; then
-    while which xmake >/dev/null 2>&1
-    do
-        if [ "x$prefix" != x ]; then
-            $make uninstall || raise "install failed!"
-        else
-            $sudoprefix $make uninstall || raise "install failed!"
-        fi
-    done
-    exit
 fi
 
