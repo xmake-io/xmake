@@ -383,17 +383,21 @@ path_toolname() {
         *-gcc) toolname="gcc";;
         */gcc) toolname="gcc";;
         gcc) toolname="gcc";;
+        gcc-*) toolname="gcc";;
         *-g++) toolname="gxx";;
         */g++) toolname="gxx";;
         g++) toolname="gxx";;
+        g++-*) toolname="gxx";;
         xcrun*clang++) toolname="clangxx";;
         xcrun*clang) toolname="clang";;
         *-clang++) toolname="clangxx";;
         */clang++) toolname="clangxx";;
         clang++) toolname="clangxx";;
+        clang++-*) toolname="clangxx";;
         *-clang) toolname="clang";;
         */clang) toolname="clang";;
         clang) toolname="clang";;
+        clang-*) toolname="clang";;
         *-ar) toolname="ar";;
         */ar) toolname="ar";;
         ar) toolname="ar";;
@@ -2674,7 +2678,7 @@ toolchain "envs"
     set_toolset "mxx" "$CC" "$CXX"
     set_toolset "ld" "$CXX" "$CC" "$LD"
     set_toolset "sh" "$CXX" "$CC" "$LD"
-    set_toolset "ar" "$AR"
+    set_toolset "ar" "$AR" "ar"
 toolchain_end
 
 # clang toolchain

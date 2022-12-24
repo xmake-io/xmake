@@ -1,1 +1,0 @@
-BASE_LIBS := ws2_32
