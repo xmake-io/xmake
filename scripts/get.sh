@@ -187,19 +187,17 @@ else
 fi
 
 # do build
-if [ "x$prefix" = "x" ]; then
-    prefix=~/.local
-fi
 if [ 'x__install_only__' != "x$2" ]; then
-    if [ "x$prefix" != "x" ]; then
-        ./configure --prefix="$prefix" || raise "configure failed!"
-    else
+    if [ -f "./configure" ]; then
         ./configure || raise "configure failed!"
     fi
     $make -j`nproc` || raise "make failed!"
 fi
 
 # do install
+if [ "x$prefix" = "x" ]; then
+    prefix=~/.local
+fi
 if [ "x$prefix" != "x" ]; then
     $make install PREFIX="$prefix" || raise "install failed!"
 else
