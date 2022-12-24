@@ -116,7 +116,7 @@ static xm_io_file_t* xm_io_stdfile_new(lua_State* lua, tb_size_t type)
     tb_assert_and_check_return_val(file, tb_null);
 
     // init file
-    file->std_ref    = fp;
+    file->u.std_ref  = fp;
     file->stream     = tb_null;
     file->fstream    = tb_null;
     file->type       = xm_io_stdfile_isatty(type);

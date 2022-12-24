@@ -36,7 +36,7 @@
 static tb_bool_t xm_io_std_flush_impl(xm_io_file_t* file)
 {
     tb_assert_and_check_return_val(xm_io_file_is_std(file), tb_false);
-    return (file->std_ref != tb_stdfile_input())? tb_stdfile_flush(file->std_ref) : tb_false;
+    return (file->u.std_ref != tb_stdfile_input())? tb_stdfile_flush(file->u.std_ref) : tb_false;
 }
 
 static tb_bool_t xm_io_file_flush_impl(xm_io_file_t* file)
@@ -50,11 +50,11 @@ static tb_bool_t xm_io_file_flush_impl(xm_io_file_t* file)
     tb_size_t        osize = tb_buffer_size(&file->wcache);
     if (odata && osize)
     {
-        if (!tb_stream_bwrit(file->file_ref, odata, osize)) return tb_false;
+        if (!tb_stream_bwrit(file->u.file_ref, odata, osize)) return tb_false;
         tb_buffer_clear(&file->wcache);
     }
 #endif
-    return tb_stream_sync(file->file_ref, tb_false);
+    return tb_stream_sync(file->u.file_ref, tb_false);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////

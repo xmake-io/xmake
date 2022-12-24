@@ -56,25 +56,25 @@ tb_int_t xm_io_file_seek(lua_State* lua)
     // seek file
     if (xm_io_file_is_file(file))
     {
-        tb_assert(file->file_ref);
+        tb_assert(file->u.file_ref);
         switch (*whence)
         {
         case 's': // "set"
             break;
         case 'e': // "end"
             {
-                tb_hong_t size = tb_stream_size(file->file_ref);
+                tb_hong_t size = tb_stream_size(file->u.file_ref);
                 if (size > 0 && size + offset <= size)
                     offset = size + offset;
                 else xm_io_return_error(lua, "seek failed, invalid offset!");
             }
             break;
         default:  // "cur"
-            offset = tb_stream_offset(file->file_ref) + offset;
+            offset = tb_stream_offset(file->u.file_ref) + offset;
             break;
         }
 
-        if (tb_stream_seek(file->file_ref, offset))
+        if (tb_stream_seek(file->u.file_ref, offset))
         {
             lua_pushnumber(lua, (lua_Number)offset);
             return 1;

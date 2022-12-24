@@ -36,7 +36,7 @@
 static tb_void_t xm_io_file_write_file_utfbom(xm_io_file_t* file)
 {
     // check
-    tb_assert(file && xm_io_file_is_file(file) && file->file_ref);
+    tb_assert(file && xm_io_file_is_file(file) && file->u.file_ref);
 
     // write bom
     switch (file->encoding)
@@ -44,19 +44,19 @@ static tb_void_t xm_io_file_write_file_utfbom(xm_io_file_t* file)
     case TB_CHARSET_TYPE_UTF8:
         {
             static tb_byte_t bom[] = {0xef, 0xbb, 0xbf};
-            tb_stream_bwrit(file->file_ref, bom, sizeof(bom));
+            tb_stream_bwrit(file->u.file_ref, bom, sizeof(bom));
         }
         break;
     case TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_LE:
         {
             static tb_byte_t bom[] = {0xff, 0xfe};
-            tb_stream_bwrit(file->file_ref, bom, sizeof(bom));
+            tb_stream_bwrit(file->u.file_ref, bom, sizeof(bom));
         }
         break;
     case TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_BE:
         {
             static tb_byte_t bom[] = {0xfe, 0xff};
-            tb_stream_bwrit(file->file_ref, bom, sizeof(bom));
+            tb_stream_bwrit(file->u.file_ref, bom, sizeof(bom));
         }
         break;
     default:
@@ -65,13 +65,13 @@ static tb_void_t xm_io_file_write_file_utfbom(xm_io_file_t* file)
 }
 static tb_void_t xm_io_file_write_file_directly(xm_io_file_t* file, tb_byte_t const* data, tb_size_t size)
 {
-    tb_assert(file && data && xm_io_file_is_file(file) && file->file_ref);
-    tb_stream_bwrit(file->file_ref, data, size);
+    tb_assert(file && data && xm_io_file_is_file(file) && file->u.file_ref);
+    tb_stream_bwrit(file->u.file_ref, data, size);
 }
 static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file_t* file, tb_byte_t const* data, tb_size_t size)
 {
     // check
-    tb_assert(file && data && xm_io_file_is_file(file) && file->file_ref);
+    tb_assert(file && data && xm_io_file_is_file(file) && file->u.file_ref);
 
 #ifdef TB_CONFIG_OS_WINDOWS
 
@@ -80,7 +80,7 @@ static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file_t* file, tb_byte_t c
     tb_size_t        osize = tb_buffer_size(&file->wcache);
     if (odata && osize)
     {
-        if (!tb_stream_bwrit(file->file_ref, odata, osize)) return ;
+        if (!tb_stream_bwrit(file->u.file_ref, odata, osize)) return ;
         tb_buffer_clear(&file->wcache);
     }
 
@@ -95,12 +95,12 @@ static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file_t* file, tb_byte_t c
         {
             if (lf > p && lf[-1] == '\r')
             {
-                if (!tb_stream_bwrit(file->file_ref, (tb_byte_t const*)p, lf + 1 - p)) break;
+                if (!tb_stream_bwrit(file->u.file_ref, (tb_byte_t const*)p, lf + 1 - p)) break;
             }
             else
             {
-                if (lf > p && !tb_stream_bwrit(file->file_ref, (tb_byte_t const*)p, lf - p)) break;
-                if (!tb_stream_bwrit(file->file_ref, (tb_byte_t const*)"\r\n", 2)) break;
+                if (lf > p && !tb_stream_bwrit(file->u.file_ref, (tb_byte_t const*)p, lf - p)) break;
+                if (!tb_stream_bwrit(file->u.file_ref, (tb_byte_t const*)"\r\n", 2)) break;
             }
 
             // next line
@@ -128,7 +128,7 @@ static tb_void_t xm_io_file_write_std(xm_io_file_t* file, tb_byte_t const* data,
     tb_check_return(type != XM_IO_FILE_TYPE_STDIN);
 
     // write data to stdout/stderr
-    tb_stdfile_writ(file->std_ref, data, size);
+    tb_stdfile_writ(file->u.std_ref, data, size);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////

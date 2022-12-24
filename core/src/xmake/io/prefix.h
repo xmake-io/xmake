@@ -81,7 +81,7 @@ typedef struct __xm_io_file_t
 
         // the standard io file
         tb_stdfile_ref_t    std_ref;
-    };
+    }u;
 
     tb_stream_ref_t  stream;    // the file stream for XM_IO_FILE_TYPE_FILE
     tb_stream_ref_t  fstream;   // the file charset stream filter

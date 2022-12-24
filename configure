@@ -1608,6 +1608,20 @@ _get_target_compiler_flags() {
             result="${result} ${flags}"
         fi
     fi
+
+    # get flags from environments, e.g. $CFLAGS, $CXXFLAGS
+    if test_eq "${flagname}" "cflags" && test_nz "${CFLAGS}"; then
+        result="${result} ${CFLAGS}"
+    fi
+    if test_eq "${flagname}" "cxxflags" && test_nz "${CXXFLAGS}"; then
+        result="${result} ${CXXFLAGS}"
+    fi
+    if test_eq "${flagname}" "mflags" && test_nz "${MFLAGS}"; then
+        result="${result} ${MFLAGS}"
+    fi
+    if test_eq "${flagname}" "mxxflags" && test_nz "${MXXFLAGS}"; then
+        result="${result} ${MXXFLAGS}"
+    fi
     _ret="${result}"
 }
 
@@ -1676,6 +1690,13 @@ _get_target_linker_flags() {
         result="${result} ${flags}"
     fi
 
+    # get flags from environments, e.g. $LDFLAGS
+    if test_eq "${flagname}" "ldflags" && test_nz "${LDFLAGS}"; then
+        result="${result} ${LDFLAGS}"
+    fi
+    if test_eq "${flagname}" "shflags" && test_nz "${LDFLAGS}"; then
+        result="${result} ${LDFLAGS}"
+    fi
     _ret="${result}"
 }
 
@@ -3539,7 +3560,7 @@ _gmake_add_header() {
 
 _gmake_add_switches() {
     echo "ifneq (\$(VERBOSE),1)" >> "${xmake_sh_makefile}"
-    echo "V=@" >> "${xmake_sh_makefile}"
+    echo "VV=@" >> "${xmake_sh_makefile}"
     echo "endif" >> "${xmake_sh_makefile}"
     echo "" >> "${xmake_sh_makefile}"
     echo "ifeq (\$(PREFIX),)" >> "${xmake_sh_makefile}"
@@ -3578,7 +3599,7 @@ _gmake_add_build_object_for_gcc_clang() {
     local flagname="${4}"
     path_directory "${objectfile}"; local objectdir="${_ret}"
     print "\t@mkdir -p ${objectdir}" >> "${xmake_sh_makefile}"
-    print "\t\$(V)\$(${kind}) -c \$(${flagname}) -o ${objectfile} ${sourcefile}" >> "${xmake_sh_makefile}"
+    print "\t\$(VV)\$(${kind}) -c \$(${flagname}) -o ${objectfile} ${sourcefile}" >> "${xmake_sh_makefile}"
 }
 
 _gmake_add_build_object() {
@@ -3618,7 +3639,7 @@ _gmake_add_build_target_for_gcc_clang() {
     local flagname="${4}"
     path_directory "${targetfile}"; local targetdir="${_ret}"
     print "\t@mkdir -p ${targetdir}" >> "${xmake_sh_makefile}"
-    print "\t\$(V)\$(${kind}) -o ${targetfile} ${objectfiles} \$(${flagname})" >> "${xmake_sh_makefile}"
+    print "\t\$(VV)\$(${kind}) -o ${targetfile} ${objectfiles} \$(${flagname})" >> "${xmake_sh_makefile}"
 }
 
 _gmake_add_build_target_for_ar() {
@@ -3628,7 +3649,7 @@ _gmake_add_build_target_for_ar() {
     local flagname="${4}"
     path_directory "${targetfile}"; local targetdir="${_ret}"
     print "\t@mkdir -p ${targetdir}" >> "${xmake_sh_makefile}"
-    print "\t\$(V)\$(${kind}) \$(${flagname}) ${flags} ${targetfile} ${objectfiles}" >> "${xmake_sh_makefile}"
+    print "\t\$(VV)\$(${kind}) \$(${flagname}) ${flags} ${targetfile} ${objectfiles}" >> "${xmake_sh_makefile}"
 }
 
 _gmake_add_build_target() {

@@ -98,7 +98,7 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
 static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_t* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
     // check
-    tb_assert(buf && file && continuation && xm_io_file_is_file(file) && file->file_ref);
+    tb_assert(buf && file && continuation && xm_io_file_is_file(file) && file->u.file_ref);
 
     // is binary?
     tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
@@ -112,7 +112,7 @@ static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_t* fi
     tb_buffer_clear(&file->rcache);
 
     // read line data
-    tb_long_t size = xm_io_file_buffer_readline(file->file_ref, &file->rcache);
+    tb_long_t size = xm_io_file_buffer_readline(file->u.file_ref, &file->rcache);
 
     // translate line data
     tb_int_t    result = PL_FAIL;
@@ -177,7 +177,7 @@ static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_t* fi
 static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file_t* file)
 {
     // check
-    tb_assert(lua && file && xm_io_file_is_file(file) && file->file_ref);
+    tb_assert(lua && file && xm_io_file_is_file(file) && file->u.file_ref);
 
     // init buffer
     tb_buffer_t buf;
@@ -186,7 +186,7 @@ static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file_t* file)
 
     // read all
     tb_byte_t           data[TB_STREAM_BLOCK_MAXN];
-    tb_stream_ref_t     stream = file->file_ref;
+    tb_stream_ref_t     stream = file->u.file_ref;
     while (!tb_stream_beof(stream))
     {
         tb_long_t real = tb_stream_read(stream, data, sizeof(data));
@@ -209,7 +209,7 @@ static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file_t* file)
 static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation)
 {
     // check
-    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->file_ref);
+    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->u.file_ref);
 
     // is binary? read all directly
     tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
@@ -248,7 +248,7 @@ static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file_t* file, tb_char_
 static tb_int_t xm_io_file_read_line(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
     // check
-    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->file_ref);
+    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->u.file_ref);
 
     // init buffer
     tb_buffer_t buf;
@@ -285,7 +285,7 @@ static tb_int_t xm_io_file_read_line(lua_State* lua, xm_io_file_t* file, tb_char
 static tb_int_t xm_io_file_read_n(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation, tb_long_t n)
 {
     // check
-    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->file_ref);
+    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->u.file_ref);
 
     // check continuation
     if (*continuation != '\0')
@@ -299,7 +299,7 @@ static tb_int_t xm_io_file_read_n(lua_State* lua, xm_io_file_t* file, tb_char_t 
     if (n == 0)
     {
         tb_byte_t* data = tb_null;
-        if (tb_stream_need(file->file_ref, &data, 1))
+        if (tb_stream_need(file->u.file_ref, &data, 1))
         {
             lua_pushliteral(lua, "");
             ok = tb_true;
@@ -310,7 +310,7 @@ static tb_int_t xm_io_file_read_n(lua_State* lua, xm_io_file_t* file, tb_char_t 
         tb_byte_t* bufptr = tb_buffer_resize(&file->rcache, n + 1);
         if (bufptr)
         {
-            if (tb_stream_bread(file->file_ref, bufptr, n))
+            if (tb_stream_bread(file->u.file_ref, bufptr, n))
             {
                 lua_pushlstring(lua, (tb_char_t const*)bufptr, n);
                 ok = tb_true;
@@ -330,7 +330,7 @@ static tb_size_t xm_io_file_std_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_
     tb_char_t strbuf[8192];
     tb_size_t buflen = 0;
     tb_size_t result = PL_FAIL;
-    if (tb_stdfile_gets(file->std_ref, strbuf, tb_arrayn(strbuf) - 1))
+    if (tb_stdfile_gets(file->u.std_ref, strbuf, tb_arrayn(strbuf) - 1))
         buflen = tb_strlen(strbuf);
     else return PL_EOF;
 
@@ -457,7 +457,7 @@ static tb_int_t xm_io_file_std_read_n(lua_State* lua, xm_io_file_t* file, tb_cha
     if (n == 0)
     {
         tb_char_t ch;
-        if (!tb_stdfile_peek(file->std_ref, &ch))
+        if (!tb_stdfile_peek(file->u.std_ref, &ch))
             lua_pushnil(lua);
         else
             lua_pushliteral(lua, "");
@@ -469,7 +469,7 @@ static tb_int_t xm_io_file_std_read_n(lua_State* lua, xm_io_file_t* file, tb_cha
     tb_assert(buf_ptr);
 
     // io.read(n)
-    if (tb_stdfile_read(file->std_ref, buf_ptr, (tb_size_t)n))
+    if (tb_stdfile_read(file->u.std_ref, buf_ptr, (tb_size_t)n))
         lua_pushlstring(lua, (tb_char_t const*)buf_ptr, (size_t)n);
     else lua_pushnil(lua);
     return 1;
@@ -486,7 +486,7 @@ static tb_int_t xm_io_file_std_read_num(lua_State* lua, xm_io_file_t* file, tb_c
 
     // read number
     tb_char_t strbuf[512];
-    if (tb_stdfile_gets(file->std_ref, strbuf, tb_arrayn(strbuf)))
+    if (tb_stdfile_gets(file->u.std_ref, strbuf, tb_arrayn(strbuf)))
         lua_pushnumber(lua, tb_s10tod(strbuf)); // TODO check invalid float number string and push nil
     else lua_pushnil(lua);
     return 1;

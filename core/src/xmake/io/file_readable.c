@@ -49,8 +49,8 @@ tb_int_t xm_io_file_readable(lua_State* lua)
 
     // has readable data?
     tb_bool_t ok = tb_false;
-    if (xm_io_file_is_file(file)) ok = tb_stream_left(file->file_ref) > 0;
-    else ok = tb_stdfile_readable(file->std_ref);
+    if (xm_io_file_is_file(file)) ok = tb_stream_left(file->u.file_ref) > 0;
+    else ok = tb_stdfile_readable(file->u.std_ref);
     lua_pushboolean(lua, ok);
     return 1;
 }

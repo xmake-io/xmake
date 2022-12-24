@@ -292,7 +292,7 @@ tb_int_t xm_io_file_open(lua_State* lua)
     tb_assert_and_check_return_val(file, 0);
 
     // init file
-    file->file_ref   = file_ref;
+    file->u.file_ref = file_ref;
     file->stream     = stream;
     file->fstream    = fstream;
     file->mode       = mode;
