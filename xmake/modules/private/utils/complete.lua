@@ -21,8 +21,6 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
-import("core.base.cli")
-import("core.base.json")
 import("private.utils.completer")
 
 function main(pos, config, ...)
