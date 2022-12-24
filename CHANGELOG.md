@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.7.4
+
 ### New features
 
 * [#3049](https://github.com/xmake-io/xmake/pull/3049): Add `xmake format` plugin
@@ -1463,6 +1465,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.7.4
 
 ### 新特性
 
