@@ -1,5 +1,5 @@
-%define     xmake_revision       6d8887c94b4777fe191f7a4c17a7dc00b10f1670
-%define     tbox_revision        149fa2795e69f087999b34e3fdb417a485ad187e
+%define     xmake_revision       02b8fd6c9fe5974e6d703411d860ea415bda8bfa
+%define     tbox_revision        4732fe57f1e85f24585aadf073747291ff03d2d6
 %define     sv_revision          035262773da0500367cb88e6f30197908159a348
 %define     lua_cjson_revision   ddcecf3b24b71421e7b4a2962f1fbcc0297e0c1e
 %define     luajit_revision      e9af1abec542e6f9851ff2368e7f196b6382a44c
@@ -73,13 +73,14 @@ export CXXFLAGS="%{optflags}"
 %else
 %set_build_flags
 %endif
+./configure
 %make_build
 
 %install
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}
 cp -p -r xmake %{buildroot}%{_datadir}/%{name}
-cp -p core/src/demo/demo.b %{buildroot}%{_bindir}/%{name}
+cp -p build/xmake %{buildroot}%{_bindir}/%{name}
 chmod 755 %{buildroot}%{_bindir}/%{name}
 cp -p README.md %{buildroot}%{_datadir}
 cp -p LICENSE.md %{buildroot}%{_datadir}
