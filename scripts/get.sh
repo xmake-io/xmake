@@ -174,6 +174,7 @@ elif [ 'x__run__' = "x$branch" ]; then
         remote_get_content "$runfile_url" > $projectdir/xmake.run
     fi
     sh $projectdir/xmake.run --noexec --target $projectdir
+    cd $projectdir || raise 'Chdir Error'
 else
     echo "cloning $gitrepo $branch .."
     if [ x != "x$2" ]; then
