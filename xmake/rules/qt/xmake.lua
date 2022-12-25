@@ -133,12 +133,14 @@ rule("qt.widgetapp_static")
         -- @see
         -- https://github.com/xmake-io/xmake/issues/1047
         -- https://github.com/xmake-io/xmake/issues/2791
-        local QtPlatformSupport = "QtPlatformSupport"
+        local QtPlatformSupport
         if qt_sdkver then
-            if qt_sdkver:ge("5.9") then
-                QtPlatformSupport = "QtPlatformCompositorSupport"
-            elseif qt_sdkver:ge("6.0") then
+            if qt_sdkver:ge("6.0") then
                 QtPlatformSupport = nil
+            elseif qt_sdkver:ge("5.9") then
+                QtPlatformSupport = "QtPlatformCompositorSupport"
+            else
+                QtPlatformSupport = "QtPlatformSupport"
             end
         end
 
@@ -218,12 +220,14 @@ rule("qt.quickapp_static")
         -- @see
         -- https://github.com/xmake-io/xmake/issues/1047
         -- https://github.com/xmake-io/xmake/issues/2791
-        local QtPlatformSupport = "QtPlatformSupport"
+        local QtPlatformSupport
         if qt_sdkver then
-            if qt_sdkver:ge("5.9") then
-                QtPlatformSupport = "QtPlatformCompositorSupport"
-            elseif qt_sdkver:ge("6.0") then
+            if qt_sdkver:ge("6.0") then
                 QtPlatformSupport = nil
+            elseif qt_sdkver:ge("5.9") then
+                QtPlatformSupport = "QtPlatformCompositorSupport"
+            else
+                QtPlatformSupport = "QtPlatformSupport"
             end
         end
 
