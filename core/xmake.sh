@@ -52,13 +52,11 @@ option "curses"
 option_end
 
 option_find_curses() {
-    local ncurses_cflags=""
     local ncurses_ldflags=""
-    ncurses_cflags=$(pkg-config --cflags ncurses 2>/dev/null)
     ncurses_ldflags=$(pkg-config --libs ncurses 2>/dev/null)
     option "curses"
         if test_nz "${ncurses_ldflags}"; then
-            add_cflags "${ncurses_cflags}"
+            add_cflags `pkg-config --cflags ncurses 2>/dev/null`
             add_ldflags "${ncurses_ldflags}"
         else
             add_links "curses"
