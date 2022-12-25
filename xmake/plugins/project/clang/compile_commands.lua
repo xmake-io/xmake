@@ -90,7 +90,7 @@ function _translate_arguments(arguments)
         if arg then
             -- split "/usr/bin/xcrun -sdk macosx clang"
             -- @see https://github.com/xmake-io/xmake/issues/3159
-            if idx == 1 and arg:find(" ", 1, true) then
+            if idx == 1 and not os.isfile(arg) and arg:find(" ", 1, true) then
                 table.join2(args, os.argv(arg))
             else
                 table.insert(args, arg)
