@@ -3585,6 +3585,7 @@ _gmake_add_switches() {
     echo "else" >> "${xmake_sh_makefile}"
     echo "INSTALLDIR:=\$(PREFIX)" >> "${xmake_sh_makefile}"
     echo "endif" >> "${xmake_sh_makefile}"
+    echo "endif" >> "${xmake_sh_makefile}"
     echo "" >> "${xmake_sh_makefile}"
     echo "ifeq (\$(INSTALLDIR),)" >> "${xmake_sh_makefile}"
     echo "INSTALLDIR=${_install_prefix_default}" >> "${xmake_sh_makefile}"
