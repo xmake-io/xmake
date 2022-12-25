@@ -14,13 +14,10 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      OpportunityLiu, glcraft
+-- @author      glcraft
 -- @file        complete.lua
 --
 
--- imports
-import("core.base.option")
-import("core.base.task")
 import("private.utils.completer")
 
 function main(pos, config, ...)
@@ -37,19 +34,24 @@ function main(pos, config, ...)
 
     if argv[1] then
 
-        -- normailize word to remove "xmake"
-        if is_host("windows") and argv[1]:lower() == "xmake.exe" then
-            argv[1] = "xmake"
+        -- normailize word to remove "xrepo"
+        if is_host("windows") and argv[1]:lower() == "xrepo.exe" then
+            argv[1] = "xrepo"
         end
-        if argv[1] == "xmake" then
+        if argv[1] == "xrepo" then
             table.remove(argv, 1)
         end
     end
 
     local items = {}
-    local tasks = task.names()
-    for _, name in ipairs(tasks) do
-        items[name] = option.taskmenu(name)
+    for _, scriptfile in ipairs(os.files(path.join(os.scriptdir(), "action", "*.lua"))) do
+        local action_name = path.basename(scriptfile)
+        local action = import("private.xrepo.action." .. action_name, {anonymous = true})
+        local options, _, description = action.menu_options()
+        items[action_name] = {
+            description = description,
+            options = options,
+        }
     end
 
     if has_space then
@@ -59,4 +61,3 @@ function main(pos, config, ...)
         comp:complete(items, argv, completing or "")
     end
 end
-
