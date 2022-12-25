@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#3201](https://github.com/xmake-io/xmake/pull/3201): Add completer and xrepo complete
+
 ## v2.7.4
 
 ### New features
@@ -1465,6 +1469,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#3201](https://github.com/xmake-io/xmake/pull/3201): 为 xrepo 添加命令自动补全
 
 ## v2.7.4
 
