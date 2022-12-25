@@ -130,11 +130,16 @@ rule("qt.widgetapp_static")
             qt_sdkver = semver.new(qt.sdkver)
         end
 
-        -- get QtPlatformSupport/QtPlatformCompositorSupport for >=5.9
+        -- @see
         -- https://github.com/xmake-io/xmake/issues/1047
+        -- https://github.com/xmake-io/xmake/issues/2791
         local QtPlatformSupport = "QtPlatformSupport"
-        if qt_sdkver and qt_sdkver:ge("5.9") then
-            QtPlatformSupport = "QtPlatformCompositorSupport"
+        if qt_sdkver then
+            if qt_sdkver:ge("5.9") then
+                QtPlatformSupport = "QtPlatformCompositorSupport"
+            elseif qt_sdkver:ge("6.0") then
+                QtPlatformSupport = nil
+            end
         end
 
         -- load some basic plugins and frameworks
@@ -145,10 +150,16 @@ rule("qt.widgetapp_static")
         end
         if target:is_plat("macosx") then
             plugins.QCocoaIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qcocoa", "cups"}}
-            table.join2(frameworks, QtPlatformSupport, "QtWidgets")
+            table.insert(frameworks, "QtWidgets")
+            if QtPlatformSupport then
+                table.insert(frameworks, QtPlatformSupport)
+            end
         elseif target:is_plat("windows") then
             plugins.QWindowsIntegrationPlugin = {linkdirs = "plugins/platforms", links = {is_mode("debug") and "qwindowsd" or "qwindows"}}
-            table.join2(frameworks, "QtPrintSupport", QtPlatformSupport, "QtWidgets")
+            table.join2(frameworks, "QtPrintSupport", "QtWidgets")
+            if QtPlatformSupport then
+                table.insert(frameworks, QtPlatformSupport)
+            end
         elseif target:is_plat("wasm") then
             plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwasm"}}
             table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
@@ -204,11 +215,16 @@ rule("qt.quickapp_static")
             qt_sdkver = semver.new(qt.sdkver)
         end
 
-        -- get QtPlatformSupport/QtPlatformCompositorSupport for >=5.9
+        -- @see
         -- https://github.com/xmake-io/xmake/issues/1047
+        -- https://github.com/xmake-io/xmake/issues/2791
         local QtPlatformSupport = "QtPlatformSupport"
-        if qt_sdkver and qt_sdkver:ge("5.9") then
-            QtPlatformSupport = "QtPlatformCompositorSupport"
+        if qt_sdkver then
+            if qt_sdkver:ge("5.9") then
+                QtPlatformSupport = "QtPlatformCompositorSupport"
+            elseif qt_sdkver:ge("6.0") then
+                QtPlatformSupport = nil
+            end
         end
 
         -- load some basic plugins and frameworks
@@ -216,10 +232,16 @@ rule("qt.quickapp_static")
         local frameworks = {"QtGui", "QtQuick", "QtQml", "QtQmlModels", "QtCore", "QtNetwork"}
         if target:is_plat("macosx") then
             plugins.QCocoaIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qcocoa", "cups"}}
-            table.join2(frameworks, QtPlatformSupport, "QtWidgets")
+            table.insert(frameworks, "QtWidgets")
+            if QtPlatformSupport then
+                table.insert(frameworks, QtPlatformSupport)
+            end
         elseif target:is_plat("windows") then
             plugins.QWindowsIntegrationPlugin = {linkdirs = "plugins/platforms", links = {is_mode("debug") and "qwindowsd" or "qwindows"}}
-            table.join2(frameworks, "QtPrintSupport", QtPlatformSupport, "QtWidgets")
+            table.join2(frameworks, "QtPrintSupport", "QtWidgets")
+            if QtPlatformSupport then
+                table.insert(frameworks, QtPlatformSupport)
+            end
         elseif target:is_plat("wasm") then
             plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwasm"}}
             table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
