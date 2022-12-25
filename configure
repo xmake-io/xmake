@@ -3574,8 +3574,17 @@ _gmake_add_switches() {
     echo "VV=@" >> "${xmake_sh_makefile}"
     echo "endif" >> "${xmake_sh_makefile}"
     echo "" >> "${xmake_sh_makefile}"
-    echo "ifeq (\$(PREFIX),)" >> "${xmake_sh_makefile}"
-    echo "PREFIX=${_install_prefix_default}" >> "${xmake_sh_makefile}"
+    echo "INSTALLDIR:=" >> "${xmake_sh_makefile}"
+    echo "ifneq (\$(DESTDIR),)" >> "${xmake_sh_makefile}"
+    echo "INSTALLDIR:=\$(DESTDIR)" >> "${xmake_sh_makefile}"
+    echo "endif" >> "${xmake_sh_makefile}"
+    echo "" >> "${xmake_sh_makefile}"
+    echo "ifneq (\$(PREFIX),)" >> "${xmake_sh_makefile}"
+    echo "INSTALLDIR:=\$(INSTALLDIR)/\$(PREFIX)" >> "${xmake_sh_makefile}"
+    echo "endif" >> "${xmake_sh_makefile}"
+    echo "" >> "${xmake_sh_makefile}"
+    echo "ifeq (\$(INSTALLDIR),)" >> "${xmake_sh_makefile}"
+    echo "INSTALLDIR=${_install_prefix_default}" >> "${xmake_sh_makefile}"
     echo "endif" >> "${xmake_sh_makefile}"
     echo "" >> "${xmake_sh_makefile}"
 }
@@ -3801,7 +3810,7 @@ _gmake_add_install_target() {
     path_filename "${targetfile}"; local filename="${_ret}"
     _get_target_item "${target}" "installdir"; local installdir="${_ret}"
     if test_z "${installdir}"; then
-        installdir="\$(PREFIX)"
+        installdir="\$(INSTALLDIR)"
     fi
 
     # install target file
