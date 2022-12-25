@@ -605,7 +605,8 @@ static int xm_curses_initscr(lua_State* lua)
     xm_curses_window_new(lua, w);
 
 #if defined(NCURSES_VERSION)
-    ESCDELAY = 0;
+//    ESCDELAY = 0;
+    set_escdelay(0);
 #endif
 
     lua_pushstring(lua, XM_CURSES_STDSCR);
