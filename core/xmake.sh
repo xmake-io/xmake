@@ -45,11 +45,26 @@ option_end
 
 # the curses option
 option "curses"
-    add_links "curses"
     add_cfuncs "initscr"
     add_cincludes "curses.h"
     add_defines "XM_CONFIG_API_HAVE_CURSES"
+    before_check "option_find_curses"
 option_end
+
+option_find_curses() {
+    local ncurses_cflags=""
+    local ncurses_ldflags=""
+    ncurses_cflags=$(pkg-config --cflags ncurses 2>/dev/null)
+    ncurses_ldflags=$(pkg-config --libs ncurses 2>/dev/null)
+    option "curses"
+        if test_nz "${ncurses_ldflags}"; then
+            add_cflags "${ncurses_cflags}"
+            add_ldflags "${ncurses_ldflags}"
+        else
+            add_links "curses"
+        fi
+    option_end
+}
 
 # the atomic option
 # @note some systems need link atomic, e.g. raspberrypi
