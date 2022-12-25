@@ -20,16 +20,17 @@ git clean -dfX
 git submodule foreach git clean -dfX
 
 # copy files to tmpdir/xmake
-mkdir -p $tmpdir/xmake/scripts
+topdir=$tmpdir/xmake
+mkdir -p $topdir/xmake/scripts
 cd $tmpdir/repo || exit
-cp -r ./core $tmpdir/xmake
-cp -r ./xmake $tmpdir/xmake/xmake
-cp ./scripts/*.sh $tmpdir/xmake/scripts
-cp -r ./scripts/man $tmpdir/xmake/scripts
-cp -r ./scripts/debian $tmpdir/xmake/scripts
-cp ./*.md $tmpdir/xmake
-cp configure $tmpdir/xmake
-cd $tmpdir/xmake || exit
+cp -r ./core $topdir/xmake
+cp -r ./xmake $topdir/xmake/xmake
+cp ./scripts/*.sh $topdir/xmake/scripts
+cp -r ./scripts/man $topdir/xmake/scripts
+cp -r ./scripts/debian $topdir/xmake/scripts
+cp ./*.md $topdir/xmake
+cp configure $topdir/xmake
+cd $topdir || exit
 rm -rf ./core/src/tbox/tbox/src/demo
 rm -rf ./core/src/luajit
 

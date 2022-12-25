@@ -18,9 +18,6 @@
     <a href="https://github.com/xmake-io/xmake/releases">
       <img src="https://img.shields.io/github/release/xmake-io/xmake.svg?style=flat-square" alt="Github All Releases" />
     </a>
-    <a href="https://aur.archlinux.org/packages/xmake">
-      <img src="https://img.shields.io/aur/votes/xmake.svg?style=flat-square" alt="AUR votes" />
-    </a>
   </div>
   <div>
     <a href="https://github.com/xmake-io/xmake/blob/master/LICENSE.md">
