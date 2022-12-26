@@ -194,16 +194,6 @@ function main(...)
     -- do action
     if menu.action then
         menu.action()
-        -- on repos changed
-        -- we clear the cache for completion
-        if action_name in {
-            "add-repo",
-            "rm-repo",
-            "update-repo"
-        } then
-            -- init the xrepo
-            import("private.xrepo.quick_search.cache.clear")()
-        end
     else
         menu.show_help()
     end
