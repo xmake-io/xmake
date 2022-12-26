@@ -501,7 +501,9 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
 
                     if provide or common.has_module_extension(cppfile) then
                         if not common.memcache():get2(name or cppfile, "compiling") then
+                            if name and name:match("std") then
                             common.memcache():set2(name or cppfile, "compiling", true)
+                            end
                         _build_modulefile(target, cppfile, {
                             objectfile = objectfile,
                             dependfile = dependfile,
