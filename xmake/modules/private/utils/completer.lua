@@ -201,6 +201,25 @@ function completer:_complete_option_v(options, current, completing)
             optvs = v
         end
     end
+    
+    local function find_and_add_candidates(values)
+        local found_candidates = {}
+        if #values > 0 and type(values[1]) == "string" then
+            for _, v in ipairs(values) do
+                if tostring(v):startswith(completing) then
+                    table.insert(found_candidates, { value = v, is_complete = true })
+                end
+            end
+        else
+            for _, v in ipairs(values) do
+                if v.value:startswith(completing) then
+                    v.is_complete=true
+                    table.insert(found_candidates, v)
+                end
+            end
+        end
+        return found_candidates
+    end
     local found_candidates = {}
     if opt then
         -- show candidates of values
@@ -208,11 +227,7 @@ function completer:_complete_option_v(options, current, completing)
         if type(values) == "function" then
             values = values(completing, current)
         end
-        for _, v in ipairs(values) do
-            if tostring(v):startswith(completing) then
-                table.insert(found_candidates, { value = v, is_complete = true })
-            end
-        end
+        found_candidates = find_and_add_candidates(values)
     end
 
     if optvs and #found_candidates == 0 then
@@ -221,11 +236,7 @@ function completer:_complete_option_v(options, current, completing)
         if type(values) == "function" then
             values = values(completing)
         end
-        for _, v in ipairs(values) do
-            if tostring(v):startswith(completing) then
-                table.insert(found_candidates, { value = v, is_complete = true })
-            end
-        end
+        found_candidates = find_and_add_candidates(values)
     end
     self:_print_candidates(found_candidates)
     return #found_candidates > 0
