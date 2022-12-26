@@ -4,7 +4,7 @@ function main(complete, opt)
     local candidates = {}
     for _, package in ipairs(packages) do
         if package.name:startswith(complete) then
-            table.insert(candidates, package.name)
+            table.insert(candidates, { value = package.name, description = package.description })
         end
     end
     return candidates
