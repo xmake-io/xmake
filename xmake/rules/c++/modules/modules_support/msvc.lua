@@ -500,6 +500,8 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     local _flags = table.join(flags, requiresflags or {})
 
                     if provide or common.has_module_extension(cppfile) then
+                        if not common.memcache():get2(name or cppfile, "compiling") then
+                            common.memcache():set2(name or cppfile, "compiling", true)
                         _build_modulefile(target, cppfile, {
                             objectfile = objectfile,
                             dependfile = dependfile,
@@ -507,6 +509,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             flags = _flags,
                             progress = (index * 100) / total})
                         _add_objectfile_to_link_arguments(target, path(objectfile))
+                        end
                     elseif requiresflags then
                         requiresflags = get_requiresflags(target, module.requires)
                         target:fileconfig_add(cppfile, {force = {cxxflags = table.join(flags, requiresflags)}})
