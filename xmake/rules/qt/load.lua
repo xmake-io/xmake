@@ -130,7 +130,7 @@ function main(target, opt)
     local languages = target:get("languages")
     local cxxlang = false
     for _, lang in ipairs(languages) do
-        if lang:startswith("cxx") or lang:startswith("c++") then
+        if lang:startswith("xx") or lang:startswith("++") then
             cxxlang = true
             break
         end
