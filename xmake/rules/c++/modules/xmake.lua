@@ -147,19 +147,6 @@ rule("c++.build.modules.install")
         -- we cannot use target:data("cxx.has_modules"),
         -- because on_config will be not called when installing targets
         if common.contains_modules(target) then
-            local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
-            if sourcebatch then
-                for _, sourcefile in sourcebatch.sourcefiles do
-                    local prefixdir = "modules"
-                    local fileconfig = target:fileconfig(sourcefile)
-                    if fileconfig and fileconfig.prefixdir then
-                        prefixdir = fileconfig.prefixdir
-                    end
-                    local install = (fileconfig and not fileconfig.install) and false or true
-                    if install then
-                        target:add("installfiles", sourcefile, {prefixdir = prefixdir})
-                    end
-                end
-            end
+            common.install_module_target(target)
         end
     end)

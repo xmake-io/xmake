@@ -572,3 +572,55 @@ function append_dependency_objectfiles(target)
         end
     end
 end
+
+-- generate meta module informations for package / other buildsystems import
+-- based on https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2473r1.pdf
+--
+-- e.g
+-- {
+--      "include_paths": {"foo/", "bar/"}
+--      "definitions": {"FOO=BAR"}
+--      "imports": {"std", "bar"}
+--      "_VENDOR_extension": {}
+-- }
+function generate_meta_module_info(target, sourcefile)
+    local module_metadata = {}
+
+    -- add include paths
+    module_metadata.include_paths = target:get("includedirs") or {}
+    for _, deps in ipairs(target:orderdeps()) do
+        table.join2(module_metadata.include_paths, deps:get("includedirs") or {})
+    end
+
+    -- add definitions
+    module_metadata.definitions = target:get("defines") or {}
+    for _, deps in ipairs(target:orderdeps()) do
+        table.join2(module_metadata.definitions, deps:get("defines") or {})
+    end
+
+    module_metadata._VENDOR_extension = {}
+
+    print(module_metadata)
+
+    return module_metadata
+end
+
+function install_module_target(target)
+    local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
+    if sourcebatch and sourcebatch.sourcefiles then
+        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            local prefixdir = path.join("modules", target:name())
+            local fileconfig = target:fileconfig(sourcefile)
+            if fileconfig and fileconfig.prefixdir then
+                prefixdir = fileconfig.prefixdir
+            end
+            local install = (fileconfig and not fileconfig.install) and false or true
+            if install then
+                target:add("installfiles", sourcefile, {prefixdir = prefixdir})
+                local metafile = path.join(target:installdir(), prefixdir, path.basename(sourcefile) .. ".meta-ixx-info")
+                print(metafile)
+                io.writefile(metafile, json.encode(generate_meta_module_info(target, sourcefile)))
+            end
+        end
+    end
+end
