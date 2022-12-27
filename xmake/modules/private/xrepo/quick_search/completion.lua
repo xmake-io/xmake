@@ -20,7 +20,7 @@
 
 import("private.xrepo.quick_search.cache")
 
-function xmake_package_complete(complete, opt)
+function _xmake_package_complete(complete, opt)
     local packages = cache.get()
     local candidates = {}
     for _, package in ipairs(packages) do
@@ -39,7 +39,7 @@ function main(complete, opt)
     end
     local packages
     if prefix == "" or prefix == "xmake" then
-        packages = xmake_package_complete(complete, opt)
+        packages = _xmake_package_complete(complete, opt)
     end
     if packages and prefix ~= "" then
         for _, package in ipairs(packages) do
