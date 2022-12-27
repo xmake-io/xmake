@@ -19,11 +19,11 @@
 --
 
 import("core.base.json")
-import("core.base.global")
+import("core.cache.globalcache")
 import("core.package.package", {alias = "core_package"})
 import("private.action.require.impl.repository")
 
-local CACHE_PATH = path.join(global.cachedir(), "repositories_data.json")
+local cache = globalcache.cache("quick_search")
 
 -- search package directories from repositories
 function _list_package_dirs()
@@ -46,32 +46,35 @@ function _list_package_dirs()
     return packageinfos
 end
 
+-- check cache content exists
+function _init()
+    if table.empty(cache:data()) then
+        update()
+    end
+end
+
 -- update the cache file
 function update()
-    local result = {}
     for _, packageinfo in ipairs(_list_package_dirs()) do
         local package = core_package.load_from_repository(packageinfo.name, packageinfo.repo, packageinfo.packagedir)
-        table.insert(result,{
-            name = packageinfo.name,
+        cache:set(packageinfo.name, {
             description = package:description(),
             versions = package:versions(),
         })
     end
-    io.writefile(CACHE_PATH, json.encode(result))
-    return result
+    cache:save()
 end
 
 -- remove the cache file
 function clear()
-    if os.exists(CACHE_PATH) then
-        os.rm(CACHE_PATH)
-    end
+    cache:clear()
+    cache:save()
 end
 
 -- get the cache data
 function get()
-    if not os.exists(CACHE_PATH) then
-        return update()
-    end
-    return json.decode(io.readfile(CACHE_PATH))
+    _init()
+    return cache:data()
+end
+
 end
