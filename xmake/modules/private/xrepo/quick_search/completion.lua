@@ -20,6 +20,7 @@
 
 import("private.xrepo.quick_search.cache")
 
+-- complete xrepo packages
 function _xmake_package_complete(complete, opt)
     local candidates = {}
     local found = cache.find(complete)
