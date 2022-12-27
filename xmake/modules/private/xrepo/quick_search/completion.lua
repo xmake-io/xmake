@@ -33,14 +33,22 @@ end
 
 function main(complete, opt)
     local prefix = ""
+
+    -- check prefix if present
     if complete:find("::", 1, true) then
         prefix = complete:sub(1, complete:find("::", 1, true) - 1)
         complete = complete:sub(complete:find("::", 1, true) + 2)
     end
+
     local packages
+
+    -- complete xmake packages
     if prefix == "" or prefix == "xmake" then
         packages = _xmake_package_complete(complete, opt)
     end
+
+    -- to prevent shell completion misunderstandings,
+    -- we put back the prefix
     if packages and prefix ~= "" then
         for _, package in ipairs(packages) do
             package.value = prefix .. "::" .. package.value
