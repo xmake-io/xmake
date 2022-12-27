@@ -6,6 +6,10 @@
 
 * [#3201](https://github.com/xmake-io/xmake/pull/3201): Add completer and xrepo complete
 
+### Changes
+
+* [#3216](https://github.com/xmake-io/xmake/pull/3216): Add intel one api toolkits detection
+
 ### Bugs fixed
 
 * [#3203](https://github.com/xmake-io/xmake/issues/3203): Fix compile_commands
@@ -1477,6 +1481,10 @@
 ### 新特性
 
 * [#3201](https://github.com/xmake-io/xmake/pull/3201): 为 xrepo 添加命令自动补全
+
+### 改进
+
+* [#3216](https://github.com/xmake-io/xmake/pull/3216): 改进 intel one api toolkits 探测
 
 ### Bugs 修复
 
