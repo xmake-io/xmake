@@ -6,6 +6,10 @@
 
 * [#3201](https://github.com/xmake-io/xmake/pull/3201): Add completer and xrepo complete
 
+### Bugs fixed
+
+* [#3203](https://github.com/xmake-io/xmake/issues/3203): Fix compile_commands
+
 ## v2.7.4
 
 ### New features
@@ -1473,6 +1477,10 @@
 ### 新特性
 
 * [#3201](https://github.com/xmake-io/xmake/pull/3201): 为 xrepo 添加命令自动补全
+
+### Bugs 修复
+
+* [#3203](https://github.com/xmake-io/xmake/issues/3203): 修复 compile_commands
 
 ## v2.7.4
 
