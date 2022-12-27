@@ -32,6 +32,11 @@ end
 function main(complete, opt)
     local prefix = ""
 
+    -- if help menu, do nothing
+    if opt.helpmenu then
+        return {}
+    end
+
     -- check prefix if present
     if complete:find("::", 1, true) then
         prefix = complete:sub(1, complete:find("::", 1, true) - 1)
