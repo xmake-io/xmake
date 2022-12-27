@@ -201,42 +201,51 @@ function completer:_complete_option_v(options, current, completing)
             optvs = v
         end
     end
-    
-    local function find_and_add_candidates(values)
-        local found_candidates = {}
+    -- transform values array to candidates array
+    local function _transform_values(values)
+        local candidates = {}
         if #values > 0 and type(values[1]) == "string" then
             for _, v in ipairs(values) do
-                if tostring(v):startswith(completing) then
-                    table.insert(found_candidates, { value = v, is_complete = true })
-                end
+                table.insert(candidates, { value = v, is_complete = true })
             end
         else
             for _, v in ipairs(values) do
-                if v.value:startswith(completing) then
-                    v.is_complete=true
-                    table.insert(found_candidates, v)
-                end
+                v.is_complete=true
+                table.insert(candidates, v)
+            end
+        end
+        return candidates
+    end
+    -- filter candidates with completing
+    local function _filter_candidates(candidates)
+        local found_candidates = {}
+        for _, v in ipairs(candidates) do
+            if v.value:find(completing,1,true) then
+                v.is_complete=true
+                table.insert(found_candidates, v)
             end
         end
         return found_candidates
     end
+    -- get completion candidates from values option
+    local function _values_into_candidates(values)
+        if type(values) == "function" then
+            -- no need to filter result of values() as we consider values() already filter candidates
+            return _transform_values(values(completing, current))
+        else
+            return _filter_candidates(_transform_values(values))
+        end
+    end
+
     local found_candidates = {}
     if opt then
-        -- show candidates of values
-        local values = opt.values
-        if type(values) == "function" then
-            values = values(completing, current)
-        end
-        found_candidates = find_and_add_candidates(values)
+        -- get candidates from values option
+        found_candidates = _values_into_candidates(opt.values)
     end
 
     if optvs and #found_candidates == 0 then
-        -- show candidates of values
-        local values = optvs.values
-        if type(values) == "function" then
-            values = values(completing)
-        end
-        found_candidates = find_and_add_candidates(values)
+        -- get candidates from values option
+        found_candidates = _values_into_candidates(optvs.values)
     end
     self:_print_candidates(found_candidates)
     return #found_candidates > 0
