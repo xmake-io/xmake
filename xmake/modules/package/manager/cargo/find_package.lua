@@ -27,6 +27,15 @@ import("core.project.target")
 import("lib.detect.find_tool")
 import("lib.detect.find_file")
 
+-- get rust library name
+--
+-- e.g.
+-- sdl2 -> libsdl2
+-- obj-rs -> libobj
+function _get_libname(name)
+    return "lib" .. name:split("%-")[1]
+end
+
 -- get the name set of libraries
 function _get_names_of_libraries(name, configs)
     local names = hashset.new()
@@ -43,7 +52,7 @@ function _get_names_of_libraries(name, configs)
                     if splitinfo and #splitinfo > 1 then
                         name = splitinfo[1]:trim()
                         if #name > 0 then
-                            names:insert("lib" .. name:gsub("-", "_"))
+                            names:insert(_get_libname(name))
                         end
                     end
                 else
@@ -53,8 +62,7 @@ function _get_names_of_libraries(name, configs)
         end
         cargo_file:close()
     else
-        -- rust packages like actix-web will produce a file named actix_web-<...>
-        names:insert("lib" .. name:gsub("-", "_"))
+        names:insert(_get_libname(name))
     end
     return names
 end
