@@ -104,7 +104,17 @@ function _find_intel_on_windows(opt)
     local ifortvars_bat = find_file("bin/ifortvars.bat", paths)
     -- look for setvars.bat which is new in 2021
     if not ifortvars_bat then
-        paths = {"$(env IFORT_COMPILER21)"}
+        -- find setvars.bat in intel oneapi toolkits rootdir
+        paths = {"$(env ONEAPI_ROOT)"}
+        ifortvars_bat = find_file("setvars.bat", paths)
+    end
+    if not ifortvars_bat then
+        -- find setvars.bat use IFORT_COMPILER.*
+        paths = {
+            "$(env IFORT_COMPILER21)",
+            "$(env IFORT_COMPILER22)",
+            "${env IFORT_COMPILER23)"
+        }
         ifortvars_bat = find_file("../../../setvars.bat", paths)
     end
 

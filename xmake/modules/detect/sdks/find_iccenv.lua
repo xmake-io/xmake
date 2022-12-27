@@ -104,7 +104,17 @@ function _find_intel_on_windows(opt)
     local iclvars_bat = find_file("bin/iclvars.bat", paths)
     -- look for setvars.bat which is new in 2021
     if not iclvars_bat then
-        paths = {"$(env ICPP_COMPILER21)"}
+        -- find setvars.bat in intel oneapi toolkits rootdir
+        paths = {"$(env ONEAPI_ROOT)"}
+        iclvars_bat = find_file("setvars.bat", paths)
+    end
+    if not iclvars_bat then
+        -- find setvars.bat using ICPP_COMPILER.*
+        paths = {
+            "$(env ICPP_COMPILER21)",
+            "$(env ICPP_COMPILER22)",
+            "$(env ICPP_COMPILER23)"
+        }
         iclvars_bat = find_file("../../../setvars.bat", paths)
     end
     if iclvars_bat then
