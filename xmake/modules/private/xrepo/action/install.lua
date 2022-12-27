@@ -80,7 +80,7 @@ function menu_options()
                                        "    - xrepo install -p android [--ndk=/xxx] -m debug \"pcre2 10.x\"",
                                        "    - xrepo install -p mingw [--mingw=/xxx] -k shared zlib",
                                        "    - xrepo install conan::zlib/1.2.11 vcpkg::zlib",
-                                        values = function (complete, opt) return import("private.xrepo.quick_search.complete")(complete, opt) end}
+                                        values = function (complete, opt) return import("private.xrepo.quick_search.completion")(complete, opt) end}
     }
 
     -- show menu options
