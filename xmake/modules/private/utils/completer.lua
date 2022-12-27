@@ -229,7 +229,9 @@ function completer:_complete_option_v(options, current, completing)
     end
     -- get completion candidates from values option
     local function _values_into_candidates(values)
-        if type(values) == "function" then
+        if values == nil then
+            return {}
+        elseif type(values) == "function" then
             -- no need to filter result of values() as we consider values() already filter candidates
             return _transform_values(values(completing, current))
         else
