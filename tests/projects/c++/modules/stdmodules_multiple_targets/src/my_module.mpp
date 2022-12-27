@@ -1,0 +1,5 @@
+export module my_module;
+
+import std;
+
+export auto my_sum(size_t a, size_t b) -> size_t;
