@@ -77,4 +77,13 @@ function get()
     return cache:data()
 end
 
+function find(name)
+    _init()
+    local list_result = {}
+    for packagename, packagedata in pairs(cache:data()) do
+        if packagename:find(name, 1, true) then
+            table.insert(list_result, {name = packagename, data = packagedata})
+        end
+    end
+    return list_result
 end

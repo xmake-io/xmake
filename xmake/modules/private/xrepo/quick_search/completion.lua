@@ -21,12 +21,10 @@
 import("private.xrepo.quick_search.cache")
 
 function _xmake_package_complete(complete, opt)
-    local packages = cache.get()
     local candidates = {}
-    for _, package in ipairs(packages) do
-        if package.name:startswith(complete) then
-            table.insert(candidates, { value = package.name, description = package.description })
-        end
+    local found = cache.find(complete)
+    for _, candidate in ipairs(found) do
+        table.insert(candidates, {value = candidate.name, desc = candidate.data.description})
     end
     return candidates
 end
