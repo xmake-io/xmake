@@ -24,7 +24,7 @@ function _xmake_package_complete(complete, opt)
     local candidates = {}
     local found = cache.find(complete)
     for _, candidate in ipairs(found) do
-        table.insert(candidates, {value = candidate.name, desc = candidate.data.description})
+        table.insert(candidates, {value = candidate.name, description = candidate.data.description})
     end
     return candidates
 end
