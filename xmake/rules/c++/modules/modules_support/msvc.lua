@@ -144,7 +144,7 @@ function load(target)
             if language:startswith("c++") or language:startswith("cxx") then
                 isatleastcpp23 = true
                 local version = tonumber(language:match("%d+"))
-                if not version or version <= 20 then
+                if (not version or version <= 20) and not language:match("latest") then
                     isatleastcpp23 = false
                     break
                 end
