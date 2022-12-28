@@ -46,7 +46,7 @@ static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr
     {
         while ((ch = *p))
         {
-            if (ch == ' ' || ch == '(' || ch == ')') wrap_quote = tb_true;
+            if (ch == ' ') wrap_quote = tb_true;
             p++;
         }
     }
