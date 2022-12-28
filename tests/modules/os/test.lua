@@ -107,7 +107,7 @@ function test_argv(t)
     -- $cli "aa bb cc" dd
     t:are_equal(os.argv('"aa bb cc" dd'), {"aa bb cc", "dd"})
     -- $cli aa(bb)cc dd
-    t:are_equal(os.argv('"aa(bb)cc" dd'), {"aa(bb)cc", "dd"})
+    t:are_equal(os.argv('aa(bb)cc dd'), {"aa(bb)cc", "dd"})
     -- $cli aa\\bb/cc dd
     t:are_equal(os.argv('aa\\bb/cc dd'), {"aa\\bb/cc", "dd"})
     -- $cli "aa\\bb/cc dd" ee
@@ -138,7 +138,7 @@ function test_args(t)
     t:are_equal(os.args({"aa", "bb", "cc"}), "aa bb cc")
     t:are_equal(os.args({"aa", "--bb=bbb", "-c"}), "aa --bb=bbb -c")
     t:are_equal(os.args({"aa bb cc", "dd"}), '"aa bb cc" dd')
-    t:are_equal(os.args({"aa(bb)cc", "dd"}), '"aa(bb)cc" dd')
+    t:are_equal(os.args({"aa(bb)cc", "dd"}), 'aa(bb)cc dd')
     t:are_equal(os.args({"aa\\bb/cc", "dd"}), "aa\\bb/cc dd")
     t:are_equal(os.args({"aa\\bb/cc dd", "ee"}), '"aa\\\\bb/cc dd" ee')
     t:are_equal(os.args({"aa\\bb/cc (dd)", "ee"}), '"aa\\\\bb/cc (dd)" ee')
