@@ -29,6 +29,13 @@ import("net.proxy")
 import("private.async.runjobs")
 import("private.action.require.impl.environment")
 
+function _clear_quick_search_cache(is_global)
+    if is_global then
+        import("private.xrepo.quick_search.cache")
+        cache.clear()
+    end
+end
+
 -- add repository url
 function _add(name, url, branch, is_global)
 
@@ -55,6 +62,9 @@ function _add(name, url, branch, is_global)
 
     -- leave environment
     environment.leave()
+
+    -- clear quick search cache
+    _clear_quick_search_cache(is_global)
 end
 
 -- remove repository url
@@ -69,8 +79,12 @@ function _remove(name, is_global)
         os.rmdir(repodir)
     end
 
+    -- clear quick search cache
+    _clear_quick_search_cache(is_global)
+
     -- trace
     cprint("${bright}remove %s repository(%s): ok!", (is_global and "global" or "local"), name)
+
 end
 
 -- update repositories
@@ -112,6 +126,9 @@ function _update()
                 pulled[repodir] = true
             end
         end
+
+        -- clear quick search cache
+        _clear_quick_search_cache(true)
     end
 
     -- pull repositories
@@ -139,6 +156,9 @@ function _clear(is_global)
     if os.isdir(repodir) then
         os.rmdir(repodir)
     end
+
+    -- clear quick search cache
+    _clear_quick_search_cache(is_global)
 
     -- trace
     cprint("${color.success}clear %s repositories: ok!", (is_global and "global" or "local"))
