@@ -316,7 +316,7 @@ end
 
 -- make the c precompiled header flag
 function nf_pcheader(self, pcheaderfile, target)
-    if self:kind() == "cc" then
+    if self:kind() == "cc" or self:kind() == "mm" then
         local pcoutputfile = target:pcoutputfile("c")
         if self:name() == "clang" then
             return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
@@ -328,7 +328,7 @@ end
 
 -- make the c++ precompiled header flag
 function nf_pcxxheader(self, pcheaderfile, target)
-    if self:kind() == "cxx" then
+    if self:kind() == "cxx" or self:kind() == "mxx" then
         local pcoutputfile = target:pcoutputfile("cxx")
         if self:name() == "clang" then
             return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
