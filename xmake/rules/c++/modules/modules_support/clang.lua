@@ -484,13 +484,18 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
 
                     if provide or common.has_module_extension(cppfile) then
                         local bmifile = provide and provide.bmi
-                        _build_modulefile(target, provide and provide.sourcefile or cppfile, {
-                            objectfile = objectfile,
-                            dependfile = target:dependfile(bmifile or objectfile),
-                            provide = provide and {bmifile = bmifile, name = name},
-                            common_args = common_args,
-                            requiresflags = requiresflags,
-                            progress = (index * 100) / total})
+                        if not common.memcache():get2(name or cppfile, "compiling") then
+                            if name and module.external then
+                                common.memcache():set2(name or cppfile, "compiling", true)
+                            end
+                            _build_modulefile(target, provide and provide.sourcefile or cppfile, {
+                                objectfile = objectfile,
+                                dependfile = target:dependfile(bmifile or objectfile),
+                                provide = provide and {bmifile = bmifile, name = name},
+                                common_args = common_args,
+                                requiresflags = requiresflags,
+                                progress = (index * 100) / total})
+                            end
                         target:add("objectfiles", objectfile)
 
                         if provide then

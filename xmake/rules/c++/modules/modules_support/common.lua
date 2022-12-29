@@ -102,6 +102,64 @@ function patch_sourcebatch(target, sourcebatch)
     end
 end
 
+-- extract packages modules dependencies
+function get_all_package_modules(target, modules, opt)
+    local package_modules
+
+    -- parse all meta-info and append their informations to the package store
+    for name, package in pairs(target:pkgs()) do
+        package_modules = package_modules or {}
+        local modules_dir = path.join(package:installdir(), "modules", name)
+        local meta_files = os.match(path.join(modules_dir, "**.meta-info"), false)
+        if meta_files then
+            for _, file in ipairs(meta_files) do
+                local metadata = json.loadfile(file)
+                package_modules[metadata._VENDOR_extension.name] = {
+                    file = path.join(modules_dir, metadata._VENDOR_extension.file),
+                    metadata = metadata
+                }
+            end
+        end
+    end
+
+    return package_modules
+end
+
+-- cull unused modules
+function cull_unused_modules(target, modules, package_modules_data)
+    local needed_modules = {}
+    -- append all target dependencies
+    for _, module in pairs(modules) do
+        if module.requires then
+            for required, _ in pairs(module.requires) do
+                table.append(needed_modules, required)
+            end
+        end
+    end
+
+    -- append all package dependencies
+    local module_names = {}
+    for name, _ in pairs(package_modules_data) do
+        table.append(module_names, name)
+    end
+
+    local culled
+    for i, name in ipairs(module_names) do
+        culled = culled or {}
+        if table.find(needed_modules, name) and package_modules_data[name] and not culled[name] then
+            culled[name] = package_modules_data[name]
+
+            -- table.remove(module_names, i)
+            if culled[name].metadata.imports then
+                 table.join2(needed_modules, culled[name].metadata.imports)
+                 table.join2(module_names, culled[name].metadata.imports)
+            end
+        end
+    end
+
+    return culled
+end
+
 -- get modules support
 function modules_support(target)
     local cachekey = tostring(target)
@@ -510,7 +568,7 @@ end
 function get_module_dependencies(target, sourcebatch, opt)
     local cachekey = target:name() .. "/" .. sourcebatch.rulename
     local modules = memcache():get2("modules", cachekey)
-    if modules == nil then
+    if modules == nil or opt.regenerate then
         modules = localcache():get2("modules", cachekey)
         opt.progress = opt.progress or 0
         local changed = modules_support(target).generate_dependencies(target, sourcebatch, opt)
@@ -564,11 +622,11 @@ function append_dependency_objectfiles(target)
     local cache = localcache():get(cachekey)
     if cache then
         if target:is_binary() then
-            target:add("ldflags", cache, {force = true})
+            target:add("ldflags", cache, {force = true, expand = false})
         elseif target:is_static() then
-            target:add("arflags", cache, {force = true})
+            target:add("arflags", cache, {force = true, expand = false})
         elseif target:is_shared() then
-            target:add("shflags", cache, {force = true})
+            target:add("shflags", cache, {force = true, expand = false})
         end
     end
 end
@@ -578,35 +636,42 @@ end
 --
 -- e.g
 -- {
---      "include_paths": {"foo/", "bar/"}
---      "definitions": {"FOO=BAR"}
---      "imports": {"std", "bar"}
+--      "include_paths": ["foo/", "bar/"]
+--      "definitions": ["FOO=BAR"]
+--      "imports": ["std", "bar"]
 --      "_VENDOR_extension": {}
 -- }
-function generate_meta_module_info(target, sourcefile)
+function generate_meta_module_info(target, name, sourcefile, requires)
     local module_metadata = {}
 
     -- add include paths
-    module_metadata.include_paths = target:get("includedirs") or {}
+    module_metadata.include_paths = table.wrap(target:get("includedirs")) or {}
     for _, deps in ipairs(target:orderdeps()) do
         table.join2(module_metadata.include_paths, deps:get("includedirs") or {})
     end
 
     -- add definitions
-    module_metadata.definitions = target:get("defines") or {}
+    module_metadata.definitions = table.wrap(target:get("defines")) or {}
     for _, deps in ipairs(target:orderdeps()) do
         table.join2(module_metadata.definitions, deps:get("defines") or {})
     end
 
-    module_metadata._VENDOR_extension = {}
+    -- add imports
+    if requires then
+        for name, _ in pairs(requires) do
+            module_metadata.imports = module_metadata.imports or {}
+            table.append(module_metadata.imports, name)
+        end
+    end
 
-    print(module_metadata)
+    module_metadata._VENDOR_extension = {name = name, file = path.filename(sourcefile)}
 
     return module_metadata
 end
 
 function install_module_target(target)
     local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
+    local cachedir = modules_cachedir(target)
     if sourcebatch and sourcebatch.sourcefiles then
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
             local prefixdir = path.join("modules", target:name())
@@ -617,9 +682,10 @@ function install_module_target(target)
             local install = (fileconfig and not fileconfig.install) and false or true
             if install then
                 target:add("installfiles", sourcefile, {prefixdir = prefixdir})
-                local metafile = path.join(target:installdir(), prefixdir, path.basename(sourcefile) .. ".meta-ixx-info")
-                print(metafile)
-                io.writefile(metafile, json.encode(generate_meta_module_info(target, sourcefile)))
+                local metafile = path.join(cachedir, path.filename(sourcefile) .. ".meta-info")
+                if os.exists(metafile) then
+                    target:add("installfiles", metafile, {prefixdir = prefixdir})
+                end
             end
         end
     end

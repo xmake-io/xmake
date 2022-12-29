@@ -26,6 +26,7 @@ import("core.project.depend")
 import("core.project.config")
 import("core.base.hashset")
 import("core.base.semver")
+import("core.base.json")
 import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
@@ -450,6 +451,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
         for objectfile, module in pairs(get_stdmodules(target)) do
             table.insert(objectfiles, objectfile)
             modules[objectfile] = module
+            modules[objectfile].external = true
         end
     end
 
@@ -480,6 +482,21 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
             if provide then
                 table.join2(flags, {ifcoutputflag, path(provide.bmi), provide.interface and interfaceflag or internalpartitionflag})
                 dependfile = target:dependfile(provide.bmi)
+
+                local fileconfig = target:fileconfig(cppfile)
+                if fileconfig and fileconfig.install then
+                    batchjobs:addjob(name .. "_metafile", function(index, total)
+                        local cachedir = common.modules_cachedir(target)
+                        local metafilepath = path.join(cachedir, path.filename(cppfile) .. ".meta-info")
+                        depend.on_changed(function()
+                            progress.show(opt.progress, "${color.build.object}generating.module.metadata %s", name)
+                            local metadata = common.generate_meta_module_info(target, name, cppfile, module.requires)
+                            json.savefile(metafilepath, metadata)
+
+                        end, {dependfile = target:dependfile(metafilepath), files = {cppfile}})
+
+                    end, {rootjob = flushjob})
+                end
             end
 
             table.join2(moduleinfo, {
@@ -497,17 +514,17 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
 
                     if provide or common.has_module_extension(cppfile) then
                         if not common.memcache():get2(name or cppfile, "compiling") then
-                            if name and name:match("std") then
-                            common.memcache():set2(name or cppfile, "compiling", true)
+                            if name and module.external then
+                                common.memcache():set2(name or cppfile, "compiling", true)
                             end
-                        _build_modulefile(target, cppfile, {
-                            objectfile = objectfile,
-                            dependfile = dependfile,
-                            name = name or module.cppfile,
-                            flags = _flags,
-                            progress = (index * 100) / total})
-                        _add_objectfile_to_link_arguments(target, path(objectfile))
+                            _build_modulefile(target, cppfile, {
+                                objectfile = objectfile,
+                                dependfile = dependfile,
+                                name = name or module.cppfile,
+                                flags = _flags,
+                                progress = (index * 100) / total})
                         end
+                        _add_objectfile_to_link_arguments(target, objectfile)
                     elseif requiresflags then
                         requiresflags = get_requiresflags(target, module.requires)
                         target:fileconfig_add(cppfile, {force = {cxxflags = table.join(flags, requiresflags)}})
@@ -577,7 +594,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 batchcmds:mkdir(path.directory(objectfile))
                 _batchcmds_compile(batchcmds, target, table.join(flags, requiresflags or {}))
                 batchcmds:add_depfiles(cppfile)
-                _add_objectfile_to_link_arguments(target, path(objectfile))
+                _add_objectfile_to_link_arguments(target, path.translate(objectfile))
                 if provide then
                     _add_module_to_mapper(target, referenceflag, name, name, objectfile, provide.bmi, requiresflags)
                 end

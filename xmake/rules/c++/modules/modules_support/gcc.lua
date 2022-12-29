@@ -445,11 +445,16 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     end
 
                     if provide or common.has_module_extension(cppfile) then
-                        _build_modulefile(target, cppfile, {
-                            objectfile = objectfile,
-                            dependfile = dependfile,
-                            name = name or cppfile,
-                            progress = (index * 100) / total})
+                        if not common.memcache():get2(name or cppfile, "compiling") then
+                            if name and module.external then
+                                common.memcache():set2(name or cppfile, "compiling", true)
+                            end
+                            _build_modulefile(target, cppfile, {
+                                objectfile = objectfile,
+                                dependfile = dependfile,
+                                name = name or cppfile,
+                                progress = (index * 100) / total})
+                        end
                         target:add("objectfiles", objectfile)
                     end
                 end)})
