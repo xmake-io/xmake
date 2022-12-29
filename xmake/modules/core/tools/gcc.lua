@@ -288,6 +288,7 @@ function nf_rpathdir(self, dir)
             return maps[name]
         end))}
         if self:is_plat("bsd") then
+            -- FreeBSD ld must have "-zorigin" with "-rpath".  Otherwise, $ORIGIN is not translated and it is literal.
             table.insert(flags, 1, "-Wl,-zorigin")
         end
         return flags
