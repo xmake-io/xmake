@@ -471,6 +471,24 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 end
             end
             local moduleinfo = table.copy(provide) or {}
+
+            if provide then
+                local fileconfig = target:fileconfig(cppfile)
+                if fileconfig and fileconfig.install then
+                    batchjobs:addjob(name .. "_metafile", function(index, total)
+                        local cachedir = common.modules_cachedir(target)
+                        local metafilepath = path.join(cachedir, path.filename(cppfile) .. ".meta-info")
+                        depend.on_changed(function()
+                            progress.show(opt.progress, "${color.build.object}generating.module.metadata %s", name)
+                            local metadata = common.generate_meta_module_info(target, name, cppfile, module.requires)
+                            json.savefile(metafilepath, metadata)
+
+                        end, {dependfile = target:dependfile(metafilepath), files = {cppfile}})
+
+                    end, {rootjob = flushjob})
+                end
+            end
+
             table.join2(moduleinfo, {
                 name = name or cppfile,
                 deps = table.keys(module.requires or {}),
