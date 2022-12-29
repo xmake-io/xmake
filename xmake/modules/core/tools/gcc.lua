@@ -283,10 +283,14 @@ end
 function nf_rpathdir(self, dir)
     dir = path.translate(dir)
     if self:has_flags("-Wl,-rpath=" .. dir, "ldflags") then
-        return {"-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
+        local flags = {"-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
             local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
             return maps[name]
         end))}
+        if self:is_plat("bsd") then
+            table.insert(flags, 1, "-Wl,-zorigin")
+        end
+        return flags
     elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir, "ldflags") then
         return {"-Xlinker", "-rpath", "-Xlinker", (dir:gsub("%$ORIGIN", "@loader_path"))}
     end
