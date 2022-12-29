@@ -9,6 +9,7 @@
 ### Changes
 
 * [#3216](https://github.com/xmake-io/xmake/pull/3216): Add intel one api toolkits detection
+* [#3020](https://github.com/xmake-io/xmake/issues/3020): Add `--lsp=clangd` to improve to generate compile_commands.json
 
 ### Bugs fixed
 
@@ -1486,6 +1487,7 @@
 ### 改进
 
 * [#3216](https://github.com/xmake-io/xmake/pull/3216): 改进 intel one api toolkits 探测
+* [#3020](https://github.com/xmake-io/xmake/issues/3020): 添加 `--lsp=clangd` 去改进 compile_commands.json 的生成
 
 ### Bugs 修复
 
