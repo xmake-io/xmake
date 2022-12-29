@@ -58,9 +58,13 @@ task("project")
                 ,   {'m', "modes",     "kv" , nil       ,   "Set the project modes."
                                                         ,   "    e.g. "
                                                         ,   "    - xmake project -k vsxmake -m \"release,debug\""                           }
-                ,   {'a', "archs",     "kv" , nil       ,          "Set the project archs."
+                ,   {'a', "archs",     "kv" , nil       ,   "Set the project archs."
                                                         ,   "    e.g. "
                                                         ,   "    - xmake project -k vsxmake -a \"x86,x64\""                                 }
+                ,   {nil, "lsp",       "kv" , nil       ,   "Set the LSP backend for compile_commands."
+                                                        ,   "    e.g. "
+                                                        ,   "    - xmake project -k compile_commands --lsp=clangd"
+                                                        ,   values = {"clangd", "cpptools", "ccls"}}
                 ,   {nil, "outputdir", "v"  , "."       ,   "Set the output directory."                                                     }
                 }
             }

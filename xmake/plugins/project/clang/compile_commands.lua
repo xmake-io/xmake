@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.tool.compiler")
 import("core.project.rule")
 import("core.project.project")
@@ -47,6 +48,7 @@ function _translate_arguments(arguments)
     local args = {}
     local cc = path.basename(arguments[1]):lower()
     local is_include = false
+    local lsp = option.get("lsp")
     for idx, arg in ipairs(arguments) do
         -- convert path to string, maybe we need convert path, but not supported now.
         arg = tostring(arg)
@@ -58,7 +60,11 @@ function _translate_arguments(arguments)
         if arg:startswith("-isystem-after", 1, true) then
             arg = "-I" .. arg:sub(15)
         elseif arg:startswith("-isystem", 1, true) then
-            arg = "-I" .. arg:sub(9)
+            -- clangd support `-isystem`, we need not translate it
+            -- @see https://github.com/xmake-io/xmake/issues/3020
+            if not lsp or lsp ~= "clangd" then
+                arg = "-I" .. arg:sub(9)
+            end
         elseif arg:find("[%-/]external:I") then
             arg = arg:gsub("[%-/]external:I", "-I")
         elseif arg:find("[%-/]external:W") or arg:find("[%-/]experimental:external") then
