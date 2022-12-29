@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.json")
 import("core.tool.compiler")
 import("core.project.project")
 import("core.project.depend")
