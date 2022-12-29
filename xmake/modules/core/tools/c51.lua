@@ -28,6 +28,24 @@ import("utils.progress")
 function init(self)
 end
 
+-- make the includedir flag
+function nf_includedirs(self, dirs)
+    local paths = {}
+    for _, dir in ipairs(dirs) do
+        table.insert(paths, path.translate(dir))
+    end
+    if #paths > 0 then
+        return {"INCDIR(" .. table.concat(paths, ";") .. ")"}
+    end
+end
+
+-- make the define flag
+function nf_defines(self, defines)
+    if defines and #defines > 0 then
+        return {"DEFINE(" .. table.concat(defines, ",") .. ")"}
+    end
+end
+
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
     return self:program(), table.join(sourcefile, flags)
