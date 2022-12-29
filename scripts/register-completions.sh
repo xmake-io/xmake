@@ -16,7 +16,7 @@ if   [[ "$SHELL" = */zsh ]]; then
     local completions=("$(XMAKE_SKIP_HISTORY=1 XMAKE_ROOT=y xmake lua private.xrepo.complete 0 nospace "$words")")
     reply=( "${(ps:\n:)completions}" )
   }
-  compctl -f -S "" -K _xrepo_zsh_complete xmake
+  compctl -f -S "" -K _xrepo_zsh_complete xrepo
 
 elif [[ "$SHELL" = */bash ]]; then
   # bash parameter completion for xmake
