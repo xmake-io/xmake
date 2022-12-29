@@ -28,7 +28,7 @@ end
 
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
-    return self:program(), table.join(objectfiles, "TO", targetfile)
+    return self:program(), table.join(table.concat(objectfiles,","), "TO", targetfile)
 end
 
 -- link the target file
