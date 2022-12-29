@@ -1,5 +1,4 @@
-# PowerShell parameter completion shim for xmake
-
+# PowerShell parameter completion for xmake
 Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock {
     param($commandName, $wordToComplete, $cursorPosition)
     $complete = "$wordToComplete"
@@ -15,6 +14,7 @@ Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock {
     }
     $env:XMAKE_SKIP_HISTORY = $oldenv
 }
+# PowerShell parameter completion for xrepo
 Register-ArgumentCompleter -Native -CommandName xrepo -ScriptBlock {
     param($commandName, $wordToComplete, $cursorPosition)
     $complete = "$wordToComplete"
