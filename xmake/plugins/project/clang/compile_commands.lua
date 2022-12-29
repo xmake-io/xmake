@@ -256,10 +256,11 @@ function _make_target(jsonfile, target)
     -- enter package environments
     local oldenvs = os.addenvs(target:pkgenvs())
 
-    -- TODO
-    -- disable precompiled header first
-    target:set("pcheader", nil)
-    target:set("pcxxheader", nil)
+    -- we enable it for clangd, @see https://github.com/xmake-io/xmake/issues/2818
+    if not lsp or lsp ~= "clangd" then
+        target:set("pcheader", nil)
+        target:set("pcxxheader", nil)
+    end
 
     -- build source batches
     for _, sourcebatch in pairs(target:sourcebatches()) do
