@@ -13,6 +13,7 @@
 ### Bugs fixed
 
 * [#3203](https://github.com/xmake-io/xmake/issues/3203): Fix compile_commands
+* [#3222](https://github.com/xmake-io/xmake/issues/3222): Fix precompiled headers in ObjC
 
 ## v2.7.4
 
@@ -1489,6 +1490,7 @@
 ### Bugs 修复
 
 * [#3203](https://github.com/xmake-io/xmake/issues/3203): 修复 compile_commands
+* [#3222](https://github.com/xmake-io/xmake/issues/3222): 修复 objc 的预编译头支持
 
 ## v2.7.4
 
