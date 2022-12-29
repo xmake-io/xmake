@@ -706,6 +706,15 @@ end
 -- load required packages
 function _load_package(packagename, requireinfo, opt)
 
+    -- check circular dependency
+    opt = opt or {}
+    if opt.requirepath then
+        local splitinfo = opt.requirepath:split(".", {plain = true})
+        if #splitinfo > 1 and splitinfo[1] == splitinfo[#splitinfo] then
+            raise("circular dependency(%s) detected in package(%s)!", opt.requirepath, packagename)
+        end
+    end
+
     -- strip trailng ~tag, e.g. zlib~debug
     local displayname
     if packagename:find('~', 1, true) then
