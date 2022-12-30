@@ -28,16 +28,9 @@ import("utils.progress")
 function init(self)
 end
 
---[[
-The flags variable in the compile function is empty when you run the command `xmake -r`. 
-But The `xmake -rv` command is no problem.
-Use these ways to walk around first.
---]]
-local paths = {} 
-
 -- make the includedir flag
 function nf_includedirs(self, dirs)
-    --local paths = {}
+    local paths = {}
     for _, dir in ipairs(dirs) do
         table.insert(paths, path.translate(dir))
     end
@@ -55,12 +48,7 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
-	table.insert(flags, "OBJECT(" .. objectfile .. ")")
-	table.insert(flags, "PRINT(" .. objectfile:gsub(".c.obj", ".lst") .. ")")
-	if #paths > 0 then
-		table.insert(flags, "INCDIR(" .. table.concat(paths, ";") .. ")")
-	end		
-	return self:program(), table.join(sourcefile, flags)	
+    return self:program(), table.join(sourcefile, "OBJECT(" .. objectfile .. ")", "PRINT(" .. (objectfile:gsub("%.c%.obj", ".lst")) .. ")", flags)	
 end
 
 -- compile the source file
@@ -72,7 +60,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
     try
     {
         function ()
-            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, dependinfo, flags))		
+            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, flags))		
             return (outdata or "") .. (errdata or "")
         end,
         catch
