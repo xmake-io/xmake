@@ -37,11 +37,11 @@ local paths = {}
 
 -- make the includedir flag
 function nf_includedirs(self, dirs)
---    local paths = {}
+    --local paths = {}
     for _, dir in ipairs(dirs) do
         table.insert(paths, path.translate(dir))
     end
-	if #paths > 0 then
+    if #paths > 0 then
         return {"INCDIR(" .. table.concat(paths, ";") .. ")"}
     end
 end
@@ -55,10 +55,10 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
-	table.insert(flags, 1, "OBJECT(" .. objectfile .. ")")
-	table.insert(flags, 2, "PRINT(" .. objectfile:gsub(".c.obj", ".lst") .. ")")
+	table.insert(flags, "OBJECT(" .. objectfile .. ")")
+	table.insert(flags, "PRINT(" .. objectfile:gsub(".c.obj", ".lst") .. ")")
 	if #paths > 0 then
-		table.insert(flags, 3, "INCDIR(" .. table.concat(paths, ";") .. ")")
+		table.insert(flags, "INCDIR(" .. table.concat(paths, ";") .. ")")
 	end		
 	return self:program(), table.join(sourcefile, flags)	
 end
