@@ -48,7 +48,7 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
-    return self:program(), table.join(sourcefile, flags)
+    return self:program(), table.join(sourcefile, "OBJECT(" .. objectfile .. ")", "PRINT(" .. (objectfile:gsub("%.c%.obj", ".lst")) .. ")", flags)	
 end
 
 -- compile the source file
@@ -56,14 +56,11 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
-
     -- compile it
     try
     {
         function ()
-            local realsourcefile = objectfile:gsub("\\.obj$", "")
-            os.cp(sourcefile, realsourcefile)
-            local outdata, errdata = os.iorunv(compargv(self, realsourcefile, objectfile, dependinfo, flags))
+            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, flags))		
             return (outdata or "") .. (errdata or "")
         end,
         catch
