@@ -710,8 +710,10 @@ function _load_package(packagename, requireinfo, opt)
     opt = opt or {}
     if opt.requirepath then
         local splitinfo = opt.requirepath:split(".", {plain = true})
-        if #splitinfo > 1 and splitinfo[1] == splitinfo[#splitinfo] then
-            raise("circular dependency(%s) detected in package(%s)!", opt.requirepath, packagename)
+        if #splitinfo > 3 and
+            splitinfo[1] == splitinfo[#splitinfo - 1] and
+            splitinfo[2] == splitinfo[#splitinfo] then
+            raise("circular dependency(%s) detected in package(%s)!", opt.requirepath, splitinfo[1])
         end
     end
 
