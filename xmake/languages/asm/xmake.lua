@@ -59,6 +59,9 @@ language("asm")
         ,   "config.links"
         ,   "target.links"
         ,   "toolchain.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "toolchain.syslinks"
         }
     ,   shared = {
             "config.linkdirs"

@@ -50,8 +50,6 @@ function main(opt)
         opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end
         version = find_programver(program, opt)
     end
-
-    -- ok?
     return program, version
 end
 

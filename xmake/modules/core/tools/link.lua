@@ -140,9 +140,14 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     {
         function ()
 
-            -- use vstool to link and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
+            local toolchain = self:toolchain()
             local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
-            vstool.runv(program, argv, {envs = self:runenvs()})
+            if toolchain and toolchain:name() == "masm32" then
+                os.iorunv(program, argv, {envs = self:runenvs()})
+            else
+                -- use vstool to link and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
+                vstool.runv(program, argv, {envs = self:runenvs()})
+            end
         end,
         catch
         {

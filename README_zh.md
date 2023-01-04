@@ -284,6 +284,7 @@ armclang      ARM Compiler Version 6 of Keil MDK
 c51           Keil development tools for the 8051 Microcontroller Architecture
 icx           Intel LLVM C/C++ Compiler
 dpcpp         Intel LLVM C++ Compiler for data parallel programming model based on Khronos SYCL
+masm32        The MASM32 SDK
 ```
 
 ## 支持语言

@@ -69,12 +69,22 @@ end
 
 -- get toolchain platform
 function _instance:plat()
-    return self:config("plat")
+    return self._PLAT or self:config("plat")
+end
+
+-- set toolchain platform
+function _instance:plat_set(plat)
+    self._PLAT = plat
 end
 
 -- get toolchain architecture
 function _instance:arch()
-    return self:config("arch")
+    return self._ARCH or self:config("arch")
+end
+
+-- set toolchain architecture
+function _instance:arch_set(arch)
+    self._ARCH = arch
 end
 
 -- the current platform is belong to the given platforms?
@@ -439,7 +449,7 @@ function _instance:_checktool(toolkind, toolpath)
     end
 
     -- find tool program
-    local tool = find_tool(toolpath, {cachekey = cachekey, program = program or toolpath, paths = self:bindir(), envs = self:get("runenvs")})
+    local tool = find_tool(toolpath, {toolchain = self, cachekey = cachekey, program = program or toolpath, paths = self:bindir(), envs = self:get("runenvs")})
     if tool then
         program = tool.program
         toolname = toolname or tool.name
