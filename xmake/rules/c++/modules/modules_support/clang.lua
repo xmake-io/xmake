@@ -67,13 +67,12 @@ end
 -- load module support for the current target
 function load(target)
     local modulesflag = get_modulesflag(target)
-    local builtinmodulemapflag = get_builtinmodulemapflag(target)
-    local implicitmodulesflag = get_implicitmodulesflag(target)
+    local noimplicitmodulemapsflag = get_noimplicitmodulemapsflag(target)
 
     -- add module flags
     target:add("cxxflags", modulesflag)
-    target:add("cxxflags", builtinmodulemapflag, {force = true})
-    target:add("cxxflags", implicitmodulesflag, {force = true})
+    -- target:add("cxxflags", builtinmodulemapflag, {force = true})
+    target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
 
     -- fix default visibility for functions and variables [-fvisibility] differs in PCH file vs. current file
     -- module.pcm cannot be loaded due to a configuration mismatch with the current compilation.
@@ -97,7 +96,8 @@ function load(target)
     -- on ubuntu:
     -- sudo apt install libc++-dev libc++abi-15-dev
     --
-    target:data_set("cxx.modules.use_libc++", table.contains(target:get("cxxflags"), "-stdlib=libc++", "clang::-stdlib=libc++"))
+    local flags = table.join(target:get("cxxflags"), get_config("cxxflags") or {})
+    target:data_set("cxx.modules.use_libc++", table.contains(flags, "-stdlib=libc++", "clang::-stdlib=libc++"))
     if target:data("cxx.modules.use_libc++") then
         target:add("syslinks", "c++")
     end
@@ -117,7 +117,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     if target:data("cxx.modules.use_libc++") then
         table.insert(argv, 1, "-stdlib=libc++")
     end
-    local result = try {function () return os.iorunv(clang, {"-E", "-x", "c++", tmpfile}) end}
+    local result = try {function () return os.iorunv(clang, argv) end}
     if result then
         for _, line in ipairs(result:split("\n", {plain = true})) do
             line = line:trim()
@@ -199,7 +199,7 @@ function toolchain_includedirs(target)
         local clang, toolname = target:tool("cxx")
         assert(toolname == "clang")
         _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
-        local _, result = try {function () return os.iorunv(clang, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
+        local _, result = try {function () return os.iorunv(clang, {"-E", "-stdlib=libc++", "-Wp,-v", "-xc", os.nuldev()}) end}
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
                 line = line:trim()
@@ -292,7 +292,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
                     if not common.memcache():get2(headerunit.name, "building") then
                         common.memcache():set2(headerunit.name, "building", true)
                         progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
-                        local args = {modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.name}
+                        local args = {modulecachepathflag .. stlcachedir, "-c", "-Wno-everything", "-o", bmifile, "-x", "c++-system-header", headerunit.name}
                         os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
                     end
 
@@ -620,6 +620,19 @@ function get_implicitmodulesflag(target)
         _g.implicitmodulesflag = implicitmodulesflag or false
     end
     return implicitmodulesflag or nil
+end
+
+function get_implicitmodulemapsflag(target)
+    local implicitmodulemapsflag = _g.implicitmodulemapsflag
+    if implicitmodulemapsflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fimplicit-module-maps", "cxxflags", {flagskey = "clang_implicit_module_map"}) then
+            implicitmodulemapsflag = "-fimplicit-module-maps"
+        end
+        assert(implicitmodulemapsflag, "compiler(clang): does not support c++ module!")
+        _g.implicitmodulemapsflag = implicitmodulemapsflag or false
+    end
+    return implicitmodulemapsflag or nil
 end
 
 function get_noimplicitmodulemapsflag(target)

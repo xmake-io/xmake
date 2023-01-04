@@ -29,6 +29,9 @@ function main(t)
             os.exec("xmake clean -a")
             os.exec("xmake f --toolchain=clang -c")
             _build()
+            os.exec("xmake clean -a")
+            os.exec("xmake f --toolchain=clang --cxxflags=\"-stdlib=libc++\" -c")
+            _build()
         end
     end
 end
