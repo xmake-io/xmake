@@ -5,6 +5,7 @@
 ### New features
 
 * [#3201](https://github.com/xmake-io/xmake/pull/3201): Add completer and xrepo complete
+* [#3233](https://github.com/xmake-io/xmake/issues/3233): Add MASM32 sdk toolchain
 
 ### Changes
 
@@ -1484,6 +1485,7 @@
 ### 新特性
 
 * [#3201](https://github.com/xmake-io/xmake/pull/3201): 为 xrepo 添加命令自动补全
+* [#3233](https://github.com/xmake-io/xmake/issues/3233): 添加 MASM32 sdk 工具链
 
 ### 改进
 
