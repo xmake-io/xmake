@@ -42,10 +42,12 @@ toolchain("masm32")
     end)
 
     on_load(function (toolchain)
+        toolchain:arch_set("x86")
         local sdkdir = toolchain:sdkdir()
         if sdkdir then
             toolchain:add("includedirs", path.join(sdkdir, "include"))
             toolchain:add("linkdirs", path.join(sdkdir, "lib"))
         end
         toolchain:add("asflags", "/coff")
+        toolchain:add("syslinks", "user32", "kernel32")
     end)
