@@ -122,35 +122,37 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
         }
     }
 
-    -- try to use cl.exe to parse includes
+    -- try to use cl.exe to parse includes, but cl.exe maybe not exists in masm32 sdk
     -- @see https://github.com/xmake-io/xmake/issues/2562
-    local outfile = os.tmpfile() .. ".rc.out"
-    local errfile = os.tmpfile() .. ".rc.err"
-    local cl = assert(self:toolchain():tool("cxx"), "cl.exe not found!")
-    local ok = try {function () os.execv(cl, {"-E", sourcefile}, {stdout = outfile, stderr = errfile, envs = self:runenvs()}); return true end}
-    if ok and os.isfile(outfile) then
-        local depfiles_rc
-        local includeset = hashset.new()
-        local file = io.open(outfile)
-        local projectdir = os.projectdir()
-        for line in file:lines() do
-            local includefile = _parse_includefile(line)
-            if includefile then
-                includefile = _normailize_dep(includefile, projectdir)
-                if includefile and not includeset:has(includefile)
-                    and path.absolute(includefile) ~= path.absolute(sourcefile)
-                    and os.isfile(includefile) then
-                    depfiles_rc = (depfiles_rc or "") .. "\n" .. includefile
-                    includeset:insert(includefile)
+    local cl = self:toolchain():tool("cxx")
+    if cl then
+        local outfile = os.tmpfile() .. ".rc.out"
+        local errfile = os.tmpfile() .. ".rc.err"
+        local ok = try {function () os.execv(cl, {"-E", sourcefile}, {stdout = outfile, stderr = errfile, envs = self:runenvs()}); return true end}
+        if ok and os.isfile(outfile) then
+            local depfiles_rc
+            local includeset = hashset.new()
+            local file = io.open(outfile)
+            local projectdir = os.projectdir()
+            for line in file:lines() do
+                local includefile = _parse_includefile(line)
+                if includefile then
+                    includefile = _normailize_dep(includefile, projectdir)
+                    if includefile and not includeset:has(includefile)
+                        and path.absolute(includefile) ~= path.absolute(sourcefile)
+                        and os.isfile(includefile) then
+                        depfiles_rc = (depfiles_rc or "") .. "\n" .. includefile
+                        includeset:insert(includefile)
+                    end
                 end
             end
+            file:close()
+            if dependinfo then
+                dependinfo.depfiles_rc = depfiles_rc
+            end
         end
-        file:close()
-        if dependinfo then
-            dependinfo.depfiles_rc = depfiles_rc
-        end
+        os.tryrm(outfile)
+        os.tryrm(errfile)
     end
-    os.tryrm(outfile)
-    os.tryrm(errfile)
 end
 

@@ -39,9 +39,10 @@ function main(opt)
 
     -- init version info first
     local version = nil
+    local verinfo = nil
 
     -- init options
-    opt       = opt or {}
+    opt = opt or {}
     opt.check = opt.check or function (program)
 
         -- find cl
@@ -68,15 +69,12 @@ function main(opt)
     opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end
 
     -- find program
-    local verinfo = nil
     local program = find_program(opt.program or "link.exe", opt)
 
     -- find program version
     if program and opt and opt.version then
         version = find_programver(program, opt)
     end
-
-    -- ok?
     return program, version
 end
 
