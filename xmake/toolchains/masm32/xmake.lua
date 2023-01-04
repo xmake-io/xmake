@@ -47,4 +47,5 @@ toolchain("masm32")
             toolchain:add("includedirs", path.join(sdkdir, "include"))
             toolchain:add("linkdirs", path.join(sdkdir, "lib"))
         end
+        toolchain:add("asflags", "/coff")
     end)

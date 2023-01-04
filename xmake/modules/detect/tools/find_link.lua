@@ -44,26 +44,32 @@ function main(opt)
     -- init options
     opt = opt or {}
     opt.check = opt.check or function (program)
+        local toolchain = opt.toolchain
+        if toolchain and toolchain:name() == "masm32" then
+            -- if this link.exe is from masm32 sdk, we just pass it fastly
+            -- because it does not contain cl.exe
+            --
+            -- TODO maybe we can use ml to improve it
+        else
+            local cl = assert(find_tool("cl", {envs = opt.envs}))
 
-        -- find cl
-        local cl = assert(find_tool("cl", {envs = opt.envs}))
+            -- make an stub source file
+            local binaryfile = os.tmpfile() .. ".exe"
+            local objectfile = os.tmpfile() .. ".obj"
+            local sourcefile = os.tmpfile() .. ".c"
 
-        -- make an stub source file
-        local binaryfile = os.tmpfile() .. ".exe"
-        local objectfile = os.tmpfile() .. ".obj"
-        local sourcefile = os.tmpfile() .. ".c"
+            -- compile sourcefile first
+            io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+            os.runv(cl.program, {"-c", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
 
-        -- compile sourcefile first
-        io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
-        os.runv(cl.program, {"-c", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
+            -- do link
+            verinfo = os.iorunv(program, {"-lib", "-out:" .. binaryfile, objectfile}, {envs = opt.envs})
 
-        -- do link
-        verinfo = os.iorunv(program, {"-lib", "-out:" .. binaryfile, objectfile}, {envs = opt.envs})
-
-        -- remove files
-        os.rm(objectfile)
-        os.rm(sourcefile)
-        os.rm(binaryfile)
+            -- remove files
+            os.rm(objectfile)
+            os.rm(sourcefile)
+            os.rm(binaryfile)
+        end
     end
     opt.command = opt.command or function () return verinfo end
     opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end
