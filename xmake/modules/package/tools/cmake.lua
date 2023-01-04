@@ -151,6 +151,7 @@ function _get_ldflags_from_packagedeps(package, opt)
                 table.join2(result, _translate_paths(_map_linkflags(package, "binary", {"cxx"}, "linkdir", fetchinfo.linkdirs)))
                 table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "link", fetchinfo.links))
                 table.join2(result, _translate_paths(_map_linkflags(package, "binary", {"cxx"}, "syslink", fetchinfo.syslinks)))
+                table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "framework", fetchinfo.frameworks))
             end
         end
     end
