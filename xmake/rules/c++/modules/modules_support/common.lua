@@ -110,15 +110,13 @@ function get_all_package_modules(target, modules, opt)
     for name, package in pairs(target:pkgs()) do
         package_modules = package_modules or {}
         local modules_dir = path.join(package:installdir(), "modules", name)
-        local meta_files = os.match(path.join(modules_dir, "**.meta-info"), false)
-        if meta_files then
-            for _, file in ipairs(meta_files) do
-                local metadata = json.loadfile(file)
-                package_modules[metadata._VENDOR_extension.name] = {
-                    file = path.join(modules_dir, metadata._VENDOR_extension.file),
-                    metadata = metadata
-                }
-            end
+        local meta_files = os.files(path.join(modules_dir, "**.meta-info"))
+        for _, file in ipairs(meta_files) do
+            local metadata = json.loadfile(file)
+            package_modules[metadata._VENDOR_extension.name] = {
+                file = path.join(modules_dir, metadata._VENDOR_extension.file),
+                metadata = metadata
+            }
         end
     end
 
