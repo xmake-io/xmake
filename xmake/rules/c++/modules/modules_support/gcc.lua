@@ -243,7 +243,7 @@ end
 function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
     local compinst = target:compiler("cxx")
     local mapper_file = _get_module_mapper(target)
-    local stlcachedir = common.stlmodules_cachedir(target)
+    local stlcachedir = common.stlmodules_cachedir(target, {mkdir = true})
     local modulemapperflag = get_modulemapperflag(target)
 
     -- build headerunits
@@ -281,7 +281,7 @@ end
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local mapper_file = _get_module_mapper(target)
-    local stlcachedir = common.stlmodules_cachedir(target)
+    local stlcachedir = common.stlmodules_cachedir(target, {mkdir = true})
 
     -- build headerunits
     local projectdir = os.projectdir()

@@ -262,7 +262,7 @@ end
 
 -- generate target stl header unit modules for batchjobs
 function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
-    local stlcachedir = common.stlmodules_cachedir(target)
+    local stlcachedir = common.stlmodules_cachedir(target, {mkdir = true})
 
     -- get flags
     local exportheaderflag = get_exportheaderflag(target)
@@ -300,9 +300,7 @@ end
 
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
-
-    -- get flags
-    local stlcachedir = common.stlmodules_cachedir(target)
+    local stlcachedir = common.stlmodules_cachedir(target, {mkdir = true})
     local exportheaderflag = get_exportheaderflag(target)
     local headerunitflag = get_headerunitflag(target)
     local headernameflag = get_headernameflag(target)
@@ -390,8 +388,6 @@ end
 -- generate target user header units for batchcmds
 function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
     local cachedir = common.modules_cachedir(target)
-
-    -- get flags
     local exportheaderflag = get_exportheaderflag(target)
     local headerunitflag = get_headerunitflag(target)
     local headernameflag = get_headernameflag(target)

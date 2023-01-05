@@ -41,9 +41,10 @@ function localcache()
 end
 
 -- get stl modules cache directory
-function stlmodules_cachedir(target)
+function stlmodules_cachedir(target, opt)
+    opt = opt or {}
     local stlcachedir = path.join(config.buildir(), "stlmodules", "cache")
-    if not os.isdir(stlcachedir) then
+    if opt.mkdir and not os.isdir(stlcachedir) then
         os.mkdir(stlcachedir)
         os.mkdir(path.join(stlcachedir, "experimental"))
     end
@@ -51,9 +52,10 @@ function stlmodules_cachedir(target)
 end
 
 -- get modules cache directory
-function modules_cachedir(target)
-    local cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
-    if not os.isdir(cachedir) then
+function modules_cachedir(target, opt)
+    opt = opt or {}
+    return path.join(target:autogendir(), "rules", "modules", "cache")
+    if opt.mkdir and not os.isdir(cachedir) then
         os.mkdir(cachedir)
     end
     return cachedir
