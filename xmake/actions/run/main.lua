@@ -54,8 +54,7 @@ function _do_run_target(target)
     end
 
     -- get run arguments
-    local args = {}
-    table.join2(args, option.get("arguments") or target:get("runargs"))
+    local args = table.wrap(option.get("arguments") or target:get("runargs"))
 
     -- debugging?
     if option.get("debug") then
