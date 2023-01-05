@@ -37,15 +37,15 @@ import("stl_headers")
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/bar.hpp.pcm
 --
 function _add_module_to_mapper(target, name, bmifile, deps)
-    local modulemap = _get_modulemap_from_mapper(target)
-    if modulemap[name] then
+    local modulemap = _get_modulemap_from_mapper(target, name)
+    if modulemap then
         return
     end
 
     local modulefileflag = get_modulefileflag(target)
     local mapflag = modulefileflag .. bmifile
-    modulemap[name] = {flag = mapflag, deps = deps}
-    common.localcache():set2(_mapper_cachekey(target), "modulemap", modulemap)
+    modulemap = {flag = mapflag, deps = deps}
+    common.localcache():set2(_mapper_cachekey(target), "modulemap" .. name, modulemap)
 end
 
 function _mapper_cachekey(target)
@@ -60,8 +60,8 @@ function _flush_mapper(target)
 end
 
 -- get modulemap from mapper
-function _get_modulemap_from_mapper(target)
-    return common.localcache():get2(_mapper_cachekey(target), "modulemap") or {}
+function _get_modulemap_from_mapper(target, name)
+    return common.localcache():get2(_mapper_cachekey(target), "modulemap" .. name) or nil
 end
 
 -- load module support for the current target
@@ -689,7 +689,6 @@ end
 
 function get_requiresflags(target, requires)
     local flags = {}
-    local modulemap = _get_modulemap_from_mapper(target)
     -- add deps required module flags
     local already_mapped_modules = {}
     for name, _ in pairs(requires) do
@@ -699,19 +698,21 @@ function get_requiresflags(target, requires)
         end
 
         for _, dep in ipairs(target:orderdeps()) do
-            local modulemap_ = _get_modulemap_from_mapper(dep)
-            already_mapped_modules[name] = true
-            if modulemap_[name] then
-                table.join2(flags, modulemap_[name].flag)
-                table.join2(flags, modulemap_[name].deps or {})
+            local modulemap_ = _get_modulemap_from_mapper(dep, name)
+            if modulemap_ then
+                already_mapped_modules[name] = true
+                table.join2(flags, modulemap_.flag)
+                table.join2(flags, modulemap_.deps or {})
                 goto continue
             end
         end
 
         -- append target required module mapper flags
-        if modulemap[name] then
-            table.join2(flags, modulemap[name].flag)
-            table.join2(flags, modulemap[name].deps or {})
+        local modulemap = _get_modulemap_from_mapper(target, name)
+        if modulemap then
+            already_mapped_modules[name] = true
+            table.join2(flags, modulemap.flag)
+            table.join2(flags, modulemap.deps or {})
             goto continue
         end
 
