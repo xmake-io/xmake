@@ -56,8 +56,20 @@ task("lua")
                                                                 if not complete or opt.command or opt.list then
                                                                     return
                                                                 end
-
-                                                                return import("main.scripts")()
+                                                                local list = import("main.scripts")()
+                                                                if list and complete then
+                                                                    local result = {}
+                                                                    for _, item in ipairs(list) do
+                                                                        if item:startswith(complete) then
+                                                                            table.insert(result, item)
+                                                                        end
+                                                                    end
+                                                                    if #result > 0 then
+                                                                        return result
+                                                                    end
+                                                                end
+                                                                -- we just return nil and fallback to system autocomplete
+                                                                -- it will complete file path, e.g. `xmake l scripts/test.lua`
                                                             end                                                             }
                 ,   {nil, "arguments"   ,  "vs" , nil   ,   "The script arguments, use '--deserialize' option to enable deserializing.",
                                                             "e.g.",
