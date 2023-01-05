@@ -121,9 +121,10 @@ rule("c++.build.modules.builder")
     after_clean(function (target)
         import("core.base.option")
         import("modules_support.common")
-        os.tryrm(common.modules_cachedir(target))
+        import("private.action.clean.remove_files")
+        remove_files(common.modules_cachedir(target))
         if option.get("all") then
-            os.tryrm(common.stlmodules_cachedir(target))
+            remove_files(common.stlmodules_cachedir(target))
             common.localcache():clear()
             common.localcache():save()
         end
