@@ -54,7 +54,7 @@ end
 -- get modules cache directory
 function modules_cachedir(target, opt)
     opt = opt or {}
-    return path.join(target:autogendir(), "rules", "modules", "cache")
+    local cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
     if opt.mkdir and not os.isdir(cachedir) then
         os.mkdir(cachedir)
     end
