@@ -273,7 +273,7 @@ end
 -- generate target stl header units for batchjobs
 function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
     local compinst = target:compiler("cxx")
-    local stlcachedir = common.stlmodules_cachedir(target)
+    local stlcachedir = common.stlmodules_cachedir(target, {mkdir = true})
     local modulecachepathflag = get_modulecachepathflag(target)
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
 
@@ -308,7 +308,7 @@ end
 
 -- generate target stl header units for batchcmds
 function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
-    local stlcachedir = common.stlmodules_cachedir(target)
+    local stlcachedir = common.stlmodules_cachedir(target, {mkdir = true})
     local modulecachepathflag = get_modulecachepathflag(target)
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
 
@@ -440,7 +440,7 @@ end
 function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, opt)
 
     -- get flags
-    local cachedir = common.modules_cachedir(target)
+    local cachedir = common.modules_cachedir(target, {mkdir = true})
     local modulecachepathflag = get_modulecachepathflag(target)
 
     -- flush job
@@ -510,7 +510,7 @@ end
 
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
-    local cachedir = common.modules_cachedir(target)
+    local cachedir = common.modules_cachedir(target, {mkdir = true})
     local modulecachepathflag = get_modulecachepathflag(target)
 
     -- build modules
