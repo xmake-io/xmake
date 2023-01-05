@@ -17,6 +17,8 @@
 
 * [#3203](https://github.com/xmake-io/xmake/issues/3203): Fix compile_commands
 * [#3222](https://github.com/xmake-io/xmake/issues/3222): Fix precompiled headers in ObjC
+* [#3240](https://github.com/xmake-io/xmake/pull/3240): Fix target run with single arguments
+* [#3238](https://github.com/xmake-io/xmake/pull/3238): Fix clang module mapper
 
 ## v2.7.4
 
@@ -1497,6 +1499,8 @@
 
 * [#3203](https://github.com/xmake-io/xmake/issues/3203): 修复 compile_commands
 * [#3222](https://github.com/xmake-io/xmake/issues/3222): 修复 objc 的预编译头支持
+* [#3240](https://github.com/xmake-io/xmake/pull/3240): 修复 `xmake run` 处理单个参数不正确问题
+* [#3238](https://github.com/xmake-io/xmake/pull/3238): 修复 clang 构建 module 时候，并行写入 mapper 冲突问题
 
 ## v2.7.4
 
