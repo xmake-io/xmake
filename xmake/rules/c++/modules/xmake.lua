@@ -115,18 +115,25 @@ rule("c++.build.modules.builder")
 
     before_link(function (target)
         import("modules_support.common")
-        common.append_dependency_objectfiles(target)
+        if target:data("cxx.has_modules") then
+            common.append_dependency_objectfiles(target)
+        end
     end)
 
     after_clean(function (target)
         import("core.base.option")
         import("modules_support.common")
         import("private.action.clean.remove_files")
-        remove_files(common.modules_cachedir(target))
-        if option.get("all") then
-            remove_files(common.stlmodules_cachedir(target))
-            common.localcache():clear()
-            common.localcache():save()
+
+        -- we cannot use target:data("cxx.has_modules"),
+        -- because on_config will be not called when cleaning targets
+        if common.contains_modules(target) then
+            remove_files(common.modules_cachedir(target))
+            if option.get("all") then
+                remove_files(common.stlmodules_cachedir(target))
+                common.localcache():clear()
+                common.localcache():save()
+            end
         end
     end)
 
