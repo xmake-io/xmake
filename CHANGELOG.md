@@ -12,6 +12,7 @@
 * [#3216](https://github.com/xmake-io/xmake/pull/3216): Add intel one api toolkits detection
 * [#3020](https://github.com/xmake-io/xmake/issues/3020): Add `--lsp=clangd` to improve to generate compile_commands.json
 * [#3215](https://github.com/xmake-io/xmake/issues/3215): Add includedirs and defines to c51
+* [#3251](https://github.com/xmake-io/xmake/issues/3251): Improve to build zig and c program
 
 ### Bugs fixed
 
@@ -1494,6 +1495,7 @@
 * [#3216](https://github.com/xmake-io/xmake/pull/3216): 改进 intel one api toolkits 探测
 * [#3020](https://github.com/xmake-io/xmake/issues/3020): 添加 `--lsp=clangd` 去改进 compile_commands.json 的生成
 * [#3215](https://github.com/xmake-io/xmake/issues/3215): 添加 includedirs 和 defines 到 c51 编译器
+* [#3251](https://github.com/xmake-io/xmake/issues/3251): 改进 zig and c 混合编译
 
 ### Bugs 修复
 
