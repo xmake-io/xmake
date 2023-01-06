@@ -367,7 +367,7 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         if require_version and #require_version == 40 and require_version:match("%w+") then
             version, source = require_version, "commit"
         else
-            version, source = require_version ~= "latest" and require_version or "master", "branch"
+            version, source = require_version ~= "latest" and require_version or "@default", "branch"
         end
     end
     -- local source package? we use a phony version
