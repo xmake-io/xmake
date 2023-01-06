@@ -85,10 +85,17 @@ function _checkout(package, url, sourcedir, url_alias)
 
     -- download package from branches?
     packagedir = path.join(sourcedir .. ".tmp", package:name())
-    if package:branch() then
+    local branch = package:branch()
+    if branch then
+
+        -- we need select the correct default branch
+        -- @see https://github.com/xmake-io/xmake/issues/3248
+        if branch == "@default" then
+            branch = nil
+        end
 
         -- only shadow clone this branch
-        git.clone(url, {depth = 1, recursive = true, longpaths = longpaths, branch = package:branch(), outputdir = packagedir})
+        git.clone(url, {depth = 1, recursive = true, longpaths = longpaths, branch = branch, outputdir = packagedir})
 
     -- download package from revision or tag?
     else
