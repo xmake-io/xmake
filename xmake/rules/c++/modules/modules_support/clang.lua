@@ -255,7 +255,7 @@ function generate_dependencies(target, sourcebatch, opt)
                 local compflags = compinst:compflags({sourcefile = file, target = target})
                 local flags = {}
                 for _, flag in pairs(compflags) do
-                    if flag:startswith("-stdlib") or flag:startswith("-f") or flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") then
+                    if flag:startswith("-stdlib") or (flag:startswith("-f") and not flag:startswith("-fmodules")) or flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") then
                         table.append(flags, flag)
                     end
                 end

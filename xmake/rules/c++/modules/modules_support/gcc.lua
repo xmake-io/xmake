@@ -105,9 +105,9 @@ end
 
 -- do compile for batchcmds
 -- @note we need use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
-function _batchcmds_compile(batchcmds, target, flags)
+function _batchcmds_compile(batchcmds, target, flags, sourcefile)
     local compinst = target:compiler("cxx")
-    local compflags = compinst:compflags({target = target})
+    local compflags = compinst:compflags({sourcefile = sourcefile}, {target = target})
     batchcmds:compilev(table.join(compflags or {}, flags), {compiler = compinst, sourcekind = "cxx"})
 end
 
@@ -116,7 +116,7 @@ function _build_modulefile(target, sourcefile, opt)
     local objectfile = opt.objectfile
     local dependfile = opt.dependfile
     local compinst = compiler.load("cxx", {target = target})
-    local compflags = table.join("-x", "c++", compinst:compflags({target = target}))
+    local compflags = table.join("-x", "c++", compinst:compflags({sourcefile = sourcefile, target = target}))
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
     -- need build this object?
@@ -194,7 +194,7 @@ function generate_dependencies(target, sourcebatch, opt)
                 local ifile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".i"))
                 local dfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".d"))
                 local args = {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depformatflag, depfileflag .. jsonfile, depoutputflag .. target:objectfile(sourcefile), "-o", ifile}
-                local compflags = compinst:compflags({target = target})
+                local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
                 -- module mapper flag force gcc to check the imports but this is not wanted at this stage
                 local modulemapperflag = get_modulemapperflag(target) .. path.translate(_get_module_mapper(target))
                 table.remove(compflags, table.unpack(table.find(compflags, modulemapperflag)))
@@ -204,28 +204,15 @@ function generate_dependencies(target, sourcebatch, opt)
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                     local compinst = target:compiler("cxx")
-                    local defines = {}
-                    for _, define in ipairs(target:get("defines")) do
-                        table.insert(defines, "-D" .. define)
-                    end
-                    local includedirs = table.join({}, target:get("includedirs"))
-                    for _, dep in ipairs(target:orderdeps()) do
-                        local includedir = dep:get("sysincludedirs") or dep:get("includedirs")
-                        if includedir then
-                            table.join2(includedirs, includedir)
+                    local compflags = compinst:compflags({sourcefile = file, target = target})
+                    local flags = {}
+                    for _, flag in pairs(compflags) do
+                        if flag:startswith("-std") or (flag:startswith("-f") and not flag:startswith("-fmodules")) or flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") then
+                            table.append(flags, flag)
                         end
-                    end
-                    for _, pkg in pairs(target:pkgs()) do
-                        local includedir = pkg:get("sysincludedirs") or pkg:get("includedirs")
-                        if includedir then
-                            table.join2(includedirs, includedir)
-                        end
-                    end
-                    for i, includedir in pairs(includedirs) do
-                        includedirs[i] = "-I" .. includedir
                     end
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    os.vrunv(compinst:program(), table.join(common_args, includedirs, defines, {get_cppversionflag(target), file,  "-o", ifile}))
+                    os.vrunv(compinst:program(), table.join(common_args, flags, {file,  "-o", ifile}))
                     local content = io.readfile(ifile)
                     os.rm(ifile)
                     return content
