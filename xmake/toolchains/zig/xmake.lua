@@ -55,10 +55,14 @@ toolchain("zig")
         -- set toolset
         -- we patch target to `zig cc` to fix has_flags. see https://github.com/xmake-io/xmake/issues/955#issuecomment-766929692
         local zig = toolchain:config("zig") or "zig"
-        toolchain:set("toolset", "cc",    zig .. " cc")
-        toolchain:set("toolset", "cxx",   zig .. " c++")
-        toolchain:set("toolset", "ld",    zig .. " c++")
-        toolchain:set("toolset", "sh",    zig .. " c++")
+        if toolchain:config("zigcc") ~= false then
+            -- we can use `set_toolchains("zig", {zigcc = false})` to disable zigcc
+            -- @see https://github.com/xmake-io/xmake/issues/3251
+            toolchain:set("toolset", "cc",    zig .. " cc")
+            toolchain:set("toolset", "cxx",   zig .. " c++")
+            toolchain:set("toolset", "ld",    zig .. " c++")
+            toolchain:set("toolset", "sh",    zig .. " c++")
+        end
         toolchain:set("toolset", "ar",   "$(env ZC)", zig)
         toolchain:set("toolset", "zc",   "$(env ZC)", zig)
         toolchain:set("toolset", "zcar", "$(env ZC)", zig)
@@ -92,7 +96,8 @@ toolchain("zig")
             -- xmake f -p cross --toolchain=zig --cross=mips64el-linux-gnuabi64
             target = toolchain:cross()
         elseif toolchain:is_plat("macosx") then
-            target = arch .. "-macos-gnu"
+            -- zig 0.10 will raise `unable to find or provide libc for target 'x86_64-macos.11.7.1...13-gnu'`
+            --target = arch .. "-macos-gnu"
         elseif toolchain:is_plat("linux") then
             if arch == "arm" then
                 target = "arm-linux-gnueabi"
