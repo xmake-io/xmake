@@ -29,9 +29,9 @@ function main(t)
             os.exec("xmake clean -a")
             os.exec("xmake f --toolchain=clang -c")
             _build()
-            os.exec("xmake clean -a")
-            os.exec("xmake f --toolchain=clang --cxxflags=\"-stdlib=libc++\" -c")
-            _build()
+            -- os.exec("xmake clean -a") there is currently a bug on llvm git that prevent to build STL header units https://github.com/llvm/llvm-project/issues/58540
+            -- os.exec("xmake f --toolchain=clang --cxxflags=\"-stdlib=libc++\" -c")
+            -- _build()
         end
     end
 end
