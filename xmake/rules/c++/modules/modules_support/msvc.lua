@@ -659,7 +659,7 @@ function get_ifcoutputflag(target)
     local ifcoutputflag = _g.ifcoutputflag
     if ifcoutputflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-ifcOutput", "cxxflags", {flagskey = "cl_ifc_output"})  then
+        if compinst:has_flags({"-ifcOutput", os.tmpfile()}, "cxxflags", {flagskey = "cl_ifc_output"})  then
             ifcoutputflag = "-ifcOutput"
         end
         assert(ifcoutputflag, "compiler(msvc): does not support c++ module!")
@@ -672,7 +672,7 @@ function get_ifcsearchdirflag(target)
     local ifcsearchdirflag = _g.ifcsearchdirflag
     if ifcsearchdirflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-ifcSearchDir", "cxxflags", {flagskey = "cl_ifc_search_dir"})  then
+        if compinst:has_flags({"-ifcSearchDir", os.tmpdir()}, "cxxflags", {flagskey = "cl_ifc_search_dir"})  then
             ifcsearchdirflag = "-ifcSearchDir"
         end
         assert(ifcsearchdirflag, "compiler(msvc): does not support c++ module!")
