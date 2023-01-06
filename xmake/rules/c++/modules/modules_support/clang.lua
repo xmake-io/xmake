@@ -71,7 +71,6 @@ function load(target)
 
     -- add module flags
     target:add("cxxflags", modulesflag)
-    -- target:add("cxxflags", builtinmodulemapflag, {force = true})
     target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
 
     -- fix default visibility for functions and variables [-fvisibility] differs in PCH file vs. current file
