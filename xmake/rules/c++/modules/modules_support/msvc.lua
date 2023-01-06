@@ -137,6 +137,14 @@ function load(target)
     local modulesflag = get_modulesflag(target)
     target:add("cxxflags", modulesflag)
 
+    -- we detect flags in advance to avoid having to detect them in parallel in parallel tasks.
+    get_ifcoutputflag(target)
+    get_ifcsearchdirflag(target)
+    get_interfaceflag(target)
+    get_referenceflag(target)
+    get_headernameflag(target)
+    get_headerunitflag(target)
+
     -- enable std modules if c++23 by defaults
     if target:data("c++.msvc.enable_std_import") == nil then
         local languages = target:get("languages")
@@ -659,7 +667,7 @@ function get_ifcoutputflag(target)
     local ifcoutputflag = _g.ifcoutputflag
     if ifcoutputflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags({"-ifcOutput", os.tmpfile()}, "cxxflags", {flagskey = "cl_ifc_output"})  then
+        if compinst:has_flags("-ifcOutput", "cxxflags", {flagskey = "cl_ifc_output"})  then
             ifcoutputflag = "-ifcOutput"
         end
         assert(ifcoutputflag, "compiler(msvc): does not support c++ module!")
@@ -672,7 +680,7 @@ function get_ifcsearchdirflag(target)
     local ifcsearchdirflag = _g.ifcsearchdirflag
     if ifcsearchdirflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags({"-ifcSearchDir", os.tmpdir()}, "cxxflags", {flagskey = "cl_ifc_search_dir"})  then
+        if compinst:has_flags("-ifcSearchDir", "cxxflags", {flagskey = "cl_ifc_search_dir"})  then
             ifcsearchdirflag = "-ifcSearchDir"
         end
         assert(ifcsearchdirflag, "compiler(msvc): does not support c++ module!")
