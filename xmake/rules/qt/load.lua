@@ -152,7 +152,7 @@ function main(target, opt)
         local cppversion = _get_target_cppversion(target)
         if qt_sdkver:ge("6.0") then
             -- add conditionnaly c++17 to avoid for example "cl : Command line warning D9025 : overriding '/std:c++latest' with '/std:c++17'" warning
-            if (not cppversion) or (not cppversion == "latest") or (tonumber(cppversion) and tonumber(cppversion) < 17) then
+            if (not cppversion) or (cppversion ~= "latest") or (tonumber(cppversion) and tonumber(cppversion) < 17) then
                 target:add("languages", "c++17")
             end
             -- @see https://github.com/xmake-io/xmake/issues/2071
@@ -162,10 +162,9 @@ function main(target, opt)
             end
         else
             -- add conditionnaly c++11 to avoid for example "cl : Command line warning D9025 : overriding '/std:c++latest' with '/std:c++11'" warning
-            if (not cppversion) or (not cppversion == "latest") or (tonumber(cppversion) and tonumber(cppversion) < 11) then
-                target:add("languages", "c++17")
+            if (not cppversion) or (cppversion ~= "latest") or (tonumber(cppversion) and tonumber(cppversion) < 11) then
+                target:add("languages", "c++11")
             end
-            target:add("languages", "c++11")
         end
     end
 
