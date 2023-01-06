@@ -83,6 +83,7 @@ sandbox_os.SYSERR_UNKNOWN     = os.SYSERR_UNKNOWN
 sandbox_os.SYSERR_NONE        = os.SYSERR_NONE
 sandbox_os.SYSERR_NOT_PERM    = os.SYSERR_NOT_PERM
 sandbox_os.SYSERR_NOT_FILEDIR = os.SYSERR_NOT_FILEDIR
+sandbox_os.SYSERR_NOT_ACCESS  = os.SYSERR_NOT_ACCESS
 
 -- copy file or directory
 function sandbox_os.cp(srcpath, dstpath, opt)

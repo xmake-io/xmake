@@ -50,6 +50,7 @@ os.SYSERR_UNKNOWN     = -1
 os.SYSERR_NONE        = 0
 os.SYSERR_NOT_PERM    = 1
 os.SYSERR_NOT_FILEDIR = 2
+os.SYSERR_NOT_ACCESS  = 3
 
 -- copy single file or directory
 function os._cp(src, dst, rootdir, opt)
