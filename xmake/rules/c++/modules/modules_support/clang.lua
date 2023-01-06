@@ -21,10 +21,12 @@
 -- imports
 import("core.base.option")
 import("core.base.json")
+import("core.base.semver")
 import("core.tool.compiler")
 import("core.project.project")
 import("core.project.depend")
 import("core.project.config")
+import("lib.detect.find_tool")
 import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
@@ -249,23 +251,35 @@ function generate_dependencies(target, sourcebatch, opt)
                 os.mkdir(outputdir)
             end
 
-            -- no support of p1689 atm
             local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
-            common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
+            if has_clangscandepssupport(target) then
+                local clangscandeps = find_tool("clang-scan-deps")
                 local compinst = target:compiler("cxx")
                 local compflags = compinst:compflags({sourcefile = file, target = target})
-                local flags = {}
-                for _, flag in ipairs(compflags) do
-                    if flag:startswith("-stdlib") or (flag:startswith("-f") and not flag:startswith("-fmodules")) or flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") then
-                        table.insert(flags, flag)
+                local flags = table.join({"--format=p1689", "--", compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags)
+
+                vprint(table.concat(table.join(clangscandeps.program, flags), " "))
+                local outdata, errdata = os.iorunv(clangscandeps.program, flags)
+                assert(errdata, errdata)
+
+                io.writefile(jsonfile, outdata)
+            else
+                common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
+                    local compinst = target:compiler("cxx")
+                    local compflags = compinst:compflags({sourcefile = file, target = target})
+                    local flags = {}
+                    for _, flag in pairs(compflags) do
+                        if flag:startswith("-stdlib") or (flag:startswith("-f") and not flag:startswith("-fmodules")) or flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") then
+                            table.insert(flags, flag)
+                        end
                     end
-                end
-                local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                os.vrunv(compinst:program(), table.join(flags, {"-E", "-x", "c++", file, "-o", ifile}))
-                local content = io.readfile(ifile)
-                os.rm(ifile)
-                return content
-            end)
+                    local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
+                    os.vrunv(compinst:program(), table.join(flags, {"-E", "-x", "c++", file, "-o", ifile}))
+                    local content = io.readfile(ifile)
+                    os.rm(ifile)
+                    return content
+                end)
+            end
             changed = true
 
             local rawdependinfo = io.readfile(jsonfile)
@@ -775,6 +789,18 @@ function has_headerunitsupport(target)
         _g.support_headerunits = support_headerunits or false
     end
     return support_headerunits or nil
+end
+
+function has_clangscandepssupport(target)
+    local support_clangscandeps = _g.support_clangscandeps
+    if support_clangscandeps == nil then
+        local clangscandeps = find_tool("clang-scan-deps", {version = true})
+        if clangscandeps and clangscandeps.version and semver.compare(clangscandeps.version, "16.0") >= 0 then
+            support_clangscandeps = true
+        end
+        _g.support_clangscandeps = support_clangscandeps or false
+    end
+    return support_clangscandeps or nil
 end
 
 function get_requiresflags(target, requires)
