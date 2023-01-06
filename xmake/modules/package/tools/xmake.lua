@@ -148,12 +148,12 @@ function _get_configs(package, configs, opt)
 end
 
 -- set some builtin global options from the parent xmake
-function _set_builtin_argv(argv)
+function _set_builtin_argv(package, argv)
     -- if the package cache directory is modified,
     -- we need to force the project directory to be specified to avoid interference by the upper level xmake.lua.
     -- and we also need to put `-P` in the first argument to avoid option.parse() parsing errors
-    local cachedir = os.getenv("XMAKE_PKG_CACHEDIR") or global.get("pkg_cachedir")
-    if cachedir then
+    local maybe_in_project = os.getenv("XMAKE_PKG_CACHEDIR") or global.get("pkg_cachedir") or package:sourcedir()
+    if maybe_in_project then
         table.insert(argv, "-P")
         table.insert(argv, os.curdir())
     end
@@ -253,7 +253,7 @@ function install(package, configs, opt)
     -- pass local repositories
     for _, repo in ipairs(repository.repositories()) do
         local repo_argv = {"repo"}
-        _set_builtin_argv(repo_argv)
+        _set_builtin_argv(package, repo_argv)
         table.join2(repo_argv, {"--add", repo:name(), repo:directory()})
         os.vrunv("xmake", repo_argv, {envs = envs})
     end
@@ -261,7 +261,7 @@ function install(package, configs, opt)
     -- pass configurations
     -- we need to put `-P` in the first argument of _set_builtin_argv() to avoid option.parse() parsing errors
     local argv = {"f"}
-    _set_builtin_argv(argv)
+    _set_builtin_argv(package, argv)
     table.insert(argv, "-y")
     table.insert(argv, "-c")
     for name, value in pairs(_get_configs(package, configs, opt)) do
@@ -280,7 +280,7 @@ function install(package, configs, opt)
 
     -- do build
     argv = {"build"}
-    _set_builtin_argv(argv)
+    _set_builtin_argv(package, argv)
     if opt.target then
         table.insert(argv, opt.target)
     end
@@ -288,7 +288,7 @@ function install(package, configs, opt)
 
     -- do install
     argv = {"install", "-y", "-o", package:installdir()}
-    _set_builtin_argv(argv)
+    _set_builtin_argv(package, argv)
     if opt.target then
         table.insert(argv, opt.target)
     end
