@@ -102,6 +102,35 @@ function patch_sourcebatch(target, sourcebatch)
     end
 end
 
+function parse_meta_info(target, metafile)
+    local metadata = json.loadfile(metafile)
+    if metadata._VENDOR_extension.xmake then
+        return metadata._VENDOR_extension.xmake.file, metadata._VENDOR_extension.xmake.name, metadata
+    end
+
+    local file = path.basename(metafile)
+    for _, ext in pairs({".mpp", ".mxx", ".cppm", ".ixx"}) do
+        if os.exists(path.join(path.directory(metafile), file .. ext)) then
+            file = file .. ext
+            break
+        end
+    end
+
+    local sourcecode = io.readfile(path.join(path.directory(metafile), file))
+    sourcecode = sourcecode:gsub("//.-\n", "\n")
+    sourcecode = sourcecode:gsub("/%*.-%*/", "")
+
+    local name
+    for _, line in ipairs(sourcecode:split("\n", {plain = true})) do
+        name = line:match("export%s+module%s+(.+)%s*;") or line:match("export%s+__preprocessed_module%s+(.+)%s*;")
+        if name then
+            break
+        end
+    end
+
+    return file, name, metadata
+end
+
 -- extract packages modules dependencies
 function get_all_package_modules(target, modules, opt)
     local package_modules
@@ -110,11 +139,11 @@ function get_all_package_modules(target, modules, opt)
     for name, package in pairs(target:pkgs()) do
         package_modules = package_modules or {}
         local modules_dir = path.join(package:installdir(), "modules", name)
-        local meta_files = os.files(path.join(modules_dir, "**.meta-info"))
-        for _, file in ipairs(meta_files) do
-            local metadata = json.loadfile(file)
-            package_modules[metadata._VENDOR_extension.name] = {
-                file = path.join(modules_dir, metadata._VENDOR_extension.file),
+        local metafiles = os.files(path.join(modules_dir, "**.meta-info"))
+        for _, metafile in ipairs(metafiles) do
+            local modulefile, name, metadata = parse_meta_info(target, metafile)
+            package_modules[name] = {
+                file = path.join(modules_dir, modulefile),
                 metadata = metadata
             }
         end
@@ -662,7 +691,7 @@ function generate_meta_module_info(target, name, sourcefile, requires)
         end
     end
 
-    module_metadata._VENDOR_extension = {name = name, file = path.filename(sourcefile)}
+    module_metadata._VENDOR_extension = { xmake = { name = name, file = path.filename(sourcefile) }}
 
     return module_metadata
 end
