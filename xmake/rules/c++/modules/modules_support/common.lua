@@ -109,8 +109,8 @@ function parse_meta_info(target, metafile)
     end
 
     local file = path.basename(metafile)
-    for _, ext in pairs({".mpp", ".mxx", ".cppm", ".ixx"}) do
-        if os.exists(path.join(path.directory(metafile), file .. ext)) then
+    for _, ext in ipairs({".mpp", ".mxx", ".cppm", ".ixx"}) do
+        if os.isfile(path.join(path.directory(metafile), file .. ext)) then
             file = file .. ext
             break
         end
