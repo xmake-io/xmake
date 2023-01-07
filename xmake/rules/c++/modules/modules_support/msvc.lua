@@ -137,14 +137,6 @@ function load(target)
     local modulesflag = get_modulesflag(target)
     target:add("cxxflags", modulesflag)
 
-    -- we detect flags in advance to avoid having to detect them in parallel in parallel tasks.
-    get_ifcoutputflag(target)
-    get_ifcsearchdirflag(target)
-    get_interfaceflag(target)
-    get_referenceflag(target)
-    get_headernameflag(target)
-    get_headerunitflag(target)
-
     -- enable std modules if c++23 by defaults
     if target:data("c++.msvc.enable_std_import") == nil then
         local languages = target:get("languages")
@@ -667,10 +659,10 @@ function get_ifcoutputflag(target)
     local ifcoutputflag = _g.ifcoutputflag
     if ifcoutputflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-ifcOutput", "cxxflags", {flagskey = "cl_ifc_output"})  then
+        if compinst:has_flags({"-ifcOutput", os.tmpfile()}, "cxxflags", {flagskey = "cl_ifc_output"})  then
             ifcoutputflag = "-ifcOutput"
         end
-        assert(ifcoutputflag, "compiler(msvc): does not support c++ module!")
+        assert(ifcoutputflag, "compiler(msvc): does not support c++ module flag(/ifcOutput)!")
         _g.ifcoutputflag = ifcoutputflag or false
     end
     return ifcoutputflag or nil
@@ -680,10 +672,10 @@ function get_ifcsearchdirflag(target)
     local ifcsearchdirflag = _g.ifcsearchdirflag
     if ifcsearchdirflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-ifcSearchDir", "cxxflags", {flagskey = "cl_ifc_search_dir"})  then
+        if compinst:has_flags({"-ifcSearchDir", os.tmpdir()}, "cxxflags", {flagskey = "cl_ifc_search_dir"})  then
             ifcsearchdirflag = "-ifcSearchDir"
         end
-        assert(ifcsearchdirflag, "compiler(msvc): does not support c++ module!")
+        assert(ifcsearchdirflag, "compiler(msvc): does not support c++ module flag(/ifcSearchDir)!")
         _g.ifcsearchdirflag = ifcsearchdirflag or false
     end
     return ifcsearchdirflag or nil
@@ -696,7 +688,7 @@ function get_interfaceflag(target)
         if compinst:has_flags("-interface", "cxxflags", {flagskey = "cl_interface"}) then
             interfaceflag = "-interface"
         end
-        assert(interfaceflag, "compiler(msvc): does not support c++ module!")
+        assert(interfaceflag, "compiler(msvc): does not support c++ module flag(/interface)!")
         _g.interfaceflag = interfaceflag or false
     end
     return interfaceflag
@@ -706,10 +698,10 @@ function get_referenceflag(target)
     local referenceflag = _g.referenceflag
     if referenceflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-reference", "cxxflags", {flagskey = "cl_reference"}) then
+        if compinst:has_flags({"-reference", "Foo=" .. os.tmpfile()}, "cxxflags", {flagskey = "cl_reference"}) then
             referenceflag = "-reference"
         end
-        assert(referenceflag, "compiler(msvc): does not support c++ module!")
+        assert(referenceflag, "compiler(msvc): does not support c++ module flag(/reference)!")
         _g.referenceflag = referenceflag or false
     end
     return referenceflag or nil
@@ -719,8 +711,8 @@ function get_headernameflag(target)
     local headernameflag = _g.headernameflag
     if headernameflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-headerName:quote", "cxxflags", {flagskey = "cl_header_name_quote"}) and
-        compinst:has_flags("-headerName:angle", "cxxflags", {flagskey = "cl_header_name_angle"}) then
+        if compinst:has_flags({"-std:c++latest", "-exportHeader", "-headerName:quote"}, "cxxflags", {flagskey = "cl_header_name_quote"}) and
+        compinst:has_flags({"-std:c++latest", "-exportHeader", "-headerName:angle"}, "cxxflags", {flagskey = "cl_header_name_angle"}) then
             headernameflag = "-headerName"
         end
         _g.headernameflag = headernameflag or false
@@ -732,8 +724,9 @@ function get_headerunitflag(target)
     local headerunitflag = _g.headerunitflag
     if headerunitflag == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags("-headerUnit:quote", "cxxflags", {flagskey = "cl_header_unit_quote"}) and
-        compinst:has_flags("-headerUnit:angle", "cxxflags", {flagskey = "cl_header_unit_angle"}) then
+        local ifcfile = os.tmpfile()
+        if compinst:has_flags({"-std:c++latest", "-headerUnit:quote", "foo.h=" .. ifcfile}, "cxxflags", {flagskey = "cl_header_unit_quote"}) and
+        compinst:has_flags({"-std:c++latest", "-headerUnit:angle", "foo.h=" .. ifcfile}, "cxxflags", {flagskey = "cl_header_unit_angle"}) then
             headerunitflag = "-headerUnit"
         end
         _g.headerunitflag = headerunitflag or false
@@ -742,11 +735,9 @@ function get_headerunitflag(target)
 end
 
 function get_exportheaderflag(target)
-    local modulesflag = get_modulesflag(target)
     local exportheaderflag = _g.exportheaderflag
     if exportheaderflag == nil then
-        local compinst = target:compiler("cxx")
-        if compinst:has_flags(modulesflag .. " -exportHeader", "cxxflags", {flagskey = "cl_export_header"}) then
+        if get_headernameflag(target) then
             exportheaderflag = "-exportHeader"
         end
         _g.exportheaderflag = exportheaderflag or false
