@@ -108,15 +108,16 @@ function parse_meta_info(target, metafile)
         return metadata._VENDOR_extension.xmake.file, metadata._VENDOR_extension.xmake.name, metadata
     end
 
-    local file = path.basename(metafile)
+    local filename = path.basename(metafile)
+    local metadir = path.directory(metafile)
     for _, ext in ipairs({".mpp", ".mxx", ".cppm", ".ixx"}) do
-        if os.isfile(path.join(path.directory(metafile), file .. ext)) then
-            file = file .. ext
+        if os.isfile(path.join(metadir, filename .. ext)) then
+            filename = filename .. ext
             break
         end
     end
 
-    local sourcecode = io.readfile(path.join(path.directory(metafile), file))
+    local sourcecode = io.readfile(path.join(path.directory(metafile), filename))
     sourcecode = sourcecode:gsub("//.-\n", "\n")
     sourcecode = sourcecode:gsub("/%*.-%*/", "")
 
@@ -128,7 +129,7 @@ function parse_meta_info(target, metafile)
         end
     end
 
-    return file, name, metadata
+    return filename, name, metadata
 end
 
 -- extract packages modules dependencies
