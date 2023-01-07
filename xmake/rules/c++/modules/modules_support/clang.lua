@@ -67,11 +67,19 @@ end
 -- load module support for the current target
 function load(target)
     local modulesflag = get_modulesflag(target)
+    local builtinmodulemapflag = get_builtinmodulemapflag(target)
+    local implicitmodulesflag = get_implicitmodulesflag(target)
     local noimplicitmodulemapsflag = get_noimplicitmodulemapsflag(target)
 
     -- add module flags
     target:add("cxxflags", modulesflag)
-    target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
+
+    if not target:values("c++.clang.modules.strict") then
+       target:add("cxxflags", builtinmodulemapflag, {force = true})
+       target:add("cxxflags", implicitmodulesflag, {force = true})
+    else
+        target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
+    end
 
     -- fix default visibility for functions and variables [-fvisibility] differs in PCH file vs. current file
     -- module.pcm cannot be loaded due to a configuration mismatch with the current compilation.

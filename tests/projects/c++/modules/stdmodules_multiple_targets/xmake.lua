@@ -1,7 +1,4 @@
 add_rules("mode.debug", "mode.release")
-
-add_cxxflags("clang::-stdlib=libc++")
-
 set_languages("c++latest")
 
 target("mod")

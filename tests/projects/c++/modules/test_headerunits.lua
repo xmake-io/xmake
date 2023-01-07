@@ -26,10 +26,13 @@ function main(t)
         end
         local clang = find_tool("clang", {version = true})
         if clang and clang.version and semver.compare(clang.version, "16.0") >= 0 then
-            os.exec("xmake clean -a")
-            os.exec("xmake f --toolchain=clang -c")
-            _build()
-            -- os.exec("xmake clean -a") there is currently a bug on llvm git that prevent to build STL header units https://github.com/llvm/llvm-project/issues/58540
+            if is_host("linux") then
+                os.exec("xmake clean -a")
+                os.exec("xmake f --toolchain=clang -c")
+                _build()
+            end
+            -- there is currently a bug on llvm git that prevent to build STL header units https://github.com/llvm/llvm-project/issues/58540
+            -- os.exec("xmake clean -a")
             -- os.exec("xmake f --toolchain=clang --cxxflags=\"-stdlib=libc++\" -c")
             -- _build()
         end

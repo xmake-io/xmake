@@ -1,1 +1,1 @@
-inherit(".test_msvc")
+inherit(".test_stdmodules")
