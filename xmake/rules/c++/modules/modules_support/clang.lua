@@ -497,7 +497,16 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             _add_module_to_mapper(target, name, bmifile, requiresflags)
                         end
                     elseif requiresflags then
-                        target:fileconfig_add(cppfile, {force = {cxxflags = requiresflags}})
+                        local cxxflags = {}
+                        for _, flag in ipairs(requiresflags) do
+                            -- we need wrap flag to support flag with space
+                            if type(flag) == "string" and flag:find(" ", 1, true) then
+                                table.insert(cxxflags, {flag})
+                            else
+                                table.insert(cxxflags, flag)
+                            end
+                        end
+                        target:fileconfig_add(cppfile, {force = {cxxflags = cxxflags}})
                     end
                 end)})
             modulesjobs[name or cppfile] = moduleinfo
@@ -553,7 +562,16 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}))
                 target:add("objectfiles", objectfile)
             elseif requiresflags then
-                target:fileconfig_add(cppfile, {force = {cxxflags = requiresflags}})
+                local cxxflags = {}
+                for _, flag in ipairs(requiresflags) do
+                    -- we need wrap flag to support flag with space
+                    if type(flag) == "string" and flag:find(" ", 1, true) then
+                        table.insert(cxxflags, {flag})
+                    else
+                        table.insert(cxxflags, flag)
+                    end
+                end
+                target:fileconfig_add(cppfile, {force = {cxxflags = cxxflags}})
             end
 
             batchcmds:add_depfiles(cppfile)
@@ -701,8 +719,10 @@ function get_requiresflags(target, requires)
             local modulemap_ = _get_modulemap_from_mapper(dep, name)
             if modulemap_ then
                 already_mapped_modules[name] = true
-                table.join2(flags, modulemap_.flag)
-                table.join2(flags, modulemap_.deps or {})
+                table.insert(flags, modulemap_.flag)
+                if modulemap_.deps then
+                    table.shallow_join2(flags, modulemap_.deps)
+                end
                 goto continue
             end
         end
@@ -711,8 +731,10 @@ function get_requiresflags(target, requires)
         local modulemap = _get_modulemap_from_mapper(target, name)
         if modulemap then
             already_mapped_modules[name] = true
-            table.join2(flags, modulemap.flag)
-            table.join2(flags, modulemap.deps or {})
+            table.insert(flags, modulemap.flag)
+            if modulemap.deps then
+                table.shallow_join2(flags, modulemap.deps)
+            end
             goto continue
         end
 
