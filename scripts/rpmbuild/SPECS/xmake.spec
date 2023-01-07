@@ -1,5 +1,5 @@
-%define     xmake_revision       69f7fc412e8a270d9019446fe20e150e0ed806cb
-%define     tbox_revision        1c6fcb6b7732b6c632f501dbd1ac4ea622220e7d
+%define     xmake_revision       5b527d486b2a08c0cc4c721fbf673f8bd1c8551f
+%define     tbox_revision        513f0f36384c540002787c7362ede4efaf104d8a
 %define     sv_revision          035262773da0500367cb88e6f30197908159a348
 %define     lua_cjson_revision   ddcecf3b24b71421e7b4a2962f1fbcc0297e0c1e
 %define     luajit_revision      e9af1abec542e6f9851ff2368e7f196b6382a44c
