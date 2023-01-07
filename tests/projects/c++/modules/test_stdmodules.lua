@@ -24,21 +24,19 @@ function main(t)
                 end
             end
         end
-    elseif is_host("linux") or is_host("macos") then
+    elseif is_host("linux") then -- or is_host("macos") then
         -- gcc don't support std modules atm
         -- local gcc = find_tool("gcc", {version = true})
-        -- if gcc and gcc.version and semver.compare(gcc.version, "11.0") >= 0 then
+        -- if is_host("linux") and gcc and gcc.version and semver.compare(gcc.version, "11.0") >= 0 then
             -- os.exec("xmake f -c")
             -- _build()
         -- end
         local clang = find_tool("clang", {version = true})
         if clang and clang.version and semver.compare(clang.version, "14.0") >= 0 then
-            if is_host("linux") then
-                -- clang don't support libstdc++ std modules atm
-                -- os.exec("xmake clean -a")
-                -- os.exec("xmake f --toolchain=clang -c")
-                -- _build()
-            end
+            -- clang don't support libstdc++ std modules atm
+            -- os.exec("xmake clean -a")
+            -- os.exec("xmake f --toolchain=clang -c")
+            -- _build()
             os.exec("xmake clean -a")
             os.exec("xmake f --toolchain=clang --cxxflags=\"-stdlib=libc++\" -c")
             _build()

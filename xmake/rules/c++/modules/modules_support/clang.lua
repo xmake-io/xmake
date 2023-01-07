@@ -66,13 +66,16 @@ end
 
 -- load module support for the current target
 function load(target)
-    local modulesflag = get_modulesflag(target)
+    local modulesflag, modulestsflag = get_modulesflag(target)
     local builtinmodulemapflag = get_builtinmodulemapflag(target)
     local implicitmodulesflag = get_implicitmodulesflag(target)
     local noimplicitmodulemapsflag = get_noimplicitmodulemapsflag(target)
 
     -- add module flags
     target:add("cxxflags", modulesflag)
+    if not modulesflag or is_host("macos") then
+        target:add("cxxflags", modulestsflag)
+    end
 
     if not target:values("c++.clang.modules.strict") then
        target:add("cxxflags", builtinmodulemapflag, {force = true})
@@ -583,20 +586,20 @@ end
 
 function get_modulesflag(target)
     local modulesflag = _g.modulesflag
-    if modulesflag == nil then
+    local modulestsflag = _g.modulestsflag
+    if modulesflag == nil and modulestsflag == nil then
         local compinst = target:compiler("cxx")
         if compinst:has_flags("-fmodules", "cxxflags", {flagskey = "clang_modules"}) then
             modulesflag = "-fmodules"
         end
-        if not modulesflag then
-            if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "clang_modules_ts"}) then
-                modulesflag = "-fmodules-ts"
-            end
+        if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "clang_modules_ts"}) then
+            modulestsflag = "-fmodules-ts"
         end
-        assert(modulesflag, "compiler(clang): does not support c++ module!")
+        assert(modulesflag or modulestsflag, "compiler(clang): does not support c++ module!")
         _g.modulesflag = modulesflag or false
+        _g.modulestsflag = modulestsflag or false
     end
-    return modulesflag or nil
+    return modulesflag or nil, modulestsflag or nil
 end
 
 function get_builtinmodulemapflag(target)
@@ -698,8 +701,9 @@ function has_headerunitsupport(target)
     local support_headerunits = _g.support_headerunits
     if support_headerunits == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags(get_modulesflag(target) .. " -std=c++20 -x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
-           compinst:has_flags(get_modulesflag(target) .. " -std=c++20 -x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
+        local modulesflag, modulestsflag = get_modulesflag(target)
+        if compinst:has_flags(modulesflag or moduletsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
+           compinst:has_flags(modulesflag or moduletsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
             support_headerunits = true
         end
         _g.support_headerunits = support_headerunits or false
