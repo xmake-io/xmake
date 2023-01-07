@@ -75,7 +75,7 @@ rule("c++.build.modules.builder")
                 if package_modules_data then
                     -- append to sourcebatch
                     for name, package_module_data in pairs(package_modules_data) do
-                        table.append(sourcebatch.sourcefiles, package_module_data.file)
+                        table.insert(sourcebatch.sourcefiles, package_module_data.file)
                     end
 
                     -- we need to repatch and regenerate dependencies at this point

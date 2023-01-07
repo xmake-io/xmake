@@ -160,24 +160,19 @@ function cull_unused_modules(target, modules, package_modules_data)
     for _, module in pairs(modules) do
         if module.requires then
             for required, _ in pairs(module.requires) do
-                table.append(needed_modules, required)
+                table.insert(needed_modules, required)
             end
         end
     end
 
     -- append all package dependencies
-    local module_names = {}
-    for name, _ in pairs(package_modules_data) do
-        table.append(module_names, name)
-    end
-
+    local module_names = table.keys(package_modules_data) or {}
     local culled
-    for i, name in ipairs(module_names) do
+    for _, name in ipairs(module_names) do
         culled = culled or {}
         if table.find(needed_modules, name) and package_modules_data[name] and not culled[name] then
             culled[name] = package_modules_data[name]
 
-            -- table.remove(module_names, i)
             if culled[name].metadata.imports then
                  table.join2(needed_modules, culled[name].metadata.imports)
                  table.join2(module_names, culled[name].metadata.imports)
