@@ -96,8 +96,8 @@ toolchain("zig")
             -- xmake f -p cross --toolchain=zig --cross=mips64el-linux-gnuabi64
             target = toolchain:cross()
         elseif toolchain:is_plat("macosx") then
-            -- zig 0.10 will raise `unable to find or provide libc for target 'x86_64-macos.11.7.1...13-gnu'`
-            --target = arch .. "-macos-gnu"
+            --@see https://github.com/ziglang/zig/issues/14226
+            target = arch .. "-macos-none"
         elseif toolchain:is_plat("linux") then
             if arch == "arm" then
                 target = "arm-linux-gnueabi"
