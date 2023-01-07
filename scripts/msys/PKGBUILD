@@ -16,12 +16,12 @@ source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/xmake-io/${_realnam
 sha256sums=('c927efad5412c3bdb8bad1be5b1b2ea40a998dff2a252edb443782865b7472b9')
 
 build() {
-    cd "$srcdir"
+    cd "${_realname}-${pkgver}"
     ./configure
     make
 }
 
 package() {
-    cd "$srcdir"
+    cd "${_realname}-${pkgver}"
     make install PREFIX="${pkgdir}/usr"
 }
