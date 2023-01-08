@@ -67,6 +67,24 @@ rule("c++.build.modules.builder")
             common.patch_sourcebatch(target, sourcebatch, opt)
             local modules = common.get_module_dependencies(target, sourcebatch, opt)
 
+            -- extract packages modules dependencies
+            local package_modules_data = common.get_all_package_modules(target, modules, opt)
+            if package_modules_data then
+                -- cull unused modules
+                package_modules_data = common.cull_unused_modules(target, modules, package_modules_data)
+                if package_modules_data then
+                    -- append to sourcebatch
+                    for name, package_module_data in pairs(package_modules_data) do
+                        table.insert(sourcebatch.sourcefiles, package_module_data.file)
+                    end
+
+                    -- we need to repatch and regenerate dependencies at this point
+                    common.patch_sourcebatch(target, sourcebatch, opt)
+                    opt.regenerate = true
+                    modules = common.get_module_dependencies(target, sourcebatch, opt)
+                end
+            end
+
             -- build modules
             common.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
 
@@ -147,19 +165,6 @@ rule("c++.build.modules.install")
         -- we cannot use target:data("cxx.has_modules"),
         -- because on_config will be not called when installing targets
         if common.contains_modules(target) then
-            local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
-            if sourcebatch then
-                for _, sourcefile in sourcebatch.sourcefiles do
-                    local prefixdir = "modules"
-                    local fileconfig = target:fileconfig(sourcefile)
-                    if fileconfig and fileconfig.prefixdir then
-                        prefixdir = fileconfig.prefixdir
-                    end
-                    local install = (fileconfig and not fileconfig.install) and false or true
-                    if install then
-                        target:add("installfiles", sourcefile, {prefixdir = prefixdir})
-                    end
-                end
-            end
+            common.install_module_target(target)
         end
     end)
