@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#3228](https://github.com/xmake-io/xmake/pull/3228): Add support of importing modules from packages
+
 ## v2.7.5
 
 ### New features
@@ -1486,6 +1490,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#3228](https://github.com/xmake-io/xmake/pull/3228): C++ modules 的安装发布，以及从包中导入 C++ modules 支持
 
 ## v2.7.5
 
