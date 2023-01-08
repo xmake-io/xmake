@@ -24,7 +24,7 @@ function main(t)
                 end
             end
         end
-    elseif is_host("linux") then -- or is_host("macos") then
+    elseif is_host("linux") then -- or is_host("macosx") then
         -- gcc don't support std modules atm
         -- local gcc = find_tool("gcc", {version = true})
         -- if is_host("linux") and gcc and gcc.version and semver.compare(gcc.version, "11.0") >= 0 then
