@@ -73,7 +73,7 @@ function load(target)
 
     -- add module flags
     target:add("cxxflags", modulesflag)
-    if not modulesflag or is_host("macos") then
+    if not modulesflag or is_host("macosx") then
         target:add("cxxflags", modulestsflag)
     end
 
