@@ -3290,12 +3290,21 @@ _check_cxxsnippets() {
 # check option
 _check_option() {
     local name="${1}"
-    _get_option_item "${name}" "before_check"; local before_check="${_ret}"
-    if test_nz "${before_check}"; then
-        eval ${before_check}
-    fi
-    if _check_csnippets "${name}" && _check_cxxsnippets "${name}"; then
-        return 0
+    _get_option_value "${name}"; local value="${_ret}"
+    if test_nz "${value}"; then
+        if _is_enabled "${value}"; then
+            return 0
+        else
+            return 1
+        fi
+    else
+        _get_option_item "${name}" "before_check"; local before_check="${_ret}"
+        if test_nz "${before_check}"; then
+            eval ${before_check}
+        fi
+        if _check_csnippets "${name}" && _check_cxxsnippets "${name}"; then
+            return 0
+        fi
     fi
     return 1
 }
