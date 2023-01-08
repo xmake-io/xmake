@@ -275,6 +275,35 @@ function generate_dependencies(target, sourcebatch, opt)
             changed = true
 
             local dependinfo = io.readfile(jsonfile)
+            if not target:data("cxx.modules.use_libc++") then
+                local has_std_modules = false
+                for _, r in ipairs (dependinfo.rules) do
+                    for _, required in ipairs(r.requires) do
+                        if required["logical-name"] == "std" or required["logical-name"] == "std.compat" then
+                            has_std_modules = true
+                            break
+                        end
+                    end
+
+                    if has_std_modules then
+                        break
+                    end
+                end
+
+                assert(not (has_std_modules and target:values("c++.clang.modules.strict")),
+                       [[On llvm <= 16 standard C++ modules are not supported ;
+                       they can be emulated through clang modules and supported only on libc++ ;
+                       please add -stdlib=libc++ cxx flag or disable strict mode]])
+
+                if has_std_modules then
+                    target:data_set("cxx.modules.use_libc++", true)
+                    if target:data("cxx.modules.use_libc++") then
+                        target:add("cxxflags", "-stdlib=libc++")
+                        target:add("syslinks", "c++")
+                    end
+                end
+            end
+
             return {moduleinfo = dependinfo}
         end, {dependfile = dependfile, files = {sourcefile}})
     end
