@@ -59,6 +59,8 @@ function main(opt)
     --
     local envs = opt.envs
     if envs and envs.WindowsSdkDir and envs.WindowsSDKVersion then
+        local toolchain = opt.toolchain
+        local arch = toolchain and toolchain:arch() or config.arch()
         local bindir = path.join(envs.WindowsSdkDir, "bin", envs.WindowsSDKVersion, arch)
         if os.isdir(bindir) then
             opt.paths = opt.paths or {}
