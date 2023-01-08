@@ -95,9 +95,14 @@ option "lua"
 option_end
 
 option_find_lua() {
+    local ldflags=""
     option "lua"
         add_cflags `pkg-config --cflags lua5.4 2>/dev/null`
-        add_ldflags `pkg-config --libs lua5.4 2>/dev/null`
+        ldflags=`pkg-config --libs lua5.4 2>/dev/null`
+        if test_z "${ldflags}"; then
+            ldflags="-llua5.4"
+        fi
+        add_ldflags "${ldflags}"
     option_end
 }
 
@@ -110,9 +115,14 @@ option "luajit"
 option_end
 
 option_find_luajit() {
+    local ldflags=""
     option "luajit"
         add_cflags `pkg-config --cflags luajit 2>/dev/null`
-        add_ldflags `pkg-config --libs luajit 2>/dev/null`
+        ldflags=`pkg-config --libs luajit 2>/dev/null`
+        if test_z "${ldflags}"; then
+            ldflags="-lluajit"
+        fi
+        add_ldflags "${ldflags}"
     option_end
 }
 
@@ -124,9 +134,14 @@ option "lz4"
 option_end
 
 option_find_lz4() {
+    local ldflags=""
     option "lz4"
         add_cflags `pkg-config --cflags liblz4 2>/dev/null`
-        add_ldflags `pkg-config --libs liblz4 2>/dev/null`
+        ldflags=`pkg-config --libs liblz4 2>/dev/null`
+        if test_z "${ldflags}"; then
+            ldflags="-llz4"
+        fi
+        add_ldflags "${ldflags}"
     option_end
 }
 

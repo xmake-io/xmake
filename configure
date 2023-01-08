@@ -3291,8 +3291,15 @@ _check_cxxsnippets() {
 _check_option() {
     local name="${1}"
     _get_option_value "${name}"; local value="${_ret}"
+    _get_option_item "${name}" "default"; local default="${_ret}"
     if test_nz "${value}"; then
         if _is_enabled "${value}"; then
+            return 0
+        else
+            return 1
+        fi
+    elif test_nz "${default}"; then
+        if _is_enabled "${default}"; then
             return 0
         else
             return 1
