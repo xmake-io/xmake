@@ -4,6 +4,16 @@
 
 ### New features
 
+* [#3228](https://github.com/xmake-io/xmake/pull/3228): Add support of importing modules from packages
+
+### Bugs fixed
+
+* [#3229](https://github.com/xmake-io/xmake/issues/3229): Fix find rc.exe for vs2015
+
+## v2.7.5
+
+### New features
+
 * [#3201](https://github.com/xmake-io/xmake/pull/3201): Add completer and xrepo complete
 * [#3233](https://github.com/xmake-io/xmake/issues/3233): Add MASM32 sdk toolchain
 
@@ -1484,6 +1494,16 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#3228](https://github.com/xmake-io/xmake/pull/3228): C++ modules 的安装发布，以及从包中导入 C++ modules 支持
+
+### Bugs 修复
+
+* [#3229](https://github.com/xmake-io/xmake/issues/3229): 修复 vs2015 下找不到 rc.exe 问题
+
+## v2.7.5
 
 ### 新特性
 

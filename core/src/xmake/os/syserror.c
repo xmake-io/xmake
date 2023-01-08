@@ -45,6 +45,7 @@ tb_int_t xm_os_syserror(lua_State* lua)
     {
     case TB_STATE_SYSERROR_NOT_PERM:            err = 1; break;
     case TB_STATE_SYSERROR_NOT_FILEDIR:         err = 2; break;
+    case TB_STATE_SYSERROR_NOT_ACCESS:          err = 3; break;
     case TB_STATE_SYSERROR_UNKNOWN_ERROR:       err = -1; break;
     }
     lua_pushinteger(lua, err);

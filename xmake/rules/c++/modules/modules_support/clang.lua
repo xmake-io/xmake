@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.json")
 import("core.tool.compiler")
 import("core.project.project")
 import("core.project.depend")
@@ -481,6 +482,24 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 end
             end
             local moduleinfo = table.copy(provide) or {}
+
+            if provide then
+                local fileconfig = target:fileconfig(cppfile)
+                if fileconfig and fileconfig.install then
+                    batchjobs:addjob(name .. "_metafile", function(index, total)
+                        local cachedir = common.modules_cachedir(target)
+                        local metafilepath = path.join(cachedir, path.filename(cppfile) .. ".meta-info")
+                        depend.on_changed(function()
+                            progress.show(opt.progress, "${color.build.object}generating.module.metadata %s", name)
+                            local metadata = common.generate_meta_module_info(target, name, cppfile, module.requires)
+                            json.savefile(metafilepath, metadata)
+
+                        end, {dependfile = target:dependfile(metafilepath), files = {cppfile}})
+
+                    end, {rootjob = flushjob})
+                end
+            end
+
             table.join2(moduleinfo, {
                 name = name or cppfile,
                 deps = table.keys(module.requires or {}),
@@ -494,20 +513,34 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
 
                     if provide or common.has_module_extension(cppfile) then
                         local bmifile = provide and provide.bmi
-                        _build_modulefile(target, provide and provide.sourcefile or cppfile, {
-                            objectfile = objectfile,
-                            dependfile = target:dependfile(bmifile or objectfile),
-                            provide = provide and {bmifile = bmifile, name = name},
-                            common_args = common_args,
-                            requiresflags = requiresflags,
-                            progress = (index * 100) / total})
+                        if not common.memcache():get2(name or cppfile, "compiling") then
+                            if name and module.external then
+                                common.memcache():set2(name or cppfile, "compiling", true)
+                            end
+                            _build_modulefile(target, provide and provide.sourcefile or cppfile, {
+                                objectfile = objectfile,
+                                dependfile = target:dependfile(bmifile or objectfile),
+                                provide = provide and {bmifile = bmifile, name = name},
+                                common_args = common_args,
+                                requiresflags = requiresflags,
+                                progress = (index * 100) / total})
+                            end
                         target:add("objectfiles", objectfile)
 
                         if provide then
                             _add_module_to_mapper(target, name, bmifile, requiresflags)
                         end
                     elseif requiresflags then
-                        target:fileconfig_add(cppfile, {force = {cxxflags = requiresflags}})
+                        local cxxflags = {}
+                        for _, flag in ipairs(requiresflags) do
+                            -- we need wrap flag to support flag with space
+                            if type(flag) == "string" and flag:find(" ", 1, true) then
+                                table.insert(cxxflags, {flag})
+                            else
+                                table.insert(cxxflags, flag)
+                            end
+                        end
+                        target:fileconfig_add(cppfile, {force = {cxxflags = cxxflags}})
                     end
                 end)})
             modulesjobs[name or cppfile] = moduleinfo
@@ -563,7 +596,16 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}))
                 target:add("objectfiles", objectfile)
             elseif requiresflags then
-                target:fileconfig_add(cppfile, {force = {cxxflags = requiresflags}})
+                local cxxflags = {}
+                for _, flag in ipairs(requiresflags) do
+                    -- we need wrap flag to support flag with space
+                    if type(flag) == "string" and flag:find(" ", 1, true) then
+                        table.insert(cxxflags, {flag})
+                    else
+                        table.insert(cxxflags, flag)
+                    end
+                end
+                target:fileconfig_add(cppfile, {force = {cxxflags = cxxflags}})
             end
 
             batchcmds:add_depfiles(cppfile)
@@ -725,8 +767,10 @@ function get_requiresflags(target, requires)
             local modulemap_ = _get_modulemap_from_mapper(dep, name)
             if modulemap_ then
                 already_mapped_modules[name] = true
-                table.join2(flags, modulemap_.flag)
-                table.join2(flags, modulemap_.deps or {})
+                table.insert(flags, modulemap_.flag)
+                if modulemap_.deps then
+                    table.shallow_join2(flags, modulemap_.deps)
+                end
                 goto continue
             end
         end
@@ -735,8 +779,10 @@ function get_requiresflags(target, requires)
         local modulemap = _get_modulemap_from_mapper(target, name)
         if modulemap then
             already_mapped_modules[name] = true
-            table.join2(flags, modulemap.flag)
-            table.join2(flags, modulemap.deps or {})
+            table.insert(flags, modulemap.flag)
+            if modulemap.deps then
+                table.shallow_join2(flags, modulemap.deps)
+            end
             goto continue
         end
 
