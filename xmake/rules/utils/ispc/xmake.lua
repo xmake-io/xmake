@@ -1,12 +1,12 @@
 rule("utils.ispc")
     set_extensions(".ispc")
 
-    on_load(function (target)
+    on_config(function (target)
         local headersdir = path.join(target:autogendir(), "rules", "utils", "ispc", "headers")
         os.mkdir(headersdir)
         target:add("includedirs", headersdir, {public = true})
     end)
-    
+
     before_buildcmd_file(function (target, batchcmds, sourcefile_ispc, opt)
         import("lib.detect.find_tool")
         local ispc = assert(find_tool("ispc"), "ispc not found!")
@@ -56,7 +56,7 @@ rule("utils.ispc")
         table.insert(flags, "-h")
         table.insert(flags, path(headersfile))
         table.insert(flags, path(sourcefile_ispc))
-        
+
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.ispc %s", sourcefile_ispc)
         batchcmds:mkdir(objectdir)
         batchcmds:vrunv(ispc.program, flags)
