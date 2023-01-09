@@ -85,7 +85,7 @@ Xmake ≈ Make/Ninja + CMake/Meson + Vcpkg/Conan + distcc + ccache/sccache
 
 If you want to know more, please refer to: [Documents](https://xmake.io/#/getting_started), [Github](https://github.com/xmake-io/xmake) and [Gitee](https://gitee.com/tboox/xmake). You are also welcome to join our [community](https://xmake.io/#/about/contact).
 
-![](https://xmake.io/assets/img/index/xmake-basic-render.gif)
+![](https://github.com/xmake-io/xmake-docs/raw/master/assets/img/index/xmake-basic-render.gif)
 
 ## Installation
 
@@ -121,7 +121,7 @@ If you don't want to use the script to install xmake, see [Installation Guide](h
 
 An official xmake package repository exists at: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 
-<img src="https://xmake.io/assets/img/index/package.gif" width="650px" />
+<img src="https://github.com/xmake-io/xmake-docs/raw/master/assets/img/index/package.gif" width="650px" />
 
 ## Create project
 
