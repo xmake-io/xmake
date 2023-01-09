@@ -21,9 +21,16 @@
 -- imports
 import("lib.detect.find_file")
 
+-- get install directory
+function _get_installdir(target)
+    local installdir = assert(target:installdir(), "please use `xmake install -o installdir` or `set_installdir` to set install directory on windows.")
+    return installdir
+end
+
 -- install headers
 function _install_headers(target, opt)
-    local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
+    local installdir = _get_installdir(target)
+    local includedir = path.join(installdir, opt and opt.includedir or "include")
     os.mkdir(includedir)
     local srcheaders, dstheaders = target:headerfiles(includedir, {installonly = true})
     if srcheaders and dstheaders then
@@ -73,7 +80,8 @@ end
 function install_binary(target, opt)
 
     -- install binary
-    local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
+    local installdir = _get_installdir(target)
+    local binarydir = path.join(installdir, opt and opt.bindir or "bin")
     os.mkdir(binarydir)
     os.vcp(target:targetfile(), binarydir)
     os.trycp(target:symbolfile(), binarydir)
@@ -103,7 +111,8 @@ end
 function install_shared(target, opt)
 
     -- install dll library to the binary directory
-    local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
+    local installdir = _get_installdir(target)
+    local binarydir = path.join(installdir, opt and opt.bindir or "bin")
     os.mkdir(binarydir)
     os.vcp(target:targetfile(), binarydir)
     os.trycp(target:symbolfile(), binarydir)
@@ -129,7 +138,8 @@ end
 function install_static(target, opt)
 
     -- install library
-    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
+    local installdir = _get_installdir(target)
+    local librarydir = path.join(installdir, opt and opt.libdir or "lib")
     os.mkdir(librarydir)
     os.vcp(target:targetfile(), librarydir)
     os.trycp(target:symbolfile(), librarydir)
