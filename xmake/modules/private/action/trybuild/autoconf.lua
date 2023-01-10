@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.platform.platform")
 import("lib.detect.find_file")
+import("lib.detect.find_tool")
 
 -- translate path
 function _translate_path(p)
