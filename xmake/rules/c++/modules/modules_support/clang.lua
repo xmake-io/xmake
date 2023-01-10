@@ -65,6 +65,12 @@ function _get_modulemap_from_mapper(target, name)
     return common.localcache():get2(_mapper_cachekey(target), "modulemap" .. name) or nil
 end
 
+-- enable libc++
+function _enable_libcxx(target)
+    target:add("cxxflags", "-stdlib=libc++")
+    target:add("syslinks", "c++")
+end
+
 -- load module support for the current target
 function load(target)
     local modulesflag, modulestsflag = get_modulesflag(target)
@@ -82,7 +88,7 @@ function load(target)
        target:add("cxxflags", builtinmodulemapflag, {force = true})
        target:add("cxxflags", implicitmodulesflag, {force = true})
     else
-        target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
+       target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
     end
 
     -- fix default visibility for functions and variables [-fvisibility] differs in PCH file vs. current file
@@ -110,7 +116,7 @@ function load(target)
     local flags = table.join(target:get("cxxflags"), get_config("cxxflags") or {})
     target:data_set("cxx.modules.use_libc++", table.contains(flags, "-stdlib=libc++", "clang::-stdlib=libc++"))
     if target:data("cxx.modules.use_libc++") then
-        target:add("syslinks", "c++")
+        _enable_libcxx(target)
     end
 end
 
@@ -179,7 +185,7 @@ function _build_modulefile(target, sourcefile, opt)
     local bmiflags
     if opt.provide then
         bmifile = opt.provide.bmifile
-        bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags or {})
+        bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags)
         vprint(compinst:compcmd(sourcefile, bmifile, {compflags = bmiflags, rawargs = true}))
     end
 
@@ -274,37 +280,39 @@ function generate_dependencies(target, sourcebatch, opt)
             end)
             changed = true
 
-            local dependinfo = io.readfile(jsonfile)
-            if not target:data("cxx.modules.use_libc++") then
-                local has_std_modules = false
-                for _, r in ipairs (dependinfo.rules) do
-                    for _, required in ipairs(r.requires) do
-                        if required["logical-name"] == "std" or required["logical-name"] == "std.compat" then
-                            has_std_modules = true
+            local rawdependinfo = io.readfile(jsonfile)
+            if rawdependinfo then
+                local dependinfo = json.decode(rawdependinfo)
+                if not target:data("cxx.modules.use_libc++") then
+                    local has_std_modules = false
+                    for _, r in ipairs(dependinfo.rules) do
+                        for _, required in ipairs(r.requires) do
+                            if required["logical-name"] == "std" or required["logical-name"] == "std.compat" then
+                                has_std_modules = true
+                                break
+                            end
+                        end
+
+                        if has_std_modules then
                             break
                         end
                     end
 
+                    assert(not (has_std_modules and target:values("c++.clang.modules.strict")),
+                           [[On llvm <= 16 standard C++ modules are not supported ;
+                           they can be emulated through clang modules and supported only on libc++ ;
+                           please add -stdlib=libc++ cxx flag or disable strict mode]])
+
                     if has_std_modules then
-                        break
-                    end
-                end
-
-                assert(not (has_std_modules and target:values("c++.clang.modules.strict")),
-                       [[On llvm <= 16 standard C++ modules are not supported ;
-                       they can be emulated through clang modules and supported only on libc++ ;
-                       please add -stdlib=libc++ cxx flag or disable strict mode]])
-
-                if has_std_modules then
-                    target:data_set("cxx.modules.use_libc++", true)
-                    if target:data("cxx.modules.use_libc++") then
-                        target:add("cxxflags", "-stdlib=libc++")
-                        target:add("syslinks", "c++")
+                        target:data_set("cxx.modules.use_libc++", true)
+                        if target:data("cxx.modules.use_libc++") then
+                            _enable_libcxx(target)
+                        end
                     end
                 end
             end
 
-            return {moduleinfo = dependinfo}
+            return {moduleinfo = rawdependinfo}
         end, {dependfile = dependfile, files = {sourcefile}})
     end
     return changed
@@ -798,7 +806,7 @@ function get_requiresflags(target, requires)
                 already_mapped_modules[name] = true
                 table.insert(flags, modulemap_.flag)
                 if modulemap_.deps then
-                    table.shallow_join2(flags, modulemap_.deps)
+                    table.join2(flags, modulemap_.deps)
                 end
                 goto continue
             end
@@ -810,7 +818,7 @@ function get_requiresflags(target, requires)
             already_mapped_modules[name] = true
             table.insert(flags, modulemap.flag)
             if modulemap.deps then
-                table.shallow_join2(flags, modulemap.deps)
+                table.join2(flags, modulemap.deps)
             end
             goto continue
         end
