@@ -44,7 +44,7 @@ end
 
 -- make the define flag
 function nf_define(self, macro)
-    return "-d" .. macro
+    return {"-d" .. macro}
 end
 
 -- make the compile arguments list

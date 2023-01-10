@@ -131,7 +131,7 @@ end
 
 -- make the define flag
 function nf_define(self, macro)
-    return "-D" .. macro
+    return {"-D" .. macro}
 end
 
 -- make the undefine flag

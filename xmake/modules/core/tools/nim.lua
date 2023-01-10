@@ -53,7 +53,7 @@ end
 
 -- make the define flag
 function nf_define(self, macro)
-    return "--define:" .. macro
+    return {"--define:" .. macro}
 end
 
 -- make the undefine flag
