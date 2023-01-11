@@ -1,8 +1,3 @@
-option("libc++")
-    set_default(false)
-    set_showmenu(true)
-option_end()
-
 add_rules("mode.release", "mode.debug")
 set_languages("c++20")
 
