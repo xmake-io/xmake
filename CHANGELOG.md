@@ -10,6 +10,7 @@
 
 * [#3229](https://github.com/xmake-io/xmake/issues/3229): Fix find rc.exe for vs2015
 * [#3271](https://github.com/xmake-io/xmake/issues/3271): Fix macro defines with spaces
+* [#3273](https://github.com/xmake-io/xmake/issues/3273): Fix nim link error
 
 ## v2.7.5
 
@@ -1504,6 +1505,7 @@
 
 * [#3229](https://github.com/xmake-io/xmake/issues/3229): 修复 vs2015 下找不到 rc.exe 问题
 * [#3271](https://github.com/xmake-io/xmake/issues/3271): 修复支持带有空格的宏定义
+* [#3273](https://github.com/xmake-io/xmake/issues/3273): 修复 nim 链接错误
 
 ## v2.7.5
 
