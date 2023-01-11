@@ -35,8 +35,6 @@ function policy.policies()
     if not policies then
         policies =
         {
-            -- enable clang std modulemap
-            ["c++.clang.module.stdmodules"]      = {description = "Enable clang std modulemap.", default = false, type = "boolean"},
             -- we will check and ignore all unsupported flags by default, but we can also pass `{force = true}` to force to set flags, e.g. add_ldflags("-static", {force = true})
             ["check.auto_ignore_flags"]          = {description = "Enable check and ignore unsupported flags automatically.", default = true, type = "boolean"},
             -- we will map gcc flags to the current compiler and linker by default.
@@ -55,6 +53,8 @@ function policy.policies()
             ["build.optimization.lto"]           = {description = "Enable LTO linker-time optimization for c/c++ building.", type = "boolean"},
             -- enable C++ modules for C++ building, even if no .mpp is involved in the compilation
             ["build.c++.modules"]                = {description = "Enable C++ modules for C++ building.", type = "boolean"},
+            -- enable clang std modulemap
+            ["build.c++.clang.stdmodules"]      = {description = "Enable clang std modulemap.", default = false, type = "boolean"},
             -- preprocessor configuration for ccache/distcc, we can disable linemarkers to speed up preprocess
             ["preprocessor.linemarkers"]         = {description = "Enable linemarkers for preprocessor.", default = true, type = "boolean"},
             -- preprocessor configuration for ccache/distcc, we can disable it to avoid cache object file with __DATE__, __TIME__

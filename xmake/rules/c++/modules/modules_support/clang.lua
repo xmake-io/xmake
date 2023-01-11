@@ -84,7 +84,7 @@ function load(target)
         target:add("cxxflags", modulestsflag)
     end
 
-    if target:policy("c++.clang.module.stdmodules") then
+    if target:policy("build.c++.clang.stdmodules") then
        target:add("cxxflags", builtinmodulemapflag, {force = true})
        target:add("cxxflags", implicitmodulesflag, {force = true})
     else
