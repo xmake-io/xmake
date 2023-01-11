@@ -113,11 +113,17 @@ If you don't want to use the script to install xmake, see [Installation Guide](h
 
 ## Simple description
 
-<img src="https://xmake.io/assets/img/index/showcode1.png" width="340px" />
+```lua
+target("hello")
+    set_kind("binary")
+    add_files("src/*.cpp")
+```
 
 ## Package dependences
 
-<img src="https://xmake.io/assets/img/index/add_require.png" width="600px" />
+```lua
+add_requires("tbox 1.6.*", "zlib", "libpng ~1.6")
+```
 
 An official xmake package repository exists at: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 

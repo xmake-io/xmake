@@ -121,11 +121,17 @@ Invoke-Expression (Invoke-Webrequest 'https://xmake.io/psget.text' -UseBasicPars
 
 ## 简单的工程描述
 
-<img src="https://xmake.io/assets/img/index/showcode1.png" width="340px" />
+```lua
+target("hello")
+    set_kind("binary")
+    add_files("src/*.cpp")
+```
 
 ## 包依赖描述
 
-<img src="https://xmake.io/assets/img/index/add_require.png" width="600px" />
+```lua
+add_requires("tbox 1.6.*", "zlib", "libpng ~1.6")
+```
 
 官方的xmake包管理仓库: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 
