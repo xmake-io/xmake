@@ -5,4 +5,3 @@ target("stl_headerunit")
     set_kind("binary")
     add_files("src/*.cpp", "src/*.mpp")
 
-    set_values("c++.clang.modules.strict", true) -- clang std module clash with stl header units or c++23 std module so we disable it

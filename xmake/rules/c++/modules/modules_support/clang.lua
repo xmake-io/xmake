@@ -298,7 +298,7 @@ function generate_dependencies(target, sourcebatch, opt)
                         end
                     end
 
-                    assert(not (has_std_modules and target:values("c++.clang.modules.strict")),
+                    assert(not (has_std_modules and not target:values("c++.clang.modules.stdmodules")),
                            [[On llvm <= 16 standard C++ modules are not supported ;
                            they can be emulated through clang modules and supported only on libc++ ;
                            please add -stdlib=libc++ cxx flag or disable strict mode]])
