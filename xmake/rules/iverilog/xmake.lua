@@ -23,7 +23,7 @@ rule("iverilog.wave")
     on_load(function (target)
         target:set("kind", "binary")
         if not target:get("extension") then
-            target:set("extension", ".lxt")
+            target:set("extension", ".vcd")
         end
     end)
 
@@ -32,18 +32,20 @@ rule("iverilog.wave")
         local iverilog = assert(toolchain:config("iverilog"), "iverilog not found!")
 
         -- compile wave file
-        local wavefile = target:targetfile() .. ".wave"
-        local argv = {"-o", wavefile}
+        local targetfile = target:targetfile()
+        local targetdir = path.directory(targetfile)
+        local vvpfile = path.join(targetdir, path.basename(targetfile) .. ".vvp")
+        local argv = {"-o", vvpfile}
         local sourcefiles = sourcebatch.sourcefiles
         for _, sourcefile in ipairs(sourcefiles) do
             batchcmds:show_progress(opt.progress, "${color.build.object}compiling.iverilog %s", path.filename(sourcefile))
             table.insert(argv, path(sourcefile))
             batchcmds:add_depfiles(sourcefile)
         end
-        batchcmds:mkdir(path.directory(wavefile))
+        batchcmds:mkdir(targetdir)
         batchcmds:vrunv(iverilog, argv)
-        batchcmds:set_depmtime(os.mtime(wavefile))
-        batchcmds:set_depcache(target:dependfile(wavefile))
+        batchcmds:set_depmtime(os.mtime(vvpfile))
+        batchcmds:set_depcache(target:dependfile(vvpfile))
     end)
 
     on_linkcmd(function (target, batchcmds, opt)
@@ -52,12 +54,11 @@ rule("iverilog.wave")
 
         -- generate wave.lxt
         local targetfile = target:targetfile()
-        local wavefile = targetfile .. ".wave"
+        local targetdir = path.directory(targetfile)
+        local vvpfile = path.join(targetdir, path.basename(targetfile) .. ".vvp")
         batchcmds:show_progress(opt.progress, "${color.build.target}linking.iverilog %s", path.filename(targetfile))
-        batchcmds:mkdir(path.directory(targetfile))
-        batchcmds:vrunv(vvp, {"-n", wavefile, "-lxt2"})
-        batchcmds:cp(wavefile .. ".vcd", targetfile)
-        batchcmds:add_depfiles(wavefile)
+        batchcmds:vrunv(vvp, {"-n", vvpfile, "-lxt2"})
+        batchcmds:add_depfiles(vvpfile)
         batchcmds:set_depmtime(os.mtime(targetfile))
         batchcmds:set_depcache(target:dependfile(targetfile))
     end)
