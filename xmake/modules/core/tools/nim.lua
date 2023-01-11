@@ -123,17 +123,11 @@ end
 -- make the build arguments list
 function buildargv(self, sourcefiles, targetkind, targetfile, flags)
     local flags_extra = {}
-    if targetkind == "static" then
-        -- fix multiple definition of `NimMain', it is only workaround solution
-        -- we need to wait for this problem to be resolved
+    if targetkind == "binary" then
+        -- fix multiple definition of `NimMain'
         --
-        -- @see https://github.com/nim-lang/Nim/issues/15955
-        local uniquekey = hash.uuid(targetfile):split("-", {plain = true})[1]
-        table.insert(flags_extra, "--passC:-DNimMain=NimMain_" .. uniquekey)
-        table.insert(flags_extra, "--passC:-DNimMainInner=NimMainInner_" .. uniquekey)
-        table.insert(flags_extra, "--passC:-DNimMainModule=NimMainModule_" .. uniquekey)
-        table.insert(flags_extra, "--passC:-DPreMain=PreMain_" .. uniquekey)
-        table.insert(flags_extra, "--passC:-DPreMainInner=PreMainInner_" .. uniquekey)
+        -- @see https://github.com/nim-lang/Nim/issues/19830
+        table.insert(flags_extra, "--passL:-Wl,--allow-multiple-definition")
     end
     if targetkind ~= "static" and self:is_plat("windows") then
         -- fix link flags for windows
