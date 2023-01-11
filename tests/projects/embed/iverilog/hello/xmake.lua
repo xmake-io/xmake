@@ -1,5 +1,5 @@
 add_requires("iverilog")
 target("hello")
-    add_rules("iverilog.binary")
+    add_rules("iverilog.wave")
     set_toolchains("@iverilog")
     add_files("src/*.v")
