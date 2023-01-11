@@ -84,7 +84,7 @@ function load(target)
         target:add("cxxflags", modulestsflag)
     end
 
-    if target:values("c++.clang.modules.stdmodules") then
+    if target:policy("c++.clang.module.stdmodules") then
        target:add("cxxflags", builtinmodulemapflag, {force = true})
        target:add("cxxflags", implicitmodulesflag, {force = true})
     else
@@ -298,7 +298,7 @@ function generate_dependencies(target, sourcebatch, opt)
                         end
                     end
 
-                    assert(not (has_std_modules and not target:values("c++.clang.modules.stdmodules")),
+                    assert(not (has_std_modules and not target:policy("c++.clang.modules.stdmodules")),
                            [[On llvm <= 16 standard C++ modules are not supported ;
                            they can be emulated through clang modules and supported only on libc++ ;
                            please add -stdlib=libc++ cxx flag or disable strict mode]])

@@ -5,10 +5,10 @@ target("mod")
     set_kind("static")
     add_files("src/*.cpp", "src/*.mpp")
 
-    set_values("c++.clang.module.stdmodules", true)
+    set_policy("c++.clang.module.stdmodules", true)
 
 target("mod2")
     set_kind("static")
     add_files("src/*.cpp", "src/*.mpp")
 
-    set_values("c++.clang.module.stdmodules", true)
+    set_policy("c++.clang.module.stdmodules", true)
