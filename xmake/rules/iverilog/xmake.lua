@@ -18,47 +18,40 @@
 -- @file        xmake.lua
 --
 
-rule("iverilog.wave")
+rule("iverilog.binary")
     set_extensions(".v", ".vhd")
     on_load(function (target)
         target:set("kind", "binary")
         if not target:get("extension") then
-            target:set("extension", ".vcd")
+            target:set("extension", ".vvp")
         end
     end)
 
     on_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
+    end)
+
+    on_linkcmd(function (target, batchcmds, opt)
         local toolchain = assert(target:toolchain("iverilog"), 'we need set_toolchains("iverilog") in target("%s")', target:name())
         local iverilog = assert(toolchain:config("iverilog"), "iverilog not found!")
 
         -- compile wave file
         local targetfile = target:targetfile()
         local targetdir = path.directory(targetfile)
-        local vvpfile = path.join(targetdir, path.basename(targetfile) .. ".vvp")
-        local argv = {"-o", vvpfile}
+        local argv = {"-o", targetfile}
+        local sourcebatch = target:sourcebatches()["iverilog.binary"]
         local sourcefiles = sourcebatch.sourcefiles
-        for _, sourcefile in ipairs(sourcefiles) do
-            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.iverilog %s", path.filename(sourcefile))
-            table.insert(argv, path(sourcefile))
-            batchcmds:add_depfiles(sourcefile)
-        end
+        table.join2(argv, sourcefiles)
+        batchcmds:show_progress(opt.progress, "${color.build.target}linking.iverilog %s", path.filename(targetfile))
         batchcmds:mkdir(targetdir)
         batchcmds:vrunv(iverilog, argv)
-        batchcmds:set_depmtime(os.mtime(vvpfile))
-        batchcmds:set_depcache(target:dependfile(vvpfile))
+        batchcmds:add_depfiles(sourcefiles)
+        batchcmds:set_depmtime(os.mtime(targetfile))
+        batchcmds:set_depcache(target:dependfile(targetfile))
     end)
 
-    on_linkcmd(function (target, batchcmds, opt)
+    on_run(function (target)
         local toolchain = assert(target:toolchain("iverilog"), 'we need set_toolchains("iverilog") in target("%s")', target:name())
         local vvp = assert(toolchain:config("vvp"), "vvp not found!")
 
-        -- generate wave.lxt
-        local targetfile = target:targetfile()
-        local targetdir = path.directory(targetfile)
-        local vvpfile = path.join(targetdir, path.basename(targetfile) .. ".vvp")
-        batchcmds:show_progress(opt.progress, "${color.build.target}linking.iverilog %s", path.filename(targetfile))
-        batchcmds:vrunv(vvp, {"-n", vvpfile, "-lxt2"})
-        batchcmds:add_depfiles(vvpfile)
-        batchcmds:set_depmtime(os.mtime(targetfile))
-        batchcmds:set_depcache(target:dependfile(targetfile))
+        os.execv(vvp, {"-n", target:targetfile(), "-lxt2"})
     end)
