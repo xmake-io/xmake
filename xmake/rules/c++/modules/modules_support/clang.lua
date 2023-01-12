@@ -65,16 +65,31 @@ function _get_modulemap_from_mapper(target, name)
     return common.localcache():get2(_mapper_cachekey(target), "modulemap" .. name) or nil
 end
 
+-- enable libc++
+function _enable_libcxx(target)
+    target:add("cxxflags", "-stdlib=libc++")
+    target:add("syslinks", "c++")
+end
+
 -- load module support for the current target
 function load(target)
-    local modulesflag = get_modulesflag(target)
+    local modulesflag, modulestsflag = get_modulesflag(target)
     local builtinmodulemapflag = get_builtinmodulemapflag(target)
     local implicitmodulesflag = get_implicitmodulesflag(target)
+    local noimplicitmodulemapsflag = get_noimplicitmodulemapsflag(target)
 
     -- add module flags
     target:add("cxxflags", modulesflag)
-    target:add("cxxflags", builtinmodulemapflag, {force = true})
-    target:add("cxxflags", implicitmodulesflag, {force = true})
+    if not modulesflag or target:is_plat("macosx") then
+        target:add("cxxflags", modulestsflag)
+    end
+
+    if target:policy("build.c++.clang.stdmodules") then
+       target:add("cxxflags", builtinmodulemapflag, {force = true})
+       target:add("cxxflags", implicitmodulesflag, {force = true})
+    else
+       target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
+    end
 
     -- fix default visibility for functions and variables [-fvisibility] differs in PCH file vs. current file
     -- module.pcm cannot be loaded due to a configuration mismatch with the current compilation.
@@ -98,9 +113,10 @@ function load(target)
     -- on ubuntu:
     -- sudo apt install libc++-dev libc++abi-15-dev
     --
-    target:data_set("cxx.modules.use_libc++", table.contains(target:get("cxxflags"), "-stdlib=libc++", "clang::-stdlib=libc++"))
+    local flags = table.join(target:get("cxxflags"), get_config("cxxflags") or {})
+    target:data_set("cxx.modules.use_libc++", table.contains(flags, "-stdlib=libc++", "clang::-stdlib=libc++"))
     if target:data("cxx.modules.use_libc++") then
-        target:add("syslinks", "c++")
+        _enable_libcxx(target)
     end
 end
 
@@ -118,7 +134,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     if target:data("cxx.modules.use_libc++") then
         table.insert(argv, 1, "-stdlib=libc++")
     end
-    local result = try {function () return os.iorunv(clang, {"-E", "-x", "c++", tmpfile}) end}
+    local result = try {function () return os.iorunv(clang, argv) end}
     if result then
         for _, line in ipairs(result:split("\n", {plain = true})) do
             line = line:trim()
@@ -169,7 +185,7 @@ function _build_modulefile(target, sourcefile, opt)
     local bmiflags
     if opt.provide then
         bmifile = opt.provide.bmifile
-        bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags or {})
+        bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags)
         vprint(compinst:compcmd(sourcefile, bmifile, {compflags = bmiflags, rawargs = true}))
     end
 
@@ -200,7 +216,7 @@ function toolchain_includedirs(target)
         local clang, toolname = target:tool("cxx")
         assert(toolname == "clang")
         _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
-        local _, result = try {function () return os.iorunv(clang, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
+        local _, result = try {function () return os.iorunv(clang, {"-E", "-stdlib=libc++", "-Wp,-v", "-xc", os.nuldev()}) end}
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
                 line = line:trim()
@@ -264,8 +280,39 @@ function generate_dependencies(target, sourcebatch, opt)
             end)
             changed = true
 
-            local dependinfo = io.readfile(jsonfile)
-            return {moduleinfo = dependinfo}
+            local rawdependinfo = io.readfile(jsonfile)
+            if rawdependinfo then
+                local dependinfo = json.decode(rawdependinfo)
+                if not target:data("cxx.modules.use_libc++") then
+                    local has_std_modules = false
+                    for _, r in ipairs(dependinfo.rules) do
+                        for _, required in ipairs(r.requires) do
+                            if required["logical-name"] == "std" or required["logical-name"] == "std.compat" then
+                                has_std_modules = true
+                                break
+                            end
+                        end
+
+                        if has_std_modules then
+                            break
+                        end
+                    end
+
+                    assert(not (has_std_modules and not target:policy("build.c++.clang.stdmodules")),
+                           [[On llvm <= 16 standard C++ modules are not supported ;
+                           they can be emulated through clang modules and supported only on libc++ ;
+                           please add -stdlib=libc++ cxx flag or disable strict mode]])
+
+                    if has_std_modules then
+                        target:data_set("cxx.modules.use_libc++", true)
+                        if target:data("cxx.modules.use_libc++") then
+                            _enable_libcxx(target)
+                        end
+                    end
+                end
+            end
+
+            return {moduleinfo = rawdependinfo}
         end, {dependfile = dependfile, files = {sourcefile}})
     end
     return changed
@@ -293,7 +340,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
                     if not common.memcache():get2(headerunit.name, "building") then
                         common.memcache():set2(headerunit.name, "building", true)
                         progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
-                        local args = {modulecachepathflag .. stlcachedir, "-c", "-o", bmifile, "-x", "c++-system-header", headerunit.name}
+                        local args = {modulecachepathflag .. stlcachedir, "-c", "-Wno-everything", "-o", bmifile, "-x", "c++-system-header", headerunit.name}
                         os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
                     end
 
@@ -618,20 +665,20 @@ end
 
 function get_modulesflag(target)
     local modulesflag = _g.modulesflag
-    if modulesflag == nil then
+    local modulestsflag = _g.modulestsflag
+    if modulesflag == nil and modulestsflag == nil then
         local compinst = target:compiler("cxx")
         if compinst:has_flags("-fmodules", "cxxflags", {flagskey = "clang_modules"}) then
             modulesflag = "-fmodules"
         end
-        if not modulesflag then
-            if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "clang_modules_ts"}) then
-                modulesflag = "-fmodules-ts"
-            end
+        if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "clang_modules_ts"}) then
+            modulestsflag = "-fmodules-ts"
         end
-        assert(modulesflag, "compiler(clang): does not support c++ module!")
+        assert(modulesflag or modulestsflag, "compiler(clang): does not support c++ module!")
         _g.modulesflag = modulesflag or false
+        _g.modulestsflag = modulestsflag or false
     end
-    return modulesflag or nil
+    return modulesflag or nil, modulestsflag or nil
 end
 
 function get_builtinmodulemapflag(target)
@@ -662,6 +709,19 @@ function get_implicitmodulesflag(target)
         _g.implicitmodulesflag = implicitmodulesflag or false
     end
     return implicitmodulesflag or nil
+end
+
+function get_implicitmodulemapsflag(target)
+    local implicitmodulemapsflag = _g.implicitmodulemapsflag
+    if implicitmodulemapsflag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-fimplicit-module-maps", "cxxflags", {flagskey = "clang_implicit_module_map"}) then
+            implicitmodulemapsflag = "-fimplicit-module-maps"
+        end
+        assert(implicitmodulemapsflag, "compiler(clang): does not support c++ module!")
+        _g.implicitmodulemapsflag = implicitmodulemapsflag or false
+    end
+    return implicitmodulemapsflag or nil
 end
 
 function get_noimplicitmodulemapsflag(target)
@@ -720,8 +780,9 @@ function has_headerunitsupport(target)
     local support_headerunits = _g.support_headerunits
     if support_headerunits == nil then
         local compinst = target:compiler("cxx")
-        if compinst:has_flags(get_modulesflag(target) .. " -std=c++20 -x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
-           compinst:has_flags(get_modulesflag(target) .. " -std=c++20 -x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
+        local modulesflag, modulestsflag = get_modulesflag(target)
+        if compinst:has_flags(modulesflag or moduletsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
+           compinst:has_flags(modulesflag or moduletsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
             support_headerunits = true
         end
         _g.support_headerunits = support_headerunits or false
@@ -745,7 +806,7 @@ function get_requiresflags(target, requires)
                 already_mapped_modules[name] = true
                 table.insert(flags, modulemap_.flag)
                 if modulemap_.deps then
-                    table.shallow_join2(flags, modulemap_.deps)
+                    table.join2(flags, modulemap_.deps)
                 end
                 goto continue
             end
@@ -757,7 +818,7 @@ function get_requiresflags(target, requires)
             already_mapped_modules[name] = true
             table.insert(flags, modulemap.flag)
             if modulemap.deps then
-                table.shallow_join2(flags, modulemap.deps)
+                table.join2(flags, modulemap.deps)
             end
             goto continue
         end
