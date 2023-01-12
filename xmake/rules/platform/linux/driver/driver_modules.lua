@@ -140,6 +140,14 @@ module_exit(hello_exit);
                             end
                             has_cflag = true
                             include_cflag = nil
+                        elseif cflag:startswith("-fplugin=") then
+                            -- @see https://github.com/xmake-io/xmake/issues/3279
+                            local plugindir = cflag:sub(10)
+                            if not path.is_absolute(plugindir) then
+                                plugindir = path.absolute(plugindir, sdkdir)
+                            end
+                            cflag = "-fplugin=" .. plugindir
+                            has_cflag = true
                         end
                         if has_cflag then
                             cflags = cflags or {}
