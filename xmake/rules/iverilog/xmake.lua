@@ -34,17 +34,73 @@ rule("iverilog.binary")
         local toolchain = assert(target:toolchain("iverilog"), 'we need set_toolchains("iverilog") in target("%s")', target:name())
         local iverilog = assert(toolchain:config("iverilog"), "iverilog not found!")
 
-        -- compile wave file
         local targetfile = target:targetfile()
         local targetdir = path.directory(targetfile)
         local argv = {"-o", targetfile}
         local sourcebatch = target:sourcebatches()["iverilog.binary"]
         local sourcefiles = table.wrap(sourcebatch.sourcefiles)
         assert(#sourcefiles > 0, "no source files!")
-        local extension = path.extension(sourcefiles[1])
-        if extension == ".vhd" then
-            table.insert(argv, "-g2012")
+
+        -- get languages
+        --
+        -- Select  the  Verilog language generation to support in the compiler.
+        -- This selects between IEEE1364-1995, IEEE1364-2001, IEEE1364-2005, IEEE1800-2005, IEEE1800-2009, IEEE1800-2012.
+        --
+        local language_ieee
+        local languages = target:get("languages")
+        if languages then
+            for _, language in ipairs(languages) do
+                if language:startswith("IEEE") then
+                    language_ieee = language
+                    break
+                end
+            end
         end
+        if language_ieee then
+            local maps = {
+                ["IEEE1364-1995"] = "-g1995",
+                ["IEEE1364-2001"] = "-g2001",
+                ["IEEE1364-2005"] = "-g2005",
+                ["IEEE1800-2005"] = "-g2005-sv",
+                ["IEEE1800-2009"] = "-g2009",
+                ["IEEE1800-2012"] = "-g2012",
+            }
+            local flag = maps[language_ieee]
+            if flag then
+                table.insert(argv, flag)
+            else
+                assert("unknown language(%s) for iverilog!", language_ieee)
+            end
+        else
+            local extension = path.extension(sourcefiles[1])
+            if extension == ".vhd" then
+                table.insert(argv, "-g2012")
+            end
+        end
+
+        -- get defines
+        local defines = target:get("defines")
+        if defines then
+            for _, define in ipairs(defines) do
+                table.insert(argv, "-D" .. define)
+            end
+        end
+
+        -- get includedirs
+        local includedirs = target:get("includedirs")
+        if includedirs then
+            for _, includedir in ipairs(includedirs) do
+                table.insert(argv, path(includedir, function (v) return "-I" .. v end))
+            end
+        end
+
+        -- get flags
+        local flags = target:values("iverilog.flags")
+        if flags then
+            table.join2(argv, flags)
+        end
+
+        -- do build
         table.join2(argv, sourcefiles)
         batchcmds:show_progress(opt.progress, "${color.build.target}linking.iverilog %s", path.filename(targetfile))
         batchcmds:mkdir(targetdir)
