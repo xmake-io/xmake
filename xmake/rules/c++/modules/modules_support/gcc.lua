@@ -206,9 +206,9 @@ function generate_dependencies(target, sourcebatch, opt)
                     local compinst = target:compiler("cxx")
                     local compflags = compinst:compflags({sourcefile = file, target = target})
                     local flags = {}
-                    for _, flag in pairs(compflags) do
+                    for _, flag in ipairs(compflags) do
                         if flag:startswith("-std") or (flag:startswith("-f") and not flag:startswith("-fmodules")) or flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") then
-                            table.append(flags, flag)
+                            table.insert(flags, flag)
                         end
                     end
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
