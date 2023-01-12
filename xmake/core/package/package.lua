@@ -475,12 +475,13 @@ end
 -- - library(default)
 --
 function _instance:kind()
-    local kind = self:get("kind")
+    local kind
+    local requireinfo = self:requireinfo()
+    if requireinfo then
+        kind = requireinfo.kind
+    end
     if not kind then
-        local requireinfo = self:requireinfo()
-        if requireinfo then
-            kind = requireinfo.kind
-        end
+        kind = self:get("kind")
     end
     return kind
 end
