@@ -6,6 +6,10 @@
 
 * [#3228](https://github.com/xmake-io/xmake/pull/3228): Add support of importing modules from packages
 
+### Changes
+
+* [#3225](https://github.com/xmake-io/xmake/pull/3225): Improve clang libc++ module support
+
 ### Bugs fixed
 
 * [#3229](https://github.com/xmake-io/xmake/issues/3229): Fix find rc.exe for vs2015
@@ -1500,6 +1504,10 @@
 ### 新特性
 
 * [#3228](https://github.com/xmake-io/xmake/pull/3228): C++ modules 的安装发布，以及从包中导入 C++ modules 支持
+
+### 改进
+
+* [#3225](https://github.com/xmake-io/xmake/pull/3225): 改进 clang libc++ 模块支持
 
 ### Bugs 修复
 
