@@ -39,7 +39,12 @@ rule("iverilog.binary")
         local targetdir = path.directory(targetfile)
         local argv = {"-o", targetfile}
         local sourcebatch = target:sourcebatches()["iverilog.binary"]
-        local sourcefiles = sourcebatch.sourcefiles
+        local sourcefiles = table.wrap(sourcebatch.sourcefiles)
+        assert(#sourcefiles > 0, "no source files!")
+        local extension = path.extension(sourcefiles[1])
+        if extension == ".vhd" then
+            table.insert(argv, "-g2012")
+        end
         table.join2(argv, sourcefiles)
         batchcmds:show_progress(opt.progress, "${color.build.target}linking.iverilog %s", path.filename(targetfile))
         batchcmds:mkdir(targetdir)
