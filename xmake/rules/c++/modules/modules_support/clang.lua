@@ -236,6 +236,7 @@ end
 function generate_dependencies(target, sourcebatch, opt)
     local changed = false
     local cachedir = common.modules_cachedir(target)
+    local projectdir = os.projectdir()
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
@@ -361,7 +362,6 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
 
     -- build headerunits
-    local projectdir = os.projectdir()
     local depmtime = 0
     for i, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
