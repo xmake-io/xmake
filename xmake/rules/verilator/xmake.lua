@@ -24,6 +24,70 @@ rule("verilator.binary")
         target:set("kind", "binary")
     end)
 
+    on_config(function (target)
+        local toolchain = assert(target:toolchain("verilator"), 'we need set_toolchains("verilator") in target("%s")', target:name())
+        local verilator = assert(toolchain:config("verilator"), "verilator not found!")
+        local autogendir = path.join(target:autogendir(), "rules", "verilator")
+        local tmpdir = os.tmpfile() .. ".dir"
+        local cmakefile = path.join(tmpdir, "test.cmake")
+        local sourcefile = path.join(tmpdir, "main.v")
+        local argv = {"--cc", "--make", "cmake", "--prefix", "test", "--Mdir", tmpdir, sourcefile}
+        io.writefile(sourcefile, [[
+module hello;
+  initial begin
+    $display("hello world!");
+    $finish ;
+  end
+endmodule]])
+        os.mkdir(tmpdir)
+        os.runv(verilator, argv)
+
+        -- parse some configurations from cmakefile
+        local verilator_root
+        io.gsub(cmakefile, "set%((%S-) (.-)%)", function (key, values)
+            if key == "VERILATOR_ROOT" then
+                verilator_root = values:match("\"(.-)\" CACHE PATH")
+                if not verilator_root then
+                    verilator_root = values:match("(.-) CACHE PATH")
+                end
+            end
+        end)
+        assert(verilator_root, "the verilator root directory not found!")
+
+        -- add includedirs
+        target:add("includedirs", autogendir)
+        target:add("includedirs", path.join(verilator_root, "include"))
+        target:add("includedirs", path.join(verilator_root, "include", "vltstd"))
+
+        -- set languages
+        local languages = target:get("languages")
+        local cxxlang = false
+        for _, lang in ipairs(languages) do
+            if lang:startswith("xx") or lang:startswith("++") then
+                cxxlang = true
+                break
+            end
+        end
+        if not cxxlang then
+            target:set("languages", "c++20")
+        end
+
+        -- TODO add defines
+        target:add("defines", "VM_COVERAGE=0")
+        target:add("defines", "VM_SC=0")
+        target:add("defines", "VM_TRACE=1")
+        target:add("defines", "VM_TRACE_FST=0")
+        target:add("defines", "VM_TRACE_VCD=1")
+
+        -- add syslinks
+        if target:is_plat("linux", "macosx") then
+            target:add("syslinks", "pthread")
+            target:add("ldflags", "-fcoroutines")
+        end
+
+        os.rm(tmpdir)
+    end)
+
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         local toolchain = assert(target:toolchain("verilator"), 'we need set_toolchains("verilator") in target("%s")', target:name())
         local verilator = assert(toolchain:config("verilator"), "verilator not found!")
@@ -52,7 +116,6 @@ rule("verilator.binary")
         local verilator = assert(toolchain:config("verilator"), "verilator not found!")
         local autogendir = path.join(target:autogendir(), "rules", "verilator")
         local targetname = target:name()
-        local cmakefile = path.join(autogendir, targetname .. ".cmake")
         local dependfile = path.join(autogendir, targetname .. ".build.d")
 
         -- TODO we need get correct files list
