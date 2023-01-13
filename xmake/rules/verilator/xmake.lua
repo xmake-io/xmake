@@ -24,6 +24,25 @@ rule("verilator.binary")
         target:set("kind", "binary")
     end)
 
-    on_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
+    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
+        local toolchain = assert(target:toolchain("verilator"), 'we need set_toolchains("verilator") in target("%s")', target:name())
+        local verilator = assert(toolchain:config("verilator"), "verilator not found!")
+        local autogendir = path.join(target:autogendir(), "rules", "verilator")
+        local targetname = target:name()
+        local cmakefile = path.join(autogendir, targetname .. ".cmake")
+
+        local argv = {"--cc", "--make", "cmake", "--prefix", targetname, "--Mdir", path(autogendir)}
+        local sourcefiles = sourcebatch.sourcefiles
+        for _, sourcefile in ipairs(sourcefiles) do
+            batchcmds:show_progress(opt.progress, "${color.build.target}compiling.verilator %s", path.filename(sourcefile))
+        end
+        table.join2(argv, sourcefiles)
+
+        -- generate c++ sourcefiles
+        batchcmds:mkdir(autogendir)
+        batchcmds:vrunv(verilator, argv)
+        batchcmds:add_depfiles(sourcefiles)
+        batchcmds:set_depmtime(os.mtime(cmakefile))
+        batchcmds:set_depcache(target:dependfile(cmakefile))
     end)
 
