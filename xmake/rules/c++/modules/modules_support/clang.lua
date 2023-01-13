@@ -152,9 +152,9 @@ end
 
 -- do compile for batchcmds
 -- @note we need use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
-function _batchcmds_compile(batchcmds, target, flags)
+function _batchcmds_compile(batchcmds, target, sourcefile, flags)
     local compinst = target:compiler("cxx")
-    local compflags = compinst:compflags({target = target})
+    local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
     batchcmds:compilev(table.join(compflags or {}, flags), {compiler = compinst, sourcekind = "cxx"})
 end
 
@@ -163,7 +163,7 @@ function _build_modulefile(target, sourcefile, opt)
     local objectfile = opt.objectfile
     local dependfile = opt.dependfile
     local compinst = compiler.load("cxx", {target = target})
-    local compflags = compinst:compflags({target = target})
+    local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
     -- need build this object?
@@ -253,28 +253,15 @@ function generate_dependencies(target, sourcebatch, opt)
             local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
             common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                 local compinst = target:compiler("cxx")
-                local defines = {}
-                for _, define in pairs(target:get("defines")) do
-                    table.insert(defines, "-D" .. define)
-                end
-                local includedirs = table.join({}, target:get("includedirs"))
-                for _, dep in ipairs(target:orderdeps()) do
-                    local includedir = dep:get("sysincludedirs") or dep:get("includedirs")
-                    if includedir then
-                        table.join2(includedirs, includedir)
+                local compflags = compinst:compflags({sourcefile = file, target = target})
+                local flags = {}
+                for _, flag in ipairs(compflags) do
+                    if flag:startswith("-stdlib") or (flag:startswith("-f") and not flag:startswith("-fmodules")) or flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") then
+                        table.insert(flags, flag)
                     end
-                end
-                for _, pkg in pairs(target:pkgs()) do
-                    local includedir = pkg:get("sysincludedirs") or pkg:get("includedirs")
-                    if includedir then
-                        table.join2(includedirs, includedir)
-                    end
-                end
-                for i, includedir in pairs(includedirs) do
-                    includedirs[i] = "-I" .. includedir
                 end
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                os.vrunv(compinst:program(), table.join(includedirs, defines, {"-E", "-x", "c++", file, "-o", ifile}))
+                os.vrunv(compinst:program(), table.join(flags, {"-E", "-x", "c++", file, "-o", ifile}))
                 local content = io.readfile(ifile)
                 os.rm(ifile)
                 return content
@@ -332,7 +319,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
     end, {rootjob = opt.rootjob})
 
     -- build headerunits
-    for i, headerunit in ipairs(headerunits) do
+    for _, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         if not os.isfile(bmifile) then
             batchjobs:addjob(headerunit.name, function (index, total)
@@ -363,7 +350,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
 
     -- build headerunits
     local depmtime = 0
-    for i, headerunit in ipairs(headerunits) do
+    for _, headerunit in ipairs(headerunits) do
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         -- don't build same header unit at the same time
         if not common.memcache():get2(headerunit.name, "building") then
@@ -629,7 +616,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                         {"-x", "c++-module", "--precompile", "-c", path(cppfile), "-o", path(provide.bmi)}))
                     _add_module_to_mapper(target, name, provide.bmi)
                 end
-                _batchcmds_compile(batchcmds, target, table.join(flags,
+                _batchcmds_compile(batchcmds, target, file, table.join(flags,
                     not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}))
                 target:add("objectfiles", objectfile)
             elseif requiresflags then

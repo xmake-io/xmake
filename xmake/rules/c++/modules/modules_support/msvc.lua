@@ -64,17 +64,18 @@ function _get_modulemap_from_mapper(target)
 end
 
 -- do compile
-function _compile(target, flags)
+function _compile(target, flags, sourcefile)
     local compinst = target:compiler("cxx")
     local msvc = target:toolchain("msvc")
-    os.vrunv(compinst:program(), winos.cmdargv(table.join(compinst:compflags({target = target}), flags)), {envs = msvc:runenvs()})
+    local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
+    os.vrunv(compinst:program(), winos.cmdargv(table.join(compflags or {}, flags)), {envs = msvc:runenvs()})
 end
 
 -- do compile for batchcmds
 -- @note we need use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
-function _batchcmds_compile(batchcmds, target, flags)
+function _batchcmds_compile(batchcmds, target, flags, sourcefile)
     local compinst = target:compiler("cxx")
-    local compflags = compinst:compflags({target = target})
+    local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
     batchcmds:compilev(table.join(compflags or {}, flags), {compiler = compinst, sourcekind = "cxx"})
 end
 
@@ -99,7 +100,7 @@ function _build_modulefile(target, sourcefile, opt)
     local objectfile = opt.objectfile
     local dependfile = opt.dependfile
     local compinst = compiler.load("cxx", {target = target})
-    local compflags = compinst:compflags({target = target})
+    local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
     -- need build this object?
@@ -198,35 +199,14 @@ function generate_dependencies(target, sourcebatch, opt)
             local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".json")
             if scandependenciesflag then
                 local flags = {jsonfile, sourcefile, "-Fo" .. target:objectfile(sourcefile)}
-                _compile(target, table.join(common_flags, flags))
+                _compile(target, table.join(common_flags, flags), sourcefile)
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                     local compinst = target:compiler("cxx")
-                    local defines = {}
-                    for _, define in ipairs(target:get("defines")) do
-                        table.insert(defines, "/D" .. define)
-                    end
-                    local _includedirs = table.join({}, target:get("includedirs"))
-                    for _, dep in ipairs(target:orderdeps()) do
-                        local includedir = dep:get("sysincludedirs") or dep:get("includedirs")
-                        if includedir then
-                            table.join2(_includedirs, includedir)
-                        end
-                    end
-                    for _, pkg in pairs(target:pkgs()) do
-                        local includedir = pkg:get("sysincludedirs") or pkg:get("includedirs")
-                        if includedir then
-                            table.join2(_includedirs, includedir)
-                        end
-                    end
-                    local includedirs = {}
-                    for _, includedir in pairs(_includedirs) do
-                        table.insert(includedirs, "/I")
-                        table.insert(includedirs, includedir)
-                    end
+                    local compflags = compinst:compflags({sourcefile = file, target = target})
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    os.vrunv(compinst:program(), table.join(includedirs, defines,
-                        {"/nologo", get_cppversionflag(target), "/P", "-TP", file,  "/Fi" .. ifile}), {envs = msvc:runenvs()})
+                    os.vrunv(compinst:program(), table.join(compflags,
+                        {"/P", "-TP", file,  "/Fi" .. ifile}), {envs = msvc:runenvs()})
                     local content = io.readfile(ifile)
                     os.rm(ifile)
                     return content
@@ -592,7 +572,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
 
                 batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
                 batchcmds:mkdir(path.directory(objectfile))
-                _batchcmds_compile(batchcmds, target, table.join(flags, requiresflags or {}))
+                _batchcmds_compile(batchcmds, target, table.join(flags, requiresflags or {}), cppfile)
                 batchcmds:add_depfiles(cppfile)
                 _add_objectfile_to_link_arguments(target, path.translate(objectfile))
                 if provide then
