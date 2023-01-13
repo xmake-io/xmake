@@ -18,6 +18,7 @@
 -- @file        xmake.lua
 --
 
+-- @see https://github.com/xmake-io/xmake/issues/3257
 rule("iverilog.binary")
     set_extensions(".v", ".vhd")
     on_load(function (target)
