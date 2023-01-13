@@ -30,8 +30,9 @@ rule("verilator.binary")
         local autogendir = path.join(target:autogendir(), "rules", "verilator")
         local targetname = target:name()
         local cmakefile = path.join(autogendir, targetname .. ".cmake")
+        local dependfile = cmakefile .. ".d"
 
-        local argv = {"--cc", "--make", "cmake", "--prefix", targetname, "--Mdir", path(autogendir)}
+        local argv = {"--cc", "--compiler", "gcc", "--make", "cmake", "--prefix", targetname, "--Mdir", path(autogendir)}
         local sourcefiles = sourcebatch.sourcefiles
         for _, sourcefile in ipairs(sourcefiles) do
             batchcmds:show_progress(opt.progress, "${color.build.target}compiling.verilator %s", path.filename(sourcefile))
@@ -43,6 +44,25 @@ rule("verilator.binary")
         batchcmds:vrunv(verilator, argv)
         batchcmds:add_depfiles(sourcefiles)
         batchcmds:set_depmtime(os.mtime(cmakefile))
-        batchcmds:set_depcache(target:dependfile(cmakefile))
+        batchcmds:set_depcache(dependfile)
+    end)
+
+    on_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
+        local toolchain = assert(target:toolchain("verilator"), 'we need set_toolchains("verilator") in target("%s")', target:name())
+        local verilator = assert(toolchain:config("verilator"), "verilator not found!")
+        local autogendir = path.join(target:autogendir(), "rules", "verilator")
+        local targetname = target:name()
+        local cmakefile = path.join(autogendir, targetname .. ".cmake")
+        local dependfile = path.join(autogendir, targetname .. ".build.d")
+
+        local sourcefiles = os.files(path.join(autogendir, "*.cpp"))
+        for _, sourcefile in ipairs(sourcefiles) do
+            local objectfile = target:objectfile(sourcefile)
+            batchcmds:compile(sourcefile, objectfile)
+            table.insert(target:objectfiles(), objectfile)
+        end
+        batchcmds:add_depfiles(sourcefiles)
+        batchcmds:set_depmtime(os.mtime(dependfile))
+        batchcmds:set_depcache(dependfile)
     end)
 
