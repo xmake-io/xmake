@@ -115,9 +115,17 @@ module_exit(hello_exit);
                     local include_cflag = false
                     for _, cflag in ipairs(line:split("%s+")) do
                         local has_cflag = false
-                        if cflag:startswith("-f") or cflag:startswith("-m")
-                        or (cflag:startswith("-W") and not cflag:startswith("-Wp,-MMD,") and not cflag:startswith("-Wp,-MD,"))
-                        or (cflag:startswith("-D") and not cflag:find("KBUILD_MODNAME=") and not cflag:find("KBUILD_BASENAME=")) then
+                        if cflag:startswith("-fplugin=") then
+                            -- @see https://github.com/xmake-io/xmake/issues/3279
+                            local plugindir = cflag:sub(10)
+                            if not path.is_absolute(plugindir) then
+                                plugindir = path.absolute(plugindir, sdkdir)
+                            end
+                            cflag = "-fplugin=" .. plugindir
+                            has_cflag = true
+                        elseif cflag:startswith("-f") or cflag:startswith("-m")
+                            or (cflag:startswith("-W") and not cflag:startswith("-Wp,-MMD,") and not cflag:startswith("-Wp,-MD,"))
+                            or (cflag:startswith("-D") and not cflag:find("KBUILD_MODNAME=") and not cflag:find("KBUILD_BASENAME=")) then
                             has_cflag = true
                             local macro = cflag:match("%-D\"(.+)\"") -- -D"KBUILD_XXX=xxx"
                             if macro then
@@ -140,14 +148,6 @@ module_exit(hello_exit);
                             end
                             has_cflag = true
                             include_cflag = nil
-                        elseif cflag:startswith("-fplugin=") then
-                            -- @see https://github.com/xmake-io/xmake/issues/3279
-                            local plugindir = cflag:sub(10)
-                            if not path.is_absolute(plugindir) then
-                                plugindir = path.absolute(plugindir, sdkdir)
-                            end
-                            cflag = "-fplugin=" .. plugindir
-                            has_cflag = true
                         end
                         if has_cflag then
                             cflags = cflags or {}
