@@ -32,7 +32,7 @@ rule("verilator.binary")
         local cmakefile = path.join(autogendir, targetname .. ".cmake")
         local dependfile = cmakefile .. ".d"
 
-        local argv = {"--cc", "--compiler", "gcc", "--make", "cmake", "--prefix", targetname, "--Mdir", path(autogendir)}
+        local argv = {"--cc", "--make", "cmake", "--prefix", targetname, "--Mdir", path(autogendir)}
         local sourcefiles = sourcebatch.sourcefiles
         for _, sourcefile in ipairs(sourcefiles) do
             batchcmds:show_progress(opt.progress, "${color.build.target}compiling.verilator %s", path.filename(sourcefile))
@@ -55,7 +55,10 @@ rule("verilator.binary")
         local cmakefile = path.join(autogendir, targetname .. ".cmake")
         local dependfile = path.join(autogendir, targetname .. ".build.d")
 
+        -- TODO we need get correct files list
         local sourcefiles = os.files(path.join(autogendir, "*.cpp"))
+
+        -- do build
         for _, sourcefile in ipairs(sourcefiles) do
             local objectfile = target:objectfile(sourcefile)
             batchcmds:compile(sourcefile, objectfile)
