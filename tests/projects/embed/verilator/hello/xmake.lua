@@ -1,0 +1,5 @@
+add_requires("verilator")
+target("hello")
+    add_rules("verilator.binary")
+    set_toolchains("@verilator")
+    add_files("src/*.v")
