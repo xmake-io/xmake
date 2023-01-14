@@ -18,6 +18,54 @@
 -- @file        verilator.lua
 --
 
+-- imports
+import("utils.progress")
+import("core.project.depend")
+import("private.action.build.object", {alias = "build_objectfiles"})
+
+-- parse sourcefiles from cmakefile
+function _get_sourcefiles_from_cmake(target, cmakefile)
+    local global_classes = {}
+    local classefiles_slow = {}
+    local classefiles_fast = {}
+    local supportfiles_slow = {}
+    local supportfiles_fast = {}
+    local targetname = target:name()
+    local verilator_root = assert(target:data("verilator.root"), "no verilator_root!")
+    io.gsub(cmakefile, "set%((%S-) (.-)%)", function (key, values)
+        if key == targetname .. "_GLOBAL" then
+            -- get global class source files
+            -- set(hello_GLOBAL "${VERILATOR_ROOT}/include/verilated.cpp" "${VERILATOR_ROOT}/include/verilated_threads.cpp")
+            for classfile in values:gmatch("\"(.-)\"") do
+                classfile = classfile:gsub("%${VERILATOR_ROOT}", verilator_root)
+                if os.isfile(classfile) then
+                    table.insert(global_classes, classfile)
+                end
+            end
+        elseif key == targetname .. "_CLASSES_SLOW" then
+            for classfile in values:gmatch("\"(.-)\"") do
+                table.insert(classefiles_slow, classfile)
+            end
+        elseif key == targetname .. "_CLASSES_FAST" then
+            for classfile in values:gmatch("\"(.-)\"") do
+                table.insert(classefiles_fast, classfile)
+            end
+        elseif key == targetname .. "_SUPPORT_SLOW" then
+            for classfile in values:gmatch("\"(.-)\"") do
+                table.insert(supportfiles_slow, classfile)
+            end
+        elseif key == targetname .. "_SUPPORT_FAST" then
+            for classfile in values:gmatch("\"(.-)\"") do
+                table.insert(supportfiles_fast, classfile)
+            end
+        end
+    end)
+
+    -- get compiled source files
+    local sourcefiles = table.join(global_classes, classefiles_slow, classefiles_fast, supportfiles_slow, supportfiles_fast)
+    return sourcefiles
+end
+
 function config(target)
     local toolchain = assert(target:toolchain("verilator"), 'we need set_toolchains("verilator") in target("%s")', target:name())
     local verilator = assert(toolchain:config("verilator"), "verilator not found!")
@@ -108,6 +156,53 @@ endmodule]])
     os.rm(tmpdir)
 end
 
+function build_cppfiles(target, batchjobs, sourcebatch, opt)
+    local toolchain = assert(target:toolchain("verilator"), 'we need set_toolchains("verilator") in target("%s")', target:name())
+    local verilator = assert(toolchain:config("verilator"), "verilator not found!")
+    local autogendir = path.join(target:autogendir(), "rules", "verilator")
+    local targetname = target:name()
+    local cmakefile = path.join(autogendir, targetname .. ".cmake")
+
+    -- build verilog files
+    depend.on_changed(function()
+        local argv = {"--cc", "--make", "cmake", "--prefix", targetname, "--Mdir", autogendir}
+        local flags = target:values("verilator.flags")
+        if flags then
+            table.join2(argv, flags)
+        end
+        local sourcefiles = sourcebatch.sourcefiles
+        for _, sourcefile in ipairs(sourcefiles) do
+            progress.show(opt.progress or 0, "${color.build.object}compiling.verilog %s", sourcefile)
+        end
+        table.join2(argv, sourcefiles)
+
+        -- generate c++ sourcefiles
+        os.vrunv(verilator, argv)
+
+    end, {dependfile = cmakefile .. ".d",
+          files = sourcebatch.sourcefiles,
+          lastmtime = os.mtime(cmakefile)})
+
+    -- get compiled source files
+    local sourcefiles = _get_sourcefiles_from_cmake(target, cmakefile)
+
+    -- do build
+    local sourcebatch_cpp = {
+        rulename = "c++.build",
+        sourcekind = "cxx",
+        sourcefiles = sourcefiles,
+        objectfiles = {},
+        dependfiles = {}}
+    for _, sourcefile in ipairs(sourcefiles) do
+        local objectfile = target:objectfile(sourcefile)
+        local dependfile = target:objectfile(objectfile)
+        table.insert(target:objectfiles(), objectfile)
+        table.insert(sourcebatch_cpp.objectfiles, objectfile)
+        table.insert(sourcebatch_cpp.dependfiles, dependfile)
+    end
+    build_objectfiles(target, batchjobs, sourcebatch_cpp, opt)
+end
+
 function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     local toolchain = assert(target:toolchain("verilator"), 'we need set_toolchains("verilator") in target("%s")', target:name())
     local verilator = assert(toolchain:config("verilator"), "verilator not found!")
@@ -123,7 +218,7 @@ function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     end
     local sourcefiles = sourcebatch.sourcefiles
     for _, sourcefile in ipairs(sourcefiles) do
-        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.verilog %s", path.filename(sourcefile))
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.verilog %s", sourcefile)
     end
     table.join2(argv, sourcefiles)
 
@@ -141,45 +236,9 @@ function buildcmd_cppfiles(target, batchcmds, sourcebatch, opt)
     local targetname = target:name()
     local cmakefile = path.join(autogendir, targetname .. ".cmake")
     local dependfile = path.join(autogendir, targetname .. ".build.d")
-    local verilator_root = assert(target:data("verilator.root"), "no verilator_root!")
-
-    -- parse some configurations from cmakefile
-    local global_classes = {}
-    local classefiles_slow = {}
-    local classefiles_fast = {}
-    local supportfiles_slow = {}
-    local supportfiles_fast = {}
-    io.gsub(cmakefile, "set%((%S-) (.-)%)", function (key, values)
-        if key == targetname .. "_GLOBAL" then
-            -- get global class source files
-            -- set(hello_GLOBAL "${VERILATOR_ROOT}/include/verilated.cpp" "${VERILATOR_ROOT}/include/verilated_threads.cpp")
-            for classfile in values:gmatch("\"(.-)\"") do
-                classfile = classfile:gsub("%${VERILATOR_ROOT}", verilator_root)
-                if os.isfile(classfile) then
-                    table.insert(global_classes, classfile)
-                end
-            end
-        elseif key == targetname .. "_CLASSES_SLOW" then
-            for classfile in values:gmatch("\"(.-)\"") do
-                table.insert(classefiles_slow, classfile)
-            end
-        elseif key == targetname .. "_CLASSES_FAST" then
-            for classfile in values:gmatch("\"(.-)\"") do
-                table.insert(classefiles_fast, classfile)
-            end
-        elseif key == targetname .. "_SUPPORT_SLOW" then
-            for classfile in values:gmatch("\"(.-)\"") do
-                table.insert(supportfiles_slow, classfile)
-            end
-        elseif key == targetname .. "_SUPPORT_FAST" then
-            for classfile in values:gmatch("\"(.-)\"") do
-                table.insert(supportfiles_fast, classfile)
-            end
-        end
-    end)
 
     -- get compiled source files
-    local sourcefiles = table.join(global_classes, classefiles_slow, classefiles_fast, supportfiles_slow, supportfiles_fast)
+    local sourcefiles = _get_sourcefiles_from_cmake(target, cmakefile)
 
     -- do build
     for _, sourcefile in ipairs(sourcefiles) do

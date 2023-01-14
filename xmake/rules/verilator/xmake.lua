@@ -29,16 +29,13 @@ rule("verilator.binary")
         import("verilator").config(target)
     end)
 
+    on_build_files(function (target, batchjobs, sourcebatch, opt)
+        import("verilator").build_cppfiles(target, batchjobs, sourcebatch, opt)
+    end, {batch = true, distcc = true})
+
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         import("verilator").buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     end)
-
-    --[[
-    on_build_files(function (target, batchjobs, sourcebatch, opt)
-        import("private.action.build.object", {alias = "build_object_batchjobs"})
-
-    end, {batch = true, distcc = true})
-    ]]
 
     on_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
         import("verilator").buildcmd_cppfiles(target, batchcmds, sourcebatch, opt)
