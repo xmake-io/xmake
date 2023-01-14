@@ -76,7 +76,15 @@ function config(target)
     local argv = {"--cc", "--make", "cmake", "--prefix", "test", "--Mdir", tmpdir, sourcefile}
     local flags = target:values("verilator.flags")
     if flags then
-        table.join2(argv, flags)
+        for _, flag in ipairs(flags) do
+            -- we need ignore some unused flags in this stub testing
+            --
+            -- e.g. add_values("verilator.flags", "-GWIDTH=4", "--trace")
+            -- error: %Error: Parameters from the command line were not found in the design: WIDTH
+            if not flag:startswith("-G") then
+                table.insert(argv, flag)
+            end
+        end
     end
     io.writefile(sourcefile, [[
 module hello;
