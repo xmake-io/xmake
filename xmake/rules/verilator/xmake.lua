@@ -152,6 +152,10 @@ endmodule]])
 
         -- parse some configurations from cmakefile
         local global_classes = {}
+        local classefiles_slow = {}
+        local classefiles_fast = {}
+        local supportfiles_slow = {}
+        local supportfiles_fast = {}
         io.gsub(cmakefile, "set%((%S-) (.-)%)", function (key, values)
             if key == targetname .. "_GLOBAL" then
                 -- get global class source files
@@ -162,12 +166,27 @@ endmodule]])
                         table.insert(global_classes, classfile)
                     end
                 end
+            elseif key == targetname .. "_CLASSES_SLOW" then
+                for classfile in values:gmatch("\"(.-)\"") do
+                    table.insert(classefiles_slow, classfile)
+                end
+            elseif key == targetname .. "_CLASSES_FAST" then
+                for classfile in values:gmatch("\"(.-)\"") do
+                    table.insert(classefiles_fast, classfile)
+                end
+            elseif key == targetname .. "_SUPPORT_SLOW" then
+                for classfile in values:gmatch("\"(.-)\"") do
+                    table.insert(supportfiles_slow, classfile)
+                end
+            elseif key == targetname .. "_SUPPORT_FAST" then
+                for classfile in values:gmatch("\"(.-)\"") do
+                    table.insert(supportfiles_fast, classfile)
+                end
             end
         end)
 
         -- get compiled source files
-        local sourcefiles = os.files(path.join(autogendir, "*.cpp"))
-        table.join2(sourcefiles, global_classes)
+        local sourcefiles = table.join(global_classes, classefiles_slow, classefiles_fast, supportfiles_slow, supportfiles_fast)
 
         -- do build
         for _, sourcefile in ipairs(sourcefiles) do
