@@ -144,7 +144,7 @@ endmodule]])
     end
 
     -- add defines for switches
-    for k, v in pairs(switches) do
+    for k, v in table.orderpairs(switches) do
         target:add("defines", "VM_" .. k .. "=" .. v)
     end
 
