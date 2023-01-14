@@ -33,6 +33,10 @@ rule("verilator.binary")
         local cmakefile = path.join(tmpdir, "test.cmake")
         local sourcefile = path.join(tmpdir, "main.v")
         local argv = {"--cc", "--make", "cmake", "--prefix", "test", "--Mdir", tmpdir, sourcefile}
+        local flags = target:values("verilator.flags")
+        if flags then
+            table.join2(argv, flags)
+        end
         io.writefile(sourcefile, [[
 module hello;
   initial begin
@@ -45,7 +49,7 @@ endmodule]])
 
         -- parse some configurations from cmakefile
         local verilator_root
-        local global_classes
+        local switches = {}
         local targetname = target:name()
         io.gsub(cmakefile, "set%((%S-) (.-)%)", function (key, values)
             if key == "VERILATOR_ROOT" then
@@ -53,7 +57,26 @@ endmodule]])
                 if not verilator_root then
                     verilator_root = values:match("(.-) CACHE PATH")
                 end
+            elseif key == "test_SC" then
+                -- SystemC output mode?  0/1 (from --sc)
+                switches.SC = values:trim()
+            elseif key == "test_COVERAGE" then
+                -- Coverage output mode?  0/1 (from --coverage)
+                switches.COVERAGE = values:trim()
+            elseif key == "test_TIMING" then
+                -- Timing mode?  0/1 (from --timing)
+                switches.TIMING = values:trim()
+            elseif key == "test_THREADS" then
+                -- Threaded output mode?  1/N threads (from --threads)
+                switches.THREADS = values:trim()
+            elseif key == "test_TRACE_VCD" then
+                -- VCD Tracing output mode?  0/1 (from --trace)
+                switches.TRACE_VCD = values:trim()
+            elseif key == "test_TRACE_FST" then
+                -- FST Tracing output mode? 0/1 (from --trace-fst)
+                switches.TRACE_FST = values:trim()
             end
+
         end)
         assert(verilator_root, "the verilator root directory not found!")
         target:data_set("verilator.root", verilator_root)
@@ -79,15 +102,13 @@ endmodule]])
             target:set("languages", "c++20")
         end
 
-        -- TODO add defines
-        target:add("defines", "VM_COVERAGE=0")
-        target:add("defines", "VM_SC=0")
-        target:add("defines", "VM_TRACE=1")
-        target:add("defines", "VM_TRACE_FST=0")
-        target:add("defines", "VM_TRACE_VCD=1")
+        -- add defines for switches
+        for k, v in pairs(switches) do
+            target:add("defines", "VM_" .. k .. "=" .. v)
+        end
 
         -- add syslinks
-        if target:is_plat("linux", "macosx") then
+        if target:is_plat("linux", "macosx") and switches.THREADS == "1" then
             target:add("syslinks", "pthread")
         end
 
@@ -103,6 +124,10 @@ endmodule]])
         local dependfile = cmakefile .. ".d"
 
         local argv = {"--cc", "--make", "cmake", "--prefix", targetname, "--Mdir", path(autogendir)}
+        local flags = target:values("verilator.flags")
+        if flags then
+            table.join2(argv, flags)
+        end
         local sourcefiles = sourcebatch.sourcefiles
         for _, sourcefile in ipairs(sourcefiles) do
             batchcmds:show_progress(opt.progress, "${color.build.target}compiling.verilator %s", path.filename(sourcefile))
