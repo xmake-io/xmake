@@ -10,9 +10,9 @@ int main(int argc, char** argv) {
     char const* vcdfile = NULL;
     if (argc == 2) {
         vcdfile = argv[1];
-    } else {
-        printf("xmake run hello [vcdfile]\n");
-        return -1;
+    }
+    if (!vcdfile) {
+        vcdfile = "hello.vcd";
     }
     VerilatedContext* contextp = new VerilatedContext;
     contextp->commandArgs(argc, argv);
