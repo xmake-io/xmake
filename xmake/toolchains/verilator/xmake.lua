@@ -31,6 +31,10 @@ toolchain("verilator")
             local envs = package:get("envs")
             if envs then
                 table.join2(paths, envs.PATH)
+                local verilator_root = envs.VERILATOR_ROOT
+                if verilator_root then
+                    toolchain:add("runenvs", "VERILATOR_ROOT", table.unwrap(verilator_root))
+                end
             end
         end
         local verilator = find_tool("verilator", {paths = paths})

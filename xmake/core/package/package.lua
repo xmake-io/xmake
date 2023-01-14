@@ -934,7 +934,7 @@ function _instance:envs()
                 if path.is_absolute(value) then
                     table.insert(newvalues, value)
                 else
-                    table.insert(newvalues, path.join(self:installdir(), value))
+                    table.insert(newvalues, path.normalize(path.join(self:installdir(), value)))
                 end
             end
             values = newvalues

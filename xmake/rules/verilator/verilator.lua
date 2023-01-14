@@ -94,7 +94,7 @@ $finish ;
 end
 endmodule]])
     os.mkdir(tmpdir)
-    os.runv(verilator, argv)
+    os.runv(verilator, argv, {envs = toolchain:runenvs()})
 
     -- parse some configurations from cmakefile
     local verilator_root
@@ -185,7 +185,7 @@ function build_cppfiles(target, batchjobs, sourcebatch, opt)
         table.join2(argv, sourcefiles)
 
         -- generate c++ sourcefiles
-        os.vrunv(verilator, argv)
+        os.vrunv(verilator, argv, {envs = toolchain:runenvs()})
 
     end, {dependfile = cmakefile .. ".d",
           files = sourcebatch.sourcefiles,
