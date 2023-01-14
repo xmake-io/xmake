@@ -45,6 +45,8 @@ endmodule]])
 
         -- parse some configurations from cmakefile
         local verilator_root
+        local global_classes
+        local targetname = target:name()
         io.gsub(cmakefile, "set%((%S-) (.-)%)", function (key, values)
             if key == "VERILATOR_ROOT" then
                 verilator_root = values:match("\"(.-)\" CACHE PATH")
@@ -54,8 +56,12 @@ endmodule]])
             end
         end)
         assert(verilator_root, "the verilator root directory not found!")
+        target:data_set("verilator.root", verilator_root)
 
         -- add includedirs
+        if not os.isfile(autogendir) then
+            os.mkdir(autogendir)
+        end
         target:add("includedirs", autogendir)
         target:add("includedirs", path.join(verilator_root, "include"))
         target:add("includedirs", path.join(verilator_root, "include", "vltstd"))
@@ -83,7 +89,6 @@ endmodule]])
         -- add syslinks
         if target:is_plat("linux", "macosx") then
             target:add("syslinks", "pthread")
-            target:add("ldflags", "-fcoroutines")
         end
 
         os.rm(tmpdir)
@@ -105,7 +110,6 @@ endmodule]])
         table.join2(argv, sourcefiles)
 
         -- generate c++ sourcefiles
-        batchcmds:mkdir(autogendir)
         batchcmds:vrunv(verilator, argv)
         batchcmds:add_depfiles(sourcefiles)
         batchcmds:set_depmtime(os.mtime(cmakefile))
@@ -117,10 +121,28 @@ endmodule]])
         local verilator = assert(toolchain:config("verilator"), "verilator not found!")
         local autogendir = path.join(target:autogendir(), "rules", "verilator")
         local targetname = target:name()
+        local cmakefile = path.join(autogendir, targetname .. ".cmake")
         local dependfile = path.join(autogendir, targetname .. ".build.d")
+        local verilator_root = assert(target:data("verilator.root"), "no verilator_root!")
 
-        -- TODO we need get correct files list
+        -- parse some configurations from cmakefile
+        local global_classes = {}
+        io.gsub(cmakefile, "set%((%S-) (.-)%)", function (key, values)
+            if key == targetname .. "_GLOBAL" then
+                -- get global class source files
+                -- set(hello_GLOBAL "${VERILATOR_ROOT}/include/verilated.cpp" "${VERILATOR_ROOT}/include/verilated_threads.cpp")
+                for classfile in values:gmatch("\"(.-)\"") do
+                    classfile = classfile:gsub("%${VERILATOR_ROOT}", verilator_root)
+                    if os.isfile(classfile) then
+                        table.insert(global_classes, classfile)
+                    end
+                end
+            end
+        end)
+
+        -- get compiled source files
         local sourcefiles = os.files(path.join(autogendir, "*.cpp"))
+        table.join2(sourcefiles, global_classes)
 
         -- do build
         for _, sourcefile in ipairs(sourcefiles) do
