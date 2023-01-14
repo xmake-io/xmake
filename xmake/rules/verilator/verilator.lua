@@ -73,7 +73,7 @@ function config(target)
     local tmpdir = os.tmpfile() .. ".dir"
     local cmakefile = path.join(tmpdir, "test.cmake")
     local sourcefile = path.join(tmpdir, "main.v")
-    local argv = {"--cc", "--make", "cmake", "--prefix", "test", "--Mdir", tmpdir, sourcefile}
+    local argv = {"--cc", "--make", "cmake", "--prefix", "test", "--Mdir", tmpdir, "main.v"}
     local flags = target:values("verilator.flags")
     if flags then
         for _, flag in ipairs(flags) do
@@ -94,7 +94,9 @@ $finish ;
 end
 endmodule]])
     os.mkdir(tmpdir)
-    os.runv(verilator, argv, {envs = toolchain:runenvs()})
+    -- we just pass relative sourcefile path to solve this issue on windows.
+    -- @see https://github.com/verilator/verilator/issues/3873
+    os.runv(verilator, argv, {curdir = tmpdir, envs = toolchain:runenvs()})
 
     -- parse some configurations from cmakefile
     local verilator_root
