@@ -130,7 +130,7 @@ endmodule]])
         end
         local sourcefiles = sourcebatch.sourcefiles
         for _, sourcefile in ipairs(sourcefiles) do
-            batchcmds:show_progress(opt.progress, "${color.build.target}compiling.verilator %s", path.filename(sourcefile))
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.verilator %s", path.filename(sourcefile))
         end
         table.join2(argv, sourcefiles)
 
@@ -172,6 +172,7 @@ endmodule]])
         -- do build
         for _, sourcefile in ipairs(sourcefiles) do
             local objectfile = target:objectfile(sourcefile)
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.$(mode) %s", path.filename(sourcefile))
             batchcmds:compile(sourcefile, objectfile)
             table.insert(target:objectfiles(), objectfile)
         end
