@@ -190,7 +190,7 @@ function generate_dependencies(target, sourcebatch, opt)
             end
 
             local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
-            if depformatflag and depfileflag and depoutputflag then
+            if depformatflag and depfileflag and depoutputflag and not target:policy("build.c++.gcc.fallbackscanner") then
                 local ifile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".i"))
                 local dfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".d"))
                 local args = {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depformatflag, depfileflag .. jsonfile, depoutputflag .. target:objectfile(sourcefile), "-o", ifile}
