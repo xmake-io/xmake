@@ -197,7 +197,7 @@ function generate_dependencies(target, sourcebatch, opt)
             end
 
             local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".json")
-            if scandependenciesflag then
+            if scandependenciesflag and not target:policy("build.c++.msvc.fallbackscanner") then
                 local flags = {jsonfile, sourcefile, "-Fo" .. target:objectfile(sourcefile)}
                 _compile(target, table.join(common_flags, flags), sourcefile)
             else

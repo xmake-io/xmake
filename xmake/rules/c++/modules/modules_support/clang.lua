@@ -252,7 +252,7 @@ function generate_dependencies(target, sourcebatch, opt)
             end
 
             local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
-            if has_clangscandepssupport(target) then
+            if has_clangscandepssupport(target) and not target:policy("build.c++.clang.fallbackscanner") then
                 local clangscandeps = find_tool("clang-scan-deps")
                 local compinst = target:compiler("cxx")
                 local compflags = compinst:compflags({sourcefile = file, target = target})
