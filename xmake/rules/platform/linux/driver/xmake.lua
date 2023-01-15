@@ -30,4 +30,11 @@ rule("platform.linux.driver")
     on_link(function (target, opt)
         import("driver_modules").link(target, opt)
     end)
+    on_install(function (target)
+        import("driver_modules").install(target)
+    end)
+    on_uninstall(function (target)
+        import("driver_modules").uninstall(target)
+    end)
+
 

@@ -309,3 +309,11 @@ function link(target, opt)
 
     end, {dependfile = dependfile, lastmtime = os.mtime(target:targetfile()), files = objectfiles})
 end
+
+function install(target)
+    os.vrunv("insmod", {target:targetfile()})
+end
+
+function uninstall(target)
+    os.vrunv("rmmod", {target:targetfile()})
+end
