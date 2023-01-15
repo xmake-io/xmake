@@ -10,6 +10,8 @@
 ### Changes
 
 * [#3225](https://github.com/xmake-io/xmake/pull/3225): Improve clang libc++ module support
+* Support for compiling xmake using mingw
+* Improve compatibility issues with xmake running on win xp
 
 ### Bugs fixed
 
@@ -1510,6 +1512,8 @@
 ### 改进
 
 * [#3225](https://github.com/xmake-io/xmake/pull/3225): 改进 clang libc++ 模块支持
+* 支持使用 mingw 编译 xmake
+* 改进 xmake 在 win xp 上的兼容性
 
 ### Bugs 修复
 
