@@ -5,6 +5,7 @@
 ### New features
 
 * [#3228](https://github.com/xmake-io/xmake/pull/3228): Add support of importing modules from packages
+* [#3257](https://github.com/xmake-io/xmake/issues/3257): Add support for iverilog and verilator
 
 ### Changes
 
@@ -1504,6 +1505,7 @@
 ### 新特性
 
 * [#3228](https://github.com/xmake-io/xmake/pull/3228): C++ modules 的安装发布，以及从包中导入 C++ modules 支持
+* [#3257](https://github.com/xmake-io/xmake/issues/3257): 增加对 iverilog 和 verilator 的支持
 
 ### 改进
 

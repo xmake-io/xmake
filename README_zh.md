@@ -291,6 +291,8 @@ c51           Keil development tools for the 8051 Microcontroller Architecture
 icx           Intel LLVM C/C++ Compiler
 dpcpp         Intel LLVM C++ Compiler for data parallel programming model based on Khronos SYCL
 masm32        The MASM32 SDK
+iverilog      Icarus Verilog
+verilator     Verilator open-source SystemVerilog simulator and lint system
 ```
 
 ## 支持语言
@@ -308,6 +310,7 @@ masm32        The MASM32 SDK
 * Vala
 * Pascal
 * Nim
+* Verilog
 
 ## 支持特性
 
