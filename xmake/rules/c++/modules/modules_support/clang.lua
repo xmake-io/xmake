@@ -179,39 +179,29 @@ function _build_modulefile(target, sourcefile, opt)
     -- init flags
     local common_args = opt.common_args
     local requiresflags = opt.requiresflags
-    local moduleoutputflag = get_moduleoutputflag(target)
 
     -- trace
     progress.show(opt.progress, "${color.build.object}compiling.module.$(mode) %s", opt.provide and opt.provide.name or sourcefile)
 
     local bmifile
-    local compileflags = {}
     local bmiflags
     if opt.provide then
         bmifile = opt.provide.bmifile
-
-        if moduleoutputflag then
-            compileflags = table.join("-x", "c++-module", moduleoutputflag .. bmifile, compflags, common_args, requiresflags)
-        else
-            bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags)
-        end
-    end
-
-    if bmiflags then
+        bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags)
         vprint(compinst:compcmd(sourcefile, bmifile, {compflags = bmiflags, rawargs = true}))
     end
 
-    compileflags = table.join2(compileflags, compflags, common_args, requiresflags or {})
-    vprint(compinst:compcmd(bmifile or sourcefile, objectfile, {compflags = compileflags, rawargs = true}))
+    local objflags = table.join(compflags, common_args, requiresflags or {}, (bmifile == nil) and {"-x", "c++"} or {})
+    vprint(compinst:compcmd(bmifile or sourcefile, objectfile, {compflags = objflags, rawargs = true}))
 
     if not dryrun then
 
         -- do compile
         dependinfo.files = {}
-        if bmiflags then
+        if opt.provide then
             assert(compinst:compile(sourcefile, bmifile, {dependinfo = dependinfo, compflags = bmiflags}))
         end
-        assert(compinst:compile(bmiflags and bmifile or sourcefile, objectfile, {compflags = compileflags}))
+        assert(compinst:compile(bmifile or sourcefile, objectfile, {compflags = objflags}))
 
         -- update files and values to the dependent file
         dependinfo.values = depvalues
@@ -791,7 +781,7 @@ function has_headerunitsupport(target)
     local support_headerunits = _g.support_headerunits
     if support_headerunits == nil then
         local compinst = target:compiler("cxx")
-        local modulesflag, moduletsflag = get_modulesflag(target)
+        local modulesflag, modulestsflag = get_modulesflag(target)
         if compinst:has_flags(modulesflag or moduletsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
            compinst:has_flags(modulesflag or moduletsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
             support_headerunits = true
@@ -811,19 +801,6 @@ function has_clangscandepssupport(target)
         _g.support_clangscandeps = support_clangscandeps or false
     end
     return support_clangscandeps or nil
-end
-
-function get_moduleoutputflag(target)
-    local moduleoutputflag = _g.moduleoutputflag
-    if moduleoutputflag == nil then
-        local compinst = target:compiler("cxx")
-        local clang = find_tool("clang", {version = true})
-        if compinst:has_flags("-fmodule-output=", "cxxflags", {flagskey = "clang_module_output", tryrun = true}) and semver.compare(clang.version, "16.0") >= 0 then
-            moduleoutputflag = "-fmodule-output="
-        end
-        _g.moduleoutputflag = moduleoutputflag or false
-    end
-    return moduleoutputflag or nil
 end
 
 function get_requiresflags(target, requires)
