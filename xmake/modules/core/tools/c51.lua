@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.global")
 import("core.language.language")
 import("utils.progress")
+import("core.project.policy")
 
 -- init it
 function init(self)
@@ -48,19 +49,17 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
-    return self:program(), table.join(sourcefile, "OBJECT(" .. objectfile .. ")", "PRINT(" .. (objectfile:gsub("%.c%.obj", ".lst")) .. ")", flags)	
+    return self:program(), table.join(sourcefile, "OBJECT(" .. objectfile .. ")", "PRINT(" .. (objectfile:gsub("%.c%.obj", ".lst")) .. ")", flags)
 end
 
 -- compile the source file
 function compile(self, sourcefile, objectfile, dependinfo, flags)
-
-    -- ensure the object directory
     os.mkdir(path.directory(objectfile))
-    -- compile it
+
     try
     {
         function ()
-            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, flags))		
+            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, flags))
             return (outdata or "") .. (errdata or "")
         end,
         catch
@@ -92,14 +91,23 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
         },
         finally
         {
-            function (ok, warnings)
-
-                -- print some warnings
-                if warnings and #warnings > 0 and (option.get("verbose") or option.get("warning") or global.get("build_warning")) then
-                    if progress.showing_without_scroll() then
-                        print("")
+            function (ok, outdata, errdata)
+                -- show warnings?
+                if ok and outdata and #outdata > 0 and policy.build_warnings() then
+                    local warnings_count = outdata:match("(%d-) WARNING")
+                    if warnings_count and tonumber(warnings_count) > 0 then
+                        local lines = outdata:split('\n', {plain = true})
+                        if #lines > 0 then
+                            if not option.get("diagnosis") then
+                                lines = table.slice(lines, 1, (#lines > 16 and 16 or #lines))
+                            end
+                            local warnings = table.concat(lines, "\n")
+                            if progress.showing_without_scroll() then
+                                print("")
+                            end
+                            cprint("${color.warning}%s", warnings)
+                        end
                     end
-                    cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
                 end
             end
         }
