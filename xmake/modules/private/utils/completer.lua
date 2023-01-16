@@ -49,14 +49,14 @@ function completer:_print_candidate(candidate)
 end
 
 function completer:_print_candidates(candidates)
-    if self:config("json") then 
+    if self:config("json") then
         import("core.base.json")
         print(json.encode(candidates))
     else
         for _, v in ipairs(candidates) do
             self:_print_candidate(v)
         end
-    end 
+    end
 end
 
 function completer:_find_candidates(candidates, find)
@@ -97,7 +97,7 @@ function completer:_complete_item(items, name)
         table.insert(found_candidates, { value = v, is_complete = true, description = items[v].description })
     end
     self:_print_candidates(found_candidates)
-    return #found_candidates > 0 
+    return #found_candidates > 0
 end
 
 -- complete values of kv
@@ -210,7 +210,7 @@ function completer:_complete_option_v(options, current, completing)
             end
         else
             for _, v in ipairs(values) do
-                v.is_complete=true
+                v.is_complete = true
                 table.insert(candidates, v)
             end
         end
@@ -220,8 +220,8 @@ function completer:_complete_option_v(options, current, completing)
     local function _filter_candidates(candidates)
         local found_candidates = {}
         for _, v in ipairs(candidates) do
-            if v.value:find(completing,1,true) then
-                v.is_complete=true
+            if v.value:find(completing, 1, true) then
+                v.is_complete = true
                 table.insert(found_candidates, v)
             end
         end
@@ -239,14 +239,14 @@ function completer:_complete_option_v(options, current, completing)
         end
     end
 
+    -- get candidates from values option
     local found_candidates = {}
     if opt then
-        -- get candidates from values option
         found_candidates = _values_into_candidates(opt.values)
     end
 
+    -- get candidates from values option
     if optvs and #found_candidates == 0 then
-        -- get candidates from values option
         found_candidates = _values_into_candidates(optvs.values)
     end
     self:_print_candidates(found_candidates)
@@ -254,12 +254,12 @@ function completer:_complete_option_v(options, current, completing)
 end
 
 function completer:_complete_option(options, segs, completing)
-    local current_options = try
-    {
+    local current_options = try {
         function()
             return option.raw_parse(segs, options, { populate_defaults = false, allow_unknown = true })
         end
     }
+
     -- current options is invalid
     if not current_options then return false end
 
@@ -287,7 +287,6 @@ function completer:complete(items, argv, completing)
 
     local shortnames = table.new(0, 10)
     for v, menu in pairs(items) do
-        -- local menu = items[v]
         if menu.shortname then
             shortnames[menu.shortname] = v
         end
@@ -302,13 +301,14 @@ function completer:complete(items, argv, completing)
         item_name = table.remove(argv, 1)
     end
 
-    if shortnames[item_name] then item_name = shortnames[item_name] end
+    if shortnames[item_name] then
+        item_name = shortnames[item_name]
+    end
 
     local options
     if items[item_name] then
         options = items[item_name].options
     end
-
     if options then
         self:_complete_option(options, argv, completing)
     end

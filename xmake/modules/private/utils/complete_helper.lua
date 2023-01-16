@@ -34,7 +34,7 @@ function targets()
 end
 
 -- get runnable targets
-function runable_targets()
+function runable_targets(complete, opt)
     return try
     {
         function ()
@@ -42,7 +42,7 @@ function runable_targets()
             local targets = project.targets()
             local runable = {}
             for k, v in pairs(targets) do
-                if v:script("run") or v:is_binary() then
+                if (v:script("run") or v:is_binary()) and (not complete or k:startswith(complete)) then
                     table.insert(runable, k)
                 end
             end
