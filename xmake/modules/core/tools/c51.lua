@@ -32,8 +32,6 @@ end
 -- make the optimize flag
 function nf_optimize(self, level)
     local kind = self:kind()
-    print("kind", kind)
-    print("level", level)
     if language.sourcekinds()[kind] then
         local maps = {
             fast       = "OT(8,SPEED)"
