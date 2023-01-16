@@ -343,6 +343,12 @@ function builder:_add_flags_from_language(flags, target, getters)
         local flagscope     = flaginfo[1]
         local flagname      = flaginfo[2]
         local checkstate    = flaginfo[3]
+        if checkstate then
+            local auto_ignore_flags = target and target.policy and target:policy("check.auto_ignore_flags")
+            if auto_ignore_flags == false then
+                checkstate = false
+            end
+        end
 
         -- get getter
         local getter = getters[flagscope]

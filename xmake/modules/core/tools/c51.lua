@@ -29,6 +29,23 @@ import("core.project.policy")
 function init(self)
 end
 
+-- make the optimize flag
+function nf_optimize(self, level)
+    local kind = self:kind()
+    print("kind", kind)
+    print("level", level)
+    if language.sourcekinds()[kind] then
+        local maps = {
+            fast       = "OT(8,SPEED)"
+        ,   faster     = "OT(9,SPEED)"
+        ,   fastest    = "OT(10,SPEED)"
+        ,   smallest   = "OT(10,SIZE)"
+        ,   aggressive = "OT(11,SPEED)"
+        }
+        return maps[level]
+    end
+end
+
 -- make the includedir flag
 function nf_includedirs(self, dirs)
     local paths = {}
@@ -53,7 +70,7 @@ function compargv(self, sourcefile, objectfile, flags)
 end
 
 -- compile the source file
-function compile(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
     os.mkdir(path.directory(objectfile))
 
     try
