@@ -1631,6 +1631,9 @@ _get_target_compiler_flags() {
     fi
 
     # get flags from environments, e.g. $CFLAGS, $CXXFLAGS
+    if test_nz "${CPPFLAGS}"; then
+        result="${result} ${CPPFLAGS}"
+    fi
     if test_eq "${flagname}" "cflags" && test_nz "${CFLAGS}"; then
         result="${result} ${CFLAGS}"
     fi
@@ -3191,7 +3194,7 @@ _get_funccode() {
     if string_contains "${func}" "("; then
         code="${func}"
     else
-        code="volatile void* p${func} = (void*)&${func};"
+        code="typedef void (*func_t)(); volatile func_t p${func} = (func_t)${func}; while (p${func}) {break;};"
     fi
     _ret="${code}"
 }
@@ -3297,6 +3300,18 @@ _check_cxsnippets() {
                 compflags="${compflags} ${flags}"
             fi
         done
+        if test_eq "${sourcekind}" "cxx"; then
+            if test_nz "${CXXFLAGS}"; then
+                compflags="${compflags} ${CXXFLAGS}"
+            fi
+        else
+            if test_nz "${CFLAGS}"; then
+                compflags="${compflags} ${CFLAGS}"
+            fi
+        fi
+        if test_nz "${CPPFLAGS}"; then
+            compflags="${compflags} ${CPPFLAGS}"
+        fi
         _toolchain_compcmd "${sourcekind}" "${objectfile}" "${sourcefile}" "${compflags}"; local compcmd="${_ret}"
         if ${xmake_sh_diagnosis}; then
             print "> ${compcmd}"
@@ -3329,6 +3344,9 @@ _check_cxsnippets() {
         _get_option_item "${name}" "ldflags"; local flags="${_ret}"
         if test_nz "${flags}"; then
             linkflags="${linkflags} ${flags}"
+        fi
+        if test_nz "${LDFLAGS}"; then
+            linkflags="${linkflags} ${LDFLAGS}"
         fi
         _toolchain_linkcmd "${toolkind}" "${binaryfile}" "${objectfile}" "${linkflags}"; local linkcmd="${_ret}"
         if ${xmake_sh_diagnosis}; then
