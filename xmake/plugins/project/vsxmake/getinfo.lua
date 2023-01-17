@@ -286,7 +286,7 @@ function _make_vsinfo_groups()
     local group_deps = {}
     for targetname, target in table.orderpairs(project.targets()) do
         local group_path = target:get("group")
-        if group_path then
+        if group_path and #(group_path:trim()) > 0 then
             local group_name = path.filename(group_path)
             local group_names = path.split(group_path)
             for idx, name in ipairs(group_names) do

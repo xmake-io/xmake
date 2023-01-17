@@ -62,7 +62,7 @@ function _make_projects(slnfile, vsinfo)
         end
         slnfile:leave("EndProject")
         local group_path = target:get("group")
-        if group_path then
+        if group_path and #(group_path:trim()) > 0 then
             for _, group_name in ipairs(path.split(group_path)) do
                 groups[group_name] = hash.uuid4("group." .. group_name)
             end
