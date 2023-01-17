@@ -4027,6 +4027,9 @@ _gmake_add_install() {
 
 _gmake_done() {
     echo "makefile is generated!"
+    if "${xmake_sh_diagnosis}"; then
+        cat "${xmake_sh_makefile}"
+    fi
 }
 
 # generate build file for gmake
