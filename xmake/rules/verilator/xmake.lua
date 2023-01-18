@@ -29,6 +29,10 @@ rule("verilator.binary")
         import("verilator").config(target)
     end)
 
+    before_build_files(function (target, sourcebatch)
+        -- Just to avoid before_buildcmd_files being executed at build time
+    end)
+
     on_build_files(function (target, batchjobs, sourcebatch, opt)
         import("verilator").build_cppfiles(target, batchjobs, sourcebatch, opt)
     end, {batch = true, distcc = true})

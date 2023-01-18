@@ -183,8 +183,13 @@ function build_cppfiles(target, batchjobs, sourcebatch, opt)
         local sourcefiles = sourcebatch.sourcefiles
         for _, sourcefile in ipairs(sourcefiles) do
             progress.show(opt.progress or 0, "${color.build.object}compiling.verilog %s", sourcefile)
+            -- we need use slashes to fix it on windows
+            -- @see https://github.com/verilator/verilator/issues/3873
+            if is_host("windows") then
+                sourcefile = sourcefile:gsub("\\", "/")
+            end
+            table.insert(argv, sourcefile)
         end
-        table.join2(argv, sourcefiles)
 
         -- generate c++ sourcefiles
         os.vrunv(verilator, argv, {envs = toolchain:runenvs()})
@@ -229,11 +234,18 @@ function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     local sourcefiles = sourcebatch.sourcefiles
     for _, sourcefile in ipairs(sourcefiles) do
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.verilog %s", sourcefile)
+        table.insert(argv, path(sourcefile, function (v)
+            -- we need use slashes to fix it on windows
+            -- @see https://github.com/verilator/verilator/issues/3873
+            if is_host("windows") then
+                v = v:gsub("\\", "/")
+            end
+            return v
+        end))
     end
-    table.join2(argv, sourcefiles)
 
     -- generate c++ sourcefiles
-    batchcmds:vrunv(verilator, argv)
+    batchcmds:vrunv(verilator, argv, {envs = toolchain:runenvs()})
     batchcmds:add_depfiles(sourcefiles)
     batchcmds:set_depmtime(os.mtime(cmakefile))
     batchcmds:set_depcache(dependfile)
