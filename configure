@@ -2841,6 +2841,18 @@ toolchain "i686_w64_mingw32"
     set_toolset "ar" "i686-w64-mingw32-ar" "ar"
 toolchain_end
 
+# aarch64 toolchain (aarch64)
+toolchain "aarch64_linux_gnu"
+    set_toolset "as" "aarch64-linux-gnu-gcc"
+    set_toolset "cc" "aarch64-linux-gnu-gcc"
+    set_toolset "cxx" "aarch64-linux-gnu-gcc" "aarch64-linux-gnu-g++"
+    set_toolset "mm" "aarch64-linux-gnu-gcc"
+    set_toolset "mxx" "aarch64-linux-gnu-gcc" "aarch64-linux-gnu-g++"
+    set_toolset "ld" "aarch64-linux-gnu-g++" "aarch64-linux-gnu-gcc"
+    set_toolset "sh" "aarch64-linux-gnu-g++" "aarch64-linux-gnu-gcc"
+    set_toolset "ar" "aarch64-linux-gnu-ar" "ar"
+toolchain_end
+
 # check platform
 _check_platform() {
     if test "x${_target_plat}" = "x"; then
@@ -3156,6 +3168,11 @@ _toolchain_detect() {
                 toolchains="i686_w64_mingw32"
             else
                 toolchains="x86_64_w64_mingw32"
+            fi
+        elif is_plat "linux" && ! is_arch "${os_arch}"; then
+            toolchains="envs"
+            if is_arch "arm64"; then
+                toolchains="${toolchains} aarch64_linux_gnu"
             fi
         else
             toolchains="envs gcc clang"
