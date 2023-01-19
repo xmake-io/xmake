@@ -35,6 +35,12 @@ fi
 # the runtime option, lua or luajit
 option "runtime" "Use luajit or lua runtime" "lua"
 
+# always use external dependencies
+option "external" "Always use external dependencies" false
+
+# use lua-cjson?
+option "lua_cjson" "Use lua-cjson as json parser" true
+
 # the readline option
 option "readline"
     add_links "readline"
@@ -75,17 +81,6 @@ void test() {\n
 }"
 option_end
 
-# the lua-cjson option
-option "lua_cjson"
-    add_links "lua5.1-cjson"
-    add_csnippets "
-int luaopen_cjson(void *l);\n
-void test() {\n
-    luaopen_cjson(0);\n
-}
-"
-option_end
-
 # the lua option
 option "lua"
     add_cfuncs "lua_pushstring"
@@ -116,8 +111,13 @@ option_end
 
 option_find_luajit() {
     local ldflags=""
+    local cflags=""
     option "luajit"
-        add_cflags `pkg-config --cflags luajit 2>/dev/null`
+        cflags=`pkg-config --cflags luajit 2>/dev/null`
+        if test_z "${cflags}"; then
+            cflags="/usr/include/luajit-2.1"
+        fi
+        add_cflags "${cflags}"
         ldflags=`pkg-config --libs luajit 2>/dev/null`
         if test_z "${ldflags}"; then
             ldflags="-lluajit"
@@ -188,25 +188,28 @@ option_find_tbox() {
 }
 
 # add projects
-if ! has_config "lua"; then
+if ! has_config "external"; then
     if is_config "runtime" "luajit"; then
-        includes "src/luajit"
+        if ! has_config "luajit"; then
+            includes "src/luajit"
+        fi
     else
-        includes "src/lua"
+        if ! has_config "lua"; then
+            includes "src/lua"
+        fi
     fi
-fi
-if ! has_config "lua_cjson"; then
-    includes "src/lua-cjson"
-fi
-if ! has_config "lz4"; then
-    includes "src/lz4"
-fi
-if ! has_config "sv"; then
-    includes "src/sv"
-fi
-if ! has_config "tbox"; then
-    includes "src/tbox"
+    if has_config "lua_cjson"; then
+        includes "src/lua-cjson"
+    fi
+    if ! has_config "lz4"; then
+        includes "src/lz4"
+    fi
+    if ! has_config "sv"; then
+        includes "src/sv"
+    fi
+    if ! has_config "tbox"; then
+        includes "src/tbox"
+    fi
 fi
 includes "src/xmake"
 includes "src/demo"
-

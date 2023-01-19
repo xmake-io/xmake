@@ -2,7 +2,15 @@ target("xmake")
     set_kind("static")
 
     -- add deps
-    add_deps("sv", "lua-cjson", "lua", "lz4", "tbox")
+    add_deps("sv", "lz4", "tbox")
+    if is_config("runtime", "luajit") then
+        add_deps("luajit")
+    else
+        add_deps("lua")
+    end
+    if has_config("lua_cjson") then
+        add_deps("lua-cjson")
+    end
     if is_plat("windows") and has_config("pdcurses") then
         add_deps("pdcurses")
     end

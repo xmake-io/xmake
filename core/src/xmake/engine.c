@@ -1109,9 +1109,11 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         xm_lua_curses_register(engine->lua, "curses");
 #endif
 
+#ifdef XM_CONFIG_API_HAVE_LUA_CJSON
         // bind cjson
         luaopen_cjson(engine->lua);
         lua_setglobal(engine->lua, "cjson");
+#endif
 
         // init host
         xm_engine_init_host(engine);

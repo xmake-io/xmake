@@ -50,15 +50,19 @@ end
 
 -- the runtime option
 option("runtime")
-    set_showmenu(true)
     set_default("lua")
     set_description("Use luajit or lua runtime")
     set_values("luajit", "lua")
 option_end()
 
+-- the lua-cjson option
+option("lua_cjson")
+    set_default(true)
+    set_description("Use lua-cjson as json parser")
+option_end()
+
 -- the readline option
 option("readline")
-    set_showmenu(true)
     set_description("Enable or disable readline library")
     add_links("readline")
     add_cincludes("readline/readline.h")
@@ -68,7 +72,6 @@ option_end()
 
 -- the curses option
 option("curses")
-    set_showmenu(true)
     set_description("Enable or disable curses library")
     add_links("curses")
     add_cincludes("curses.h")
@@ -78,7 +81,6 @@ option_end()
 -- the pdcurses option
 option("pdcurses")
     set_default(true)
-    set_showmenu(true)
     set_description("Enable or disable pdcurses library")
     add_defines("PDCURSES")
     add_defines("XM_CONFIG_API_HAVE_CURSES")
@@ -87,7 +89,6 @@ option_end()
 -- only build xmake libraries for development?
 option("onlylib")
     set_default(false)
-    set_showmenu(true)
     set_description("Only build xmake libraries for development")
 option_end()
 
@@ -98,7 +99,10 @@ if is_plat("windows") then
 end
 
 -- add projects
-includes("src/lua-cjson", "src/sv", "src/lz4", "src/tbox", "src/xmake", "src/demo")
+includes("src/sv", "src/lz4", "src/tbox", "src/xmake", "src/demo")
+if has_config("lua_cjson") then
+    includes("src/lua-cjson")
+end
 if is_config("runtime", "luajit") then
     includes("src/luajit")
 else
