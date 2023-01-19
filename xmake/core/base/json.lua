@@ -86,7 +86,7 @@ function json._pure_skip_delim(str, pos, delim, err_if_missing)
     pos = pos + #str:match('^%s*', pos)
     if str:sub(pos, pos) ~= delim then
         if err_if_missing then
-            os.raise('expected ' .. delim .. ' near position ' .. pos)
+            os.raise("expected %s near position %d", delim, pos)
         end
         return pos, false
     end
@@ -95,7 +95,7 @@ end
 
 function json._pure_parse_str_val(str, pos, val)
     val = val or ''
-    local early_end_error = 'end of input found while parsing string.'
+    local early_end_error = "end of input found while parsing string."
     if pos > #str then
         os.raise(early_end_error)
     end
@@ -120,7 +120,7 @@ function json._pure_parse_num_val(str, pos)
     local num_str = str:match('^-?%d+%.?%d*[eE]?[+-]?%d*', pos)
     local val = tonumber(num_str)
     if not val then
-        os.raise('error parsing number at position ' .. pos .. '.')
+        os.raise("error parsing number at position %d", pos)
     end
     return val, pos + #num_str
 end
@@ -130,7 +130,7 @@ function json._pure_stringify(obj, as_key)
     local kind = json._pure_kind_of(obj)
     if kind == "array" then
         if as_key then
-            os.raise('can\'t encode array as key.')
+            os.raise("can\'t encode array as key.")
         end
         s[#s + 1] = '['
         for i, val in ipairs(obj) do
@@ -140,7 +140,7 @@ function json._pure_stringify(obj, as_key)
         s[#s + 1] = ']'
     elseif kind == "table" then
         if as_key then
-            os.raise('can\'t encode table as key.')
+            os.raise("can\'t encode table as key.")
         end
         s[#s + 1] = '{'
         for k, v in pairs(obj) do
@@ -162,7 +162,7 @@ function json._pure_stringify(obj, as_key)
     elseif kind == "nil" then
         return "null"
     else
-        os.raise('unjsonifiable type: ' .. kind .. '.')
+        os.raise("unknown type: %s", kind)
     end
     return table.concat(s)
 end
@@ -170,7 +170,7 @@ end
 function json._pure_parse(str, pos, end_delim)
     pos = pos or 1
     if pos > #str then
-        os.raise('reached unexpected end of input.')
+        os.raise("reached unexpected end of input.")
     end
     -- skip whitespace.
     local pos = pos + #str:match('^%s*', pos)
@@ -184,7 +184,7 @@ function json._pure_parse(str, pos, end_delim)
                 return obj, pos
             end
             if not delim_found then
-                os.raise('comma missing between object items.')
+                os.raise("comma missing between object items.")
             end
             pos = json._pure_skip_delim(str, pos, ':', true)  -- true -> error if missing.
             obj[key], pos = json._pure_parse(str, pos)
@@ -200,14 +200,14 @@ function json._pure_parse(str, pos, end_delim)
                 return arr, pos
             end
             if not delim_found then
-                os.raise('comma missing between array items.')
+                os.raise("comma missing between array items.")
             end
             arr[#arr + 1] = val
             pos, delim_found = json._pure_skip_delim(str, pos, ',')
         end
     elseif first == '"' then
         return json._pure_parse_str_val(str, pos + 1)
-    elseif first == '-' or first:match('%d') then
+    elseif first == '-' or first:match("%d") then
         return json._pure_parse_num_val(str, pos)
     elseif first == end_delim then
         -- end of an object or array.
@@ -220,8 +220,8 @@ function json._pure_parse(str, pos, end_delim)
                 return lit_val, lit_end + 1
             end
         end
-        local pos_info_str = 'position ' .. pos .. ': ' .. str:sub(pos, pos + 10)
-        os.raise('invalid json syntax starting at ' .. pos_info_str)
+        local pos_info_str = "position " .. pos .. ": " .. str:sub(pos, pos + 10)
+        os.raise("invalid json syntax starting at " .. pos_info_str)
     end
 end
 
