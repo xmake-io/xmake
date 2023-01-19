@@ -28,7 +28,25 @@ local os    = require("base/os")
 local utils = require("base/utils")
 
 -- export null
-json.null = cjson and cjson.null or {}
+if cjson then
+    json.null = cjson.null
+else
+    json.null = {}
+    setmetatable(json.null, {
+        __is_json_null = true,
+        __eq = function (obj)
+            if type(obj) == "table" then
+                local mt = getmetatable(obj)
+                if mt and mt.__is_json_null then
+                    return true
+                end
+            end
+            return false
+        end,
+        __tostring = function()
+            return "null"
+        end})
+end
 
 function json._pure_kind_of(obj)
     if type(obj) ~= "table" then
@@ -36,6 +54,9 @@ function json._pure_kind_of(obj)
     end
     if json.is_marked_as_array(obj) then
         return "array"
+    end
+    if obj == json.null then
+        return "nil"
     end
     local i = 1
     for _ in pairs(obj) do
@@ -119,7 +140,7 @@ function json._pure_stringify(obj, as_key)
         end
         s[#s + 1] = '['
         for i, val in ipairs(obj) do
-            if i > 1 then s[#s + 1] = ', ' end
+            if i > 1 then s[#s + 1] = ',' end
             s[#s + 1] = json._pure_stringify(val)
         end
         s[#s + 1] = ']'
@@ -129,7 +150,7 @@ function json._pure_stringify(obj, as_key)
         end
         s[#s + 1] = '{'
         for k, v in pairs(obj) do
-            if #s > 1 then s[#s + 1] = ', ' end
+            if #s > 1 then s[#s + 1] = ',' end
             s[#s + 1] = json._pure_stringify(k, true)
             s[#s + 1] = ':'
             s[#s + 1] = json._pure_stringify(v)
@@ -145,7 +166,7 @@ function json._pure_stringify(obj, as_key)
     elseif kind == "boolean" then
         return tostring(obj)
     elseif kind == "nil" then
-        return 'null'
+        return "null"
     else
         os.raise('unjsonifiable type: ' .. kind .. '.')
     end
@@ -198,7 +219,7 @@ function json._pure_parse(str, pos, end_delim)
         -- end of an object or array.
         return nil, pos + 1
     else
-        local literals = {['true'] = true, ['false'] = false, ['null'] = json.null}
+        local literals = {["true"] = true, ["false"] = false, ["null"] = json.null}
         for lit_str, lit_val in pairs(literals) do
             local lit_end = pos + #lit_str - 1
             if str:sub(pos, lit_end) == lit_str then
