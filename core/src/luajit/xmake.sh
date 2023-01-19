@@ -30,7 +30,7 @@ else
 fi
 jit_autogendir="luajit/autogen/${jit_plat}/${jit_dir}/${jit_arch}"
 
-target "lua"
+target "luajit"
     set_kind "static"
     set_default false
     set_warnings "all"

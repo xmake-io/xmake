@@ -22,7 +22,7 @@ end
 local autogendir = path.join("luajit", "autogen", plat, jit and "jit" or "nojit", arch)
 
 -- add target
-target("lua")
+target("luajit")
 
     -- make as a static library
     set_kind("static")
