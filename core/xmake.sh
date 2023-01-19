@@ -96,7 +96,7 @@ option_find_lua() {
         cflags=`pkg-config --cflags lua5.4 2>/dev/null`
         ldflags=`pkg-config --libs lua5.4 2>/dev/null`
         if test_z "${cflags}"; then
-            cflags="/usr/include/lua5.4"
+            cflags="-I/usr/include/lua5.4"
         fi
         if test_z "${ldflags}"; then
             ldflags="-llua5.4"
@@ -121,7 +121,7 @@ option_find_luajit() {
         cflags=`pkg-config --cflags luajit 2>/dev/null`
         ldflags=`pkg-config --libs luajit 2>/dev/null`
         if test_z "${cflags}"; then
-            cflags="/usr/include/luajit-2.1"
+            cflags="-I/usr/include/luajit-2.1"
         fi
         if test_z "${ldflags}"; then
             ldflags="-lluajit"
@@ -145,7 +145,7 @@ option_find_lz4() {
         cflags=`pkg-config --cflags liblz4 2>/dev/null`
         ldflags=`pkg-config --libs liblz4 2>/dev/null`
         if test_z "${cflags}"; then
-            cflags="/usr/include"
+            cflags="-I/usr/include"
         fi
         if test_z "${ldflags}"; then
             ldflags="-llz4"
@@ -170,7 +170,7 @@ option_find_sv() {
         cflags=`pkg-config --cflags libsv 2>/dev/null`
         ldflags=`pkg-config --libs libsv 2>/dev/null`
         if test_z "${cflags}"; then
-            cflags="/usr/include"
+            cflags="-I/usr/include"
         fi
         if test_z "${ldflags}"; then
             ldflags="-lsv"
@@ -195,7 +195,7 @@ option_find_tbox() {
         cflags=`pkg-config --cflags libtbox 2>/dev/null`
         ldflags=`pkg-config --libs libtbox 2>/dev/null`
         if test_z "${cflags}"; then
-            cflags="/usr/include"
+            cflags="-I/usr/include"
         fi
         if test_z "${ldflags}"; then
             ldflags="-ltbox"
