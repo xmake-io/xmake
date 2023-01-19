@@ -31,21 +31,24 @@ local utils = require("base/utils")
 json.null = cjson and cjson.null or {}
 
 function json._pure_kind_of(obj)
-    if type(obj) ~= 'table' then
+    if type(obj) ~= "table" then
         return type(obj)
+    end
+    if json.is_marked_as_array(obj) then
+        return "array"
     end
     local i = 1
     for _ in pairs(obj) do
         if obj[i] ~= nil then
             i = i + 1
         else
-            return 'table'
+            return "table"
         end
     end
     if i == 1 then
-        return 'table'
+        return "table"
     else
-        return 'array'
+        return "array"
     end
 end
 
@@ -110,7 +113,7 @@ end
 function json._pure_stringify(obj, as_key)
     local s = {}
     local kind = json._pure_kind_of(obj)
-    if kind == 'array' then
+    if kind == "array" then
         if as_key then
             os.raise('can\'t encode array as key.')
         end
@@ -120,7 +123,7 @@ function json._pure_stringify(obj, as_key)
             s[#s + 1] = json._pure_stringify(val)
         end
         s[#s + 1] = ']'
-    elseif kind == 'table' then
+    elseif kind == "table" then
         if as_key then
             os.raise('can\'t encode table as key.')
         end
@@ -132,19 +135,19 @@ function json._pure_stringify(obj, as_key)
             s[#s + 1] = json._pure_stringify(v)
         end
         s[#s + 1] = '}'
-    elseif kind == 'string' then
+    elseif kind == "string" then
         return '"' .. json._pure_escape_str(obj) .. '"'
-    elseif kind == 'number' then
+    elseif kind == "number" then
         if as_key then
             return '"' .. tostring(obj) .. '"'
         end
         return tostring(obj)
-    elseif kind == 'boolean' then
+    elseif kind == "boolean" then
         return tostring(obj)
-    elseif kind == 'nil' then
+    elseif kind == "nil" then
         return 'null'
     else
-        os.raise('Unjsonifiable type: ' .. kind .. '.')
+        os.raise('unjsonifiable type: ' .. kind .. '.')
     end
     return table.concat(s)
 end
@@ -162,19 +165,28 @@ function json._pure_parse(str, pos, end_delim)
         pos = pos + 1
         while true do
             key, pos = json._pure_parse(str, pos, '}')
-            if key == nil then return obj, pos end
-            if not delim_found then os.raise('comma missing between object items.') end
+            if key == nil then
+                return obj, pos
+            end
+            if not delim_found then
+                os.raise('comma missing between object items.')
+            end
             pos = json._pure_skip_delim(str, pos, ':', true)  -- true -> error if missing.
             obj[key], pos = json._pure_parse(str, pos)
             pos, delim_found = json._pure_skip_delim(str, pos, ',')
         end
     elseif first == '[' then
         local arr, val, delim_found = {}, true, true
+        json.mark_as_array(arr)
         pos = pos + 1
         while true do
             val, pos = json._pure_parse(str, pos, ']')
-            if val == nil then return arr, pos end
-            if not delim_found then os.raise('comma missing between array items.') end
+            if val == nil then
+                return arr, pos
+            end
+            if not delim_found then
+                os.raise('comma missing between array items.')
+            end
             arr[#arr + 1] = val
             pos, delim_found = json._pure_skip_delim(str, pos, ',')
         end
@@ -189,7 +201,9 @@ function json._pure_parse(str, pos, end_delim)
         local literals = {['true'] = true, ['false'] = false, ['null'] = json.null}
         for lit_str, lit_val in pairs(literals) do
             local lit_end = pos + #lit_str - 1
-            if str:sub(pos, lit_end) == lit_str then return lit_val, lit_end + 1 end
+            if str:sub(pos, lit_end) == lit_str then
+                return lit_val, lit_end + 1
+            end
         end
         local pos_info_str = 'position ' .. pos .. ': ' .. str:sub(pos, pos + 10)
         os.raise('invalid json syntax starting at ' .. pos_info_str)
