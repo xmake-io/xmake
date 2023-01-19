@@ -82,10 +82,6 @@ function json._pure_escape_str(s)
     return s
 end
 
--- returns pos, did_find; there are two cases:
--- 1. Delimiter found: pos = pos after leading space + delim; did_find = true.
--- 2. Delimiter not found: pos = pos after leading space;     did_find = false.
--- this throws an error if err_if_missing is true and the delim is not found.
 function json._pure_skip_delim(str, pos, delim, err_if_missing)
     pos = pos + #str:match('^%s*', pos)
     if str:sub(pos, pos) ~= delim then
@@ -97,8 +93,6 @@ function json._pure_skip_delim(str, pos, delim, err_if_missing)
     return pos + 1, true
 end
 
--- expects the given pos to be the first character after the opening quote.
--- returns val, pos; the returned pos is after the closing quote character.
 function json._pure_parse_str_val(str, pos, val)
     val = val or ''
     local early_end_error = 'end of input found while parsing string.'
@@ -112,7 +106,8 @@ function json._pure_parse_str_val(str, pos, val)
     if c ~= '\\' then
         return json._pure_parse_str_val(str, pos + 1, val .. c)
     end
-    -- We must have a \ character.
+
+    -- we must have a \ character.
     local esc_map = {b = '\b', f = '\f', n = '\n', r = '\r', t = '\t'}
     local nextc = str:sub(pos + 1, pos + 1)
     if not nextc then
@@ -121,7 +116,6 @@ function json._pure_parse_str_val(str, pos, val)
     return json._pure_parse_str_val(str, pos + 2, val .. (esc_map[nextc] or nextc))
 end
 
--- returns val, pos; the returned pos is after the number's final character.
 function json._pure_parse_num_val(str, pos)
     local num_str = str:match('^-?%d+%.?%d*[eE]?[+-]?%d*', pos)
     local val = tonumber(num_str)
