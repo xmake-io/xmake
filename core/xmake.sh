@@ -38,6 +38,9 @@ option "runtime" "Use luajit or lua runtime" "lua"
 # always use external dependencies
 option "external" "Always use external dependencies" false
 
+# use lua-cjson?
+option "lua_cjson" "Use lua-cjson as json parser" true
+
 # the readline option
 option "readline"
     add_links "readline"
@@ -77,29 +80,6 @@ void test() {\n
     __atomic_load(&v,&v,0);\n
 }"
 option_end
-
-# the lua-cjson option, only for luajit/lua5.1
-option "lua_cjson"
-    add_defines "XM_CONFIG_API_HAVE_LUA_CJSON"
-    before_check "option_find_lua_cjson"
-    add_csnippets "
-int luaopen_cjson(void *l);\n
-void test() {\n
-    luaopen_cjson(0);\n
-}
-"
-option_end
-
-option_find_lua_cjson() {
-    local ldflags=""
-    option "lua_cjson"
-        ldflags=`pkg-config --libs luajit 2>/dev/null`
-        if test_nz "${ldflags}"; then
-            ldflags="-llua5.1-cjson ${ldflags}"
-        fi
-        add_ldflags "${ldflags}"
-    option_end
-}
 
 # the lua option
 option "lua"
@@ -213,13 +193,12 @@ if ! has_config "external"; then
         if ! has_config "luajit"; then
             includes "src/luajit"
         fi
-        if ! has_config "lua_cjson"; then
-            includes "src/lua-cjson"
-        fi
     else
         if ! has_config "lua"; then
             includes "src/lua"
         fi
+    fi
+    if has_config "lua_cjson"; then
         includes "src/lua-cjson"
     fi
     if ! has_config "lz4"; then

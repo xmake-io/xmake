@@ -13,21 +13,16 @@ target "xmake"
             add_deps "$lib"
         fi
     done
+    if has_config "lua_cjson" && ! has_config "external"; then
+        add_deps "lua_cjson"
+    fi
     if is_config "runtime" "luajit"; then
-        if has_config "lua_cjson"; then
-            add_options "lua_cjson" "{public}"
-        elif ! has_config "external"; then
-            add_deps "lua_cjson"
-        fi
         if has_config "luajit"; then
             add_options "luajit" "{public}"
         elif ! has_config "external"; then
             add_deps "luajit"
         fi
     else
-        if ! has_config "external"; then
-            add_deps "lua_cjson"
-        fi
         if has_config "lua"; then
             add_options "lua" "{public}"
         elif ! has_config "external"; then
