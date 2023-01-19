@@ -25,7 +25,9 @@ target "xmake"
             add_deps "luajit"
         fi
     else
-        add_deps "lua_cjson"
+        if ! has_config "external"; then
+            add_deps "lua_cjson"
+        fi
         if has_config "lua"; then
             add_options "lua" "{public}"
         elif ! has_config "external"; then
