@@ -91,12 +91,17 @@ option_end
 
 option_find_lua() {
     local ldflags=""
+    local cflags=""
     option "lua"
-        add_cflags `pkg-config --cflags lua5.4 2>/dev/null`
+        cflags=`pkg-config --cflags lua5.4 2>/dev/null`
         ldflags=`pkg-config --libs lua5.4 2>/dev/null`
+        if test_z "${cflags}"; then
+            cflags="/usr/include/lua5.4"
+        fi
         if test_z "${ldflags}"; then
             ldflags="-llua5.4"
         fi
+        add_cflags "${cflags}"
         add_ldflags "${ldflags}"
     option_end
 }
@@ -114,14 +119,14 @@ option_find_luajit() {
     local cflags=""
     option "luajit"
         cflags=`pkg-config --cflags luajit 2>/dev/null`
+        ldflags=`pkg-config --libs luajit 2>/dev/null`
         if test_z "${cflags}"; then
             cflags="/usr/include/luajit-2.1"
         fi
-        add_cflags "${cflags}"
-        ldflags=`pkg-config --libs luajit 2>/dev/null`
         if test_z "${ldflags}"; then
             ldflags="-lluajit"
         fi
+        add_cflags "${cflags}"
         add_ldflags "${ldflags}"
     option_end
 }
@@ -135,12 +140,17 @@ option_end
 
 option_find_lz4() {
     local ldflags=""
+    local cflags=""
     option "lz4"
-        add_cflags `pkg-config --cflags liblz4 2>/dev/null`
+        cflags=`pkg-config --cflags liblz4 2>/dev/null`
         ldflags=`pkg-config --libs liblz4 2>/dev/null`
+        if test_z "${cflags}"; then
+            cflags="/usr/include"
+        fi
         if test_z "${ldflags}"; then
             ldflags="-llz4"
         fi
+        add_cflags "${cflags}"
         add_ldflags "${ldflags}"
     option_end
 }
@@ -154,15 +164,19 @@ option "sv"
 option_end
 
 option_find_sv() {
+    local ldflags=""
+    local cflags=""
     option "sv"
-        local dirs="/usr/local /usr"
-        for dir in $dirs; do
-            if test -f "${dir}/lib/libsv.a"; then
-                add_linkdirs "${dir}/lib"
-                add_includedirs "${dir}/include/sv"
-                break
-            fi
-        done
+        cflags=`pkg-config --cflags libsv 2>/dev/null`
+        ldflags=`pkg-config --libs libsv 2>/dev/null`
+        if test_z "${cflags}"; then
+            cflags="/usr/include"
+        fi
+        if test_z "${ldflags}"; then
+            ldflags="-lsv"
+        fi
+        add_cflags "${cflags}"
+        add_ldflags "${ldflags}"
     option_end
 }
 
@@ -175,15 +189,19 @@ option "tbox"
 option_end
 
 option_find_tbox() {
+    local ldflags=""
+    local cflags=""
     option "tbox"
-        local dirs="/usr/local /usr"
-        for dir in $dirs; do
-            if test -f "${dir}/lib/libtbox.a"; then
-                add_linkdirs "${dir}/lib"
-                add_includedirs "${dir}/include"
-                break
-            fi
-        done
+        cflags=`pkg-config --cflags libtbox 2>/dev/null`
+        ldflags=`pkg-config --libs libtbox 2>/dev/null`
+        if test_z "${cflags}"; then
+            cflags="/usr/include"
+        fi
+        if test_z "${ldflags}"; then
+            ldflags="-ltbox"
+        fi
+        add_cflags "${cflags}"
+        add_ldflags "${ldflags}"
     option_end
 }
 
