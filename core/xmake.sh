@@ -209,14 +209,17 @@ option_find_tbox() {
 
 # add projects
 if ! has_config "external"; then
-    if ! has_config "lua"; then
-        if is_config "runtime" "luajit"; then
+    if is_config "runtime" "luajit"; then
+        if ! has_config "luajit"; then
             includes "src/luajit"
-        else
+        fi
+        if ! has_config "lua_cjson"; then
+            includes "src/lua-cjson"
+        fi
+    else
+        if ! has_config "lua"; then
             includes "src/lua"
         fi
-    fi
-    if ! has_config "lua_cjson" || is_config "runtime" "lua"; then
         includes "src/lua-cjson"
     fi
     if ! has_config "lz4"; then
