@@ -20,14 +20,23 @@
 
 -- define module: json
 local json  = json or {}
-local cjson = cjson or {}
 
 -- load modules
 local io    = require("base/io")
 local utils = require("base/utils")
 
 -- export null
-json.null = cjson.null
+json.null = cjson and cjson.null or {}
+
+-- decode json string using pure lua
+function json._pure_decode(jsonstr, opt)
+    return {}
+end
+
+-- encode json string using pua lua
+function json._pure_encode(luatable, opt)
+    return ""
+end
 
 -- support empty array
 -- @see https://github.com/mpx/lua-cjson/issues/11
@@ -51,7 +60,7 @@ end
 -- @return              the lua table
 --
 function json.decode(jsonstr, opt)
-    local ok, luatable_or_errors = utils.trycall(cjson.decode, nil, jsonstr)
+    local ok, luatable_or_errors = utils.trycall(cjson and cjson.decode or json._pure_decode, nil, jsonstr)
     if not ok then
         return nil, string.format("decode json failed, %s", luatable_or_errors)
     end
@@ -66,7 +75,7 @@ end
 -- @return              the json string
 --
 function json.encode(luatable, opt)
-    local ok, jsonstr_or_errors = utils.trycall(cjson.encode, nil, luatable)
+    local ok, jsonstr_or_errors = utils.trycall(cjson and cjson.encode or json._pure_encode, nil, luatable)
     if not ok then
         return nil, string.format("encode json failed, %s", jsonstr_or_errors)
     end
