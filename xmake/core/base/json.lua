@@ -20,6 +20,7 @@
 
 -- define module: json
 local json  = json or {}
+cjson = nil -- TODO disable it for testing
 
 -- load modules
 local io    = require("base/io")
