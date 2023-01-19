@@ -57,7 +57,7 @@ function _get_apis()
         -- toolchain.add_xxx
     ,   "toolchain.add_links"
     ,   "toolchain.add_syslinks"
-    ,   "toolchain.add_cflags"
+    ,   "toolchain.add_asflags"
     ,   "toolchain.add_ldflags"
     ,   "toolchain.add_arflags"
     ,   "toolchain.add_shflags"
