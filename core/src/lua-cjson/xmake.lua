@@ -1,7 +1,11 @@
 target("lua-cjson")
     set_kind("static")
     set_warnings("all")
-    add_deps("lua")
+    if is_config("runtime", "luajit") then
+        add_deps("luajit")
+    else
+        add_deps("lua")
+    end
     if is_plat("windows") then
         set_languages("c89")
     end
