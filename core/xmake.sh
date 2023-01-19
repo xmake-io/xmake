@@ -75,7 +75,7 @@ void test() {\n
 }"
 option_end
 
-# the lua-cjson option
+# the lua-cjson option, only for luajit/lua5.1
 option "lua_cjson"
     add_defines "XM_CONFIG_API_HAVE_LUA_CJSON"
     before_check "option_find_lua_cjson"
