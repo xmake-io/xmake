@@ -35,6 +35,9 @@ fi
 # the runtime option, lua or luajit
 option "runtime" "Use luajit or lua runtime" "lua"
 
+# always use external dependencies
+option "external" "Always use external dependencies" false
+
 # the readline option
 option "readline"
     add_links "readline"
@@ -205,24 +208,26 @@ option_find_tbox() {
 }
 
 # add projects
-if ! has_config "lua"; then
-    if is_config "runtime" "luajit"; then
-        includes "src/luajit"
-    else
-        includes "src/lua"
+if ! has_config "external"; then
+    if ! has_config "lua"; then
+        if is_config "runtime" "luajit"; then
+            includes "src/luajit"
+        else
+            includes "src/lua"
+        fi
     fi
-fi
-if ! has_config "lua_cjson" || is_config "runtime" "lua"; then
-    includes "src/lua-cjson"
-fi
-if ! has_config "lz4"; then
-    includes "src/lz4"
-fi
-if ! has_config "sv"; then
-    includes "src/sv"
-fi
-if ! has_config "tbox"; then
-    includes "src/tbox"
+    if ! has_config "lua_cjson" || is_config "runtime" "lua"; then
+        includes "src/lua-cjson"
+    fi
+    if ! has_config "lz4"; then
+        includes "src/lz4"
+    fi
+    if ! has_config "sv"; then
+        includes "src/sv"
+    fi
+    if ! has_config "tbox"; then
+        includes "src/tbox"
+    fi
 fi
 includes "src/xmake"
 includes "src/demo"
