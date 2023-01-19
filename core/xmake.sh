@@ -212,7 +212,7 @@ if ! has_config "lua"; then
         includes "src/lua"
     fi
 fi
-if ! has_config "lua_cjson"; then
+if ! has_config "lua_cjson" || is_config "runtime" "lua"; then
     includes "src/lua-cjson"
 fi
 if ! has_config "lz4"; then
