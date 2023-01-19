@@ -77,7 +77,8 @@ option_end
 
 # the lua-cjson option
 option "lua_cjson"
-    add_links "lua5.1-cjson"
+    add_defines "XM_CONFIG_API_HAVE_LUA_CJSON"
+    before_check "option_find_lua_cjson"
     add_csnippets "
 int luaopen_cjson(void *l);\n
 void test() {\n
@@ -85,6 +86,17 @@ void test() {\n
 }
 "
 option_end
+
+option_find_lua_cjson() {
+    local ldflags=""
+    option "lua_cjson"
+        ldflags=`pkg-config --libs luajit 2>/dev/null`
+        if test_nz "${ldflags}"; then
+            ldflags="-llua5.1-cjson ${ldflags}"
+        fi
+        add_ldflags "${ldflags}"
+    option_end
+}
 
 # the lua option
 option "lua"
@@ -116,8 +128,13 @@ option_end
 
 option_find_luajit() {
     local ldflags=""
+    local cflags=""
     option "luajit"
-        add_cflags `pkg-config --cflags luajit 2>/dev/null`
+        cflags=`pkg-config --cflags luajit 2>/dev/null`
+        if test_z "${cflags}"; then
+            cflags="/usr/include/luajit-2.1"
+        fi
+        add_cflags "${cflags}"
         ldflags=`pkg-config --libs luajit 2>/dev/null`
         if test_z "${ldflags}"; then
             ldflags="-lluajit"
@@ -209,4 +226,3 @@ if ! has_config "tbox"; then
 fi
 includes "src/xmake"
 includes "src/demo"
-
