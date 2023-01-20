@@ -66,6 +66,43 @@ function _get_sourcefiles_from_cmake(target, cmakefile)
     return sourcefiles
 end
 
+-- get languages
+--
+-- Select the Verilog language generation to support in the compiler.
+-- This selects between v1364-1995, v1364-2001, v1364-2005, v1800-2005, v1800-2009, v1800-2012.
+--
+function _get_lanuage_flags(target)
+    local language_v
+    local languages = target:get("languages")
+    if languages then
+        for _, language in ipairs(languages) do
+            if language:startswith("v") then
+                language_v = language
+                break
+            end
+        end
+    end
+    if language_v then
+        local maps = {
+            -- Verilog
+            ["v1364-1995"] = "+1364-1995ext+v",
+            ["v1364-2001"] = "+1364-2001ext+v",
+            ["v1364-2005"] = "+1364-2005ext+v",
+            -- SystemVerilog
+            ["v1800-2005"] = "+1800-2005ext+v",
+            ["v1800-2009"] = "+1800-2009ext+v",
+            ["v1800-2012"] = "+1800-2012ext+v",
+            ["v1800-2017"] = "+1800-2017ext+v",
+        }
+        local flag = maps[language_v]
+        if flag then
+            return flag
+        else
+            assert("unknown language(%s) for verilator!", language_v)
+        end
+    end
+end
+
 function config(target)
     local toolchain = assert(target:toolchain("verilator"), 'we need set_toolchains("verilator") in target("%s")', target:name())
     local verilator = assert(toolchain:config("verilator"), "verilator not found!")
@@ -150,7 +187,7 @@ endmodule]])
         end
     end
     if not cxxlang then
-        target:set("languages", "c++20")
+        target:add("languages", "c++20")
     end
 
     -- add defines for switches
@@ -179,6 +216,10 @@ function build_cppfiles(target, batchjobs, sourcebatch, opt)
         local flags = target:values("verilator.flags")
         if flags then
             table.join2(argv, flags)
+        end
+        local language_flags = _get_lanuage_flags(target)
+        if language_flags then
+            table.join2(argv, language_flags)
         end
         local sourcefiles = sourcebatch.sourcefiles
         for _, sourcefile in ipairs(sourcefiles) do
@@ -230,6 +271,10 @@ function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     local flags = target:values("verilator.flags")
     if flags then
         table.join2(argv, flags)
+    end
+    local language_flags = _get_lanuage_flags(target)
+    if language_flags then
+        table.join2(argv, language_flags)
     end
     local sourcefiles = sourcebatch.sourcefiles
     for _, sourcefile in ipairs(sourcefiles) do

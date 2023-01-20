@@ -44,33 +44,33 @@ rule("iverilog.binary")
 
         -- get languages
         --
-        -- Select  the  Verilog language generation to support in the compiler.
-        -- This selects between IEEE1364-1995, IEEE1364-2001, IEEE1364-2005, IEEE1800-2005, IEEE1800-2009, IEEE1800-2012.
+        -- Select the Verilog language generation to support in the compiler.
+        -- This selects between v1364-1995, v1364-2001, v1364-2005, v1800-2005, v1800-2009, v1800-2012.
         --
-        local language_ieee
+        local language_v
         local languages = target:get("languages")
         if languages then
             for _, language in ipairs(languages) do
-                if language:startswith("IEEE") then
-                    language_ieee = language
+                if language:startswith("v") then
+                    language_v = language
                     break
                 end
             end
         end
-        if language_ieee then
+        if language_v then
             local maps = {
-                ["IEEE1364-1995"] = "-g1995",
-                ["IEEE1364-2001"] = "-g2001",
-                ["IEEE1364-2005"] = "-g2005",
-                ["IEEE1800-2005"] = "-g2005-sv",
-                ["IEEE1800-2009"] = "-g2009",
-                ["IEEE1800-2012"] = "-g2012",
+                ["v1364-1995"] = "-g1995",
+                ["v1364-2001"] = "-g2001",
+                ["v1364-2005"] = "-g2005",
+                ["v1800-2005"] = "-g2005-sv",
+                ["v1800-2009"] = "-g2009",
+                ["v1800-2012"] = "-g2012",
             }
-            local flag = maps[language_ieee]
+            local flag = maps[language_v]
             if flag then
                 table.insert(argv, flag)
             else
-                assert("unknown language(%s) for iverilog!", language_ieee)
+                assert("unknown language(%s) for iverilog!", language_v)
             end
         else
             local extension = path.extension(sourcefiles[1])
