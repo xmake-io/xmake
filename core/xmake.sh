@@ -38,9 +38,6 @@ option "runtime" "Use luajit or lua runtime" "lua"
 # always use external dependencies
 option "external" "Always use external dependencies" false
 
-# use lua-cjson?
-option "lua_cjson" "Use lua-cjson as json parser" true
-
 # the readline option
 option "readline"
     add_links "readline"
@@ -208,26 +205,14 @@ option_find_tbox() {
 # add projects
 if ! has_config "external"; then
     if is_config "runtime" "luajit"; then
-        if ! has_config "luajit"; then
-            includes "src/luajit"
-        fi
+        includes "src/luajit"
     else
-        if ! has_config "lua"; then
-            includes "src/lua"
-        fi
+        includes "src/lua"
     fi
-    if has_config "lua_cjson"; then
-        includes "src/lua-cjson"
-    fi
-    if ! has_config "lz4"; then
-        includes "src/lz4"
-    fi
-    if ! has_config "sv"; then
-        includes "src/sv"
-    fi
-    if ! has_config "tbox"; then
-        includes "src/tbox"
-    fi
+    includes "src/lua-cjson"
+    includes "src/lz4"
+    includes "src/sv"
+    includes "src/tbox"
 fi
 includes "src/xmake"
 includes "src/demo"
