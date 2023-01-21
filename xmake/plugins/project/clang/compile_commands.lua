@@ -42,13 +42,23 @@ function _sourcebatch_is_built(sourcebatch)
     end
 end
 
+-- get LSP, clangd, ccls, ...
+function _get_lsp()
+    local lsp = option.get("lsp")
+    if lsp == nil then
+        lsp = os.getenv("XMAKE_GENERATOR_COMPDB_LSP")
+    end
+    return lsp
+end
+
 -- translate external/system include flags, because some tools (vscode) do not support them yet.
 -- https://github.com/xmake-io/xmake/issues/1050
 function _translate_arguments(arguments)
     local args = {}
     local cc = path.basename(arguments[1]):lower()
     local is_include = false
-    local lsp = option.get("lsp")
+    local lsp = _get_lsp()
+    local program_map = {}
     for idx, arg in ipairs(arguments) do
         -- convert path to string, maybe we need convert path, but not supported now.
         arg = tostring(arg)
@@ -94,13 +104,28 @@ function _translate_arguments(arguments)
             is_include = true
         end
         if arg then
-            -- split "/usr/bin/xcrun -sdk macosx clang"
-            -- @see https://github.com/xmake-io/xmake/issues/3159
-            if idx == 1 and not os.isfile(arg) and arg:find(" ", 1, true) then
-                table.join2(args, os.argv(arg))
-            else
-                table.insert(args, arg)
+            -- improve to support for "/usr/bin/xcrun -sdk macosx clang"
+            -- @see
+            -- https://github.com/xmake-io/xmake/issues/3159
+            -- https://github.com/xmake-io/xmake/issues/3286
+            if idx == 1 and is_host("macosx") and arg:find("xcrun -sdk", 1, true) then
+                local cmd = program_map[arg]
+                if cmd == nil then
+                    cmd = arg:gsub("xcrun %-sdk (%S+) (%S+)", function (plat, cc)
+                        return "xcrun -sdk " .. plat .. " -f " .. cc
+                    end)
+                    local splitinfo = cmd:split("%s")
+                    local binpath = try {function() return os.iorunv(splitinfo[1], table.slice(splitinfo, 2) or {}) end}
+                    if binpath then
+                        binpath = binpath:trim()
+                        if #binpath > 0 then
+                            arg = binpath
+                        end
+                    end
+                    program_map[arg] = cmd
+                end
             end
+            table.insert(args, arg)
         end
     end
     return args
@@ -257,6 +282,7 @@ function _make_target(jsonfile, target)
     local oldenvs = os.addenvs(target:pkgenvs())
 
     -- we enable it for clangd, @see https://github.com/xmake-io/xmake/issues/2818
+    local lsp = _get_lsp()
     if not lsp or lsp ~= "clangd" then
         target:set("pcheader", nil)
         target:set("pcxxheader", nil)
