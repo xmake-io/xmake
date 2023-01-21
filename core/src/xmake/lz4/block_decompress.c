@@ -65,7 +65,7 @@ tb_int_t xm_lz4_block_decompress(lua_State* lua)
     tb_byte_t buffer[8192];
     do
     {
-        output_data = real <= sizeof(buffer)? buffer : (tb_byte_t*)tb_malloc(buffer_maxn);
+        output_data = real <= sizeof(buffer)? buffer : (tb_byte_t*)tb_malloc(real);
         tb_assert_and_check_break(output_data);
 
         tb_int_t r = LZ4_decompress_safe((tb_char_t const*)data, (tb_char_t*)output_data, real, real);
