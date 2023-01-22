@@ -25,7 +25,6 @@ import("core.tool.compiler")
 import("core.project.project")
 import("core.project.depend")
 import("core.project.config")
-import("core.base.hashset")
 import("core.base.semver")
 import("utils.progress")
 import("private.action.build.object", {alias = "objectbuilder"})
@@ -182,8 +181,8 @@ end
 function generate_dependencies(target, sourcebatch, opt)
     local msvc = target:toolchain("msvc")
     local scandependenciesflag = get_scandependenciesflag(target)
+    local ifcoutputflag = get_ifcoutputflag(target)
     local common_flags = {"-TP", scandependenciesflag}
-    local cachedir = common.modules_cachedir(target)
     local changed = false
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
@@ -191,14 +190,11 @@ function generate_dependencies(target, sourcebatch, opt)
             if opt.progress then
                 progress.show(opt.progress, "${color.build.object}generating.module.deps %s", sourcefile)
             end
-            local outputdir = path.join(cachedir, path.directory(path.relative(sourcefile, projectdir)))
-            if not os.isdir(outputdir) then
-                os.mkdir(outputdir)
-            end
+            local outputdir = common.get_outputdir(target, sourcefile)
 
-            local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".json")
+            local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".module.json")
             if scandependenciesflag and not target:policy("build.c++.msvc.fallbackscanner") then
-                local flags = {jsonfile, sourcefile, "-Fo" .. target:objectfile(sourcefile)}
+                local flags = {jsonfile, sourcefile, ifcoutputflag, outputdir, "-Fo" .. target:objectfile(sourcefile)}
                 _compile(target, table.join(common_flags, flags), sourcefile)
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
@@ -311,8 +307,6 @@ end
 
 -- generate target user header units for batchcmds
 function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits, opt)
-    local cachedir = common.modules_cachedir(target)
-
     -- get flags
     local exportheaderflag = get_exportheaderflag(target)
     local headerunitflag = get_headerunitflag(target)
@@ -326,17 +320,10 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
     end, {rootjob = opt.rootjob})
 
     -- build headerunits
-    local projectdir = os.projectdir()
     for _, headerunit in ipairs(headerunits) do
         local file = path.relative(headerunit.path, target:scriptdir())
         local objectfile = target:objectfile(file)
-        local outputdir
-        if headerunit.type == ":quote" then
-            outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
-        else
-            -- if path is relative then its a subtarget path
-            outputdir = path.join(cachedir, path.is_absolute(headerunit.path) and path.directory(headerunit.path):sub(3) or headerunit.path)
-        end
+        local outputdir = common.get_outputdir(target, headerunit)
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
         local bmifile = path.join(outputdir, bmifilename)
         batchjobs:addjob(headerunit.name, function (index, total)
@@ -368,7 +355,6 @@ end
 
 -- generate target user header units for batchcmds
 function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits, opt)
-    local cachedir = common.modules_cachedir(target)
     local exportheaderflag = get_exportheaderflag(target)
     local headerunitflag = get_headerunitflag(target)
     local headernameflag = get_headernameflag(target)
@@ -376,18 +362,11 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
     assert(headerunitflag and headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
 
     -- build headerunits
-    local projectdir = os.projectdir()
     local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
         local file = path.relative(headerunit.path, target:scriptdir())
         local objectfile = target:objectfile(file)
-        local outputdir
-        if headerunit.type == ":quote" then
-            outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
-        else
-            -- if path is relative then its a subtarget path
-            outputdir = path.join(cachedir, path.is_absolute(headerunit.path) and path.directory(headerunit.path):sub(3) or headerunit.path)
-        end
+        local outputdir = common.get_outputdir(target, headerunit)
         batchcmds:mkdir(outputdir)
 
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
@@ -466,10 +445,10 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 local fileconfig = target:fileconfig(cppfile)
                 if fileconfig and fileconfig.install then
                     batchjobs:addjob(name .. "_metafile", function(index, total)
-                        local cachedir = common.modules_cachedir(target)
-                        local metafilepath = path.join(cachedir, path.filename(cppfile) .. ".meta-info")
+                        local outputdir = common.get_outputdir(target, cppfile)
+                        local metafilepath = path.join(outputdir, path.filename(cppfile) .. ".meta-info")
                         depend.on_changed(function()
-                            progress.show(opt.progress, "${color.build.object}generating.module.metadata %s", name)
+                            progress.show((index * 100) / total, "${color.build.object}generating.module.metadata %s", name)
                             local metadata = common.generate_meta_module_info(target, name, cppfile, module.requires)
                             json.savefile(metafilepath, metadata)
 
