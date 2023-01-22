@@ -74,7 +74,7 @@ function load(target)
     end
     target:add("cxxflags", {modulesflag, modulemapperflag .. path.translate(_get_module_mapper(target))}, {force = true, expand = false})
     -- fix cxxabi issue, @see https://github.com/xmake-io/xmake/issues/2716#issuecomment-1225057760
-    -- target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=0")
+    target:add("cxxflags", "-D_GLIBCXX_USE_CXX11_ABI=0")
 end
 
 -- get includedirs for stl headers
