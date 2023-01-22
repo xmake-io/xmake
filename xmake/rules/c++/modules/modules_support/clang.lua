@@ -247,7 +247,6 @@ end
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
     local changed = false
-    local cachedir = common.modules_cachedir(target)
     local projectdir = os.projectdir()
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
@@ -256,11 +255,7 @@ function generate_dependencies(target, sourcebatch, opt)
                 progress.show(opt.progress, "${color.build.object}generating.module.deps %s", sourcefile)
             end
 
-            local outputdir = path.translate(path.join(cachedir, path.directory(path.relative(sourcefile, projectdir))))
-            if not os.isdir(outputdir) then
-                os.mkdir(outputdir)
-            end
-
+            local outputdir = common.get_outputdir(target, sourcefile)
             local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
             if has_clangscandepssupport(target) and not target:policy("build.c++.clang.fallbackscanner") then
                 local clangscandeps = find_tool("clang-scan-deps")
@@ -278,9 +273,14 @@ function generate_dependencies(target, sourcebatch, opt)
                     local compinst = target:compiler("cxx")
                     local compflags = compinst:compflags({sourcefile = file, target = target})
                     local flags = {}
+                    local next_flag = false
                     for _, flag in pairs(compflags) do
-                        if flag:startswith("-stdlib") or (flag:startswith("-f") and not flag:startswith("-fmodules")) or flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") then
+                        if flag == "-m64" or flag == "-g" or flag:startswith("-stdlib") or flag:startswith("-m") or (flag:startswith("-f") and not flag:startswith("-fmodule") and not flag:startswith("-fno-implicit-module-maps")) or flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") or next_flag then
                             table.insert(flags, flag)
+                            next_flag = false
+                            if flag:startswith("-isystem") then
+                                next_flag = true
+                            end
                         end
                     end
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
@@ -401,7 +401,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
 
     -- get cachedirs
-    local cachedir = common.modules_cachedir(target)
+    local cachedir = common.modules_cachedir(target, {mkdir = true})
     local modulecachepathflag = get_modulecachepathflag(target)
 
     -- flush job
@@ -410,19 +410,13 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
     end, {rootjob = opt.rootjob})
 
     -- build headerunits
-    local projectdir = os.projectdir()
     for _, headerunit in ipairs(headerunits) do
         local file = path.relative(headerunit.path, target:scriptdir())
         local objectfile = target:objectfile(file)
 
-        local outputdir
-        if headerunit.type == ":quote" then
-            outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
-        else
-            outputdir = path.join(cachedir, path.directory(headerunit.path))
-        end
+        local outputdir = common.get_outputdir(target, headerunit.path)
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
-        local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
+        local bmifile = path.join(outputdir, bmifilename)
         batchjobs:addjob(headerunit.name, function (index, total)
             depend.on_changed(function()
                 progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
@@ -454,22 +448,16 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
     assert(has_headerunitsupport(target), "compiler(clang): does not support c++ header units!")
 
     -- get cachedirs
-    local cachedir = common.modules_cachedir(target)
+    local cachedir = common.modules_cachedir(target, {mkdir = true})
     local modulecachepathflag = get_modulecachepathflag(target)
 
     -- build headerunits
-    local projectdir = os.projectdir()
     local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
         local file = path.relative(headerunit.path, target:scriptdir())
         local objectfile = target:objectfile(file)
 
-        local outputdir
-        if headerunit.type == ":quote" then
-            outputdir = path.join(cachedir, path.directory(path.relative(headerunit.path, projectdir)))
-        else
-            outputdir = path.join(cachedir, path.directory(headerunit.path))
-        end
+        local outputdir = common.get_outputdir(target, headerunit.path)
         batchcmds:mkdir(outputdir)
 
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
@@ -535,8 +523,8 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 local fileconfig = target:fileconfig(cppfile)
                 if fileconfig and fileconfig.install then
                     batchjobs:addjob(name .. "_metafile", function(index, total)
-                        local cachedir = common.modules_cachedir(target)
-                        local metafilepath = path.join(cachedir, path.filename(cppfile) .. ".meta-info")
+                        local outputdir = common.get_outputdir(target, cppfile)
+                        local metafilepath = path.join(outputdir, path.filename(cppfile) .. ".meta-info")
                         depend.on_changed(function()
                             progress.show(opt.progress, "${color.build.object}generating.module.metadata %s", name)
                             local metadata = common.generate_meta_module_info(target, name, cppfile, module.requires)
