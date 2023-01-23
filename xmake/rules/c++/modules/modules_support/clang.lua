@@ -247,7 +247,6 @@ end
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
     local changed = false
-    local projectdir = os.projectdir()
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
         depend.on_changed(function()
