@@ -728,7 +728,8 @@ function get_outputdir(target, module)
         end
         return cached
     else
-        local hashed = hash.sha1(bytes(path.directory(modulepath) .. target:name())):sub(1, 6)
+        local key = path.directory(modulepath) .. target:name()
+        local hashed = hash.uuid(key):split("-", {plain = true})[1]:lower()
         local moduledir = path.join(cachedir, hashed)
         localcache():set2("modules_paths", modulepath, moduledir)
         if not os.exists(moduledir) then
