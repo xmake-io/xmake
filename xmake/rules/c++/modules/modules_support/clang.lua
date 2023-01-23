@@ -277,7 +277,8 @@ function generate_dependencies(target, sourcebatch, opt)
                     for _, flag in ipairs(compflags) do
                         if flag == "-m64" or flag == "-g" or flag:startswith("-stdlib") or flag:startswith("-m") or
                            (flag:startswith("-f") and not flag:startswith("-fmodule") and not flag:startswith("-fno-implicit-module-maps")) or
-                           flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") or next_flag then
+                           flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") or next_flag or
+                           flag:startswith("-iframework") then
                             table.insert(flags, flag)
                             next_flag = false
                             if flag:startswith("-isystem") then
