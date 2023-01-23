@@ -440,6 +440,8 @@ function _preprocess(program, argv, opt)
             is_gcc = true
         elseif tool:name():startswith("clang") then
             is_clang = true
+        elseif tool:name() == "circle" then
+            return
         end
     end
 
