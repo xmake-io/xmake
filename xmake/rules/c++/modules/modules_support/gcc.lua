@@ -203,7 +203,9 @@ function generate_dependencies(target, sourcebatch, opt)
                     local flags = {}
                     local next_flag = false
                     for _, flag in ipairs(compflags) do
-                        if flag == "-m64" or flag == "-g" or flag:startswith("-m") or flag:startswith("-std") or (flag:startswith("-f") and not flag:startswith("-fmodule")) or flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") or next_flag then
+                        if flag == "-m64" or flag == "-g" or flag:startswith("-m") or flag:startswith("-std") or
+                           (flag:startswith("-f") and not flag:startswith("-fmodule")) or flag:startswith("-D") or
+                           flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") or next_flag then
                             table.insert(flags, flag)
                             next_flag = false
                             if flag:startswith("-isystem") then
