@@ -272,22 +272,14 @@ function generate_dependencies(target, sourcebatch, opt)
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                     local compinst = target:compiler("cxx")
                     local compflags = compinst:compflags({sourcefile = file, target = target})
-                    local flags = {}
-                    local next_flag = false
-                    for _, flag in ipairs(compflags) do
-                        if flag == "-m64" or flag == "-g" or flag:startswith("-stdlib") or flag:startswith("-m") or
-                           (flag:startswith("-f") and not flag:startswith("-fmodule") and not flag:startswith("-fno-implicit-module-maps")) or
-                           flag:startswith("-D") or flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") or next_flag or
-                           flag:startswith("-iframework") then
-                            table.insert(flags, flag)
-                            next_flag = false
-                            if flag:startswith("-isystem") then
-                                next_flag = true
-                            end
+                    for i, flag in ipairs(compflags) do
+                        -- exclude -fmodule* and -std=c++/gnu++* flags because, when they are set clang try to find bmi of imported modules but they don't exists a this point of compilation
+                        if flag:startswith("-fmodule") or flag:startswith("-std=c++") or flag:startswith("-std=gnu++") then
+                            table.remove(compflags, i)
                         end
                     end
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    os.vrunv(compinst:program(), table.join(flags, {"-E", "-x", "c++", file, "-o", ifile}))
+                    os.vrunv(compinst:program(), table.join(compflags, {"-E", "-x", "c++", file, "-o", ifile}))
                     local content = io.readfile(ifile)
                     os.rm(ifile)
                     return content

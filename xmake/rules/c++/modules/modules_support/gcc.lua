@@ -200,21 +200,14 @@ function generate_dependencies(target, sourcebatch, opt)
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                     local compinst = target:compiler("cxx")
                     local compflags = compinst:compflags({sourcefile = file, target = target})
-                    local flags = {}
-                    local next_flag = false
-                    for _, flag in ipairs(compflags) do
-                        if flag == "-m64" or flag == "-g" or flag:startswith("-m") or flag:startswith("-std") or
-                           (flag:startswith("-f") and not flag:startswith("-fmodule")) or flag:startswith("-D") or
-                           flag:startswith("-U") or flag:startswith("-I") or flag:startswith("-isystem") or next_flag then
-                            table.insert(flags, flag)
-                            next_flag = false
-                            if flag:startswith("-isystem") then
-                                next_flag = true
-                            end
+                    for i, flag in ipairs(compflags) do
+                        -- exclude -fmodule* flags because, when they are set gcc try to find bmi of imported modules but they don't exists a this point of compilation
+                        if flag:startswith("-fmodule") then
+                            table.remove(compflags, i)
                         end
                     end
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    os.vrunv(compinst:program(), table.join(common_args, flags, {file,  "-o", ifile}))
+                    os.vrunv(compinst:program(), table.join(common_args, compflags, {file,  "-o", ifile}))
                     local content = io.readfile(ifile)
                     os.rm(ifile)
                     return content
@@ -340,8 +333,8 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
     local projectdir = os.projectdir()
     local depmtime = 0
     for _, headerunit in ipairs(headerunits) do
-        local headerunit_path
         local flags = {"-c"}
+        local headerunit_path
         if headerunit.type == ":quote" then
             table.join2(flags, {"-I", path(path.relative(headerunit.path, projectdir)):directory(), "-x", "c++-user-header", headerunit.name})
             headerunit_path = path.join(".", path.relative(headerunit.path, projectdir))
@@ -357,7 +350,6 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
         local bmifile = (outputdir and path.join(outputdir, bmifilename) or bmifilename)
         batchcmds:mkdir(path.directory(objectfile))
-
 
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
         _batchcmds_compile(batchcmds, target, flags)
@@ -405,7 +397,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         local outputdir = common.get_outputdir(target, cppfile)
                         local metafilepath = path.join(outputdir, path.filename(cppfile) .. ".meta-info")
                         depend.on_changed(function()
-                            progress.show(opt.progress, "${color.build.object}generating.module.metadata %s", name)
+                            progress.show((index * 100) / total, "${color.build.object}generating.module.metadata %s", name)
                             local metadata = common.generate_meta_module_info(target, name, cppfile, module.requires)
                             json.savefile(metafilepath, metadata)
 
@@ -462,6 +454,7 @@ end
 
 -- build module files for batchcmds
 function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, opt)
+    local modulemapperflag = get_modulemapperflag(target)
     local mapper_file = _get_module_mapper(target)
 
     -- build modules
