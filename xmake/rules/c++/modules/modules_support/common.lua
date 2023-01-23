@@ -310,6 +310,9 @@ function _parse_dependencies_data(target, moduleinfos)
                         -- we didn't found the compiled module path, so we assume it
                         if not bmifile then
                             local name = provide["logical-name"] .. bmi_extension(target)
+                            -- partition ":" character is invalid path character on windows
+                            -- @see https://github.com/xmake-io/xmake/issues/2954
+                            name = name:replace(":", "-")
                             bmifile = path.join(get_outputdir(target,  name), name)
                         end
                     end
