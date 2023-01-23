@@ -226,7 +226,7 @@ function toolchain_includedirs(target)
     if includedirs == nil then
         includedirs = {}
         local clang, toolname = target:tool("cxx")
-        assert(toolname == "clang")
+        assert(toolname:startswith("clang"))
         _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
         local _, result = try {function () return os.iorunv(clang, {"-E", "-stdlib=libc++", "-Wp,-v", "-xc", os.nuldev()}) end}
         if result then
