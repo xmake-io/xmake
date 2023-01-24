@@ -201,7 +201,7 @@ function generate_dependencies(target, sourcebatch, opt)
                     local compinst = target:compiler("cxx")
                     local compflags = compinst:compflags({sourcefile = file, target = target})
                     -- exclude -fmodule* flags because, when they are set gcc try to find bmi of imported modules but they don't exists a this point of compilation
-                    compflags = table.remove_if(compflags, function(_, flag) return flag:startswith("-fmodule") end)
+                    table.remove_if(compflags, function(_, flag) return flag:startswith("-fmodule") end)
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
                     os.vrunv(compinst:program(), table.join(common_args, compflags, {file,  "-o", ifile}))
                     local content = io.readfile(ifile)
