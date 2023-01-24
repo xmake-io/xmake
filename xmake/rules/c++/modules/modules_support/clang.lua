@@ -271,12 +271,8 @@ function generate_dependencies(target, sourcebatch, opt)
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                     local compinst = target:compiler("cxx")
                     local compflags = compinst:compflags({sourcefile = file, target = target})
-                    for i, flag in ipairs(compflags) do
-                        -- exclude -fmodule* and -std=c++/gnu++* flags because, when they are set clang try to find bmi of imported modules but they don't exists a this point of compilation
-                        if flag:startswith("-fmodule") or flag:startswith("-std=c++") or flag:startswith("-std=gnu++") then
-                            table.remove(compflags, i)
-                        end
-                    end
+                    -- exclude -fmodule* and -std=c++/gnu++* flags because, when they are set clang try to find bmi of imported modules but they don't exists a this point of compilation
+                    compflags = table.remove_if(compflags, function(_, flag) return flag:startswith("-fmodule") or flag:startswith("-std=c++") or flag:startswith("-std=gnu++") end)
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
                     os.vrunv(compinst:program(), table.join(compflags, {"-E", "-x", "c++", file, "-o", ifile}))
                     local content = io.readfile(ifile)
