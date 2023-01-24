@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.json")
+import("core.base.bytes")
 import("core.base.hashset")
 import("core.project.config")
 import("core.tool.compiler")
@@ -43,7 +44,7 @@ end
 -- get stl modules cache directory
 function stlmodules_cachedir(target, opt)
     opt = opt or {}
-    local stlcachedir = path.join(config.buildir(), "stlmodules", "cache")
+    local stlcachedir = path.join(config.buildir(), "stlmodules", "cache", config.mode() or "release")
     if opt.mkdir and not os.isdir(stlcachedir) then
         os.mkdir(stlcachedir)
         os.mkdir(path.join(stlcachedir, "experimental"))
@@ -287,7 +288,6 @@ end
 }]]
 function _parse_dependencies_data(target, moduleinfos)
     local modules
-    local cachedir = modules_cachedir(target)
     for _, moduleinfo in ipairs(moduleinfos) do
         assert(moduleinfo.version <= 1)
         for _, rule in ipairs(moduleinfo.rules) do
@@ -297,24 +297,30 @@ function _parse_dependencies_data(target, moduleinfos)
                 for _, provide in ipairs(rule.provides) do
                     m.provides = m.provides or {}
                     assert(provide["logical-name"])
-                    if provide["compiled-module-path"] then
-                        if not path.is_absolute(provide["compiled-module-path"]) then
-                            m.provides[provide["logical-name"]] = path.absolute(path.translate(provide["compiled-module-path"]))
-                        else
-                            m.provides[provide["logical-name"]] = path.translate(provide["compiled-module-path"])
+                    local bmifile = provide["compiled-module-path"]
+                    -- try to find the compiled module path in outputs filed (MSVC doesn't generate compiled-module-path)
+                    if not bmifile then
+                        for _, output in ipairs(rule.outputs) do
+                            if output:endswith(".ifc") or output:endswith(".pcm") or output:endswith(".bmi") then
+                                bmifile = output
+                                break
+                            end
                         end
-                    else
-                        -- assume path with name
-                        local name = provide["logical-name"] .. bmi_extension(target)
-                        -- partition ":" character is invalid path character on windows
-                        -- @see https://github.com/xmake-io/xmake/issues/2954
-                        name = name:replace(":", "-")
-                        m.provides[provide["logical-name"]] = {
-                            bmi = path.join(cachedir, name),
-                            sourcefile = moduleinfo.sourcefile,
-                            interface = provide["is-interface"]
-                        }
+
+                        -- we didn't found the compiled module path, so we assume it
+                        if not bmifile then
+                            local name = provide["logical-name"] .. bmi_extension(target)
+                            -- partition ":" character is invalid path character on windows
+                            -- @see https://github.com/xmake-io/xmake/issues/2954
+                            name = name:replace(":", "-")
+                            bmifile = path.join(get_outputdir(target,  name), name)
+                        end
                     end
+                    m.provides[provide["logical-name"]] = {
+                        bmi = bmifile,
+                        sourcefile = moduleinfo.sourcefile,
+                        interface = provide["is-interface"]
+                    }
                 end
             else
                 m.cppfile = moduleinfo.sourcefile
@@ -516,7 +522,7 @@ end
   ]
 }]]
 function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess_file)
-    local output = {version = 0, revision = 0, rules = {}}
+    local output = {version = 1, revision = 0, rules = {}}
     local rule = {outputs = {jsonfile}}
     rule["primary-output"] = target:objectfile(sourcefile)
 
@@ -550,6 +556,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
             if module_depname:startswith(":") then
                 local module_name = (module_name_export or module_name_private or "")
                 module_name = module_name:split(":")[1]
+                module_dep["unique-on-source-path"] = true
                 module_depname = module_name .. module_depname
             elseif module_depname:startswith("\"") then
                 module_depname = module_depname:sub(2, -2)
@@ -569,12 +576,13 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
     end
 
     if module_name_export or internal then
-        table.insert(rule.outputs, (module_name_export or module_name_private) .. bmi_extension(target))
+        local outputdir = get_outputdir(target, sourcefile)
 
         local provide = {}
         provide["logical-name"] = module_name_export or module_name_private
-        provide["source-path"] = path.absolute(sourcefile, project.directory())
+        provide["source-path"] = sourcefile
         provide["is-interface"] = not internal
+        provide["compiled-module-path"] = path.join(outputdir, (module_name_export or module_name_private) .. bmi_extension(target))
 
         rule.provides = {}
         table.insert(rule.provides, provide)
@@ -693,7 +701,6 @@ end
 
 function install_module_target(target)
     local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
-    local cachedir = modules_cachedir(target)
     if sourcebatch and sourcebatch.sourcefiles then
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
             local prefixdir = path.join("modules", target:name())
@@ -704,11 +711,33 @@ function install_module_target(target)
             local install = (fileconfig and not fileconfig.install) and false or true
             if install then
                 target:add("installfiles", sourcefile, {prefixdir = prefixdir})
-                local metafile = path.join(cachedir, path.filename(sourcefile) .. ".meta-info")
+                local outputdir = get_outputdir(target,sourcefile)
+                local metafile = path.join(outputdir, path.filename(sourcefile) .. ".meta-info")
                 if os.exists(metafile) then
                     target:add("installfiles", metafile, {prefixdir = prefixdir})
                 end
             end
         end
+    end
+end
+
+function get_outputdir(target, module)
+    local cachedir = modules_cachedir(target)
+    local modulepath = module.path or module
+    local cached = localcache():get2("modules_paths", modulepath)
+    if cached then
+        if not os.exists(cached) then
+            os.mkdir(cached)
+        end
+        return cached
+    else
+        local key = path.directory(modulepath) .. target:name()
+        local hashed = hash.uuid(key):split("-", {plain = true})[1]:lower()
+        local moduledir = path.join(cachedir, hashed)
+        localcache():set2("modules_paths", modulepath, moduledir)
+        if not os.exists(moduledir) then
+            os.mkdir(moduledir)
+        end
+        return moduledir
     end
 end
