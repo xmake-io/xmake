@@ -388,13 +388,17 @@ end
 
 -- link the target file
 --
--- we need use os.vrunv() to show link output when enable verbose information
+-- maybe we need use os.vrunv() to show link output when enable verbose information
 -- @see https://github.com/xmake-io/xmake/discussions/2916
 --
 function link(self, objectfiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
-    os.vrunv(program, argv, {envs = self:runenvs()})
+    if option.get("verbose") then
+        os.execv(program, argv, {envs = self:runenvs()})
+    else
+        os.vrunv(program, argv, {envs = self:runenvs()})
+    end
 end
 
 -- has color diagnostics?
