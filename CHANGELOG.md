@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.7.6
+
 ### New features
 
 * [#3228](https://github.com/xmake-io/xmake/pull/3228): Add support of importing modules from packages
@@ -1507,6 +1509,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.7.6
 
 ### 新特性
 
