@@ -38,10 +38,9 @@ jobs:
       - name: Prepare
         run: |
           xmake show
-          [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-          Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04.zip" -UseBasicParsing -OutFile ./nsis.zip
-          Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04-strlen_8192.zip" -UseBasicParsing -OutFile ./nsis-longstr.zip
-          Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/UAC.zip" -UseBasicParsing -OutFile ./nsis-uac.zip
+          curl -fsSL "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04.zip" -o ./nsis.zip
+          curl -fsSL "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04-strlen_8192.zip" -o ./nsis-longstr.zip
+          curl -fsSL "https://github.com/xmake-mirror/nsis/releases/download/v30b3/UAC.zip" -o ./nsis-uac.zip
           Expand-Archive ./nsis.zip -DestinationPath ./nsis
           Move-Item ./nsis/*/* ./nsis
           Expand-Archive ./nsis-longstr.zip -DestinationPath ./nsis -Force
@@ -75,11 +74,11 @@ jobs:
         run: |
           # build installer
           (New-Item ./winenv/bin -ItemType Directory).FullName
-          Invoke-WebRequest "https://github.com/xmake-mirror/7zip/releases/download/19.00/7z19.00-${{ matrix.arch }}.zip" -UseBasicParsing -OutFile .\7zip.zip
+          curl -fsSL "https://github.com/xmake-mirror/7zip/releases/download/19.00/7z19.00-${{ matrix.arch }}.zip" -o .\7zip.zip
           Expand-Archive ./7zip.zip -DestinationPath ./7zip
           Copy-Item ./7zip/7z.exe ./winenv/bin
           Copy-Item ./7zip/7z.dll ./winenv/bin
-          Invoke-WebRequest "https://curl.se/windows/dl-7.81.0/curl-7.81.0-win32-mingw.zip" -UseBasicParsing -OutFile .\curl.zip
+          curl -fsSL "https://curl.se/windows/dl-7.85.0/curl-7.85.0-win32-mingw.zip" -o .\curl.zip
           Expand-Archive ./curl.zip -DestinationPath ./curl
           Copy-Item ./curl/curl-7.81.0-win32-mingw/bin/curl.exe ./winenv/bin
           Copy-Item ./curl/curl-7.81.0-win32-mingw/bin/curl-ca-bundle.crt ./winenv/bin
