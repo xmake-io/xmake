@@ -6,6 +6,10 @@
 
 * [#3318](https://github.com/xmake-io/xmake/pull/3318): Improve dlang toolchains
 
+### Bugs fixed
+
+* [#3317](https://github.com/xmake-io/xmake/pull/3317): Fix languages for qt project.
+
 ## v2.7.6
 
 ### New features
@@ -1517,6 +1521,10 @@
 ### 改进
 
 * [#3318](https://github.com/xmake-io/xmake/pull/3318): 改进 dlang 工具链
+
+### Bugs 修复
+
+* [#3317](https://github.com/xmake-io/xmake/pull/3317): 针对 Qt 工程，修复 lanuages 设置
 
 ## v2.7.6
 
