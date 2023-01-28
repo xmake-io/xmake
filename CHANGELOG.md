@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* [#3318](https://github.com/xmake-io/xmake/pull/3318): Improve dlang toolchains
+
 ## v2.7.6
 
 ### New features
@@ -1509,6 +1513,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#3318](https://github.com/xmake-io/xmake/pull/3318): 改进 dlang 工具链
 
 ## v2.7.6
 
