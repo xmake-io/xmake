@@ -18,19 +18,23 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
-toolchain("dlang")
+toolchain("dmd")
     set_homepage("https://dlang.org/")
     set_description("D Programming Language Compiler")
 
-    on_check("check")
+    on_check(function (toolchain)
+        import("lib.detect.find_tool")
+        if find_tool("dmd") then
+            return true
+        end
+    end)
 
     on_load(function (toolchain)
         local cross = toolchain:cross() or ""
-        toolchain:add("toolset", "dc",   "$(env DC)", "dmd", "ldc2", cross .. "gdc")
-        toolchain:add("toolset", "dcld", "$(env DC)", "dmd", "ldc2", cross .. "gdc")
-        toolchain:add("toolset", "dcsh", "$(env DC)", "dmd", "ldc2", cross .. "gdc")
-        toolchain:add("toolset", "dcar", "$(env DC)", "dmd", "ldc2", cross .. "gcc-ar")
+        toolchain:add("toolset", "dc",   "dmd")
+        toolchain:add("toolset", "dcld", "dmd")
+        toolchain:add("toolset", "dcsh", "dmd")
+        toolchain:add("toolset", "dcar", "dmd")
 
         local march
         if toolchain:is_arch("x86_64", "x64") then

@@ -38,7 +38,7 @@ platform("windows")
     set_formats("symbol", "$(name).pdb")
 
     -- set toolchains
-    set_toolchains("msvc", "clang", "yasm", "nasm", "cuda", "dlang", "rust", "swift", "go", "gfortran", "zig", "fpc", "nim")
+    set_toolchains("msvc", "clang", "yasm", "nasm", "cuda", "rust", "swift", "go", "gfortran", "zig", "fpc", "nim")
 
     -- set menu
     set_menu {

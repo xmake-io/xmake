@@ -19,18 +19,17 @@
 --
 
 -- define toolchain
-toolchain("dlang")
-    set_homepage("https://dlang.org/")
-    set_description("D Programming Language Compiler")
+toolchain("ldc")
+    set_homepage("https://github.com/ldc-developers/ldc")
+    set_description("The LLVM-based D Compiler.")
 
     on_check("check")
 
     on_load(function (toolchain)
-        local cross = toolchain:cross() or ""
-        toolchain:add("toolset", "dc",   "$(env DC)", "dmd", "ldc2", cross .. "gdc")
-        toolchain:add("toolset", "dcld", "$(env DC)", "dmd", "ldc2", cross .. "gdc")
-        toolchain:add("toolset", "dcsh", "$(env DC)", "dmd", "ldc2", cross .. "gdc")
-        toolchain:add("toolset", "dcar", "$(env DC)", "dmd", "ldc2", cross .. "gcc-ar")
+        toolchain:add("toolset", "dc",   "ldc2")
+        toolchain:add("toolset", "dcld", "ldc2")
+        toolchain:add("toolset", "dcsh", "ldc2")
+        toolchain:add("toolset", "dcar", "ldc2")
 
         local march
         if toolchain:is_arch("x86_64", "x64") then

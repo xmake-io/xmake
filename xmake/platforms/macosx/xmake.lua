@@ -40,7 +40,7 @@ platform("macosx")
     set_installdir("/usr/local")
 
     -- set toolchains
-    set_toolchains("envs", "xcode", "clang", "gcc", "yasm", "nasm", "cuda", "dlang", "rust", "go", "gfortran", "zig", "fpc", "nim")
+    set_toolchains("envs", "xcode", "clang", "gcc", "yasm", "nasm", "cuda", "rust", "go", "gfortran", "zig", "fpc", "nim")
 
     -- set menu
     set_menu {

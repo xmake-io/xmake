@@ -40,7 +40,7 @@ platform("linux")
     set_installdir("/usr/local")
 
     -- set toolchains
-    set_toolchains("envs", "cross", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "dlang", "go", "rust", "swift", "gfortran", "zig", "fpc", "nim")
+    set_toolchains("envs", "cross", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "go", "rust", "swift", "gfortran", "zig", "fpc", "nim")
 
     -- set menu
     set_menu {
