@@ -21,7 +21,7 @@
 -- define toolchain
 toolchain("dlang")
     set_homepage("https://dlang.org/")
-    set_description("D Programming Language Compiler")
+    set_description("D Programming Language Compiler (Auto)")
 
     on_check("check")
 

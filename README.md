@@ -251,7 +251,10 @@ clang-cl      LLVM Clang C/C++ Compiler compatible with msvc
 yasm          The Yasm Modular Assembler
 clang         A C language family frontend for LLVM
 go            Go Programming Language Compiler
-dlang         D Programming Language Compiler
+dlang         D Programming Language Compiler (Auto)
+dmd           D Programming Language Compiler
+ldc           The LLVM-based D Compiler
+gdc           The GNU D Compiler (GDC)
 gfortran      GNU Fortran Programming Language Compiler
 zig           Zig Programming Language Compiler
 sdcc          Small Device C Compiler
