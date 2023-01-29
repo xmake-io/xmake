@@ -18,15 +18,7 @@
 -- @file        xmake.lua
 --
 
--- define rule: c.build.optimization
-rule("c.build.optimization")
-    on_config(function (target)
-        import("config")(target, "cc")
-    end)
-
--- define rule: c++.build.optimization
-rule("c++.build.optimization")
-    on_config(function (target)
-        import("config")(target, "cxx")
-    end)
+-- define rule: dlang.build.optimization
+rule("dlang.build.optimization")
+    on_config("config")
 
