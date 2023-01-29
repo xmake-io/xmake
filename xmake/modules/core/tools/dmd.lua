@@ -48,21 +48,10 @@ function nf_optimize(self, level)
         local maps =
         {
             fast        = "-O"
-        ,   faster      = "-O -release"
-        ,   fastest     = "-O -release -inline -boundscheck=off"
-        ,   smallest    = "-O -release -boundscheck=off"
-        ,   aggressive  = "-O -release -inline -boundscheck=off"
-        }
-        return maps[level]
-    end
-end
-
--- make the strip flag
-function nf_strip(self, level)
-    if not self:is_plat("windows") then
-        local maps = {
-            debug = "-L-S",
-            all   = "-L-s"
+        ,   faster      = {"-O", "-release"}
+        ,   fastest     = {"-O", "-release", "-inline", "-boundscheck=off"}
+        ,   smallest    = {"-O", "-release", "-boundscheck=off"}
+        ,   aggressive  = {"-O", "-release", "-inline", "-boundscheck=off"}
         }
         return maps[level]
     end
