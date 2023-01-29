@@ -32,7 +32,7 @@ function _add_lto_optimization(target)
         -- @see https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
         local optimize = target:get("optimize")
         if optimize then
-            local optimize_flags = compiler.map_flags("dc", "optimize", optimize)
+            local optimize_flags = compiler.map_flags("d", "optimize", optimize)
             target:add("ldflags", optimize_flags)
             target:add("shflags", optimize_flags)
         end
