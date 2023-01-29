@@ -813,7 +813,7 @@ _get_abstract_flag_for_gcc_clang() {
                 flag="-Wl,-S"
             elif test_eq "${value}" "all"; then
                 if is_plat "macosx"; then
-                    flag="-Wl,-x"
+                    flag="-Wl,-x -Wl,-dead_strip"
                 else
                     flag="-s"
                 fi
