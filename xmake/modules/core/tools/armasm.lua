@@ -45,20 +45,6 @@ function nf_symbol(self, level)
     end
 end
 
--- make the optimize flag
-function nf_optimize(self, level)
-    local maps =
-    {
-        none       = "-O0"
-    ,   fast       = "-O1"
-    ,   faster     = "-O2"
-    ,   fastest    = "-O3"
-    ,   smallest   = "-Os"
-    ,   aggressive = "-Ofast"
-    }
-    return maps[level]
-end
-
 -- make runtime flag
 function nf_runtime(self, runtime)
     if runtime == "microlib" then
