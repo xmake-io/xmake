@@ -26,9 +26,9 @@ import("core.project.project")
 function _add_lto_optimization(target)
     if target:has_tool("dc", "ldc2") and target:has_tool("dcld", "ldc2") then
         target:add("dcflags", "-flto=thin", {force = true})
-        target:add("ldflags", "-flto=thin", {force = true})
-        target:add("shflags", "-flto=thin", {force = true})
-        -- to use the link-time optimizer, -flto and optimization options should be specified at compile time and during the final link.
+        target:add("ldflags", "-flto=thin", "-defaultlib=phobos2-ldc-lto,druntime-ldc-lto", {force = true})
+        target:add("shflags", "-flto=thin", "-defaultlib=phobos2-ldc-lto,druntime-ldc-lto", {force = true})
+        -- to use the link-time optimizer, lto and optimization options should be specified at compile time and during the final link.
         -- @see https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
         local optimize = target:get("optimize")
         if optimize then

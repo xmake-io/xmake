@@ -20,6 +20,7 @@
 
 -- imports
 inherit("dmd")
+import("core.language.language")
 
 -- init it
 function init(self)
@@ -37,20 +38,28 @@ end
 -- make the optimize flag
 function nf_optimize(self, level)
     local maps = {
-        fast        = "-O"
-    ,   faster      = {"-O", "--release"}
-    ,   fastest     = {"-O", "--release", "--boundscheck=off"}
-    ,   smallest    = {"-O", "--release", "--boundscheck=off"}
-    ,   aggressive  = {"-O", "--release", "--boundscheck=off"}
+        none        = "--O0"
+    ,   fast        = "--O1"
+    ,   faster      = {"--O2", "--release"}
+    ,   fastest     = {"--O3", "--release", "--boundscheck=off"}
+    ,   smallest    = {"--Oz", "--release", "--boundscheck=off"}
+    ,   aggressive  = {"--O4", "--release", "--boundscheck=off"}
     }
     return maps[level]
 end
 
 -- make the symbol flag
 function nf_symbol(self, level)
-    local maps = {
-        debug = "-g --d-debug"
-    }
-    return maps[level]
+    local kind = self:kind()
+    if language.sourcekinds()[kind] then
+        local maps = _g.symbol_maps
+        if not maps then
+            maps = {
+                debug  = {"-g", "--d-debug"}
+            ,   hidden = "-fvisibility=hidden"
+            }
+            _g.symbol_maps = maps
+        end
+        return maps[level .. '_' .. kind] or maps[level]
+    end
 end
-

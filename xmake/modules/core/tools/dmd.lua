@@ -73,10 +73,17 @@ end
 
 -- make the symbol flag
 function nf_symbol(self, level)
-    local maps = {
-        debug = "-g -debug"
-    }
-    return maps[level]
+    local kind = self:kind()
+    if language.sourcekinds()[kind] then
+        local maps = _g.symbol_maps
+        if not maps then
+            maps = {
+                debug  = {"-g", "-debug"}
+            }
+            _g.symbol_maps = maps
+        end
+        return maps[level .. '_' .. kind] or maps[level]
+    end
 end
 
 -- make the warning flag
