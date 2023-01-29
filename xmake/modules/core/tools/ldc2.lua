@@ -46,17 +46,6 @@ function nf_optimize(self, level)
     return maps[level]
 end
 
--- make the strip flag
-function nf_strip(self, level)
-    if not self:is_plat("windows") then
-        local maps = {
-            debug = "-L-S",
-            all   = "-L-s"
-        }
-        return maps[level]
-    end
-end
-
 -- make the symbol flag
 function nf_symbol(self, level)
     local maps = {

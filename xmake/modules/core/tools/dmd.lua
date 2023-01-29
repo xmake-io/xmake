@@ -62,7 +62,7 @@ function nf_strip(self, level)
     if not self:is_plat("windows") then
         local maps = {
             debug = "-L-S",
-            all   = {"-L-s", "-L-dead_strip"}
+            all   = "-L-s"
         }
         if self:is_plat("macosx", "iphoneos") then
             maps.all = {"-L-x", "-L-dead_strip"}
