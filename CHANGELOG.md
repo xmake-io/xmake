@@ -5,6 +5,7 @@
 ### Changes
 
 * [#3318](https://github.com/xmake-io/xmake/pull/3318): Improve dlang toolchains
+* Improve to strip/optimization for dmd/ldc2
 
 ### Bugs fixed
 
@@ -1521,6 +1522,7 @@
 ### 改进
 
 * [#3318](https://github.com/xmake-io/xmake/pull/3318): 改进 dlang 工具链
+* 为 dmd/ldc2 改进 strip/optimization
 
 ### Bugs 修复
 
