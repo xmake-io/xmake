@@ -181,6 +181,8 @@ function nf_language(self, stdname)
             ansi        = "-ansi"
         ,   c89         = "-std=c89"
         ,   gnu89       = "-std=gnu89"
+        ,   c90         = "-std=c90"
+        ,   gnu90       = "-std=gnu90"
         ,   c99         = "-std=c99"
         ,   gnu99       = "-std=gnu99"
         ,   c11         = "-std=c11"
