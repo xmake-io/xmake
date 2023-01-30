@@ -47,7 +47,7 @@ fi
 if [ -f "$outputfile.tar.gz" ]; then
     rm "$outputfile.tar.gz"
 fi
-zip -qr "$outputfile.zip" .
+zip -qr -9 "$outputfile.zip" .
 7z a "$outputfile.7z" .
 #tar -czf "$outputfile.tar.gz" *
 tar -cvf - * | gzip -9 - > "$outputfile.tar.gz"
