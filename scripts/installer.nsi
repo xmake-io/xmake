@@ -49,6 +49,8 @@ Unicode true
 
 ; Use best compressor
 SetCompressor /FINAL /SOLID lzma
+SetCompressorDictSize 64
+SetDatablockOptimize ON
 
 ; The default installation directory
 !ifdef x64
