@@ -34,6 +34,7 @@ cp ./*.md $topdir
 cp configure $topdir
 rm -rf $topdir/core/src/tbox/tbox/src/demo
 rm -rf $topdir/core/src/luajit
+rm -rf $topdir/core/src/pdcurses
 cd $srcdir || exit
 
 # archive files
