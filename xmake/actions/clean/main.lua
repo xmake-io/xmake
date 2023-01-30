@@ -161,8 +161,8 @@ function main()
     -- get the target name
     local targetname = option.get("target")
 
-    -- config it first
-    task.run("config", {target = targetname, require = false, verbose = false})
+    -- local config first
+    config.load()
 
     -- enter project directory
     local oldir = os.cd(project.directory())

@@ -63,6 +63,10 @@ function main(target)
     -- remove all?
     if option.get("all") then
 
+        -- remove config files
+        local _, configfiles = target:configfiles()
+        remove_files(configfiles)
+
         -- TODO remove the config.h file (deprecated)
         remove_files(target:configheader())
 
