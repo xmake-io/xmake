@@ -32,9 +32,9 @@ cp -r ./scripts/man $topdir/scripts
 cp -r ./scripts/debian $topdir/scripts
 cp ./*.md $topdir
 cp configure $topdir
+rm -rf $topdir/core/src/tbox/tbox/src/demo
+rm -rf $topdir/core/src/luajit
 cd $srcdir || exit
-rm -rf ./core/src/tbox/tbox/src/demo
-rm -rf ./core/src/luajit
 
 # archive files
 outputfile=$artifactsdir/"xmake"

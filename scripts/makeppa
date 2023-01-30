@@ -38,8 +38,8 @@ fi
 # extract tarball
 cd $workdir
 if [ ! -d $basename ]; then
-    mkdir $basename 
-    tar -xvf $basename.tar.gz -C $basename 
+    mkdir $basename
+    tar -xvf $basename.tar.gz -C $basename
 fi
 
 # enter project directory
@@ -76,7 +76,7 @@ lintian ../xmake_$version+$patch$serie.dsc
 # upload package
 echo "uploading package .."
 source=xmake_$version+"$patch$serie"_source
-if [ -f ../$source.ppa.upload ]; then 
+if [ -f ../$source.ppa.upload ]; then
     rm ../$source.ppa.upload
 fi
 dput ppa:xmake-io/xmake ../$source.changes
