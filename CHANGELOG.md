@@ -10,6 +10,7 @@
 ### Bugs fixed
 
 * [#3317](https://github.com/xmake-io/xmake/pull/3317): Fix languages for qt project.
+* [#3321](https://github.com/xmake-io/xmake/issues/3321): Fix dependfile when generating configiles
 
 ## v2.7.6
 
@@ -1527,6 +1528,7 @@
 ### Bugs 修复
 
 * [#3317](https://github.com/xmake-io/xmake/pull/3317): 针对 Qt 工程，修复 lanuages 设置
+* [#3321](https://github.com/xmake-io/xmake/issues/3321): 修复隔天 configfiles 重新生成导致重编问题
 
 ## v2.7.6
 
