@@ -27,8 +27,20 @@ task("check")
         options = {
             {'l', "list",      "k",  nil,   "Show all supported checkers list."},
             {nil, "info",      "kv", nil,   "Show the given checker information."},
-            {nil, "level",     "kv", "all", "Just show information for the given level.", values = {"warn", "error", "all"}},
-            {nil, "checkers",  "vs", nil,   "Use the given checkers to check project."}
+            {nil, "level",     "kv", "all", "Just show information for the given level.", values = {"warning", "error", "all"}},
+            {nil, "checkers",  "v",  "api", "Use the given checkers to check project.",
+                                            "e.g.",
+                                            "    - xmake check api",
+                                            "    - xmake check --level=error api.target",
+                                            "    - xmake check api.target.languages",
+                                            "",
+                                            "The supported checkers list:",
+                values = function (complete, opt)
+                    return import("plugins.check.checker", {rootdir = os.programdir()}).complete(complete, opt)
+                end},
+            {nil, "arguments", "vs", nil,   "Set the checker arguments.",
+                                            "e.g.",
+                                            "    - xmake check clang.tidy [arguments]"}
         }
     }
 

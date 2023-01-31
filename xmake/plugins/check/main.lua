@@ -20,6 +20,27 @@
 
 -- imports
 import("core.base.option")
+import("core.base.text")
+import("checker")
+
+function _show_list()
+    local tbl = {align = 'l', sep = "    "}
+    local checkers = checker.checkers()
+    local groups = {}
+    for name, info in table.orderpairs(checkers) do
+        local groupname = name:split(".", {plain = true})[1]
+        if not groups[groupname] then
+            table.insert(tbl, {})
+            table.insert(tbl, {groupname:sub(1, 1):upper() .. groupname:sub(2) .. " checkers:"})
+            groups[groupname] = true
+        end
+        table.insert(tbl, {{"  " .. name, style = "${color.dump.string}"}, info.description})
+    end
+    cprint(text.table(tbl))
+end
 
 function main()
+    if option.get("list") then
+        return _show_list()
+    end
 end
