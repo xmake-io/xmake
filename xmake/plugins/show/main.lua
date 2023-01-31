@@ -26,7 +26,6 @@ function _show_list(name)
     assert(#name > 0 and import("lists." .. name, {try = true, anonymous = true}), "unknown list name(%s)", name)()
 end
 
--- main entry
 function main()
 
     -- show list?
