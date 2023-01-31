@@ -52,11 +52,31 @@ tb_int_t xm_semver_satisfies(lua_State* lua)
     semver_range_t range = {0};
     if (semver_rangen(&range, range_str, tb_strlen(range_str)))
     {
-        // is branch name? try to match it
+        // range is branch name? try to match it
+        semver_t range_semver = {0};
         if (!tb_strcmp(version_str, range_str))
         {
             lua_pushboolean(lua, tb_true);
             return 1;
+        }
+        // range is a single version? try to compare it
+        else if (!semver_tryn(&range_semver, range_str, tb_strlen(range_str)))
+        {
+            semver_t semver = {0};
+            if (!semver_tryn(&semver, version_str, tb_strlen(version_str)))
+            {
+                lua_pushboolean(lua, semver_pcmp(&semver, &range_semver) == 0);
+                semver_dtor(&semver);
+                semver_dtor(&range_semver);
+                return 1;
+            }
+            else
+            {
+                semver_dtor(&range_semver);
+                lua_pushnil(lua);
+                lua_pushfstring(lua, "unable to parse semver '%s'", version_str);
+                return 2;
+            }
         }
         else
         {
@@ -79,7 +99,5 @@ tb_int_t xm_semver_satisfies(lua_State* lua)
     lua_pushboolean(lua, semver_range_match(semver, range));
     semver_dtor(&semver);
     semver_range_dtor(&range);
-
-    // ok
     return 1;
 }
