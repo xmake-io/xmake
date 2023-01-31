@@ -34,13 +34,26 @@ function _show_list()
             table.insert(tbl, {groupname:sub(1, 1):upper() .. groupname:sub(2) .. " checkers:"})
             groups[groupname] = true
         end
-        table.insert(tbl, {{"  " .. name, style = "${color.dump.string}"}, info.description})
+        table.insert(tbl, {{"  " .. name, style = "${color.dump.string_quote}"}, info.description})
     end
     cprint(text.table(tbl))
+end
+
+function _show_info(name)
+    local checkers = checker.checkers()
+    local info = checkers[name]
+    if info then
+        cprint("${color.dump.string}checker${clear}(%s):", name)
+        cprint("  -> ${color.dump.string_quote}description${clear}: %s", info.description)
+    else
+        raise("checker(%s) not found!", name)
+    end
 end
 
 function main()
     if option.get("list") then
         return _show_list()
+    elseif option.get("info") then
+        return _show_info(option.get("info"))
     end
 end
