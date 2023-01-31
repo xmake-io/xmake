@@ -42,10 +42,12 @@ function test_semver_satisfies(t)
     _check_semver_satisfies(t, true, "1.5.1", "^1.5.0")
     _check_semver_satisfies(t, true, "1.5.1", "~1.5.0")
     _check_semver_satisfies(t, true, "1.6.0", "^1.5.0")
+    _check_semver_satisfies(t, true, "1.6.0", "v1.6.0")
 
     _check_semver_satisfies(t, false, "1.6.1", "~1.5.0")
     _check_semver_satisfies(t, false, "2.5.1", "^1.5.0")
     _check_semver_satisfies(t, false, "1.4.1", ">=1.5.0 <1.6.0")
+    _check_semver_satisfies(t, false, "1.6.0", "v1.6.1")
 end
 
 -- parse version
