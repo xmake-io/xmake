@@ -23,11 +23,12 @@ task("check")
     on_run("main")
     set_menu {
         usage = "xmake check [options] [arguments]",
-        description = "Check the project code and configuration.",
+        description = "Check the project sourcecode and configuration.",
         options = {
-            {'l', "list",      "k",  nil, "Show all supported checkers list."},
-            {nil, "info",      "kv", nil, "Show the given checker information."},
-            {nil, "checkers",  "vs", nil, "Use the given checkers to check project."}
+            {'l', "list",      "k",  nil,   "Show all supported checkers list."},
+            {nil, "info",      "kv", nil,   "Show the given checker information."},
+            {nil, "level",     "kv", "all", "Just show information for the given level.", values = {"warn", "error", "all"}},
+            {nil, "checkers",  "vs", nil,   "Use the given checkers to check project."}
         }
     }
 
