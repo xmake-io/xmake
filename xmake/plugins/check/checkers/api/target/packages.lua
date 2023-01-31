@@ -19,4 +19,5 @@
 --
 
 function main()
+    print("check packages ..")
 end

@@ -19,4 +19,5 @@
 --
 
 function main()
+    print("check languages ..")
 end

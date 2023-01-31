@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.text")
 import("checker")
 
+-- show checkers list
 function _show_list()
     local tbl = {align = 'l', sep = "    "}
     local checkers = checker.checkers()
@@ -39,6 +40,7 @@ function _show_list()
     cprint(text.table(tbl))
 end
 
+-- show checker information
 function _show_info(name)
     local checkers = checker.checkers()
     local info = checkers[name]
@@ -50,10 +52,31 @@ function _show_info(name)
     end
 end
 
+-- do check
+function _check(group_or_name, arguments)
+    local checked_checkers = {}
+    local checkers = checker.checkers()
+    if checkers[group_or_name] then
+        table.insert(checked_checkers, group_or_name)
+    else
+        for name, _ in table.orderpairs(checkers) do
+            if name:startswith(group_or_name .. ".") then
+                table.insert(checked_checkers, name)
+            end
+        end
+    end
+    assert(#checked_checkers > 0, "checker(%s) not found!", group_or_name)
+    for _, name in ipairs(checked_checkers) do
+        import("checkers." .. name, {anonymous = true})(arguments)
+    end
+end
+
 function main()
     if option.get("list") then
-        return _show_list()
+        _show_list()
     elseif option.get("info") then
-        return _show_info(option.get("info"))
+        _show_info(option.get("info"))
+    elseif option.get("checkers") then
+        _check(option.get("checkers"), option.get("arguments"))
     end
 end

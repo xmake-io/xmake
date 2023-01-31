@@ -50,7 +50,7 @@ function complete(complete, opt)
                     else
                         table.insert(list, "...")
                     end
-                elseif k:startswith(complete) then
+                elseif name:startswith(complete) then
                     table.insert(list, name)
                 end
             end
