@@ -36,6 +36,5 @@ function main()
             table.insert(languages, "gnu" .. value:sub(2))
         end
     end
-    print(languages)
     api_checker.check({values = languages})
 end
