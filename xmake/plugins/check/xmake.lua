@@ -25,6 +25,9 @@ task("check")
         usage = "xmake check [options] [arguments]",
         description = "Check the project code and configuration.",
         options = {
+            {'l', "list",      "k",  nil, "Show all supported checkers list."},
+            {nil, "info",      "kv", nil, "Show the given checker information."},
+            {nil, "checkers",  "vs", nil, "Use the given checkers to check project."}
         }
     }
 
