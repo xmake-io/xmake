@@ -23,7 +23,7 @@ task("check")
     on_run("main")
     set_menu {
         usage = "xmake check [options] [arguments]",
-        description = "Check the project configuration.",
+        description = "Check the project code and configuration.",
         options = {
         }
     }
