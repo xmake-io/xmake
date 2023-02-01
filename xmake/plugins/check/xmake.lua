@@ -27,11 +27,10 @@ task("check")
         options = {
             {'l', "list",      "k",  nil,   "Show all supported checkers list."},
             {nil, "info",      "kv", nil,   "Show the given checker information."},
-            {nil, "level",     "kv", "all", "Just show information for the given level.", values = {"note", "warning", "error", "all"}},
             {nil, "checkers",  "v",  "api", "Use the given checkers to check project.",
                                             "e.g.",
                                             "    - xmake check api",
-                                            "    - xmake check --level=error api.target",
+                                            "    - xmake check -v api.target",
                                             "    - xmake check api.target.languages",
                                             "",
                                             "The supported checkers list:",

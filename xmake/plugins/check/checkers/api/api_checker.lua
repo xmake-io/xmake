@@ -27,10 +27,9 @@ import("core.project.project")
 function _show(apiname, value, target, opt)
     opt = opt or {}
 
-    -- match level?
+    -- match level? verbose: note/warning/error, default: warning/error
     local level = opt.level
-    local level_option = option.get("level")
-    if level_option and level_option ~= "all" and level_option ~= level then
+    if not option.get("verbose") and level == "note" then
         return
     end
 
