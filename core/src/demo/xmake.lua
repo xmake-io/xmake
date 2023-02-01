@@ -27,16 +27,18 @@ target("demo")
 
     -- add links
     if is_plat("windows") then
-        add_links("ws2_32", "advapi32", "shell32")
+        add_syslinks("ws2_32", "advapi32", "shell32")
         add_ldflags("/export:malloc", "/export:free", "/export:memmove")
     elseif is_plat("android") then
-        add_links("m", "c")
+        add_syslinks("m", "c")
     elseif is_plat("macosx") and is_config("runtime", "luajit") then
         add_ldflags("-all_load", "-pagezero_size 10000", "-image_base 100000000")
     elseif is_plat("mingw") then
         add_ldflags("-static-libgcc", {force = true})
+    elseif is_plat("haiku") then
+        add_syslinks("pthread", "network", "m", "c")
     else
-        add_links("pthread", "dl", "m", "c")
+        add_syslinks("pthread", "dl", "m", "c")
     end
 
     -- enable xp compatibility mode
