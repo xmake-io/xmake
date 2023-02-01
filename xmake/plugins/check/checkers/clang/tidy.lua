@@ -26,8 +26,35 @@ import("lib.detect.find_tool")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 
--- main
-function main()
+-- the clang.tidy options
+local options = {
+    {"l", "list",   "k",   nil,   "Show the clang-tidy checks list."},
+    {nil, "checks", "kv",  nil,   "Set the given checks.",
+                                  "e.g.",
+                                  "    - xmake check clang.tidy --checks=\"*\""},
+    {nil, "target", "v",   nil,   "Check the sourcefiles of the given target.",
+                                  ".e.g",
+                                  "    - xmake check clang.tidy",
+                                  "    - xmake check clang.tidy [target]"}
+}
+
+-- show checks list
+function _show_list(clang_tidy)
+    os.execv(clang_tidy, {"-list-checks"})
+end
+
+-- do check
+function _check(clang_tidy, opt)
+    opt = opt or {}
+    os.execv(clang_tidy, {"--version"})
+end
+
+function main(argv)
+
+    -- parse arguments
+    local args = option.parse(argv or {}, options, "Use clang-tidy to check project code."
+                                           , ""
+                                           , "Usage: xmake check clang.tidy [options]")
 
     -- enter the environments of llvm
     local oldenvs = packagenv.enter("llvm")
@@ -50,8 +77,12 @@ function main()
     end
     assert(clang_tidy, "clang-tidy not found!")
 
-    -- do clang-tidy
-    os.execv(clang_tidy.program, {"--version"})
+    -- list checks
+    if args.list then
+        _show_list(clang_tidy.program)
+    else
+        _check(clang_tidy.program, args)
+    end
 
     -- done
     os.setenvs(oldenvs)
