@@ -18,5 +18,15 @@
 -- @file        packages.lua
 --
 
+-- imports
+import("core.project.project")
+import(".api_checker")
+
 function main()
+    local packages = {}
+    local requires = project.required_packages()
+    if requires then
+        table.join2(packages, table.orderkeys(requires))
+    end
+    api_checker.check_targets("packages", {values = packages, level = "note"})
 end

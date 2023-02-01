@@ -71,7 +71,7 @@ function check_targets(apiname, opt)
         local values = target:get(apiname)
         for _, value in ipairs(values) do
             if not valueset:has(value) then
-                _show(apiname, value, target, {level = "warning"})
+                _show(apiname, value, target, {level = opt.level or "warning"})
             end
         end
     end
