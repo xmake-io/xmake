@@ -24,6 +24,20 @@ import("core.base.hashset")
 import("core.project.project")
 import("..checker")
 
+-- get the most probable value
+function _get_most_probable_value(value, valueset)
+    local result
+    local mindist
+    for v in valueset:keys() do
+        local dist = value:levenshtein(v)
+        if not mindist or dist < mindist then
+            mindist = dist
+            result = v
+        end
+    end
+    return result
+end
+
 -- show result
 function _show(apiname, value, target, opt)
     opt = opt or {}
@@ -57,6 +71,10 @@ function _show(apiname, value, target, opt)
     _g.showed = _g.showed or {}
     local showed = _g.showed
     local infostr = string.format("%s%s: unknown %s value '%s'", sourcetips, level_tips, apiname, value)
+    local probable_value = _get_most_probable_value(value, opt.valueset)
+    if probable_value then
+        infostr = string.format("%s, it may be '%s'", infostr, probable_value)
+    end
     if not showed[infostr] then
         cprint(infostr)
         showed[infostr] = true
@@ -73,7 +91,7 @@ function check_targets(apiname, opt)
         local values = target:get(apiname)
         for _, value in ipairs(values) do
             if not valueset:has(value) then
-                local reported = _show(apiname, value, target, {level = level})
+                local reported = _show(apiname, value, target, {valueset = valueset, level = level})
                 if reported then
                     checker.update_stats(level)
                 end
