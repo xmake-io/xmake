@@ -32,7 +32,7 @@ function main()
     -- load configuration
     config.load()
 
-    -- enter the environments of doxygen
+    -- enter the environments of llvm
     local oldenvs = packagenv.enter("llvm")
 
     -- find clang-format
@@ -99,5 +99,6 @@ function main()
     os.vrunv(clang_format.program, argv, {curdir = projectdir})
     cprint("${color.success}formatting complete")
 
+    -- done
     os.setenvs(oldenvs)
 end

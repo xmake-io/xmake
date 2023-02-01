@@ -18,5 +18,42 @@
 -- @file        tidy.lua
 --
 
+-- imports
+import("core.base.option")
+import("core.project.config")
+import("core.project.project")
+import("lib.detect.find_tool")
+import("private.action.require.impl.packagenv")
+import("private.action.require.impl.install_packages")
+
+-- main
 function main()
+
+    -- enter the environments of llvm
+    local oldenvs = packagenv.enter("llvm")
+
+    -- find clang-tidy
+    local packages = {}
+    local clang_tidy = find_tool("clang-tidy")
+    if not clang_tidy then
+        table.join2(packages, install_packages("llvm"))
+    end
+
+    -- enter the environments of installed packages
+    for _, instance in ipairs(packages) do
+        instance:envs_enter()
+    end
+
+    -- we need force to detect and flush detect cache after loading all environments
+    if not clang_tidy then
+        clang_tidy = find_tool("clang-tidy", {force = true})
+    end
+    assert(clang_tidy, "clang-tidy not found!")
+
+    -- do clang-tidy
+    os.execv(clang_tidy.program, {"--version"})
+
+    -- done
+    os.setenvs(oldenvs)
 end
+
