@@ -34,6 +34,16 @@ function _show(apiname, value, target, opt)
         return
     end
 
+    -- get source information
+    local sourceinfo = (target:get("__sourceinfo_" .. apiname) or {})[value] or {}
+    local sourcetips = sourceinfo.file or ""
+    if sourceinfo.line then
+        sourcetips = sourcetips .. ":" .. sourceinfo.line .. ": "
+    end
+    if #sourcetips == 0 then
+        sourcetips = string.format("target(%s)", target:name())
+    end
+
     -- do show
     local level_tips = "note"
     if level == "warning" then
@@ -41,7 +51,16 @@ function _show(apiname, value, target, opt)
     elseif level == "error" then
         level_tips = "${color.error}${text.error}${clear}"
     end
-    cprint("%s: unknown %s value(%s) in target(%s)!", level_tips, apiname, value, target:name())
+    if apiname:endswith("s") then
+        apiname = apiname:sub(1, #apiname - 1)
+    end
+    _g.showed = _g.showed or {}
+    local showed = _g.showed
+    local infostr = string.format("%s%s: unknown %s value '%s'", sourcetips, level_tips, apiname, value)
+    if not showed[infostr] then
+        cprint(infostr)
+        showed[infostr] = true
+    end
 end
 
 -- check api configuration in targets
