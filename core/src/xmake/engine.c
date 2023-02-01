@@ -37,7 +37,7 @@
 #   include <unistd.h>
 #   include <mach-o/dyld.h>
 #   include <signal.h>
-#elif defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD) || defined(TB_CONFIG_OS_ANDROID)
+#elif defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD) || defined(TB_CONFIG_OS_ANDROID) || defined(TB_CONFIG_OS_HAIKU)
 #   include <unistd.h>
 #   include <signal.h>
 #endif
