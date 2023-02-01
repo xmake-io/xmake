@@ -33,6 +33,7 @@ local options = {
     {"l", "list",   "k",   nil,     "Show the clang-tidy checks list."},
     {'j', "jobs",   "kv", tostring(os.default_njob()),
                                     "Set the number of parallel check jobs."},
+    {nil, "create", "k", nil,       "Create a .clang-tidy file."},
     {nil, "configfile", "kv", nil,  "Specify the path of .clang-tidy or custom config file"},
     {nil, "checks", "kv",  nil,     "Set the given checks.",
                                     "e.g.",
@@ -52,6 +53,16 @@ function _show_list(clang_tidy)
     os.execv(clang_tidy, {"--list-checks"})
 end
 
+-- create .clang-tidy config file
+function _create_config(clang_tidy, opt)
+    local projectdir = project.directory()
+    local argv = {"--dump-config"}
+    if opt.checks then
+        table.insert(argv, "--checks=" .. opt.checks)
+    end
+    os.execv(clang_tidy, argv, {stdout = path.join(projectdir, ".clang-tidy"), curdir = projectdir})
+end
+
 -- add sourcefiles in target
 function _add_target_files(sourcefiles, target)
     table.join2(sourcefiles, (target:sourcefiles()))
@@ -60,6 +71,7 @@ end
 -- check sourcefile
 function _check_sourcefile(clang_tidy, sourcefile, opt)
     opt = opt or {}
+    local projectdir = project.directory()
     local argv = {}
     if opt.checks then
         table.insert(argv, "--checks=" .. opt.checks)
@@ -71,8 +83,11 @@ function _check_sourcefile(clang_tidy, sourcefile, opt)
     if opt.configfile then
         table.insert(argv, "--config-file=" .. opt.configfile)
     end
+    if not path.is_absolute(sourcefile) then
+        sourcefile = path.absolute(sourcefile, projectdir)
+    end
     table.insert(argv, sourcefile)
-    os.execv(clang_tidy, argv)
+    os.execv(clang_tidy, argv, {curdir = projectdir})
 end
 
 -- do check
@@ -152,6 +167,8 @@ function main(argv)
     -- list checks
     if args.list then
         _show_list(clang_tidy.program)
+    elseif args.create then
+        _create_config(clang_tidy.program, args)
     else
         _check(clang_tidy.program, args)
     end
