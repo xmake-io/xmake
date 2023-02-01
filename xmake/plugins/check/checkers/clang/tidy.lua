@@ -20,15 +20,19 @@
 
 -- imports
 import("core.base.option")
+import("core.base.task")
 import("core.project.config")
 import("core.project.project")
 import("lib.detect.find_tool")
+import("private.async.runjobs")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 
 -- the clang.tidy options
 local options = {
     {"l", "list",   "k",   nil,   "Show the clang-tidy checks list."},
+    {'j', "jobs",   "kv", tostring(os.default_njob()),
+                                  "Set the number of parallel check jobs."},
     {nil, "checks", "kv",  nil,   "Set the given checks.",
                                   "e.g.",
                                   "    - xmake check clang.tidy --checks=\"*\""},
@@ -43,10 +47,61 @@ function _show_list(clang_tidy)
     os.execv(clang_tidy, {"-list-checks"})
 end
 
+-- add sourcefiles in target
+function _add_target_files(sourcefiles, target)
+    table.join2(sourcefiles, (target:sourcefiles()))
+end
+
+-- check sourcefile
+function _check_sourcefile(clang_tidy, sourcefile, opt)
+    opt = opt or {}
+    local argv = {}
+    if opt.checks then
+        table.insert(argv, "-checks=" .. opt.checks)
+    end
+    if opt.compdbfile then
+        table.insert(argv, "-p")
+        table.insert(argv, opt.compdbfile)
+    end
+    table.insert(argv, sourcefile)
+    os.execv(clang_tidy, argv)
+end
+
 -- do check
 function _check(clang_tidy, opt)
     opt = opt or {}
-    os.execv(clang_tidy, {"--version"})
+
+    -- generate compile_commands.json first
+    local filename = "compile_commands.json"
+    local filepath = filename
+    if not os.isfile(filepath) then
+        local outputdir = os.tmpfile() .. ".dir"
+        filepath = outputdir and path.join(outputdir, filename) or filename
+        task.run("project", {quiet = true, kind = "compile_commands", outputdir = outputdir})
+    end
+    opt.compdbfile = filepath
+
+    -- get sourcefiles
+    local sourcefiles = {}
+    local targetname = opt.target
+    if targetname then
+        _add_target_files(sourcefiles, project.target(targetname))
+    else
+        for _, target in ipairs(project.ordertargets()) do
+            _add_target_files(sourcefiles, target)
+        end
+    end
+
+    -- check files
+    local jobs = tonumber(opt.jobs or "1")
+    runjobs("check_files", function (index)
+        local sourcefile = sourcefiles[index]
+        if sourcefile then
+            _check_sourcefile(clang_tidy, sourcefile, opt)
+        end
+    end, {total = #sourcefiles,
+          comax = jobs,
+          isolate = true})
 end
 
 function main(argv)
