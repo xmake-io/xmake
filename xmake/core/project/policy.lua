@@ -33,8 +33,7 @@ local string  = require("base/string")
 function policy.policies()
     local policies = policy._POLICIES
     if not policies then
-        policies =
-        {
+        policies = {
             -- we will check and ignore all unsupported flags by default, but we can also pass `{force = true}` to force to set flags, e.g. add_ldflags("-static", {force = true})
             ["check.auto_ignore_flags"]           = {description = "Enable check and ignore unsupported flags automatically.", default = true, type = "boolean"},
             -- we will map gcc flags to the current compiler and linker by default.

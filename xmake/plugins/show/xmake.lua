@@ -18,34 +18,23 @@
 -- @file        xmake.lua
 --
 
--- define task
 task("show")
-
-    -- set category
     set_category("plugin")
-
-    -- on run
     on_run("main")
-
-    -- set menu
     set_menu {
-                -- usage
-                usage = "xmake show [options] [arguments]"
-
-                -- description
-            ,   description = "Show the given project information."
-
-                -- options
-            ,   options =
-                {
-                    {'l', "list"        , "kv"  , nil   ,   "Show the values list of the given name."
-                                                        ,   values = function (complete, opt)
-                                                                return import("list").lists()
-                                                            end},
-                    {'t', "target"      , "kv"  , nil   ,   "Show the information of the given target."
-                                                        ,   values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
-                }
-            }
+        usage = "xmake show [options] [arguments]",
+        description = "Show the given project information.",
+        options = {
+            {'l', "list",   "kv", nil, "Show the values list of the given name.",
+                values = function (complete, opt)
+                    return import("list").lists()
+                end},
+            {'t', "target", "kv", nil, "Show the information of the given target.",
+                values = function (complete, opt)
+                    return import("private.utils.complete_helper.targets")(complete, opt)
+                end}
+        }
+    }
 
 
 
