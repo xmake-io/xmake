@@ -30,21 +30,26 @@ import("private.action.require.impl.install_packages")
 
 -- the clang.tidy options
 local options = {
-    {"l", "list",   "k",   nil,   "Show the clang-tidy checks list."},
+    {"l", "list",   "k",   nil,     "Show the clang-tidy checks list."},
     {'j', "jobs",   "kv", tostring(os.default_njob()),
-                                  "Set the number of parallel check jobs."},
-    {nil, "checks", "kv",  nil,   "Set the given checks.",
-                                  "e.g.",
-                                  "    - xmake check clang.tidy --checks=\"*\""},
-    {nil, "target", "v",   nil,   "Check the sourcefiles of the given target.",
-                                  ".e.g",
-                                  "    - xmake check clang.tidy",
-                                  "    - xmake check clang.tidy [target]"}
+                                    "Set the number of parallel check jobs."},
+    {nil, "configfile", "kv", nil,  "Specify the path of .clang-tidy or custom config file"},
+    {nil, "checks", "kv",  nil,     "Set the given checks.",
+                                    "e.g.",
+                                    "    - xmake check clang.tidy --checks=\"*\""},
+    {'f', "files",  "v", nil,       "Set files path with pattern",
+                                    "e.g.",
+                                    "    - xmake check clang.tidy -f src/main.c",
+                                    "    - xmake check clang.tidy -f 'src/*.c" .. path.envsep() .. "src/**.cpp'"},
+    {nil, "target", "v",   nil,     "Check the sourcefiles of the given target.",
+                                    ".e.g",
+                                    "    - xmake check clang.tidy",
+                                    "    - xmake check clang.tidy [target]"}
 }
 
 -- show checks list
 function _show_list(clang_tidy)
-    os.execv(clang_tidy, {"-list-checks"})
+    os.execv(clang_tidy, {"--list-checks"})
 end
 
 -- add sourcefiles in target
@@ -57,11 +62,14 @@ function _check_sourcefile(clang_tidy, sourcefile, opt)
     opt = opt or {}
     local argv = {}
     if opt.checks then
-        table.insert(argv, "-checks=" .. opt.checks)
+        table.insert(argv, "--checks=" .. opt.checks)
     end
     if opt.compdbfile then
         table.insert(argv, "-p")
         table.insert(argv, opt.compdbfile)
+    end
+    if opt.configfile then
+        table.insert(argv, "--config-file=" .. opt.configfile)
     end
     table.insert(argv, sourcefile)
     os.execv(clang_tidy, argv)
@@ -83,12 +91,21 @@ function _check(clang_tidy, opt)
 
     -- get sourcefiles
     local sourcefiles = {}
-    local targetname = opt.target
-    if targetname then
-        _add_target_files(sourcefiles, project.target(targetname))
+    if opt.files then
+        local files = path.splitenv(opt.files)
+        for _, file in ipairs(files) do
+            for _, filepath in ipairs(os.files(file)) do
+                table.insert(sourcefiles, filepath)
+            end
+        end
     else
-        for _, target in ipairs(project.ordertargets()) do
-            _add_target_files(sourcefiles, target)
+        local targetname = opt.target
+        if targetname then
+            _add_target_files(sourcefiles, project.target(targetname))
+        else
+            for _, target in ipairs(project.ordertargets()) do
+                _add_target_files(sourcefiles, target)
+            end
         end
     end
 

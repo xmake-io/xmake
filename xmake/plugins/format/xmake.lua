@@ -25,10 +25,13 @@ task("format")
                 usage = "xmake format [options] [arguments]",
                 description = "Format the current project.",
                 options = {
-                    {'s', "style",  "kv", nil,      "Set the path of .clang-format file, a coding style"..
-                                                    "(LLVM, Google, Chromium, Mozilla, WebKit) or key value string" },
-                    {nil, "create", "k", nil,       "Create a .clang-format file from a coding style" },
-                    {'f', "files", "v", nil, "Set file path or glob pattern"}
+                    {'s', "style",  "kv", nil,  "Set the path of .clang-format file, a coding style",
+                                                values = {"LLVM", "Google", "Chromium", "Mozilla", "WebKit"}},
+                    {nil, "create", "k", nil,   "Create a .clang-format file from a coding style"},
+                    {'f', "files",  "v", nil,   "Set files path with pattern",
+                                                "e.g.",
+                                                "    - xmake format -f src/main.c",
+                                                "    - xmake format -f 'src/*.c" .. path.envsep() .. "src/**.cpp'"}
                 }
             }
 
