@@ -239,6 +239,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * MinGW (i386, x86_64, arm, arm64)
 * Cygwin (i386, x86_64)
 * Wasm (wasm32)
+* Haiku (i386, x86_64)
 * Cross (cross-toolchains ..)
 
 ## Supported toolchains

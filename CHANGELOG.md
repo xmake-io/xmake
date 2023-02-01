@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* Add Haiku support
+
 ### Changes
 
 * [#3318](https://github.com/xmake-io/xmake/pull/3318): Improve dlang toolchains
@@ -1519,6 +1523,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* 添加 Haiku 支持
 
 ### 改进
 

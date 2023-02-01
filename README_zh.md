@@ -248,6 +248,7 @@ $ xmake f --menu
 * MinGW (i386, x86_64, arm, arm64)
 * Cygwin (i386, x86_64)
 * Wasm (wasm32)
+* Haiku (i386, x86_64)
 * Cross (cross-toolchains ..)
 
 ## 支持工具链
