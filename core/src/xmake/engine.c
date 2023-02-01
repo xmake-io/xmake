@@ -877,6 +877,8 @@ static tb_void_t xm_engine_init_host(xm_engine_t* engine)
     syshost = "ios";
 #elif defined(TB_CONFIG_OS_ANDROID)
     syshost = "android";
+#elif defined(TB_CONFIG_OS_HAIKU)
+    syshost = "haiku";
 #endif
     lua_pushstring(engine->lua, syshost? syshost : "unknown");
     lua_setglobal(engine->lua, "_HOST");

@@ -19,13 +19,13 @@
 --
 
 -- define platform
-platform("bsd")
+platform("haiku")
 
     -- set os
-    set_os("bsd")
+    set_os("haiku")
 
     -- set hosts
-    set_hosts("bsd")
+    set_hosts("haiku")
 
     -- set archs
     set_archs("i386", "x86_64")
@@ -35,9 +35,6 @@ platform("bsd")
     set_formats("object", "$(name).o")
     set_formats("shared", "lib$(name).so")
     set_formats("symbol", "$(name).sym")
-
-    -- set install directory
-    set_installdir("/usr/local")
 
     -- set toolchains
     set_toolchains("envs", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "go", "rust", "gfortran", "zig")
