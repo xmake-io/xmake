@@ -53,6 +53,23 @@ function _get_apis()
     ,   "option.add_undefines"
     ,   "option.add_frameworks"
     ,   "option.add_rpathdirs"
+        -- package.add_xxx
+    ,   "package.add_links"
+    ,   "package.add_syslinks"
+    ,   "package.add_mflags"
+    ,   "package.add_xxflags"
+    ,   "package.add_xxxflags"
+    ,   "package.add_ldflags"
+    ,   "package.add_arflags"
+    ,   "package.add_shflags"
+    ,   "package.add_defines"
+    ,   "package.add_undefines"
+    ,   "package.add_frameworks"
+    ,   "package.add_rpathdirs"
+    ,   "package.add_linkdirs"
+    ,   "package.add_includedirs" --@note we need not uses paths for package, see https://github.com/xmake-io/xmake/issues/717
+    ,   "package.add_sysincludedirs"
+    ,   "package.add_frameworkdirs"
         -- toolchain.add_xxx
     ,   "toolchain.add_links"
     ,   "toolchain.add_syslinks"
