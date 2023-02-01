@@ -36,5 +36,5 @@ function main()
             table.insert(languages, "gnu" .. value:sub(2))
         end
     end
-    api_checker.check({values = languages})
+    api_checker.check_targets("languages", {values = languages})
 end

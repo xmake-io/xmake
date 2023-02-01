@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.text")
+import("core.project.config")
 import("checker")
 
 -- show checkers list
@@ -54,6 +55,11 @@ end
 
 -- do check
 function _check(group_or_name, arguments)
+
+    -- load config
+    config.load()
+
+    -- get checkers
     local checked_checkers = {}
     local checkers = checker.checkers()
     if checkers[group_or_name] then
@@ -66,6 +72,8 @@ function _check(group_or_name, arguments)
         end
     end
     assert(#checked_checkers > 0, "checker(%s) not found!", group_or_name)
+
+    -- do checkers
     for _, name in ipairs(checked_checkers) do
         import("checkers." .. name, {anonymous = true})(arguments)
     end

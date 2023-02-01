@@ -18,5 +18,42 @@
 -- @file        api_checker.lua
 --
 
-function check()
+-- imports
+import("core.base.option")
+import("core.base.hashset")
+import("core.project.project")
+
+-- show result
+function _show(apiname, value, target, opt)
+    opt = opt or {}
+
+    -- match level?
+    local level = opt.level
+    local level_option = option.get("level")
+    if level_option and level_option ~= "all" and level_option ~= level then
+        return
+    end
+
+    -- do show
+    local level_tips = "note"
+    if level == "warning" then
+        level_tips = "${color.warning}${text.warning}${clear}"
+    elseif level == "error" then
+        level_tips = "${color.error}${text.error}${clear}"
+    end
+    cprint("%s: unknown %s value(%s) in target(%s)!", level_tips, apiname, value, target:name())
+end
+
+-- check api configuration in targets
+function check_targets(apiname, opt)
+    opt = opt or {}
+    local valueset = hashset.from(opt.values)
+    for _, target in pairs(project.targets()) do
+        local values = target:get(apiname)
+        for _, value in ipairs(values) do
+            if not valueset:has(value) then
+                _show(apiname, value, target, {level = "warning"})
+            end
+        end
+    end
 end
