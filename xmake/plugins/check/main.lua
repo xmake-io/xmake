@@ -77,6 +77,7 @@ function _check(group_or_name, arguments)
     for _, name in ipairs(checked_checkers) do
         import("checkers." .. name, {anonymous = true})(arguments)
     end
+    checker.show_stats()
 end
 
 function main()

@@ -114,10 +114,10 @@ function core_sandbox_module._find(dir, name)
 
     -- the single module?
     if os.isfile(key .. ".lua") then
-        return path.absolute(key), false
+        return path.normalize(path.absolute(key)), false
     -- modules?
     elseif os.isdir(key) then
-        return path.absolute(key), true
+        return path.normalize(path.absolute(key)), true
     end
 end
 

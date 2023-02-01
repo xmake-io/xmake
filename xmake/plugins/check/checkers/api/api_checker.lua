@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.hashset")
 import("core.project.project")
+import("..checker")
 
 -- show result
 function _show(apiname, value, target, opt)
@@ -59,18 +60,23 @@ function _show(apiname, value, target, opt)
     if not showed[infostr] then
         cprint(infostr)
         showed[infostr] = true
+        return true
     end
 end
 
 -- check api configuration in targets
 function check_targets(apiname, opt)
     opt = opt or {}
+    local level = opt.level or "warning"
     local valueset = hashset.from(opt.values)
     for _, target in pairs(project.targets()) do
         local values = target:get(apiname)
         for _, value in ipairs(values) do
             if not valueset:has(value) then
-                _show(apiname, value, target, {level = opt.level or "warning"})
+                local reported = _show(apiname, value, target, {level = level})
+                if reported then
+                    checker.update_stats(level)
+                end
             end
         end
     end

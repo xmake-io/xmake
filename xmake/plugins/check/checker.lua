@@ -58,3 +58,20 @@ function complete(complete, opt)
         end
     }
 end
+
+-- update stats
+function update_stats(level, count)
+    local stats = _g.stats
+    if not stats then
+        stats = {}
+        _g.stats = stats
+    end
+    count = count or 1
+    stats[level] = (stats[level] or 0) + count
+end
+
+-- show stats
+function show_stats()
+    local stats = _g.stats or {}
+    cprint("${bright}%d${clear} notes, ${color.warning}%d${clear} warnings, ${color.error}%d${clear} errors", stats.note or 0, stats.warning or 0, stats.error or 0)
+end
