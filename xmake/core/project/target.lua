@@ -1384,8 +1384,8 @@ function _instance:fileconfig(sourcefile)
             -- match source files
             local results = os.match(filepath)
             if #results == 0 and not fileconfig.always_added then
-                local sourceinfo = (self:get("__sourceinfo_files") or {})[filepath] or {}
-                utils.warning("cannot match %s(%s).add_files(\"%s\") at %s:%d", self:type(), self:name(), filepath, sourceinfo.file or "", sourceinfo.line or -1)
+                local sourceinfo = self:sourceinfo("files", filepath) or {}
+                utils.warning("%s:%d: cannot match add_files(\"%s\") in %s(%s)", sourceinfo.file or "", sourceinfo.line or -1, filepath, self:type(), self:name())
             end
 
             -- process source files
@@ -1508,8 +1508,8 @@ function _instance:sourcefiles()
             targetcache:set2("sourcefiles", file, results)
         end
         if #results == 0 then
-            local sourceinfo = (self:get("__sourceinfo_files") or {})[file] or {}
-            utils.warning("cannot match %s(%s).%s_files(\"%s\") at %s:%d", self:type(), self:name(), (removed and "remove" or "add"), file, sourceinfo.file or "", sourceinfo.line or -1)
+            local sourceinfo = self:sourceinfo("files", file) or {}
+            utils.warning("%s:%d: cannot match %s_files(\"%s\") in %s(%s)", sourceinfo.file or "", sourceinfo.line or -1, (removed and "remove" or "add"), file, self:type(), self:name())
         end
 
         -- process source files

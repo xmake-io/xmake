@@ -31,8 +31,8 @@ function main(target)
     for _, name in ipairs({"includedirs", "frameworkdirs", "linkdirs"}) do
         for _, value in ipairs(_get_values_from_target(target, name)) do
             if not os.isdir(value) then
-                local sourceinfo = (target:get("__sourceinfo_" .. name) or {})[value] or {}
-                wprint("%s(%s).add_%s(\"%s\") path not found at %s:%d", target:type(), target:name(), name, value, sourceinfo.file or "", sourceinfo.line or -1)
+                local sourceinfo = target:sourceinfo(name, value) or {}
+                wprint("%s:%d: %s '%s' not found in %s(%s)", sourceinfo.file or "", sourceinfo.line or -1, name, value, target:type(), target:name())
             end
         end
     end
