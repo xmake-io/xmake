@@ -93,8 +93,20 @@ end
 function check_targets(apiname, opt)
     opt = opt or {}
     local level = opt.level or "warning"
-    local valueset = opt.values and hashset.from(opt.values) or hashset.new()
+    local valueset
+    if opt.values and type(opt.values) ~= "function" then
+        valueset = hashset.from(opt.values)
+    else
+        valueset = hashset.new()
+    end
     for _, target in pairs(project.targets()) do
+        local target_valueset = valueset
+        if type(opt.values) == "function" then
+            local target_values = opt.values(target)
+            if target_values then
+                target_valueset = hashset.from(target_values)
+            end
+        end
         local values = target:get(apiname)
         for _, value in ipairs(values) do
             if opt.check then
@@ -105,8 +117,8 @@ function check_targets(apiname, opt)
                         checker.update_stats(level)
                     end
                 end
-            elseif not valueset:has(value) then
-                local reported = _show(apiname, value, target, {valueset = valueset, level = level})
+            elseif not target_valueset:has(value) then
+                local reported = _show(apiname, value, target, {valueset = target_valueset, level = level})
                 if reported then
                     checker.update_stats(level)
                 end
