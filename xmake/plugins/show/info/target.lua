@@ -33,6 +33,7 @@ function main(name)
 
     -- show target information
     print("The information of target(%s):", name)
+    cprint("    ${color.dump.string}at${clear}: %s", path.join(target:scriptdir(), "xmake.lua"))
     cprint("    ${color.dump.string}kind${clear}: %s", target:kind())
     cprint("    ${color.dump.string}targetfile${clear}: %s", target:targetfile())
     local deps = target:get("deps")
@@ -67,17 +68,11 @@ function main(name)
             end
         end
     end
-    cprint("    ${color.dump.string}at${clear}: %s", path.join(target:scriptdir(), "xmake.lua"))
-    for _, sourcebatch in pairs(target:sourcebatches()) do
-        cprint("    ${color.dump.string}sourcebatch${clear}(%s): with rule(%s)", sourcebatch.sourcekind, sourcebatch.rulename)
-        for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            cprint("      -> %s", sourcefile)
-            if sourcebatch.objectfiles then
-                cprint("         ${dim}-> %s", sourcebatch.objectfiles[idx])
-            end
-            if sourcebatch.dependfiles then
-                cprint("         ${dim}-> %s", sourcebatch.dependfiles[idx])
-            end
+    local files = target:get("files")
+    if files then
+        cprint("    ${color.dump.string}files${clear}:")
+        for _, file in ipairs(files) do
+            cprint("      -> %s", file)
         end
     end
 end
