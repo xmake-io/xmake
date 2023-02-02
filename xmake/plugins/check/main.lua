@@ -74,10 +74,17 @@ function _check(group_or_name, arguments)
     assert(#checked_checkers > 0, "checker(%s) not found!", group_or_name)
 
     -- do checkers
+    local showstats
     for _, name in ipairs(checked_checkers) do
+        local info = checkers[name]
+        if showstats == nil and info and info.showstats ~= nil then
+            showstats = info.showstats
+        end
         import("checkers." .. name, {anonymous = true})(arguments)
     end
-    checker.show_stats()
+    if showstats ~= false then
+        checker.show_stats()
+    end
 end
 
 function main()

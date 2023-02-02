@@ -30,7 +30,7 @@ function checkers()
             ["api.target.languages"] = {description = "Check languages configuration in target."},
             ["api.target.packages"]  = {description = "Check packages configuration in target."},
             -- clang tidy checker
-            ["clang.tidy"]           = {description = "Check project code using clang-tidy."}
+            ["clang.tidy"]           = {description = "Check project code using clang-tidy.", showstats = false}
         }
         _g._CHECKERS = checkers
     end
