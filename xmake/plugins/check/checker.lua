@@ -51,11 +51,15 @@ function complete(complete, opt)
     {
         function ()
             local list = {}
+            local groupstats = {}
             for name, _ in table.orderpairs(checkers()) do
+                local groupname = name:split(".", {plain = true})[1]
+                groupstats[groupname] = (groupstats[groupname] or 0) + 1
                 if not complete then
-                    if #list < 16 then
+                    local limit = 16
+                    if groupstats[groupname] < limit then
                         table.insert(list, name)
-                    else
+                    elseif groupstats[groupname] == limit then
                         table.insert(list, "...")
                     end
                 elseif name:startswith(complete) then
