@@ -70,10 +70,17 @@ function _show(apiname, value, target, opt)
     end
     _g.showed = _g.showed or {}
     local showed = _g.showed
-    local infostr = string.format("%s%s: unknown %s value '%s'", sourcetips, level_tips, apiname, value)
-    local probable_value = _get_most_probable_value(value, opt.valueset)
-    if probable_value then
-        infostr = string.format("%s, it may be '%s'", infostr, probable_value)
+    local infostr
+    if opt.showstr then
+        infostr = string.format("%s%s: %s", sourcetips, level_tips, opt.showstr)
+    else
+        infostr = string.format("%s%s: unknown %s value '%s'", sourcetips, level_tips, apiname, value)
+    end
+    if opt.valueset then
+        local probable_value = _get_most_probable_value(value, opt.valueset)
+        if probable_value then
+            infostr = string.format("%s, it may be '%s'", infostr, probable_value)
+        end
     end
     if not showed[infostr] then
         cprint(infostr)
@@ -86,11 +93,19 @@ end
 function check_targets(apiname, opt)
     opt = opt or {}
     local level = opt.level or "warning"
-    local valueset = hashset.from(opt.values)
+    local valueset = opt.values and hashset.from(opt.values) or hashset.new()
     for _, target in pairs(project.targets()) do
         local values = target:get(apiname)
         for _, value in ipairs(values) do
-            if not valueset:has(value) then
+            if opt.check then
+                local ok, errors = opt.check(target, value)
+                if not ok then
+                    local reported = _show(apiname, value, target, {showstr = errors, level = level})
+                    if reported then
+                        checker.update_stats(level)
+                    end
+                end
+            elseif not valueset:has(value) then
                 local reported = _show(apiname, value, target, {valueset = valueset, level = level})
                 if reported then
                     checker.update_stats(level)

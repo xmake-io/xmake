@@ -27,6 +27,7 @@ function checkers()
     if not checkers then
         checkers = {
             -- target api checkers
+            ["api.target.version"]   = {description = "Check version configuration in target."},
             ["api.target.languages"] = {description = "Check languages configuration in target."},
             ["api.target.packages"]  = {description = "Check packages configuration in target."},
             -- clang tidy checker
