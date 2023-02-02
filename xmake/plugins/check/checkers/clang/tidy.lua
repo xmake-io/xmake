@@ -100,7 +100,7 @@ function _check(clang_tidy, opt)
     if not os.isfile(filepath) then
         local outputdir = os.tmpfile() .. ".dir"
         filepath = outputdir and path.join(outputdir, filename) or filename
-        task.run("project", {quiet = true, kind = "compile_commands", outputdir = outputdir})
+        task.run("project", {quiet = true, kind = "compile_commands", lsp = "clangd", outputdir = outputdir})
     end
     opt.compdbfile = filepath
 
