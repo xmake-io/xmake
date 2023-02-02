@@ -24,14 +24,8 @@ import("core.project.config")
 import("core.project.project")
 import("core.language.language")
 
--- show target info
-function main(name)
-
-    -- get target
-    config.load()
-    local target = assert(project.target(name), "target(%s) not found!", name)
-
-    -- show target information
+-- show target information
+function _show_target(target)
     print("The information of target(%s):", name)
     cprint("    ${color.dump.string}at${clear}: %s", path.join(target:scriptdir(), "xmake.lua"))
     cprint("    ${color.dump.string}kind${clear}: %s", target:kind())
@@ -62,8 +56,15 @@ function main(name)
             local valuename = apiname:split('.add_', {plain = true})[2]
             if valuename then
                 local values = target:get(valuename)
-                if values then
-                    cprint("    ${color.dump.string}%s${clear}: %s", valuename, table.concat(table.wrap(values), ", "))
+                local values_from_deps = target:get_from_deps(valuename)
+                local values_from_opts = target:get_from_opts(valuename)
+                local values_from_pkgs = target:get_from_pkgs(valuename)
+                values = table.join(values or {}, values_from_deps or {}, values_from_opts or {}, values_from_pkgs or {})
+                if #values > 0 then
+                    cprint("    ${color.dump.string}%s${clear}:", valuename)
+                    for _, value in ipairs(values) do
+                        cprint("      ${color.dump.reference}->${clear} %s", value)
+                    end
                 end
             end
         end
@@ -72,7 +73,17 @@ function main(name)
     if files then
         cprint("    ${color.dump.string}files${clear}:")
         for _, file in ipairs(files) do
-            cprint("      -> %s", file)
+            cprint("      ${color.dump.reference}->${clear} %s", file)
         end
     end
+end
+
+function main(name)
+
+    -- get target
+    config.load()
+    local target = assert(project.target(name), "target(%s) not found!", name)
+
+    -- show target information
+    _show_target(target)
 end
