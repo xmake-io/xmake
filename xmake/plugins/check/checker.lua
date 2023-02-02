@@ -29,6 +29,7 @@ function checkers()
             -- target api checkers
             ["api.target.version"]   = {description = "Check version configuration in target."},
             ["api.target.optimize"]  = {description = "Check optimize configuration in target."},
+            ["api.target.warnings"]  = {description = "Check warnings configuration in target."},
             ["api.target.languages"] = {description = "Check languages configuration in target."},
             ["api.target.packages"]  = {description = "Check packages configuration in target."},
             -- clang tidy checker
