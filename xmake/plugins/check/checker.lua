@@ -40,6 +40,11 @@ function checkers()
             ["api.target.linkdirs"]      = {description = "Check linkdirs configuration in target."},
             ["api.target.includedirs"]   = {description = "Check includedirs configuration in target."},
             ["api.target.frameworkdirs"] = {description = "Check frameworkdirs configuration in target."},
+            ["api.target.cflags"]        = {description = "Check c compiler flags configuration in target."},
+            ["api.target.cxflags"]       = {description = "Check c/c++ compiler flags configuration in target."},
+            ["api.target.cxxflags"]      = {description = "Check c++ compiler flags configuration in target."},
+            ["api.target.ldflags"]       = {description = "Check binary linker flags configuration in target."},
+            ["api.target.shflags"]       = {description = "Check shared library linker flags configuration in target."},
             -- clang tidy checker
             ["clang.tidy"]               = {description = "Check project code using clang-tidy.", showstats = false}
         }
