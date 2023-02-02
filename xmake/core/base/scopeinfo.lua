@@ -664,6 +664,17 @@ function _instance:extraconf_set(name, item, key, value)
     end
 end
 
+-- get configuration source information of the given api item
+--
+-- e.g.
+-- self:get("defines", "TEST")
+--  - add_defines("TEST")
+--    - src/xmake.lua:10
+--
+function _instance:sourceinfo(name, item)
+    return (self:get("__sourceinfo_" .. name) or {})[item]
+end
+
 -- clone a new instance from the current
 function _instance:clone()
     return _instance.new(self:kind(), table.clone(self:info()), {interpreter = self:interpreter(), deduplicate = self._DEDUPLICATE, enable_filter = self._ENABLE_FILTER})

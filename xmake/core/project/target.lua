@@ -488,6 +488,11 @@ function _instance:extraconf_set(name, item, key, value)
     self._INFO:extraconf_set(name, item, key, value)
 end
 
+-- get configuration source information of the given api item
+function _instance:sourceinfo(name, item)
+    return self._INFO:sourceinfo(name, item)
+end
+
 -- get user private data
 function _instance:data(name)
     return self._DATA and self._DATA[name]

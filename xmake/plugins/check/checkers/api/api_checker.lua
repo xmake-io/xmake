@@ -49,7 +49,7 @@ function _show(apiname, value, target, opt)
     end
 
     -- get source information
-    local sourceinfo = (target:get("__sourceinfo_" .. apiname) or {})[value] or {}
+    local sourceinfo = target:sourceinfo(apiname, value) or {}
     local sourcetips = sourceinfo.file or ""
     if sourceinfo.line then
         sourcetips = sourcetips .. ":" .. sourceinfo.line .. ": "
