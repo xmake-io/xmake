@@ -15,27 +15,17 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        version.lua
+-- @file        includedirs.lua
 --
 
 -- imports
-import("core.base.semver")
 import(".api_checker")
 
 function main()
-    api_checker.check_targets("version", {check = function(target, value)
-        local errors
-        local ok = try {
-            function()
-                semver.new(value)
-                return true
-            end,
-            catch {
-                function (errs)
-                    errors = errs
-                end
-            }
-        }
-        return ok, errors
-    end, level = "error"})
+    api_checker.check_targets("includedirs", {check = function(target, value)
+        if not os.isdir(value) then
+            return false, string.format("includedir '%s' not found", value)
+        end
+        return true
+    end})
 end
