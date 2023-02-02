@@ -43,6 +43,7 @@ function checkers()
             ["api.target.cflags"]        = {description = "Check c compiler flags configuration in target."},
             ["api.target.cxflags"]       = {description = "Check c/c++ compiler flags configuration in target."},
             ["api.target.cxxflags"]      = {description = "Check c++ compiler flags configuration in target."},
+            ["api.target.asflags"]       = {description = "Check assembler flags configuration in target."},
             ["api.target.ldflags"]       = {description = "Check binary linker flags configuration in target."},
             ["api.target.shflags"]       = {description = "Check shared library linker flags configuration in target."},
             -- clang tidy checker
