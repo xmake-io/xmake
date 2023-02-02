@@ -5,6 +5,7 @@
 ### New features
 
 * Add Haiku support
+* [#3326](https://github.com/xmake-io/xmake/issues/3326): Add `xmake check` to check project code (clang-tidy) and configuration
 
 ### Changes
 
@@ -1527,6 +1528,7 @@
 ### 新特性
 
 * 添加 Haiku 支持
+* [#3326](https://github.com/xmake-io/xmake/issues/3326): 添加 `xmake check` 去检测工程代码 (clang-tidy) 和 API 参数配置
 
 ### 改进
 
