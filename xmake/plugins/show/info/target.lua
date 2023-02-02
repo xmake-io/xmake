@@ -26,7 +26,7 @@ import("core.language.language")
 
 -- show target information
 function _show_target(target)
-    print("The information of target(%s):", name)
+    print("The information of target(%s):", target:name())
     cprint("    ${color.dump.string}at${clear}: %s", path.join(target:scriptdir(), "xmake.lua"))
     cprint("    ${color.dump.string}kind${clear}: %s", target:kind())
     cprint("    ${color.dump.string}targetfile${clear}: %s", target:targetfile())
