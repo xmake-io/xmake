@@ -80,6 +80,16 @@ jobs:
           tag: ${{ steps.previoustag.outputs.tag }}
           overwrite: true
 
+      - name: Upload artifacts to lastest release
+        if: github.ref == 'refs/heads/master'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: artifacts/xmake.tar.gz
+          asset_name: xmake-master.tar.gz
+          tag: ${{ steps.previoustag.outputs.tag }}
+          overwrite: true
+
       - name: Publish package
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
