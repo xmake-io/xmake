@@ -102,6 +102,28 @@ function _get_values_from_pkgs(target, name)
     return values
 end
 
+-- get values from target dependencies
+function _get_values_from_deps(target, name)
+    local values = {}
+    local orderdeps = target:orderdeps()
+    local total = #orderdeps
+    for idx, _ in ipairs(orderdeps) do
+        local dep = orderdeps[total + 1 - idx]
+        local depinherit = target:extraconf("deps", dep:name(), "inherit")
+        if depinherit == nil or depinherit then
+            for _, value in ipairs(dep:get(name, {interface = true})) do
+                values[value] = string.format(" -> dep(%s)", dep:name())
+            end
+            for _, value in ipairs(dep:get_from_opts(name, {interface = true})) do
+                values[value] = string.format(" -> dep(%s) -> options", dep:name())
+            end
+            for _, value in ipairs(dep:get_from_pkgs(name, {interface = true})) do
+                values[value] = string.format(" -> dep(%s) -> packages", dep:name())
+            end
+        end
+    end
+    return values
+end
 
 -- show target information
 function _show_target(target)
@@ -161,16 +183,16 @@ function _show_target(target)
                 for value, sourceinfo in pairs(values_from_pkgs) do
                     table.insert(results, {value = value, sourceinfo = sourceinfo})
                 end
+                local values_from_deps = _get_values_from_deps(target, valuename)
+                for value, sourceinfo in pairs(values_from_deps) do
+                    table.insert(results, {value = value, sourceinfo = sourceinfo})
+                end
                 if #results > 0 then
                     cprint("    ${color.dump.string}%s${clear}:", valuename)
                     for _, result in ipairs(results) do
                         cprint("      ${color.dump.reference}->${clear} %s%s", result.value, result.sourceinfo)
                     end
                 end
-                --[[
-                local values_from_deps = target:get_from_deps(valuename)
-                local values_from_pkgs = target:get_from_pkgs(valuename)
-                end]]
             end
         end
     end
