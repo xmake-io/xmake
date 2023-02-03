@@ -414,8 +414,8 @@ path_toolname() {
         ar) toolname="ar";;
         cc) toolname="gcc";;
         */cc) toolname="gcc";;
-        c++) toolname="g++";;
-        */c++) toolname="g++";;
+        c++) toolname="gxx";;
+        */c++) toolname="gxx";;
         *) raise "unknown tool ${1}";;
     esac
     _ret="${toolname}"
