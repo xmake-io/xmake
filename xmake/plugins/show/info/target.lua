@@ -26,13 +26,82 @@ import("core.project.project")
 import("core.language.language")
 
 -- get source info string
-function _get_sourceinfo_str(target, name, item)
+function _get_sourceinfo_str(target, name, item, opt)
+    opt = opt or {}
     local sourceinfo = target:sourceinfo(name, item)
     if sourceinfo then
-        return string.format(" ${dim}(%s:%s)${clear}", sourceinfo.file or "", sourceinfo.line or -1)
+        local tips = opt.tips
+        if tips then
+            tips = tips .. " -> "
+        end
+        return string.format(" ${dim}-> %s%s:%s${clear}", tips or "", sourceinfo.file or "", sourceinfo.line or -1)
+    elseif opt.tips then
+        return string.format(" ${dim}-> %s${clear}", opt.tips)
     end
     return ""
 end
+
+-- get values from target options
+function _get_values_from_opts(target, name)
+    local values = {}
+    for _, opt_ in ipairs(target:orderopts()) do
+        for _, value in ipairs(opt_:get(name)) do
+            local tips = string.format("option(%s)", opt_:name())
+            values[value] = _get_sourceinfo_str(opt_, name, value, {tips = tips})
+        end
+    end
+    return values
+end
+
+-- get values from target packages
+function _get_values_from_pkgs(target, name)
+    local values = {}
+    for _, pkg in ipairs(target:orderpkgs()) do
+        local configinfo = target:pkgconfig(pkg:name())
+        -- get values from package components
+        -- e.g. `add_packages("sfml", {components = {"graphics", "window"}})`
+        local selected_components = configinfo and configinfo.components or pkg:components_default()
+        if selected_components and pkg:components() then
+            local components_enabled = hashset.new()
+            for _, comp in ipairs(table.wrap(selected_components)) do
+                components_enabled:insert(comp)
+                for _, dep in ipairs(table.wrap(pkg:component_orderdeps(comp))) do
+                    components_enabled:insert(dep)
+                end
+            end
+            components_enabled:insert("__base")
+            -- if we can't find the values from the component, we need to fall back to __base to find them.
+            -- it contains some common values of all components
+            local components = table.wrap(pkg:components())
+            for _, component_name in ipairs(table.join(pkg:components_orderlist(), "__base")) do
+                if components_enabled:has(component_name) then
+                    local info = components[component_name]
+                    if info then
+                        for _, value in ipairs(info[name]) do
+                            values[value] = string.format(" -> package(%s)", pkg:name())
+                        end
+                    else
+                        local components_str = table.concat(table.wrap(configinfo.components), ", ")
+                        utils.warning("unknown component(%s) in add_packages(%s, {components = {%s}})", component_name, pkg:name(), components_str)
+                    end
+                end
+            end
+        -- get values instead of the builtin configs if exists extra package config
+        -- e.g. `add_packages("xxx", {links = "xxx"})`
+        elseif configinfo and configinfo[name] then
+            for _, value in ipairs(configinfo[name]) do
+                values[value] = _get_sourceinfo_str(target, "packages", pkg:name())
+            end
+        else
+            -- get values from the builtin package configs
+            for _, value in ipairs(pkg:get(name)) do
+                values[value] = string.format(" -> package(%s)", pkg:name())
+            end
+        end
+    end
+    return values
+end
+
 
 -- show target information
 function _show_target(target)
@@ -77,17 +146,31 @@ function _show_target(target)
         if apiname:startswith("target.") then
             local valuename = apiname:split('.add_', {plain = true})[2]
             if valuename then
-                local values = target:get(valuename)
-                local values_from_deps = target:get_from_deps(valuename)
-                local values_from_opts = target:get_from_opts(valuename)
-                local values_from_pkgs = target:get_from_pkgs(valuename)
-                values = table.unique(table.join(values or {}, values_from_deps or {}, values_from_opts or {}, values_from_pkgs or {}))
+                local results = {}
+                local values = table.unique(table.wrap(target:get(valuename)))
                 if #values > 0 then
-                    cprint("    ${color.dump.string}%s${clear}:", valuename)
                     for _, value in ipairs(values) do
-                        cprint("      ${color.dump.reference}->${clear} %s%s", value, _get_sourceinfo_str(target, valuename, value))
+                        table.insert(results, {value = value, sourceinfo = _get_sourceinfo_str(target, valuename, value)})
                     end
                 end
+                local values_from_opts = _get_values_from_opts(target, valuename)
+                for value, sourceinfo in pairs(values_from_opts) do
+                    table.insert(results, {value = value, sourceinfo = sourceinfo})
+                end
+                local values_from_pkgs = _get_values_from_pkgs(target, valuename)
+                for value, sourceinfo in pairs(values_from_pkgs) do
+                    table.insert(results, {value = value, sourceinfo = sourceinfo})
+                end
+                if #results > 0 then
+                    cprint("    ${color.dump.string}%s${clear}:", valuename)
+                    for _, result in ipairs(results) do
+                        cprint("      ${color.dump.reference}->${clear} %s%s", result.value, result.sourceinfo)
+                    end
+                end
+                --[[
+                local values_from_deps = target:get_from_deps(valuename)
+                local values_from_pkgs = target:get_from_pkgs(valuename)
+                end]]
             end
         end
     end
