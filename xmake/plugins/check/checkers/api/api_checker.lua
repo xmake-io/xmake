@@ -52,7 +52,7 @@ function _show(apiname, value, target, opt)
     local sourceinfo = target:sourceinfo(apiname, value) or {}
     local sourcetips = sourceinfo.file or ""
     if sourceinfo.line then
-        sourcetips = sourcetips .. ":" .. sourceinfo.line .. ": "
+        sourcetips = sourcetips .. ":" .. (sourceinfo.line or -1) .. ": "
     end
     if #sourcetips == 0 then
         sourcetips = string.format("target(%s)", target:name())

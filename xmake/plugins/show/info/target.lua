@@ -25,6 +25,15 @@ import("core.project.config")
 import("core.project.project")
 import("core.language.language")
 
+-- get source info string
+function _get_sourceinfo_str(target, name, item)
+    local sourceinfo = target:sourceinfo(name, item)
+    if sourceinfo then
+        return string.format(" ${dim}(%s:%s)${clear}", sourceinfo.file or "", sourceinfo.line or -1)
+    end
+    return ""
+end
+
 -- show target information
 function _show_target(target)
     print("The information of target(%s):", target:name())
@@ -33,11 +42,17 @@ function _show_target(target)
     cprint("    ${color.dump.string}targetfile${clear}: %s", target:targetfile())
     local deps = target:get("deps")
     if deps then
-        cprint("    ${color.dump.string}deps${clear}: %s", table.concat(table.wrap(deps), ", "))
+        cprint("    ${color.dump.string}deps${clear}:")
+        for _, dep in ipairs(deps) do
+            cprint("      ${color.dump.reference}->${clear} %s%s", dep, _get_sourceinfo_str(target, "deps", dep))
+        end
     end
     local rules = target:get("rules")
     if rules then
-        cprint("    ${color.dump.string}rules${clear}: %s", table.concat(table.wrap(rules), ", "))
+        cprint("    ${color.dump.string}rules${clear}:")
+        for _, value in ipairs(rules) do
+            cprint("      ${color.dump.reference}->${clear} %s%s", value, _get_sourceinfo_str(target, "rules", value))
+        end
     end
     local options = {}
     for _, opt in ipairs(target:get("options")) do
@@ -46,11 +61,17 @@ function _show_target(target)
         end
     end
     if #options > 0 then
-        cprint("    ${color.dump.string}options${clear}: %s", table.concat(options, ", "))
+        cprint("    ${color.dump.string}options${clear}:")
+        for _, value in ipairs(options) do
+            cprint("      ${color.dump.reference}->${clear} %s%s", value, _get_sourceinfo_str(target, "options", value))
+        end
     end
     local packages = target:get("packages")
     if packages then
-        cprint("    ${color.dump.string}packages${clear}: %s", table.concat(table.wrap(packages), ", "))
+        cprint("    ${color.dump.string}packages${clear}:")
+        for _, value in ipairs(packages) do
+            cprint("      ${color.dump.reference}->${clear} %s%s", value, _get_sourceinfo_str(target, "packages", value))
+        end
     end
     for _, apiname in ipairs(table.join(language.apis().values, language.apis().paths)) do
         if apiname:startswith("target.") then
@@ -64,7 +85,7 @@ function _show_target(target)
                 if #values > 0 then
                     cprint("    ${color.dump.string}%s${clear}:", valuename)
                     for _, value in ipairs(values) do
-                        cprint("      ${color.dump.reference}->${clear} %s", value)
+                        cprint("      ${color.dump.reference}->${clear} %s%s", value, _get_sourceinfo_str(target, valuename, value))
                     end
                 end
             end
@@ -74,7 +95,7 @@ function _show_target(target)
     if files then
         cprint("    ${color.dump.string}files${clear}:")
         for _, file in ipairs(files) do
-            cprint("      ${color.dump.reference}->${clear} %s", file)
+            cprint("      ${color.dump.reference}->${clear} %s%s", file, _get_sourceinfo_str(target, "files", file))
         end
     end
     local sourcekinds = hashset.new()
