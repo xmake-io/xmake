@@ -20,7 +20,10 @@
 
 -- define rule: c++.build.modules
 rule("c++.build.modules")
+
+    -- @note common.contains_modules() need it
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
+
     add_deps("c++.build.modules.builder")
     add_deps("c++.build.modules.install")
 
