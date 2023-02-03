@@ -20,7 +20,7 @@
 
 language("c++")
     add_rules("c++")
-    set_sourcekinds {cc = ".c", cxx = {".cpp", ".cc", ".cxx"}}
+    set_sourcekinds {cc = ".c", cxx = {".cpp", ".cc", ".cxx", ".mpp", ".mxx", ".cppm", ".ixx"}}
     set_sourceflags {cc = {"cflags", "cxflags"}, cxx = {"cxxflags", "cxflags"}}
     set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
