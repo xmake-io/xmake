@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
@@ -59,7 +60,7 @@ function _show_target(target)
                 local values_from_deps = target:get_from_deps(valuename)
                 local values_from_opts = target:get_from_opts(valuename)
                 local values_from_pkgs = target:get_from_pkgs(valuename)
-                values = table.join(values or {}, values_from_deps or {}, values_from_opts or {}, values_from_pkgs or {})
+                values = table.unique(table.join(values or {}, values_from_deps or {}, values_from_opts or {}, values_from_pkgs or {}))
                 if #values > 0 then
                     cprint("    ${color.dump.string}%s${clear}:", valuename)
                     for _, value in ipairs(values) do
@@ -75,6 +76,24 @@ function _show_target(target)
         for _, file in ipairs(files) do
             cprint("      ${color.dump.reference}->${clear} %s", file)
         end
+    end
+    local sourcekinds = hashset.new()
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        if sourcebatch.sourcekind then
+            sourcekinds:insert(sourcebatch.sourcekind)
+        end
+    end
+    for _, sourcekind in sourcekinds:keys() do
+        local compinst = target:compiler(sourcekind)
+        if compinst then
+            cprint("    ${color.dump.string}compflags (%s)${clear}: %s", sourcekind, compinst:program())
+            cprint("      ${color.dump.reference}->${clear} %s", os.args(compinst:compflags({target = target})))
+        end
+    end
+    local linker = target:linker()
+    if linker then
+        cprint("    ${color.dump.string}linkflags (%s)${clear}: %s", linker:kind(), linker:program())
+        cprint("      ${color.dump.reference}->${clear} %s", os.args(linker:linkflags({target = target})))
     end
 end
 
