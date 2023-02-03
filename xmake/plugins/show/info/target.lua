@@ -212,13 +212,25 @@ function _show_target(target)
     for _, sourcekind in sourcekinds:keys() do
         local compinst = target:compiler(sourcekind)
         if compinst then
-            cprint("    ${color.dump.string}compflags (%s)${clear}: %s", sourcekind, compinst:program())
+            cprint("    ${color.dump.string}compiler (%s)${clear}: %s", sourcekind, compinst:program())
+            cprint("      ${color.dump.reference}->${clear} %s", os.args(compinst:compflags()))
+        end
+    end
+    local linker = target:linker()
+    if linker then
+        cprint("    ${color.dump.string}linker (%s)${clear}: %s", linker:kind(), linker:program())
+        cprint("      ${color.dump.reference}->${clear} %s", os.args(linker:linkflags()))
+    end
+    for _, sourcekind in sourcekinds:keys() do
+        local compinst = target:compiler(sourcekind)
+        if compinst then
+            cprint("    ${color.dump.string}compflags (%s)${clear}:", sourcekind)
             cprint("      ${color.dump.reference}->${clear} %s", os.args(compinst:compflags({target = target})))
         end
     end
     local linker = target:linker()
     if linker then
-        cprint("    ${color.dump.string}linkflags (%s)${clear}: %s", linker:kind(), linker:program())
+        cprint("    ${color.dump.string}linkflags (%s)${clear}:", linker:kind())
         cprint("      ${color.dump.reference}->${clear} %s", os.args(linker:linkflags({target = target})))
     end
 end
