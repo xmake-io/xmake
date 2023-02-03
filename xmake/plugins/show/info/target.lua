@@ -200,7 +200,9 @@ function _show_target(target)
     if files then
         cprint("    ${color.dump.string}files${clear}:")
         for _, file in ipairs(files) do
-            cprint("      ${color.dump.reference}->${clear} %s%s", file, _get_sourceinfo_str(target, "files", file))
+            if not file:startswith("__remove_") then
+                cprint("      ${color.dump.reference}->${clear} %s%s", file, _get_sourceinfo_str(target, "files", file))
+            end
         end
     end
     local sourcekinds = hashset.new()
