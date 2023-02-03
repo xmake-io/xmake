@@ -109,6 +109,11 @@ function _instance:extraconf_set(name, item, key, value)
     return self._INFO:extraconf_set(name, item, key, value)
 end
 
+-- get configuration source information of the given api item
+function _instance:sourceinfo(name, item)
+    return self._INFO:sourceinfo(name, item)
+end
+
 -- get the package license
 function _instance:license()
     return self:get("license")

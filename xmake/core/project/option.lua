@@ -439,6 +439,11 @@ function _instance:extraconf(name, item, key)
     return self._INFO:extraconf(name, item, key)
 end
 
+-- get configuration source information of the given api item
+function _instance:sourceinfo(name, item)
+    return self._INFO:sourceinfo(name, item)
+end
+
 -- get the given dependent option
 function _instance:dep(name)
     local deps = self:deps()
