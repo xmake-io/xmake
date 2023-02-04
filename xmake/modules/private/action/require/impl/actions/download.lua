@@ -164,7 +164,9 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
                 -- we can use local package from the search directories directly if network is too slow
                 os.cp(localfile, packagefile)
             else
-                http.download(url, packagefile, {insecure = global.get("insecure-ssl")})
+                http.download(url, packagefile, {
+                    insecure = global.get("insecure-ssl"),
+                    headers = package:policy("package.download.http_headers")})
             end
         end
 
