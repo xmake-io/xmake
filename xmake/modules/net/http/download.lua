@@ -85,6 +85,14 @@ function _curl_download(tool, url, outputfile, opt)
         table.insert(argv, "-k")
     end
 
+    -- add custom headers
+    if opt.headers then
+        for _, header in ipairs(opt.headers) do
+            table.insert(argv, "-H")
+            table.insert(argv, header)
+        end
+    end
+
     -- continue to download?
     if opt.continue then
         table.insert(argv, "-C")
@@ -148,6 +156,13 @@ function _wget_download(tool, url, outputfile, opt)
     -- ignore to check ssl certificates
     if opt.insecure then
         table.insert(argv, "--no-check-certificate")
+    end
+
+    -- add custom headers
+    if opt.headers then
+        for _, header in ipairs(opt.headers) do
+            table.insert(argv, "--header=" .. header)
+        end
     end
 
     -- continue to download?
