@@ -1712,6 +1712,16 @@ function _instance:fetch(opt)
     -- save to cache
     self._FETCHINFO = fetchinfo
 
+    -- we need update the real version if it's system package
+    -- @see https://github.com/xmake-io/xmake/issues/3333
+    if is_system and fetchinfo and fetchinfo.version then
+        local fetch_version = semver.new(fetchinfo.version)
+        if fetch_version then
+            self._VERSION = fetch_version
+            self._VERSION_STR = fetchinfo.version
+        end
+    end
+
     -- mark as system package?
     if is_system ~= nil then
         self._is_system = is_system
