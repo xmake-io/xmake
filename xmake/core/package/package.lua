@@ -274,6 +274,11 @@ function _instance:url_excludes(url)
     return self:extraconf("urls", url, "excludes")
 end
 
+-- get the http headers of url, @note need raw url
+function _instance:url_http_headers(url)
+    return self:extraconf("urls", url, "http_headers")
+end
+
 -- set artifacts info
 function _instance:artifacts_set(artifacts_info)
     local versions = self:get("versions")

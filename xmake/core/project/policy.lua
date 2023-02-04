@@ -76,6 +76,8 @@ function policy.policies()
             ["package.install_only"]              = {description = "Only install packages from remote.", type = "boolean"},
             -- always install packages every time
             ["package.install_always"]            = {description = "Always install packages every time.", type = "boolean"},
+            -- set custom headers when downloading package
+            ["package.download.http_headers"]     = {description = "Set the custom http headers when downloading package."},
             -- use includes as external header files? e.g. -isystem ..
             ["package.include_external_headers"]  = {description = "Use includes as external headers.", type = "boolean"},
             -- inherit the configs from the external command arguments, e.g. toolchains, `xmake f --toolchain=`

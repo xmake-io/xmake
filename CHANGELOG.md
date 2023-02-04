@@ -6,6 +6,7 @@
 
 * Add Haiku support
 * [#3326](https://github.com/xmake-io/xmake/issues/3326): Add `xmake check` to check project code (clang-tidy) and configuration
+* [#3332](https://github.com/xmake-io/xmake/pull/3332): add custom http headers when downloading packages
 
 ### Changes
 
@@ -1530,6 +1531,7 @@
 
 * 添加 Haiku 支持
 * [#3326](https://github.com/xmake-io/xmake/issues/3326): 添加 `xmake check` 去检测工程代码 (clang-tidy) 和 API 参数配置
+* [#3332](https://github.com/xmake-io/xmake/pull/3332): 在包中配置添加自定义 http headers
 
 ### 改进
 

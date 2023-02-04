@@ -73,7 +73,9 @@ function _patch(package, patch_url, patch_hash)
 
         -- download the patch file
         if patch_url:find(string.ipattern("https-://")) or patch_url:find(string.ipattern("ftps-://")) then
-            http.download(patch_url, patch_file)
+            http.download(patch_url, patch_file, {
+                insecure = global.get("insecure-ssl"),
+                headers = package:policy("package.download.http_headers")})
         else
             -- copy the patch file
             if os.isfile(patch_url) then
