@@ -249,10 +249,17 @@ function _instance:rules()
         local installdir = self:installdir()
         local rulesdir = path.join(installdir, "rules")
         if os.isdir(rulesdir) then
-            local files = os.match(path.join(rulesdir, "**.lua"))
+            local files = os.filedirs(path.join(rulesdir, "*"))
             if files then
                 for _, filepath in ipairs(files) do
-                    local results, errors = rule._load(filepath)
+                    local results, errors
+                    if filepath:endswith(".lua") then
+                        results, errors = rule._load(filepath)
+                    elseif os.isdir(filepath) and os.isfile(path.join(filepath, "xmake.lua")) then
+                        results, errors = rule._load(path.join(filepath, "xmake.lua"))
+                    else
+                        os.raise("unknown rule %s: %s", os.isdir(filepath) and "directory" or "file", filepath)
+                    end
                     if results then
                         table.join2(ruleinfos, results)
                     else
