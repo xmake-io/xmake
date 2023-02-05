@@ -25,7 +25,8 @@ else
     set_strip "all"
     set_symbols "hidden"
     set_optimizes "smallest"
-    if is_plat "macosx"; then
+    # we cannot enable LTO on macOS arm64
+    if is_plat "macosx" && ! is_arch "arm64"; then
         add_cxflags "-flto"
         add_mxflags "-flto"
         add_ldflags "-flto"
