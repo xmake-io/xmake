@@ -218,6 +218,17 @@ function _download(package, url, sourcedir, opt)
     end
 end
 
+-- download codes from script
+function _download_from_script(package, script, opt)
+
+    -- do download
+    script(package, opt)
+
+    -- trace
+    tty.erase_line_to_start().cr()
+    cprint("${yellow}  => ${clear}download %s .. ${color.success}${text.success}", opt.url)
+end
+
 -- get sorted urls
 function _urls(package)
 
@@ -290,7 +301,7 @@ function main(package)
                 local sourcedir = "source"
                 local script = package:script("download")
                 if script then
-                    script(package, {
+                    _download_from_script(package, script, {
                         sourcedir = sourcedir,
                         url = url,
                         url_alias = url_alias,
