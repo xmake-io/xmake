@@ -31,7 +31,7 @@ function main()
 
     -- config it first
     local targetname = option.get("target")
-    task.run("config", {target = targetname, require = "n", verbose = false})
+    task.run("config", {require = "n", verbose = false})
 
     -- attempt to uninstall directly
     try

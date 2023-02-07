@@ -111,15 +111,9 @@ function _check_target(target)
 end
 
 -- check targets
-function _check_targets(targetname)
+function _check_targets()
     assert(not project.is_loaded(), "project and targets may have been loaded early!")
-    if not targetname then
-        for _, target in pairs(project.targets()) do
-            _check_target(target)
-        end
-    else
-        local target = project.target(targetname)
-        assert(target, "unknown target: %s", targetname)
+    for _, target in pairs(project.targets()) do
         _check_target(target)
     end
 end
@@ -180,20 +174,11 @@ function _config_target(target)
 end
 
 -- config targets
-function _config_targets(targetname)
-    if not targetname then
-        for _, target in ipairs(project.ordertargets()) do
-            if target:is_enabled() then
-                _config_target(target)
-            end
+function _config_targets()
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _config_target(target)
         end
-    else
-        local target = project.target(targetname)
-        assert(target, "unknown target: %s", targetname)
-        for _, dep in ipairs(target:orderdeps()) do
-            _config_target(dep)
-        end
-        _config_target(target)
     end
 end
 
@@ -331,9 +316,6 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     if option.get("menu") then
         options_changed = menuconf_show()
     end
-
-    -- the target name
-    local targetname = option.get("target")
 
     -- load the project configuration
     --
@@ -473,7 +455,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
 
         -- check target and ensure to load all targets, @note we must load targets after installing required packages,
         -- otherwise has_package() will be invalid.
-        _check_targets(targetname)
+        _check_targets()
 
         -- update the config files
         generate_configfiles({force = recheck})
@@ -490,7 +472,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         _load_package_rules_for_targets()
 
         -- config targets
-        _config_targets(targetname)
+        _config_targets()
     end
 
     -- dump config
