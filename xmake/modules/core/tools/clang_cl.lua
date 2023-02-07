@@ -165,7 +165,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
         {
             function (ok, outdata, errdata)
                 -- show warnings?
-                if ok and errdata and #errdata > 0 and (option.get("diagnosis") or option.get("warning") or policy.build_warnings()) then
+                if ok and errdata and #errdata > 0 and policy.build_warnings() then
                     local lines = errdata:split('\n', {plain = true})
                     if #lines > 0 then
                         local warnings = table.concat(table.slice(lines, 1, (#lines > 8 and 8 or #lines)), "\n")
