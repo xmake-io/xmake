@@ -34,9 +34,9 @@ local table = require("base/table")
 -- b.deps = c
 -- foo.deps = a d
 --
--- orderdeps: c -> b -> d -> a -> foo
+-- foo.orderdeps: d -> c -> b -> a
 --
--- if they're target, their links order is reverse(orderdeps), e.g. foo-> a -> d -> b -> c
+-- if they're targets, their links order is reverse(orderdeps), e.g. foo: a -> b -> c -> d
 --
 function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath)
     local plaindeps = table.wrap(instance:get("deps"))
@@ -44,41 +44,70 @@ function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath)
     for idx, _ in ipairs(plaindeps) do
         -- we reverse to get the flat dependencies in order to ensure the correct linking order
         -- @see https://github.com/xmake-io/xmake/issues/3144
-        local dep = plaindeps[total + 1 - idx]
-        local depinst = instances[dep]
+        local depname = plaindeps[total + 1 - idx]
+        local depinst = instances[depname]
         if depinst then
             local depspath_sub
             if depspath then
                 for idx, name in ipairs(depspath) do
-                    if name == dep then
+                    if name == depname then
                         local circular_deps = table.slice(depspath, idx)
-                        table.insert(circular_deps, dep)
+                        table.insert(circular_deps, depname)
                         os.raise("circular dependency(%s) detected!", table.concat(circular_deps, ", "))
                     end
                 end
-                depspath_sub = table.join(depspath, dep)
+                depspath_sub = table.join(depspath, depname)
             end
             instance_deps.load_deps(depinst, instances, deps, orderdeps, depspath_sub)
-            if not deps[dep] then
-                deps[dep] = depinst
+            if not deps[depname] then
+                deps[depname] = depinst
                 table.insert(orderdeps, depinst)
             end
         end
     end
 end
 
--- sort instances for all deps
-function instance_deps.sort_deps(instances, orderinstances, instancerefs, instance)
+-- sort the given instance with deps
+function instance_deps._sort_instance(instance, instances, orderinstances, instancerefs, depspath)
     for _, depname in ipairs(table.wrap(instance:get("deps"))) do
-        local instanceinst = instances[depname]
-        if instanceinst then
-            instance_deps.sort_deps(instances, orderinstances, instancerefs, instanceinst)
+        local depinst = instances[depname]
+        if depinst then
+            local depspath_sub
+            if depspath then
+                for idx, name in ipairs(depspath) do
+                    if name == depname then
+                        local circular_deps = table.slice(depspath, idx)
+                        table.insert(circular_deps, depname)
+                        os.raise("circular dependency(%s) detected!", table.concat(circular_deps, ", "))
+                    end
+                end
+                depspath_sub = table.join(depspath, depname)
+            end
+            instance_deps._sort_instance(depinst, instances, orderinstances, instancerefs, depspath_sub)
         end
     end
     if not instancerefs[instance:name()] then
         instancerefs[instance:name()] = true
         table.insert(orderinstances, instance)
     end
+end
+
+-- sort instances with deps
+--
+-- e.g.
+--
+-- a.deps = b
+-- b.deps = c
+-- foo.deps = a d
+--
+-- orderdeps: c -> b -> a -> d -> foo
+function instance_deps.sort(instances)
+    local refs = {}
+    local orderinstances = {}
+    for _, instance in table.orderpairs(instances) do
+        instance_deps._sort_instance(instance, instances, orderinstances, refs, {instance:name()})
+    end
+    return orderinstances
 end
 
 -- return module
