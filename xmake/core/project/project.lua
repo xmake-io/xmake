@@ -896,12 +896,7 @@ end
 function project.ordertargets()
     local ordertargets = project._memcache():get("ordertargets")
     if not ordertargets then
-        local targets = project.targets()
-        ordertargets = {}
-        local targetrefs = {}
-        for _, t in table.orderpairs(targets) do
-            instance_deps.sort_deps(targets, ordertargets, targetrefs, t)
-        end
+        ordertargets = instance_deps.sort(project.targets())
         project._memcache():set("ordertargets", ordertargets)
     end
     return ordertargets
