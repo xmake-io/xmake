@@ -19,7 +19,23 @@
 --
 
 -- imports
+import("core.base.hashset")
 import("core.sandbox.module")
+
+-- remove some suffix
+--
+-- we just remove some known extension, because we need reverse others, e.g. ld.lld, ld64.lld
+--
+function _remove_suffix(name)
+    local exts = hashset.of("exe", "bat", "sh", "ps1", "ps")
+    name = name:gsub("%.(%w+)", function (ext)
+        ext = ext:lower()
+        if exts:has(ext) then
+            return ""
+        end
+    end)
+    return name
+end
 
 -- find the the whole name
 function _find_with_whole_name(program)
@@ -34,7 +50,7 @@ function _find_with_whole_name(program)
     local names = path.filename(program):lower():split("%s")
     for _, name in ipairs(names) do
         -- remove suffix: ".exe", e.g. "zig.exe cc"
-        name = name:gsub("%.%w+", "")
+        name = _remove_suffix(name)
         -- "zig c++" -> zig_cxx
         name = name:gsub("%+", "x")
         -- skip -arguments
@@ -70,8 +86,8 @@ function _find(program)
     end
 
     -- remove suffix: ".xxx"
-    name = name:gsub("%.%w+", "")
-    toolname = name:gsub("[%+%-]", function (ch) return (ch == "+" and "x" or "_") end)
+    name = _remove_suffix(name)
+    toolname = name:gsub("[%+%-%.]", function (ch) return (ch == "+" and "x" or "_") end)
     if module.find("detect.tools.find_" .. toolname) then
         return toolname
     end
