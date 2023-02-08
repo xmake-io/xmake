@@ -883,8 +883,18 @@ function _load_packages(requires, opt)
 
                     -- load dependent packages and do not load system/3rd packages for package/deps()
                     local packagedeps = {}
+
+                    -- make sure dependent packages are loaded with the same plat/arch
+                    local requires_extraconf = package:extraconf("deps") or {}
+                    local requires_extra = {}
+                    for _, depname in pairs(package:get("deps")) do
+                        requires_extra[depname] = requires_extraconf[depname] or {}
+                        requires_extra[depname].plat = requires_extra[depname].plat or package:plat()
+                        requires_extra[depname].arch = requires_extra[depname].arch or package:arch()
+                    end
+
                     local deps, plaindeps = _load_packages(package:get("deps"), {requirepath = requirepath,
-                                                        requires_extra = package:extraconf("deps") or {},
+                                                        requires_extra = requires_extra,
                                                         parentinfo = requireinfo,
                                                         nodeps = opt.nodeps,
                                                         system = false})
