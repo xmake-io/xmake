@@ -29,6 +29,28 @@ local table         = require("base/table")
 local utils         = require("base/utils")
 local option        = require("base/option")
 
+-- always use workingdir?
+--
+-- If the -P/-F parameter is specified, we use workingdir as the configuration root
+--
+-- But we cannot call `option.get("project")`, because the menu script
+-- will also fetch the configdir, but at this point,
+-- the option has not yet finished parsing.
+function config._use_workingdir()
+    local use_workingdir = config._USE_WORKINGDIR
+    if use_workingdir == nil then
+        for _, arg in ipairs(xmake._ARGV) do
+            if arg == "-P" or arg == "-F" or
+                arg:startswith("--project=") or arg:startswith("--file=") then
+                use_workingdir = true
+            end
+        end
+        use_workingdir = use_workingdir or false
+        config._USE_WORKINGDIR = use_workingdir
+    end
+    return use_workingdir
+end
+
 -- get the current given configuration
 function config.get(name)
     local value = nil
@@ -98,7 +120,7 @@ function config.buildir(opt)
     local rootdir
     -- we always switch to independent working directory if `-P/-F` is set
     -- @see https://github.com/xmake-io/xmake/issues/3342
-    if not rootdir and (option.get("project") or option.get("projectfile")) then
+    if not rootdir and config._use_workingdir() then
         rootdir = os.workingdir()
     end
     -- we switch to independent working directory if .xmake exists
@@ -137,7 +159,7 @@ function config.directory()
         local rootdir = os.getenv("XMAKE_CONFIGDIR")
         -- we always switch to independent working directory if `-P/-F` is set
         -- @see https://github.com/xmake-io/xmake/issues/3342
-        if not rootdir and (option.get("project") or option.get("projectfile")) then
+        if not rootdir and config._use_workingdir() then
             rootdir = os.workingdir()
         end
         -- we switch to independent working directory if .xmake exists
