@@ -12,6 +12,7 @@
 
 * [#3318](https://github.com/xmake-io/xmake/pull/3318): Improve dlang toolchains
 * [#2591](https://github.com/xmake-io/xmake/issues/2591): Improve target analysis
+* [#3342](https://github.com/xmake-io/xmake/issues/3342): Improve to configure working and build directories
 * Improve to strip/optimization for dmd/ldc2
 
 ### Bugs fixed
@@ -1539,6 +1540,7 @@
 * [#3318](https://github.com/xmake-io/xmake/pull/3318): 改进 dlang 工具链
 * [#2591](https://github.com/xmake-io/xmake/issues/2591): 改进 target 配置来源分析
 * 为 dmd/ldc2 改进 strip/optimization
+* [#3342](https://github.com/xmake-io/xmake/issues/3342): 改进配置构建目录，支持外置目录构建，保持远吗目录更加干净
 
 ### Bugs 修复
 
