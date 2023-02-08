@@ -167,6 +167,7 @@ function _load_require(require_str, requires_extra, parentinfo)
     "verify", "external", "private", "build", "configs", "version")
     for name, value in pairs(require_extra) do
         if not extra_options:has(name) then
+            print("not found")
             wprint("add_requires(\"%s\") has unknown option: {%s=%s}!", require_str, name, tostring(value))
         end
     end
