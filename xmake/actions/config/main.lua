@@ -301,7 +301,10 @@ function main(opt)
     end
 
     -- check the working directory
-    if not option.get("project") and not option.get("file") and os.isdir(os.projectdir()) then
+    if not option.get("project") and not option.get("file") and -- no given project path
+        not localcache.get("project", "projectdir") and -- no cached project path
+        not localcache.get("project", "projectfile") and
+        os.isdir(os.projectdir()) then
         if path.translate(os.projectdir()) ~= path.translate(os.workingdir()) then
             wprint([[You are working in the project directory(%s) and you can also
 force to build in current directory via run `xmake -P .`]], os.projectdir())

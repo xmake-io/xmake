@@ -96,8 +96,14 @@ function config.buildir(opt)
     -- get the absolute path first
     opt = opt or {}
     local rootdir
-    if os.isdir(path.join(os.workingdir(), ".xmake")) then
-        -- we switch to independent working directory @see https://github.com/xmake-io/xmake/issues/820
+    -- we always switch to independent working directory if `-P/-F` is set
+    -- @see https://github.com/xmake-io/xmake/issues/3342
+    if not rootdir and (option.get("project") or option.get("projectfile")) then
+        rootdir = os.workingdir()
+    end
+    -- we switch to independent working directory if .xmake exists
+    -- @see https://github.com/xmake-io/xmake/issues/820
+    if not rootdir and os.isdir(path.join(os.workingdir(), "." .. xmake._NAME)) then
         rootdir = os.workingdir()
     end
     if not rootdir then
@@ -129,9 +135,18 @@ end
 function config.directory()
     if config._DIRECTORY == nil then
         local rootdir = os.getenv("XMAKE_CONFIGDIR")
-        if not rootdir then
-            -- @see https://github.com/xmake-io/xmake/issues/3342
+        -- we always switch to independent working directory if `-P/-F` is set
+        -- @see https://github.com/xmake-io/xmake/issues/3342
+        if not rootdir and (option.get("project") or option.get("projectfile")) then
             rootdir = os.workingdir()
+        end
+        -- we switch to independent working directory if .xmake exists
+        -- @see https://github.com/xmake-io/xmake/issues/820
+        if not rootdir and os.isdir(path.join(os.workingdir(), "." .. xmake._NAME)) then
+            rootdir = os.workingdir()
+        end
+        if not rootdir then
+            rootdir = os.projectdir()
         end
         config._DIRECTORY = path.join(rootdir, "." .. xmake._NAME, os.host(), os.arch())
     end

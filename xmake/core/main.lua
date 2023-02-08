@@ -117,6 +117,25 @@ function main._basicparse()
     return option.parse(xmake._COMMAND_ARGV, task.common_options(), { allow_unknown = true })
 end
 
+-- get the project configuration from cache if we are in the independent working directory
+-- @see https://github.com/xmake-io/xmake/issues/3342
+--
+function main._projectconf(name)
+    local rootdir = os.getenv("XMAKE_CONFIGDIR")
+    -- we switch to independent working directory
+    -- @see https://github.com/xmake-io/xmake/issues/820
+    if not rootdir and os.isdir(path.join(os.workingdir(), "." .. xmake._NAME)) then
+        rootdir = os.workingdir()
+    end
+    local cachefile = path.join(rootdir, "." .. xmake._NAME, os.host(), os.arch(), "cache", "project")
+    if os.isfile(cachefile) then
+        local cacheinfo = io.load(cachefile)
+        if cacheinfo then
+            return cacheinfo[name]
+        end
+    end
+end
+
 -- the init function for main
 function main._init()
 
@@ -139,7 +158,7 @@ function main._init()
         local opt_projectdir, opt_projectfile = options.project, options.file
 
         -- init the project directory
-        local projectdir = opt_projectdir or localcache.get("project", "projectdir") or xmake._PROJECT_DIR
+        local projectdir = opt_projectdir or main._projectconf("projectdir") or xmake._PROJECT_DIR
         if projectdir and not path.is_absolute(projectdir) then
             projectdir = path.absolute(projectdir)
         elseif projectdir then
@@ -149,7 +168,7 @@ function main._init()
         assert(projectdir)
 
         -- init the xmake.lua file path
-        local projectfile = opt_projectfile or localcache.get("project", "projectfile") or xmake._PROJECT_FILE
+        local projectfile = opt_projectfile or main._projectconf("projectfile") or xmake._PROJECT_FILE
         if projectfile and not path.is_absolute(projectfile) then
             projectfile = path.absolute(projectfile, projectdir)
         end
