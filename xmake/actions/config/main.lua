@@ -485,6 +485,19 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         _export_configs()
     end
 
+    -- we need save it and enable external working mode
+    -- if we configure the given project directory
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/3342
+    --
+    local projectdir = option.get("project")
+    local projectfile = option.get("file")
+    if projectdir or projectfile then
+        localcache.set("project", "projectdir", projectdir)
+        localcache.set("project", "projectfile", projectfile)
+        localcache.save("project")
+    end
+
     -- save options and config cache
     localcache.set("config", "recheck", false)
     localcache.set("config", "mtimes", project.mtimes())

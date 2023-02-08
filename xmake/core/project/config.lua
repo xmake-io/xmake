@@ -129,12 +129,9 @@ end
 function config.directory()
     if config._DIRECTORY == nil then
         local rootdir = os.getenv("XMAKE_CONFIGDIR")
-        if not rootdir and os.isdir(path.join(os.workingdir(), ".xmake")) then
-            -- we switch to independent working directory @see https://github.com/xmake-io/xmake/issues/820
-            rootdir = os.workingdir()
-        end
         if not rootdir then
-            rootdir = os.projectdir()
+            -- @see https://github.com/xmake-io/xmake/issues/3342
+            rootdir = os.workingdir()
         end
         config._DIRECTORY = path.join(rootdir, "." .. xmake._NAME, os.host(), os.arch())
     end

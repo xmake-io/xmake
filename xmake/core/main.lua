@@ -139,7 +139,7 @@ function main._init()
         local opt_projectdir, opt_projectfile = options.project, options.file
 
         -- init the project directory
-        local projectdir = opt_projectdir or xmake._PROJECT_DIR
+        local projectdir = opt_projectdir or localcache.get("project", "projectdir") or xmake._PROJECT_DIR
         if projectdir and not path.is_absolute(projectdir) then
             projectdir = path.absolute(projectdir)
         elseif projectdir then
@@ -149,7 +149,7 @@ function main._init()
         assert(projectdir)
 
         -- init the xmake.lua file path
-        local projectfile = opt_projectfile or xmake._PROJECT_FILE
+        local projectfile = opt_projectfile or localcache.get("project", "projectfile") or xmake._PROJECT_FILE
         if projectfile and not path.is_absolute(projectfile) then
             projectfile = path.absolute(projectfile, projectdir)
         end
