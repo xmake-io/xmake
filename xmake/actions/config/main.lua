@@ -111,15 +111,9 @@ function _check_target(target)
 end
 
 -- check targets
-function _check_targets(targetname)
+function _check_targets()
     assert(not project.is_loaded(), "project and targets may have been loaded early!")
-    if not targetname then
-        for _, target in pairs(project.targets()) do
-            _check_target(target)
-        end
-    else
-        local target = project.target(targetname)
-        assert(target, "unknown target: %s", targetname)
+    for _, target in pairs(project.targets()) do
         _check_target(target)
     end
 end
@@ -180,20 +174,11 @@ function _config_target(target)
 end
 
 -- config targets
-function _config_targets(targetname)
-    if not targetname then
-        for _, target in ipairs(project.ordertargets()) do
-            if target:is_enabled() then
-                _config_target(target)
-            end
+function _config_targets()
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _config_target(target)
         end
-    else
-        local target = project.target(targetname)
-        assert(target, "unknown target: %s", targetname)
-        for _, dep in ipairs(target:orderdeps()) do
-            _config_target(dep)
-        end
-        _config_target(target)
     end
 end
 
@@ -316,7 +301,10 @@ function main(opt)
     end
 
     -- check the working directory
-    if not option.get("project") and not option.get("file") and os.isdir(os.projectdir()) then
+    if not option.get("project") and not option.get("file") and -- no given project path
+        not localcache.get("project", "projectdir") and -- no cached project path
+        not localcache.get("project", "projectfile") and
+        os.isdir(os.projectdir()) then
         if path.translate(os.projectdir()) ~= path.translate(os.workingdir()) then
             wprint([[You are working in the project directory(%s) and you can also
 force to build in current directory via run `xmake -P .`]], os.projectdir())
@@ -331,9 +319,6 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     if option.get("menu") then
         options_changed = menuconf_show()
     end
-
-    -- the target name
-    local targetname = option.get("target")
 
     -- load the project configuration
     --
@@ -473,7 +458,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
 
         -- check target and ensure to load all targets, @note we must load targets after installing required packages,
         -- otherwise has_package() will be invalid.
-        _check_targets(targetname)
+        _check_targets()
 
         -- update the config files
         generate_configfiles({force = recheck})
@@ -490,7 +475,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         _load_package_rules_for_targets()
 
         -- config targets
-        _config_targets(targetname)
+        _config_targets()
     end
 
     -- dump config
@@ -501,6 +486,19 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     -- export configs
     if option.get("export") then
         _export_configs()
+    end
+
+    -- we need save it and enable external working mode
+    -- if we configure the given project directory
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/3342
+    --
+    local projectdir = option.get("project")
+    local projectfile = option.get("file")
+    if projectdir or projectfile then
+        localcache.set("project", "projectdir", projectdir)
+        localcache.set("project", "projectfile", projectfile)
+        localcache.save("project")
     end
 
     -- save options and config cache

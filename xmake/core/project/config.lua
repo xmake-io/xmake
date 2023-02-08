@@ -29,6 +29,28 @@ local table         = require("base/table")
 local utils         = require("base/utils")
 local option        = require("base/option")
 
+-- always use workingdir?
+--
+-- If the -P/-F parameter is specified, we use workingdir as the configuration root
+--
+-- But we cannot call `option.get("project")`, because the menu script
+-- will also fetch the configdir, but at this point,
+-- the option has not yet finished parsing.
+function config._use_workingdir()
+    local use_workingdir = config._USE_WORKINGDIR
+    if use_workingdir == nil then
+        for _, arg in ipairs(xmake._ARGV) do
+            if arg == "-P" or arg == "-F" or
+                arg:startswith("--project=") or arg:startswith("--file=") then
+                use_workingdir = true
+            end
+        end
+        use_workingdir = use_workingdir or false
+        config._USE_WORKINGDIR = use_workingdir
+    end
+    return use_workingdir
+end
+
 -- get the current given configuration
 function config.get(name)
     local value = nil
@@ -96,8 +118,14 @@ function config.buildir(opt)
     -- get the absolute path first
     opt = opt or {}
     local rootdir
-    if os.isdir(path.join(os.workingdir(), ".xmake")) then
-        -- we switch to independent working directory @see https://github.com/xmake-io/xmake/issues/820
+    -- we always switch to independent working directory if `-P/-F` is set
+    -- @see https://github.com/xmake-io/xmake/issues/3342
+    if not rootdir and config._use_workingdir() then
+        rootdir = os.workingdir()
+    end
+    -- we switch to independent working directory if .xmake exists
+    -- @see https://github.com/xmake-io/xmake/issues/820
+    if not rootdir and os.isdir(path.join(os.workingdir(), "." .. xmake._NAME)) then
         rootdir = os.workingdir()
     end
     if not rootdir then
@@ -129,8 +157,14 @@ end
 function config.directory()
     if config._DIRECTORY == nil then
         local rootdir = os.getenv("XMAKE_CONFIGDIR")
-        if not rootdir and os.isdir(path.join(os.workingdir(), ".xmake")) then
-            -- we switch to independent working directory @see https://github.com/xmake-io/xmake/issues/820
+        -- we always switch to independent working directory if `-P/-F` is set
+        -- @see https://github.com/xmake-io/xmake/issues/3342
+        if not rootdir and config._use_workingdir() then
+            rootdir = os.workingdir()
+        end
+        -- we switch to independent working directory if .xmake exists
+        -- @see https://github.com/xmake-io/xmake/issues/820
+        if not rootdir and os.isdir(path.join(os.workingdir(), "." .. xmake._NAME)) then
             rootdir = os.workingdir()
         end
         if not rootdir then

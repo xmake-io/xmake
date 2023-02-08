@@ -76,22 +76,8 @@ function _make_for_target(target)
     _g.configfiles[configheader] = file
 end
 
--- make the configure file for the given target and dependents
-function _make_for_target_with_deps(targetname)
-    local target = project.target(targetname)
-    if target then
-        _make_for_target(target)
-        for _, dep in ipairs(target:get("deps")) do
-            _make_for_target_with_deps(dep)
-        end
-    end
-end
-
 -- the main entry function
 function main()
-
-    -- the target name
-    local targetname = option.get("target")
 
     -- enter project directory
     local oldir = os.cd(project.directory())
@@ -99,13 +85,10 @@ function main()
     -- make configure for the given target name
     _g.configfiles  = {}
     _g.configpathes = {}
-    if targetname then
-        _make_for_target_with_deps(targetname)
-    else
-        -- make configure for all targets
-        for _, target in pairs(project.targets()) do
-            _make_for_target(target)
-        end
+
+    -- make configure for all targets
+    for _, target in pairs(project.targets()) do
+        _make_for_target(target)
     end
 
     -- close and update files

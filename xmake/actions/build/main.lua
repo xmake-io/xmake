@@ -40,7 +40,7 @@ function _do_try_build(configfile, tool, trybuild, trybuild_detected, targetname
     if configfile and tool and (trybuild or utils.confirm({default = true,
             description = "${bright}" .. path.filename(configfile) .. "${clear} found, try building it or you can run `${bright}xmake f --trybuild=${clear}` to set buildsystem"})) then
         if not trybuild then
-            task.run("config", {target = targetname, trybuild = trybuild_detected})
+            task.run("config", {trybuild = trybuild_detected})
         end
         tool.build()
         return true
@@ -136,7 +136,7 @@ function main()
     else
         targetname = option.get("target")
     end
-    task.run("config", {target = targetname}, {disable_dump = true})
+    task.run("config", {}, {disable_dump = true})
 
     -- enter project directory
     local oldir = os.cd(project.directory())

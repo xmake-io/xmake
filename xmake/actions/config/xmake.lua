@@ -227,8 +227,6 @@ task("config")
                                                             "    - xmake f --trybuild=autoconf --tryconfigs='--enable-shared=no'"},
                     {'o', "buildir",    "kv", "build"   , "Set build directory."},
                     {},
-                    {nil, "target",     "v" , nil       , "Configure for the given target."
-                                                        , values = _target_values},
                     {category = "Project Configuration"},
                     _project_menu_options}}
 
