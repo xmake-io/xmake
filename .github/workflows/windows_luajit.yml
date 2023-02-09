@@ -49,12 +49,14 @@ jobs:
 
       - name: Build
         run: |
-          xmake f -vD -P core -a ${{ matrix.arch }} --runtime=luajit
+          cd core
+          xmake f -vD -a ${{ matrix.arch }} --runtime=luajit
           xmake -vD
+          cd ..
 
       - name: Tests
         run: |
-          Copy-Item ./build/xmake.exe ./xmake
+          Copy-Item ./core/build/xmake.exe ./xmake
           Copy-Item ./scripts/xrepo.bat ./xmake
           Copy-Item ./scripts/xrepo.ps1 ./xmake
           $Env:XMAKE_PROGRAM_DIR = $(Resolve-Path ./xmake)
