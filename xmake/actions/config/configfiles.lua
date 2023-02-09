@@ -296,7 +296,11 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
                     os.cp(dstfile_tmp, dstfile)
                     generated = true
                 else
-                    os.touch(dstfile, {mtime = os.time()})
+                    -- I forget why I added it here, but if we switch the option, mode,
+                    -- this will cause the whole project to be rebuilt,
+                    -- even if nothing in config.h has been changed.
+                    --
+                    --os.touch(dstfile, {mtime = os.time()})
                 end
             else
                 os.cp(dstfile_tmp, dstfile)
