@@ -197,6 +197,8 @@ function _download(package, url, sourcedir, opt)
         else
             os.mv(sourcedir_tmp, sourcedir)
         end
+        -- mark this sourcedir as cleanable
+        package:data_set("cleanable_sourcedir", path.absolute(sourcedir))
     elseif extension and extension ~= "" then
         -- create an empty source directory if do not extract package file
         os.tryrm(sourcedir)

@@ -227,6 +227,25 @@ function _check_package_toolchains(package)
     end
 end
 
+-- get failed install directory
+function _get_installdir_failed(package)
+    return path.join(package:cachedir(), "installdir.failed")
+end
+
+-- clear install directory
+function _clear_installdir(package)
+    os.tryrm(package:installdir())
+    os.tryrm(_get_installdir_failed(package))
+end
+
+-- clear source directory
+function _clear_sourcedir(package)
+    local sourcedir = package:data("cleanable_sourcedir")
+    if sourcedir then
+        os.tryrm(sourcedir)
+    end
+end
+
 -- install the given package
 function main(package)
 
@@ -282,8 +301,8 @@ function main(package)
                 local force_reinstall = package:data("force_reinstall") or option.get("force")
                 if force_reinstall or not package:manifest_load() then
 
-                    -- clean install directory first
-                    os.tryrm(package:installdir())
+                    -- clear install directory
+                    _clear_installdir(package)
 
                     -- download package resources
                     download_resources(package)
@@ -379,8 +398,7 @@ function main(package)
                 -- copy the invalid package directory to cache
                 local installdir = package:installdir()
                 if os.isdir(installdir) then
-                    local installdir_failed = path.join(package:cachedir(), "installdir.failed")
-                    os.tryrm(installdir_failed)
+                    local installdir_failed = _get_installdir_failed(package)
                     if not os.isdir(installdir_failed) then
                         os.cp(installdir, installdir_failed)
                     end
@@ -425,5 +443,8 @@ function main(package)
 
     -- leave source codes directory
     os.cd(oldir)
+
+    -- clean source directory if it is no longer needed
+    _clear_sourcedir(package)
     return ok
 end
