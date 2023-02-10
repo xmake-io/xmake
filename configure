@@ -627,6 +627,8 @@ is_host() {
 os_arch=`uname -m | tr '[A-Z]' '[a-z]'`
 if test_eq "${os_arch}" "i686"; then
     os_arch="i386"
+elif test_eq "${os_arch}" "aarch64"; then
+    os_arch="arm64"
 fi
 
 # set the default target platform
@@ -646,6 +648,8 @@ elif test_nz "${TERMUX_ARCH}"; then
 fi
 if test_eq "${_target_arch_default}" "i686"; then
     _target_arch_default="i386"
+elif test_eq "${_target_arch_default}" "aarch64"; then
+    _target_arch_default="arm64"
 fi
 
 # set the default target mode
