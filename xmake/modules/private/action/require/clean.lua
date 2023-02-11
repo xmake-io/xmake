@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.hashset")
 import("core.package.package")
 import("core.cache.localcache")
 import("private.action.require.impl.remove_packages")
@@ -27,21 +28,28 @@ import("private.action.require.impl.remove_packages")
 -- clean the given or all package caches
 function main(package_names)
 
-    -- trace
-    print("clearing packages ..")
+    local clean_modes = option.get("clean_modes")
+    if clean_modes then
+        clean_modes = hashset.from(clean_modes:split(","))
+    else
+        clean_modes = hashset.of("cache", "package")
+    end
 
     -- clear all unused packages
-    remove_packages(package_names, {clean = true})
-
-    -- trace
-    print("clearing caches ..")
+    if clean_modes:has("package") then
+        print("clearing packages ..")
+        remove_packages(package_names, {clean = true})
+    end
 
     -- clear cache directory
-    os.rm(package.cachedir())
+    if clean_modes:has("cache") then
+        print("clearing caches ..")
+        os.rm(package.cachedir())
 
-    -- clear require cache
-    local require_cache = localcache.cache("package")
-    require_cache:clear()
-    require_cache:save()
+        -- clear require cache
+        local require_cache = localcache.cache("package")
+        require_cache:clear()
+        require_cache:save()
+    end
 end
 

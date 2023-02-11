@@ -45,6 +45,9 @@ task("require")
                                                          "e.g.",
                                                          "    $ xmake require --clean",
                                                          "    $ xmake require --clean zlib tbox pcr*"                          }
+                ,   {nil, "clean_modes","kv", nil,       "Set the modes of cleaning packages.",
+                                                         "e.g.",
+                                                         "    $ xmake require --clean --clean_modes=cache,package"             }
                 ,   {'f', "force",      "k",  nil,       "Force to reinstall all package dependencies."                        }
                 ,   {'j', "jobs",       "kv", tostring(os.default_njob()),
                                                          "Set the number of parallel compilation jobs."                        }

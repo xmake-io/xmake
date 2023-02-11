@@ -30,6 +30,7 @@ function menu_options()
     -- menu options
     local options =
     {
+        {nil, "cache",      "k", nil,  "Just clean packages cache."},
         {nil, "packages",   "vs", nil, "The packages list (support lua pattern).",
                                        "e.g.",
                                        "    - xrepo clean",
@@ -83,6 +84,9 @@ function _clean_packages(packages)
     end
     if option.get("diagnosis") then
         table.insert(require_argv, "-D")
+    end
+    if option.get("cache") then
+        table.insert(require_argv, "--clean_modes=cache")
     end
     if packages then
         table.join2(require_argv, packages)
