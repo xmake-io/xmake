@@ -32,6 +32,47 @@ import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
 import("stl_headers")
 
+-- get clang version
+function _get_clang_version(target)
+    local clang_version = _g.clang_version
+    if not clang_version then
+        local program, toolname = target:tool("cxx")
+        if program and (toolname == "clang" or toolname == "clangxx") then
+            local clang = find_tool("clang", {program = program, version = true})
+            if clang then
+                clang_version = clang.version
+            end
+        end
+        clang_version = clang_version or false
+        _g.clang_version = clang_version
+    end
+    return clang_version or nil
+end
+
+-- get clang-scan-deps
+function _get_clang_scan_deps(target)
+    local clang_scan_deps = _g.clang_scan_deps
+    if not clang_scan_deps then
+        local program, toolname = target:tool("cxx")
+        if program and (toolname == "clang" or toolname == "clangxx") then
+            local dir = path.directory(program)
+            local basename = path.basename(program)
+            local extension = path.extension(program)
+            program = (basename:gsub("clang", "clang-scan-deps")) .. extension
+            if os.isdir(dir) then
+                program = path.join(dir, program)
+            end
+            local result = find_tool("clang-scan-deps", {program = program, version = true})
+            if result then
+                clang_scan_deps = result.program
+            end
+        end
+        clang_scan_deps = clang_scan_deps or false
+        _g.clang_scan_deps = clang_scan_deps
+    end
+    return clang_scan_deps or nil
+end
+
 -- add a module or an header unit into the mapper
 --
 -- e.g
@@ -82,7 +123,7 @@ function load(target)
 
     -- add module flags
     target:add("cxxflags", modulesflag)
-    if not modulesflag or target:is_plat("macosx") then
+    if not modulesflag then
         target:add("cxxflags", modulestsflag)
     end
 
@@ -257,13 +298,13 @@ function generate_dependencies(target, sourcebatch, opt)
             local outputdir = common.get_outputdir(target, sourcefile)
             local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
             if has_clangscandepssupport(target) and not target:policy("build.c++.clang.fallbackscanner") then
-                local clangscandeps = find_tool("clang-scan-deps")
+                local clangscandeps = _get_clang_scan_deps(target)
                 local compinst = target:compiler("cxx")
                 local compflags = compinst:compflags({sourcefile = file, target = target})
                 local flags = table.join({"--format=p1689", "--", compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags)
 
-                vprint(table.concat(table.join(clangscandeps.program, flags), " "))
-                local outdata, errdata = os.iorunv(clangscandeps.program, flags)
+                vprint(table.concat(table.join(clangscandeps, flags), " "))
+                local outdata, errdata = os.iorunv(clangscandeps, flags)
                 assert(errdata, errdata)
 
                 io.writefile(jsonfile, outdata)
@@ -301,13 +342,15 @@ function generate_dependencies(target, sourcebatch, opt)
                             break
                         end
                     end
-
-                    assert(not (has_std_modules and not target:policy("build.c++.clang.stdmodules")),
-                           [[On llvm <= 16 standard C++ modules are not supported ;
-                           they can be emulated through clang modules and supported only on libc++ ;
-                           please add -stdlib=libc++ cxx flag or disable strict mode]])
-
                     if has_std_modules then
+
+                        -- we need clang >= 17.0 or use clang stdmodules if the current target contains std module
+                        local clang_version = _get_clang_version(target)
+                        assert((clang_version and semver.compare(clang_version, "17.0") >= 0) or target:policy("build.c++.clang.stdmodules"),
+                               [[On llvm <= 16 standard C++ modules are not supported ;
+                               they can be emulated through clang modules and supported only on libc++ ;
+                               please add -stdlib=libc++ cxx flag or disable strict mode]])
+
                         target:data_set("cxx.modules.use_libc++", true)
                         if target:data("cxx.modules.use_libc++") then
                             _enable_libcxx(target)
@@ -771,9 +814,9 @@ function has_headerunitsupport(target)
     local support_headerunits = _g.support_headerunits
     if support_headerunits == nil then
         local compinst = target:compiler("cxx")
-        local modulesflag, moduletsflag = get_modulesflag(target)
-        if compinst:has_flags(modulesflag or moduletsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
-           compinst:has_flags(modulesflag or moduletsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
+        local modulesflag, modulestsflag = get_modulesflag(target)
+        if compinst:has_flags(modulesflag or modulestsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
+           compinst:has_flags(modulesflag or modulestsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
             support_headerunits = true
         end
         _g.support_headerunits = support_headerunits or false
@@ -784,8 +827,9 @@ end
 function has_clangscandepssupport(target)
     local support_clangscandeps = _g.support_clangscandeps
     if support_clangscandeps == nil then
-        local clangscandeps = find_tool("clang-scan-deps", {version = true})
-        if clangscandeps and clangscandeps.version and semver.compare(clangscandeps.version, "16.0") >= 0 then
+        local clangscandeps = _get_clang_scan_deps(target)
+        local clang_version = _get_clang_version(target)
+        if clangscandeps and clang_version and semver.compare(clang_version, "16.0") >= 0 then
             support_clangscandeps = true
         end
         _g.support_clangscandeps = support_clangscandeps or false
@@ -797,8 +841,8 @@ function get_moduleoutputflag(target)
     local moduleoutputflag = _g.moduleoutputflag
     if moduleoutputflag == nil then
         local compinst = target:compiler("cxx")
-        local clang = find_tool("clang", {version = true})
-        if compinst:has_flags("-fmodule-output=", "cxxflags", {flagskey = "clang_module_output", tryrun = true}) and semver.compare(clang.version, "16.0") >= 0 then
+        local clang_version = _get_clang_version(target)
+        if compinst:has_flags("-fmodule-output=", "cxxflags", {flagskey = "clang_module_output", tryrun = true}) and semver.compare(clang_version, "16.0") >= 0 then
             moduleoutputflag = "-fmodule-output="
         end
         _g.moduleoutputflag = moduleoutputflag or false
