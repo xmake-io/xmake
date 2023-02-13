@@ -126,6 +126,11 @@
       <SubSystem Condition="'%(SubSystem)' == '' And $(XmakeSubSystem.Contains('console'))">Console</SubSystem>
       <SubSystem Condition="'%(SubSystem)' == '' And $(XmakeSubSystem.Contains('windows'))">Windows</SubSystem>
     </Link>
+
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);$(XmakeDefines)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(XmakeIncludeDirs)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
