@@ -42,9 +42,9 @@ rule("cuda.build.devlink")
             return
         end
 
-        -- only for binary/shared on non-windows platforms
+        -- only for binary/shared by default
         -- https://github.com/xmake-io/xmake/issues/1976
-        if not (devlink == true or target:is_plat("windows") or target:is_binary() or target:is_shared()) then
+        if not (devlink == true or target:is_binary() or target:is_shared()) then
             return
         end
 
