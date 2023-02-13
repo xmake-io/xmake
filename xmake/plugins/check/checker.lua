@@ -28,6 +28,7 @@ function checkers()
         checkers = {
             -- target api checkers
             ["api.target.version"]       = {description = "Check version configuration in target."},
+            ["api.target.kind"]          = {description = "Check kind configuration in target."},
             ["api.target.strip"]         = {description = "Check strip configuration in target."},
             ["api.target.optimize"]      = {description = "Check optimize configuration in target."},
             ["api.target.symbols"]       = {description = "Check symbols configuration in target."},
