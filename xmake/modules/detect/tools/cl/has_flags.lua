@@ -54,10 +54,10 @@ end
 function _check_try_running(flags, opt)
 
     -- make an stub source file
-    local tmpdir = path.join(os.tmpdir(), "detect")
-    local sourcefile = path.join(tmpdir, "cl_has_flags" .. _get_extension(opt))
+    local snippet = opt.snippet or "int main(int argc, char** argv)\n{return 0;}"
+    local sourcefile = os.tmpfile("cl_has_flags:" .. snippet) .. _get_extension(opt)
     if not os.isfile(sourcefile) then
-        io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+        io.writefile(sourcefile, snippet)
     end
 
     -- check it
