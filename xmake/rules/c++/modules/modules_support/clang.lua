@@ -823,8 +823,8 @@ function has_headerunitsupport(target)
         local compinst = target:compiler("cxx")
         local _, modulestsflag, withoutflag = get_modulesflag(target)
         modulestsflag = withoutflag and "" or modulestsflag
-        if compinst:has_flags(modulestsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
-           compinst:has_flags(modulestsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
+        if compinst:has_flags(modulestsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {snippet = "inline int foo() { return 0; }", flagskey = "clang_user_header_unit_support", tryrun = true}) and
+           compinst:has_flags(modulestsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {snippet = "inline int foo() { return 0; }", flagskey = "clang_system_header_unit_support", tryrun = true}) then
             support_headerunits = true
         end
         _g.support_headerunits = support_headerunits or false
