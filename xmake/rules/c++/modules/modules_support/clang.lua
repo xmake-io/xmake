@@ -303,7 +303,7 @@ function generate_dependencies(target, sourcebatch, opt)
             if has_clangscandepssupport(target) and not target:policy("build.c++.clang.fallbackscanner") then
                 local clangscandeps = _get_clang_scan_deps(target)
                 local compinst = target:compiler("cxx")
-                local compflags = compinst:compflags({sourcefile = file, target = target})
+                local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
                 local flags = table.join({"--format=p1689", "--", compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags)
 
                 vprint(table.concat(table.join(clangscandeps, flags), " "))
