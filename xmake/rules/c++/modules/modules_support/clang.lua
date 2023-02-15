@@ -111,7 +111,8 @@ end
 -- enable libc++
 function _enable_libcxx(target)
     target:add("cxxflags", "-stdlib=libc++")
-    target:add("syslinks", "c++")
+    target:add("ldflags", "-stdlib=libc++")
+    target:add("shflags", "-stdlib=libc++")
 end
 
 -- load module support for the current target
