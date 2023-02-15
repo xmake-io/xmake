@@ -233,7 +233,7 @@ function _build_modulefile(target, sourcefile, opt)
         bmifile = opt.provide.bmifile
 
         if moduleoutputflag then
-            compileflags = table.join("-x", "c++-module", moduleoutputflag .. bmifile, compflags, common_args, requiresflags)
+            compileflags = table.join("-x", "c++-module", moduleoutputflag .. bmifile, requiresflags)
         else
             bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags)
         end
