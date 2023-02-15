@@ -246,7 +246,7 @@ function _build_modulefile(target, sourcefile, opt)
     end
 
     compileflags = table.join2(compileflags, compflags, common_args, requiresflags or {})
-    vprint(compinst:compcmd(bmifile or sourcefile, objectfile, {compflags = compileflags, rawargs = true}))
+    vprint(compinst:compcmd(bmiflags and bmifile or sourcefile, objectfile, {compflags = compileflags, rawargs = true}))
 
     if not dryrun then
 
