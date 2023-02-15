@@ -79,15 +79,21 @@ end
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/foo.pcm
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/iostream.pcm
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/bar.hpp.pcm
+-- on LLVM >= 16
+-- -fmodule-file=foo=build/.gens/Foo/rules/modules/cache/foo.pcm
+-- -fmodule-file=build/.gens/Foo/rules/modules/cache/iostream.pcm
+-- -fmodule-file=build/.gens/Foo/rules/modules/cache/bar.hpp.pcm
 --
-function _add_module_to_mapper(target, name, bmifile, deps)
+function _add_module_to_mapper(target, name, bmifile, deps, namedmodule)
     local modulemap = _get_modulemap_from_mapper(target, name)
     if modulemap then
         return
     end
 
+    local clang_version = _get_clang_version(target)
+    namedmodule = namedmodule and semver.compare(clang_version, "16.0") >= 0
     local modulefileflag = get_modulefileflag(target)
-    local mapflag = modulefileflag .. bmifile
+    local mapflag = namedmodule and format("%s%s=%s", modulefileflag, name, bmifile) or modulefileflag .. bmifile
     modulemap = {flag = mapflag, deps = deps}
     common.localcache():set2(_mapper_cachekey(target), "modulemap" .. name, modulemap)
 end
@@ -596,7 +602,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         target:add("objectfiles", objectfile)
 
                         if provide then
-                            _add_module_to_mapper(target, name, bmifile, requiresflags)
+                            _add_module_to_mapper(target, name, bmifile, requiresflags, true)
                         end
                     elseif requiresflags then
                         local cxxflags = {}
@@ -658,7 +664,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 if provide then
                     _batchcmds_compile(batchcmds, target, table.join(flags,
                         {"-x", "c++-module", "--precompile", "-c", path(cppfile), "-o", path(provide.bmi)}))
-                    _add_module_to_mapper(target, name, provide.bmi)
+                    _add_module_to_mapper(target, name, provide.bmi, nil, true)
                 end
                 _batchcmds_compile(batchcmds, target, file, table.join(flags,
                     not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}))
