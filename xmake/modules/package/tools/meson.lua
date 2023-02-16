@@ -422,7 +422,6 @@ function install(package, configs, opt)
     -- generate build files and build
     opt = opt or {}
     generate(package, configs, opt)
-    build(package, configs, opt)
 
     -- configure install
     local buildir = _get_buildir(package, opt)
