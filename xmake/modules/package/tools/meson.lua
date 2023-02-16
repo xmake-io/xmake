@@ -24,7 +24,6 @@ import("core.project.config")
 import("core.tool.toolchain")
 import("core.tool.linker")
 import("core.tool.compiler")
-import("package.tools.ninja")
 import("lib.detect.find_tool")
 
 -- get build directory
@@ -53,6 +52,9 @@ function _is_cross_compilation(package)
         return true
     end
     if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
+        return true
+    end
+    if package:is_plat("windows") and package:is_arch("arm64") then
         return true
     end
     return false
@@ -374,7 +376,8 @@ function generate(package, configs, opt)
     opt = opt or {}
 
     -- pass configurations
-    local argv = {}
+    -- TODO: support more backends https://mesonbuild.com/Commands.html#setup
+    local argv = {"setup"}
     for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if value ~= "" then
@@ -387,7 +390,8 @@ function generate(package, configs, opt)
     end
 
     -- do configure
-    os.vrunv("meson", argv, {envs = opt.envs or buildenvs(package, opt)})
+    local meson = assert(find_tool("meson"), "meson not found!")
+    os.vrunv(meson, argv, {envs = opt.envs or buildenvs(package, opt)})
 end
 
 -- build package
@@ -397,9 +401,19 @@ function build(package, configs, opt)
     opt = opt or {}
     generate(package, configs, opt)
 
-    -- do build
+    -- configurate build
     local buildir = _get_buildir(package, opt)
-    ninja.build(package, {}, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
+    local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
+    local argv = {"compile", "-C", buildir}
+    if option.get("diagnosis") then
+        table.insert(argv, "-v")
+    end
+    table.insert(argv, "-j")
+    table.insert(argv, njob)
+
+    -- do build
+    local meson = assert(find_tool("meson"), "meson not found!")
+    os.vrunv(meson, argv, {envs = opt.envs or buildenvs(package, opt)})
 end
 
 -- install package
@@ -409,9 +423,16 @@ function install(package, configs, opt)
     opt = opt or {}
     generate(package, configs, opt)
 
-    -- do build and install
+    -- configure install
     local buildir = _get_buildir(package, opt)
-    ninja.install(package, {}, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
+    local argv = {"install", "-C", buildir}
+    if option.get("verbose") then
+        table.insert(argv, "-v")
+    end
+
+    -- do build and install
+    local meson = assert(find_tool("meson"), "meson not found!")
+    os.vrunv(meson, {"install", "-C", buildir}, {envs = opt.envs or buildenvs(package, opt)})
 
     -- fix static libname on windows
     if package:is_plat("windows") and not package:config("shared") then
