@@ -308,10 +308,8 @@ function generate_dependencies(target, sourcebatch, opt)
                 local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
                 local flags = table.join("--format=p1689", "--",
                                          compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile),
+                                         "-stdlib=libc++",
                                          compflags)
-                if target:data("cxx.modules.use_libc++") then
-                    table.insert(flags, "-stdlib=libc++")
-                end
                 vprint(table.concat(table.join(clangscandeps, flags), " "))
                 local outdata, errdata = os.iorunv(clangscandeps, flags)
                 assert(errdata, errdata)
