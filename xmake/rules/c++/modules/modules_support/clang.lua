@@ -243,16 +243,6 @@ function _build_modulefile(target, sourcefile, opt)
         compileflags = {"-x", "c++"}
     end
 
-    -- we can also enable libc++ when building modules
-    --
-    -- @see https://github.com/xmake-io/xmake/issues/3373
-    if target:data("cxx.modules.use_libc++") then
-        if bmiflags then
-            table.insert(bmiflags, "-stdlib=libc++")
-        end
-        table.insert(compileflags, "-stdlib=libc++")
-    end
-
     if bmiflags then
         vprint(compinst:compcmd(sourcefile, bmifile, {compflags = bmiflags, rawargs = true}))
     end
@@ -319,7 +309,6 @@ function generate_dependencies(target, sourcebatch, opt)
                 local flags = table.join("--format=p1689", "--",
                                          compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile),
                                          compflags)
-                -- we can also enable libc++ when scaning deps
                 if target:data("cxx.modules.use_libc++") then
                     table.insert(flags, "-stdlib=libc++")
                 end
@@ -352,7 +341,10 @@ function generate_dependencies(target, sourcebatch, opt)
                     local has_std_modules = false
                     for _, r in ipairs(dependinfo.rules) do
                         for _, required in ipairs(r.requires) do
-                            if required["logical-name"] == "std" or required["logical-name"] == "std.compat" then
+                            -- it may be `std:utility`, ..
+                            -- @see https://github.com/xmake-io/xmake/issues/3373
+                            local logical_name = required["logical-name"]
+                            if logical_name and (logical_name == "std" or logical_name:startswith("std.") or logical_name:startswith("std:")) then
                                 has_std_modules = true
                                 break
                             end
