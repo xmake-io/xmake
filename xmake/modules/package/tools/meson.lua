@@ -54,7 +54,7 @@ function _is_cross_compilation(package)
     if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
         return true
     end
-    if package:is_plat("windows") and package:is_arch("arm64") then
+    if package:is_plat("windows") and not package:is_arch(os.arch()) then
         return true
     end
     return false
@@ -193,6 +193,25 @@ function _get_cross_file(package, opt)
             elseif package:is_arch("x86", "i386") then
                 cpu = "i686"
                 cpu_family = "x86"
+            else
+                raise("unsupported arch(%s)", package:arch())
+            end
+            file:print("system = 'windows'")
+            file:print("cpu_family = '%s'", cpu_family)
+            file:print("cpu = '%s'", cpu)
+            file:print("endian = 'little'")
+        elseif package:is_plat("windows") then
+            local cpu
+            local cpu_family
+            if package:is_arch("arm64") then
+                cpu = "aarch64"
+                cpu_family = "aarch64"
+            elseif package:is_arch("x86") then
+                cpu = "x86"
+                cpu_family = "x86"
+            elseif package:is_arch("x64") then
+                cpu = "x86_64"
+                cpu_family = "x86_64"
             else
                 raise("unsupported arch(%s)", package:arch())
             end
