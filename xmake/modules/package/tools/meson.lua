@@ -391,7 +391,7 @@ function generate(package, configs, opt)
 
     -- do configure
     local meson = assert(find_tool("meson"), "meson not found!")
-    os.vrunv(meson, argv, {envs = opt.envs or buildenvs(package, opt)})
+    os.vrunv(meson.program, argv, {envs = opt.envs or buildenvs(package, opt)})
 end
 
 -- build package
@@ -413,7 +413,7 @@ function build(package, configs, opt)
 
     -- do build
     local meson = assert(find_tool("meson"), "meson not found!")
-    os.vrunv(meson, argv, {envs = opt.envs or buildenvs(package, opt)})
+    os.vrunv(meson.program, argv, {envs = opt.envs or buildenvs(package, opt)})
 end
 
 -- install package
@@ -432,7 +432,7 @@ function install(package, configs, opt)
 
     -- do build and install
     local meson = assert(find_tool("meson"), "meson not found!")
-    os.vrunv(meson, {"install", "-C", buildir}, {envs = opt.envs or buildenvs(package, opt)})
+    os.vrunv(meson.program, {"install", "-C", buildir}, {envs = opt.envs or buildenvs(package, opt)})
 
     -- fix static libname on windows
     if package:is_plat("windows") and not package:config("shared") then
