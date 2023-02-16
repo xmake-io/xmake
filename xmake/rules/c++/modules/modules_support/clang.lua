@@ -79,15 +79,21 @@ end
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/foo.pcm
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/iostream.pcm
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/bar.hpp.pcm
+-- on LLVM >= 16
+-- -fmodule-file=foo=build/.gens/Foo/rules/modules/cache/foo.pcm
+-- -fmodule-file=build/.gens/Foo/rules/modules/cache/iostream.pcm
+-- -fmodule-file=build/.gens/Foo/rules/modules/cache/bar.hpp.pcm
 --
-function _add_module_to_mapper(target, name, bmifile, deps)
+function _add_module_to_mapper(target, name, bmifile, deps, namedmodule)
     local modulemap = _get_modulemap_from_mapper(target, name)
     if modulemap then
         return
     end
 
+    local clang_version = _get_clang_version(target)
+    namedmodule = namedmodule and semver.compare(clang_version, "16.0") >= 0
     local modulefileflag = get_modulefileflag(target)
-    local mapflag = modulefileflag .. bmifile
+    local mapflag = namedmodule and format("%s%s=%s", modulefileflag, name, bmifile) or modulefileflag .. bmifile
     modulemap = {flag = mapflag, deps = deps}
     common.localcache():set2(_mapper_cachekey(target), "modulemap" .. name, modulemap)
 end
@@ -111,27 +117,22 @@ end
 -- enable libc++
 function _enable_libcxx(target)
     target:add("cxxflags", "-stdlib=libc++")
-    target:add("syslinks", "c++")
+    target:add("ldflags", "-stdlib=libc++")
+    target:add("shflags", "-stdlib=libc++")
 end
 
 -- load module support for the current target
 function load(target)
-    local modulesflag, modulestsflag = get_modulesflag(target)
-    local builtinmodulemapflag = get_builtinmodulemapflag(target)
-    local implicitmodulesflag = get_implicitmodulesflag(target)
-    local noimplicitmodulemapsflag = get_noimplicitmodulemapsflag(target)
+    local clangmodulesflag, modulestsflag, withoutflag = get_modulesflag(target)
 
     -- add module flags
-    target:add("cxxflags", modulesflag)
-    if not modulesflag then
+    if not withoutflag then
         target:add("cxxflags", modulestsflag)
     end
 
+    -- enable clang modules to emulate std modules
     if target:policy("build.c++.clang.stdmodules") then
-       target:add("cxxflags", builtinmodulemapflag, {force = true})
-       target:add("cxxflags", implicitmodulesflag, {force = true})
-    else
-       target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
+       target:add("cxxflags", clangmodulesflag)
     end
 
     -- fix default visibility for functions and variables [-fvisibility] differs in PCH file vs. current file
@@ -156,7 +157,7 @@ function load(target)
     -- on ubuntu:
     -- sudo apt install libc++-dev libc++abi-15-dev
     --
-    local flags = table.join(target:get("cxxflags"), get_config("cxxflags") or {})
+    local flags = table.join(target:get("cxxflags") or {}, get_config("cxxflags") or {})
     target:data_set("cxx.modules.use_libc++", table.contains(flags, "-stdlib=libc++", "clang::-stdlib=libc++"))
     if target:data("cxx.modules.use_libc++") then
         _enable_libcxx(target)
@@ -232,10 +233,12 @@ function _build_modulefile(target, sourcefile, opt)
         bmifile = opt.provide.bmifile
 
         if moduleoutputflag then
-            compileflags = table.join("-x", "c++-module", moduleoutputflag .. bmifile, compflags, common_args, requiresflags)
+            compileflags = table.join("-x", "c++-module", moduleoutputflag .. bmifile, requiresflags)
         else
             bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags)
         end
+    else
+        compileflags = {"-x", "c++"}
     end
 
     if bmiflags then
@@ -243,7 +246,7 @@ function _build_modulefile(target, sourcefile, opt)
     end
 
     compileflags = table.join2(compileflags, compflags, common_args, requiresflags or {})
-    vprint(compinst:compcmd(bmifile or sourcefile, objectfile, {compflags = compileflags, rawargs = true}))
+    vprint(compinst:compcmd(bmiflags and bmifile or sourcefile, objectfile, {compflags = compileflags, rawargs = true}))
 
     if not dryrun then
 
@@ -300,7 +303,7 @@ function generate_dependencies(target, sourcebatch, opt)
             if has_clangscandepssupport(target) and not target:policy("build.c++.clang.fallbackscanner") then
                 local clangscandeps = _get_clang_scan_deps(target)
                 local compinst = target:compiler("cxx")
-                local compflags = compinst:compflags({sourcefile = file, target = target})
+                local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
                 local flags = table.join({"--format=p1689", "--", compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags)
 
                 vprint(table.concat(table.join(clangscandeps, flags), " "))
@@ -599,7 +602,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         target:add("objectfiles", objectfile)
 
                         if provide then
-                            _add_module_to_mapper(target, name, bmifile, requiresflags)
+                            _add_module_to_mapper(target, name, bmifile, requiresflags, true)
                         end
                     elseif requiresflags then
                         local cxxflags = {}
@@ -661,7 +664,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 if provide then
                     _batchcmds_compile(batchcmds, target, table.join(flags,
                         {"-x", "c++-module", "--precompile", "-c", path(cppfile), "-o", path(provide.bmi)}))
-                    _add_module_to_mapper(target, name, provide.bmi)
+                    _add_module_to_mapper(target, name, provide.bmi, nil, true)
                 end
                 _batchcmds_compile(batchcmds, target, file, table.join(flags,
                     not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}))
@@ -698,21 +701,25 @@ function get_bmi_extension()
 end
 
 function get_modulesflag(target)
-    local modulesflag = _g.modulesflag
+    local clangmodulesflag = _g.clangmodulesflag
     local modulestsflag = _g.modulestsflag
-    if modulesflag == nil and modulestsflag == nil then
+    local withoutflag = _g.withoutflag
+    if clangmodulesflag == nil and modulestsflag == nil then
         local compinst = target:compiler("cxx")
         if compinst:has_flags("-fmodules", "cxxflags", {flagskey = "clang_modules"}) then
-            modulesflag = "-fmodules"
+            clangmodulesflag = "-fmodules"
         end
         if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "clang_modules_ts"}) then
             modulestsflag = "-fmodules-ts"
         end
-        assert(modulesflag or modulestsflag, "compiler(clang): does not support c++ module!")
-        _g.modulesflag = modulesflag or false
+        local clang_version = _get_clang_version(target)
+        withoutflag = semver.compare(clang_version, "16.0") >= 0
+        assert(withoutflag or modulestsflag, "compiler(clang): does not support c++ module!")
+        _g.clangmodulesflag = clangmodulesflag or false
         _g.modulestsflag = modulestsflag or false
+        _g.withoutflag = withoutflag or false
     end
-    return modulesflag or nil, modulestsflag or nil
+    return clangmodulesflag or nil, modulestsflag or nil, withoutflag or nil
 end
 
 function get_builtinmodulemapflag(target)
@@ -814,9 +821,10 @@ function has_headerunitsupport(target)
     local support_headerunits = _g.support_headerunits
     if support_headerunits == nil then
         local compinst = target:compiler("cxx")
-        local modulesflag, modulestsflag = get_modulesflag(target)
-        if compinst:has_flags(modulesflag or modulestsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
-           compinst:has_flags(modulesflag or modulestsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
+        local _, modulestsflag, withoutflag = get_modulesflag(target)
+        modulestsflag = withoutflag and "" or modulestsflag
+        if compinst:has_flags(modulestsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {snippet = "inline int foo() { return 0; }", flagskey = "clang_user_header_unit_support", tryrun = true}) and
+           compinst:has_flags(modulestsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {snippet = "inline int foo() { return 0; }", flagskey = "clang_system_header_unit_support", tryrun = true}) then
             support_headerunits = true
         end
         _g.support_headerunits = support_headerunits or false
