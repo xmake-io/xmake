@@ -234,7 +234,6 @@ function _build_modulefile(target, sourcefile, opt)
     local bmiflags
     if opt.provide then
         bmifile = opt.provide.bmifile
-
         if moduleoutputflag then
             compileflags = table.join("-x", "c++-module", moduleoutputflag .. bmifile, requiresflags)
         else
@@ -242,6 +241,16 @@ function _build_modulefile(target, sourcefile, opt)
         end
     else
         compileflags = {"-x", "c++"}
+    end
+
+    -- we can also enable libc++ when building modules
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/3373
+    if target:data("cxx.modules.use_libc++") then
+        if bmiflags then
+            table.insert(bmiflags, "-stdlib=libc++")
+        end
+        table.insert(compileflags, "-stdlib=libc++")
     end
 
     if bmiflags then
@@ -307,8 +316,13 @@ function generate_dependencies(target, sourcebatch, opt)
                 local clangscandeps = _get_clang_scan_deps(target)
                 local compinst = target:compiler("cxx")
                 local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
-                local flags = table.join({"--format=p1689", "--", compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags)
-
+                local flags = table.join("--format=p1689", "--",
+                                         compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile),
+                                         compflags)
+                -- we can also enable libc++ when scaning deps
+                if target:data("cxx.modules.use_libc++") then
+                    table.insert(flags, "-stdlib=libc++")
+                end
                 vprint(table.concat(table.join(clangscandeps, flags), " "))
                 local outdata, errdata = os.iorunv(clangscandeps, flags)
                 assert(errdata, errdata)
