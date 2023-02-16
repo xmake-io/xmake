@@ -77,6 +77,7 @@ function _find_package_with_builtin_rule(package_name, opt)
     -- find package from the given package manager
     local result = nil
     local found_manager_name = nil
+    opt = table.join({try = true}, opt)
     for _, manager_name in ipairs(managers) do
         dprint("finding %s from %s ..", package_name, manager_name)
         result = import("package.manager." .. manager_name .. ".find_package", {anonymous = true})(package_name, opt)
