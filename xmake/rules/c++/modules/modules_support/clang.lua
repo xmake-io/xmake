@@ -115,11 +115,19 @@ function _get_modulemap_from_mapper(target, name)
     return common.localcache():get2(_mapper_cachekey(target), "modulemap" .. name) or nil
 end
 
--- enable libc++
-function _enable_libcxx(target)
-    target:add("cxxflags", "-stdlib=libc++")
-    target:add("ldflags", "-stdlib=libc++")
-    target:add("shflags", "-stdlib=libc++")
+-- use the given stdlib? e.g. libc++ or libstdc++
+function _use_stdlib(target, name)
+    local stdlib = target:data("cxx.modules.stdlib") or "libstdc++"
+    return stdlib == name
+end
+
+-- set stdlib flags, it will use libstdc++ if we do not set `-stdlib=`
+function _set_stdlib_flags(target)
+    if _use_stdlib(target, "libc++") then
+        target:add("cxxflags", "-stdlib=libc++")
+        target:add("ldflags", "-stdlib=libc++")
+        target:add("shflags", "-stdlib=libc++")
+    end
 end
 
 -- load module support for the current target
@@ -161,10 +169,12 @@ function load(target)
     -- sudo apt install libc++-dev libc++abi-15-dev
     --
     local flags = table.join(target:get("cxxflags") or {}, get_config("cxxflags") or {})
-    target:data_set("cxx.modules.use_libc++", table.contains(flags, "-stdlib=libc++", "clang::-stdlib=libc++"))
-    if target:data("cxx.modules.use_libc++") then
-        _enable_libcxx(target)
+    if table.contains(flags, "-stdlib=libc++", "clang::-stdlib=libc++") then
+        target:data_set("cxx.modules.stdlib", "libc++")
+    elseif table.contains(flags, "-stdlib=libstdc++", "clang::-stdlib=libstdc++") then
+        target:data_set("cxx.modules.stdlib", "libstdc++")
     end
+    _set_stdlib_flags(target)
 end
 
 -- get includedirs for stl headers
@@ -178,7 +188,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     local tmpfile = os.tmpfile() .. ".cc"
     io.writefile(tmpfile, "#include <vector>")
     local argv = {"-E", "-x", "c++", tmpfile}
-    if target:data("cxx.modules.use_libc++") then
+    if _use_stdlib(target, "libc++") then
         table.insert(argv, 1, "-stdlib=libc++")
     end
     local result = try {function () return os.iorunv(clang, argv) end}
@@ -308,7 +318,6 @@ function generate_dependencies(target, sourcebatch, opt)
                 local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
                 local flags = table.join("--format=p1689", "--",
                                          compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile),
-                                         "-stdlib=libc++",
                                          compflags)
                 vprint(table.concat(table.join(clangscandeps, flags), " "))
                 local outdata, errdata = os.iorunv(clangscandeps, flags)
@@ -335,7 +344,7 @@ function generate_dependencies(target, sourcebatch, opt)
             local rawdependinfo = io.readfile(jsonfile)
             if rawdependinfo then
                 local dependinfo = json.decode(rawdependinfo)
-                if not target:data("cxx.modules.use_libc++") then
+                if target:data("cxx.modules.stdlib") == nil then
                     local has_std_modules = false
                     for _, r in ipairs(dependinfo.rules) do
                         for _, required in ipairs(r.requires) do
@@ -361,10 +370,9 @@ function generate_dependencies(target, sourcebatch, opt)
                                they can be emulated through clang modules and supported only on libc++ ;
                                please add -stdlib=libc++ cxx flag or disable strict mode]])
 
-                        target:data_set("cxx.modules.use_libc++", true)
-                        if target:data("cxx.modules.use_libc++") then
-                            _enable_libcxx(target)
-                        end
+                        -- we use libc++ by default if we do not explicitly specify -stdlib:libstdc++
+                        target:data_set("cxx.modules.stdlib", "libc++")
+                        _set_stdlib_flags(target)
                     end
                 end
             end
@@ -403,7 +411,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
 
                 end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
                 -- libc++ have a builtin module mapper
-                if not target:data_set("cxx.modules.use_libc++") then
+                if not _use_stdlib(target, "libc++") then
                     _add_module_to_mapper(target, headerunit.name, bmifile)
                 end
             end, {rootjob = flushjob})
@@ -431,7 +439,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
             _batchcmds_compile(batchcmds, target, flags)
         end
         -- libc++ have a builtin module mapper
-        if not target:data_set("cxx.modules.use_libc++") then
+        if not _use_stdlib(target, "libc++") then
             _add_module_to_mapper(target, headerunit.name, bmifile)
         end
         depmtime = math.max(depmtime, os.mtime(bmifile))
