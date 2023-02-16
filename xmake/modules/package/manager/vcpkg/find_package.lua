@@ -182,7 +182,9 @@ function main(name, opt)
     -- attempt to find vcpkg directory
     local vcpkgdir = find_vcpkgdir()
     if not vcpkgdir then
-        wprint("vcpkg root directory not found, maybe you need set $VCPKG_ROOT!")
+        if option.get("diagnosis") then
+            cprint("${color.warning}checkinfo: ${clear dim}vcpkg root directory not found, maybe you need set $VCPKG_ROOT!")
+        end
         return
     end
 
