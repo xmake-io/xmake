@@ -419,7 +419,7 @@ end
 -- install package
 function install(package, configs, opt)
 
-    -- generate build files and build
+    -- generate build files
     opt = opt or {}
     generate(package, configs, opt)
 
@@ -430,7 +430,7 @@ function install(package, configs, opt)
         table.insert(argv, "-v")
     end
 
-    -- do install
+    -- do build and install
     local meson = assert(find_tool("meson"), "meson not found!")
     os.vrunv(meson, {"install", "-C", buildir}, {envs = opt.envs or buildenvs(package, opt)})
 
