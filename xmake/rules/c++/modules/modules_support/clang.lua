@@ -84,17 +84,18 @@ end
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/iostream.pcm
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/bar.hpp.pcm
 --
-function _add_module_to_mapper(target, name, bmifile, deps, namedmodule)
+function _add_module_to_mapper(target, name, bmifile, opt)
+    opt = opt or {}
     local modulemap = _get_modulemap_from_mapper(target, name)
     if modulemap then
         return
     end
 
     local clang_version = _get_clang_version(target)
-    namedmodule = namedmodule and semver.compare(clang_version, "16.0") >= 0
+    local namedmodule = opt.namedmodule and semver.compare(clang_version, "16.0") >= 0
     local modulefileflag = get_modulefileflag(target)
     local mapflag = namedmodule and format("%s%s=%s", modulefileflag, name, bmifile) or modulefileflag .. bmifile
-    modulemap = {flag = mapflag, deps = deps}
+    modulemap = {flag = mapflag, deps = opt.deps}
     common.localcache():set2(_mapper_cachekey(target), "modulemap" .. name, modulemap)
 end
 
@@ -602,7 +603,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         target:add("objectfiles", objectfile)
 
                         if provide then
-                            _add_module_to_mapper(target, name, bmifile, requiresflags, true)
+                            _add_module_to_mapper(target, name, bmifile, {deps = requiresflags, namedmodule = true})
                         end
                     elseif requiresflags then
                         local cxxflags = {}
@@ -664,7 +665,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 if provide then
                     _batchcmds_compile(batchcmds, target, table.join(flags,
                         {"-x", "c++-module", "--precompile", "-c", path(cppfile), "-o", path(provide.bmi)}))
-                    _add_module_to_mapper(target, name, provide.bmi, nil, true)
+                    _add_module_to_mapper(target, name, provide.bmi, {namedmodule = true})
                 end
                 _batchcmds_compile(batchcmds, target, file, table.join(flags,
                     not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}))
@@ -823,8 +824,14 @@ function has_headerunitsupport(target)
         local compinst = target:compiler("cxx")
         local _, modulestsflag, withoutflag = get_modulesflag(target)
         modulestsflag = withoutflag and "" or modulestsflag
-        if compinst:has_flags(modulestsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {snippet = "inline int foo() { return 0; }", flagskey = "clang_user_header_unit_support", tryrun = true}) and
-           compinst:has_flags(modulestsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {snippet = "inline int foo() { return 0; }", flagskey = "clang_system_header_unit_support", tryrun = true}) then
+        if compinst:has_flags(modulestsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {
+                snippet = "inline int foo() { return 0; }",
+                flagskey = "clang_user_header_unit_support",
+                tryrun = true}) and
+           compinst:has_flags(modulestsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {
+                snippet = "inline int foo() { return 0; }",
+                flagskey = "clang_system_header_unit_support",
+                tryrun = true}) then
             support_headerunits = true
         end
         _g.support_headerunits = support_headerunits or false
@@ -850,7 +857,8 @@ function get_moduleoutputflag(target)
     if moduleoutputflag == nil then
         local compinst = target:compiler("cxx")
         local clang_version = _get_clang_version(target)
-        if compinst:has_flags("-fmodule-output=", "cxxflags", {flagskey = "clang_module_output", tryrun = true}) and semver.compare(clang_version, "16.0") >= 0 then
+        if compinst:has_flags("-fmodule-output=", "cxxflags", {flagskey = "clang_module_output", tryrun = true}) and
+            semver.compare(clang_version, "16.0") >= 0 then
             moduleoutputflag = "-fmodule-output="
         end
         _g.moduleoutputflag = moduleoutputflag or false
