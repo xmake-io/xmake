@@ -139,17 +139,19 @@ function load(target)
     -- fix default visibility for functions and variables [-fvisibility] differs in PCH file vs. current file
     -- module.pcm cannot be loaded due to a configuration mismatch with the current compilation.
     --
-    -- it will happen in binary target depend ont shared target with modules, and enable release mode at same time.
+    -- it will happen in binary target depend on library target with modules, and enable release mode at same time.
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/3358#issuecomment-1432586767
     local dep_symbols
-    local has_shared_deps = false
+    local has_library_deps = false
     for _, dep in ipairs(target:orderdeps()) do
-        if dep:is_shared() then
+        if dep:is_shared() or dep:is_static() or dep:is_object() then
             dep_symbols = dep:get("symbols")
-            has_shared_deps = true
+            has_library_deps = true
             break
         end
     end
-    if has_shared_deps then
+    if has_library_deps then
         target:set("symbols", dep_symbols and dep_symbols or "none")
     end
 
