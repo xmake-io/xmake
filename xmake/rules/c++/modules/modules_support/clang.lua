@@ -32,22 +32,70 @@ import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
 import("stl_headers")
 
+-- get clang version
+function _get_clang_version(target)
+    local clang_version = _g.clang_version
+    if not clang_version then
+        local program, toolname = target:tool("cxx")
+        if program and (toolname == "clang" or toolname == "clangxx") then
+            local clang = find_tool("clang", {program = program, version = true})
+            if clang then
+                clang_version = clang.version
+            end
+        end
+        clang_version = clang_version or false
+        _g.clang_version = clang_version
+    end
+    return clang_version or nil
+end
+
+-- get clang-scan-deps
+function _get_clang_scan_deps(target)
+    local clang_scan_deps = _g.clang_scan_deps
+    if not clang_scan_deps then
+        local program, toolname = target:tool("cxx")
+        if program and (toolname == "clang" or toolname == "clangxx") then
+            local dir = path.directory(program)
+            local basename = path.basename(program)
+            local extension = path.extension(program)
+            program = (basename:gsub("clang", "clang-scan-deps")) .. extension
+            if os.isdir(dir) then
+                program = path.join(dir, program)
+            end
+            local result = find_tool("clang-scan-deps", {program = program, version = true})
+            if result then
+                clang_scan_deps = result.program
+            end
+        end
+        clang_scan_deps = clang_scan_deps or false
+        _g.clang_scan_deps = clang_scan_deps
+    end
+    return clang_scan_deps or nil
+end
+
 -- add a module or an header unit into the mapper
 --
 -- e.g
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/foo.pcm
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/iostream.pcm
 -- -fmodule-file=build/.gens/Foo/rules/modules/cache/bar.hpp.pcm
+-- on LLVM >= 16
+-- -fmodule-file=foo=build/.gens/Foo/rules/modules/cache/foo.pcm
+-- -fmodule-file=build/.gens/Foo/rules/modules/cache/iostream.pcm
+-- -fmodule-file=build/.gens/Foo/rules/modules/cache/bar.hpp.pcm
 --
-function _add_module_to_mapper(target, name, bmifile, deps)
+function _add_module_to_mapper(target, name, bmifile, opt)
+    opt = opt or {}
     local modulemap = _get_modulemap_from_mapper(target, name)
     if modulemap then
         return
     end
 
+    local clang_version = _get_clang_version(target)
+    local namedmodule = opt.namedmodule and semver.compare(clang_version, "16.0") >= 0
     local modulefileflag = get_modulefileflag(target)
-    local mapflag = modulefileflag .. bmifile
-    modulemap = {flag = mapflag, deps = deps}
+    local mapflag = namedmodule and format("%s%s=%s", modulefileflag, name, bmifile) or modulefileflag .. bmifile
+    modulemap = {flag = mapflag, deps = opt.deps}
     common.localcache():set2(_mapper_cachekey(target), "modulemap" .. name, modulemap)
 end
 
@@ -67,46 +115,51 @@ function _get_modulemap_from_mapper(target, name)
     return common.localcache():get2(_mapper_cachekey(target), "modulemap" .. name) or nil
 end
 
--- enable libc++
-function _enable_libcxx(target)
-    target:add("cxxflags", "-stdlib=libc++")
-    target:add("syslinks", "c++")
+-- use the given stdlib? e.g. libc++ or libstdc++
+function _use_stdlib(target, name)
+    local stdlib = target:data("cxx.modules.stdlib") or "libstdc++"
+    return stdlib == name
+end
+
+-- set stdlib flags, it will use libstdc++ if we do not set `-stdlib=`
+function _set_stdlib_flags(target)
+    if _use_stdlib(target, "libc++") then
+        target:add("cxxflags", "-stdlib=libc++")
+        target:add("ldflags", "-stdlib=libc++")
+        target:add("shflags", "-stdlib=libc++")
+    end
 end
 
 -- load module support for the current target
 function load(target)
-    local modulesflag, modulestsflag = get_modulesflag(target)
-    local builtinmodulemapflag = get_builtinmodulemapflag(target)
-    local implicitmodulesflag = get_implicitmodulesflag(target)
-    local noimplicitmodulemapsflag = get_noimplicitmodulemapsflag(target)
+    local clangmodulesflag, modulestsflag, withoutflag = get_modulesflag(target)
 
     -- add module flags
-    target:add("cxxflags", modulesflag)
-    if not modulesflag or target:is_plat("macosx") then
+    if not withoutflag then
         target:add("cxxflags", modulestsflag)
     end
 
+    -- enable clang modules to emulate std modules
     if target:policy("build.c++.clang.stdmodules") then
-       target:add("cxxflags", builtinmodulemapflag, {force = true})
-       target:add("cxxflags", implicitmodulesflag, {force = true})
-    else
-       target:add("cxxflags", noimplicitmodulemapsflag, {force = true})
+       target:add("cxxflags", clangmodulesflag)
     end
 
     -- fix default visibility for functions and variables [-fvisibility] differs in PCH file vs. current file
     -- module.pcm cannot be loaded due to a configuration mismatch with the current compilation.
     --
-    -- it will happen in binary target depend ont shared target with modules, and enable release mode at same time.
+    -- it will happen in binary target depend on library target with modules, and enable release mode at same time.
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/3358#issuecomment-1432586767
     local dep_symbols
-    local has_shared_deps = false
+    local has_library_deps = false
     for _, dep in ipairs(target:orderdeps()) do
-        if dep:is_shared() then
+        if dep:is_shared() or dep:is_static() or dep:is_object() then
             dep_symbols = dep:get("symbols")
-            has_shared_deps = true
+            has_library_deps = true
             break
         end
     end
-    if has_shared_deps then
+    if has_library_deps then
         target:set("symbols", dep_symbols and dep_symbols or "none")
     end
 
@@ -115,11 +168,13 @@ function load(target)
     -- on ubuntu:
     -- sudo apt install libc++-dev libc++abi-15-dev
     --
-    local flags = table.join(target:get("cxxflags"), get_config("cxxflags") or {})
-    target:data_set("cxx.modules.use_libc++", table.contains(flags, "-stdlib=libc++", "clang::-stdlib=libc++"))
-    if target:data("cxx.modules.use_libc++") then
-        _enable_libcxx(target)
+    local flags = table.join(target:get("cxxflags") or {}, get_config("cxxflags") or {})
+    if table.contains(flags, "-stdlib=libc++", "clang::-stdlib=libc++") then
+        target:data_set("cxx.modules.stdlib", "libc++")
+    elseif table.contains(flags, "-stdlib=libstdc++", "clang::-stdlib=libstdc++") then
+        target:data_set("cxx.modules.stdlib", "libstdc++")
     end
+    _set_stdlib_flags(target)
 end
 
 -- get includedirs for stl headers
@@ -133,7 +188,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     local tmpfile = os.tmpfile() .. ".cc"
     io.writefile(tmpfile, "#include <vector>")
     local argv = {"-E", "-x", "c++", tmpfile}
-    if target:data("cxx.modules.use_libc++") then
+    if _use_stdlib(target, "libc++") then
         table.insert(argv, 1, "-stdlib=libc++")
     end
     local result = try {function () return os.iorunv(clang, argv) end}
@@ -189,12 +244,13 @@ function _build_modulefile(target, sourcefile, opt)
     local bmiflags
     if opt.provide then
         bmifile = opt.provide.bmifile
-
         if moduleoutputflag then
-            compileflags = table.join("-x", "c++-module", moduleoutputflag .. bmifile, compflags, common_args, requiresflags)
+            compileflags = table.join("-x", "c++-module", moduleoutputflag .. bmifile, requiresflags)
         else
             bmiflags = table.join("-x", "c++-module", "--precompile", compflags, common_args, requiresflags)
         end
+    else
+        compileflags = {"-x", "c++"}
     end
 
     if bmiflags then
@@ -202,7 +258,7 @@ function _build_modulefile(target, sourcefile, opt)
     end
 
     compileflags = table.join2(compileflags, compflags, common_args, requiresflags or {})
-    vprint(compinst:compcmd(bmifile or sourcefile, objectfile, {compflags = compileflags, rawargs = true}))
+    vprint(compinst:compcmd(bmiflags and bmifile or sourcefile, objectfile, {compflags = compileflags, rawargs = true}))
 
     if not dryrun then
 
@@ -257,13 +313,14 @@ function generate_dependencies(target, sourcebatch, opt)
             local outputdir = common.get_outputdir(target, sourcefile)
             local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
             if has_clangscandepssupport(target) and not target:policy("build.c++.clang.fallbackscanner") then
-                local clangscandeps = find_tool("clang-scan-deps")
+                local clangscandeps = _get_clang_scan_deps(target)
                 local compinst = target:compiler("cxx")
-                local compflags = compinst:compflags({sourcefile = file, target = target})
-                local flags = table.join({"--format=p1689", "--", compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags)
-
-                vprint(table.concat(table.join(clangscandeps.program, flags), " "))
-                local outdata, errdata = os.iorunv(clangscandeps.program, flags)
+                local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
+                local flags = table.join("--format=p1689", "--",
+                                         compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile),
+                                         compflags)
+                vprint(table.concat(table.join(clangscandeps, flags), " "))
+                local outdata, errdata = os.iorunv(clangscandeps, flags)
                 assert(errdata, errdata)
 
                 io.writefile(jsonfile, outdata)
@@ -287,11 +344,14 @@ function generate_dependencies(target, sourcebatch, opt)
             local rawdependinfo = io.readfile(jsonfile)
             if rawdependinfo then
                 local dependinfo = json.decode(rawdependinfo)
-                if not target:data("cxx.modules.use_libc++") then
+                if target:data("cxx.modules.stdlib") == nil then
                     local has_std_modules = false
                     for _, r in ipairs(dependinfo.rules) do
                         for _, required in ipairs(r.requires) do
-                            if required["logical-name"] == "std" or required["logical-name"] == "std.compat" then
+                            -- it may be `std:utility`, ..
+                            -- @see https://github.com/xmake-io/xmake/issues/3373
+                            local logical_name = required["logical-name"]
+                            if logical_name and (logical_name == "std" or logical_name:startswith("std.") or logical_name:startswith("std:")) then
                                 has_std_modules = true
                                 break
                             end
@@ -301,17 +361,18 @@ function generate_dependencies(target, sourcebatch, opt)
                             break
                         end
                     end
-
-                    assert(not (has_std_modules and not target:policy("build.c++.clang.stdmodules")),
-                           [[On llvm <= 16 standard C++ modules are not supported ;
-                           they can be emulated through clang modules and supported only on libc++ ;
-                           please add -stdlib=libc++ cxx flag or disable strict mode]])
-
                     if has_std_modules then
-                        target:data_set("cxx.modules.use_libc++", true)
-                        if target:data("cxx.modules.use_libc++") then
-                            _enable_libcxx(target)
-                        end
+
+                        -- we need clang >= 17.0 or use clang stdmodules if the current target contains std module
+                        local clang_version = _get_clang_version(target)
+                        assert((clang_version and semver.compare(clang_version, "17.0") >= 0) or target:policy("build.c++.clang.stdmodules"),
+                               [[On llvm <= 16 standard C++ modules are not supported ;
+                               they can be emulated through clang modules and supported only on libc++ ;
+                               please add -stdlib=libc++ cxx flag or disable strict mode]])
+
+                        -- we use libc++ by default if we do not explicitly specify -stdlib:libstdc++
+                        target:data_set("cxx.modules.stdlib", "libc++")
+                        _set_stdlib_flags(target)
                     end
                 end
             end
@@ -350,7 +411,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
 
                 end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
                 -- libc++ have a builtin module mapper
-                if not target:data_set("cxx.modules.use_libc++") then
+                if not _use_stdlib(target, "libc++") then
                     _add_module_to_mapper(target, headerunit.name, bmifile)
                 end
             end, {rootjob = flushjob})
@@ -378,7 +439,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
             _batchcmds_compile(batchcmds, target, flags)
         end
         -- libc++ have a builtin module mapper
-        if not target:data_set("cxx.modules.use_libc++") then
+        if not _use_stdlib(target, "libc++") then
             _add_module_to_mapper(target, headerunit.name, bmifile)
         end
         depmtime = math.max(depmtime, os.mtime(bmifile))
@@ -556,7 +617,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                         target:add("objectfiles", objectfile)
 
                         if provide then
-                            _add_module_to_mapper(target, name, bmifile, requiresflags)
+                            _add_module_to_mapper(target, name, bmifile, {deps = requiresflags, namedmodule = true})
                         end
                     elseif requiresflags then
                         local cxxflags = {}
@@ -618,7 +679,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 if provide then
                     _batchcmds_compile(batchcmds, target, table.join(flags,
                         {"-x", "c++-module", "--precompile", "-c", path(cppfile), "-o", path(provide.bmi)}))
-                    _add_module_to_mapper(target, name, provide.bmi)
+                    _add_module_to_mapper(target, name, provide.bmi, {namedmodule = true})
                 end
                 _batchcmds_compile(batchcmds, target, file, table.join(flags,
                     not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}))
@@ -655,21 +716,25 @@ function get_bmi_extension()
 end
 
 function get_modulesflag(target)
-    local modulesflag = _g.modulesflag
+    local clangmodulesflag = _g.clangmodulesflag
     local modulestsflag = _g.modulestsflag
-    if modulesflag == nil and modulestsflag == nil then
+    local withoutflag = _g.withoutflag
+    if clangmodulesflag == nil and modulestsflag == nil then
         local compinst = target:compiler("cxx")
         if compinst:has_flags("-fmodules", "cxxflags", {flagskey = "clang_modules"}) then
-            modulesflag = "-fmodules"
+            clangmodulesflag = "-fmodules"
         end
         if compinst:has_flags("-fmodules-ts", "cxxflags", {flagskey = "clang_modules_ts"}) then
             modulestsflag = "-fmodules-ts"
         end
-        assert(modulesflag or modulestsflag, "compiler(clang): does not support c++ module!")
-        _g.modulesflag = modulesflag or false
+        local clang_version = _get_clang_version(target)
+        withoutflag = semver.compare(clang_version, "16.0") >= 0
+        assert(withoutflag or modulestsflag, "compiler(clang): does not support c++ module!")
+        _g.clangmodulesflag = clangmodulesflag or false
         _g.modulestsflag = modulestsflag or false
+        _g.withoutflag = withoutflag or false
     end
-    return modulesflag or nil, modulestsflag or nil
+    return clangmodulesflag or nil, modulestsflag or nil, withoutflag or nil
 end
 
 function get_builtinmodulemapflag(target)
@@ -771,9 +836,16 @@ function has_headerunitsupport(target)
     local support_headerunits = _g.support_headerunits
     if support_headerunits == nil then
         local compinst = target:compiler("cxx")
-        local modulesflag, moduletsflag = get_modulesflag(target)
-        if compinst:has_flags(modulesflag or moduletsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {flagskey = "clang_user_header_unit_support", tryrun = true}) and
-           compinst:has_flags(modulesflag or moduletsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {flagskey = "clang_system_header_unit_support", tryrun = true}) then
+        local _, modulestsflag, withoutflag = get_modulesflag(target)
+        modulestsflag = withoutflag and "" or modulestsflag
+        if compinst:has_flags(modulestsflag .. " -std=c++20 -x c++-user-header", "cxxflags", {
+                snippet = "inline int foo() { return 0; }",
+                flagskey = "clang_user_header_unit_support",
+                tryrun = true}) and
+           compinst:has_flags(modulestsflag .. " -std=c++20 -x c++-system-header", "cxxflags", {
+                snippet = "inline int foo() { return 0; }",
+                flagskey = "clang_system_header_unit_support",
+                tryrun = true}) then
             support_headerunits = true
         end
         _g.support_headerunits = support_headerunits or false
@@ -784,8 +856,9 @@ end
 function has_clangscandepssupport(target)
     local support_clangscandeps = _g.support_clangscandeps
     if support_clangscandeps == nil then
-        local clangscandeps = find_tool("clang-scan-deps", {version = true})
-        if clangscandeps and clangscandeps.version and semver.compare(clangscandeps.version, "16.0") >= 0 then
+        local clangscandeps = _get_clang_scan_deps(target)
+        local clang_version = _get_clang_version(target)
+        if clangscandeps and clang_version and semver.compare(clang_version, "16.0") >= 0 then
             support_clangscandeps = true
         end
         _g.support_clangscandeps = support_clangscandeps or false
@@ -797,8 +870,9 @@ function get_moduleoutputflag(target)
     local moduleoutputflag = _g.moduleoutputflag
     if moduleoutputflag == nil then
         local compinst = target:compiler("cxx")
-        local clang = find_tool("clang", {version = true})
-        if compinst:has_flags("-fmodule-output=", "cxxflags", {flagskey = "clang_module_output", tryrun = true}) and semver.compare(clang.version, "16.0") >= 0 then
+        local clang_version = _get_clang_version(target)
+        if compinst:has_flags("-fmodule-output=", "cxxflags", {flagskey = "clang_module_output", tryrun = true}) and
+            semver.compare(clang_version, "16.0") >= 0 then
             moduleoutputflag = "-fmodule-output="
         end
         _g.moduleoutputflag = moduleoutputflag or false
