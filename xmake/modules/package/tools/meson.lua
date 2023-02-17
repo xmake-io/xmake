@@ -46,20 +46,6 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
--- is cross compilation?
-function _is_cross_compilation(package)
-    if not package:is_plat(os.subhost()) then
-        return true
-    end
-    if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
-        return true
-    end
-    if package:is_plat("windows") and not package:is_arch(os.arch()) then
-        return true
-    end
-    return false
-end
-
 -- get pkg-config
 function _get_pkgconfig(package)
     if package:is_plat("windows") then
@@ -271,7 +257,7 @@ function _get_configs(package, configs, opt)
     end
 
     -- add cross file
-    if _is_cross_compilation(package) then
+    if package:is_cross() then
         table.insert(configs, "--cross-file=" .. _get_cross_file(package, opt))
     end
 
