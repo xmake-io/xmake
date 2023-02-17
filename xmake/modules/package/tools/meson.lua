@@ -71,41 +71,41 @@ function _get_cross_file(package, opt)
         file:print("[binaries]")
         local cc = package:build_getenv("cc")
         if cc then
-            file:print("c='%s'", executable_path(cc))
+            file:print("c=['%s']", executable_path(cc))
         end
         local cxx = package:build_getenv("cxx")
         if cxx then
-            file:print("cpp='%s'", executable_path(cxx))
+            file:print("cpp=['%s']", executable_path(cxx))
         end
         local ld = package:build_getenv("ld")
         if ld then
-            file:print("ld='%s'", executable_path(ld))
+            file:print("ld=['%s']", executable_path(ld))
         end
         local ar = package:build_getenv("ar")
         if ar then
-            file:print("ar='%s'", executable_path(ar))
+            file:print("ar=['%s']", executable_path(ar))
         end
         local strip = package:build_getenv("strip")
         if strip then
-            file:print("strip='%s'", executable_path(strip))
+            file:print("strip=['%s']", executable_path(strip))
         end
         local ranlib = package:build_getenv("ranlib")
         if ranlib then
-            file:print("ranlib='%s'", executable_path(ranlib))
+            file:print("ranlib=['%s']", executable_path(ranlib))
         end
         if package:is_plat("mingw") then
             local mrc = package:build_getenv("mrc")
             if mrc then
-                file:print("windres='%s'", executable_path(mrc))
+                file:print("windres=['%s']", executable_path(mrc))
             end
         end
         local cmake = find_tool("cmake")
         if cmake then
-            file:print("cmake='%s'", executable_path(cmake.program))
+            file:print("cmake=['%s']", executable_path(cmake.program))
         end
         local pkgconfig = _get_pkgconfig(package)
         if pkgconfig then
-            file:print("pkgconfig='%s'", executable_path(pkgconfig))
+            file:print("pkgconfig=['%s']", executable_path(pkgconfig))
         end
         file:print("")
 
