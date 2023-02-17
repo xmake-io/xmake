@@ -46,20 +46,6 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
--- is cross compilation?
-function _is_cross_compilation(package)
-    if not package:is_plat(os.subhost()) then
-        return true
-    end
-    if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
-        return true
-    end
-    if package:is_plat("windows") and package:is_arch("arm64") then
-        return true
-    end
-    return false
-end
-
 -- get pkg-config
 function _get_pkgconfig(package)
     if package:is_plat("windows") then
@@ -200,6 +186,25 @@ function _get_cross_file(package, opt)
             file:print("cpu_family = '%s'", cpu_family)
             file:print("cpu = '%s'", cpu)
             file:print("endian = 'little'")
+        elseif package:is_plat("windows") then
+            local cpu
+            local cpu_family
+            if package:is_arch("arm64") then
+                cpu = "aarch64"
+                cpu_family = "aarch64"
+            elseif package:is_arch("x86") then
+                cpu = "x86"
+                cpu_family = "x86"
+            elseif package:is_arch("x64") then
+                cpu = "x86_64"
+                cpu_family = "x86_64"
+            else
+                raise("unsupported arch(%s)", package:arch())
+            end
+            file:print("system = 'windows'")
+            file:print("cpu_family = '%s'", cpu_family)
+            file:print("cpu = '%s'", cpu)
+            file:print("endian = 'little'")
         elseif package:is_plat("wasm") then
             file:print("system = 'emscripten'")
             file:print("cpu_family = 'wasm32'")
@@ -252,7 +257,7 @@ function _get_configs(package, configs, opt)
     end
 
     -- add cross file
-    if _is_cross_compilation(package) then
+    if package:is_cross() then
         table.insert(configs, "--cross-file=" .. _get_cross_file(package, opt))
     end
 
