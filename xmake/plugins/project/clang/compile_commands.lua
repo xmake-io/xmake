@@ -25,6 +25,7 @@ import("core.project.rule")
 import("core.project.project")
 import("core.language.language")
 import("private.utils.batchcmds")
+import("private.utils.executable_path")
 
 -- escape path
 function _escape_path(p)
@@ -58,7 +59,6 @@ function _translate_arguments(arguments)
     local cc = path.basename(arguments[1]):lower()
     local is_include = false
     local lsp = _get_lsp()
-    local program_map = {}
     for idx, arg in ipairs(arguments) do
         -- convert path to string, maybe we need convert path, but not supported now.
         arg = tostring(arg)
@@ -108,22 +108,8 @@ function _translate_arguments(arguments)
             -- @see
             -- https://github.com/xmake-io/xmake/issues/3159
             -- https://github.com/xmake-io/xmake/issues/3286
-            if idx == 1 and is_host("macosx") and arg:find("xcrun -sdk", 1, true) then
-                local cmd = program_map[arg]
-                if cmd == nil then
-                    cmd = arg:gsub("xcrun %-sdk (%S+) (%S+)", function (plat, cc)
-                        return "xcrun -sdk " .. plat .. " -f " .. cc
-                    end)
-                    local splitinfo = cmd:split("%s")
-                    local binpath = try {function() return os.iorunv(splitinfo[1], table.slice(splitinfo, 2) or {}) end}
-                    if binpath then
-                        binpath = binpath:trim()
-                        if #binpath > 0 then
-                            arg = binpath
-                        end
-                    end
-                    program_map[arg] = cmd
-                end
+            if idx == 1 then
+                arg = executable_path(arg)
             end
             table.insert(args, arg)
         end

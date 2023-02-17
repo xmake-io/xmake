@@ -25,6 +25,7 @@ import("core.tool.toolchain")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("lib.detect.find_tool")
+import("private.utils.executable_path")
 
 -- get build directory
 function _get_buildir(package, opt)
@@ -70,42 +71,41 @@ function _get_cross_file(package, opt)
         file:print("[binaries]")
         local cc = package:build_getenv("cc")
         if cc then
-            -- we need split it, maybe is `xcrun -sdk iphoneos clang`
-            file:print("c=['%s']", table.concat(os.argv(cc), "', '"))
+            file:print("c='%s'", executable_path(cc))
         end
         local cxx = package:build_getenv("cxx")
         if cxx then
-            file:print("cpp=['%s']", table.concat(os.argv(cxx), "', '"))
+            file:print("cpp='%s'", executable_path(cxx))
         end
         local ld = package:build_getenv("ld")
         if ld then
-            file:print("ld=['%s']", table.concat(os.argv(ld), "', '"))
+            file:print("ld='%s'", executable_path(ld))
         end
         local ar = package:build_getenv("ar")
         if ar then
-            file:print("ar=['%s']", table.concat(os.argv(ar), "', '"))
+            file:print("ar='%s'", executable_path(ar))
         end
         local strip = package:build_getenv("strip")
         if strip then
-            file:print("strip='%s'", strip)
+            file:print("strip='%s'", executable_path(strip))
         end
         local ranlib = package:build_getenv("ranlib")
         if ranlib then
-            file:print("ranlib='%s'", ranlib)
+            file:print("ranlib='%s'", executable_path(ranlib))
         end
         if package:is_plat("mingw") then
             local mrc = package:build_getenv("mrc")
             if mrc then
-                file:print("windres='%s'", mrc)
+                file:print("windres='%s'", executable_path(mrc))
             end
         end
         local cmake = find_tool("cmake")
         if cmake then
-            file:print("cmake='%s'", cmake.program)
+            file:print("cmake='%s'", executable_path(cmake.program))
         end
         local pkgconfig = _get_pkgconfig(package)
         if pkgconfig then
-            file:print("pkgconfig='%s'", pkgconfig)
+            file:print("pkgconfig='%s'", executable_path(pkgconfig))
         end
         file:print("")
 
