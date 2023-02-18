@@ -52,11 +52,12 @@ function _find_package(cmake, name, opt)
         requirestr = requirestr .. " " .. configs.search_mode:upper()
     end
     -- use opt.components is for backward compatibility
+    local componentstr = ""
     local components = configs.components or opt.components
-    if components then
-        requirestr = requirestr .. " COMPONENTS"
+    if components and #components > 0 then
+        componentstr = "COMPONENTS"
         for _, component in ipairs(components) do
-            requirestr = requirestr .. " " .. component
+            componentstr = componentstr .. " " .. component
         end
     end
     local moduledirs = configs.moduledirs or opt.moduledirs
@@ -77,7 +78,7 @@ function _find_package(cmake, name, opt)
         end
     end
     local testname = "test_" .. name
-    cmakefile:print("find_package(%s REQUIRED)", requirestr)
+    cmakefile:print("find_package(%s REQUIRED %s)", requirestr, componentstr)
     cmakefile:print("if(%s_FOUND)", name)
     cmakefile:print("   add_executable(%s test.cpp)", testname)
     cmakefile:print("   target_include_directories(%s PRIVATE ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS})",
@@ -237,6 +238,12 @@ function _find_package(cmake, name, opt)
                             end
                         end
                     end
+                end
+
+                values = line:match("<PreprocessorDefinitions>%%%(PreprocessorDefinitions%);(.+)</PreprocessorDefinitions>")
+                if values then
+                    defines = defines or {}
+                    table.join2(defines, path.splitenv(values))
                 end
             end
         end
