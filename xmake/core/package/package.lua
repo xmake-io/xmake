@@ -625,7 +625,7 @@ end
 function _instance:is_cross()
     if os.host() == "windows" then
         if self:is_plat("windows") and
-            self:is_arch(os.arch()) then -- maybe cross-compilation for arm64 on x86/x64
+            not self:is_arch("arm64") then -- maybe cross-compilation for arm64 on x86/x64
             return false
         elseif self:is_plat("mingw") then
             return false
