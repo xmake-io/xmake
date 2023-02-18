@@ -81,9 +81,12 @@ function _get_cross_file(package, opt)
         if ld then
             file:print("ld=['%s']", executable_path(ld))
         end
-        local ar = package:build_getenv("ar")
-        if ar then
-            file:print("ar=['%s']", executable_path(ar))
+        -- we cannot pass link.exe to ar for msvc, it will raise `unknown linker`
+        if not package:is_plat("windows") then
+            local ar = package:build_getenv("ar")
+            if ar then
+                file:print("ar=['%s']", executable_path(ar))
+            end
         end
         local strip = package:build_getenv("strip")
         if strip then
