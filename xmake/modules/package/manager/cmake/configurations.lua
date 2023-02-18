@@ -22,10 +22,12 @@
 function main()
     return
     {
-        components = {description = "Set the cmake package components, e.g. {\"regex\", \"system\"}"},
-        moduledirs = {description = "Set the cmake modules directories."},
-        presets    = {description = "Set the preset values, e.g. {Boost_USE_STATIC_LIB = true}"},
-        envs       = {description = "Set the run environments of cmake, e.g. {CMAKE_PREFIX_PATH = \"xxx\"}"},
+        link_libraries = {description = "Set the cmake package dependencies, e.g. {\"abc::lib1\", \"abc::lib2\"}"},
+        search_mode    = {description = "Set the cmake package search mode, e.g. {\"config\", \"module\"}"},
+        components     = {description = "Set the cmake package components, e.g. {\"regex\", \"system\"}"},
+        moduledirs     = {description = "Set the cmake modules directories."},
+        presets        = {description = "Set the preset values, e.g. {Boost_USE_STATIC_LIB = true}"},
+        envs           = {description = "Set the run environments of cmake, e.g. {CMAKE_PREFIX_PATH = \"xxx\"}"},
     }
 end
 
