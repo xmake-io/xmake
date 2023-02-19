@@ -39,7 +39,7 @@ function _generate_moduledeps(target, sourcefile, opt)
     depend.on_changed(function ()
 
         -- trace
-        vprint("generating.moduledeps %s", sourcefile)
+        vprint("generating.proto.moduledeps %s", sourcefile)
 
         -- get module name
         local proto_rootdir = opt.proto_rootdir
