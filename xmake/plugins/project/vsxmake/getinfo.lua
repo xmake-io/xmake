@@ -172,6 +172,7 @@ function _make_targetinfo(mode, arch, target)
         end
     end
     for k, v in table.orderpairs(addrunenvs) do
+        v = table.unique(v)
         if k:upper() == "PATH" then
             runenvs[k] = _make_dirs(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
