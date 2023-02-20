@@ -30,8 +30,11 @@ function _check_target(target, opt)
             for _, dep in ipairs(target:orderdeps()) do
                 if dep:is_static() then
                     sourcebatches = dep:sourcebatches()
-                    if sourcebatches and sourcebatches["cuda.build"] and not dep:values("cuda.build.devlink") then
-                        wprint('target(%s)${clear}: cuda device link is not performed! specify set_values("cuda.build.devlink", true) to enable it', dep:name())
+                    if sourcebatches and sourcebatches["cuda.build"] then
+                        local devlink = dep:policy("build.cuda.devlink") or dep:values("cuda.build.devlink")
+                        if not devlink then
+                            wprint('target(%s)${clear}: cuda device link is not performed! specify set_policy("build.cuda.devlink", true) to enable it', dep:name())
+                        end
                     end
                 end
             end

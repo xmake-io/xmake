@@ -37,7 +37,7 @@ rule("cuda.build.devlink")
         import("utils.progress")
 
         -- disable devlink?
-        local devlink = target:values("cuda.build.devlink")
+        local devlink = target:policy("build.cuda.devlink") or target:values("cuda.build.devlink")
         if devlink == false then
             return
         end
