@@ -38,7 +38,7 @@ function _show(str, opt)
     end
 end
 
-function main(target)
+function check_target(target)
     local checkers = checker.checkers()
     for name, info in table.orderpairs(checkers) do
         -- just do some faster checkers
