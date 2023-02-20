@@ -18,7 +18,7 @@
 -- @file        check_targets.lua
 --
 
-import("plugins.check.checker", {rootdir = os.programdir()})
+import("private.check.checker", {rootdir = os.programdir()})
 
 function _show(str, opt)
     _g.showed = _g.showed or {}
@@ -43,7 +43,7 @@ function check_target(target)
     for name, info in table.orderpairs(checkers) do
         -- just do some faster checkers
         if info.timely then
-            import("plugins.check.checkers." .. name, {anonymous = true, rootdir = os.programdir()})({
+            import("private.check.checkers." .. name, {anonymous = true, rootdir = os.programdir()})({
                 target = target, show = _show})
         end
     end
