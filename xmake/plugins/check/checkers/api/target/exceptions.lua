@@ -21,6 +21,7 @@
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("exceptions", {values = {"none", "cxx", "objc", "no-cxx", "no-objc"}})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("exceptions", table.join(opt, {values = {"none", "cxx", "objc", "no-cxx", "no-objc"}}))
 end

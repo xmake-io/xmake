@@ -22,11 +22,12 @@
 import("core.project.project")
 import(".api_checker")
 
-function main()
+function main(opt)
+    opt = opt or {}
     local packages = {}
     local requires = project.required_packages()
     if requires then
         table.join2(packages, table.orderkeys(requires))
     end
-    api_checker.check_targets("packages", {values = packages, level = "note"})
+    api_checker.check_targets("packages", table.join(opt, {values = packages, level = "note"}))
 end

@@ -21,6 +21,7 @@
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("fpmodels", {values = {"none", "precise", "fast", "strict", "except", "noexcept"}})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("fpmodels", table.join(opt, {values = {"none", "precise", "fast", "strict", "except", "noexcept"}}))
 end

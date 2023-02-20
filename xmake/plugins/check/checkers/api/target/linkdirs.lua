@@ -21,11 +21,12 @@
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("linkdirs", {check = function(target, value)
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("linkdirs", table.join(opt, {check = function(target, value)
         if not os.isdir(value) then
             return false, string.format("linkdir '%s' not found", value)
         end
         return true
-    end})
+    end}))
 end

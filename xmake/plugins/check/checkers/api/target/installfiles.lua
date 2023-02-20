@@ -21,13 +21,14 @@
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("installfiles", {check = function(target, value)
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("installfiles", table.join(opt, {check = function(target, value)
         value = value:gsub("[()]", "")
         local installfiles = os.files(value)
         if not installfiles or #installfiles == 0 then
             return false, string.format("installfiles '%s' not found", value)
         end
         return true
-    end})
+    end}))
 end

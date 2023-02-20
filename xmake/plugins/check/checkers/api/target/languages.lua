@@ -21,7 +21,8 @@
 -- imports
 import(".api_checker")
 
-function main()
+function main(opt)
+    opt = opt or {}
     local values = {
         "ansi", "c89", "c90", "c99", "c11", "c17", "clatest",
         "cxx98", "cxx11", "cxx14", "cxx17", "cxx1z", "cxx20", "cxx2a", "cxx23", "cxx2b", "cxxlatest"
@@ -36,5 +37,5 @@ function main()
             table.insert(languages, "gnu" .. value:sub(2))
         end
     end
-    api_checker.check_targets("languages", {values = languages})
+    api_checker.check_targets("languages", table.join(opt, {values = languages}))
 end

@@ -22,8 +22,9 @@
 import("core.tool.compiler")
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("shflags", {check = function(target, value)
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("shflags", table.join(opt, {check = function(target, value)
         if target:is_shared() then
             local linker = target:linker()
             if not linker:has_flags(value) then
@@ -31,5 +32,5 @@ function main()
             end
         end
         return true
-    end})
+    end}))
 end

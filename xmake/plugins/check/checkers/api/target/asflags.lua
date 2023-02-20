@@ -22,12 +22,13 @@
 import("core.tool.compiler")
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("asflags", {check = function(target, value)
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("asflags", table.join(opt, {check = function(target, value)
         local compinst = target:compiler("as")
         if not compinst:has_flags(value) then
             return false, string.format("%s: unknown assembler flag '%s'", compinst:name(), value)
         end
         return true
-    end})
+    end}))
 end

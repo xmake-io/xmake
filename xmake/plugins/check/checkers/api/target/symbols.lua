@@ -21,13 +21,14 @@
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("symbols", {values = function (target)
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("symbols", table.join(opt, {values = function (target)
         local values = {"none", "debug", "hidden", "hidden_cxx"}
         if target:is_plat("windows") and (target:has_tool("cc", "cl") or target:has_tool("cxx", "cl")) then
             table.insert(values, "edit")
             table.insert(values, "embed")
         end
         return values
-    end})
+    end}))
 end

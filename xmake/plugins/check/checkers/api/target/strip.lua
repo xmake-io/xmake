@@ -21,6 +21,7 @@
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("strip", {values = {"none", "debug", "all"}})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("strip", table.join(opt, {values = {"none", "debug", "all"}}))
 end

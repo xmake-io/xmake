@@ -21,11 +21,12 @@
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("frameworkdirs", {check = function(target, value)
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("frameworkdirs", table.join(opt, {check = function(target, value)
         if not os.isdir(value) then
             return false, string.format("frameworkdir '%s' not found", value)
         end
         return true
-    end})
+    end}))
 end

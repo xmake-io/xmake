@@ -22,8 +22,9 @@
 import("core.base.semver")
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("version", {check = function(target, value)
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("version", table.join(opt, {check = function(target, value)
         local errors
         local ok = try {
             function()
@@ -37,5 +38,5 @@ function main()
             }
         }
         return ok, errors
-    end, level = "error"})
+    end, level = "error"}))
 end

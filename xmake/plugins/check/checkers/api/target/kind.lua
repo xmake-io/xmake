@@ -21,6 +21,7 @@
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("kind", {values = {"object", "binary", "static", "shared", "headeronly", "phony"}})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("kind", table.join(opt, {values = {"object", "binary", "static", "shared", "headeronly", "phony"}}))
 end

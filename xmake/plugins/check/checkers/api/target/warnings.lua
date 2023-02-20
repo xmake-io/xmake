@@ -21,6 +21,7 @@
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("warnings", {values = {"none", "less", "more", "all", "allextra", "everything", "error"}})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("warnings", table.join(opt, {values = {"none", "less", "more", "all", "allextra", "everything", "error"}}))
 end

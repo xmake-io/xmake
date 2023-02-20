@@ -21,12 +21,13 @@
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("files", {check = function(target, value)
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("files", table.join(opt, {check = function(target, value)
         local files = os.files(value)
         if not files or #files == 0 then
             return false, string.format("files '%s' not found", value)
         end
         return true
-    end})
+    end}))
 end
