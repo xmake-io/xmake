@@ -59,7 +59,9 @@ function main(opt)
     table.insert(argv, opt.remote or "origin")
 
     -- set branch
-    table.insert(argv, opt.branch or "master")
+    if opt.branch then
+        table.insert(argv, opt.branch)
+    end
 
     -- set tags
     if opt.tags then
