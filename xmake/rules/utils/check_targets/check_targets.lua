@@ -41,7 +41,8 @@ end
 function main(target)
     local checkers = checker.checkers()
     for name, info in table.orderpairs(checkers) do
-        if name:startswith("api.target.") and info.timely then
+        -- just do some faster checkers
+        if info.timely then
             import("plugins.check.checkers." .. name, {anonymous = true, rootdir = os.programdir()})({
                 target = target, show = _show})
         end
