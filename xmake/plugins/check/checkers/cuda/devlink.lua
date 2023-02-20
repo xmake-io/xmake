@@ -20,8 +20,32 @@
 
 -- imports
 import("core.base.option")
+import("core.project.project")
+
+-- https://github.com/xmake-io/xmake/issues/1976#issuecomment-1427378799
+function _check_target(target, opt)
+    if target:is_binary() then
+        local sourcebatches = target:sourcebatches()
+        if sourcebatches and not sourcebatches["cuda.build"] then
+            for _, dep in ipairs(target:orderdeps()) do
+                if dep:is_static() then
+                    sourcebatches = dep:sourcebatches()
+                    if sourcebatches and sourcebatches["cuda.build"] and not dep:values("cuda.build.devlink") then
+                        wprint('target(%s)${clear}: cuda device link is not performed! specify set_values("cuda.build.devlink", true) to enable it', dep:name())
+                    end
+                end
+            end
+        end
+    end
+end
 
 function main(opt)
-    print("devlink")
+    if opt.target then
+        _check_target(opt.target, opt)
+    else
+        for _, target in pairs(project.targets()) do
+            _check_target(target, opt)
+        end
+    end
 end
 
