@@ -18,22 +18,41 @@
 -- @file        check_targets.lua
 --
 
--- get values from target
-function _get_values_from_target(target, name)
-    local values = table.wrap(target:get(name))
-    table.join2(values, target:get_from_opts(name))
-    table.join2(values, target:get_from_pkgs(name))
-    return values
+import("plugins.check.checker", {rootdir = os.programdir()})
+
+function _show(str, opt)
+    _g.showed = _g.showed or {}
+    local showed = _g.showed
+    local infostr
+    if str then
+        infostr = string.format("%s${clear}: %s", opt.sourcetips, str)
+    else
+        infostr = string.format("%s${clear}: unknown %s value '%s'", opt.sourcetips, opt.apiname, opt.value)
+    end
+    if opt.probable_value then
+        infostr = string.format("%s, it may be '%s'", infostr, opt.probable_value)
+    end
+    if not showed[infostr] then
+        wprint(infostr)
+        showed[infostr] = true
+    end
 end
 
--- main entry
 function main(target)
-    for _, name in ipairs({"includedirs", "frameworkdirs", "linkdirs"}) do
-        for _, value in ipairs(_get_values_from_target(target, name)) do
-            if not os.isdir(value) then
-                local sourceinfo = target:sourceinfo(name, value) or {}
-                wprint("%s:%d: %s '%s' not found in %s(%s)", sourceinfo.file or "", sourceinfo.line or -1, name, value, target:type(), target:name())
-            end
+
+    -- get checkers
+    local checked_checkers = {}
+    local checkers = checker.checkers()
+    for name, _ in table.orderpairs(checkers) do
+        if name:startswith("api.target.") then
+            table.insert(checked_checkers, name)
         end
+    end
+
+    -- do checkers
+    for _, name in ipairs(checked_checkers) do
+        local info = checkers[name]
+        import("plugins.check.checkers." .. name, {anonymous = true, rootdir = os.programdir()})({
+            target = target, show = _show})
     end
 end
