@@ -19,7 +19,6 @@
 --
 
 rule("utils.check.targets")
-    add_deps("utils.check.project")
     before_build(function (target)
         import("checker").check_target(target)
     end)
