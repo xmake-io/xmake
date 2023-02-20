@@ -39,20 +39,11 @@ function _show(str, opt)
 end
 
 function main(target)
-
-    -- get checkers
-    local checked_checkers = {}
     local checkers = checker.checkers()
-    for name, _ in table.orderpairs(checkers) do
-        if name:startswith("api.target.") then
-            table.insert(checked_checkers, name)
+    for name, info in table.orderpairs(checkers) do
+        if name:startswith("api.target.") and info.timely then
+            import("plugins.check.checkers." .. name, {anonymous = true, rootdir = os.programdir()})({
+                target = target, show = _show})
         end
-    end
-
-    -- do checkers
-    for _, name in ipairs(checked_checkers) do
-        local info = checkers[name]
-        import("plugins.check.checkers." .. name, {anonymous = true, rootdir = os.programdir()})({
-            target = target, show = _show})
     end
 end
