@@ -18,7 +18,6 @@
 -- @file        xmake.lua
 --
 
--- define rule: environment
 rule("cuda.env")
 
     on_load(function (target)
