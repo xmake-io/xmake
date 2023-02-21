@@ -15,12 +15,20 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        fpmodels.lua
+-- @file        asflags.lua
 --
 
 -- imports
+import("core.tool.compiler")
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("fpmodels", {values = {"none", "precise", "fast", "strict", "except", "noexcept"}})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("asflags", table.join(opt, {check = function(target, value)
+        local compinst = target:compiler("as")
+        if not compinst:has_flags(value) then
+            return false, string.format("%s: unknown assembler flag '%s'", compinst:name(), value)
+        end
+        return true
+    end}))
 end

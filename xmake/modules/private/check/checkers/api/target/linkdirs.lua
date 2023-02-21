@@ -15,19 +15,18 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        headerfiles.lua
+-- @file        linkdirs.lua
 --
 
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("headerfiles", {check = function(target, value)
-        value = value:gsub("[()]", "")
-        local headerfiles = os.files(value)
-        if not headerfiles or #headerfiles == 0 then
-            return false, string.format("headerfiles '%s' not found", value)
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("linkdirs", table.join(opt, {check = function(target, value)
+        if not os.isdir(value) then
+            return false, string.format("linkdir '%s' not found", value)
         end
         return true
-    end})
+    end}))
 end

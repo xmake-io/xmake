@@ -15,12 +15,22 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        exceptions.lua
+-- @file        shflags.lua
 --
 
 -- imports
+import("core.tool.compiler")
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("exceptions", {values = {"none", "cxx", "objc", "no-cxx", "no-objc"}})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("shflags", table.join(opt, {check = function(target, value)
+        if target:is_shared() then
+            local linker = target:linker()
+            if not linker:has_flags(value) then
+                return false, string.format("%s: unknown linker flag '%s'", linker:name(), value)
+            end
+        end
+        return true
+    end}))
 end

@@ -15,26 +15,20 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        languages.lua
+-- @file        symbols.lua
 --
 
 -- imports
 import(".api_checker")
 
-function main()
-    local values = {
-        "ansi", "c89", "c90", "c99", "c11", "c17", "clatest",
-        "cxx98", "cxx11", "cxx14", "cxx17", "cxx1z", "cxx20", "cxx2a", "cxx23", "cxx2b", "cxxlatest"
-    }
-    local languages = {}
-    for _, value in ipairs(values) do
-        table.insert(languages, value)
-        if value:find("xx", 1, true) then
-            table.insert(languages, (value:gsub("xx", "++")))
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("symbols", table.join(opt, {values = function (target)
+        local values = {"none", "debug", "hidden", "hidden_cxx"}
+        if target:is_plat("windows") and (target:has_tool("cc", "cl") or target:has_tool("cxx", "cl")) then
+            table.insert(values, "edit")
+            table.insert(values, "embed")
         end
-        if value:startswith("c") then
-            table.insert(languages, "gnu" .. value:sub(2))
-        end
-    end
-    api_checker.check_targets("languages", {values = languages})
+        return values
+    end}))
 end

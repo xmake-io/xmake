@@ -21,6 +21,7 @@
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("optimize", {values = {"none", "fast", "faster", "fastest", "smallest", "aggressive"}})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("optimize", table.join(opt, {values = {"none", "fast", "faster", "fastest", "smallest", "aggressive"}}))
 end

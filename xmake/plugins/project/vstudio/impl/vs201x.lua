@@ -316,7 +316,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
         targetinfo.culinkflags = linkinst:linkflags({target = target})
 
         -- save cuda devlink status
-        targetinfo.cudevlink = target:values("cuda.build.devlink")
+        targetinfo.cudevlink = target:policy("build.cuda.devlink") or target:values("cuda.build.devlink")
     end
 
     -- save execution dir (when executed from VS)

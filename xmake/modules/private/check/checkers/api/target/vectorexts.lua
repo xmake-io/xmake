@@ -15,19 +15,13 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        cxxflags.lua
+-- @file        vectorexts.lua
 --
 
 -- imports
-import("core.tool.compiler")
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("cxxflags", {check = function(target, value)
-        local compinst = target:compiler("cxx")
-        if not compinst:has_flags(value) then
-            return false, string.format("%s: unknown c++ compiler flag '%s'", compinst:name(), value)
-        end
-        return true
-    end})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("vectorexts", table.join(opt, {values = {"none", "sse", "sse2", "sse3", "ssse3", "avx", "avx2", "neon"}}))
 end

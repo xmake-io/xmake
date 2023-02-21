@@ -15,12 +15,18 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        strip.lua
+-- @file        includedirs.lua
 --
 
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("strip", {values = {"none", "debug", "all"}})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("includedirs", table.join(opt, {check = function(target, value)
+        if not os.isdir(value) then
+            return false, string.format("includedir '%s' not found", value)
+        end
+        return true
+    end}))
 end

@@ -345,7 +345,7 @@ function _add_target_sources(cmakelists, target, outputdir)
     cmakelists:print(")")
     if has_cuda then
         cmakelists:print("set_target_properties(%s PROPERTIES CUDA_SEPARABLE_COMPILATION ON)", target:name())
-        local devlink = target:values("cuda.build.devlink")
+        local devlink = target:policy("build.cuda.devlink") or target:values("cuda.build.devlink")
         if devlink ~= nil then
             cmakelists:print("set_target_properties(%s PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS %s)", target:name(), devlink and "ON" or "OFF")
         end

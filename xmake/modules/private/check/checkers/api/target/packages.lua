@@ -15,21 +15,19 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        shflags.lua
+-- @file        packages.lua
 --
 
 -- imports
-import("core.tool.compiler")
+import("core.project.project")
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("shflags", {check = function(target, value)
-        if target:is_shared() then
-            local linker = target:linker()
-            if not linker:has_flags(value) then
-                return false, string.format("%s: unknown linker flag '%s'", linker:name(), value)
-            end
-        end
-        return true
-    end})
+function main(opt)
+    opt = opt or {}
+    local packages = {}
+    local requires = project.required_packages()
+    if requires then
+        table.join2(packages, table.orderkeys(requires))
+    end
+    api_checker.check_targets("packages", table.join(opt, {values = packages, level = "note"}))
 end

@@ -18,7 +18,8 @@
 -- @file        xmake.lua
 --
 
--- define rule: utils.check.targets
 rule("utils.check.targets")
-    before_build("check_targets")
+    before_build(function (target)
+        import("checker").check_target(target)
+    end)
 

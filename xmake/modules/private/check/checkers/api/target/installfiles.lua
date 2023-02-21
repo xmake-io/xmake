@@ -15,19 +15,20 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        symbols.lua
+-- @file        installfiles.lua
 --
 
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("symbols", {values = function (target)
-        local values = {"none", "debug", "hidden", "hidden_cxx"}
-        if target:is_plat("windows") and (target:has_tool("cc", "cl") or target:has_tool("cxx", "cl")) then
-            table.insert(values, "edit")
-            table.insert(values, "embed")
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("installfiles", table.join(opt, {check = function(target, value)
+        value = value:gsub("[()]", "")
+        local installfiles = os.files(value)
+        if not installfiles or #installfiles == 0 then
+            return false, string.format("installfiles '%s' not found", value)
         end
-        return values
-    end})
+        return true
+    end}))
 end

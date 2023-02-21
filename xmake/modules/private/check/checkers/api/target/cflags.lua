@@ -15,27 +15,20 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        version.lua
+-- @file        cflags.lua
 --
 
 -- imports
-import("core.base.semver")
+import("core.tool.compiler")
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("version", {check = function(target, value)
-        local errors
-        local ok = try {
-            function()
-                semver.new(value)
-                return true
-            end,
-            catch {
-                function (errs)
-                    errors = errs
-                end
-            }
-        }
-        return ok, errors
-    end, level = "error"})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("cflags", table.join(opt, {check = function(target, value)
+        local compinst = target:compiler("cc")
+        if not compinst:has_flags(value) then
+            return false, string.format("%s: unknown c compiler flag '%s'", compinst:name(), value)
+        end
+        return true
+    end}))
 end

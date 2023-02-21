@@ -35,7 +35,7 @@ task("check")
                                             "",
                                             "The supported checkers list:",
                 values = function (complete, opt)
-                    return import("plugins.check.checker", {rootdir = os.programdir()}).complete(complete, opt)
+                    return import("private.check.checker").complete(complete, opt)
                 end},
             {nil, "arguments", "vs", nil,   "Set the checker arguments.",
                                             "e.g.",

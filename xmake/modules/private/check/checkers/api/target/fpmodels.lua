@@ -15,17 +15,13 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        includedirs.lua
+-- @file        fpmodels.lua
 --
 
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("includedirs", {check = function(target, value)
-        if not os.isdir(value) then
-            return false, string.format("includedir '%s' not found", value)
-        end
-        return true
-    end})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("fpmodels", table.join(opt, {values = {"none", "precise", "fast", "strict", "except", "noexcept"}}))
 end

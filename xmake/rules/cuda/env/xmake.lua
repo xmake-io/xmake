@@ -23,7 +23,6 @@ rule("cuda.env")
 
     on_load(function (target)
         import("detect.sdks.find_cuda")
-
         local cuda = assert(find_cuda(nil, {verbose = true}), "Cuda SDK not found!")
         if cuda then
             target:data_set("cuda", cuda)

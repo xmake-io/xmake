@@ -15,19 +15,19 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        installfiles.lua
+-- @file        files.lua
 --
 
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("installfiles", {check = function(target, value)
-        value = value:gsub("[()]", "")
-        local installfiles = os.files(value)
-        if not installfiles or #installfiles == 0 then
-            return false, string.format("installfiles '%s' not found", value)
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("files", table.join(opt, {check = function(target, value)
+        local files = os.files(value)
+        if not files or #files == 0 then
+            return false, string.format("files '%s' not found", value)
         end
         return true
-    end})
+    end}))
 end

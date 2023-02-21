@@ -15,19 +15,28 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        asflags.lua
+-- @file        version.lua
 --
 
 -- imports
-import("core.tool.compiler")
+import("core.base.semver")
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("asflags", {check = function(target, value)
-        local compinst = target:compiler("as")
-        if not compinst:has_flags(value) then
-            return false, string.format("%s: unknown assembler flag '%s'", compinst:name(), value)
-        end
-        return true
-    end})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("version", table.join(opt, {check = function(target, value)
+        local errors
+        local ok = try {
+            function()
+                semver.new(value)
+                return true
+            end,
+            catch {
+                function (errs)
+                    errors = errs
+                end
+            }
+        }
+        return ok, errors
+    end, level = "error"}))
 end

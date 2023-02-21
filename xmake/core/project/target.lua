@@ -1381,7 +1381,7 @@ function _instance:fileconfig(sourcefile)
             local results = os.match(filepath)
             if #results == 0 and not fileconfig.always_added then
                 local sourceinfo = self:sourceinfo("files", filepath) or {}
-                utils.warning("%s:%d: cannot match add_files(\"%s\") in %s(%s)", sourceinfo.file or "", sourceinfo.line or -1, filepath, self:type(), self:name())
+                utils.warning("%s:%d${clear}: cannot match add_files(\"%s\") in %s(%s)", sourceinfo.file or "", sourceinfo.line or -1, filepath, self:type(), self:name())
             end
 
             -- process source files
@@ -1505,7 +1505,7 @@ function _instance:sourcefiles()
         end
         if #results == 0 then
             local sourceinfo = self:sourceinfo("files", file) or {}
-            utils.warning("%s:%d: cannot match %s_files(\"%s\") in %s(%s)", sourceinfo.file or "", sourceinfo.line or -1, (removed and "remove" or "add"), file, self:type(), self:name())
+            utils.warning("%s:%d${clear}: cannot match %s_files(\"%s\") in %s(%s)", sourceinfo.file or "", sourceinfo.line or -1, (removed and "remove" or "add"), file, self:type(), self:name())
         end
 
         -- process source files

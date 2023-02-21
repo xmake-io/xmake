@@ -15,17 +15,13 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        linkdirs.lua
+-- @file        kind.lua
 --
 
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("linkdirs", {check = function(target, value)
-        if not os.isdir(value) then
-            return false, string.format("linkdir '%s' not found", value)
-        end
-        return true
-    end})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("kind", table.join(opt, {values = {"object", "binary", "static", "shared", "headeronly", "phony"}}))
 end

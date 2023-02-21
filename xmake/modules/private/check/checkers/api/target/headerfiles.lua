@@ -15,19 +15,20 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        cflags.lua
+-- @file        headerfiles.lua
 --
 
 -- imports
-import("core.tool.compiler")
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("cflags", {check = function(target, value)
-        local compinst = target:compiler("cc")
-        if not compinst:has_flags(value) then
-            return false, string.format("%s: unknown c compiler flag '%s'", compinst:name(), value)
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("headerfiles", table.join(opt, {check = function(target, value)
+        value = value:gsub("[()]", "")
+        local headerfiles = os.files(value)
+        if not headerfiles or #headerfiles == 0 then
+            return false, string.format("headerfiles '%s' not found", value)
         end
         return true
-    end})
+    end}))
 end

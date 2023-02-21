@@ -15,18 +15,13 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        configfiles.lua
+-- @file        warnings.lua
 --
 
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("configfiles", {check = function(target, value)
-        local configfiles = os.files(value)
-        if not configfiles or #configfiles == 0 then
-            return false, string.format("configfiles '%s' not found", value)
-        end
-        return true
-    end})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("warnings", table.join(opt, {values = {"none", "less", "more", "all", "allextra", "everything", "error"}}))
 end

@@ -15,19 +15,20 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        cxflags.lua
+-- @file        cxxflags.lua
 --
 
 -- imports
 import("core.tool.compiler")
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("cxflags", {check = function(target, value)
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("cxxflags", table.join(opt, {check = function(target, value)
         local compinst = target:compiler("cxx")
         if not compinst:has_flags(value) then
-            return false, string.format("%s: unknown c/c++ compiler flag '%s'", compinst:name(), value)
+            return false, string.format("%s: unknown c++ compiler flag '%s'", compinst:name(), value)
         end
         return true
-    end})
+    end}))
 end

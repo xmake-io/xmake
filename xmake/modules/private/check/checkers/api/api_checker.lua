@@ -38,6 +38,25 @@ function _get_most_probable_value(value, valueset)
     return result
 end
 
+function _do_show(str, opt)
+    _g.showed = _g.showed or {}
+    local showed = _g.showed
+    local infostr
+    if str then
+        infostr = string.format("%s: %s: %s", opt.sourcetips, opt.level_tips, str)
+    else
+        infostr = string.format("%s: %s: unknown %s value '%s'", opt.sourcetips, opt.level_tips, opt.apiname, opt.value)
+    end
+    if opt.probable_value then
+        infostr = string.format("%s, it may be '%s'", infostr, opt.probable_value)
+    end
+    if not showed[infostr] then
+        cprint(infostr)
+        showed[infostr] = true
+        return true
+    end
+end
+
 -- show result
 function _show(apiname, value, target, opt)
     opt = opt or {}
@@ -52,40 +71,70 @@ function _show(apiname, value, target, opt)
     local sourceinfo = target:sourceinfo(apiname, value) or {}
     local sourcetips = sourceinfo.file or ""
     if sourceinfo.line then
-        sourcetips = sourcetips .. ":" .. (sourceinfo.line or -1) .. ": "
+        sourcetips = sourcetips .. ":" .. (sourceinfo.line or -1)
     end
     if #sourcetips == 0 then
         sourcetips = string.format("target(%s)", target:name())
     end
 
-    -- do show
+    -- get level tips
     local level_tips = "note"
     if level == "warning" then
         level_tips = "${color.warning}${text.warning}${clear}"
     elseif level == "error" then
         level_tips = "${color.error}${text.error}${clear}"
     end
+
+    -- get probable value
+    local probable_value
+    if opt.valueset then
+        probable_value = _get_most_probable_value(value, opt.valueset)
+    end
+
     if apiname:endswith("s") then
         apiname = apiname:sub(1, #apiname - 1)
     end
-    _g.showed = _g.showed or {}
-    local showed = _g.showed
-    local infostr
-    if opt.showstr then
-        infostr = string.format("%s%s: %s", sourcetips, level_tips, opt.showstr)
-    else
-        infostr = string.format("%s%s: unknown %s value '%s'", sourcetips, level_tips, apiname, value)
-    end
-    if opt.valueset then
-        local probable_value = _get_most_probable_value(value, opt.valueset)
-        if probable_value then
-            infostr = string.format("%s, it may be '%s'", infostr, probable_value)
+
+    -- do show
+    return (opt.show or _do_show)(opt.showstr, {
+        apiname = apiname,
+        sourcetips = sourcetips,
+        level_tips = level_tips,
+        value = value,
+        probable_value = probable_value})
+end
+
+-- check target
+function _check_target(target, apiname, valueset, level, opt)
+    local target_valueset = valueset
+    if type(opt.values) == "function" then
+        local target_values = opt.values(target)
+        if target_values then
+            target_valueset = hashset.from(target_values)
         end
     end
-    if not showed[infostr] then
-        cprint(infostr)
-        showed[infostr] = true
-        return true
+    local values = target:get(apiname)
+    for _, value in ipairs(values) do
+        if opt.check then
+            local ok, errors = opt.check(target, value)
+            if not ok then
+                local reported = _show(apiname, value, target, {
+                    show = opt.show,
+                    showstr = errors,
+                    level = level})
+                if reported then
+                    checker.update_stats(level)
+                end
+            end
+        elseif not target_valueset:has(value) then
+            local reported = _show(apiname, value, target, {
+                show = opt.show,
+                valueset = target_valueset,
+                level = level})
+            if reported then
+                checker.update_stats(level)
+            end
+        end
     end
 end
 
@@ -99,30 +148,11 @@ function check_targets(apiname, opt)
     else
         valueset = hashset.new()
     end
-    for _, target in pairs(project.targets()) do
-        local target_valueset = valueset
-        if type(opt.values) == "function" then
-            local target_values = opt.values(target)
-            if target_values then
-                target_valueset = hashset.from(target_values)
-            end
-        end
-        local values = target:get(apiname)
-        for _, value in ipairs(values) do
-            if opt.check then
-                local ok, errors = opt.check(target, value)
-                if not ok then
-                    local reported = _show(apiname, value, target, {showstr = errors, level = level})
-                    if reported then
-                        checker.update_stats(level)
-                    end
-                end
-            elseif not target_valueset:has(value) then
-                local reported = _show(apiname, value, target, {valueset = target_valueset, level = level})
-                if reported then
-                    checker.update_stats(level)
-                end
-            end
+    if opt.target then
+        _check_target(opt.target, apiname, valueset, level, opt)
+    else
+        for _, target in pairs(project.targets()) do
+            _check_target(target, apiname, valueset, level, opt)
         end
     end
 end

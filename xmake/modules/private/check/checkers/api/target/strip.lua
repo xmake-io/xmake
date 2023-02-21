@@ -15,18 +15,13 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        packages.lua
+-- @file        strip.lua
 --
 
 -- imports
-import("core.project.project")
 import(".api_checker")
 
-function main()
-    local packages = {}
-    local requires = project.required_packages()
-    if requires then
-        table.join2(packages, table.orderkeys(requires))
-    end
-    api_checker.check_targets("packages", {values = packages, level = "note"})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("strip", table.join(opt, {values = {"none", "debug", "all"}}))
 end

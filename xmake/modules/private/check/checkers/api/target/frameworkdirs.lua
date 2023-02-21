@@ -15,12 +15,18 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        warnings.lua
+-- @file        frameworkdirs.lua
 --
 
 -- imports
 import(".api_checker")
 
-function main()
-    api_checker.check_targets("warnings", {values = {"none", "less", "more", "all", "allextra", "everything", "error"}})
+function main(opt)
+    opt = opt or {}
+    api_checker.check_targets("frameworkdirs", table.join(opt, {check = function(target, value)
+        if not os.isdir(value) then
+            return false, string.format("frameworkdir '%s' not found", value)
+        end
+        return true
+    end}))
 end

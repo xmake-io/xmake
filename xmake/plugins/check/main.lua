@@ -22,7 +22,7 @@
 import("core.base.option")
 import("core.base.text")
 import("core.project.config")
-import("checker")
+import("private.check.checker")
 
 -- show checkers list
 function _show_list()
@@ -80,7 +80,7 @@ function _check(group_or_name, arguments)
         if showstats == nil and info and info.showstats ~= nil then
             showstats = info.showstats
         end
-        import("checkers." .. name, {anonymous = true})(arguments)
+        import("private.check.checkers." .. name, {anonymous = true})(arguments)
     end
     if showstats ~= false then
         checker.show_stats()
