@@ -43,7 +43,7 @@ function check_target(target)
     for name, info in table.orderpairs(checkers) do
         -- just do some faster checkers
         if info.timely then
-            import("private.check.checkers." .. name, {anonymous = true, rootdir = os.programdir()})({
+            import("private.check.checkers." .. name, {anonymous = true})({
                 target = target, show = _show})
         end
     end
