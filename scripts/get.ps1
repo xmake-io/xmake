@@ -148,7 +148,7 @@ param (
             }
 
             if ($content) {
-                $content = [System.Text.RegularExpressions.Regex]::Replace($content, "\n*(# PowerShell parameter completion shim for xmake)?\s*Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock\s*{.+?\n}\s*", "`n", [System.Text.RegularExpressions.RegexOptions]::Singleline)
+                $content = $content -replace "`n# >>> xmake >>>`n[\S\s]*?`n# <<< xmake <<<`n", ""
             }
             try {
                 $appendcontent = (Invoke-Webrequest 'https://xmake.io/assets/scripts/pscompletions.text' -UseBasicParsing).Content
