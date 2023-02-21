@@ -24,13 +24,16 @@ import("core.project.project")
 import("private.check.checker")
 
 function _show(str, opt)
+    opt = opt or {}
     _g.showed = _g.showed or {}
     local showed = _g.showed
     local infostr
-    if str then
+    if str and opt.sourcetips then
         infostr = string.format("%s${clear}: %s", opt.sourcetips, str)
-    else
+    elseif opt.sourcetips and opt.apiname and opt.value ~= nil then
         infostr = string.format("%s${clear}: unknown %s value '%s'", opt.sourcetips, opt.apiname, opt.value)
+    elseif str then
+        infostr = string.format("${clear}: %s", str)
     end
     if opt.probable_value then
         infostr = string.format("%s, it may be '%s'", infostr, opt.probable_value)

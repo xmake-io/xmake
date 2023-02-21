@@ -52,9 +52,6 @@ rule("c++")
     -- strip self-target binary if `set_symbols("debug")` and `set_strip("all")` are enabled
     add_deps("utils.symbols.extract")
 
-    -- check licenses
-    add_deps("utils.check.licenses")
-
     -- add platform rules
     add_deps("platform.wasm")
     add_deps("platform.windows")
