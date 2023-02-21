@@ -970,6 +970,20 @@ function scheduler:runloop()
                 if eventfunc then
                     ok, errors = eventfunc(self, obj, objevents)
                     if not ok then
+                        -- TODO
+                        --
+                        -- This causes a direct exit from the entire runloop and
+                        -- a quick escape from nested try-catch blocks and coroutines groups.
+                        --
+                        -- So some try-catch cannot catch these errors, such as when a build fails (in build group).
+                        -- @see https://github.com/xmake-io/xmake/issues/3401
+                        --
+                        -- In theory, we should handle it better. For example, if there is a group that is waiting,
+                        -- we should notify the other concurrent threads to exit quickly and then let the group concurrent threads to throw the error.
+                        -- That way the outside try-catch can continue to catch it.
+                        --
+                        -- But implementing it is more complicated and I haven't come up with a solution to let other concurrent processes exit quickly,
+                        -- especially if the child process is waiting and we need to notify it of the end quickly as well.
                         break
                     end
                 end
