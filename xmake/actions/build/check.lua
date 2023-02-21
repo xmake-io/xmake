@@ -44,18 +44,8 @@ function _show(str, opt)
     end
 end
 
-function _check_target(target)
-    local checkers = checker.checkers()
-    for name, info in table.orderpairs(checkers) do
-        -- just do some faster checkers
-        if info.timely then
-            import("private.check.checkers." .. name, {anonymous = true})({
-                target = target, show = _show})
-        end
-    end
-end
-
-function main(targetname)
+function main(targetname, opt)
+    opt = opt or {}
 
     -- get targets
     local targets = {}
@@ -75,8 +65,7 @@ function main(targetname)
     -- do check
     local checkers = checker.checkers()
     for name, info in table.orderpairs(checkers) do
-        -- just do some faster checkers
-        if info.timely then
+        if (info.build and opt.build) or (info.build_failure and opt.build_failure) then
             local check = import("private.check.checkers." .. name, {anonymous = true})
             for _, target in ipairs(targets) do
                 check({target = target, show = _show})

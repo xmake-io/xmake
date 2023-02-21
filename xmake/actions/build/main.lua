@@ -125,7 +125,7 @@ function _on_exit(ok, errors)
 
     -- we just handle the build failure
     if handled and not ok then
-        print("build failed")
+        check_targets(targetname, {build_failure = true})
     end
 end
 
@@ -172,7 +172,7 @@ function main()
         function ()
 
             -- do check
-            check_targets(targetname)
+            check_targets(targetname, {build = true})
 
             -- do rules before building
             _do_project_rules("build_before")
