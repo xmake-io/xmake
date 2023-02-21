@@ -52,7 +52,7 @@ function checkers()
             ["api.target.ldflags"]       = {description = "Check binary linker flags configuration in target."},
             ["api.target.shflags"]       = {description = "Check shared library linker flags configuration in target."},
             -- cuda checkers
-            ["cuda.devlink"]             = {description = "Check devlink for targets.", timely = true},
+            ["cuda.devlink"]             = {description = "Check devlink for targets."},
             -- clang tidy checker
             ["clang.tidy"]               = {description = "Check project code using clang-tidy.", showstats = false}
         }
