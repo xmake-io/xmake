@@ -148,10 +148,18 @@ param (
             }
 
             if ($content) {
-                $content = [System.Text.RegularExpressions.Regex]::Replace($content, "\n*(# PowerShell parameter completion shim for xmake)?\s*Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock\s*{.+?\n}\s*", "`n", [System.Text.RegularExpressions.RegexOptions]::Singleline)
+                $content = $content -replace "`n# >>> xmake >>>`n[\S\s]*?`n# <<< xmake <<<`n", ""
             }
             try {
-                $appendcontent = (Invoke-Webrequest 'https://xmake.io/assets/scripts/pscompletions.text' -UseBasicParsing).Content
+                $url = if ($v -is [version]) {
+                    "https://fastly.jsdelivr.net/gh/xmake-io/xmake@v$v/scripts/register-completions.ps1"
+                } else {
+                    "https://fastly.jsdelivr.net/gh/xmake-io/xmake@$v/scripts/register-completions.ps1"
+                }
+                $appendcontent = (Invoke-Webrequest $url -UseBasicParsing).Content
+                if ($appendcontent -is [byte[]]) {
+                    $appendcontent = [System.Text.Encoding]::UTF8.GetString($appendcontent)
+                }
             } catch {
                 writeErrorTip 'Download failed!'
                 writeErrorTip 'Check your network or... the news of S3 break'
