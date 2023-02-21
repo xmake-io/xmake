@@ -18,7 +18,7 @@
 -- @file        check_targets.lua
 --
 
-import("private.check.checker", {rootdir = os.programdir()})
+import("private.check.checker")
 
 function _show(str, opt)
     _g.showed = _g.showed or {}
