@@ -157,6 +157,9 @@ param (
                     "https://fastly.jsdelivr.net/gh/xmake-io/xmake@$v/scripts/register-completions.ps1"
                 }
                 $appendcontent = (Invoke-Webrequest $url -UseBasicParsing).Content
+                if ($appendcontent -is [bytep[]]) {
+                    $appendcontent = [System.Text.Encoding]::UTF8.GetString($appendcontent)
+                }
             } catch {
                 writeErrorTip 'Download failed!'
                 writeErrorTip 'Check your network or... the news of S3 break'
