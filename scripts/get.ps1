@@ -151,7 +151,12 @@ param (
                 $content = $content -replace "`n# >>> xmake >>>`n[\S\s]*?`n# <<< xmake <<<`n", ""
             }
             try {
-                $appendcontent = (Invoke-Webrequest 'https://xmake.io/assets/scripts/pscompletions.text' -UseBasicParsing).Content
+                $url = if ($v -is [version]) {
+                    "https://fastly.jsdelivr.net/gh/xmake-io/xmake@v$v/scripts/register-completions.ps1"
+                } else {
+                    "https://fastly.jsdelivr.net/gh/xmake-io/xmake@$v/scripts/register-completions.ps1"
+                }
+                $appendcontent = (Invoke-Webrequest $url -UseBasicParsing).Content
             } catch {
                 writeErrorTip 'Download failed!'
                 writeErrorTip 'Check your network or... the news of S3 break'
