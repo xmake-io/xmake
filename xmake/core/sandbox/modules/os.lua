@@ -42,6 +42,7 @@ sandbox_os.subarch      = os.subarch
 sandbox_os.syserror     = os.syserror
 sandbox_os.strerror     = os.strerror
 sandbox_os.exit         = os.exit
+sandbox_os.atexit       = os.atexit
 sandbox_os.date         = os.date
 sandbox_os.time         = os.time
 sandbox_os.args         = os.args

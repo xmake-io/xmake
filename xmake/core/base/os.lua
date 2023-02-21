@@ -270,6 +270,16 @@ function os._is_tracing_process()
     return is_tracing
 end
 
+-- run all exit callback
+function os._run_exit_cbs(ok, errors)
+    local exit_callbacks = os._EXIT_CALLBACKS
+    if exit_callbacks then
+        for _, cb in ipairs(exit_callbacks) do
+            cb(ok, errors)
+        end
+    end
+end
+
 -- match files or directories
 --
 -- @param pattern   the search pattern
@@ -650,9 +660,23 @@ end
 
 -- exit program
 function os.exit(...)
-
-    -- do exit
     return os._exit(...)
+end
+
+-- register exit callback
+--
+-- e.g.
+-- os.atexit(function (ok, errors)
+--     print(ok, errors)
+-- end)
+--
+function os.atexit(on_exit)
+    local exit_callbacks = os._EXIT_CALLBACKS
+    if exit_callbacks == nil then
+        exit_callbacks = {}
+        os._EXIT_CALLBACKS = exit_callbacks
+    end
+    table.insert(exit_callbacks, on_exit)
 end
 
 -- run command

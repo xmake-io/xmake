@@ -207,6 +207,9 @@ end
 -- exit main program
 function main._exit(ok, errors)
 
+    -- run all exit callbacks
+    os._run_exit_cbs(ok, errors)
+
     -- show errors
     local retval = 0
     if not ok then
