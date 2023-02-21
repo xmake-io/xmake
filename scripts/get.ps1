@@ -157,7 +157,7 @@ param (
                     "https://fastly.jsdelivr.net/gh/xmake-io/xmake@$v/scripts/register-completions.ps1"
                 }
                 $appendcontent = (Invoke-Webrequest $url -UseBasicParsing).Content
-                if ($appendcontent -is [bytep[]]) {
+                if ($appendcontent -is [byte[]]) {
                     $appendcontent = [System.Text.Encoding]::UTF8.GetString($appendcontent)
                 }
             } catch {
