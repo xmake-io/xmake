@@ -32,5 +32,3 @@ rule("swift")
     -- support `add_files("src/*.o")` to merge object files to target
     add_deps("utils.merge.object")
 
-    -- check targets
-    add_deps("utils.check.targets")

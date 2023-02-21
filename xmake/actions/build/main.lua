@@ -32,6 +32,7 @@ import("build")
 import("build_files")
 import("cleaner")
 import("statistics")
+import("check", {alias = "check_targets"})
 import("private.cache.build_cache")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 
@@ -169,6 +170,9 @@ function main()
     try
     {
         function ()
+
+            -- do check
+            check_targets(targetname)
 
             -- do rules before building
             _do_project_rules("build_before")

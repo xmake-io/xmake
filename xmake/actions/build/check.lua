@@ -18,6 +18,9 @@
 -- @file        check_targets.lua
 --
 
+-- imports
+import("core.base.option")
+import("core.project.project")
 import("private.check.checker")
 
 function _show(str, opt)
@@ -38,13 +41,43 @@ function _show(str, opt)
     end
 end
 
-function check_target(target)
+function _check_target(target)
     local checkers = checker.checkers()
     for name, info in table.orderpairs(checkers) do
         -- just do some faster checkers
         if info.timely then
             import("private.check.checkers." .. name, {anonymous = true})({
                 target = target, show = _show})
+        end
+    end
+end
+
+function main(targetname)
+
+    -- get targets
+    local targets = {}
+    if targetname then
+        table.insert(targets, project.target(targetname))
+    else
+        for _, target in pairs(project.targets()) do
+            if target:is_enabled() then
+                local group = target:get("group")
+                if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
+                    table.insert(targets, target)
+                end
+            end
+        end
+    end
+
+    -- do check
+    local checkers = checker.checkers()
+    for name, info in table.orderpairs(checkers) do
+        -- just do some faster checkers
+        if info.timely then
+            local check = import("private.check.checkers." .. name, {anonymous = true})
+            for _, target in ipairs(targets) do
+                check({target = target, show = _show})
+            end
         end
     end
 end
