@@ -18,16 +18,22 @@
 -- @file        check_targets.lua
 --
 
+-- imports
+import("core.base.option")
+import("core.project.project")
 import("private.check.checker")
 
 function _show(str, opt)
+    opt = opt or {}
     _g.showed = _g.showed or {}
     local showed = _g.showed
     local infostr
-    if str then
+    if str and opt.sourcetips then
         infostr = string.format("%s${clear}: %s", opt.sourcetips, str)
-    else
+    elseif opt.sourcetips and opt.apiname and opt.value ~= nil then
         infostr = string.format("%s${clear}: unknown %s value '%s'", opt.sourcetips, opt.apiname, opt.value)
+    elseif str then
+        infostr = string.format("${clear}: %s", str)
     end
     if opt.probable_value then
         infostr = string.format("%s, it may be '%s'", infostr, opt.probable_value)
@@ -38,13 +44,32 @@ function _show(str, opt)
     end
 end
 
-function check_target(target)
+function main(targetname, opt)
+    opt = opt or {}
+
+    -- get targets
+    local targets = {}
+    if targetname then
+        table.insert(targets, project.target(targetname))
+    else
+        for _, target in pairs(project.targets()) do
+            if target:is_enabled() then
+                local group = target:get("group")
+                if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
+                    table.insert(targets, target)
+                end
+            end
+        end
+    end
+
+    -- do check
     local checkers = checker.checkers()
     for name, info in table.orderpairs(checkers) do
-        -- just do some faster checkers
-        if info.timely then
-            import("private.check.checkers." .. name, {anonymous = true})({
-                target = target, show = _show})
+        if (info.build and opt.build) or (info.build_failure and opt.build_failure) then
+            local check = import("private.check.checkers." .. name, {anonymous = true})
+            for _, target in ipairs(targets) do
+                check({target = target, show = _show})
+            end
         end
     end
 end

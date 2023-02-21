@@ -165,10 +165,3 @@ rule("vala")
     -- strip self-target binary if `set_symbols("debug")` and `set_strip("all")` are enabled
     add_deps("utils.symbols.extract")
 
-    -- check targets
-    add_deps("utils.check.targets")
-
-    -- check licenses
-    add_deps("utils.check.licenses")
-
-

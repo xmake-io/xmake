@@ -22,7 +22,7 @@
 import("core.base.option")
 import("core.base.hashset")
 import("core.project.project")
-import("..checker")
+import("private.check.checker")
 
 -- get the most probable value
 function _get_most_probable_value(value, valueset)
