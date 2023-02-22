@@ -61,6 +61,22 @@ function _get_pkgconfig(package)
     end
 end
 
+-- translate flags
+function _translate_flags(package, flags)
+    if package:is_plat("android") then
+        local flags_new = {}
+        for _, flag in ipairs(flags) do
+            if flag:startswith("-gcc-toolchain ") or flag:startswith("-target ") or flag:startswith("-isystem ") then
+                table.join2(flags_new, flag:split(" ", {limit = 2}))
+            else
+                table.insert(flags_new, flag)
+            end
+        end
+        flags = flags_new
+    end
+    return flags
+end
+
 -- get cross file
 function _get_cross_file(package, opt)
     opt = opt or {}
@@ -132,13 +148,16 @@ function _get_cross_file(package, opt)
         table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
         table.join2(shflags,  _get_ldflags_from_packagedeps(package, opt))
         if #cflags > 0 then
+            cflags = _translate_flags(package, cflags)
             file:print("c_args=['%s']", table.concat(cflags, "', '"))
         end
         if #cxxflags > 0 then
+            cxxflags = _translate_flags(package, cxxflags)
             file:print("cpp_args=['%s']", table.concat(cxxflags, "', '"))
         end
         local linkflags = table.join(ldflags or {}, shflags)
         if #linkflags > 0 then
+            linkflags = _translate_flags(package, linkflags)
             file:print("c_link_args=['%s']", table.concat(linkflags, "', '"))
             file:print("cpp_link_args=['%s']", table.concat(linkflags, "', '"))
         end
@@ -171,8 +190,27 @@ function _get_cross_file(package, opt)
             file:print("cpu = '%s'", cpu)
             file:print("endian = 'little'")
         elseif package:is_plat("android") then
-            -- TODO
-            raise("android has been not supported now!")
+            local cpu
+            local cpu_family
+            if package:is_arch("arm64-v8a") then
+                cpu = "aarch64"
+                cpu_family = "aarch64"
+            elseif package:is_arch("armeabi-v7a") then
+                cpu = "arm"
+                cpu_family = "arm"
+            elseif package:is_arch("x64", "x86_64") then
+                cpu = "x86_64"
+                cpu_family = "x86_64"
+            elseif package:is_arch("x86", "i386") then
+                cpu = "i686"
+                cpu_family = "x86"
+            else
+                raise("unsupported arch(%s)", package:arch())
+            end
+            file:print("system = 'android'")
+            file:print("cpu_family = '%s'", cpu_family)
+            file:print("cpu = '%s'", cpu)
+            file:print("endian = 'little'")
         elseif package:is_plat("mingw") then
             local cpu
             local cpu_family
