@@ -306,7 +306,12 @@ function _add_package_configurations(package)
         package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
     end
     if package:extraconf("configs", "shared", "default") == nil then
-        package:add("configs", "shared", {builtin = true, description = "Build shared library.", default = false, type = "boolean"})
+        -- we always use static library if it's for wasm platform
+        local readonly
+        if package:is_plat("wasm") then
+            readonly = true
+        end
+        package:add("configs", "shared", {builtin = true, description = "Build shared library.", default = false, readonly = readonly, type = "boolean"})
     end
     if package:extraconf("configs", "pic", "default") == nil then
         package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
