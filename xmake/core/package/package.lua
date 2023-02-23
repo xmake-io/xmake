@@ -346,7 +346,7 @@ function _instance:is_precompiled()
 end
 
 -- fallback to source code build
-function _instance:fackback_build()
+function _instance:fallback_build()
     if self:is_precompiled() then
         local artifacts_backup = self._ARTIFACTS_BACKUP
         if artifacts_backup then

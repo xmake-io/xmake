@@ -479,7 +479,7 @@ function _install_packages(packages_install, packages_download, installdeps)
                     if not action_install(instance) then
                         assert(instance:is_precompiled(), "package(%s) should be precompiled", instance:name())
                         -- we need disable built and re-download and re-install it
-                        instance:fackback_build()
+                        instance:fallback_build()
                         action_download(instance)
                         action_install(instance)
                     end
