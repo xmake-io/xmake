@@ -26,15 +26,13 @@ end
 
 -- get filename from github name mangling
 function github_filename(url)
-    if url:find("^https://github.com/[^/]-/[^/]-/archive/") then
-        local reponame = url:match("^https://github.com/[^/]-/([^/]-)/archive/")
+    local reponame = url:match("^https://github.com/[^/]-/([^/]-)/archive/")
+    if reponame then
         local filename = raw_filename(url)
         if filename:find("^v%d") then
             filename = filename:match("^v(.+)")
         end
-        if reponame and filename then
-            return reponame .. "-" .. filename
-        end
+        return reponame .. "-" .. filename
     end
 end
 
