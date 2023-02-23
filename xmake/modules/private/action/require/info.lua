@@ -162,8 +162,8 @@ function main(requires_raw)
         for _, url in ipairs(urls) do
             url = filter.handle(url, instance)
             if git.checkurl(url) then
-                searchnames:insert(instance:name() .. archive.extension(url))
-                searchnames:insert(path.basename(url_filename(url)))
+                searchnames:insert(instance:name() .. archive.extension(url) .. " ${dim}(git)${clear}")
+                searchnames:insert(path.basename(url_filename(url)) .. " ${dim}(git)${clear}")
             else
                 local extension = archive.extension(url)
                 if extension then
