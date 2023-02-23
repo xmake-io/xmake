@@ -28,7 +28,7 @@ import("core.package.package", {alias = "core_package"})
 import("lib.detect.find_file")
 import("lib.detect.find_directory")
 import("private.action.require.impl.utils.filter")
-import("private.action.require.impl..utils.url_filename")
+import("private.action.require.impl.utils.url_filename")
 import("net.http")
 import("net.proxy")
 import("devel.git")
@@ -156,6 +156,13 @@ function _download(package, url, sourcedir, opt)
             local localfile
             local searchnames = {package:name() .. "-" .. package:version_str() .. archive.extension(url),
                                  packagefile}
+
+            -- match github name mangling https://github.com/xmake-io/xmake/issues/1343
+            local github_name = url_filename.github_filename(url)
+            if github_name then
+                table.insert(searchnames, github_name)
+            end
+
             for _, searchname in ipairs(searchnames) do
                 localfile = find_file(searchname, core_package.searchdirs())
                 if localfile then

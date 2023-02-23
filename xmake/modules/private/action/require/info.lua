@@ -163,6 +163,12 @@ function main(requires_raw)
                     searchnames:insert(instance:name() .. "-" .. instance:version_str() .. extension)
                 end
                 searchnames:insert(url_filename(url))
+
+                -- match github name mangling https://github.com/xmake-io/xmake/issues/1343
+                local github_name = url_filename.github_filename(url)
+                if github_name then
+                    searchnames:insert(github_name)
+                end
             end
         end
         cprint("      -> ${color.dump.string_quote}searchnames${clear}: %s", table.concat(searchnames:to_array(), ", "))
