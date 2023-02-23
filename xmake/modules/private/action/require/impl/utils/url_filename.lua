@@ -18,8 +18,27 @@
 -- @file        url_filename.lua
 --
 
--- get filename from url
-function main(url)
+-- get raw filename
+function raw_filename(url)
     local urlpath = url:split('?', {plain = true})[1]
     return path.filename(urlpath)
+end
+
+-- get filename from github name mangling
+function github_filename(url)
+    if url:find("^https://github.com/[^/]-/[^/]-/archive/") then
+        local reponame = url:match("^https://github.com/[^/]-/([^/]-)/archive/")
+        local filename = raw_filename(url)
+        if filename:find("^v%d") then
+            filename = filename:match("^v(.+)")
+        end
+        if reponame and filename then
+            return reponame .. "-" .. filename
+        end
+    end
+end
+
+-- get filename from url
+function main(url)
+    return raw_filename(url)
 end
