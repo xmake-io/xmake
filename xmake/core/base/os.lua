@@ -155,24 +155,14 @@ function os._rm(filedir)
 end
 
 -- get the ramdisk root directory
+-- https://github.com/xmake-io/xmake/issues/3408
 function os._ramdir()
-
-    -- get root ramdir
     local ramdir_root = os._ROOT_RAMDIR
     if ramdir_root == nil then
         ramdir_root = os.getenv("XMAKE_RAMDIR")
     end
     if ramdir_root == nil then
-        if os.host() == "linux" and os.isdir("/dev/shm") then
-            ramdir_root = "/dev/shm"
-        elseif os.host() == "macosx" and os.isdir("/Volumes/RAM") then
-            -- @note we need the user to execute the command to create it.
-            -- diskutil partitionDisk `hdiutil attach -nomount ram://8388608` GPT APFS "RAM" 0
-            ramdir_root = "/Volumes/RAM"
-        end
-        if ramdir_root == nil then
-            ramdir_root = false
-        end
+        ramdir_root = false
         os._ROOT_RAMDIR = ramdir_root
     end
     return ramdir_root or nil
