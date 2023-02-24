@@ -96,7 +96,7 @@ function _get_configs(package, configs, opt)
             end
         end
     else
-        local names = {"ndk", "ndk_sdkver", "vs", "vs_toolset", "mingw", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
+        local names = {"sdk", "ndk", "ndk_sdkver", "vs", "vs_toolset", "mingw", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
         for _, name in ipairs(names) do
             local value = get_config(name)
             if value ~= nil then
@@ -104,6 +104,7 @@ function _get_configs(package, configs, opt)
             end
         end
     end
+
     local policies = get_config("policies")
     if package:config("lto") and (not policies or not policies:find("build.optimization.lto", 1, true)) then
         if policies then
