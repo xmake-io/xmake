@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.7.7
+
 ### New features
 
 * Add Haiku support
@@ -1529,6 +1531,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.7.7
 
 ### 新特性
 
