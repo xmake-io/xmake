@@ -23,5 +23,6 @@ import(".api_checker")
 
 function main(opt)
     opt = opt or {}
-    api_checker.check_targets("vectorexts", table.join(opt, {values = {"none", "sse", "sse2", "sse3", "ssse3", "avx", "avx2", "neon"}}))
+    api_checker.check_targets("vectorexts", table.join(opt, {values = {
+        "none", "sse", "sse2", "sse3", "ssse3", "avx", "avx2", "fma", "neon"}}))
 end

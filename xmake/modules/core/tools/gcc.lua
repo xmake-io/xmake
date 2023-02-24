@@ -166,6 +166,7 @@ function nf_vectorext(self, extension)
     ,   ssse3 = "-mssse3"
     ,   avx   = "-mavx"
     ,   avx2  = "-mavx2"
+    ,   fma   = "-mfma"
     ,   neon  = "-mfpu=neon"
     }
     return maps[extension]
