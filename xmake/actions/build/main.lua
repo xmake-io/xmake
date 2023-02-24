@@ -167,11 +167,13 @@ function main()
     -- register exit callbacks
     os.atexit(_on_exit)
 
+    local build_time
     try
     {
         function ()
 
             -- do check
+            local time = os.mclock()
             check_targets(targetname, {build = true})
 
             -- do rules before building
@@ -179,6 +181,9 @@ function main()
 
             -- do build
             _do_build(targetname, group_pattern)
+
+            -- get build time
+            build_time = os.mclock() - time
 
             -- dump cache stats
             if option.get("diagnosis") then
@@ -220,5 +225,9 @@ function main()
     os.cd(oldir)
 
     -- trace
-    progress.show(100, "${color.success}build ok!")
+    local str = ""
+    if build_time then
+        str = string.format(", spent %ss", build_time / 1000)
+    end
+    progress.show(100, "${color.success}build ok%s", str)
 end
