@@ -41,13 +41,8 @@ jobs:
         run: |
           brew install gnu-tar
           gem install --no-document fpm
-          scripts/makepkg osxpkg
           scripts/archive-all
           scripts/makeself/build-runfile.sh
-      - uses: actions/upload-artifact@v2
-        with:
-          name: xmake-latest.macosx.pkg
-          path: artifacts/xmake.pkg
       - uses: actions/upload-artifact@v2
         with:
           name: xmake-latest.gz.run
