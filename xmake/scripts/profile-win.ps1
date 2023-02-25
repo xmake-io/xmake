@@ -7,13 +7,19 @@ Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock {
     }
     $oldenv = $env:XMAKE_SKIP_HISTORY
     $env:XMAKE_SKIP_HISTORY = 1
-    xmake lua "private.utils.complete" $cursorPosition "nospace-json" "$complete" | ConvertFrom-Json | Sort-Object -Property value | ForEach-Object {
+    $results = xmake lua "private.utils.complete" $cursorPosition "nospace-json" "$complete" | ConvertFrom-Json | Sort-Object -Property value
+    $results | ForEach-Object {
         $hasdesc = [bool] $_.psobject.Properties['description']
-        $desc = $hasdesc  ? " - $($_.description)" : ""
+        if ($hasdesc) {
+            $desc = " - $($_.description)"
+        } else {
+            $desc = ""
+        }
         [System.Management.Automation.CompletionResult]::new($_.value, "$($_.value)$desc", 'ParameterValue', $_.value)
     }
     $env:XMAKE_SKIP_HISTORY = $oldenv
 }
+
 # PowerShell parameter completion for xrepo
 Register-ArgumentCompleter -Native -CommandName xrepo -ScriptBlock {
     param($commandName, $wordToComplete, $cursorPosition)
@@ -23,9 +29,14 @@ Register-ArgumentCompleter -Native -CommandName xrepo -ScriptBlock {
     }
     $oldenv = $env:XMAKE_SKIP_HISTORY
     $env:XMAKE_SKIP_HISTORY = 1
-    xmake lua "private.xrepo.complete" $cursorPosition "nospace-json" "$complete" | ConvertFrom-Json | Sort-Object -Property value | ForEach-Object {
+    $results = xmake lua "private.xrepo.complete" $cursorPosition "nospace-json" "$complete" | ConvertFrom-Json | Sort-Object -Property value
+    $results | ForEach-Object {
         $hasdesc = [bool] $_.psobject.Properties['description']
-        $desc = $hasdesc  ? " - $($_.description)" : ""
+        if ($hasdesc) {
+            $desc = " - $($_.description)"
+        } else {
+            $desc = ""
+        }
         [System.Management.Automation.CompletionResult]::new($_.value, "$($_.value)$desc", 'ParameterValue', $_.value)
     }
     $env:XMAKE_SKIP_HISTORY = $oldenv
