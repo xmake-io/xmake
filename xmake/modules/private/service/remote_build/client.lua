@@ -568,6 +568,10 @@ function remote_build_client:_read_stdin(stream, opt)
                 if not ok then
                     break
                 end
+            else
+                -- we need to avoid always reading stdin
+                -- https://github.com/xmake-io/xmake/issues/3422
+                os.sleep(1)
             end
         else
             os.sleep(500)
