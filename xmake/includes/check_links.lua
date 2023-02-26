@@ -27,7 +27,7 @@
 --
 function check_links(definition, links, opt)
     opt = opt or {}
-    local optname = "__" .. (opt.name or definition)
+    local optname = opt.name or ("__" .. definition)
     save_scope()
     option(optname)
         set_showmenu(false)
@@ -48,7 +48,7 @@ end
 --
 function configvar_check_links(definition, links, opt)
     opt = opt or {}
-    local optname = "__" .. (opt.name or definition)
+    local optname = opt.name or ("__" .. definition)
     local defname, defval = table.unpack(definition:split('='))
     save_scope()
     option(optname)
