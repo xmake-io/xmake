@@ -28,7 +28,7 @@
 --
 function check_macros(definition, macros, opt)
     opt = opt or {}
-    local optname = "__" .. (opt.name or definition)
+    local optname = opt.name or ("__" .. definition)
     local snippets = {}
     save_scope()
     option(optname)
@@ -81,7 +81,7 @@ end
 --  configvar_check_macros("HAS_CXX20", "__cplusplus >= 202002L", {languages = "c++20"})
 function configvar_check_macros(definition, macros, opt)
     opt = opt or {}
-    local optname = "__" .. (opt.name or definition)
+    local optname = opt.name or ("__" .. definition)
     local defname, defval = table.unpack(definition:split('='))
     local snippets = {}
     save_scope()
