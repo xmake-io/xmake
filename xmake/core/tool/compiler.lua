@@ -153,9 +153,6 @@ function compiler.load(sourcekind, target)
     -- init flag kinds
     instance._FLAGKINDS = table.wrap(result:sourceflags()[sourcekind])
 
-    -- save this instance
-    compiler._INSTANCES[cachekey] = instance
-
     -- add toolchains flags to the compiler tool, e.g. gcc.cxflags or cxflags
     local toolname = compiler_tool:name()
     if target and target.toolconfig then
@@ -174,6 +171,10 @@ function compiler.load(sourcekind, target)
     if not ok then
         return nil, errors
     end
+
+    -- @note we have to save it after the load to avoid
+    -- other concurrent processes going ahead and getting an incomplete instance of the tool.
+    compiler._INSTANCES[cachekey] = instance
     return instance
 end
 

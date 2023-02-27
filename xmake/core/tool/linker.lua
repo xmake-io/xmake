@@ -177,9 +177,6 @@ function linker.load(targetkind, sourcekinds, target)
     -- init flag kinds
     instance._FLAGKINDS = {linkerinfo.linkerflag}
 
-    -- save this instance
-    builder._INSTANCES[cachekey] = instance
-
     -- add toolchains flags to the linker tool
     -- add special lanugage flags first, e.g. go.gcldflags or gcc.ldflags or gcldflags or ldflags
     local toolkind = linkertool:kind()
@@ -202,6 +199,10 @@ function linker.load(targetkind, sourcekinds, target)
     if not ok then
         return nil, errors
     end
+
+    -- @note we have to save it after the load to avoid
+    -- other concurrent processes going ahead and getting an incomplete instance of the tool.
+    builder._INSTANCES[cachekey] = instance
     return instance
 end
 
