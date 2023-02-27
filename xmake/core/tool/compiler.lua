@@ -153,9 +153,6 @@ function compiler.load(sourcekind, target)
     -- init flag kinds
     instance._FLAGKINDS = table.wrap(result:sourceflags()[sourcekind])
 
-    -- save this instance
-    compiler._INSTANCES[cachekey] = instance
-
     -- add toolchains flags to the compiler tool, e.g. gcc.cxflags or cxflags
     local toolname = compiler_tool:name()
     if target and target.toolconfig then
@@ -167,6 +164,17 @@ function compiler.load(sourcekind, target)
             compiler_tool:add(flagkind, platform.toolconfig(toolname .. '.' .. flagkind) or platform.toolconfig(flagkind))
         end
     end
+
+    -- we need to load it at the end because in tool.load().
+    -- because we may need to call has_flags, which requires the full platform toolchain flags
+    local ok, errors = compiler_tool:_load()
+    if not ok then
+        return nil, errors
+    end
+
+    -- @note we have to save it after the load to avoid
+    -- other concurrent processes going ahead and getting an incomplete instance of the tool.
+    compiler._INSTANCES[cachekey] = instance
     return instance
 end
 
