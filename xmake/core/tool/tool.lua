@@ -67,9 +67,21 @@ function _instance.new(kind, name, program, plat, arch, toolchain_inst)
             return nil, errors
         end
     end
-
-    -- ok
     return instance
+end
+
+-- load tool
+function _instance:_load()
+    if not self._LOADED then
+        if self.load then
+            local ok, errors = sandbox.load(self.load, self)
+            if not ok then
+                return false, errors
+            end
+        end
+        self._LOADED = true
+    end
+    return true
 end
 
 -- get the tool name

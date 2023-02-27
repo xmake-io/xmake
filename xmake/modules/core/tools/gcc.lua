@@ -32,7 +32,6 @@ import("utils.progress")
 import("private.cache.build_cache")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 
--- init it
 function init(self)
 
     -- init mxflags
@@ -43,16 +42,6 @@ function init(self)
 
     -- init shflags
     self:set("shflags", "-shared")
-
-    -- add -fPIC for shared
-    --
-    -- we need check it for clang/gcc with window target
-    -- @see https://github.com/xmake-io/xmake/issues/1392
-    --
-    if not self:is_plat("windows", "mingw") and self:has_flags("-fPIC", "cxflags") then
-        self:add("shflags", "-fPIC")
-        self:add("shared.cxflags", "-fPIC")
-    end
 
     -- init flags map
     self:set("mapflags", {
@@ -73,6 +62,21 @@ function init(self)
         self:add("mapflags", {
             ["-s"] = "-Wl,-x"
         })
+    end
+end
+
+-- we can only call has_flags in load(),
+-- as it requires the full platform toolchain flags.
+--
+function load(self)
+    -- add -fPIC for shared
+    --
+    -- we need check it for clang/gcc with window target
+    -- @see https://github.com/xmake-io/xmake/issues/1392
+    --
+    if not self:is_plat("windows", "mingw") and self:has_flags("-fPIC", "cxflags") then
+        self:add("shflags", "-fPIC")
+        self:add("shared.cxflags", "-fPIC")
     end
 end
 

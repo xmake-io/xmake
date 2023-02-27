@@ -167,6 +167,13 @@ function compiler.load(sourcekind, target)
             compiler_tool:add(flagkind, platform.toolconfig(toolname .. '.' .. flagkind) or platform.toolconfig(flagkind))
         end
     end
+
+    -- we need to load it at the end because in tool.load().
+    -- because we may need to call has_flags, which requires the full platform toolchain flags
+    local ok, errors = compiler_tool:_load()
+    if not ok then
+        return nil, errors
+    end
     return instance
 end
 
