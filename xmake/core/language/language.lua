@@ -239,7 +239,7 @@ function language.load(name)
     -- load all languages
     if not name then
         if not language._LANGUAGES then
-            for _, name in ipairs(table.wrap(os.match(path.join(language._directory(), "*"), true))) do
+            for _, name in ipairs(table.wrap(os.dirs(path.join(language._directory(), "*")))) do
                 local instance, errors = language.load(path.basename(name))
                 if not instance then
                     return nil, errors

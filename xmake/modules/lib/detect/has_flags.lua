@@ -43,6 +43,8 @@ import("lib.detect.find_tool")
 function main(name, flags, opt)
 
     -- wrap flags first
+    flags = table.clone(flags)
+    table.wrap_unlock(flags)
     flags = table.wrap(flags)
 
     -- init options
