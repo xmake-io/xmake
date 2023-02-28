@@ -331,7 +331,13 @@ function main(target, opt)
         -- we need fix it, because gcc maybe does not work on latest mingw when `-isystem D:\a\_temp\msys64\mingw64\include` is passed.
         -- and qt.includedir will be this path value when Qt sdk directory just is `D:\a\_temp\msys64\mingw64`
         -- @see https://github.com/msys2/MINGW-packages/issues/10761#issuecomment-1044302523
-        if qt.includedir and os.isdir(qt.includedir) then
+        if is_subhost("msys") then
+            local mingw_prefix = os.getenv("MINGW_PREFIX")
+            local mingw_includedir = path.normalize(path.join(mingw_prefix or "/", "include"))
+            if qt.includedir and qt.includedir and path.normalize(qt.includedir) ~= mingw_includedir then
+                _add_includedirs(target, qt.includedir)
+            end
+        else
             _add_includedirs(target, qt.includedir)
         end
         _add_includedirs(target, path.join(qt.mkspecsdir, "win32-g++"))
