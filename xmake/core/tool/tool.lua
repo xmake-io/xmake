@@ -200,7 +200,7 @@ function _instance:_sysflags(toolkind, flagkind)
         end
     end
     if sourceflags then
-        for _, flagname in ipairs(sourceflags) do
+        for _, flagname in ipairs(table.wrap(sourceflags)) do
             local flags = self:get(flagname)
             if flags then
                 table.join2(sysflags, flags)
