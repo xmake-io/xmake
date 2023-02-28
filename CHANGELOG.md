@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* [#3433](https://github.com/xmake-io/xmake/issues/3433): Improve to build Qt project on msys2/mingw64
+
 ## v2.7.7
 
 ### New features
@@ -1531,6 +1535,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#3433](https://github.com/xmake-io/xmake/issues/3433): 改进 QT 在 msys2/mingw64 上的构建支持
 
 ## v2.7.7
 
