@@ -79,6 +79,14 @@ function _find_sdkdir(sdkdir, sdkver)
     end
     if is_host("windows") then
 
+        -- we find it from /mingw64 first
+        if is_subhost("msys") then
+            local mingw_prefix = os.getenv("MINGW_PREFIX")
+            if mingw_prefix and os.isdir(mingw_prefix) then
+                table.insert(paths, mingw_prefix)
+            end
+        end
+
         -- add paths from registry
         local regs =
         {
