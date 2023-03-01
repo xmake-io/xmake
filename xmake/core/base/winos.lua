@@ -122,20 +122,22 @@ function winos.version()
             winver = verstr:match("%[.-([%d%.]+)]")
             if winver then
                 winver = winver:trim()
-            end
-            local sem_winver = nil
-            local seg = 0
-            for num in winver:gmatch("%d+") do
-                if seg == 0 then
-                    sem_winver = num
-                elseif seg == 3 then
-                    sem_winver = sem_winver .. "+" .. num
-                else
-                    sem_winver = sem_winver .. "." .. num
+                local sem_winver
+                local seg = 0
+                for num in winver:gmatch("%d+") do
+                    if seg == 0 then
+                        sem_winver = num
+                    elseif seg == 3 then
+                        sem_winver = sem_winver .. "+" .. num
+                    else
+                        sem_winver = sem_winver .. "." .. num
+                    end
+                    seg = seg + 1
                 end
-                seg = seg + 1
+                if sem_winver then
+                    winver = semver.new(sem_winver)
+                end
             end
-            winver = semver.new(sem_winver)
         end
         if not winver then
             winver = semver.new("0.0")
