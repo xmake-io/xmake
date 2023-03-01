@@ -135,8 +135,12 @@ function _target_values(complete, opt)
     return import("private.utils.complete_helper.targets")(complete, opt)
 end
 
+-- the toolchains is too much, so we just show all for menuconf and auto-complete mode.
+-- @see https://github.com/xmake-io/xmake/issues/3436
+--
 function _toolchain_values(complete, opt)
-    if complete then
+    opt = opt or {}
+    if complete or opt.menuconf then
         import("core.tool.toolchain")
         return toolchain.list()
     end
