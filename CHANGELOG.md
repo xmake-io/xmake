@@ -6,6 +6,10 @@
 
 * [#3433](https://github.com/xmake-io/xmake/issues/3433): Improve to build Qt project on msys2/mingw64
 
+### Bugs fixed
+
+* [#3436](https://github.com/xmake-io/xmake/issues/3436): Fix complete and menuconf
+
 ## v2.7.7
 
 ### New features
@@ -1539,6 +1543,10 @@
 ### 改进
 
 * [#3433](https://github.com/xmake-io/xmake/issues/3433): 改进 QT 在 msys2/mingw64 上的构建支持
+
+### Bugs 修复
+
+* [#3436](https://github.com/xmake-io/xmake/issues/3436): 修复自动补全和 menuconf
 
 ## v2.7.7
 
