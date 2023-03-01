@@ -136,7 +136,7 @@ function completer:_complete_option_kv_v(options, current, completing, name, val
             table.insert(found_candidates, { value = format("--%s=%s", name, v), is_complete = true })
         end
     end
-    completer:_print_candidates(found_candidates)
+    self:_print_candidates(found_candidates)
 
     -- whether any candidates has been found, finish complete since we don't have more info
     return true
