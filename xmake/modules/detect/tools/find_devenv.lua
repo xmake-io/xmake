@@ -49,7 +49,7 @@ function main(opt)
     -- e.g. C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE
     --
     local program = nil
-    local msvc = toolchain.load("msvc")
+    local msvc = toolchain.load("msvc", {plat = os.host(), arch = os.arch()})
     if msvc then
         local vcvars = msvc:config("vcvars")
         if vcvars then
