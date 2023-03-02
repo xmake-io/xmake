@@ -167,7 +167,6 @@ function _load_require(require_str, requires_extra, parentinfo)
     "verify", "external", "private", "build", "configs", "version")
     for name, value in pairs(require_extra) do
         if not extra_options:has(name) then
-            print("not found")
             wprint("add_requires(\"%s\") has unknown option: {%s=%s}!", require_str, name, tostring(value))
         end
     end
@@ -212,9 +211,10 @@ end
 
 -- load package package from repositories
 function _load_package_from_repository(packagename, opt)
+    opt = opt or {}
     local packagedir, repo = repository.packagedir(packagename, opt)
     if packagedir then
-        return core_package.load_from_repository(packagename, repo, packagedir)
+        return core_package.load_from_repository(packagename, repo, packagedir, {plat = opt.plat, arch = opt.arch})
     end
 end
 
@@ -750,7 +750,10 @@ function _load_package(packagename, requireinfo, opt)
     local from_repo = false
     if not package then
         package = _load_package_from_repository(packagename, {
-            name = requireinfo.reponame, locked_repo = locked_requireinfo and locked_requireinfo.repo})
+            plat = requireinfo.plat,
+            arch = requireinfo.arch,
+            name = requireinfo.reponame,
+            locked_repo = locked_requireinfo and locked_requireinfo.repo})
         if package then
             from_repo = true
         end
