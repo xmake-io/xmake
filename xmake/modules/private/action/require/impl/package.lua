@@ -212,9 +212,10 @@ end
 
 -- load package package from repositories
 function _load_package_from_repository(packagename, opt)
+    opt = opt or {}
     local packagedir, repo = repository.packagedir(packagename, opt)
     if packagedir then
-        return core_package.load_from_repository(packagename, repo, packagedir)
+        return core_package.load_from_repository(packagename, repo, packagedir, {plat = opt.plat, arch = opt.arch})
     end
 end
 
@@ -750,7 +751,10 @@ function _load_package(packagename, requireinfo, opt)
     local from_repo = false
     if not package then
         package = _load_package_from_repository(packagename, {
-            name = requireinfo.reponame, locked_repo = locked_requireinfo and locked_requireinfo.repo})
+            plat = requireinfo.plat,
+            arch = requireinfo.arch,
+            name = requireinfo.reponame,
+            locked_repo = locked_requireinfo and locked_requireinfo.repo})
         if package then
             from_repo = true
         end

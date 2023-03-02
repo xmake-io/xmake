@@ -2445,9 +2445,10 @@ function package.load_from_project(packagename, project)
 end
 
 -- load the package from the package directory or package description file
-function package.load_from_repository(packagename, repo, packagedir, packagefile)
+function package.load_from_repository(packagename, repo, packagedir, opt)
 
     -- get it directly from cache first
+    opt = opt or {}
     local instance = package._memcache():get2("packages", packagename)
     if instance then
         return instance
@@ -2459,8 +2460,8 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
     end
 
     -- find the package script path
-    local scriptpath = packagefile
-    if not packagefile and packagedir then
+    local scriptpath = opt.packagefile
+    if not opt.packagefile and packagedir then
         scriptpath = path.join(packagedir, "xmake.lua")
     end
     if not scriptpath or not os.isfile(scriptpath) then
@@ -2469,6 +2470,20 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
 
     -- get interpreter
     local interp = package._interpreter()
+
+    -- we need modify plat/arch in description scope at same time
+    -- if plat/arch are passed to add_requires.
+    --
+    -- @see https://github.com/orgs/xmake-io/discussions/3439
+    --
+    -- e.g. add_requires("zlib~mingw", {plat = "mingw", arch = "x86_64"})
+    --
+    if opt.plat then
+        package._memcache():set("target_plat", opt.plat)
+    end
+    if opt.arch then
+        package._memcache():set("target_arch", opt.arch)
+    end
 
     -- load script
     local ok, errors = interp:load(scriptpath)
@@ -2490,6 +2505,14 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
 
     -- new an instance
     instance = _instance.new(packagename, packageinfo, {scriptdir = path.directory(scriptpath), repo = repo})
+
+    -- reset plat/arch
+    if opt.plat then
+        package._memcache():set("target_plat", nil)
+    end
+    if opt.arch then
+        package._memcache():set("target_arch", nil)
+    end
 
     -- save instance to the cache
     package._memcache():set2("packages", instance)
