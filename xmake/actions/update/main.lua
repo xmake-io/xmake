@@ -291,13 +291,13 @@ end
 -- initialize shells
 function _initialize_shell()
 
-    local target, command, profile
+    local target, command
     if is_host("windows") then
         local psshell = find_tool("pwsh") or find_tool("powershell")
         local outdata, errdata = try {function () return os.iorunv(psshell.program, {"-c", "Write-Output $PROFILE.CurrentUserAllHosts"}) end}
         if outdata then
             target = outdata:trim()
-            profile = path.join(os.programdir(), "scripts", "profile-win.ps1")
+            local profile = path.join(os.programdir(), "scripts", "profile-win.ps1")
             command = format("if (Test-Path -Path \"%s\" -PathType Leaf) {\n    . \"%s\"\n}", profile, profile)
         else
             raise("failed to get profile location from powershell!")
@@ -309,9 +309,13 @@ function _initialize_shell()
         elseif shell:endswith("zsh") then target = "~/.zshrc"
         elseif shell:endswith("ksh") then target = "~/.kshrc"
         end
-        profile = path.join(os.programdir(), "scripts", "profile-unix.sh")
-        command = format("export XMAKE_ROOTDIR=\"%s\"\nexport PATH=\"$XMAKE_ROOTDIR:$PATH\"\n", path.directory(os.programfile()))
-        command = command .. format("[[ -s \"%s\" ]] && source \"%s\"", profile, profile)
+        command = "[[ -s \"$HOME/.xmake/profile\" ]] && source \"$HOME/.xmake/profile\""
+
+        -- write home profile
+        local profile = path.join(os.programdir(), "scripts", "profile-unix.sh")
+        local bridge_command = format("export XMAKE_ROOTDIR=\"%s\"\nexport PATH=\"$XMAKE_ROOTDIR:$PATH\"\n", path.directory(os.programfile()))
+        bridge_command = bridge_command .. format("[[ -s \"%s\" ]] && source \"%s\"\n", profile, profile)
+        io.writefile("~/.xmake/profile", bridge_command)
     end
 
     -- trace
@@ -328,7 +332,7 @@ function _initialize_shell()
                     file = file .. "\n"
                 end
             end
-            file = file .. "# >>> xmake >>>\n" .. command .. "\n# <<< xmake <<<"
+            file = file .. "# >>> xmake >>>\n" .. command .. "\n# <<< xmake <<<\n"
             io.writefile(target, file)
             return true
         end,
@@ -516,3 +520,4 @@ function main()
         _install(sourcedir)
     end
 end
+
