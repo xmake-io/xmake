@@ -240,8 +240,58 @@ fi
 #-----------------------------------------------------------------------------
 # install profile
 #
-export XMAKE_ROOTDIR="$prefix/bin"
-export PATH="$XMAKE_ROOTDIR:$PATH"
-xmake --version
-xmake update --integrate
+install_profile_new() {
+    export XMAKE_ROOTDIR="$prefix/bin"
+    export PATH="$XMAKE_ROOTDIR:$PATH"
+    xmake --version
+    xmake update --integrate
+}
+
+write_profile() {
+    grep -sq ".xmake/profile" $1 || echo -e "\n# >>> xmake >>>\n[[ -s \"\$HOME/.xmake/profile\" ]] && source \"\$HOME/.xmake/profile\" # load xmake profile\n# <<< xmake <<<" >> $1
+}
+install_profile_old() {
+    if [ ! -d ~/.xmake ]; then mkdir ~/.xmake; fi
+    echo "export XMAKE_ROOTDIR=\"$prefix/bin\"" > ~/.xmake/profile
+    echo 'export PATH="$XMAKE_ROOTDIR:$PATH"' >> ~/.xmake/profile
+    if [ -f "$projectdir/scripts/register-completions.sh" ]; then
+        cat "$projectdir/scripts/register-completions.sh" >> ~/.xmake/profile
+    else
+        remote_get_content "$gitrepo_raw/scripts/register-completions.sh" >> ~/.xmake/profile
+    fi
+
+    if [ -f "$projectdir/scripts/register-virtualenvs.sh" ]; then
+        cat "$projectdir/scripts/register-virtualenvs.sh" >> ~/.xmake/profile
+    else
+        remote_get_content "$gitrepo_raw/scripts/register-virtualenvs.sh" >> ~/.xmake/profile
+    fi
+
+    if   [[ "$SHELL" = */zsh ]]; then
+        write_profile ~/.zshrc
+    elif [[ "$SHELL" = */ksh ]]; then
+        write_profile ~/.kshrc
+    elif [[ "$SHELL" = */bash ]]; then
+        write_profile ~/.bashrc
+        if [ "$(uname)" == "Darwin" ]; then
+            write_profile ~/.bash_profile
+        fi
+    else write_profile ~/.profile
+    fi
+
+    if xmake --version >/dev/null 2>&1; then xmake --version; else
+        source ~/.xmake/profile
+        xmake --version
+        echo "Reload shell profile by running the following command now!"
+        echo -e "\x1b[1msource ~/.xmake/profile\x1b[0m"
+    fi
+}
+if test_eq "$branch" "__local__"; then
+    install_profile_new
+elif test_eq "$branch" "dev"; then
+    install_profile_new
+elif test_eq "$branch" "master"; then
+    install_profile_new
+else
+    install_profile_old
+fi
 
