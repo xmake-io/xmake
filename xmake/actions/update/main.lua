@@ -352,6 +352,10 @@ test -f "%s" && source "%s"
     -- trace
     if ok then
         cprint("${color.success}${text.success}")
+        if not is_host("windows") then
+            print("Reload shell profile by running the following command now!")
+            cprint("${bright}source ~/.xmake/profile${clear}")
+        end
     else
         cprint("${color.failure}${text.failure}")
     end

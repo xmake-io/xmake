@@ -246,7 +246,5 @@ xmake update --integrate
 if xmake --version >/dev/null 2>&1; then xmake --version; else
     source ~/.xmake/profile
     xmake --version
-    echo "Reload shell profile by running the following command now!"
-    echo -e "\x1b[1msource ~/.xmake/profile\x1b[0m"
 fi
 
