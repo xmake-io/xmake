@@ -31,7 +31,7 @@ import("lib.detect.find_file")
 --
 -- e.g.
 -- sdl2 -> libsdl2
--- obj-rs -> libobj
+-- future-util -> libfuture_util
 function _get_libname(name)
     return "lib" .. name:gsub("-", "_")
 end
