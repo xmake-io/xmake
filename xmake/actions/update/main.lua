@@ -291,7 +291,7 @@ end
 -- initialize shells
 function _initialize_shell()
 
-    local target, command
+    local target, command, profile_home
     if is_host("windows") then
         local psshell = find_tool("pwsh") or find_tool("powershell")
         local outdata, errdata = try {function () return os.iorunv(psshell.program, {"-c", "Write-Output $PROFILE.CurrentUserAllHosts"}) end}
@@ -310,7 +310,7 @@ function _initialize_shell()
         elseif shell:endswith("ksh") then target = "~/.kshrc"
         elseif shell:endswith("fish") then target = "~/.config/fish/config.fish"
         end
-        local profile_home = path.absolute("~/.xmake/profile")
+        profile_home = path.absolute("~/.xmake/profile")
         command = ("test -f \"%s\" && source \"%s\""):format(profile_home, profile_home)
 
         -- write home profile
@@ -353,9 +353,9 @@ test -f "%s" && source "%s"
     -- trace
     if ok then
         cprint("${color.success}${text.success}")
-        if not is_host("windows") then
+        if not is_host("windows") and profile_home then
             print("Reload shell profile by running the following command now!")
-            cprint("${bright}source ~/.xmake/profile${clear}")
+            cprint("${bright}source %s${clear}", profile_home)
         end
     else
         cprint("${color.failure}${text.failure}")
