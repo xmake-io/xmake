@@ -100,13 +100,13 @@ xmake 官方也推出了一些入门课程，带你一步步快速上手 xmake�
 #### 使用curl
 
 ```bash
-bash <(curl -fsSL https://xmake.io/shget.text)
+curl -fsSL https://xmake.io/shget.text | bash
 ```
 
 #### 使用wget
 
 ```bash
-bash <(wget https://xmake.io/shget.text -O -)
+wget https://xmake.io/shget.text -O - | bash
 ```
 
 #### 使用powershell

@@ -92,13 +92,13 @@ If you want to know more, please refer to: [Documents](https://xmake.io/#/gettin
 #### via curl
 
 ```bash
-bash <(curl -fsSL https://xmake.io/shget.text)
+curl -fsSL https://xmake.io/shget.text | bash
 ```
 
 #### via wget
 
 ```bash
-bash <(wget https://xmake.io/shget.text -O -)
+wget https://xmake.io/shget.text -O - | bash
 ```
 
 #### via powershell
