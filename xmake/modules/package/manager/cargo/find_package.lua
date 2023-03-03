@@ -33,7 +33,7 @@ import("lib.detect.find_file")
 -- sdl2 -> libsdl2
 -- obj-rs -> libobj
 function _get_libname(name)
-    return "lib" .. name:split("%-")[1]
+    return "lib" .. name:gsub("-", "_")
 end
 
 -- get the name set of libraries
