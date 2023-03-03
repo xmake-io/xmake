@@ -39,6 +39,7 @@ os._mkdir    = os._mkdir or os.mkdir
 os._rmdir    = os._rmdir or os.rmdir
 os._touch    = os._touch or os.touch
 os._tmpdir   = os._tmpdir or os.tmpdir
+os._fscase   = os._fscase or os.fscase
 os._setenv   = os._setenv or os.setenv
 os._getenvs  = os._getenvs or os.getenvs
 os._cpuinfo  = os._cpuinfo or os.cpuinfo
@@ -1068,8 +1069,24 @@ function os.isroot()
 end
 
 -- is case-insensitive filesystem?
-function os.fscase()
-    if os._FSCASE == nil then
+function os.fscase(filepath)
+    if os._FSCASE == nil or filepath then
+        if os._fscase then
+            if filepath then
+                assert(os.exists(filepath), filepath .. " not found in os.fscase()")
+            else
+                local tmpdir = os.tmpdir()
+                if not os.isdir(tmpdir) then
+                    os.mkdir(tmpdir)
+                end
+                filepath = tmpdir
+            end
+            local fscase = os._fscase(filepath)
+            if fscase ~= -1 then
+                os._FSCASE = (fscase == 1)
+                return os._FSCASE
+            end
+        end
         if os.host() == "windows" then
             os._FSCASE = false
         else
@@ -1379,3 +1396,4 @@ end
 
 -- return module
 return os
+
