@@ -313,8 +313,13 @@ function _initialize_shell()
 
         -- write home profile
         local profile = "$XMAKE_PROGRAM_DIR/scripts/profile-unix.sh"
-        local bridge_command = format("export XMAKE_ROOTDIR=\"%s\"\nexport XMAKE_PROGRAM_DIR=\"%s\"\nexport PATH=\"$XMAKE_ROOTDIR:$PATH\"\n", path.directory(os.programfile()), os.programdir())
-        bridge_command = bridge_command .. format("test -f \"%s\" && source \"%s\"\n", profile, profile)
+        local profile_fish = "$XMAKE_PROGRAM_DIR/scripts/profile-unix.fish"
+        local bridge_command = format([[export XMAKE_ROOTDIR="%s"
+export XMAKE_PROGRAM_DIR="%s"
+export PATH="$XMAKE_ROOTDIR:$PATH"
+test $FISH_VERSION && test -f "%s" && source "%s" && exit 0
+test -f "%s" && source "%s"
+]], path.directory(os.programfile()), os.programdir(), profile_fish, profile_fish, profile, profile)
         io.writefile("~/.xmake/profile", bridge_command)
     end
 

@@ -15,16 +15,9 @@
 # Copyright (C) 2022-present, TBOOX Open Source Group.
 #
 # @author      ruki
-# @homepage    profile-unix.sh
+# @homepage    profile-unix.fish
 #
 
 # register completions
-if   [[ "$SHELL" = */zsh ]]; then
-  . "$XMAKE_PROGRAM_DIR/scripts/completions/register-completions.zsh"
-elif [[ "$SHELL" = */bash ]]; then
-  . "$XMAKE_PROGRAM_DIR/scripts/completions/register-completions.bash"
-fi
-
-# register virtualenvs
-. "$XMAKE_PROGRAM_DIR/scripts/virtualenvs/register-virtualenvs.sh"
+. "$XMAKE_PROGRAM_DIR/scripts/completions/register-completions.fish"
 
