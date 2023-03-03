@@ -166,20 +166,23 @@ function tty.shell()
                 end
             end
         else
-            shell = os.getenv("SHELL")
-            if shell then
-                for _, shellname in ipairs({"zsh", "bash", "sh"}) do
-                    if shell:find(shellname) then
-                        shell = shellname
-                        break
+            if not shell and os.getenv("FISH_VERSION") then
+                shell = "fish"
+            end
+            if not shell then
+                shell = os.getenv("SHELL")
+                if shell then
+                    for _, shellname in ipairs({"zsh", "bash", "sh"}) do
+                        if shell:find(shellname) then
+                            shell = shellname
+                            break
+                        end
                     end
                 end
             end
             if not shell then
                 if os.getenv("BASH_VERSION") then
                     shell = "bash"
-                elseif os.getenv("FISH_VERSION") then
-                    shell = "fish"
                 end
             end
         end
