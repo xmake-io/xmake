@@ -291,13 +291,13 @@ end
 -- initialize shells
 function _initialize_shell()
 
-    local target, command, profile
+    local target, command
     if is_host("windows") then
         local psshell = find_tool("pwsh") or find_tool("powershell")
         local outdata, errdata = try {function () return os.iorunv(psshell.program, {"-c", "Write-Output $PROFILE.CurrentUserAllHosts"}) end}
         if outdata then
             target = outdata:trim()
-            profile = path.join(os.programdir(), "scripts", "profile-win.ps1")
+            local profile = path.join(os.programdir(), "scripts", "profile-win.ps1")
             command = format("if (Test-Path -Path \"%s\" -PathType Leaf) {\n    . \"%s\"\n}", profile, profile)
         else
             raise("failed to get profile location from powershell!")
@@ -308,10 +308,21 @@ function _initialize_shell()
         if shell:endswith("bash") then target = (is_host("macosx") and "~/.bash_profile" or "~/.bashrc")
         elseif shell:endswith("zsh") then target = "~/.zshrc"
         elseif shell:endswith("ksh") then target = "~/.kshrc"
+        elseif shell:endswith("fish") then target = "~/.config/fish/config.fish"
         end
-        profile = path.join(os.programdir(), "scripts", "profile-unix.sh")
-        command = format("export XMAKE_ROOTDIR=\"%s\"\nexport PATH=\"$XMAKE_ROOTDIR:$PATH\"\n", path.directory(os.programfile()))
-        command = command .. format("[[ -s \"%s\" ]] && source \"%s\"", profile, profile)
+        local profile_home = path.absolute("~/.xmake/profile")
+        command = ("test -f \"%s\" && source \"%s\""):format(profile_home, profile_home)
+
+        -- write home profile
+        local profile = "$XMAKE_PROGRAM_DIR/scripts/profile-unix.sh"
+        local profile_fish = "$XMAKE_PROGRAM_DIR/scripts/profile-unix.fish"
+        local bridge_command = format([[export XMAKE_ROOTDIR="%s"
+export XMAKE_PROGRAM_DIR="%s"
+export PATH="$XMAKE_ROOTDIR:$PATH"
+test $FISH_VERSION && test -f "%s" && source "%s" && exit 0
+test -f "%s" && source "%s"
+]], path.directory(os.programfile()), os.programdir(), profile_fish, profile_fish, profile, profile)
+        io.writefile(profile_home, bridge_command)
     end
 
     -- trace
@@ -328,7 +339,7 @@ function _initialize_shell()
                     file = file .. "\n"
                 end
             end
-            file = file .. "# >>> xmake >>>\n" .. command .. "\n# <<< xmake <<<"
+            file = file .. "# >>> xmake >>>\n" .. command .. "\n# <<< xmake <<<\n"
             io.writefile(target, file)
             return true
         end,
@@ -342,6 +353,10 @@ function _initialize_shell()
     -- trace
     if ok then
         cprint("${color.success}${text.success}")
+        if not is_host("windows") then
+            print("Reload shell profile by running the following command now!")
+            cprint("${bright}source ~/.xmake/profile${clear}")
+        end
     else
         cprint("${color.failure}${text.failure}")
     end
@@ -516,3 +531,4 @@ function main()
         _install(sourcedir)
     end
 end
+

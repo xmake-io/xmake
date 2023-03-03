@@ -15,16 +15,22 @@
 # Copyright (C) 2022-present, TBOOX Open Source Group.
 #
 # @author      ruki
-# @homepage    profile-unix.sh
+# @homepage    register-completions.zsh
 #
 
-# register completions
-if   [[ "$SHELL" = */zsh ]]; then
-  . "$XMAKE_PROGRAM_DIR/scripts/completions/register-completions.zsh"
-elif [[ "$SHELL" = */bash ]]; then
-  . "$XMAKE_PROGRAM_DIR/scripts/completions/register-completions.bash"
-fi
+# zsh parameter completion for xmake
+_xmake_zsh_complete()
+{
+  local completions=("$(XMAKE_SKIP_HISTORY=1 XMAKE_ROOT=y xmake lua private.utils.complete 0 nospace "$words")")
+  reply=( "${(ps:\n:)completions}" )
+}
+compctl -f -S "" -K _xmake_zsh_complete xmake
 
-# register virtualenvs
-. "$XMAKE_PROGRAM_DIR/scripts/virtualenvs/register-virtualenvs.sh"
+# zsh parameter completion for xrepo
+_xrepo_zsh_complete()
+{
+  local completions=("$(XMAKE_SKIP_HISTORY=1 XMAKE_ROOT=y xmake lua private.xrepo.complete 0 nospace "$words")")
+  reply=( "${(ps:\n:)completions}" )
+}
+compctl -f -S "" -K _xrepo_zsh_complete xrepo
 

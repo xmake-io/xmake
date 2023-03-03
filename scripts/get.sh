@@ -240,12 +240,17 @@ fi
 #-----------------------------------------------------------------------------
 # install profile
 #
+install_profile_new() {
+    export XMAKE_ROOTDIR="$prefix/bin"
+    export PATH="$XMAKE_ROOTDIR:$PATH"
+    xmake --version
+    xmake update --integrate
+}
 
 write_profile() {
     grep -sq ".xmake/profile" $1 || echo -e "\n# >>> xmake >>>\n[[ -s \"\$HOME/.xmake/profile\" ]] && source \"\$HOME/.xmake/profile\" # load xmake profile\n# <<< xmake <<<" >> $1
 }
-
-install_profile() {
+install_profile_old() {
     if [ ! -d ~/.xmake ]; then mkdir ~/.xmake; fi
     echo "export XMAKE_ROOTDIR=\"$prefix/bin\"" > ~/.xmake/profile
     echo 'export PATH="$XMAKE_ROOTDIR:$PATH"' >> ~/.xmake/profile
@@ -272,12 +277,21 @@ install_profile() {
         fi
     else write_profile ~/.profile
     fi
+
+    if xmake --version >/dev/null 2>&1; then xmake --version; else
+        source ~/.xmake/profile
+        xmake --version
+        echo "Reload shell profile by running the following command now!"
+        echo -e "\x1b[1msource ~/.xmake/profile\x1b[0m"
+    fi
 }
-install_profile
-if xmake --version >/dev/null 2>&1; then xmake --version; else
-    source ~/.xmake/profile
-    xmake --version
-    echo "Reload shell profile by running the following command now!"
-    echo -e "\x1b[1msource ~/.xmake/profile\x1b[0m"
+if test_eq "$branch" "__local__"; then
+    install_profile_new
+elif test_eq "$branch" "dev"; then
+    install_profile_new
+elif test_eq "$branch" "master"; then
+    install_profile_new
+else
+    install_profile_old
 fi
 
