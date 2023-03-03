@@ -308,6 +308,7 @@ function _initialize_shell()
         if shell:endswith("bash") then target = (is_host("macosx") and "~/.bash_profile" or "~/.bashrc")
         elseif shell:endswith("zsh") then target = "~/.zshrc"
         elseif shell:endswith("ksh") then target = "~/.kshrc"
+        elseif shell:endswith("fish") then target = "~/.config/fish/config.fish"
         end
         command = "test -f \"$HOME/.xmake/profile\" && source \"$HOME/.xmake/profile\""
 

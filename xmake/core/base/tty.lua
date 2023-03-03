@@ -175,6 +175,13 @@ function tty.shell()
                     end
                 end
             end
+            if not shell then
+                if os.getenv("BASH_VERSION") then
+                    shell = "bash"
+                elseif os.getenv("FISH_VERSION") then
+                    shell = "fish"
+                end
+            end
         end
         tty._SHELL = shell or "sh"
     end
