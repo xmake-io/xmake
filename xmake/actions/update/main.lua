@@ -309,12 +309,12 @@ function _initialize_shell()
         elseif shell:endswith("zsh") then target = "~/.zshrc"
         elseif shell:endswith("ksh") then target = "~/.kshrc"
         end
-        command = "[[ -s \"$HOME/.xmake/profile\" ]] && source \"$HOME/.xmake/profile\""
+        command = "test -f \"$HOME/.xmake/profile\" && source \"$HOME/.xmake/profile\""
 
         -- write home profile
         local profile = "$XMAKE_PROGRAM_DIR/scripts/profile-unix.sh"
         local bridge_command = format("export XMAKE_ROOTDIR=\"%s\"\nexport XMAKE_PROGRAM_DIR=\"%s\"\nexport PATH=\"$XMAKE_ROOTDIR:$PATH\"\n", path.directory(os.programfile()), os.programdir())
-        bridge_command = bridge_command .. format("[[ -s \"%s\" ]] && source \"%s\"\n", profile, profile)
+        bridge_command = bridge_command .. format("test -f \"%s\" && source \"%s\"\n", profile, profile)
         io.writefile("~/.xmake/profile", bridge_command)
     end
 
