@@ -134,6 +134,7 @@ param (
     }
 
     function registerTabCompletion {
+        # TODO: add --global --user choice
         Write-Host "Tab completion service"
         try {
             xmake update --integrate
