@@ -310,7 +310,8 @@ function _initialize_shell()
         elseif shell:endswith("ksh") then target = "~/.kshrc"
         elseif shell:endswith("fish") then target = "~/.config/fish/config.fish"
         end
-        command = "test -f \"$HOME/.xmake/profile\" && source \"$HOME/.xmake/profile\""
+        local profile_home = path.absolute("~/.xmake/profile")
+        command = ("test -f \"%s\" && source \"%s\""):format(profile_home, profile_home)
 
         -- write home profile
         local profile = "$XMAKE_PROGRAM_DIR/scripts/profile-unix.sh"
@@ -321,7 +322,7 @@ export PATH="$XMAKE_ROOTDIR:$PATH"
 test $FISH_VERSION && test -f "%s" && source "%s" && exit 0
 test -f "%s" && source "%s"
 ]], path.directory(os.programfile()), os.programdir(), profile_fish, profile_fish, profile, profile)
-        io.writefile("~/.xmake/profile", bridge_command)
+        io.writefile(profile_home, bridge_command)
     end
 
     -- trace
