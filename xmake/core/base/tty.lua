@@ -166,9 +166,7 @@ function tty.shell()
                 end
             end
         else
-            if not shell and os.getenv("FISH_VERSION") then
-                shell = "fish"
-            end
+            shell = os.getenv("XMAKE_SHELL")
             if not shell then
                 shell = os.getenv("SHELL")
                 if shell then
@@ -178,11 +176,6 @@ function tty.shell()
                             break
                         end
                     end
-                end
-            end
-            if not shell then
-                if os.getenv("BASH_VERSION") then
-                    shell = "bash"
                 end
             end
         end
