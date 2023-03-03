@@ -242,9 +242,6 @@ fi
 #
 export XMAKE_ROOTDIR="$prefix/bin"
 export PATH="$XMAKE_ROOTDIR:$PATH"
+xmake --version
 xmake update --integrate
-if xmake --version >/dev/null 2>&1; then xmake --version; else
-    source ~/.xmake/profile
-    xmake --version
-fi
 
