@@ -5,6 +5,7 @@
 ### Changes
 
 * [#3433](https://github.com/xmake-io/xmake/issues/3433): Improve to build Qt project on msys2/mingw64
+* [#3419](https://github.com/xmake-io/xmake/issues/3419): Support fish shell envirnoment
 
 ### Bugs fixed
 
@@ -1543,6 +1544,7 @@
 ### 改进
 
 * [#3433](https://github.com/xmake-io/xmake/issues/3433): 改进 QT 在 msys2/mingw64 上的构建支持
+* [#3419](https://github.com/xmake-io/xmake/issues/3419): 支持 fish shell 环境
 
 ### Bugs 修复
 
