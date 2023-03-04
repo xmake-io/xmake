@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.global")
 import("net.http")
 import("net.proxy")
 import("devel.git")
