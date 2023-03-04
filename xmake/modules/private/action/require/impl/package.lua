@@ -495,6 +495,13 @@ end
 
 -- finish requireinfo
 function _finish_requireinfo(requireinfo, package)
+    -- we need to synchronise the plat/arch inherited from the parent package as early as possible
+    if requireinfo.plat then
+        package:plat_set(requireinfo.plat)
+    end
+    if requireinfo.arch then
+        package:arch_set(requireinfo.arch)
+    end
     requireinfo.configs = requireinfo.configs or {}
     if not package:is_headeronly() then
         if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
