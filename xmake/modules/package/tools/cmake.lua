@@ -378,6 +378,7 @@ function _get_configs_for_android(package, configs, opt)
         table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. path.join(ndk, "build/cmake/android.toolchain.cmake"))
         table.insert(configs, "-DANDROID_ABI=" .. package:arch())
         if ndk_sdkver then
+            table.insert(configs, "-DANDROID_PLATFORM=android-" .. ndk_sdkver)
             table.insert(configs, "-DANDROID_NATIVE_API_LEVEL=" .. ndk_sdkver)
         end
         if ndk_cxxstl then
