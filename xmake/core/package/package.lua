@@ -2445,7 +2445,7 @@ function package.load_from_project(packagename, project)
 end
 
 -- load the package from the package directory or package description file
-function package.load_from_repository(packagename, repo, packagedir, opt)
+function package.load_from_repository(packagename, packagedir, opt)
 
     -- get it directly from cache first
     opt = opt or {}
@@ -2454,7 +2454,8 @@ function package.load_from_repository(packagename, repo, packagedir, opt)
         return instance
     end
 
-    -- load repository first for checking the xmake minimal version
+    -- load repository first for checking the xmake minimal version (deprecated)
+    local repo = opt.repo
     if repo then
         repo:load()
     end

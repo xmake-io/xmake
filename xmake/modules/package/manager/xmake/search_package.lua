@@ -32,7 +32,7 @@ function main(name, opt)
     opt = opt or {}
     local results = {}
     for _, packageinfo in ipairs(repository.searchdirs(name)) do
-        local package = core_package.load_from_repository(packageinfo.name, packageinfo.repo, packageinfo.packagedir)
+        local package = core_package.load_from_repository(packageinfo.name, packageinfo.packagedir, {repo = packageinfo.repo})
         if package then
             local repo = package:repo()
             local version

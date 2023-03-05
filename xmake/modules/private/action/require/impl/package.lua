@@ -214,7 +214,7 @@ function _load_package_from_repository(packagename, opt)
     opt = opt or {}
     local packagedir, repo = repository.packagedir(packagename, opt)
     if packagedir then
-        return core_package.load_from_repository(packagename, repo, packagedir, {plat = opt.plat, arch = opt.arch})
+        return core_package.load_from_repository(packagename, packagedir, {plat = opt.plat, arch = opt.arch, repo = repo})
     end
 end
 

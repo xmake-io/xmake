@@ -56,7 +56,7 @@ end
 -- update the cache file
 function update()
     for _, packageinfo in ipairs(_list_package_dirs()) do
-        local package = core_package.load_from_repository(packageinfo.name, packageinfo.repo, packageinfo.packagedir)
+        local package = core_package.load_from_repository(packageinfo.name, packageinfo.packagedir, {repo = packageinfo.repo})
         cache:set(packageinfo.name, {
             description = package:description(),
             versions = package:versions(),
