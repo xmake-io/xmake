@@ -168,8 +168,8 @@ function _instance:has_flags(flags, flagkind, opt)
     return self._has_flags(self:name(), flags, opt)
 end
 
--- load tool
-function _instance:_load()
+-- load tool only once
+function _instance:_load_once()
     if not self._LOADED then
         if self.load then
             local ok, errors = sandbox.load(self.load, self)

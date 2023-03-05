@@ -124,57 +124,62 @@ function compiler.load(sourcekind, target)
 
     -- get it directly from cache dirst
     compiler._INSTANCES = compiler._INSTANCES or {}
-    if compiler._INSTANCES[cachekey] then
-        return compiler._INSTANCES[cachekey]
-    end
+    local instance = compiler._INSTANCES[cachekey]
+    if not instance then
 
-    -- new instance
-    local instance = table.inherit(compiler, builder)
+        -- new instance
+        instance = table.inherit(compiler, builder)
 
-    -- save the compiler tool
-    instance._TOOL = compiler_tool
+        -- save the compiler tool
+        instance._TOOL = compiler_tool
 
-    -- load the compiler language from the source kind
-    local result, errors = language.load_sk(sourcekind)
-    if not result then
-        return nil, errors
-    end
-    instance._LANGUAGE = result
-
-    -- init target (optional)
-    instance._TARGET = target
-
-    -- init target kind
-    instance._TARGETKIND = "object"
-
-    -- init name flags
-    instance._NAMEFLAGS = result:nameflags()[instance:_targetkind()]
-
-    -- init flag kinds
-    instance._FLAGKINDS = table.wrap(result:sourceflags()[sourcekind])
-
-    -- add toolchains flags to the compiler tool, e.g. gcc.cxflags or cxflags
-    local toolname = compiler_tool:name()
-    if target and target.toolconfig then
-        for _, flagkind in ipairs(instance:_flagkinds()) do
-            compiler_tool:add(flagkind, target:toolconfig(toolname .. '.' .. flagkind) or target:toolconfig(flagkind))
+        -- load the compiler language from the source kind
+        local result, errors = language.load_sk(sourcekind)
+        if not result then
+            return nil, errors
         end
-    else
-        for _, flagkind in ipairs(instance:_flagkinds()) do
-            compiler_tool:add(flagkind, platform.toolconfig(toolname .. '.' .. flagkind) or platform.toolconfig(flagkind))
+        instance._LANGUAGE = result
+
+        -- init target (optional)
+        instance._TARGET = target
+
+        -- init target kind
+        instance._TARGETKIND = "object"
+
+        -- init name flags
+        instance._NAMEFLAGS = result:nameflags()[instance:_targetkind()]
+
+        -- init flag kinds
+        instance._FLAGKINDS = table.wrap(result:sourceflags()[sourcekind])
+
+        -- add toolchains flags to the compiler tool, e.g. gcc.cxflags or cxflags
+        local toolname = compiler_tool:name()
+        if target and target.toolconfig then
+            for _, flagkind in ipairs(instance:_flagkinds()) do
+                compiler_tool:add(flagkind, target:toolconfig(toolname .. '.' .. flagkind) or target:toolconfig(flagkind))
+            end
+        else
+            for _, flagkind in ipairs(instance:_flagkinds()) do
+                compiler_tool:add(flagkind, platform.toolconfig(toolname .. '.' .. flagkind) or platform.toolconfig(flagkind))
+            end
         end
+
+        -- @note we can't call _load_once before caching the instance,
+        -- it may call has_flags to trigger the concurrent scheduling.
+        --
+        -- this will result in more compiler/linker instances being created at the same time,
+        -- and they will access the same tool instance at the same time.
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/3429
+        compiler._INSTANCES[cachekey] = instance
     end
 
     -- we need to load it at the end because in tool.load().
     -- because we may need to call has_flags, which requires the full platform toolchain flags
-    local ok, errors = compiler_tool:_load()
+    local ok, errors = compiler_tool:_load_once()
     if not ok then
         return nil, errors
     end
-
-    -- @note we have to save it after the load to avoid
-    -- other concurrent processes going ahead and getting an incomplete instance of the tool.
-    compiler._INSTANCES[cachekey] = instance
     return instance
 end
 
