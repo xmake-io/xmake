@@ -27,12 +27,57 @@ import("core.project.target")
 import("lib.detect.find_tool")
 import("lib.detect.find_file")
 
+-- get cargo registry directory
+function _get_cargo_registrydir()
+    return "~/.cargo/registry"
+end
+
+-- get the Cargo.toml of package
+-- e.g. ~/.cargo/registry/src/github.com-1ecc6299db9ec823/obj-rs-0.6.4/Cargo.toml
+function _get_package_toml(name)
+    local registrydir = _get_cargo_registrydir()
+    local registrysrc = path.join(registrydir, "src")
+    if os.isdir(registrysrc) then
+        local files = os.files(path.join(registrysrc, "*", name .. "-*", "Cargo.toml"))
+        for _, file in ipairs(files) do
+            local dir = path.directory(file)
+            local basename = path.filename(dir)
+            if basename:startswith(name) then
+                basename = basename:sub(#name + 1)
+                if basename:match("^%-[%d%.]+$") then
+                    return file
+                end
+            end
+        end
+    end
+end
+
 -- get rust library name
 --
 -- e.g.
 -- sdl2 -> libsdl2
 -- future-util -> libfuture_util
 function _get_libname(name)
+    -- we attempt to parse libname from Cargo.toml/[lib]
+    -- @see https://github.com/xmake-io/xmake/issues/3452
+    -- e.g. obj-rs -> libobj
+    local tomlfile = _get_package_toml(name)
+    if tomlfile then
+        local libinfo = false
+        local tomldata = io.readfile(tomlfile)
+        for _, line in ipairs(tomldata:split("\n")) do
+            if line:find("[lib]", 1, true) then
+                libinfo = true
+            elseif line:find("[", 1, true) then
+                libinfo = false
+            elseif libinfo then
+                local name = line:match("name%s+=%s+\"(.+)\"")
+                if name then
+                    return "lib" .. name
+                end
+            end
+        end
+    end
     return "lib" .. name:gsub("-", "_")
 end
 
