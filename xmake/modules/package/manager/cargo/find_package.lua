@@ -29,7 +29,11 @@ import("lib.detect.find_file")
 
 -- get cargo registry directory
 function _get_cargo_registrydir()
-    return "~/.cargo/registry"
+    if is_host("windows") then
+        return "$(env USERPROFILE)\\.cargo\\registry"
+    else
+        return "~/.cargo/registry"
+    end
 end
 
 -- get the Cargo.toml of package
