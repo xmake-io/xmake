@@ -88,7 +88,13 @@ function main(name, flags, opt)
     end
 
     -- attempt to get result from cache first
-    local cacheinfo = detectcache:get("lib.detect.has_flags") or {}
+    local cacheinfo = detectcache:get("lib.detect.has_flags")
+    if not cacheinfo then
+        -- since has_flags may be switched to other concurrent processes during cache saving,
+        -- we need to commit the initialized cache to avoid multiple cache objects overwriting it.
+        cacheinfo = {}
+        detectcache:set("lib.detect.has_flags", cacheinfo)
+    end
     local result = cacheinfo[key]
     if result ~= nil and not opt.force then
         return result
