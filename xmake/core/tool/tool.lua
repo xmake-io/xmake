@@ -188,15 +188,22 @@ function _instance:_sysflags(toolkind, flagkind)
     local sysflags = {}
     local sourceflags = language.sourceflags()[toolkind]
     if not sourceflags and flagkind then
-        sourceflags = {flagkind}
+        sourceflags = {}
         if flagkind == "cflags" or flagkind == "cxxflags" then
+            table.insert(sourceflags, flagkind)
             table.insert(sourceflags, "cxflags")
         elseif flagkind == "cxflags" then
+            table.insert(sourceflags, flagkind)
             table.insert(sourceflags, "cxxflags")
         elseif flagkind == "mflags" or flagkind == "mxxflags" then
+            table.insert(sourceflags, flagkind)
             table.insert(sourceflags, "mxflags")
         elseif flagkind == "mxflags" then
+            table.insert(sourceflags, flagkind)
             table.insert(sourceflags, "mxxflags")
+        else
+            -- flagkind may be ldflags, we need ignore it
+            -- and we should use more precise flagkind, e.g. rcldflags instead of ldflags
         end
     end
     if sourceflags then
