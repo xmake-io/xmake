@@ -32,6 +32,7 @@ local config        = require("project/config")
 local sandbox       = require("sandbox/sandbox")
 local toolchain     = require("tool/toolchain")
 local platform      = require("platform/platform")
+local language      = require("language/language")
 local import        = require("sandbox/modules/import")
 
 -- new an instance
@@ -68,20 +69,6 @@ function _instance.new(kind, name, program, plat, arch, toolchain_inst)
         end
     end
     return instance
-end
-
--- load tool
-function _instance:_load()
-    if not self._LOADED then
-        if self.load then
-            local ok, errors = sandbox.load(self.load, self)
-            if not ok then
-                return false, errors
-            end
-        end
-        self._LOADED = true
-    end
-    return true
 end
 
 -- get the tool name
@@ -169,12 +156,7 @@ function _instance:has_flags(flags, flagkind, opt)
     opt.program = opt.program or self:program()
     opt.toolkind = opt.toolkind or self:kind()
     opt.flagkind = opt.flagkind or flagkind
-
-    -- get system flags
-    opt.sysflags = opt.sysflags or self:get(self:kind() .. 'flags')
-    if not opt.sysflags and opt.flagkind then
-        opt.sysflags = self:get(opt.flagkind)
-    end
+    opt.sysflags = opt.sysflags or self:_sysflags(opt.toolkind, opt.flagkind)
 
     -- import has_flags()
     self._has_flags = self._has_flags or import("lib.detect.has_flags", {anonymous = true})
@@ -184,6 +166,54 @@ function _instance:has_flags(flags, flagkind, opt)
 
     -- has flags?
     return self._has_flags(self:name(), flags, opt)
+end
+
+-- load tool only once
+function _instance:_load_once()
+    if not self._LOADED then
+        if self.load then
+            local ok, errors = sandbox.load(self.load, self)
+            if not ok then
+                return false, errors
+            end
+        end
+        self._LOADED = true
+    end
+    return true
+end
+
+-- get system flags from toolchains
+-- @see https://github.com/xmake-io/xmake/issues/3429
+function _instance:_sysflags(toolkind, flagkind)
+    local sysflags = {}
+    local sourceflags = language.sourceflags()[toolkind]
+    if not sourceflags and flagkind then
+        sourceflags = {flagkind}
+        if flagkind == "cflags" or flagkind == "cxxflags" then
+            table.insert(sourceflags, "cxflags")
+        elseif flagkind == "cxflags" then
+            table.insert(sourceflags, "cxxflags")
+        elseif flagkind == "mflags" or flagkind == "mxxflags" then
+            table.insert(sourceflags, "mxflags")
+        elseif flagkind == "mxflags" then
+            table.insert(sourceflags, "mxxflags")
+        end
+    end
+    if sourceflags then
+        for _, flagname in ipairs(table.wrap(sourceflags)) do
+            local flags = self:get(flagname)
+            if flags then
+                table.join2(sysflags, flags)
+            end
+        end
+    end
+    -- maybe it's linker flags, ld -> ldflags, dcld -> dcldflags
+    if #sysflags == 0 then
+        table.join2(sysflags, self:get(toolkind .. "flags"))
+    end
+    if #sysflags > 0 then
+        return sysflags
+    end
 end
 
 -- load the given tool from the given kind

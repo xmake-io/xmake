@@ -74,7 +74,7 @@ function load(self)
     -- we need check it for clang/gcc with window target
     -- @see https://github.com/xmake-io/xmake/issues/1392
     --
-    if not self:is_plat("windows", "mingw") and self:has_flags("-fPIC", "cxflags") then
+    if not self:is_plat("windows", "mingw") and self:has_flags("-fPIC") then
         self:add("shflags", "-fPIC")
         self:add("shared.cxflags", "-fPIC")
     end
