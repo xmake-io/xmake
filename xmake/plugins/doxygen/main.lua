@@ -27,7 +27,7 @@ import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 
 -- generate doxyfile
-function _generate_doxyfile()
+function _generate_doxyfile(doxygen)
 
     -- generate the default doxyfile
     local doxyfile = path.join(project.directory(), "doxyfile")
@@ -98,7 +98,7 @@ function main()
     -- get doxyfile first
     local doxyfile = "doxyfile"
     if not os.isfile(doxyfile) then
-        doxyfile = _generate_doxyfile()
+        doxyfile = _generate_doxyfile(doxygen)
     end
     assert(os.isfile(doxyfile), "%s not found!", doxyfile)
 
