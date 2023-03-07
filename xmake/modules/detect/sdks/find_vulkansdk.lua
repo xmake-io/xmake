@@ -41,7 +41,12 @@ function main(opt)
     {
         "$(env VK_SDK_PATH)",
         "$(env VULKAN_SDK)"
-    }
+    }    
+    if is_host("linux") then
+        -- we attempt to find vulkan from /usr, e.g. /usr/include/vulkan/vulkan.h
+        table.insert(paths, "/usr");
+        table.insert(paths, "/usr/local")
+    end
     local arch = opt.arch or config.arch() or os.arch()
     local binsuffix = ((is_host("windows") and arch == "x86") and "bin32" or "bin")
     local libname = (is_host("windows") and "vulkan-1" or "vulkan")
