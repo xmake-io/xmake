@@ -33,6 +33,16 @@ function main(requires, opt)
         local installdir = instance:installdir()
         local rootdir = core_package.installdir()
         local exportpath, count = installdir:replace(rootdir, packagedir, {plain = true})
+        if count == 0 and instance:is_binary_embed() then
+            -- maybe local binary embed package
+            -- @see https://github.com/xmake-io/xmake/issues/3470
+            local name = instance:name()
+            installdir = instance:scriptdir()
+            if installdir:endswith(path.join(name:sub(1, 1), name)) then
+                rootdir = path.directory(path.directory(installdir))
+                exportpath, count = installdir:replace(rootdir, packagedir, {plain = true})
+            end
+        end
 
         -- export this package
         if exportpath and count == 1 and instance:fetch({force = true}) then

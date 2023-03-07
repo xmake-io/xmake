@@ -586,16 +586,21 @@ function _instance:is_parallelize()
     return self:get("parallelize") ~= false
 end
 
--- is local embed package?
+-- is local embed source code package?
 -- we install directly from the local source code instead of downloading it remotely
-function _instance:is_embed()
+function _instance:is_source_embed()
     return self:get("sourcedir") and #self:urls() == 0 and self:script("install")
+end
+
+-- is local embed binary package? it's come from `xmake package`
+function _instance:is_binary_embed()
+    return self:get("installdir") and #self:urls() == 0 and not self:script("install") and self:script("fetch")
 end
 
 -- is local package?
 -- we will use local installdir and cachedir in current project
 function _instance:is_local()
-    return self:is_embed() or self:is_thirdparty()
+    return self:is_source_embed() or self:is_binary_embed() or self:is_thirdparty()
 end
 
 -- use external includes?
