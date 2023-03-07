@@ -1258,10 +1258,16 @@ end
 
 -- get the given configuration value of package
 function _instance:config(name)
+    local value
     local configs = self:configs()
     if configs then
-        return configs[name]
+        value = configs[name]
     end
+    -- we cannot get it from `self:get()`, because there are always some builtin configs.
+    if value == nil and self:base() then
+        value = self:base():config(name)
+    end
+    return value
 end
 
 -- set configuration value
