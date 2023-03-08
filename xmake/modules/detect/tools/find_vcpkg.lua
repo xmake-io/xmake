@@ -54,7 +54,7 @@ function main(opt)
     -- find program
     opt.paths = paths
     opt.envs  = {PATH = os.getenv("PATH")}
-    local program = find_program(opt.program or "vcpkg", opt)
+    local program = find_program(opt.program or (is_host("windows") and "vcpkg.exe" or "vcpkg"), opt)
 
     -- find program version
     local version = nil
