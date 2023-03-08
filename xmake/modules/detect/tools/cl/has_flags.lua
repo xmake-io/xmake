@@ -22,6 +22,16 @@
 import("core.language.language")
 import("core.cache.global_detectcache")
 
+-- attempt to check it from known flags
+function _check_from_knownargs(flags, opt)
+    local flag = flags[1]:gsub("/", "-")
+    if flag:startswith("-D") or
+       flag:startswith("-U") or
+       flag:startswith("-I") then
+        return true
+    end
+end
+
 -- attempt to check it from the argument list
 function _check_from_arglist(flags, opt)
     local key = "detect.tools.cl.has_flags"
@@ -84,8 +94,13 @@ function main(flags, opt)
 
     -- attempt to check it from the argument list
     opt = opt or {}
-    if not opt.tryrun and _check_from_arglist(flags, opt) then
-        return true
+    if not opt.tryrun then
+        if _check_from_arglist(flags, opt) then
+            return true
+        end
+        if _check_from_knownargs(flags, opt) then
+            return true
+        end
     end
 
     -- try running to check it
