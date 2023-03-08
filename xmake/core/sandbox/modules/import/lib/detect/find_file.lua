@@ -90,20 +90,22 @@ function sandbox_lib_detect_find_file.main(name, paths, opt)
         end
 
         for _, _s_path in ipairs(table.wrap(_path)) do
-            -- find file with suffixes
-            if #suffixes > 0 then
-                for _, suffix in ipairs(suffixes) do
-                    local filedir = path.join(_s_path, suffix)
-                    local results = sandbox_lib_detect_find_file._find(filedir, name)
+            if #_s_path > 0 then
+                -- find file with suffixes
+                if #suffixes > 0 then
+                    for _, suffix in ipairs(suffixes) do
+                        local filedir = path.join(_s_path, suffix)
+                        local results = sandbox_lib_detect_find_file._find(filedir, name)
+                        if results then
+                            return results
+                        end
+                    end
+                else
+                    -- find file in the given path
+                    local results = sandbox_lib_detect_find_file._find(_s_path, name)
                     if results then
                         return results
                     end
-                end
-            else
-                -- find file in the given path
-                local results = sandbox_lib_detect_find_file._find(_s_path, name)
-                if results then
-                    return results
                 end
             end
         end
