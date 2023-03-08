@@ -10,6 +10,7 @@
 ### Bugs fixed
 
 * [#3436](https://github.com/xmake-io/xmake/issues/3436): Fix complete and menuconf
+* [#3463](https://github.com/xmake-io/xmake/issues/3463): Fix c++modules cache issue
 
 ## v2.7.7
 
@@ -1549,6 +1550,7 @@
 ### Bugs 修复
 
 * [#3436](https://github.com/xmake-io/xmake/issues/3436): 修复自动补全和 menuconf
+* [#3463](https://github.com/xmake-io/xmake/issues/3463): 修复 c++modules 缓存问题
 
 ## v2.7.7
 
