@@ -19,7 +19,7 @@
 --
 
 rule("qt.env")
-    on_load(function (target)
+    on_config(function (target)
 
         -- imports
         import("detect.sdks.find_qt")

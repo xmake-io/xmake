@@ -22,7 +22,7 @@ rule("qt.qmltyperegistrar")
     add_deps("qt.env")
     set_extensions(".h", ".hpp")
 
-    on_load(function(target)
+    on_config(function(target)
         -- get qt
         local qt = assert(target:data("qt"), "qt not found!")
 

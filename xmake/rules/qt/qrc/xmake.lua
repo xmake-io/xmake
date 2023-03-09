@@ -21,7 +21,7 @@
 rule("qt.qrc")
     add_deps("qt.env")
     set_extensions(".qrc")
-    on_load(function (target)
+    on_config(function (target)
 
         -- get rcc
         local qt = assert(target:data("qt"), "qt not found!")
