@@ -65,6 +65,11 @@ function _instance:set(p)
     return self
 end
 
+function _instance:empty()
+    local str = self._STR
+    return str == nil or #str == 0
+end
+
 function _instance:transform_set(transform)
     self._TRANSFORM = transform
     self:_update()
@@ -138,12 +143,12 @@ end
 
 -- tostring(path)
 function _instance:__tostring()
-    return self:str()
+    return not self:empty() and self:str() or ""
 end
 
 -- todisplay(path)
 function _instance:__todisplay()
-    return "<path: " .. self:str() .. ">"
+    return "<path: " .. (self:empty() and "empty" or self:str()) .. ">"
 end
 
 -- path.translate:

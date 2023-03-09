@@ -76,7 +76,9 @@ rule("qt.moc")
                     end
                     return item
                 end)
-                table.insert(flags, pathitem)
+                if not pathitem:empty() then
+                    table.insert(flags, pathitem)
+                end
             end
         end
         local user_flags = target:get("qt.moc.flags") or {}
