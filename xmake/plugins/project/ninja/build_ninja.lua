@@ -70,6 +70,36 @@ function _get_relative_unix_path(filepath, outputdir)
     return os.args(filepath)
 end
 
+-- translate compiler flags
+function _translate_compflags(compflags, outputdir)
+    local flags = {}
+    for _, flag in ipairs(compflags) do
+        for _, pattern in ipairs({"[%-](I)(.*)", "[%-](isystem)(.*)"}) do
+            flag = flag:gsub(pattern, function (flag, dir)
+                dir = _get_relative_unix_path(dir, outputdir)
+                return "-" .. flag .. dir
+            end)
+        end
+        table.insert(flags, flag)
+    end
+    return flags
+end
+
+-- translate linker flags
+function _translate_linkflags(linkflags, outputdir)
+    local flags = {}
+    for _, flag in ipairs(linkflags) do
+        for _, pattern in ipairs({"[%-](L)(.*)", "[%-](F)(.*)"}) do
+            flag = flag:gsub(pattern, function (flag, dir)
+                dir = _get_relative_unix_path(dir, outputdir)
+                return "-" .. flag .. dir
+            end)
+        end
+        table.insert(flags, flag)
+    end
+    return flags
+end
+
 -- add header
 function _add_header(ninjafile)
     ninjafile:print([[# this is the build file for project %s
@@ -81,9 +111,10 @@ function _add_header(ninjafile)
 end
 
 -- add rules for generator
-function _add_rules_for_generator(ninjafile)
+function _add_rules_for_generator(ninjafile, outputdir)
+    local projectdir = _get_relative_unix_path(os.projectdir(), outputdir)
     ninjafile:print("rule gen")
-    ninjafile:print(" command = xmake project -k ninja")
+    ninjafile:print(" command = xmake project -P %s -k ninja", projectdir)
     ninjafile:print(" description = regenerating ninja files")
     ninjafile:print("")
 end
@@ -235,10 +266,10 @@ function _add_rules_for_linker(ninjafile)
 end
 
 -- add rules
-function _add_rules(ninjafile)
+function _add_rules(ninjafile, outputdir)
 
     -- add rules for generator
-    _add_rules_for_generator(ninjafile)
+    _add_rules_for_generator(ninjafile, outputdir)
 
     -- add rules for complier
     _add_rules_for_compiler(ninjafile)
@@ -256,8 +287,9 @@ end
 function _add_build_for_object(ninjafile, target, sourcekind, sourcefile, objectfile, outputdir)
     objectfile = _get_relative_unix_path(objectfile, outputdir)
     sourcefile = _get_relative_unix_path(sourcefile, outputdir)
+    local compflags = compiler.compflags(sourcefile, {target = target})
     ninjafile:print("build %s: %s %s", objectfile, sourcekind, sourcefile)
-    ninjafile:print(" ARGS = %s", os.args(compiler.compflags(sourcefile, {target = target})))
+    ninjafile:print(" ARGS = %s", os.args(_translate_compflags(compflags, outputdir)))
     ninjafile:print("")
 end
 
@@ -305,7 +337,7 @@ function _add_build_for_target(ninjafile, target, outputdir)
         end
     end
     ninjafile:print("")
-    ninjafile:print(" ARGS = %s", os.args(target:linkflags()))
+    ninjafile:print(" ARGS = %s", os.args(_translate_linkflags(target:linkflags(), outputdir)))
     ninjafile:print("")
 
     -- build target objects
@@ -384,7 +416,7 @@ function make(outputdir)
     _add_header(ninjafile)
 
     -- add rules
-    _add_rules(ninjafile)
+    _add_rules(ninjafile, outputdir)
 
     -- add build rules for targets
     _add_build_for_targets(ninjafile, outputdir)
