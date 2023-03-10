@@ -39,6 +39,30 @@ function _sourcebatch_is_built(sourcebatch)
     end
 end
 
+-- tranlate path
+function _translate_path(filepath, outputdir)
+    filepath = path.translate(filepath)
+    if filepath == "" then
+        return ""
+    end
+    if path.is_absolute(filepath) then
+        if filepath:startswith(project.directory()) then
+            return path.relative(filepath, outputdir)
+        end
+        return filepath
+    else
+        return path.relative(path.absolute(filepath), outputdir)
+    end
+end
+
+-- get unix path relative to the ninja path
+-- @see https://github.com/xmake-io/xmake/issues/3359
+function _get_relative_unix_path(filepath, outputdir)
+    filepath = _translate_path(filepath, outputdir)
+    filepath = path.translate(filepath):gsub('\\', '/')
+    return os.args(filepath)
+end
+
 -- add header
 function _add_header(ninjafile)
     ninjafile:print([[# this is the build file for project %s
@@ -222,21 +246,23 @@ function _add_build_for_phony(ninjafile, target)
 end
 
 -- add build rule for object
-function _add_build_for_object(ninjafile, target, sourcekind, sourcefile, objectfile)
+function _add_build_for_object(ninjafile, target, sourcekind, sourcefile, objectfile, outputdir)
+    objectfile = _get_relative_unix_path(objectfile, outputdir)
+    sourcefile = _get_relative_unix_path(sourcefile, outputdir)
     ninjafile:print("build %s: %s %s", objectfile, sourcekind, sourcefile)
     ninjafile:print(" ARGS = %s", os.args(compiler.compflags(sourcefile, {target = target})))
     ninjafile:print("")
 end
 
 -- add build rule for objects
-function _add_build_for_objects(ninjafile, target, sourcebatch)
+function _add_build_for_objects(ninjafile, target, sourcebatch, outputdir)
     for index, objectfile in ipairs(sourcebatch.objectfiles) do
-        _add_build_for_object(ninjafile, target,  sourcebatch.sourcekind, sourcebatch.sourcefiles[index], objectfile)
+        _add_build_for_object(ninjafile, target,  sourcebatch.sourcekind, sourcebatch.sourcefiles[index], objectfile, outputdir)
     end
 end
 
 -- add build rule for target
-function _add_build_for_target(ninjafile, target)
+function _add_build_for_target(ninjafile, target, outputdir)
 
     -- https://github.com/xmake-io/xmake/issues/2337
     target:data_set("plugin.project.kind", "ninja")
@@ -248,14 +274,14 @@ function _add_build_for_target(ninjafile, target)
 
     -- build target
     ninjafile:print("# build target: %s", target:name())
-    local targetfile = target:targetfile()
+    local targetfile = _get_relative_unix_path(target:targetfile(), outputdir)
     ninjafile:print("build %s: phony %s", target:name(), targetfile)
 
     -- build target file
     ninjafile:printf("build %s: %s", targetfile, target:linker():kind())
     local objectfiles = target:objectfiles()
     for _, objectfile in ipairs(objectfiles) do
-        ninjafile:write(" " .. objectfile)
+        ninjafile:write(" " .. _get_relative_unix_path(objectfile, outputdir))
     end
     -- merge objects with rule("utils.merge.object")
     for _, sourcebatch in pairs(target:sourcebatches()) do
@@ -268,7 +294,7 @@ function _add_build_for_target(ninjafile, target)
         ninjafile:print(" || $")
         ninjafile:write("  ")
         for _, dep in ipairs(deps) do
-            ninjafile:write(" " .. project.target(dep):targetfile())
+            ninjafile:write(" " .. _get_relative_unix_path(project.target(dep):targetfile(), outputdir))
         end
     end
     ninjafile:print("")
@@ -278,32 +304,33 @@ function _add_build_for_target(ninjafile, target)
     -- build target objects
     for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
         if _sourcebatch_is_built(sourcebatch) then
-            _add_build_for_objects(ninjafile, target, sourcebatch)
+            _add_build_for_objects(ninjafile, target, sourcebatch, outputdir)
         end
     end
 end
 
 -- add build rule for generator
-function _add_build_for_generator(ninjafile)
+function _add_build_for_generator(ninjafile, outputdir)
     ninjafile:print("# build build.ninja")
     ninjafile:print("build build.ninja: gen $")
     local allfiles = project.allfiles()
     for idx, projectfile in ipairs(allfiles) do
         if not path.is_absolute(projectfile) or projectfile:startswith(os.projectdir()) then
-            ninjafile:print("  %s %s", os.args(path.relative(path.absolute(projectfile))), idx < #allfiles and "$" or "")
+            local filepath = _get_relative_unix_path(projectfile, outputdir)
+            ninjafile:print("  %s %s", filepath, idx < #allfiles and "$" or "")
         end
     end
     ninjafile:print("")
 end
 
 -- add build rule for targets
-function _add_build_for_targets(ninjafile)
+function _add_build_for_targets(ninjafile, outputdir)
 
     -- begin
     ninjafile:print("# build targets\n")
 
     -- add build rule for generator
-    _add_build_for_generator(ninjafile)
+    _add_build_for_generator(ninjafile, outputdir)
 
     -- TODO
     -- disable precompiled header first
@@ -314,7 +341,7 @@ function _add_build_for_targets(ninjafile)
 
     -- build targets
     for _, target in pairs(project.targets()) do
-        _add_build_for_target(ninjafile, target)
+        _add_build_for_target(ninjafile, target, outputdir)
     end
 
     -- build default
@@ -353,7 +380,7 @@ function make(outputdir)
     _add_rules(ninjafile)
 
     -- add build rules for targets
-    _add_build_for_targets(ninjafile)
+    _add_build_for_targets(ninjafile, outputdir)
 
     -- close the ninjafile
     ninjafile:close()
