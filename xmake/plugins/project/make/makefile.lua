@@ -196,9 +196,15 @@ end
 
 -- add switches
 function _add_switches(makefile)
-    makefile:print("ifneq (%$(VERBOSE),1)")
-    makefile:print("VV=@")
-    makefile:print("endif")
+    if is_subhost("windows") then
+        makefile:print("!if \"%$(VERBOSE)\" != \"1\"")
+        makefile:print("VV=@")
+        makefile:print("!endif")
+    else
+        makefile:print("ifneq (%$(VERBOSE),1)")
+        makefile:print("VV=@")
+        makefile:print("endif")
+    end
     makefile:print("")
 end
 
