@@ -29,6 +29,7 @@ function main()
         presets        = {description = "Set the preset values, e.g. {Boost_USE_STATIC_LIB = true}"},
         envs           = {description = "Set the run environments of cmake, e.g. {CMAKE_PREFIX_PATH = \"xxx\"}"},
         find_name      = {description = "Set the name used for ${find_name}_LIBS/_INCLUDE_DIRS in cmake"},
+        debug          = {description = "Set the CMAKE_BUILD_TYPE to Debug if set to true"},
     }
 end
 
