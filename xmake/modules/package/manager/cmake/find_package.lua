@@ -106,12 +106,12 @@ function _find_package(cmake, name, opt)
     cmakefile:close()
 
     -- run cmake
-    local envs = configs.envs or opt.envs
+    local envs = configs.envs or opt.envs or {}
     -- decide whether to enable debug build type
     if (not envs.CMAKE_BUILD_TYPE and configs.debug) then
         envs.CMAKE_BUILD_TYPE = "Debug"
     end
-    try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = envs}) end}
+    os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = envs})
 
     -- pares defines and includedirs for macosx/linux
     local links
