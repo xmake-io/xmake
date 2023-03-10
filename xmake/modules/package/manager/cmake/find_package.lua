@@ -78,24 +78,30 @@ function _find_package(cmake, name, opt)
         end
     end
     local testname = "test_" .. name
-    local findname = configs.find_name or name
     cmakefile:print("find_package(%s REQUIRED %s)", requirestr, componentstr)
     cmakefile:print("if(%s_FOUND)", name)
     cmakefile:print("   add_executable(%s test.cpp)", testname)
-    cmakefile:print("   target_include_directories(%s PRIVATE ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS})",
-        testname, findname, findname)
-    cmakefile:print("   target_include_directories(%s PRIVATE ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS})",
-        testname, findname:upper(), findname:upper())
-    cmakefile:print("   target_include_directories(%s PRIVATE ${%s_CXX_INCLUDE_DIRS})",
-        testname, findname)
-    cmakefile:print("   target_link_libraries(%s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
-        testname, findname, findname, findname)
-    cmakefile:print("   target_link_libraries(%s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
-        testname, findname:upper(), findname:upper(), findname:upper())
-    if configs.link_libraries then
-        cmakefile:print("   target_link_libraries(%s %s)",
-            testname, table.concat(table.wrap(configs.link_libraries), " "))
+    -- setup include directories
+    local includedirs = ""
+    if configs.include_dirs then
+        includedirs = table.concat(table.wrap(configs.include_dirs), " ")
+    else
+        includedirs = string.gsub("${X_INCLUDE_DIR} ${X_INCLUDE_DIRS}", "X", name)
+        includedirs = includedirs .. string.gsub(" ${X_INCLUDE_DIR} ${X_INCLUDE_DIRS}", "X", name:upper())
     end
+    cmakefile:print("   target_include_directories(%s PRIVATE %s)", testname, includedirs)
+    -- reserved for backword compatibility
+    cmakefile:print("   target_include_directories(%s PRIVATE ${%s_CXX_INCLUDE_DIRS})",
+        testname, name)
+    -- setup link library/target
+    local linklibs = ""
+    if configs.link_libraries then
+        linklibs = table.concat(table.wrap(configs.link_libraries), " ")
+    else
+        linklibs = string.gsub("${X_LIBRARY} ${X_LIBRARIES} ${X_LIBS}", "X", name)
+        linklibs = linklibs .. string.gsub(" ${X_LIBRARY} ${X_LIBRARIES} ${X_LIBS}", "X", name:upper())
+    end
+    cmakefile:print("   target_link_libraries(%s PRIVATE %s)", testname, linklibs)
     cmakefile:print("endif(%s_FOUND)", name)
     cmakefile:close()
 

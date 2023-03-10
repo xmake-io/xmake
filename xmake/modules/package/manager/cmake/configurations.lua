@@ -23,12 +23,12 @@ function main()
     return
     {
         link_libraries = {description = "Set the cmake package dependencies, e.g. {\"abc::lib1\", \"abc::lib2\"}"},
+        include_dirs   = {description = "Set the cmake package include directories, e.g. {\"${ZLIB_INCLUDE_DIRS}\"}"},
         search_mode    = {description = "Set the cmake package search mode, e.g. {\"config\", \"module\"}"},
         components     = {description = "Set the cmake package components, e.g. {\"regex\", \"system\"}"},
         moduledirs     = {description = "Set the cmake modules directories."},
         presets        = {description = "Set the preset values, e.g. {Boost_USE_STATIC_LIB = true}"},
         envs           = {description = "Set the run environments of cmake, e.g. {CMAKE_PREFIX_PATH = \"xxx\"}"},
-        find_name      = {description = "Set the name used for ${find_name}_LIBS/_INCLUDE_DIRS in cmake"},
         debug          = {description = "Set the CMAKE_BUILD_TYPE to Debug if set to true"},
     }
 end
