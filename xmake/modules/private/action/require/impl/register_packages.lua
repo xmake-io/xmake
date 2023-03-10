@@ -51,6 +51,7 @@ function _register_required_package_libs(instance, required_package, is_deps)
                 fetchinfo.shared  = nil
                 fetchinfo.installdir = nil
                 fetchinfo.extra = nil
+                fetchinfo.components = nil
             end
 
             -- merge into the root values
