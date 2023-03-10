@@ -194,6 +194,84 @@ function _add_header(makefile)
 ]], project.name() or "")
 end
 
+-- add switches
+function _add_switches(makefile)
+    makefile:print("ifneq (%$(VERBOSE),1)")
+    makefile:print("VV=@")
+    makefile:print("endif")
+    makefile:print("")
+end
+
+-- add toolchains
+function _add_toolchains(makefile, outputdir)
+
+    -- add ccache
+    local ccache = find_tool("ccache")
+    if ccache then
+        makefile:print("CCACHE=" .. ccache.program)
+    end
+
+    -- add compilers
+    for sourcekind, _ in pairs(language.sourcekinds()) do
+        local program = platform.tool(sourcekind)
+        if program and program ~= "" then
+            makefile:print("%s=%s", sourcekind:upper(), program)
+        end
+    end
+    makefile:print("")
+
+    -- add linkers
+    local linkerkinds = {}
+    for _, _linkerkinds in pairs(language.targetkinds()) do
+        table.join2(linkerkinds, _linkerkinds)
+    end
+    for _, linkerkind in ipairs(table.unique(linkerkinds)) do
+        local program = platform.tool(linkerkind)
+        if program and program ~= "" then
+            makefile:print("%s=%s", (linkerkind:upper():gsub('%-', '_')), program)
+        end
+    end
+    makefile:print("")
+
+    -- add toolchains from targets
+    for targetname, target in pairs(project.targets()) do
+        if not target:is_phony() then
+            local program = _get_program_from_target(target, target:linker():kind())
+            if program then
+                makefile:print("%s_%s=%s", targetname, target:linker():kind():upper(), program)
+            end
+            for _, sourcebatch in pairs(target:sourcebatches()) do
+                local sourcekind = sourcebatch.sourcekind
+                if sourcekind then
+                    local program = _get_program_from_target(target, sourcekind)
+                    if program then
+                        makefile:print("%s_%s=%s", targetname, sourcekind:upper(), program)
+                    end
+                end
+            end
+        end
+    end
+    makefile:print("")
+end
+
+-- add flags
+function _add_flags(makefile, targetflags, outputdir)
+    for targetname, target in pairs(project.targets()) do
+        if not target:is_phony() then
+            for _, sourcebatch in pairs(target:sourcebatches()) do
+                local sourcekind = sourcebatch.sourcekind
+                if sourcekind then
+                    local commonflags, sourceflags = _get_common_flags(target, sourcekind, sourcebatch)
+                    makefile:print("%s_%sFLAGS=%s", targetname, sourcekind:upper(), os.args(_translate_compflags(commonflags, outputdir)))
+                    targetflags[targetname .. '_' .. sourcekind:upper()] = sourceflags
+                end
+            end
+            makefile:print("%s_%sFLAGS=%s", targetname, target:linker():kind():upper(), os.args(_translate_linkflags(target:linkflags(), outputdir)))
+        end
+    end
+    makefile:print("")
+end
+
 -- add build object
 function _add_build_object(makefile, target, sourcefile, objectfile, sourceflags, outputdir)
 
@@ -252,7 +330,7 @@ function _add_build_object(makefile, target, sourcefile, objectfile, sourceflags
     -- make body
     makefile:print("\t@echo %scompiling.$(mode) %s", ccache and "ccache " or "", sourcefile)
     _add_create_directory(makefile, path.directory(objectfile))
-    makefile:writef("\t@%s\n", command)
+    makefile:writef("\t$(VV)%s\n", command)
 
     -- make tail
     makefile:print("")
@@ -365,7 +443,7 @@ function _add_build_target(makefile, target, targetflags, outputdir)
     -- make body
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))
     _add_create_directory(makefile, path.directory(targetfile))
-    makefile:writef("\t@%s\n", command)
+    makefile:writef("\t$(VV)%s\n", command)
     makefile:print("")
 
     -- build source batches
@@ -379,78 +457,8 @@ function _add_build_target(makefile, target, targetflags, outputdir)
     end
 end
 
--- add build
-function _add_build(makefile, outputdir)
-
-    -- make variables for ccache
-    local ccache = find_tool("ccache")
-    if ccache then
-        makefile:print("CCACHE=" .. ccache.program)
-    end
-
-    -- make variables for source kinds
-    for sourcekind, _ in pairs(language.sourcekinds()) do
-        local program = platform.tool(sourcekind)
-        if program and program ~= "" then
-            makefile:print("%s=%s", sourcekind:upper(), program)
-        end
-    end
-    makefile:print("")
-
-    -- make variables for linker kinds
-    local linkerkinds = {}
-    for _, _linkerkinds in pairs(language.targetkinds()) do
-        table.join2(linkerkinds, _linkerkinds)
-    end
-    for _, linkerkind in ipairs(table.unique(linkerkinds)) do
-        local program = platform.tool(linkerkind)
-        if program and program ~= "" then
-            makefile:print("%s=%s", (linkerkind:upper():gsub('%-', '_')), program)
-        end
-    end
-    makefile:print("")
-
-    -- TODO
-    -- disable precompiled header first
-    for _, target in pairs(project.targets()) do
-        target:set("pcheader", nil)
-        target:set("pcxxheader", nil)
-    end
-
-    -- add variables for target
-    local targetflags = {}
-    for targetname, target in pairs(project.targets()) do
-        if not target:is_phony() then
-
-            -- add target linker
-            local program = _get_program_from_target(target, target:linker():kind())
-            if program then
-                makefile:print("%s_%s=%s", targetname, target:linker():kind():upper(), program)
-            end
-
-            -- add target flags
-            for _, sourcebatch in pairs(target:sourcebatches()) do
-                local sourcekind = sourcebatch.sourcekind
-                if sourcekind then
-
-                    -- add source compiler
-                    local program = _get_program_from_target(target, sourcekind)
-                    if program then
-                        makefile:print("%s_%s=%s", targetname, sourcekind:upper(), program)
-                    end
-
-                    -- add source flags
-                    local commonflags, sourceflags = _get_common_flags(target, sourcekind, sourcebatch)
-                    makefile:print("%s_%sFLAGS=%s", targetname, sourcekind:upper(), os.args(_translate_compflags(commonflags, outputdir)))
-                    targetflags[targetname .. '_' .. sourcekind:upper()] = sourceflags
-                end
-            end
-            makefile:print("%s_%sFLAGS=%s", targetname, target:linker():kind():upper(), os.args(_translate_linkflags(target:linkflags(), outputdir)))
-        end
-    end
-    makefile:print("")
-
-    -- make all
+-- add build targets
+function _add_build_targets(makefile, targetflags, outputdir)
     local default = ""
     for targetname, target in pairs(project.targets()) do
         if target:is_default() then
@@ -464,11 +472,23 @@ function _add_build(makefile, outputdir)
     end
     makefile:print("all: %s\n", all)
     makefile:print(".PHONY: default all %s\n", all)
-
-    -- add build for all targets
     for _, target in pairs(project.targets()) do
         _add_build_target(makefile, target, targetflags, outputdir)
     end
+end
+
+-- add build
+function _add_build(makefile, targetflags, outputdir)
+
+    -- TODO
+    -- disable precompiled header first
+    for _, target in pairs(project.targets()) do
+        target:set("pcheader", nil)
+        target:set("pcxxheader", nil)
+    end
+
+    -- add build targets
+    _add_build_targets(makefile, targetflags, outputdir)
 end
 
 -- add clean target
@@ -489,8 +509,8 @@ function _add_clean_target(makefile, target, outputdir)
     makefile:print("")
 end
 
--- add clean
-function _add_clean(makefile, outputdir)
+-- add clean targets
+function _add_clean_targets(makefile, outputdir)
     local all = ""
     for targetname, _ in pairs(project.targets()) do
         all = all .. " clean_" .. targetname
@@ -501,6 +521,11 @@ function _add_clean(makefile, outputdir)
     for _, target in pairs(project.targets()) do
         _add_clean_target(makefile, target, outputdir)
     end
+end
+
+-- add clean
+function _add_clean(makefile, outputdir)
+    _add_clean_targets(makefile, outputdir)
 end
 
 function make(outputdir)
@@ -514,8 +539,18 @@ function make(outputdir)
     -- add header
     _add_header(makefile)
 
+    -- add switches
+    _add_switches(makefile)
+
+    -- add toolchains
+    _add_toolchains(makefile, outputdir)
+
+    -- add flags
+    local targetflags = {}
+    _add_flags(makefile, targetflags, outputdir)
+
     -- add build
-    _add_build(makefile, outputdir)
+    _add_build(makefile, targetflags, outputdir)
 
     -- add clean
     _add_clean(makefile, outputdir)
