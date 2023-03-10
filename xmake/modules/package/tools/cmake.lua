@@ -793,7 +793,8 @@ end
 -- do build for ninja
 function _build_for_ninja(package, configs, opt)
     opt = opt or {}
-    ninja.build(package, {}, {envs = opt.envs or buildenvs(package, opt)})
+    opt.envs = opt.envs or buildenvs(package, opt)
+    ninja.build(package, {}, opt)
 end
 
 -- do build for cmake/build
@@ -875,7 +876,8 @@ end
 -- do install for ninja
 function _install_for_ninja(package, configs, opt)
     opt = opt or {}
-    ninja.install(package, {}, {envs = opt.envs or buildenvs(package, opt)})
+    opt.envs = opt.envs or buildenvs(package, opt)
+    ninja.install(package, {}, opt)
 end
 
 -- do install for cmake/build
