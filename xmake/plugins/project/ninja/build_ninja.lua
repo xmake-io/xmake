@@ -39,6 +39,14 @@ function _sourcebatch_is_built(sourcebatch)
     end
 end
 
+-- escape path
+function _escape_path(filepath)
+    if is_host("windows") then
+        filepath = filepath:gsub('\\', '/')
+    end
+    return filepath
+end
+
 -- tranlate path
 function _translate_path(filepath, outputdir)
     filepath = path.translate(filepath)
@@ -55,11 +63,10 @@ function _translate_path(filepath, outputdir)
     end
 end
 
--- get unix path relative to the ninja path
--- @see https://github.com/xmake-io/xmake/issues/3359
+-- get relative unix path
 function _get_relative_unix_path(filepath, outputdir)
     filepath = _translate_path(filepath, outputdir)
-    filepath = path.translate(filepath):gsub('\\', '/')
+    filepath = _escape_path(path.translate(filepath))
     return os.args(filepath)
 end
 
