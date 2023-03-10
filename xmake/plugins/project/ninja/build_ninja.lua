@@ -403,7 +403,6 @@ function _add_build_for_targets(ninjafile, outputdir)
     ninjafile:print("default default\n")
 end
 
--- make
 function make(outputdir)
 
     -- enter project directory
