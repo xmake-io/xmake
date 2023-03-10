@@ -168,8 +168,6 @@ function _make_compflags(sourcefile, targetinfo, vcxprojdir)
     -- translate path for -Idir or /Idir
     local flags = {}
     for _, flag in ipairs(targetinfo.compflags[sourcefile]) do
-
-        -- handle external includes as well
         for _, pattern in ipairs({"[%-/](I)(.*)", "[%-/](external:I)(.*)"}) do
 
             -- -Idir or /Idir
@@ -178,16 +176,12 @@ function _make_compflags(sourcefile, targetinfo, vcxprojdir)
                 return "/" .. flag .. dir
             end)
         end
-
-        -- save flag
         table.insert(flags, flag)
     end
 
     -- add -D__config_$(mode)__ and -D__config_$(arch)__ for the config header
     table.insert(flags, "-D__config_" .. targetinfo.mode .. "__")
     table.insert(flags, "-D__config_" .. targetinfo.arch .. "__")
-
-    -- ok?
     return flags
 end
 
