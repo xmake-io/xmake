@@ -26,14 +26,6 @@ import("core.language.language")
 import("core.platform.platform")
 import("lib.detect.find_tool")
 
--- escape path
-function _escape_path(filepath)
-    if is_host("windows") then
-        filepath = filepath:gsub('\\', '/')
-    end
-    return filepath
-end
-
 -- tranlate path
 function _translate_path(filepath, outputdir)
     filepath = path.translate(filepath)
@@ -53,7 +45,7 @@ end
 -- get relative unix path
 function _get_relative_unix_path(filepath, outputdir)
     filepath = _translate_path(filepath, outputdir)
-    filepath = _escape_path(path.translate(filepath))
+    filepath = path.translate(filepath)
     return os.args(filepath)
 end
 
