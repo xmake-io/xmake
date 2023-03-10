@@ -78,19 +78,20 @@ function _find_package(cmake, name, opt)
         end
     end
     local testname = "test_" .. name
+    local findname = configs.find_name or name
     cmakefile:print("find_package(%s REQUIRED %s)", requirestr, componentstr)
     cmakefile:print("if(%s_FOUND)", name)
     cmakefile:print("   add_executable(%s test.cpp)", testname)
     cmakefile:print("   target_include_directories(%s PRIVATE ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS})",
-        testname, name, name)
+        testname, findname, findname)
     cmakefile:print("   target_include_directories(%s PRIVATE ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS})",
-        testname, name:upper(), name:upper())
+        testname, findname:upper(), findname:upper())
     cmakefile:print("   target_include_directories(%s PRIVATE ${%s_CXX_INCLUDE_DIRS})",
-        testname, name)
+        testname, findname)
     cmakefile:print("   target_link_libraries(%s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
-        testname, name, name, name)
+        testname, findname, findname, findname)
     cmakefile:print("   target_link_libraries(%s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
-        testname, name:upper(), name:upper(), name:upper())
+        testname, findname:upper(), findname:upper(), findname:upper())
     if configs.link_libraries then
         cmakefile:print("   target_link_libraries(%s %s)",
             testname, table.concat(table.wrap(configs.link_libraries), " "))
