@@ -227,8 +227,15 @@ end
 
 -- add rules for linker (msvc)
 function _add_rules_for_linker_msvc(ninjafile, linkerkind, program)
+    if linkerkind == "ar" then
+        program = program .. " -lib"
+    elseif linkerkind == "sh" then
+        program = program .. " -dll"
+    end
     ninjafile:print("rule %s", linkerkind)
-    ninjafile:print(" command = %s $ARGS -out:$out $in", program)
+    ninjafile:print(" command = %s @$out.rsp", program)
+    ninjafile:print(" rspfile = $out.rsp")
+    ninjafile:print(" rspfile_content = $ARGS -out:$out $in_newline")
     ninjafile:print(" description = linking.%s $out", config.mode())
     ninjafile:print("")
 end
