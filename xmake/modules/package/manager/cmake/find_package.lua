@@ -83,8 +83,8 @@ function _find_package(cmake, name, opt)
     cmakefile:print("   add_executable(%s test.cpp)", testname)
     -- setup include directories
     local includedirs = ""
-    if configs.include_dirs then
-        includedirs = table.concat(table.wrap(configs.include_dirs), " ")
+    if configs.include_directories then
+        includedirs = table.concat(table.wrap(configs.include_directories), " ")
     else
         includedirs = ("${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS}"):format(name, name)
         includedirs = includedirs .. (" ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS}"):format(name:upper(), name:upper())
