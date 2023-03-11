@@ -232,6 +232,7 @@ function _add_rules_for_linker_msvc(ninjafile, linkerkind, program)
     elseif linkerkind == "sh" then
         program = program .. " -dll"
     end
+    -- @note we use rspfile to handle long command limit on windows
     ninjafile:print("rule %s", linkerkind)
     ninjafile:print(" command = %s @$out.rsp", program)
     ninjafile:print(" rspfile = $out.rsp")
