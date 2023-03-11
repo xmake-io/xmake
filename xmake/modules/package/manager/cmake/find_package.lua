@@ -86,8 +86,8 @@ function _find_package(cmake, name, opt)
     if configs.include_dirs then
         includedirs = table.concat(table.wrap(configs.include_dirs), " ")
     else
-        includedirs = string.gsub("${X_INCLUDE_DIR} ${X_INCLUDE_DIRS}", "X", name)
-        includedirs = includedirs .. string.gsub(" ${X_INCLUDE_DIR} ${X_INCLUDE_DIRS}", "X", name:upper())
+        includedirs = ("${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS}"):format(name, name)
+        includedirs = includedirs .. (" ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS}"):format(name:upper(), name:upper())
     end
     cmakefile:print("   target_include_directories(%s PRIVATE %s)", testname, includedirs)
     -- reserved for backword compatibility
@@ -98,8 +98,8 @@ function _find_package(cmake, name, opt)
     if configs.link_libraries then
         linklibs = table.concat(table.wrap(configs.link_libraries), " ")
     else
-        linklibs = string.gsub("${X_LIBRARY} ${X_LIBRARIES} ${X_LIBS}", "X", name)
-        linklibs = linklibs .. string.gsub(" ${X_LIBRARY} ${X_LIBRARIES} ${X_LIBS}", "X", name:upper())
+        linklibs = ("${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS}"):format(name, name, name)
+        linklibs = linklibs .. (" ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS}"):format(name:upper(), name:upper(), name:upper())
     end
     cmakefile:print("   target_link_libraries(%s PRIVATE %s)", testname, linklibs)
     cmakefile:print("endif(%s_FOUND)", name)
