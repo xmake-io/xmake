@@ -108,7 +108,7 @@ function _find_package(cmake, name, opt)
     -- run cmake
     local envs = configs.envs or opt.envs or {}
     -- decide whether to enable debug build type
-    if (not envs.CMAKE_BUILD_TYPE and configs.debug) then
+    if (not envs.CMAKE_BUILD_TYPE and opt.mode == "debug") then
         envs.CMAKE_BUILD_TYPE = "Debug"
     end
     os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = envs})
