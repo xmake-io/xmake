@@ -388,17 +388,34 @@ function _get_env_script(envs, shell, del)
     return ret
 end
 
+-- get prompt
+function _get_prompt(bnd)
+    bnd = bnd or option.get("bind")
+    local prompt
+    local boundenv = _get_boundenv({bind = bnd})
+    if boundenv then
+        if os.isfile(boundenv) then
+            prompt = path.basename(boundenv)
+        else
+            prompt = boundenv:sub(1, math.min(#boundenv, 8))
+            if boundenv ~= prompt then
+                prompt = prompt .. ".."
+            end
+        end
+        prompt = "[" .. prompt .. "]"
+    elseif not bnd then
+        assert(os.isfile(os.projectfile()), "xmake.lua not found!")
+        prompt = path.filename(os.projectdir())
+        prompt = "[" .. prompt .. "]"
+    end
+    return prompt or ""
+end
+
 -- get information of current virtual environment
 function info(key, bnd)
     if key == "prompt" then
-        local boundenv = _get_boundenv({bind = bnd})
-        if boundenv then
-            assert(os.isfile(boundenv), "environment not found!")
-            io.write("[" .. path.basename(boundenv) .. "]")
-        elseif not bnd then
-            assert(os.isfile(os.projectfile()), "xmake.lua not found!")
-            io.write("[" .. path.filename(os.projectdir()) .. "]")
-        end
+        local prompt = _get_prompt(bnd)
+        io.write(prompt)
     elseif key == "envfile" then
         print(os.tmpfile())
     elseif key == "config" then
@@ -426,23 +443,23 @@ end
 -- run shell
 function _run_shell(envs)
     local shell = os.shell()
-    local projectname = path.filename(os.projectdir())
     if shell == "pwsh" or shell == "powershell" then
         os.execv("pwsh", option.get("arguments"), {envs = envs})
     elseif shell:endswith("sh") then
-        local prompt = "[" .. projectname .. "] "
+        local prompt = _get_prompt()
         local ps1 = os.getenv("PS1")
         if ps1 then
             prompt = prompt .. ps1
         elseif is_host("macosx") then
-            prompt = prompt .. "\\W > "
+            prompt = prompt .. " \\W > "
         else
-            prompt = prompt .. "> "
+            prompt = prompt .. " > "
         end
         os.execv(shell, option.get("arguments"), {envs = table.join({PS1 = prompt}, envs)})
     elseif shell == "cmd" or is_host("windows") then
-        local prompt = "[" .. projectname .. "] $P$G"
-        local args = table.join({"/k", "set PROMPT=[" .. projectname .. "] $P$G"}, option.get("arguments"))
+        local prompt = _get_prompt()
+        prompt = prompt .. " $P$G"
+        local args = table.join({"/k", "set PROMPT=" .. prompt}, option.get("arguments"))
         os.execv("cmd", args, {envs = envs})
     else
         assert("shell not found!")
@@ -487,7 +504,7 @@ function main()
         os.rm(path.join(_get_envsdir(), envname .. ".lua"))
     else
         local program = option.get("program")
-        if program and program == "shell" then
+        if program and program == "shell" and is_subhost("windows") then
             wprint("The shell was not integrated with xmake. Some features might be missing. Please switch to your default shell, and run `xmake update --integrate` to integrate the shell.")
         end
         local envs = _package_getenvs()
