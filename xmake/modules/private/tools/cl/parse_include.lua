@@ -27,7 +27,7 @@ import("lib.detect.find_tool")
 import("private.tools.vstool")
 
 -- probe include note prefix from cl
-function _probe_include_note_from_cl()
+function probe_include_note_from_cl()
     local key = "cldeps.parse_include.note"
     local note = detectcache:get(key)
     if not note then
@@ -69,11 +69,11 @@ end
 --
 -- @note we cannot get better solution to distinguish between `includes` and `error infos`
 --
-function _get_include_notes()
+function get_include_notes()
     local notes = _g.notes
     if not notes then
         notes = {}
-        local note = _probe_include_note_from_cl()
+        local note = probe_include_note_from_cl()
         if note then
             table.insert(notes, note)
         end
@@ -90,7 +90,7 @@ end
 
 -- main entry
 function main(line)
-    local notes = _get_include_notes()
+    local notes = get_include_notes()
     for idx, note in ipairs(notes) do
         if line:startswith(note) then
             -- optimization: move this note to head

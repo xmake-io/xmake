@@ -27,6 +27,7 @@ import("core.tool.linker")
 import("core.tool.compiler")
 import("lib.detect.find_tool")
 import("lib.detect.find_toolname")
+import("private.tools.cl.parse_include")
 
 -- this sourcebatch is built?
 function _sourcebatch_is_built(sourcebatch)
@@ -174,7 +175,12 @@ end
 function _add_rules_for_compiler(ninjafile)
     ninjafile:print("# rules for compiler")
     if is_plat("windows") then
-        ninjafile:print("msvc_deps_prefix = Note: including file:")
+        -- @see https://github.com/ninja-build/ninja/issues/613
+        local note_include = parse_include.probe_include_note_from_cl()
+        if not note_include then
+            note_include = "Note: including file:"
+        end
+        ninjafile:print("msvc_deps_prefix = %s", note_include:trim())
     end
     local add_compiler_rules =
     {
