@@ -317,6 +317,7 @@ function _package_getenvs(opt)
     else
         packages = boundenv or option.get("program")
     end
+    local oldir = os.curdir()
     if os.isfile(os.projectfile()) or has_envfile then
         if has_envfile then
             _enter_project({enteronly = true})
@@ -343,6 +344,7 @@ function _package_getenvs(opt)
     for k, v in pairs(envs) do
         results[k] = _deduplicate_pathenv(v)
     end
+    os.cd(oldir)
     return results
 end
 
@@ -397,7 +399,7 @@ function _get_prompt(bnd)
         if os.isfile(boundenv) then
             prompt = path.basename(boundenv)
         else
-            prompt = boundenv:sub(1, math.min(#boundenv, 8))
+            prompt = boundenv:sub(1, math.min(#boundenv, 16))
             if boundenv ~= prompt then
                 prompt = prompt .. ".."
             end
@@ -419,6 +421,7 @@ function info(key, bnd)
     elseif key == "envfile" then
         print(os.tmpfile())
     elseif key == "config" then
+        local oldir = os.curdir()
         local boundenv = _get_boundenv({bind = bnd})
         local has_envfile = (boundenv and os.isfile(boundenv)) and true or false
         if has_envfile or os.isfile(os.projectfile()) then
@@ -428,6 +431,7 @@ function info(key, bnd)
             end
             task.run("config", {}, {disable_dump = true})
         end
+        os.cd(oldir)
     elseif key:startswith("script.") then
         local shell = key:match("script%.(.+)")
         io.write(_get_env_script(_package_getenvs({bind = bnd}), shell, false))
