@@ -362,17 +362,7 @@ function info(key, bnd)
     elseif key == "envfile" then
         print(os.tmpfile())
     elseif key == "config" then
-        local oldir = os.curdir()
-        local boundenv = _get_boundenv({bind = bnd})
-        local has_envfile = (boundenv and os.isfile(boundenv)) and true or false
-        if has_envfile or os.isfile(os.projectfile()) then
-            if has_envfile then
-                _enter_project()
-                table.insert(project.rcfiles(), boundenv)
-            end
-            task.run("config", {}, {disable_dump = true})
-        end
-        os.cd(oldir)
+        _package_getenvs({bind = bnd})
     elseif key:startswith("script.") then
         local shell = key:match("script%.(.+)")
         io.write(_get_env_script(_package_getenvs({bind = bnd}), shell, false))
