@@ -64,12 +64,11 @@ function menu_options()
                                        "    - xrepo env --list"},
         {'b', "bind",       "kv", nil, "Bind the specified environment or package.",
                                        "e.g.",
-                                       "    - xrepo env -b base",
-                                       "    - xrepo env -b myenv",
-                                       "    - xrepo env -b \"python 3.x\" python",
-                                       "    - xrepo env -b \"llvm 11.x\" bash",
-                                       "      $ clang --version",
-                                       "    - xrepo env -p android -b \"zlib,luajit 2.x\" luajit xx.lua"},
+                                       "    - xrepo env -b base shell",
+                                       "    - xrepo env -b myenv shell",
+                                       "    - xrepo env -b \"python 3.x\" shell",
+                                       "    - xrepo env -b \"cmake,ninja,python 3.x\" shell",
+                                       "    - xrepo env -b \"luajit 2.x\" luajit xx.lua"},
         {},
         {nil, "program",    "v",  nil, "Set the program name to be run.",
                                        "e.g.",
@@ -77,7 +76,7 @@ function menu_options()
                                        "    - xrepo env bash",
                                        "    - xrepo env shell (it will load bash/sh/cmd automatically)",
                                        "    - xrepo env python",
-                                       "    - xrepo env -p android luajit xx.lua"},
+                                       "    - xrepo env luajit xx.lua"},
         {nil, "arguments",  "vs", nil, "Set the program arguments to be run"}
     }
 
