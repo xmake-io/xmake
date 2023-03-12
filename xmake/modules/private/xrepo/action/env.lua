@@ -96,40 +96,8 @@ function menu_options()
     return options, show_options, description
 end
 
--- get requires
-function _get_requires(packages)
-    local requires = packages
-    local requires_extra = {}
-    local extra = {system = false}
-    if option.get("mode") == "debug" then
-        extra.debug = true
-    end
-    if option.get("kind") == "shared" then
-        extra.configs = extra.configs or {}
-        extra.configs.shared = true
-    end
-    local configs = option.get("configs")
-    if configs then
-        extra.system  = false
-        extra.configs = extra.configs or {}
-        local extra_configs, errors = ("{" .. configs .. "}"):deserialize()
-        if extra_configs then
-            table.join2(extra.configs, extra_configs)
-        else
-            raise(errors)
-        end
-    end
-    for _, require_str in ipairs(requires) do
-        requires_extra[require_str] = extra
-    end
-    return requires, requires_extra
-end
-
--- enter project
-function _enter_project(opt)
-
-    -- enter working project directory
-    opt = opt or {}
+-- enter the working project
+function _enter_project()
     local workdir = path.join(os.tmpdir(), "xrepo", "working")
     if not os.isdir(workdir) then
         os.mkdir(workdir)
@@ -138,41 +106,7 @@ function _enter_project(opt)
     else
         os.cd(workdir)
     end
-    if opt.enteronly then
-        project.chdir(workdir)
-        return
-    end
-
-    -- do configure first
-    local config_argv = {"f", "-c"}
-    if option.get("verbose") then
-        table.insert(config_argv, "-v")
-    end
-    if option.get("diagnosis") then
-        table.insert(config_argv, "-D")
-    end
-    if option.get("plat") then
-        table.insert(config_argv, "-p")
-        table.insert(config_argv, option.get("plat"))
-    end
-    if option.get("arch") then
-        table.insert(config_argv, "-a")
-        table.insert(config_argv, option.get("arch"))
-    end
-    local mode  = option.get("mode")
-    if mode then
-        table.insert(config_argv, "-m")
-        table.insert(config_argv, mode)
-    end
-    local kind  = option.get("kind")
-    if kind then
-        table.insert(config_argv, "-k")
-        table.insert(config_argv, kind)
-    end
-    os.vrunv("xmake", config_argv)
-
-    -- load config
-    config.load()
+    project.chdir(workdir)
 end
 
 -- remove repeat environment values
@@ -319,7 +253,7 @@ function _package_getenvs(opt)
     local oldir = os.curdir()
     if os.isfile(os.projectfile()) or has_envfile then
         if has_envfile then
-            _enter_project({enteronly = true})
+            _enter_project()
             table.insert(project.rcfiles(), boundenv)
         end
         task.run("config", {}, {disable_dump = true})
@@ -333,8 +267,16 @@ function _package_getenvs(opt)
         end
     elseif packages then
         _enter_project()
+        local envfile = os.tmpfile() .. ".lua"
         packages = packages:split(',', {plain = true})
-        local requires, requires_extra = _get_requires(packages)
+        local file = io.open(envfile, "w")
+        for _, requirename in ipairs(packages) do
+            file:print("add_requires(\"%s\")", requirename)
+        end
+        file:close()
+        table.insert(project.rcfiles(), envfile)
+        task.run("config", {}, {disable_dump = true})
+        local requires, requires_extra = get_requires()
         for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
             _package_addenvs(envs, instance)
         end
@@ -425,7 +367,7 @@ function info(key, bnd)
         local has_envfile = (boundenv and os.isfile(boundenv)) and true or false
         if has_envfile or os.isfile(os.projectfile()) then
             if has_envfile then
-                _enter_project({enteronly = true})
+                _enter_project()
                 table.insert(project.rcfiles(), boundenv)
             end
             task.run("config", {}, {disable_dump = true})
@@ -469,7 +411,6 @@ function _run_shell(envs)
     end
 end
 
--- main entry
 function main()
     if option.get("list") then
         local envname = option.get("program")
