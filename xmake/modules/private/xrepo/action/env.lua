@@ -64,12 +64,11 @@ function menu_options()
                                        "    - xrepo env --list"},
         {'b', "bind",       "kv", nil, "Bind the specified environment or package.",
                                        "e.g.",
-                                       "    - xrepo env -b base",
-                                       "    - xrepo env -b myenv",
-                                       "    - xrepo env -b \"python 3.x\" python",
-                                       "    - xrepo env -b \"llvm 11.x\" bash",
-                                       "      $ clang --version",
-                                       "    - xrepo env -p android -b \"zlib,luajit 2.x\" luajit xx.lua"},
+                                       "    - xrepo env -b base shell",
+                                       "    - xrepo env -b myenv shell",
+                                       "    - xrepo env -b \"python 3.x\" shell",
+                                       "    - xrepo env -b \"cmake,ninja,python 3.x\" shell",
+                                       "    - xrepo env -b \"luajit 2.x\" luajit xx.lua"},
         {},
         {nil, "program",    "v",  nil, "Set the program name to be run.",
                                        "e.g.",
@@ -77,7 +76,7 @@ function menu_options()
                                        "    - xrepo env bash",
                                        "    - xrepo env shell (it will load bash/sh/cmd automatically)",
                                        "    - xrepo env python",
-                                       "    - xrepo env -p android luajit xx.lua"},
+                                       "    - xrepo env luajit xx.lua"},
         {nil, "arguments",  "vs", nil, "Set the program arguments to be run"}
     }
 
@@ -97,40 +96,8 @@ function menu_options()
     return options, show_options, description
 end
 
--- get requires
-function _get_requires(packages)
-    local requires = packages
-    local requires_extra = {}
-    local extra = {system = false}
-    if option.get("mode") == "debug" then
-        extra.debug = true
-    end
-    if option.get("kind") == "shared" then
-        extra.configs = extra.configs or {}
-        extra.configs.shared = true
-    end
-    local configs = option.get("configs")
-    if configs then
-        extra.system  = false
-        extra.configs = extra.configs or {}
-        local extra_configs, errors = ("{" .. configs .. "}"):deserialize()
-        if extra_configs then
-            table.join2(extra.configs, extra_configs)
-        else
-            raise(errors)
-        end
-    end
-    for _, require_str in ipairs(requires) do
-        requires_extra[require_str] = extra
-    end
-    return requires, requires_extra
-end
-
--- enter project
-function _enter_project(opt)
-
-    -- enter working project directory
-    opt = opt or {}
+-- enter the working project
+function _enter_project()
     local workdir = path.join(os.tmpdir(), "xrepo", "working")
     if not os.isdir(workdir) then
         os.mkdir(workdir)
@@ -139,41 +106,7 @@ function _enter_project(opt)
     else
         os.cd(workdir)
     end
-    if opt.enteronly then
-        project.chdir(workdir)
-        return
-    end
-
-    -- do configure first
-    local config_argv = {"f", "-c"}
-    if option.get("verbose") then
-        table.insert(config_argv, "-v")
-    end
-    if option.get("diagnosis") then
-        table.insert(config_argv, "-D")
-    end
-    if option.get("plat") then
-        table.insert(config_argv, "-p")
-        table.insert(config_argv, option.get("plat"))
-    end
-    if option.get("arch") then
-        table.insert(config_argv, "-a")
-        table.insert(config_argv, option.get("arch"))
-    end
-    local mode  = option.get("mode")
-    if mode then
-        table.insert(config_argv, "-m")
-        table.insert(config_argv, mode)
-    end
-    local kind  = option.get("kind")
-    if kind then
-        table.insert(config_argv, "-k")
-        table.insert(config_argv, kind)
-    end
-    os.vrunv("xmake", config_argv)
-
-    -- load config
-    config.load()
+    project.chdir(workdir)
 end
 
 -- remove repeat environment values
@@ -317,9 +250,10 @@ function _package_getenvs(opt)
     else
         packages = boundenv or option.get("program")
     end
+    local oldir = os.curdir()
     if os.isfile(os.projectfile()) or has_envfile then
         if has_envfile then
-            _enter_project({enteronly = true})
+            _enter_project()
             table.insert(project.rcfiles(), boundenv)
         end
         task.run("config", {}, {disable_dump = true})
@@ -333,8 +267,16 @@ function _package_getenvs(opt)
         end
     elseif packages then
         _enter_project()
+        local envfile = os.tmpfile() .. ".lua"
         packages = packages:split(',', {plain = true})
-        local requires, requires_extra = _get_requires(packages)
+        local file = io.open(envfile, "w")
+        for _, requirename in ipairs(packages) do
+            file:print("add_requires(\"%s\")", requirename)
+        end
+        file:close()
+        table.insert(project.rcfiles(), envfile)
+        task.run("config", {}, {disable_dump = true})
+        local requires, requires_extra = get_requires()
         for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
             _package_addenvs(envs, instance)
         end
@@ -343,6 +285,7 @@ function _package_getenvs(opt)
     for k, v in pairs(envs) do
         results[k] = _deduplicate_pathenv(v)
     end
+    os.cd(oldir)
     return results
 end
 
@@ -388,29 +331,38 @@ function _get_env_script(envs, shell, del)
     return ret
 end
 
+-- get prompt
+function _get_prompt(bnd)
+    bnd = bnd or option.get("bind")
+    local prompt
+    local boundenv = _get_boundenv({bind = bnd})
+    if boundenv then
+        if os.isfile(boundenv) then
+            prompt = path.basename(boundenv)
+        else
+            prompt = boundenv:sub(1, math.min(#boundenv, 16))
+            if boundenv ~= prompt then
+                prompt = prompt .. ".."
+            end
+        end
+        prompt = "[" .. prompt .. "]"
+    elseif not bnd then
+        assert(os.isfile(os.projectfile()), "xmake.lua not found!")
+        prompt = path.filename(os.projectdir())
+        prompt = "[" .. prompt .. "]"
+    end
+    return prompt or ""
+end
+
 -- get information of current virtual environment
 function info(key, bnd)
     if key == "prompt" then
-        local boundenv = _get_boundenv({bind = bnd})
-        if boundenv then
-            assert(os.isfile(boundenv), "environment not found!")
-            io.write("[" .. path.basename(boundenv) .. "]")
-        elseif not bnd then
-            assert(os.isfile(os.projectfile()), "xmake.lua not found!")
-            io.write("[" .. path.filename(os.projectdir()) .. "]")
-        end
+        local prompt = _get_prompt(bnd)
+        io.write(prompt)
     elseif key == "envfile" then
         print(os.tmpfile())
     elseif key == "config" then
-        local boundenv = _get_boundenv({bind = bnd})
-        local has_envfile = (boundenv and os.isfile(boundenv)) and true or false
-        if has_envfile or os.isfile(os.projectfile()) then
-            if has_envfile then
-                _enter_project({enteronly = true})
-                table.insert(project.rcfiles(), boundenv)
-            end
-            task.run("config", {}, {disable_dump = true})
-        end
+        _package_getenvs({bind = bnd})
     elseif key:startswith("script.") then
         local shell = key:match("script%.(.+)")
         io.write(_get_env_script(_package_getenvs({bind = bnd}), shell, false))
@@ -426,30 +378,29 @@ end
 -- run shell
 function _run_shell(envs)
     local shell = os.shell()
-    local projectname = path.filename(os.projectdir())
     if shell == "pwsh" or shell == "powershell" then
         os.execv("pwsh", option.get("arguments"), {envs = envs})
     elseif shell:endswith("sh") then
-        local prompt = "[" .. projectname .. "] "
+        local prompt = _get_prompt()
         local ps1 = os.getenv("PS1")
         if ps1 then
             prompt = prompt .. ps1
         elseif is_host("macosx") then
-            prompt = prompt .. "\\W > "
+            prompt = prompt .. " \\W > "
         else
-            prompt = prompt .. "> "
+            prompt = prompt .. " > "
         end
         os.execv(shell, option.get("arguments"), {envs = table.join({PS1 = prompt}, envs)})
     elseif shell == "cmd" or is_host("windows") then
-        local prompt = "[" .. projectname .. "] $P$G"
-        local args = table.join({"/k", "set PROMPT=[" .. projectname .. "] $P$G"}, option.get("arguments"))
+        local prompt = _get_prompt()
+        prompt = prompt .. " $P$G"
+        local args = table.join({"/k", "set PROMPT=" .. prompt}, option.get("arguments"))
         os.execv("cmd", args, {envs = envs})
     else
         assert("shell not found!")
     end
 end
 
--- main entry
 function main()
     if option.get("list") then
         local envname = option.get("program")
@@ -487,7 +438,7 @@ function main()
         os.rm(path.join(_get_envsdir(), envname .. ".lua"))
     else
         local program = option.get("program")
-        if program and program == "shell" then
+        if program and program == "shell" and is_subhost("windows") then
             wprint("The shell was not integrated with xmake. Some features might be missing. Please switch to your default shell, and run `xmake update --integrate` to integrate the shell.")
         end
         local envs = _package_getenvs()
