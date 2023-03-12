@@ -81,25 +81,36 @@ function _find_package(cmake, name, opt)
     cmakefile:print("find_package(%s REQUIRED %s)", requirestr, componentstr)
     cmakefile:print("if(%s_FOUND)", name)
     cmakefile:print("   add_executable(%s test.cpp)", testname)
-    cmakefile:print("   target_include_directories(%s PRIVATE ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS})",
-        testname, name, name)
-    cmakefile:print("   target_include_directories(%s PRIVATE ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS})",
-        testname, name:upper(), name:upper())
+    -- setup include directories
+    local includedirs = ""
+    if configs.include_directories then
+        includedirs = table.concat(table.wrap(configs.include_directories), " ")
+    else
+        includedirs = ("${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS}"):format(name, name)
+        includedirs = includedirs .. (" ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS}"):format(name:upper(), name:upper())
+    end
+    cmakefile:print("   target_include_directories(%s PRIVATE %s)", testname, includedirs)
+    -- reserved for backword compatibility
     cmakefile:print("   target_include_directories(%s PRIVATE ${%s_CXX_INCLUDE_DIRS})",
         testname, name)
-    cmakefile:print("   target_link_libraries(%s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
-        testname, name, name, name)
-    cmakefile:print("   target_link_libraries(%s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
-        testname, name:upper(), name:upper(), name:upper())
+    -- setup link library/target
+    local linklibs = ""
     if configs.link_libraries then
-        cmakefile:print("   target_link_libraries(%s %s)",
-            testname, table.concat(table.wrap(configs.link_libraries), " "))
+        linklibs = table.concat(table.wrap(configs.link_libraries), " ")
+    else
+        linklibs = ("${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS}"):format(name, name, name)
+        linklibs = linklibs .. (" ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS}"):format(name:upper(), name:upper(), name:upper())
     end
+    cmakefile:print("   target_link_libraries(%s PRIVATE %s)", testname, linklibs)
     cmakefile:print("endif(%s_FOUND)", name)
     cmakefile:close()
 
     -- run cmake
     local envs = configs.envs or opt.envs
+    if opt.mode == "debug" then
+        envs = envs or {}
+        envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or "Debug"
+    end
     try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = envs}) end}
 
     -- pares defines and includedirs for macosx/linux
