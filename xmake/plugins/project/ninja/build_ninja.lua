@@ -423,7 +423,14 @@ function make(outputdir)
     local oldir = os.cd(os.projectdir())
 
     -- open the build.ninja file
-    local ninjafile = io.open(path.join(outputdir, "build.ninja"), "w")
+    --
+    -- we need change encoding to support msvc_deps_prefix
+    -- @see https://github.com/ninja-build/ninja/issues/613
+    --
+    -- TODO maybe we need support more encoding for other languages
+    --
+    local encoding = is_subhost("windows") and "gbk"
+    local ninjafile = io.open(path.join(outputdir, "build.ninja"), "w", {encoding = encoding})
 
     -- add header
     _add_header(ninjafile)
