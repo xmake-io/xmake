@@ -29,7 +29,6 @@ function main()
         moduledirs          = {description = "Set the cmake modules directories."},
         presets             = {description = "Set the preset values, e.g. {Boost_USE_STATIC_LIB = true}"},
         envs                = {description = "Set the run environments of cmake, e.g. {CMAKE_PREFIX_PATH = \"xxx\"}"},
-        debug               = {description = "Set the CMAKE_BUILD_TYPE=Debug if set to ture."}
     }
 end
 
