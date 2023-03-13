@@ -21,7 +21,7 @@
 -- update compile_commandss.json automatically
 --
 -- @code
--- add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
+-- add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode", lsp = "clangd"})
 -- target("test")
 --     set_kind("binary")
 --     add_files("src/*.c")
@@ -48,10 +48,8 @@ rule("plugin.compile_commands.autoupdate")
             for _, target in pairs(project.targets()) do
                 table.join2(sourcefiles, target:sourcefiles(), target:headerfiles())
                 local extraconf = target:extraconf("rules", "plugin.compile_commands.autoupdate")
-                if extraconf and extraconf.outputdir then
+                if extraconf then
                     outputdir = extraconf.outputdir
-                end
-                if extraconf and extraconf.lsp then
                     lsp = extraconf.lsp
                 end
             end
