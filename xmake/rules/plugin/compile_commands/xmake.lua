@@ -43,6 +43,7 @@ rule("plugin.compile_commands.autoupdate")
         local lockfile = io.openlock(tmpfile .. ".lock")
         if lockfile:trylock() then
             local outputdir
+            local lsp
             local sourcefiles = {}
             for _, target in pairs(project.targets()) do
                 table.join2(sourcefiles, target:sourcefiles(), target:headerfiles())
@@ -50,13 +51,16 @@ rule("plugin.compile_commands.autoupdate")
                 if extraconf and extraconf.outputdir then
                     outputdir = extraconf.outputdir
                 end
+                if extraconf and extraconf.lsp then
+                    lsp = extraconf.lsp
+                end
             end
             table.sort(sourcefiles)
             depend.on_changed(function ()
                 -- we use task instead of os.exec("xmake") to avoid the project lock
                 local filename = "compile_commands.json"
                 local filepath = outputdir and path.join(outputdir, filename) or filename
-                task.run("project", {kind = "compile_commands", outputdir = outputdir})
+                task.run("project", {kind = "compile_commands", outputdir = outputdir, lsp = lsp})
                 print("compile_commands.json updated!")
             end, {dependfile = dependfile,
                   files = project.allfiles(),
