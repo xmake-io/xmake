@@ -46,7 +46,7 @@ rule("swig.base")
                     target:set("extension", ".pyd")
                 end
             end
-        elseif moduletype == "lua" then
+        elseif moduletype == "lua" or moduletype == "java" then
             target:set("prefixname", "")
             if not target:is_plat("windows") then
                 target:set("extension", ".so")
@@ -68,6 +68,8 @@ rule("swig.base")
                         scriptfile = scriptfile .. ".py"
                     elseif moduletype == "lua" then
                         scriptfile = scriptfile .. ".lua"
+                    elseif moduletype == "java" then
+                        scriptfile = scriptfile .. ".java"
                     end
                     table.insert(scriptfiles, scriptfile)
                     if scriptdir then
