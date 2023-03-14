@@ -46,8 +46,13 @@ rule("swig.base")
                     target:set("extension", ".pyd")
                 end
             end
-        elseif moduletype == "lua" or moduletype == "java" then
+        elseif moduletype == "lua" then
             target:set("prefixname", "")
+            if not target:is_plat("windows") then
+                target:set("extension", ".so")
+            end
+        elseif moduletype == "java" then
+            target:set("prefixname", "lib")
             if not target:is_plat("windows") then
                 target:set("extension", ".so")
             end
