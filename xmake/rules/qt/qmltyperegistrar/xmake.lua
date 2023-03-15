@@ -24,7 +24,7 @@ rule("qt.qmltyperegistrar")
 
     on_config(function(target)
         -- get qt
-        local qt = assert(target:data("qt"), "qt not found!")
+        local qt = assert(target:data("qt"), "Qt not found!")
 
         -- get qmltyperegistrar
         local qmltyperegistrar = path.join(qt.bindir, is_host("windows") and "qmltyperegistrar.exe" or "qmltyperegistrar")

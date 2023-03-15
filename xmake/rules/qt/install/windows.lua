@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.tool.toolchain")
 import("lib.detect.find_path")
+import("detect.sdks.find_qt")
 
 -- get install directory
 function _get_installdir(target)
@@ -38,7 +39,7 @@ function main(target, opt)
     local installfile = path.join(installdir, "bin", path.filename(targetfile))
 
     -- get qt sdk
-    local qt = target:data("qt")
+    local qt = assert(find_qt(), "Qt SDK not found!")
 
     -- get windeployqt
     local windeployqt = path.join(qt.bindir, "windeployqt.exe")

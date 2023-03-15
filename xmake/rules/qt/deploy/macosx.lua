@@ -25,6 +25,7 @@ import("core.project.config")
 import("core.project.depend")
 import("core.tool.toolchain")
 import("lib.detect.find_path")
+import("detect.sdks.find_qt")
 import("utils.progress")
 
 -- save Info.plist
@@ -87,7 +88,7 @@ function main(target, opt)
     progress.show(opt.progress, "${color.build.target}generating.qt.app %s.app", target:basename())
 
     -- get qt sdk
-    local qt = target:data("qt")
+    local qt = assert(find_qt(), "Qt SDK not found!")
 
     -- get macdeployqt
     local macdeployqt = path.join(qt.bindir, "macdeployqt")
