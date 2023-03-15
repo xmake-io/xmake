@@ -241,6 +241,7 @@ function buildenvs(package, opt)
     local envs = _get_package_toolchains_envs(package, opt)
     -- we should avoid using $XMAKE_CONFIGDIR outside to cause conflicts
     envs.XMAKE_CONFIGDIR = os.curdir()
+    envs.XMAKE_IN_XREPO  = "true"
     return envs
 end
 
