@@ -48,6 +48,57 @@ function _get_buildenv(key)
     return value
 end
 
+-- translate paths
+function _translate_paths(paths)
+    if is_host("windows") then
+        if type(paths) == "string" then
+            return (paths:gsub("\\", "/"))
+        elseif type(paths) == "table" then
+            local result = {}
+            for _, p in ipairs(paths) do
+                table.insert(result, (p:gsub("\\", "/")))
+            end
+            return result
+        end
+    end
+    return paths
+end
+
+-- translate bin path
+function _translate_bin_path(bin_path)
+    if is_host("windows") and bin_path then
+        bin_path = bin_path:gsub("\\", "/")
+        if not bin_path:find(string.ipattern("%.exe$")) and
+           not bin_path:find(string.ipattern("%.cmd$")) and
+           not bin_path:find(string.ipattern("%.bat$")) then
+            bin_path = bin_path .. ".exe"
+        end
+    end
+    return bin_path
+end
+
+-- is cross compilation?
+function _is_cross_compilation()
+    if not is_plat(os.subhost()) then
+        return true
+    end
+    if is_plat("macosx") and not is_arch(os.subarch()) then
+        return true
+    end
+    return false
+end
+
+-- is the toolchain compatible with the host?
+function _is_toolchain_compatible_with_host(name)
+    if is_host("linux", "macosx", "bsd") then
+        if name:startswith("clang") or name:startswith("gcc") then
+            return true
+        end
+    elseif is_host("windows") and name == "msvc" then
+        return true
+    end
+end
+
 -- get configs for windows
 function _get_configs_for_windows(configs)
     table.insert(configs, "-A")
@@ -165,13 +216,33 @@ function _get_configs_for_cross(configs)
     local envs                     = {}
     local cflags                   = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cflags"))
     local cxxflags                 = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cxxflags"))
-    local sdkdir                   = _get_buildenv("sdk")
-    envs.CMAKE_C_COMPILER          = _get_buildenv("cc")
-    envs.CMAKE_CXX_COMPILER        = _get_buildenv("cxx")
-    envs.CMAKE_ASM_COMPILER        = _get_buildenv("as")
-    envs.CMAKE_AR                  = _get_buildenv("ar")
-    envs.CMAKE_LINKER              = _get_buildenv("ld")
-    envs.CMAKE_RANLIB              = _get_buildenv("ranlib")
+    local sdkdir                   = _translate_paths(_get_buildenv("sdk"))
+    envs.CMAKE_C_COMPILER          = _translate_bin_path(_get_buildenv("cc"))
+    envs.CMAKE_CXX_COMPILER        = _translate_bin_path(_get_buildenv("cxx"))
+    envs.CMAKE_ASM_COMPILER        = _translate_bin_path(_get_buildenv("as"))
+    envs.CMAKE_AR                  = _translate_bin_path(_get_buildenv("ar"))
+    -- https://github.com/xmake-io/xmake-repo/pull/1096
+    local cxx = envs.CMAKE_CXX_COMPILER
+    if cxx and (cxx:find("clang", 1, true) or cxx:find("gcc", 1, true)) then
+        local dir = path.directory(cxx)
+        local name = path.filename(cxx)
+        name = name:gsub("clang$", "clang++")
+        name = name:gsub("clang%-", "clang++-")
+        name = name:gsub("gcc$", "g++")
+        name = name:gsub("gcc%-", "g++-")
+        envs.CMAKE_CXX_COMPILER = _translate_bin_path(dir and path.join(dir, name) or name)
+    end
+    -- @note The link command line is set in Modules/CMake{C,CXX,Fortran}Information.cmake and defaults to using the compiler, not CMAKE_LINKER,
+    -- so we need set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
+    --
+    -- https://github.com/xmake-io/xmake-repo/pull/1039
+    -- https://stackoverflow.com/questions/1867745/cmake-use-a-custom-linker/25274328#25274328
+    envs.CMAKE_LINKER              = _translate_bin_path(_get_buildenv("ld"))
+    local ld = envs.CMAKE_LINKER
+    if ld and (ld:find("g++", 1, true) or ld:find("clang++", 1, true)) then
+        envs.CMAKE_CXX_LINK_EXECUTABLE = "<CMAKE_LINKER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
+    end
+    envs.CMAKE_RANLIB              = _translate_bin_path(_get_buildenv("ranlib"))
     envs.CMAKE_C_FLAGS             = table.concat(cflags, ' ')
     envs.CMAKE_CXX_FLAGS           = table.concat(cxxflags, ' ')
     envs.CMAKE_ASM_FLAGS           = table.concat(table.wrap(_get_buildenv("asflags")), ' ')
@@ -194,6 +265,54 @@ function _get_configs_for_cross(configs)
     end
 end
 
+-- get configs for host toolchain
+function _get_configs_for_host_toolchain(configs)
+    local envs                     = {}
+    local cflags                   = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cflags"))
+    local cxxflags                 = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cxxflags"))
+    local sdkdir                   = _translate_paths(_get_buildenv("sdk"))
+    envs.CMAKE_C_COMPILER          = _translate_bin_path(_get_buildenv("cc"))
+    envs.CMAKE_CXX_COMPILER        = _translate_bin_path(_get_buildenv("cxx"))
+    envs.CMAKE_ASM_COMPILER        = _translate_bin_path(_get_buildenv("as"))
+    envs.CMAKE_AR                  = _translate_bin_path(_get_buildenv("ar"))
+    -- https://github.com/xmake-io/xmake-repo/pull/1096
+    local cxx = envs.CMAKE_CXX_COMPILER
+    if cxx and (cxx:find("clang", 1, true) or cxx:find("gcc", 1, true)) then
+        local dir = path.directory(cxx)
+        local name = path.filename(cxx)
+        name = name:gsub("clang$", "clang++")
+        name = name:gsub("clang%-", "clang++-")
+        name = name:gsub("gcc$", "g++")
+        name = name:gsub("gcc%-", "g++-")
+        envs.CMAKE_CXX_COMPILER = _translate_bin_path(dir and path.join(dir, name) or name)
+    end
+    -- @note The link command line is set in Modules/CMake{C,CXX,Fortran}Information.cmake and defaults to using the compiler, not CMAKE_LINKER,
+    -- so we need set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
+    --
+    -- https://github.com/xmake-io/xmake-repo/pull/1039
+    -- https://stackoverflow.com/questions/1867745/cmake-use-a-custom-linker/25274328#25274328
+    envs.CMAKE_LINKER              = _translate_bin_path(_get_buildenv("ld"))
+    local ld = envs.CMAKE_LINKER
+    if ld and (ld:find("g++", 1, true) or ld:find("clang++", 1, true)) then
+        envs.CMAKE_CXX_LINK_EXECUTABLE = "<CMAKE_LINKER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
+    end
+    envs.CMAKE_RANLIB              = _translate_bin_path(_get_buildenv("ranlib"))
+    envs.CMAKE_C_FLAGS             = table.concat(cflags, ' ')
+    envs.CMAKE_CXX_FLAGS           = table.concat(cxxflags, ' ')
+    envs.CMAKE_ASM_FLAGS           = table.concat(table.wrap(_get_buildenv("asflags")), ' ')
+    envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("arflags")), ' ')
+    envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
+    envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
+    -- we need not set it as cross compilation if we just pass toolchain
+    -- https://github.com/xmake-io/xmake/issues/2170
+    if not is_plat(os.subhost()) then
+        envs.CMAKE_SYSTEM_NAME     = "Linux"
+    end
+    for k, v in pairs(envs) do
+        table.insert(configs, "-D" .. k .. "=" .. v)
+    end
+end
+
 -- get configs
 function _get_configs(artifacts_dir)
 
@@ -211,8 +330,16 @@ function _get_configs(artifacts_dir)
         _get_configs_for_mingw(configs)
     elseif is_plat("wasm") then
         _get_configs_for_wasm(configs)
-    elseif not is_plat(os.subhost()) then
+    elseif _is_cross_compilation() then
         _get_configs_for_cross(configs)
+    elseif config.get("toolchain") then
+        -- we still need find system libraries,
+        -- it just pass toolchain environments if the toolchain is compatible with host
+        if _is_toolchain_compatible_with_host(config.get("toolchain")) then
+            _get_configs_for_host_toolchain(configs)
+        else
+            _get_configs_for_cross(configs)
+        end
     end
 
     -- enable verbose?
