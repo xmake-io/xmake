@@ -9,6 +9,7 @@
 * [#3455](https://github.com/xmake-io/xmake/issues/3455): Dlang incremental build support
 * [#3498](https://github.com/xmake-io/xmake/issues/3498): Improve to bind package virtual envirnoments
 * [#3504](https://github.com/xmake-io/xmake/pull/3504): Add swig java support
+* [#3508](https://github.com/xmake-io/xmake/issues/3508): Improve trybuild/cmake to support for switching toolchain
 
 ### Bugs fixed
 
@@ -1552,6 +1553,7 @@
 * [#3455](https://github.com/xmake-io/xmake/issues/3455): Dlang 增量编译支持
 * [#3498](https://github.com/xmake-io/xmake/issues/3498): 改进绑定包虚拟环境
 * [#3504](https://github.com/xmake-io/xmake/pull/3504): 添加 swig java 支持
+* [#3508](https://github.com/xmake-io/xmake/issues/3508): 改进 trybuild/cmake 去支持工具链切换
 
 ### Bugs 修复
 
