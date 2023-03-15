@@ -438,7 +438,7 @@ function main()
         os.rm(path.join(_get_envsdir(), envname .. ".lua"))
     else
         local program = option.get("program")
-        if program and program == "shell" and is_subhost("windows") then
+        if program and program == "shell" and not is_subhost("windows") then
             wprint("The shell was not integrated with xmake. Some features might be missing. Please switch to your default shell, and run `xmake update --integrate` to integrate the shell.")
         end
         local envs = _package_getenvs()
