@@ -34,48 +34,36 @@ toolchain("xcode")
     -- load toolchain
     on_load(function (toolchain)
 
-        -- get cross
-        local cross, arch, simulator
-        if toolchain:is_plat("macosx") then
-            cross = "xcrun -sdk macosx "
-        elseif toolchain:is_plat("iphoneos") then
-            arch = toolchain:arch()
-            simulator = (arch == "i386" or arch == "x86_64")
-            cross = simulator and "xcrun -sdk iphonesimulator " or "xcrun -sdk iphoneos "
-        elseif toolchain:is_plat("watchos") then
-            arch = toolchain:arch()
-            simulator = (arch == "i386")
-            cross = simulator and "xcrun -sdk watchsimulator " or "xcrun -sdk watchos "
-        elseif toolchain:is_plat("appletvos") then
-            arch = toolchain:arch()
-            simulator = (arch == "i386" or arch == "x86_64")
-            cross = simulator and "xcrun -sdk appletvsimulator " or "xcrun -sdk appletvos "
-        else
-            raise("unknown platform for xcode!")
-        end
-
         -- set toolset
-        toolchain:set("toolset", "cc", cross .. "clang")
-        toolchain:set("toolset", "cxx", cross .. "clang", cross .. "clang++")
-        toolchain:set("toolset", "ld", cross .. "clang++", cross .. "clang")
-        toolchain:set("toolset", "sh", cross .. "clang++", cross .. "clang")
-        toolchain:set("toolset", "ar", cross .. "ar")
-        toolchain:set("toolset", "strip", cross .. "strip")
-        toolchain:set("toolset", "dsymutil", cross .. "dsymutil", "dsymutil")
-        toolchain:set("toolset", "mm", cross .. "clang")
-        toolchain:set("toolset", "mxx", cross .. "clang", cross .. "clang++")
-        toolchain:set("toolset", "sc", cross .. "swiftc", "swiftc")
-        toolchain:set("toolset", "scld", cross .. "swiftc", "swiftc")
-        toolchain:set("toolset", "scsh", cross .. "swiftc", "swiftc")
+        local bindir      = toolchain:bindir()
+        local xc_clang    = bindir and path.join(bindir, "clang") or "clang"
+        local xc_clangxx  = bindir and path.join(bindir, "clang++") or "clang++"
+        local xc_ar       = bindir and path.join(bindir, "ar") or "ar"
+        local xc_strip    = bindir and path.join(bindir, "strip") or "strip"
+        local xc_swiftc   = bindir and path.join(bindir, "swiftc") or "swiftc"
+        local xc_dsymutil = bindir and path.join(bindir, "dsymutil") or "dsymutil"
+
+        toolchain:set("toolset", "cc", xc_clang)
+        toolchain:set("toolset", "cxx", xc_clang, xc_clangxx)
+        toolchain:set("toolset", "ld", xc_clangxx, xc_clang)
+        toolchain:set("toolset", "sh", xc_clangxx, xc_clang)
+        toolchain:set("toolset", "ar", xc_ar)
+        toolchain:set("toolset", "strip", xc_strip)
+        toolchain:set("toolset", "dsymutil", xc_dsymutil, "dsymutil")
+        toolchain:set("toolset", "mm", xc_clang)
+        toolchain:set("toolset", "mxx", xc_clang, xc_clangxx)
+        toolchain:set("toolset", "sc", xc_swiftc, "swiftc")
+        toolchain:set("toolset", "scld", xc_swiftc, "swiftc")
+        toolchain:set("toolset", "scsh", xc_swiftc, "swiftc")
         if arch then
-            toolchain:set("toolset", "cpp", cross .. "clang -arch " .. arch .. " -E")
+            toolchain:set("toolset", "cpp", xc_clang .. " -arch " .. arch .. " -E")
         end
         if toolchain:is_plat("macosx") then
-            toolchain:set("toolset", "as", cross .. "clang")
+            toolchain:set("toolset", "as", xc_clang)
         elseif simulator then
-            toolchain:set("toolset", "as", cross .. "clang")
+            toolchain:set("toolset", "as", xc_clang)
         else
-            toolchain:set("toolset", "as", path.join(os.programdir(), "scripts", "gas-preprocessor.pl " .. cross) .. "clang")
+            toolchain:set("toolset", "as", path.join(os.programdir(), "scripts", "gas-preprocessor.pl " .. xc_clang))
         end
 
         -- load configurations

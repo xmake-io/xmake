@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("detect.sdks.find_xcode")
+import("private.utils.executable_path")
 
 -- main entry
 function main(toolchain)
@@ -89,6 +90,25 @@ function main(toolchain)
     end
     if xcode_sysroot then
         toolchain:config_set("xcode_sysroot", xcode_sysroot)
+    end
+    toolchain:config_set("simulator", simulator)
+
+    -- get xcode bin directory
+    local cross
+    if toolchain:is_plat("macosx") then
+        cross = "xcrun -sdk macosx "
+    elseif toolchain:is_plat("iphoneos") then
+        cross = simulator and "xcrun -sdk iphonesimulator " or "xcrun -sdk iphoneos "
+    elseif toolchain:is_plat("watchos") then
+        cross = simulator and "xcrun -sdk watchsimulator " or "xcrun -sdk watchos "
+    elseif toolchain:is_plat("appletvos") then
+        cross = simulator and "xcrun -sdk appletvsimulator " or "xcrun -sdk appletvos "
+    else
+        raise("unknown platform for xcode!")
+    end
+    local xc_clang = executable_path(cross .. "clang")
+    if xc_clang then
+        toolchain:config_set("bindir", path.directory(xc_clang))
     end
 
     -- save target minver
