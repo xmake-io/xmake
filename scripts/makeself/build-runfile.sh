@@ -44,7 +44,7 @@ perl -pi -e "s/#xmake-version#/$version/g" ./lsm
 
 # make run file
 cd $tmpdir
-makeself_version="2.4.5"
+makeself_version="2.5.0"
 curl -fsSL https://github.com/megastep/makeself/releases/download/release-$makeself_version/makeself-$makeself_version.run -o ./makeself-$makeself_version.run
 sh ./makeself-$makeself_version.run
 ./makeself-$makeself_version/makeself.sh \
