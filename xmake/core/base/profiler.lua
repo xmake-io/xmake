@@ -107,9 +107,9 @@ end
 -- start profiling
 function profiler:start()
     local mode = self:mode()
-    if mode and mode == "trace" then
+    if self:is_trace() then
         debug.sethook(profiler._tracing_handler, 'cr', 0)
-    else
+    elseif self:is_perf("call") then
         self._REPORTS        = self._REPORTS or {}
         self._REPORTS_BY_KEY = self._REPORTS_BY_KEY or {}
         self._STARTIME       = self._STARTIME or os.clock()
@@ -119,18 +119,10 @@ end
 
 -- stop profiling
 function profiler:stop()
-
-    -- trace?
-    local mode = self:mode()
-    if mode and mode == "trace" then
-        -- stop to hook
+    if self:is_trace() then
         debug.sethook()
-    else
-
-        -- save the stop time
+    elseif self:is_perf("call") then
         self._STOPTIME = os.clock()
-
-        -- stop to hook
         debug.sethook()
 
         -- calculate the total time
@@ -143,20 +135,16 @@ function profiler:stop()
 
         -- show reports
         for _, report in ipairs(self._REPORTS) do
-
-            -- calculate percent
             local percent = (report.totaltime / totaltime) * 100
             if percent < 1 then
                 break
             end
-
-            -- trace
             utils.print("%6.3f, %6.2f%%, %7d, %s", report.totaltime, percent, report.callcount, self:_func_title(report.funcinfo))
         end
    end
 end
 
--- get profiler mode, e.g. perf, trace
+-- get profiler mode, e.g. perf:call, perf:tag, trace
 function profiler:mode()
     local mode = self._MODE
     if mode == nil then
@@ -166,10 +154,23 @@ function profiler:mode()
     return mode or nil
 end
 
+-- is trace?
+function profiler:is_trace()
+    local mode = self:mode()
+    return mode and mode == "trace"
+end
+
+-- is perf?
+function profiler:is_perf(name)
+    local mode = self:mode()
+    if mode and name then
+        return mode == "perf:" .. name
+    end
+end
+
 -- profiler is enabled?
 function profiler:enabled()
-    local mode = self:mode()
-    return mode ~= nil and (mode == "trace" or mode == "perf")
+    return self:is_perf("call") or self:is_perf("tag") or self:is_trace()
 end
 
 -- return module
