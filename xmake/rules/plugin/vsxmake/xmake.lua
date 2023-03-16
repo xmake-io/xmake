@@ -47,7 +47,7 @@ rule("plugin.vsxmake.autoupdate")
         local archs = localcache.get("vsxmake", "archs")
         local outputdir = localcache.get("vsxmake", "outputdir")
         if lockfile:trylock() then
-            if os.getenv("XMAKE_IN_VSTUDIO") then
+            if os.getenv("XMAKE_IN_VSTUDIO") and not os.getenv("XMAKE_IN_XREPO") then
                 local sourcefiles = {}
                 for _, target in pairs(project.targets()) do
                     table.join2(sourcefiles, target:sourcefiles(), target:headerfiles())

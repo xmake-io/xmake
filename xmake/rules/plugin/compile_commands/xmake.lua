@@ -37,6 +37,11 @@ rule("plugin.compile_commands.autoupdate")
         import("core.project.project")
         import("core.base.task")
 
+        -- we should not update it if we are installing xmake package
+        if os.getenv("XMAKE_IN_XREPO") then
+            return
+        end
+
         -- run only once for all xmake process in vs
         local tmpfile = path.join(config.buildir(), ".gens", "rules", "plugin.compile_commands.autoupdate")
         local dependfile = tmpfile .. ".d"
