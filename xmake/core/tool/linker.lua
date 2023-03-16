@@ -28,6 +28,7 @@ local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
 local option    = require("base/option")
+local profiler  = require("base/profiler")
 local config    = require("project/config")
 local sandbox   = require("sandbox/sandbox")
 local language  = require("language/language")
@@ -217,7 +218,10 @@ function linker:link(objectfiles, targetfile, opt)
     local linkflags = opt.linkflags or self:linkflags(opt)
     opt = table.copy(opt)
     opt.target = self:target()
-    return sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, linkflags, opt)
+    profiler:enter(self:name(), "link", targetfile)
+    local ok, errors = sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, linkflags, opt)
+    profiler:leave(self:name(), "link", targetfile)
+    return ok, errors
 end
 
 -- get the link arguments list

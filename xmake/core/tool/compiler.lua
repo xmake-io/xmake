@@ -28,6 +28,7 @@ local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
 local option    = require("base/option")
+local profiler  = require("base/profiler")
 local tool      = require("tool/tool")
 local builder   = require("tool/builder")
 local config    = require("project/config")
@@ -269,7 +270,10 @@ function compiler:compile(sourcefiles, objectfile, opt)
     -- compile it
     opt = table.copy(opt)
     opt.target = self:target()
-    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.dependinfo, compflags, opt)
+    profiler:enter(self:name(), "compile", sourcefiles)
+    local ok, errors = sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.dependinfo, compflags, opt)
+    profiler:leave(self:name(), "compile", sourcefiles)
+    return ok, errors
 end
 
 -- get the compile arguments list

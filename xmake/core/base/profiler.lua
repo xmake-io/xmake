@@ -91,6 +91,7 @@ end
 
 -- get the tag report
 function profiler:_tag_report(name, argv)
+    self._REPORTS_BY_KEY = self._REPORTS_BY_KEY or {}
     local key = self:_tag_key(name, argv)
     local report = self._REPORTS_BY_KEY[key]
     if not report then
@@ -101,6 +102,7 @@ function profiler:_tag_report(name, argv)
             totaltime   = 0
         }
         self._REPORTS_BY_KEY[key] = report
+        self._REPORTS = self._REPORTS or {}
         table.insert(self._REPORTS, report)
     end
     return report
@@ -199,8 +201,9 @@ function profiler:stop()
 end
 
 -- enter the given tag for perl:tag
-function profiler:enter(name, argv)
+function profiler:enter(name, ...)
     if self:is_perf("tag") then
+        local argv = table.pack(...)
         local report = self:_tag_report(name, argv)
         report.calltime    = os.clock()
         report.callcount   = report.callcount + 1
@@ -208,9 +211,10 @@ function profiler:enter(name, argv)
 end
 
 -- leave the given tag for perl:tag
-function profiler:leave(name, argv)
+function profiler:leave(name, ...)
     if self:is_perf("tag") then
         local stoptime = os.clock()
+        local argv = table.pack(...)
         local report = self:_tag_report(name, argv)
         if report.calltime and report.calltime > 0 then
             report.totaltime = report.totaltime + (stoptime - report.calltime)
