@@ -52,11 +52,53 @@ function profiler:_func_report(funcinfo)
     local key = self:_func_key(funcinfo)
     local report = self._REPORTS_BY_KEY[key]
     if not report then
-        report =
-        {
-            funcinfo    = funcinfo
-        ,   callcount   = 0
-        ,   totaltime   = 0
+        report = {
+            funcinfo    = funcinfo,
+            callcount   = 0,
+            totaltime   = 0
+        }
+        self._REPORTS_BY_KEY[key] = report
+        table.insert(self._REPORTS, report)
+    end
+    return report
+end
+
+-- get the tag key
+function profiler:_tag_key(name, argv)
+    local key = name
+    if argv then
+        if type(argv) == "table" then
+            key = key .. os.args(argv)
+        else
+            key = key .. tostring(argv)
+        end
+    end
+    return key
+end
+
+-- get the tag title
+function profiler:_tag_title(name, argv)
+    local key = name
+    if argv then
+        if type(argv) == "table" then
+            key = key .. ": " .. os.args(argv)
+        else
+            key = key .. ": " .. tostring(argv)
+        end
+    end
+    return key
+end
+
+-- get the tag report
+function profiler:_tag_report(name, argv)
+    local key = self:_tag_key(name, argv)
+    local report = self._REPORTS_BY_KEY[key]
+    if not report then
+        report = {
+            name        = name,
+            argv        = argv,
+            callcount   = 0,
+            totaltime   = 0
         }
         self._REPORTS_BY_KEY[key] = report
         table.insert(self._REPORTS, report)
@@ -106,7 +148,6 @@ end
 
 -- start profiling
 function profiler:start()
-    local mode = self:mode()
     if self:is_trace() then
         debug.sethook(profiler._tracing_handler, 'cr', 0)
     elseif self:is_perf("call") then
@@ -129,19 +170,53 @@ function profiler:stop()
         local totaltime = self._STOPTIME - self._STARTIME
 
         -- sort reports
-        table.sort(self._REPORTS, function(a, b)
+        local reports = self._REPORTS or {}
+        table.sort(reports, function(a, b)
             return a.totaltime > b.totaltime
         end)
 
         -- show reports
-        for _, report in ipairs(self._REPORTS) do
+        for _, report in ipairs(reports) do
             local percent = (report.totaltime / totaltime) * 100
             if percent < 1 then
                 break
             end
             utils.print("%6.3f, %6.2f%%, %7d, %s", report.totaltime, percent, report.callcount, self:_func_title(report.funcinfo))
         end
+    elseif self:is_perf("tag") then
+
+        -- sort reports
+        local reports = self._REPORTS or {}
+        table.sort(reports, function(a, b)
+            return a.totaltime > b.totaltime
+        end)
+
+        -- show reports
+        for _, report in ipairs(reports) do
+            utils.print("%6.3f, %7d, %s", report.totaltime, report.callcount, self:_tag_title(report.name, report.argv))
+        end
    end
+end
+
+-- enter the given tag for perl:tag
+function profiler:enter(name, argv)
+    if self:is_perf("tag") then
+        local report = self:_tag_report(name, argv)
+        report.calltime    = os.clock()
+        report.callcount   = report.callcount + 1
+    end
+end
+
+-- leave the given tag for perl:tag
+function profiler:leave(name, argv)
+    if self:is_perf("tag") then
+        local stoptime = os.clock()
+        local report = self:_tag_report(name, argv)
+        if report.calltime and report.calltime > 0 then
+            report.totaltime = report.totaltime + (stoptime - report.calltime)
+            report.calltime = 0
+        end
+    end
 end
 
 -- get profiler mode, e.g. perf:call, perf:tag, trace
