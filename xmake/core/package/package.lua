@@ -1507,10 +1507,12 @@ function _instance:_fetch_tool(opt)
                 end
             end
         else
+            print("find_tool", self:name())
             fetchinfo = self:find_tool(self:name(), {require_version = opt.require_version,
                                                      cachekey = "fetch_package_xmake",
                                                      norun = true, -- we need not run it to check for xmake/packages, @see https://github.com/xmake-io/xmake-repo/issues/66
                                                      force = opt.force})
+            print("fetchinfo", fetchinfo)
 
             -- may be toolset, not single tool
             if not fetchinfo then
