@@ -209,8 +209,7 @@ function _instance:_do_check_features()
 
         -- all features are supported?
         features = table.wrap(features)
-        local features_supported = self._core_tool_compiler.has_features(features, {target = self})
-        if features_supported and #features_supported == #features then
+        if self._core_tool_compiler.has_features(features, {target = self}) then
             passed = 1
         end
 

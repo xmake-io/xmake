@@ -2193,6 +2193,19 @@ function _instance:has_cxxflags(flags, opt)
     return compinst:has_flags(flags, "cxxflags", opt)
 end
 
+-- has the given features?
+--
+-- @param features  the features, e.g. {"c_static_assert", "cxx_constexpr"}
+-- @param opt       the argument options, e.g. {cxflags = "", defines = "", includedirs = "", ...}
+--
+-- @return          true or false, errors
+--
+function _instance:has_features(features, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("core.tool.compiler", {anonymous = true}).has_features(features, opt)
+end
+
 -- check the given c snippets?
 --
 -- @param snippets  the snippets
