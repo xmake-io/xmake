@@ -202,7 +202,12 @@ end
 
 -- enter the given tag for perl:tag
 function profiler:enter(name, ...)
-    if self:is_perf("tag") then
+    local is_perf_tag = self._IS_PERF_TAG
+    if is_perf_tag == nil then
+        is_perf_tag = self:is_perf("tag")
+        self._IS_PERF_TAG = is_perf_tag
+    end
+    if is_perf_tag then
         local argv = table.pack(...)
         local report = self:_tag_report(name, argv)
         report.calltime    = os.clock()
@@ -212,7 +217,12 @@ end
 
 -- leave the given tag for perl:tag
 function profiler:leave(name, ...)
-    if self:is_perf("tag") then
+    local is_perf_tag = self._IS_PERF_TAG
+    if is_perf_tag == nil then
+        is_perf_tag = self:is_perf("tag")
+        self._IS_PERF_TAG = is_perf_tag
+    end
+    if is_perf_tag then
         local stoptime = os.clock()
         local argv = table.pack(...)
         local report = self:_tag_report(name, argv)
