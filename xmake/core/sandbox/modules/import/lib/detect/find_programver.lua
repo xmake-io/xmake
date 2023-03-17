@@ -28,6 +28,7 @@ local table       = require("base/table")
 local utils       = require("base/utils")
 local option      = require("base/option")
 local semver      = require("base/semver")
+local profiler    = require("base/profiler")
 local project     = require("project/project")
 local detectcache = require("cache/detectcache")
 local sandbox     = require("sandbox/sandbox")
@@ -81,6 +82,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
 
     -- attempt to get version output info
     checking = coroutine_running and program or nil
+    profiler:enter("find_programver", program)
     local ok = false
     local outdata = nil
     local command = opt.command
@@ -95,6 +97,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
         ok, outdata = os.iorunv(program, {command or "--version"}, {envs = opt.envs})
     end
     checking = nil
+    profiler:leave("find_programver", program)
 
     -- find version info
     if ok and outdata and #outdata > 0 then

@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.scheduler")
+import("core.base.profiler")
 import("core.project.config")
 import("core.cache.detectcache")
 import("lib.detect.find_tool")
@@ -117,6 +118,9 @@ function main(name, flags, opt)
     end
     checkflags = results
 
+    -- start profile
+    profiler.enter("has_flags", tool.name, checkflags[1])
+
     -- detect.tools.xxx.has_flags(flags, opt)?
     _g._checking = coroutine_running and key or nil
     local hasflags = import("detect.tools." .. tool.name .. ".has_flags", {try = true})
@@ -131,6 +135,9 @@ function main(name, flags, opt)
     end
     _g._checking = nil
     result = result or false
+
+    -- stop profile
+    profiler.leave("has_flags", tool.name, checkflags[1])
 
     -- trace
     if option.get("verbose") or option.get("diagnosis") or opt.verbose then

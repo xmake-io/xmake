@@ -36,7 +36,7 @@ function main()
                     XMAKE_RAMDIR         = {"Set the ramdisk directory.", os.getenv("XMAKE_RAMDIR")},
                     XMAKE_RCFILES        = {"Set the runtime configuration files.", path.joinenv(project.rcfiles())},
                     XMAKE_TMPDIR         = {"Set the temporary directory.", os.tmpdir()},
-                    XMAKE_PROFILE        = {"Start profiler, e.g. perf, trace, stuck.", os.getenv("XMAKE_PROFILE")},
+                    XMAKE_PROFILE        = {"Start profiler, e.g. perf:call, perf:tag, trace, stuck.", os.getenv("XMAKE_PROFILE")},
                     XMAKE_PKG_CACHEDIR   = {"Set the cache directory of packages.", os.getenv("XMAKE_PKG_CACHEDIR")},
                     XMAKE_PKG_INSTALLDIR = {"Set the install directory of packages.", os.getenv("XMAKE_PKG_INSTALLDIR")}}
     local width = 24
