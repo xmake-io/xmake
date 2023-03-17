@@ -2196,7 +2196,7 @@ end
 -- has the given features?
 --
 -- @param features  the features, e.g. {"c_static_assert", "cxx_constexpr"}
--- @param opt       the argument options, e.g. {cxflags = "", defines = "", includedirs = "", ...}
+-- @param opt       the argument options, e.g. {flags = ""}
 --
 -- @return          true or false, errors
 --
