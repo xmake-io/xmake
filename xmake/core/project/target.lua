@@ -2252,6 +2252,134 @@ function _instance:has_tool(toolkind, ...)
     end
 end
 
+-- has the given c funcs?
+--
+-- @param funcs     the funcs
+-- @param opt       the argument options, e.g. { includes = ""}
+--
+-- @return          true or false, errors
+--
+function _instance:has_cfuncs(funcs, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("lib.detect.has_cfuncs", {anonymous = true})(funcs, opt)
+end
+
+-- has the given c++ funcs?
+--
+-- @param funcs     the funcs
+-- @param opt       the argument options, e.g. { includes = ""}
+--
+-- @return          true or false, errors
+--
+function _instance:has_cxxfuncs(funcs, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("lib.detect.has_cxxfuncs", {anonymous = true})(funcs, opt)
+end
+
+-- has the given c types?
+--
+-- @param types     the types
+-- @param opt       the argument options, e.g. { defines = ""}
+--
+-- @return          true or false, errors
+--
+function _instance:has_ctypes(types, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("lib.detect.has_ctypes", {anonymous = true})(types, opt)
+end
+
+-- has the given c++ types?
+--
+-- @param types  the types
+-- @param opt       the argument options, e.g. { defines = ""}
+--
+-- @return          true or false, errors
+--
+function _instance:has_cxxtypes(types, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("lib.detect.has_cxxtypes", {anonymous = true})(types, opt)
+end
+
+-- has the given c includes?
+--
+-- @param includes  the includes
+-- @param opt       the argument options, e.g. { defines = ""}
+--
+-- @return          true or false, errors
+--
+function _instance:has_cincludes(includes, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("lib.detect.has_cincludes", {anonymous = true})(includes, opt)
+end
+
+-- has the given c++ includes?
+--
+-- @param includes  the includes
+-- @param opt       the argument options, e.g. { defines = ""}
+--
+-- @return          true or false, errors
+--
+function _instance:has_cxxincludes(includes, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("lib.detect.has_cxxincludes", {anonymous = true})(includes, opt)
+end
+
+-- has the given c flags?
+--
+-- @param flags     the flags
+-- @param opt       the argument options, e.g. { flagskey = "xxx" }
+--
+-- @return          true or false, errors
+--
+function _instance:has_cflags(flags, opt)
+    local compinst = self:compiler("cc")
+    return compinst:has_flags(flags, "cflags", opt)
+end
+
+-- has the given c++ flags?
+--
+-- @param flags     the flags
+-- @param opt       the argument options, e.g. { flagskey = "xxx" }
+--
+-- @return          true or false, errors
+--
+function _instance:has_cxxflags(flags, opt)
+    local compinst = self:compiler("cxx")
+    return compinst:has_flags(flags, "cxxflags", opt)
+end
+
+-- check the given c snippets?
+--
+-- @param snippets  the snippets
+-- @param opt       the argument options, e.g. { includes = ""}
+--
+-- @return          true or false, errors
+--
+function _instance:check_csnippets(snippets, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("lib.detect.check_csnippets", {anonymous = true})(snippets, opt)
+end
+
+-- check the given c++ snippets?
+--
+-- @param snippets  the snippets
+-- @param opt       the argument options, e.g. { includes = ""}
+--
+-- @return          true or false, errors
+--
+function _instance:check_cxxsnippets(snippets, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("lib.detect.check_cxxsnippets", {anonymous = true})(snippets, opt)
+end
+
 -- get project
 function target._project()
     return target._PROJECT
