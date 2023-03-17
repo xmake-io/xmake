@@ -2088,7 +2088,7 @@ end
 -- has the given c funcs?
 --
 -- @param funcs     the funcs
--- @param opt       the argument options, e.g. { includes = ""}
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2102,7 +2102,7 @@ end
 -- has the given c++ funcs?
 --
 -- @param funcs     the funcs
--- @param opt       the argument options, e.g. {includes = ""}
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2116,7 +2116,7 @@ end
 -- has the given c types?
 --
 -- @param types     the types
--- @param opt       the argument options, e.g. { defines = ""}
+-- @param opt       the argument options, e.g. {configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2129,8 +2129,8 @@ end
 
 -- has the given c++ types?
 --
--- @param types  the types
--- @param opt       the argument options, e.g. { defines = ""}
+-- @param types     the types
+-- @param opt       the argument options, e.g. {configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2144,7 +2144,7 @@ end
 -- has the given c includes?
 --
 -- @param includes  the includes
--- @param opt       the argument options, e.g. { defines = ""}
+-- @param opt       the argument options, e.g. {configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2158,7 +2158,7 @@ end
 -- has the given c++ includes?
 --
 -- @param includes  the includes
--- @param opt       the argument options, e.g. { defines = ""}
+-- @param opt       the argument options, e.g. {configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2209,7 +2209,7 @@ end
 -- check the given c snippets?
 --
 -- @param snippets  the snippets
--- @param opt       the argument options, e.g. { includes = ""}
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2223,7 +2223,7 @@ end
 -- check the given c++ snippets?
 --
 -- @param snippets  the snippets
--- @param opt       the argument options, e.g. { includes = ""}
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
