@@ -203,10 +203,13 @@ function profiler:stop()
 
         -- show reports
         local count = 0
-        while count < 32 and h:length() > 0 do
+        while count < 64 and h:length() > 0 do
             local report = h:pop()
             utils.print("%6.3f, %7d, %s", report.totaltime, report.callcount, self:_tag_title(report.name, report.argv))
             count = count + 1
+        end
+        if h:length() > 0 then
+            utils.print("...")
         end
    end
 end
