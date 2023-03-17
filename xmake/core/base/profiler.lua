@@ -24,6 +24,7 @@ local profiler = {}
 -- load modules
 local os        = require("base/os")
 local path      = require("base/path")
+local heap      = require("base/heap")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
@@ -191,15 +192,21 @@ function profiler:stop()
         end
     elseif self:is_perf("tag") then
 
-        -- sort reports
+        -- sort reports, topN
         local reports = self._REPORTS or {}
-        table.sort(reports, function(a, b)
+        local h = heap.valueheap({cmp = function(a, b)
             return a.totaltime > b.totaltime
-        end)
+        end})
+        for _, report in ipairs(reports) do
+            h:push(report)
+        end
 
         -- show reports
-        for _, report in ipairs(reports) do
+        local count = 0
+        while count < 32 and h:length() > 0 do
+            local report = h:pop()
             utils.print("%6.3f, %7d, %s", report.totaltime, report.callcount, self:_tag_title(report.name, report.argv))
+            count = count + 1
         end
    end
 end
