@@ -36,6 +36,7 @@ local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local memcache       = require("cache/memcache")
 local toolchain      = require("tool/toolchain")
+local compiler       = require("tool/compiler")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local policy         = require("project/policy")
@@ -57,6 +58,16 @@ function _instance.new(name, info, opt)
     instance._REPO      = opt.repo
     instance._SCRIPTDIR = opt.scriptdir and path.absolute(opt.scriptdir)
     return instance
+end
+
+-- get memcache
+function _instance:_memcache()
+    local cache = self._MEMCACHE
+    if not cache then
+        cache = memcache.cache("core.package.package." .. tostring(self))
+        self._MEMCACHE = cache
+    end
+    return cache
 end
 
 -- get the package name
@@ -1110,6 +1121,23 @@ function _instance:toolconfig(name)
     end
 end
 
+-- get the target compiler
+function _instance:compiler(sourcekind)
+    local compilerinst = self:_memcache():get("compiler")
+    if not compilerinst then
+        if not sourcekind then
+            os.raise("please pass sourcekind to the first argument of package:compiler(), e.g. cc, cxx, as")
+        end
+        local instance, errors = compiler.load(sourcekind, self)
+        if not instance then
+            os.raise(errors)
+        end
+        compilerinst = instance
+        self:_memcache():set("compiler", compilerinst)
+    end
+    return compilerinst
+end
+
 -- has the given tool for the current package?
 --
 -- e.g.
@@ -2060,7 +2088,7 @@ end
 -- has the given c funcs?
 --
 -- @param funcs     the funcs
--- @param opt       the argument options, e.g. { includes = ""}
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2074,7 +2102,7 @@ end
 -- has the given c++ funcs?
 --
 -- @param funcs     the funcs
--- @param opt       the argument options, e.g. {includes = ""}
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2087,8 +2115,8 @@ end
 
 -- has the given c types?
 --
--- @param types  the types
--- @param opt       the argument options, e.g. { defines = ""}
+-- @param types     the types
+-- @param opt       the argument options, e.g. {configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2101,8 +2129,8 @@ end
 
 -- has the given c++ types?
 --
--- @param types  the types
--- @param opt       the argument options, e.g. { defines = ""}
+-- @param types     the types
+-- @param opt       the argument options, e.g. {configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2116,7 +2144,7 @@ end
 -- has the given c includes?
 --
 -- @param includes  the includes
--- @param opt       the argument options, e.g. { defines = ""}
+-- @param opt       the argument options, e.g. {configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2130,7 +2158,7 @@ end
 -- has the given c++ includes?
 --
 -- @param includes  the includes
--- @param opt       the argument options, e.g. { defines = ""}
+-- @param opt       the argument options, e.g. {configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2141,10 +2169,47 @@ function _instance:has_cxxincludes(includes, opt)
     return sandbox_module.import("lib.detect.has_cxxincludes", {anonymous = true})(includes, opt)
 end
 
+-- has the given c flags?
+--
+-- @param flags     the flags
+-- @param opt       the argument options, e.g. { flagskey = "xxx" }
+--
+-- @return          true or false, errors
+--
+function _instance:has_cflags(flags, opt)
+    local compinst = self:compiler("cc")
+    return compinst:has_flags(flags, "cflags", opt)
+end
+
+-- has the given c++ flags?
+--
+-- @param flags     the flags
+-- @param opt       the argument options, e.g. { flagskey = "xxx" }
+--
+-- @return          true or false, errors
+--
+function _instance:has_cxxflags(flags, opt)
+    local compinst = self:compiler("cxx")
+    return compinst:has_flags(flags, "cxxflags", opt)
+end
+
+-- has the given features?
+--
+-- @param features  the features, e.g. {"c_static_assert", "cxx_constexpr"}
+-- @param opt       the argument options, e.g. {flags = ""}
+--
+-- @return          true or false, errors
+--
+function _instance:has_features(features, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("core.tool.compiler", {anonymous = true}).has_features(features, opt)
+end
+
 -- check the given c snippets?
 --
 -- @param snippets  the snippets
--- @param opt       the argument options, e.g. { includes = ""}
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --
@@ -2158,7 +2223,7 @@ end
 -- check the given c++ snippets?
 --
 -- @param snippets  the snippets
--- @param opt       the argument options, e.g. { includes = ""}
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
 --
 -- @return          true or false, errors
 --

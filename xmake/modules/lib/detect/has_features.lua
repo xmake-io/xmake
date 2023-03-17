@@ -28,7 +28,7 @@ import("lib.detect.features", {alias = "get_features"})
 -- @param features  the features
 -- @param opt       the argument options, e.g. {verbose = false, flags = {}, program = ""}}
 --
--- @return          the supported features or nil
+-- @return          true or false
 --
 -- @code
 -- local features = has_features("clang", "cxx_constexpr")
@@ -37,20 +37,14 @@ import("lib.detect.features", {alias = "get_features"})
 -- @endcode
 --
 function main(name, features, opt)
-
-    -- init options
     opt = opt or {}
-
-    -- get all features
-    local all = get_features(name, opt) or {}
-
-    -- get results
-    local results = nil
+    local allfeatures = get_features(name, opt) or {}
+    local passed = 0
+    features = table.wrap(features)
     for _, feature in ipairs(features) do
-        if all[feature] then
-            results = results or {}
-            table.insert(results, feature)
+        if allfeatures[feature] then
+            passed = passed + 1
         end
     end
-    return results
+    return passed == #features
 end

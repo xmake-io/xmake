@@ -226,7 +226,7 @@ end
 -- @param opt           the argument options (contain all the compiler attributes of target),
 --                      e.g. {target = ..., targetkind = "static", cxflags = "", defines = "", includedirs = "", ...}
 --
--- @return              the supported features or nil
+-- @return              the true or false
 --
 function sandbox_core_tool_compiler.has_features(features, opt)
 
@@ -236,14 +236,10 @@ function sandbox_core_tool_compiler.has_features(features, opt)
         return
     end
 
-    -- init options
-    opt = opt or {}
-
-    -- get the language kinds
-    local langkinds = language.langkinds()
-
     -- classify features by the source kind
+    opt = opt or {}
     local features_by_kind = {}
+    local langkinds = language.langkinds()
     for _, feature in ipairs(table.wrap(features)) do
 
         -- get language kind
@@ -260,29 +256,18 @@ function sandbox_core_tool_compiler.has_features(features, opt)
     end
 
     -- has features for each compiler?
-    local results = nil
     for sourcekind, features in pairs(features_by_kind) do
-
-        -- get the compiler instance
         local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
-
-        -- get flags
         local flags = instance:compflags(opt)
-
-        -- has features?
         local ok, results_or_errors = sandbox.load(sandbox_core_tool_compiler._has_features, instance:name(), features, {flags = flags, program = instance:program(), envs = instance:runenvs()})
         if not ok then
             raise(results_or_errors)
         end
-
-        -- save results
-        if results_or_errors then
-            results = table.join(results or {}, results_or_errors)
+        if not results_or_errors then
+            return false
         end
     end
-
-    -- ok?
-    return results
+    return true
 end
 
 -- has the given flags?
