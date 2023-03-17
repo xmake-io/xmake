@@ -26,6 +26,7 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local table     = require("base/table")
+local profiler  = require("base/profiler")
 local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
 
@@ -70,16 +71,18 @@ function sandbox_lib_detect_find_file.main(name, paths, opt)
     opt = opt or {}
 
     -- find file
+    profiler:enter("find_file", name)
+    local results
     local suffixes = table.wrap(opt.suffixes)
     for _, _path in ipairs(table.wrap(paths)) do
 
         -- format path for builtin variables
         if type(_path) == "function" then
-            local ok, results = sandbox.load(_path)
+            local ok, result_or_errors = sandbox.load(_path)
             if ok then
-                _path = results or ""
+                _path = result_or_errors or ""
             else
-                raise(results)
+                raise(result_or_errors)
             end
         elseif type(_path) == "string" then
             if _path:match("^%$%(env .+%)$") then
@@ -95,21 +98,24 @@ function sandbox_lib_detect_find_file.main(name, paths, opt)
                 if #suffixes > 0 then
                     for _, suffix in ipairs(suffixes) do
                         local filedir = path.join(_s_path, suffix)
-                        local results = sandbox_lib_detect_find_file._find(filedir, name)
+                        results = sandbox_lib_detect_find_file._find(filedir, name)
                         if results then
-                            return results
+                            goto found
                         end
                     end
                 else
                     -- find file in the given path
-                    local results = sandbox_lib_detect_find_file._find(_s_path, name)
+                    results = sandbox_lib_detect_find_file._find(_s_path, name)
                     if results then
-                        return results
+                        goto found
                     end
                 end
             end
         end
     end
+::found::
+    profiler:leave("find_file", name)
+    return results
 end
 
 -- return module

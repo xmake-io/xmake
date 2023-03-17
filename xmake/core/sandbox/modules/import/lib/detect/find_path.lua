@@ -25,6 +25,7 @@ local sandbox_lib_detect_find_path = sandbox_lib_detect_find_path or {}
 local os        = require("base/os")
 local path      = require("base/path")
 local table     = require("base/table")
+local profiler  = require("base/profiler")
 local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
 
@@ -76,16 +77,18 @@ function sandbox_lib_detect_find_path.main(name, paths, opt)
     opt = opt or {}
 
     -- find path
+    local results
+    profiler:enter("find_path", name)
     local suffixes = table.wrap(opt.suffixes)
     for _, _path in ipairs(table.wrap(paths)) do
 
         -- format path for builtin variables
         if type(_path) == "function" then
-            local ok, results = sandbox.load(_path)
+            local ok, result_or_errors = sandbox.load(_path)
             if ok then
-                _path = results or ""
+                _path = result_or_errors or ""
             else
-                raise(results)
+                raise(result_or_errors)
             end
         else
             _path = vformat(_path)
@@ -95,19 +98,22 @@ function sandbox_lib_detect_find_path.main(name, paths, opt)
         if #suffixes > 0 then
             for _, suffix in ipairs(suffixes) do
                 local filedir = path.join(_path, suffix)
-                local results = sandbox_lib_detect_find_path._find(filedir, name)
+                results = sandbox_lib_detect_find_path._find(filedir, name)
                 if results then
-                    return results
+                    goto found
                 end
             end
         else
             -- find file in the given path
-            local results = sandbox_lib_detect_find_path._find(_path, name)
+            results = sandbox_lib_detect_find_path._find(_path, name)
             if results then
-                return results
+                goto found
             end
         end
     end
+::found::
+    profiler:leave("find_path", name)
+    return results
 end
 
 -- return module
