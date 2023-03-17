@@ -89,6 +89,8 @@ function sandbox_lib_detect_find_programver.main(program, opt)
         if not ok and outdata and option.get("diagnosis") then
             utils.cprint("${color.warning}checkinfo: ${clear dim}" .. outdata)
         end
+    elseif type(command) == "table" then
+        ok, outdata = os.iorunv(program, command, {envs = opt.envs})
     else
         ok, outdata = os.iorunv(program, {command or "--version"}, {envs = opt.envs})
     end

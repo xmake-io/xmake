@@ -35,20 +35,13 @@ import("lib.detect.find_programver")
 -- @endcode
 --
 function main(opt)
-
-    -- init options
     opt         = opt or {}
-    opt.command = opt.command or "--version"
-
-    -- find program
+    opt.check   = opt.check or {"-c", "$PSVersionTable"}
     local program = find_program(opt.program or "powershell", opt)
-
-    -- find program version
     local version = nil
     if program and opt and opt.version then
+        opt.command = opt.command or {"-c", "$PSVersionTable"}
         version = find_programver(program, opt)
     end
-
-    -- ok?
     return program, version
 end

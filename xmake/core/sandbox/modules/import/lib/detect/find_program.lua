@@ -61,6 +61,8 @@ function sandbox_lib_detect_find_program._do_check(program, opt)
     local errors = nil
     if type(opt.check) == "string" then
         ok, errors = os.runv(program, {opt.check}, {envs = opt.envs})
+    elseif type(opt.check) == "table" then
+        ok, errors = os.runv(program, opt.check, {envs = opt.envs})
     else
         ok, errors = sandbox.load(opt.check, program)
     end
