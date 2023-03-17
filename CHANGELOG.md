@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#3518](https://github.com/xmake-io/xmake/issues/3518): Profile compile and link performance
+
 ### Changes
 
 * [#3433](https://github.com/xmake-io/xmake/issues/3433): Improve to build Qt project on msys2/mingw64
@@ -1545,6 +1549,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#3518](https://github.com/xmake-io/xmake/issues/3518): 分析编译和链接性能
 
 ### 改进
 
