@@ -67,10 +67,12 @@ end
 function profiler:_tag_key(name, argv)
     local key = name
     if argv then
-        if type(argv) == "table" then
-            key = key .. os.args(argv)
-        else
-            key = key .. tostring(argv)
+        for _, item in ipairs(argv) do
+            if type(item) == "table" then
+                key = key .. os.args(item)
+            else
+                key = key .. tostring(item)
+            end
         end
     end
     return key
@@ -80,10 +82,12 @@ end
 function profiler:_tag_title(name, argv)
     local key = name
     if argv then
-        if type(argv) == "table" then
-            key = key .. ": " .. os.args(argv)
-        else
-            key = key .. ": " .. tostring(argv)
+        for _, item in ipairs(argv) do
+            if type(item) == "table" then
+                key = key .. ": " .. os.args(item)
+            else
+                key = key .. ": " .. tostring(item)
+            end
         end
     end
     return key
