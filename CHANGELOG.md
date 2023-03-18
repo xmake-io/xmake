@@ -5,6 +5,7 @@
 ### New features
 
 * [#3518](https://github.com/xmake-io/xmake/issues/3518): Profile compile and link performance
+* [#3522](https://github.com/xmake-io/xmake/issues/3522): Add has_cflags, has_xxx for target
 
 ### Changes
 
@@ -1553,6 +1554,7 @@
 ### 新特性
 
 * [#3518](https://github.com/xmake-io/xmake/issues/3518): 分析编译和链接性能
+* [#3522](https://github.com/xmake-io/xmake/issues/3522): 为 target 添加 has_cflags, has_xxx 等辅助接口
 
 ### 改进
 
