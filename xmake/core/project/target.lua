@@ -1536,7 +1536,8 @@ function _instance:sourcefiles()
                     pattern = pattern:sub(3)
                 end
                 pattern = path.pattern(pattern)
-                if sourcefile:match(pattern) then
+                -- we need match whole pattern, https://github.com/xmake-io/xmake/issues/3523
+                if sourcefile:match("^" .. pattern .. "$") then
                     return true
                 end
             end
