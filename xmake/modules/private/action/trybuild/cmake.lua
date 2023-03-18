@@ -317,7 +317,7 @@ end
 function _get_configs(artifacts_dir)
 
     -- add prefix
-    local configs = {"-DCMAKE_INSTALL_PREFIX=" .. artifacts_dir, "-DCMAKE_INSTALL_LIBDIR=" .. path.join(artifacts_dir, "lib")}
+    local configs = {"-DCMAKE_INSTALL_PREFIX=" .. artifacts_dir, "-DCMAKE_INSTALL_LIBDIR:PATH=lib"}
     if is_plat("windows") then
         _get_configs_for_windows(configs)
     elseif is_plat("android") then
