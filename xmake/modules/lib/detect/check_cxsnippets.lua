@@ -75,10 +75,20 @@ end
 -- make source code
 function _sourcecode(snippets, opt)
 
+    -- has main()?
+    local has_main = false
+    for _, snippet in pairs(snippets) do
+        -- find int main(int argc, char** argv) {}
+        if snippet:find("%s+main%s*%(.-%)") then
+            has_main = true
+            break
+        end
+    end
+
     -- add includes
     local sourcecode = ""
     local includes = table.wrap(opt.includes)
-    if opt.tryrun and opt.output then
+    if not has_main and opt.tryrun and opt.output then
         table.insert(includes, "stdio.h")
     end
     for _, include in ipairs(includes) do
@@ -91,6 +101,16 @@ function _sourcecode(snippets, opt)
         sourcecode = format("%s\ntypedef %s __type_%s;", sourcecode, typename, typename:gsub("[^%a]", "_"))
     end
     sourcecode = sourcecode .. "\n"
+
+    -- we just add all snippets if has main function
+    -- @see https://github.com/xmake-io/xmake/issues/3527
+    if has_main then
+        for _, snippet in pairs(snippets) do
+            sourcecode = sourcecode .. "\n" .. snippet
+        end
+        sourcecode = sourcecode .. "\n"
+        return sourcecode
+    end
 
     -- add snippets (build only)
     if not opt.tryrun then
@@ -146,6 +166,13 @@ end
 -- local ok, output_or_errors = check_cxsnippets("void test() {}")
 -- local ok, output_or_errors = check_cxsnippets({"void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
 -- local ok, output_or_errors = check_cxsnippets({snippet_name = "void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
+-- local ok, output_or_errors = check_cxsnippets([[
+--  int test() {
+--      return (sizeof(int) == 4)? 0 : -1;
+--  }
+--  int main(int argc, char** argv) {
+--      return test();
+--  }]], {tryrun = true})
 -- @endcode
 --
 function main(snippets, opt)

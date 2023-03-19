@@ -16,6 +16,13 @@ target("foo")
     check_ctypes("HAS_WCHAR", "wchar_t")
     check_cincludes("HAS_STRING_H", "string.h")
     check_csnippets("HAS_INT_4", "return (sizeof(int) == 4)? 0 : -1;", {tryrun = true})
+    check_csnippets("HAS_INT_4_IN_MAIN", [[
+    int test() {
+        return (sizeof(int) == 4)? 0 : -1;
+    }
+    int main(int argc, char** argv) {
+        return test();
+    }]], {tryrun = true})
     check_csnippets("INT_SIZE", 'printf("%d", sizeof(int)); return 0;', {output = true, number = true})
     configvar_check_cincludes("HAS_STRING_AND_STDIO_H", {"string.h", "stdio.h"})
     configvar_check_ctypes("HAS_WCHAR_AND_FLOAT", {"wchar_t", "float"})
