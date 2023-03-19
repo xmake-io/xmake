@@ -20,7 +20,8 @@ target("foo")
     int test() {
         return (sizeof(int) == 4)? 0 : -1;
     }
-    int main(int argc, char** argv) {
+    int main(int argc, char** argv)
+    {
         return test();
     }]], {tryrun = true})
     check_csnippets("INT_SIZE", 'printf("%d", sizeof(int)); return 0;', {output = true, number = true})

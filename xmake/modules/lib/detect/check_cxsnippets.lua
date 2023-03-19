@@ -79,7 +79,7 @@ function _sourcecode(snippets, opt)
     local has_main = false
     for _, snippet in pairs(snippets) do
         -- find int main(int argc, char** argv) {}
-        if snippet:find("%s+main%s*%(.-%)") then
+        if snippet:find("int%s+main%s*%(.-%)%s*{") then
             has_main = true
             break
         end
