@@ -63,6 +63,12 @@ function is_enabled(target)
                 result = policy
             end
         end
+        -- disable ccache for msvc, because cl.exe preprocessor is too slower
+        -- @see https://github.com/xmake-io/xmake/issues/3532
+        if result == nil and is_host("windows") and
+            target and target.has_tool and target:has_tool("cxx", "cl") then
+            result = false
+        end
         if result == nil then
             result = config.get("ccache")
         end
