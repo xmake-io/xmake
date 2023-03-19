@@ -83,6 +83,8 @@ function nf_symbol(self, level)
             _g.symbol_maps = maps
         end
         return maps[level .. '_' .. kind] or maps[level]
+    elseif kind == "dcld" then
+        return "-g"
     end
 end
 
