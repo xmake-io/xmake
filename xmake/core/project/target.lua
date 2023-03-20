@@ -2394,6 +2394,32 @@ function _instance:check_cxxsnippets(snippets, opt)
     return sandbox_module.import("lib.detect.check_cxxsnippets", {anonymous = true})(snippets, opt)
 end
 
+-- check the given objc snippets?
+--
+-- @param snippets  the snippets
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
+--
+-- @return          true or false, errors
+--
+function _instance:check_msnippets(snippets, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("lib.detect.check_msnippets", {anonymous = true})(snippets, opt)
+end
+
+-- check the given objc++ snippets?
+--
+-- @param snippets  the snippets
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
+--
+-- @return          true or false, errors
+--
+function _instance:check_mxxsnippets(snippets, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("lib.detect.check_mxxsnippets", {anonymous = true})(snippets, opt)
+end
+
 -- get project
 function target._project()
     return target._PROJECT
