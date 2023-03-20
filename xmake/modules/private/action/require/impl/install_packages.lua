@@ -537,6 +537,11 @@ function _install_packages(packages_install, packages_download, installdeps)
                 table.insert(downloading, instance:displayname())
             end
         end
+        -- we just return it directly if no thing is waited
+        -- @see https://github.com/xmake-io/xmake/issues/3535
+        if #installing == 0 and #downloading == 0 then
+            return
+        end
 
         -- get waitobjs tips
         local tips = nil
