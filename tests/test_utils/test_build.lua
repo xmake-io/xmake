@@ -17,7 +17,8 @@ function test_build:build(argv)
         os.exec("xmake uninstall --installdir=$(tmpdir) -D")
     end
     os.exec("xmake c -D")
-    os.exec("xmake f --mode=debug -D -y")
+    -- we force to enable ccache to test it on ci
+    os.exec("xmake f --mode=debug --policies=build.ccache:y -D -y")
     os.exec("xmake m -b")
     os.exec("xmake -r -a -D")
     os.exec("xmake m -e buildtest")

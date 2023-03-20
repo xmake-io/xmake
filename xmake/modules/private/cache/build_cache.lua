@@ -25,6 +25,7 @@ import("core.cache.memcache")
 import("core.project.config")
 import("core.project.policy")
 import("core.project.project")
+import("utils.ci.is_running", {alias = "ci_is_running"})
 import("private.service.client_config")
 import("private.service.remote_cache.client", {alias = "remote_cache_client"})
 
@@ -54,7 +55,7 @@ function is_enabled(target)
     local result = _memcache():get2("enabled", key)
     if result == nil then
         -- target may be option instance
-        if target and target.policy then
+        if result == nil and target and target.policy then
             result = target:policy("build.ccache")
         end
         if result == nil and os.isfile(os.projectfile()) then
@@ -62,6 +63,10 @@ function is_enabled(target)
             if policy ~= nil then
                 result = policy
             end
+        end
+        -- disable ccache on ci
+        if result == nil and ci_is_running() then
+            result = false
         end
         -- disable ccache for msvc, because cl.exe preprocessor is too slower
         -- @see https://github.com/xmake-io/xmake/issues/3532

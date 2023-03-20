@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.process")
 import("core.project.config")
 import("core.platform.platform")
+import("utils.ci.is_running", {alias = "ci_is_running"})
 import("private.action.update.fetch_version")
 import("private.action.require.impl.packagenv")
 
@@ -35,14 +36,11 @@ function _is_enabled()
         return false
     end
 
-    -- is in ci(travis/appveyor/...)? need not post it
-    local ci = (os.getenv("CI") or os.getenv("GITHUB_ACTIONS") or ""):lower()
-    if ci == "true" then
+    -- is running on ci(travis/appveyor/...)? need not post it
+    if ci_is_running() then
         os.setenv("XMAKE_STATS", "false")
         return false
     end
-
-    -- ok
     return true
 end
 
