@@ -149,7 +149,7 @@ end
 -- @param snippets  the snippets
 -- @param opt       the argument options
 --                  e.g.
---                  { verbose = false, target = [target|option], sourcekind = "[cc|cxx]"
+--                  { verbose = false, target = [target|option], sourcekind = "[cc|cxx|mm|mxx]"
 --                  , types = {"wchar_t", "char*"}, includes = "stdio.h", funcs = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}
 --                  , configs = {defines = "xx", cxflags = ""}
 --                  , tryrun = true, output = true}
@@ -219,8 +219,9 @@ function main(snippets, opt)
 
     -- get c/c++ extension
     local extension = ".c"
-    if opt.sourcekind then
-        extension = table.wrap(language.sourcekinds()[opt.sourcekind])[1] or ".c"
+    local sourcekind = opt.sourcekind
+    if sourcekind then
+        extension = table.wrap(language.sourcekinds()[sourcekind])[1] or ".c"
     end
 
     -- make the source file
@@ -271,7 +272,16 @@ function main(snippets, opt)
 
     -- trace
     if opt.verbose or option.get("verbose") or option.get("diagnosis") then
-        local kind = opt.sourcekind == "cc" and "c" or "c++"
+        local kind = "c"
+        if sourcekind == "cxx" then
+            kind = "c++"
+        elseif sourcekind == "mxx" then
+            kind = "objc++"
+        elseif sourcekind == "cc" then
+            kind = "c"
+        elseif sourcekind == "mm" then
+            kind = "objc"
+        end
         if #includes > 0 then
             cprint("${dim}> checking for %s includes(%s)", kind, table.concat(includes, ", "))
         end
