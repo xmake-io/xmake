@@ -91,6 +91,8 @@ function linuxos.name()
                     name = "centos"
                 elseif os_release:find("fedora", 1, true) then
                     name = "fedora"
+                elseif os_release:find("uos", 1, true) then
+                    name = "uos"
                 elseif os_release:find("linux mint", 1, true) or os_release:find("linuxmint", 1, true) then
                     name = "linuxmint"
                 elseif os_release:find("ubuntu", 1, true) then
