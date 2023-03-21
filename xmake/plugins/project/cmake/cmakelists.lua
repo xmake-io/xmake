@@ -610,6 +610,35 @@ function _add_target_warnings(cmakelists, target)
     end
 end
 
+-- add target exceptions
+function _add_target_exceptions(cmakelists, target)
+    local flags_gcc =
+    {
+        cxx = "-fcxx-exceptions",
+        ["no-cxx"] = "-fno-cxx-exceptions",
+        objc = "-fobjc-exceptions",
+        ["no-objc"] = "-fno-objc-exceptions"
+    }
+    local flags_msvc =
+    {
+        cxx = "/EHsc",
+        ["no-cxx"] = "/EHsc-"
+    }
+    local exceptions = target:get("exceptions")
+    if exceptions then
+        cmakelists:print("if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL \"MSVC\")")
+        -- msvc or clang-cl
+        for _, exception in ipairs(exceptions) do
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[exception])
+        end
+        cmakelists:print("else()")
+        for _, exception in ipairs(exceptions) do
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[exception])
+        end
+        cmakelists:print("endif()")
+    end
+end
+
 -- add target languages
 function _add_target_languages(cmakelists, target)
     local features =
@@ -1033,6 +1062,9 @@ function _add_target(cmakelists, target, outputdir)
 
     -- add target warnings
     _add_target_warnings(cmakelists, target)
+
+    -- add target exceptions 
+    _add_target_exceptions(cmakelists, target)
 
     -- add target languages
     _add_target_languages(cmakelists, target)
