@@ -130,7 +130,7 @@ function _instance:_api_set_values(name, ...)
     local handled_values = self:_api_handle(name, values)
 
     -- save values
-    if type(handled_values) == "table" and #handled_values == 0 then
+    if type(handled_values) == "table" and table.empty(handled_values) then
         -- set("xx", nil)? remove it
         scope[name] = nil
     else

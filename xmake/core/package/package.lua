@@ -295,7 +295,10 @@ function _instance:artifacts_set(artifacts_info)
     local versions = self:get("versions")
     if versions then
         -- backup previous package configuration
-        self._ARTIFACTS_BACKUP = {urls = table.copy(self:urls()), versions = table.copy(versions), install = self:get("install")}
+        self._ARTIFACTS_BACKUP = {
+            urls = table.copy(self:urls()),
+            versions = table.copy(versions),
+            install = self:script("install")} -- self:get() will get a table, it will be broken when call self:set()
 
         -- we switch to urls of the precompiled artifacts
         self:urls_set(table.wrap(artifacts_info.urls))
