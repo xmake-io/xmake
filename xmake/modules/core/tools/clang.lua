@@ -164,3 +164,26 @@ function nf_exception(self, exp)
     end
 end
 
+-- make vs runtime flag
+-- @see https://github.com/xmake-io/xmake/issues/3546
+function nf_runtime(self, vs_runtime)
+    if self:is_plat("windows") and vs_runtime then
+        local maps
+        local kind = self:kind()
+        if language.sourcekinds()[kind] then
+            maps = {
+                MT  = "-fms-runtime-lib=static",
+                MTd = "-fms-runtime-lib=static_dbg",
+                MD  = "-fms-runtime-lib=dll",
+                MDd = "-fms-runtime-lib=dll_dbg"
+            }
+        elseif kind == "ld" or kind == "sh" then
+            maps = {
+                MD  = "-lmsvcrt",
+                MDd = "-lmsvcrtd"
+            }
+        end
+        return maps and maps[vs_runtime]
+    end
+end
+
