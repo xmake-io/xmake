@@ -179,8 +179,8 @@ function nf_runtime(self, vs_runtime)
             }
         elseif kind == "ld" or kind == "sh" then
             maps = {
-                MD  = "-nostdlib -lmsvcrt",
-                MDd = "-nostdlib -lmsvcrtd"
+                MD  = {"-nostdlib", "-lmsvcrt"},
+                MDd = {"-nostdlib", "-lmsvcrtd"}
             }
         end
         return maps and maps[vs_runtime]
