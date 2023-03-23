@@ -360,10 +360,13 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
     local version = nil
     local require_version = requireinfo.version
     local require_verify  = requireinfo.verify
-    if (not package:get("versions") or require_verify == false) and semver.is_valid(require_version) then
+    if (not package:get("versions") or require_verify == false)
+        and (semver.is_valid(require_version) or semver.is_valid_range(require_version)) then
         -- no version list in package() or need not verify sha256sum? try selecting this version directly
-        -- @see https://github.com/xmake-io/xmake/issues/930
+        -- @see
+        -- https://github.com/xmake-io/xmake/issues/930
         -- https://github.com/xmake-io/xmake/issues/1009
+        -- https://github.com/xmake-io/xmake/issues/3551
         version = require_version
         source = "version"
     elseif #package:versions() > 0 then -- select version?
