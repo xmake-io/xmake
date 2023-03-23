@@ -264,7 +264,7 @@ rule("qt.quickapp_static")
 -- define rule: qt qmlplugin
 rule("qt.qmlplugin")
     add_deps("qt.shared", "qt.qmltyperegistrar")
-    on_load(function(target)
+    on_config(function(target)
         import("load")(target, {frameworks = { "QtCore", "QtGui", "QtQuick", "QtQml", "QtNetwork" }})
     end)
 
