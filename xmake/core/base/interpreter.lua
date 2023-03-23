@@ -31,6 +31,12 @@ local scopeinfo  = require("base/scopeinfo")
 local deprecated = require("base/deprecated")
 local sandbox    = require("sandbox/sandbox")
 
+-- raise without interpreter stack
+-- @see https://github.com/xmake-io/xmake/issues/3553
+function interpreter._raise(errors)
+    os.raise("[nobacktrace]: " .. (errors or ""))
+end
+
 -- traceback
 function interpreter._traceback(errors)
 
@@ -76,8 +82,6 @@ function interpreter._traceback(errors)
         -- next
         level = level + 1
     end
-
-    -- ok?
     return results
 end
 
@@ -354,7 +358,7 @@ function interpreter:_api_translate_paths(values, apiname, infolevel)
     for _, p in ipairs(values) do
         if type(p) ~= "string" or #p == 0 then
             local sourceinfo = debug.getinfo(infolevel or 3, "Sl")
-            os.raise("%s(%s): invalid path value at %s:%d", apiname, tostring(p), sourceinfo.short_src or sourceinfo.source, sourceinfo.currentline)
+            interpreter._raise("%s(%s): invalid path value at %s:%d", apiname, tostring(p), sourceinfo.short_src or sourceinfo.source, sourceinfo.currentline)
         end
         if not p:find("^%s-%$%(.-%)") and not path.is_absolute(p) then
             table.insert(results, path.relative(path.absolute(p, self:scriptdir()), self:rootdir()))
@@ -1573,13 +1577,13 @@ function interpreter:api_builtin_set_xmakever(minver)
 
     -- no version
     if not minver then
-        os.raise("[nobacktrace]: set_xmakever(): no version!")
+        interpreter._raise("set_xmakever(): no version!")
     end
 
     -- parse minimum version
     local minvers = minver:split('.', {plain = true})
     if not minvers or #minvers ~= 3 then
-        os.raise("[nobacktrace]: set_xmakever(\"%s\"): invalid version format!", minver)
+        interpreter._raise("set_xmakever(\"%s\"): invalid version format!", minver)
     end
 
     -- make minimum numerical version
@@ -1593,7 +1597,7 @@ function interpreter:api_builtin_set_xmakever(minver)
 
     -- check version
     if curvers_num < minvers_num then
-        os.raise("[nobacktrace]: xmake v%s < v%s, please run `$xmake update` to upgrade xmake!", xmake._VERSION_SHORT, minver)
+        interpreter._raise("xmake v%s < v%s, please run `$xmake update` to upgrade xmake!", xmake._VERSION_SHORT, minver)
     end
 end
 
@@ -1676,7 +1680,7 @@ function interpreter:api_builtin_includes(...)
                 -- done interpreter
                 local ok, errors = xpcall(script, interpreter._traceback)
                 if not ok then
-                    os.raise(errors)
+                    interpreter._raise(errors)
                 end
 
                 -- leave the script directory
@@ -1699,7 +1703,7 @@ function interpreter:api_builtin_includes(...)
                 -- get mtime of the file
                 self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
             else
-                os.raise(errors)
+                interpreter._raise(errors)
             end
         end
     end
