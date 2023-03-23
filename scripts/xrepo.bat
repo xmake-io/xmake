@@ -35,6 +35,14 @@
             exit /B 1
         ) else (
             setlocal EnableDelayedExpansion
+            @%XMAKE_EXE% lua --quiet private.xrepo.action.env | findstr . && (
+                echo error: corrupt xmake.lua detected in the current directory^^!
+                exit /B 1
+            )
+            @%XMAKE_EXE% lua --quiet private.xrepo.action.env
+            if !errorlevel! neq 0 (
+                exit /B !errorlevel!
+            )
             %XMAKE_EXE% lua private.xrepo.action.env.info config
             if !errorlevel! neq 0 (
                 exit /B !errorlevel!
@@ -77,10 +85,18 @@
             set PROMPT=%XMAKE_PROMPT_BACKUP%
             set XMAKE_ENV_BACKUP=
             set XMAKE_PROMPT_BACKUP=
-            echo Please rerun `xrepo env shell` to enter the environment.
+            echo Please rerun `xrepo env %2 %3 shell` to enter the environment.
             exit /B 1
         ) else (
             setlocal EnableDelayedExpansion
+            @%XMAKE_EXE% lua --quiet private.xrepo.action.env | findstr . && (
+                echo error: corrupt xmake.lua detected in the current directory^^!
+                exit /B 1
+            )
+            @%XMAKE_EXE% lua --quiet private.xrepo.action.env
+            if !errorlevel! neq 0 (
+                exit /B !errorlevel!
+            )
             %XMAKE_EXE% lua private.xrepo.action.env.info config %3
             if !errorlevel! neq 0 (
                 exit /B !errorlevel!
