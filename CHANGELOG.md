@@ -20,6 +20,7 @@
 
 * [#3436](https://github.com/xmake-io/xmake/issues/3436): Fix complete and menuconf
 * [#3463](https://github.com/xmake-io/xmake/issues/3463): Fix c++modules cache issue
+* [#3545](https://github.com/xmake-io/xmake/issues/3545): Fix parsedeps for armcc
 
 ## v2.7.7
 
@@ -1569,6 +1570,7 @@
 
 * [#3436](https://github.com/xmake-io/xmake/issues/3436): 修复自动补全和 menuconf
 * [#3463](https://github.com/xmake-io/xmake/issues/3463): 修复 c++modules 缓存问题
+* [#3545](https://github.com/xmake-io/xmake/issues/3545): 修复 armcc 的头文件依赖解析
 
 ## v2.7.7
 
