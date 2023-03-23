@@ -15,6 +15,12 @@ function Enter-XrepoEnvironment {
     );
 
     begin {
+        $currentTest = (& $Env:XMAKE_EXE lua --quiet private.xrepo.action.env | Out-String);
+        if (-not $? -or $currentTest) {
+            Write-Host "error: corrupt xmake.lua detected in the current directory!";
+            Exit 1;
+        }
+
         $script:xrepoOldEnvs = (Get-ChildItem -Path Env:);
 
         if (-not $bnd) {
