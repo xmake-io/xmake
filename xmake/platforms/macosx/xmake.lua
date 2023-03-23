@@ -58,6 +58,7 @@ platform("macosx")
                 ,   {category = "Qt SDK Configuration"                                                       }
                 ,   {nil, "qt",                      "kv", "auto",       "The Qt SDK Directory"              }
                 ,   {nil, "qt_sdkver",               "kv", "auto",       "The Qt SDK Version"                }
+                ,   {nil, "qmake",          "kv", "auto",       "The Qt QMake Tool"                 }
                 ,   {category = "Vcpkg Configuration"                                                        }
                 ,   {nil, "vcpkg",                   "kv", "auto",       "The Vcpkg Directory"               }
                 }

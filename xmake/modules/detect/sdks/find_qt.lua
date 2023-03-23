@@ -177,6 +177,10 @@ function _find_qt(sdkdir, sdkver)
         return
     end
 
+    return _find_qt_by_qmake(qmake)
+end
+
+function _find_qt_by_qmake(qmake)
     -- get qt environments
     local qtenvs = _get_qtenvs(qmake)
     if not qtenvs then
@@ -241,7 +245,12 @@ function main(sdkdir, opt)
     end
 
     -- find qt
-    local qt = _find_qt(sdkdir or config.get("qt") or global.get("qt") or config.get("sdk"), opt.version or config.get("qt_sdkver"))
+    local qt
+    if config.get("qmake") then
+        qt = _find_qt_by_qmake(config.get("qmake"))
+    else
+        qt = _find_qt(sdkdir or config.get("qt") or global.get("qt") or config.get("sdk"), opt.version or config.get("qt_sdkver"))
+    end
     if qt then
 
         -- save to config

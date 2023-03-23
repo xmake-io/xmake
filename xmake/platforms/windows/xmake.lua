@@ -58,6 +58,7 @@ platform("windows")
                 ,   {category = "Qt SDK Configuration"                                              }
                 ,   {nil, "qt",         "kv", "auto", "The Qt SDK Directory"                        }
                 ,   {nil, "qt_sdkver",  "kv", "auto", "The Qt SDK Version"                          }
+                ,   {nil, "qmake",      "kv", "auto", "The Qt QMake Tool"                           }
                 ,   {category = "WDK Configuration"                                                 }
                 ,   {nil, "wdk",        "kv", "auto", "The WDK Directory"                           }
                 ,   {nil, "wdk_sdkver", "kv", "auto", "The WDK Version"                             }

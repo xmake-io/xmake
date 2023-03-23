@@ -48,6 +48,7 @@ platform("haiku")
                 ,   {category = "Qt SDK Configuration"                                              }
                 ,   {nil, "qt",             "kv", "auto",       "The Qt SDK Directory"              }
                 ,   {nil, "qt_sdkver",      "kv", "auto",       "The Qt SDK Version"                }
+                ,   {nil, "qmake",          "kv", "auto",       "The Qt QMake Tool"                 }
                 }
 
             ,   global =
