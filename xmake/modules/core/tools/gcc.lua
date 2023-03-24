@@ -88,6 +88,9 @@ function nf_strip(self, level, target)
     }
     if self:is_plat("macosx", "iphoneos") then
         maps.all = {"-Wl,-x", "-Wl,-dead_strip"}
+    elseif self:is_plat("windows") then
+        -- clang does not it on windows, TODO maybe we need test it for gcc
+        maps = {}
     end
     return maps[level]
 end

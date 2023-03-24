@@ -164,10 +164,29 @@ function nf_exception(self, exp)
     end
 end
 
+-- has -fms-runtime-lib?
+function _has_ms_runtime_lib(self)
+    local has_ms_runtime_lib = _g._HAS_MS_RUNTIME_LIB
+    if has_ms_runtime_lib == nil then
+        if self:has_flags("-fms-runtime-lib=dll", "cxflags", {flagskey = "clang_ms_runtime_lib"}) then
+            has_ms_runtime_lib = true
+        end
+        has_ms_runtime_lib = has_ms_runtime_lib or false
+        _g._HAS_MS_RUNTIME_LIB = has_ms_runtime_lib
+    end
+    return has_ms_runtime_lib
+end
+
 -- make vs runtime flag
 -- @see https://github.com/xmake-io/xmake/issues/3546
 function nf_runtime(self, vs_runtime)
     if self:is_plat("windows") and vs_runtime then
+        if not _has_ms_runtime_lib(self) then
+            if vs_runtime:startswith("MD") then
+                wprint("%s runtime is not available for the current Clang compiler.", vs_runtime)
+            end
+            return
+        end
         local maps
         local kind = self:kind()
         if language.sourcekinds()[kind] then
@@ -179,8 +198,10 @@ function nf_runtime(self, vs_runtime)
             }
         elseif kind == "ld" or kind == "sh" then
             maps = {
-                MD  = {"-nostdlib", "-lmsvcrt"},
-                MDd = {"-nostdlib", "-lmsvcrtd"}
+                MT  = "-nostdlib",
+                MTd = "-nostdlib",
+                MD  = "-nostdlib",
+                MDd = "-nostdlib"
             }
         end
         return maps and maps[vs_runtime]
