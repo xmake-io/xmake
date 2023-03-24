@@ -21,6 +21,7 @@
 -- imports
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
+import("core.base.semver")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
@@ -139,11 +140,34 @@ end
 
 -- find qmake
 function _find_qmake(sdkdir, sdkver)
+
+    -- we attempt to find qmake from qt sdkdir first
     local sdkdir, qmakefile = _find_sdkdir(sdkdir, sdkver)
     if qmakefile then
         return qmakefile
     end
-    local qmake = find_tool("qmake", {paths = sdkdir and path.join(sdkdir, "bin")})
+
+    -- try finding qmake with the specific version, e.g. /usr/bin/qmake6
+    -- https://github.com/xmake-io/xmake/pull/3555
+    local qmake
+    if sdkver then
+        sdkver = semver.try_parse(sdkver)
+        if sdkver then
+            qmake = find_tool("qmake", {program = "qmake" .. sdkver:major(), paths = sdkdir and path.join(sdkdir, "bin")})
+        end
+    end
+
+    -- we need find the default qmake in current system
+    -- maybe we only installed qmake6
+    if not qmake then
+        local suffixes = {"", "6"}
+        for _, suffix in ipairs(suffixes) do
+            qmake = find_tool("qmake", {program = "qmake" .. suffix, paths = sdkdir and path.join(sdkdir, "bin")})
+            if qmake then
+                break
+            end
+        end
+    end
     if qmake then
         return qmake.program
     end

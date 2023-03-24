@@ -35,6 +35,11 @@ function sandbox_core_base_semver.new(version)
     return result
 end
 
+-- try parsing the given version string to semver instance
+function sandbox_core_base_semver.try_parse(version)
+    return semver.new(version)
+end
+
 -- match a valid version from the string
 --
 -- semver.match('xxx 1.2.3 xxx') => { major = 1, minor = 2, patch = 3, ... }
