@@ -187,11 +187,19 @@ function _check_targets(targetname, group_pattern)
 
     -- filter and check targets with builtin-run script
     local targetnames = {}
+    local is_windows = os.host() == "windows"
     for _, target in ipairs(targets) do
         if target:targetfile() and target:is_enabled() and not target:script("run") then
             local targetfile = target:targetfile()
-            if targetfile and not os.isfile(targetfile) then
-                table.insert(targetnames, target:name())
+            if targetfile then
+                if is_windows and target:kind() == 'binary' then
+                    if string.sub(targetfile, -4) ~= '.exe' then
+                        targetfile = targetfile .. '.exe'
+                    end
+                end
+                if not os.isfile(targetfile) then
+                    table.insert(targetnames, target:name())
+                end
             end
         end
     end
