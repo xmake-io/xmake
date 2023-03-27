@@ -31,6 +31,7 @@ jobs:
       - name: Installation
         run: |
           brew install dmd
+          brew install dub
 
       - name: Tests
         run: |

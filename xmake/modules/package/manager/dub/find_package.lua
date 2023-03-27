@@ -49,7 +49,7 @@ function main(name, opt)
     if pkglist then
         local pkgdir
         for _, line in ipairs(pkglist:split('\n', {plain = true})) do
-            local pkginfo = line:split(':', {plain = true})
+            local pkginfo = line:split(': ', {plain = true})
             if #pkginfo == 2 then
                 local pkgkey  = pkginfo[1]:trim():split(' ', {plain = true})
                 local pkgpath = pkginfo[2]:trim()
