@@ -21,6 +21,10 @@
 -- define rule: driver
 rule("wdk.driver")
 
+    if is_mode("debug") then
+        add_defines("DBG")
+    end
+
     -- add rules
     add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.tracewpp", "wdk.sign", "wdk.package.cab")
 
