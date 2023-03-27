@@ -49,7 +49,7 @@ function nf_optimize(self, level)
 end
 
 -- make the symbol flag
-function nf_symbol(self, level)
+function nf_symbol(self, level, target)
     local kind = self:kind()
     if language.sourcekinds()[kind] then
         local maps = _g.symbol_maps
@@ -61,7 +61,7 @@ function nf_symbol(self, level)
             _g.symbol_maps = maps
         end
         return maps[level .. '_' .. kind] or maps[level]
-    elseif kind == "dcld" then
+    elseif (kind == "dcld" or kind == "dcsh") and target:is_plat("windows") and level == "debug" then
         return "-g"
     end
 end
