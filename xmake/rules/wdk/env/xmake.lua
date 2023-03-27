@@ -18,11 +18,6 @@
 -- @file        xmake.lua
 --
 
--- match visual studio default behaviour
-if is_mode("debug") then
-    add_defines("DBG")
-end
-
 -- define rule: environment
 rule("wdk.env")
 
@@ -54,7 +49,7 @@ rule("wdk.env")
 
             -- add defines for debug
             if is_mode("debug") then
-                target:add("define", "DBG=1")
+                target:add("defines", "DBG=1")
             end
 
             -- get winver name
