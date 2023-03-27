@@ -18,6 +18,11 @@
 -- @file        xmake.lua
 --
 
+-- match visual studio default behaviour
+if is_mode("debug") then
+    add_defines("DBG")
+end
+
 -- define rule: environment
 rule("wdk.env")
 
