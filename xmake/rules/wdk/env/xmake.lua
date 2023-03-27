@@ -49,7 +49,7 @@ rule("wdk.env")
 
             -- add defines for debug
             if is_mode("debug") then
-                target:add("define", "DBG=1")
+                target:add("defines", "DBG=1")
             end
 
             -- get winver name
