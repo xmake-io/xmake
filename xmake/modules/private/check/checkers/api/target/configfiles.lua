@@ -24,6 +24,7 @@ import(".api_checker")
 function main(opt)
     opt = opt or {}
     api_checker.check_targets("configfiles", table.join(opt, {check = function(target, value)
+        value = value:gsub("[()]", "")
         local configfiles = os.files(value)
         if not configfiles or #configfiles == 0 then
             return false, string.format("configfiles '%s' not found", value)
