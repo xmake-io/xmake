@@ -124,7 +124,8 @@ function _find_sdkdir(sdkdir, sdkver)
     end
 
     -- special case for android on windows, where qmake is a .bat from version 6.3
-    if is_host("windows") and is_plat("android") then
+    -- this case also applys to wasm
+    if is_host("windows") and is_plat("android", "wasm") then
         local qmake = find_file("qmake.bat", paths, {suffixes = subdirs})
         if qmake then
             return path.directory(path.directory(qmake)), qmake
