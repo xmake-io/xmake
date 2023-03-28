@@ -30,19 +30,22 @@ import("private.action.require.impl.install_packages")
 
 -- the clang.tidy options
 local options = {
-    {"l", "list",   "k",   nil,     "Show the clang-tidy checks list."},
-    {'j', "jobs",   "kv", tostring(os.default_njob()),
+    {"l", "list",       "k",   nil, "Show the clang-tidy checks list."},
+    {'j', "jobs",       "kv", tostring(os.default_njob()),
                                     "Set the number of parallel check jobs."},
-    {nil, "create", "k", nil,       "Create a .clang-tidy file."},
+    {nil, "fix",        "k", nil,   "Apply suggested fixes."},
+    {nil, "fix_errors", "k", nil,   "Apply suggested errors fixes."},
+    {nil, "fix_notes",  "k", nil,   "Apply suggested notes fixes."},
+    {nil, "create",     "k", nil,   "Create a .clang-tidy file."},
     {nil, "configfile", "kv", nil,  "Specify the path of .clang-tidy or custom config file"},
-    {nil, "checks", "kv",  nil,     "Set the given checks.",
+    {nil, "checks",     "kv", nil,  "Set the given checks.",
                                     "e.g.",
                                     "    - xmake check clang.tidy --checks=\"*\""},
-    {'f', "files",  "v", nil,       "Set files path with pattern",
+    {'f', "files",      "v", nil,       "Set files path with pattern",
                                     "e.g.",
                                     "    - xmake check clang.tidy -f src/main.c",
                                     "    - xmake check clang.tidy -f 'src/*.c" .. path.envsep() .. "src/**.cpp'"},
-    {nil, "target", "v",   nil,     "Check the sourcefiles of the given target.",
+    {nil, "target",     "v", nil,   "Check the sourcefiles of the given target.",
                                     ".e.g",
                                     "    - xmake check clang.tidy",
                                     "    - xmake check clang.tidy [target]"}
@@ -75,6 +78,15 @@ function _check_sourcefile(clang_tidy, sourcefile, opt)
     local argv = {}
     if opt.checks then
         table.insert(argv, "--checks=" .. opt.checks)
+    end
+    if opt.fix then
+        table.insert(argv, "--fix")
+    end
+    if opt.fix_errors then
+        table.insert(argv, "--fix-errors")
+    end
+    if opt.fix_notes then
+        table.insert(argv, "--fix-notes")
     end
     if opt.compdbfile then
         table.insert(argv, "-p")
