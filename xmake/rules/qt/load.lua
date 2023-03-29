@@ -70,7 +70,14 @@ function _find_static_links_3rd(target, linkdirs, qt_sdkver, libpattern)
         for _, libpath in ipairs(os.files(path.join(linkdir, libpattern))) do
             local basename = path.basename(libpath)
             -- we need ignore qt framework libraries, e.g. libQt5xxx.a, Qt5Core.lib ..
-            if not basename:startswith("libQt" .. qt_sdkver:major()) and not basename:startswith("Qt" .. qt_sdkver:major()) then
+            -- but bundled library names like libQt5Bundledxxx.a on wasm.
+            local is_bundled_library = 
+                basename:startswith("libQt" .. qt_sdkver:major() .. "Bundled") or (
+                    (not basename:startswith("libQt" .. qt_sdkver:major())) and
+                    (not basename:startswith("Qt" .. qt_sdkver:major()))
+                )
+
+            if is_bundled_library then
                 if (is_mode("debug") and basename:endswith(debug_suffix)) or (not is_mode("debug") and not basename:endswith(debug_suffix)) then
                     table.insert(links, core_target.linkname(path.filename(libpath)))
                 end
