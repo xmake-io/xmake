@@ -41,8 +41,8 @@ function _link(target, linkdirs, framework, qt_sdkver)
         else -- for qt4.x, e.g. QtGui4.lib
             if target:is_plat("windows", "mingw") then
                 framework = "Qt" .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "") .. qt_sdkver:major()
-            else 
-                framework = "Qt" .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "") 
+            else
+                framework = "Qt" .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
             end
         end
         if target:is_plat("android") then --> -lQt5Core_armeabi/-lQt5CoreDebug_armeabi for 5.14.x
@@ -70,14 +70,11 @@ function _find_static_links_3rd(target, linkdirs, qt_sdkver, libpattern)
         for _, libpath in ipairs(os.files(path.join(linkdir, libpattern))) do
             local basename = path.basename(libpath)
             -- we need ignore qt framework libraries, e.g. libQt5xxx.a, Qt5Core.lib ..
-            -- but bundled library names like libQt5Bundledxxx.a on wasm.
-            local is_bundled_library = 
-                basename:startswith("libQt" .. qt_sdkver:major() .. "Bundled") or (
-                    (not basename:startswith("libQt" .. qt_sdkver:major())) and
-                    (not basename:startswith("Qt" .. qt_sdkver:major()))
-                )
-
-            if is_bundled_library then
+            -- but bundled library names like libQt5Bundledxxx.a on Qt6.x
+            -- @see https://github.com/xmake-io/xmake/issues/3572
+            if basename:startswith("libQt" .. qt_sdkver:major() .. "Bundled") or (
+                (not basename:startswith("libQt" .. qt_sdkver:major())) and
+                (not basename:startswith("Qt" .. qt_sdkver:major()))) then
                 if (is_mode("debug") and basename:endswith(debug_suffix)) or (not is_mode("debug") and not basename:endswith(debug_suffix)) then
                     table.insert(links, core_target.linkname(path.filename(libpath)))
                 end
@@ -289,9 +286,18 @@ function main(target, opt)
     end
     target:set("frameworks", local_frameworks)
 
-    -- add some static third-party links if exists, e.g. libqtmain.a, libqtfreetype.q, libqtlibpng.a
+    -- add some static third-party links if exists
     -- and exclude qt framework libraries, e.g. libQt5xxx.a, Qt5xxx.lib
-    target:add("syslinks", _find_static_links_3rd(target, qt.libdir, qt_sdkver, target:is_plat("windows") and "qt*.lib" or "libqt*.a"))
+    local libpattern
+    if qt_sdkver:ge("6.0") then
+        -- e.g. libQt6BundledFreetype.a on Qt6.x
+        -- @see https://github.com/xmake-io/xmake/issues/3572
+        libpattern = target:is_plat("windows") and "Qt*.lib" or "libQt*.a"
+    else
+        -- e.g. libqtmain.a, libqtfreetype.q, libqtlibpng.a on Qt5.x
+        libpattern = target:is_plat("windows") and "qt*.lib" or "libqt*.a"
+    end
+    target:add("syslinks", _find_static_links_3rd(target, qt.libdir, qt_sdkver, libpattern))
 
     -- add user syslinks
     if syslinks_user then
