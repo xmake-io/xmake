@@ -221,11 +221,9 @@ rule("qt.quickapp_static")
         -- https://github.com/xmake-io/xmake/issues/1047
         -- https://github.com/xmake-io/xmake/issues/2791
         local QtPlatformSupport
-        local OldQtWasm = true;
         if qt_sdkver then
             if qt_sdkver:ge("6.0") then
                 QtPlatformSupport = nil
-                OldQtWasm = false;
             elseif qt_sdkver:ge("5.9") then
                 QtPlatformSupport = "QtPlatformCompositorSupport"
             else
@@ -250,7 +248,7 @@ rule("qt.quickapp_static")
             end
         elseif target:is_plat("wasm") then
             plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwasm"}}
-            if OldQtWasm then
+            if qt_sdkver and qt_sdkver:lt("6.0") then
                 table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
             end
         end
