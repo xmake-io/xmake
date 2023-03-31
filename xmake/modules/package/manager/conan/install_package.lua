@@ -120,7 +120,7 @@ end
 -- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = ,
 --                                  configs = {
 --                                      remote = "", build = "all", options = {}, imports = {}, build_requires = {},
---                                      settings = {"compiler=Visual Studio", "compiler.version=10", "compiler.runtime=MD"}}}
+--                                      settings = {"compiler=msvc", "compiler.version=10", "compiler.runtime=MD"}}}
 --
 -- @return      true or false
 --
@@ -217,7 +217,7 @@ function main(name, opt)
                         ["2005"] = "8"}
         local vs = assert(config.get("vs"), "vs not found!")
         table.insert(argv, "-s")
-        table.insert(argv, "compiler=Visual Studio")
+        table.insert(argv, "compiler=msvc")
         table.insert(argv, "-s")
         table.insert(argv, "compiler.version=" .. assert(vsvers[vs], "unknown msvc version!"))
         if configs.vs_runtime then
