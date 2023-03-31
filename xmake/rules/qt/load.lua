@@ -368,7 +368,7 @@ function main(target, opt)
         _add_includedirs(target, path.join(qt.mkspecsdir, "wasm-emscripten"))
         target:add("rpathdirs", qt.libdir)
         target:add("linkdirs", qt.libdir)
-        for _, filepath in ipairs(os.files(path.join(qt.libdir, "objects-*","**.o"))) do
+        for _, filepath in ipairs(os.files(path.join(qt.libdir, "objects-*", "**.o"))) do
             table.insert(target:objectfiles(), filepath)
         end
         target:add("ldflags", "-s WASM=1", "-s FETCH=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1", "--bind")
