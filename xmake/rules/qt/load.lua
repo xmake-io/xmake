@@ -94,6 +94,8 @@ function _add_plugins(target, plugins)
         if plugin.linkdirs then
             target:values_add("qt.linkdirs", table.unpack(table.wrap(plugin.linkdirs)))
         end
+        -- TODO: add prebuilt object files in qt sdk.
+        -- these file is located at plugins/xxx/objects-Release/xxxPlugin_init/xxxPlugin_init.cpp.o
     end
 end
 
@@ -368,7 +370,9 @@ function main(target, opt)
         _add_includedirs(target, path.join(qt.mkspecsdir, "wasm-emscripten"))
         target:add("rpathdirs", qt.libdir)
         target:add("linkdirs", qt.libdir)
-        for _, filepath in ipairs(os.files(path.join(qt.libdir, "objects-*", "**.o"))) do
+        -- add prebuilt object files in qt sdk.
+        -- these file is located at lib/objects-Release/xxxmodule_resources_x/.rcc/xxxmodule.cpp.o
+        for _, filepath in ipairs(os.files(path.join(qt.libdir, "objects-*", "*_resources_*", ".rcc", "*.o"))) do
             table.insert(target:objectfiles(), filepath)
         end
         target:add("ldflags", "-s WASM=1", "-s FETCH=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1", "--bind")
