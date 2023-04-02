@@ -165,10 +165,10 @@ rule("qt.widgetapp_static")
         elseif target:is_plat("wasm") then
             plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwasm"}}
             if qt_sdkver then
-                if qt_sdkver:lt("6.0") then
-                    table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
-                else
+                if qt_sdkver:ge("6.0") then
                     table.join2(frameworks, "QtOpenGL")
+                else
+                    table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
                 end
             end
         end
@@ -255,10 +255,10 @@ rule("qt.quickapp_static")
         elseif target:is_plat("wasm") then
             plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwasm"}}
             if qt_sdkver then
-                if qt_sdkver:lt("6.0") then
-                    table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
-                else
+                if qt_sdkver:ge("6.0") then
                     table.join2(frameworks, "QtOpenGL")
+                else
+                    table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
                 end
             end
         end
