@@ -164,7 +164,13 @@ rule("qt.widgetapp_static")
             end
         elseif target:is_plat("wasm") then
             plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwasm"}}
-            table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
+            if qt_sdkver then
+                if qt_sdkver:lt("6.0") then
+                    table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
+                else
+                    table.join2(frameworks, "QtOpenGL")
+                end
+            end
         end
         import("load")(target, {gui = true, plugins = plugins, frameworks = frameworks})
     end)
