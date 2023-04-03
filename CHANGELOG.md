@@ -10,7 +10,7 @@
 
 ### Changes
 
-* [#3433](https://github.com/xmake-io/xmake/issues/3433): Improve to build Qt project on msys2/mingw64
+* [#3433](https://github.com/xmake-io/xmake/issues/3433): Improve to build Qt project on msys2/mingw64 and wasm
 * [#3419](https://github.com/xmake-io/xmake/issues/3419): Support fish shell envirnoment
 * [#3455](https://github.com/xmake-io/xmake/issues/3455): Dlang incremental build support
 * [#3498](https://github.com/xmake-io/xmake/issues/3498): Improve to bind package virtual envirnoments
@@ -1561,7 +1561,7 @@
 
 ### 改进
 
-* [#3433](https://github.com/xmake-io/xmake/issues/3433): 改进 QT 在 msys2/mingw64 上的构建支持
+* [#3433](https://github.com/xmake-io/xmake/issues/3433): 改进 QT 在 msys2/mingw64 和 wasm 上的构建支持
 * [#3419](https://github.com/xmake-io/xmake/issues/3419): 支持 fish shell 环境
 * [#3455](https://github.com/xmake-io/xmake/issues/3455): Dlang 增量编译支持
 * [#3498](https://github.com/xmake-io/xmake/issues/3498): 改进绑定包虚拟环境
