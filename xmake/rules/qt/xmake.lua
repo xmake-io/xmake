@@ -121,7 +121,7 @@ rule("qt.widgetapp_static")
     end)
 
     on_config(function (target)
-        local frameworks, plugins, qt_sdkver = import("load")(target)
+        local frameworks, plugins, qt_sdkver = import("config_static")(target)
         if qt_sdkver:ge("5.0") then
             table.join2(frameworks, {"QtGui", "QtWidgets", "QtCore"})
         else
@@ -169,7 +169,7 @@ rule("qt.quickapp_static")
     end)
 
     on_config(function (target)
-        local frameworks, plugins = import("load")(target);
+        local frameworks, plugins = import("config_static")(target);
         table.join2(frameworks, {"QtGui", "QtQuick", "QtQml", "QtQmlModels", "QtCore", "QtNetwork"})
         import("load")(target, {gui = true, plugins = plugins, frameworks = frameworks})
     end)
