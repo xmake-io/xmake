@@ -16,6 +16,7 @@
 * [#3498](https://github.com/xmake-io/xmake/issues/3498): Improve to bind package virtual envirnoments
 * [#3504](https://github.com/xmake-io/xmake/pull/3504): Add swig java support
 * [#3508](https://github.com/xmake-io/xmake/issues/3508): Improve trybuild/cmake to support for switching toolchain
+* disable build cache for msvc, because msvc's preprocessor is too slow.
 
 ### Bugs fixed
 
@@ -1567,6 +1568,7 @@
 * [#3498](https://github.com/xmake-io/xmake/issues/3498): 改进绑定包虚拟环境
 * [#3504](https://github.com/xmake-io/xmake/pull/3504): 添加 swig java 支持
 * [#3508](https://github.com/xmake-io/xmake/issues/3508): 改进 trybuild/cmake 去支持工具链切换
+* 为 msvc 禁用 build cache 加速，因为 msvc 的预处理器太慢，反而极大影响构建性能。
 
 ### Bugs 修复
 
