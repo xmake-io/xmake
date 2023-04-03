@@ -6,7 +6,7 @@
 
 * [#3518](https://github.com/xmake-io/xmake/issues/3518): Profile compile and link performance
 * [#3522](https://github.com/xmake-io/xmake/issues/3522): Add has_cflags, has_xxx for target
-* [#3537](https://github.com/xmake-io/xmake/issues/3527): Add --fix for clang.tidy checker
+* [#3537](https://github.com/xmake-io/xmake/issues/3537): Add --fix for clang.tidy checker
 
 ### Changes
 
@@ -1557,7 +1557,7 @@
 
 * [#3518](https://github.com/xmake-io/xmake/issues/3518): 分析编译和链接性能
 * [#3522](https://github.com/xmake-io/xmake/issues/3522): 为 target 添加 has_cflags, has_xxx 等辅助接口
-* [#3537](https://github.com/xmake-io/xmake/issues/3527): 为 clang.tidy 检测器添加 `--fix` 自动修复
+* [#3537](https://github.com/xmake-io/xmake/issues/3537): 为 clang.tidy 检测器添加 `--fix` 自动修复
 
 ### 改进
 
