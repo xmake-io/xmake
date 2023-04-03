@@ -169,7 +169,7 @@ rule("qt.quickapp_static")
     end)
 
     on_config(function (target)
-        local frameworks, plugins = import("config_static")(target);
+        local frameworks, plugins = import("config_static")(target)
         table.join2(frameworks, {"QtGui", "QtQuick", "QtQml", "QtQmlModels", "QtCore", "QtNetwork"})
         import("load")(target, {gui = true, plugins = plugins, frameworks = frameworks})
     end)

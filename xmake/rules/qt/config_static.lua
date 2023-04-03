@@ -66,5 +66,5 @@ function main(target)
             table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
         end
     end
-    return frameworks, plugins, qt_sdkver;
+    return frameworks, plugins, qt_sdkver
 end
