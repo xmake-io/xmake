@@ -27,7 +27,7 @@ function main(opt)
     api_checker.check_targets("shflags", table.join(opt, {check = function(target, value)
         if target:is_shared() then
             local linker = target:linker()
-            if not linker:has_flags(value) then
+            if not api_checker.check_flag(target, linker, "shflags", value) then
                 return false, string.format("%s: unknown linker flag '%s'", linker:name(), value)
             end
         end

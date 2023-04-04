@@ -138,6 +138,39 @@ function _check_target(target, apiname, valueset, level, opt)
     end
 end
 
+-- check flag
+-- @see https://github.com/xmake-io/xmake/issues/3594
+function check_flag(target, toolinst, flagkind, flag)
+    local extraconf = target:extraconf(flagkind)
+
+    -- does this flag belong to this tool?
+    -- @see https://github.com/xmake-io/xmake/issues/3022
+    --
+    -- e.g.
+    -- for all: add_cxxflags("-g")
+    -- only for clang: add_cxxflags("clang::-stdlib=libc++")
+    -- only for clang and multiple flags: add_cxxflags("-stdlib=libc++", "-DFOO", {tools = "clang"})
+    --
+    local for_this_tool = true
+    local flagconf = extraconf and extraconf[flag]
+    if type(flag) == "string" and flag:find("::", 1, true) then
+        for_this_tool = false
+        local splitinfo = flag:split("::", {plain = true})
+        local toolname = splitinfo[1]
+        if toolname == toolinst:name() then
+            flag = splitinfo[2]
+            for_this_tool = true
+        end
+    elseif flagconf and flagconf.tools then
+        for_this_tool = table.contains(table.wrap(flagconf.tools), toolinst:name())
+    end
+    if for_this_tool then
+        return toolinst:has_flags(flag)
+    else
+        return true
+    end
+end
+
 -- check api configuration in targets
 function check_targets(apiname, opt)
     opt = opt or {}
