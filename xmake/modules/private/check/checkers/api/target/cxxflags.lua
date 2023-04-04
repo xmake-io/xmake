@@ -26,7 +26,7 @@ function main(opt)
     opt = opt or {}
     api_checker.check_targets("cxxflags", table.join(opt, {check = function(target, value)
         local compinst = target:compiler("cxx")
-        if not compinst:has_flags(value) then
+        if not api_checker.check_flag(target, compinst, "cxxflags", value) then
             return false, string.format("%s: unknown c++ compiler flag '%s'", compinst:name(), value)
         end
         return true
