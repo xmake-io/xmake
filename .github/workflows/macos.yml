@@ -86,17 +86,6 @@ jobs:
           tag: ${{ steps.previoustag.outputs.tag }}
           overwrite: true
 
-      - name: Publish package
-        if: github.event.action == 'published'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/xmake.pkg
-          asset_name: xmake-${{ steps.tagName.outputs.tag }}.macosx.pkg
-          asset_content_type: application/zip
-
       - name: Publish gz runfile
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
