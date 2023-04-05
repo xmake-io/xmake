@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.7.8
+
 ### New features
 
 * [#3518](https://github.com/xmake-io/xmake/issues/3518): Profile compile and link performance
@@ -1553,6 +1555,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.7.8
 
 ### 新特性
 
