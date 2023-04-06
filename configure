@@ -795,7 +795,7 @@ _get_abstract_flag_for_gcc_clang() {
             string_replace "${value}" '"' '\\\"'; value="${_ret}"
             flag="-D${value}"
             ;;
-        udefines) flag="-U${value}";;
+        undefines) flag="-U${value}";;
         includedirs) flag="-I${value}";;
         linkdirs) flag="-L${value}";;
         links) flag="-l${value}";;
@@ -933,7 +933,7 @@ _get_abstract_flags() {
     local values="${4}"
     local flags=""
     local value=""
-    for value in "${values}"; do
+    for value in ${values}; do
         local flag=""
         case "${toolname}" in
             gcc) _get_abstract_flag_for_gcc_clang "${toolkind}" "${toolname}" "${itemname}" "${value}"; flag="${_ret}";;
@@ -2037,7 +2037,7 @@ add_defines() {
     local define=""
     if ${_loading_targets} && test_z "${_xmake_sh_option_current}"; then
         local public=false
-        for define in "$@"; do
+        for define in $@; do
             if test_nq "${define}" "{public}"; then
                 _add_target_item "${_xmake_sh_target_current}" "defines" "${define}"
             else
@@ -2045,7 +2045,7 @@ add_defines() {
             fi
         done
         if ${public}; then
-            for define in "$@"; do
+            for define in $@; do
                 if test_nq "${define}" "{public}"; then
                     _add_target_item "${_xmake_sh_target_current}" "defines_public" "${define}"
                 fi
@@ -2056,8 +2056,8 @@ add_defines() {
     fi
 }
 
-# add udefines in target
-add_udefines() {
+# add undefines in target
+add_undefines() {
     local undefine=""
     if ${_loading_targets} && test_z "${_xmake_sh_option_current}"; then
         local public=false
@@ -2076,7 +2076,7 @@ add_udefines() {
             done
         fi
     elif ${_loading_options} && test_nz "${_xmake_sh_option_current}"; then
-        _add_option_item "${_xmake_sh_option_current}" "udefines" "${@}"
+        _add_option_item "${_xmake_sh_option_current}" "undefines" "${@}"
     fi
 }
 
