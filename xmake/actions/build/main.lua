@@ -171,16 +171,16 @@ function main()
     try
     {
         function ()
-
-            -- do check
             local time = os.mclock()
-            check_targets(targetname, {build = true})
 
             -- do rules before building
             _do_project_rules("build_before")
 
             -- do build
             _do_build(targetname, group_pattern)
+
+            -- do check
+            check_targets(targetname, {build = true})
 
             -- get build time
             build_time = os.mclock() - time
