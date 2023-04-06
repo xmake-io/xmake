@@ -38,8 +38,9 @@ fi
 # extract tarball
 cd $workdir
 if [ ! -d $basename ]; then
-    mkdir $basename
-    tar -xvf $basename.tar.gz -C $basename
+    mkdir xmakesrc
+    tar -xvf $basename.tar.gz -C xmakesrc
+    mv xmakesrc/xmake-$version $basename
 fi
 
 # enter project directory
