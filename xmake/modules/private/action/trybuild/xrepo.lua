@@ -142,6 +142,21 @@ function _get_install_configs(argv)
     if config.get("ndk") then
         table.insert(argv, "--ndk=" .. config.get("ndk"))
     end
+    if option.get("ndk_sdkver") then
+        table.insert(argv, "--ndk_sdkver=" .. option.get("ndk_sdkver"))
+    end
+    if option.get("android_sdk") then
+        table.insert(argv, "--android_sdk=" .. option.get("android_sdk"))
+    end
+    if option.get("build_toolver") then
+        table.insert(argv, "--build_toolver=" .. option.get("build_toolver"))
+    end
+    if option.get("ndk_stdcxx") then
+        table.insert(argv, "--ndk_stdcxx=" .. option.get("ndk_stdcxx"))
+    end
+    if option.get("ndk_cxxstl") then
+        table.insert(argv, "--ndk_cxxstl=" .. option.get("ndk_cxxstl"))
+    end
 
     -- mingw
     if config.get("mingw") then
