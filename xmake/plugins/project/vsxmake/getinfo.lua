@@ -371,6 +371,7 @@ end
 -- make filter
 function _make_filter(filepath, target, vcxprojdir)
     local filter
+    local is_plain = false
     local filegroups = target.filegroups
     if filegroups then
         -- @see https://github.com/xmake-io/xmake/issues/2282
@@ -392,6 +393,7 @@ function _make_filter(filepath, target, vcxprojdir)
                 if filepath:match(filepattern) then
                     if mode == "plain" then
                         filter = path.normalize(filegroup)
+                        is_plain = true
                     else
                         -- file tree mode (default)
                         if filegroup ~= "" then
@@ -408,7 +410,7 @@ function _make_filter(filepath, target, vcxprojdir)
             end
         end
     end
-    if not filter then
+    if not filter and not is_plain then
         -- use the default filter rule
         filter = path.relative(path.absolute(path.directory(filepath)), vcxprojdir)
         -- @see https://github.com/xmake-io/xmake/issues/2039
