@@ -433,7 +433,7 @@ function main()
         if version:find('.', 1, true) then
             mainurls = {format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.%s.exe", version, version, winarch),
                         format("https://fastly.jsdelivr.net/gh/xmake-mirror/xmake-releases@%s/xmake-%s.%s.exe.zip", version, version, winarch),
-                        format("https://gitlab.com/xmake-mirror/xmake-releases/-/raw/%s/xmake-%s.%s.exe.zip", version, version, winarch)}
+                        format("https://gitlab.com/xmake-mirror/xmake-releases/-/raw/%s/xmake-%s.%s.exe.zip", (version:gsub("^v", "")), version, winarch)}
         else
             -- regard as a git branch, fetch from ci
             local tags = fetchinfo.tags
