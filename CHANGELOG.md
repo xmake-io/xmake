@@ -2,6 +2,11 @@
 
 ## master (unreleased)
 
+### Bugs fixed
+
+* [#3596](https://github.com/xmake-io/xmake/issues/3596): Fix check_cxxfuncs and check_cxxsnippets
+* [#3603](https://github.com/xmake-io/xmake/issues/3603): Fix `xmake update`
+
 ## v2.7.8
 
 ### New features
@@ -1555,6 +1560,11 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs 修复
+
+* [#3596](https://github.com/xmake-io/xmake/issues/3596): 修复 check_cxxfuncs 和 check_cxxsnippets
+* [#3603](https://github.com/xmake-io/xmake/issues/3603): 修复 xmake update 的无效 url
 
 ## v2.7.8
 
