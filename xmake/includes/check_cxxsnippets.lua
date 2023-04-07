@@ -40,7 +40,7 @@ function check_cxxsnippets(definition, snippets, opt)
             add_links(opt.links)
         end
         if opt.includes then
-            add_cincludes(opt.includes)
+            add_cxxincludes(opt.includes)
         end
         if opt.languages then
             set_languages(opt.languages)
@@ -100,7 +100,7 @@ function configvar_check_cxxsnippets(definition, snippets, opt)
             add_links(opt.links)
         end
         if opt.includes then
-            add_cincludes(opt.includes)
+            add_cxxincludes(opt.includes)
         end
         if opt.languages then
             set_languages(opt.languages)
