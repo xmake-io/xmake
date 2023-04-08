@@ -54,7 +54,18 @@ function menu_options()
         {nil, "vs_sdkver",     "kv", nil, "The Windows SDK Version of Visual Studio"
                                         , "  e.g. --vs_sdkver=10.0.15063.0"  },
         {category = "Android NDK Configuration"                              },
-        {nil, "ndk",           "kv", nil, "Set the android NDK directory."   },
+        {nil, "ndk",           "kv", nil, "The NDK directory"                },
+        {nil, "ndk_sdkver",    "kv", nil, "The SDK Version for NDK (default: auto)" },
+        {nil, "android_sdk",   "kv", nil, "The Android SDK Directory"        },
+        {nil, "build_toolver", "kv", nil, "The Build Tool Version of Android SDK" },
+        {nil, "ndk_stdcxx",    "kv", nil, "Use stdc++ library for NDK"        },
+        {nil, "ndk_cxxstl",    "kv", nil, "The stdc++ stl library for NDK",
+                                          "    - c++_static",
+                                          "    - c++_shared",
+                                          "    - gnustl_static",
+                                          "    - gnustl_shared",
+                                          "    - stlport_shared",
+                                          "    - stlport_static"             },
         {category = "Cross Compilation Configuration"                        },
         {nil, "sdk",           "kv", nil, "Set the SDK directory of cross toolchain." },
         {nil, "toolchain",     "kv", nil, "Set the toolchain name."          },
@@ -170,6 +181,21 @@ function _install_packages(packages)
     -- for android
     if option.get("ndk") then
         table.insert(config_argv, "--ndk=" .. option.get("ndk"))
+    end
+    if option.get("ndk_sdkver") then
+        table.insert(config_argv, "--ndk_sdkver=" .. option.get("ndk_sdkver"))
+    end
+    if option.get("android_sdk") then
+        table.insert(config_argv, "--android_sdk=" .. option.get("android_sdk"))
+    end
+    if option.get("build_toolver") then
+        table.insert(config_argv, "--build_toolver=" .. option.get("build_toolver"))
+    end
+    if option.get("ndk_stdcxx") then
+        table.insert(config_argv, "--ndk_stdcxx=" .. option.get("ndk_stdcxx"))
+    end
+    if option.get("ndk_cxxstl") then
+        table.insert(config_argv, "--ndk_cxxstl=" .. option.get("ndk_cxxstl"))
     end
     -- for cross toolchain
     if option.get("sdk") then
