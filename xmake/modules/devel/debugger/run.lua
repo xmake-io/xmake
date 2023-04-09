@@ -268,7 +268,7 @@ function _run_gede(program, argv, opt)
     -- find gede
     opt = opt or {}
     local gede = find_tool("gede", {program = config.get("debugger")})
-    if not gede or not gede.program then
+    if not gede then
         return false
     end
 
@@ -289,7 +289,7 @@ function _run_seergdb(program, argv, opt)
     -- find seergdb
     opt = opt or {}
     local seergdb = find_tool("seergdb", {program = config.get("debugger")})
-    if not seergdb or seergdb.program then
+    if not seergdb then
         return false
     end
 
