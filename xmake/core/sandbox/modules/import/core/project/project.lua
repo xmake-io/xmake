@@ -72,7 +72,7 @@ sandbox_core_project.tmpfile              = project.tmpfile
 sandbox_core_project.is_loaded            = project.is_loaded
 
 -- check project options
-function sandbox_core_project.check()
+function sandbox_core_project.check_options()
 
     -- get project options
     local options = {}
@@ -122,6 +122,78 @@ function sandbox_core_project.check()
     if not ok then
         raise(errors)
     end
+end
+
+-- config target
+function sandbox_core_project._config_target(target)
+    for _, rule in ipairs(table.wrap(target:orderules())) do
+        local on_config = rule:script("config")
+        if on_config then
+            on_config(target)
+        end
+    end
+    local on_config = target:script("config")
+    if on_config then
+        on_config(target)
+    end
+end
+
+-- config targets
+function sandbox_core_project._config_targets()
+    for _, target in ipairs(table.wrap(project.ordertargets())) do
+        if target:is_enabled() then
+            sandbox_core_project._config_target(target)
+        end
+    end
+end
+
+-- load rules in the required packages for target
+function sandbox_core_project._load_package_rules_for_target(target)
+    for _, rulename in ipairs(table.wrap(target:get("rules"))) do
+        local packagename = rulename:match("@(.-)/")
+        if packagename then
+            local pkginfo = project.required_package(packagename)
+            if pkginfo then
+                local r = pkginfo:rule(rulename)
+                if r then
+                    target:rule_add(r)
+                    for _, dep in pairs(table.wrap(r:deps())) do
+                        target:rule_add(dep)
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- load rules in the required packages for targets
+-- @see https://github.com/xmake-io/xmake/issues/2374
+--
+-- @code
+-- add_requires("zlib", {system = false})
+-- target("test")
+--    set_kind("binary")
+--    add_files("src/*.cpp")
+--    add_packages("zlib")
+--    add_rules("@zlib/test")
+-- @endcode
+--
+function sandbox_core_project._load_package_rules_for_targets()
+    for _, target in ipairs(table.wrap(project.ordertargets())) do
+        if target:is_enabled() then
+            sandbox_core_project._load_package_rules_for_target(target)
+        end
+    end
+end
+
+-- load project targets
+function sandbox_core_project.load_targets()
+
+    -- load package rules for targets
+    sandbox_core_project._load_package_rules_for_targets()
+
+    -- config targets
+    sandbox_core_project._config_targets()
 end
 
 -- get the filelock of the whole project directory

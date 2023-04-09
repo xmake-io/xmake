@@ -62,11 +62,13 @@ function _check_targets(targetname, group_pattern)
     end
 end
 
--- main
 function main()
 
-    -- local config first
+    -- load config first
     config.load()
+
+    -- load targets
+    project.load_targets()
 
     -- check targets first
     local targetname

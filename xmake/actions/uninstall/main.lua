@@ -26,7 +26,6 @@ import("core.base.privilege")
 import("privilege.sudo")
 import("uninstall")
 
--- main
 function main()
 
     -- config it first

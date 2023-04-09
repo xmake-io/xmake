@@ -155,72 +155,6 @@ function _check_target_toolchains()
     end
 end
 
--- config target
-function _config_target(target)
-    local oldenvs = os.addenvs(target:pkgenvs())
-    for _, rule in ipairs(target:orderules()) do
-        local on_config = rule:script("config")
-        if on_config then
-            on_config(target)
-        end
-    end
-    local on_config = target:script("config")
-    if on_config then
-        on_config(target)
-    end
-    if oldenvs then
-        os.setenvs(oldenvs)
-    end
-end
-
--- config targets
-function _config_targets()
-    for _, target in ipairs(project.ordertargets()) do
-        if target:is_enabled() then
-            _config_target(target)
-        end
-    end
-end
-
--- load rules in the required packages for target
-function _load_package_rules_for_target(target)
-    for _, rulename in ipairs(target:get("rules")) do
-        local packagename = rulename:match("@(.-)/")
-        if packagename then
-            local pkginfo = project.required_package(packagename)
-            if pkginfo then
-                local r = pkginfo:rule(rulename)
-                if r then
-                    target:rule_add(r)
-                    for _, dep in pairs(r:deps()) do
-                        target:rule_add(dep)
-                    end
-                end
-            end
-        end
-    end
-end
-
--- load rules in the required packages for targets
--- @see https://github.com/xmake-io/xmake/issues/2374
---
--- @code
--- add_requires("zlib", {system = false})
--- target("test")
---    set_kind("binary")
---    add_files("src/*.cpp")
---    add_packages("zlib")
---    add_rules("@zlib/test")
--- @endcode
---
-function _load_package_rules_for_targets()
-    for _, target in ipairs(project.ordertargets()) do
-        if target:is_enabled() then
-            _load_package_rules_for_target(target)
-        end
-    end
-end
-
 -- find default mode
 function _find_default_mode()
     local mode = config.mode()
@@ -275,7 +209,6 @@ function _export_configs()
     end
 end
 
--- main entry
 function main(opt)
 
     -- do action for remote?
@@ -431,7 +364,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
 
         -- check project options
         if not trybuild then
-            project.check()
+            project.check_options()
         end
     end
 
@@ -466,11 +399,8 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
             _check_target_toolchains()
         end
 
-        -- load package rules for targets
-        _load_package_rules_for_targets()
-
-        -- config targets
-        _config_targets()
+        -- load targets
+        project.load_targets()
 
         -- update the config files
         generate_configfiles({force = recheck})
