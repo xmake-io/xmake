@@ -72,7 +72,7 @@ sandbox_core_project.tmpfile              = project.tmpfile
 sandbox_core_project.is_loaded            = project.is_loaded
 
 -- check project options
-function sandbox_core_project.check()
+function sandbox_core_project.check_options()
 
     -- get project options
     local options = {}

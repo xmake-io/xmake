@@ -431,7 +431,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
 
         -- check project options
         if not trybuild then
-            project.check()
+            project.check_options()
         end
     end
 

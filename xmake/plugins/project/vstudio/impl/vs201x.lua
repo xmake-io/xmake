@@ -605,7 +605,7 @@ function make(outputdir, vsinfo)
                 platform.load(config.plat(), arch):check()
 
                 -- check project options
-                project.check()
+                project.check_options()
 
                 -- install and update requires
                 install_requires()
