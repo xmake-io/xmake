@@ -32,7 +32,7 @@ import("detect.tools.find_ollydbg")
 import("detect.tools.find_devenv")
 import("detect.tools.find_vsjitdebugger")
 import("detect.tools.find_renderdoc")
-import("lib.detect.find_program")
+import("lib.detect.find_tool")
 
 -- run gdb
 function _run_gdb(program, argv, opt)
@@ -267,9 +267,8 @@ function _run_gede(program, argv, opt)
 
     -- find gede
     opt = opt or {}
-    local debugger = config.get("debugger") or "gede"
-    local prog = find_program(debugger, {})
-    if not prog then
+    local gede = find_tool("gede", {program = config.get("debugger")})
+    if not gede or not gede.program then
         return false
     end
 
@@ -280,7 +279,7 @@ function _run_gede(program, argv, opt)
     table.insert(argv, 1, "--no-show-config")
 
     -- run it
-    os.execv(prog, argv, table.join(opt, {exclusive = true}))
+    os.execv(gede.program, argv, table.join(opt, {exclusive = true}))
     return true
 end
 
@@ -289,9 +288,8 @@ function _run_seergdb(program, argv, opt)
 
     -- find seergdb
     opt = opt or {}
-    local debugger = config.get("debugger") or "seergdb"
-    local prog = find_program(debugger, {})
-    if not prog then
+    local seergdb = find_tool("seergdb", {program = config.get("debugger")})
+    if not seergdb or seergdb.program then
         return false
     end
 
@@ -301,7 +299,7 @@ function _run_seergdb(program, argv, opt)
     table.insert(argv, 1, "--start")
 
     -- run it
-    os.execv(prog, argv, table.join(opt, {exclusive = true}))
+    os.execv(seergdb.program, argv, table.join(opt, {exclusive = true}))
     return true
 end
 
