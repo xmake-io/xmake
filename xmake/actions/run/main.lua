@@ -213,6 +213,9 @@ function main()
     -- load config first
     config.load()
 
+    -- load targets
+    project.load_targets()
+
     -- check targets first
     local targetname
     local group_pattern = option.get("group")
