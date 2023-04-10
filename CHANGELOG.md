@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#3613](https://github.com/xmake-io/xmake/issues/3613): Add `wasm.preloadfiles` configuration for wasm
+
 ### Bugs fixed
 
 * [#3596](https://github.com/xmake-io/xmake/issues/3596): Fix check_cxxfuncs and check_cxxsnippets
@@ -1561,6 +1565,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#3613](https://github.com/xmake-io/xmake/issues/3613): 添加 `wasm.preloadfiles` 扩展配置
 
 ### Bugs 修复
 
