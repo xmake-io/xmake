@@ -18,13 +18,17 @@
 -- @file        xmake.lua
 --
 
-rule("platform.wasm")
-    add_deps("platform.wasm.preloadfiles")
-    add_deps("platform.wasm.installfiles")
-
-rule("platform.windows")
-    if is_host("windows") then
-        add_deps("platform.windows.def")
-        add_deps("platform.windows.manifest")
-    end
+-- @see https://github.com/xmake-io/xmake/issues/3613
+rule("platform.wasm.preloadfiles")
+    on_load("wasm", function (target)
+        if not target:is_binary() then
+            return
+        end
+        local preloadfiles = target:values("wasm.preloadfiles")
+        if preloadfiles then
+            for _, preloadfile in ipairs(preloadfiles) do
+                target:add("ldflags", {"--preload-file", preloadfile}, {force = true, expand = false})
+            end
+        end
+    end)
 
