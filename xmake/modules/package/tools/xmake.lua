@@ -242,6 +242,7 @@ function buildenvs(package, opt)
     -- we should avoid using $XMAKE_CONFIGDIR outside to cause conflicts
     envs.XMAKE_CONFIGDIR = os.curdir()
     envs.XMAKE_IN_XREPO  = "1"
+    envs.XMAKE_IN_PROJECT_GENERATOR = ""
     return envs
 end
 
