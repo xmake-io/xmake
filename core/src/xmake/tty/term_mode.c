@@ -52,7 +52,7 @@ tb_int_t xm_tty_term_mode(lua_State* lua)
 
     // get and set terminal mode
     DWORD mode = 0;
-    HANDLE console_handle;
+    HANDLE console_handle = INVALID_HANDLE_VALUE;
     switch (stdtype)
     {
     case 1: console_handle = GetStdHandle(STD_INPUT_HANDLE); break;
@@ -63,7 +63,8 @@ tb_int_t xm_tty_term_mode(lua_State* lua)
     if (lua_isnumber(lua, 2))
     {
         tb_int_t newmode = (tb_int_t)lua_tointeger(lua, 2);
-        SetConsoleMode(console_handle, (DWORD)newmode);
+        if (console_handle != INVALID_HANDLE_VALUE)
+            SetConsoleMode(console_handle, (DWORD)newmode);
     }
 #else
     tb_int_t mode = 0;
