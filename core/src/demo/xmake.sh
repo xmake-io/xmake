@@ -28,6 +28,11 @@ target "demo"
     add_installfiles "${projectdir}/(xmake/templates/**)" "share"
     add_installfiles "${projectdir}/scripts/xrepo.sh" "bin" "xrepo"
 
+    if is_plat "mingw" "msys" "cygwin" && is_host "windows"; then
+        add_installfiles "${projectdir}/scripts/msys/xmake.sh" "bin" "xmake"
+        add_installfiles "${buildir}/xmake.exe" "share/xmake"
+    fi
+
     # add syslinks
     add_options "atomic"
     if is_plat "mingw" "msys" "cygwin"; then
