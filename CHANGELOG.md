@@ -11,6 +11,7 @@
 * [#3596](https://github.com/xmake-io/xmake/issues/3596): Fix check_cxxfuncs and check_cxxsnippets
 * [#3603](https://github.com/xmake-io/xmake/issues/3603): Fix `xmake update`
 * [#3614](https://github.com/xmake-io/xmake/issues/3614): Fix qt envirnoment when running target
+* Fix setenv for msys/mingw
 
 ## v2.7.8
 
@@ -1575,6 +1576,7 @@
 * [#3596](https://github.com/xmake-io/xmake/issues/3596): 修复 check_cxxfuncs 和 check_cxxsnippets
 * [#3603](https://github.com/xmake-io/xmake/issues/3603): 修复 xmake update 的无效 url
 * [#3614](https://github.com/xmake-io/xmake/issues/3614): 修复 xmake run 对 Qt 环境的加载
+* 修复 msys/mingw 下环境变量设置问题
 
 ## v2.7.8
 
