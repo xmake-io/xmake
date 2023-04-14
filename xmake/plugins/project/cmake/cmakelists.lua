@@ -137,7 +137,8 @@ function _sourcebatch_is_built(sourcebatch)
     local rulename = sourcebatch.rulename
     if rulename == "c.build" or rulename == "c++.build"
         or rulename == "asm.build" or rulename == "cuda.build"
-        or rulename == "objc.build" or rulename == "objc++.build" then
+        or rulename == "objc.build" or rulename == "objc++.build"
+        or rulename == "win.sdk.resource" then
         return true
     end
 end
