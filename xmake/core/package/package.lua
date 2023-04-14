@@ -88,7 +88,15 @@ end
 -- get the package configuration
 function _instance:get(name)
     local value = self._INFO:get(name)
-    if value == nil and self:base() then
+    if name == "configs" then
+        -- we need merge it, because current builtin configs always exists
+        if self:base() then
+            local configs_base = self:base():get("configs")
+            if configs_base then
+                value = table.unique(table.join(value or {}, configs_base))
+            end
+        end
+    elseif value == nil and self:base() then
         value = self:base():get(name)
     end
     if value ~= nil then
@@ -1298,10 +1306,6 @@ function _instance:config(name)
     local configs = self:configs()
     if configs then
         value = configs[name]
-    end
-    -- we cannot get it from `self:get()`, because there are always some builtin configs.
-    if value == nil and self:base() then
-        value = self:base():config(name)
     end
     return value
 end
