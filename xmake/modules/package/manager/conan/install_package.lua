@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.semver")
 import("core.project.config")
 import("core.tool.toolchain")
 import("core.platform.platform")
@@ -131,9 +132,12 @@ function main(name, opt)
     local configs = opt.configs or {}
 
     -- find conan
-    local conan = find_tool("conan")
+    local conan = find_tool("conan", {version = true})
     if not conan then
         raise("conan not found!")
+    end
+    if conan.version then
+        assert(semver.compare(conan.version, "2.0") < 0, "conan %s is not supported, please use conan 1.x", conan.version)
     end
 
     -- get build directory
