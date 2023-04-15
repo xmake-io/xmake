@@ -221,7 +221,7 @@ function main(name, opt)
                         ["2005"] = "8"}
         local vs = assert(config.get("vs"), "vs not found!")
         table.insert(argv, "-s")
-        table.insert(argv, "compiler=msvc")
+        table.insert(argv, "compiler=Visual Studio")
         table.insert(argv, "-s")
         table.insert(argv, "compiler.version=" .. assert(vsvers[vs], "unknown msvc version!"))
         if configs.vs_runtime then
