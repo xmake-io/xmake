@@ -246,8 +246,8 @@ function _clear_sourcedir(package)
     end
 end
 
--- install the given package
-function main(package)
+-- enter working directory
+function _enter_workdir(package)
 
     -- get working directory of this package
     local workdir = package:cachedir()
@@ -255,7 +255,7 @@ function main(package)
     -- lock this package
     package:lock()
 
-    -- enter the working directory
+    -- enter directory
     local oldir = nil
     local sourcedir = package:sourcedir()
     if sourcedir then
@@ -274,6 +274,47 @@ function main(package)
         os.mkdir(workdir)
         oldir = os.cd(workdir)
     end
+
+    -- we need copy source codes to the working directory with short path on windows
+    --
+    -- Because the target name and source file path of this project are too long,
+    -- it's absolute path exceeds the windows path length limit.
+    --
+    if is_host("windows") and package:policy("platform.longpaths") then
+        local sourcedir_tmp = os.tmpdir() .. ".dir"
+        os.tryrm(sourcedir_tmp)
+        os.cp(os.curdir(), sourcedir_tmp)
+        os.cd(sourcedir_tmp)
+    end
+
+    return oldir
+end
+
+-- leave working directory
+function _leave_workdir(package, oldir)
+
+    -- clean the empty package directory
+    local installdir = package:installdir()
+    if os.emptydir(installdir) then
+        os.tryrm(installdir)
+    end
+
+    -- unlock this package
+    package:unlock()
+
+    -- leave source codes directory
+    if oldir then
+        os.cd(oldir)
+    end
+
+    -- clean source directory if it is no longer needed
+    _clear_sourcedir(package)
+end
+
+function main(package)
+
+    -- enter working directory
+    local oldir = _enter_workdir(package)
 
     -- init tipname
     local tipname = package:name()
@@ -432,19 +473,6 @@ function main(package)
         }
     }
 
-    -- clean the empty package directory
-    local installdir = package:installdir()
-    if os.emptydir(installdir) then
-        os.tryrm(installdir)
-    end
-
-    -- unlock this package
-    package:unlock()
-
-    -- leave source codes directory
-    os.cd(oldir)
-
-    -- clean source directory if it is no longer needed
-    _clear_sourcedir(package)
+    _leave_workdir(package, oldir)
     return ok
 end
