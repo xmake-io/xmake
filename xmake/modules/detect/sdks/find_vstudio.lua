@@ -343,6 +343,34 @@ function _find_vstudio(opt)
     return results
 end
 
+-- get last mtime of msvc
+-- @see https://github.com/xmake-io/xmake/issues/3652
+function _get_last_mtime_of_msvc(msvc)
+    local mtime = -1
+    for arch, envs in pairs(msvc.vcvarsall) do
+        if envs.PATH then
+            local pathenv = path.splitenv(envs.PATH)
+            for _, dir in ipairs(pathenv) do
+                local cl = path.join(dir, "cl.exe")
+                if os.isfile(cl) then
+                    local t = os.mtime(cl)
+                    if t > mtime then
+                        mtime = t
+                    end
+                end
+            end
+        end
+        local winsdk = envs.WindowsSdkDir
+        if winsdk and os.isdir(winsdk) then
+            local t = os.mtime(winsdk)
+            if t > mtime then
+                mtime = t
+            end
+        end
+    end
+    return mtime
+end
+
 -- get last mtime of vstudio
 function _get_last_mtime(vstudio)
     local mtime = -1
@@ -350,6 +378,10 @@ function _get_last_mtime(vstudio)
         local vcvarsall_bat = msvc.vcvarsall_bat
         if vcvarsall_bat and os.isfile(vcvarsall_bat) then
             local t = os.mtime(vcvarsall_bat)
+            if t > mtime then
+                mtime = t
+            end
+            t = _get_last_mtime_of_msvc(msvc)
             if t > mtime then
                 mtime = t
             end
