@@ -1566,11 +1566,11 @@ _get_target_toolchain_flags_for_gcc() {
     local toolkind="${2}"
     local flags=""
     if is_arch "i386"; then
-        flags="-m32"
+        flags="${flags} -m32"
     fi
     _get_target_item "${name}" "kind"; local targetkind="${_ret}"
     if test_eq "${targetkind}" "shared" && test_eq "${toolkind}" "sh"; then
-        flags="-shared -fPIC"
+        flags="${flags} -shared -fPIC"
     fi
     _ret="${flags}"
 }
@@ -1581,11 +1581,17 @@ _get_target_toolchain_flags_for_clang() {
     local toolkind="${2}"
     local flags="-Qunused-arguments"
     if is_arch "i386"; then
-        flags="-m32"
+        flags="${flags} -m32"
     fi
     _get_target_item "${name}" "kind"; local targetkind="${_ret}"
     if test_eq "${targetkind}" "shared" && test_eq "${toolkind}" "sh"; then
-        flags="-shared -fPIC"
+        flags="${flags} -shared -fPIC"
+    fi
+    if is_plat "macosx"; then
+        _os_iorunv "xcrun" "-sdk" "macosx" "--show-sdk-path"; local sdkdir="${_ret}"
+        if test_nz "${sdkdir}"; then
+            flags="${flags} -isysroot \"${sdkdir}\""
+        fi
     fi
     _ret="${flags}"
 }
