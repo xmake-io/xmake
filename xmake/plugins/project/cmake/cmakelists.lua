@@ -28,6 +28,7 @@ import("core.base.hashset")
 import("core.project.rule")
 import("lib.detect.find_tool")
 import("private.utils.batchcmds")
+import("private.utils.rule_groups")
 
 -- get minimal cmake version
 function _get_cmake_minver()
@@ -895,6 +896,9 @@ end
 
 -- add target custom commands for batchcmds
 function _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, cmds)
+    if #cmds == 0 then
+        return
+    end
     if suffix == "before" then
         -- ADD_CUSTOM_COMMAND and PRE_BUILD did not work as I expected,
         -- so we need use add_dependencies and fake target to support it.
@@ -978,26 +982,54 @@ function _add_target_custom_commands_for_objectrules(cmakelists, target, sourceb
         end
     end
 end
+function _add_batchjobs_for_group(batchjobs, rootjob, target, group, suffix)
+    for _, item in pairs(group) do
+        local sourcebatch = item.sourcebatch
+        if item.target then
+            _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suffix)
+        end
+        -- override on_xxx script in target? we need ignore rule scripts
+        if item.rule and (suffix or not rule_groups.has_scripts_for_target(target, suffix)) then
+            _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix)
+        end
+    end
+end
+
 
 -- add target custom commands
 function _add_target_custom_commands(cmakelists, target, outputdir)
 
+    -- build sourcebatch groups first
+    local groups = rule_groups.build_sourcebatch_groups(target, target:sourcebatches())
+
     -- add before commands
     local cmds_before = {}
     _add_target_custom_commands_for_target(cmakelists, target, cmds_before, "before")
-    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
-        if not _sourcebatch_is_built(sourcebatch) then
-            _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, cmds_before, "before")
-            _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, cmds_before)
+    for idx, group in irpairs(groups) do
+        for _, item in pairs(group) do
+            -- buildcmd scripts are always in rule, so we need ignore target item (item.target).
+            local sourcebatch = item.sourcebatch
+            if item.rule then
+                if not _sourcebatch_is_built(sourcebatch) then
+                    _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, cmds_before, "before")
+                    _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, cmds_before)
+                end
+            end
         end
     end
     _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, "before", cmds_before)
 
     -- add after commands
     local cmds_after = {}
-    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
-        if not _sourcebatch_is_built(sourcebatch) then
-            _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, cmds_after, "after")
+    for idx, group in irpairs(groups) do
+        for _, item in pairs(group) do
+            -- buildcmd scripts are always in rule, so we need ignore target item (item.target).
+            local sourcebatch = item.sourcebatch
+            if item.rule then
+                if not _sourcebatch_is_built(sourcebatch) then
+                    _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, cmds_after, "after")
+                end
+            end
         end
     end
     _add_target_custom_commands_for_target(cmakelists, target, cmds_after, "after")

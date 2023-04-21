@@ -27,6 +27,65 @@ import("private.async.runjobs")
 import("private.utils.batchcmds")
 import("private.utils.rule_groups")
 
+-- has scripts for the custom rule
+function _has_scripts_for_rule(ruleinst, suffix)
+
+    -- add batch jobs for xx_build_files
+    local scriptname = "build_files" .. (suffix and ("_" .. suffix) or "")
+    local script = ruleinst:script(scriptname)
+    if script then
+        return true
+    end
+
+    -- add batch jobs for xx_build_file
+    scriptname = "build_file" .. (suffix and ("_" .. suffix) or "")
+    script = ruleinst:script(scriptname)
+    if script then
+        return true
+    end
+
+    -- add batch jobs for xx_buildcmd_files
+    scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
+    script = ruleinst:script(scriptname)
+    if script then
+        return true
+    end
+
+    -- add batch jobs for xx_buildcmd_file
+    scriptname = "buildcmd_file" .. (suffix and ("_" .. suffix) or "")
+    script = ruleinst:script(scriptname)
+    if script then
+        return true
+    end
+end
+
+-- has scripts for target
+function _has_scripts_for_target(target, suffix)
+    local scriptname = "build_files" .. (suffix and ("_" .. suffix) or "")
+    local script = target:script(scriptname)
+    if script then
+        return true
+    else
+        scriptname = "build_file" .. (suffix and ("_" .. suffix) or "")
+        script = target:script(scriptname)
+        if script then
+            return true
+        end
+    end
+end
+
+-- has scripts for group
+function _has_scripts_for_group(group, suffix)
+    for _, item in pairs(group) do
+        if item.target and _has_scripts_for_target(item.target, suffix) then
+            return true
+        end
+        if item.rule and _has_scripts_for_rule(item.rule, suffix) then
+            return true
+        end
+    end
+end
+
 -- add batch jobs for the custom rule
 function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix)
 
@@ -146,7 +205,7 @@ function _add_batchjobs_for_group(batchjobs, rootjob, target, group, suffix)
             _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suffix)
         end
         -- override on_xxx script in target? we need ignore rule scripts
-        if item.rule and (suffix or not rule_groups.has_scripts_for_target(target, suffix)) then
+        if item.rule and (suffix or not _has_scripts_for_target(target, suffix)) then
             _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix)
         end
     end
@@ -162,7 +221,7 @@ function add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, sourcebatches
     local groups_root
     local groups_leaf = rootjob
     for idx, group in ipairs(groups) do
-        if rule_groups.has_scripts_for_group(group, "after") then
+        if _has_scripts_for_group(group, "after") then
             batchjobs:group_enter(target:name() .. "/after_build_files" .. idx)
             _add_batchjobs_for_group(batchjobs, groups_leaf, target, group, "after")
             groups_leaf = batchjobs:group_leave() or groups_leaf
@@ -172,7 +231,7 @@ function add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, sourcebatches
 
     -- add batch jobs for build
     for idx, group in ipairs(groups) do
-        if rule_groups.has_scripts_for_group(group) then
+        if _has_scripts_for_group(group) then
             batchjobs:group_enter(target:name() .. "/build_files" .. idx)
             _add_batchjobs_for_group(batchjobs, groups_leaf, target, group)
             groups_leaf = batchjobs:group_leave() or groups_leaf
@@ -182,7 +241,7 @@ function add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, sourcebatches
 
     -- add batch jobs for build_before
     for idx, group in ipairs(groups) do
-        if rule_groups.has_scripts_for_group(group, "before") then
+        if _has_scripts_for_group(group, "before") then
             batchjobs:group_enter(target:name() .. "/before_build_files" .. idx)
             _add_batchjobs_for_group(batchjobs, groups_leaf, target, group, "before")
             groups_leaf = batchjobs:group_leave() or groups_leaf
