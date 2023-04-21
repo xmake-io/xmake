@@ -995,7 +995,6 @@ function _add_batchjobs_for_group(batchjobs, rootjob, target, group, suffix)
     end
 end
 
-
 -- add target custom commands
 function _add_target_custom_commands(cmakelists, target, outputdir)
 
@@ -1003,6 +1002,7 @@ function _add_target_custom_commands(cmakelists, target, outputdir)
     local groups = rule_groups.build_sourcebatch_groups(target, target:sourcebatches())
 
     -- add before commands
+    -- we use irpairs(groups), because the last group that should be given the highest priority.
     local cmds_before = {}
     _add_target_custom_commands_for_target(cmakelists, target, cmds_before, "before")
     for idx, group in irpairs(groups) do
@@ -1012,6 +1012,7 @@ function _add_target_custom_commands(cmakelists, target, outputdir)
             if item.rule then
                 if not _sourcebatch_is_built(sourcebatch) then
                     _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, cmds_before, "before")
+                    -- rule.on_buildcmd_files should also be executed before building the target, as cmake PRE_BUILD does not work.
                     _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, cmds_before)
                 end
             end
