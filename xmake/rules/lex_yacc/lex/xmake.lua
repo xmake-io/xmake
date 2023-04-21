@@ -21,8 +21,9 @@
 -- define rule: lex
 rule("lex")
     add_deps("c++")
+    add_deps("yacc", {order = true})
     set_extensions(".l", ".ll")
-    on_buildcmd_file(function (target, batchcmds, sourcefile_lex, opt)
+    before_buildcmd_file(function (target, batchcmds, sourcefile_lex, opt)
 
         -- get lex
         import("lib.detect.find_tool")
