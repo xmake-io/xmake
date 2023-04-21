@@ -379,24 +379,32 @@ verilator     Verilator open-source SystemVerilog simulator and lint system
 ```lua
 add_rules("mode.debug", "mode.release")
 
-target("console")
+target("console", 
+  function() 
     set_kind("binary")
     add_files("src/*.c")
     if is_mode("debug") then
         add_defines("DEBUG")
     end
+  end
+)
 ```
 
 #### 自定义脚本
 
 ```lua
-target("test")
+target("test", 
+  function()
     set_kind("binary")
     add_files("src/*.c")
-    after_build(function (target)
+    after_build(
+      function (target)
         print("hello: %s", target:name())
         os.exec("echo %s", target:targetfile())
-    end)
+      end
+    )
+  end
+)
 ```
 
 #### 依赖包自动集成
@@ -406,10 +414,13 @@ target("test")
 ```lua
 add_requires("tbox >1.6.1", "libuv master", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8")
 add_requires("conan::openssl/1.1.1g", {alias = "openssl", optional = true, debug = true})
-target("test")
+target("test",
+  function()
     set_kind("binary")
     add_files("src/*.c")
     add_packages("tbox", "libuv", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8", "openssl")
+  end
+)
 ```
 
 另外，我们也可以使用 [xrepo](https://github.com/xmake-io/xrepo) 命令来快速安装依赖包。
@@ -417,34 +428,46 @@ target("test")
 #### Qt QuickApp 应用程序
 
 ```lua
-target("test")
+target("test", 
+  function()
     add_rules("qt.quickapp")
     add_files("src/*.cpp")
     add_files("src/qml.qrc")
+  end
+)
 ```
 
 #### Cuda 程序
 
 ```lua
-target("test")
+target("test", 
+  function()
     set_kind("binary")
     add_files("src/*.cu")
     add_cugencodes("native")
     add_cugencodes("compute_35")
+  end
+)
 ```
 
 #### WDK/UMDF 驱动程序
 
 ```lua
-target("echo")
+target("echo",
+  function()
     add_rules("wdk.driver", "wdk.env.umdf")
     add_files("driver/*.c")
     add_files("driver/*.inx")
     add_includedirs("exe")
+  end
+)
 
-target("app")
+target("app",
+  function()
     add_rules("wdk.binary", "wdk.env.umdf")
     add_files("exe/*.cpp")
+  end
+)
 ```
 
 更多WDK驱动程序例子(umdf/kmdf/wdm)，见：[WDK工程例子](https://xmake.io/#/zh-cn/guide/project_examples?id=wdk%e9%a9%b1%e5%8a%a8%e7%a8%8b%e5%ba%8f)
@@ -452,10 +475,13 @@ target("app")
 #### iOS/MacOS 应用程序
 
 ```lua
-target("test")
+target("test",
+  function()
     add_rules("xcode.application")
     add_files("src/*.m", "src/**.storyboard", "src/*.xcassets")
     add_files("src/Info.plist")
+  end
+)
 ```
 
 #### Framework 和 Bundle 程序（iOS/MacOS）
@@ -471,19 +497,25 @@ target("test")
 
 ```lua
 add_requires("libomp", {optional = true})
-target("loop")
+target("loop",
+  function()
     set_kind("binary")
     add_files("src/*.cpp")
     add_rules("c++.openmp")
     add_packages("libomp")
+  end
+)
 ```
 
 #### Zig 程序
 
 ```lua
-target("test")
+target("test",
+  function()
     set_kind("binary")
     add_files("src/main.zig")
+  end
+)
 ```
 
 ### 自动拉取远程工具链
@@ -494,10 +526,13 @@ target("test")
 
 ```lua
 add_requires("llvm 10.x", {alias = "llvm-10"})
-target("test")
+target("test",
+  function()
     set_kind("binary")
-    add_files("src/*.c)
+    add_files("src/*.c")
     set_toolchains("llvm@llvm-10")
+  end
+)
 ````
 
 #### 拉取交叉编译工具链
@@ -506,10 +541,13 @@ target("test")
 
 ```lua
 add_requires("muslcc")
-target("test")
+target("test", 
+  function()
     set_kind("binary")
-    add_files("src/*.c)
+    add_files("src/*.c")
     set_toolchains("@muslcc")
+  end
+)
 ```
 
 #### 拉取工具链并且集成对应工具链编译的依赖包
@@ -522,10 +560,13 @@ add_requires("zlib", "libogg", {system = false})
 
 set_toolchains("@muslcc")
 
-target("test")
+target("test", 
+  function()
     set_kind("binary")
     add_files("src/*.c")
     add_packages("zlib", "libogg")
+  end
+)
 ```
 
 ## 插件

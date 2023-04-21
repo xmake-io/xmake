@@ -371,24 +371,32 @@ For more details see: [Remote Compilation](https://xmake.io/#/features/remote_bu
 ```lua
 add_rules("mode.debug", "mode.release")
 
-target("console")
+target("console", 
+  function() 
     set_kind("binary")
     add_files("src/*.c")
     if is_mode("debug") then
         add_defines("DEBUG")
     end
+  end
+)
 ```
 
 #### Custom scripts
 
 ```lua
-target("test")
+target("test", 
+  function()
     set_kind("binary")
     add_files("src/*.c")
-    after_build(function (target)
+    after_build(
+      function (target)
         print("hello: %s", target:name())
         os.exec("echo %s", target:targetfile())
-    end)
+      end
+    )
+  end
+)
 ```
 
 #### Automatic integration of dependent packages
@@ -398,10 +406,13 @@ Download and use packages in [xmake-repo](https://github.com/xmake-io/xmake-repo
 ```lua
 add_requires("tbox >1.6.1", "libuv master", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8")
 add_requires("conan::openssl/1.1.1g", {alias = "openssl", optional = true, debug = true})
-target("test")
+target("test",
+  function()
     set_kind("binary")
     add_files("src/*.c")
     add_packages("tbox", "libuv", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8", "openssl")
+  end
+)
 ```
 
 In addition, we can also use the [xrepo](https://github.com/xmake-io/xrepo) command to quickly install dependencies.
@@ -409,34 +420,46 @@ In addition, we can also use the [xrepo](https://github.com/xmake-io/xrepo) comm
 #### Qt QuickApp Program
 
 ```lua
-target("test")
+target("test", 
+  function()
     add_rules("qt.quickapp")
     add_files("src/*.cpp")
     add_files("src/qml.qrc")
+  end
+)
 ```
 
 #### Cuda Program
 
 ```lua
-target("test")
+target("test", 
+  function()
     set_kind("binary")
     add_files("src/*.cu")
     add_cugencodes("native")
     add_cugencodes("compute_35")
+  end
+)
 ```
 
 #### WDK/UMDF Driver Program
 
 ```lua
-target("echo")
+target("echo",
+  function()
     add_rules("wdk.driver", "wdk.env.umdf")
     add_files("driver/*.c")
     add_files("driver/*.inx")
     add_includedirs("exe")
+  end
+)
 
-target("app")
+target("app",
+  function()
     add_rules("wdk.binary", "wdk.env.umdf")
     add_files("exe/*.cpp")
+  end
+)
 ```
 
 More wdk driver program examples exist (umdf/kmdf/wdm), please see [WDK Program Examples](https://xmake.io/#/guide/project_examples?id=wdk-driver-program)
@@ -444,38 +467,50 @@ More wdk driver program examples exist (umdf/kmdf/wdm), please see [WDK Program 
 #### iOS/MacOS Application
 
 ```lua
-target("test")
+target("test",
+  function()
     add_rules("xcode.application")
     add_files("src/*.m", "src/**.storyboard", "src/*.xcassets")
     add_files("src/Info.plist")
+  end
+)
 ```
 
 #### Framework and Bundle Program (iOS/MacOS)
 
 ```lua
-target("test")
+target("test",
+  function()
     add_rules("xcode.framework") -- or xcode.bundle
     add_files("src/*.m")
     add_files("src/Info.plist")
+  end
+)
 ```
 
 #### OpenMP Program
 
 ```lua
 add_requires("libomp", {optional = true})
-target("loop")
+target("loop", 
+  function()
     set_kind("binary")
     add_files("src/*.cpp")
     add_rules("c++.openmp")
     add_packages("libomp")
+  end
+)
 ```
 
 #### Zig Program
 
 ```lua
-target("test")
+target("test", 
+  function()
     set_kind("binary")
     add_files("src/main.zig")
+  end
+)
 ```
 
 ### Automatically fetch remote toolchain
@@ -486,10 +521,13 @@ We use Clang in `llvm-10` to compile the project.
 
 ```lua
 add_requires("llvm 10.x", {alias = "llvm-10"})
-target("test")
+target("test", 
+  function()
     set_kind("binary")
     add_files("src/*.c")
     set_toolchains("llvm@llvm-10")
+  end
+)
 ````
 
 #### Fetch cross-compilation toolchain
@@ -498,10 +536,13 @@ We can also pull a specified cross-compilation toolchain to compile the project.
 
 ```lua
 add_requires("muslcc")
-target("test")
+target("test", 
+  function()
     set_kind("binary")
     add_files("src/*.c")
     set_toolchains("@muslcc")
+  end
+)
 ```
 
 #### Fetch toolchain and packages
@@ -514,10 +555,13 @@ add_requires("zlib", "libogg", {system = false})
 
 set_toolchains("@muslcc")
 
-target("test")
+target("test", 
+  function()
     set_kind("binary")
     add_files("src/*.c")
     add_packages("zlib", "libogg")
+  end
+)
 ```
 
 ## Plugins
