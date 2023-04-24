@@ -196,6 +196,55 @@ function _get_flags_from_fileconfig(fileconfig, outputdir, name)
     end
 end
 
+-- get flags from target
+-- @see https://github.com/xmake-io/xmake/issues/3594
+function _get_flags_from_target(target, flagkind)
+    local flags = _get_configs_from_target(target, flagkind)
+    local extraconf = target:extraconf(flagkind)
+    local sourcekind
+    if flagkind == "cflags" then
+        sourcekind = "cc"
+    elseif flagkind == "cxxflags" or flagkind == "cxflags" then
+        sourcekind = "cxx"
+    elseif flagkind == "asflags" then
+        sourcekind = "as"
+    elseif flagkind == "cuflags" then
+        sourcekind = "cu"
+    else
+        raise("unknown flag kind %s", flagkind)
+    end
+    local toolinst = target:compiler(sourcekind)
+
+    -- does this flag belong to this tool?
+    -- @see https://github.com/xmake-io/xmake/issues/3022
+    --
+    -- e.g.
+    -- for all: add_cxxflags("-g")
+    -- only for clang: add_cxxflags("clang::-stdlib=libc++")
+    -- only for clang and multiple flags: add_cxxflags("-stdlib=libc++", "-DFOO", {tools = "clang"})
+    --
+    local result = {}
+    for _, flag in ipairs(flags) do
+        local for_this_tool = true
+        local flagconf = extraconf and extraconf[flag]
+        if type(flag) == "string" and flag:find("::", 1, true) then
+            for_this_tool = false
+            local splitinfo = flag:split("::", {plain = true})
+            local toolname = splitinfo[1]
+            if toolname == toolinst:name() then
+                flag = splitinfo[2]
+                for_this_tool = true
+            end
+        elseif flagconf and flagconf.tools then
+            for_this_tool = table.contains(table.wrap(flagconf.tools), toolinst:name())
+        end
+        if for_this_tool then
+            table.insert(result, flag)
+        end
+    end
+    return result
+end
+
 -- add project info
 function _add_project(cmakelists, languages, outputdir)
 
@@ -539,10 +588,10 @@ end
 
 -- add target compile options
 function _add_target_compile_options(cmakelists, target, outputdir)
-    local cflags   = _get_configs_from_target(target, "cflags")
-    local cxflags  = _get_configs_from_target(target, "cxflags")
-    local cxxflags = _get_configs_from_target(target, "cxxflags")
-    local cuflags  = _get_configs_from_target(target, "cuflags")
+    local cflags   = _get_flags_from_target(target, "cflags")
+    local cxflags  = _get_flags_from_target(target, "cxflags")
+    local cxxflags = _get_flags_from_target(target, "cxxflags")
+    local cuflags  = _get_flags_from_target(target, "cuflags")
     if #cflags > 0 or #cxflags > 0 or #cxxflags > 0 or #cuflags > 0 then
         cmakelists:print("target_compile_options(%s PRIVATE", target:name())
         for _, flag in ipairs(_translate_flags(cflags, outputdir)) do
