@@ -35,12 +35,6 @@ function main(package_names)
         clean_modes = hashset.of("cache", "package")
     end
 
-    -- clear all unused packages
-    if clean_modes:has("package") then
-        print("clearing packages ..")
-        remove_packages(package_names, {clean = true})
-    end
-
     -- clear cache directory
     if clean_modes:has("cache") then
         print("clearing caches ..")
@@ -50,6 +44,12 @@ function main(package_names)
         local require_cache = localcache.cache("package")
         require_cache:clear()
         require_cache:save()
+    end
+
+    -- clear all unused packages
+    if clean_modes:has("package") then
+        print("clearing packages ..")
+        remove_packages(package_names, {clean = true})
     end
 end
 
