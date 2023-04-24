@@ -65,13 +65,15 @@ function load(target, sourcekind)
 
     -- get c/c++ source file for protobuf
     local prefixdir
+    local autogendir
     local public
     local fileconfig = target:fileconfig(sourcefile_proto)
     if fileconfig then
         public = fileconfig.proto_public
         prefixdir = fileconfig.proto_rootdir
+        autogendir = fileconfig.proto_autogendir
     end
-    local rootdir = path.join(target:autogendir(), "rules", "protobuf")
+    local rootdir = autogendir and autogendir or path.join(target:autogendir(), "rules", "protobuf")
     local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
     local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
     local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
