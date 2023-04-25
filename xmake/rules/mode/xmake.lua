@@ -34,6 +34,11 @@ rule("mode.debug")
             if not target:get("optimize") then
                 target:set("optimize", "none")
             end
+            
+            -- enable _DEBUG macros to simulate VS default behaviour
+            if is_plat("windows") then
+                target:add("cxflags", "-D_DEBUG")
+            end
         end
     end)
 
