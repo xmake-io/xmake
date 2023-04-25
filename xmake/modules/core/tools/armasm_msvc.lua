@@ -46,20 +46,6 @@ function nf_symbol(self, level)
     end
 end
 
--- make the optimize flag
-function nf_optimize(self, level)
-    local maps =
-    {
-        none       = "-O0"
-    ,   fast       = "-O1"
-    ,   faster     = "-O2"
-    ,   fastest    = "-O3"
-    ,   smallest   = "-Os"
-    ,   aggressive = "-Ofast"
-    }
-    return maps[level]
-end
-
 -- make the define flag
 -- eg.
 -- add_defines("MACRO") -> --pd "MACRO  SETA 1
