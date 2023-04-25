@@ -28,6 +28,7 @@ import("core.base.hashset")
 import("core.project.rule")
 import("lib.detect.find_tool")
 import("private.utils.batchcmds")
+import("private.utils.rule_groups")
 
 -- get minimal cmake version
 function _get_cmake_minver()
@@ -193,6 +194,55 @@ function _get_flags_from_fileconfig(fileconfig, outputdir, name)
     if #flags > 0 then
         return flags
     end
+end
+
+-- get flags from target
+-- @see https://github.com/xmake-io/xmake/issues/3594
+function _get_flags_from_target(target, flagkind)
+    local flags = _get_configs_from_target(target, flagkind)
+    local extraconf = target:extraconf(flagkind)
+    local sourcekind
+    if flagkind == "cflags" then
+        sourcekind = "cc"
+    elseif flagkind == "cxxflags" or flagkind == "cxflags" then
+        sourcekind = "cxx"
+    elseif flagkind == "asflags" then
+        sourcekind = "as"
+    elseif flagkind == "cuflags" then
+        sourcekind = "cu"
+    else
+        raise("unknown flag kind %s", flagkind)
+    end
+    local toolinst = target:compiler(sourcekind)
+
+    -- does this flag belong to this tool?
+    -- @see https://github.com/xmake-io/xmake/issues/3022
+    --
+    -- e.g.
+    -- for all: add_cxxflags("-g")
+    -- only for clang: add_cxxflags("clang::-stdlib=libc++")
+    -- only for clang and multiple flags: add_cxxflags("-stdlib=libc++", "-DFOO", {tools = "clang"})
+    --
+    local result = {}
+    for _, flag in ipairs(flags) do
+        local for_this_tool = true
+        local flagconf = extraconf and extraconf[flag]
+        if type(flag) == "string" and flag:find("::", 1, true) then
+            for_this_tool = false
+            local splitinfo = flag:split("::", {plain = true})
+            local toolname = splitinfo[1]
+            if toolname == toolinst:name() then
+                flag = splitinfo[2]
+                for_this_tool = true
+            end
+        elseif flagconf and flagconf.tools then
+            for_this_tool = table.contains(table.wrap(flagconf.tools), toolinst:name())
+        end
+        if for_this_tool then
+            table.insert(result, flag)
+        end
+    end
+    return result
 end
 
 -- add project info
@@ -538,10 +588,10 @@ end
 
 -- add target compile options
 function _add_target_compile_options(cmakelists, target, outputdir)
-    local cflags   = _get_configs_from_target(target, "cflags")
-    local cxflags  = _get_configs_from_target(target, "cxflags")
-    local cxxflags = _get_configs_from_target(target, "cxxflags")
-    local cuflags  = _get_configs_from_target(target, "cuflags")
+    local cflags   = _get_flags_from_target(target, "cflags")
+    local cxflags  = _get_flags_from_target(target, "cxflags")
+    local cxxflags = _get_flags_from_target(target, "cxxflags")
+    local cuflags  = _get_flags_from_target(target, "cuflags")
     if #cflags > 0 or #cxflags > 0 or #cxxflags > 0 or #cuflags > 0 then
         cmakelists:print("target_compile_options(%s PRIVATE", target:name())
         for _, flag in ipairs(_translate_flags(cflags, outputdir)) do
@@ -894,7 +944,10 @@ function _get_command_string(cmd, outputdir)
 end
 
 -- add target custom commands for batchcmds
-function _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, batchcmds)
+function _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, cmds)
+    if #cmds == 0 then
+        return
+    end
     if suffix == "before" then
         -- ADD_CUSTOM_COMMAND and PRE_BUILD did not work as I expected,
         -- so we need use add_dependencies and fake target to support it.
@@ -903,7 +956,7 @@ function _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir
         --
         local key = target:name() .. "_" .. hash.uuid():split("-", {plain = true})[1]
         cmakelists:print("add_custom_command(OUTPUT output_%s", key)
-        for _, cmd in ipairs(batchcmds:cmds()) do
+        for _, cmd in ipairs(cmds) do
             local command = _get_command_string(cmd, outputdir)
             if command then
                 cmakelists:print("    COMMAND %s", command)
@@ -915,12 +968,10 @@ function _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir
         cmakelists:print("    DEPENDS output_%s", key)
         cmakelists:print(")")
         cmakelists:print("add_dependencies(%s target_%s)", target:name(), key)
-    else
+    elseif suffix == "after" then
         cmakelists:print("add_custom_command(TARGET %s", target:name())
-        if suffix == "after" then
-            cmakelists:print("    POST_BUILD")
-        end
-        for _, cmd in ipairs(batchcmds:cmds()) do
+        cmakelists:print("    POST_BUILD")
+        for _, cmd in ipairs(cmds) do
             local command = _get_command_string(cmd, outputdir)
             if command then
                 cmakelists:print("    COMMAND %s", command)
@@ -932,7 +983,7 @@ function _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir
 end
 
 -- add target custom commands for target
-function _add_target_custom_commands_for_target(cmakelists, target, outputdir, suffix)
+function _add_target_custom_commands_for_target(cmakelists, target, cmds, suffix)
     for _, ruleinst in ipairs(target:orderules()) do
         local scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
         local script = ruleinst:script(scriptname)
@@ -940,14 +991,14 @@ function _add_target_custom_commands_for_target(cmakelists, target, outputdir, s
             local batchcmds_ = batchcmds.new({target = target})
             script(target, batchcmds_, {})
             if not batchcmds_:empty() then
-                _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, batchcmds_)
+                table.join2(cmds, batchcmds_:cmds())
             end
         end
     end
 end
 
 -- add target custom commands for object rules
-function _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, outputdir, suffix)
+function _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, cmds, suffix)
 
     -- get rule
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
@@ -960,7 +1011,7 @@ function _add_target_custom_commands_for_objectrules(cmakelists, target, sourceb
         local batchcmds_ = batchcmds.new({target = target})
         script(target, batchcmds_, sourcebatch, {})
         if not batchcmds_:empty() then
-            _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, batchcmds_)
+            table.join2(cmds, batchcmds_:cmds())
         end
     end
 
@@ -974,24 +1025,65 @@ function _add_target_custom_commands_for_objectrules(cmakelists, target, sourceb
                 local batchcmds_ = batchcmds.new({target = target})
                 script(target, batchcmds_, sourcefile, {})
                 if not batchcmds_:empty() then
-                    _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, suffix, batchcmds_)
+                    table.join2(cmds, batchcmds_:cmds())
                 end
             end
+        end
+    end
+end
+function _add_batchjobs_for_group(batchjobs, rootjob, target, group, suffix)
+    for _, item in pairs(group) do
+        local sourcebatch = item.sourcebatch
+        if item.target then
+            _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suffix)
+        end
+        -- override on_xxx script in target? we need ignore rule scripts
+        if item.rule and (suffix or not rule_groups.has_scripts_for_target(target, suffix)) then
+            _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix)
         end
     end
 end
 
 -- add target custom commands
 function _add_target_custom_commands(cmakelists, target, outputdir)
-    _add_target_custom_commands_for_target(cmakelists, target, outputdir, "before")
-    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
-        if not _sourcebatch_is_built(sourcebatch) then
-            _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, outputdir, "before")
-            _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, outputdir)
-            _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, outputdir, "after")
+
+    -- build sourcebatch groups first
+    local groups = rule_groups.build_sourcebatch_groups(target, target:sourcebatches())
+
+    -- add before commands
+    -- we use irpairs(groups), because the last group that should be given the highest priority.
+    local cmds_before = {}
+    _add_target_custom_commands_for_target(cmakelists, target, cmds_before, "before")
+    for idx, group in irpairs(groups) do
+        for _, item in pairs(group) do
+            -- buildcmd scripts are always in rule, so we need ignore target item (item.target).
+            local sourcebatch = item.sourcebatch
+            if item.rule then
+                if not _sourcebatch_is_built(sourcebatch) then
+                    _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, cmds_before, "before")
+                    -- rule.on_buildcmd_files should also be executed before building the target, as cmake PRE_BUILD does not work.
+                    _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, cmds_before)
+                end
+            end
         end
     end
-    _add_target_custom_commands_for_target(cmakelists, target, outputdir, "after")
+    _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, "before", cmds_before)
+
+    -- add after commands
+    local cmds_after = {}
+    for idx, group in irpairs(groups) do
+        for _, item in pairs(group) do
+            -- buildcmd scripts are always in rule, so we need ignore target item (item.target).
+            local sourcebatch = item.sourcebatch
+            if item.rule then
+                if not _sourcebatch_is_built(sourcebatch) then
+                    _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, cmds_after, "after")
+                end
+            end
+        end
+    end
+    _add_target_custom_commands_for_target(cmakelists, target, cmds_after, "after")
+    _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, "after", cmds_after)
 end
 
 -- TODO export target headers (deprecated)
