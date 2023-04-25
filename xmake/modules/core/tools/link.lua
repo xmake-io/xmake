@@ -59,6 +59,12 @@ end
 
 -- make the strip flag
 function nf_strip(self, level, target)
+
+    -- link.exe/arm64 does not support /opt:ref, /opt:icf
+    if target and target:is_arch("arm64") then
+        return
+    end
+
     -- @note we explicitly strip some useless code, because `/debug` may keep them
     -- @see https://github.com/xmake-io/xmake/issues/907
     if level == "all" then
