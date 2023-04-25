@@ -36,7 +36,7 @@ rule("mode.debug")
             end
             
             -- enable _DEBUG macros to simulate VS default behaviour
-            if is_plat("windows") then
+            if target:is_plat("windows") then
                 target:add("cxflags", "-D_DEBUG")
             end
         end
