@@ -210,6 +210,11 @@ function _get_cmd_echo(str)
     return string.format("@echo %s", colors.ignore(str))
 end
 
+-- get command: cd
+function _get_cmd_cd(dir)
+    return string.format("@cd %s", dir)
+end
+
 -- get command string
 function _get_command_string(cmd, outputdir)
     local kind = cmd.kind
@@ -236,7 +241,7 @@ function _get_command_string(cmd, outputdir)
     elseif kind == "mv" then
         return _get_cmd_mv(_get_relative_unix_path(cmd.srcpath, outputdir), _get_relative_unix_path(cmd.dstpath, outputdir))
     elseif kind == "cd" then
-        return string.format("cd %s", _get_relative_unix_path(cmd.dir, outputdir))
+        return _get_cmd_cd(_get_relative_unix_path(cmd.dir, outputdir))
     elseif kind == "mkdir" then
         return _get_cmd_mkdir(_get_relative_unix_path(cmd.dir, outputdir))
     elseif kind == "show" then
