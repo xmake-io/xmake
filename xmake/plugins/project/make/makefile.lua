@@ -141,7 +141,6 @@ function _get_common_flags(target, sourcekind, sourcebatch)
     return commonflags, sourceflags_
 end
 
-
 -- mkdir directory
 function _add_create_directory(makefile, dir)
     if is_subhost("windows") then
@@ -271,7 +270,7 @@ function _add_flags(makefile, targetflags, outputdir)
 end
 
 -- add build object
-function _add_build_object(makefile, target, sourcefile, objectfile, sourceflags, outputdir)
+function _add_build_object(makefile, target, sourcefile, objectfile, sourceflags, outputdir, precmds_label)
 
     -- get the source file kind
     local sourcekind = language.sourcekind_of(sourcefile)
@@ -321,6 +320,9 @@ function _add_build_object(makefile, target, sourcefile, objectfile, sourceflags
 
     -- make head
     makefile:printf("%s:", objectfile)
+    if precmds_label then
+        makefile:printf(" %s", precmds_label)
+    end
 
     -- make dependence
     makefile:print(" %s", sourcefile)
@@ -335,7 +337,7 @@ function _add_build_object(makefile, target, sourcefile, objectfile, sourceflags
 end
 
 -- add build objects
-function _add_build_objects(makefile, target, sourcekind, sourcebatch, sourceflags, outputdir)
+function _add_build_objects(makefile, target, sourcekind, sourcebatch, sourceflags, outputdir, precmds_label)
     local handled_objects = target:data("makefile.handled_objects")
     if not handled_objects then
         handled_objects = {}
@@ -345,7 +347,8 @@ function _add_build_objects(makefile, target, sourcekind, sourcebatch, sourcefla
         -- remove repeat
         -- this is because some rules will repeatedly bind the same sourcekind, e.g. `rule("c++.build.modules.builder")`
         if not handled_objects[objectfile] then
-            _add_build_object(makefile, target, sourcebatch.sourcefiles[index], objectfile, sourceflags, outputdir)
+            _add_build_object(makefile, target,
+                sourcebatch.sourcefiles[index], objectfile, sourceflags, outputdir, precmds_label)
             handled_objects[objectfile] = true
         end
     end
@@ -362,11 +365,31 @@ function _add_build_phony(makefile, target)
     makefile:print("")
 end
 
+-- add custom commands before building target
+function _add_build_target_custom_commands_before(makefile, target, outputdir)
+    local targetname = target:name()
+    local label = "precmds_" .. targetname
+
+    makefile:print("%s:", label)
+    makefile:print("\techo hello %s", targetname)
+    makefile:print("")
+    return label
+end
+
+-- add custom commands after building target
+function _add_build_target_custom_commands_after(makefile, target, outputdir)
+    local targetname = target:name()
+    makefile:print("\techo hello %s", targetname)
+end
+
 -- add build target
 function _add_build_target(makefile, target, targetflags, outputdir)
 
     -- https://github.com/xmake-io/xmake/issues/2337
     target:data_set("plugin.project.kind", "makefile")
+
+    -- add custom commands before building target
+    local precmds_label = _add_build_target_custom_commands_before(makefile, target, outputdir)
 
     -- is phony target?
     if target:is_phony() then
@@ -382,9 +405,15 @@ function _add_build_target(makefile, target, targetflags, outputdir)
     -- in these cases, the targetfile rule is not created
     if target:targetfile() == "./" .. targetname then
         makefile:printf("%s:", targetname)
+        if precmds_label then
+            makefile:printf(" %s", precmds_label)
+        end
     else
         makefile:print("%s: %s", targetname, targetfile)
         makefile:printf("%s:", targetfile)
+    end
+    if precmds_label then
+        makefile:printf(" %s", precmds_label)
     end
 
     -- make dependence for the dependent targets
@@ -442,6 +471,11 @@ function _add_build_target(makefile, target, targetflags, outputdir)
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))
     _add_create_directory(makefile, path.directory(targetfile))
     makefile:writef("\t$(VV)%s\n", command)
+
+    -- add custom commands after building target
+    _add_build_target_custom_commands_after(makefile, target, outputdir)
+
+    -- end
     makefile:print("")
 
     -- build source batches
@@ -450,7 +484,7 @@ function _add_build_target(makefile, target, targetflags, outputdir)
         if sourcekind then
             -- compile source files to single object at once
             local sourceflags = targetflags[target:name() .. '_' .. sourcekind:upper()]
-            _add_build_objects(makefile, target, sourcekind, sourcebatch, sourceflags, outputdir)
+            _add_build_objects(makefile, target, sourcekind, sourcebatch, sourceflags, outputdir, precmds_label)
         end
     end
 end
