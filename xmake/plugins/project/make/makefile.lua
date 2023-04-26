@@ -229,7 +229,7 @@ function _get_command_string(cmd, outputdir)
         if opt and opt.curdir then
             wprint("curdir has been not supported in batchcmds:execv() for makefile generator!")
         end
-        return command
+        return "%$(VV)" .. command
     elseif kind == "cp" then
         if os.isdir(cmd.srcpath) then
             return _get_cmd_cpdir(get_relative_unix_path(cmd.srcpath, outputdir), _get_relative_unix_path(cmd.dstpath, outputdir))
