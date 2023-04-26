@@ -89,36 +89,17 @@ function get_target_buildcmd_files(target, cmds, sourcebatch, suffix)
 end
 
 -- get target buildcmd commands of source group
-function get_target_buildcmd_sourcegroups(target, cmds, groups, suffix)
-    for idx, group in irpairs(groups) do
+function get_target_buildcmd_sourcegroups(target, cmds, sourcegroups, suffix)
+    for idx, group in irpairs(sourcegroups) do
         for _, item in pairs(group) do
             -- buildcmd scripts are always in rule, so we need ignore target item (item.target).
             local sourcebatch = item.sourcebatch
             if item.rule then
                 if not _sourcebatch_is_built(sourcebatch) then
-                    get_target_buildcmd_files(target, cmds_before, sourcebatch, suffix)
+                    get_target_buildcmd_files(target, cmds, sourcebatch, suffix)
                 end
             end
         end
     end
 end
 
--- get target custom commands
-function _get_target_cmds(target)
-
-    -- build sourcebatch groups first
-    local groups = rule_groups.build_sourcebatch_groups(target, target:sourcebatches())
-
-    -- add before commands
-    -- we use irpairs(groups), because the last group that should be given the highest priority.
-    local cmds_before = {}
-    get_target_buildcmd(target, cmds_before, "before")
-    get_target_buildcmd_sourcegroups(target, cmds_before, groups, "before")
-    _add_target_cmds_for_batchcmds(target, "before", cmds_before)
-
-    -- add after commands
-    local cmds_after = {}
-    get_target_buildcmd(target, cmds_after, "after")
-    get_target_buildcmd_sourcegroups(target, cmds_after, groups, "after")
-    _add_target_cmds_for_batchcmds(target, "after", cmds_after)
-end
