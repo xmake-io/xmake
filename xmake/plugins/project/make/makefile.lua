@@ -205,6 +205,11 @@ function _get_cmd_rm(filedir)
     end
 end
 
+-- get command: echo
+function _get_cmd_echo(str)
+    return string.format("@echo %s", colors.ignore(str))
+end
+
 -- get command string
 function _get_command_string(cmd, outputdir)
     local kind = cmd.kind
@@ -235,7 +240,7 @@ function _get_command_string(cmd, outputdir)
     elseif kind == "mkdir" then
         return _get_cmd_mkdir(_get_relative_unix_path(cmd.dir, outputdir))
     elseif kind == "show" then
-        return string.format("echo %s", colors.ignore(cmd.showtext))
+        return _get_cmd_echo(cmd.showtext)
     end
 end
 
@@ -398,7 +403,7 @@ function _add_build_object(makefile, target, sourcefile, objectfile, sourceflags
     makefile:print(" %s", sourcefile)
 
     -- make body
-    makefile:print("\t@echo %scompiling.$(mode) %s", ccache and "ccache " or "", sourcefile)
+    makefile:print("\t%s", _get_cmd_echo(string.format("%scompiling.$(mode) %s", ccache and "ccache " or "", sourcefile)))
     makefile:print("\t%s", _get_cmd_mkdir(path.directory(objectfile)))
     makefile:writef("\t$(VV)%s\n", command)
 
@@ -564,7 +569,7 @@ function _add_build_target(makefile, target, targetflags, outputdir)
     end
 
     -- make body
-    makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))
+    makefile:print("\t%s", _get_cmd_echo(string.format("linking.$(mode) %s", path.filename(targetfile))))
     makefile:print("\t%s", _get_cmd_mkdir(path.directory(targetfile)))
     makefile:writef("\t$(VV)%s\n", command)
 
