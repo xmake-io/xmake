@@ -143,8 +143,10 @@ function main(packages)
     end
 
     -- register references for `xrepo clean`
+    -- and we use glocal memory cache to save all packages from multiple arch/mode, e.g. `xmake project -m "debug,release" -k vsxmake`
     -- @see https://github.com/xmake-io/xmake/issues/3679
-    local references = {}
+    local references = _g.references or {}
+    _g.references = references
     for _, instance in ipairs(packages) do
         if not instance:is_system() and not instance:is_thirdparty() then
             local installdir = instance:installdir({readonly = true})
@@ -153,7 +155,7 @@ function main(packages)
             end
         end
     end
-    localcache.set("references", "packages", references)
+    localcache.set("references", "packages", table.unique(references))
     localcache.save("references")
 end
 
