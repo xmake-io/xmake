@@ -23,37 +23,17 @@
 -- @see https://developer.apple.com/documentation/metal/libraries/building_a_library_with_metal_s_command-line_tools
 --
 rule("xcode.metal")
-
-    -- support add_files("*.metal")
     set_extensions(".metal")
-
-    on_load(function (target)
-        local cross
-        if target:is_plat("macosx") then
-            cross = "xcrun -sdk macosx "
-        elseif target:is_plat("iphoneos") then
-            cross = target:is_arch("i386", "x86_64") and "xcrun -sdk iphonesimulator " or "xcrun -sdk iphoneos "
-        elseif target:is_plat("watchos") then
-            cross = target:is_arch("i386") and "xcrun -sdk watchsimulator " or "xcrun -sdk watchos "
-        elseif target:is_plat("appletvos") then
-            cross = target:is_arch("i386", "x86_64") and "xcrun -sdk appletvsimulator " or "xcrun -sdk appletvos "
-        else
-            raise("unknown platform for xcode!")
-        end
-        target:data_set("xcode.metal.cross", cross)
-    end)
 
     -- build *.metal to *.air
     on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
 
         -- get metal
-        import("core.tool.toolchain")
         import("lib.detect.find_tool")
-        local cross = target:data("xcode.metal.cross")
-        local metal = assert(find_tool("metal", {program = cross .. " metal"}), "metal command not found!")
+        local xcode = assert(target:toolchain("xcode"), "xcode not fount!")
+        local metal = assert(find_tool("metal", {program = path.join(xcode:bindir(), "metal")}), "metal command not found!")
 
         -- get xcode toolchain
-        local xcode = toolchain.load("xcode", {plat = target:plat(), arch = target:arch()})
         local target_minver = xcode:config("target_minver")
         local xcode_sysroot = xcode:config("xcode_sysroot")
 
@@ -124,13 +104,11 @@ rule("xcode.metal")
         end
 
         -- get metallib
-        import("core.tool.toolchain")
         import("lib.detect.find_tool")
-        local cross = target:data("xcode.metal.cross")
-        local metallib = assert(find_tool("metallib", {program = cross .. " metallib"}), "metallib command not found!")
+        local xcode = assert(target:toolchain("xcode"), "xcode not fount!")
+        local metallib = assert(find_tool("metallib", {program = path.join(xcode:bindir(), "metallib")}), "metallib command not found!")
 
         -- get xcode toolchain
-        local xcode = toolchain.load("xcode", {plat = target:plat(), arch = target:arch()})
         local xcode_sysroot = xcode:config("xcode_sysroot")
 
         -- add commands
