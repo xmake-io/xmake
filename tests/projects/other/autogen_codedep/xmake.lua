@@ -4,19 +4,15 @@ set_policy("build.across_targets_in_parallel", false)
 rule("autogen")
     set_extensions(".in")
     before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
-
-        -- add objectfile
         local sourcefile_cx = path.join(target:autogendir(), "rules", "autogen", path.basename(sourcefile) .. ".cpp")
         local objectfile = target:objectfile(sourcefile_cx)
         table.insert(target:objectfiles(), objectfile)
 
-        -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.autogen %s", sourcefile)
         batchcmds:mkdir(path.directory(sourcefile_cx))
         batchcmds:vrunv(target:dep("autogen"):targetfile(), {sourcefile, sourcefile_cx})
         batchcmds:compile(sourcefile_cx, objectfile)
 
-        -- add deps
         batchcmds:add_depfiles(sourcefile)
         batchcmds:set_depmtime(os.mtime(objectfile))
         batchcmds:set_depcache(target:dependfile(objectfile))
