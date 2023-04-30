@@ -121,7 +121,11 @@ function compiler.load(sourcekind, target)
     end
 
     -- init cache key
-    local cachekey = sourcekind .. (program_or_errors or "") .. (config.get("arch") or os.arch())
+    -- @note we need plat/arch,
+    -- because it is possible for the compiler to do cross-compilation with the -target parameter
+    local plat = compiler_tool:plat() or config.plat() or os.host()
+    local arch = compiler_tool:arch() or config.arch() or os.arch()
+    local cachekey = sourcekind .. (program_or_errors or "") .. plat .. arch
 
     -- get it directly from cache dirst
     compiler._INSTANCES = compiler._INSTANCES or {}
