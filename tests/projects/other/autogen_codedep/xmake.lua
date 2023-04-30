@@ -1,5 +1,4 @@
 add_rules("mode.debug", "mode.release")
-set_policy("build.across_targets_in_parallel", false)
 
 rule("autogen")
     set_extensions(".in")
@@ -32,4 +31,5 @@ target("test")
     add_rules("autogen")
     add_files("src/main.cpp")
     add_files("src/*.in")
+    set_policy("build.across_targets_in_parallel", false)
 
