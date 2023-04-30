@@ -267,7 +267,8 @@ function _run_gede(program, argv, opt)
 
     -- find gede
     opt = opt or {}
-    local gede = find_tool("gede", {program = config.get("debugger")})
+    -- 'gede --version' return with non-zero code
+    local gede = find_tool("gede", {program = config.get("debugger"), norun = true})
     if not gede then
         return false
     end
