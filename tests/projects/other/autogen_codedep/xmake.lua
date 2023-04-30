@@ -12,7 +12,7 @@ rule("autogen")
         batchcmds:vrunv(target:dep("autogen"):targetfile(), {sourcefile, sourcefile_cx})
         batchcmds:compile(sourcefile_cx, objectfile)
 
-        batchcmds:add_depfiles(sourcefile)
+        batchcmds:add_depfiles(sourcefile, target:dep("autogen"):targetfile())
         batchcmds:set_depmtime(os.mtime(objectfile))
         batchcmds:set_depcache(target:dependfile(objectfile))
     end)
