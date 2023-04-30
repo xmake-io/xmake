@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    dst_file << "unsigned char data[] = {";
+    dst_file << "unsigned char g_codegen_data[] = {";
     for (auto byte : buffer) {
         dst_file << "0x" << hex << (int)(unsigned char)byte << ",";
     }

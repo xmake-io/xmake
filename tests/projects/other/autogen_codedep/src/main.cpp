@@ -2,9 +2,9 @@
 
 using namespace std;
 
-extern unsigned char data[];
+extern unsigned char g_codegen_data[];
 
 int main(int argc, char** argv) {
-    cout << (const char*)data << endl;
+    cout << (const char*)g_codegen_data << endl;
     return 0;
 }
