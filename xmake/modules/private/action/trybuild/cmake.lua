@@ -504,11 +504,12 @@ function build()
 
     -- get artifacts directory
     local opt = {}
-    opt.artifacts_dir = _get_artifacts_dir()
+    local artifacts_dir = _get_artifacts_dir()
     if not os.isdir(artifacts_dir) then
         os.mkdir(artifacts_dir)
     end
     os.cd(_get_buildir())
+    opt.artifacts_dir = artifacts_dir
 
     -- exists $CMAKE_GENERATOR? use it
     opt.cmake_generator = os.getenv("CMAKE_GENERATOR")
