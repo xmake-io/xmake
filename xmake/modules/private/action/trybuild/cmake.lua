@@ -469,7 +469,7 @@ function _build_for_ninja(opt)
     if is_plat("windows") then
         envs = _get_msvc_runenvs()
     end
-    os.vrunv(ninja.program, argv, {envs = envs})
+    os.vexecv(ninja.program, argv, {envs = envs})
 end
 
 -- detect build-system and configuration file
