@@ -37,6 +37,7 @@ function main(name, opt)
         raise("conan not found!")
     end
     if conan.version and semver.compare(conan.version, "2.0.4") >= 0 then -- TODO 2.0.5
+        -- https://github.com/conan-io/conan/issues/13709
         import("package.manager.conan.v2.install_package")(conan, name, opt)
     elseif conan.version and semver.compare(conan.version, "2.0.0") < 0 then
         import("package.manager.conan.v1.install_package")(conan, name, opt)

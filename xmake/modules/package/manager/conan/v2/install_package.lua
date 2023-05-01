@@ -64,8 +64,6 @@ function _conan_generate_conanfile(name, configs, opt)
     -- generate it
     local conanfile = io.open("conanfile.txt", "w")
     if conanfile then
-        conanfile:print("[generators]")
-        conanfile:print("xmake")
         conanfile:print("[requires]")
         local require_version = opt.require_version
         if require_version ~= nil and require_version ~= "latest" then
@@ -89,29 +87,25 @@ function _conan_generate_conanfile(name, configs, opt)
     end
 end
 
+-- get conan home directory
+function _conan_get_homedir(conan)
+    local homedir = _g.homedir
+    if homedir == nil then
+        homedir = try {function () return os.iorunv(conan.program, {"config", "home"}) end}
+        _g.homedir = homedir
+    end
+    return homedir
+end
+
 -- install xmake generator
+-- @see https://github.com/conan-io/conan/pull/13718
+--
 function _conan_install_xmake_generator(conan)
-    local xmake_generator_localdir = path.join(config.directory(), "conan", "xmake_generator")
-    if not os.isdir(xmake_generator_localdir) then
-
-        -- sort main urls
-        local mainurls = {"https://github.com/xmake-io/conan-xmake_generator.git",
-                          "https://gitlab.com/xmake-io/conan-xmake_generator.git",
-                          "https://gitee.com/xmake-io/conan-xmake_generator.git"}
-        fasturl.add(mainurls)
-        mainurls = fasturl.sort(mainurls)
-
-        -- clone xmake generator repository
-        local ok = false
-        for _, url in ipairs(mainurls) do
-            ok = try { function () git.clone(url, {depth = 1, branch = "0.1.0/testing", outputdir = xmake_generator_localdir}); return true end }
-            if ok then
-                break
-            end
-        end
-        if ok then
-            os.vrunv(conan.program, {"export", xmake_generator_localdir, "bincrafters/testing"})
-        end
+    local homedir = assert(_conan_get_homedir(conan), "cannot get conan home")
+    local scriptfile_now = path.join(os.programdir(), "scripts", "conan", "extensions", "generators", "xmake_generator.py")
+    local scriptfile_installed = path.join(homedir, "extensions", "generators", "xmake_generator.py")
+    if not os.isfile(scriptfile_installed) or os.mtime(scriptfile_now) > os.mtime(scriptfile_installed) then
+        os.vrunv(conan.program, {"config", "install", path.join(os.programdir(), "scripts", "conan")})
     end
 end
 
@@ -140,8 +134,28 @@ function main(conan, name, opt)
     -- generate conanfile.txt
     _conan_generate_conanfile(name, configs, opt)
 
+    io.writefile("profile_build.txt", [[
+    [settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=gnu17
+compiler.libcxx=libstdc++11
+compiler.version=11
+os=Linux]])
+
+    io.writefile("profile_host.txt", [[
+    [settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=gnu17
+compiler.libcxx=libstdc++11
+compiler.version=11
+os=Linux]])
+
     -- install package
-    local argv = {"install", "."}
+    local argv = {"install", ".", "-g", "XmakeGenerator", "--profile:build=profile_build.txt", "--profile:host=profile_host.txt"}
     if configs.build then
         if configs.build == "all" then
             table.insert(argv, "--build")
