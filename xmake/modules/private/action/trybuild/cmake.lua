@@ -372,7 +372,6 @@ function _get_configs_for_generator(configs, opt)
     end
 end
 
-
 -- get configs for installation
 function _get_configs_for_install(configs, opt)
     -- @see https://cmake.org/cmake/help/v3.14/module/GNUInstallDirs.html
