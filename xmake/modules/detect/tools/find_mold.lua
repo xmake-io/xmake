@@ -21,6 +21,7 @@
 -- imports
 import("core.tool.compiler")
 import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
 -- find ar
 --

@@ -143,6 +143,13 @@ function main(target, opt)
         target:add("asflags", "-fPIC")
     end
 
+    if qt_sdkver:ge("6.0") then
+        -- @see https://github.com/xmake-io/xmake/issues/2071
+        if target:is_plat("windows") then
+            target:add("cxxflags", "/Zc:__cplusplus")
+            target:add("cxxflags", "/permissive-")
+        end
+    end
     -- need c++11 at least
     local languages = target:get("languages")
     local cxxlang = false
@@ -161,11 +168,6 @@ function main(target, opt)
             -- add conditionnaly c++17 to avoid for example "cl : Command line warning D9025 : overriding '/std:c++latest' with '/std:c++17'" warning
             if (not cppversion) or (tonumber(cppversion) and tonumber(cppversion) < 17) then
                 target:add("languages", "c++17")
-            end
-            -- @see https://github.com/xmake-io/xmake/issues/2071
-            if target:is_plat("windows") then
-                target:add("cxxflags", "/Zc:__cplusplus")
-                target:add("cxxflags", "/permissive-")
             end
         else
             -- add conditionnaly c++11 to avoid for example "cl : Command line warning D9025 : overriding '/std:c++latest' with '/std:c++11'" warning
