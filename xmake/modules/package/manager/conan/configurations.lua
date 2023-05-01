@@ -27,7 +27,7 @@ function main()
         options        = {description = "Set the options values, e.g. OpenSSL:shared=True"},
         imports        = {description = "Set the imports for conan."},
         settings       = {description = "Set the build settings for conan."},
-        build_requires = {description = "Set the build requires for conan.", default = "xmake_generator/0.1.0@bincrafters/testing"}
+        build_requires = {description = "Set the build requires for conan."}
     }
 end
 
