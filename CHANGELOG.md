@@ -11,6 +11,7 @@
 * [#3669](https://github.com/xmake-io/xmake/issues/3669): Improve cmake generator to support add_cxflags with the given tool
 * [#3679](https://github.com/xmake-io/xmake/issues/3679): Improve `xrepo clean`
 * [#3662](https://github.com/xmake-io/xmake/issues/3662): Improve cmake/make generator for lex/yacc project
+* [#3697](https://github.com/xmake-io/xmake/issues/3662): Improve trybuild/cmake
 
 ### Bugs fixed
 
@@ -1583,6 +1584,7 @@
 * [#3669](https://github.com/xmake-io/xmake/issues/3669): 改进 cmake 生成器支持特定工具的 cxflags
 * [#3679](https://github.com/xmake-io/xmake/issues/3679): 改进 `xrepo clean`
 * [#3662](https://github.com/xmake-io/xmake/issues/3662): 改进 cmake/make 生成器去更好的支持 lex/yacc 工程
+* [#3697](https://github.com/xmake-io/xmake/issues/3662): 改进 trybuild/cmake
 
 ### Bugs 修复
 
