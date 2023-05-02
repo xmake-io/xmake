@@ -110,34 +110,110 @@ function _conan_install_xmake_generator(conan)
     end
 end
 
+-- get arch
+function _conan_get_arch(arch)
+    local map = {x86_64          = "x86_64",
+                 x64             = "x86_64",
+                 i386            = "x86",
+                 x86             = "x86",
+                 armv7           = "armv7",
+                 ["armv7-a"]     = "armv7",  -- for android, deprecated
+                 ["armeabi"]     = "armv7",  -- for android, removed in ndk r17
+                 ["armeabi-v7a"] = "armv7",  -- for android
+                 armv7s          = "armv7s", -- for iphoneos
+                 arm64           = "armv8",  -- for iphoneos
+                 ["arm64-v8a"]   = "armv8",  -- for android
+                 mips            = "mips",
+                 mips64          = "mips64"}
+    return assert(map[arch], "unknown arch(%s)!", arch)
+end
+
+-- get os
+function _conan_get_os(plat)
+    local map = {macosx   = "Macos",
+                 windows  = "Windows",
+                 mingw    = "Windows",
+                 linux    = "Linux",
+                 cross    = "Linux",
+                 iphoneos = "iOS",
+                 android  = "Android"}
+    return assert(map[plat], "unknown os(%s)!", plat)
+end
+
+-- get build type
+function _conan_get_build_type(mode)
+    if mode == "debug" then
+        return "Debug"
+    else
+        return "Release"
+    end
+end
+
+-- generate compiler profile
+function _conan_generate_compiler_profile(profile, configs, opt)
+    local plat = opt.plat
+    local arch = opt.arch
+    if plat == "windows" then
+        local vsvers = {["2022"] = "17",
+                        ["2019"] = "16",
+                        ["2017"] = "15",
+                        ["2015"] = "14",
+                        ["2013"] = "12",
+                        ["2012"] = "11",
+                        ["2010"] = "10",
+                        ["2008"] = "9",
+                        ["2005"] = "8"}
+        local vs = assert(config.get("vs"), "vs not found!")
+        profile:print("compiler=Visual Studio")
+        profile:print("compiler.version=" .. assert(vsvers[vs], "unknown msvc version!"))
+        if configs.vs_runtime then
+            profile:print("compiler.runtime=" .. configs.vs_runtime)
+        end
+    elseif plat == "iphoneos" then
+        local target_minver = nil
+        local toolchain_xcode = toolchain.load("xcode", {plat = plat, arch = arch})
+        if toolchain_xcode then
+            target_minver = toolchain_xcode:config("target_minver")
+        end
+        if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "x86") then
+            target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
+        end
+        if target_minver then
+            profile:print("os.version=" .. target_minver)
+        end
+    elseif plat == "android" then
+        local ndk_sdkver = config.get("ndk_sdkver")
+        if ndk_sdkver then
+            profile:print("os.api_level=" .. ndk_sdkver)
+        end
+    else
+        profile:print("compiler=gcc")
+        profile:print("compiler.cppstd=gnu17")
+        profile:print("compiler.libcxx=libstdc++11")
+        profile:print("compiler.version=11")
+    end
+end
+
 -- generate host profile
 function _conan_generate_host_profile(configs, opt)
-
-    io.writefile("profile_host.txt", [[
-    [settings]
-arch=x86_64
-build_type=Release
-compiler=gcc
-compiler.cppstd=gnu17
-compiler.libcxx=libstdc++11
-compiler.version=11
-os=Linux]])
-
+    local profile = io.open("profile_host.txt", "w")
+    profile:print("[settings]")
+    profile:print("arch=%s", _conan_get_arch(os.arch()))
+    profile:print("build_type=%s", _conan_get_build_type(opt.mode))
+    profile:print("os=%s", _conan_get_os(os.host()))
+    _conan_generate_compiler_profile(profile, configs, {plat = os.host(), arch = os.arch()})
+    profile:close()
 end
 
 -- generate build profile
 function _conan_generate_build_profile(configs, opt)
-
-    io.writefile("profile_build.txt", [[
-    [settings]
-arch=x86_64
-build_type=Release
-compiler=gcc
-compiler.cppstd=gnu17
-compiler.libcxx=libstdc++11
-compiler.version=11
-os=Linux]])
-
+    local profile = io.open("profile_build.txt", "w")
+    profile:print("[settings]")
+    profile:print("arch=%s", _conan_get_arch(opt.arch))
+    profile:print("build_type=%s", _conan_get_build_type(opt.mode))
+    profile:print("os=%s", _conan_get_os(opt.plat))
+    _conan_generate_compiler_profile(profile, configs, opt)
+    profile:close()
 end
 
 -- install package
@@ -172,93 +248,13 @@ function main(conan, name, opt)
     _conan_generate_build_profile(configs, opt)
 
     -- install package
-    local argv = {"install", ".", "-g", "XmakeGenerator", "--profile:build=profile_build.txt", "--profile:host=profile_host.txt"}
+    local argv = {"install", ".", "-g", "XmakeGenerator",
+        "--profile:build=profile_build.txt", "--profile:host=profile_host.txt"}
     if configs.build then
         if configs.build == "all" then
             table.insert(argv, "--build")
         else
             table.insert(argv, "--build=" .. configs.build)
-        end
-    end
-
-    -- set platform
-    local plats = {macosx = "Macos", windows = "Windows", mingw = "Windows", linux = "Linux", cross = "Linux", iphoneos = "iOS", android = "Android"}
-    table.insert(argv, "-s")
-    local plat = plats[opt.plat]
-    if plat then
-        table.insert(argv, "os=" .. plat)
-    else
-        raise("cannot install package(%s) on platform(%s)!", name, opt.plat)
-    end
-
-    -- set architecture
-    local archs = {x86_64          = "x86_64",
-                   x64             = "x86_64",
-                   i386            = "x86",
-                   x86             = "x86",
-                   armv7           = "armv7",
-                   ["armv7-a"]     = "armv7",  -- for android, deprecated
-                   ["armeabi"]     = "armv7",  -- for android, removed in ndk r17
-                   ["armeabi-v7a"] = "armv7",  -- for android
-                   armv7s          = "armv7s", -- for iphoneos
-                   arm64           = "armv8",  -- for iphoneos
-                   ["arm64-v8a"]   = "armv8",  -- for android
-                   mips            = "mips",
-                   mips64          = "mips64"}
-    table.insert(argv, "-s")
-    local arch = archs[opt.arch]
-    if arch then
-        table.insert(argv, "arch=" .. arch)
-    else
-        raise("cannot install package(%s) for arch(%s)!", name, opt.arch)
-    end
-
-    -- set build mode
-    table.insert(argv, "-s")
-    if opt.mode == "debug" then
-        table.insert(argv, "build_type=Debug")
-    else
-        table.insert(argv, "build_type=Release")
-    end
-
-    -- set compiler settings
-    if opt.plat == "windows" then
-        local vsvers = {["2022"] = "17",
-                        ["2019"] = "16",
-                        ["2017"] = "15",
-                        ["2015"] = "14",
-                        ["2013"] = "12",
-                        ["2012"] = "11",
-                        ["2010"] = "10",
-                        ["2008"] = "9",
-                        ["2005"] = "8"}
-        local vs = assert(config.get("vs"), "vs not found!")
-        table.insert(argv, "-s")
-        table.insert(argv, "compiler=Visual Studio")
-        table.insert(argv, "-s")
-        table.insert(argv, "compiler.version=" .. assert(vsvers[vs], "unknown msvc version!"))
-        if configs.vs_runtime then
-            table.insert(argv, "-s")
-            table.insert(argv, "compiler.runtime=" .. configs.vs_runtime)
-        end
-    elseif opt.plat == "iphoneos" then
-        local target_minver = nil
-        local toolchain_xcode = toolchain.load("xcode", {plat = opt.plat, arch = opt.arch})
-        if toolchain_xcode then
-            target_minver = toolchain_xcode:config("target_minver")
-        end
-        if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "x86") then
-            target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
-        end
-        if target_minver then
-            table.insert(argv, "-s")
-            table.insert(argv, "os.version=" .. target_minver)
-        end
-    elseif opt.plat == "android" then
-        local ndk_sdkver = config.get("ndk_sdkver")
-        if ndk_sdkver then
-            table.insert(argv, "-s")
-            table.insert(argv, "os.api_level=" .. ndk_sdkver)
         end
     end
 
