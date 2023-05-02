@@ -57,7 +57,6 @@ function _conan_generate_conanfile(name, configs, opt)
 
     -- get conan options, imports and build_requires
     local options        = table.wrap(configs.options)
-    local imports        = table.wrap(configs.imports)
     local build_requires = table.wrap(configs.build_requires)
 
     -- @see https://docs.conan.io/en/latest/systems_cross_building/cross_building.html
@@ -74,10 +73,6 @@ function _conan_generate_conanfile(name, configs, opt)
         if #options > 0 then
             conanfile:print("[options]")
             conanfile:print("%s", table.concat(options, "\n"))
-        end
-        if #imports > 0 then
-            conanfile:print("[imports]")
-            conanfile:print("%s", table.concat(imports, "\n"))
         end
         if #build_requires > 0 then
             conanfile:print("[build_requires]")
