@@ -59,7 +59,8 @@ function _conan_generate_conanfile(name, configs, opt)
     local options        = table.wrap(configs.options)
     local build_requires = table.wrap(configs.build_requires)
 
-    -- @see https://docs.conan.io/en/latest/systems_cross_building/cross_building.html
+    -- @see https://docs.conan.io/1/migrating_to_2.0/recipes.html
+    -- https://docs.conan.io/en/latest/systems_cross_building/cross_building.html
     -- generate it
     local conanfile = io.open("conanfile.txt", "w")
     if conanfile then
@@ -72,10 +73,15 @@ function _conan_generate_conanfile(name, configs, opt)
         end
         if #options > 0 then
             conanfile:print("[options]")
-            conanfile:print("%s", table.concat(options, "\n"))
+            for _, item in ipairs(options) do
+                if not item:find(":", 1, true) then
+                    item = name .. "/*:" .. item
+                end
+                conanfile:print("%s", item)
+            end
         end
         if #build_requires > 0 then
-            conanfile:print("[build_requires]")
+            conanfile:print("[tool_requires]")
             conanfile:print("%s", table.concat(build_requires, "\n"))
         end
         conanfile:close()
@@ -104,6 +110,36 @@ function _conan_install_xmake_generator(conan)
     end
 end
 
+-- generate host profile
+function _conan_generate_host_profile(configs, opt)
+
+    io.writefile("profile_host.txt", [[
+    [settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=gnu17
+compiler.libcxx=libstdc++11
+compiler.version=11
+os=Linux]])
+
+end
+
+-- generate build profile
+function _conan_generate_build_profile(configs, opt)
+
+    io.writefile("profile_build.txt", [[
+    [settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=gnu17
+compiler.libcxx=libstdc++11
+compiler.version=11
+os=Linux]])
+
+end
+
 -- install package
 function main(conan, name, opt)
 
@@ -129,25 +165,11 @@ function main(conan, name, opt)
     -- generate conanfile.txt
     _conan_generate_conanfile(name, configs, opt)
 
-    io.writefile("profile_build.txt", [[
-    [settings]
-arch=x86_64
-build_type=Release
-compiler=gcc
-compiler.cppstd=gnu17
-compiler.libcxx=libstdc++11
-compiler.version=11
-os=Linux]])
+    -- generate host profile
+    _conan_generate_host_profile(configs, opt)
 
-    io.writefile("profile_host.txt", [[
-    [settings]
-arch=x86_64
-build_type=Release
-compiler=gcc
-compiler.cppstd=gnu17
-compiler.libcxx=libstdc++11
-compiler.version=11
-os=Linux]])
+    -- generate build profile
+    _conan_generate_build_profile(configs, opt)
 
     -- install package
     local argv = {"install", ".", "-g", "XmakeGenerator", "--profile:build=profile_build.txt", "--profile:host=profile_host.txt"}

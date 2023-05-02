@@ -75,7 +75,12 @@ function _conan_generate_conanfile(name, configs, opt)
         end
         if #options > 0 then
             conanfile:print("[options]")
-            conanfile:print("%s", table.concat(options, "\n"))
+            for _, item in ipairs(options) do
+                if not item:find(":", 1, true) then
+                    item = name .. ":" .. item
+                end
+                conanfile:print("%s", item)
+            end
         end
         if #imports > 0 then
             conanfile:print("[imports]")

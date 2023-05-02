@@ -24,7 +24,7 @@ function main()
     {
         build          = {description = "Use it to choose if you want to build from sources.", default = "missing", values = {"all", "never", "missing", "outdated"}},
         remote         = {description = "Set the conan remote server."},
-        options        = {description = "Set the options values, e.g. shared=True"}, -- TODO
+        options        = {description = "Set the options values, e.g. shared=True"},
         settings       = {description = "Set the build settings for conan."},
         imports        = {description = "Set the imports for conan 1.x, it has been deprecated in conan 2.x."},
         build_requires = {description = "Set the build requires for conan."}
