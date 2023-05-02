@@ -5,6 +5,7 @@
 ### New features
 
 * [#3613](https://github.com/xmake-io/xmake/issues/3613): Add `wasm.preloadfiles` configuration for wasm
+* [#3703](https://github.com/xmake-io/xmake/pull/3703): Support for conan 2.0
 
 ### Changes
 
@@ -1578,6 +1579,7 @@
 ### 新特性
 
 * [#3613](https://github.com/xmake-io/xmake/issues/3613): 添加 `wasm.preloadfiles` 扩展配置
+* [#3703](https://github.com/xmake-io/xmake/pull/3703): 支持 conan 2.0
 
 ### 改进
 
