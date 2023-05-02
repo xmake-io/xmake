@@ -151,6 +151,7 @@ end
 
 -- generate compiler profile
 function _conan_generate_compiler_profile(profile, configs, opt)
+    local conf
     local plat = opt.plat
     local arch = opt.arch
     if plat == "windows" then
@@ -169,9 +170,9 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         end
     elseif plat == "iphoneos" then
         local target_minver = nil
-        local toolchain_xcode = toolchain.load("xcode", {plat = plat, arch = arch})
-        if toolchain_xcode then
-            target_minver = toolchain_xcode:config("target_minver")
+        local xcode = toolchain.load("xcode", {plat = plat, arch = arch})
+        if xcode then
+            target_minver = xcode:config("target_minver")
         end
         if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "x86") then
             target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
@@ -179,18 +180,52 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         if target_minver then
             profile:print("os.version=" .. target_minver)
         end
+        local simulator = xcode:config("appledev") == "simulator"
+        profile:print("os.sdk=" .. (simulator and "iphonesimulator" or "iphoneos"))
+        profile:print("compiler=clang")
+        local version
+        local result = find_tool("clang", {version = true})
+        if result and result.version then
+            local v = semver.try_parse(result.version)
+            if v then
+                version = v:major()
+            end
+        end
+        if version then
+            profile:print("compiler.version=" .. version)
+        end
     elseif plat == "android" then
-        local ndk_sdkver = config.get("ndk_sdkver")
+        local ndk = toolchain.load("ndk", {plat = plat, arch = arch})
+        local ndk_sdkver = ndk:config("ndk_sdkver")
         if ndk_sdkver then
             profile:print("os.api_level=" .. ndk_sdkver)
         end
+        local ndk_cxxstl = config.get("ndk_cxxstl")
+        if ndk_cxxstl then
+            profile:print("compiler.libcxx=" .. ndk_cxxstl)
+        end
+        local version
+        local program, toolname = ndk:tool("cc")
+        local result = find_tool(toolname, {program = program, version = true})
+        if result and result.version then
+            local v = semver.try_parse(result.version)
+            if v then
+                version = v:major()
+            end
+        end
+        profile:print("compiler=" .. toolname)
+        if version then
+            profile:print("compiler.version=" .. version)
+        end
+        conf = {}
+        conf["tools.android:ndk_path"] = ndk:config("ndk")
     else
         local program, toolname = platform.tool("cc", plat, arch)
         if toolname == "gcc" or toolname == "clang" then
             local version
-            local gcc = find_tool(toolname, {program = program, version = true})
-            if gcc and gcc.version then
-                local v = semver.try_parse(gcc.version)
+            local result = find_tool(toolname, {program = program, version = true})
+            if result and result.version then
+                local v = semver.try_parse(result.version)
                 if v then
                     version = v:major()
                 end
@@ -207,11 +242,19 @@ function _conan_generate_compiler_profile(profile, configs, opt)
             end
         end
     end
+
+    if conf then
+        profile:print("")
+        profile:print("[conf]")
+        for k, v in pairs(conf) do
+            profile:print("%s=%s", k, v)
+        end
+    end
 end
 
--- generate host profile
-function _conan_generate_host_profile(configs, opt)
-    local profile = io.open("profile_host.txt", "w")
+-- generate build profile
+function _conan_generate_build_profile(configs, opt)
+    local profile = io.open("profile_build.txt", "w")
     profile:print("[settings]")
     profile:print("arch=%s", _conan_get_arch(os.arch()))
     profile:print("build_type=%s", _conan_get_build_type(opt.mode))
@@ -220,9 +263,9 @@ function _conan_generate_host_profile(configs, opt)
     profile:close()
 end
 
--- generate build profile
-function _conan_generate_build_profile(configs, opt)
-    local profile = io.open("profile_build.txt", "w")
+-- generate host profile
+function _conan_generate_host_profile(configs, opt)
+    local profile = io.open("profile_host.txt", "w")
     profile:print("[settings]")
     profile:print("arch=%s", _conan_get_arch(opt.arch))
     profile:print("build_type=%s", _conan_get_build_type(opt.mode))
@@ -283,37 +326,6 @@ function main(conan, name, opt)
     if configs.remote then
         table.insert(argv, "-r")
         table.insert(argv, configs.remote)
-    end
-
-    -- TODO set environments
-    if opt.plat == "android" then
-        local envs = {}
-        local cflags   = table.join(table.wrap(_conan_get_build_env("cxflags", opt.plat)), _conan_get_build_env("cflags", opt.plat))
-        local cxxflags = table.join(table.wrap(_conan_get_build_env("cxflags", opt.plat)), _conan_get_build_env("cxxflags", opt.plat))
-        envs.CC        = _conan_get_build_env("cc", opt.plat)
-        envs.CXX       = _conan_get_build_env("cxx", opt.plat)
-        envs.AS        = _conan_get_build_env("as", opt.plat)
-        envs.AR        = _conan_get_build_env("ar", opt.plat)
-        envs.LD        = _conan_get_build_env("ld", opt.plat)
-        envs.LDSHARED  = _conan_get_build_env("sh", opt.plat)
-        envs.CPP       = _conan_get_build_env("cpp", opt.plat)
-        envs.RANLIB    = _conan_get_build_env("ranlib", opt.plat)
-        envs.CFLAGS    = table.concat(cflags, ' ')
-        envs.CXXFLAGS  = table.concat(cxxflags, ' ')
-        envs.ASFLAGS   = table.concat(table.wrap(_conan_get_build_env("asflags", opt.plat)), ' ')
-        envs.ARFLAGS   = table.concat(table.wrap(_conan_get_build_env("arflags", opt.plat)), ' ')
-        envs.LDFLAGS   = table.concat(table.wrap(_conan_get_build_env("ldflags", opt.plat)), ' ')
-        envs.SHFLAGS   = table.concat(table.wrap(_conan_get_build_env("shflags", opt.plat)), ' ')
-        local toolchain_ndk = toolchain.load("ndk", {plat = opt.plat, arch = opt.arch})
-        local ndk_sysroot = toolchain_ndk:config("ndk_sysroot")
-        if ndk_sysroot then
-            table.insert(argv, "-e")
-            table.insert(argv, "CONAN_CMAKE_FIND_ROOT_PATH=" .. ndk_sysroot)
-        end
-        for k, v in pairs(envs) do
-            table.insert(argv, "-e")
-            table.insert(argv, k .. "=" .. v)
-        end
     end
 
     -- do install
