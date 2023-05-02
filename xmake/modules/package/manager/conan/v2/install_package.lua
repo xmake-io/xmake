@@ -154,17 +154,15 @@ function _conan_generate_compiler_profile(profile, configs, opt)
     local plat = opt.plat
     local arch = opt.arch
     if plat == "windows" then
-        local vsvers = {["2022"] = "17",
-                        ["2019"] = "16",
-                        ["2017"] = "15",
-                        ["2015"] = "14",
-                        ["2013"] = "12",
-                        ["2012"] = "11",
-                        ["2010"] = "10",
-                        ["2008"] = "9",
-                        ["2005"] = "8"}
+        -- https://github.com/conan-io/conan/blob/353c63b16c31c90d370305b5cbb5dc175cf8a443/conan/tools/microsoft/visual.py#L13
+        local vsvers = {["2022"] = "193",
+                        ["2019"] = "192",
+                        ["2017"] = "191",
+                        ["2015"] = "190",
+                        ["2013"] = "180",
+                        ["2012"] = "170"}
         local vs = assert(config.get("vs"), "vs not found!")
-        profile:print("compiler=Visual Studio")
+        profile:print("compiler=msvc")
         profile:print("compiler.version=" .. assert(vsvers[vs], "unknown msvc version!"))
         if configs.vs_runtime then
             profile:print("compiler.runtime=" .. configs.vs_runtime)
