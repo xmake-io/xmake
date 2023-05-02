@@ -34,15 +34,14 @@ class XmakeGenerator:
             dep_cppinfo = dep.cpp_info.copy()
             dep_cppinfo.set_relative_base_folder(dep.package_folder)
             dep_aggregate = dep_cppinfo.aggregated_components()
-            print("dep_aggregate", dep_aggregate)
 
             # format deps
             deps = XmakeDepsFormatter(dep_aggregate)
 
             # make template
-            plat = "Linux"
-            arch = "x86_64"
-            mode = "Release"
+            plat = self._conanfile.settings.os
+            arch = self._conanfile.settings.arch
+            mode = self._conanfile.settings.build_type
             template = ('  {plat}_{arch}_{mode} = \n'
                         '  {{\n'
                         '    includedirs    = {{{deps.include_paths}}},\n'
