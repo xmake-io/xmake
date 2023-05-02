@@ -187,10 +187,27 @@ function _conan_generate_compiler_profile(profile, configs, opt)
             profile:print("os.api_level=" .. ndk_sdkver)
         end
     else
-        profile:print("compiler=gcc")
-        profile:print("compiler.cppstd=gnu17")
-        profile:print("compiler.libcxx=libstdc++11")
-        profile:print("compiler.version=11")
+        local program, toolname = platform.tool("cc", plat, arch)
+        if toolname == "gcc" or toolname == "clang" then
+            local version
+            local gcc = find_tool(toolname, {program = program, version = true})
+            if gcc and gcc.version then
+                local v = semver.try_parse(gcc.version)
+                if v then
+                    version = v:major()
+                end
+            end
+            profile:print("compiler=" .. toolname)
+            profile:print("compiler.cppstd=gnu17")
+            if toolname == "clang" then
+                profile:print("compiler.libcxx=libc++")
+            else
+                profile:print("compiler.libcxx=libstdc++11")
+            end
+            if version then
+                profile:print("compiler.version=" .. version)
+            end
+        end
     end
 end
 
