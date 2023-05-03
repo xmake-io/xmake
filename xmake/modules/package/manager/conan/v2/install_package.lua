@@ -149,6 +149,19 @@ function _conan_get_build_type(mode)
     end
 end
 
+-- get compiler version
+function _conan_get_compiler_version(name, program)
+    local version
+    local result = find_tool(name, {program = program, version = true})
+    if result and result.version then
+        local v = semver.try_parse(result.version)
+        if v then
+            version = v:major()
+        end
+    end
+    return version
+end
+
 -- generate compiler profile
 function _conan_generate_compiler_profile(profile, configs, opt)
     local conf
@@ -183,14 +196,7 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         local simulator = xcode:config("appledev") == "simulator"
         profile:print("os.sdk=" .. (simulator and "iphonesimulator" or "iphoneos"))
         profile:print("compiler=clang")
-        local version
-        local result = find_tool("clang", {version = true})
-        if result and result.version then
-            local v = semver.try_parse(result.version)
-            if v then
-                version = v:major()
-            end
-        end
+        local version = _conan_get_compiler_version("clang")
         if version then
             profile:print("compiler.version=" .. version)
         end
@@ -204,15 +210,8 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         if ndk_cxxstl then
             profile:print("compiler.libcxx=" .. ndk_cxxstl)
         end
-        local version
         local program, toolname = ndk:tool("cc")
-        local result = find_tool(toolname, {program = program, version = true})
-        if result and result.version then
-            local v = semver.try_parse(result.version)
-            if v then
-                version = v:major()
-            end
-        end
+        local version = _conan_get_compiler_version(toolname, program)
         profile:print("compiler=" .. toolname)
         if version then
             profile:print("compiler.version=" .. version)
@@ -222,14 +221,6 @@ function _conan_generate_compiler_profile(profile, configs, opt)
     else
         local program, toolname = platform.tool("cc", plat, arch)
         if toolname == "gcc" or toolname == "clang" then
-            local version
-            local result = find_tool(toolname, {program = program, version = true})
-            if result and result.version then
-                local v = semver.try_parse(result.version)
-                if v then
-                    version = v:major()
-                end
-            end
             profile:print("compiler=" .. toolname)
             profile:print("compiler.cppstd=gnu17")
             if toolname == "clang" then
@@ -237,6 +228,7 @@ function _conan_generate_compiler_profile(profile, configs, opt)
             else
                 profile:print("compiler.libcxx=libstdc++11")
             end
+            local version = _conan_get_compiler_version(toolname, program)
             if version then
                 profile:print("compiler.version=" .. version)
             end
