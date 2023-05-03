@@ -101,9 +101,10 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
         return false
     end
 
-    -- p7zip cannot extract other archive format on msys/cygwin
+    -- p7zip cannot extract other archive format on msys/cygwin, but it can extract .tgz
     -- https://github.com/xmake-io/xmake/issues/1575#issuecomment-898205462
-    if is_subhost("msys", "cygwin") and extension ~= ".7z" and program:startswith("sh ") then
+    if is_subhost("msys", "cygwin") and program:startswith("sh ") and
+        extension ~= ".7z" and extension ~= ".tgz" then
         return false
     end
 
