@@ -1045,7 +1045,7 @@ static tb_pointer_t xm_engine_lua_realloc(tb_pointer_t udata, tb_pointer_t data,
     tb_pointer_t ptr = tb_null;
     if (nsize == 0 && data) tb_free(data);
     else if (!data) ptr = tb_malloc((tb_size_t)nsize);
-    else if (nsize > osize) ptr = tb_ralloc(data, (tb_size_t)nsize);
+    else if (nsize != osize) ptr = tb_ralloc(data, (tb_size_t)nsize);
     else ptr = data;
     return ptr;
 }
