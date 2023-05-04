@@ -50,6 +50,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
+
+// proc/self
 #if defined(TB_CONFIG_OS_LINUX)
 #   define XM_PROC_SELF_FILE        "/proc/self/exe"
 #elif defined(TB_CONFIG_OS_BSD) && !defined(__OpenBSD__)
@@ -61,6 +63,9 @@
 #       define XM_PROC_SELF_FILE    "/proc/curproc/file"
 #   endif
 #endif
+
+// hook lua memory allocator
+#define XM_HOOK_LUA_MEMALLOC        (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
@@ -1034,6 +1039,17 @@ static tb_void_t xm_engine_init_signal(xm_engine_t* engine)
 #endif
 }
 
+#if XM_HOOK_LUA_MEMALLOC
+static tb_pointer_t xm_engine_lua_realloc(tb_pointer_t udata, tb_pointer_t data, size_t osize, size_t nsize)
+{
+//    tb_trace_i("data: %p, osize: %d nsize: %d", data, (int)osize, (int)nsize);
+    if (nsize == 0 && data) tb_free(data);
+    else if (!data) return tb_malloc((tb_size_t)nsize);
+    else return tb_ralloc(data, (tb_size_t)nsize);
+    return tb_null;
+}
+#endif
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
@@ -1054,6 +1070,11 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         // init lua
         engine->lua = luaL_newstate();
         tb_assert_and_check_break(engine->lua);
+
+#if XM_HOOK_LUA_MEMALLOC
+        // hook lua memmory
+        lua_setallocf(engine->lua, xm_engine_lua_realloc, engine->lua);
+#endif
 
         // open lua libraries
         luaL_openlibs(engine->lua);

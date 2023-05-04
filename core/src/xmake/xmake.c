@@ -94,8 +94,13 @@ tb_bool_t xm_init_(tb_size_t mode, tb_hize_t build)
     // check version
     xm_version_check(build);
 
-    // init tbox
+#if 0
+    // init tbox, we always use the tbox's default allocator
+    if (!tb_init(tb_null, tb_default_allocator(tb_null, 0))) return tb_false;
+#else
+    // init tbox, since small compilation mode is enabled, it still uses the native allocator
     if (!tb_init(tb_null, tb_null)) return tb_false;
+#endif
 
     // trace
     tb_trace_d("init: ok");
