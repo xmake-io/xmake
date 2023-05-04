@@ -101,10 +101,8 @@ tb_int_t xm_os_rmdir(lua_State* lua)
     }
     else
     {
-        // done os.rmdir(path)
+        // os.rmdir(path)
         lua_pushboolean(lua, tb_directory_remove(path));
     }
-
-    // ok
     return 1;
 }

@@ -42,9 +42,7 @@ tb_int_t xm_os_exists(lua_State* lua)
     tb_char_t const* path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
-    // done os.exists(path)
+    // os.exists(path)
     lua_pushboolean(lua, tb_file_info(path, tb_null));
-
-    // ok
     return 1;
 }

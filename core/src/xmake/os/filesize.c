@@ -42,12 +42,10 @@ tb_int_t xm_os_filesize(lua_State* lua)
     tb_char_t const* path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
-    // done os.filesize(path)
+    // os.filesize(path)
     tb_file_info_t info = {0};
     if (tb_file_info(path, &info) && (info.type == TB_FILE_TYPE_FILE))
         lua_pushinteger(lua, (lua_Integer)info.size);
     else lua_pushinteger(lua, 0);
-
-    // ok
     return 1;
 }

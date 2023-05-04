@@ -60,13 +60,11 @@ tb_int_t xm_os_emptydir(lua_State* lua)
     tb_char_t const* dir = luaL_checkstring(lua, 1);
     tb_check_return_val(dir, 0);
 
-    // done os.emptydir(dir)
+    // os.emptydir(dir)
     tb_bool_t is_emptydir = tb_true;
     tb_directory_walk(dir, tb_true, tb_true, xm_os_emptydir_walk, &is_emptydir);
 
     // is emptydir?
     lua_pushboolean(lua, is_emptydir);
-
-    // ok
     return 1;
 }

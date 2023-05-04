@@ -65,11 +65,9 @@ static tb_char_t const* xm_string_ltrim(tb_char_t const* sstr, tb_char_t const* 
     // check
     tb_assert(sstr && estr && ctrim);
 
-    // done
     tb_char_t const* p = sstr;
     while (p < estr && tb_strnchr(ctrim, ntrim, *p))
         p++;
-
     return p;
 }
 
@@ -78,11 +76,9 @@ static tb_char_t const* xm_string_rtrim(tb_char_t const* sstr, tb_char_t const* 
     // check
     tb_assert(sstr && estr && ctrim);
 
-    // done
     tb_char_t const* p = estr - 1;
     while (p >= sstr && tb_strnchr(ctrim, ntrim, *p))
         p--;
-
     return p + 1;
 }
 

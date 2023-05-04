@@ -1054,7 +1054,6 @@ static tb_pointer_t xm_engine_lua_realloc(tb_pointer_t udata, tb_pointer_t data,
  */
 xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_cb_t lni_initalizer)
 {
-    // done
     tb_bool_t     ok = tb_false;
     xm_engine_t*  engine = tb_null;
     do
