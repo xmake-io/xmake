@@ -1042,10 +1042,12 @@ static tb_void_t xm_engine_init_signal(xm_engine_t* engine)
 #if XM_HOOK_LUA_MEMALLOC
 static tb_pointer_t xm_engine_lua_realloc(tb_pointer_t udata, tb_pointer_t data, size_t osize, size_t nsize)
 {
+    tb_pointer_t ptr = tb_null;
     if (nsize == 0 && data) tb_free(data);
-    else if (!data) return tb_malloc((tb_size_t)nsize);
-    else return tb_ralloc(data, (tb_size_t)nsize);
-    return tb_null;
+    else if (!data) ptr = tb_malloc((tb_size_t)nsize);
+    else if (nsize > osize) ptr = tb_ralloc(data, (tb_size_t)nsize);
+    else ptr = data;
+    return ptr;
 }
 #endif
 
