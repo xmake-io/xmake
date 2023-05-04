@@ -21,10 +21,10 @@
 -- imports
 import("ping")
 
--- http[s]://xxx.com/.. or git@git.xxx.com:xxx/xxx.git
+-- http[s]://xxx.com[:1234]/.. or git@git.xxx.com:xxx/xxx.git
 function _parse_host(url)
     _g._URLHOSTS = _g._URLHOSTS or {}
-    local host = _g._URLHOSTS[url] or url:match("://(.-)/") or url:match("@(.-):")
+    local host = _g._URLHOSTS[url] or url:match("://([^/:]+)") or url:match("@(.-):")
     _g._URLHOSTS[url] = host
     return host
 end
