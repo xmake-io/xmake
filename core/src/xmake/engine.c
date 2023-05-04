@@ -1209,20 +1209,15 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
             }
         }
 #endif
-
-        // ok
         ok = tb_true;
 
     } while (0);
 
-    // failed?
     if (!ok)
     {
-        // exit it
         if (engine) xm_engine_exit((xm_engine_ref_t)engine);
         engine = tb_null;
     }
-
     return (xm_engine_ref_t)engine;
 }
 tb_void_t xm_engine_exit(xm_engine_ref_t self)
@@ -1268,10 +1263,7 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     // exists this script?
     if (!tb_file_info(path, tb_null))
     {
-        // error
         tb_printf("not found main script: %s\n", path);
-
-        // failed
         return -1;
     }
 
@@ -1281,10 +1273,7 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     // load and execute the main script
     if (luaL_dofile(engine->lua, path))
     {
-        // error
         tb_printf("error: %s\n", lua_tostring(engine->lua, -1));
-
-        // failed
         return -1;
     }
 
@@ -1296,10 +1285,7 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     lua_getglobal(engine->lua, "_xmake_main");
     if (lua_pcall(engine->lua, 0, 1, -2))
     {
-        // error
         tb_printf("error: %s\n", lua_tostring(engine->lua, -1));
-
-        // failed
         return -1;
     }
 
