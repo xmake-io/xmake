@@ -23,6 +23,12 @@ import("core.base.option")
 import("core.tool.toolchain")
 import("lib.detect.find_tool")
 
+-- get the number of parallel jobs
+function _get_parallel_njobs(opt)
+    return opt.jobs or option.get("jobs") or tostring(os.default_njob())
+end
+
+-- tra
 -- get msvc
 function _get_msvc(package)
     local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
@@ -30,9 +36,36 @@ function _get_msvc(package)
     return msvc
 end
 
+-- get msvc run environments
+function _get_msvc_runenvs(package)
+    return os.joinenvs(_get_msvc(package):runenvs())
+end
+
+-- get vs arch
+function _get_vsarch(package)
+    local arch = package:arch()
+    if arch == 'x86' or arch == 'i386' then return "Win32" end
+    if arch == 'x86_64' then return "x64" end
+    if arch:startswith('arm64') then return "ARM64" end
+    if arch:startswith('arm') then return "ARM" end
+    return arch
+end
+
+-- get configs
+function _get_configs(package, configs, opt)
+    local jobs = _get_parallel_njobs(opt)
+    configs = configs or {}
+    table.insert(configs, "-nologo")
+    table.insert(configs, "-t:Rebuild")
+    table.insert(configs, (jobs ~= nil and format("-m:%d", jobs) or "-m"))
+    table.insert(configs, "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"))
+    table.insert(configs, "-p:Platform=" .. _get_vsarch(package))
+    return configs
+end
+
 -- get the build environments
 function buildenvs(package, opt)
-    return os.joinenvs(_get_msvc(package):runenvs())
+    return _get_msvc_runenvs(package)
 end
 
 -- build package
@@ -43,7 +76,7 @@ function build(package, configs, opt)
 
     -- pass configurations
     local argv = {}
-    for name, value in pairs(configs) do
+    for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if value ~= "" then
             if type(name) == "number" then
