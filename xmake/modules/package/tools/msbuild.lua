@@ -55,11 +55,16 @@ end
 function _get_configs(package, configs, opt)
     local jobs = _get_parallel_njobs(opt)
     configs = configs or {}
+    local configs_str = string.serialize(configs, {indent = false, strip = true})
     table.insert(configs, "-nologo")
     table.insert(configs, "-t:Rebuild")
     table.insert(configs, (jobs ~= nil and format("-m:%d", jobs) or "-m"))
-    table.insert(configs, "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"))
-    table.insert(configs, "-p:Platform=" .. _get_vsarch(package))
+    if not configs_str:find("p:Configuration=", 1, true) then
+        table.insert(configs, "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"))
+    end
+    if not configs_str:find("p:Platform=", 1, true) then
+        table.insert(configs, "-p:Platform=" .. _get_vsarch(package))
+    end
     return configs
 end
 
