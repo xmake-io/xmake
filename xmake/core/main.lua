@@ -259,14 +259,12 @@ function main.entry()
     -- check run command as root
     if not option.get("root") and os.getenv("XMAKE_ROOT") ~= 'y' then
         if os.isroot() then
-            if not privilege.store() or os.isroot() then
-                errors = [[Running xmake as root is extremely dangerous and no longer supported.
+            errors = [[Running xmake as root is extremely dangerous and no longer supported.
 As xmake does not drop privileges on installation you would be giving all
 build scripts full access to your system.
 Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
-                ]]
-                return main._exit(false, errors)
-            end
+            ]]
+            return main._exit(false, errors)
         end
     end
 
