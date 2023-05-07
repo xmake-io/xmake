@@ -204,7 +204,7 @@ elif test_eq "$branch" "__run__"; then
         echo "downloading $runfile_url .."
         remote_get_content "$runfile_url" > $projectdir/xmake.run
     fi
-    sh $projectdir/xmake.run --noexec --target $projectdir
+    sh $projectdir/xmake.run --noexec --quiet --target $projectdir
 else
     echo "cloning $gitrepo $branch .."
     if test_nz "$2"; then
