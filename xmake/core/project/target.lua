@@ -1143,9 +1143,12 @@ function _instance:autogenfile(sourcefile, opt)
     -- we need replace '..' to '__' in this case
     --
     if path.is_absolute(relativedir) and os.host() == "windows" then
-        -- remove C:\\ and whitespaces
+        -- remove C:\\ and whitespaces and fix long path issue
         -- e.g. C:\\Program Files (x64)\\xxx\Windows.h
-        -- @see https://github.com/xmake-io/xmake/issues/3021
+        --
+        -- @see
+        -- https://github.com/xmake-io/xmake/issues/3021
+        -- https://github.com/xmake-io/xmake/issues/3715
         relativedir = hash.uuid4(relativedir):gsub("%-", ""):lower()
     end
     relativedir = relativedir:gsub("%.%.", "__")
@@ -1796,7 +1799,13 @@ function _instance:dependfile(objectfile)
         relativedir = origindir
     end
     if path.is_absolute(relativedir) and os.host() == "windows" then
-        relativedir = relativedir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
+        -- remove C:\\ and whitespaces and fix long path issue
+        -- e.g. C:\\Program Files (x64)\\xxx\Windows.h
+        --
+        -- @see
+        -- https://github.com/xmake-io/xmake/issues/3021
+        -- https://github.com/xmake-io/xmake/issues/3715
+        relativedir = hash.uuid4(relativedir):gsub("%-", ""):lower()
     end
 
     -- originfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
@@ -1812,25 +1821,15 @@ end
 
 -- get the dependent include files
 function _instance:dependfiles()
-
-    -- get source batches
     local sourcebatches, modified = self:sourcebatches()
-
-    -- cached? return it directly
     if self._DEPENDFILES and not modified then
         return self._DEPENDFILES
     end
-
-    -- get dependent files from source batches
     local dependfiles = {}
     for _, sourcebatch in pairs(self:sourcebatches()) do
         table.join2(dependfiles, sourcebatch.dependfiles)
     end
-
-    -- cache it
     self._DEPENDFILES = dependfiles
-
-    -- ok?
     return dependfiles
 end
 
