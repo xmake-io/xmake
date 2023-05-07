@@ -57,7 +57,6 @@ function _get_configs(package, configs, opt)
     configs = configs or {}
     local configs_str = string.serialize(configs, {indent = false, strip = true})
     table.insert(configs, "-nologo")
-    table.insert(configs, "-t:Rebuild")
     table.insert(configs, (jobs ~= nil and format("-m:%d", jobs) or "-m"))
     if not configs_str:find("p:Configuration=", 1, true) then
         table.insert(configs, "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"))
