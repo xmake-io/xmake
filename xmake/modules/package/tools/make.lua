@@ -122,6 +122,7 @@ function build(package, configs, opt)
     local argv = {"-j" .. njob}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
+        table.insert(argv, "V=1")
     end
     for name, value in pairs(configs) do
         value = tostring(value):trim()
@@ -149,6 +150,7 @@ function install(package, configs, opt)
     local argv = {"install"}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
+        table.insert(argv, "V=1")
     end
     make(package, argv, opt)
 end
