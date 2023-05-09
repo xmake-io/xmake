@@ -144,7 +144,9 @@ function _load_require(require_str, requires_extra, parentinfo)
     end
 
     -- get required building configurations
-    local require_build_configs = require_extra.configs or require_extra.config
+    -- we need clone a new configs object, because the whole requireinfo will be modified later.
+    -- @see https://github.com/xmake-io/xmake-repo/pull/2067
+    local require_build_configs = table.clone(require_extra.configs or require_extra.config)
     if require_extra.debug then
         require_build_configs = require_build_configs or {}
         require_build_configs.debug = true
