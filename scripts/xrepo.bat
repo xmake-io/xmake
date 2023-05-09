@@ -1,4 +1,5 @@
-@set "XMAKE_EXE=xmake"
+@set "XMAKE_ROOTDIR=%~dp0"
+@set "XMAKE_EXE=%XMAKE_ROOTDIR%xmake.exe"
 
 @if [%1]==[env] (
     if [%2]==[quit] (
@@ -88,21 +89,16 @@
             echo Please rerun `xrepo env %2 %3 shell` to enter the environment.
             exit /B 1
         ) else (
+            pushd %XMAKE_ROOTDIR%
             setlocal EnableDelayedExpansion
-            @%XMAKE_EXE% lua --quiet private.xrepo.action.env | findstr . && (
-                echo error: corrupt xmake.lua detected in the current directory^^!
-                exit /B 1
-            )
-            @%XMAKE_EXE% lua --quiet private.xrepo.action.env
-            if !errorlevel! neq 0 (
-                exit /B !errorlevel!
-            )
             %XMAKE_EXE% lua private.xrepo.action.env.info config %3
             if !errorlevel! neq 0 (
+                popd
                 exit /B !errorlevel!
             )
             @%XMAKE_EXE% lua --quiet private.xrepo.action.env.info prompt %3 1>nul
             if !errorlevel! neq 0 (
+                popd
                 echo error: environment not found^^!
                 exit /B !errorlevel!
             )
@@ -120,6 +116,7 @@
             @"%XMAKE_EXE%" lua --quiet private.xrepo.action.env.info script.cmd %3 1>"%%i.bat"
             call "%%i.bat"
         )
+        popd
         goto :ENDXREPO
     )
 )
