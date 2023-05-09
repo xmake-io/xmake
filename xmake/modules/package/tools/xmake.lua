@@ -96,7 +96,13 @@ function _get_configs(package, configs, opt)
             end
         end
     else
-        local names = {"sdk", "ndk", "ndk_sdkver", "vs", "vs_toolset", "mingw", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
+        local names = {"ndk", "ndk_sdkver", "vs", "vs_toolset", "mingw", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
+        -- We only set the sdk directory when doing cross-compilation,
+        -- otherwise the host dependency package may also use the cross-compilation toolchain in sdk incorrectly.
+        -- e.g. build host python -> host zlib -> xmake f --plat=linux --arch=x86_64 --sdk=/tmp/aarch64-linux-musl-cross -> incorrect cross compilation
+        if package:is_cross() then
+            table.insert(names, "sdk")
+        end
         for _, name in ipairs(names) do
             local value = get_config(name)
             if value ~= nil then
