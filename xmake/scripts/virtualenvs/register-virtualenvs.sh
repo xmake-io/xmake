@@ -36,12 +36,12 @@ function xrepo {
                     unset XMAKE_PROMPT_BACKUP
                     unset XMAKE_ENV_BACKUP
                 fi
+                "$XMAKE_EXE" lua private.xrepo.action.env.info config || return 1
                 local currentTest="$("$XMAKE_EXE" lua --quiet private.xrepo.action.env)" || return 1
                 if [ ! -z "$currentTest" ]; then
                     echo "error: corrupt xmake.lua detected in the current directory!"
                     return 1
                 fi
-                "$XMAKE_EXE" lua private.xrepo.action.env.info config || return 1
                 local prompt="$("$XMAKE_EXE" lua --quiet private.xrepo.action.env.info prompt)" || return 1
                 if [ -z "${prompt+x}" ]; then
                     return 1

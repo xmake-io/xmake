@@ -36,17 +36,13 @@
             exit /B 1
         ) else (
             setlocal EnableDelayedExpansion
-            @%XMAKE_EXE% lua --quiet private.xrepo.action.env | findstr . && (
-                echo error: corrupt xmake.lua detected in the current directory^^!
-                exit /B 1
-            )
-            @%XMAKE_EXE% lua --quiet private.xrepo.action.env
-            if !errorlevel! neq 0 (
-                exit /B !errorlevel!
-            )
             %XMAKE_EXE% lua private.xrepo.action.env.info config
             if !errorlevel! neq 0 (
                 exit /B !errorlevel!
+            )
+            @%XMAKE_EXE% lua --quiet private.xrepo.action.env | findstr . && (
+                echo error: corrupt xmake.lua detected in the current directory^^!
+                exit /B 1
             )
             @%XMAKE_EXE% lua --quiet private.xrepo.action.env.info prompt 1>nul
             if !errorlevel! neq 0 (
