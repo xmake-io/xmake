@@ -154,13 +154,26 @@ function _get_configs(package, configs, opt)
     return configs
 end
 
+-- maybe in project?
+-- @see https://github.com/xmake-io/xmake/issues/3720
+function _maybe_in_project(package)
+    local dir = package:sourcedir() or package:cachedir()
+    local parentdir = path.directory(dir)
+    while parentdir and os.isdir(parentdir) do
+        if os.isfile(path.join(parentdir, "xmake.lua")) then
+            print("parentdir", parentdir)
+            return true
+        end
+        parentdir = path.directory(parentdir)
+    end
+end
+
 -- set some builtin global options from the parent xmake
 function _set_builtin_argv(package, argv)
     -- if the package cache directory is modified,
     -- we need to force the project directory to be specified to avoid interference by the upper level xmake.lua.
     -- and we also need to put `-P` in the first argument to avoid option.parse() parsing errors
-    local maybe_in_project = os.getenv("XMAKE_PKG_CACHEDIR") or global.get("pkg_cachedir") or package:sourcedir()
-    if maybe_in_project then
+    if _maybe_in_project(package) then
         table.insert(argv, "-P")
         table.insert(argv, os.curdir())
     end
