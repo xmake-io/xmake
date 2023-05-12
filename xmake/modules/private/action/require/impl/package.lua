@@ -995,7 +995,7 @@ function _compatible_with_previous_librarydeps(package, opt)
     -- has been checked?
     local compatible_checked = package:data("librarydeps.compatible_checked")
     if compatible_checked then
-        return
+        return true
     end
 
     -- check strict compatibility for librarydeps?
