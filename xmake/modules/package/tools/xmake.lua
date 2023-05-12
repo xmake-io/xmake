@@ -161,7 +161,6 @@ function _maybe_in_project(package)
     local parentdir = path.directory(dir)
     while parentdir and os.isdir(parentdir) do
         if os.isfile(path.join(parentdir, "xmake.lua")) then
-            print("parentdir", parentdir)
             return true
         end
         parentdir = path.directory(parentdir)
