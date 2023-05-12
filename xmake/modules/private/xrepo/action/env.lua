@@ -105,6 +105,8 @@ function _enter_project()
         os.vrunv("xmake", {"create", "-P", "."})
     else
         os.cd(workdir)
+        os.rm("*")
+        os.vrunv("xmake", {"create", "-P", "."})
     end
     project.chdir(workdir)
 end
