@@ -19,11 +19,11 @@
             call %XMAKE_ENV_BACKUP%
             setlocal EnableDelayedExpansion
             if !errorlevel! neq 0 exit /B !errorlevel!
-            %XMAKE_EXE% lua private.xrepo.action.env.info config
+            "%XMAKE_EXE%" lua private.xrepo.action.env.info config
             if !errorlevel! neq 0 (
                 exit /B !errorlevel!
             )
-            @%XMAKE_EXE% lua --quiet private.xrepo.action.env.info prompt 1>nul
+            @"%XMAKE_EXE%" lua --quiet private.xrepo.action.env.info prompt 1>nul
             if !errorlevel! neq 0 (
                 echo error: xmake.lua not found^^!
                 exit /B !errorlevel!
@@ -36,30 +36,30 @@
             exit /B 1
         ) else (
             setlocal EnableDelayedExpansion
-            %XMAKE_EXE% lua private.xrepo.action.env.info config
+            "%XMAKE_EXE%" lua private.xrepo.action.env.info config
             if !errorlevel! neq 0 (
                 exit /B !errorlevel!
             )
-            @%XMAKE_EXE% lua --quiet private.xrepo.action.env | findstr . && (
+            @"%XMAKE_EXE%" lua --quiet private.xrepo.action.env | findstr . && (
                 echo error: corrupt xmake.lua detected in the current directory^^!
                 exit /B 1
             )
-            @%XMAKE_EXE% lua --quiet private.xrepo.action.env.info prompt 1>nul
+            @"%XMAKE_EXE%" lua --quiet private.xrepo.action.env.info prompt 1>nul
             if !errorlevel! neq 0 (
                 echo error: xmake.lua not found^^!
                 exit /B !errorlevel!
             )
             endlocal
-            for /f %%i in ('@%XMAKE_EXE% lua --quiet private.xrepo.action.env.info prompt') do @(
+            for /f %%i in ('@"%XMAKE_EXE%" lua --quiet private.xrepo.action.env.info prompt') do @(
                 @set "PROMPT=%%i %PROMPT%"
             )
             @set XMAKE_PROMPT_BACKUP=%PROMPT%
         )
-        for /f %%i in ('@%XMAKE_EXE% lua private.xrepo.action.env.info envfile') do @(
+        for /f %%i in ('@"%XMAKE_EXE%" lua private.xrepo.action.env.info envfile') do @(
             @set "XMAKE_ENV_BACKUP=%%i.bat"
             @"%XMAKE_EXE%" lua private.xrepo.action.env.info backup.cmd 1>"%%i.bat"
         )
-        for /f %%i in ('@%XMAKE_EXE% lua private.xrepo.action.env.info envfile') do @(
+        for /f %%i in ('@"%XMAKE_EXE%" lua private.xrepo.action.env.info envfile') do @(
             @"%XMAKE_EXE%" lua private.xrepo.action.env.info script.cmd 1>"%%i.bat"
             call "%%i.bat"
         )
@@ -117,6 +117,6 @@
     )
 )
 
-@call %XMAKE_EXE% lua private.xrepo %*
+@call "%XMAKE_EXE%" lua private.xrepo %*
 
 :ENDXREPO
