@@ -138,19 +138,18 @@ function get_all_package_modules(target, modules, opt)
     local package_modules
 
     -- parse all meta-info and append their informations to the package store
-    for name, package in pairs(target:pkgs()) do
+    for _, package in pairs(target:pkgs()) do
         package_modules = package_modules or {}
-        local modules_dir = path.join(package:installdir(), "modules", name)
-        local metafiles = os.files(path.join(modules_dir, "**.meta-info"))
+        local modulesdir = path.join(package:installdir(), "modules")
+        local metafiles = os.files(path.join(modulesdir, "*", "*.meta-info"))
         for _, metafile in ipairs(metafiles) do
             local modulefile, name, metadata = parse_meta_info(target, metafile)
             package_modules[name] = {
-                file = path.join(modules_dir, modulefile),
+                file = path.join(modulesdir, modulefile),
                 metadata = metadata
             }
         end
     end
-
     return package_modules
 end
 
@@ -694,8 +693,8 @@ function generate_meta_module_info(target, name, sourcefile, requires)
         end
     end
 
-    module_metadata._VENDOR_extension = { xmake = { name = name, file = path.filename(sourcefile) }}
-
+    local modulehash = get_modulehash(target, sourcefile)
+    module_metadata._VENDOR_extension = { xmake = { name = name, file = path.join(modulehash, path.filename(sourcefile)) }}
     return module_metadata
 end
 
@@ -703,22 +702,28 @@ function install_module_target(target)
     local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
     if sourcebatch and sourcebatch.sourcefiles then
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            local prefixdir = path.join("modules", target:name())
-            local fileconfig = target:fileconfig(sourcefile)
-            if fileconfig and fileconfig.prefixdir then
-                prefixdir = fileconfig.prefixdir
-            end
             local install = (fileconfig and not fileconfig.install) and false or true
             if install then
+                local modulehash = get_modulehash(target, sourcefile)
+                prefixdir = path.join("modules", modulehash)
                 target:add("installfiles", sourcefile, {prefixdir = prefixdir})
-                local outputdir = get_outputdir(target,sourcefile)
-                local metafile = path.join(outputdir, path.filename(sourcefile) .. ".meta-info")
+                local metafile = get_metafile(target, sourcefile)
                 if os.exists(metafile) then
                     target:add("installfiles", metafile, {prefixdir = prefixdir})
                 end
             end
         end
     end
+end
+
+function get_modulehash(target, modulepath)
+    local key = path.directory(modulepath) .. target:name()
+    return hash.uuid(key):split("-", {plain = true})[1]:lower()
+end
+
+function get_metafile(target, modulefile)
+    local outputdir = get_outputdir(target, modulefile)
+    return path.join(outputdir, path.filename(modulefile) .. ".meta-info")
 end
 
 function get_outputdir(target, module)
@@ -731,9 +736,8 @@ function get_outputdir(target, module)
         end
         return cached
     else
-        local key = path.directory(modulepath) .. target:name()
-        local hashed = hash.uuid(key):split("-", {plain = true})[1]:lower()
-        local moduledir = path.join(cachedir, hashed)
+        local modulehash = get_modulehash(target, modulepath)
+        local moduledir = path.join(cachedir, modulehash)
         localcache():set2("modules_paths", modulepath, moduledir)
         if not os.exists(moduledir) then
             os.mkdir(moduledir)
