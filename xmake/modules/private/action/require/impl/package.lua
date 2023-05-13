@@ -992,16 +992,14 @@ function _compatible_with_previous_librarydeps(package, opt)
         return true
     end
 
-    -- has been checked?
-    local compatible_checked = package:data("librarydeps.compatible_checked")
-    if compatible_checked then
-        return
-    end
-
     -- check strict compatibility for librarydeps?
     local strict_compatibility = project.policy("package.librarydeps.strict_compatibility")
     if strict_compatibility == nil then
         strict_compatibility = package:policy("package.librarydeps.strict_compatibility")
+    end
+    -- and we can disable it manually, @see https://github.com/xmake-io/xmake/pull/3738
+    if strict_compatibility == false then
+       return true
     end
 
     -- compute the buildhash for current librarydeps
