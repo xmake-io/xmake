@@ -144,6 +144,7 @@ end
 
 -- main
 function main()
+
     -- enter the original working directory, because the default directory is in the project directory
     os.cd(os.workingdir())
 
