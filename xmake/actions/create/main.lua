@@ -71,7 +71,6 @@ function _create_project(language, templateid, targetname)
     -- get project directory, if targetname == '.', then get path ot the current dir
     local projectdir = path.absolute(option.get("project") or
         path.join(os.curdir(), targetname == "." and "" or targetname))
-    print(projectdir)
     if not os.isdir(projectdir) and targetname ~= "." then
         -- make the project directory if not exists
         os.mkdir(projectdir)
