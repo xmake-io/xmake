@@ -68,9 +68,11 @@ function _create_project(language, templateid, targetname)
     end
     assert(tempinst and tempinst:scriptdir(), "invalid template id: %s!", templateid)
 
-    -- get project directory
-    local projectdir = path.absolute(option.get("project") or path.join(os.curdir(), targetname))
-    if not os.isdir(projectdir) then
+    -- get project directory, if targetname == '.', then get path ot the current dir
+    local projectdir = path.absolute(option.get("project") or
+        path.join(os.curdir(), targetname == "." and "" or targetname))
+    print(projectdir)
+    if not os.isdir(projectdir) and targetname ~= "." then
         -- make the project directory if not exists
         os.mkdir(projectdir)
     end
@@ -104,6 +106,11 @@ function _create_project(language, templateid, targetname)
         raise("template(%s): project not found!", templateid)
     end
 
+    -- if targetname == ".", get the name of the current directory
+    if targetname == "." then
+        targetname = path.filename(projectdir)
+    end
+
     -- get the builtin variables
     local builtinvars = _get_builtinvars(tempinst, targetname)
 
@@ -120,7 +127,7 @@ function _create_project(language, templateid, targetname)
     -- do after_create
     local after_create = tempinst:get("create_after")
     if after_create then
-        after_create(tempinst, {targetname = targetname})
+        after_create(tempinst, { targetname = targetname })
     end
 
     -- trace
@@ -137,7 +144,6 @@ end
 
 -- main
 function main()
-
     -- enter the original working directory, because the default directory is in the project directory
     os.cd(os.workingdir())
 
