@@ -13,6 +13,7 @@
 * [#3679](https://github.com/xmake-io/xmake/issues/3679): Improve `xrepo clean`
 * [#3662](https://github.com/xmake-io/xmake/issues/3662): Improve cmake/make generator for lex/yacc project
 * [#3697](https://github.com/xmake-io/xmake/issues/3662): Improve trybuild/cmake
+* [#3730](https://github.com/xmake-io/xmake/issues/3730): Improve c++modules package installation
 
 ### Bugs fixed
 
@@ -1587,6 +1588,7 @@
 * [#3679](https://github.com/xmake-io/xmake/issues/3679): 改进 `xrepo clean`
 * [#3662](https://github.com/xmake-io/xmake/issues/3662): 改进 cmake/make 生成器去更好的支持 lex/yacc 工程
 * [#3697](https://github.com/xmake-io/xmake/issues/3662): 改进 trybuild/cmake
+* [#3730](https://github.com/xmake-io/xmake/issues/3730): 改进 c++modules 包安装，解决不同目录同名文件分发冲突问题
 
 ### Bugs 修复
 
