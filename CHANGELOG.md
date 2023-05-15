@@ -1,5 +1,7 @@
 # Changelog ([中文](#中文))
 
+## v2.7.9
+
 ## master (unreleased)
 
 ### New features
@@ -1576,6 +1578,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.7.9
 
 ### 新特性
 
