@@ -32,7 +32,7 @@ end
 -- create project from template
 function _create_project(language, templateid, targetname)
     if targetname == '.' then
-        raise("you should specific ${red}-P${reset} instead of directly using ${red}.${reset}")
+        raise("you should specify ${red}-P${reset} instead of directly using ${red}.${reset}")
     end
 
     -- check the language
