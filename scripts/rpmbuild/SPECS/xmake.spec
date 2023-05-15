@@ -1,5 +1,5 @@
-%define     xmake_revision       87dff1ef4a5d96c093955a3cd97b69bc5ccd4c7f
-%define     tbox_revision        577ec239822be88861a0f4a80e33485409e36c28
+%define     xmake_revision       c879226767b810186714264d76bc0b55f127f034
+%define     tbox_revision        23fb0c033b30f9909efa62f8cfee7cee8d5a8dcc
 %define     sv_revision          10ee6a807466a5e61309201caea360a113ad3862
 %define     lua_cjson_revision   ddcecf3b24b71421e7b4a2962f1fbcc0297e0c1e
 %define     luajit_revision      e9af1abec542e6f9851ff2368e7f196b6382a44c
@@ -9,7 +9,7 @@
 %undefine   _disable_source_fetch
 
 Name:       xmake
-Version:    2.7.8
+Version:    2.7.9
 Release:    1%{?dist}
 Summary:    A cross-platform build utility based on Lua
 BuildArch:  noarch
