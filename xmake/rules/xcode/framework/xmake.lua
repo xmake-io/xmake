@@ -105,12 +105,14 @@ rule("xcode.framework")
             end
             os.vcp(target:targetfile(), contentsdir)
 
-            -- change rpath
-            -- @see https://github.com/xmake-io/xmake/issues/2679#issuecomment-1221839215
-            local filename = path.filename(target:targetfile())
-            local targetfile = path.join(contentsdir, filename)
-            local rpath = path.relative(contentsdir, path.directory(bundledir))
-            os.vrunv("install_name_tool", {"-id", path.join("@rpath", rpath, filename), targetfile})
+            if target:is_shared() then
+                -- change rpath
+                -- @see https://github.com/xmake-io/xmake/issues/2679#issuecomment-1221839215
+                local filename = path.filename(target:targetfile())
+                local targetfile = path.join(contentsdir, filename)
+                local rpath = path.relative(contentsdir, path.directory(bundledir))
+                os.vrunv("install_name_tool", {"-id", path.join("@rpath", rpath, filename), targetfile})
+            end
 
             -- move header files
             os.tryrm(headersdir)
