@@ -1545,6 +1545,7 @@ function _instance:_fetch_tool(opt)
             fetchinfo = self:find_tool(self:name(), {require_version = opt.require_version,
                                                      cachekey = "fetch_package_xmake",
                                                      norun = true, -- we need not run it to check for xmake/packages, @see https://github.com/xmake-io/xmake-repo/issues/66
+                                                     system = false, -- we only find it from xmake/packages, @see https://github.com/xmake-io/xmake-repo/pull/2085
                                                      force = opt.force})
 
             -- may be toolset, not single tool
@@ -1641,6 +1642,7 @@ function _instance:find_tool(name, opt)
                                   version = true, -- we alway check version
                                   require_version = opt.require_version,
                                   norun = opt.norun,
+                                  system = opt.system,
                                   force = opt.force})
 end
 

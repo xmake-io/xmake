@@ -26,8 +26,6 @@ import("core.base.semver")
 
 -- find tool from modules
 function _find_from_modules(name, opt)
-
-    -- attempt to import "detect.tools.find_xxx"
     local find_tool = import("detect.tools.find_" .. name, {try = true})
     if find_tool then
         local program, version, toolname = find_tool(opt)
@@ -39,28 +37,20 @@ end
 
 -- find tool
 function _find_tool(name, opt)
-
-    -- find tool name
     local toolname = find_toolname(name or opt.program)
     if toolname then
-
-        -- attempt to find tool from modules first
         local tool = _find_from_modules(toolname, opt)
         if tool then
             return tool
         end
     end
 
-    -- init program
     opt.program = opt.program or name
-
-    -- find program
     local program = find_program(opt.program, opt)
     if not program then
         return
     end
 
-    -- find tool version
     local version = nil
     if program and opt.version then
         version = find_programver(program, opt)
@@ -73,7 +63,7 @@ end
 -- @param name      the tool name
 -- @param opt       the options, e.g. {program = "xcrun -sdk macosx clang", paths = {"/usr/bin"},
 --                                     check = function (tool) os.run("%s -h", tool) end, version = true
---                                     force = true, cachekey = "xxx", envs = {PATH = "xxx"}}
+--                                     force = true, cachekey = "xxx", envs = {PATH = "xxx"}, system = false}
 --
 -- @return          {name = "", program = "", version = ""} or nil
 --
@@ -91,15 +81,11 @@ end
 -- @endcode
 --
 function main(name, opt)
-
-    -- do find
     opt = opt or {}
     if opt.require_version then
         opt.version = true
     end
     local result = _find_tool(name, opt)
-
-    -- match version?
     if opt.require_version and opt.require_version:find('.', 1, true) and result then
         if not (result.version and (result.version == opt.require_version or semver.satisfies(result.version, opt.require_version))) then
             result = nil

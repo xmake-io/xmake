@@ -38,17 +38,14 @@ import("detect.tools.find_python3")
 -- @endcode
 --
 function main(opt)
-
-    -- init options
     opt = opt or {}
-
-    -- find program
     local program = find_program(opt.program or "python", opt)
     if not program then
-        program = find_python3() or find_python2()
+        local opt2 = table.clone(opt)
+        opt2.program = nil
+        program = find_python3(opt2) or find_python2(opt2)
     end
 
-    -- find program version
     local version = nil
     if program and opt.version then
         opt.command = function ()
@@ -57,7 +54,5 @@ function main(opt)
         end
         version = find_programver(program, opt)
     end
-
-    -- ok?
     return program, version
 end
