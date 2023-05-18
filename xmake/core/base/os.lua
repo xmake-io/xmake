@@ -1135,7 +1135,9 @@ function os.getenvs()
         local p = line:find('=', 1, true)
         if p then
             local key = line:sub(1, p - 1):trim()
-            if os.host() == "windows" then
+            -- only translate Path to PATH on windows
+            -- @see https://github.com/xmake-io/xmake/issues/3752
+            if os.host() == "windows" and key:lower() == "path" then
                 key = key:upper()
             end
             local values = line:sub(p + 1):trim()
