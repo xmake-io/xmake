@@ -1,8 +1,12 @@
 # Changelog ([中文](#中文))
 
-## v2.7.9
-
 ## master (unreleased)
+
+### Bugs fixed
+
+* [#3755](https://github.com/xmake-io/xmake/pull/3755): fix find_tool from xmake/packages
+
+## v2.7.9
 
 ### New features
 
@@ -1578,6 +1582,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs 修复
+
+* [#3755](https://github.com/xmake-io/xmake/pull/3755): 修复 find_tool 从 xmake/packages 中查找程序
 
 ## v2.7.9
 
