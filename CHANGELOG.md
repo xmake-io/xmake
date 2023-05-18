@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* [#3752](https://github.com/xmake-io/xmake/issues/3752): Improve os.getenvs for windows
+
 ### Bugs fixed
 
 * [#3755](https://github.com/xmake-io/xmake/pull/3755): fix find_tool from xmake/packages
@@ -1582,6 +1586,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#3752](https://github.com/xmake-io/xmake/issues/3752): 改进 windows 上 os.getenvs 的获取
 
 ### Bugs 修复
 
