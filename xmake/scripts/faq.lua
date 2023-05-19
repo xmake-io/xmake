@@ -38,7 +38,7 @@
 --    -- add debug and release modes
 --    add_rules("mode.debug", "mode.release")
 --
---    -- add macro defination
+--    -- add macro definition
 --    add_defines("NDEBUG", "_GNU_SOURCE=1")
 --
 --    -- set warning all as error
