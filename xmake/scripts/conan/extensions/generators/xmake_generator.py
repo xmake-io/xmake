@@ -31,9 +31,7 @@ class XmakeGenerator:
             #dep_name = require.ref.name
 
             # get aggregate dependency's cppinfo
-            dep_cppinfo = dep.cpp_info.copy()
-            dep_cppinfo.set_relative_base_folder(dep.package_folder)
-            dep_aggregate = dep_cppinfo.aggregated_components()
+            dep_aggregate = dep.cpp_info.aggregated_components()
 
             # format deps
             deps = XmakeDepsFormatter(dep_aggregate)
