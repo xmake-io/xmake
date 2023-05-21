@@ -62,79 +62,55 @@ end
 
 -- load the language from the given name (c++, objc++, swift, golang, asm, ...)
 function sandbox_core_language.load(name)
-
-    -- load it
     local instance, errors = language.load(name)
     if not instance then
         raise(errors)
     end
-
-    -- ok
     return instance
 end
 
 -- load the language from the given source kind: cc, cxx, mm, mxx, sc, go, as ..
 function sandbox_core_language.load_sk(sourcekind)
-
-    -- load it
     local instance, errors = language.load_sk(sourcekind)
     if not instance then
         raise(errors)
     end
-
-    -- ok
     return instance
 end
 
 -- load the language from the given source extension: .c, .cpp, .m, .mm, .swift, .go, .s ..
 function sandbox_core_language.load_ex(extension)
-
-    -- load it
     local instance, errors = language.load_ex(extension)
     if not instance then
         raise(errors)
     end
-
-    -- ok
     return instance
 end
 
 -- get source kind of the source file name
 function sandbox_core_language.sourcekind_of(sourcefile)
-
-    -- get it
     local sourcekind, errors = language.sourcekind_of(sourcefile)
     if not sourcekind then
         raise(errors)
     end
-
-    -- ok
     return sourcekind
 end
 
 -- get extension of the source kind
 function sandbox_core_language.extension_of(sourcekind)
-
-    -- get it
     local extension, errors = language.extension_of(sourcekind)
     if not extension then
         raise(errors)
     end
-
-    -- ok
     return extension
 end
 
 -- get linker info (kind and flag) of the source kinds
-function sandbox_core_language.linkerinfo_of(targetkind, sourcekinds)
-
-    -- get it
-    local linkerinfo, errors = language.linkerinfo_of(targetkind, sourcekinds)
+function sandbox_core_language.linkerinfos_of(targetkind, sourcekinds)
+    local linkerinfo, errors = language.linkerinfos_of(targetkind, sourcekinds)
     if not linkerinfo then
         raise(errors)
     end
-
-    -- ok
     return linkerinfo
 end
 
