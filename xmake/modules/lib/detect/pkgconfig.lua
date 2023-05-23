@@ -195,7 +195,6 @@ function libinfo(name, opt)
         end
     end
 
-
     -- get version
     local version = try { function() return os.iorunv(pkgconfig, {"--modversion", name}, {envs = envs}) end }
     if version then
