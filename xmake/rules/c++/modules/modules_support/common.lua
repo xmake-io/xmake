@@ -728,20 +728,10 @@ end
 
 function get_outputdir(target, module)
     local cachedir = modules_cachedir(target)
-    local modulepath = module.path or module
-    local cached = localcache():get2("modules_paths", modulepath)
-    if cached then
-        if not os.exists(cached) then
-            os.mkdir(cached)
-        end
-        return cached
-    else
-        local modulehash = get_modulehash(target, modulepath)
-        local moduledir = path.join(cachedir, modulehash)
-        localcache():set2("modules_paths", modulepath, moduledir)
-        if not os.exists(moduledir) then
-            os.mkdir(moduledir)
-        end
-        return moduledir
+    local modulehash = get_modulehash(target, module.path or module)
+    local outputdir = path.join(cachedir, modulehash)
+    if not os.exists(outputdir) then
+        os.mkdir(outputdir)
     end
+    return outputdir
 end
