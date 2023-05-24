@@ -482,8 +482,8 @@ function _get_configs_for_wasm(package, configs, opt)
     local emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk.emscripten, "cmake/Modules/Platform"))
     assert(emscripten_cmakefile, "Emscripten.cmake not found!")
     table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. emscripten_cmakefile)
-    if is_subhost("windows") then
-        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
+    if is_subhost("windows") and opt.cmake_generator ~= "Ninja" then
+        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw32-make not found!")
         table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. _translate_paths(path.join(mingw, "bin", "mingw32-make.exe")))
     end
     _get_configs_for_generic(package, configs, opt)
@@ -652,8 +652,15 @@ function _get_configs_for_generator(package, configs, opt)
         table.insert(configs, "-G")
         table.insert(configs, _get_cmake_generator_for_msvc(package))
     elseif package:is_plat("wasm") and is_subhost("windows") then
+        -- we attempt to use ninja if it exist
+        -- @see https://github.com/xmake-io/xmake/issues/3771
         table.insert(configs, "-G")
-        table.insert(configs, "MinGW Makefiles")
+        if find_tool("ninja") then
+            table.insert(configs, "Ninja")
+            opt.cmake_generator = "Ninja"
+        else
+            table.insert(configs, "MinGW Makefiles")
+        end
     else
         table.insert(configs, "-G")
         table.insert(configs, "Unix Makefiles")
