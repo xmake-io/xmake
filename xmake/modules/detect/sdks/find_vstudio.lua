@@ -286,7 +286,7 @@ function _find_vstudio(opt)
             table.insert(paths, format("$(env %s)\\..\\..\\VC", vsenvs[version]))
         end
         if vswhere_VCAuxiliaryBuildDir and os.isdir(vswhere_VCAuxiliaryBuildDir) then
-            table.insert(paths, vswhere_VCAuxiliaryBuildDir)
+            table.insert(paths, 1, vswhere_VCAuxiliaryBuildDir)
         end
 
         -- find vcvarsall.bat, vcvars32.bat for vs7.1
