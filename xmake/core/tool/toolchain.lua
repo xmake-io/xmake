@@ -278,6 +278,11 @@ function _instance:check()
     return checkok
 end
 
+-- do load manually, it will call on_load()
+function _instance:load()
+    self:_load()
+end
+
 -- check cross toolchain
 function _instance:check_cross_toolchain()
     return sandbox_module.import("toolchains.cross.check", {rootdir = os.programdir(), anonymous = true})(self)
@@ -311,7 +316,15 @@ end
 
 -- save toolchain to file
 function _instance:savefile(filepath)
-    return io.save(filepath, {name = self:name(), info = self:info():info(), cachekey = self:cachekey(), configs = self._CONFIGS})
+    if not self:_is_loaded() then
+        os.raise("we can only save toolchain(%s) after it has been loaded!", self:name())
+    end
+    -- we strip on_load/on_check scripts to solve some issues
+    -- @see https://github.com/xmake-io/xmake/issues/3774
+    local info = table.clone(self:info():info())
+    info.load = nil
+    info.check = nil
+    return io.save(filepath, {name = self:name(), info = info, cachekey = self:cachekey(), configs = self._CONFIGS})
 end
 
 -- on check (builtin)
@@ -347,6 +360,11 @@ function _instance:_load()
         end
         info:set("__loaded", true)
     end
+end
+
+-- is loaded?
+function _instance:_is_loaded()
+    return self:info():get("__loaded")
 end
 
 -- get the tool description from the tool kind
