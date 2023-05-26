@@ -241,14 +241,19 @@ function _get_package_toolchains_envs(package, opt)
 
         -- pass custom toolchains definition in project
         for _, toolchain_inst in ipairs(toolchains_custom) do
-            local toolchains_file = os.tmpfile()
-            dprint("passing toolchain(%s) to %s", toolchain_inst:name(), toolchains_file)
-            local ok, errors = toolchain_inst:savefile(toolchains_file)
-            if not ok then
-                raise("save toolchain failed, %s", errors or "unknown")
+            -- we must load it first
+            -- @see https://github.com/xmake-io/xmake/issues/3774
+            if toolchain_inst:check() then
+                toolchain_inst:load()
+                local toolchains_file = os.tmpfile()
+                dprint("passing toolchain(%s) to %s", toolchain_inst:name(), toolchains_file)
+                local ok, errors = toolchain_inst:savefile(toolchains_file)
+                if not ok then
+                    raise("save toolchain failed, %s", errors or "unknown")
+                end
+                envs.XMAKE_TOOLCHAIN_DATAFILES = envs.XMAKE_TOOLCHAIN_DATAFILES or {}
+                table.insert(envs.XMAKE_TOOLCHAIN_DATAFILES, toolchains_file)
             end
-            envs.XMAKE_TOOLCHAIN_DATAFILES = envs.XMAKE_TOOLCHAIN_DATAFILES or {}
-            table.insert(envs.XMAKE_TOOLCHAIN_DATAFILES, toolchains_file)
         end
     end
     return envs
