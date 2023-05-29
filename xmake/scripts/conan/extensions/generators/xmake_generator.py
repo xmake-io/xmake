@@ -12,8 +12,11 @@ class XmakeGenerator:
     def __init__(self, conanfile):
         self._conanfile = conanfile
 
-    def filename(self):
-        return "conanbuildinfo.xmake.lua"
+    def filename(self, pkgname = None):
+        if pkgname:
+            return "conanbuildinfo_%s.xmake.lua" %pkgname
+        else:
+            return "conanbuildinfo.xmake.lua"
 
     def generate(self):
         print("XmakeGenerator: generating build info ..")
@@ -27,19 +30,26 @@ class XmakeGenerator:
                    + list(test_req.items()) \
                    + list(build_req.items())
 
+        dep_names = []
+        pkginfo = None
+        plat = self._conanfile.settings.os
+        arch = self._conanfile.settings.arch
+        mode = self._conanfile.settings.build_type
         for require, dep in full_req:
-            #dep_name = require.ref.name
-
             # get aggregate dependency's cppinfo
             dep_aggregate = dep.cpp_info.aggregated_components()
 
             # format deps
             deps = XmakeDepsFormatter(dep_aggregate)
 
-            # make template
-            plat = self._conanfile.settings.os
-            arch = self._conanfile.settings.arch
-            mode = self._conanfile.settings.build_type
+            # get package and deps
+            dep_name = require.ref.name
+            if not pkginfo:
+                pkginfo = deps
+            else:
+                dep_names.append(dep_name)
+
+            # make content
             template = ('  {plat}_{arch}_{mode} = \n'
                         '  {{\n'
                         '    includedirs    = {{{deps.include_paths}}},\n'
@@ -58,17 +68,44 @@ class XmakeGenerator:
                         '    __srcdirs      = {{{deps.src_paths}}}\n'
                         '  }}')
 
-            # make sections
             sections = []
             sections.append(template.format(plat = plat, arch = arch, mode = mode, deps = deps))
-
-            # make content
             content = "{\n" + ",\n".join(sections) + "\n}"
-            print(content)
+            print(dep_name, content)
 
-            # save content to file
-            with open(self.filename(), 'w') as file:
+            # save package content to file
+            with open(self.filename(dep_name), 'w') as file:
                 file.write(content)
+
+        # save root content to file
+        template = ('  {plat}_{arch}_{mode} = \n'
+                    '  {{\n'
+                    '    includedirs    = {{{pkginfo.include_paths}}},\n'
+                    '    linkdirs       = {{{pkginfo.lib_paths}}},\n'
+                    '    links          = {{{pkginfo.libs}}},\n'
+                    '    frameworkdirs  = {{{pkginfo.framework_paths}}},\n'
+                    '    frameworks     = {{{pkginfo.frameworks}}},\n'
+                    '    syslinks       = {{{pkginfo.system_libs}}},\n'
+                    '    defines        = {{{pkginfo.defines}}},\n'
+                    '    cxxflags       = {{{pkginfo.cppflags}}},\n'
+                    '    cflags         = {{{pkginfo.cflags}}},\n'
+                    '    shflags        = {{{pkginfo.sharedlinkflags}}},\n'
+                    '    ldflags        = {{{pkginfo.exelinkflags}}},\n'
+                    '    __bindirs      = {{{pkginfo.bin_paths}}},\n'
+                    '    __resdirs      = {{{pkginfo.res_paths}}},\n'
+                    '    __srcdirs      = {{{pkginfo.src_paths}}},\n'
+                    '    __dep_names    = {{{dep_names}}}\n'
+                    '  }}')
+
+        sections = []
+        dep_names_str = ", ".join('"%s"' % p for p in dep_names)
+        sections.append(template.format(plat = plat, arch = arch, mode = mode, pkginfo = pkginfo, dep_names = dep_names_str))
+        content = "{\n" + ",\n".join(sections) + "\n}"
+        print(content)
+
+        # save package content to file
+        with open(self.filename(), 'w') as file:
+            file.write(content)
 
 class XmakeDepsFormatter(object):
     def __prepare_process_escape_character(self, raw_string):
