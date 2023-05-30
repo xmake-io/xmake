@@ -23,8 +23,12 @@ import("core.base.option")
 import("core.project.config")
 
 -- get build info file
-function _conan_get_buildinfo_file(name)
-    return path.absolute(path.join(config.buildir() or os.tmpdir(), ".conan", name, "conanbuildinfo.xmake.lua"))
+function _conan_get_buildinfo_file(name, dep_name)
+    local filename = "conanbuildinfo.xmake.lua"
+    if dep_name then
+        filename = "conanbuildinfo_" .. dep_name .. ".xmake.lua"
+    end
+    return path.absolute(path.join(config.buildir() or os.tmpdir(), ".conan", name, filename))
 end
 
 -- get conan platform
@@ -56,35 +60,39 @@ function _conan_get_mode(opt)
     return opt.mode == "debug" and "Debug" or "Release"
 end
 
--- find package using the conan package manager
---
--- @param name  the package name
--- @param opt   the options, e.g. {verbose = true)
---
-function main(name, opt)
+-- get info key
+function _conan_get_infokey(opt)
+    local plat = _conan_get_plat(opt)
+    local arch = _conan_get_arch(opt)
+    local mode = _conan_get_mode(opt)
+    if plat and arch and mode then
+        return plat .. "_" .. arch .. "_" .. mode
+    end
+end
 
-    -- get the build info
+-- get build info
+function _conan_get_buildinfo(name, opt)
     opt = opt or {}
-    local buildinfo_file = _conan_get_buildinfo_file(name)
+    local buildinfo_file = _conan_get_buildinfo_file(name, opt.dep_name)
     if not os.isfile(buildinfo_file) then
         return
     end
 
     -- load build info
-    local buildinfo = io.load(buildinfo_file)
-
-    -- get platform, architecture and mode
-    local plat = _conan_get_plat(opt)
-    local arch = _conan_get_arch(opt)
-    local mode = _conan_get_mode(opt)
-    if not plat or not arch or not mode then
+    local infokey = _conan_get_infokey(opt)
+    if not infokey then
         return
+    end
+    local buildinfo = io.load(buildinfo_file)
+    if buildinfo then
+        buildinfo = buildinfo[infokey]
     end
 
     -- get the package info of the given platform, architecture and mode
     local found = false
     local result = {}
-    for k, v in pairs(buildinfo[plat .. "_" .. arch .. "_" .. mode]) do
+    local dep_names
+    for k, v in pairs(buildinfo) do
         if not k:startswith("__") then
             if #table.wrap(v) > 0 then
                 result[k] = v
@@ -94,6 +102,15 @@ function main(name, opt)
     end
 
     if found then
+        return buildinfo, result
+    end
+end
+
+-- find conan library
+function _conan_find_library(name, opt)
+    opt = opt or {}
+    local buildinfo, result = _conan_get_buildinfo(name, opt)
+    if result then
         local libfiles = {}
         for _, linkdir in ipairs(result.linkdirs) do
             if not os.isdir(linkdir) then
@@ -127,6 +144,31 @@ function main(name, opt)
             result.version = opt.require_version
         end
         result.libfiles = table.unique(libfiles)
-        return result
+        return result, buildinfo.__dep_names
     end
+end
+
+-- find package using the conan package manager
+--
+-- @param name  the package name
+-- @param opt   the options, e.g. {verbose = true)
+--
+function main(name, opt)
+    local result, dep_names = _conan_find_library(name, opt)
+    if result and dep_names then
+        for _, dep_name in ipairs(dep_names) do
+            local depinfo = _conan_find_library(name, table.join(opt, {dep_name = dep_name}))
+            for k, v in pairs(depinfo) do
+                result[k] = table.join(result[k] or {}, v)
+            end
+        end
+        for k, v in pairs(result) do
+            if k == "links" or k == "syslinks" or k == "frameworks" then
+                result[k] = table.unwrap(table.reverse_unique(v))
+            else
+                result[k] = table.unwrap(table.unique(v))
+            end
+        end
+    end
+    return result
 end
