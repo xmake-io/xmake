@@ -9,7 +9,8 @@
 
 ### Bugs fixed
 
-* [#3755](https://github.com/xmake-io/xmake/pull/3755): fix find_tool from xmake/packages
+* [#3755](https://github.com/xmake-io/xmake/pull/3755): Fix find_tool from xmake/packages
+* [#3787](https://github.com/xmake-io/xmake/issues/3787): Fix packages from conan 2.x
 
 ## v2.7.9
 
@@ -1596,6 +1597,7 @@
 ### Bugs 修复
 
 * [#3755](https://github.com/xmake-io/xmake/pull/3755): 修复 find_tool 从 xmake/packages 中查找程序
+* [#3787](https://github.com/xmake-io/xmake/issues/3787): 修复从 conan 2.x 中使用包
 
 ## v2.7.9
 
