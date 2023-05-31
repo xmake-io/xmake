@@ -43,6 +43,10 @@ rule("utils.bin2c")
             table.insert(argv, "-w")
             table.insert(argv, tostring(linewidth))
         end
+        local nozeroend = target:extraconf("rules", "utils.bin2c", "nozeroend")
+        if nozeroend then
+            table.insert(argv, "--nozeroend")
+        end
         batchcmds:vrunv(os.programfile(), argv, {envs = {XMAKE_SKIP_HISTORY = "y"}})
 
         -- add deps
