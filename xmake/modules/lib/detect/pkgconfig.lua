@@ -149,10 +149,11 @@ function libinfo(name, opt)
     end
 
     -- get cflags
-    local result = nil
-    local cflags = try { function () return os.iorunv(pkgconfig, {"--cflags", name}, {envs = envs}) end }
+    local found
+    local result = {}
+    local cflags = try {function () return os.iorunv(pkgconfig, {"--cflags", name}, {envs = envs}) end,
+                        catch {function (errs) found = false end}}
     if cflags then
-        result = result or {}
         for _, flag in ipairs(os.argv(cflags)) do
             if flag:startswith("-I") and #flag > 2 then
                 local includedir = flag:sub(3)
@@ -171,10 +172,15 @@ function libinfo(name, opt)
         end
     end
 
+    -- libinfo may be empty body, but it's also valid
+    -- @see https://github.com/xmake-io/xmake/issues/3777#issuecomment-1568453316
+    if found == false then
+        return
+    end
+
     -- get libs and ldflags
     local ldflags = try { function () return os.iorunv(pkgconfig, {"--libs", name}, {envs = envs}) end }
     if ldflags then
-        result = result or {}
         for _, flag in ipairs(os.argv(ldflags)) do
             if flag:startswith("-L") and #flag > 2 then
                 local linkdir = flag:sub(3)
@@ -198,7 +204,6 @@ function libinfo(name, opt)
     -- get version
     local version = try { function() return os.iorunv(pkgconfig, {"--modversion", name}, {envs = envs}) end }
     if version then
-        result = result or {}
         result.version = version:trim()
     end
     return result
