@@ -6,6 +6,7 @@
 
 * [#3752](https://github.com/xmake-io/xmake/issues/3752): Improve os.getenvs for windows
 * [#3371](https://github.com/xmake-io/xmake/issues/3371): Improve tools.cmake to support ninja generator for wasm
+* [#3777](https://github.com/xmake-io/xmake/issues/3777): Improve to find package from pkg-config
 
 ### Bugs fixed
 
@@ -1592,7 +1593,8 @@
 ### 改进
 
 * [#3752](https://github.com/xmake-io/xmake/issues/3752): 改进 windows 上 os.getenvs 的获取
-* [#3371](https://github.com/xmake-io/xmake/issues/3371): 噶进 tools.cmake 支持使用 ninja 去构建 wasm 包
+* [#3371](https://github.com/xmake-io/xmake/issues/3371): 改进 tools.cmake 支持使用 ninja 去构建 wasm 包
+* [#3777](https://github.com/xmake-io/xmake/issues/3777): 改进从 pkg-config 中查找包
 
 ### Bugs 修复
 
