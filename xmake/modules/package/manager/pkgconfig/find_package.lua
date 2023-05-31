@@ -50,9 +50,10 @@ function main(name, opt)
         end
     end
 
-    -- get result
+    -- get result, libinfo may be empty body, but it's also valid
+    -- @see https://github.com/xmake-io/xmake/issues/3777#issuecomment-1568453316
     local result = nil
-    if libinfo.links or libinfo.includedirs then
+    if libinfo then
         result             = result or {}
         result.includedirs = libinfo.includedirs
         result.linkdirs    = libinfo.linkdirs
