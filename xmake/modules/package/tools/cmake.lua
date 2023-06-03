@@ -440,7 +440,7 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
     envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
     envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
-    envs.CMAKE_LINKER              = _translate_bin_path(package:build_getenv("ld"))
+    envs.CMAKE_CUSTOM_LINKER       = _translate_bin_path(package:build_getenv("ld"))
     envs.CMAKE_RANLIB              = _translate_bin_path(package:build_getenv("ranlib"))
     envs.CMAKE_RC_COMPILER         = _translate_bin_path(package:build_getenv("mrc"))
     envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
@@ -515,9 +515,10 @@ function _get_configs_for_cross(package, configs, opt)
     --
     -- https://github.com/xmake-io/xmake-repo/pull/1039
     -- https://stackoverflow.com/questions/1867745/cmake-use-a-custom-linker/25274328#25274328
-    envs.CMAKE_LINKER              = _translate_bin_path(package:build_getenv("ld"))
+    -- https://github.com/xmake-io/xmake-repo/pull/2134#issuecomment-1573195810
+    envs.CMAKE_CUSTOM_LINKER       = _translate_bin_path(package:build_getenv("ld"))
     if package:has_tool("ld", "gxx", "clangxx") then
-        envs.CMAKE_CXX_LINK_EXECUTABLE = "<CMAKE_LINKER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
+        envs.CMAKE_CXX_LINK_EXECUTABLE = "<CMAKE_CUSTOM_LINKER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
     end
     envs.CMAKE_RANLIB              = _translate_bin_path(package:build_getenv("ranlib"))
     envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
@@ -579,9 +580,10 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     --
     -- https://github.com/xmake-io/xmake-repo/pull/1039
     -- https://stackoverflow.com/questions/1867745/cmake-use-a-custom-linker/25274328#25274328
-    envs.CMAKE_LINKER              = _translate_bin_path(package:build_getenv("ld"))
+    -- https://github.com/xmake-io/xmake-repo/pull/2134#issuecomment-1573195810
+    envs.CMAKE_CUSTOM_LINKER       = _translate_bin_path(package:build_getenv("ld"))
     if package:has_tool("ld", "gxx", "clangxx") then
-        envs.CMAKE_CXX_LINK_EXECUTABLE = "<CMAKE_LINKER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
+        envs.CMAKE_CXX_LINK_EXECUTABLE = "<CMAKE_CUSTOM_LINKER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
     end
     envs.CMAKE_RANLIB              = _translate_bin_path(package:build_getenv("ranlib"))
     envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
