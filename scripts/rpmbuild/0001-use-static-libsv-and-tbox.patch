@@ -1,0 +1,27 @@
+diff --git a/core/src/xmake/xmake.sh b/core/src/xmake/xmake.sh
+index dc45ecbca..d0e0d0069 100755
+--- a/core/src/xmake/xmake.sh
++++ b/core/src/xmake/xmake.sh
+@@ -6,6 +6,8 @@ target "xmake"
+ 
+     # add deps
+     if has_config "external"; then
++        add_deps "sv"
++        add_deps "tbox"
+         local libs="lz4 sv tbox"
+         for lib in $libs; do
+             if has_config "$lib"; then
+diff --git a/core/xmake.sh b/core/xmake.sh
+index 2ae2e686b..6ea8c1b69 100755
+--- a/core/xmake.sh
++++ b/core/xmake.sh
+@@ -214,6 +214,9 @@ if ! has_config "external"; then
+     includes "src/lz4"
+     includes "src/sv"
+     includes "src/tbox"
++else
++    includes "src/sv"
++    includes "src/tbox"
+ fi
+ includes "src/xmake"
+ includes "src/demo"
