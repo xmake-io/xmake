@@ -30,8 +30,8 @@ BuildRequires:  gcc
 BuildRequires:  gcc-c++
 
 # Virtual provides for bundled libraries
-Provides:  bundled(libsv)
-Provides:  bundled(tbox)
+Provides:  bundled(libsv) = 0.0.1
+Provides:  bundled(libtbox) = 1.7.3
 
 %description
 xmake is a lightweight cross-platform build utility based on Lua.
@@ -74,7 +74,7 @@ install -Dpm0755 build/xmake \
 install -Dpm0755 scripts/xrepo.sh \
         %{buildroot}%{_bindir}/xrepo
 install -Dpm0644 scripts/man/*1 \
-       	%{buildroot}%{_mandir}/man1/
+        %{buildroot}%{_mandir}/man1/
 install -Dpm0644 xmake/scripts/completions/register-completions.bash \
         %{buildroot}%{_datadir}/bash-completion/completions/xmake
 install -Dpm0644 xmake/scripts/completions/register-completions.fish \
