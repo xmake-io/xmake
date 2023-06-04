@@ -100,7 +100,11 @@ cp -rp xmake \
 %{_mandir}/man1/*.1*
 
 %changelog
-%autochangelog
+* Sun Jun 04 2023 Zephyr Lykos <fedora@mochaa.ws> - 2.7.9-1
+- Switch to release tarball
+- Use system provided libs if possible
+- Fix docs & manpage installation
+- Install shell completions
 
 * Sun Oct 18 2020 Ruki Wang <waruqi@gmail.com> - 2.3.8-1
 - v2.3.8 released
