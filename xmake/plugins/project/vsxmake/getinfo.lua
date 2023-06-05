@@ -137,6 +137,11 @@ function _make_targetinfo(mode, arch, target)
     -- save defines
     targetinfo.defines       = _make_arrs(_get_values_from_target(target, "defines"))
 
+    -- save flags
+    targetinfo.cflags        = _make_arrs(_get_values_from_target(target, "cflags"))
+    targetinfo.cxflags       = _make_arrs(_get_values_from_target(target, "cxflags"))
+    targetinfo.cxxflags      = _make_arrs(_get_values_from_target(target, "cxxflags"))
+
     -- save languages
     targetinfo.languages     = _make_arrs(_get_values_from_target(target, "languages"))
     if targetinfo.languages then
