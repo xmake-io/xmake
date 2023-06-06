@@ -412,6 +412,7 @@ function main(archivefile, outputdir, opt)
         ,   [".tar.xz"]     = {_extract_using_7z, _extract_using_xz}
         ,   [".tar.bz2"]    = {_extract_using_7z, _extract_using_bzip2}
         ,   [".tar.lz"]     = {_extract_using_7z}
+        ,   [".tar.Z"]      = {_extract_using_7z}
         }
     else
         extractors =
@@ -428,6 +429,7 @@ function main(archivefile, outputdir, opt)
         ,   [".tar.xz"]     = {_extract_using_tar, _extract_using_7z, _extract_using_xz}
         ,   [".tar.bz2"]    = {_extract_using_tar, _extract_using_7z, _extract_using_bzip2}
         ,   [".tar.lz"]     = {_extract_using_tar, _extract_using_7z}
+        ,   [".tar.Z"]      = {_extract_using_tar, _extract_using_7z}
         }
     end
 
