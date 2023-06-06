@@ -36,6 +36,156 @@ function _get_config_from_toolchains(package, name)
     end
 end
 
+-- is the toolchain compatible with the host?
+function _is_toolchain_compatible_with_host(package)
+    local toolchains = package:config("toolchains")
+    if toolchains then
+        toolchains = table.wrap(toolchains)
+        if is_host("linux", "macosx", "bsd") then
+            for _, name in ipairs(toolchains) do
+                if name:startswith("clang") or name:startswith("gcc") then
+                    return true
+                end
+            end
+        elseif is_host("windows") and table.contains(toolchains, "msvc") then
+            return true
+        end
+    end
+end
+
+-- get configs for qt
+function _get_configs_for_qt(package, configs, opt)
+    local names = {"qt", "qt_sdkver"}
+    for _, name in ipairs(names) do
+        local value = get_config(name)
+        if value ~= nil then
+            table.insert(configs, "--" .. name .. "=" .. tostring(value))
+        end
+    end
+end
+
+-- get configs for vcpkg
+function _get_configs_for_vcpkg(package, configs, opt)
+    local names = {"vcpkg"}
+    for _, name in ipairs(names) do
+        local value = get_config(name)
+        if value ~= nil then
+            table.insert(configs, "--" .. name .. "=" .. tostring(value))
+        end
+    end
+end
+
+-- get configs for windows
+function _get_configs_for_windows(package, configs, opt)
+    local names = {"vs", "vs_toolset", "vs_runtime"}
+    for _, name in ipairs(names) do
+        local value = get_config(name)
+        if value ~= nil then
+            table.insert(configs, "--" .. name .. "=" .. tostring(value))
+        end
+    end
+    _get_configs_for_qt(package, configs, opt)
+    _get_configs_for_vcpkg(package, configs, opt)
+end
+
+-- get configs for appleos
+function _get_configs_for_appleos(package, configs, opt)
+    local appledev = package:config("appledev")
+    if appledev then
+        table.insert(configs, "--appledev=" .. appledev)
+    end
+    local target_minver = get_config("target_minver")
+    if target_minver then
+        table.insert(configs, "--target_minver=" .. target_minver)
+    end
+    _get_configs_for_qt(package, configs, opt)
+    _get_configs_for_vcpkg(package, configs, opt)
+end
+
+-- get configs for android
+function _get_configs_for_android(package, configs, opt)
+    local names = {"ndk", "ndk_sdkver", "ndk_stdcxx", "ndk_cxxstl"}
+    for _, name in ipairs(names) do
+        local value = get_config(name)
+        if value ~= nil then
+            table.insert(configs, "--" .. name .. "=" .. tostring(value))
+        end
+    end
+    _get_configs_for_qt(package, configs, opt)
+    _get_configs_for_vcpkg(package, configs, opt)
+end
+
+-- get configs for mingw
+function _get_configs_for_mingw(package, configs, opt)
+    local names = {"mingw", "sdk", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
+    for _, name in ipairs(names) do
+        local value = get_config(name)
+        if value ~= nil then
+            table.insert(configs, "--" .. name .. "=" .. tostring(value))
+        end
+    end
+    _get_configs_for_qt(package, configs, opt)
+    _get_configs_for_vcpkg(package, configs, opt)
+end
+
+-- get configs for generic, e.g. linux, macosx, bsd host platforms
+function _get_configs_for_generic(package, configs, opt)
+    local names = {"ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
+    for _, name in ipairs(names) do
+        local value = get_config(name)
+        if value ~= nil then
+            table.insert(configs, "--" .. name .. "=" .. tostring(value))
+        end
+    end
+    _get_configs_for_qt(package, configs, opt)
+    _get_configs_for_vcpkg(package, configs, opt)
+end
+
+-- get configs for host toolchain
+function _get_configs_for_host_toolchain(package, configs, opt)
+    local bindir = _get_config_from_toolchains(package, "bindir") or get_config("bin")
+    if bindir then
+        table.insert(configs, "--bin=" .. bindir)
+    end
+    local sdkdir = _get_config_from_toolchains(package, "sdkdir") or get_config("sdk")
+    if sdkdir then
+        table.insert(configs, "--sdk=" .. sdkdir)
+    end
+    local toolchain_name = get_config("toolchain")
+    if toolchain_name then
+        table.insert(configs, "--toolchain=" .. toolchain_name)
+    end
+    _get_configs_for_qt(package, configs, opt)
+    _get_configs_for_vcpkg(package, configs, opt)
+end
+
+-- get configs for cross
+function _get_configs_for_cross(package, configs, opt)
+    local cross = _get_config_from_toolchains(package, "cross") or get_config("cross")
+    if cross then
+        table.insert(configs, "--cross=" .. cross)
+    end
+    local bindir = _get_config_from_toolchains(package, "bindir") or get_config("bin")
+    if bindir then
+        table.insert(configs, "--bin=" .. bindir)
+    end
+    local sdkdir = _get_config_from_toolchains(package, "sdkdir") or get_config("sdk")
+    if sdkdir then
+        table.insert(configs, "--sdk=" .. sdkdir)
+    end
+    local toolchain_name = get_config("toolchain")
+    if toolchain_name then
+        table.insert(configs, "--toolchain=" .. toolchain_name)
+    end
+    local names = {"ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
+    for _, name in ipairs(names) do
+        local value = get_config(name)
+        if value ~= nil then
+            table.insert(configs, "--" .. name .. "=" .. tostring(value))
+        end
+    end
+end
+
 -- get configs
 function _get_configs(package, configs, opt)
     opt = opt or {}
@@ -54,61 +204,27 @@ function _get_configs(package, configs, opt)
         table.insert(configs, "--kind=" .. (package:config("shared") and "shared" or "static"))
     end
     if package:is_plat("windows") then
-        local vs_runtime = package:config("vs_runtime")
-        if vs_runtime then
-            table.insert(configs, "--vs_runtime=" .. vs_runtime)
-        end
-    elseif package:is_plat("iphoneos", "watchos", "appletvos") then
-        local appledev = package:config("appledev")
-        if appledev then
-            table.insert(configs, "--appledev=" .. appledev)
-        end
-        local target_minver = get_config("target_minver")
-        if target_minver then
-            table.insert(configs, "--target_minver=" .. target_minver)
-        end
-    elseif package:is_plat("cross") then
-        local cross = _get_config_from_toolchains(package, "cross") or get_config("cross")
-        if cross then
-            table.insert(configs, "--cross=" .. cross)
-        end
-        local bindir = _get_config_from_toolchains(package, "bindir") or get_config("bin")
-        if bindir then
-            table.insert(configs, "--bin=" .. bindir)
-        end
-        local sdkdir = _get_config_from_toolchains(package, "sdkdir") or get_config("sdk")
-        if sdkdir then
-            table.insert(configs, "--sdk=" .. sdkdir)
-        end
-        -- we can only modify toolchain for cross-compilation
-        --
-        -- e.g. xrepo install -p cross --toolchain=muslcc meson,
-        -- we cannot pass muslcc toolchain to it's deps(zlib, ..), because meson is always host binary and zlib is host library.
-        local toolchain_name = get_config("toolchain")
-        if toolchain_name then
-            table.insert(configs, "--toolchain=" .. toolchain_name)
-        end
-        local names = {"ld", "sh", "ar", "cc", "cxx"}
-        for _, name in ipairs(names) do
-            local value = get_config(name)
-            if value ~= nil then
-                table.insert(configs, "--" .. name .. "=" .. tostring(value))
-            end
+        _get_configs_for_windows(package, configs, opt)
+    elseif package:is_plat("android") then
+        _get_configs_for_android(package, configs, opt)
+    elseif package:is_plat("iphoneos", "watchos", "appletvos") or
+        -- for cross-compilation on macOS, @see https://github.com/xmake-io/xmake/issues/2804
+        (package:is_plat("macosx") and not package:is_arch(os.subarch())) then
+        _get_configs_for_appleos(package, configs, opt)
+    elseif package:is_plat("mingw") then
+        _get_configs_for_mingw(package, configs, opt)
+    elseif package:is_cross() then
+        _get_configs_for_cross(package, configs, opt)
+    elseif package:config("toolchains") then
+        -- we still need find system libraries,
+        -- it just pass toolchain environments if the toolchain is compatible with host
+        if _is_toolchain_compatible_with_host(package) then
+            _get_configs_for_host_toolchain(package, configs, opt)
+        else
+            _get_configs_for_cross(package, configs, opt)
         end
     else
-        local names = {"ndk", "ndk_sdkver", "vs", "vs_toolset", "mingw", "qt", "vcpkg", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
-        -- We only set the sdk directory when doing cross-compilation,
-        -- otherwise the host dependency package may also use the cross-compilation toolchain in sdk incorrectly.
-        -- e.g. build host python -> host zlib -> xmake f --plat=linux --arch=x86_64 --sdk=/tmp/aarch64-linux-musl-cross -> incorrect cross compilation
-        if package:is_cross() then
-            table.insert(names, "sdk")
-        end
-        for _, name in ipairs(names) do
-            local value = get_config(name)
-            if value ~= nil then
-                table.insert(configs, "--" .. name .. "=" .. tostring(value))
-            end
-        end
+        _get_configs_for_generic(package, configs, opt)
     end
 
     local policies = get_config("policies")

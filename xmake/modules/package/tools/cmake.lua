@@ -73,17 +73,6 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
--- is cross compilation?
-function _is_cross_compilation(package)
-    if not package:is_plat(os.subhost()) then
-        return true
-    end
-    if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
-        return true
-    end
-    return false
-end
-
 -- is the toolchain compatible with the host?
 function _is_toolchain_compatible_with_host(package)
     local toolchains = package:config("toolchains")
@@ -698,7 +687,7 @@ function _get_configs(package, configs, opt)
         _get_configs_for_mingw(package, configs, opt)
     elseif package:is_plat("wasm") then
         _get_configs_for_wasm(package, configs, opt)
-    elseif _is_cross_compilation(package) then
+    elseif package:is_cross() then
         _get_configs_for_cross(package, configs, opt)
     elseif package:config("toolchains") then
         -- we still need find system libraries,
