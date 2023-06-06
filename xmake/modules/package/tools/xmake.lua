@@ -25,6 +25,7 @@ import("core.tool.toolchain")
 import("core.project.project")
 import("core.package.repository")
 import("private.action.require.impl.package", {alias = "require_package"})
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- get config from toolchains
 function _get_config_from_toolchains(package, name)
@@ -38,16 +39,8 @@ end
 
 -- is the toolchain compatible with the host?
 function _is_toolchain_compatible_with_host(package)
-    local toolchains = package:config("toolchains")
-    if toolchains then
-        toolchains = table.wrap(toolchains)
-        if is_host("linux", "macosx", "bsd") then
-            for _, name in ipairs(toolchains) do
-                if name:startswith("clang") or name:startswith("gcc") then
-                    return true
-                end
-            end
-        elseif is_host("windows") and table.contains(toolchains, "msvc") then
+    for _, name in ipairs(package:config("toolchains")) do
+        if toolchain_utils.is_compatible_with_host(name) then
             return true
         end
     end

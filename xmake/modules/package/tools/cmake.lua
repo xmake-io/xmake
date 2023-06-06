@@ -28,6 +28,7 @@ import("lib.detect.find_file")
 import("lib.detect.find_tool")
 import("package.tools.ninja")
 import("detect.sdks.find_emsdk")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- get the number of parallel jobs
 function _get_parallel_njobs(opt)
@@ -75,16 +76,8 @@ end
 
 -- is the toolchain compatible with the host?
 function _is_toolchain_compatible_with_host(package)
-    local toolchains = package:config("toolchains")
-    if toolchains then
-        toolchains = table.wrap(toolchains)
-        if is_host("linux", "macosx", "bsd") then
-            for _, name in ipairs(toolchains) do
-                if name:startswith("clang") or name:startswith("gcc") then
-                    return true
-                end
-            end
-        elseif is_host("windows") and table.contains(toolchains, "msvc") then
+    for _, name in ipairs(package:config("toolchains")) do
+        if toolchain_utils.is_compatible_with_host(name) then
             return true
         end
     end
