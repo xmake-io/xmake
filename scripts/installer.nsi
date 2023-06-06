@@ -286,15 +286,9 @@ Section "XMake (required)" InstallExeutable
 SectionEnd
 
 Section "Enable Long Path" LongPath
-  ; Get git path from the registry
-  ReadRegStr $R0 ${HKLM} "SOFTWARE\GitForWindows" "InstallPath"
   ${If} $NOADMIN == "false"
-    ; In admin enable long path on both git system config and in registry
+    ; Enable long path
     WriteRegDWORD ${HKLM} "SYSTEM\CurrentControlSet\Control\FileSystem" "LongPathsEnabled" 1
-    Exec '"$R0\cmd\git.exe" config --system core.longpaths true'
-  ${Else}
-    ; Enable only in git global config
-    Exec '"$R0\cmd\git.exe" config --global core.longpaths true'
   ${EndIf}
 SectionEnd
 
