@@ -86,6 +86,11 @@ function _get_configs_for_windows(package, configs, opt)
     end
     _get_configs_for_qt(package, configs, opt)
     _get_configs_for_vcpkg(package, configs, opt)
+
+    -- we can switch some toolchains, e.g. llvm/clang
+    if package:config("toolchains") and _is_toolchain_compatible_with_host(package) then
+        _get_configs_for_host_toolchain(package, configs, opt)
+    end
 end
 
 -- get configs for appleos
