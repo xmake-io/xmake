@@ -285,6 +285,19 @@ Section "XMake (required)" InstallExeutable
 
 SectionEnd
 
+Section "Enable Long Path" LongPath
+  ; Get git path from the registry
+  ReadRegStr $R0 ${HKLM} "SOFTWARE\GitForWindows" "InstallPath"
+  ${If} $NOADMIN == "false"
+    ; In admin enable long path on both git system config and in registry
+    WriteRegDWORD ${HKLM} "SYSTEM\CurrentControlSet\Control\FileSystem" "LongPathsEnabled" 1
+    Exec '"$R0\cmd\git.exe" config --system core.longpaths true'
+  ${Else}
+    ; Enable only in git global config
+    Exec '"$R0\cmd\git.exe" config --global core.longpaths true'
+  ${EndIf}
+SectionEnd
+
 Section "Add to PATH" InstallPath
 
   ${If} $NOADMIN == "false"
@@ -314,11 +327,13 @@ SectionEnd
 ; Language strings
 LangString DESC_InstallExeutable ${LANG_ENGLISH} "A cross-platform build utility based on Lua"
 LangString DESC_InstallPath ${LANG_ENGLISH} "Add xmake to PATH"
+LangString DESC_LongPath ${LANG_ENGLISH} "Enable long path on both Windows and Git"
 
 ; Assign language strings to sections
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 !insertmacro MUI_DESCRIPTION_TEXT ${InstallExeutable} $(DESC_InstallExeutable)
 !insertmacro MUI_DESCRIPTION_TEXT ${InstallPath} $(DESC_InstallPath)
+!insertmacro MUI_DESCRIPTION_TEXT ${LongPath} $(DESC_LongPath)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------------
