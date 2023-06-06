@@ -25,6 +25,7 @@ import("core.tool.toolchain")
 import("core.platform.platform")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- get build directory
 function _get_buildir()
@@ -98,17 +99,6 @@ function _is_cross_compilation()
         return true
     end
     return false
-end
-
--- is the toolchain compatible with the host?
-function _is_toolchain_compatible_with_host(name)
-    if is_host("linux", "macosx", "bsd") then
-        if name:startswith("clang") or name:startswith("gcc") then
-            return true
-        end
-    elseif is_host("windows") and name == "msvc" then
-        return true
-    end
 end
 
 -- get configs for windows
@@ -403,7 +393,7 @@ function _get_configs(opt)
     elseif config.get("toolchain") then
         -- we still need find system libraries,
         -- it just pass toolchain environments if the toolchain is compatible with host
-        if _is_toolchain_compatible_with_host(config.get("toolchain")) then
+        if toolchain_utils.is_compatible_with_host(config.get("toolchain")) then
             _get_configs_for_host_toolchain(configs)
         else
             _get_configs_for_cross(configs)
