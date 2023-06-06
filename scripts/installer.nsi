@@ -321,7 +321,7 @@ SectionEnd
 ; Language strings
 LangString DESC_InstallExeutable ${LANG_ENGLISH} "A cross-platform build utility based on Lua"
 LangString DESC_InstallPath ${LANG_ENGLISH} "Add xmake to PATH"
-LangString DESC_LongPath ${LANG_ENGLISH} "Enable long path on both Windows and Git"
+LangString DESC_LongPath ${LANG_ENGLISH} "Increases the maximum path length limit, up to 32,767 characters (before 256). This can be useful if a project has many recursive subfolders to make sure that the project is compiled without errors. A reboot might be required because some processes may have started before the new value was set"
 
 ; Assign language strings to sections
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
