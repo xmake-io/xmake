@@ -108,7 +108,7 @@ function make(package, argv, opt)
         end
     end
     assert(program, "make not found!")
-    os.vrunv(program, argv, {envs = runenvs, curdir = opt.curdir})
+    os.vrunv(program, argv or {}, {envs = runenvs, curdir = opt.curdir})
 end
 
 -- build package
