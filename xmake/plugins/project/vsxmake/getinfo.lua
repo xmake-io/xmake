@@ -73,7 +73,7 @@ function _make_dirs(dir)
     return path.joinenv(r)
 end
 
-function _make_arrs(arr)
+function _make_arrs(arr, sep)
     if arr == nil then
         return ""
     end
@@ -82,10 +82,10 @@ function _make_arrs(arr)
     end
     local r = {}
     for k, v in ipairs(arr) do
-        r[k] = _make_arrs(v)
+        r[k] = _make_arrs(v, sep)
     end
     r = table.unique(r)
-    return table.concat(r, ";")
+    return table.concat(r, sep or ";")
 end
 
 -- get values from target
@@ -138,9 +138,9 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.defines       = _make_arrs(_get_values_from_target(target, "defines"))
 
     -- save flags
-    targetinfo.cflags        = _make_arrs(_get_values_from_target(target, "cflags"))
-    targetinfo.cxflags       = _make_arrs(_get_values_from_target(target, "cxflags"))
-    targetinfo.cxxflags      = _make_arrs(_get_values_from_target(target, "cxxflags"))
+    targetinfo.cflags        = _make_arrs(_get_values_from_target(target, "cflags"), " ")
+    targetinfo.cxflags       = _make_arrs(_get_values_from_target(target, "cxflags"), " ")
+    targetinfo.cxxflags      = _make_arrs(_get_values_from_target(target, "cxxflags"), " ")
 
     -- save languages
     targetinfo.languages     = _make_arrs(_get_values_from_target(target, "languages"))
