@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#3821](https://github.com/xmake-io/xmake/pull/3821): Add longpath option for windows installer
+
 ### Changes
 
 * [#3752](https://github.com/xmake-io/xmake/issues/3752): Improve os.getenvs for windows
@@ -1590,6 +1594,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#3821](https://github.com/xmake-io/xmake/pull/3821): windows 安装器添加长路径支持选项
 
 ### 改进
 
