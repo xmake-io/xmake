@@ -19,4 +19,7 @@
     <XmakeLinkDirs>#linkdirs#</XmakeLinkDirs>
     <XmakeSourceDirs>#sourcedirs#</XmakeSourceDirs>
     <XmakePrecompiledHeader>#pcheaderfile#</XmakePrecompiledHeader>
+    <XmakeCFlags>#cflags#</XmakeCFlags>
+    <XmakeCXFlags>#cxflags#</XmakeCXFlags>
+    <XmakeCXXFlags>#cxxflags#</XmakeCXXFlags>
   </PropertyGroup>
