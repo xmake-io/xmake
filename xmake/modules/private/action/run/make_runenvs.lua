@@ -38,7 +38,7 @@ function _make_runpath_on_windows(target)
     -- recursively add targets and dep targets linkdirs
     local seentargets = hashset.new()
     local function insert_target(target)
-        if seentargets:insert(target)
+        if seentargets:insert(target) then
             for _, linkdir in ipairs(target:get("linkdirs")) do
                 insert(linkdir)
             end
