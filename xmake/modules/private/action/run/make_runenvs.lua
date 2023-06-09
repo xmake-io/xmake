@@ -35,25 +35,29 @@ function _make_runpath_on_windows(target)
         end
     end
 
+    -- recursively add targets and dep targets linkdirs
+    local seentargets = hashset.new()
     local function insert_target(target)
-        for _, linkdir in ipairs(target:get("linkdirs")) do
-            insert(linkdir)
-        end
-        for _, opt in ipairs(target:orderopts()) do
-            for _, linkdir in ipairs(opt:get("linkdirs")) do
+        if seentargets:insert(target)
+            for _, linkdir in ipairs(target:get("linkdirs")) do
                 insert(linkdir)
             end
-        end
-        for _, pkg in ipairs(target:orderpkgs()) do
-            for _, linkdir in ipairs(pkg:get("linkdirs")) do
-                insert(linkdir)
+            for _, opt in ipairs(target:orderopts()) do
+                for _, linkdir in ipairs(opt:get("linkdirs")) do
+                    insert(linkdir)
+                end
             end
-        end
-        for _, dep in ipairs(target:orderdeps()) do
-            if dep:kind() == "shared" then
-                insert(dep:targetdir())
+            for _, pkg in ipairs(target:orderpkgs()) do
+                for _, linkdir in ipairs(pkg:get("linkdirs")) do
+                    insert(linkdir)
+                end
             end
-            insert_target(dep)
+            for _, dep in ipairs(target:orderdeps()) do
+                if dep:kind() == "shared" then
+                    insert(dep:targetdir())
+                end
+                insert_target(dep)
+            end
         end
     end
 
