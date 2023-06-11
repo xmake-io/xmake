@@ -34,6 +34,9 @@ function main(name, opt)
 
     -- init options
     opt = opt or {}
+    if opt.require_version and opt.require_version ~= "latest" then
+        name = name .. '-' .. opt.require_version:gsub('%.', '_')
+    end
 
     -- find apt
     local zypper = find_tool("zypper")

@@ -326,7 +326,7 @@ Xmake can automatically fetch and install dependencies!
 * Portage on Gentoo/Linux (portage::libhandy)
 * Nimble for nimlang (nimble::zip >1.3)
 * Cargo for rust (cargo::base64 0.13.0)
-* Zypper on openSUSE (zypper::libsfml2-2_5)
+* Zypper on openSUSE (zypper::libsfml2 2.5)
 
 ### Package management features
 

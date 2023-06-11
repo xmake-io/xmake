@@ -27,6 +27,9 @@ import("package.manager.pkgconfig.find_package", { alias = "find_package_from_pk
 
 -- find package
 function _find_package(rpm, zypper, name, opt)
+    if opt.require_version and opt.require_version ~= "latest" then
+        name = name .. '-' .. opt.require_version:gsub('%.', '_')
+    end
     local result = nil
     local pkgconfig_files = {}
     local listinfo = try { function()
