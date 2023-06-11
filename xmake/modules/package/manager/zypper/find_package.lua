@@ -88,7 +88,7 @@ function _find_package(rpm, name, opt)
             foundpc = true
         end
     end
-    if foundpc == true then
+    if foundpc then
         pcresult.includedirs = table.unique(pcresult.includedirs)
         pcresult.linkdirs = table.unique(pcresult.linkdirs)
         pcresult.links = table.reverse_unique(pcresult.links)
@@ -136,19 +136,13 @@ end
 -- @param opt   the options, e.g. {verbose = true, version = "1.12.0")
 --
 function main(name, opt)
-
-    -- check
     opt = opt or {}
     if not is_host(opt.plat) or os.arch() ~= opt.arch then
         return
     end
-
-    -- find rpm
     local rpm = find_tool("rpm")
     if not rpm then
         return
     end
-
-    -- find package
     return _find_package(rpm, name, opt)
 end
