@@ -5,6 +5,7 @@
 ### New features
 
 * [#3821](https://github.com/xmake-io/xmake/pull/3821): Add longpath option for windows installer
+* [#3828](https://github.com/xmake-io/xmake/pull/3828): Add support for zypper package manager
 
 ### Changes
 
@@ -1598,6 +1599,7 @@
 ### 新特性
 
 * [#3821](https://github.com/xmake-io/xmake/pull/3821): windows 安装器添加长路径支持选项
+* [#3828](https://github.com/xmake-io/xmake/pull/3828): 添加 zypper 包管理器支持
 
 ### 改进
 
