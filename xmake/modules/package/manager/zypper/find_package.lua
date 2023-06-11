@@ -26,7 +26,7 @@ import("lib.detect.find_tool")
 import("package.manager.pkgconfig.find_package", { alias = "find_package_from_pkgconfig" })
 
 -- find package
-function _find_package(rpm, zypper, name, opt)
+function _find_package(rpm, name, opt)
     if opt.require_version and opt.require_version ~= "latest" then
         name = name .. '-' .. opt.require_version:gsub('%.', '_')
     end
@@ -99,17 +99,17 @@ function _find_package(rpm, zypper, name, opt)
     -- @see https://github.com/xmake-io/xmake/issues/1786
     if not result then
         local statusinfo = try { function()
-            return os.iorunv(zypper.program, { "info", "--requires", name })
+            return os.iorunv(rpm.program, { "-qR", name })
         end }
         if statusinfo then
             for _, line in ipairs(statusinfo:split("\n", { plain = true })) do
                 -- parse depends, e.g. Depends: libboost1.74-dev
-                if line:startswith("Requires") then
-                    local depends = line:split("^Requires%s+:%s+")
-                    if #depends == 1 then
-                        return _find_package(rpm, zypper, depends[1], opt)
+                if not line:startswith("rpmlib(") then
+                    local depends = line
+                    result = _find_package(rpm, depends, opt)
+                    if result then
+                        return result
                     end
-                    break
                 end
             end
         end
@@ -143,13 +143,12 @@ function main(name, opt)
         return
     end
 
-    -- find rpm and zypper
+    -- find rpm
     local rpm = find_tool("rpm")
-    local zypper = find_tool("zypper")
-    if not (rpm and zypper) then
+    if not rpm then
         return
     end
 
     -- find package
-    return _find_package(rpm, zypper, name, opt)
+    return _find_package(rpm, name, opt)
 end
