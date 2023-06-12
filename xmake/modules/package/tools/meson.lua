@@ -251,9 +251,9 @@ function _get_cross_file(package, opt)
             file:print("cpu_family = 'wasm32'")
             file:print("cpu = 'wasm32'")
             file:print("endian = 'little'")
-        elseif package:is_plat("cross") and package:targetos() then
+        else
             local cpu = package:arch()
-            if package:is_arch("arm64") then
+            if package:is_arch("arm64") or package:is_arch("aarch64") then
                 cpu = "aarch64"
             elseif package:is_arch("arm.*") then
                 cpu = "arm"
