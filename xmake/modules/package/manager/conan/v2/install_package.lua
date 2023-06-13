@@ -178,8 +178,10 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         local vs = assert(config.get("vs"), "vs not found!")
         profile:print("compiler=msvc")
         profile:print("compiler.version=" .. assert(vsvers[vs], "unknown msvc version!"))
-        if configs.vs_runtime then
-            profile:print("compiler.runtime=" .. configs.vs_runtime)
+        local vs_runtime = configs.vs_runtime
+        if vs_runtime then
+            profile:print("compiler.runtime=" .. (vs_runtime:startswith("MD") and "dynamic" or "static"))
+            profile:print("compiler.runtime_type=" .. (vs_runtime:endswith("d") and "Debug" or "Release"))
         end
     elseif plat == "iphoneos" then
         local target_minver = nil
