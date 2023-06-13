@@ -18,6 +18,7 @@
 
 * [#3755](https://github.com/xmake-io/xmake/pull/3755): Fix find_tool from xmake/packages
 * [#3787](https://github.com/xmake-io/xmake/issues/3787): Fix packages from conan 2.x
+* [#3839](https://github.com/orgs/xmake-io/discussions/3839): Fix vs_runtime for conan 2.x
 
 ## v2.7.9
 
@@ -1612,6 +1613,7 @@
 
 * [#3755](https://github.com/xmake-io/xmake/pull/3755): 修复 find_tool 从 xmake/packages 中查找程序
 * [#3787](https://github.com/xmake-io/xmake/issues/3787): 修复从 conan 2.x 中使用包
+* [#3839](https://github.com/orgs/xmake-io/discussions/3839): 修复 conan 2.x 包的 vs_runtime 设置
 
 ## v2.7.9
 
