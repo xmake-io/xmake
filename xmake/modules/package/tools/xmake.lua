@@ -70,12 +70,17 @@ end
 
 -- get configs for windows
 function _get_configs_for_windows(package, configs, opt)
-    local names = {"vs", "vs_toolset", "vs_runtime"}
+    local names = {"vs", "vs_toolset"}
     for _, name in ipairs(names) do
         local value = get_config(name)
         if value ~= nil then
             table.insert(configs, "--" .. name .. "=" .. tostring(value))
         end
+    end
+    -- pass vs_runtime from package configs
+    local vs_runtime = package:config("vs_runtime")
+    if vs_runtime then
+        table.insert(configs, "--vs_runtime=" .. vs_runtime)
     end
     _get_configs_for_qt(package, configs, opt)
     _get_configs_for_vcpkg(package, configs, opt)
