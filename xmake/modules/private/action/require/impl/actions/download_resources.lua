@@ -100,7 +100,7 @@ function _download(package, resource_name, resource_url, resource_hash)
 
     -- the package file have been downloaded?
     local cached = true
-    if option.get("force") or not os.isfile(resource_file) or resource_hash ~= hash.sha256(resource_file) then
+    if not os.isfile(resource_file) or resource_hash ~= hash.sha256(resource_file) then
 
         -- no cached
         cached = false

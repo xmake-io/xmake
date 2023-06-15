@@ -64,7 +64,7 @@ function _patch(package, patch_url, patch_hash)
 
     -- the package file have been downloaded?
     local cached = true
-    if option.get("force") or not os.isfile(patch_file) or not _check_sha256(patch_hash, patch_file) then
+    if not os.isfile(patch_file) or not _check_sha256(patch_hash, patch_file) then
 
         -- no cached
         cached = false
