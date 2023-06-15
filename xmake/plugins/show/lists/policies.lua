@@ -14,8 +14,8 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      ruki
--- @file        envs.lua
+-- @author      A2va
+-- @file        policies.lua
 --
 
 -- imports
