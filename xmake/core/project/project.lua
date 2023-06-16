@@ -93,7 +93,7 @@ function project._api_is_kind(interp, ...)
     if not kind then return false end
 
     -- exists this kind?
-    for _, k in ipairs(table.join(...)) do
+    for _, k in ipairs(table.pack(...)) do
         if k and type(k) == "string" and k == kind then
             return true
         end
@@ -115,7 +115,7 @@ function project._api_has_package(interp, ...)
     -- only for loading targets
     local requires = project._memcache():get("requires")
     if requires then
-        for _, name in ipairs(table.join(...)) do
+        for _, name in ipairs(table.pack(...)) do
             local pkg = requires[name]
             if pkg and pkg:enabled() then
                 return true

@@ -593,7 +593,7 @@ end
 -- the current target is belong to the given platforms?
 function _instance:is_plat(...)
     local plat = self:plat()
-    for _, v in ipairs(table.join(...)) do
+    for _, v in ipairs(table.pack(...)) do
         if v and plat == v then
             return true
         end
@@ -603,7 +603,7 @@ end
 -- the current target is belong to the given architectures?
 function _instance:is_arch(...)
     local arch = self:arch()
-    for _, v in ipairs(table.join(...)) do
+    for _, v in ipairs(table.pack(...)) do
         if v and arch:find("^" .. v:gsub("%-", "%%-") .. "$") then
             return true
         end
@@ -2234,6 +2234,20 @@ function _instance:toolconfig(name)
     end})
 end
 
+-- has source files with the given source kind?
+function _instance:has_sourcekind(...)
+    local sourcekinds_set = self._SOURCEKINDS_SET
+    if sourcekinds_set == nil then
+        sourcekinds_set = hashset.from(self:sourcekinds())
+        self._SOURCEKINDS_SET = sourcekinds_set
+    end
+    for _, v in ipairs(table.pack(...)) do
+        if sourcekinds_set:has(v) then
+            return true
+        end
+    end
+end
+
 -- has the given tool for the current target?
 --
 -- e.g.
@@ -2244,7 +2258,7 @@ end
 function _instance:has_tool(toolkind, ...)
     local _, toolname = self:tool(toolkind)
     if toolname then
-        for _, v in ipairs(table.join(...)) do
+        for _, v in ipairs(table.pack(...)) do
             if v and toolname:find("^" .. v:gsub("%-", "%%-") .. "$") then
                 return true
             end

@@ -212,7 +212,7 @@ end
 -- the current platform is belong to the given platforms?
 function _instance:is_plat(...)
     local plat = self:plat()
-    for _, v in ipairs(table.join(...)) do
+    for _, v in ipairs(table.pack(...)) do
         if v and plat == v then
             return true
         end
@@ -222,7 +222,7 @@ end
 -- the current architecture is belong to the given architectures?
 function _instance:is_arch(...)
     local arch = self:arch()
-    for _, v in ipairs(table.join(...)) do
+    for _, v in ipairs(table.pack(...)) do
         if v and arch:find("^" .. v:gsub("%-", "%%-") .. "$") then
             return true
         end
@@ -247,7 +247,7 @@ end
 -- the current architecture is belong to the given target architectures?
 function _instance:is_targetarch(...)
     local targetarch = self:targetarch()
-    for _, v in ipairs(table.join(...)) do
+    for _, v in ipairs(table.pack(...)) do
         if v and targetarch:find("^" .. v:gsub("%-", "%%-") .. "$") then
             return true
         end
