@@ -265,7 +265,7 @@ function config.is_value(name, ...)
     if not value then return false end
 
     -- exists this value? and escape '-'
-    for _, v in ipairs(table.join(...)) do
+    for _, v in ipairs(table.pack(...)) do
         if v and type(v) == "string" and value:find("^" .. v:gsub("%-", "%%-") .. "$") then
             return true
         end
@@ -274,7 +274,7 @@ end
 
 -- has the given configs?
 function config.has(...)
-    for _, name in ipairs(table.join(...)) do
+    for _, name in ipairs(table.pack(...)) do
         if name and type(name) == "string" and config.get(name) then
             return true
         end
