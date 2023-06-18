@@ -26,6 +26,8 @@ import("core.project.project")
 import("core.language.language")
 import("private.utils.batchcmds")
 import("private.utils.executable_path")
+import("private.utils.rule_groups")
+import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
 
 -- escape path
 function _escape_path(p)
@@ -165,101 +167,56 @@ function _make_arguments(jsonfile, arguments, sourcefile)
     map[key] = true
 end
 
--- make commands for target
-function _make_commands_for_targetrules(jsonfile, target, suffix)
-    for _, ruleinst in ipairs(target:orderules()) do
-        local scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
-        local script = ruleinst:script(scriptname)
-        if script then
-            local batchcmds_ = batchcmds.new({target = target})
-            script(target, batchcmds_, {})
-            if not batchcmds_:empty() then
-                for _, cmd in ipairs(batchcmds_:cmds()) do
-                    if cmd.program then
-                        _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
-                    end
-                end
+-- add target custom commands
+function _add_target_custom_commands(jsonfile, target, suffix, cmds)
+    for _, cmd in ipairs(cmds) do
+        if cmd.program then
+            _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
+        end
+    end
+end
+
+-- add target source commands
+function _add_target_source_commands(jsonfile, target)
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        local sourcekind = sourcebatch.sourcekind
+        if sourcekind and _sourcebatch_is_built(sourcebatch) then
+            for index, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local objectfile = sourcebatch.objectfiles[index]
+                local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
+                _make_arguments(jsonfile, arguments, sourcefile)
             end
         end
     end
 end
 
--- make commands for object rules
-function _make_commands_for_objectrules(jsonfile, target, sourcebatch, suffix)
+-- add target commands
+function _add_target_commands(jsonfile, target)
 
-    -- we ignore all built sourcebatches
-    if _sourcebatch_is_built(sourcebatch) then
-        return
-    end
+    -- build sourcebatch groups first
+    local sourcegroups = rule_groups.build_sourcebatch_groups(target, target:sourcebatches())
 
-    -- get rule
-    local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
-    local ruleinst = assert(target:rule(rulename) or project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+    -- add before commands
+    -- we use irpairs(groups), because the last group that should be given the highest priority.
+    local cmds_before = {}
+    target_cmds.get_target_buildcmd(target, cmds_before, "before")
+    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups, "before")
+    -- rule.on_buildcmd_files should also be executed before building the target, as cmake PRE_BUILD does not work.
+    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups)
+    _add_target_custom_commands(jsonfile, target, "before", cmds_before)
 
-    -- generate commands for xx_buildcmd_files
-    local scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
-    local script = ruleinst:script(scriptname)
-    if script then
-        local batchcmds_ = batchcmds.new({target = target})
-        script(target, batchcmds_, sourcebatch, {})
-        if not batchcmds_:empty() then
-            for _, cmd in ipairs(batchcmds_:cmds()) do
-                if cmd.program then
-                    _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
-                end
-            end
-        end
-    end
+    -- add target source commands
+    _add_target_source_commands(jsonfile, target)
 
-    -- generate commands for xx_buildcmd_file
-    if not script then
-        scriptname = "buildcmd_file" .. (suffix and ("_" .. suffix) or "")
-        script = ruleinst:script(scriptname)
-        if script then
-            local sourcekind = sourcebatch.sourcekind
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local batchcmds_ = batchcmds.new({target = target})
-                script(target, batchcmds_, sourcefile, {})
-                if not batchcmds_:empty() then
-                    for _, cmd in ipairs(batchcmds_:cmds()) do
-                        if cmd.program then
-                            _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
-                        end
-                    end
-                end
-            end
-        end
-    end
+    -- add after commands
+    local cmds_after = {}
+    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_after, sourcegroups, "after")
+    target_cmds.get_target_buildcmd(target, cmds_after, "after")
+    _add_target_custom_commands(jsonfile, target, "after", cmds_after)
 end
 
-
-
--- make commands for objects
-function _make_commands_for_objects(jsonfile, target, sourcebatch)
-    local sourcekind = sourcebatch.sourcekind
-    if sourcekind and _sourcebatch_is_built(sourcebatch) then
-        for index, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            local objectfile = sourcebatch.objectfiles[index]
-            local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
-            _make_arguments(jsonfile, arguments, sourcefile)
-        end
-        return true
-    end
-end
-
--- make objects
-function _make_objects(jsonfile, target, sourcebatch)
-    _make_commands_for_targetrules(jsonfile, target, "before")
-    _make_commands_for_objectrules(jsonfile, target, sourcebatch, "before")
-    if not _make_commands_for_objects(jsonfile, target, sourcebatch) then
-        _make_commands_for_objectrules(jsonfile, target, sourcebatch)
-    end
-    _make_commands_for_objectrules(jsonfile, target, sourcebatch, "after")
-    _make_commands_for_targetrules(jsonfile, target, "after")
-end
-
--- make target
-function _make_target(jsonfile, target)
+-- add target
+function _add_target(jsonfile, target)
 
     -- https://github.com/xmake-io/xmake/issues/2337
     target:data_set("plugin.project.kind", "compile_commands")
@@ -274,30 +231,22 @@ function _make_target(jsonfile, target)
         target:set("pcxxheader", nil)
     end
 
-    -- build source batches
-    for _, sourcebatch in pairs(target:sourcebatches()) do
-        _make_objects(jsonfile, target, sourcebatch)
-    end
+    -- add target commands
+    _add_target_commands(jsonfile, target)
 
     -- restore package environments
     os.setenvs(oldenvs)
 end
 
--- make all
-function _make_all(jsonfile)
-
-    -- make header
+-- add targets
+function _add_targets(jsonfile)
     jsonfile:print("[")
-
-    -- make commands
     _g.firstline = true
     for _, target in pairs(project.targets()) do
         if not target:is_phony() then
-            _make_target(jsonfile, target)
+            _add_target(jsonfile, target)
         end
     end
-
-    -- make tailer
     jsonfile:print("]")
 end
 
@@ -309,19 +258,9 @@ end
 --  - http://eli.thegreenplace.net/2014/05/21/compilation-databases-for-clang-based-tools
 --
 function make(outputdir)
-
-    -- enter project directory
     local oldir = os.cd(os.projectdir())
-
-    -- open the jsonfile
     local jsonfile = io.open(path.join(outputdir, "compile_commands.json"), "w")
-
-    -- make all
-    _make_all(jsonfile)
-
-    -- close the jsonfile
+    _add_targets(jsonfile)
     jsonfile:close()
-
-    -- leave project directory
     os.cd(oldir)
 end
