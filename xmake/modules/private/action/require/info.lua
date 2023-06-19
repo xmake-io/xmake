@@ -255,9 +255,14 @@ function main(requires_raw)
                         printf(configs_extra.description)
                     end
                     if configs_extra.default ~= nil then
-                        printf(" (default: %s)", configs_extra.default)
+                        io.write(" (default: %s", configs_extra.default)
                     elseif configs_extra.type ~= nil and configs_extra.type ~= "string" then
-                        printf(" (type: %s)", configs_extra.type)
+                        io.write(" (type: %s", configs_extra.type)
+                    end
+                    if configs_extra.readonly ~= nil then
+                        io.write(", readonly)")
+                    else
+                        io.write(")")
                     end
                     print("")
                     if configs_extra.values then
