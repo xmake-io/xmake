@@ -258,9 +258,9 @@ function main(requires_raw)
                         printf(configs_extra.description)
                     end
                     if configs_extra.default ~= nil then
-                        printf(" (default: %s", configs_extra.default)
+                        printf(" (default: %s)", configs_extra.default)
                     elseif configs_extra.type ~= nil and configs_extra.type ~= "string" then
-                        printf(" (type: %s", configs_extra.type)
+                        printf(" (type: %s)", configs_extra.type)
                     end
                     print("")
                     if configs_extra.values then
