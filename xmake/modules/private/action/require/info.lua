@@ -235,11 +235,9 @@ function main(requires_raw)
                     elseif configs_extra.type ~= nil and configs_extra.type ~= "string" then
                         printf(" (type: %s)", configs_extra.type)
                     end
-
                     if configs_extra.readonly ~= nil then
                         printf(" (readonly)")
                     end
-                    
                     print("")
                     if configs_extra.values then
                         cprint("            -> values: %s", string.serialize(configs_extra.values, true))
@@ -263,11 +261,6 @@ function main(requires_raw)
                         printf(" (default: %s", configs_extra.default)
                     elseif configs_extra.type ~= nil and configs_extra.type ~= "string" then
                         printf(" (type: %s", configs_extra.type)
-                    end
-                    if configs_extra.readonly ~= nil then
-                        printf(", readonly)")
-                    else
-                        printf(")")
                     end
                     print("")
                     if configs_extra.values then
