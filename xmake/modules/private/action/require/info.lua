@@ -235,7 +235,7 @@ function main(requires_raw)
                     elseif configs_extra.type ~= nil and configs_extra.type ~= "string" then
                         printf(" (type: %s)", configs_extra.type)
                     end
-                    if configs_extra.readonly ~= nil then
+                    if configs_extra.readonly then
                         printf(" (readonly)")
                     end
                     print("")
