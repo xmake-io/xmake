@@ -511,7 +511,11 @@ function _get_configs_for_cross(package, configs, opt)
     -- we need not set it as cross compilation if we just pass toolchain
     -- https://github.com/xmake-io/xmake/issues/2170
     if not package:is_plat(os.subhost()) then
-        envs.CMAKE_SYSTEM_NAME     = package:targetos() or "Linux"
+        local system_name = package:targetos() or "Linux"
+        if system_name == "linux" then
+            system_name = "Linux"
+        end
+        envs.CMAKE_SYSTEM_NAME = system_name
     else
         if package:config("pic") ~= false then
             table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
