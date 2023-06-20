@@ -3,7 +3,7 @@
   <!-- inherit parent settings -->
   <Import Condition="Exists('$(MSBuildThisFileDirectory)\..\Xmake.Custom.props')"
     Project="$(MSBuildThisFileDirectory)\..\Xmake.Custom.props" />
-      
+
   <PropertyGroup Label="XmakePaths">
     <!-- set environment XMAKE_CONFIGDIR for xmake tasks -->
     <!-- <XmakeConfigDir Condition="'$(XmakeMode)|$(XmakeArch)' == 'release|x86'">$(XmakeProjectDir)\.xmake</XmakeConfigDir> -->
@@ -14,7 +14,7 @@
 
   <PropertyGroup Label="XmakeFlags">
     <!-- Configure these flags to customize xmake build process -->
-    <!-- 
+    <!--
       Inherit parents:
         <XmakeCleanFlags>$(XmakeCleanflags) -D</XmakeCleanFlags>
       Override parents:
@@ -40,16 +40,16 @@
     <!-- Set -r for "xmake build" for selected files -->
     <!-- <XmakeRebuildFile Condition="'$(XmakeRebuildFile)' == ''">false</XmakeRebuildFile> -->
 
-    
+
     <!-- Additional flags for "xmake clean" -->
     <!-- <XmakeCleanFlags>$(XmakeCleanflags)</XmakeCleanFlags> -->
-    
+
     <!-- Additional flags for "xmake build" -->
     <!-- <XmakeBuildFlags>$(XmakeBuildFlags)</XmakeBuildFlags> -->
-    
+
     <!-- Additional flags for "xmake config" -->
     <!-- <XmakeConfigFlags>$(XmakeConfigFlags)</XmakeConfigFlags> -->
-    
+
     <!-- Additional flags for all xmake call -->
     <!-- <XmakeCommonFlags>$(XmakeCommonFlags)</XmakeCommonFlags> -->
   </PropertyGroup>
