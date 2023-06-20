@@ -60,6 +60,10 @@ function policy.policies()
             ["build.c++.msvc.fallbackscanner"]    = {description = "Force msvc fallback module dependency scanner.", default = false, type = "boolean"},
             -- force C++ modules fallback dependency scanner for gcc
             ["build.c++.gcc.fallbackscanner"]     = {description = "Force gcc fallback module dependency scanner.", default = false, type = "boolean"},
+            -- force to enable new cxx11 abi in C++ modules for gcc
+            -- If in the future, gcc can support it well, we'll turn it on by default
+            -- https://github.com/xmake-io/xmake/issues/3855
+            ["build.c++.gcc.modules.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc.", type = "boolean"},
             -- enable cuda device link
             ["build.cuda.devlink"]                = {description = "Enable Cuda devlink.", type = "boolean"},
             -- preprocessor configuration for ccache/distcc, we can disable linemarkers to speed up preprocess
