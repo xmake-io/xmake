@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("lib.detect.find_file")
 
 -- get install directory
@@ -65,6 +66,9 @@ end
 
 -- install shared libraries for packages
 function _install_shared_for_packages(target, outputdir)
+    if option.get("nopkgs") then
+        return
+    end
     _g.installed_packages = _g.installed_packages or {}
     for _, pkg in ipairs(target:orderpkgs()) do
         if not _g.installed_packages[pkg:name()] then

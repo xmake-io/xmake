@@ -18,27 +18,13 @@
 -- @file        xmake.lua
 --
 
--- define task
 task("install")
-
-    -- set category
     set_category("action")
-
-    -- on run
     on_run("main")
-
-    -- set menu
     set_menu {
-                -- usage
                 usage = "xmake install|i [options] [target]"
-
-                -- description
             ,   description = "Package and install the target binary files."
-
-                -- xmake i
             ,   shortname = 'i'
-
-                -- options
             ,   options =
                 {
                     {'o', "installdir", "kv", nil   , "Set the install directory.",
@@ -52,6 +38,7 @@ task("install")
                                                       "    xmake install -g test_*",
                                                       "    xmake install --group=benchmark/*"     }
                 ,   {'a', "all",        "k",  nil   , "Install all targets."                      }
+                ,   {nil, "nopkgs",     "k",  nil   , "Only install targets without packages."    }
                 ,   {nil, "admin",      "k",  nil   , "Try to request administrator permission to install"}
 
                 ,   {                                                                               }

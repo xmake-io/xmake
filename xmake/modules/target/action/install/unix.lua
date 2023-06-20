@@ -18,6 +18,9 @@
 -- @file        unix.lua
 --
 
+-- imports
+import("core.base.option")
+
 -- install headers
 function _install_headers(target, opt)
     local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
@@ -60,6 +63,9 @@ end
 
 -- install shared libraries for packages
 function _install_shared_for_packages(target, outputdir)
+    if option.get("nopkgs") then
+        return
+    end
     _g.installed_packages = _g.installed_packages or {}
     for _, pkg in ipairs(target:orderpkgs()) do
         if not _g.installed_packages[pkg:name()] then

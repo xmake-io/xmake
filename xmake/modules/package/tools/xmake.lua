@@ -432,7 +432,7 @@ function install(package, configs, opt)
     os.vrunv("xmake", argv, {envs = envs})
 
     -- do install
-    argv = {"install", "-y", "-o", package:installdir()}
+    argv = {"install", "-y", "--nopkgs", "-o", package:installdir()}
     _set_builtin_argv(package, argv)
     if opt.target then
         table.insert(argv, opt.target)
