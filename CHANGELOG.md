@@ -13,6 +13,7 @@
 * [#3371](https://github.com/xmake-io/xmake/issues/3371): Improve tools.cmake to support ninja generator for wasm
 * [#3777](https://github.com/xmake-io/xmake/issues/3777): Improve to find package from pkg-config
 * [#3815](https://github.com/xmake-io/xmake/pull/3815): Improve tools.xmake to pass toolchains for windows
+* [#3857](https://github.com/xmake-io/xmake/issues/3857): Improve to generate compile_commands.json
 
 ### Bugs fixed
 
@@ -1608,6 +1609,7 @@
 * [#3371](https://github.com/xmake-io/xmake/issues/3371): 改进 tools.cmake 支持使用 ninja 去构建 wasm 包
 * [#3777](https://github.com/xmake-io/xmake/issues/3777): 改进从 pkg-config 中查找包
 * [#3815](https://github.com/xmake-io/xmake/pull/3815): 改进 tools.xmake 支持为 windows 平台传递工具链
+* [#3857](https://github.com/xmake-io/xmake/issues/3857): 改进生成 compile_commands.json
 
 ### Bugs 修复
 
