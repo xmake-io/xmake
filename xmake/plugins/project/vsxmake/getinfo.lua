@@ -110,10 +110,27 @@ function _make_targetinfo(mode, arch, target)
     ,   sdkver = config.get("vs_sdkver")
     }
 
+    --replace plat wasm and arch wasm32 to windows and x64
+    if "wasm" == targetinfo.plat then
+        config.set("plat", "windows", {force = true})
+        targetinfo.plat = config.get("plat")
+        print("replacing for wasm plat: %s", targetinfo.plat)
+        
+    end
+
+    if "wasm32" == targetinfo.arch then
+        config.set("arch", "x86",{force = true})
+        targetinfo.arch = config.get("arch")
+        targetinfo.vsarch = "Win32"
+        print("replacing for wasm32 arch: %s", targetinfo.arch)
+        
+    end
+
     -- write only if not default
     -- use target:get("xxx") rather than target:xxx()
 
     -- save target kind
+
     targetinfo.kind          = target:kind()
 
     -- is default?
@@ -285,6 +302,13 @@ function _make_vsinfo_archs()
     if not vsinfo_archs or #vsinfo_archs == 0 then
         vsinfo_archs = { config.arch() }
     end
+
+    for k, v in pairs(vsinfo_archs) do
+        if "wasm32" == v then
+            vsinfo_archs[k] = "x86"
+        end
+    end
+
     return vsinfo_archs
 end
 
