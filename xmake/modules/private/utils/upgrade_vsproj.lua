@@ -34,6 +34,7 @@ function upgrade(projectfile, opt)
     opt = opt or {}
 end
 
+-- https://github.com/xmake-io/xmake/issues/3871
 function main(...)
     local argv = {...}
     local opt  = option.parse(argv, options, "Upgrade all the vs project files."

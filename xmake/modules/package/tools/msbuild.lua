@@ -95,6 +95,7 @@ function build(package, configs, opt)
     end
 
     -- upgrade vs solution file?
+    -- @see https://github.com/xmake-io/xmake/issues/3871
     if slnfile and opt.upgrade then
         upgrade_vsproj.upgrade(slnfile, opt)
     end
