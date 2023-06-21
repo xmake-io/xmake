@@ -29,9 +29,23 @@ local options = {
 ,   {nil, "vs_projectfiles", "vs", nil, "Set the solution or project files."         }
 }
 
+-- upgrade *.sln
+function _upgrade_sln(projectfile, opt)
+    opt = opt or {}
+end
+
+-- upgrade *.vcxproj
+function _upgrade_vcxproj(projectfile, opt)
+    opt = opt or {}
+end
+
 -- upgrade vs project file
 function upgrade(projectfile, opt)
-    opt = opt or {}
+    if projectfile:endswith(".sln") then
+        _upgrade_sln(projectfile, opt)
+    elseif projectfile:endswith(".vcxproj") then
+        _upgrade_vcxproj(projectfile, opt)
+    end
 end
 
 -- https://github.com/xmake-io/xmake/issues/3871
