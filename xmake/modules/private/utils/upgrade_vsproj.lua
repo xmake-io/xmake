@@ -30,7 +30,7 @@ local options = {
 }
 
 -- upgrade vs project file
-function _upgrade(projectfile, opt)
+function upgrade(projectfile, opt)
     opt = opt or {}
 end
 
@@ -41,6 +41,6 @@ function main(...)
                                            , "Usage: xmake l private.utils.upgrade_vsproj [options]")
 
     for _, projectfile in ipairs(opt.vs_projectfiles) do
-        _upgrade(projectfile, opt)
+        upgrade(projectfile, opt)
     end
 end
