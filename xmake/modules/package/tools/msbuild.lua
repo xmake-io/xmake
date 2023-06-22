@@ -92,9 +92,9 @@ function build(package, configs, opt)
     -- upgrade vs solution file?
     -- @see https://github.com/xmake-io/xmake/issues/3871
     if opt.upgrade then
-        local msvc_str = _get_msvc(package)
+        local msvc = _get_msvc(package)
         for _, value in ipairs(opt.upgrade) do
-            upgrade_vsproj.upgrade(value, table.join(opt, {msvc = msvc_str}))
+            upgrade_vsproj.upgrade(value, table.join(opt, {msvc = msvc}))
         end
     end
 
