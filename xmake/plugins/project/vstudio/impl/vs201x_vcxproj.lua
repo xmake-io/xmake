@@ -214,8 +214,6 @@ end
 
 -- make header
 function _make_header(vcxprojfile, vsinfo)
-
-    -- make header
     vcxprojfile:print("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
     vcxprojfile:enter("<Project DefaultTargets=\"Build\" ToolsVersion=\"%s.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">", assert(vsinfo.project_version))
 end

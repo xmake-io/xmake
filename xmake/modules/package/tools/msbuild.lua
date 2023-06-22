@@ -22,13 +22,13 @@
 import("core.base.option")
 import("core.tool.toolchain")
 import("lib.detect.find_tool")
+import("private.utils.upgrade_vsproj")
 
 -- get the number of parallel jobs
 function _get_parallel_njobs(opt)
     return opt.jobs or option.get("jobs") or tostring(os.default_njob())
 end
 
--- tra
 -- get msvc
 function _get_msvc(package)
     local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
@@ -74,8 +74,6 @@ end
 
 -- build package
 function build(package, configs, opt)
-
-    -- init options
     opt = opt or {}
 
     -- pass configurations
@@ -88,6 +86,15 @@ function build(package, configs, opt)
             else
                 table.insert(argv, name .. "=" .. value)
             end
+        end
+    end
+
+    -- upgrade vs solution file?
+    -- @see https://github.com/xmake-io/xmake/issues/3871
+    if opt.upgrade then
+        local msvc = _get_msvc(package)
+        for _, value in ipairs(opt.upgrade) do
+            upgrade_vsproj.upgrade(value, table.join(opt, {msvc = msvc}))
         end
     end
 
