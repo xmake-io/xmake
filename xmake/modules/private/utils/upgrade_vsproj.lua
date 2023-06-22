@@ -20,6 +20,8 @@
 
 -- imports
 import("core.base.option")
+import("core.tool.toolchain")
+import("plugins.project.vstudio.impl.vsinfo", {rootdir = os.programdir()})
 
 -- the options
 local options = {
@@ -29,14 +31,41 @@ local options = {
 ,   {nil, "vs_projectfiles", "vs", nil, "Set the solution or project files."         }
 }
 
+-- get toolset version
+function _get_toolset_ver(vs_toolset)
+    local toolset_ver = nil
+    if vs_toolset then
+        local verinfo = vs_toolset:split('%.')
+        if #verinfo >= 2 then
+            toolset_ver = "v" .. verinfo[1] .. (verinfo[2]:sub(1, 1) or "0")
+        end
+    end
+    return toolset_ver
+end
+
 -- upgrade *.sln
 function _upgrade_sln(projectfile, opt)
     opt = opt or {}
+    local msvc = opt.msvc or import("core.tool.toolchain").load("msvc")
+    local vs_version = opt.vs or msvc:config("vs")
+    local vs_info = assert(vsinfo(tonumber(vs_version)), "unknown vs version!")
+    io.gsub(projectfile, "Microsoft Visual Studio Solution File, Format Version %d+%.%d+",
+        "Microsoft Visual Studio Solution File, Format Version " .. vs_info.solution_version .. ".00")
+    io.gsub(projectfile, "# Visual Studio %d+", "# Visual Studio " .. vs_version)
 end
 
 -- upgrade *.vcxproj
 function _upgrade_vcxproj(projectfile, opt)
     opt = opt or {}
+    local msvc = opt.msvc or import("core.tool.toolchain").load("msvc")
+    local vs_version = opt.vs or msvc:config("vs")
+    local vs_info = assert(vsinfo(tonumber(vs_version)), "unknown vs version!")
+    local vs_sdkver = opt.vs_sdkver or msvc:config("vs_sdkver") or vs_info.sdk_version
+    local vs_toolset = _get_toolset_ver(opt.vs_toolset or msvc:config("vs_toolset")) or vs_info.toolset_version
+    io.gsub(projectfile, "<PlatformToolset>v%d+</PlatformToolset>",
+        "<PlatformToolset>" .. vs_toolset .. "</PlatformToolset>")
+    io.gsub(projectfile, "<WindowsTargetPlatformVersion>.*</WindowsTargetPlatformVersion>",
+        "<WindowsTargetPlatformVersion>" .. vs_sdkver .. "</WindowsTargetPlatformVersion>")
 end
 
 -- upgrade vs project file

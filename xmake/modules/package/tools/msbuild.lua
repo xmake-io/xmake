@@ -29,7 +29,6 @@ function _get_parallel_njobs(opt)
     return opt.jobs or option.get("jobs") or tostring(os.default_njob())
 end
 
--- tra
 -- get msvc
 function _get_msvc(package)
     local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
@@ -97,7 +96,7 @@ function build(package, configs, opt)
     -- upgrade vs solution file?
     -- @see https://github.com/xmake-io/xmake/issues/3871
     if slnfile and opt.upgrade then
-        upgrade_vsproj.upgrade(slnfile, opt)
+        upgrade_vsproj.upgrade(slnfile, table.join(opt, {msvc = _get_msvc(package)}))
     end
 
     -- do build
