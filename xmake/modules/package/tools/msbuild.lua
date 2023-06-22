@@ -77,15 +77,11 @@ function build(package, configs, opt)
     opt = opt or {}
 
     -- pass configurations
-    local slnfile
     local argv = {}
     for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if value ~= "" then
             if type(name) == "number" then
-                if value:endswith(".sln") then
-                    slnfile = value
-                end
                 table.insert(argv, value)
             else
                 table.insert(argv, name .. "=" .. value)
@@ -95,8 +91,11 @@ function build(package, configs, opt)
 
     -- upgrade vs solution file?
     -- @see https://github.com/xmake-io/xmake/issues/3871
-    if slnfile and opt.upgrade then
-        upgrade_vsproj.upgrade(slnfile, table.join(opt, {msvc = _get_msvc(package)}))
+    if opt.upgrade then
+        local msvc = _get_msvc(package)
+        for _, value in ipairs(opt.upgrade) do
+            upgrade_vsproj.upgrade(value, table.join(opt, {msvc = msvc}))
+        end
     end
 
     -- do build
