@@ -2739,7 +2739,8 @@ done
 #
 
 # parse triplet
-# e.g. i686-linux-gnu, aarch64-apple-darwin, x86_64-w64-mingw32
+# https://github.com/xmake-io/xmake/issues/3869
+# e.g. i686-linux-gnu, aarch64-apple-darwin, x86_64-w64-mingw32, i686-redhat-linux-gnu
 _parse_triplet() {
     local triplet="${1}"
     string_split "${triplet}" "-"
@@ -2775,6 +2776,7 @@ _get_plat_from_vendor_os() {
             fi
             ;;
         w64) _ret="mingw";;
+        *) _ret="${os}";;
     esac
 }
 
