@@ -678,7 +678,7 @@ function _add_target_exceptions(cmakelists, target)
     }
     local exceptions = target:get("exceptions")
     if exceptions then
-        cmakelists:print("if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL \"MSVC\")")
+        cmakelists:print("if(MSVC)")
         -- msvc or clang-cl
         for _, exception in ipairs(exceptions) do
             cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[exception])
