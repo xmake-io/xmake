@@ -20,6 +20,7 @@
 
 -- define rule: protobuf.cpp
 rule("protobuf.cpp")
+    add_deps("c++")
     set_extensions(".proto")
     on_load(function(target)
         import("proto").load(target, "cxx")
@@ -34,6 +35,7 @@ rule("protobuf.cpp")
 
 -- define rule: protobuf.c
 rule("protobuf.c")
+    add_deps("c++")
     set_extensions(".proto")
     on_load(function(target)
         import("proto").load(target, "cc")
