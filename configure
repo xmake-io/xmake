@@ -669,6 +669,9 @@ fi
 # set the default target mode
 _target_mode_default="release"
 
+# set the default target kind
+_target_kind_default="static"
+
 # set the default project generator and build program
 if is_host "freebsd" "bsd"; then
     _project_generator="gmake"
@@ -733,6 +736,21 @@ is_mode() {
     local mode=""
     for mode in $@; do
         if test_eq "${_target_mode}" "${mode}"; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# determining target kind
+# e.g.
+# if is_kind "release"; then
+#     ...
+# fi
+is_kind() {
+    local kind=""
+    for kind in $@; do
+        if test_eq "${_target_kind}" "${kind}"; then
             return 0
         fi
     done
@@ -2616,6 +2634,10 @@ Common options:
   --mode=MODE             Set the given compilation mode. (default: '"${_target_mode_default}"')
                             - release
                             - debug
+  --kind=KIND             Set the given target kind. (default: '"${_target_kind_default}"')
+                            - static
+                            - shared
+                            - binary
   --toolchain=TOOLCHAIN   Set toolchain name.
                             - clang
                             - gcc
@@ -2687,6 +2709,9 @@ _handle_option() {
         return 0
     elif test_eq "${name}" "mode"; then
         _target_mode=${value}
+        return 0
+    elif test_eq "${name}" "kind"; then
+        _target_kind=${value}
         return 0
     elif test_eq "${name}" "toolchain"; then
         _target_toolchain=${value}
@@ -2917,6 +2942,9 @@ _check_platform() {
     fi
     if test "x${_target_mode}" = "x"; then
         _target_mode=${_target_mode_default}
+    fi
+    if test "x${_target_kind}" = "x"; then
+        _target_kind=${_target_kind_default}
     fi
     echo "checking for platform ... ${_target_plat}"
     echo "checking for architecture ... ${_target_arch}"
@@ -3547,6 +3575,7 @@ fi
 plat="${_target_plat}"
 arch="${_target_arch}"
 mode="${_target_mode}"
+kind="${_target_kind}"
 
 #-----------------------------------------------------------------------------
 # load project targets
