@@ -73,15 +73,24 @@ end
 
 -- translate compiler flags
 function _translate_compflags(compflags, outputdir)
-    local flags = {}
-    for _, flag in ipairs(compflags) do
-        for _, pattern in ipairs({"[%-](I)(.*)", "[%-](isystem)(.*)"}) do
-            flag = flag:gsub(pattern, function (flag, dir)
-                dir = _get_relative_unix_path(dir, outputdir)
-                return "-" .. flag .. dir
-            end)
-        end
-        table.insert(flags, flag)
+	local flags = {}
+	local last_flag = nil;
+	for _, flag in ipairs(compflags) do
+		if flag == "-I" or flag == "-isystem" then
+			last_flag = flag;
+		else
+			if last_flag == "-I" or last_flag == "-isystem" then
+				flag = last_flag..flag;
+			end;
+			last_flag = flag;
+			for _, pattern in ipairs({"[%-](I)(.*)", "[%-](isystem)(.*)"}) do
+				flag = flag:gsub(pattern, function (flag, dir)
+						dir = _get_relative_unix_path(dir, outputdir)
+						return "-" .. flag .. dir
+				end)
+			end
+			table.insert(flags, flag)
+		end;
     end
     return flags
 end
