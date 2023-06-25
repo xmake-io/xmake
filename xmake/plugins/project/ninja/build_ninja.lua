@@ -82,7 +82,6 @@ function _translate_compflags(compflags, outputdir)
             if last_flag == "-I" or last_flag == "-isystem" then
                 flag = last_flag .. flag;
             end
-            ;
             last_flag = flag;
             for _, pattern in ipairs({ "[%-](I)(.*)", "[%-](isystem)(.*)" }) do
                 flag = flag:gsub(pattern, function(flag, dir)
@@ -92,7 +91,6 @@ function _translate_compflags(compflags, outputdir)
             end
             table.insert(flags, flag)
         end
-        ;
     end
     return flags
 end
