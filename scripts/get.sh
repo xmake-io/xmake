@@ -1,7 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # xmake getter
-# usage: bash <(curl -s <my location>) [branch|__local__|__run__] [commit/__install_only__]
+# usage: curl -s <my location> | sh -- [branch|__local__|__run__] [commit/__install_only__]
 
 set -o pipefail
 
