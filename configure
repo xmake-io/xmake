@@ -1587,8 +1587,12 @@ _get_target_toolchain_flags_for_gcc() {
         flags="${flags} -m32"
     fi
     _get_target_item "${name}" "kind"; local targetkind="${_ret}"
-    if test_eq "${targetkind}" "shared" && test_eq "${toolkind}" "sh"; then
-        flags="${flags} -shared -fPIC"
+    if test_eq "${targetkind}" "shared"; then
+        if test_eq "${toolkind}" "sh"; then
+            flags="${flags} -shared -fPIC"
+        elif test_eq "${toolkind}" "cc" || test_eq "${toolkind}" "cxx"; then
+            flags="${flags} -fPIC"
+        fi
     fi
     _ret="${flags}"
 }
@@ -1602,8 +1606,12 @@ _get_target_toolchain_flags_for_clang() {
         flags="${flags} -m32"
     fi
     _get_target_item "${name}" "kind"; local targetkind="${_ret}"
-    if test_eq "${targetkind}" "shared" && test_eq "${toolkind}" "sh"; then
-        flags="${flags} -shared -fPIC"
+    if test_eq "${targetkind}" "shared"; then
+        if test_eq "${toolkind}" "sh"; then
+            flags="${flags} -shared -fPIC"
+        elif test_eq "${toolkind}" "cc" || test_eq "${toolkind}" "cxx"; then
+            flags="${flags} -fPIC"
+        fi
     fi
     if is_plat "macosx"; then
         _os_iorunv "xcrun" "-sdk" "macosx" "--show-sdk-path"; local sdkdir="${_ret}"
