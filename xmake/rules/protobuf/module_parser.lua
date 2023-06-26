@@ -132,20 +132,22 @@ end
 -- build batch jobs
 function build_batchjobs(moduledeps, batchjobs, rootjob)
     local depset = hashset.new()
-    for _, moduleinfo in pairs(moduledeps) do
+    local moduleinfos = {}
+    for _, moduleinfo in table.orderpairs(moduledeps) do
         assert(moduleinfo.job)
         for _, depname in ipairs(moduleinfo.deps) do
             depset:insert(depname)
         end
+        table.insert(moduleinfos, moduleinfo)
     end
     local moduledeps_root = {}
-    for _, moduleinfo in pairs(moduledeps) do
+    for _, moduleinfo in ipairs(moduleinfos) do
         if not depset:has(moduleinfo.name) then
             table.insert(moduledeps_root, moduleinfo)
         end
     end
     local jobrefs = {}
-    for _, moduleinfo in pairs(moduledeps_root) do
+    for _, moduleinfo in ipairs(moduledeps_root) do
         _build_batchjobs_with_deps(moduledeps, batchjobs, rootjob, jobrefs, moduleinfo)
     end
 end
