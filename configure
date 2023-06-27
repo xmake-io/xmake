@@ -1594,18 +1594,6 @@ _get_target_toolchain_flags_for_gcc() {
             flags="${flags} -fPIC"
         fi
     fi
-    # add soname, https://github.com/tboox/tbox/issues/214#issuecomment-1608882997
-    if test_eq "${targetkind}" "shared" && test_eq "${toolkind}" "sh" && is_plat "linux"; then
-        _get_target_item "${name}" "version"; local version="${_ret}"
-        if test_nz "${version}"; then
-            string_split "${version}" "."
-            local version_major="${_ret}"
-            local version_minor="${_ret2}"
-            local version_alter="${_ret3}"
-            _get_target_filename "${name}"; local filename="${_ret}"
-            flags="${flags} -Wl,-soname,${filename}.${version_major}.${version_minor}.${version_alter}"
-        fi
-    fi
     _ret="${flags}"
 }
 
@@ -1623,18 +1611,6 @@ _get_target_toolchain_flags_for_clang() {
             flags="${flags} -shared -fPIC"
         elif test_eq "${toolkind}" "cc" || test_eq "${toolkind}" "cxx"; then
             flags="${flags} -fPIC"
-        fi
-    fi
-    # add soname, https://github.com/tboox/tbox/issues/214#issuecomment-1608882997
-    if test_eq "${targetkind}" "shared" && test_eq "${toolkind}" "sh" && is_plat "linux"; then
-        _get_target_item "${name}" "version"; local version="${_ret}"
-        if test_nz "${version}"; then
-            string_split "${version}" "."
-            local version_major="${_ret}"
-            local version_minor="${_ret2}"
-            local version_alter="${_ret3}"
-            _get_target_filename "${name}"; local filename="${_ret}"
-            flags="${flags} -Wl,-soname,${filename}.${version_major}.${version_minor}.${version_alter}"
         fi
     fi
     if is_plat "macosx"; then
