@@ -57,7 +57,10 @@ function main(names)
                 local version = result.version
                 local reponame = result.reponame
                 local description = result.description
-                cprint("      -> ${color.dump.string}%s%s${clear}: %s %s", name, version and ("-" .. version) or "", description or "", reponame and ("(in " .. reponame .. ")") or "")
+                cprint("      -> ${color.dump.string}%s%s${clear}: %s %s", name,
+                    version and ("-" .. version) or "",
+                    description or "",
+                    reponame and ("(in " .. reponame .. ")") or "")
             end
         end
     end
