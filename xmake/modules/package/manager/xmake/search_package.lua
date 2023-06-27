@@ -24,8 +24,7 @@ import("core.package.package", {alias = "core_package"})
 import("private.action.require.impl.repository")
 
 -- search package from name
-function _search_package_from_name(name, opt)
-    local results = {}
+function _search_package_from_name(packages, name, opt)
     for _, packageinfo in ipairs(repository.searchdirs(name)) do
         local package = core_package.load_from_repository(packageinfo.name, packageinfo.packagedir, {repo = packageinfo.repo})
         if package then
@@ -45,41 +44,43 @@ function _search_package_from_name(name, opt)
                     version = versions[1]
                 end
             end
-            results[package:name()] = {name = package:name(), version = version, description = package:get("description"), reponame = repo and repo:name()}
+            packages[package:name()] = {name = package:name(), version = version, description = package:get("description"), reponame = repo and repo:name()}
         end
     end
-    return results
 end
 
 -- search package from description
-function _search_package_from_description(name, opt)
-    local results = {}
+function _search_package_from_description(packages, name, opt)
     for _, packageinfo in ipairs(repository.searchdirs("*")) do
-        local package = core_package.load_from_repository(packageinfo.name, packageinfo.packagedir, {repo = packageinfo.repo})
-        if package then
-            local description = package:description()
-            if description and description:find(string.ipattern(name)) then
-                local repo = package:repo()
-                local version
-                local versions = package:versions()
-                if versions then
-                    versions = table.copy(versions)
-                    table.sort(versions, function (a, b) return semver.compare(a, b) > 0 end)
-                    if opt.require_version then
-                        for _, ver in ipairs(versions) do
-                            if semver.satisfies(ver, opt.require_version) then
-                                version = ver
+        if not packages[packageinfo.name] then
+            local package = core_package.load_from_repository(packageinfo.name, packageinfo.packagedir, {repo = packageinfo.repo})
+            if package then
+                local description = package:description()
+                if description and description:find(string.ipattern(name)) then
+                    local repo = package:repo()
+                    local version
+                    local versions = package:versions()
+                    if versions then
+                        versions = table.copy(versions)
+                        table.sort(versions, function (a, b) return semver.compare(a, b) > 0 end)
+                        if opt.require_version then
+                            for _, ver in ipairs(versions) do
+                                if semver.satisfies(ver, opt.require_version) then
+                                    version = ver
+                                end
                             end
+                        else
+                            version = versions[1]
                         end
-                    else
-                        version = versions[1]
                     end
+                    description = description:gsub(string.ipattern(name), function (w)
+                        return "${bright}" .. w .. "${clear}"
+                    end)
+                    packages[package:name()] = {name = package:name(), version = version, description = description, reponame = repo and repo:name()}
                 end
-                results[package:name()] = {name = package:name(), version = version, description = package:get("description"), reponame = repo and repo:name()}
             end
         end
     end
-    return results
 end
 
 -- search package using the xmake package manager
@@ -90,8 +91,8 @@ end
 function main(name, opt)
     opt = opt or {}
     local packages = {}
-    table.join2(packages, _search_package_from_name(name, opt))
-    table.join2(packages, _search_package_from_description(name, opt))
+    _search_package_from_name(packages, name, opt)
+    _search_package_from_description(packages, name, opt)
 
     local results = {}
     for name, info in table.orderpairs(packages) do
