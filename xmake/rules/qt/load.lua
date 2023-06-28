@@ -32,7 +32,11 @@ function _link(target, linkdirs, framework, qt_sdkver)
         if target:is_plat("windows") then
             debug_suffix = "d"
         elseif target:is_plat("mingw") then
-            debug_suffix = "d"
+            if qt_sdkver:ge("5.15.2") then
+                debug_suffix = ""
+            else
+                debug_suffix = "d"
+            end
         elseif target:is_plat("android") or target:is_plat("linux") then
             debug_suffix = ""
         end
