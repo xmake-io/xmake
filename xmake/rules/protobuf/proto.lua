@@ -99,6 +99,7 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
     local prefixdir
     local autogendir
     local public
+    local grpc_cpp_plugin
     local fileconfig = target:fileconfig(sourcefile_proto)
     if fileconfig then
         public = fileconfig.proto_public
@@ -135,7 +136,7 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
         table.insert(target:objectfiles(), objectfile_grpc)
     end
 
-    local protoc_args =  {
+    local protoc_args = {
         path(sourcefile_proto),
         path(prefixdir and prefixdir or path.directory(sourcefile_proto), function (p) return "-I" .. p end),
         path(sourcefile_dir, function (p) return (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. p end)
@@ -154,18 +155,16 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
     if grpc_cpp_plugin then
         batchcmds:compile(sourcefile_cx_grpc, objectfile_grpc, {configs = {includedirs = sourcefile_dir}})
     end
+    
     -- add deps
-    local depmtime = os.mtime(objectfile);
+    local depmtime = os.mtime(objectfile)
     batchcmds:add_depfiles(sourcefile_proto)
-
+    batchcmds:set_depcache(target:dependfile(objectfile))
     if grpc_cpp_plugin then
         batchcmds:set_depmtime(math.max(os.mtime(objectfile_grpc), depmtime))
     else
         batchcmds:set_depmtime(depmtime)
     end
-
-    batchcmds:set_depcache(target:dependfile(objectfile))
-
 end
 
 -- build batch jobs
