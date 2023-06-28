@@ -961,9 +961,9 @@ static tb_void_t xm_engine_init_arch(xm_engine_t* engine)
 #   if defined(TB_ARCH_x64)
         sysarch = "x64";
 #   elif defined(TB_ARCH_ARM64)
-        sysarch = "arm64"
+        sysarch = "arm64";
 #   elif defined(TB_ARCH_ARM)
-        sysarch = "arm"
+        sysarch = "arm";
 #   else
         sysarch = "x86";
 #   endif
