@@ -1,0 +1,8 @@
+syntax = "proto3";
+package test2;
+message TestCase2 {
+    string name2 = 4;
+}
+message Test2 {
+    repeated TestCase2 case2 = 1;
+}

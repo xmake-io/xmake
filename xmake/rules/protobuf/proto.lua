@@ -49,6 +49,13 @@ function _get_protoc(target, sourcekind)
     return assert(target:data(sourcekind == "cxx" and "protobuf.protoc" or "protobuf.protoc-c"), "protoc not found!")
 end
 
+-- get grpc_cpp_plugin
+function _get_grpc_cpp_plugin(target, sourcekind)
+    assert(sourcekind == "cxx", "grpc_cpp_plugin only support c++")
+    local grpc_cpp_plugin = find_tool("grpc_cpp_plugin", {norun = true})
+    return assert(grpc_cpp_plugin and grpc_cpp_plugin.program, "grpc_cpp_plugin not found!")
+end
+
 -- we need add some configs to export includedirs to other targets in on_load
 -- @see https://github.com/xmake-io/xmake/issues/2256
 function load(target, sourcekind)
@@ -92,6 +99,7 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
     local prefixdir
     local autogendir
     local public
+    local grpc_cpp_plugin
     local fileconfig = target:fileconfig(sourcefile_proto)
     if fileconfig then
         public = fileconfig.proto_public
@@ -99,11 +107,21 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
         -- custom autogen directory to access the generated header files
         -- @see https://github.com/xmake-io/xmake/issues/3678
         autogendir = fileconfig.proto_autogendir
+        grpc_cpp_plugin = fileconfig.proto_grpc_cpp_plugin
     end
     local rootdir = autogendir and autogendir or path.join(target:autogendir(), "rules", "protobuf")
     local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
     local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
     local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
+
+    local grpc_cpp_plugin_bin
+    local filename_grpc
+    local sourcefile_cx_grpc
+    if grpc_cpp_plugin then
+        grpc_cpp_plugin_bin = _get_grpc_cpp_plugin(target, sourcekind)
+        filename_grpc = path.basename(sourcefile_proto) .. ".grpc.pb.cc"
+        sourcefile_cx_grpc = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename_grpc})
+    end
 
     -- add includedirs
     target:add("includedirs", sourcefile_dir, {public = public})
@@ -112,18 +130,41 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
     local objectfile = target:objectfile(sourcefile_cx)
     table.insert(target:objectfiles(), objectfile)
 
+    local objectfile_grpc
+    if grpc_cpp_plugin then
+        objectfile_grpc = target:objectfile(sourcefile_cx_grpc)
+        table.insert(target:objectfiles(), objectfile_grpc)
+    end
+
+    local protoc_args = {
+        path(sourcefile_proto),
+        path(prefixdir and prefixdir or path.directory(sourcefile_proto), function (p) return "-I" .. p end),
+        path(sourcefile_dir, function (p) return (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. p end)
+    }
+    
+    if grpc_cpp_plugin then
+        table.insert(protoc_args, "--plugin=protoc-gen-grpc=" .. grpc_cpp_plugin_bin)
+        table.insert(protoc_args, path(sourcefile_dir, function (p) return ("--grpc_out=") .. p end))
+    end
+
     -- add commands
     batchcmds:mkdir(sourcefile_dir)
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
-    batchcmds:vrunv(protoc, {path(sourcefile_proto),
-        path(prefixdir and prefixdir or path.directory(sourcefile_proto), function (p) return "-I" .. p end),
-        path(sourcefile_dir, function (p) return (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. p end)})
-    batchcmds:compile(sourcefile_cx, objectfile, {configs = {includedirs = sourcefile_dir, languages = (sourcekind == "cxx" and "c++11")}})
-
+    batchcmds:vrunv(protoc, protoc_args)
+    batchcmds:compile(sourcefile_cx, objectfile, {configs = {includedirs = sourcefile_dir}})
+    if grpc_cpp_plugin then
+        batchcmds:compile(sourcefile_cx_grpc, objectfile_grpc, {configs = {includedirs = sourcefile_dir}})
+    end
+    
     -- add deps
+    local depmtime = os.mtime(objectfile)
     batchcmds:add_depfiles(sourcefile_proto)
-    batchcmds:set_depmtime(os.mtime(objectfile))
     batchcmds:set_depcache(target:dependfile(objectfile))
+    if grpc_cpp_plugin then
+        batchcmds:set_depmtime(math.max(os.mtime(objectfile_grpc), depmtime))
+    else
+        batchcmds:set_depmtime(depmtime)
+    end
 end
 
 -- build batch jobs
