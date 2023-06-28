@@ -312,7 +312,7 @@ function generate_dependencies(target, sourcebatch, opt)
 
             local outputdir = common.get_outputdir(target, sourcefile)
             local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
-            if has_clangscandepssupport(target) and not target:policy("build.c++.clang.fallbackscanner") then
+            if false then --has_clangscandepssupport(target) and not target:policy("build.c++.clang.fallbackscanner") then
                 local clangscandeps = _get_clang_scan_deps(target)
                 local compinst = target:compiler("cxx")
                 local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
@@ -328,7 +328,8 @@ function generate_dependencies(target, sourcebatch, opt)
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                     local compinst = target:compiler("cxx")
                     local compflags = compinst:compflags({sourcefile = file, target = target})
-                    -- exclude -fmodule* and -std=c++/gnu++* flags because, when they are set clang try to find bmi of imported modules but they don't exists a this point of compilation
+                    -- exclude -fmodule* and -std=c++/gnu++* flags because,
+                    -- when they are set clang try to find bmi of imported modules but they don't exists a this point of compilation
                     table.remove_if(compflags, function(_, flag)
                         return flag:startswith("-fmodule") or flag:startswith("-std=c++") or flag:startswith("-std=gnu++")
                     end)
