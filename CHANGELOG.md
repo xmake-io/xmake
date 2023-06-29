@@ -18,6 +18,7 @@
 * [#3815](https://github.com/xmake-io/xmake/pull/3815): Improve tools.xmake to pass toolchains for windows
 * [#3857](https://github.com/xmake-io/xmake/issues/3857): Improve to generate compile_commands.json
 * [#3892](https://github.com/xmake-io/xmake/issues/3892): Improve to search packages from description
+* Update lua runtime to 5.4.6
 
 ### Bugs fixed
 
@@ -1618,6 +1619,7 @@
 * [#3815](https://github.com/xmake-io/xmake/pull/3815): 改进 tools.xmake 支持为 windows 平台传递工具链
 * [#3857](https://github.com/xmake-io/xmake/issues/3857): 改进生成 compile_commands.json
 * [#3892](https://github.com/xmake-io/xmake/issues/3892): 改进包搜索，支持从描述中找包
+* 更新 lua 运行时到 5.4.6
 
 ### Bugs 修复
 
