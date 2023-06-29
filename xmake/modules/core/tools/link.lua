@@ -100,7 +100,10 @@ end
 
 -- make the link flag
 function nf_link(self, lib)
-    return lib .. ".lib"
+    if not lib:endswith(".lib") then
+        lib = lib .. ".lib"
+    end
+    return lib
 end
 
 -- make the syslink flag
