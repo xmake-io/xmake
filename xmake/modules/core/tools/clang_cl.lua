@@ -111,7 +111,10 @@ function nf_pcheader(self, pcheaderfile, target)
         if objectfiles then
             table.insert(objectfiles, target:pcoutputfile("c") .. ".obj")
         end
-        return {"-Yu" .. path.filename(pcheaderfile), "-FI" .. path.filename(pcheaderfile), "-I" .. path.directory(pcheaderfile), "-Fp" .. target:pcoutputfile("c")}
+        return {"-Yu" .. path.filename(pcheaderfile),
+                "-FI" .. path.filename(pcheaderfile),
+                "-I" .. path.directory(pcheaderfile),
+                "-Fp" .. target:pcoutputfile("c")}
     end
 end
 
@@ -124,7 +127,10 @@ function nf_pcxxheader(self, pcheaderfile, target)
         end
         -- https://github.com/xmake-io/xmake/issues/3905
         -- clang-cl need extra include search path
-        return {"-Yu" .. path.filename(pcheaderfile), "-FI" .. path.filename(pcheaderfile), "-I" .. path.directory(pcheaderfile), "-Fp" .. target:pcoutputfile("c")}
+        return {"-Yu" .. path.filename(pcheaderfile),
+                "-FI" .. path.filename(pcheaderfile),
+                "-I" .. path.directory(pcheaderfile),
+                "-Fp" .. target:pcoutputfile("cxx")}
     end
 end
 
