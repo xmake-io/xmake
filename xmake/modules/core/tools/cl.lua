@@ -314,11 +314,7 @@ end
 
 -- make the c precompiled header flag
 function nf_pcheader(self, pcheaderfile, target)
-
-    -- for c source file
     if self:kind() == "cc" then
-
-        -- patch objectfile
         local objectfiles = target:objectfiles()
         if objectfiles then
             table.insert(objectfiles, target:pcoutputfile("c") .. ".obj")
@@ -329,11 +325,7 @@ end
 
 -- make the c++ precompiled header flag
 function nf_pcxxheader(self, pcheaderfile, target)
-
-    -- for c++ source file
     if self:kind() == "cxx" then
-
-        -- patch objectfile
         local objectfiles = target:objectfiles()
         if objectfiles then
             table.insert(objectfiles, target:pcoutputfile("cxx") .. ".obj")

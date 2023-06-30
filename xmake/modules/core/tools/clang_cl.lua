@@ -104,6 +104,30 @@ function nf_optimize(self, level)
     return maps[level]
 end
 
+-- make the c precompiled header flag
+function nf_pcheader(self, pcheaderfile, target)
+    if self:kind() == "cc" then
+        local objectfiles = target:objectfiles()
+        if objectfiles then
+            table.insert(objectfiles, target:pcoutputfile("c") .. ".obj")
+        end
+        return {"-Yu" .. path.filename(pcheaderfile), "-FI" .. path.filename(pcheaderfile), "-I" .. path.directory(pcheaderfile), "-Fp" .. target:pcoutputfile("c")}
+    end
+end
+
+-- make the c++ precompiled header flag
+function nf_pcxxheader(self, pcheaderfile, target)
+    if self:kind() == "cxx" then
+        local objectfiles = target:objectfiles()
+        if objectfiles then
+            table.insert(objectfiles, target:pcoutputfile("cxx") .. ".obj")
+        end
+        -- https://github.com/xmake-io/xmake/issues/3905
+        -- clang-cl need extra include search path
+        return {"-Yu" .. path.filename(pcheaderfile), "-FI" .. path.filename(pcheaderfile), "-I" .. path.directory(pcheaderfile), "-Fp" .. target:pcoutputfile("c")}
+    end
+end
+
 -- compile the source file
 function compile(self, sourcefile, objectfile, dependinfo, flags)
 
