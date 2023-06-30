@@ -59,7 +59,7 @@ function _get_clang_scan_deps(target)
             local basename = path.basename(program)
             local extension = path.extension(program)
             program = (basename:gsub("clang", "clang-scan-deps")) .. extension
-            if os.isdir(dir) then
+            if dir and dir ~= "." and os.isdir(dir) then
                 program = path.join(dir, program)
             end
             local result = find_tool("clang-scan-deps", {program = program, version = true})
