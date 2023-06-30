@@ -919,7 +919,7 @@ function _instance:manifest_save()
     end
 
     -- save manifest
-    local ok, errors = io.save(self:manifest_file(), manifest)
+    local ok, errors = io.save(self:manifest_file(), manifest, { orderkeys = true })
     if not ok then
         os.raise(errors)
     end
