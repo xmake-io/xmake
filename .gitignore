@@ -30,6 +30,7 @@ winenv/
 
 # for compiler
 compile_commands.json
+.cache/
 
 # Makefile generation
 /core/xmake.config.h
