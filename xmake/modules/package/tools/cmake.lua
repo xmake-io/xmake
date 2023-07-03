@@ -486,9 +486,11 @@ function _get_configs_for_cross(package, configs, opt)
         local dir = path.directory(cxx)
         local name = path.filename(cxx)
         name = name:gsub("clang$", "clang++")
-        name = name:gsub("clang%-", "clang++-")
+        name = name:gsub("clang%-", "clang++-") -- clang-xx
+        name = name:gsub("clang%.", "clang++.") -- clang.exe
         name = name:gsub("gcc$", "g++")
         name = name:gsub("gcc%-", "g++-")
+        name = name:gsub("gcc%.", "g++.")
         if dir and dir ~= "." then
             cxx = path.join(dir, name)
         else
@@ -561,8 +563,10 @@ function _get_configs_for_host_toolchain(package, configs, opt)
         local name = path.filename(cxx)
         name = name:gsub("clang$", "clang++")
         name = name:gsub("clang%-", "clang++-")
+        name = name:gsub("clang%.", "clang++.")
         name = name:gsub("gcc$", "g++")
         name = name:gsub("gcc%-", "g++-")
+        name = name:gsub("gcc%.", "g++.")
         if dir and dir ~= "." then
             cxx = path.join(dir, name)
         else
