@@ -19,9 +19,9 @@
 #
 
 # register completions
-if   [[ "$SHELL" = */zsh ]]; then
+if   [[ -n "$ZSH_VERSION" ]]; then
   . "$XMAKE_PROGRAM_DIR/scripts/completions/register-completions.zsh"
-elif [[ "$SHELL" = */bash ]]; then
+elif [[ -n "$BASH_VERSION" ]]; then
   . "$XMAKE_PROGRAM_DIR/scripts/completions/register-completions.bash"
 fi
 
