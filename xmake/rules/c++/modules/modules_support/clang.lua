@@ -435,7 +435,7 @@ function generate_stl_headerunits_for_batchcmds(target, batchcmds, headerunits, 
             common.memcache():set2(headerunit.name, "building", true)
             local flags = {
                 path(stlcachedir, function (p) return modulecachepathflag .. p end),
-                "-c", "-o", path(bmifile), "-x", "c++-system-header", headerunit.name}
+                "-c", "-Wno-everything", "-o", path(bmifile), "-x", "c++-system-header", headerunit.name}
             batchcmds:show_progress(opt.progress, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
             _batchcmds_compile(batchcmds, target, flags)
         end
