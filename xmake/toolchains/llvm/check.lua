@@ -66,6 +66,21 @@ function main(toolchain)
                 sdkdir = path.directory(bindir)
             end
         end
+        -- attempt to get it from $PATH
+        if not sdkdir then
+            local pathenv = os.getenv("PATH")
+            if pathenv then
+                local buildhash_pattern = string.rep('%x', 32)
+                local match_pattern = "[\\/]packages[\\/]%w[\\/].*llvm.*[\\/][^\\/]+[\\/]" .. buildhash_pattern .. "[\\/]bin"
+                for _, p in ipairs(path.splitenv(pathenv)) do
+                    if (p:find(match_pattern) or p:find(string.ipattern("llvm[%w%-%_%+]*[\\/]bin"))) and
+                        path.filename(p) == "bin" and os.isdir(p) then
+                        sdkdir = path.directory(p)
+                        break
+                    end
+                end
+            end
+        end
     end
 
     -- find cross toolchain from external envirnoment
