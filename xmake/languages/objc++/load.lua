@@ -92,8 +92,8 @@ function _get_apis()
         -- target.set_xxx
         "target.set_headerdir"      -- TODO deprecated
     ,   "target.set_config_header"
-    ,   "target.set_pcheader"
-    ,   "target.set_pcxxheader"
+    ,   "target.set_pmheader"
+    ,   "target.set_pmxxheader"
         -- target.add_xxx
     ,   "target.add_headers"        -- TODO deprecated
     ,   "target.add_headerfiles"
