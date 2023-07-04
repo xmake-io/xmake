@@ -2092,11 +2092,7 @@ end
 -- @param langkind  c/cxx
 --
 function _instance:pcoutputfile(langkind)
-
-    -- init cache
     self._PCOUTPUTFILES = self._PCOUTPUTFILES or {}
-
-    -- get it from the cache first
     local pcoutputfile = self._PCOUTPUTFILES[langkind]
     if pcoutputfile then
         return pcoutputfile
@@ -2108,7 +2104,9 @@ function _instance:pcoutputfile(langkind)
 
         -- is gcc?
         local is_gcc = false
-        local _, toolname = self:tool(langkind == "c" and "cc" or "cxx")
+        local sourcekinds = {c = "cc", cxx = "cxx", m = "mm", mxx = "mxx"}
+        local sourcekind = assert(sourcekinds[langkind], "unknown language kind: " .. langkind)
+        local _, toolname = self:tool(sourcekind)
         if toolname and (toolname == "gcc" or toolname == "gxx") then
             is_gcc = true
         end
@@ -2118,9 +2116,7 @@ function _instance:pcoutputfile(langkind)
         -- @note gcc has not -include-pch option to set the pch file path
         --
         pcoutputfile = self:objectfile(pcheaderfile)
-        pcoutputfile = path.join(path.directory(pcoutputfile), path.basename(pcoutputfile) .. (is_gcc and ".gch" or ".pch"))
-
-        -- save to cache
+        pcoutputfile = path.join(path.directory(pcoutputfile), sourcekind, path.basename(pcoutputfile) .. (is_gcc and ".gch" or ".pch"))
         self._PCOUTPUTFILES[langkind] = pcoutputfile
         return pcoutputfile
     end
