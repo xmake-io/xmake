@@ -2116,7 +2116,7 @@ function _instance:pcoutputfile(langkind)
         -- @note gcc has not -include-pch option to set the pch file path
         --
         pcoutputfile = self:objectfile(pcheaderfile)
-        pcoutputfile = path.join(path.directory(pcoutputfile), path.basename(pcoutputfile) .. "." .. sourcekind .. (is_gcc and ".gch" or ".pch"))
+        pcoutputfile = path.join(path.directory(pcoutputfile), sourcekind, path.basename(pcoutputfile) .. (is_gcc and ".gch" or ".pch"))
         self._PCOUTPUTFILES[langkind] = pcoutputfile
         return pcoutputfile
     end
