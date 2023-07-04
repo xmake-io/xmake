@@ -9,6 +9,7 @@
 * [#3871](https://github.com/xmake-io/xmake/issues/3871): Improve tools.msbuild to support for upgrading vsproj
 * [#3148](https://github.com/xmake-io/xmake/issues/3148): Support grpc for protobuf
 * [#3889](https://github.com/xmake-io/xmake/issues/3889): Support to add library path for add_links
+* [#3912](https://github.com/orgs/xmake-io/issues/3912): Add set_pmxxheader to support objc precompiled header
 
 ### Changes
 
@@ -1610,6 +1611,7 @@
 * [#3871](https://github.com/xmake-io/xmake/issues/3871): 改进 tools.msbuild 支持对 vsproj 进行自动升级
 * [#3148](https://github.com/xmake-io/xmake/issues/3148): 改进 protobuf 支持 grpc
 * [#3889](https://github.com/xmake-io/xmake/issues/3889): add_links 支持库路径添加
+* [#3912](https://github.com/orgs/xmake-io/issues/3912): 添加 set_pmxxheader 去支持 objc 预编译头
 
 ### 改进
 
