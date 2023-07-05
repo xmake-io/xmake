@@ -396,7 +396,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 local lines = errors:split("\n", {plain = true})
                 local start = 0
                 for index, line in ipairs(lines) do
-                    if line:find("error:", 1, true) or line:find("错误：", 1, true) or line:match("ptxas fatal%s*:") or line:match("error %a+[0-9]+%s*:") then
+                    if line:find("[eE]rror:", 1, true) or line:find("错误：", 1, true) or line:match("ptxas fatal%s*:") or line:match("error %a+[0-9]+%s*:") then
                         start = index
                         break
                     end
