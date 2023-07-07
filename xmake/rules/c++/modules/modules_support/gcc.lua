@@ -45,7 +45,6 @@ end
 -- hello build/.gens/stl_headerunit/linux/x86_64/release/rules/modules/cache/hello.gcm
 --
 function _add_module_to_mapper(file, modulepath, bmi)
---    modulepath = path.normalize(modulepath)
     for line in io.lines(file) do
         if line:startswith(modulepath .. " ") then
             return false
