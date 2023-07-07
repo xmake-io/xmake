@@ -31,6 +31,7 @@ import("core.language.language")
 import("utils.progress")
 import("private.cache.build_cache")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
+import("rules.c++.modules.modules_support.common", {rootdir = os.programdir(), alias = "modules_common"})
 
 function init(self)
 
@@ -666,8 +667,8 @@ end
 
 -- get modules cache directory
 function _modules_cachedir(target)
-    if target and target.autogendir and target:data("cxx.has_modules") then -- we need ignore option instance
-        return path.join(target:autogendir(), "rules", "modules", "cache")
+    if target and target:type() == "target" and target:data("cxx.has_modules") then -- we need ignore option instance
+        return modules_common.modules_cachedir(target)
     end
 end
 

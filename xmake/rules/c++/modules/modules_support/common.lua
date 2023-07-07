@@ -55,7 +55,7 @@ end
 -- get modules cache directory
 function modules_cachedir(target, opt)
     opt = opt or {}
-    local cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
+    local cachedir = path.join(config.buildir(), "modules", "cache", config.mode() or "release")
     if opt.mkdir and not os.isdir(cachedir) then
         os.mkdir(cachedir)
     end
@@ -717,8 +717,16 @@ function install_module_target(target)
 end
 
 function get_modulehash(target, modulepath)
-    local key = path.directory(modulepath) .. target:name()
-    return hash.uuid(key):split("-", {plain = true})[1]:lower()
+    local projectdir = project.directory()
+    if path.is_absolute(modulepath) then
+        modulepath = path.normalize(path.absolute(modulepath, projectdir))
+    else
+        modulepath = path.normalize(modulepath)
+    end
+    if modulepath:startswith(projectdir) then
+        modulepath = path.relative(modulepath, projectdir)
+    end
+    return hash.uuid(modulepath):split("-", {plain = true})[1]:lower()
 end
 
 function get_metafile(target, modulefile)

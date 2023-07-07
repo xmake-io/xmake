@@ -36,12 +36,13 @@ import("common")
 -- /reference Foo=build/.gens/Foo/rules/modules/cache/Foo.ifc
 -- /headerUnit:angle glm/mat4x4.hpp=Users\arthu\AppData\Local\.xmake\packages\g\glm\0.9.9+8\91454f3ee0be416cb9c7452970a2300f\include\glm\mat4x4.hpp.ifc
 --
-function _add_module_to_mapper(target, argument, namekey, path, objectfile, bmifile, deps)
+function _add_module_to_mapper(target, argument, namekey, modulepath, objectfile, bmifile, deps)
     local modulemap = _get_modulemap_from_mapper(target)
     if modulemap[namekey] then
         return
     end
-    local mapflag = {argument, path .. "=" .. bmifile}
+    modulepath = path.normalize(modulepath)
+    local mapflag = {argument, modulepath .. "=" .. bmifile}
     modulemap[namekey] = {flag = mapflag, objectfile = objectfile, deps = deps}
     common.localcache():set2(_mapper_cachekey(target), "modulemap", modulemap)
 end

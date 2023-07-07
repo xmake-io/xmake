@@ -44,14 +44,14 @@ end
 -- /usr/include/c++/11/iostream build/.gens/stl_headerunit/linux/x86_64/release/stlmodules/cache/iostream.gcm
 -- hello build/.gens/stl_headerunit/linux/x86_64/release/rules/modules/cache/hello.gcm
 --
-function _add_module_to_mapper(file, module, bmi)
+function _add_module_to_mapper(file, modulepath, bmi)
     for line in io.lines(file) do
-        if line:startswith(module .. " ") then
+        if line:startswith(modulepath .. " ") then
             return false
         end
     end
     local f = io.open(file, "a")
-    f:print("%s %s", module, bmi)
+    f:print("%s %s", modulepath, bmi)
     f:close()
     return true
 end
