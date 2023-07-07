@@ -43,8 +43,8 @@ rule("cuda.gencodes")
 
         -- sm_20 and compute_20 is supported until CUDA 8
         -- sm_30 and compute_30 is supported until CUDA 10
-        local known_v_archs = hashset.of(20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, 80, 86, 87)
-        local known_r_archs = hashset.of(20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, 80, 86, 87)
+        local known_v_archs = hashset.of(20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, 80, 86, 87, 89, 90)
+        local known_r_archs = hashset.of(20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, 80, 86, 87, 89, 90)
 
         local function nf_cugencode(archs)
             if type(archs) ~= "string" then
