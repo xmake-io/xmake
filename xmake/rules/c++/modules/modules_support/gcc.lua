@@ -44,14 +44,15 @@ end
 -- /usr/include/c++/11/iostream build/.gens/stl_headerunit/linux/x86_64/release/stlmodules/cache/iostream.gcm
 -- hello build/.gens/stl_headerunit/linux/x86_64/release/rules/modules/cache/hello.gcm
 --
-function _add_module_to_mapper(file, module, bmi)
+function _add_module_to_mapper(file, modulepath, bmi)
+--    modulepath = path.normalize(modulepath)
     for line in io.lines(file) do
-        if line:startswith(module .. " ") then
+        if line:startswith(modulepath .. " ") then
             return false
         end
     end
     local f = io.open(file, "a")
-    f:print("%s %s", module, bmi)
+    f:print("%s %s", modulepath, bmi)
     f:close()
     return true
 end
@@ -293,6 +294,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
     -- build headerunits
     local projectdir = os.projectdir()
     for _, headerunit in ipairs(headerunits) do
+        print(headerunit)
         local headerunit_path
         if headerunit.type == ":quote" then
             headerunit_path = path.join(".", path.relative(headerunit.path, projectdir))
@@ -315,7 +317,17 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
                 -- generate headerunit
                 local args = { "-c" }
                 if headerunit.type == ":quote" then
-                    table.join2(args, { "-I", path.directory(path.relative(headerunit.path, projectdir)), "-x", "c++-user-header", headerunit.name })
+                    local includedir
+                    local p = headerunit.path
+                    if p:endswith(headerunit.name) then
+                        includedir = p:sub(1, #p - #headerunit.name - 1)
+                    else
+                        includedir = path.directory(p)
+                    end
+                    if path.is_absolute(includedir) then
+                        includedir = path.relative(includedir, projectdir)
+                    end
+                    table.join2(args, { "-I", includedir, "-x", "c++-user-header", headerunit.name })
                 elseif headerunit.type == ":angle" then
                     table.join2(args, { "-x", "c++-system-header", headerunit.name })
                 end
@@ -338,7 +350,17 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         local flags = {"-c"}
         local headerunit_path
         if headerunit.type == ":quote" then
-            table.join2(flags, {"-I", path(path.relative(headerunit.path, projectdir)):directory(), "-x", "c++-user-header", headerunit.name})
+            local includedir
+            local p = headerunit.path
+            if p:endswith(headerunit.name) then
+                includedir = p:sub(1, #p - #headerunit.name - 1)
+            else
+                includedir = path.directory(p)
+            end
+            if path.is_absolute(includedir) then
+                includedir = path.relative(includedir, projectdir)
+            end
+            table.join2(flags, {"-I", path(includedir), "-x", "c++-user-header", headerunit.name})
             headerunit_path = path.join(".", path.relative(headerunit.path, projectdir))
         elseif headerunit.type == ":angle" then
             table.join2(flags, {"-x", "c++-system-header", headerunit.name})
