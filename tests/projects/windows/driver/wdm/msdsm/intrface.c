@@ -598,24 +598,20 @@ Return Value:
     //
     if (!supported) {
 
+		//
+		// Get the inquiry data embedded in the device descriptor.
+		//
+		RtlStringCchCopyA((LPSTR)vendorId,
+						  sizeof(vendorId) / sizeof(vendorId[0]),
+						  (LPCSTR)(&inquiryData.VendorId));
 
-        if (!supported) {
+		RtlStringCchCopyA((LPSTR)productId,
+						  sizeof(productId) / sizeof(productId[0]),
+						  (LPCSTR)(&inquiryData.ProductId));
 
-            //
-            // Get the inquiry data embedded in the device descriptor.
-            //
-            RtlStringCchCopyA((LPSTR)vendorId,
-                              sizeof(vendorId) / sizeof(vendorId[0]),
-                              (LPCSTR)(&inquiryData.VendorId));
-
-            RtlStringCchCopyA((LPSTR)productId,
-                              sizeof(productId) / sizeof(productId[0]),
-                              (LPCSTR)(&inquiryData.ProductId));
-
-            supported = DsmpDeviceSupported(dsmContext,
-                                            (PCSZ)vendorId,
-                                            (PCSZ)productId);
-        }
+		supported = DsmpDeviceSupported(dsmContext,
+										(PCSZ)vendorId,
+										(PCSZ)productId);
 
         if (!supported) {
 
