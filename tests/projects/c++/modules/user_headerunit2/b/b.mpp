@@ -1,0 +1,3 @@
+﻿export module B;
+import A;
+import "../a/c.hpp";

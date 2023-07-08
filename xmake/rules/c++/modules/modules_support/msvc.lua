@@ -226,6 +226,7 @@ function generate_headerunit_for_batchjob(target, name, flags, objectfile, index
         progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", name)
         _compile(target, table.join(common_flags, flags))
         _add_objectfile_to_link_arguments(target, objectfile)
+        common.memcache():set2(name, "generating", false)
     end
 end
 
@@ -740,7 +741,20 @@ function get_requiresflags(target, requires, opt)
             local modulemap_ = _get_modulemap_from_mapper(dep)
             if modulemap_[name] then
                 table.join2(flags, modulemap_[name].flag)
-                table.join2(flags, modulemap_[name].deps or {})
+                -- we need ignore headerunits from deps
+                -- @see https://github.com/xmake-io/xmake/issues/3925
+                local skip = 0
+                for _, flag in ipairs(modulemap_[name].deps) do
+                    if flag:find("headerUnit:quote", 1, true) then
+                        skip = 2
+                    end
+                    if skip == 0 then
+                        table.insert(flags, flag)
+                    end
+                    if skip > 0 then
+                        skip = skip - 1
+                    end
+                end
                 already_mapped_modules[name] = true
                 goto continue
             end
