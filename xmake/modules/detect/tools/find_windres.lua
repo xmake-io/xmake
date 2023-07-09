@@ -21,9 +21,8 @@
 -- imports
 import("lib.detect.find_program")
 
--- check
+-- we cannot run `windres --version` to check it, because llvm-mingw/windres always return non-zero
 function _check(program, opt)
-    opt = opt or {}
     local objectfile = os.tmpfile() .. ".o"
     local resourcefile  = os.tmpfile() .. ".rc"
     io.writefile(resourcefile, [[
@@ -66,6 +65,8 @@ end
 --
 function main(opt)
     opt = opt or {}
-    opt.check = _check -- we cannot run `windres --version` to check it, because llvm-mingw/windres always return non-zero
+    opt.check = function (program)
+        _check(program, opt)
+    end
     return find_program(opt.program or "windres", opt)
 end
