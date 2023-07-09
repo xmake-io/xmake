@@ -649,7 +649,7 @@ function _get_configs_for_generator(package, configs, opt)
     elseif package:is_plat("mingw") and is_subhost("windows") then
         table.insert(configs, "-G")
         table.insert(configs, "MinGW Makefiles")
-    elseif package:is_plat("windows") then
+    elseif package:is_plat("windows") and not package:config("toolchains") then
         table.insert(configs, "-G")
         table.insert(configs, _get_cmake_generator_for_msvc(package))
     elseif package:is_plat("wasm") and is_subhost("windows") then
@@ -685,7 +685,7 @@ function _get_configs(package, configs, opt)
     opt._configs_str = string.serialize(configs, {indent = false, strip = true})
     _get_configs_for_install(package, configs, opt)
     _get_configs_for_generator(package, configs, opt)
-    if package:is_plat("windows") then
+    if package:is_plat("windows") and not package:config("toolchains") then
         _get_configs_for_windows(package, configs, opt)
     elseif package:is_plat("android") then
         _get_configs_for_android(package, configs, opt)
@@ -721,7 +721,7 @@ function buildenvs(package, opt)
     opt = opt or {}
     local envs = {}
     if package:is_plat("windows") then
-        envs = _get_msvc_runenvs(package)
+       -- envs = _get_msvc_runenvs(package)
     end
 
     -- we need pass pkgconf for windows/mingw without msys2/cygwin

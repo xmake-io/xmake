@@ -22,7 +22,8 @@
 import("lib.detect.find_program")
 
 -- check
-function _check(program)
+function _check(program, opt)
+    opt = opt or {}
     local objectfile = os.tmpfile() .. ".o"
     local resourcefile  = os.tmpfile() .. ".rc"
     io.writefile(resourcefile, [[
@@ -45,7 +46,7 @@ BEGIN
 END
     ]])
 
-    os.runv(program, {"-i", resourcefile, "-o", objectfile})
+    os.runv(program, {"-i", resourcefile, "-o", objectfile}, {envs = opt.envs})
     os.rm(resourcefile)
     os.rm(objectfile)
 end
