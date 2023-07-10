@@ -15,14 +15,14 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_swiftc.lua
+-- @file        find_swift_frontend.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find swiftc
+-- find swift_frontend
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
@@ -30,14 +30,14 @@ import("lib.detect.find_programver")
 --
 -- @code
 --
--- local swiftc = find_swiftc()
--- local swiftc, version = find_swiftc({program = "xcrun -sdk macosx swiftc", version = true})
+-- local swift_frontend = find_swift_frontend()
+-- local swift_frontend, version = find_swift_frontend({program = "xcrun -sdk macosx swift-frontend", version = true})
 --
 -- @endcode
 --
 function main(opt)
     opt = opt or {}
-    local program = find_program(opt.program or "swiftc", opt)
+    local program = find_program(opt.program or "swift-frontend", opt)
     local version = nil
     if program and opt and opt.version then
         version = find_programver(program, opt)
