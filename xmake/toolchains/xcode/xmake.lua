@@ -35,13 +35,14 @@ toolchain("xcode")
     on_load(function (toolchain)
 
         -- set toolset
-        local bindir      = toolchain:bindir()
-        local xc_clang    = bindir and path.join(bindir, "clang") or "clang"
-        local xc_clangxx  = bindir and path.join(bindir, "clang++") or "clang++"
-        local xc_ar       = bindir and path.join(bindir, "ar") or "ar"
-        local xc_strip    = bindir and path.join(bindir, "strip") or "strip"
-        local xc_swiftc   = bindir and path.join(bindir, "swiftc") or "swiftc"
-        local xc_dsymutil = bindir and path.join(bindir, "dsymutil") or "dsymutil"
+        local bindir            = toolchain:bindir()
+        local xc_clang          = bindir and path.join(bindir, "clang") or "clang"
+        local xc_clangxx        = bindir and path.join(bindir, "clang++") or "clang++"
+        local xc_ar             = bindir and path.join(bindir, "ar") or "ar"
+        local xc_strip          = bindir and path.join(bindir, "strip") or "strip"
+        local xc_swift_frontend = bindir and path.join(bindir, "swift-frontend") or "swift-frontend"
+        local xc_swiftc         = bindir and path.join(bindir, "swiftc") or "swiftc"
+        local xc_dsymutil       = bindir and path.join(bindir, "dsymutil") or "dsymutil"
 
         toolchain:set("toolset", "cc", xc_clang)
         toolchain:set("toolset", "cxx", xc_clang, xc_clangxx)
@@ -52,7 +53,7 @@ toolchain("xcode")
         toolchain:set("toolset", "dsymutil", xc_dsymutil, "dsymutil")
         toolchain:set("toolset", "mm", xc_clang)
         toolchain:set("toolset", "mxx", xc_clang, xc_clangxx)
-        toolchain:set("toolset", "sc", xc_swiftc, "swiftc")
+        toolchain:set("toolset", "sc", xc_swift_frontend, "swift_frontend", xc_swiftc, "swiftc")
         toolchain:set("toolset", "scld", xc_swiftc, "swiftc")
         toolchain:set("toolset", "scsh", xc_swiftc, "swiftc")
         if arch then
