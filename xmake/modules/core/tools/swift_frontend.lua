@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        swiftc.lua
+-- @file        swift_frontend.lua
 --
 
 -- imports
@@ -92,8 +92,7 @@ function nf_optimize(self, level)
     -- only for source kind
     local kind = self:kind()
     if language.sourcekinds()[kind] then
-        local maps =
-        {
+        local maps = {
             none        = "-Onone"
         ,   fast        = "-O"
         ,   faster      = "-O"
