@@ -19,6 +19,7 @@
 * [#3815](https://github.com/xmake-io/xmake/pull/3815): Improve tools.xmake to pass toolchains for windows
 * [#3857](https://github.com/xmake-io/xmake/issues/3857): Improve to generate compile_commands.json
 * [#3892](https://github.com/xmake-io/xmake/issues/3892): Improve to search packages from description
+* [#3916](https://github.com/xmake-io/xmake/issues/3916): Improve to build swift program, support for multiple modules
 * Update lua runtime to 5.4.6
 
 ### Bugs fixed
@@ -1621,6 +1622,7 @@
 * [#3815](https://github.com/xmake-io/xmake/pull/3815): 改进 tools.xmake 支持为 windows 平台传递工具链
 * [#3857](https://github.com/xmake-io/xmake/issues/3857): 改进生成 compile_commands.json
 * [#3892](https://github.com/xmake-io/xmake/issues/3892): 改进包搜索，支持从描述中找包
+* [#3916](https://github.com/xmake-io/xmake/issues/3916): 改进构建 swift 程序，支持模块间符号调用
 * 更新 lua 运行时到 5.4.6
 
 ### Bugs 修复
