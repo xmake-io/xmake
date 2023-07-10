@@ -12,26 +12,11 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Sousce Group.
+-- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        has_flags.lua
 --
 
--- define toolchain
-toolchain("swift")
-
-    -- set homepage
-    set_homepage("https://swift.org/")
-    set_description("Swift Programming Language Compiler")
-
-    -- set toolset
-    set_toolset("sc",   "$(env SC)", "swift-frontend", "swiftc")
-    set_toolset("scld", "$(env SC)", "swiftc")
-    set_toolset("scsh", "$(env SC)", "swiftc")
-
-    -- on load
-    on_load(function (toolchain)
-        toolchain:set("scshflags", "")
-        toolchain:set("scldflags", "")
-    end)
+-- imports
+inherit("detect.tools.swiftc.has_flags")
