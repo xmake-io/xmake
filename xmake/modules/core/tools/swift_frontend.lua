@@ -131,8 +131,16 @@ function nf_frameworkdir(self, frameworkdir)
 end
 
 -- make the compile arguments list
+-- @see https://github.com/xmake-io/xmake/issues/3916
 function compargv(self, sourcefile, objectfile, flags)
-    return self:program(), table.join("-c", flags, "-o", objectfile, "-primary-file", sourcefile)
+    local flags_new = {}
+    for _, flag in ipairs(flags) do
+        -- we need remove primary file in swift.build rule
+        if flag ~= sourcefile then
+            table.insert(flags_new, flag)
+        end
+    end
+    return self:program(), table.join("-c", flags_new, "-o", objectfile, "-primary-file", sourcefile)
 end
 
 -- compile the source file
