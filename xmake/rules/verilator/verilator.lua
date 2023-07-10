@@ -20,6 +20,7 @@
 
 -- imports
 import("utils.progress")
+import("core.base.hashset")
 import("core.project.depend")
 import("private.action.build.object", {alias = "build_objectfiles"})
 
@@ -112,14 +113,14 @@ function config(target)
     local sourcefile = path.join(tmpdir, "main.v")
     local argv = {"--cc", "--make", "cmake", "--prefix", "test", "--Mdir", tmpdir, "main.v"}
     local flags = target:values("verilator.flags")
+    local switches_flags = hashset.of( "sc", "coverage", "timing", "trace", "trace-fst", "threads")
     if flags then
-        for _, flag in ipairs(flags) do
-            -- we need ignore some unused flags in this stub testing
-            --
-            -- e.g. add_values("verilator.flags", "-GWIDTH=4", "--trace")
-            -- error: %Error: Parameters from the command line were not found in the design: WIDTH
-            if not flag:startswith("-G") then
+        for idx, flag in ipairs(flags) do
+            if flag:startswith("--") and switches_flags:has(flag:sub(3)) then
                 table.insert(argv, flag)
+                if flag:startswith("--threads") then
+                    table.insert(argv, flags[idx + 1])
+                end
             end
         end
     end
@@ -198,6 +199,9 @@ endmodule]])
     -- add syslinks
     if target:is_plat("linux", "macosx") and switches.THREADS == "1" then
         target:add("syslinks", "pthread")
+    end
+    if target:is_plat("linux", "macosx") and switches.TRACE_FST == "1" then
+        target:add("syslinks", "z")
     end
 
     os.rm(tmpdir)

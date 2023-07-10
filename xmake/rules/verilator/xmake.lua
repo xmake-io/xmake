@@ -20,7 +20,7 @@
 
 -- @see https://github.com/xmake-io/xmake/issues/3257
 rule("verilator.binary")
-    set_extensions(".v")
+    set_extensions(".v", ".sv")
     on_load(function (target)
         target:set("kind", "binary")
     end)
