@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        swiftc.lua
+-- @file        swift_frontend.lua
 --
 
 -- imports
@@ -57,15 +57,6 @@ function init(self)
     })
 end
 
--- make the strip flag
-function nf_strip(self, level)
-    local maps = {
-        debug = "-Xlinker -S"
-    ,   all   = "-Xlinker -s"
-    }
-    return maps[level]
-end
-
 -- make the symbol flag
 function nf_symbol(self, level)
     local maps = {
@@ -92,8 +83,7 @@ function nf_optimize(self, level)
     -- only for source kind
     local kind = self:kind()
     if language.sourcekinds()[kind] then
-        local maps =
-        {
+        local maps = {
             none        = "-Onone"
         ,   fast        = "-O"
         ,   faster      = "-O"
@@ -140,35 +130,17 @@ function nf_frameworkdir(self, frameworkdir)
     return {"-F", frameworkdir}
 end
 
--- make the link flag
-function nf_link(self, lib)
-    return "-l" .. lib
-end
-
--- make the syslink flag
-function nf_syslink(self, lib)
-    return nf_link(self, lib)
-end
-
--- make the linkdir flag
-function nf_linkdir(self, dir)
-    return {"-L", dir}
-end
-
--- make the link arguments list
-function linkargv(self, objectfiles, targetkind, targetfile, flags)
-    return self:program(), table.join("-o", targetfile, objectfiles, flags)
-end
-
--- link the target file
-function link(self, objectfiles, targetkind, targetfile, flags)
-    os.mkdir(path.directory(targetfile))
-    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
-end
-
 -- make the compile arguments list
+-- @see https://github.com/xmake-io/xmake/issues/3916
 function compargv(self, sourcefile, objectfile, flags)
-    return self:program(), table.join("-c", flags, "-o", objectfile, sourcefile)
+    local flags_new = {}
+    for _, flag in ipairs(flags) do
+        -- we need remove primary file in swift.build rule
+        if flag ~= sourcefile then
+            table.insert(flags_new, flag)
+        end
+    end
+    return self:program(), table.join("-c", flags_new, "-o", objectfile, "-primary-file", sourcefile)
 end
 
 -- compile the source file

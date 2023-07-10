@@ -22,6 +22,19 @@
 rule("swift.build")
     set_sourcekinds("sc")
     on_build_files("private.action.build.object", {batch = true})
+    on_config(function (target)
+        -- we use swift-frontend to support multiple modules
+        -- @see https://github.com/xmake-io/xmake/issues/3916
+        if target:has_tool("sc", "swift_frontend") then
+            target:add("scflags", "-module-name", target:name(), {force = true})
+            local sourcebatch = target:sourcebatches()["swift.build"]
+            if sourcebatch then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    target:add("scflags", sourcefile, {force = true})
+                end
+            end
+        end
+    end)
 
 -- define rule: swift
 rule("swift")

@@ -23,7 +23,6 @@ import("core.cache.detectcache")
 
 -- try running
 function _try_running(...)
-
     local argv = {...}
     local errors = nil
     return try { function () os.runv(table.unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
