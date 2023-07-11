@@ -721,7 +721,7 @@ function buildenvs(package, opt)
     opt = opt or {}
     local envs = {}
     if package:is_plat("windows") then
-       -- envs = _get_msvc_runenvs(package)
+        envs = _get_msvc_runenvs(package)
     end
 
     -- we need pass pkgconf for windows/mingw without msys2/cygwin
