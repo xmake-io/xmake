@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.8.1
+
 ### New features
 
 * [#3821](https://github.com/xmake-io/xmake/pull/3821): Add longpath option for windows installer
@@ -1605,6 +1607,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.8.1
 
 ### 新特性
 
