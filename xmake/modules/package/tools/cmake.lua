@@ -649,7 +649,7 @@ function _get_configs_for_generator(package, configs, opt)
     elseif package:is_plat("mingw") and is_subhost("windows") then
         table.insert(configs, "-G")
         table.insert(configs, "MinGW Makefiles")
-    elseif package:is_plat("windows") and not package:config("toolchains") then
+    elseif package:is_plat("windows") then
         table.insert(configs, "-G")
         table.insert(configs, _get_cmake_generator_for_msvc(package))
     elseif package:is_plat("wasm") and is_subhost("windows") then
@@ -685,7 +685,7 @@ function _get_configs(package, configs, opt)
     opt._configs_str = string.serialize(configs, {indent = false, strip = true})
     _get_configs_for_install(package, configs, opt)
     _get_configs_for_generator(package, configs, opt)
-    if package:is_plat("windows") and not package:config("toolchains") then
+    if package:is_plat("windows") then
         _get_configs_for_windows(package, configs, opt)
     elseif package:is_plat("android") then
         _get_configs_for_android(package, configs, opt)
