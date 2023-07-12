@@ -31,12 +31,10 @@ import("vstudio.vs")
 import("vsxmake.vsxmake")
 import("clang.compile_flags")
 import("clang.compile_commands")
+import("private.utils.statistics")
 
 function makers()
-
-    -- the maps
-    return
-    {
+    return {
         make             = makefile.make
     ,   makefile         = makefile.make
     ,   xmakefile        = xmakefile.make
@@ -71,15 +69,11 @@ end
 
 -- make project
 function _make(kind)
-
     local maps = makers()
     assert(maps[kind], "the project kind(%s) is not supported!", kind)
-
-    -- make it
     maps[kind](option.get("outputdir"))
 end
 
--- main
 function main()
 
     -- in project generator?
@@ -87,6 +81,9 @@ function main()
 
     -- config it first
     task.run("config")
+
+    -- post statistics
+    statistics.post()
 
     -- make project
     _make(option.get("kind"))

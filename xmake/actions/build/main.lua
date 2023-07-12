@@ -31,10 +31,10 @@ import("utils.progress")
 import("build")
 import("build_files")
 import("cleaner")
-import("statistics")
 import("check", {alias = "check_targets"})
 import("private.cache.build_cache")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
+import("private.utils.statistics")
 
 -- try building it
 function _do_try_build(configfile, tool, trybuild, trybuild_detected, targetname)
