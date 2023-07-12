@@ -293,7 +293,6 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
     -- build headerunits
     local projectdir = os.projectdir()
     for _, headerunit in ipairs(headerunits) do
-        print(headerunit)
         local headerunit_path
         if headerunit.type == ":quote" then
             headerunit_path = path.join(".", path.relative(headerunit.path, projectdir))
