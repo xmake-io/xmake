@@ -62,17 +62,21 @@ function _upgrade_vcxproj(projectfile, opt)
     local vs_info = assert(vsinfo(tonumber(vs_version)), "unknown vs version!")
     local vs_sdkver = opt.vs_sdkver or msvc:config("vs_sdkver") or vs_info.sdk_version
     local vs_toolset = _get_toolset_ver(opt.vs_toolset or msvc:config("vs_toolset")) or vs_info.toolset_version
+    local vs_toolsver = vs_info.project_version
     io.gsub(projectfile, "<PlatformToolset>v%d+</PlatformToolset>",
         "<PlatformToolset>" .. vs_toolset .. "</PlatformToolset>")
     io.gsub(projectfile, "<WindowsTargetPlatformVersion>.*</WindowsTargetPlatformVersion>",
         "<WindowsTargetPlatformVersion>" .. vs_sdkver .. "</WindowsTargetPlatformVersion>")
+    if vs_toolsver then 
+        io.gsub(projectfile, "ToolsVersion=\".-\"", "ToolsVersion=\"" .. vs_toolsver .. "\"")
+    end
 end
 
 -- upgrade vs project file
 function upgrade(projectfile, opt)
     if projectfile:endswith(".sln") then
         _upgrade_sln(projectfile, opt)
-    elseif projectfile:endswith(".vcxproj") then
+    elseif projectfile:endswith(".vcxproj") or projectfile:endswith(".props") then
         _upgrade_vcxproj(projectfile, opt)
     end
 end
