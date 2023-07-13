@@ -67,7 +67,7 @@ function _upgrade_vcxproj(projectfile, opt)
         "<PlatformToolset>" .. vs_toolset .. "</PlatformToolset>")
     io.gsub(projectfile, "<WindowsTargetPlatformVersion>.*</WindowsTargetPlatformVersion>",
         "<WindowsTargetPlatformVersion>" .. vs_sdkver .. "</WindowsTargetPlatformVersion>")
-    if vs_toolsver then 
+    if vs_toolsver then
         io.gsub(projectfile, "ToolsVersion=\".-\"", "ToolsVersion=\"" .. vs_toolsver .. "\"")
     end
 end
