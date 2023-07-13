@@ -272,6 +272,19 @@ function _get_vs_toolset(package)
     return toolset_ver
 end
 
+-- insert configs from envs
+function _insert_configs_from_envs(configs, envs, opt)
+    opt = opt or {}
+    local configs_str = opt._configs_str
+    for k, v in pairs(envs) do
+        if configs_str and configs_str:find(k, 1, true) then
+            -- use user custom configuration
+        else
+            table.insert(configs, "-D" .. k .. "=" .. v)
+        end
+    end
+end
+
 -- get configs for generic
 function _get_configs_for_generic(package, configs, opt)
     local cflags = _get_cflags(package, opt)
@@ -407,9 +420,7 @@ function _get_configs_for_appleos(package, configs, opt)
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM   = "NEVER"
     -- avoid install bundle targets
     envs.CMAKE_MACOSX_BUNDLE       = "NO"
-    for k, v in pairs(envs) do
-        table.insert(configs, "-D" .. k .. "=" .. v)
-    end
+    _insert_configs_from_envs(configs, envs, opt)
 end
 
 -- get configs for mingw
@@ -446,14 +457,10 @@ function _get_configs_for_mingw(package, configs, opt)
         local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
         envs.CMAKE_MAKE_PROGRAM = path.join(mingw, "bin", "mingw32-make.exe")
     end
-
     if opt.cmake_generator == "Ninja" then
         envs.CMAKE_MAKE_PROGRAM = "ninja"
     end
-
-    for k, v in pairs(envs) do
-        table.insert(configs, "-D" .. k .. "=" .. v)
-    end
+    _insert_configs_from_envs(configs, envs, opt)
 end
 
 -- get configs for wasm
@@ -530,7 +537,7 @@ function _get_configs_for_cross(package, configs, opt)
     end
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
-    envs.CMAKE_FIND_ROOT_PATH      = sdkdir
+    envs.CMAKE_FIND_ROOT_PATH              = sdkdir
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
@@ -541,9 +548,7 @@ function _get_configs_for_cross(package, configs, opt)
     -- Avoids finding host include/library path
     envs.CMAKE_FIND_USE_CMAKE_SYSTEM_PATH = "0"
     envs.CMAKE_FIND_USE_INSTALL_PREFIX = "0"
-    for k, v in pairs(envs) do
-        table.insert(configs, "-D" .. k .. "=" .. v)
-    end
+    _insert_configs_from_envs(configs, envs, opt)
 end
 
 -- get configs for host toolchain
@@ -600,9 +605,7 @@ function _get_configs_for_host_toolchain(package, configs, opt)
             table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
         end
     end
-    for k, v in pairs(envs) do
-        table.insert(configs, "-D" .. k .. "=" .. v)
-    end
+    _insert_configs_from_envs(configs, envs, opt)
 end
 
 -- get cmake generator for msvc
