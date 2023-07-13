@@ -45,7 +45,7 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
 
     -- init argv
     local argv = {}
-    if is_host("windows") and not os.is_subhost("msys", "cygwin") then
+    if is_host("windows") then
         -- force "x:\\xx" as local file
         local force_local = _g.force_local
         if force_local == nil then
