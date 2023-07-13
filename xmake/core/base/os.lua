@@ -1004,7 +1004,7 @@ function os.nuldev(input)
 
     -- mingw and cygwin have /dev/null
     if input then
-        if os.host() == "windows" and not os.is_subhost("msys", "cygwin") then
+        if os.host() == "windows" then
             -- init the input nuldev
             if xmake._NULDEV_INPUT == nil then
                 -- create an empty file

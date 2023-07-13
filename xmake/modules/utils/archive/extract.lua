@@ -33,7 +33,7 @@ import("extension", {alias = "get_archive_extension"})
 function _extract_using_tar(archivefile, outputdir, extension, opt)
 
     -- the tar of windows can only extract "*.tar"
-    if os.host() == "windows" and not os.is_subhost("msys", "cygwin") and extension ~= ".tar" then
+    if os.host() == "windows" and extension ~= ".tar" then
         return false
     end
 
@@ -84,7 +84,7 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
     end
 
     -- extract it
-    if is_host("windows") and not os.is_subhost("msys", "cygwin") then
+    if is_host("windows") then
         os.vrunv(program, argv, {curdir = outputdir})
     else
         os.vrunv(program, argv)
