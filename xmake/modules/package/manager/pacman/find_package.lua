@@ -113,7 +113,9 @@ function main(name, opt)
 
     -- for msys2/mingw? mingw-w64-[i686|x86_64]-xxx
     if is_subhost("msys") and opt.plat == "mingw" then
-        name = (opt.arch == "x86_64" and "mingw-w64-x86_64-" or "mingw-w64-i686-") .. name
+        -- try to get the package prefix from the environment first
+        -- https://www.msys2.org/docs/package-naming/
+        name = (os.getenv("MINGW_PACKAGE_PREFIX") or (opt.arch == "x86_64" and "mingw-w64-x86_64" or "mingw-w64-i686")) .. "-" .. name
     end
 
     -- get package files list
