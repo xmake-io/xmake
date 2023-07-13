@@ -2,6 +2,11 @@
 
 ## master (unreleased)
 
+### Changes
+
+* [#3960](https://github.com/xmake-io/xmake/issues/3960): Improve msys2/crt64 support
+* Improve to upgrade vcproj files in tools.msbuild
+
 ## v2.8.1
 
 ### New features
@@ -1607,6 +1612,11 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#3960](https://github.com/xmake-io/xmake/issues/3960): 改进 msys2/crt64 支持
+* 改进 tools.msbuild 升级 vcproj 文件
 
 ## v2.8.1
 
