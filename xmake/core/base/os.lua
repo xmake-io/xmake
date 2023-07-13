@@ -1002,7 +1002,6 @@ end
 -- get the system null device
 function os.nuldev(input)
 
-    -- mingw and cygwin have /dev/null
     if input then
         if os.host() == "windows" then
             -- init the input nuldev
