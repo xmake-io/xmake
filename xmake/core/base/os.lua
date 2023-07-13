@@ -1002,8 +1002,9 @@ end
 -- get the system null device
 function os.nuldev(input)
 
+    -- mingw and cygwin have /dev/null
     if input then
-        if os.host() == "windows" then
+        if os.host() == "windows" and not os.is_subhost("msys", "cygwin") then
             -- init the input nuldev
             if xmake._NULDEV_INPUT == nil then
                 -- create an empty file
@@ -1023,7 +1024,7 @@ function os.nuldev(input)
         end
         return xmake._NULDEV_INPUT
     else
-        if os.host() == "windows" then
+        if os.host() == "windows" and not os.is_subhost("msys", "cygwin") then
             -- @note cannot cache this file path to avoid multi-processes writing to the same file at the same time
             return os.tmpfile()
         else
