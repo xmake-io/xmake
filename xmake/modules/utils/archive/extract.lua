@@ -70,7 +70,7 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
     end
 
     -- set outputdir
-    if not is_host("windows") or os.is_subhost("msys", "cygwin") then
+    if not is_host("windows") then
         table.insert(argv, "-C")
         table.insert(argv, outputdir)
     end
