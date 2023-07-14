@@ -549,7 +549,7 @@ function _make_source_options_cuda(vcxprojfile, flags, opt)
 
         -- make Warning
         if flagstr:find("[%-/]W[1234]") then
-            local wlevel = flagstr:find("[%-/](W[1234])")
+            local wlevel = flagstr:match("[%-/](W[1234])")
             vcxprojfile:print("<Warning%s>%s</Warning>", condition, wlevel)
         elseif flagstr:find("[%-/]Wall") then
             vcxprojfile:print("<Warning%s>Wall</Warning>", condition)
