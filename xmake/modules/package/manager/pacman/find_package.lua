@@ -118,9 +118,8 @@ function main(name, opt)
         -- https://www.msys2.org/docs/package-naming/
         local prefix = "mingw-w64-"
         local arch = (opt.arch == "x86_64" and "x86_64-" or "i686-")
-
         local msystem = os.getenv("MSYSTEM")
-        if msystem and msystem ~= "MINGW32" then
+        if msystem and msystem ~= "MINGW32" and msystem ~= "MINGW64" then
             local i, j = msystem:find("%D+")
             name_alt = prefix .. msystem:sub(i, j):lower() .. "-" .. arch .. name
         end
