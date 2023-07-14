@@ -467,7 +467,8 @@ end
 function _add_target_include_directories(cmakelists, target, outputdir)
     local includedirs = _get_configs_from_target(target, "includedirs")
     if #includedirs > 0 then
-        cmakelists:print("target_include_directories(%s PRIVATE", target:name())
+        local access_type = target:kind() == "headeronly" and "INTERFACE" or "PRIVATE"
+        cmakelists:print("target_include_directories(%s %s", target:name(), access_type)
         for _, includedir in ipairs(includedirs) do
             cmakelists:print("    " .. _get_relative_unix_path(includedir, outputdir))
         end
