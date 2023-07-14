@@ -227,7 +227,7 @@ function sandbox_lib_detect_find_program._find(name, paths, opt)
     if envpaths then
         table.join2(syspaths, path.splitenv(envpaths))
     end]]
-    if os.host() ~= "windows" then
+    if os.host() ~= "windows" or os.is_subhost("msys", "cygwin") then
         table.insert(syspaths, "/usr/local/bin")
         table.insert(syspaths, "/usr/bin")
     end
