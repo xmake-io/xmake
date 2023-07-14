@@ -119,7 +119,7 @@ function main(name, opt)
         local prefix = "mingw-w64-"
         local arch = (opt.arch == "x86_64" and "x86_64-" or "i686-")
         local msystem = os.getenv("MSYSTEM")
-        if msystem and msystem ~= "MINGW32" and msystem ~= "MINGW64" then
+        if msystem and not msystem:startswith("MINGW") then
             local i, j = msystem:find("%D+")
             name_alt = prefix .. msystem:sub(i, j):lower() .. "-" .. arch .. name
         end
