@@ -112,12 +112,28 @@ function main(name, opt)
     end
 
     -- for msys2/mingw? mingw-w64-[i686|x86_64]-xxx
+    local name_alt
     if is_subhost("msys") and opt.plat == "mingw" then
-        name = (opt.arch == "x86_64" and "mingw-w64-x86_64-" or "mingw-w64-i686-") .. name
+        -- try to get the package prefix from the environment first
+        -- https://www.msys2.org/docs/package-naming/
+        local prefix = "mingw-w64-"
+        local arch = (opt.arch == "x86_64" and "x86_64-" or "i686-")
+        local msystem = os.getenv("MSYSTEM")
+        if msystem and not msystem:startswith("MINGW") then
+            local i, j = msystem:find("%D+")
+            name_alt = prefix .. msystem:sub(i, j):lower() .. "-" .. arch .. name
+        end
+        name = prefix .. arch .. name
     end
 
     -- get package files list
-    local list = try { function() return os.iorunv(pacman.program, {"-Q", "-l", name}) end }
+    local list
+    for _, n in ipairs({name, name_alt}) do
+        list = n and try { function() return os.iorunv(pacman.program, {"-Q", "-l", n}) end }
+        if list then
+            break
+        end
+    end
     if not list then
         return
     end
