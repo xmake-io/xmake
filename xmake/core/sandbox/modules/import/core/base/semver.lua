@@ -46,7 +46,7 @@ end
 -- semver.match('a.b.c') => nil
 --
 function sandbox_core_base_semver.match(str, pos, pattern)
-    return semver.match(str, pos)
+    return semver.match(str, pos, pattern)
 end
 
 -- is valid version?
