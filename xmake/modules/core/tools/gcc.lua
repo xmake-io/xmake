@@ -651,13 +651,19 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
         end
     end
 
-    -- compile header.h as c++?
+    -- set the language of precompiled header?
     if self:kind() == "cxx" then
         table.insert(pchflags, "-x")
         table.insert(pchflags, "c++-header")
+    elseif self:kind() == "cc" then
+        table.insert(pchflags, "-x")
+        table.insert(pchflags, "c-header")
     elseif self:kind() == "mxx" then
         table.insert(pchflags, "-x")
         table.insert(pchflags, "objective-c++-header")
+    elseif self:kind() == "mm" then
+        table.insert(pchflags, "-x")
+        table.insert(pchflags, "objective-c-header")
     end
 
     -- make the compile arguments list
