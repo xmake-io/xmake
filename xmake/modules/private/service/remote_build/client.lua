@@ -101,7 +101,7 @@ function remote_build_client:connect()
     local session_id = self:session_id()
     local ok = false
     local errors
-    print("%s: connect %s:%d ..", self, addr, port)
+    cprint("${dim}%s: connect %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         if stream:send_msg(message.new_connect(session_id, {token = token})) and stream:flush() then
@@ -117,9 +117,9 @@ function remote_build_client:connect()
         end
     end
     if ok then
-        print("%s: connected!", self)
+        cprint("${dim}%s: connected!", self)
     else
-        print("%s: connect %s:%d failed, %s", self, addr, port, errors or "unknown")
+        cprint("${dim}%s: connect %s:%d failed, %s", self, addr, port, errors or "unknown")
     end
 
     -- update status
@@ -149,7 +149,7 @@ function remote_build_client:disconnect()
     local session_id = self:session_id()
     local errors
     local ok = false
-    print("%s: disconnect %s:%d ..", self, addr, port)
+    cprint("${dim}%s: disconnect %s:%d ..", self, addr, port)
     if sock then
         local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
         if stream:send_msg(message.new_disconnect(session_id, {token = self:token()})) and stream:flush() then
@@ -169,9 +169,9 @@ function remote_build_client:disconnect()
         ok = true
     end
     if ok then
-        print("%s: disconnected!", self)
+        cprint("${dim}%s: disconnected!", self)
     else
-        print("%s: disconnect %s:%d failed, %s", self, addr, port, errors or "unknown")
+        cprint("${dim}%s: disconnect %s:%d failed, %s", self, addr, port, errors or "unknown")
     end
 
     -- update status
@@ -191,7 +191,7 @@ function remote_build_client:sync()
     local errors
     local ok = false
     local diff_files
-    print("%s: sync files in %s:%d ..", self, addr, port)
+    cprint("${dim}%s: sync files in %s:%d ..", self, addr, port)
     while sock do
 
         -- diff files
@@ -229,9 +229,9 @@ function remote_build_client:sync()
         break
     end
     if ok then
-        print("%s: sync files ok!", self)
+        cprint("${dim}%s: sync files ok!", self)
     else
-        print("%s: sync files failed in %s:%d, %s", self, addr, port, errors or "unknown")
+        cprint("${dim}%s: sync files failed in %s:%d, %s", self, addr, port, errors or "unknown")
     end
 end
 
@@ -247,7 +247,7 @@ function remote_build_client:pull(filepattern, outputdir)
     if not filepattern:find("*", 1, true) and os.isdir(filepattern) then
         filepattern = path.join(filepattern, "**")
     end
-    print("%s: pull %s in %s:%d ..", self, filepattern, addr, port)
+    cprint("${dim}%s: pull %s in %s:%d ..", self, filepattern, addr, port)
     local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_pull(session_id, filepattern, {token = self:token()})) and stream:flush() then
         local fileitems
@@ -280,9 +280,9 @@ function remote_build_client:pull(filepattern, outputdir)
         end
     end
     if ok then
-        print("%s: pull files to %s!", self, outputdir)
+        cprint("${dim}%s: pull files to %s!", self, outputdir)
     else
-        print("%s: pull files failed in %s:%d, %s", self, addr, port, errors or "unknown")
+        cprint("${dim}%s: pull files failed in %s:%d, %s", self, addr, port, errors or "unknown")
     end
 end
 
@@ -295,7 +295,7 @@ function remote_build_client:clean()
     local session_id = self:session_id()
     local errors
     local ok = false
-    print("%s: clean files in %s:%d ..", self, addr, port)
+    cprint("${dim}%s: clean files in %s:%d ..", self, addr, port)
     local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_clean(session_id, {token = self:token()})) and stream:flush() then
         local msg = stream:recv_msg({timeout = -1})
@@ -309,9 +309,9 @@ function remote_build_client:clean()
         end
     end
     if ok then
-        print("%s: clean files ok!", self)
+        cprint("${dim}%s: clean files ok!", self)
     else
-        print("%s: clean files failed in %s:%d, %s", self, addr, port, errors or "unknown")
+        cprint("${dim}%s: clean files failed in %s:%d, %s", self, addr, port, errors or "unknown")
     end
 end
 
@@ -327,7 +327,7 @@ function remote_build_client:runcmd(program, argv)
     local buff = bytes(8192)
     local command = os.args(table.join(program, argv))
     local leftstr = ""
-    cprint("%s: run ${bright}%s${clear} in %s:%d ..", self, command, addr, port)
+    cprint("${dim}%s: run '%s' in %s:%d ..", self, command, addr, port)
     local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_runcmd(session_id, program, argv, {token = self:token()})) and stream:flush() then
         local stdin_opt = {stop = false}
@@ -373,9 +373,9 @@ function remote_build_client:runcmd(program, argv)
         cprint(leftstr)
     end
     if ok then
-        print("%s: run command ok!", self)
+        cprint("${dim}%s: run command ok!", self)
     else
-        print("%s: run command failed in %s:%d, %s", self, addr, port, errors or "unknown")
+        cprint("${dim}%s: run command failed in %s:%d, %s", self, addr, port, errors or "unknown")
     end
     io.flush()
 end
