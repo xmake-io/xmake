@@ -7,6 +7,10 @@
 * [#3960](https://github.com/xmake-io/xmake/issues/3960): Improve msys2/crt64 support
 * Improve to upgrade vcproj files in tools.msbuild
 
+### Bugs fixed
+
+* Fix exit all child processes on macOS/Linux
+
 ## v2.8.1
 
 ### New features
@@ -1617,6 +1621,10 @@
 
 * [#3960](https://github.com/xmake-io/xmake/issues/3960): 改进 msys2/crt64 支持
 * 改进 tools.msbuild 升级 vcproj 文件
+
+### Bugs 修复
+
+* 修复 macOS/Linux 上子子进程无法快速退出问题
 
 ## v2.8.1
 
