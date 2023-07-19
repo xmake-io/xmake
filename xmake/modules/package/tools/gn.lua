@@ -67,9 +67,6 @@ function _get_configs(package, configs, opt)
         configs.target_cpu = "arm"
     end
     configs.is_debug = package:is_debug()
-    if not package:is_debug() then
-        configs.symbol_level = 0
-    end
     return configs
 end
 
