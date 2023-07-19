@@ -21,7 +21,7 @@
 rule("utils.merge.archive")
     set_extensions(".a", ".lib")
     after_load(function (target)
-        -- we need disable inherit links if all static deps have been merged
+        -- we need to disable inherit links if all static deps have been merged
         -- and we must disable it in after_load, because it will be called before rule(utils.inherit.links).on_config
         --
         -- @see https://github.com/xmake-io/xmake/issues/3404

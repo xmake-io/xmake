@@ -73,7 +73,7 @@ function save(dependinfo, dependfile)
     io.save(dependfile, dependinfo)
 end
 
--- the dependent info is changed?
+-- Is the dependent info changed?
 --
 -- if not depend.is_changed(dependinfo, {filemtime = os.mtime(objectfile), values = {...}}) then
 --      return
@@ -88,7 +88,7 @@ function is_changed(dependinfo, opt)
         return true
     end
 
-    -- check the dependent files are changed?
+    -- check whether the dependent files are changed
     local lastmtime = opt.lastmtime or 0
     _g.files_mtime = _g.files_mtime or {}
     local files_mtime = _g.files_mtime
@@ -104,7 +104,7 @@ function is_changed(dependinfo, opt)
         end
     end
 
-    -- check the dependent values are changed?
+    -- check whether the dependent values are changed
     local depvalues = values
     local optvalues = table.wrap(opt.values)
     if #depvalues ~= #optvalues then
@@ -127,7 +127,7 @@ function is_changed(dependinfo, opt)
         end
     end
 
-    -- check the dependent files list are changed?
+    -- check whether the dependent files list are changed
     if opt.files then
         local optfiles = table.wrap(opt.files)
         if #files ~= #optfiles then

@@ -39,14 +39,14 @@ function _register_required_package_libs(instance, required_package, is_deps)
         if fetchinfo then
             fetchinfo.name = nil
             if is_deps then
-                -- we need only reserve license for root package
+                -- we only need reserve license for root package
                 --
                 -- @note the license compatibility between the root package and
                 -- its dependent packages is guaranteed by the root package itself
                 --
                 fetchinfo.license = nil
 
-                -- we need only some infos for root package
+                -- we only need some infos for root package
                 fetchinfo.version = nil
                 fetchinfo.static  = nil
                 fetchinfo.shared  = nil

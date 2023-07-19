@@ -177,7 +177,7 @@ function _remove_packages(packages)
         end
     end
     if not packagefile then
-        -- avoid to override extra configs in add_requires/xmake.lua
+        -- avoid overriding extra configs in add_requires/xmake.lua
         if extra then
             local extra_str = string.serialize(extra, {indent = false, strip = true})
             table.insert(require_argv, "--extra=" .. extra_str)

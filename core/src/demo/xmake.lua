@@ -11,16 +11,16 @@ target("demo")
     -- make as a binary
     set_kind("binary")
 
-    -- add defines
+    -- add definitions
     add_defines("__tb_prefix__=\"xmake\"")
 
     -- add includes directory
     add_includedirs("$(projectdir)", "$(projectdir)/src")
 
-    -- add the common source files
+    -- add common source files
     add_files("**.c")
 
-    -- add the resource files (it will be enabled after publishing new version)
+    -- add resource files (it will be enabled after publishing new version)
     if is_plat("windows") then
         add_files("*.rc")
     end

@@ -206,7 +206,7 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target)
     end
 end
 
--- get batch jobs, @note we need export it for private.diagnosis.dump_buildjobs
+-- get batch jobs, @note we need to export it for private.diagnosis.dump_buildjobs
 function get_batchjobs(targetname, group_pattern)
 
     -- get root targets

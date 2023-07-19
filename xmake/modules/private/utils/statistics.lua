@@ -68,7 +68,7 @@ function post()
         return
     end
 
-    -- mark as posted first, avoid to post it repeatly
+    -- mark as posted first, avoid posting it repeatly
     io.writefile(markfile, "ok")
 
     -- init argument list

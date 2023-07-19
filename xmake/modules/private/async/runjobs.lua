@@ -67,7 +67,7 @@ function main(name, jobs, opt)
     assert(jobs, "runjobs: no jobs!")
 
     -- show waiting tips?
-    local showprogress = io.isatty() and (opt.progress or opt.showtips) -- we need hide wait characters if is not a tty
+    local showprogress = io.isatty() and (opt.progress or opt.showtips) -- we need to hide wait characters if is not a tty
     local progress_helper
     local backnum = 0
     if showprogress then
@@ -186,7 +186,7 @@ function main(name, jobs, opt)
                         break
                     end
 
-                    -- priority changed? we need wait all running jobs exited
+                    -- priority changed? we need to wait all running jobs exited
                     priority_curr = priority or priority_prev
                     assert(priority_curr >= priority_prev, "runjobs: invalid priority(%d < %d)!", priority_curr, priority_prev)
                     if priority_curr > priority_prev then
@@ -261,7 +261,7 @@ function main(name, jobs, opt)
             end
         end)
 
-        -- need only one job exited if be same priority
+        -- only need one job exited if be same priority
         if priority_curr == priority_prev then
             scheduler.co_group_wait(group_name, {limit = 1})
         else

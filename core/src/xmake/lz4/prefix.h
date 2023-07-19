@@ -33,7 +33,7 @@
  * types
  */
 
-// we need define LZ4_byte if < 1.9.3
+// we need to define LZ4_byte if < 1.9.3
 #if defined(LZ4_VERSION_NUMBER) && LZ4_VERSION_NUMBER < (1 * 100 * 100 + 9 * 100 + 3)
 #   if defined(__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */)
 #       include <stdint.h>

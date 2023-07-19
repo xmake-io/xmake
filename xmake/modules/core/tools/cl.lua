@@ -116,7 +116,7 @@ function nf_symbols(self, levels, target)
 
             -- check and add symbol output file
             --
-            -- @note we need use `{}` to wrap it to avoid expand it
+            -- @note we need to use `{}` to wrap it to avoid expand it
             -- https://github.com/xmake-io/xmake/issues/2061#issuecomment-1042590085
             local pdbflags = {"-Fd" .. (target:is_static() and symbolfile or path.join(symboldir, "compile." .. path.filename(symbolfile)))}
             if self:has_flags({"-FS", "-Fd" .. os.nuldev() .. ".pdb"}, "cxflags", { flagskey = "-FS -Fd" }) then
@@ -163,7 +163,7 @@ function nf_optimize(self, level)
         none        = "-Od"
     ,   faster      = "-Ox"
     ,   fastest     = "-O2 -fp:fast"
-    ,   smallest    = "-O1 -GL" -- /GL and (/OPT:REF is on by default in linker), we need enable /ltcg
+    ,   smallest    = "-O1 -GL" -- /GL and (/OPT:REF is on by default in linker), we need to enable /ltcg
     ,   aggressive  = "-O2 -fp:fast"
     }
     return maps[level]
@@ -521,7 +521,7 @@ end
 -- compile preprocessed file
 function _compile_preprocessed_file(program, cppinfo, opt)
     local outdata, errdata = vstool.iorunv(program, winos.cmdargv(table.join(cppinfo.cppflags, "-Fo" .. cppinfo.objectfile, cppinfo.cppfile)), opt)
-    -- we need get warning information from output
+    -- we need to get warning information from output
     cppinfo.outdata = outdata
     cppinfo.errdata = errdata
 end
@@ -592,7 +592,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                 end
             end
 
-            -- we need show full file path to goto error position if xmake is called in vstudio
+            -- we need to show full file path to goto error position if xmake is called in vstudio
             -- https://github.com/xmake-io/xmake/issues/1049
             if _is_in_vstudio() then
                 if compflags == flags then

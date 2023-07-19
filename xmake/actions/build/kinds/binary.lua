@@ -157,7 +157,7 @@ function main(batchjobs, rootjob, target)
         _link_target(target, {progress = (index * 100) / total})
     end, {rootjob = rootjob})
 
-    -- we need only return and depend the link job for each target,
+    -- we only need to return and depend the link job for each target,
     -- so we can compile the source files for each target in parallel
     --
     -- unless call set_policy("build.across_targets_in_parallel", false) to disable to build across targets in parallel.

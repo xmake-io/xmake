@@ -91,7 +91,7 @@ rule("c++.build.modules.builder")
             -- build modules
             common.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
 
-            -- generate headerunits and we need do it before building modules
+            -- generate headerunits and we need to do it before building modules
             local user_headerunits, stl_headerunits = common.get_headerunits(target, sourcebatch, modules)
             if user_headerunits or stl_headerunits then
                 -- we need new group(headerunits)

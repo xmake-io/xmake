@@ -9,6 +9,6 @@ function main(cmd)
         end)
     end
     -- check processes status after exiting
-    -- we need terminate all unclosed processes automatically after parent process is exited
+    -- we need to terminate all unclosed processes automatically after parent process is exited
     -- ps aux | grep sleep
 end

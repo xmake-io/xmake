@@ -952,7 +952,7 @@ function _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir
     end
     if suffix == "before" then
         -- ADD_CUSTOM_COMMAND and PRE_BUILD did not work as I expected,
-        -- so we need use add_dependencies and fake target to support it.
+        -- so we need to use add_dependencies and fake target to support it.
         --
         -- @see https://gitlab.kitware.com/cmake/cmake/-/issues/17802
         --
@@ -1052,7 +1052,7 @@ function _add_target(cmakelists, target, outputdir)
     _add_target_dependencies(cmakelists, target)
 
     -- add target custom commands
-    -- we need call it first for running all rules, these rules will change some flags, e.g. c++modules
+    -- we need to call it first for running all rules, these rules will change some flags, e.g. c++modules
     _add_target_custom_commands(cmakelists, target, outputdir)
 
     -- add target precompilied header

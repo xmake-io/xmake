@@ -71,7 +71,7 @@ function _compile(target, flags, sourcefile)
 end
 
 -- do compile for batchcmds
--- @note we need use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
+-- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
 function _batchcmds_compile(batchcmds, target, flags, sourcefile)
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
@@ -741,7 +741,7 @@ function get_requiresflags(target, requires, opt)
             local modulemap_ = _get_modulemap_from_mapper(dep)
             if modulemap_[name] then
                 table.join2(flags, modulemap_[name].flag)
-                -- we need ignore headerunits from deps
+                -- we need to ignore headerunits from deps
                 -- @see https://github.com/xmake-io/xmake/issues/3925
                 local skip = 0
                 for _, flag in ipairs(modulemap_[name].deps) do

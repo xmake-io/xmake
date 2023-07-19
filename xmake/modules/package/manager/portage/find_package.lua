@@ -90,7 +90,7 @@ function main(name, opt)
         includedirs = table.unique(includedirs)
         result = find_package_from_pkgconfig(pkgconfig_name, {configdirs = pkgconfig_dir, linkdirs = linkdirs})
         if not result and has_includes then
-            -- header only and hidden /usr/include? we need only return empty {}
+            -- header only and hidden /usr/include? we only need to return empty {}
             result = {}
         end
     end

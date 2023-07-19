@@ -9,7 +9,7 @@ set_warnings "all"
 # set language: c99
 set_languages "c99"
 
-# add defines
+# add definitions
 add_defines "_GNU_SOURCE=1"  "_FILE_OFFSET_BITS=64"  "_LARGEFILE_SOURCE"
 
 # disable some compiler errors

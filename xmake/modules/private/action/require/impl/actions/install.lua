@@ -202,7 +202,7 @@ function _fix_paths_for_precompiled_package(package)
             for _, file in ipairs(os.files(filepattern)) do
                 if remote_prefix then
                     local _, count = io.replace(file, remote_prefix, local_prefix, {plain = true})
-                    -- maybe we need translate path seperator
+                    -- maybe we need to translate path seperator
                     -- @see https://github.com/xmake-io/xmake/discussions/3008
                     if count == 0 and is_host("windows") then
                         io.replace(file, (remote_prefix:gsub("\\", "/")), local_prefix:gsub("\\", "/"), {plain = true})
@@ -275,7 +275,7 @@ function _enter_workdir(package)
         oldir = os.cd(workdir)
     end
 
-    -- we need copy source codes to the working directory with short path on windows
+    -- we need to copy source codes to the working directory with short path on windows
     --
     -- Because the target name and source file path of this project are too long,
     -- it's absolute path exceeds the windows path length limit.

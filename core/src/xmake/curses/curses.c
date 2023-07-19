@@ -830,7 +830,7 @@ int xm_lua_curses_register(lua_State* lua, const char* module)
     /* since version 5.4, the ncurses library decides how to interpret non-ASCII data using the nl_langinfo function.
      * that means that you have to call setlocale() in the application and encode Unicode strings using one of the system’s available encodings.
      *
-     * and we need link libncurses_window.so for drawing vline, hline characters
+     * and we need to link libncurses_window.so for drawing vline, hline characters
      */
 #if defined(NCURSES_VERSION)
     setlocale(LC_ALL, "");

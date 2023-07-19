@@ -73,7 +73,7 @@ function _find_static_links_3rd(target, linkdirs, qt_sdkver, libpattern)
     for _, linkdir in ipairs(linkdirs) do
         for _, libpath in ipairs(os.files(path.join(linkdir, libpattern))) do
             local basename = path.basename(libpath)
-            -- we need ignore qt framework libraries, e.g. libQt5xxx.a, Qt5Core.lib ..
+            -- we need to ignore qt framework libraries, e.g. libQt5xxx.a, Qt5Core.lib ..
             -- but bundled library names like libQt5Bundledxxx.a on Qt6.x
             -- @see https://github.com/xmake-io/xmake/issues/3572
             if basename:startswith("libQt" .. qt_sdkver:major() .. "Bundled") or (
@@ -181,7 +181,7 @@ function main(target, opt)
         end
     end
 
-    -- add defines for the compile mode
+    -- add definitions for the compile mode
     if is_mode("debug") then
         target:add("defines", "QT_QML_DEBUG")
     elseif is_mode("release") then
@@ -214,7 +214,7 @@ function main(target, opt)
         end
     end
 
-    -- backup the user syslinks, we need add them behind the qt syslinks
+    -- backup the user syslinks, we need to add them behind the qt syslinks
     local syslinks_user = target:get("syslinks")
     target:set("syslinks", nil)
 
@@ -255,7 +255,7 @@ function main(target, opt)
                     _add_includedirs(target, path.join(qt.includedir, private_dir, qt.sdkver))
                 end
             else
-                -- add defines
+                -- add definitions
                 target:add("defines", "QT_" .. framework:sub(3):upper() .. "_LIB")
 
                 -- add includedirs
@@ -349,7 +349,7 @@ function main(target, opt)
         target:add("syslinks", "ws2_32", "gdi32", "ole32", "advapi32", "shell32", "user32", "opengl32", "imm32", "winmm", "iphlpapi")
     elseif target:is_plat("mingw") then
         target:set("frameworks", nil)
-        -- we need fix it, because gcc maybe does not work on latest mingw when `-isystem D:\a\_temp\msys64\mingw64\include` is passed.
+        -- we need to fix it, because gcc maybe does not work on latest mingw when `-isystem D:\a\_temp\msys64\mingw64\include` is passed.
         -- and qt.includedir will be this path value when Qt sdk directory just is `D:\a\_temp\msys64\mingw64`
         -- @see https://github.com/msys2/MINGW-packages/issues/10761#issuecomment-1044302523
         if is_subhost("msys") then

@@ -835,7 +835,7 @@ _get_abstract_flag_for_gcc_clang() {
                 string_replace "${value}" "\$ORIGIN" "@loader_path"; value="${_ret}"
                 flag="-Xlinker -rpath -Xlinker ${value}"
             else
-                # escape $ORIGIN in makefile, TODO we need also handle it for ninja
+                # escape $ORIGIN in makefile, TODO we also need to handle it for ninja
                 string_replace "${value}" "@loader_path" '$$ORIGIN'; value="${_ret}"
                 if is_plat "bsd"; then
                     flag="-Wl,-zorigin -Wl,-rpath='${value}'"
@@ -1835,7 +1835,7 @@ _get_target_flags() {
 _add_target_filepaths() {
     local key="$1"
     shift
-    # we need avoid escape `*` automatically in for-loop
+    # we need to avoid escape `*` automatically in for-loop
     local file=""
     string_replace "${@}" "\*" "?"; local list="${_ret}"
     if test_eq "${key}" "files"; then
@@ -2079,7 +2079,7 @@ add_configfiles() {
     _add_target_filepaths "configfiles" "$@"
 }
 
-# add defines in target
+# add definitions in target
 add_defines() {
     local define=""
     if ${_loading_targets} && test_z "${_xmake_sh_option_current}"; then

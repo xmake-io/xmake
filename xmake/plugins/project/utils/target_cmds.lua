@@ -92,7 +92,7 @@ end
 function get_target_buildcmd_sourcegroups(target, cmds, sourcegroups, suffix)
     for idx, group in irpairs(sourcegroups) do
         for _, item in pairs(group) do
-            -- buildcmd scripts are always in rule, so we need ignore target item (item.target).
+            -- buildcmd scripts are always in rule, so we need to ignore target item (item.target).
             local sourcebatch = item.sourcebatch
             if item.rule then
                 if not _sourcebatch_is_built(sourcebatch) then

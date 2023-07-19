@@ -41,7 +41,7 @@ function _instance.new(kind, name, program, plat, arch, toolchain_inst)
     -- import "core.tools.xxx"
     local toolclass = nil
     if os.isfile(path.join(os.programdir(), "modules", "core", "tools", name .. ".lua")) then
-        toolclass = import("core.tools." .. name, {nocache = true}) -- @note we need create a tool instance with unique toolclass context (_g)
+        toolclass = import("core.tools." .. name, {nocache = true}) -- @note we need to create a tool instance with unique toolclass context (_g)
     end
 
     -- not found?
@@ -202,7 +202,7 @@ function _instance:_sysflags(toolkind, flagkind)
             table.insert(sourceflags, flagkind)
             table.insert(sourceflags, "mxxflags")
         else
-            -- flagkind may be ldflags, we need ignore it
+            -- flagkind may be ldflags, we need to ignore it
             -- and we should use more precise flagkind, e.g. rcldflags instead of ldflags
         end
     end
@@ -255,7 +255,7 @@ function tool.load(kind, opt)
     if program then
         local pos = program:find('@', 1, true)
         if pos then
-            -- we need ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
+            -- we need to ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
             -- https://github.com/xmake-io/xmake/issues/2853
             local prefix = program:sub(1, pos - 1)
             if prefix and not prefix:find("[/\\]") then

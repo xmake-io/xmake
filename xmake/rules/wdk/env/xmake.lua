@@ -47,7 +47,7 @@ rule("wdk.env")
                 wdk.kmdfver = kmdfver
             end
 
-            -- add defines for debug
+            -- add definitions for debug
             if is_mode("debug") then
                 target:add("defines", "DBG=1")
             end
@@ -67,7 +67,7 @@ rule("wdk.env")
             -- get ntddi version
             local ntddi_version = os_winver.ntddi_version(winver or "") or "0x0A000000"
 
-            -- add defines for winver
+            -- add definitions for winver
             target:add("defines", "_WIN32_WINNT=" .. winnt_version, "WINVER=" .. winver_version, "NTDDI_VERSION=" .. ntddi_version, "_NT_TARGET_VERSION=" .. target_version)
 
             -- set builtin version values

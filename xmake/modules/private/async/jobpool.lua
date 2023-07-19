@@ -123,7 +123,7 @@ function jobpool:pop()
 
         -- update all parents nodes
         for _, p in ipairs(parents) do
-            -- we need avoid add it the leafjobs repeatly, it will cause dead-loop when poping group job
+            -- we need to avoid adding it to leafjobs repeatly, it will cause dead-loop when poping group job
             -- @see https://github.com/xmake-io/xmake/issues/2740
             if not p._leaf then
                 p._priority = math.max(p._priority or 0, priority + 1)

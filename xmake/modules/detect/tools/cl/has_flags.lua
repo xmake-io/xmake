@@ -75,7 +75,7 @@ function _check_try_running(flags, opt)
     return try  {   function ()
                         local tmpdir = os.tmpdir()
                         local _, errs = os.iorunv(opt.program, table.join("-c", "-nologo", flags, "-Fo" .. os.nuldev(), sourcefile),
-                                            {envs = opt.envs, curdir = tmpdir}) -- we need switch to tmpdir to avoid generating some tmp files, e.g. /Zi -> vc140.pdb
+                                            {envs = opt.envs, curdir = tmpdir}) -- we need to switch to tmpdir to avoid generating some tmp files, e.g. /Zi -> vc140.pdb
                         if errs and #errs:trim() > 0 then
                             return false, errs
                         end

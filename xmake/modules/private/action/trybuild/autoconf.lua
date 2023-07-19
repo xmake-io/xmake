@@ -154,7 +154,7 @@ function _get_buildenvs()
             name = name:gsub("g%+%+%-%d+", "ld")
             envs.LD = dir and path.join(dir, name) or name
         end
-        -- we need use clang++ as cxx, autoconf will use it as linker
+        -- we need to use clang++ as cxx, autoconf will use it as linker
         -- https://github.com/xmake-io/xmake/issues/2170
         local cxx = envs.CXX
         if cxx then

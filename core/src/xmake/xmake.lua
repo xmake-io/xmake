@@ -15,7 +15,7 @@ target("xmake")
         add_deps("pdcurses")
     end
 
-    -- add defines
+    -- add definitions
     add_defines("__tb_prefix__=\"xmake\"")
     if is_mode("debug") then
         add_defines("__tb_debug__", {public = true})
@@ -49,7 +49,7 @@ target("xmake")
         add_options("curses")
     end
 
-    -- add defines
+    -- add definitions
     if is_plat("windows") then
         add_defines("UNICODE", "_UNICODE")
     end

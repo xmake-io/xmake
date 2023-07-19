@@ -80,7 +80,7 @@ function main(hosts, opt)
                 if cacheinfo then
                     cacheinfo[host] = timeval
                 end
-                vprint("pinging for the host(%s) ... %d ms", host, math.floor(timeval))
+                vprint("pinging the host(%s) ... %d ms", host, math.floor(timeval))
             end
         end
     end, {total = #hosts})

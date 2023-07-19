@@ -771,7 +771,7 @@ function os.execv(program, argv, opt)
         local head = file:read("l")
         if head and head:startswith("#!") then
             -- we cannot run `/bin/sh` directly on msys2/cygwin
-            -- because `/bin/sh` is not real file path, maybe we need convert it.
+            -- because `/bin/sh` is not real file path, maybe we need to convert it.
             local subhost = os.subhost()
             if subhost == "msys" or subhost == "cygwin" then
                 filename = "sh"

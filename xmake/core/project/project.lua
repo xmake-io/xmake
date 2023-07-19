@@ -375,7 +375,7 @@ function project._load_targets()
                         t._RULES[deprule:name()] = deprule
                     end
                 end
-            -- we need ignore `@package/rulename`, it will be loaded later
+            -- we need to ignore `@package/rulename`, it will be loaded later
             elseif not rulename:match("@.-/") then
                 return nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
@@ -387,7 +387,7 @@ function project._load_targets()
             return nil, errors
         end
 
-        -- we need call on_load() before building deps/rules,
+        -- we need to call on_load() before building deps/rules,
         -- so we can use `target:add("deps", "xxx")` to add deps in on_load
         ok, errors = t:_load()
         if not ok then
@@ -799,7 +799,7 @@ end
 function project.name()
     local name = project.get("project")
     -- TODO multi project names? we only get the first name now.
-    -- and we need improve it in the future.
+    -- and we need to improve it in the future.
     if type(name) == "table" then
         name = name[1]
     end
@@ -1004,7 +1004,7 @@ end
 
 -- get the given toolchain
 function project.toolchain(name, opt)
-    local toolchain_name = toolchain.parsename(name) -- we need ignore `@packagename`
+    local toolchain_name = toolchain.parsename(name) -- we need to ignore `@packagename`
     local info = project._toolchains()[toolchain_name]
     if info then
         return toolchain.load_withinfo(name, info, opt)

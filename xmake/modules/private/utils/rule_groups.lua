@@ -25,7 +25,7 @@ import("core.project.config")
 import("core.project.project")
 
 -- get rule
--- @note we need get rule from target first, because we maybe will inject and replace builtin rule in target
+-- @note we need to get rule from target first, because we maybe will inject and replace builtin rule in target
 function get_rule(target, rulename)
     local ruleinst = assert(target:rule(rulename) or project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
     return ruleinst

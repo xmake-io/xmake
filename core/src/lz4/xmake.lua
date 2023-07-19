@@ -16,6 +16,6 @@ target("lz4")
     -- add the common source files
     add_files("lz4/lib/*.c|lz4file.c")
 
-    -- add defines
+    -- add definitions
     add_defines("XXH_NAMESPACE=LZ4_")
 

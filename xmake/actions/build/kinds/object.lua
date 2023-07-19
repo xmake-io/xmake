@@ -204,7 +204,7 @@ function _add_batchjobs_for_group(batchjobs, rootjob, target, group, suffix)
         if item.target then
             _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suffix)
         end
-        -- override on_xxx script in target? we need ignore rule scripts
+        -- override on_xxx script in target? we need to ignore rule scripts
         if item.rule and (suffix or not _has_scripts_for_target(target, suffix)) then
             _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix)
         end

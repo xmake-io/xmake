@@ -110,7 +110,7 @@ function _get_toolchain_includedirs_for_stlheaders(includedirs, gcc)
 end
 
 -- do compile for batchcmds
--- @note we need use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
+-- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
 function _batchcmds_compile(batchcmds, target, flags, sourcefile)
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile}, {target = target})

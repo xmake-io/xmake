@@ -27,7 +27,7 @@ import("lib.detect.find_tool")
 -- attempt to check vs environment
 function _check_vsenv(toolchain)
 
-    -- have been checked?
+    -- has been checked?
     local vs = toolchain:config("vs") or config.get("vs")
     if vs then
         vs = tostring(vs)

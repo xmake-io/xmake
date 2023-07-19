@@ -113,7 +113,7 @@ function _instance:_api_set_values(name, ...)
         extra_config = nil
     end
 
-    -- @note we need mark table value as meta object to avoid wrap/unwrap
+    -- @note we need to mark table value as meta object to avoid wrap/unwrap
     -- if these values cannot be expanded, especially when there is only one value
     --
     -- e.g. target:set("shflags", {"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})
@@ -162,7 +162,7 @@ function _instance:_api_add_values(name, ...)
         extra_config = nil
     end
 
-    -- @note we need mark table value as meta object to avoid wrap/unwrap
+    -- @note we need to mark table value as meta object to avoid wrap/unwrap
     -- if these values cannot be expanded, especially when there is only one value
     --
     -- e.g. target:add("shflags", {"-Wl,-exported_symbols_list", exportfile}, {force = true, expand = false})

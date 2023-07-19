@@ -38,8 +38,8 @@ import("private.service.show_logs")
 import("private.service.show_status")
 
 function main()
-    -- @note we need load server config before loading client config,
-    -- because we need same local token in both configs
+    -- @note we need the load server config before loading the client config,
+    -- because we need the same local token in both configs
     server_config.load()
     client_config.load()
     if option.get("start") then

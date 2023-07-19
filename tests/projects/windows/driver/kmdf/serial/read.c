@@ -1736,7 +1736,7 @@ Return Value:
 
     //
     // Since we (essentially) reduced the percentage of the interrupt
-    // buffer being full, we need to handle any flow control.
+    // buffer being full, we need to handle any flow of control.
     //
 
     SerialHandleReducedIntBuffer(extension);

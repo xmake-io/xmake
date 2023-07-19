@@ -22,7 +22,7 @@
 import(".cmake.cmakelists")
 import("lib.detect.find_tool")
 
--- TODO maybe we need implement it by myself, do not use cmake
+-- TODO maybe we need to implement it by myself, do not use cmake
 function make(outputdir)
 
     -- check

@@ -3720,8 +3720,8 @@ Return Value:
             //
             // This indicates that the request is being retried. So we need to:
             // 1. Update old path's and new path's request count
-            // 2. If the old path was supposed to be removed, check if there are
-            //    no more requests are outstanding, and if yes, remove the path
+            // 2. If the old path was supposed to be removed, check if there is
+            //    no more outstanding request, and if so, remove the path
             //
 
             irpStack = IoGetCurrentIrpStackLocation(irp);

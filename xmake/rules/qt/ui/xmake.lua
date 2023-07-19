@@ -34,7 +34,7 @@ rule("qt.ui")
         end
         assert(uic and os.isexec(uic), "uic not found!")
 
-        -- add includedirs, @note we need create this directory first to suppress warning (file not found).
+        -- add includedirs, @note we need to create this directory first to suppress warning (file not found).
         -- and we muse add it in load stage to ensure `depend.on_changed` work.
         --
         -- @see https://github.com/xmake-io/xmake/issues/1180

@@ -37,7 +37,7 @@ function _concat_packages(a, b)
     for k, v in pairs(result) do
         if k == "links" then
             if type(v) == "table" and #v > 1 then
-                -- we need ensure link orders when removing repeat values
+                -- we need to ensure link orders when removing repeat values
                 v = table.reverse_unique(v)
             end
         else

@@ -435,7 +435,7 @@ function make(outputdir)
 
     -- open the build.ninja file
     --
-    -- we need change encoding to support msvc_deps_prefix
+    -- we need to change encoding to support msvc_deps_prefix
     -- @see https://github.com/ninja-build/ninja/issues/613
     --
     -- TODO maybe we need support more encoding for other languages

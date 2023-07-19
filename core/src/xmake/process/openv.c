@@ -329,7 +329,7 @@ tb_int_t xm_process_openv(lua_State* lua)
     // set the new environments
     if (envn > 0) attr.envp = envs;
 
-    /* we need ignore SIGINT and SIGQUIT if we enter exclusive mode
+    /* we need to ignore SIGINT and SIGQUIT if we enter exclusive mode
      * @see https://github.com/xmake-io/xmake/discussions/2893
      */
 #if defined(SIGINT)

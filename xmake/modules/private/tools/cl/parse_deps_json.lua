@@ -73,7 +73,7 @@ function _normailize_dep(dep, projectdir)
     if dep:startswith(projectdir) then
         return path.relative(dep, projectdir)
     else
-        -- we need also check header files outside project
+        -- we also need to check header files outside project
         -- https://github.com/xmake-io/xmake/issues/1154
         return dep
     end
@@ -132,7 +132,7 @@ function main(depsdata)
 
     -- translate it
     local results = hashset.new()
-    local projectdir = os.projectdir():lower() -- we need generate lower string, because json values are all lower
+    local projectdir = os.projectdir():lower() -- we need to generate lower string, because json values are all lower
     for _, includefile in ipairs(includes) do
         includefile = _normailize_dep(includefile, projectdir)
         if includefile then

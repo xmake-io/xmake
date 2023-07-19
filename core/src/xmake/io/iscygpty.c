@@ -57,7 +57,7 @@
 #endif /* USE_FILEEXTD */
 
 #if _WIN32_WINNT >= 0x0600
-# define USE_DYNFILEID // we need enable it for supporting xp
+# define USE_DYNFILEID // we need to enable it for supporting xp
 #endif
 #ifdef USE_DYNFILEID
 typedef BOOL (WINAPI *pfnGetFileInformationByHandleEx)(

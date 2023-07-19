@@ -15,7 +15,7 @@ target("pdcurses")
     -- add the common source files
     add_files("pdcurses/pdcurses/*.c", "pdcurses/win32/*.c")
 
-    -- add defines
+    -- add definitions
     add_defines("PDC_WIDE")
 
     -- set languages

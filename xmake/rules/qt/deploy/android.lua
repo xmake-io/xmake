@@ -118,7 +118,7 @@ function main(target, opt)
 
     -- install target to android-build/libs first
     if qt_sdkver and qt_sdkver:ge("5.14") then
-        -- we need copy target to android-build/libs/armeabi/libxxx_armeabi.so after Qt 5.14.0
+        -- we need to copy target to android-build/libs/armeabi/libxxx_armeabi.so after Qt 5.14.0
         os.cp(target:targetfile(), path.join(android_buildir, "libs", target_arch, "lib" .. target:basename() .. "_" .. target_arch .. ".so"))
     else
         os.cp(target:targetfile(), path.join(android_buildir, "libs", target_arch, path.filename(target:targetfile())))

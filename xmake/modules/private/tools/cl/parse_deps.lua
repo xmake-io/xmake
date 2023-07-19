@@ -73,7 +73,7 @@ function _normailize_dep(dep, projectdir)
     if dep:startswith(projectdir) then
         return path.relative(dep, projectdir)
     else
-        -- we need also check header files outside project
+        -- we also need to check header files outside project
         -- https://github.com/xmake-io/xmake/issues/1154
         return dep
     end

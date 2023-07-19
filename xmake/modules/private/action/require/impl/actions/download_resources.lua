@@ -68,7 +68,7 @@ function _checkout(package, resource_name, resource_url, resource_revision)
     -- remove temporary directory
     os.rm(resourcedir)
 
-    -- we need enable longpaths on windows
+    -- we need to enable longpaths on windows
     local longpaths = package:policy("platform.longpaths")
 
     -- clone whole history and tags
@@ -143,7 +143,7 @@ end
 -- download all resources of the given package
 function main(package)
 
-    -- we need not download it if we use the precompiled artifacts to install package
+    -- we don't need to download it if we use the precompiled artifacts to install package
     if package:is_precompiled() then
         return
     end
