@@ -194,7 +194,7 @@ module_exit(hello_exit);
 end
 
 function load(target)
-    -- we need only need binary kind, because we will rewrite on_link
+    -- we only need binary kind, because we will rewrite on_link
     target:set("kind", "binary")
     target:set("extension", ".ko")
 end
@@ -213,7 +213,7 @@ function config(target)
         assert(not target:rule(rulename), "target(%s) is linux driver module, it need not rule(%s)!", target:name(), rulename)
     end
 
-    -- we need disable includedirs from add_packages("linux-headers")
+    -- we need to disable includedirs from add_packages("linux-headers")
     if target:pkg("linux-headers") then
         target:pkg("linux-headers"):set("includedirs", nil)
         target:pkg("linux-headers"):set("sysincludedirs", nil)
@@ -272,7 +272,7 @@ function link(target, opt)
         io.writefile(targetfile_mod, table.concat(objectfiles, "\n") .. "\n\n")
 
         -- generate .sourcename.o.cmd
-        -- we need only touch an empty file, otherwise modpost command will raise error.
+        -- we only need to touch an empty file, otherwise modpost command will raise error.
         for _, objectfile in ipairs(objectfiles) do
             local objectdir = path.directory(objectfile)
             local objectname = path.filename(objectfile)

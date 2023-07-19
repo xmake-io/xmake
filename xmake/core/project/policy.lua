@@ -70,7 +70,7 @@ function policy.policies()
             ["preprocessor.linemarkers"]          = {description = "Enable linemarkers for preprocessor.", default = true, type = "boolean"},
             -- preprocessor configuration for ccache/distcc, we can disable it to avoid cache object file with __DATE__, __TIME__
             ["preprocessor.gcc.directives_only"]  = {description = "Enable -fdirectives-only for gcc preprocessor.", type = "boolean"},
-            -- we need enable longpaths when building target or installing package
+            -- we need to enable longpaths when building target or installing package
             ["platform.longpaths"]                = {description = "Enable long paths when building target or installing package on windows.", default = false, type = "boolean"},
             -- lock required packages
             ["package.requires_lock"]             = {description = "Enable xmake-requires.lock to lock required packages.", default = false, type = "boolean"},

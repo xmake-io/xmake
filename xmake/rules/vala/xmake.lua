@@ -21,7 +21,7 @@
 rule("vala.build")
     set_extensions(".vala")
     on_load(function (target)
-        -- only vala source files? we need patch c source kind for linker
+        -- only vala source files? we need to patch c source kind for linker
         local sourcekinds = target:sourcekinds()
         if #sourcekinds == 0 then
             table.insert(sourcekinds, "cc")

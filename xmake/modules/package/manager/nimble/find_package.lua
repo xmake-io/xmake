@@ -61,7 +61,7 @@ function main(name, opt)
             end
         end
     end
-    -- @note we need not return links and includedirs information,
+    -- @note we don't need return links and includedirs information,
     -- because it's nim source code package and nim will find them automatically
     return result
 end

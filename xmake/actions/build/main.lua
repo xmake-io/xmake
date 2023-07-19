@@ -194,7 +194,7 @@ function main()
         {
             function (errors)
 
-                -- maybe it's unreachable when building fails, so we need also os.atexit()
+                -- maybe it's unreachable when building fails, so we also need os.atexit()
                 -- @see https://github.com/xmake-io/xmake/issues/3401
                 _on_exit(false, errors)
 

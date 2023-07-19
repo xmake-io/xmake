@@ -7,7 +7,7 @@ set_version("2.8.1", {build = "%Y%m%d"})
 -- set xmake min version
 set_xmakever("2.2.3")
 
--- set warning all as error
+-- set all warnings as errors
 set_warnings("all", "error")
 
 -- set language: c99, c++11
@@ -25,7 +25,7 @@ end
 -- disable some compiler errors
 add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing", "-Wno-error=nullability-completeness", "-Wno-error=parentheses-equality")
 
--- add defines
+-- add definitions
 add_defines("_GNU_SOURCE=1", "_FILE_OFFSET_BITS=64", "_LARGEFILE_SOURCE")
 
 -- add vectorexts

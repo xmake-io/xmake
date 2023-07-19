@@ -170,7 +170,7 @@ function main(argv)
         instance:envs_enter()
     end
 
-    -- we need force to detect and flush detect cache after loading all environments
+    -- we need to force detect and flush detect cache after loading all environments
     if not clang_tidy then
         clang_tidy = find_tool("clang-tidy", {force = true})
     end

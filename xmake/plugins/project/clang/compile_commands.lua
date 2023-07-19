@@ -62,7 +62,7 @@ function _translate_arguments(arguments)
     local is_include = false
     local lsp = _get_lsp()
     for idx, arg in ipairs(arguments) do
-        -- convert path to string, maybe we need convert path, but not supported now.
+        -- convert path to string, maybe we need to convert path, but not supported now.
         arg = tostring(arg)
 
         -- see https://github.com/xmake-io/xmake/issues/1721
@@ -72,7 +72,7 @@ function _translate_arguments(arguments)
         if arg:startswith("-isystem-after", 1, true) then
             arg = "-I" .. arg:sub(15)
         elseif arg:startswith("-isystem", 1, true) then
-            -- clangd support `-isystem`, we need not translate it
+            -- clangd support `-isystem`, we don't need to translate it
             -- @see https://github.com/xmake-io/xmake/issues/3020
             if not lsp or lsp ~= "clangd" then
                 arg = "-I" .. arg:sub(9)

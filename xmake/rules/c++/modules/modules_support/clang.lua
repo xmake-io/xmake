@@ -163,7 +163,7 @@ function load(target)
         target:set("symbols", dep_symbols and dep_symbols or "none")
     end
 
-    -- if use libc++, we need install libc++ and libc++abi
+    -- if use libc++, we need to install libc++ and libc++abi
     --
     -- on ubuntu:
     -- sudo apt install libc++-dev libc++abi-15-dev
@@ -208,7 +208,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
 end
 
 -- do compile for batchcmds
--- @note we need use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
+-- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
 function _batchcmds_compile(batchcmds, target, sourcefile, flags)
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
@@ -620,7 +620,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                     elseif requiresflags then
                         local cxxflags = {}
                         for _, flag in ipairs(requiresflags) do
-                            -- we need wrap flag to support flag with space
+                            -- we need to wrap flag to support flag with space
                             if type(flag) == "string" and flag:find(" ", 1, true) then
                                 table.insert(cxxflags, {flag})
                             else
@@ -685,7 +685,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             elseif requiresflags then
                 local cxxflags = {}
                 for _, flag in ipairs(requiresflags) do
-                    -- we need wrap flag to support flag with space
+                    -- we need to wrap flag to support flag with space
                     if type(flag) == "string" and flag:find(" ", 1, true) then
                         table.insert(cxxflags, {flag})
                     else

@@ -112,7 +112,7 @@ function nf_symbol(self, level)
         end
         return maps[level .. '_' .. kind] or maps[level]
     elseif kind == "ld" or kind == "sh" then
-        -- we need add `-g` to linker to generate pdb symbol file for mingw-gcc, llvm-clang on windows
+        -- we need to add `-g` to linker to generate pdb symbol file for mingw-gcc, llvm-clang on windows
         local plat = self:plat()
         if level == "debug" and (plat == "windows" or (plat == "mingw" and is_host("windows"))) then
             return "-g"
@@ -426,7 +426,7 @@ end
 
 -- link the target file
 --
--- maybe we need use os.vrunv() to show link output when enable verbose information
+-- maybe we need to use os.vrunv() to show link output when enable verbose information
 -- @see https://github.com/xmake-io/xmake/discussions/2916
 --
 function link(self, objectfiles, targetkind, targetfile, flags)
@@ -483,7 +483,7 @@ function _preprocess(program, argv, opt)
         end
     end
 
-    -- enable "-fdirectives-only"? we need enable it manually
+    -- enable "-fdirectives-only"? we need to enable it manually
     --
     -- @see https://github.com/xmake-io/xmake/issues/2603
     -- https://github.com/xmake-io/xmake/issues/2425
@@ -577,7 +577,7 @@ function _preprocess(program, argv, opt)
     table.insert(cppflags, cppfile)
     table.insert(cppflags, sourcefile)
 
-    -- we need mark as it when compiling the preprocessed source file
+    -- we need to mark as it when compiling the preprocessed source file
     -- it will indicate to the preprocessor that the input file has already been preprocessed.
     if is_gcc then
         table.insert(flags, "-fpreprocessed")
@@ -605,7 +605,7 @@ end
 -- compile preprocessed file
 function _compile_preprocessed_file(program, cppinfo, opt)
     local outdata, errdata = os.iorunv(program, table.join(cppinfo.cppflags, "-o", cppinfo.objectfile, cppinfo.cppfile), opt)
-    -- we need get warning information from output
+    -- we need to get warning information from output
     cppinfo.outdata = outdata
     cppinfo.errdata = errdata
 end
@@ -672,7 +672,7 @@ end
 
 -- get modules cache directory
 function _modules_cachedir(target)
-    if target and target.autogendir and target:data("cxx.has_modules") then -- we need ignore option instance
+    if target and target.autogendir and target:data("cxx.has_modules") then -- we need to ignore option instance
         return path.join(target:autogendir(), "rules", "modules", "cache")
     end
 end

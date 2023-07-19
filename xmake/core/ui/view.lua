@@ -305,7 +305,7 @@ end
 -- set state
 function view:state_set(name, enable)
 
-    -- state is not changed?
+    -- state not changed?
     enable = enable or false
     if self:state(name) == enable then
         return self
@@ -324,7 +324,7 @@ end
 -- set option
 function view:option_set(name, enable)
 
-    -- state is not changed?
+    -- state not changed?
     enable = enable or false
     if self:option(name) == enable then
         return
@@ -444,7 +444,7 @@ function view:_mark_resize()
     -- need resize it
     self:state_set("resize", true)
 
-    -- @note we need trigger on_resize() of the root view and pass it to this subview
+    -- @note we need to trigger on_resize() of the root view and pass it to this subview
     if self:parent() then
         self:parent():invalidate(true)
     end

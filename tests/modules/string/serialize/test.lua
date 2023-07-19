@@ -63,7 +63,7 @@ function test_function(t)
     function f() return x end
     -- fenv will restore
     if xmake.luajit() then
-        -- TODO we need fix it for lua backend
+        -- TODO we need to fix it for lua backend
         t:are_same(roundtrip(f)(), x)
     end
 

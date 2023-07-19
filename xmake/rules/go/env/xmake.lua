@@ -37,7 +37,7 @@ rule("go.env")
             local gopkgdir = path.join(os.isdir(goroot_local) and goroot_local or goroot, "pkg", goos .. "_" .. goarch)
             if not os.isdir(gopkgdir) or os.emptydir(gopkgdir) then
                 local gosrcdir = path.join(goroot, "src")
-                local confirm = utils.confirm({default = true, description = ("we need build go for %s_%s only once first!"):format(goos, goarch)})
+                local confirm = utils.confirm({default = true, description = ("we need to build go for %s_%s only once first!"):format(goos, goarch)})
                 if confirm then
                     local build_task = function ()
                         tty.erase_line_to_start().cr()
@@ -47,7 +47,7 @@ rule("go.env")
                             os.vrunv(path.join(gosrcdir, "make.bat"), {"--no-clean"}, {envs = {GOOS = goos, GOARCH = goarch, GOROOT_BOOTSTRAP = goroot}, curdir = gosrcdir})
                         else
 
-                            -- we need copy goroot to the local directory to solving permission problem
+                            -- we need to copy goroot to the local directory to solving permission problem
                             if is_host("linux") then
                                 os.vcp(goroot, goroot_local)
                                 goroot = path.absolute(goroot_local)

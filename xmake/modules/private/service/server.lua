@@ -112,7 +112,7 @@ function server:known_hosts_set(hosts)
     self._KNOWN_HOSTS = hosts and hashset.from(hosts) or hashset.new()
 end
 
--- we need verify user
+-- we need to verify user
 function server:need_verfiy()
     return not self:tokens():empty()
 end
@@ -120,7 +120,7 @@ end
 -- verify user
 function server:verify_user(token, peeraddr)
     if not token then
-        return false, "client has no authorization, we need add username to connect address or token!"
+        return false, "client has no authorization, we need to add username to connect address or token!"
     end
 
     -- check authorization

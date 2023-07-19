@@ -344,7 +344,7 @@ function main(toolchain)
     end
     toolchain:add("rcshflags", "-C link-args=\"" .. (table.concat(rcshflags, " "):gsub("%-march=.-%s", "") .. "\""))
     toolchain:add("rcldflags", "-C link-args=\"" .. (table.concat(rcldflags, " "):gsub("%-march=.-%s", "") .. "\""))
-    local sh = toolchain:tool("sh") -- @note we cannot use `config.get("sh")`, because we need check sh first
+    local sh = toolchain:tool("sh") -- @note we cannot use `config.get("sh")`, because we need to check sh first
     if sh then
         toolchain:add("rcshflags", "-C linker=" .. sh)
     end

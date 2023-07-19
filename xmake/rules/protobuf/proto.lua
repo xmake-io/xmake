@@ -56,7 +56,7 @@ function _get_grpc_cpp_plugin(target, sourcekind)
     return assert(grpc_cpp_plugin and grpc_cpp_plugin.program, "grpc_cpp_plugin not found!")
 end
 
--- we need add some configs to export includedirs to other targets in on_load
+-- we need to add some configs to export includedirs to other targets in on_load
 -- @see https://github.com/xmake-io/xmake/issues/2256
 function load(target, sourcekind)
 

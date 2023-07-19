@@ -52,7 +52,7 @@ function _install_shared_for_package(target, pkg, outputdir)
                     -- rm because symlink cannot overwrite existing file
                     os.rm(targetname)
                 end
-                -- we need reserve symlink
+                -- we need to reserve symlink
                 -- @see https://github.com/xmake-io/xmake/issues/1582
                 os.vcp(sopath, outputdir, {symlink = true})
                 _g.installed_libfiles[sopath] = true

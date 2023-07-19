@@ -170,7 +170,7 @@ function winos.cmdargv(argv, opt)
         local argsfile = os.tmpfile(opt.tmpkey or os.args(argv)) .. ".args.txt"
         local f = io.open(argsfile, 'w', {encoding = "ansi"})
         if f then
-            -- we need split args file to solve `fatal error LNK1170: line in command file contains 131071 or more characters`
+            -- we need to split args file to solve `fatal error LNK1170: line in command file contains 131071 or more characters`
             -- @see https://github.com/xmake-io/xmake/issues/812
             local idx = 1
             while idx <= #argv do
@@ -179,7 +179,7 @@ function winos.cmdargv(argv, opt)
                 if arg1 then
                     arg1 = tostring(arg1)
                 end
-                -- we need ensure `/name value` in same line,
+                -- we need to ensure `/name value` in same line,
                 -- otherwise cl.exe will prompt that the corresponding parameter value cannot be found
                 --
                 -- e.g.

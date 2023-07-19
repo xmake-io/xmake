@@ -81,7 +81,7 @@ function _checkout(package, url, sourcedir, opt)
     -- remove temporary directory
     os.rm(sourcedir .. ".tmp")
 
-    -- we need enable longpaths on windows
+    -- we need to enable longpaths on windows
     local longpaths = package:policy("platform.longpaths")
 
     -- download package from branches?
@@ -89,7 +89,7 @@ function _checkout(package, url, sourcedir, opt)
     local branch = package:branch()
     if branch then
 
-        -- we need select the correct default branch
+        -- we need to select the correct default branch
         -- @see https://github.com/xmake-io/xmake/issues/3248
         if branch == "@default" then
             branch = nil
@@ -132,7 +132,7 @@ function _download(package, url, sourcedir, opt)
 
     -- get sourcehash from the given url
     --
-    -- we need not sourcehash and skip checksum to try download it directly if no version list in package()
+    -- we don't need sourcehash and skip checksum to try download it directly if no version list in package()
     -- @see https://github.com/xmake-io/xmake/issues/930
     -- https://github.com/xmake-io/xmake/issues/1009
     --
@@ -198,7 +198,7 @@ function _download(package, url, sourcedir, opt)
         local filedirs = os.filedirs(path.join(sourcedir_tmp, "*"))
         if #filedirs == 1 and os.isdir(filedirs[1]) then
             os.mv(filedirs[1], sourcedir)
-            -- we need anchor it to avoid expand it when installing package
+            -- we need to anchor it to avoid expand it when installing package
             io.writefile(path.join(sourcedir, "__sourceroot_anchor__.txt"), "")
             os.rm(sourcedir_tmp)
         else
@@ -212,7 +212,7 @@ function _download(package, url, sourcedir, opt)
         os.mkdir(sourcedir)
         raise("cannot extract %s, maybe missing extractor or invalid package file!", packagefile)
     else
-        -- if it is not archive file, we need only create empty source file and use package:originfile()
+        -- if it is not archive file, we only need to create empty source file and use package:originfile()
         os.tryrm(sourcedir)
         os.mkdir(sourcedir)
     end

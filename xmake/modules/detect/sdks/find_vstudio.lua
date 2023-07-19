@@ -105,7 +105,7 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
-    -- @note we need get utf8 output from cmd.exe
+    -- @note we need to get utf8 output from cmd.exe
     -- because some %PATH% and other envs maybe contains unicode characters
 	if winos.version():gt("winxp") then
     	file:print("chcp 65001")

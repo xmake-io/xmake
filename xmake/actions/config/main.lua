@@ -90,8 +90,8 @@ function _need_check(changed)
         changed = true
     end
 
-    -- xmake has been updated? force to check config again
-    -- we need clean the dirty config cache of the old version
+    -- Has xmake been updated? force to check config again
+    -- we need to clean the dirty config cache of the old version
     if not changed then
         if os.mtime(path.join(os.programdir(), "core", "main.lua")) > os.mtime(config.filepath()) then
             changed = true
@@ -216,7 +216,7 @@ function main(opt)
         return remote_build_action()
     end
 
-    -- avoid to run this task repeatly
+    -- avoid running this task repeatly
     opt = opt or {}
     if _g.configured then return end
     _g.configured = true
@@ -271,7 +271,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     local importfile = option.get("import")
     if importfile then
         assert(os.isfile(importfile), "%s not found!", importfile)
-        -- we need use readonly, @see https://github.com/xmake-io/xmake/issues/2278
+        -- we need to use readonly, @see https://github.com/xmake-io/xmake/issues/2278
         local import_configs = io.load(importfile)
         if import_configs then
             for name, value in pairs(import_configs) do
@@ -290,7 +290,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         options = options or options_history
     end
     for name, value in pairs(options) do
-        -- options is changed by argument options?
+        -- Is options changed by argument options?
         options_changed = options_changed or options_history[name] ~= value
         -- @note override it and mark as readonly (highest priority)
         config.set(name, value, {readonly = true})
@@ -419,7 +419,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         _export_configs()
     end
 
-    -- we need save it and enable external working mode
+    -- we need to save it and enable external working mode
     -- if we configure the given project directory
     --
     -- @see https://github.com/xmake-io/xmake/issues/3342

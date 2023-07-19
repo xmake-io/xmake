@@ -93,7 +93,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
     try
     {
         function ()
-            -- @note we need not uses vstool.iorunv to enable unicode output for rc.exe
+            -- @note we don't need to use vstool.iorunv to enable unicode output for rc.exe
             local program, argv = compargv(self, sourcefile, objectfile, flags)
             local outdata, errdata = os.iorunv(program, argv, {envs = self:runenvs()})
             return (outdata or "") .. (errdata or "")

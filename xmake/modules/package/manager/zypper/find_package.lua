@@ -42,7 +42,7 @@ function _find_package(rpm, name, opt)
             -- get includedirs
             local pos = line:find("include/", 1, true)
             if pos then
-                -- we need not add includedirs, gcc/clang will use /usr/ as default sysroot
+                -- we don't need to add includedirs, gcc/clang will use /usr/ as default sysroot
                 result = result or {}
             end
 

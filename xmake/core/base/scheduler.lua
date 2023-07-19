@@ -443,7 +443,7 @@ function scheduler:co_suspend(...)
     -- suspend it
     local results = table.pack(coroutine.yield(...))
 
-    -- if the current directory has been changed? restore it
+    -- Has the current directory been changed? restore it
     local running = assert(self:co_running())
     local curdir = self._CO_CURDIR_HASH
     local olddir = self._CO_CURDIRS and self._CO_CURDIRS[running] or nil
@@ -451,7 +451,7 @@ function scheduler:co_suspend(...)
         os.cd(olddir[2])
     end
 
-    -- if the current environments has been changed? restore it
+    -- Has the current environments been changed? restore it
     local curenvs = self._CO_CURENVS_HASH
     local oldenvs = self._CO_CURENVS and self._CO_CURENVS[running] or nil
     if oldenvs and curenvs ~= oldenvs[1] and running:is_isolated() then -- hash changed?
@@ -470,7 +470,7 @@ end
 -- sleep some times (ms)
 function scheduler:co_sleep(ms)
 
-    -- we need not do sleep
+    -- we don't need to sleep
     if ms == 0 then
         return true
     end

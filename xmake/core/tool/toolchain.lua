@@ -345,7 +345,7 @@ function _instance:_on_load()
     return on_load
 end
 
--- do load, @note we need load it repeatly for each architectures
+-- do load, @note we need to load it repeatly for each architectures
 function _instance:_load()
     local info = self:info()
     if not info:get("__loaded") and not info:get("__loading") then
@@ -456,7 +456,7 @@ function _instance:_checktool(toolkind, toolpath)
     if toolpath then
         local pos = toolpath:find('@', 1, true)
         if pos then
-            -- we need ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
+            -- we need to ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
             -- https://github.com/xmake-io/xmake/issues/2853
             local prefix = toolpath:sub(1, pos - 1)
             if prefix and not prefix:find("[/\\]") then
@@ -698,7 +698,7 @@ function toolchain.load_fromfile(filepath, opt)
     local scope_opt = {interpreter = toolchain._interpreter(), deduplicate = true, enable_filter = true}
     local info = scopeinfo.new("toolchain", fileinfo.info, scope_opt)
     local instance = toolchain.load_withinfo(fileinfo.name, info, opt)
-    -- we need skip check
+    -- we need to skip check
     instance._CHECKED = true
     return instance
 end
@@ -753,7 +753,7 @@ function toolchain.tool(toolchains, toolkind, opt)
     if program and type(program) == "string" then
         local pos = program:find('@', 1, true)
         if pos then
-            -- we need ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
+            -- we need to ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
             -- https://github.com/xmake-io/xmake/issues/2853
             local prefix = program:sub(1, pos - 1)
             if prefix and not prefix:find("[/\\]") then

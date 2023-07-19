@@ -66,7 +66,7 @@ function main(requireinfo, opt)
     end
     if opt.hash then
         if key == "" then
-            key = "_" -- we need generate a fixed hash value
+            key = "_" -- we need to generate a fixed hash value
         end
         return hash.uuid(key):split("-", {plain = true})[1]:lower()
     else

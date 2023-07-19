@@ -58,7 +58,7 @@ function enter()
         instance:envs_enter()
     end
 
-    -- we need force to detect and flush detect cache after loading all environments
+    -- we need to force to detect and flush detect cache after loading all environments
     if not git then
         find_tool("git", {force = true})
     end

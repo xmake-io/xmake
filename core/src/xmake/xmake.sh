@@ -36,7 +36,7 @@ target "xmake"
     # add options
     add_options "readline" "curses" "{public}"
 
-    # add defines
+    # add definitions
     add_defines "__tb_prefix__=\"xmake\""
     if is_mode "debug"; then
         add_defines "__tb_debug__" "{public}"

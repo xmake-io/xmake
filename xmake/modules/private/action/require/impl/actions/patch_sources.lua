@@ -30,7 +30,7 @@ function _check_sha256(patch_hash, patch_file)
     local ok = (patch_hash == hash.sha256(patch_file))
     if not ok and is_host("windows") then
         -- `git pull` maybe will replace lf to crlf in the patch text automatically on windows.
-        -- so we need attempt to fix this sha256
+        -- so we need to attempt to fix this sha256
         --
         -- @see
         -- https://github.com/xmake-io/xmake-repo/pull/67
@@ -104,7 +104,7 @@ end
 -- patch the given package
 function main(package)
 
-    -- we need not patch it if we use the precompiled artifacts to install package
+    -- we don't need to patch it if we use the precompiled artifacts to install package
     if package:is_precompiled() then
         return
     end

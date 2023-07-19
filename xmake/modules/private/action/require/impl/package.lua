@@ -144,7 +144,7 @@ function _load_require(require_str, requires_extra, parentinfo)
     end
 
     -- get required building configurations
-    -- we need clone a new configs object, because the whole requireinfo will be modified later.
+    -- we need to clone a new configs object, because the whole requireinfo will be modified later.
     -- @see https://github.com/xmake-io/xmake-repo/pull/2067
     local require_build_configs = table.clone(require_extra.configs or require_extra.config)
     if require_extra.debug then
@@ -155,7 +155,7 @@ function _load_require(require_str, requires_extra, parentinfo)
     -- require packge in the current host platform
     if require_extra.host then
         if is_subhost(core_package.targetplat()) and os.subarch() == core_package.targetarch() then
-            -- we need pass plat/arch to avoid repeat installation
+            -- we need to pass plat/arch to avoid repeat installation
             -- @see https://github.com/xmake-io/xmake/issues/1579
         else
             require_extra.plat = os.subhost()
@@ -513,7 +513,7 @@ function _finish_requireinfo(requireinfo, package)
             requireinfo.configs.vs_runtime = "MT"
         end
     end
-    -- we need ensure readonly configs
+    -- we need to ensure readonly configs
     for _, name in ipairs(table.keys(requireinfo.configs)) do
         local current = requireinfo.configs[name]
         local default = package:extraconf("configs", name, "default")
@@ -852,7 +852,7 @@ function _load_package(packagename, requireinfo, opt)
     -- check package configurations
     _check_package_configurations(package)
 
-    -- save artifacts info, we need add it at last before buildhash need depend on package configurations
+    -- save artifacts info, we need to add it at last before buildhash need depend on package configurations
     -- it will switch to install precompiled binary package from xmake-mirror/build-artifacts
     if from_repo and not option.get("build") and not requireinfo.build then
         local artifacts_manifest = repository.artifacts_manifest(packagename, version)
@@ -1084,7 +1084,7 @@ function should_install(package, opt)
     if package:exists() and _compatible_with_previous_librarydeps(package, opt) then
         return false
     end
-    -- we need not install it if this package need only be fetched
+    -- we don't need to install it if this package only need to be fetched
     if package:is_fetchonly() then
         return false
     end

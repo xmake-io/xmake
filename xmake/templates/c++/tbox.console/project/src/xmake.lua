@@ -4,7 +4,7 @@ target("${TARGETNAME}")
     -- set kind
     set_kind("binary")
 
-    -- add defines
+    -- add definitions
     add_defines("__tb_prefix__=\"${TARGETNAME}\"")
 
     -- add packages

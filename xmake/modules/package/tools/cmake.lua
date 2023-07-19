@@ -86,7 +86,7 @@ end
 -- get msvc
 function _get_msvc(package)
     local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
-    assert(msvc:check(), "vs not found!") -- we need check vs envs if it has been not checked yet
+    assert(msvc:check(), "vs not found!") -- we need to check vs envs if it has been not checked yet
     return msvc
 end
 
@@ -506,7 +506,7 @@ function _get_configs_for_cross(package, configs, opt)
         envs.CMAKE_CXX_COMPILER = _translate_bin_path(cxx)
     end
     -- @note The link command line is set in Modules/CMake{C,CXX,Fortran}Information.cmake and defaults to using the compiler, not CMAKE_LINKER,
-    -- so we need set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
+    -- so we need to set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
     --
     -- https://github.com/xmake-io/xmake-repo/pull/1039
     -- https://stackoverflow.com/questions/1867745/cmake-use-a-custom-linker/25274328#25274328
@@ -522,7 +522,7 @@ function _get_configs_for_cross(package, configs, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
-    -- we need not set it as cross compilation if we just pass toolchain
+    -- we don't need to set it as cross compilation if we just pass toolchain
     -- https://github.com/xmake-io/xmake/issues/2170
     if not package:is_plat(os.subhost()) then
         local system_name = package:targetos() or "Linux"
@@ -596,7 +596,7 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
-    -- we need not set it as cross compilation if we just pass toolchain
+    -- we don't need to set it as cross compilation if we just pass toolchain
     -- https://github.com/xmake-io/xmake/issues/2170
     if not package:is_plat(os.subhost()) then
         envs.CMAKE_SYSTEM_NAME     = "Linux"
@@ -719,7 +719,7 @@ end
 -- get build environments
 function buildenvs(package, opt)
 
-    -- we need bind msvc environments manually
+    -- we need to bind msvc environments manually
     -- @see https://github.com/xmake-io/xmake/issues/1057
     opt = opt or {}
     local envs = {}
@@ -727,7 +727,7 @@ function buildenvs(package, opt)
         envs = _get_msvc_runenvs(package)
     end
 
-    -- we need pass pkgconf for windows/mingw without msys2/cygwin
+    -- we need to pass pkgconf for windows/mingw without msys2/cygwin
     if package:is_plat("windows", "mingw") and is_subhost("windows") then
         local pkgconf = find_tool("pkgconf")
         if pkgconf then

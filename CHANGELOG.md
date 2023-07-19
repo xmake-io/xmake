@@ -1448,7 +1448,7 @@
 ### Bugs fixed
 
 * [#41](https://github.com/waruqi/xmake/issues/41): Fix checker bug for windows
-* [#43](https://github.com/waruqi/xmake/issues/43): Avoid to generate unnecessary .xmake directory
+* [#43](https://github.com/waruqi/xmake/issues/43): Avoid generating unnecessary .xmake directory
 * Add c++ stl search directories for android
 * Fix compile error for rhel 5.10
 * Fix `os.iorun` bug

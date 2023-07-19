@@ -236,7 +236,7 @@ function batchcmds:compile(sourcefiles, objectfile, opt)
     opt = opt or {}
     opt.target = self._TARGET
 
-    -- wrap path for sourcefiles, because we need translate path for project generator
+    -- wrap path for sourcefiles, because we need to translate path for project generator
     if type(sourcefiles) == "table" then
         local sourcefiles_wrap = {}
         for _, sourcefile in ipairs(sourcefiles) do
@@ -274,7 +274,7 @@ function batchcmds:compilev(argv, opt)
         compiler_inst = compiler.load(sourcekind, opt)
     end
 
-    -- we need translate path for the project generator
+    -- we need to translate path for the project generator
     for idx, item in ipairs(argv) do
         if type(item) == "string" then
             if item:startswith("-I") then
@@ -299,7 +299,7 @@ function batchcmds:link(objectfiles, targetfile, opt)
     opt = opt or {}
     opt.target = target
 
-    -- wrap path for objectfiles, because we need translate path for project generator
+    -- wrap path for objectfiles, because we need to translate path for project generator
     local objectfiles_wrap = {}
     for _, objectfile in ipairs(objectfiles) do
         table.insert(objectfiles_wrap, path(objectfile))
@@ -310,7 +310,7 @@ function batchcmds:link(objectfiles, targetfile, opt)
     local linker_inst = target and target:linker() or linker.load(opt.targetkind, opt.sourcekinds, opt)
     local program, argv = linker_inst:linkargv(objectfiles, path(targetfile), opt)
 
-    -- we need translate path for the project generator
+    -- we need to translate path for the project generator
     for idx, item in ipairs(argv) do
         if type(item) == "string" then
             if item:startswith("-L") then

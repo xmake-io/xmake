@@ -371,7 +371,7 @@ end
 -- install packages
 function _install_packages(packages_install, packages_download, installdeps)
 
-    -- we need hide wait characters if is not a tty
+    -- we need to hide wait characters if is not a tty
     local show_wait = io.isatty()
 
     -- init installed packages
@@ -478,7 +478,7 @@ function _install_packages(packages_install, packages_download, installdeps)
                 if downloaded then
                     if not action_install(instance) then
                         assert(instance:is_precompiled(), "package(%s) should be precompiled", instance:name())
-                        -- we need disable built and re-download and re-install it
+                        -- we need to disable built and re-download and re-install it
                         instance:fallback_build()
                         action_download(instance)
                         action_install(instance)
@@ -628,7 +628,7 @@ function _get_package_installdeps(packages)
     local installdeps = {}
     local packagesmap = {}
     for _, instance in ipairs(packages) do
-        -- we need use alias name first for toolchain/packages
+        -- we need to use alias name first for toolchain/packages
         packagesmap[instance:alias() or instance:name()] = instance
     end
     for _, instance in ipairs(packages) do
@@ -636,7 +636,7 @@ function _get_package_installdeps(packages)
         if instance:orderdeps() then
             deps = table.copy(instance:orderdeps())
         end
-        -- patch toolchain/packages to installdeps, because we need install toolchain package first
+        -- patch toolchain/packages to installdeps, because we need to install toolchain package first
         for _, toolchain in ipairs(instance:toolchains()) do
             for _, packagename in ipairs(toolchain:config("packages")) do
                 if packagesmap[packagename] ~= instance then -- avoid loop recursion
@@ -766,7 +766,7 @@ function main(requires, opt)
         print("upgrading packages ..")
     end
 
-    -- some packages are modified? we need fix packages list and all deps
+    -- some packages are modified? we need to fix packages list and all deps
     if packages_modified then
         order_packages = {}
         _replace_packages(packages, packages_modified)

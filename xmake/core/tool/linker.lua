@@ -114,7 +114,7 @@ function linker.load(targetkind, sourcekinds, target)
     -- wrap sourcekinds first
     sourcekinds = table.wrap(sourcekinds)
     if #sourcekinds == 0 then
-        -- we need detect the sourcekinds of all deps if the current target has not any source files
+        -- we need to detect the sourcekinds of all deps if the current target has not any source files
         for _, dep in ipairs(target:orderdeps()) do
             table.join2(sourcekinds, dep:sourcekinds())
         end

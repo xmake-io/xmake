@@ -6,7 +6,7 @@ target "demo"
     set_basename "xmake"
     set_targetdir "${buildir}"
 
-    # add defines
+    # add definitions
     add_defines "__tb_prefix__=\"xmake\""
 
     # add includes directory

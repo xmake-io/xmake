@@ -1,6 +1,6 @@
 function main(t)
     if is_host("linux") and os.arch() == "x86_64" then
-        -- TODO, we need wait fix of linux kernel
+        -- TODO, we need to wait fix of linux kernel
         if linuxos.name() == "archlinux" then
             return
         end

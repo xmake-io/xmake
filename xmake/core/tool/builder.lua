@@ -393,7 +393,7 @@ end
 -- preprocess flags
 function builder:_preprocess_flags(flags)
 
-    -- remove repeat by right direction, because we need consider links/deps order
+    -- remove repeat by right direction, because we need to consider links/deps order
     -- @note https://github.com/xmake-io/xmake/issues/1240
     local unique = {}
     local count = #flags

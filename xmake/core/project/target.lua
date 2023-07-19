@@ -273,7 +273,7 @@ end
 function _instance:_invalidate(name)
     self._CACHEID = self._CACHEID + 1
     self._POLICIES = nil
-    -- we need flush the source files cache if target/files are modified, e.g. `target:add("files", "xxx.c")`
+    -- we need to flush the source files cache if target/files are modified, e.g. `target:add("files", "xxx.c")`
     if name == "files" then
         self._SOURCEFILES = nil
     elseif name == "deps" then
@@ -1140,7 +1140,7 @@ function _instance:autogenfile(sourcefile, opt)
     -- objectfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
     -- autogenfile: project/build/.gens/xxxx/../../xxx.c will be out of range for autogendir
     --
-    -- we need replace '..' to '__' in this case
+    -- we need to replace '..' with '__' in this case
     --
     if path.is_absolute(relativedir) and os.host() == "windows" then
         -- remove C:\\ and whitespaces and fix long path issue
@@ -1539,7 +1539,7 @@ function _instance:sourcefiles()
                     pattern = pattern:sub(3)
                 end
                 pattern = path.pattern(pattern)
-                -- we need match whole pattern, https://github.com/xmake-io/xmake/issues/3523
+                -- we need to match whole pattern, https://github.com/xmake-io/xmake/issues/3523
                 if sourcefile:match("^" .. pattern .. "$") then
                     return true
                 end
@@ -1574,14 +1574,14 @@ function _instance:objectfiles()
     local batchcount = 0
     local sourcebatches = self:sourcebatches()
     local orderkeys = table.keys(sourcebatches)
-    table.sort(orderkeys) -- @note we need guarantee the order of objectfiles for depend.is_changed() and etc.
+    table.sort(orderkeys) -- @note we need to guarantee the order of objectfiles for depend.is_changed() and etc.
     for _, k in ipairs(orderkeys) do
         local sourcebatch = sourcebatches[k]
         table.join2(objectfiles, sourcebatch.objectfiles)
         batchcount = batchcount + 1
     end
 
-    -- some object files may be repeat and appear link errors if multi-batches exists, so we need remove all repeat object files
+    -- some object files may be repeat and appear link errors if multi-batches exists, so we need to remove all repeat object files
     -- e.g. add_files("src/*.c", {rules = {"rule1", "rule2"}})
     local deduplicate = batchcount > 1
 
@@ -1810,7 +1810,7 @@ function _instance:dependfile(objectfile)
 
     -- originfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
     --
-    -- we need replace '..' to '__' in this case
+    -- we need to replace '..' to '__' in this case
     --
     relativedir = relativedir:gsub("%.%.", "__")
 
@@ -2194,7 +2194,7 @@ function _instance:tool(toolkind)
         if program and not toolname then
             local pos = program:find('@', 1, true)
             if pos then
-                -- we need ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
+                -- we need to ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
                 -- https://github.com/xmake-io/xmake/issues/2853
                 local prefix = program:sub(1, pos - 1)
                 if prefix and not prefix:find("[/\\]") then

@@ -71,7 +71,7 @@ tb_void_t                   xm_engine_exit(xm_engine_ref_t engine);
  */
 tb_int_t                    xm_engine_main(xm_engine_ref_t engine, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv);
 
-/*! register lni modules in the engine, @note we need call it in lni_initalizer()
+/*! register lni modules in the engine, @note we need to call it in lni_initalizer()
  *
  * @param engine            the engine
  * @param module            the lni module name

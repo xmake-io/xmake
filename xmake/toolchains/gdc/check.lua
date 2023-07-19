@@ -30,7 +30,7 @@ function main(toolchain)
         return true
     end
 
-    -- we need find gdc2 in the given toolchain sdk directory
+    -- we need to find gdc2 in the given toolchain sdk directory
     local sdkdir = toolchain:sdkdir()
     local bindir = toolchain:bindir()
     local cross  = toolchain:cross()

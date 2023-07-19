@@ -105,7 +105,7 @@ function _get_lanuage_flags(target)
 end
 
 function config(target)
-    local toolchain = assert(target:toolchain("verilator"), 'we need set_toolchains("verilator") in target("%s")', target:name())
+    local toolchain = assert(target:toolchain("verilator"), 'we need to set_toolchains("verilator") in target("%s")', target:name())
     local verilator = assert(toolchain:config("verilator"), "verilator not found!")
     local autogendir = path.join(target:autogendir(), "rules", "verilator")
     local tmpdir = os.tmpfile() .. ".dir"
@@ -191,7 +191,7 @@ endmodule]])
         target:add("languages", "c++20")
     end
 
-    -- add defines for switches
+    -- add definitions for switches
     for k, v in table.orderpairs(switches) do
         target:add("defines", "VM_" .. k .. "=" .. v)
     end
@@ -208,7 +208,7 @@ endmodule]])
 end
 
 function build_cppfiles(target, batchjobs, sourcebatch, opt)
-    local toolchain = assert(target:toolchain("verilator"), 'we need set_toolchains("verilator") in target("%s")', target:name())
+    local toolchain = assert(target:toolchain("verilator"), 'we need to set_toolchains("verilator") in target("%s")', target:name())
     local verilator = assert(toolchain:config("verilator"), "verilator not found!")
     local autogendir = path.join(target:autogendir(), "rules", "verilator")
     local targetname = target:name()
@@ -228,7 +228,7 @@ function build_cppfiles(target, batchjobs, sourcebatch, opt)
         local sourcefiles = sourcebatch.sourcefiles
         for _, sourcefile in ipairs(sourcefiles) do
             progress.show(opt.progress or 0, "${color.build.object}compiling.verilog %s", sourcefile)
-            -- we need use slashes to fix it on windows
+            -- we need to use slashes to fix it on windows
             -- @see https://github.com/verilator/verilator/issues/3873
             if is_host("windows") then
                 sourcefile = sourcefile:gsub("\\", "/")
@@ -264,7 +264,7 @@ function build_cppfiles(target, batchjobs, sourcebatch, opt)
 end
 
 function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
-    local toolchain = assert(target:toolchain("verilator"), 'we need set_toolchains("verilator") in target("%s")', target:name())
+    local toolchain = assert(target:toolchain("verilator"), 'we need to set_toolchains("verilator") in target("%s")', target:name())
     local verilator = assert(toolchain:config("verilator"), "verilator not found!")
     local autogendir = path.join(target:autogendir(), "rules", "verilator")
     local targetname = target:name()
@@ -284,7 +284,7 @@ function buildcmd_vfiles(target, batchcmds, sourcebatch, opt)
     for _, sourcefile in ipairs(sourcefiles) do
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.verilog %s", sourcefile)
         table.insert(argv, path(sourcefile, function (v)
-            -- we need use slashes to fix it on windows
+            -- we need to use slashes to fix it on windows
             -- @see https://github.com/verilator/verilator/issues/3873
             if is_host("windows") then
                 v = v:gsub("\\", "/")

@@ -89,7 +89,7 @@ function main()
         instance:envs_enter()
     end
 
-    -- we need force to detect and flush detect cache after loading all environments
+    -- we need to force detect and flush detect cache after loading all environments
     if not doxygen then
         doxygen = find_tool("doxygen", {force = true})
     end

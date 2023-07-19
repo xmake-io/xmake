@@ -158,7 +158,7 @@ function _find_qmake(sdkdir, sdkver)
         end
     end
 
-    -- we need find the default qmake in current system
+    -- we need to find the default qmake in current system
     -- maybe we only installed qmake6
     if not qmake then
         local suffixes = {"", "6", "-qt5"}

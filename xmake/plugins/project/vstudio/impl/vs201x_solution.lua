@@ -37,7 +37,7 @@ function _make_projects(slnfile, vsinfo)
     local targets = {}
     local vctool = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
     for targetname, target in table.orderpairs(project.targets()) do
-        -- we need set startup project for default or binary target
+        -- we need to set startup project for default or binary target
         -- @see https://github.com/xmake-io/xmake/issues/1249
         if target:get("default") == true then
             table.insert(targets, 1, target)

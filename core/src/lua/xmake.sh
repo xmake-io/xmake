@@ -42,7 +42,7 @@ target "lua"
     add_files "lua/lvm.c"
     add_files "lua/lzio.c"
 
-    # add defines
+    # add definitions
     add_defines "LUA_COMPAT_5_1" "LUA_COMPAT_5_2" "LUA_COMPAT_5_3" "{public}"
     if is_plat "mingw"; then
         add_defines "LUA_USE_WINDOWS"

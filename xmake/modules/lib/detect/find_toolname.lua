@@ -24,7 +24,7 @@ import("core.sandbox.module")
 
 -- remove some suffix
 --
--- we just remove some known extension, because we need reverse others, e.g. ld.lld, ld64.lld
+-- we just remove some known extension, because we need to reverse others, e.g. ld.lld, ld64.lld
 --
 function _remove_suffix(name)
     local exts = hashset.of("exe", "bat", "sh", "ps1", "ps")

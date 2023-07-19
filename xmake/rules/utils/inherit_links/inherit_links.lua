@@ -60,7 +60,7 @@ function main(target)
 
         -- rust maybe will disable inherit links, only inherit linkdirs
         if target:data("inherit.links.deplink") ~= false then
-            -- we need move target link to head
+            -- we need to move target link to head
             _add_export_value(target, "links", target:linkname())
             local links = target:get("links", {rawref = true})
             if links and type(links) == "table" and #links > 1 then
@@ -71,14 +71,14 @@ function main(target)
 
         _add_export_value(target, "linkdirs", path.directory(targetfile))
         if target:rule("go") then
-            -- we need add includedirs to support import modules for golang
+            -- we need to add includedirs to support import modules for golang
             _add_export_value(target, "includedirs", path.directory(targetfile))
         end
 
         -- we export all links and linkdirs in self/packages/options to the parent target by default
         --
         -- @note we only export links for static target,
-        -- and we need pass `{public = true}` to add_packages/add_links/... to export it if want to export links for shared target
+        -- and we need to pass `{public = true}` to add_packages/add_links/... to export it if want to export links for shared target
         --
         if target:data("inherit.links.exportlinks") ~= false then
             if targetkind == "static" then

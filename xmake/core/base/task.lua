@@ -150,7 +150,7 @@ function task._translate_menu(menu)
             end
         end
 
-        -- add common options, we need avoid repeat because the main/build task will be inserted twice
+        -- add common options, we need to avoid repeat because the main/build task will be inserted twice
         if not menu._common_options then
             for i, v in ipairs(task.common_options()) do
                 table.insert(options, i, v)

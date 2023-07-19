@@ -52,7 +52,7 @@ end
 -- get msvc
 function _get_msvc()
     local msvc = toolchain.load("msvc")
-    assert(msvc:check(), "vs not found!") -- we need check vs envs if it has been not checked yet
+    assert(msvc:check(), "vs not found!") -- we need to check vs envs if it has been not checked yet
     return msvc
 end
 
@@ -235,7 +235,7 @@ function _get_configs_for_cross(configs)
         envs.CMAKE_CXX_COMPILER = _translate_bin_path(dir and path.join(dir, name) or name)
     end
     -- @note The link command line is set in Modules/CMake{C,CXX,Fortran}Information.cmake and defaults to using the compiler, not CMAKE_LINKER,
-    -- so we need set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
+    -- so we need to set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
     --
     -- https://github.com/xmake-io/xmake-repo/pull/1039
     -- https://stackoverflow.com/questions/1867745/cmake-use-a-custom-linker/25274328#25274328
@@ -289,7 +289,7 @@ function _get_configs_for_host_toolchain(configs)
         envs.CMAKE_CXX_COMPILER = _translate_bin_path(dir and path.join(dir, name) or name)
     end
     -- @note The link command line is set in Modules/CMake{C,CXX,Fortran}Information.cmake and defaults to using the compiler, not CMAKE_LINKER,
-    -- so we need set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
+    -- so we need to set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
     --
     -- https://github.com/xmake-io/xmake-repo/pull/1039
     -- https://stackoverflow.com/questions/1867745/cmake-use-a-custom-linker/25274328#25274328
@@ -305,7 +305,7 @@ function _get_configs_for_host_toolchain(configs)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
-    -- we need not set it as cross compilation if we just pass toolchain
+    -- we don't need to set it as cross compilation if we just pass toolchain
     -- https://github.com/xmake-io/xmake/issues/2170
     if not is_plat(os.subhost()) then
         envs.CMAKE_SYSTEM_NAME     = "Linux"

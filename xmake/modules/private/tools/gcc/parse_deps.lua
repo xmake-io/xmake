@@ -35,7 +35,7 @@ function _normailize_dep(dep, projectdir)
     if dep:startswith(projectdir) then
         return path.relative(dep, projectdir)
     else
-        -- we need also check header files outside project
+        -- we also need to check header files outside project
         -- https://github.com/xmake-io/xmake/issues/1154
         return dep
     end
@@ -72,7 +72,7 @@ function main(depsdata, opt)
     local plain = {plain = true}
     line = line:replace("\\ ", space_placeholder, plain)
     for _, includefile in ipairs(line:split(' ', plain)) do -- it will trim all internal spaces without `{strict = true}`
-        -- some gcc toolchains will some invalid paths (e.g. `d\:\xxx`), we need fix it
+        -- some gcc toolchains will some invalid paths (e.g. `d\:\xxx`), we need to fix it
         -- https://github.com/xmake-io/xmake/issues/1196
         if is_host("windows") and includefile:match("^%w\\:") then
             includefile = includefile:replace("\\:", ":", plain)

@@ -115,7 +115,7 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
         outputdir = os.tmpfile({ramdisk = false}) .. ".tar"
     end
 
-    -- on msys2/cygwin? we need translate input path to cygwin-like path
+    -- on msys2/cygwin? we need to translate input path to cygwin-like path
     if is_subhost("msys", "cygwin") and program:gsub("\\", "/"):find("/usr/bin") then
         archivefile = path.cygwin_path(archivefile)
     end
@@ -331,7 +331,7 @@ function _extract_using_bzip2(archivefile, outputdir, extension, opt)
         outputdir = os.tmpfile({ramdisk = false}) .. ".tar"
     end
 
-    -- on msys2/cygwin? we need translate input path to cygwin-like path
+    -- on msys2/cygwin? we need to translate input path to cygwin-like path
     if is_subhost("msys", "cygwin") and program:gsub("\\", "/"):find("/usr/bin") then
         archivefile = path.cygwin_path(archivefile)
     end

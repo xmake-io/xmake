@@ -52,7 +52,7 @@ function remote_build_client:init()
         self._PROJECTDIR = projectdir
         self._WORKDIR = path.join(project_config.directory(), "remote_build")
     else
-        raise("we need enter a project directory with xmake.lua first!")
+        raise("we need to enter a project directory with xmake.lua first!")
     end
 
     -- init filesync
@@ -79,7 +79,7 @@ function remote_build_client:connect()
         return
     end
 
-    -- we need user authorization?
+    -- Do we need user authorization?
     local token = config.get("remote_build.token")
     if not token and self:user() then
 

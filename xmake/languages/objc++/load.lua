@@ -67,7 +67,7 @@ function _get_apis()
     ,   "package.add_frameworks"
     ,   "package.add_rpathdirs"
     ,   "package.add_linkdirs"
-    ,   "package.add_includedirs" --@note we need not uses paths for package, see https://github.com/xmake-io/xmake/issues/717
+    ,   "package.add_includedirs" --@note we don't need to use paths for package, see https://github.com/xmake-io/xmake/issues/717
     ,   "package.add_sysincludedirs"
     ,   "package.add_frameworkdirs"
         -- toolchain.add_xxx

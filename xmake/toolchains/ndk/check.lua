@@ -58,7 +58,7 @@ function _check_ndk(toolchain)
         toolchain:configs_save()
         return true
     else
-        --[[TODO we need also add this tips when use remote ndk toolchain
+        --[[TODO we also need to add this tips when use remote ndk toolchain
         -- failed
         cprint("${bright color.error}please run:")
         cprint("    - xmake config --ndk=xxx")

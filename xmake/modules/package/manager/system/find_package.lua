@@ -158,7 +158,7 @@ function _find_package_from_xcodedirs(name, links, opt)
         end
     end
     if result then
-        -- we need not add linkdirs again if we are building target on the current platform (with -isysroot)
+        -- we don't need to add linkdirs again if we are building target on the current platform (with -isysroot)
         if config.plat() ~= opt.plat or config.arch() ~= opt.arch then
             result.linkdirs    = linkdirs
             result.includedirs = includedirs
