@@ -30,6 +30,7 @@ cp -r ./xmake $topdir/xmake
 cp ./scripts/*.sh $topdir/scripts
 cp -r ./scripts/man $topdir/scripts
 cp -r ./scripts/debian $topdir/scripts
+cp -r ./scripts/msys $topdir/scripts
 cp ./*.md $topdir
 cp configure $topdir
 rm -rf $topdir/core/src/tbox/tbox/src/demo
