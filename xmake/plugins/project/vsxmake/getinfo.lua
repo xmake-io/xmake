@@ -541,7 +541,7 @@ function main(outputdir, vsinfo)
         end
     end
 
-    -- we need set startup project for default or binary target
+    -- we need to set startup project for default or binary target
     -- @see https://github.com/xmake-io/xmake/issues/1249
     local targetnames = {}
     for targetname, target in table.orderpairs(project.targets()) do
