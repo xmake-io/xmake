@@ -72,7 +72,6 @@ function _flatten_envs(envs)
     for name, values in pairs(envs) do
         flatten_envs[name] = table.concat(values, path.envsep())
     end
-
     return flatten_envs
 end
 
@@ -81,7 +80,6 @@ function join(addrunenvs, setrunenvs)
     if setrunenvs then
         table.join2(envs, _flatten_envs(setrunenvs))
     end
-
     return envs
 end
 

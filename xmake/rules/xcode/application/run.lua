@@ -44,7 +44,7 @@ function _run_on_macosx(target, opt)
     if option.get("debug") then
         debugger.run(targetfile, option.get("arguments"), {addrunenvs = addrunenvs, setrunenvs = setrunenvs})
     else
-        os.execv(targetfile, option.get("arguments"), {envs = runenvs.join()})
+        os.execv(targetfile, option.get("arguments"), {envs = runenvs.join(addrunenvs, setrunenvs)})
     end
 
     -- restore the previous directory
