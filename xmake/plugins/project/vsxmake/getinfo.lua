@@ -31,7 +31,7 @@ import("core.tool.toolchain")
 import("core.cache.memcache")
 import("core.cache.localcache")
 import("lib.detect.find_tool")
-import("private.action.run.make_runenvs")
+import("private.action.run.runenvs")
 import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
@@ -165,7 +165,7 @@ function _make_targetinfo(mode, arch, target)
 
     -- save runenvs
     local runenvs = {}
-    local addrunenvs, setrunenvs = make_runenvs(target)
+    local addrunenvs, setrunenvs = runenvs.make(target)
     for k, v in table.orderpairs(target:pkgenvs()) do
         addrunenvs = addrunenvs or {}
         addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
@@ -541,7 +541,7 @@ function main(outputdir, vsinfo)
         end
     end
 
-    -- we need to set startup project for default or binary target
+    -- we need set startup project for default or binary target
     -- @see https://github.com/xmake-io/xmake/issues/1249
     local targetnames = {}
     for targetname, target in table.orderpairs(project.targets()) do

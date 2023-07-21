@@ -14,8 +14,8 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      ruki, OpportunityLiu
--- @file        make_runenvs.lua
+-- @author      ruki, OpportunityLiu, SirLynix
+-- @file        runenvs.lua
 --
 
 -- imports
@@ -66,7 +66,26 @@ function _make_runpath_on_windows(target)
     return pathenv
 end
 
-function main(target)
+-- flatten envs ({PATH = {"A", "B"}} => {PATH = "A;B"})
+function _flatten_envs(envs)
+    local flatten_envs = {}
+    for name, values in pairs(envs) do
+        flatten_envs[name] = table.concat(values, path.envsep())
+    end
+
+    return flatten_envs
+end
+
+function join(addrunenvs, setrunenvs)
+    local envs = addrunenvs and _flatten_envs(addrunenvs) or {}
+    if setrunenvs then
+        table.join2(envs, _flatten_envs(setrunenvs))
+    end
+
+    return envs
+end
+
+function make(target)
 
     -- check
     assert(target)

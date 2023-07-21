@@ -27,7 +27,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.tool.toolchain")
 import("lib.detect.find_tool")
-import("private.action.run.make_runenvs")
+import("private.action.run.runenvs")
 import("private.action.require.impl.package")
 import("private.action.require.impl.utils.get_requires")
 
@@ -234,7 +234,7 @@ function _target_addenvs(envs)
             end
         end
         -- add run environments
-        local addrunenvs = make_runenvs(target)
+        local addrunenvs = runenvs.make(target)
         for name, values in pairs(addrunenvs) do
             _addenvs(envs, name, table.unpack(table.wrap(values)))
         end

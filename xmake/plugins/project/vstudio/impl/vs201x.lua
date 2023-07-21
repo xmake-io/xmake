@@ -36,7 +36,7 @@ import("vsutils")
 import("core.cache.memcache")
 import("core.cache.localcache")
 import("private.action.require.install", {alias = "install_requires"})
-import("private.action.run.make_runenvs")
+import("private.action.run.runenvs")
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("private.utils.batchcmds")
@@ -324,7 +324,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
 
     -- save runenvs
     local runenvs = {}
-    local addrunenvs, setrunenvs = make_runenvs(target)
+    local addrunenvs, setrunenvs = runenvs.make(target)
     for k, v in table.orderpairs(target:pkgenvs()) do
         addrunenvs = addrunenvs or {}
         addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
