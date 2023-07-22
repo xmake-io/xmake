@@ -45,16 +45,16 @@ function _do_run_target(target)
     local targetfile = path.absolute(target:targetfile())
 
     -- build run environments
-    local addrunenvs, setrunenvs = runenvs.make(target)
+    local addenvs, setenvs = runenvs.make(target)
 
     -- get run arguments
     local args = table.wrap(option.get("arguments") or target:get("runargs"))
 
     -- debugging?
     if option.get("debug") then
-        debugger.run(targetfile, args, {curdir = rundir, addrunenvs = addrunenvs, setrunenvs = setrunenvs})
+        debugger.run(targetfile, args, {curdir = rundir, addenvs = addenvs, setenvs = setenvs})
     else
-        local envs = runenvs.join(addrunenvs, setrunenvs)
+        local envs = runenvs.join(addenvs, setenvs)
         os.execv(targetfile, args, {curdir = rundir, detach = option.get("detach"), envs = envs})
     end
 end

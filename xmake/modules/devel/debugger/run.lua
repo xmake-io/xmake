@@ -51,7 +51,7 @@ function _run_gdb(program, argv, opt)
     table.insert(argv, 1, "--args")
 
     -- handle envs
-    opt.envs = runenvs.join(opt.addrunenvs, opt.setrunenvs)
+    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     os.execv(gdb, argv, table.join(opt, {exclusive = true}))
@@ -74,7 +74,7 @@ function _run_cudagdb(program, argv, opt)
     table.insert(argv, 1, "--args")
 
     -- handle envs
-    opt.envs = runenvs.join(opt.addrunenvs, opt.setrunenvs)
+    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     os.execv(gdb, argv, table.join(opt, {exclusive = true}))
@@ -104,7 +104,7 @@ function _run_lldb(program, argv, opt)
     end
 
     -- handle envs
-    opt.envs = runenvs.join(opt.addrunenvs, opt.setrunenvs)
+    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     os.execv(names[1], argv, table.join(opt, {exclusive = true}))
@@ -125,7 +125,7 @@ function _run_windbg(program, argv, opt)
     table.insert(argv, 1, program)
 
     -- handle envs
-    opt.envs = runenvs.join(opt.addrunenvs, opt.setrunenvs)
+    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     opt.detach = true
@@ -147,7 +147,7 @@ function _run_cudamemcheck(program, argv, opt)
     table.insert(argv, 1, program)
 
     -- handle envs
-    opt.envs = runenvs.join(opt.addrunenvs, opt.setrunenvs)
+    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     os.execv(cudamemcheck, argv, opt)
@@ -168,7 +168,7 @@ function _run_x64dbg(program, argv, opt)
     table.insert(argv, 1, program)
 
     -- handle envs
-    opt.envs = runenvs.join(opt.addrunenvs, opt.setrunenvs)
+    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     opt.detach = true
@@ -190,7 +190,7 @@ function _run_ollydbg(program, argv, opt)
     table.insert(argv, 1, program)
 
     -- handle envs
-    opt.envs = runenvs.join(opt.addrunenvs, opt.setrunenvs)
+    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     opt.detach = true
@@ -212,7 +212,7 @@ function _run_vsjitdebugger(program, argv, opt)
     table.insert(argv, 1, program)
 
     -- handle envs
-    opt.envs = runenvs.join(opt.addrunenvs, opt.setrunenvs)
+    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     opt.detach = true
@@ -235,7 +235,7 @@ function _run_devenv(program, argv, opt)
     table.insert(argv, 2, program)
 
     -- handle envs
-    opt.envs = runenvs.join(opt.addrunenvs, opt.setrunenvs)
+    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     opt.detach = true
@@ -254,8 +254,8 @@ function _run_renderdoc(program, argv, opt)
 
     -- build capture settings
     local environment = {}
-    if opt.addrunenvs then
-        for name, values in pairs(opt.addrunenvs) do
+    if opt.addenvs then
+        for name, values in pairs(opt.addenvs) do
             table.insert(environment, {
                 separator = "Platform style",
                 type = "Append",
@@ -265,8 +265,8 @@ function _run_renderdoc(program, argv, opt)
         end
     end
 
-    if opt.setrunenvs then
-        for name, values in pairs(opt.setrunenvs) do
+    if opt.setenvs then
+        for name, values in pairs(opt.setenvs) do
             table.insert(environment, {
                 separator = "Platform style",
                 type = "Set",
@@ -309,8 +309,8 @@ function _run_renderdoc(program, argv, opt)
 
     -- run renderdoc
     opt.detach = true
-    opt.addrunenvs = nil
-    opt.setrunenvs = nil
+    opt.addenvs = nil
+    opt.setenvs = nil
     os.execv(renderdoc, { capturefile }, opt)
     return true
 end
@@ -333,7 +333,7 @@ function _run_gede(program, argv, opt)
     table.insert(argv, 1, "--no-show-config")
 
     -- handle envs
-    opt.envs = runenvs.join(opt.addrunenvs, opt.setrunenvs)
+    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     os.execv(gede.program, argv, table.join(opt, {exclusive = true}))
@@ -356,7 +356,7 @@ function _run_seergdb(program, argv, opt)
     table.insert(argv, 1, "--start")
 
     -- handle envs
-    opt.envs = runenvs.join(opt.addrunenvs, opt.setrunenvs)
+    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     os.execv(seergdb.program, argv, table.join(opt, {exclusive = true}))
