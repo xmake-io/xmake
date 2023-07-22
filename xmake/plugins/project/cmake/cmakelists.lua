@@ -679,16 +679,20 @@ function _add_target_exceptions(cmakelists, target)
     }
     local exceptions = target:get("exceptions")
     if exceptions then
-        cmakelists:print("if(MSVC)")
-        -- msvc or clang-cl
-        for _, exception in ipairs(exceptions) do
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[exception])
+        if exceptions == "none" then
+            cmakelists:print("string(REPLACE \"/EHsc\" \"\" CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")")
+        else
+            cmakelists:print("if(MSVC)")
+            -- msvc or clang-cl
+            for _, exception in ipairs(exceptions) do
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[exception])
+            end
+            cmakelists:print("else()")
+            for _, exception in ipairs(exceptions) do
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[exception])
+            end
+            cmakelists:print("endif()")
         end
-        cmakelists:print("else()")
-        for _, exception in ipairs(exceptions) do
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[exception])
-        end
-        cmakelists:print("endif()")
     end
 end
 
