@@ -259,7 +259,7 @@ function _run_renderdoc(program, argv, opt)
             table.insert(environment, {
                 separator = "Platform style",
                 type = "Append",
-                value = table.concat(values, path.envsep()),
+                value = path.joinenv(values),
                 variable = name
             })
         end
@@ -270,7 +270,7 @@ function _run_renderdoc(program, argv, opt)
             table.insert(environment, {
                 separator = "Platform style",
                 type = "Set",
-                value = table.concat(values, path.envsep()),
+                value = path.joinenv(values),
                 variable = name
             })
         end

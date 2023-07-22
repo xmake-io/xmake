@@ -70,7 +70,7 @@ end
 function _flatten_envs(envs)
     local flatten_envs = {}
     for name, values in pairs(envs) do
-        flatten_envs[name] = table.concat(values, path.envsep())
+        flatten_envs[name] = path.joinenv(values)
     end
     return flatten_envs
 end
