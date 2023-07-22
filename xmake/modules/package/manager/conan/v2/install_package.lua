@@ -178,6 +178,7 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         local vs = assert(config.get("vs"), "vs not found!")
         profile:print("compiler=msvc")
         profile:print("compiler.version=" .. assert(vsvers[vs], "unknown msvc version!"))
+        -- @see https://github.com/conan-io/conan/issues/12387
         if vs >= 2015 then
             profile:print("compiler.cppstd=14")
         end
