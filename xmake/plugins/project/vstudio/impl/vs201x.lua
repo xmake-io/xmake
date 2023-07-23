@@ -323,7 +323,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     targetinfo.rundir = target:rundir()
 
     -- save runenvs
-    local runenvs = {}
+    local targetrunenvs = {}
     local addrunenvs, setrunenvs = runenvs.make(target)
     for k, v in table.orderpairs(target:pkgenvs()) do
         addrunenvs = addrunenvs or {}
@@ -337,25 +337,25 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     end
     for k, v in table.orderpairs(addrunenvs) do
         if k:upper() == "PATH" then
-            runenvs[k] = _translate_path(v, vcxprojdir) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
+            targetrunenvs[k] = _translate_path(v, vcxprojdir) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
-            runenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
+            targetrunenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
         end
     end
     for k, v in table.orderpairs(setrunenvs) do
         if #v == 1 then
             v = v[1]
             if path.is_absolute(v) and v:startswith(project.directory()) then
-                runenvs[k] = _translate_path(v, vcxprojdir)
+                targetrunenvs[k] = _translate_path(v, vcxprojdir)
             else
-                runenvs[k] = v[1]
+                targetrunenvs[k] = v[1]
             end
         else
-            runenvs[k] = path.joinenv(v)
+            targetrunenvs[k] = path.joinenv(v)
         end
     end
     local runenvstr = {}
-    for k, v in table.orderpairs(runenvs) do
+    for k, v in table.orderpairs(targetrunenvs) do
         table.insert(runenvstr, k .. "=" .. v)
     end
     targetinfo.runenvs = table.concat(runenvstr, "\n")

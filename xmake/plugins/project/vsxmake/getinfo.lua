@@ -164,7 +164,7 @@ function _make_targetinfo(mode, arch, target)
     end
 
     -- save runenvs
-    local runenvs = {}
+    local targetrunenvs = {}
     local addrunenvs, setrunenvs = runenvs.make(target)
     for k, v in table.orderpairs(target:pkgenvs()) do
         addrunenvs = addrunenvs or {}
@@ -180,25 +180,25 @@ function _make_targetinfo(mode, arch, target)
         -- https://github.com/xmake-io/xmake/issues/3391
         v = table.unique(v)
         if k:upper() == "PATH" then
-            runenvs[k] = _make_dirs(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
+            targetrunenvs[k] = _make_dirs(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
-            runenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
+            targetrunenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
         end
     end
     for k, v in table.orderpairs(setrunenvs) do
         if #v == 1 then
             v = v[1]
             if path.is_absolute(v) and v:startswith(project.directory()) then
-                runenvs[k] = _make_dirs(v)
+                targetrunenvs[k] = _make_dirs(v)
             else
-                runenvs[k] = v[1]
+                targetrunenvs[k] = v[1]
             end
         else
-            runenvs[k] = path.joinenv(v)
+            targetrunenvs[k] = path.joinenv(v)
         end
     end
     local runenvstr = {}
-    for k, v in table.orderpairs(runenvs) do
+    for k, v in table.orderpairs(targetrunenvs) do
         table.insert(runenvstr, k .. "=" .. v)
     end
     targetinfo.runenvs = table.concat(runenvstr, "\n")
