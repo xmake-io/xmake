@@ -6,6 +6,7 @@
 
 * [#3960](https://github.com/xmake-io/xmake/issues/3960): Improve msys2/crt64 support
 * Improve to upgrade vcproj files in tools.msbuild
+* Support add_requires("xmake::xxx") package
 
 ### Bugs fixed
 
@@ -1621,6 +1622,7 @@
 
 * [#3960](https://github.com/xmake-io/xmake/issues/3960): 改进 msys2/crt64 支持
 * 改进 tools.msbuild 升级 vcproj 文件
+* 支持 add_requires("xmake::xxx") 包
 
 ### Bugs 修复
 
