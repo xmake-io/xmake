@@ -79,7 +79,7 @@ end
 function join(addenvs, setenvs)
     local envs = os.joinenvs(addenvs and _flatten_envs(addenvs) or {})
     if setenvs then
-        table.join2(envs, _flatten_envs(setenvs))
+        envs = os.joinenvs(envs, _flatten_envs(setenvs))
     end
     return envs
 end
