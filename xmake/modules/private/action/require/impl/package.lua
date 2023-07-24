@@ -173,6 +173,13 @@ function _load_require(require_str, requires_extra, parentinfo)
         end
     end
 
+    -- we always use xmake package, `add_requires("xmake::zlib")`,
+    -- it is equivalent to `add_requires("zlib", {system = false})`
+    if packagename:startswith("xmake::") then
+        packagename = packagename:sub(8)
+        require_extra.system = false
+    end
+
     -- init required item
     local required = {}
     parentinfo = parentinfo or {}
@@ -726,6 +733,7 @@ end
 
 -- load required packages
 function _load_package(packagename, requireinfo, opt)
+    print(packagename, requireinfo)
 
     -- check circular dependency
     opt = opt or {}
