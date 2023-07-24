@@ -63,7 +63,8 @@ function main (target, opt)
                         if symbol then
                             symbol = symbol:split('%s')[1]
                             if not symbol:startswith("__") then
-                                if target:is_arch("x86") and symbol:startswith("_") then
+                                -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
+                                if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("_DllMain@") then
                                     symbol = symbol:sub(2)
                                 end
                                 if export_classes or not symbol:startswith("?") then
