@@ -733,7 +733,6 @@ end
 
 -- load required packages
 function _load_package(packagename, requireinfo, opt)
-    print(packagename, requireinfo)
 
     -- check circular dependency
     opt = opt or {}
