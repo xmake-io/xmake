@@ -90,15 +90,25 @@ function _do_build_file(target, sourcefile, opt)
         dependinfo.files = {}
         assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
 
-        -- update files and values to the dependent file
+        -- update files and values to the depfiles
         dependinfo.values = depvalues
         table.insert(dependinfo.files, sourcefile)
-        local pcoutputfile = target:pcoutputfile("cxx")
-        if target:has_sourcekind("cxx") and pcoutputfile then
-            table.insert(dependinfo.files, pcoutputfile)
-        end
+
+        -- add precompiled header to the depfiles when building sourcefile
+        local build_pch
+        local pcxxoutputfile = target:pcoutputfile("cxx")
         local pcoutputfile = target:pcoutputfile("c")
-        if target:has_sourcekind("cc") and pcoutputfile then
+        if pcxxoutputfile or pcoutputfile then
+            -- https://github.com/xmake-io/xmake/issues/3988
+            local extension = path.extension(sourcefile)
+            if (extension:startswith(".h") or extension == ".inl") then
+                build_pch = true
+            end
+        end
+        if target:has_sourcekind("cxx") and pcxxoutputfile and not build_pch then
+            table.insert(dependinfo.files, pcxxoutputfile)
+        end
+        if target:has_sourcekind("cc") and pcoutputfile and not build_pch then
             table.insert(dependinfo.files, pcoutputfile)
         end
         depend.save(dependinfo, dependfile)
