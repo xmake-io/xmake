@@ -36,7 +36,7 @@ import("vsutils")
 import("core.cache.memcache")
 import("core.cache.localcache")
 import("private.action.require.install", {alias = "install_requires"})
-import("private.action.run.make_runenvs")
+import("private.action.run.runenvs")
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("private.utils.batchcmds")
@@ -323,8 +323,8 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     targetinfo.rundir = target:rundir()
 
     -- save runenvs
-    local runenvs = {}
-    local addrunenvs, setrunenvs = make_runenvs(target)
+    local targetrunenvs = {}
+    local addrunenvs, setrunenvs = runenvs.make(target)
     for k, v in table.orderpairs(target:pkgenvs()) do
         addrunenvs = addrunenvs or {}
         addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
@@ -337,25 +337,25 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     end
     for k, v in table.orderpairs(addrunenvs) do
         if k:upper() == "PATH" then
-            runenvs[k] = _translate_path(v, vcxprojdir) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
+            targetrunenvs[k] = _translate_path(v, vcxprojdir) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .. "'))"
         else
-            runenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
+            targetrunenvs[k] = path.joinenv(v) .. ";$([System.Environment]::GetEnvironmentVariable('" .. k .."'))"
         end
     end
     for k, v in table.orderpairs(setrunenvs) do
         if #v == 1 then
             v = v[1]
             if path.is_absolute(v) and v:startswith(project.directory()) then
-                runenvs[k] = _translate_path(v, vcxprojdir)
+                targetrunenvs[k] = _translate_path(v, vcxprojdir)
             else
-                runenvs[k] = v[1]
+                targetrunenvs[k] = v[1]
             end
         else
-            runenvs[k] = path.joinenv(v)
+            targetrunenvs[k] = path.joinenv(v)
         end
     end
     local runenvstr = {}
-    for k, v in table.orderpairs(runenvs) do
+    for k, v in table.orderpairs(targetrunenvs) do
         table.insert(runenvstr, k .. "=" .. v)
     end
     targetinfo.runenvs = table.concat(runenvstr, "\n")

@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("devel.debugger")
-import("private.action.run.make_runenvs")
+import("private.action.run.runenvs")
 
 -- run on macosx
 function _run_on_macosx(target, opt)
@@ -38,19 +38,13 @@ function _run_on_macosx(target, opt)
     local oldir = os.cd(rundir)
 
     -- add run environments
-    local addrunenvs, setrunenvs = make_runenvs(target)
-    for name, values in pairs(addrunenvs) do
-        os.addenv(name, table.unpack(table.wrap(values)))
-    end
-    for name, value in pairs(setrunenvs) do
-        os.setenv(name, table.unpack(table.wrap(value)))
-    end
+    local addrunenvs, setrunenvs = runenvs.make(target)
 
     -- debugging?
     if option.get("debug") then
-        debugger.run(targetfile, option.get("arguments"))
+        debugger.run(targetfile, option.get("arguments"), {addrunenvs = addrunenvs, setrunenvs = setrunenvs})
     else
-        os.execv(targetfile, option.get("arguments"))
+        os.execv(targetfile, option.get("arguments"), {envs = runenvs.join(addrunenvs, setrunenvs)})
     end
 
     -- restore the previous directory
