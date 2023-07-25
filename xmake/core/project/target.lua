@@ -647,6 +647,8 @@ function _instance:version()
 end
 
 -- get the target soname
+-- @see https://github.com/tboox/tbox/issues/214
+--
 -- set_version("1.0.1", {soname = "1.0"}) -> libfoo.so.1.0, libfoo.1.0.dylib
 -- set_version("1.0.1", {soname = "1"}) -> libfoo.so.1, libfoo.1.dylib
 -- set_version("1.0.1", {soname = true}) -> libfoo.so.1, libfoo.1.dylib

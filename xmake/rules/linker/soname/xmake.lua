@@ -18,8 +18,17 @@
 -- @file        xmake.lua
 --
 
-rule("linker")
-    add_deps("linker.link_scripts")
-    add_deps("linker.version_scripts")
-    add_deps("linker.soname")
+rule("linker.soname")
+    on_config(function (target)
+        local soname = target:soname()
+        if target:is_shared() and soname then
+            if target:has_tool("sh", "gcc", "gxx", "clang", "clangxx") then
+                if target:is_plat("macosx", "iphoneos", "watchos", "appletvos") then
+                    target:add("shflags", "-Wl,-install_name," .. soname, {force = true})
+                else
+                    target:add("shflags", "-Wl,-soname," .. soname, {force = true})
+                end
+            end
+        end
+    end)
 
