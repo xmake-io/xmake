@@ -28,6 +28,30 @@ rule("linker.soname")
                 else
                     target:add("shflags", "-Wl,-soname," .. soname, {force = true})
                 end
+                target:data_set("soname.enabled", true)
+            end
+        end
+    end)
+    after_link(function (target)
+        local soname = target:soname()
+        if target:is_shared() and soname and target:data("soname.enabled") then
+            local version = target:version()
+            local filename = target:filename()
+            local extension = path.extension(filename)
+            local targetfile_with_version = path.join(target:targetdir(), filename .. "." .. version)
+            if extension == ".dylib" then
+                targetfile_with_version = path.join(target:targetdir(), path.basename(filename) .. "." .. version .. extension)
+            end
+            local targetfile_with_soname = path.join(target:targetdir(), soname)
+            local targetfile = target:targetfile()
+            if soname ~= filename and soname ~= path.filename(targetfile_with_version) then
+                os.cp(target:targetfile(), targetfile_with_version)
+                os.rm(target:targetfile())
+                os.rm(targetfile_with_soname)
+                local oldir = os.cd(target:targetdir())
+                os.ln(path.filename(targetfile_with_version), soname)
+                os.ln(soname, path.filename(targetfile))
+                os.cd(oldir)
             end
         end
     end)
