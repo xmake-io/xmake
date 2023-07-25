@@ -635,24 +635,17 @@ end
 
 -- get the target version
 function _instance:version()
-
-    -- get version and build version
     local version = self:get("version")
-    local version_build = nil
+    local version_build
+    local version_soname
     if version then
-        local version_extra = self:get("__extra_version")
-        if version_extra then
-            version_build = self._VERSION_BUILD
-            if not version_build then
-                version_build = table.wrap(version_extra[version]).build
-                if type(version_build) == "string" then
-                    version_build = os.date(version_build, os.time())
-                    self._VERSION_BUILD = version_build
-                end
-            end
+        version_build = self:extraconf("version", version, "build")
+        if type(version_build) == "string" then
+            version_build = os.date(version_build, os.time())
         end
+        version_soname = self:extraconf("version", version, "soname")
     end
-    return version, version_build
+    return version, version_build, version_soname
 end
 
 -- get the target license
