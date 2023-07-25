@@ -32,6 +32,7 @@ rule("linker.soname")
             end
         end
     end)
+
     after_link(function (target)
         local soname = target:soname()
         if target:is_shared() and soname and target:data("soname.enabled") then
@@ -56,3 +57,19 @@ rule("linker.soname")
         end
     end)
 
+    after_clean(function (target)
+        import("private.action.clean.remove_files")
+        local soname = target:soname()
+        if target:is_shared() and soname then
+            local version = target:version()
+            local filename = target:filename()
+            local extension = path.extension(filename)
+            local targetfile_with_version = path.join(target:targetdir(), filename .. "." .. version)
+            if extension == ".dylib" then
+                targetfile_with_version = path.join(target:targetdir(), path.basename(filename) .. "." .. version .. extension)
+            end
+            local targetfile_with_soname = path.join(target:targetdir(), soname)
+            remove_files(targetfile_with_soname)
+            remove_files(targetfile_with_version)
+        end
+    end)
