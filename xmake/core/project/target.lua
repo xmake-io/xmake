@@ -637,15 +637,45 @@ end
 function _instance:version()
     local version = self:get("version")
     local version_build
-    local version_soname
     if version then
         version_build = self:extraconf("version", version, "build")
         if type(version_build) == "string" then
             version_build = os.date(version_build, os.time())
         end
-        version_soname = self:extraconf("version", version, "soname")
     end
-    return version, version_build, version_soname
+    return version, version_build
+end
+
+-- get the target soname
+-- set_version("1.0.1", {soname = "1.0"}) -> libfoo.so.1.0, libfoo.1.0.dylib
+-- set_version("1.0.1", {soname = "1"}) -> libfoo.so.1, libfoo.1.dylib
+-- set_version("1.0.1", {soname = true}) -> libfoo.so.1, libfoo.1.dylib
+-- set_version("1.0.1", {soname = ""}) -> libfoo.so, libfoo.dylib
+function _instance:soname()
+    if not self:is_shared() then
+        return
+    end
+    local version = self:get("version")
+    local version_soname
+    if version then
+        version_soname = self:extraconf("version", version, "soname")
+        if version_soname == true then
+            version_soname = version:split(".", {plain = true})[1]
+        end
+    end
+    if not version_soname then
+        return
+    end
+    local soname = self:filename()
+    if type(version_soname) == "string" and #version_soname > 0 then
+        local extension = path.extension(soname)
+        if extension == ".dylib" then
+            soname = path.basename(soname) .. "." .. version_soname .. extension
+        else
+            soname = soname .. "." .. version_soname
+        end
+    end
+    return soname
 end
 
 -- get the target license
