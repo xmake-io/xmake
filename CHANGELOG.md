@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#4002](https://github.com/xmake-io/xmake/issues/4002): Add soname and version support
+
 ### Changes
 
 * [#3960](https://github.com/xmake-io/xmake/issues/3960): Improve msys2/crt64 support
@@ -1617,6 +1621,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#4002](https://github.com/xmake-io/xmake/issues/4002): 增加 soname 支持
 
 ### 改进
 
