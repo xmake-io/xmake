@@ -112,7 +112,24 @@ function install_shared(target, opt)
     -- install libraries
     local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
     os.mkdir(librarydir)
-    os.vcp(target:targetfile(), librarydir)
+    local targetfile = target:targetfile()
+    if os.islink(targetfile) then
+        local targetfile_with_soname = os.readlink(targetfile)
+        if not path.is_absolute(targetfile_with_soname) then
+            targetfile_with_soname = path.join(target:targetdir(), targetfile_with_soname)
+        end
+        if os.islink(targetfile_with_soname) then
+            local targetfile_with_version = os.readlink(targetfile_with_soname)
+            if not path.is_absolute(targetfile_with_version) then
+                targetfile_with_version = path.join(target:targetdir(), targetfile_with_version)
+            end
+            os.vcp(targetfile_with_version, librarydir, {symlink = true})
+        end
+        os.vcp(targetfile_with_soname, librarydir, {symlink = true})
+        os.vcp(targetfile, librarydir, {symlink = true})
+    else
+        os.vcp(targetfile, librarydir)
+    end
 
     -- install shared libraries for all packages
     _install_shared_for_packages(target, librarydir)

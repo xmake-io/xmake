@@ -91,7 +91,22 @@ function uninstall_shared(target, opt)
 
     -- remove the target file
     local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
-    os.vrm(path.join(librarydir, path.filename(target:targetfile())))
+    local targetfile = path.join(librarydir, path.filename(target:targetfile()))
+    if os.islink(targetfile) then
+        local targetfile_with_soname = os.readlink(targetfile)
+        if not path.is_absolute(targetfile_with_soname) then
+            targetfile_with_soname = path.join(librarydir, targetfile_with_soname)
+        end
+        if os.islink(targetfile_with_soname) then
+            local targetfile_with_version = os.readlink(targetfile_with_soname)
+            if not path.is_absolute(targetfile_with_version) then
+                targetfile_with_version = path.join(librarydir, targetfile_with_version)
+            end
+            os.vrm(targetfile_with_version)
+        end
+        os.vrm(targetfile_with_soname)
+    end
+    os.vrm(targetfile)
 
     -- remove headers from the include directory
     _uninstall_headers(target, opt)

@@ -635,24 +635,52 @@ end
 
 -- get the target version
 function _instance:version()
-
-    -- get version and build version
     local version = self:get("version")
-    local version_build = nil
+    local version_build
     if version then
-        local version_extra = self:get("__extra_version")
-        if version_extra then
-            version_build = self._VERSION_BUILD
-            if not version_build then
-                version_build = table.wrap(version_extra[version]).build
-                if type(version_build) == "string" then
-                    version_build = os.date(version_build, os.time())
-                    self._VERSION_BUILD = version_build
-                end
-            end
+        version_build = self:extraconf("version", version, "build")
+        if type(version_build) == "string" then
+            version_build = os.date(version_build, os.time())
         end
     end
     return version, version_build
+end
+
+-- get the target soname
+-- @see https://github.com/tboox/tbox/issues/214
+--
+-- set_version("1.0.1", {soname = "1.0"}) -> libfoo.so.1.0, libfoo.1.0.dylib
+-- set_version("1.0.1", {soname = "1"}) -> libfoo.so.1, libfoo.1.dylib
+-- set_version("1.0.1", {soname = true}) -> libfoo.so.1, libfoo.1.dylib
+-- set_version("1.0.1", {soname = ""}) -> libfoo.so, libfoo.dylib
+function _instance:soname()
+    if not self:is_shared() then
+        return
+    end
+    if not self:is_plat("macosx", "linux", "bsd", "cross") then
+        return
+    end
+    local version = self:get("version")
+    local version_soname
+    if version then
+        version_soname = self:extraconf("version", version, "soname")
+        if version_soname == true then
+            version_soname = version:split(".", {plain = true})[1]
+        end
+    end
+    if not version_soname then
+        return
+    end
+    local soname = self:filename()
+    if type(version_soname) == "string" and #version_soname > 0 then
+        local extension = path.extension(soname)
+        if extension == ".dylib" then
+            soname = path.basename(soname) .. "." .. version_soname .. extension
+        else
+            soname = soname .. "." .. version_soname
+        end
+    end
+    return soname
 end
 
 -- get the target license

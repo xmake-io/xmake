@@ -21,4 +21,5 @@
 rule("linker")
     add_deps("linker.link_scripts")
     add_deps("linker.version_scripts")
+    add_deps("linker.soname")
 
