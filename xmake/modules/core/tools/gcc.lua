@@ -166,16 +166,17 @@ end
 -- make the vector extension flag
 function nf_vectorext(self, extension)
     local maps = {
-        mmx    = "-mmmx"
-    ,   sse    = "-msse"
-    ,   sse2   = "-msse2"
-    ,   sse3   = "-msse3"
-    ,   ssse3  = "-mssse3"
-    ,   avx    = "-mavx"
-    ,   avx2   = "-mavx2"
-    ,   avx512 = "-march=skylake-avx512"
-    ,   fma    = "-mfma"
-    ,   neon   = "-mfpu=neon"
+        mmx        = "-mmmx"
+    ,   sse        = "-msse"
+    ,   sse2       = "-msse2"
+    ,   sse3       = "-msse3"
+    ,   ssse3      = "-mssse3"
+    ,   ["sse4.2"] = "-msse4.2"
+    ,   avx        = "-mavx"
+    ,   avx2       = "-mavx2"
+    ,   avx512     = "-march=skylake-avx512"
+    ,   fma        = "-mfma"
+    ,   neon       = "-mfpu=neon"
     }
     return maps[extension]
 end

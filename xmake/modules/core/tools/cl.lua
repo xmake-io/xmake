@@ -180,12 +180,13 @@ end
 function nf_vectorext(self, extension)
     local maps =
     {
-        sse    = "-arch:SSE"
-    ,   sse2   = "-arch:SSE2"
-    ,   avx    = "-arch:AVX"
-    ,   avx2   = "-arch:AVX2"
-    ,   avx512 = "-arch:AVX512"
-    ,   fma    = "-arch:AVX2"
+        sse        = "-arch:SSE"
+    ,   sse2       = "-arch:SSE2"
+    ,   ["sse4.2"] = "/d2archSSE42"
+    ,   avx        = "-arch:AVX"
+    ,   avx2       = "-arch:AVX2"
+    ,   avx512     = "-arch:AVX512"
+    ,   fma        = "-arch:AVX2"
     }
     local flag = maps[extension]
     if flag and self:has_flags(flag, "cxflags") then
