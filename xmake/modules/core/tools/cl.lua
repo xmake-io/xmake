@@ -182,10 +182,10 @@ function nf_vectorext(self, extension)
     {
         sse        = "-arch:SSE"
     ,   sse2       = "-arch:SSE2"
-    ,   ["sse4.2"] = "/d2archSSE42"
+    ,   ["sse4.2"] = "/d2archSSE42" -- the only undocumented way works, @see https://github.com/xmake-io/xmake/issues/3786
     ,   avx        = "-arch:AVX"
     ,   avx2       = "-arch:AVX2"
-    ,   avx512     = "-arch:AVX512"
+    ,   avx512     = "-arch:AVX512" -- for msvc 2019+ avx512 support
     ,   fma        = "-arch:AVX2"
     }
     local flag = maps[extension]

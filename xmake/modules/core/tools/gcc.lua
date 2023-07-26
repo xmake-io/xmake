@@ -174,7 +174,7 @@ function nf_vectorext(self, extension)
     ,   ["sse4.2"] = "-msse4.2"
     ,   avx        = "-mavx"
     ,   avx2       = "-mavx2"
-    ,   avx512     = "-march=skylake-avx512"
+    ,   avx512     = "-march=skylake-avx512" -- @see https://github.com/xmake-io/xmake/issues/1613
     ,   fma        = "-mfma"
     ,   neon       = "-mfpu=neon"
     }
