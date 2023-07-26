@@ -55,6 +55,7 @@ os.SYSERR_NOT_ACCESS  = 3
 
 -- copy single file or directory
 function os._cp(src, dst, rootdir, opt)
+    opt = opt or {}
     assert(src and dst)
 
     -- reserve the source directory structure if opt.rootdir is given
@@ -68,7 +69,7 @@ function os._cp(src, dst, rootdir, opt)
     end
 
     -- is file or link?
-    local symlink = opt and opt.symlink
+    local symlink = opt.symlink
     if os.isfile(src) or (symlink and os.islink(src)) then
 
         -- the destination is directory? append the filename
@@ -81,6 +82,9 @@ function os._cp(src, dst, rootdir, opt)
         end
 
         -- copy or link file
+        if opt.force and os.isfile(dst) then
+            os.rmfile(dst)
+        end
         if not os.cpfile(src, dst, symlink) then
             local errors = os.strerror()
             if symlink and os.islink(src) then
@@ -106,8 +110,6 @@ function os._cp(src, dst, rootdir, opt)
         if not os.cpdir(src, dst, symlink) then
             return false, string.format("cannot copy directory %s to %s,  %s", src, dst, os.strerror())
         end
-
-    -- not exists?
     else
         return false, string.format("cannot copy file %s, file not found!", src)
     end
@@ -115,10 +117,10 @@ function os._cp(src, dst, rootdir, opt)
 end
 
 -- move single file or directory
-function os._mv(src, dst)
+function os._mv(src, dst, opt)
+    opt = opt or {}
     assert(src and dst)
 
-    -- exists file or directory?
     if os.exists(src) then
 
         -- the destination directory exists? append the filename
@@ -127,10 +129,12 @@ function os._mv(src, dst)
         end
 
         -- move file or directory
+        if opt.force and os.isfile(dst) then
+            os.rmfile(dst)
+        end
         if not os.rename(src, dst) then
             return false, string.format("cannot move %s to %s %s", src, dst, os.strerror())
         end
-    -- not exists?
     else
         return false, string.format("cannot move %s to %s, file %s not found!", src, dst, os.strerror())
     end
@@ -435,7 +439,7 @@ function os.cp(srcpath, dstpath, opt)
 end
 
 -- move files or directories
-function os.mv(srcpath, dstpath)
+function os.mv(srcpath, dstpath, opt)
 
     -- check arguments
     if not srcpath or not dstpath then
@@ -447,10 +451,10 @@ function os.mv(srcpath, dstpath)
     dstpath = tostring(dstpath)
     local srcpathes = os._match_wildcard_pathes(srcpath)
     if type(srcpathes) == "string" then
-        return os._mv(srcpathes, dstpath)
+        return os._mv(srcpathes, dstpath, opt)
     else
         for _, _srcpath in ipairs(srcpathes) do
-            local ok, errors = os._mv(_srcpath, dstpath)
+            local ok, errors = os._mv(_srcpath, dstpath, opt)
             if not ok then
                 return false, errors
             end
@@ -484,9 +488,13 @@ function os.rm(filepath)
 end
 
 -- link file or directory to the new symfile
-function os.ln(srcpath, dstpath)
+function os.ln(srcpath, dstpath, opt)
+    opt = opt or {}
     srcpath = tostring(srcpath)
     dstpath = tostring(dstpath)
+    if opt.force and os.isfile(dstpath) then
+        os.rmfile(dstpath)
+    end
     if not os.link(srcpath, dstpath) then
         return false, string.format("cannot link %s to %s, %s", srcpath, dstpath, os.strerror())
     end

@@ -48,10 +48,9 @@ rule("linker.soname")
             if soname ~= filename and soname ~= path.filename(targetfile_with_version) then
                 os.cp(target:targetfile(), targetfile_with_version)
                 os.rm(target:targetfile())
-                os.rm(targetfile_with_soname)
                 local oldir = os.cd(target:targetdir())
-                os.ln(path.filename(targetfile_with_version), soname)
-                os.ln(soname, path.filename(targetfile))
+                os.ln(path.filename(targetfile_with_version), soname, {force = true})
+                os.ln(soname, path.filename(targetfile), {force = true})
                 os.cd(oldir)
             end
         end

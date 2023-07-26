@@ -123,11 +123,11 @@ function sandbox_os.rm(filepath)
 end
 
 -- link file or directory to the new symfile
-function sandbox_os.ln(srcpath, dstpath)
+function sandbox_os.ln(srcpath, dstpath, opt)
     assert(srcpath and dstpath)
     srcpath = tostring(srcpath)
     dstpath = tostring(dstpath)
-    local ok, errors = os.ln(vformat(srcpath), vformat(dstpath))
+    local ok, errors = os.ln(vformat(srcpath), vformat(dstpath), opt)
     if not ok then
         os.raise(errors)
     end
@@ -143,12 +143,12 @@ function sandbox_os.vcp(srcpath, dstpath, opt)
 end
 
 -- move file or directory with the verbose info
-function sandbox_os.vmv(srcpath, dstpath)
+function sandbox_os.vmv(srcpath, dstpath, opt)
     assert(srcpath and dstpath)
     if option.get("verbose") then
         utils.cprint("${dim}> move %s to %s", srcpath, dstpath)
     end
-    return sandbox_os.mv(srcpath, dstpath)
+    return sandbox_os.mv(srcpath, dstpath, opt)
 end
 
 -- remove file or directory with the verbose info

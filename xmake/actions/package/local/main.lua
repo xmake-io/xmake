@@ -109,7 +109,23 @@ function _package_library(target)
         end
     else
         os.mkdir(librarydir)
-        os.vcp(targetfile, librarydir)
+        if os.islink(targetfile) then
+            local targetfile_with_soname = os.readlink(targetfile)
+            if not path.is_absolute(targetfile_with_soname) then
+                targetfile_with_soname = path.join(target:targetdir(), targetfile_with_soname)
+            end
+            if os.islink(targetfile_with_soname) then
+                local targetfile_with_version = os.readlink(targetfile_with_soname)
+                if not path.is_absolute(targetfile_with_version) then
+                    targetfile_with_version = path.join(target:targetdir(), targetfile_with_version)
+                end
+                os.vcp(targetfile_with_version, librarydir, {symlink = true, force = true})
+            end
+            os.vcp(targetfile_with_soname, librarydir, {symlink = true, force = true})
+            os.vcp(targetfile, librarydir, {symlink = true, force = true})
+        else
+            os.vcp(targetfile, librarydir)
+        end
         os.trycp(target:symbolfile(), librarydir)
     end
 
