@@ -5,6 +5,7 @@
 ### New features
 
 * [#4002](https://github.com/xmake-io/xmake/issues/4002): Add soname and version support
+* [#1613](https://github.com/xmake-io/xmake/issues/1613): Add avx512 and sse4.2 for add_vectorexts
 
 ### Changes
 
@@ -1625,6 +1626,7 @@
 ### 新特性
 
 * [#4002](https://github.com/xmake-io/xmake/issues/4002): 增加 soname 支持
+* [#1613](https://github.com/xmake-io/xmake/issues/1613): 为 add_vectorexts 增加 avx512 和 sse4.2 支持
 
 ### 改进
 
