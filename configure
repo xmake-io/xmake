@@ -835,7 +835,7 @@ _get_abstract_flag_for_gcc_clang() {
                 string_replace "${value}" "\$ORIGIN" "@loader_path"; value="${_ret}"
                 flag="-Xlinker -rpath -Xlinker ${value}"
             else
-                # escape $ORIGIN in makefile, TODO we also need to handle it for ninja
+                # escape $ORIGIN in makefile, TODO we need also handle it for ninja
                 string_replace "${value}" "@loader_path" '$$ORIGIN'; value="${_ret}"
                 if is_plat "bsd"; then
                     flag="-Wl,-zorigin -Wl,-rpath='${value}'"
@@ -1400,7 +1400,11 @@ _get_target_extension() {
         if test "x${kind}" = "xstatic"; then
             extension=".a"
         elif test "x${kind}" = "xshared"; then
-            extension=".so"
+            if is_plat "macosx"; then
+                extension=".dylib"
+            else
+                extension=".so"
+            fi
         fi
     fi
     _ret="${extension}"
@@ -1441,6 +1445,32 @@ _get_target_filename() {
         filename="${prefixname}${basename}${extension}"
     fi
     _ret="${filename}"
+}
+
+# get target soname
+# @see https://github.com/tboox/tbox/issues/214
+#
+# set_version "1.0.1" "" "1" -> libfoo.so.1, libfoo.1.dylib
+# set_version "1.0.1" "" "A" -> libfoo.so.A, libfoo.A.dylib
+_get_target_soname() {
+    local soname=""
+    local name="${1}"
+    _get_target_item "${name}" "kind"; local targetkind="${_ret}"
+    if test_eq "${targetkind}" "shared" && is_plat "macosx" "linux" "bsd"; then
+        _get_target_item "${name}" "version"; local version="${_ret}"
+        _get_target_item "${name}" "version_soname"; local version_soname="${_ret}"
+        if test_nz "${version}" && test_nz "${version_soname}"; then
+            _get_target_filename "${name}"; soname="${_ret}"
+            _get_target_extension "${name}"; local extension="${_ret}"
+            if test_eq "${extension}" ".dylib"; then
+                path_basename "${soname}"; local basename="${_ret}"
+                soname="${basename}.${version_soname}${extension}"
+            else
+                soname="${soname}.${version_soname}"
+            fi
+        fi
+    fi
+    _ret="${soname}"
 }
 
 # get target directory
@@ -1593,6 +1623,17 @@ _get_target_toolchain_flags_for_gcc() {
         elif test_eq "${toolkind}" "cc" || test_eq "${toolkind}" "cxx"; then
             flags="${flags} -fPIC"
         fi
+        # @see https://github.com/tboox/tbox/issues/214
+        if test_eq "${toolkind}" "sh"; then
+            _get_target_soname "${name}"; local soname="${_ret}"
+            if test_nz "${soname}"; then
+                if is_plat "macosx"; then
+                    flags="${flags} -Wl,-install_name,${soname}"
+                else
+                    flags="${flags} -Wl,-soname,${soname}"
+                fi
+            fi
+        fi
     fi
     _ret="${flags}"
 }
@@ -1611,6 +1652,17 @@ _get_target_toolchain_flags_for_clang() {
             flags="${flags} -shared -fPIC"
         elif test_eq "${toolkind}" "cc" || test_eq "${toolkind}" "cxx"; then
             flags="${flags} -fPIC"
+        fi
+        # @see https://github.com/tboox/tbox/issues/214
+        if test_eq "${toolkind}" "sh"; then
+            _get_target_soname "${name}"; local soname="${_ret}"
+            if test_nz "${soname}"; then
+                if is_plat "macosx"; then
+                    flags="${flags} -Wl,-install_name,${soname}"
+                else
+                    flags="${flags} -Wl,-soname,${soname}"
+                fi
+            fi
         fi
     fi
     if is_plat "macosx"; then
@@ -1835,7 +1887,7 @@ _get_target_flags() {
 _add_target_filepaths() {
     local key="$1"
     shift
-    # we need to avoid escape `*` automatically in for-loop
+    # we need avoid escape `*` automatically in for-loop
     local file=""
     string_replace "${@}" "\*" "?"; local list="${_ret}"
     if test_eq "${key}" "files"; then
@@ -1946,8 +1998,10 @@ set_version() {
     fi
     local version="${1}"
     local version_build="${2}"
+    local version_soname="${3}"
     _set_target_item "${_xmake_sh_target_current}" "version" "${version}"
     _set_target_item "${_xmake_sh_target_current}" "version_build" "${version_build}"
+    _set_target_item "${_xmake_sh_target_current}" "version_soname" "${version_soname}"
 }
 
 # set default in target
@@ -2079,7 +2133,7 @@ add_configfiles() {
     _add_target_filepaths "configfiles" "$@"
 }
 
-# add definitions in target
+# add defines in target
 add_defines() {
     local define=""
     if ${_loading_targets} && test_z "${_xmake_sh_option_current}"; then
@@ -3979,6 +4033,29 @@ _gmake_add_build_target() {
         emar) _gmake_add_build_target_for_ar "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
         *) raise "unknown toolname(${toolname})!" ;;
     esac
+
+    # @see https://github.com/tboox/tbox/issues/214
+    if test_eq "${targetkind}" "shared"; then
+        _get_target_item "${target}" "version"; local version="${_ret}"
+        _get_target_soname "${target}"; local soname="${_ret}"
+        if test_nz "${soname}" && test_nz "${version}"; then
+            _get_target_filename "${target}"; local filename="${_ret}"
+            _get_target_extension "${target}"; local extension="${_ret}"
+            local targetfile_with_version="${targetdir}/${filename}.${version}"
+            if test_eq "${extension}" ".dylib"; then
+                path_basename "${filename}"; local basename="${_ret}"
+                targetfile_with_version="${targetdir}/${basename}.${version}${extension}"
+            fi
+            local targetfile_with_soname="${targetdir}/${soname}"
+            path_filename "${targetfile_with_version}"; local targetfilename_with_version="${_ret}"
+            if test_nq "${soname}" "${filename}" && test_nq "${soname}" "${targetfilename_with_version}"; then
+                print "\t@cp -p ${targetfile} ${targetfile_with_version}" >> "${xmake_sh_makefile}"
+                print "\t@cd ${targetdir} && ln -sf ${targetfilename_with_version} ${soname} && ln -sf ${soname} ${filename}" >> "${xmake_sh_makefile}"
+            fi
+        fi
+    fi
+
+    # end
     echo "" >> "${xmake_sh_makefile}"
 
     # build objects
@@ -4008,8 +4085,15 @@ _gmake_add_build() {
 
 _gmake_add_run_target() {
     local target=${1}
+    _get_targetdir "${target}"; local targetdir="${_ret}"
     _get_target_file "${target}"; local targetfile="${_ret}"
-    print "\t@${targetfile}" >> "${xmake_sh_makefile}"
+    if is_plat "macosx"; then
+        print "\t@DYLD_LIBRARY_PATH=${targetdir} ${targetfile}" >> "${xmake_sh_makefile}"
+    elif is_plat "linux" "bsd"; then
+        print "\t@LD_LIBRARY_PATH=${targetdir} ${targetfile}" >> "${xmake_sh_makefile}"
+    else
+        print "\t@${targetfile}" >> "${xmake_sh_makefile}"
+    fi
 }
 
 _gmake_add_run_targets() {
@@ -4043,6 +4127,26 @@ _gmake_add_clean_target() {
     for objectfile in ${objectfiles}; do
         print "\t@rm ${objectfile}" >> "${xmake_sh_makefile}"
     done
+
+    # @see https://github.com/tboox/tbox/issues/214
+    _get_targetdir "${target}"; local targetdir="${_ret}"
+    _get_target_item "${target}" "kind"; local targetkind="${_ret}"
+    if test_eq "${targetkind}" "shared"; then
+        _get_target_item "${target}" "version"; local version="${_ret}"
+        _get_target_soname "${target}"; local soname="${_ret}"
+        if test_nz "${soname}" && test_nz "${version}"; then
+            _get_target_filename "${target}"; local filename="${_ret}"
+            _get_target_extension "${target}"; local extension="${_ret}"
+            local targetfile_with_version="${targetdir}/${filename}.${version}"
+            if test_eq "${extension}" ".dylib"; then
+                path_basename "${filename}"; local basename="${_ret}"
+                targetfile_with_version="${targetdir}/${basename}.${version}${extension}"
+            fi
+            local targetfile_with_soname="${targetdir}/${soname}"
+            print "\t@if test -f ${targetfile_with_soname}; then rm ${targetfile_with_soname}; fi" >> "${xmake_sh_makefile}"
+            print "\t@if test -f ${targetfile_with_version}; then rm ${targetfile_with_version}; fi" >> "${xmake_sh_makefile}"
+        fi
+    fi
 }
 
 _gmake_add_clean_targets() {
@@ -4069,17 +4173,44 @@ _gmake_add_install_target() {
     _get_target_file "${target}"; local targetfile="${_ret}"
     path_filename "${targetfile}"; local filename="${_ret}"
     _get_target_item "${target}" "installdir"; local installdir="${_ret}"
+    _get_target_item "${target}" "kind"; local targetkind="${_ret}"
     if test_z "${installdir}"; then
         installdir="\$(INSTALLDIR)"
     fi
 
+    # @see https://github.com/tboox/tbox/issues/214
+    install_for_soname=false
+    if test_eq "${targetkind}" "shared"; then
+        _get_target_item "${target}" "version"; local version="${_ret}"
+        _get_target_soname "${target}"; local soname="${_ret}"
+        if test_nz "${soname}" && test_nz "${version}"; then
+            _get_target_extension "${target}"; local extension="${_ret}"
+            string_replace "${_install_libdir_default}" "\${prefix}" "${installdir}"; _install_libdir_default="${_ret}"
+            local targetfile_with_version="${_install_libdir_default}/${filename}.${version}"
+            if test_eq "${extension}" ".dylib"; then
+                path_basename "${filename}"; local basename="${_ret}"
+                targetfile_with_version="${_install_libdir_default}/${basename}.${version}${extension}"
+            fi
+            local targetfile_with_soname="${_install_libdir_default}/${soname}"
+            path_filename "${targetfile_with_version}"; local targetfilename_with_version="${_ret}"
+            if test_nq "${soname}" "${filename}" && test_nq "${soname}" "${targetfilename_with_version}"; then
+                install_for_soname=true
+            fi
+        fi
+    fi
+
     # install target file
-    _get_target_item "${target}" "kind"; local targetkind="${_ret}"
     if test_eq "${targetkind}" "binary"; then
         string_replace "${_install_bindir_default}" "\${prefix}" "${installdir}"; _install_bindir_default="${_ret}"
         print "\t@echo installing ${targetfile} to ${_install_bindir_default}" >> "${xmake_sh_makefile}"
         print "\t@mkdir -p ${_install_bindir_default}" >> "${xmake_sh_makefile}"
         print "\t@cp -p ${targetfile} ${_install_bindir_default}/${filename}" >> "${xmake_sh_makefile}"
+    elif ${install_for_soname}; then
+        string_replace "${_install_libdir_default}" "\${prefix}" "${installdir}"; _install_libdir_default="${_ret}"
+        print "\t@echo installing ${targetfile} to ${_install_libdir_default}" >> "${xmake_sh_makefile}"
+        print "\t@mkdir -p ${_install_libdir_default}" >> "${xmake_sh_makefile}"
+        print "\t@cp -p ${targetfile} ${targetfile_with_version}" >> "${xmake_sh_makefile}"
+        print "\t@cd ${_install_libdir_default} && ln -sf ${targetfilename_with_version} ${soname} && ln -sf ${soname} ${filename}" >> "${xmake_sh_makefile}"
     elif test_eq "${targetkind}" "static" || test_eq "${targetkind}" "shared"; then
         string_replace "${_install_libdir_default}" "\${prefix}" "${installdir}"; _install_libdir_default="${_ret}"
         print "\t@echo installing ${targetfile} to ${_install_libdir_default}" >> "${xmake_sh_makefile}"
