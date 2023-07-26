@@ -187,6 +187,7 @@ function nf_vectorext(self, extension)
     ,   avx2       = "-arch:AVX2"
     ,   avx512     = "-arch:AVX512" -- for msvc 2019+ avx512 support
     ,   fma        = "-arch:AVX2"
+    ,   all        = {"-arch:SSE", "-arch:SSE2", "/d2archSSE42", "-arch:AVX", "-arch:AVX2", "-arch:AVX512"}
     }
     local flag = maps[extension]
     if flag and self:has_flags(flag, "cxflags") then

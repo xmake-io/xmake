@@ -164,6 +164,7 @@ function nf_optimize(self, level)
 end
 
 -- make the vector extension flag
+-- @see https://github.com/xmake-io/xmake/issues/1613
 function nf_vectorext(self, extension)
     local maps = {
         mmx        = "-mmmx"
@@ -174,9 +175,10 @@ function nf_vectorext(self, extension)
     ,   ["sse4.2"] = "-msse4.2"
     ,   avx        = "-mavx"
     ,   avx2       = "-mavx2"
-    ,   avx512     = "-march=skylake-avx512" -- @see https://github.com/xmake-io/xmake/issues/1613
+    ,   avx512     = {"-mavx512f", "-mavx512dq", "-mavx512bw", "-mavx512vl"}
     ,   fma        = "-mfma"
     ,   neon       = "-mfpu=neon"
+    ,   all        = "-march=native"
     }
     return maps[extension]
 end
