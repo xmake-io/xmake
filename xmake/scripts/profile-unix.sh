@@ -20,8 +20,10 @@
 
 # register completions
 if   [[ -n "$ZSH_VERSION" ]]; then
+  export XMAKE_SHELL=zsh
   . "$XMAKE_PROGRAM_DIR/scripts/completions/register-completions.zsh"
 elif [[ -n "$BASH_VERSION" ]]; then
+  export XMAKE_SHELL=bash
   . "$XMAKE_PROGRAM_DIR/scripts/completions/register-completions.bash"
 fi
 
