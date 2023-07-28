@@ -37,6 +37,7 @@ function checkers()
             ["api.target.languages"]     = {description = "Check languages configuration in target.", build = true},
             ["api.target.vectorexts"]    = {description = "Check vectorexts configuration in target.", build = true},
             ["api.target.exceptions"]    = {description = "Check exceptions configuration in target.", build = true},
+            ["api.target.encodings"]     = {description = "Check encodings configuration in target.", build = true},
             ["api.target.packages"]      = {description = "Check packages configuration in target."},
             ["api.target.files"]         = {description = "Check files configuration in target."},
             ["api.target.headerfiles"]   = {description = "Check header files configuration in target."},
