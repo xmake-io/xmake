@@ -337,6 +337,41 @@ function nf_exception(self, exp)
     return exp:startswith("no-") and "-fno-exceptions" or "-fexceptions"
 end
 
+-- make the encoding flag
+-- @see https://github.com/xmake-io/xmake/issues/2471
+--
+-- e.g.
+-- set_encodings("utf-8")
+-- set_encodings("source:utf-8", "target:utf-8")
+function nf_encoding(self, encoding)
+    local kind
+    local charset
+    local splitinfo = encoding:split(":")
+    if #splitinfo > 1 then
+        kind = splitinfo[1]
+        charset = splitinfo[2]
+    else
+        charset = encoding
+    end
+    local charsets = {
+        ["utf-8"] = "UTF-8",
+        utf8 = "UTF-8"
+    }
+    local flags = {}
+    charset = charsets[charset:lower()]
+    if charset then
+        if kind == "source" or not kind then
+            table.insert(flags, "-finput-charset=" .. charset)
+        end
+        if kind == "target" or not kind then
+            table.insert(flags, "-fexec-charset=" .. charset)
+        end
+    end
+    if #flags > 0 then
+        return flags
+    end
+end
+
 -- make the c precompiled header flag
 function nf_pcheader(self, pcheaderfile, target)
     if self:kind() == "cc" then

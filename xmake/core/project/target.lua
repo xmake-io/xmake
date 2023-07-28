@@ -2496,6 +2496,7 @@ function target.apis()
         ,   "target.set_toolchains"
         ,   "target.set_runargs"
         ,   "target.set_exceptions"
+        ,   "target.set_encodings"
             -- target.add_xxx
         ,   "target.add_deps"
         ,   "target.add_rules"

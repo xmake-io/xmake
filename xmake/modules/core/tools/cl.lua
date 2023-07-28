@@ -315,6 +315,45 @@ function nf_exception(self, exp)
     return maps[exp]
 end
 
+-- make the encoding flag
+-- @see https://github.com/xmake-io/xmake/issues/2471
+--
+-- e.g.
+-- set_encodings("utf-8")
+-- set_encodings("source:utf-8", "target:utf-8")
+function nf_encoding(self, encoding)
+    local kind
+    local charset
+    local splitinfo = encoding:split(":")
+    if #splitinfo > 1 then
+        kind = splitinfo[1]
+        charset = splitinfo[2]
+    else
+        charset = encoding
+    end
+    local charsets = {
+        ["utf-8"] = "utf-8",
+        utf8 = "utf-8"
+    }
+    local flags = {}
+    charset = charsets[charset:lower()]
+    if charset then
+        if not kind and charset == "utf-8" then
+            table.insert(flags, "/utf-8")
+        else
+            if kind == "source" or not kind then
+                table.insert(flags, "-source-charset=" .. charset)
+            end
+            if kind == "target" or not kind then
+                table.insert(flags, "-execution-charset=" .. charset)
+            end
+        end
+    end
+    if #flags > 0 then
+        return flags
+    end
+end
+
 -- make the c precompiled header flag
 function nf_pcheader(self, pcheaderfile, target)
     if self:kind() == "cc" then

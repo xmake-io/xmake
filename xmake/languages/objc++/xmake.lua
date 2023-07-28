@@ -66,6 +66,8 @@ language("objc++")
         ,   "target.undefines"
         ,   "target.frameworkdirs"
         ,   "target.frameworks"
+        ,   "target.exceptions"
+        ,   "target.encodings"
         ,   "target.pmheader"
         ,   "target.pmxxheader"
         ,   "toolchain.includedirs"

@@ -48,6 +48,7 @@ language("c++")
         ,   "target.frameworkdirs"
         ,   "target.frameworks"
         ,   "target.exceptions"
+        ,   "target.encodings"
         ,   "target.pcheader"
         ,   "target.pcxxheader"
         ,   "toolchain.includedirs"
