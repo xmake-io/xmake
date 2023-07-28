@@ -6,6 +6,7 @@
 
 * [#4002](https://github.com/xmake-io/xmake/issues/4002): Add soname and version support
 * [#1613](https://github.com/xmake-io/xmake/issues/1613): Add avx512 and sse4.2 for add_vectorexts
+* [#2471](https://github.com/xmake-io/xmake/issues/2471): Add set_encodings to set source/target encodings
 
 ### Changes
 
@@ -1627,6 +1628,7 @@
 
 * [#4002](https://github.com/xmake-io/xmake/issues/4002): 增加 soname 支持
 * [#1613](https://github.com/xmake-io/xmake/issues/1613): 为 add_vectorexts 增加 avx512 和 sse4.2 支持
+* [#2471](https://github.com/xmake-io/xmake/issues/2471): 添加 set_encodings API 去设置源文件和目标文件的编码
 
 ### 改进
 
