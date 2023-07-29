@@ -61,19 +61,20 @@ function _get_windows_sdk_arguments(target)
     if msvc then
         local envs = msvc:runenvs()
         local WindowsSdkDir = envs.WindowsSdkDir
-
-        local includedirs = os.dirs(path.join(WindowsSdkDir, "Include", envs.WindowsSDKVersion, "*"))
-
-        for _, tool in ipairs({"atlmfc", "diasdk"}) do
-            local tool_dir = path.join(WindowsSdkDir, tool, "include")
-            if os.isdir(tool_dir) then
-                table.insert(includedirs, tool_dir)
+        local WindowsSDKVersion = envs.WindowsSDKVersion
+        if WindowsSdkDir and WindowsSDKVersion then
+            local includedirs = os.dirs(path.join(WindowsSdkDir, "Include", envs.WindowsSDKVersion, "*"))
+            for _, tool in ipairs({"atlmfc", "diasdk"}) do
+                local tool_dir = path.join(WindowsSdkDir, tool, "include")
+                if os.isdir(tool_dir) then
+                    table.insert(includedirs, tool_dir)
+                end
             end
-        end
 
-        for _, dir in ipairs(includedirs) do
-            table.insert(args, "-imsvc")
-            table.insert(args, dir)
+            for _, dir in ipairs(includedirs) do
+                table.insert(args, "-imsvc")
+                table.insert(args, dir)
+            end
         end
     end
     return args
@@ -165,7 +166,7 @@ function _make_arguments(jsonfile, arguments, sourcefile, target)
     arguments = _translate_arguments(arguments)
 
     local lsp = _get_lsp()
-    if lsp and lsp == "clangd" and is_plat("windows") then
+    if lsp and lsp == "clangd" and target:is_plat("windows") then
         table.join2(arguments, _get_windows_sdk_arguments(target))
     end
 
