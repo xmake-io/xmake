@@ -325,30 +325,32 @@ function _make_filter(filepath, target, vcxprojdir)
             local extraconf = filegroups_extraconf[filegroup] or {}
             local rootdir = extraconf.rootdir
             assert(rootdir, "please set root directory, e.g. add_filegroups(%s, {rootdir = 'xxx'})", filegroup)
-            if not path.is_absolute(rootdir) then
-                rootdir = path.absolute(rootdir, scriptdir)
-            end
-            local fileitem = path.relative(filepath, rootdir)
-            local files = extraconf.files or "**"
-            local mode = extraconf.mode
-            for _, filepattern in ipairs(files) do
-                filepattern = path.pattern(path.absolute(path.join(rootdir, filepattern)))
-                if filepath:match(filepattern) then
-                    if mode == "plain" then
-                        filter = path.normalize(filegroup)
-                        is_plain = true
-                    else
-                        -- file tree mode (default)
-                        if filegroup ~= "" then
-                            filter = path.normalize(path.join(filegroup, path.directory(fileitem)))
+            for _, rootdir in ipairs(table.wrap(rootdir)) do
+                if not path.is_absolute(rootdir) then
+                    rootdir = path.absolute(rootdir, scriptdir)
+                end
+                local fileitem = path.relative(filepath, rootdir)
+                local files = extraconf.files or "**"
+                local mode = extraconf.mode
+                for _, filepattern in ipairs(files) do
+                    filepattern = path.pattern(path.absolute(path.join(rootdir, filepattern)))
+                    if filepath:match(filepattern) then
+                        if mode == "plain" then
+                            filter = path.normalize(filegroup)
+                            is_plain = true
                         else
-                            filter = path.normalize(path.directory(fileitem))
+                            -- file tree mode (default)
+                            if filegroup ~= "" then
+                                filter = path.normalize(path.join(filegroup, path.directory(fileitem)))
+                            else
+                                filter = path.normalize(path.directory(fileitem))
+                            end
                         end
+                        if filter and filter == '.' then
+                            filter = nil
+                        end
+                        break
                     end
-                    if filter and filter == '.' then
-                        filter = nil
-                    end
-                    break
                 end
             end
         end
@@ -497,8 +499,24 @@ function main(outputdir, vsinfo)
                 table.sort(_target.headerfiles)
 
                 -- save file groups
-                _target.filegroups = target:get("filegroups")
-                _target.filegroups_extraconf = target:extraconf("filegroups")
+                _target.filegroups = table.unique(table.join(_target.filegroups or {}, target:get("filegroups")))
+                
+                for filegroup, groupconf in pairs(target:extraconf("filegroups")) do
+                    _target.filegroups_extraconf = _target.filegroups_extraconf or {}
+                    local mergedconf = _target.filegroups_extraconf[filegroup]
+                    if not mergedconf then
+                        mergedconf = {}
+                        _target.filegroups_extraconf[filegroup] = mergedconf
+                    end
+
+                    if groupconf.rootdir then
+                        mergedconf.rootdir = table.unique(table.join(mergedconf.rootdir or {}, table.wrap(groupconf.rootdir)))
+                    end
+                    if groupconf.files then
+                        mergedconf.files = table.unique(table.join(mergedconf.files or {}, table.wrap(groupconf.files)))
+                    end
+                    mergedconf.plain = groupconf.plain or mergedconf.plain
+                end
 
                 -- save deps
                 _target.deps = table.unique(table.join(_target.deps or {}, table.orderkeys(target:deps()), nil))

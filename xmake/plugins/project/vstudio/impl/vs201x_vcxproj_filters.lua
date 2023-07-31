@@ -76,30 +76,32 @@ function _make_filter(filepath, target, vcxprojdir)
             local extraconf = filegroups_extraconf[filegroup] or {}
             local rootdir = extraconf.rootdir
             assert(rootdir, "please set root directory, e.g. add_filegroups(%s, {rootdir = 'xxx'})", filegroup)
-            if not path.is_absolute(rootdir) then
-                rootdir = path.absolute(rootdir, scriptdir)
-            end
-            local fileitem = path.relative(filepath, rootdir)
-            local files = extraconf.files or "**"
-            local mode = extraconf.mode
-            for _, filepattern in ipairs(files) do
-                filepattern = path.pattern(path.absolute(path.join(rootdir, filepattern)))
-                if filepath:match(filepattern) then
-                    if mode == "plain" then
-                        filter = path.normalize(filegroup)
-                        is_plain = true
-                    else
-                        -- file tree mode (default)
-                        if filegroup ~= "" then
-                            filter = path.normalize(path.join(filegroup, path.directory(fileitem)))
+            for _, rootdir in ipairs(table.wrap(rootdir)) do
+                if not path.is_absolute(rootdir) then
+                    rootdir = path.absolute(rootdir, scriptdir)
+                end
+                local fileitem = path.relative(filepath, rootdir)
+                local files = extraconf.files or "**"
+                local mode = extraconf.mode
+                for _, filepattern in ipairs(files) do
+                    filepattern = path.pattern(path.absolute(path.join(rootdir, filepattern)))
+                    if filepath:match(filepattern) then
+                        if mode == "plain" then
+                            filter = path.normalize(filegroup)
+                            is_plain = true
                         else
-                            filter = path.normalize(path.directory(fileitem))
+                            -- file tree mode (default)
+                            if filegroup ~= "" then
+                                filter = path.normalize(path.join(filegroup, path.directory(fileitem)))
+                            else
+                                filter = path.normalize(path.directory(fileitem))
+                            end
                         end
+                        if filter and filter == '.' then
+                            filter = nil
+                        end
+                        break
                     end
-                    if filter and filter == '.' then
-                        filter = nil
-                    end
-                    break
                 end
             end
         end
