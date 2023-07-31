@@ -43,6 +43,11 @@ function main(opt)
     -- find program
     local program = find_program(opt.program or "bison", opt)
 
+    -- try win_bison if bison is not found on windows
+    if not program and not opt.program and os.host() == "windows" then
+        program = find_program("win_bison", opt)
+    end
+
     -- find program version
     local version = nil
     if program and opt and opt.version then
