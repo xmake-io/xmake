@@ -67,9 +67,6 @@ function main(target)
         local _, configfiles = target:configfiles()
         remove_files(configfiles)
 
-        -- TODO remove the config.h file (deprecated)
-        remove_files(target:configheader())
-
         -- remove all dependent files for each platform
         remove_files(target:dependir({root = true}))
 

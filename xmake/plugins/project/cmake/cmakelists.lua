@@ -482,11 +482,6 @@ function _add_target_include_directories(cmakelists, target, outputdir)
         end
         cmakelists:print(")")
     end
-    -- export config header directory (deprecated)
-    local configheader = target:configheader()
-    if configheader then
-        cmakelists:print("target_include_directories(%s PUBLIC %s)", target:name(), _get_relative_unix_path(path.directory(configheader), outputdir))
-    end
 end
 
 -- add target system include directories

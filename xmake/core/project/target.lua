@@ -1287,11 +1287,6 @@ function _instance:scriptdir()
     return self:get("__scriptdir")
 end
 
--- TODO get header directory (deprecated)
-function _instance:headerdir()
-    return self:get("headerdir") or config.buildir()
-end
-
 -- get configuration output directory
 function _instance:configdir()
     return self:get("configdir") or config.buildir()
@@ -1633,35 +1628,22 @@ function _instance:objectfiles()
     return objectfiles
 end
 
--- TODO get the header files, get("headers") (deprecated)
-function _instance:headers(outputdir)
-    return self:headerfiles(outputdir, {only_deprecated = true})
-end
-
 -- get the header files
---
--- default: get("headers") + get("headerfiles")
--- only_deprecated: get("headers")
---
 function _instance:headerfiles(outputdir, opt)
 
     -- get header files?
     opt = opt or {}
-    local headers = self:get("headers") -- TODO deprecated
-    local only_deprecated = opt.only_deprecated
-    if not only_deprecated then
-       headers = table.join(headers or {}, self:get("headerfiles"))
-       -- add_headerfiles("src/*.h", {install = false})
-       -- @see https://github.com/xmake-io/xmake/issues/2577
-       if opt.installonly then
-           local installfiles = {}
-           for _, headerfile in ipairs(table.wrap(headers)) do
-               if self:extraconf("headerfiles", headerfile, "install") ~= false then
-                   table.insert(installfiles, headerfile)
-               end
+    local headers = table.join(headers or {}, self:get("headerfiles"))
+    -- add_headerfiles("src/*.h", {install = false})
+    -- @see https://github.com/xmake-io/xmake/issues/2577
+    if opt.installonly then
+       local installfiles = {}
+       for _, headerfile in ipairs(table.wrap(headers)) do
+           if self:extraconf("headerfiles", headerfile, "install") ~= false then
+               table.insert(installfiles, headerfile)
            end
-           headers = installfiles
        end
+       headers = installfiles
     end
     if not headers then
         return
@@ -1670,9 +1652,7 @@ function _instance:headerfiles(outputdir, opt)
     -- get the installed header directory
     local headerdir = outputdir
     if not headerdir then
-        if only_deprecated then
-            headerdir = self:headerdir()
-        elseif self:installdir() then
+        if self:installdir() then
             headerdir = path.join(self:installdir(), "include")
         end
     end
@@ -2025,78 +2005,6 @@ function _instance:script(name, generic)
     return result
 end
 
--- TODO get the config header version (deprecated)
-function _instance:configversion()
-
-    -- get the config version and build version
-    local version = nil
-    local buildversion = nil
-    local configheader = self:get("config_header")
-    local configheader_extra = self:get("__extra_config_header")
-    if type(configheader_extra) == "table" then
-        version      = table.wrap(configheader_extra[configheader]).version
-        buildversion = self._CONFIGHEADER_BUILDVERSION
-        if not buildversion then
-            buildversion = table.wrap(configheader_extra[configheader]).buildversion
-            if buildversion then
-                buildversion = os.date(buildversion, os.time())
-            end
-            self._CONFIGHEADER_BUILDVERSION = buildversion
-        end
-    end
-
-    -- ok?
-    return version, buildversion
-end
-
--- get the config header prefix
-function _instance:configprefix()
-
-    -- get the config prefix
-    local configprefix = nil
-    local configheader = self:get("config_header")
-    local configheader_extra = self:get("__extra_config_header")
-    if type(configheader_extra) == "table" then
-        configprefix = table.wrap(configheader_extra[configheader]).prefix
-    end
-    return configprefix
-end
-
--- get the config header files (deprecated)
-function _instance:configheader(outputdir)
-
-    -- get config header
-    local configheader = self:get("config_header")
-    if not configheader then
-        return
-    end
-
-    -- get the root directory
-    local rootdir, count = configheader:gsub("|.*$", ""):gsub("%(.*%)$", "")
-    if count == 0 then
-        rootdir = nil
-    end
-    if rootdir and rootdir:trim() == "" then
-        rootdir = "."
-    end
-
-    -- remove '(' and ')'
-    configheader = configheader:gsub("[%(%)]", "")
-
-    -- get the output header
-    local outputheader = nil
-    if outputdir then
-        if rootdir then
-            outputheader = path.absolute(path.relative(configheader, rootdir), outputdir)
-        else
-            outputheader = path.join(outputdir, path.filename(configheader))
-        end
-    end
-
-    -- ok
-    return configheader, outputheader
-end
-
 -- get the precompiled header file (xxx.[h|hpp|inl])
 --
 -- @param langkind  c/cxx
@@ -2203,23 +2111,16 @@ function _instance:tool(toolkind)
     end
     return toolchain.tool(self:toolchains(), toolkind, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
                                                         before_get = function()
-        -- get program from set_toolchain/set_tools (deprecated)
-        local toolname
-        local program = self:get("toolset." .. toolkind) or self:get("toolchain." .. toolkind)
-        if not program then
-            local tools = self:get("tools") -- TODO: deprecated
-            if tools then
-                program = tools[toolkind]
-            end
-        end
         -- get program from `xmake f --cc`
+        local program
         if not program and not self:get("toolchains") then
             program = config.get(toolkind)
         end
 
         -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
         -- https://github.com/xmake-io/xmake/issues/1361
-        if program and not toolname then
+        local toolname
+        if program then
             local pos = program:find('@', 1, true)
             if pos then
                 -- we need to ignore valid path with `@`, e.g. /usr/local/opt/go@1.17/bin/go
@@ -2513,7 +2414,6 @@ function target.apis()
             "target.set_values"
         ,   "target.set_configvar"
         ,   "target.set_runenv"
-        ,   "target.set_toolchain" -- TODO: deprecated
         ,   "target.set_toolset"
         ,   "target.set_policy"
             -- target.add_xxx
@@ -2539,12 +2439,6 @@ function target.apis()
             -- target.remove_xxx
         ,   "target.remove_files"
         ,   "target.remove_headerfiles"
-        }
-    ,   dictionary =
-        {
-            -- target.set_xxx
-            "target.set_tools" -- TODO: deprecated
-        ,   "target.add_tools" -- TODO: deprecated
         }
     ,   script =
         {
