@@ -38,13 +38,9 @@ import("lib.detect.find_programver")
 function main(opt)
     opt = opt or {}
     local program = find_program(opt.program or "bison", opt)
-
-    -- try win_bison if bison is not found on windows
-    if not program and is_host("windows") then
+    if not program and not opt.program and is_host("windows") then
         program = find_program("win_bison", opt)
     end
-
-    -- find program version
     local version = nil
     if program and opt and opt.version then
         version = find_programver(program, opt)
