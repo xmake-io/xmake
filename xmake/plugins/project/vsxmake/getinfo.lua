@@ -349,14 +349,15 @@ function _make_filter(filepath, target, vcxprojdir)
                         if filter and filter == '.' then
                             filter = nil
                         end
-                        break
+                        goto found_filter
                     end
                 end
                 -- stop once a rootdir matches
                 if filter then
-                    break
+                    goto found_filter
                 end
             end
+            ::found_filter::
         end
     end
     if not filter and not is_plain then
