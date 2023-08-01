@@ -90,7 +90,7 @@ function _get_apis()
     }
     apis.paths = {
         -- target.set_xxx
-    ,   "target.set_pmheader"
+        "target.set_pmheader"
     ,   "target.set_pmxxheader"
         -- target.add_xxx
     ,   "target.add_headerfiles"
