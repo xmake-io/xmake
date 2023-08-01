@@ -11,6 +11,7 @@
 ### Changes
 
 * [#3960](https://github.com/xmake-io/xmake/issues/3960): Improve msys2/crt64 support
+* [#4032](https://github.com/xmake-io/xmake/pull/4032): Remove some old deprecated apis
 * Improve to upgrade vcproj files in tools.msbuild
 * Support add_requires("xmake::xxx") package
 
@@ -1633,6 +1634,7 @@
 ### 改进
 
 * [#3960](https://github.com/xmake-io/xmake/issues/3960): 改进 msys2/crt64 支持
+* [#4032](https://github.com/xmake-io/xmake/pull/4032): 移除一些非常老的废弃接口
 * 改进 tools.msbuild 升级 vcproj 文件
 * 支持 add_requires("xmake::xxx") 包
 
