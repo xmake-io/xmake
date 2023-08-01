@@ -36,11 +36,7 @@ import("lib.detect.find_programver")
 -- @endcode
 --
 function main(opt)
-
-    -- init options
     opt = opt or {}
-
-    -- find program
     local program = find_program(opt.program or "flex", opt)
 
     -- try win_flex if flex is not found on windows
@@ -53,7 +49,5 @@ function main(opt)
     if program and opt and opt.version then
         version = find_programver(program, opt)
     end
-
-    -- ok?
     return program, version
 end
