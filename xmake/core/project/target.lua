@@ -2025,78 +2025,6 @@ function _instance:script(name, generic)
     return result
 end
 
--- TODO get the config header version (deprecated)
-function _instance:configversion()
-
-    -- get the config version and build version
-    local version = nil
-    local buildversion = nil
-    local configheader = self:get("config_header")
-    local configheader_extra = self:get("__extra_config_header")
-    if type(configheader_extra) == "table" then
-        version      = table.wrap(configheader_extra[configheader]).version
-        buildversion = self._CONFIGHEADER_BUILDVERSION
-        if not buildversion then
-            buildversion = table.wrap(configheader_extra[configheader]).buildversion
-            if buildversion then
-                buildversion = os.date(buildversion, os.time())
-            end
-            self._CONFIGHEADER_BUILDVERSION = buildversion
-        end
-    end
-
-    -- ok?
-    return version, buildversion
-end
-
--- get the config header prefix
-function _instance:configprefix()
-
-    -- get the config prefix
-    local configprefix = nil
-    local configheader = self:get("config_header")
-    local configheader_extra = self:get("__extra_config_header")
-    if type(configheader_extra) == "table" then
-        configprefix = table.wrap(configheader_extra[configheader]).prefix
-    end
-    return configprefix
-end
-
--- get the config header files (deprecated)
-function _instance:configheader(outputdir)
-
-    -- get config header
-    local configheader = self:get("config_header")
-    if not configheader then
-        return
-    end
-
-    -- get the root directory
-    local rootdir, count = configheader:gsub("|.*$", ""):gsub("%(.*%)$", "")
-    if count == 0 then
-        rootdir = nil
-    end
-    if rootdir and rootdir:trim() == "" then
-        rootdir = "."
-    end
-
-    -- remove '(' and ')'
-    configheader = configheader:gsub("[%(%)]", "")
-
-    -- get the output header
-    local outputheader = nil
-    if outputdir then
-        if rootdir then
-            outputheader = path.absolute(path.relative(configheader, rootdir), outputdir)
-        else
-            outputheader = path.join(outputdir, path.filename(configheader))
-        end
-    end
-
-    -- ok
-    return configheader, outputheader
-end
-
 -- get the precompiled header file (xxx.[h|hpp|inl])
 --
 -- @param langkind  c/cxx
@@ -2506,6 +2434,12 @@ function target.apis()
         ,   "target.add_languages"
         ,   "target.add_vectorexts"
         ,   "target.add_toolchains"
+        ,   "target.add_defines"
+        ,   "target.add_undefines"
+        ,   "target.add_frameworks"
+        ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
+        ,   "target.add_links"
+        ,   "target.add_syslinks"
         }
     ,   keyvalues =
         {
@@ -2530,6 +2464,11 @@ function target.apis()
         ,   "target.set_installdir"
         ,   "target.set_rundir"
             -- target.add_xxx
+        ,   "target.add_headerfiles"
+        ,   "target.add_linkdirs"
+        ,   "target.add_includedirs"
+        ,   "target.add_sysincludedirs"
+        ,   "target.add_frameworkdirs"
         ,   "target.add_files"
         ,   "target.add_cleanfiles"
         ,   "target.add_configfiles"
@@ -2539,12 +2478,6 @@ function target.apis()
             -- target.remove_xxx
         ,   "target.remove_files"
         ,   "target.remove_headerfiles"
-        }
-    ,   dictionary =
-        {
-            -- target.set_xxx
-            "target.set_tools" -- TODO: deprecated
-        ,   "target.add_tools" -- TODO: deprecated
         }
     ,   script =
         {

@@ -30,7 +30,6 @@ import("core.cache.localcache")
 import("scangen")
 import("menuconf", {alias = "menuconf_show"})
 import("configfiles", {alias = "generate_configfiles"})
-import("configheader", {alias = "generate_configheader"})
 import("private.action.require.check", {alias = "check_packages"})
 import("private.action.require.install", {alias = "install_packages"})
 import("private.service.remote_build.action", {alias = "remote_build_action"})
@@ -404,9 +403,6 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
 
         -- update the config files
         generate_configfiles({force = recheck})
-        if recheck then
-            generate_configheader()
-        end
     end
 
     -- dump config

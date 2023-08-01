@@ -53,10 +53,6 @@ function main(target)
     remove_files(target:pcoutputfile("c"))
     remove_files(target:pcoutputfile("cxx"))
 
-    -- TODO remove the header files (deprecated)
-    local _, dstheaders = target:headers()
-    remove_files(dstheaders)
-
     -- remove the clean files
     remove_files(target:get("cleanfiles"))
 
@@ -66,9 +62,6 @@ function main(target)
         -- remove config files
         local _, configfiles = target:configfiles()
         remove_files(configfiles)
-
-        -- TODO remove the config.h file (deprecated)
-        remove_files(target:configheader())
 
         -- remove all dependent files for each platform
         remove_files(target:dependir({root = true}))

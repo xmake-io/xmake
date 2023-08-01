@@ -55,12 +55,6 @@ function _package_library(target)
         end
     end
 
-    -- copy the config.h to the output directory (deprecated)
-    local configheader = target:configheader()
-    if configheader then
-        os.vcp(configheader, format("%s/%s.pkg/$(plat)/$(arch)/include/%s", outputdir, targetname, path.filename(configheader)))
-    end
-
     -- copy headers
     local srcheaders, dstheaders = target:headerfiles(format("%s/%s.pkg/$(plat)/$(arch)/include", outputdir, targetname))
     if srcheaders and dstheaders then

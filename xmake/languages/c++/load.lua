@@ -149,18 +149,12 @@ function _get_apis()
     local apis = {}
     apis.values = {
         -- target.add_xxx
-        "target.add_links"
-    ,   "target.add_syslinks"
     ,   "target.add_cflags"
     ,   "target.add_cxflags"
     ,   "target.add_cxxflags"
     ,   "target.add_ldflags"
     ,   "target.add_arflags"
     ,   "target.add_shflags"
-    ,   "target.add_defines"
-    ,   "target.add_undefines"
-    ,   "target.add_frameworks"
-    ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
         -- option.add_xxx
     ,   "option.add_cincludes"
     ,   "option.add_cxxincludes"
@@ -217,17 +211,8 @@ function _get_apis()
     }
     apis.paths = {
         -- target.set_xxx
-        "target.set_headerdir"        -- TODO deprecated
-    ,   "target.set_config_header"    -- TODO deprecated
     ,   "target.set_pcheader"
     ,   "target.set_pcxxheader"
-        -- target.add_xxx
-    ,   "target.add_headers"          -- TODO deprecated
-    ,   "target.add_headerfiles"
-    ,   "target.add_linkdirs"
-    ,   "target.add_includedirs"
-    ,   "target.add_sysincludedirs"
-    ,   "target.add_frameworkdirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
     ,   "option.add_includedirs"
