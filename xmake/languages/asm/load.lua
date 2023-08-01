@@ -70,7 +70,6 @@ function _get_apis()
     }
     apis.paths = {
         -- target.add_xxx
-        "target.add_headers"    -- TODO deprecated
     ,   "target.add_headerfiles"
     ,   "target.add_linkdirs"
     ,   "target.add_includedirs"

@@ -90,12 +90,9 @@ function _get_apis()
     }
     apis.paths = {
         -- target.set_xxx
-        "target.set_headerdir"      -- TODO deprecated
-    ,   "target.set_config_header"
     ,   "target.set_pmheader"
     ,   "target.set_pmxxheader"
         -- target.add_xxx
-    ,   "target.add_headers"        -- TODO deprecated
     ,   "target.add_headerfiles"
     ,   "target.add_linkdirs"
     ,   "target.add_includedirs"
