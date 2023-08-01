@@ -2131,15 +2131,6 @@ function _instance:tool(toolkind)
     end
     return toolchain.tool(self:toolchains(), toolkind, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
                                                         before_get = function()
-        -- get program from set_toolchain/set_tools (deprecated)
-        local toolname
-        local program = self:get("toolset." .. toolkind) or self:get("toolchain." .. toolkind)
-        if not program then
-            local tools = self:get("tools") -- TODO: deprecated
-            if tools then
-                program = tools[toolkind]
-            end
-        end
         -- get program from `xmake f --cc`
         if not program and not self:get("toolchains") then
             program = config.get(toolkind)
@@ -2447,7 +2438,6 @@ function target.apis()
             "target.set_values"
         ,   "target.set_configvar"
         ,   "target.set_runenv"
-        ,   "target.set_toolchain" -- TODO: deprecated
         ,   "target.set_toolset"
         ,   "target.set_policy"
             -- target.add_xxx
