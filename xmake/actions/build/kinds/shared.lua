@@ -54,21 +54,6 @@ function _do_link_target(target, opt)
     local depvalues = {linkinst:program(), linkflags}
     depend.on_changed(function ()
 
-        -- TODO make headers (deprecated)
-        if not dryrun then
-            local srcheaders, dstheaders = target:headers()
-            if srcheaders and dstheaders then
-                local i = 1
-                for _, srcheader in ipairs(srcheaders) do
-                    local dstheader = dstheaders[i]
-                    if dstheader then
-                        os.cp(srcheader, dstheader)
-                    end
-                    i = i + 1
-                end
-            end
-        end
-
         -- the target file
         local targetfile = target:targetfile()
 

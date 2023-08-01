@@ -53,10 +53,6 @@ function main(target)
     remove_files(target:pcoutputfile("c"))
     remove_files(target:pcoutputfile("cxx"))
 
-    -- TODO remove the header files (deprecated)
-    local _, dstheaders = target:headers()
-    remove_files(dstheaders)
-
     -- remove the clean files
     remove_files(target:get("cleanfiles"))
 

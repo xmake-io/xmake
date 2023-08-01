@@ -655,9 +655,6 @@ function _add_clean_target(makefile, target, outputdir)
         _add_remove_files(makefile, target:targetfile(), outputdir)
         _add_remove_files(makefile, target:symbolfile(), outputdir)
         _add_remove_files(makefile, target:objectfiles(), outputdir)
-        -- TODO remove the header files (deprecated)
-        local _, dstheaders = target:headers()
-        _add_remove_files(makefile, dstheaders, outputdir)
     end
     makefile:print("")
 end
