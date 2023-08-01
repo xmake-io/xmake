@@ -18,132 +18,6 @@
 -- @file        load.lua
 --
 
--- get function name and function info
---
--- sigsetjmp
--- sigsetjmp((void*)0, 0)
--- sigsetjmp{sigsetjmp((void*)0, 0);}
--- sigsetjmp{int a = 0; sigsetjmp((void*)a, a);}
---
-function _funcinfo(func)
-    local name, code = string.match(func, "(.+){(.+)}")
-    if code == nil then
-        local pos = func:find("%(")
-        if pos then
-            name = func:sub(1, pos - 1)
-            code = func
-        else
-            name = func
-            code = string.format("volatile void* p%s = (void*)&%s;", name, name)
-        end
-    end
-    return name:trim(), code
-end
-
--- TODO add c function, deprecated
-function _api_add_cfunc(interp, module, alias, links, includes, func)
-
-    -- parse the function info
-    local funcname, funccode = _funcinfo(func)
-
-    -- make the option name
-    local name = nil
-    if module ~= nil then
-        name = format("__%s_%s", module, funcname)
-    else
-        name = format("__%s", funcname)
-    end
-
-    -- uses the alias name
-    if alias ~= nil then
-        funcname = alias
-    end
-
-    -- make the option define
-    local define = nil
-    if module ~= nil then
-        define = format("$(prefix)_%s_HAVE_%s", module:upper(), funcname:upper())
-    else
-        define = format("$(prefix)_HAVE_%s", funcname:upper())
-    end
-
-    -- save the current scope
-    interp:api_builtin_save_scope()
-
-    -- check option
-    interp:api_call("option", name)
-    interp:api_call("set_category", "cfuncs")
-    interp:api_call("add_cfuncs", func)
-    if links then interp:api_call("add_links", links) end
-    if includes then interp:api_call("add_cincludes", includes) end
-
-    -- restore the current scope
-    interp:api_builtin_restore_scope()
-
-    -- add this option
-    interp:api_call("add_options", name)
-end
-
--- TODO add c functions, deprecated
-function _api_add_cfuncs(interp, module, links, includes, ...)
-    wprint("target.add_cfuncs is deprecated, please use option.add_cfuncs()")
-    for _, func in ipairs({...}) do
-        _api_add_cfunc(interp, module, nil, links, includes, func)
-    end
-end
-
--- TODO add c++ function, deprecated
-function _api_add_cxxfunc(interp, module, alias, links, includes, func)
-
-    -- parse the function info
-    local funcname, funccode = _funcinfo(func)
-
-    -- make the option name
-    local name = nil
-    if module ~= nil then
-        name = format("__%s_%s", module, funcname)
-    else
-        name = format("__%s", funcname)
-    end
-
-    -- uses the alias name
-    if alias ~= nil then
-        funcname = alias
-    end
-
-    -- make the option define
-    local define = nil
-    if module ~= nil then
-        define = format("$(prefix)_%s_HAVE_%s", module:upper(), funcname:upper())
-    else
-        define = format("$(prefix)_HAVE_%s", funcname:upper())
-    end
-
-    -- save the current scope
-    interp:api_builtin_save_scope()
-
-    -- check option
-    interp:api_call("option", name)
-    interp:api_call("set_category", "cxxfuncs")
-    interp:api_call("add_cxxfuncs", func)
-    if links then interp:api_call("add_links", links) end
-    if includes then interp:api_call("add_cxxincludes", includes) end
-
-    -- restore the current scope
-    interp:api_builtin_restore_scope()
-
-    -- add this option
-    interp:api_call("add_options", name)
-end
-
--- TODO add c++ functions, deprecated
-function _api_add_cxxfuncs(interp, module, links, includes, ...)
-    wprint("target.add_cxxfuncs is deprecated, please use option.add_cxxfuncs()")
-    for _, func in ipairs({...}) do
-        _api_add_cxxfunc(interp, module, nil, links, includes, func)
-    end
-end
-
 -- get apis
 function _get_apis()
     local apis = {}
@@ -217,12 +91,9 @@ function _get_apis()
     }
     apis.paths = {
         -- target.set_xxx
-        "target.set_headerdir"        -- TODO deprecated
-    ,   "target.set_config_header"    -- TODO deprecated
-    ,   "target.set_pcheader"
+        "target.set_pcheader"
     ,   "target.set_pcxxheader"
         -- target.add_xxx
-    ,   "target.add_headers"          -- TODO deprecated
     ,   "target.add_headerfiles"
     ,   "target.add_linkdirs"
     ,   "target.add_includedirs"
@@ -238,13 +109,6 @@ function _get_apis()
         -- option.add_xxx
         "option.add_csnippets"
     ,   "option.add_cxxsnippets"
-    }
-    apis.custom = {
-        -- target.add_xxx
-        {"target.add_cfunc",        _api_add_cfunc      }
-    ,   {"target.add_cfuncs",       _api_add_cfuncs     }
-    ,   {"target.add_cxxfunc",      _api_add_cxxfunc    }
-    ,   {"target.add_cxxfuncs",     _api_add_cxxfuncs   }
     }
     return apis
 end

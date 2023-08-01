@@ -33,7 +33,6 @@ import("core.cache.localcache")
 import("lib.detect.find_tool")
 import("private.action.run.runenvs")
 import("private.action.require.install", {alias = "install_requires"})
-import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("vstudio.impl.vsutils", {rootdir = path.join(os.programdir(), "plugins", "project")})
 
@@ -463,7 +462,6 @@ function main(outputdir, vsinfo)
 
             -- update config files
             generate_configfiles()
-            generate_configheader()
 
             -- ensure to enter project directory
             os.cd(project.directory())

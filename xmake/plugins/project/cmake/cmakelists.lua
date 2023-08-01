@@ -482,11 +482,6 @@ function _add_target_include_directories(cmakelists, target, outputdir)
         end
         cmakelists:print(")")
     end
-    -- export config header directory (deprecated)
-    local configheader = target:configheader()
-    if configheader then
-        cmakelists:print("target_include_directories(%s PUBLIC %s)", target:name(), _get_relative_unix_path(path.directory(configheader), outputdir))
-    end
 end
 
 -- add target system include directories
@@ -1010,21 +1005,6 @@ function _add_target_custom_commands(cmakelists, target, outputdir)
     _add_target_custom_commands_for_batchcmds(cmakelists, target, outputdir, "after", cmds_after)
 end
 
--- TODO export target headers (deprecated)
-function _export_target_headers(target)
-    local srcheaders, dstheaders = target:headers()
-    if srcheaders and dstheaders then
-        local i = 1
-        for _, srcheader in ipairs(srcheaders) do
-            local dstheader = dstheaders[i]
-            if dstheader then
-                os.cp(srcheader, dstheader)
-            end
-            i = i + 1
-        end
-    end
-end
-
 -- add target
 function _add_target(cmakelists, target, outputdir)
 
@@ -1048,9 +1028,6 @@ function _add_target(cmakelists, target, outputdir)
     else
         raise("unknown target kind %s", target:kind())
     end
-
-    -- TODO export target headers (deprecated)
-    _export_target_headers(target)
 
     -- add target dependencies
     _add_target_dependencies(cmakelists, target)

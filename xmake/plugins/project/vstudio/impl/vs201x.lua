@@ -38,7 +38,6 @@ import("core.cache.localcache")
 import("private.action.require.install", {alias = "install_requires"})
 import("private.action.run.runenvs")
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
-import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("private.utils.batchcmds")
 
 function _translate_path(dir, vcxprojdir)
@@ -380,57 +379,6 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     return targetinfo
 end
 
--- make target headers
-function _make_targetheaders(mode, arch, target, last)
-
-    -- only for static and shared target
-    local kind = target:kind()
-    if kind == "static" or kind == "shared" then
-
-        -- TODO make headers, (deprecated)
-        local srcheaders, dstheaders = target:headers()
-        if srcheaders and dstheaders then
-            local i = 1
-            for _, srcheader in ipairs(srcheaders) do
-                local dstheader = dstheaders[i]
-                if dstheader then
-                    os.cp(srcheader, dstheader)
-                end
-                i = i + 1
-            end
-        end
-
-        -- make config header
-        local configheader_raw = target:configheader()
-        if configheader_raw and os.isfile(configheader_raw) then
-
-            -- init the config header path for each mode and arch
-            local configheader_mode_arch = path.join(path.directory(configheader_raw), mode .. "." .. arch .. "." .. path.filename(configheader_raw))
-
-            -- init the temporary config header path
-            local configheader_tmp = path.join(path.directory(configheader_raw), "tmp." .. path.filename(configheader_raw))
-
-            -- copy the original config header first
-            os.cp(configheader_raw, configheader_mode_arch)
-
-            -- append the current config header
-            local file = io.open(configheader_tmp, "a+")
-            if file then
-                file:print("")
-                file:print("#if defined(__config_%s__) && defined(__config_%s__)", mode, arch)
-                file:print("#    include \"%s.%s.%s\"", mode, arch, path.filename(configheader_raw))
-                file:print("#endif")
-                file:close()
-            end
-
-            -- override the raw config header at last
-            if last and os.isfile(configheader_tmp) then
-                os.mv(configheader_tmp, configheader_raw)
-            end
-        end
-    end
-end
-
 function _make_vsinfo_modes()
     local vsinfo_modes = {}
     local modes = option.get("modes")
@@ -553,7 +501,6 @@ function make(outputdir, vsinfo)
 
                 -- update config files
                 generate_configfiles()
-                generate_configheader()
             end
 
             -- ensure to enter project directory
@@ -607,9 +554,6 @@ function make(outputdir, vsinfo)
                     end
                     mergedconf.plain = groupconf.plain or mergedconf.plain
                 end
-
-                -- make target headers
-                _make_targetheaders(mode, arch, target, mode_idx == #vsinfo.modes and arch_idx == 2)
             end
         end
     end
