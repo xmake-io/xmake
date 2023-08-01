@@ -589,8 +589,24 @@ function make(outputdir, vsinfo)
                 table.sort(_target.headerfiles)
 
                 -- save file groups
-                _target.filegroups = target:get("filegroups")
-                _target.filegroups_extraconf = target:extraconf("filegroups")
+                _target.filegroups = table.unique(table.join(_target.filegroups or {}, target:get("filegroups")))
+                
+                for filegroup, groupconf in pairs(target:extraconf("filegroups")) do
+                    _target.filegroups_extraconf = _target.filegroups_extraconf or {}
+                    local mergedconf = _target.filegroups_extraconf[filegroup]
+                    if not mergedconf then
+                        mergedconf = {}
+                        _target.filegroups_extraconf[filegroup] = mergedconf
+                    end
+
+                    if groupconf.rootdir then
+                        mergedconf.rootdir = table.unique(table.join(mergedconf.rootdir or {}, table.wrap(groupconf.rootdir)))
+                    end
+                    if groupconf.files then
+                        mergedconf.files = table.unique(table.join(mergedconf.files or {}, table.wrap(groupconf.files)))
+                    end
+                    mergedconf.plain = groupconf.plain or mergedconf.plain
+                end
 
                 -- make target headers
                 _make_targetheaders(mode, arch, target, mode_idx == #vsinfo.modes and arch_idx == 2)
