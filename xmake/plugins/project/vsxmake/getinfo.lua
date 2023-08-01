@@ -352,6 +352,10 @@ function _make_filter(filepath, target, vcxprojdir)
                         break
                     end
                 end
+                -- stop once a rootdir matches
+                if filter then
+                    break
+                end
             end
         end
     end
