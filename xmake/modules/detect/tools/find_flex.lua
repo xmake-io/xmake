@@ -44,7 +44,7 @@ function main(opt)
     local program = find_program(opt.program or "flex", opt)
 
     -- try win_flex if flex is not found on windows
-    if not program and not opt.program and os.host() == "windows" then
+    if not program and is_host("windows") then
         program = find_program("win_flex", opt)
     end
 
