@@ -154,9 +154,12 @@ function _find_package(vcpkgdir, name, opt)
     -- save version
     if result then
         local infoname = path.basename(infofile)
-        result.version = infoname:match(name .. "_(%d+%.?%d*%.?%d*.-)_" .. arch)
+        local prefix = name
+        -- name maybe contains lua pattern characters, we need escape it. e.g. `-`
+        prefix = prefix:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+        result.version = infoname:match(prefix .. "_(%d+%.?%d*%.?%d*.-)_" .. arch)
         if not result.version then
-            result.version = infoname:match(name .. "_(%d+%.?%d*%.-)_" .. arch)
+            result.version = infoname:match(prefix .. "_(%d+%.?%d*%.-)_" .. arch)
         end
     end
 
