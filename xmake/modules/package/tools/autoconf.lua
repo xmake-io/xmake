@@ -371,6 +371,9 @@ function buildenvs(package, opt)
         if os.isdir(pkgconfig) then
             table.insert(PKG_CONFIG_PATH, pkgconfig)
         end
+    end
+    -- some binary packages contain it too. e.g. libtool
+    for _, dep in ipairs(package:orderdeps()) do
         local aclocal = path.join(dep:installdir(), "share", "aclocal")
         if os.isdir(aclocal) then
             table.insert(ACLOCAL_PATH, aclocal)
@@ -396,6 +399,9 @@ function autogen_envs(package, opt)
         if os.isdir(pkgconfig) then
             table.insert(PKG_CONFIG_PATH, pkgconfig)
         end
+    end
+    -- some binary packages contain it too. e.g. libtool
+    for _, dep in ipairs(package:orderdeps()) do
         local aclocal = path.join(dep:installdir(), "share", "aclocal")
         if os.isdir(aclocal) then
             table.insert(ACLOCAL_PATH, aclocal)
