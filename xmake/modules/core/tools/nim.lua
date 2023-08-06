@@ -123,12 +123,6 @@ end
 -- make the build arguments list
 function buildargv(self, sourcefiles, targetkind, targetfile, flags)
     local flags_extra = {}
-    if targetkind == "binary" then
-        -- fix multiple definition of `NimMain'
-        --
-        -- @see https://github.com/nim-lang/Nim/issues/19830
-        table.insert(flags_extra, "--passL:-Wl,--allow-multiple-definition")
-    end
     if targetkind ~= "static" and self:is_plat("windows") then
         -- fix link flags for windows
         -- @see https://github.com/nim-lang/Nim/issues/19033
