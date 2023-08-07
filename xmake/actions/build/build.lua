@@ -116,7 +116,8 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
     end
 
     -- add after_build job for target
-    local oldenvs
+    local pkgenvs = _g.pkgenvs or {}
+    _g.pkgenvs = pkgenvs
     local job_build_after = batchjobs:addjob(target:name() .. "/after_build", function (index, total)
 
         -- do after_build
@@ -140,8 +141,15 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
         end
 
         -- restore environments
-        if oldenvs then
-            os.setenvs(oldenvs)
+        if target:pkgenvs() then
+            pkgenvs.oldenvs = pkgenvs.oldenvs or os.getenvs()
+            pkgenvs.newenvs = pkgenvs.newenvs or {}
+            pkgenvs.newenvs[target] = nil
+            local newenvs = pkgenvs.oldenvs
+            for _, envs in pairs(pkgenvs.newenvs) do
+                newenvs = os.joinenvs(envs, newenvs)
+            end
+            os.setenvs(newenvs)
         end
 
     end, {rootjob = rootjob})
@@ -153,7 +161,21 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
     local job_build_before = batchjobs:addjob(target:name() .. "/before_build", function (index, total)
 
         -- enter package environments
-        oldenvs = os.addenvs(target:pkgenvs())
+        -- https://github.com/xmake-io/xmake/issues/4033
+        --
+        -- maybe mixing envs isn't a great solution,
+        -- but it's the most efficient compromise compared to setting envs in every on_build_file.
+        --
+        if target:pkgenvs() then
+            pkgenvs.oldenvs = pkgenvs.oldenvs or os.getenvs()
+            pkgenvs.newenvs = pkgenvs.newenvs or {}
+            pkgenvs.newenvs[target] = target:pkgenvs()
+            local newenvs = pkgenvs.oldenvs
+            for _, envs in pairs(pkgenvs.newenvs) do
+                newenvs = os.joinenvs(envs, newenvs)
+            end
+            os.setenvs(newenvs)
+        end
 
         -- clean target if rebuild
         if option.get("rebuild") and not option.get("dry-run") then
@@ -265,7 +287,4 @@ function main(targetname, group_pattern)
         os.cd(curdir)
     end
 end
-
-
-
 
