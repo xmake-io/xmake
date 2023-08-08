@@ -253,8 +253,16 @@ _os_find() {
 }
 
 # get date, "%Y%m%d%H%M" -> 202212072222
+# Use deterministic timestamp from SOURCE_DATE_EPOCH if available
+# https://reproducible-builds.org/docs/source-date-epoch/
 _os_date() {
-    _ret=$(date +"${1}")
+    if test_z "${SOURCE_DATE_EPOCH}"; then
+        _ret=$(date +"${1}")
+    elif is_host "macosx"; then
+        _ret=$(date -u -r "$SOURCE_DATE_EPOCH" +"${1}")
+    else
+        _ret=$(date -u -d "@$SOURCE_DATE_EPOCH" +"${1}")
+    fi
 }
 
 # we avoid use `basename`, because it's slow
