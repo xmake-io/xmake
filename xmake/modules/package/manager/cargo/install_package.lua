@@ -132,8 +132,9 @@ target = "%s"
     -- do install
     local installdir = opt.installdir
     os.tryrm(path.join(installdir, "lib"))
-    if configs.build_target then
-        os.vcp(path.join(sourcedir, "target", configs.build_target, opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
+    local cross = get_config("cross")
+    if cross then
+        os.vcp(path.join(sourcedir, "target", cross, opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
     else
         os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
     end

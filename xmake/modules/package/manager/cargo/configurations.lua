@@ -26,7 +26,6 @@ function main()
         default_features = {description = "Enable or disable any defaults provided by the dependency.", default = true},
         std              = {description = "Enable or disable std module."},
         main             = {description = "Enable or disable main entry function."},
-        build_target     = {description = "Set build target. e.g. aarch64-unknown-none"},
         cargo_toml       = {description = "Set Cargo.toml file path"}
     }
 end

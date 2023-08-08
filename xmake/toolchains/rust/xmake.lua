@@ -18,21 +18,31 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
 toolchain("rust")
 
-    -- set homepage
     set_homepage("https://www.rust-lang.org/")
     set_description("Rust Programming Language Compiler")
 
-    -- set toolset
+--    set_kind("standalone")
+
     set_toolset("rc",   "$(env RC)", "rustc")
     set_toolset("rcld", "$(env RC)", "rustc")
     set_toolset("rcsh", "$(env RC)", "rustc")
     set_toolset("rcar", "$(env RC)", "rustc")
 
-    -- on load
+    on_check(function (toolchain)
+        import("lib.detect.find_tool")
+        return find_tool("rustc")
+    end)
+
     on_load(function (toolchain)
-        toolchain:set("rcshflags", "")
-        toolchain:set("rcldflags", "")
+        -- for cross-compilation, e.g. xmake f -p cross --cross=aarch64-unknown-none
+        local cross = toolchain:cross()
+        if toolchain:is_cross() and cross then
+            toolchain:add("rcshflags", "--target=" .. cross)
+            toolchain:add("rcldflags", "--target=" .. cross)
+        else
+            toolchain:set("rcshflags", "")
+            toolchain:set("rcldflags", "")
+        end
     end)
