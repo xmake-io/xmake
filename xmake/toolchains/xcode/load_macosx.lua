@@ -78,7 +78,8 @@ function main(toolchain)
     -- init flags for c/c++
     toolchain:add("ldflags", "-stdlib=libc++")
     toolchain:add("shflags", "-stdlib=libc++")
-    toolchain:add("syslinks", "z")
+    toolchain:add("ldflags", "-lz")
+    toolchain:add("shflags", "-lz")
 
     -- init flags for objc/c++ (with ldflags and shflags)
     -- we can use `add_mxflags("-fno-objc-arc")` to override it in xmake.lua

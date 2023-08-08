@@ -23,24 +23,17 @@ toolchain("rust")
     set_homepage("https://www.rust-lang.org/")
     set_description("Rust Programming Language Compiler")
 
---    set_kind("standalone")
-
     set_toolset("rc",   "$(env RC)", "rustc")
     set_toolset("rcld", "$(env RC)", "rustc")
     set_toolset("rcsh", "$(env RC)", "rustc")
     set_toolset("rcar", "$(env RC)", "rustc")
 
-    on_check(function (toolchain)
-        import("lib.detect.find_tool")
-        return find_tool("rustc")
-    end)
-
     on_load(function (toolchain)
-        -- for cross-compilation, e.g. xmake f -p cross --cross=aarch64-unknown-none
-        local cross = toolchain:cross()
-        if toolchain:is_cross() and cross then
-            toolchain:add("rcshflags", "--target=" .. cross)
-            toolchain:add("rcldflags", "--target=" .. cross)
+        -- e.g. x86_64-pc-windows-msvc, aarch64-unknown-none
+        local arch = toolchain:arch()
+        if arch and #arch:split("%-") > 1 then
+            toolchain:add("rcshflags", "--target=" .. arch)
+            toolchain:add("rcldflags", "--target=" .. arch)
         else
             toolchain:set("rcshflags", "")
             toolchain:set("rcldflags", "")

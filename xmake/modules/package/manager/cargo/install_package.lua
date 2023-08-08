@@ -52,6 +52,15 @@ function main(name, opt)
         require_version = "*"
     end
 
+    -- get target
+    -- e.g. x86_64-pc-windows-msvc, aarch64-unknown-none
+    -- @see https://github.com/xmake-io/xmake/issues/4049
+    local target
+    local arch = opt.arch
+    if arch and #arch:split("%-") > 1 then
+        target = arch
+    end
+
     -- generate Cargo.toml
     local sourcedir = path.join(opt.cachedir, "source")
     local cargotoml = path.join(sourcedir, "Cargo.toml")
@@ -88,11 +97,11 @@ function main(name, opt)
 
     -- generate .cargo/config.toml
     local configtoml = path.join(sourcedir, ".cargo", "config.toml")
-    if configs.build_target then
+    if target then
         io.writefile(configtoml, format([[
 [build]
 target = "%s"
-]], configs.build_target))
+]], target))
     end
 
     -- generate main.rs
@@ -132,9 +141,8 @@ target = "%s"
     -- do install
     local installdir = opt.installdir
     os.tryrm(path.join(installdir, "lib"))
-    local cross = get_config("cross")
-    if cross then
-        os.vcp(path.join(sourcedir, "target", cross, opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
+    if target then
+        os.vcp(path.join(sourcedir, "target", target, opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
     else
         os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
     end
