@@ -466,7 +466,7 @@ function _instance:sourcehash(url_alias)
         if not sourcehash then
             sourcehash = versions[version_str]
         end
-        if sourcehash then
+        if sourcehash and #sourcehash == 40 then
             sourcehash = sourcehash:lower()
         end
         return sourcehash
