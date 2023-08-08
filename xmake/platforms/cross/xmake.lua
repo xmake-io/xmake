@@ -34,6 +34,6 @@ platform("cross")
     set_formats("symbol", "$(name).sym")
 
     -- set toolchains
-    set_toolchains("envs", "rust", "cross")
+    set_toolchains("envs", "cross")
 
 
