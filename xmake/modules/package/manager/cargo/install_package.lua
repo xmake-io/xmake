@@ -86,12 +86,38 @@ function main(name, opt)
         tomlfile:close()
     end
 
+    -- generate .cargo/config.toml
+    local configtoml = path.join(sourcedir, ".cargo", "config.toml")
+    if configs.build_target then
+        io.writefile(configtoml, format([[
+[build]
+target = "%s"
+]], configs.build_target))
+    end
+
     -- generate main.rs
-    io.writefile(path.join(sourcedir, "src", "main.rs"), [[
-fn main() {
-    println!("Hello, world!");
-}
-    ]])
+    local file = io.open(path.join(sourcedir, "src", "main.rs"), "w")
+    if configs.main == false then
+        file:print("#![no_main]")
+    end
+    if configs.std == false then
+        file:print("#![no_std]")
+    end
+    if configs.main == false then
+        file:print([[
+    use core::panic::PanicInfo;
+
+    #[panic_handler]
+    fn panic(_panic: &PanicInfo<'_>) -> ! {
+        loop {}
+    }]])
+    else
+        file:print([[
+    fn main() {
+        println!("Hello, world!");
+    }]])
+    end
+    file:close()
 
     -- do build
     local argv = {"build"}
@@ -106,5 +132,9 @@ fn main() {
     -- do install
     local installdir = opt.installdir
     os.tryrm(path.join(installdir, "lib"))
-    os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
+    if configs.build_target then
+        os.vcp(path.join(sourcedir, "target", configs.build_target, opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
+    else
+        os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
+    end
 end
