@@ -89,7 +89,8 @@ function _get_names_of_libraries(name, target, configs)
     if configs.cargo_toml then
         local cargo = assert(find_tool("cargo"), "cargo not found!")
         local cargo_args = {"metadata", "--format-version", "1", "--manifest-path", configs.cargo_toml, "--color", "never"}
-        if check_target(target, true) then
+        local target = check_target(target, true) and target or nil
+        if target then
             table.insert(cargo_args, "--filter-platform")
             table.insert(cargo_args, target)
         end

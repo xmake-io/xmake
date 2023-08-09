@@ -40,7 +40,6 @@ end
 --
 -- @return          true if arch != nil and the target is supported by rustc, otherwise false
 function main(arch, precise)
-    print("arch: " .. arch)
 
     if not arch then
         return false
@@ -52,7 +51,7 @@ function main(arch, precise)
     if #archs >= 2 then
         result = true
     else
-        utils.warning("the arch \"%s\" is NOT a valid target triple, will be IGNORED and may cause compilation errors, please check it again", arch)
+        wprint("the arch \"%s\" is NOT a valid target triple, will be IGNORED and may cause compilation errors, please check it again", arch)
     end
 
     -- 2: check by rustc
@@ -69,7 +68,7 @@ function main(arch, precise)
             end
         end
         if not result then
-            utils.warning("the arch \"%s\" is NOT supported by rustc, will be IGNORED and may cause compilation errors, please check it again", arch)
+            wprint("the arch \"%s\" is NOT supported by rustc, will be IGNORED and may cause compilation errors, please check it again", arch)
         end
     end
 
