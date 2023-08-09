@@ -14,6 +14,7 @@
 * [#4032](https://github.com/xmake-io/xmake/pull/4032): Remove some old deprecated apis
 * Improve to upgrade vcproj files in tools.msbuild
 * Support add_requires("xmake::xxx") package
+* [#4049](https://github.com/xmake-io/xmake/issues/4049): Improve rust to support cross-compilation
 
 ### Bugs fixed
 
@@ -1637,6 +1638,7 @@
 * [#4032](https://github.com/xmake-io/xmake/pull/4032): 移除一些非常老的废弃接口
 * 改进 tools.msbuild 升级 vcproj 文件
 * 支持 add_requires("xmake::xxx") 包
+* [#4049](https://github.com/xmake-io/xmake/issues/4049): 改进 Rust 支持交叉编译
 
 ### Bugs 修复
 
