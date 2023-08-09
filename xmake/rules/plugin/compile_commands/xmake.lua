@@ -42,7 +42,7 @@ rule("plugin.compile_commands.autoupdate")
             return
         end
 
-        -- run only once for all xmake process in vs
+        -- run only once for all xmake process
         local tmpfile = path.join(config.buildir(), ".gens", "rules", "plugin.compile_commands.autoupdate")
         local dependfile = tmpfile .. ".d"
         local lockfile = io.openlock(tmpfile .. ".lock")
