@@ -51,6 +51,8 @@ function main(arch, precise)
     local archs = arch:split("%-")
     if #archs >= 2 then
         result = true
+    else
+        utils.warning("The arch \"%s\" is NOT a valid target triple, will be IGNORED and may cause compilation errors. please check it again", arch)
     end
 
     -- 2: check by rustc
