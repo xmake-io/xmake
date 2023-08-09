@@ -109,7 +109,7 @@ function _checkout(package, url, sourcedir, opt)
         git.checkout(revision, {repodir = packagedir})
 
         -- update all submodules
-        if os.isfile(path.join(packagedir, ".gitmodules")) then
+        if os.isfile(path.join(packagedir, ".gitmodules")) and opt.url_submodules ~= false then
             git.submodule.update({init = true, recursive = true, longpaths = longpaths, repodir = packagedir})
         end
     end
@@ -283,6 +283,7 @@ function main(package)
         local url_alias = package:url_alias(url)
         local url_excludes = package:url_excludes(url)
         local url_http_headers = package:url_http_headers(url)
+        local url_submodules = package:extraconf("urls", url, "submodules")
 
         -- filter url
         url = filter.handle(url, package)
@@ -314,10 +315,12 @@ function main(package)
                         sourcedir = sourcedir,
                         url = url,
                         url_alias = url_alias,
-                        url_excludes = url_excludes})
+                        url_excludes = url_excludes,
+                        url_submodules = url_submodules})
                 elseif git.checkurl(url) then
                     _checkout(package, url, sourcedir, {
-                        url_alias = url_alias})
+                        url_alias = url_alias,
+                        url_submodules = url_submodules})
                 else
                     _download(package, url, sourcedir, {
                         url_alias = url_alias,
