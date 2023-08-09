@@ -87,7 +87,7 @@ end
 function _get_names_of_libraries(name, target, configs)
     local names = hashset.new()
     if configs.cargo_toml then
-        local cargo = assert(find_tool("cargo"), "cargo not found! Please ensure Rust has been installed")
+        local cargo = assert(find_tool("cargo"), "cargo not found!")
         local cargo_args = {"metadata", "--format-version", "1", "--manifest-path", configs.cargo_toml, "--color", "never"}
         if check_target(target, true) then
             table.insert(cargo_args, "--filter-platform")
