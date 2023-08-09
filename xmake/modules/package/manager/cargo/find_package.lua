@@ -84,12 +84,13 @@ function _get_libname(name)
 end
 
 -- get the name set of libraries
-function _get_names_of_libraries(name, target, configs)
+function _get_names_of_libraries(name, opt)
+    local configs = opt.configs or {}
     local names = hashset.new()
     if configs.cargo_toml then
         local cargo = assert(find_tool("cargo"), "cargo not found!")
         local cargo_args = {"metadata", "--format-version", "1", "--manifest-path", configs.cargo_toml, "--color", "never"}
-        local target = check_target(target, true) and target or nil
+        local target = check_target(opt.arch, true) and opt.arch or nil
         if target then
             table.insert(cargo_args, "--filter-platform")
             table.insert(cargo_args, target)
@@ -143,7 +144,7 @@ function main(name, opt)
     local configs = opt.configs or {}
 
     -- get names of libraries
-    local names = _get_names_of_libraries(name, opt.arch, configs)
+    local names = _get_names_of_libraries(name, opt)
     assert(not names:empty())
 
     local frameworkdirs
