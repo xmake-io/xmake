@@ -198,6 +198,7 @@ function _get_configs(package, configs, opt)
     local cxxflags = table.join(table.wrap(package:config("cxxflags")), get_config("cxxflags"))
     local asflags  = table.join(table.wrap(package:config("asflags")),  get_config("asflags"))
     local ldflags  = table.join(table.wrap(package:config("ldflags")),  get_config("ldflags"))
+    local shflags  = table.join(table.wrap(package:config("shflags")),  get_config("shflags"))
     table.insert(configs, "--plat=" .. package:plat())
     table.insert(configs, "--arch=" .. package:arch())
     if configs.mode == nil then
@@ -265,6 +266,9 @@ function _get_configs(package, configs, opt)
     end
     if ldflags and #ldflags > 0 then
         table.insert(configs, "--ldflags=" .. table.concat(ldflags, ' '))
+    end
+    if shflags and #shflags > 0 then
+        table.insert(configs, "--shflags=" .. table.concat(shflags, ' '))
     end
     local buildir = opt.buildir or package:buildir()
     if buildir then

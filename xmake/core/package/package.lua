@@ -2086,6 +2086,19 @@ function _instance:_generate_build_configs(configs, opt)
     if opt.sourcekind == "cxx" and configs.exceptions == nil and self:has_tool("cxx", "cl") then
         configs.exceptions = "cxx"
     end
+
+    -- pass user flags to on_test, because some flags need be passed to ldflags in on_test
+    -- e.g. add_requireconfs("**", {configs = {cxflags = "/fsanitize=address", ldflags = "/fsanitize=address"}})
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/4046
+    --
+    for name, flags in pairs(self:configs()) do
+        if name:endswith("flags") and self:extraconf("configs", name, "builtin") then
+            configs[name] = table.wrap(configs[name] or {})
+            table.join2(configs[name], flags)
+        end
+    end
+
     if configs and (configs.ldflags or configs.shflags) then
         configs.force = {ldflags = configs.ldflags, shflags = configs.shflags}
         configs.ldflags = nil
