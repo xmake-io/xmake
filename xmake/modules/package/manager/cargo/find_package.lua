@@ -22,10 +22,12 @@
 import("core.base.option")
 import("core.base.semver")
 import("core.base.hashset")
+import("core.base.json")
 import("core.project.config")
 import("core.project.target")
 import("lib.detect.find_tool")
 import("lib.detect.find_file")
+import("private.tools.rust.check_target")
 
 -- get cargo registry directory
 function _get_cargo_registrydir()
@@ -82,30 +84,48 @@ function _get_libname(name)
 end
 
 -- get the name set of libraries
-function _get_names_of_libraries(name, configs)
+function _get_names_of_libraries(name, opt)
+    local configs = opt.configs or {}
     local names = hashset.new()
     if configs.cargo_toml then
-        local dependencies = false
-        local cargo_file = io.open(configs.cargo_toml)
-        for line in cargo_file:lines() do
-            line = line:trim()
-            if not dependencies and line == "[dependencies]" then
-                dependencies = true
-            elseif dependencies then
-                if not line:startswith("[") then
-                    local splitinfo = line:split("=", {plain = true})
-                    if splitinfo and #splitinfo > 1 then
-                        name = splitinfo[1]:trim()
-                        if #name > 0 then
-                            names:insert(_get_libname(name))
-                        end
-                    end
-                else
+        local cargo = assert(find_tool("cargo"), "cargo not found!")
+        local cargo_args = {"metadata", "--format-version", "1", "--manifest-path", configs.cargo_toml, "--color", "never"}
+        local target = check_target(opt.arch, true) and opt.arch or nil
+        if target then
+            table.insert(cargo_args, "--filter-platform")
+            table.insert(cargo_args, target)
+        end
+        if configs.features then
+            table.insert(cargo_args, "--features")
+            table.insert(cargo_args, table.concat(configs.features, ","))
+        end
+        if configs.default_features == false then
+            table.insert(cargo_args, "--no-default-features")
+        end
+
+        local output = os.iorunv(cargo.program, cargo_args)
+        local metadata = json.decode(output)
+
+        -- fetch the direct dependencies list regradless of the target platform
+        table.insert(cargo_args, "--no-deps")
+        output = os.iorunv(cargo.program, cargo_args)
+        local metadata_no_deps = json.decode(output)
+        -- FIXME: should consider the case of multiple packages in a workspace!
+        local direct_deps = metadata_no_deps.packages[1].dependencies
+
+        -- get the intersection of the direct dependencies and all dependencies for the target platform
+        for _, dep in ipairs(direct_deps) do
+            local dep_metadata
+            for _, pkg in ipairs(metadata.packages) do
+                if pkg.name == dep.name then
+                    dep_metadata = pkg
                     break
                 end
             end
+            if dep_metadata then
+                names:insert(_get_libname(dep.name))
+            end
         end
-        cargo_file:close()
     else
         names:insert(_get_libname(name))
     end
@@ -124,7 +144,7 @@ function main(name, opt)
     local configs = opt.configs or {}
 
     -- get names of libraries
-    local names = _get_names_of_libraries(name, configs)
+    local names = _get_names_of_libraries(name, opt)
     assert(not names:empty())
 
     local frameworkdirs

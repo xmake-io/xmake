@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
+import("private.tools.rust.check_target")
 
 -- install package
 --
@@ -55,11 +56,7 @@ function main(name, opt)
     -- get target
     -- e.g. x86_64-pc-windows-msvc, aarch64-unknown-none
     -- @see https://github.com/xmake-io/xmake/issues/4049
-    local target
-    local arch = opt.arch
-    if arch and #arch:split("%-") > 1 then
-        target = arch
-    end
+    local target = check_target(opt.arch, true) and opt.arch or nil
 
     -- generate Cargo.toml
     local sourcedir = path.join(opt.cachedir, "source")
