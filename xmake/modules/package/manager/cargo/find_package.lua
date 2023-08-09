@@ -27,6 +27,7 @@ import("core.project.config")
 import("core.project.target")
 import("lib.detect.find_tool")
 import("lib.detect.find_file")
+import("private.tools.rust.check_target")
 
 -- get cargo registry directory
 function _get_cargo_registrydir()
@@ -82,13 +83,22 @@ function _get_libname(name)
     return "lib" .. name:gsub("-", "_")
 end
 
+function _get_package_from_deps(name, deps)
+    for _, dep in ipairs(deps) do
+        if dep.name == name then
+            return dep
+        end
+    end
+    return nil
+end
+
 -- get the name set of libraries
 function _get_names_of_libraries(name, opt, configs)
     local names = hashset.new()
     if configs.cargo_toml then
         local cargo = assert(find_tool("cargo"), "cargo not found! Please ensure Rust has been installed")
         local cargo_args = {"metadata", "--format-version", "1", "--manifest-path", configs.cargo_toml, "--color", "never"}
-        if opt.arch then
+        if check_target(opt.arch, true) then
             table.insert(cargo_args, "--filter-platform")
             table.insert(cargo_args, opt.arch)
         end
@@ -111,16 +121,8 @@ function _get_names_of_libraries(name, opt, configs)
         local direct_deps = metadata_no_deps.packages[1].dependencies
 
         -- get the intersection of the direct dependencies and all dependencies for the target platform
-        local function _get_deps(name, deps)
-            for _, dep in ipairs(deps) do
-                if dep.name == name then
-                    return dep
-                end
-            end
-            return nil
-        end
         for _, dep in ipairs(direct_deps) do
-            local dep_metadata = _get_deps(dep.name, metadata.packages)
+            local dep_metadata = _get_package_from_deps(dep.name, metadata.packages)
             if dep_metadata then
                 names:insert(_get_libname(dep.name))
             end
