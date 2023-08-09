@@ -18,21 +18,24 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
 toolchain("rust")
 
-    -- set homepage
     set_homepage("https://www.rust-lang.org/")
     set_description("Rust Programming Language Compiler")
 
-    -- set toolset
     set_toolset("rc",   "$(env RC)", "rustc")
     set_toolset("rcld", "$(env RC)", "rustc")
     set_toolset("rcsh", "$(env RC)", "rustc")
     set_toolset("rcar", "$(env RC)", "rustc")
 
-    -- on load
     on_load(function (toolchain)
-        toolchain:set("rcshflags", "")
-        toolchain:set("rcldflags", "")
+        -- e.g. x86_64-pc-windows-msvc, aarch64-unknown-none
+        local arch = toolchain:arch()
+        if arch and #arch:split("%-") > 1 then
+            toolchain:add("rcshflags", "--target=" .. arch)
+            toolchain:add("rcldflags", "--target=" .. arch)
+        else
+            toolchain:set("rcshflags", "")
+            toolchain:set("rcldflags", "")
+        end
     end)

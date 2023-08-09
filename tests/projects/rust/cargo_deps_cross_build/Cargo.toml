@@ -1,0 +1,10 @@
+[package]
+name = "demo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+spin = "^0.9"
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu = "^9.3"

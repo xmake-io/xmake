@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
+import("private.tools.rust.check_target")
 
 -- install package
 --
@@ -51,6 +52,11 @@ function main(name, opt)
     if not require_version or require_version == "latest" then
         require_version = "*"
     end
+
+    -- get target
+    -- e.g. x86_64-pc-windows-msvc, aarch64-unknown-none
+    -- @see https://github.com/xmake-io/xmake/issues/4049
+    local target = check_target(opt.arch, true) and opt.arch or nil
 
     -- generate Cargo.toml
     local sourcedir = path.join(opt.cachedir, "source")
@@ -86,12 +92,38 @@ function main(name, opt)
         tomlfile:close()
     end
 
+    -- generate .cargo/config.toml
+    local configtoml = path.join(sourcedir, ".cargo", "config.toml")
+    if target then
+        io.writefile(configtoml, format([[
+[build]
+target = "%s"
+]], target))
+    end
+
     -- generate main.rs
-    io.writefile(path.join(sourcedir, "src", "main.rs"), [[
-fn main() {
-    println!("Hello, world!");
-}
-    ]])
+    local file = io.open(path.join(sourcedir, "src", "main.rs"), "w")
+    if configs.main == false then
+        file:print("#![no_main]")
+    end
+    if configs.std == false then
+        file:print("#![no_std]")
+    end
+    if configs.main == false then
+        file:print([[
+    use core::panic::PanicInfo;
+
+    #[panic_handler]
+    fn panic(_panic: &PanicInfo<'_>) -> ! {
+        loop {}
+    }]])
+    else
+        file:print([[
+    fn main() {
+        println!("Hello, world!");
+    }]])
+    end
+    file:close()
 
     -- do build
     local argv = {"build"}
@@ -106,5 +138,9 @@ fn main() {
     -- do install
     local installdir = opt.installdir
     os.tryrm(path.join(installdir, "lib"))
-    os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
+    if target then
+        os.vcp(path.join(sourcedir, "target", target, opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
+    else
+        os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
+    end
 end
