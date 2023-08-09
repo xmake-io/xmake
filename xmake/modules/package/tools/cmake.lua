@@ -225,6 +225,7 @@ function _get_ldflags(package, opt)
         table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "syslink", package:build_getenv("syslinks")))
         table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
     end
+    table.join2(result, package:config("ldflags"))
     if package:config("lto") then
         table.join2(result, package:_generate_lto_configs().ldflags)
     end
@@ -247,6 +248,7 @@ function _get_shflags(package, opt)
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "syslink", package:build_getenv("syslinks")))
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
     end
+    table.join2(result, package:config("shflags"))
     if package:config("lto") then
         table.join2(result, package:_generate_lto_configs().shflags)
     end

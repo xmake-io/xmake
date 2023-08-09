@@ -338,6 +338,8 @@ function _add_package_configurations(package)
     package:add("configs", "cxflags", {builtin = true, description = "Set the C/C++ compiler flags."})
     package:add("configs", "cxxflags", {builtin = true, description = "Set the C++ compiler flags."})
     package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
+    package:add("configs", "ldflags", {builtin = true, description = "Set the binary linker flags."})
+    package:add("configs", "shflags", {builtin = true, description = "Set the shared library linker flags."})
 end
 
 -- select package version
