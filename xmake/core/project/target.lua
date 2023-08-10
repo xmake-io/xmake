@@ -2111,8 +2111,10 @@ function _instance:tool(toolkind)
     end
     return toolchain.tool(self:toolchains(), toolkind, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
                                                         before_get = function()
+        -- get program from set_toolset
+        local program = self:get("toolset." .. toolkind)
+
         -- get program from `xmake f --cc`
-        local program
         if not program and not self:get("toolchains") then
             program = config.get(toolkind)
         end
