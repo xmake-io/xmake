@@ -2077,9 +2077,9 @@ function _instance:toolchains()
     if toolchains == nil then
 
         -- load target toolchains
+        toolchains = {}
         local target_toolchains = self:get("toolchains")
         if target_toolchains then
-            toolchains = {}
             for _, name in ipairs(table.wrap(target_toolchains)) do
                 local toolchain_opt = table.copy(self:extraconf("toolchains", name))
                 toolchain_opt.arch = self:arch()
@@ -2094,10 +2094,9 @@ function _instance:toolchains()
                 end
                 table.insert(toolchains, toolchain_inst)
             end
-        else
-            -- load platform toolchains
-            toolchains = self:platform():toolchains()
         end
+        -- load platform toolchains
+        table.join2(toolchains, self:platform():toolchains())
         self:_memcache():set("toolchains", toolchains)
     end
     return toolchains
