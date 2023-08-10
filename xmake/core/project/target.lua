@@ -2076,7 +2076,7 @@ function _instance:toolchains()
     local toolchains = self:_memcache():get("toolchains")
     if toolchains == nil then
 
-        -- load target toolchains
+        -- load target toolchains first
         toolchains = {}
         local target_toolchains = self:get("toolchains")
         if target_toolchains then
@@ -2095,8 +2095,11 @@ function _instance:toolchains()
                 table.insert(toolchains, toolchain_inst)
             end
         end
-        -- load platform toolchains
+
+        -- we need merge target and platform toolchains,
+        -- because we maybe only set partial toolchains in target, e.g. nasm toolchain
         table.join2(toolchains, self:platform():toolchains())
+
         self:_memcache():set("toolchains", toolchains)
     end
     return toolchains
