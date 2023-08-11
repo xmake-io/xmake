@@ -2101,6 +2101,8 @@ function _instance:toolchains()
 
             -- we always need a standalone toolchain
             -- because we maybe only set partial toolchains in target, e.g. nasm toolchain
+            --
+            -- @note platform has been checked in config/_check_target_toolchains
             if not has_standalone then
                 for _, toolchain_inst in ipairs(self:platform():toolchains()) do
                     if toolchain_inst:is_standalone() then
