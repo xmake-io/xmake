@@ -2077,10 +2077,10 @@ function _instance:toolchains()
     if toolchains == nil then
 
         -- load target toolchains first
-        toolchains = {}
         local has_standalone = false
         local target_toolchains = self:get("toolchains")
         if target_toolchains then
+            toolchains = {}
             for _, name in ipairs(table.wrap(target_toolchains)) do
                 local toolchain_opt = table.copy(self:extraconf("toolchains", name))
                 toolchain_opt.arch = self:arch()
@@ -2098,20 +2098,20 @@ function _instance:toolchains()
                 end
                 table.insert(toolchains, toolchain_inst)
             end
-        end
 
-        -- we need merge target and platform toolchains,
-        -- because we maybe only set partial toolchains in target, e.g. nasm toolchain
-        for _, toolchain_inst in ipairs(self:platform():toolchains()) do
-            if toolchain_inst:is_standalone() then
-                -- we can only add one standalone toolchain
-                if not has_standalone then
-                    table.insert(toolchains, toolchain_inst)
+            -- we always need a standalone toolchain
+            -- because we maybe only set partial toolchains in target, e.g. nasm toolchain
+            if not has_standalone then
+                for _, toolchain_inst in ipairs(self:platform():toolchains()) do
+                    if toolchain_inst:is_standalone() then
+                        table.insert(toolchains, toolchain_inst)
+                        has_standalone = true
+                        break
+                    end
                 end
-                has_standalone = true
-            else
-                table.insert(toolchains, toolchain_inst)
             end
+        else
+            toolchains = self:platform():toolchains()
         end
 
         self:_memcache():set("toolchains", toolchains)

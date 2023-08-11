@@ -17,15 +17,15 @@
                 commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
-            version = "1.16.4"
+            version = "1.16.5"
         },
         ["cmake#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "d3260ca0867f8b26aa2a72818bca3e6113a4fc42",
-                url = "https://github.com/xmake-io/xmake-repo.git"
+                commit = "bd51a8d551dad9aae6749511b2139658285d847f",
+                url = "https://gitee.com/tboox/xmake-repo.git"
             },
-            version = "3.22.1"
+            version = "3.25.3"
         },
         ["gmp#31fecfc4"] = {
             repo = {
@@ -38,7 +38,7 @@
         ["libisl 0.22#67114504"] = {
             repo = {
                 branch = "master",
-                commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
+                commit = "123c0b54565571402683bb4efcf0d5cbaee53115",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "0.22"
@@ -62,7 +62,7 @@
         ["libtool#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "dd4abbd658b9897c9e1dcacf2e4bdeeb02d05860",
+                commit = "2918fbb829482398c8ab2676d05a46779d0f44b1",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "2.4.6"
@@ -73,7 +73,7 @@
                 commit = "8d4f0875fe9a3c63be4948cefca9f232954e3e87",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
-            version = "1.4.19"
+            version = "1.4.6"
         },
         ["muslcc#31fecfc4"] = {
             repo = {
