@@ -118,7 +118,7 @@ function _find_cuda(sdkdir)
 
     -- get version
     local version = find_programver(path.join(bindir, "nvcc"), {parse = "release (%d+%.%d+),"})
-    
+
     -- find msbuildextensionsdir on windows
     local msbuildextensionsdir
     if is_host("windows") then
