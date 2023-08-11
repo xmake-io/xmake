@@ -2076,7 +2076,8 @@ function _instance:toolchains()
     local toolchains = self:_memcache():get("toolchains")
     if toolchains == nil then
 
-        -- load target toolchains
+        -- load target toolchains first
+        local has_standalone = false
         local target_toolchains = self:get("toolchains")
         if target_toolchains then
             toolchains = {}
@@ -2092,12 +2093,29 @@ function _instance:toolchains()
                 if not toolchain_inst then
                     os.raise(errors)
                 end
+                if toolchain_inst:is_standalone() then
+                    has_standalone = true
+                end
                 table.insert(toolchains, toolchain_inst)
             end
+
+            -- we always need a standalone toolchain
+            -- because we maybe only set partial toolchains in target, e.g. nasm toolchain
+            --
+            -- @note platform has been checked in config/_check_target_toolchains
+            if not has_standalone then
+                for _, toolchain_inst in ipairs(self:platform():toolchains()) do
+                    if toolchain_inst:is_standalone() then
+                        table.insert(toolchains, toolchain_inst)
+                        has_standalone = true
+                        break
+                    end
+                end
+            end
         else
-            -- load platform toolchains
             toolchains = self:platform():toolchains()
         end
+
         self:_memcache():set("toolchains", toolchains)
     end
     return toolchains

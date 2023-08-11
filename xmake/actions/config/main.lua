@@ -125,6 +125,14 @@ function _check_target_toolchains()
         if target:is_enabled() and (target:get("toolchains") or
                                     not target:is_plat(config.get("plat")) or
                                     not target:is_arch(config.get("arch"))) then
+
+            -- check platform toolchains first
+            -- `target/set_plat()` and target:toolchains() need it
+            local ok, errors = target:platform():check()
+            if not ok then
+                raise(errors)
+            end
+
             local target_toolchains = target:get("toolchains")
             if target_toolchains then
                 target_toolchains = hashset.from(table.wrap(target_toolchains))
@@ -133,12 +141,6 @@ function _check_target_toolchains()
                     if not toolchain_inst:check() and target_toolchains:has(toolchain_inst:name()) then
                         raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
                     end
-                end
-            else
-                -- check platform toolchains for `target/set_plat()`
-                local ok, errors = target:platform():check()
-                if not ok then
-                    raise(errors)
                 end
             end
         elseif not target:get("toolset") then
