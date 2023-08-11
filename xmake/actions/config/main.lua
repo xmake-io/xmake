@@ -130,7 +130,7 @@ function _check_target_toolchains()
                 target_toolchains = hashset.from(table.wrap(target_toolchains))
                 for _, toolchain_inst in pairs(target:toolchains()) do
                     -- check toolchains for `target/set_toolchains()`
-                    if target_toolchains:has(toolchain_inst:name()) and not toolchain_inst:check() then
+                    if not toolchain_inst:check() and target_toolchains:has(toolchain_inst:name()) then
                         raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
                     end
                 end
