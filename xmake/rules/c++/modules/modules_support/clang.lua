@@ -316,8 +316,18 @@ function generate_dependencies(target, sourcebatch, opt)
                 local clangscandeps = _get_clang_scan_deps(target)
                 local compinst = target:compiler("cxx")
                 local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
+                -- We need absolute path of clang to use clang-scan-deps
+                -- See https://clang.llvm.org/docs/StandardCPlusPlusModules.html#possible-issues-failed-to-find-system-headers
+                -- NOTE: We need a method to check if compinst:program()..".exe"(maybe aka "clang.exe") is a symlink
+                local program_file_name = ""
+                if os.is_host("windows") and path.extension(compinst:program()) == "" then
+                    program_file_name = compinst:program()..".exe"
+                else
+                    program_file_name = compinst:program()
+                end
+                local absolute_path = path.is_absolute(program_file_name) and program_file_name or import("lib.detect.find_file")(program_file_name, {"$(env PATH)"})
                 local flags = table.join("--format=p1689", "--",
-                                         compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile),
+                                         absolute_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile),
                                          compflags)
                 vprint(table.concat(table.join(clangscandeps, flags), " "))
                 local outdata, errdata = os.iorunv(clangscandeps, flags)
