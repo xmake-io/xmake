@@ -32,6 +32,23 @@ import("private.action.build.object", {alias = "objectbuilder"})
 import("common")
 import("stl_headers")
 
+-- get clang path
+function _get_clang_path(target)
+    local clang_path = _g.clang_path
+    if not clang_path then
+        local program, toolname = target:tool("cxx")
+        if program and (toolname == "clang" or toolname == "clangxx") then
+            local clang = find_tool("clang", {program = program})
+            if clang then
+                clang_path = clang.program
+            end
+        end
+        clang_path = clang_path or false
+        _g.clang_path = clang_path
+    end
+    return clang_path or nil
+end
+
 -- get clang version
 function _get_clang_version(target)
     local clang_version = _g.clang_version
@@ -313,11 +330,17 @@ function generate_dependencies(target, sourcebatch, opt)
             local outputdir = common.get_outputdir(target, sourcefile)
             local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
             if has_clangscandepssupport(target) and not target:policy("build.c++.clang.fallbackscanner") then
+                -- We need absolute path of clang to use clang-scan-deps
+                -- See https://clang.llvm.org/docs/StandardCPlusPlusModules.html#possible-issues-failed-to-find-system-headers
+                local clang_path = compinst:program()
+                if not path.is_absolute(clang_path) then
+                    clang_path = _get_clang_path(target) or compinst:program()
+                end
                 local clangscandeps = _get_clang_scan_deps(target)
                 local compinst = target:compiler("cxx")
                 local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
                 local flags = table.join("--format=p1689", "--",
-                                         compinst:program(), "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile),
+                                         clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile),
                                          compflags)
                 vprint(table.concat(table.join(clangscandeps, flags), " "))
                 local outdata, errdata = os.iorunv(clangscandeps, flags)
