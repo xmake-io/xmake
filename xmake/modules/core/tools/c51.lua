@@ -64,7 +64,9 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
-    return self:program(), table.join(sourcefile, "OBJECT(" .. objectfile .. ")", "PRINT(" .. (objectfile:gsub("%.c%.obj", ".lst")) .. ")", flags)
+    local lstfile = objectfile:gsub("%.c%.obj", ".lst")
+    lstfile = lstfile:gsub("%.c%.o$", ".lst")
+    return self:program(), table.join(sourcefile, "OBJECT(" .. objectfile .. ")", "PRINT(" .. lstfile .. ")", flags)
 end
 
 -- compile the source file
