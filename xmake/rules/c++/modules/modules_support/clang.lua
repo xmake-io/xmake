@@ -77,7 +77,6 @@ end
 
 -- get clang-scan-deps
 function _get_clang_scan_deps(target)
-    --[[
     local clang_scan_deps = _g.clang_scan_deps
     if not clang_scan_deps then
         local program, toolname = target:tool("cxx")
@@ -97,7 +96,7 @@ function _get_clang_scan_deps(target)
         clang_scan_deps = clang_scan_deps or false
         _g.clang_scan_deps = clang_scan_deps
     end
-    return clang_scan_deps or nil]]
+    return clang_scan_deps or nil
 end
 
 -- add a module or an header unit into the mapper
