@@ -16,6 +16,7 @@
 * Improve to upgrade vcproj files in tools.msbuild
 * Support add_requires("xmake::xxx") package
 * [#4049](https://github.com/xmake-io/xmake/issues/4049): Improve rust to support cross-compilation
+* Improve clang modules support
 
 ### Bugs fixed
 
@@ -1641,6 +1642,7 @@
 * 改进 tools.msbuild 升级 vcproj 文件
 * 支持 add_requires("xmake::xxx") 包
 * [#4049](https://github.com/xmake-io/xmake/issues/4049): 改进 Rust 支持交叉编译
+* 改进 clang 下 c++ modules 支持
 
 ### Bugs 修复
 
