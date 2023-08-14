@@ -47,15 +47,15 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
--- get pkg-config
+-- get pkg-config, we need force to find it, because package install environments will be changed
 function _get_pkgconfig(package)
     if package:is_plat("windows") then
-        local pkgconf = find_tool("pkgconf")
+        local pkgconf = find_tool("pkgconf", {force = true})
         if pkgconf then
             return pkgconf.program
         end
     end
-    local pkgconfig = find_tool("pkg-config")
+    local pkgconfig = find_tool("pkg-config", {force = true})
     if pkgconfig then
         return pkgconfig.program
     end
@@ -388,9 +388,9 @@ function buildenvs(package, opt)
         envs.SHFLAGS   = table.concat(shflags, ' ')
         if package:is_plat("windows") then
             envs = os.joinenvs(envs, _get_msvc_runenvs(package))
-            local pkgconf = find_tool("pkgconf")
+            local pkgconf = _get_pkgconfig(package)
             if pkgconf then
-                envs.PKG_CONFIG = pkgconf.program
+                envs.PKG_CONFIG = pkgconf
             end
         end
     end
