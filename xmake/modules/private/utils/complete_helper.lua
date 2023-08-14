@@ -28,7 +28,7 @@ function targets()
     {
         function ()
             config.load()
-            return table.keys(project.targets())
+            return table.orderkeys(project.targets())
         end
     }
 end
@@ -41,7 +41,7 @@ function runable_targets(complete, opt)
             config.load()
             local targets = project.targets()
             local runable = {}
-            for k, v in pairs(targets) do
+            for k, v in table.orderpairs(targets) do
                 if (v:script("run") or v:is_binary()) and (not complete or k:startswith(complete)) then
                     table.insert(runable, k)
                 end
