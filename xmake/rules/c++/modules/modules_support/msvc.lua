@@ -137,7 +137,7 @@ function load(target)
     local modulesflag = get_modulesflag(target)
     local msvc = target:toolchain("msvc")
     local vcvars = msvc:config("vcvars")
-    if vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.29") == -1 then
+    if vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.29") < 0 then
         target:add("cxxflags", modulesflag)
     end
 
@@ -159,7 +159,7 @@ function load(target)
         local msvc = target:toolchain("msvc")
         if msvc then
             local vcvars = msvc:config("vcvars")
-            if vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.35") then
+            if vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.35") > 0 then
                 stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
             end
         end
@@ -612,7 +612,7 @@ function get_modulesflag(target)
         end
         local msvc = target:toolchain("msvc")
         local vcvars = msvc:config("vcvars")
-        if vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.29") == -1 then
+        if vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.29") < 0 then
             assert(modulesflag, "compiler(msvc): does not support c++ module!")
         end
         _g.modulesflag = modulesflag or false
