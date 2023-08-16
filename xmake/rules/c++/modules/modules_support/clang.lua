@@ -328,6 +328,7 @@ end
 
 -- generate dependency files
 function generate_dependencies(target, sourcebatch, opt)
+    local compinst = target:compiler("cxx")
     local changed = false
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
@@ -358,7 +359,6 @@ function generate_dependencies(target, sourcebatch, opt)
                 io.writefile(jsonfile, outdata)
             else
                 common.fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
-                    local compinst = target:compiler("cxx")
                     local compflags = compinst:compflags({sourcefile = file, target = target})
                     -- exclude -fmodule* and -std=c++/gnu++* flags because,
                     -- when they are set clang try to find bmi of imported modules but they don't exists a this point of compilation
