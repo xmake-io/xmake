@@ -133,9 +133,13 @@ end
 -- load module support for the current target
 function load(target)
 
-    -- add modules flags
+    -- add modules flags if visual studio version is < 16.11 (vc 14.29)
     local modulesflag = get_modulesflag(target)
-    target:add("cxxflags", modulesflag)
+    local msvc = target:toolchain("msvc")
+    local vcvars = msvc:config("vcvars")
+    if vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.29") < 0 then
+        target:add("cxxflags", modulesflag)
+    end
 
     -- enable std modules if c++23 by defaults
     if target:data("c++.msvc.enable_std_import") == nil then
@@ -155,7 +159,7 @@ function load(target)
         local msvc = target:toolchain("msvc")
         if msvc then
             local vcvars = msvc:config("vcvars")
-            if vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.35") then
+            if vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.35") > 0 then
                 stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
             end
         end
@@ -606,7 +610,11 @@ function get_modulesflag(target)
         if compinst:has_flags("-experimental:module", "cxxflags", {flagskey = "cl_experimental_module"}) then
             modulesflag = "-experimental:module"
         end
-        assert(modulesflag, "compiler(msvc): does not support c++ module!")
+        local msvc = target:toolchain("msvc")
+        local vcvars = msvc:config("vcvars")
+        if vcvars.VCInstallDir and vcvars.VCToolsVersion and semver.compare(vcvars.VCToolsVersion, "14.29") < 0 then
+            assert(modulesflag, "compiler(msvc): does not support c++ module!")
+        end
         _g.modulesflag = modulesflag or false
     end
     return modulesflag or nil
