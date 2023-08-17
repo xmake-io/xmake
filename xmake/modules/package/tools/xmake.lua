@@ -396,7 +396,7 @@ function _get_package_depconfs_envs(envs, package, opt)
     local requireconfs = {}
     for _, dep in ipairs(package:librarydeps()) do
         local requireinfo = dep:requireinfo()
-        if requireinfo and (requireinfo.override or (requireinfo.configs and #requireinfo.configs > 0)) then
+        if requireinfo and (requireinfo.override or (requireinfo.configs and not table.empty(requireinfo.configs))) then
             local requirepaths = {}
             _get_package_requirepaths(requirepaths, package, dep, {})
             if #requirepaths > 0 then
