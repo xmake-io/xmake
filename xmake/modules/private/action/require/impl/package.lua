@@ -562,7 +562,7 @@ function _merge_requireinfo(requireinfo, requirepath)
         end
     end
 
-    -- append requireconf_extra into requireinfo
+    -- Append requireconf_extra into requireinfo
     -- and the configs of add_requires have a higher priority than add_requireconfs.
     --
     -- e.g.
@@ -571,16 +571,20 @@ function _merge_requireinfo(requireinfo, requirepath)
     --
     -- foo and bar will be debug mode
     --
-    -- we can also override the configs of add_requires
+    -- We can also override the configs of add_requires
     --
     -- e.g.
     -- add_requires("zlib 1.2.11")
     -- add_requireconfs("zlib", {override = true, version = "1.2.10"})
     --
-    -- we override the version of zlib to 1.2.10
+    -- We override the version of zlib to 1.2.10
     --
-    if #requireconf_result == 1 then
-        local requireconf_extra = requireconf_result[1].requireconf_extra
+    -- If the same dependency is matched to multiple configurations,
+    -- the configurations are merged by default,
+    -- and if override is set, then it rewrites the previous configurations.
+    --
+    for _, item in ipairs(requireconf_result) do
+        local requireconf_extra = item.requireconf_extra
         if requireconf_extra then
             -- preprocess requireconf_extra, (debug, override ..)
             local override = requireconf_extra.override
@@ -604,12 +608,6 @@ function _merge_requireinfo(requireinfo, requirepath)
                 end
             end
         end
-    elseif #requireconf_result > 1 then
-        local confs = {}
-        for _, item in ipairs(requireconf_result) do
-            table.insert(confs, item.requireconf)
-        end
-        raise("package(%s) will match multiple add_requireconfs(%s)!", requirepath, table.concat(confs, " "))
     end
 end
 
