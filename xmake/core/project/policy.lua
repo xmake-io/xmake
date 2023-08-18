@@ -34,68 +34,71 @@ function policy.policies()
     local policies = policy._POLICIES
     if not policies then
         policies = {
-            -- we will check and ignore all unsupported flags by default, but we can also pass `{force = true}` to force to set flags, e.g. add_ldflags("-static", {force = true})
+            -- We will check and ignore all unsupported flags by default, but we can also pass `{force = true}` to force to set flags, e.g. add_ldflags("-static", {force = true})
             ["check.auto_ignore_flags"]           = {description = "Enable check and ignore unsupported flags automatically.", default = true, type = "boolean"},
-            -- we will map gcc flags to the current compiler and linker by default.
+            -- We will map gcc flags to the current compiler and linker by default.
             ["check.auto_map_flags"]              = {description = "Enable map gcc flags to the current compiler and linker automatically.", default = true, type = "boolean"},
-            -- we will check the compatibility of target and package licenses
+            -- We will check the compatibility of target and package licenses
             ["check.target_package_licenses"]     = {description = "Enable check the compatibility of target and package licenses.", default = true, type = "boolean"},
-            -- we can compile the source files for each target in parallel
+            -- We can compile the source files for each target in parallel
             ["build.across_targets_in_parallel"]  = {description = "Enable compile the source files for each target in parallel.", default = true, type = "boolean"},
-            -- merge archive intead of linking for all dependent targets
+            -- Merge archive intead of linking for all dependent targets
             ["build.merge_archive"]               = {description = "Enable merge archive intead of linking for all dependent targets.", default = false, type = "boolean"},
             -- C/C++ build cache
             ["build.ccache"]                      = {description = "Enable C/C++ build cache.", type = "boolean"},
-            -- enable build warning output, it's disabled by default and we need `xmake -w/-vD` to look at it.
+            -- Enable build warning output, it's disabled by default and we need `xmake -w/-vD` to look at it.
             ["build.warning"]                     = {description = "Enable build warning output.", type = "boolean"},
-            -- enable LTO linker-time optimization for c/c++ building.
+            -- Enable LTO linker-time optimization for c/c++ building.
             ["build.optimization.lto"]            = {description = "Enable LTO linker-time optimization for c/c++ building.", type = "boolean"},
-            -- enable C++ modules for C++ building, even if no .mpp is involved in the compilation
+            -- Enable C++ modules for C++ building, even if no .mpp is involved in the compilation
             ["build.c++.modules"]                 = {description = "Enable C++ modules for C++ building.", type = "boolean"},
-            -- enable clang std modulemap
+            -- Enable clang std modulemap
             ["build.c++.clang.stdmodules"]        = {description = "Enable clang std modulemap.", default = false, type = "boolean"},
-            -- force C++ modules fallback dependency scanner for clang
+            -- Force C++ modules fallback dependency scanner for clang
             ["build.c++.clang.fallbackscanner"]   = {description = "Force clang fallback module dependency scanner.", default = false, type = "boolean"},
-            -- force C++ modules fallback dependency scanner for msvc
+            -- Force C++ modules fallback dependency scanner for msvc
             ["build.c++.msvc.fallbackscanner"]    = {description = "Force msvc fallback module dependency scanner.", default = false, type = "boolean"},
-            -- force C++ modules fallback dependency scanner for gcc
+            -- Force C++ modules fallback dependency scanner for gcc
             ["build.c++.gcc.fallbackscanner"]     = {description = "Force gcc fallback module dependency scanner.", default = false, type = "boolean"},
-            -- force to enable new cxx11 abi in C++ modules for gcc
+            -- Force to enable new cxx11 abi in C++ modules for gcc
             -- If in the future, gcc can support it well, we'll turn it on by default
             -- https://github.com/xmake-io/xmake/issues/3855
             ["build.c++.gcc.modules.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc.", type = "boolean"},
-            -- enable cuda device link
+            -- Enable cuda device link
             ["build.cuda.devlink"]                = {description = "Enable Cuda devlink.", type = "boolean"},
-            -- preprocessor configuration for ccache/distcc, we can disable linemarkers to speed up preprocess
+            -- Preprocessor configuration for ccache/distcc, we can disable linemarkers to speed up preprocess
             ["preprocessor.linemarkers"]          = {description = "Enable linemarkers for preprocessor.", default = true, type = "boolean"},
-            -- preprocessor configuration for ccache/distcc, we can disable it to avoid cache object file with __DATE__, __TIME__
+            -- Preprocessor configuration for ccache/distcc, we can disable it to avoid cache object file with __DATE__, __TIME__
             ["preprocessor.gcc.directives_only"]  = {description = "Enable -fdirectives-only for gcc preprocessor.", type = "boolean"},
-            -- we need to enable longpaths when building target or installing package
+            -- We need to enable longpaths when building target or installing package
             ["platform.longpaths"]                = {description = "Enable long paths when building target or installing package on windows.", default = false, type = "boolean"},
-            -- lock required packages
+            -- Lock required packages
             ["package.requires_lock"]             = {description = "Enable xmake-requires.lock to lock required packages.", default = false, type = "boolean"},
-            -- enable the precompiled packages, it will be enabled by default
+            -- Enable the precompiled packages, it will be enabled by default
             ["package.precompiled"]               = {description = "Enable precompiled packages.", default = true, type = "boolean"},
-            -- only fetch packages on system
+            -- Only fetch packages on system
             ["package.fetch_only"]                = {description = "Only fetch packages on system.", type = "boolean"},
-            -- only install packages from remote
+            -- Only install packages from remote
             ["package.install_only"]              = {description = "Only install packages from remote.", type = "boolean"},
-            -- always install packages every time
+            -- Always install packages every time
             ["package.install_always"]            = {description = "Always install packages every time.", type = "boolean"},
-            -- set custom headers when downloading package
+            -- Set custom headers when downloading package
             ["package.download.http_headers"]     = {description = "Set the custom http headers when downloading package."},
-            -- use includes as external header files? e.g. -isystem ..
+            -- Use includes as external header files? e.g. -isystem ..
             ["package.include_external_headers"]  = {description = "Use includes as external headers.", type = "boolean"},
-            -- inherit the configs from the external command arguments, e.g. toolchains, `xmake f --toolchain=`
+            -- Inherit the configs from the external command arguments, e.g. toolchains, `xmake f --toolchain=`
             ["package.inherit_external_configs"]  = {description = "Inherit the configs from the external command arguments.", default = true, type = "boolean"},
-            -- set strict compatibility for package and it's all child packages. we can just set it in package().
+            -- Set strict compatibility for package and it's all child packages. we can just set it in package().
             -- if true, then any updates to this package, such as buildhash changes due to version changes,
             -- will force all installed child packages to be recompiled and installed, @see https://github.com/xmake-io/xmake/issues/2719
             ["package.strict_compatibility"]      = {description = "Set strict compatibility for package and it's all child packages.", type = "boolean"},
-            -- set strict compatibility for package and it's all library dependencies. we can set it in package() and user project configuration.
+            -- Set strict compatibility for package and it's all library dependencies. we can set it in package() and user project configuration.
             -- if true, then any updates to library dependencies, such as buildhash changes due to version changes,
             -- will force the installed packages to be recompiled and installed. @see https://github.com/xmake-io/xmake/issues/2719
-            ["package.librarydeps.strict_compatibility"] = {description = "Set strict compatibility for package and it's all library dependencies.", type = "boolean"}
+            ["package.librarydeps.strict_compatibility"] = {description = "Set strict compatibility for package and it's all library dependencies.", type = "boolean"},
+            -- Automatically passes dependency configuration for inner xmake package
+            -- https://github.com/xmake-io/xmake/issues/3952
+            ["package.xmake.pass_depconfs"] = {description = "Automatically passes dependency configuration for inner xmake package", default = true, type = "boolean"}
         }
         policy._POLICIES = policies
     end

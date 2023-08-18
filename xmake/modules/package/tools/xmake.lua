@@ -393,6 +393,13 @@ end
 -- get package depconfs envs
 -- @see https://github.com/xmake-io/xmake/issues/3952
 function _get_package_depconfs_envs(envs, package, opt)
+    local policy = package:policy("package.xmake.pass_depconfs")
+    if policy == nil then
+        policy = project.policy("package.xmake.pass_depconfs")
+    end
+    if policy == false then
+        return
+    end
     local requireconfs = {}
     for _, dep in ipairs(package:librarydeps()) do
         local requireinfo = dep:requireinfo()
