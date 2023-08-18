@@ -562,6 +562,7 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     envs.CMAKE_C_COMPILER          = _translate_bin_path(package:build_getenv("cc"))
     envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
     envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
+    envs.CMAKE_RC_COMPILER         = _translate_bin_path(package:build_getenv("mrc"))
     envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
     -- https://github.com/xmake-io/xmake-repo/pull/1096
     local cxx = envs.CMAKE_CXX_COMPILER
