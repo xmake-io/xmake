@@ -177,15 +177,13 @@ function _make_sources(filtersfile, vsinfo, target, vcxprojdir)
     filtersfile:leave("</ItemGroup>")
 end
 
--- make headers
-function _make_headers(filtersfile, vsinfo, target, vcxprojdir)
-
-    -- and headers
+-- make includes
+function _make_includes(filtersfile, vsinfo, target, vcxprojdir)
     filtersfile:enter("<ItemGroup>")
-        for _, headerfile in ipairs(target.headerfiles) do
-            local filter = _make_filter(headerfile, target, vcxprojdir)
+        for _, includefile in ipairs(table.join(target.headerfiles or {}, target.extrafiles)) do
+            local filter = _make_filter(includefile, target, vcxprojdir)
             if filter then
-                filtersfile:enter("<ClInclude Include=\"%s\">", path.relative(path.absolute(headerfile), vcxprojdir))
+                filtersfile:enter("<ClInclude Include=\"%s\">", path.relative(path.absolute(includefile), vcxprojdir))
                 filtersfile:print("<Filter>%s</Filter>", filter)
                 filtersfile:leave("</ClInclude>")
             end
@@ -218,8 +216,8 @@ function make(vsinfo, target)
     -- make sources
     _make_sources(filtersfile, vsinfo, target, vcxprojdir)
 
-    -- make headers
-    _make_headers(filtersfile, vsinfo, target, vcxprojdir)
+    -- make includes
+    _make_includes(filtersfile, vsinfo, target, vcxprojdir)
 
     -- make tailer
     _make_tailer(filtersfile, vsinfo)
