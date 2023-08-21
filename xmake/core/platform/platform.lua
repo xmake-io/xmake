@@ -234,7 +234,7 @@ end
 
 -- do check
 function _instance:check()
-    local checked = self._CHECKED
+    local checked = self:_memcache():get("checked")
     if checked ~= nil then
         return checked
     end
@@ -260,13 +260,13 @@ function _instance:check()
         end
     end
     if #toolchains == 0 then
-        self._CHECKED = false
+        self:_memcache():set("checked", false)
         return false, "toolchains not found!"
     end
 
     -- save valid toolchains
     config.set("__toolchains_" .. self:name() .. "_" .. self:arch(), toolchains_valid)
-    self._CHECKED = true
+    self:_memcache():set("checked", true)
     return true
 end
 
