@@ -496,14 +496,16 @@ function main(outputdir, vsinfo)
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
+                _target.extrafiles = table.unique(table.join(_target.extrafiles or {}, (target:get("extrafiles"))))
 
                 -- sort them to stabilize generation
                 table.sort(_target.sourcefiles)
                 table.sort(_target.headerfiles)
+                table.sort(_target.extrafiles)
 
                 -- save file groups
                 _target.filegroups = table.unique(table.join(_target.filegroups or {}, target:get("filegroups")))
-                
+
                 for filegroup, groupconf in pairs(target:extraconf("filegroups")) do
                     _target.filegroups_extraconf = _target.filegroups_extraconf or {}
                     local mergedconf = _target.filegroups_extraconf[filegroup]
@@ -534,7 +536,8 @@ function main(outputdir, vsinfo)
         local root = target.absscriptdir or projectdir
         target.sourcefiles = table.imap(target.sourcefiles, function(_, v) return path.relative(v, projectdir) end)
         target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, projectdir) end)
-        for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
+        target.extrafiles = table.imap(target.extrafiles, function(_, v) return path.relative(v, projectdir) end)
+        for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles or {}, target.extrafiles)) do
             local dir = _make_filter(f, target, root)
             local escaped_f = vsutils.escape(f)
             target._paths[f] =
