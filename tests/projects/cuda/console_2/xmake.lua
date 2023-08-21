@@ -5,6 +5,5 @@ add_cugencodes("compute_35")
 
 target("bin")
     set_kind("binary")
-    add_cuflags("-rdc=true")
     add_includedirs("inc")
     add_files("src/*.cu")

@@ -5,12 +5,6 @@ target("${TARGETNAME}")
     add_files("src/**.cu")
     add_includedirs("inc")
 
-    -- generate relocatable device code for device linker of dependents.
-    -- if neither __device__ and __global__ functions will be called cross file or be exported,
-    -- nor dynamic parallelism will be used,
-    -- this instruction could be omitted.
-    add_cuflags("-rdc=true")
-
     -- generate SASS code for SM architecture of current host
     add_cugencodes("native")
 

@@ -5,7 +5,6 @@ add_cugencodes("compute_30")
 
 target("lib")
     set_kind("static")
-    add_cuflags("-rdc=true")
     add_includedirs("inc", {public = true})
     add_files("src/lib.cu")
 
