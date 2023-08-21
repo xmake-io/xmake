@@ -70,6 +70,7 @@ language("objc++")
         ,   "target.encodings"
         ,   "target.pmheader"
         ,   "target.pmxxheader"
+        ,   "target.forceincludes"
         ,   "toolchain.includedirs"
         ,   "toolchain.defines"
         ,   "toolchain.undefines"
