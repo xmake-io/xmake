@@ -35,8 +35,7 @@ function _get_apis()
     ,   "target.add_undefines"
     ,   "target.add_frameworks"
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
-    ,   "target.add_cincludes"
-    ,   "target.add_cxxincludes"
+    ,   "target.add_forceincludes"
         -- option.add_xxx
     ,   "option.add_cincludes"
     ,   "option.add_cxxincludes"

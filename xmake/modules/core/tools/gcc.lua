@@ -278,16 +278,10 @@ function nf_sysincludedir(self, dir)
     return {"-isystem", path.translate(dir)}
 end
 
--- make the force c include flag
-function nf_cinclude(self, headerfile)
-    if self:kind() == "cc" then
-        return {"-include", headerfile}
-    end
-end
-
--- make the force c++ include flag
-function nf_cxxinclude(self, headerfile)
-    if self:kind() == "cxx" then
+-- make the force include flag
+function nf_forceinclude(self, headerfile, target)
+    local sourcekinds = target:extraconf("forceincludes", headerfile, "sourcekinds")
+    if not sourcekinds or table.contains(table.wrap(sourcekinds), self:kind()) then
         return {"-include", headerfile}
     end
 end
