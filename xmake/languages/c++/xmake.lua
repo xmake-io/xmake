@@ -51,6 +51,7 @@ language("c++")
         ,   "target.encodings"
         ,   "target.pcheader"
         ,   "target.pcxxheader"
+        ,   "target.forceincludes"
         ,   "toolchain.includedirs"
         ,   "toolchain.defines"
         ,   "toolchain.undefines"

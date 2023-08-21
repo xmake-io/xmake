@@ -278,6 +278,14 @@ function nf_sysincludedir(self, dir)
     return {"-isystem", path.translate(dir)}
 end
 
+-- make the force include flag
+function nf_forceinclude(self, headerfile, target)
+    local sourcekinds = target and target:extraconf("forceincludes", headerfile, "sourcekinds")
+    if not sourcekinds or table.contains(table.wrap(sourcekinds), self:kind()) then
+        return {"-include", headerfile}
+    end
+end
+
 -- make the link flag
 function nf_link(self, lib)
     if lib:endswith(".a") or lib:endswith(".so") or lib:endswith(".dylib") or lib:endswith(".lib") then

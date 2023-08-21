@@ -281,6 +281,14 @@ function nf_includedir(self, dir)
     return {"-I" .. path.translate(dir)}
 end
 
+-- make the force include flag
+function nf_forceinclude(self, headerfile, target)
+    local sourcekinds = target and target:extraconf("forceincludes", headerfile, "sourcekinds")
+    if not sourcekinds or table.contains(table.wrap(sourcekinds), self:kind()) then
+        return {"-FI", headerfile}
+    end
+end
+
 -- make the sysincludedir flag
 function nf_sysincludedir(self, dir)
     local has_external_includedir = _g._HAS_EXTERNAL_INCLUDEDIR
