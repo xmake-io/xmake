@@ -9,6 +9,7 @@
 * [#2471](https://github.com/xmake-io/xmake/issues/2471): Add set_encodings to set source/target encodings
 * [#4071](https://github.com/xmake-io/xmake/pull/4071): Support the stm8 assembler on the sdcc toolchain.
 * [#4101](https://github.com/xmake-io/xmake/issues/4101): Add force includes for c/c++
+* [#2384](https://github.com/xmake-io/xmake/issues/2384): Add extrafiles for vs/vsxmake generator
 
 ### Changes
 
@@ -1636,6 +1637,7 @@
 * [#2471](https://github.com/xmake-io/xmake/issues/2471): 添加 set_encodings API 去设置源文件和目标文件的编码
 * [#4071](https://github.com/xmake-io/xmake/pull/4071): 支持 sdcc 的 stm8 汇编器
 * [#4101](https://github.com/xmake-io/xmake/issues/4101): 为 c/c++ 添加 force includes
+* [#2384](https://github.com/xmake-io/xmake/issues/2384): 为 vs/vsxmake 生成器添加 add_extrafiles 接口
 
 ### 改进
 
