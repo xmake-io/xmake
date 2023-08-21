@@ -1346,7 +1346,7 @@ function _make_source_files(vcxprojfile, vsinfo, target)
     -- add header files
     local pcheader = target.pcxxheader or target.pcheader
     vcxprojfile:enter("<ItemGroup>")
-        for _, includefile in ipairs(target.headerfiles) do
+        for _, includefile in ipairs(table.join(target.headerfiles or {}, target.extrafiles)) do
             -- we need to ignore pcheader file to fix https://github.com/xmake-io/xmake/issues/1171
             if not pcheader or includefile ~= pcheader then
                 _make_header_file(vcxprojfile, includefile, target.project_dir)

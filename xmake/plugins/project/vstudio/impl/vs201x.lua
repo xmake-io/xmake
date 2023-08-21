@@ -530,14 +530,16 @@ function make(outputdir, vsinfo)
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
+                _target.extrafiles = table.unique(table.join(_target.extrafiles or {}, (target:get("extrafiles"))))
 
                 -- sort them to stabilize generation
                 table.sort(_target.sourcefiles)
                 table.sort(_target.headerfiles)
+                table.sort(_target.extrafiles)
 
                 -- save file groups
                 _target.filegroups = table.unique(table.join(_target.filegroups or {}, target:get("filegroups")))
-                
+
                 for filegroup, groupconf in pairs(target:extraconf("filegroups")) do
                     _target.filegroups_extraconf = _target.filegroups_extraconf or {}
                     local mergedconf = _target.filegroups_extraconf[filegroup]

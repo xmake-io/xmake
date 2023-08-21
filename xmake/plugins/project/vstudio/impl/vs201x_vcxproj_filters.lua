@@ -131,7 +131,7 @@ function _make_filters(filtersfile, vsinfo, target, vcxprojdir)
     -- add filters
     filtersfile:enter("<ItemGroup>")
         local exists = {}
-        for _, filepath in pairs(table.join(target.sourcefiles, target.headerfiles)) do
+        for _, filepath in pairs(table.join(target.sourcefiles, target.headerfiles or {}, target.extrafiles)) do
             local filter = _make_filter(filepath, target, vcxprojdir)
             while filter and filter ~= '.' do
                 if not exists[filter] then
