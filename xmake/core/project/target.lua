@@ -2454,6 +2454,7 @@ function target.apis()
         ,   "target.add_cleanfiles"
         ,   "target.add_configfiles"
         ,   "target.add_installfiles"
+        ,   "target.add_extrafiles"
             -- target.del_xxx (deprecated)
         ,   "target.del_files"
             -- target.remove_xxx
