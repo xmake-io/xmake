@@ -281,6 +281,20 @@ function nf_includedir(self, dir)
     return {"-I" .. path.translate(dir)}
 end
 
+-- make the force c include flag
+function nf_cinclude(self, headerfile)
+    if self:kind() == "cc" then
+        return {"-FI", headerfile}
+    end
+end
+
+-- make the force c++ include flag
+function nf_cxxinclude(self, headerfile)
+    if self:kind() == "cxx" then
+        return {"-FI", headerfile}
+    end
+end
+
 -- make the sysincludedir flag
 function nf_sysincludedir(self, dir)
     local has_external_includedir = _g._HAS_EXTERNAL_INCLUDEDIR

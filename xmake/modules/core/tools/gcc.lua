@@ -278,6 +278,20 @@ function nf_sysincludedir(self, dir)
     return {"-isystem", path.translate(dir)}
 end
 
+-- make the force c include flag
+function nf_cinclude(self, headerfile)
+    if self:kind() == "cc" then
+        return {"-include", headerfile}
+    end
+end
+
+-- make the force c++ include flag
+function nf_cxxinclude(self, headerfile)
+    if self:kind() == "cxx" then
+        return {"-include", headerfile}
+    end
+end
+
 -- make the link flag
 function nf_link(self, lib)
     if lib:endswith(".a") or lib:endswith(".so") or lib:endswith(".dylib") or lib:endswith(".lib") then
