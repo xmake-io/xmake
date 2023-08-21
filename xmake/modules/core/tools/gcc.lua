@@ -280,7 +280,7 @@ end
 
 -- make the force include flag
 function nf_forceinclude(self, headerfile, target)
-    local sourcekinds = target:extraconf("forceincludes", headerfile, "sourcekinds")
+    local sourcekinds = target and target:extraconf("forceincludes", headerfile, "sourcekinds")
     if not sourcekinds or table.contains(table.wrap(sourcekinds), self:kind()) then
         return {"-include", headerfile}
     end
