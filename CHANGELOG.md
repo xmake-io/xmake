@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.8.2
+
 ### New features
 
 * [#4002](https://github.com/xmake-io/xmake/issues/4002): Add soname and version support
@@ -1629,6 +1631,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.8.2
 
 ### 新特性
 
