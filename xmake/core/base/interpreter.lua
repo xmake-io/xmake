@@ -684,8 +684,8 @@ function interpreter.new()
 
     -- register the builtin interfaces
     instance:api_register(nil, "includes",     interpreter.api_builtin_includes)
-    instance:api_register(nil, "add_subdirs",  interpreter.api_builtin_includes)
-    instance:api_register(nil, "add_subfiles", interpreter.api_builtin_includes)
+    instance:api_register(nil, "add_subdirs",  interpreter.api_builtin_add_subdirs)
+    instance:api_register(nil, "add_subfiles", interpreter.api_builtin_add_subfiles)
     instance:api_register(nil, "set_xmakever", interpreter.api_builtin_set_xmakever)
     instance:api_register(nil, "save_scope",   interpreter.api_builtin_save_scope)
     instance:api_register(nil, "restore_scope",interpreter.api_builtin_restore_scope)
@@ -1710,6 +1710,20 @@ function interpreter:api_builtin_includes(...)
 
     -- restore the current file
     self._PRIVATE._CURFILE = curfile
+end
+
+-- the builtin api: add_subdirs(), deprecated
+function interpreter:api_builtin_add_subdirs(...)
+    self:api_builtin_includes(...)
+    local dirs = {...}
+    deprecated.add("includes(%s)", "add_subdirs(%s)", table.concat(dirs, ", "), table.concat(dirs, ", "))
+end
+
+-- the builtin api: add_subfiles(), deprecated
+function interpreter:api_builtin_add_subfiles(...)
+    self:api_builtin_includes(...)
+    local files = {...}
+    deprecated.add("includes(%s)", "add_subfiles(%s)", table.concat(files, ", "), table.concat(files, ", "))
 end
 
 -- the builtin api: save_scope()
