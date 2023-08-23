@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Bugs fixed
+
+* [#4110](https://github.com/xmake-io/xmake/issues/4110): Fix extrafiles
+
 ## v2.8.2
 
 ### New features
@@ -1631,6 +1635,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs 修复
+
+* [#4110](https://github.com/xmake-io/xmake/issues/4110): 修复 extrafiles
 
 ## v2.8.2
 

@@ -1756,6 +1756,11 @@ function _instance:installfiles(outputdir)
     return self:_copiedfiles("installfiles", outputdir or self:installdir())
 end
 
+-- get the extra files
+function _instance:extrafiles()
+    return (self:_copiedfiles("extrafiles"))
+end
+
 -- get depend file from object file
 function _instance:dependfile(objectfile)
 

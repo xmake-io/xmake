@@ -496,7 +496,7 @@ function main(outputdir, vsinfo)
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
-                _target.extrafiles = table.unique(table.join(_target.extrafiles or {}, (target:get("extrafiles"))))
+                _target.extrafiles = table.unique(table.join(_target.extrafiles or {}, (target:extrafiles())))
 
                 -- sort them to stabilize generation
                 table.sort(_target.sourcefiles)
