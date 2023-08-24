@@ -44,7 +44,9 @@ function _search_package_from_name(packages, name, opt)
                     version = versions[1]
                 end
             end
-            packages[package:name()] = {name = package:name(), version = version, description = package:get("description"), reponame = repo and repo:name()}
+            if not opt.require_version or version then
+                packages[package:name()] = {name = package:name(), version = version, description = package:get("description"), reponame = repo and repo:name()}
+            end
         end
     end
 end
@@ -76,7 +78,9 @@ function _search_package_from_description(packages, name, opt)
                     description = description:gsub(string.ipattern(name), function (w)
                         return "${bright}" .. w .. "${clear}"
                     end)
-                    packages[package:name()] = {name = package:name(), version = version, description = description, reponame = repo and repo:name()}
+                    if not opt.require_version or version then
+                        packages[package:name()] = {name = package:name(), version = version, description = description, reponame = repo and repo:name()}
+                    end
                 end
             end
         end
