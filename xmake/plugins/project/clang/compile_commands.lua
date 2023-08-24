@@ -146,9 +146,11 @@ function _translate_arguments(arguments)
 end
 
 -- make command
-function _make_arguments(jsonfile, arguments, sourcefile, target)
+function _make_arguments(jsonfile, arguments, opt)
 
     -- attempt to get source file from arguments
+    opt = opt or {}
+    local sourcefile = opt.sourcefile
     if not sourcefile then
         for _, arg in ipairs(arguments) do
             local sourcekind = try {function () return language.sourcekind_of(path.filename(arg)) end}
@@ -166,7 +168,8 @@ function _make_arguments(jsonfile, arguments, sourcefile, target)
     arguments = _translate_arguments(arguments)
 
     local lsp = _get_lsp()
-    if lsp and lsp == "clangd" and target:is_plat("windows") then
+    local target = opt.target
+    if lsp and lsp == "clangd" and target and target:is_plat("windows") then
         table.join2(arguments, _get_windows_sdk_arguments(target))
     end
 
@@ -202,7 +205,7 @@ end
 function _add_target_custom_commands(jsonfile, target, suffix, cmds)
     for _, cmd in ipairs(cmds) do
         if cmd.program then
-            _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
+            _make_arguments(jsonfile, table.join(cmd.program, cmd.argv), {target = target})
         end
     end
 end
@@ -215,7 +218,7 @@ function _add_target_source_commands(jsonfile, target)
             for index, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local objectfile = sourcebatch.objectfiles[index]
                 local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
-                _make_arguments(jsonfile, arguments, sourcefile, target)
+                _make_arguments(jsonfile, arguments, {sourcefile = sourcefile, target = target})
             end
         end
     end
