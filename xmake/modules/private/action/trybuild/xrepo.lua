@@ -50,7 +50,7 @@ function detect()
     local packagename = dirname
     local version = semver.match(dirname)
     if version then
-        local pos = dirname:find(version:rawstr(), 1, true)
+        local pos = dirname:find("v" .. version:rawstr(), 1, true) or dirname:find(version:rawstr(), 1, true)
         if pos then
             packagename = dirname:sub(1, pos - 1)
             if packagename:endswith("-") or packagename:endswith("_") then
