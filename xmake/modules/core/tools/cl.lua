@@ -350,10 +350,10 @@ function nf_encoding(self, encoding)
             table.insert(flags, "/utf-8")
         else
             if kind == "source" or not kind then
-                table.insert(flags, "-source-charset=" .. charset)
+                table.insert(flags, "-source-charset:" .. charset)
             end
             if kind == "target" or not kind then
-                table.insert(flags, "-execution-charset=" .. charset)
+                table.insert(flags, "-execution-charset:" .. charset)
             end
         end
     end
