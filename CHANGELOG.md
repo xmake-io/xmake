@@ -5,6 +5,7 @@
 ### Bugs fixed
 
 * [#4110](https://github.com/xmake-io/xmake/issues/4110): Fix extrafiles
+* [#4115](https://github.com/xmake-io/xmake/issues/4115): Fix compile_commands generator for clangd
 
 ## v2.8.2
 
@@ -1639,6 +1640,7 @@
 ### Bugs 修复
 
 * [#4110](https://github.com/xmake-io/xmake/issues/4110): 修复 extrafiles
+* [#4115](https://github.com/xmake-io/xmake/issues/4115): 修复 compile_commands 生成器
 
 ## v2.8.2
 
