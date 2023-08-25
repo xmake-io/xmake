@@ -1,8 +1,9 @@
 module;
 #include <cstdio>
-import "header.hpp";
 
 export module hello;
+
+import "header.hpp";
 
 export namespace hello {
     void say(const char *arg) {
