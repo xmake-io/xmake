@@ -253,7 +253,7 @@ function _package_getenvs(opt)
         packages = boundenv or option.get("program")
     end
     local oldir = os.curdir()
-    if os.isfile(os.projectfile()) or has_envfile then
+    if (os.isfile(os.projectfile()) and not boundenv) or has_envfile then
         if has_envfile then
             _enter_project()
             table.insert(project.rcfiles(), boundenv)
