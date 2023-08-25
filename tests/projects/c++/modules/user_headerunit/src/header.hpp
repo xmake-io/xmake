@@ -1,5 +1,5 @@
 #pragma once
 
 namespace hello {
-    static constexpr auto FOO = "Hello";
+    inline constexpr auto FOO = "Hello";
 }
