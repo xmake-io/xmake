@@ -40,6 +40,7 @@ local config        = require("project/config")
 local project       = require("project/project")
 local localcache    = require("cache/localcache")
 local profiler      = require("base/profiler")
+local debugger      = require("base/debugger")
 
 -- init the option menu
 local menu =
@@ -139,6 +140,14 @@ end
 -- the init function for main
 function main._init()
 
+    -- start debugger
+    if debugger:enabled() then
+        local ok, errors = debugger:start()
+        if not ok then
+            return false, errors
+        end
+    end
+
     -- disable scheduler first
     scheduler:enable(false)
 
@@ -148,9 +157,9 @@ function main._init()
     -- e.g. `xmake f -c -P xxx` will be parsed as `-c=-P`, it's incorrect.
     --
     -- maybe we will improve this later
-    local options, err = main._basicparse()
+    local options, errors = main._basicparse()
     if not options then
-        return false, err
+        return false, errors
     end
 
     -- init project paths only for xmake engine
