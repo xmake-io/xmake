@@ -28,7 +28,7 @@ local path      = require("base/path")
 -- start emmylua debugger
 function debugger:_start_emmylua_debugger()
     local debugger_libfile = os.getenv("EMMYLUA_DEBUGGER")
-    local script, errors = package.loadlib(debugger_libfile)
+    local script, errors = package.loadlib(debugger_libfile, "luaopen_emmy_core")
     if not script then
         return false, errors
     end
