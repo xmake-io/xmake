@@ -26,6 +26,11 @@ local os        = require("base/os")
 local path      = require("base/path")
 
 -- start emmylua debugger
+--
+-- e.g.
+--
+-- xrepo env -b emmylua_debugger xmake --version
+--
 function debugger:_start_emmylua_debugger()
     local debugger_libfile = os.getenv("EMMYLUA_DEBUGGER")
     local script, errors = package.loadlib(debugger_libfile, "luaopen_emmy_core")
