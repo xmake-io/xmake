@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* Support Lua Debugger (EmmyLua)
+
 ### Bugs fixed
 
 * [#4110](https://github.com/xmake-io/xmake/issues/4110): Fix extrafiles
@@ -1636,6 +1640,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* 支持 Lua 调试 (EmmyLua)
 
 ### Bugs 修复
 
