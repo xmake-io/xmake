@@ -4,7 +4,7 @@
 
 ### New features
 
-* Support Lua Debugger (EmmyLua)
+* [#4112](https://github.com/xmake-io/xmake/issues/4112): Support Lua Debugger (EmmyLua)
 
 ### Bugs fixed
 
@@ -1643,7 +1643,7 @@
 
 ### 新特性
 
-* 支持 Lua 调试 (EmmyLua)
+* [#4112](https://github.com/xmake-io/xmake/issues/4112): 支持 Lua 调试 (EmmyLua)
 
 ### Bugs 修复
 
