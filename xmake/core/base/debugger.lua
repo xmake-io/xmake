@@ -44,6 +44,7 @@ function debugger:_start_emmylua_debugger()
     debugger_inst.tcpListen("localhost", 9966)
     debugger_inst.waitIDE()
     debugger_inst.breakHere()
+    return true
 end
 
 -- start debugging
