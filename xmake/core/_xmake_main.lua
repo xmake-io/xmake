@@ -42,6 +42,15 @@ if xmake._LUAJIT == nil then
     xmake._LUAJIT = true
 end
 
+-- has debugger?
+if xmake._HAS_DEBUGGER == nil then
+    if os.getenv("EMMYLUA_DEBUGGER") then
+        xmake._HAS_DEBUGGER = true
+    else
+        xmake._HAS_DEBUGGER = false
+    end
+end
+
 -- load the given lua file
 function _loadfile_impl(filepath, mode, opt)
 
@@ -62,6 +71,11 @@ function _loadfile_impl(filepath, mode, opt)
             local projectname = path.filename(xmake._PROJECT_DIR)
             displaypath = path.translate("@projectdir(" .. projectname .. ")/" .. path.relative(filepath, xmake._PROJECT_DIR))
         end
+    end
+
+    -- we use raw file path if debugger is enabled
+    if xmake._HAS_DEBUGGER then
+        displaypath = filepath
     end
 
     -- load script data from file
