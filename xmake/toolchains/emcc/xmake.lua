@@ -18,20 +18,14 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
 toolchain("emcc")
 
-    -- set homepage
     set_homepage("http://emscripten.org")
     set_description("A toolchain for compiling to asm.js and WebAssembly")
 
-    -- mark as standalone toolchain
     set_kind("standalone")
 
-    -- add suffix for windows
     local suffix = is_host("windows") and ".bat" or ""
-
-    -- set toolset
     set_toolset("cc", "emcc" .. suffix)
     set_toolset("cxx", "emcc" .. suffix, "em++" .. suffix)
     set_toolset("ld", "em++" .. suffix, "emcc" .. suffix)
@@ -40,12 +34,25 @@ toolchain("emcc")
     set_toolset("as", "emcc" .. suffix)
     set_toolset("ranlib", "emranlib" .. suffix)
 
-    -- check toolchain
     on_check(function (toolchain)
-        return import("lib.detect.find_tool")("emcc")
+        import("lib.detect.find_tool")
+        for _, package in ipairs(toolchain:packages()) do
+            local installdir = package:installdir()
+            if installdir and os.isdir(installdir) then
+                local sdkdir = installdir
+                local bindir = path.join(sdkdir, "upstream/emscripten")
+                local emcc = find_tool("emcc", {force = true, paths = bindir})
+                if emcc then
+                    toolchain:config_set("bindir", bindir)
+                    toolchain:config_set("sdkdir", sdkdir)
+                    toolchain:configs_save()
+                    return emcc
+                end
+            end
+        end
+        return find_tool("emcc")
     end)
 
-    -- on load
     on_load(function (toolchain)
         toolchain:add("cxflags", "")
         toolchain:add("asflags", "")
