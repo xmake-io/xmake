@@ -36,15 +36,14 @@ toolchain("emcc")
 
     on_check(function (toolchain)
         import("lib.detect.find_tool")
+        import("detect.sdks.find_emsdk")
         for _, package in ipairs(toolchain:packages()) do
             local installdir = package:installdir()
             if installdir and os.isdir(installdir) then
-                local sdkdir = installdir
-                local bindir = path.join(sdkdir, "upstream/emscripten")
-                local emcc = find_tool("emcc", {force = true, paths = bindir})
-                if emcc then
-                    toolchain:config_set("bindir", bindir)
-                    toolchain:config_set("sdkdir", sdkdir)
+                local emsdk = find_emsdk(installdir)
+                if emsdk then
+                    toolchain:config_set("bindir", emsdk.emscripten)
+                    toolchain:config_set("sdkdir", emsdk.sdkdir)
                     toolchain:configs_save()
                     return emcc
                 end
