@@ -128,11 +128,9 @@ function _check_target_toolchains()
 
             -- check platform toolchains first
             -- `target/set_plat()` and target:toolchains() need it
-            local ok, errors = target:platform():check()
-            if not ok then
-                raise(errors)
-            end
+            target:platform():check()
 
+            -- check target toolchains next
             local target_toolchains = target:get("toolchains")
             if target_toolchains then
                 target_toolchains = hashset.from(table.wrap(target_toolchains))
