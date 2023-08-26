@@ -474,16 +474,12 @@ end
 function find_angle_header_file(target, file)
     local headerpaths = modules_support(target).toolchain_includedirs(target)
     for _, dep in ipairs(target:orderdeps()) do
-        local includedirs = dep:get("sysincludedirs") or dep:get("includedirs")
-        if includedirs then
-            table.join2(headerpaths, includedirs)
-        end
+        local includedirs = table.join(dep:get("sysincludedirs") or {}, dep:get("includedirs") or {})
+        table.join2(headerpaths, includedirs)
     end
     for _, pkg in pairs(target:pkgs()) do
-        local includedirs = pkg:get("sysincludedirs") or pkg:get("includedirs")
-        if includedirs then
-            table.join2(headerpaths, includedirs)
-        end
+        local includedirs = table.join(pkg:get("sysincludedirs") or {}, pkg:get("includedirs") or {})
+        table.join2(headerpaths, includedirs)
     end
     table.join2(headerpaths, target:get("includedirs"))
     local p = find_file(file, headerpaths)
@@ -534,6 +530,9 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
     sourcecode = sourcecode:gsub("//.-\n", "\n")
     sourcecode = sourcecode:gsub("/%*.-%*/", "")
     for _, line in ipairs(sourcecode:split("\n", {plain = true})) do
+        if line:match("#") then
+            goto continue
+        end
         if not module_name_export then
             module_name_export = line:match("export%s+module%s+(.+)%s*;") or line:match("export%s+__preprocessed_module%s+(.+)%s*;")
         end
@@ -572,6 +571,7 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
             table.insert(module_deps, module_dep)
             module_deps_set:insert(module_depname)
         end
+        ::continue::
     end
 
     if module_name_export or internal then
