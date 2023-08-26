@@ -350,7 +350,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
                     outputdir,
                     "/Fo" .. objectfile
                 }
-                generate_headerunit_for_batchjob(target, headerunit.unique and path.filename(headerunit.name) or headerunit.name, flags, objectfile, index, total)
+                generate_headerunit_for_batchjob(target, headerunit.name, flags, objectfile, index, total)
             end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
             _add_module_to_mapper(target, headerunitflag, headerunit.name, headerunit.path, objectfile,  bmifile)
         end, {rootjob = flushjob})
@@ -385,7 +385,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
             outputdir,
             "/Fo" .. objectfile
         }
-        generate_headerunit_for_batchcmds(target, headerunit.unique and path.filename(headerunit.name) or headerunit.name, flags, objectfile, batchcmds, opt)
+        generate_headerunit_for_batchcmds(target, headerunit.name, flags, objectfile, batchcmds, opt)
         batchcmds:add_depfiles(headerunit.path)
 
         _add_module_to_mapper(target, headerunitflag, headerunit.name, headerunit.path, objectfile,  bmifile)
