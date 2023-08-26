@@ -351,9 +351,8 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
                     "/Fo" .. objectfile
                 }
                 generate_headerunit_for_batchjob(target, headerunit.unique and path.filename(headerunit.name) or headerunit.name, flags, objectfile, index, total)
-
             end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
-            _add_module_to_mapper(target, headerunitflag .. headerunit.type, headerunit.name, headerunit.type == ":quote" and headerunit.path or headerunit.name, objectfile,  bmifile)
+            _add_module_to_mapper(target, headerunitflag, headerunit.name, headerunit.path, objectfile,  bmifile)
         end, {rootjob = flushjob})
     end
 end
@@ -389,7 +388,7 @@ function generate_user_headerunits_for_batchcmds(target, batchcmds, headerunits,
         generate_headerunit_for_batchcmds(target, headerunit.unique and path.filename(headerunit.name) or headerunit.name, flags, objectfile, batchcmds, opt)
         batchcmds:add_depfiles(headerunit.path)
 
-        _add_module_to_mapper(target, headerunitflag .. headerunit.type, headerunit.name, headerunit.type == ":quote" and headerunit.path or headerunit.name, objectfile,  bmifile)
+        _add_module_to_mapper(target, headerunitflag, headerunit.name, headerunit.path, objectfile,  bmifile)
 
         depmtime = math.max(depmtime, os.mtime(bmifile))
     end
