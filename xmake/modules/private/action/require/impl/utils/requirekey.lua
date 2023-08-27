@@ -52,14 +52,11 @@ function main(requireinfo, opt)
     if key:startswith("/") then
         key = key:sub(2)
     end
-    local ignored_configs = hashset.from(requireinfo.ignored_configs or {})
     local configs = requireinfo.configs
     if configs then
         local configs_order = {}
         for k, v in pairs(configs) do
-            if not ignored_configs:has(k) then
-                table.insert(configs_order, k .. "=" .. tostring(v))
-            end
+            table.insert(configs_order, k .. "=" .. tostring(v))
         end
         table.sort(configs_order)
         key = key .. ":" .. string.serialize(configs_order, true)

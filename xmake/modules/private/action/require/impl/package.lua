@@ -502,8 +502,9 @@ function _init_requireinfo(requireinfo, package, opt)
         requireinfo.configs.lto = requireinfo.configs.lto or project.policy("build.optimization.lto")
     end
     -- but we will ignore some configs for buildhash in the headeronly and host/binary package
+    -- @note on_test still need these configs, @see https://github.com/xmake-io/xmake/issues/4124
     if package:is_headeronly() or (package:is_binary() and not package:is_cross()) then
-        requireinfo.ignored_configs = {"vs_runtime", "toolchains", "lto", "pic"}
+        requireinfo.ignored_configs_for_buildhash = {"vs_runtime", "toolchains", "lto", "pic"}
     end
 end
 
@@ -1151,9 +1152,9 @@ function get_configs_str(package)
         if requireinfo.kind then
             table.insert(configs, requireinfo.kind)
         end
-        local ignored_configs = hashset.from(requireinfo.ignored_configs or {})
+        local ignored_configs_for_buildhash = hashset.from(requireinfo.ignored_configs_for_buildhash or {})
         for k, v in pairs(requireinfo.configs) do
-            if not ignored_configs:has(k) then
+            if not ignored_configs_for_buildhash:has(k) then
                 if type(v) == "boolean" then
                     table.insert(configs, k .. ":" .. (v and "y" or "n"))
                 else
