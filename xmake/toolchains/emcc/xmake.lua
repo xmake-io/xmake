@@ -45,7 +45,7 @@ toolchain("emcc")
                     toolchain:config_set("bindir", emsdk.emscripten)
                     toolchain:config_set("sdkdir", emsdk.sdkdir)
                     toolchain:configs_save()
-                    return emcc
+                    return emsdk
                 end
             end
         end

@@ -1327,9 +1327,44 @@ function _instance:configs()
             configs = {}
             local requireinfo = self:requireinfo()
             local configs_required = requireinfo and requireinfo.configs or {}
-            local ignored_configs = hashset.from(requireinfo and requireinfo.ignored_configs or {})
             for _, name in ipairs(table.wrap(configs_defined)) do
-                if not ignored_configs:has(name) then
+                local value = configs_required[name]
+                if value == nil then
+                    value = self:extraconf("configs", name, "default")
+                end
+                configs[name] = value
+            end
+        else
+            configs = false
+        end
+        self._CONFIGS = configs
+    end
+    return configs and configs or nil
+end
+
+-- get the given configuration value of package for buildhash
+function _instance:_config_for_buildhash(name)
+    local value
+    local configs = self:_configs_for_buildhash()
+    if configs then
+        value = configs[name]
+    end
+    return value
+end
+
+-- get the configurations of package for buildhash
+-- @note on_test still need these configs
+function _instance:_configs_for_buildhash()
+    local configs = self._CONFIGS_FOR_BUILDHASH
+    if configs == nil then
+        local configs_defined = self:get("configs")
+        if configs_defined then
+            configs = {}
+            local requireinfo = self:requireinfo()
+            local configs_required = requireinfo and requireinfo.configs or {}
+            local ignored_configs_for_buildhash = hashset.from(requireinfo and requireinfo.ignored_configs_for_buildhash or {})
+            for _, name in ipairs(table.wrap(configs_defined)) do
+                if not ignored_configs_for_buildhash:has(name) then
                     local value = configs_required[name]
                     if value == nil then
                         value = self:extraconf("configs", name, "default")
@@ -1340,7 +1375,7 @@ function _instance:configs()
         else
             configs = false
         end
-        self._CONFIGS = configs
+        self._CONFIGS_FOR_BUILDHASH = configs
     end
     return configs and configs or nil
 end
@@ -1388,7 +1423,7 @@ function _instance:buildhash()
                     str = str .. "_" .. table.concat(hashs, "_")
                 end
             end
-            local toolchains = self:config("toolchains")
+            local toolchains = self:_config_for_buildhash("toolchains")
             if opt.toolchains ~= false and toolchains then
                 toolchains = table.copy(table.wrap(toolchains))
                 table.sort(toolchains)
@@ -1407,8 +1442,8 @@ function _instance:buildhash()
 
         -- we need to be compatible with the hash value string for the previous xmake version
         -- without builtin pic configuration (< 2.5.1).
-        if self:config("pic") then
-            local configs = table.copy(self:configs())
+        if self:_config_for_buildhash("pic") then
+            local configs = table.copy(self:_configs_for_buildhash())
             configs.pic = nil
             buildhash = _get_buildhash(configs, {sourcehash = false, toolchains = false})
             if not os.isdir(_get_installdir(buildhash)) then
@@ -1419,7 +1454,7 @@ function _instance:buildhash()
         -- we need to be compatible with the hash value string for the previous xmake version
         -- without sourcehash (< 2.5.2)
         if not buildhash then
-            buildhash = _get_buildhash(self:configs(), {sourcehash = false, toolchains = false})
+            buildhash = _get_buildhash(self:_configs_for_buildhash(), {sourcehash = false, toolchains = false})
             if not os.isdir(_get_installdir(buildhash)) then
                 buildhash = nil
             end
@@ -1428,7 +1463,7 @@ function _instance:buildhash()
         -- we need to be compatible with the previous xmake version
         -- without toolchains (< 2.6.4)
         if not buildhash then
-            buildhash = _get_buildhash(self:configs(), {toolchains = false})
+            buildhash = _get_buildhash(self:_configs_for_buildhash(), {toolchains = false})
             if not os.isdir(_get_installdir(buildhash)) then
                 buildhash = nil
             end
@@ -1436,7 +1471,7 @@ function _instance:buildhash()
 
         -- get build hash for current version
         if not buildhash then
-            buildhash = _get_buildhash(self:configs())
+            buildhash = _get_buildhash(self:_configs_for_buildhash())
         end
         self._BUILDHASH = buildhash
     end
