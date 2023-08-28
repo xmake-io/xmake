@@ -6,6 +6,10 @@
 
 * [#4112](https://github.com/xmake-io/xmake/issues/4112): Support Lua Debugger (EmmyLua)
 
+### Changes
+
+* [#4119](https://github.com/xmake-io/xmake/issues/4119): Improve to support emcc toolchain and emscripten package
+
 ### Bugs fixed
 
 * [#4110](https://github.com/xmake-io/xmake/issues/4110): Fix extrafiles
@@ -1644,6 +1648,10 @@
 ### 新特性
 
 * [#4112](https://github.com/xmake-io/xmake/issues/4112): 支持 Lua 调试 (EmmyLua)
+
+### 改进
+
+* [#4119](https://github.com/xmake-io/xmake/issues/4119): 改进支持 emcc 工具链和 emscripten 包的整合
 
 ### Bugs 修复
 
