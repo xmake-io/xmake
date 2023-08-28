@@ -211,6 +211,8 @@ function nf_language(self, stdname)
         _g.cxxmaps = {
             cxx98        = "-std=c++98"
         ,   gnuxx98      = "-std=gnu++98"
+        ,   cxx03        = "-std=c++03"
+        ,   gnuxx03      = "-std=gnu++03"
         ,   cxx11        = "-std=c++11"
         ,   gnuxx11      = "-std=gnu++11"
         ,   cxx14        = "-std=c++14"
