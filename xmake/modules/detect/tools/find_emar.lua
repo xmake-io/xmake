@@ -21,27 +21,12 @@
 -- imports
 import("core.tool.compiler")
 import("lib.detect.find_program")
+import("lib.detect.find_tool")
 import("detect.sdks.find_emsdk")
 
 -- check
 function _check(program)
 
-    -- make an stub source file
-    local libraryfile   = os.tmpfile() .. ".a"
-    local objectfile    = os.tmpfile() .. ".o"
-    local sourcefile    = os.tmpfile() .. ".c"
-    io.writefile(sourcefile, "int test(void)\n{return 0;}")
-
-    -- compile it
-    compiler.compile(sourcefile, objectfile)
-
-    -- archive it
-    os.runv(program, {"-cr", libraryfile, objectfile})
-
-    -- remove files
-    os.rm(objectfile)
-    os.rm(sourcefile)
-    os.rm(libraryfile)
 end
 
 -- find ar
@@ -61,7 +46,33 @@ function main(opt)
 
     -- init options
     opt       = opt or {}
-    opt.check = opt.check or _check
+    opt.check = opt.check or function (program)
+        local bindir = path.directory(program)
+        local filename = path.filename(program)
+        filename = filename:gsub("emar", "emcc")
+        local emcc_program = filename
+        if bindir and bindir ~= "." then
+            emcc_program = path.join(bindir, filename)
+        end
+        local emcc = assert(find_tool("emcc", {program = emcc_program, envs = opt.envs}), "emcc not found!")
+
+        -- make an stub source file
+        local libraryfile   = os.tmpfile() .. ".a"
+        local objectfile    = os.tmpfile() .. ".o"
+        local sourcefile    = os.tmpfile() .. ".c"
+        io.writefile(sourcefile, "int test(void)\n{return 0;}")
+
+        -- compile it
+        os.runv(emcc.program, {"-c", "-o" .. objectfile, sourcefile}, {envs = opt.envs})
+
+        -- archive it
+        os.runv(program, {"-cr", libraryfile, objectfile}, {envs = opt.envs})
+
+        -- remove files
+        os.rm(objectfile)
+        os.rm(sourcefile)
+        os.rm(libraryfile)
+    end
 
     -- init the search directories
     local emsdk = find_emsdk()
