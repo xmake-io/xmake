@@ -5,6 +5,7 @@
 ### New features
 
 * [#4112](https://github.com/xmake-io/xmake/issues/4112): Support Lua Debugger (EmmyLua)
+* [#4132](https://github.com/xmake-io/xmake/pull/4132): Support cppfront
 
 ### Changes
 
@@ -1648,6 +1649,7 @@
 ### 新特性
 
 * [#4112](https://github.com/xmake-io/xmake/issues/4112): 支持 Lua 调试 (EmmyLua)
+* [#4132](https://github.com/xmake-io/xmake/pull/4132): 支持 cppfront
 
 ### 改进
 
