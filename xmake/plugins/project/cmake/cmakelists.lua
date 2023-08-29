@@ -917,7 +917,7 @@ function _get_command_string(cmd, outputdir)
         for _, v in ipairs(cmd.argv) do
             table.insert(argv, _translate_flag(v, outputdir))
         end
-        local command = cmd.program .. " " .. os.args(argv)
+        local command = _escape_path(cmd.program) .. " " .. os.args(argv)
         if opt and opt.curdir then
             command = "${CMAKE_COMMAND} -E chdir " .. _get_relative_unix_path_to_cmake(opt.curdir, outputdir) .. " " .. command
         end
