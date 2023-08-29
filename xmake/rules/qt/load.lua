@@ -123,6 +123,16 @@ function _get_target_cppversion(target)
     end
 end
 
+-- get values from target
+-- @see https://github.com/xmake-io/xmake/issues/4135
+function _get_values_from_target(target, name)
+    local values = table.wrap(target:get(name))
+    table.join2(values, target:get_from_opts(name))
+    table.join2(values, target:get_from_pkgs(name))
+    table.join2(values, target:get_from_deps(name, {interface = true}))
+    return table.unique(values)
+end
+
 -- the main entry
 function main(target, opt)
 
@@ -234,7 +244,7 @@ function main(target, opt)
 
     -- do frameworks for qt
     local frameworksset = hashset.new()
-    for _, framework in ipairs(target:get("frameworks")) do
+    for _, framework in ipairs(_get_values_from_target(target, "frameworks")) do
 
         -- translate qt frameworks
         if framework:startswith("Qt") then
