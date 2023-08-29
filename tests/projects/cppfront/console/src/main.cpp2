@@ -1,4 +1,4 @@
-main: () -> int = 
+main: () -> int =
     println("Hello world!\n");
 
 println: (msg: _) -> int = {
