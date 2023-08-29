@@ -27,6 +27,9 @@ local space_placeholder = "\001"
 
 -- normailize path of a dependecy
 function _normailize_dep(dep, projectdir)
+    -- escape characters, e.g. \#Qt.Widget_pch.h -> #Qt.Widget_pch.h
+    -- @see https://github.com/xmake-io/xmake/issues/4134
+    dep = dep:gsub("\\(.)", "%1")
     if path.is_absolute(dep) then
         dep = path.translate(dep)
     else
