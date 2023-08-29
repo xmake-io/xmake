@@ -35,7 +35,7 @@ rule("cppfront.build")
             end
         end
     end)
-    before_buildcmd_file(function (target, batchcmds, sourcefile_cpp2, opt)
+    on_buildcmd_file(function (target, batchcmds, sourcefile_cpp2, opt)
 
         -- get cppfront
         import("lib.detect.find_tool")
