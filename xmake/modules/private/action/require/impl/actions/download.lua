@@ -84,6 +84,8 @@ function _checkout(package, url, sourcedir, opt)
     -- we need to enable longpaths on windows
     local longpaths = package:policy("platform.longpaths")
 
+    print("rev", package:revision(opt.url_alias))
+    print("tag", package:tag())
     -- download package from branches?
     packagedir = path.join(sourcedir .. ".tmp", package:name())
     local branch = package:branch()
@@ -101,16 +103,35 @@ function _checkout(package, url, sourcedir, opt)
     -- download package from revision or tag?
     else
 
-        -- clone whole history and tags
-        git.clone(url, {longpaths = longpaths, outputdir = packagedir})
+        -- get tag and revision?
+        local tag
+        local revision = package:revision(opt.url_alias)
+        if revision and (#revision ~= 40 or not revision:match("%w+")) then
+            tag = revision
+        end
+        if not tag then
+            tag = package:tag()
+        end
+        if not revision then
+            revision = tag or package:commit() or package:version_str()
+        end
 
-        -- attempt to checkout the given version
-        local revision = package:revision(opt.url_alias) or package:tag() or package:commit() or package:version_str()
-        git.checkout(revision, {repodir = packagedir})
+        -- only shallow clone this tag
+        -- @see https://github.com/xmake-io/xmake/issues/4151
+        if tag and git.clone.can_clone_tag() then
+            git.clone(url, {depth = 1, recursive = true, shallow_submodules = true, longpaths = longpaths, branch = tag, outputdir = packagedir})
+        else
 
-        -- update all submodules
-        if os.isfile(path.join(packagedir, ".gitmodules")) and opt.url_submodules ~= false then
-            git.submodule.update({init = true, recursive = true, longpaths = longpaths, repodir = packagedir})
+            -- clone whole history and tags
+            git.clone(url, {longpaths = longpaths, outputdir = packagedir})
+
+            -- attempt to checkout the given version
+            git.checkout(revision, {repodir = packagedir})
+
+            -- update all submodules
+            if os.isfile(path.join(packagedir, ".gitmodules")) and opt.url_submodules ~= false then
+                git.submodule.update({init = true, recursive = true, longpaths = longpaths, repodir = packagedir})
+            end
         end
     end
 
