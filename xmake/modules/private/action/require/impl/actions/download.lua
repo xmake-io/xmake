@@ -95,8 +95,8 @@ function _checkout(package, url, sourcedir, opt)
             branch = nil
         end
 
-        -- only shadow clone this branch
-        git.clone(url, {depth = 1, recursive = true, longpaths = longpaths, branch = branch, outputdir = packagedir})
+        -- only shallow clone this branch
+        git.clone(url, {depth = 1, recursive = true, shallow_submodules = true, longpaths = longpaths, branch = branch, outputdir = packagedir})
 
     -- download package from revision or tag?
     else
