@@ -37,20 +37,13 @@ import("lib.detect.find_programver")
 -- @endcode
 --
 function main(opt)
-
-    -- init options
     opt = opt or {}
-
-    -- find program
-    opt.paths   = opt.paths or
-    {
+    opt.paths = opt.paths or {
         "$(env VULKAN_SDK)/Bin",
         "$(env VK_SDK_PATH)/Bin",
         "$(env PATH)"
     }
     local program = find_program(opt.program or "dxc.exe", opt)
-
-    -- find program version
     local version = nil
     if program and opt and opt.version then
         version = find_programver(program, opt)
