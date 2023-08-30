@@ -38,6 +38,20 @@ function can_clone_tag()
     return can or false
 end
 
+-- can clone with --shallow-submodules?
+-- @see https://github.com/xmake-io/xmake/issues/4151
+function can_shallow_submodules()
+    local can = _g.can_shallow_submodules
+    if can == nil then
+        local git = assert(find_tool("git", {version = true}), "git not found!")
+        if git.version and semver.compare(git.version, "2.9.0") >= 0 then
+            can = true
+        end
+        _g.can_shallow_submodules = can or false
+    end
+    return can or false
+end
+
 -- clone url
 --
 -- @param url   the git url
@@ -82,7 +96,7 @@ function main(url, opt)
     if opt.recurse_submodules then
         table.insert(argv, "--recurse-submodules")
     end
-    if opt.shallow_submodules then
+    if opt.shallow_submodules and can_shallow_submodules() then
         table.insert(argv, "--shallow-submodules")
     end
 
