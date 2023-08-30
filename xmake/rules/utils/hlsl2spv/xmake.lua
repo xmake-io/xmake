@@ -49,16 +49,14 @@ rule("utils.hlsl2spv")
     before_buildcmd_file(function (target, batchcmds, sourcefile_hlsl, opt) 
         import("lib.detect.find_tool")
         
-        local dxc = find_tool("dxc")
-        assert(dxc, "dxc not found!")
+        local dxc = assert(find_tool("dxc"), "dxc not found!")
 
         -- hlsl to spv
         local basename_with_type = path.basename(sourcefile_hlsl)
-        local shadertype = string.sub(path.extension(basename_with_type), 2, -1)
-
+        local shadertype = path.extension(basename_with_type):sub(2)
         if shadertype == "" then 
             -- if not specify shader type, considered it a header, skip
-            print("[WARN] hlsl2spv: shader type not specified, skip %s", sourcefile_hlsl)
+            wprint("hlsl2spv: shader type not specified, skip %s", sourcefile_hlsl)
             return
         end
 
@@ -68,19 +66,16 @@ rule("utils.hlsl2spv")
         local spvfilepath = path.join(outputdir, basename_with_type .. ".spv")
         
         local shadermodel = target:extraconf("rules", "utils.hlsl2spv", "shadermodel") or "6.0"
-        local _sm = string.gsub(shadermodel, "%.", "_")
-
-        local dxc_profile = shadertype .. "_" .. _sm
+        local sm = shadermodel:gsub("%.", "_")
+        local dxc_profile = shadertype .. "_" .. sm
 
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.hlsl %s", sourcefile_hlsl)
         batchcmds:mkdir(outputdir)
-
         batchcmds:vrunv(dxc.program, {path(sourcefile_hlsl), "-spirv", "-HV", hlslversion, "-fspv-target-env=" .. targetenv, "-E", "main", "-T", dxc_profile, "-Fo", path(spvfilepath)})
 
         -- bin2c
         local outputfile = spvfilepath
         local is_bin2c = target:extraconf("rules", "utils.hlsl2spv", "bin2c")
-
         if is_bin2c then 
             -- get header file
             local headerdir = outputdir
