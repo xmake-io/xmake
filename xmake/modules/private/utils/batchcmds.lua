@@ -31,7 +31,7 @@ import("core.language.language")
 import("utils.progress", {alias = "progress_utils"})
 
 -- define module
-local batchcmds = batchcmds or object { _init = {"_TARGET", "_CMDS", "_DEPS", "_tip"}}
+local batchcmds = batchcmds or object { _init = {"_TARGET", "_CMDS", "_DEPINFO", "_tip"}}
 
 -- show text
 function _show(showtext, progress)
@@ -372,39 +372,39 @@ function batchcmds:show_progress(progress, format, ...)
     end
 end
 
--- get deps
-function batchcmds:deps()
-    return self._DEPS
+-- get depinfo
+function batchcmds:depinfo()
+    return self._DEPINFO
 end
 
 -- add dependent files
 function batchcmds:add_depfiles(...)
-    local deps = self._DEPS or {}
-    deps.files = deps.files or {}
-    table.join2(deps.files, ...)
-    self._DEPS = deps
+    local depinfo = self._DEPINFO or {}
+    depinfo.files = depinfo.files or {}
+    table.join2(depinfo.files, ...)
+    self._DEPINFO = depinfo
 end
 
 -- add dependent values
 function batchcmds:add_depvalues(...)
-    local deps = self._DEPS or {}
-    deps.values = deps.values or {}
-    table.join2(deps.values, ...)
-    self._DEPS = deps
+    local depinfo = self._DEPINFO or {}
+    depinfo.values = depinfo.values or {}
+    table.join2(depinfo.values, ...)
+    self._DEPINFO = depinfo
 end
 
 -- set the last mtime of dependent files and values
 function batchcmds:set_depmtime(lastmtime)
-    local deps = self._DEPS or {}
-    deps.lastmtime = lastmtime
-    self._DEPS = deps
+    local depinfo = self._DEPINFO or {}
+    depinfo.lastmtime = lastmtime
+    self._DEPINFO = depinfo
 end
 
 -- set cache file of depend info
 function batchcmds:set_depcache(cachefile)
-    local deps = self._DEPS or {}
-    deps.dependfile = cachefile
-    self._DEPS = deps
+    local depinfo = self._DEPINFO or {}
+    depinfo.dependfile = cachefile
+    self._DEPINFO = depinfo
 end
 
 -- run cmds
@@ -413,11 +413,11 @@ function batchcmds:runcmds(opt)
     if self:empty() then
         return
     end
-    local deps = self:deps()
-    if deps and deps.files then
+    local depinfo = self:depinfo()
+    if depinfo and depinfo.files then
         depend.on_changed(function ()
             _runcmds(self:cmds(), opt)
-        end, self:deps())
+        end, table.join(depinfo, {dryrun = opt.dryrun, changed = opt.changed}))
     else
         _runcmds(self:cmds(), opt)
     end

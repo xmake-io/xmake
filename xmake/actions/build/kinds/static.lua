@@ -95,7 +95,7 @@ function _on_link_target(target, opt)
         if on_linkcmd then
             local batchcmds_ = batchcmds.new({target = target})
             on_linkcmd(target, batchcmds_, {progress = opt.progress})
-            batchcmds_:runcmds({dryrun = option.get("dry-run")})
+            batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
             done = true
         end
     end
@@ -124,7 +124,7 @@ function _link_target(target, opt)
         if before_linkcmd then
             local batchcmds_ = batchcmds.new({target = target})
             before_linkcmd(target, batchcmds_, {progress = opt.progress})
-            batchcmds_:runcmds({dryrun = option.get("dry-run")})
+            batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
         end
     end
 
@@ -147,7 +147,7 @@ function _link_target(target, opt)
         if after_linkcmd then
             local batchcmds_ = batchcmds.new({target = target})
             after_linkcmd(target, batchcmds_, {progress = opt.progress})
-            batchcmds_:runcmds({dryrun = option.get("dry-run")})
+            batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
         end
     end
 end
