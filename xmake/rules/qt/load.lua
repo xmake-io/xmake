@@ -397,7 +397,7 @@ function main(target, opt)
         target:add("rpathdirs", qt.libdir)
         target:add("linkdirs", qt.libdir)
         -- add prebuilt object files in qt sdk.
-        -- these file is located at lib/objects-Release/xxxmodule_resources_x/.rcc/xxxmodule.cpp.o
+        -- these files are located at lib/objects-Release/xxxmodule_resources_x/.rcc/xxxmodule.cpp.o
         for _, filepath in ipairs(os.files(path.join(qt.libdir, "objects-*", "*_resources_*", ".rcc", "*.o"))) do
             table.insert(target:objectfiles(), filepath)
         end
