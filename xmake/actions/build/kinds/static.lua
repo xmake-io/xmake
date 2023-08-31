@@ -52,7 +52,7 @@ function _do_link_target(target, opt)
     end
     local dryrun = option.get("dry-run")
     local depvalues = {linkinst:program(), linkflags}
-    depend._on_changed(function ()
+    depend.on_changed(function ()
 
         -- the target file
         local targetfile = target:targetfile()

@@ -236,7 +236,7 @@ function link(target, opt)
     local targetfile  = target:targetfile()
     local dependfile  = target:dependfile(targetfile)
     local objectfiles = target:objectfiles()
-    depend._on_changed(function ()
+    depend.on_changed(function ()
 
         -- trace
         progress.show(opt.progress, "${color.build.object}linking.$(mode) %s", targetfile)

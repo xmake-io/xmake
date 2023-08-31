@@ -94,7 +94,7 @@ rule("xcode.framework")
         local headersdir = path.join(contentsdir, "Headers")
 
         -- do build if changed
-        depend._on_changed(function ()
+        depend.on_changed(function ()
 
             -- trace progress info
             progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))

@@ -184,7 +184,7 @@ function generate_dependencies(target, sourcebatch, opt)
     local changed = false
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
-        depend._on_changed(function()
+        depend.on_changed(function()
             if opt.progress then
                 progress.show(opt.progress, "${color.build.object}generating.module.deps %s", sourcefile)
             end
@@ -237,7 +237,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         if not os.isfile(bmifile) then
             batchjobs:addjob(headerunit.name, function (index, total)
-                depend._on_changed(function()
+                depend.on_changed(function()
                     progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
                     local args = {"-c", "-x", "c++-system-header", headerunit.name}
                     local flags = table.join(compinst:compflags({target = target}), args)
@@ -305,7 +305,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
         local bmifile = path.join(outputdir, bmifilename)
         batchjobs:addjob(headerunit.name, function (index, total)
-            depend._on_changed(function()
+            depend.on_changed(function()
                 progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
                 local objectdir = path.directory(objectfile)
                 if not os.isdir(objectdir) then
@@ -417,7 +417,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 if fileconfig and fileconfig.install then
                     batchjobs:addjob(name .. "_metafile", function(index, total)
                         local metafilepath = common.get_metafile(target, cppfile)
-                        depend._on_changed(function()
+                        depend.on_changed(function()
                             progress.show((index * 100) / total, "${color.build.object}generating.module.metadata %s", name)
                             local metadata = common.generate_meta_module_info(target, name, cppfile, module.requires)
                             json.savefile(metafilepath, metadata)

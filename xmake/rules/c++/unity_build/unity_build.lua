@@ -23,7 +23,7 @@ import("core.project.depend")
 
 function _merge_unityfile(target, sourcefile_unity, sourcefiles, opt)
     local dependfile = target:dependfile(sourcefile_unity)
-    depend._on_changed(function ()
+    depend.on_changed(function ()
 
         -- trace
         vprint("generating.unityfile %s", sourcefile_unity)

@@ -88,7 +88,7 @@ function main(target, opt)
     end
     local dryrun = option.get("dry-run")
     local depvalues = {linkinst:program(), linkflags}
-    depend._on_changed(function ()
+    depend.on_changed(function ()
 
         -- is verbose?
         local verbose = option.get("verbose")

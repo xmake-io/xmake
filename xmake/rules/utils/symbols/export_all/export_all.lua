@@ -38,7 +38,7 @@ function main(target, opt)
     -- export all symbols
     local allsymbols_filepath = path.join(target:autogendir(), "rules", "symbols", "export_all.def")
     local dependfile = allsymbols_filepath .. ".d"
-    depend._on_changed(function ()
+    depend.on_changed(function ()
 
         -- trace progress info
         progress.show(opt.progress, "${color.build.target}exporting.$(mode) %s", path.filename(target:targetfile()))

@@ -215,7 +215,7 @@ function build_cppfiles(target, batchjobs, sourcebatch, opt)
     local cmakefile = path.join(autogendir, targetname .. ".cmake")
 
     -- build verilog files
-    depend._on_changed(function()
+    depend.on_changed(function()
         local argv = {"--cc", "--make", "cmake", "--prefix", targetname, "--Mdir", autogendir}
         local flags = target:values("verilator.flags")
         if flags then
