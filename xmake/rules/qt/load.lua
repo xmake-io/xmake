@@ -123,6 +123,16 @@ function _get_target_cppversion(target)
     end
 end
 
+-- get frameworks from target
+-- @see https://github.com/xmake-io/xmake/issues/4135
+function _get_frameworks_from_target(target)
+    local values = table.wrap(target:get("frameworks"))
+    table.join2(values, target:get_from_opts("frameworks"))
+    table.join2(values, target:get_from_pkgs("frameworks"))
+    table.join2(values, target:get_from_deps("__qt_frameworks", {interface = true}))
+    return table.unique(values)
+end
+
 -- the main entry
 function main(target, opt)
 
@@ -227,6 +237,16 @@ function main(target, opt)
     end
     target:add("syslinks", target:values("qt.links"))
 
+    -- backup qt frameworks
+    local qt_frameworks = target:get("frameworks")
+    if qt_frameworks then
+        target:set("__qt_frameworks", qt_frameworks)
+    end
+    local qt_frameworks_extra = target:extraconf("frameworks")
+    if qt_frameworks_extra then
+        target:extraconf_set("__qt_frameworks", qt_frameworks_extra)
+    end
+
     -- add frameworks
     if opt.frameworks then
         target:add("frameworks", opt.frameworks)
@@ -234,7 +254,7 @@ function main(target, opt)
 
     -- do frameworks for qt
     local frameworksset = hashset.new()
-    for _, framework in ipairs(target:get("frameworks")) do
+    for _, framework in ipairs(_get_frameworks_from_target(target)) do
 
         -- translate qt frameworks
         if framework:startswith("Qt") then
