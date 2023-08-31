@@ -215,7 +215,7 @@ function build_cppfiles(target, batchjobs, sourcebatch, opt)
     local cmakefile = path.join(autogendir, targetname .. ".cmake")
 
     -- build verilog files
-    depend.on_changed(function()
+    depend._on_changed(function()
         local argv = {"--cc", "--make", "cmake", "--prefix", targetname, "--Mdir", autogendir}
         local flags = target:values("verilator.flags")
         if flags then
@@ -241,6 +241,7 @@ function build_cppfiles(target, batchjobs, sourcebatch, opt)
 
     end, {dependfile = cmakefile .. ".d",
           files = sourcebatch.sourcefiles,
+          changed = target:is_rebuilt(),
           lastmtime = os.mtime(cmakefile)})
 
     -- get compiled source files

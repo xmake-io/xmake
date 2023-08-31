@@ -332,7 +332,7 @@ function generate_dependencies(target, sourcebatch, opt)
     local changed = false
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
-        depend.on_changed(function()
+        depend._on_changed(function()
             if opt.progress then
                 progress.show(opt.progress, "${color.build.object}generating.module.deps %s", sourcefile)
             end
@@ -411,7 +411,7 @@ function generate_dependencies(target, sourcebatch, opt)
             end
 
             return {moduleinfo = rawdependinfo}
-        end, {dependfile = dependfile, files = {sourcefile}})
+        end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt()})
     end
     return changed
 end
@@ -433,7 +433,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         if not os.isfile(bmifile) then
             batchjobs:addjob(headerunit.name, function (index, total)
-                depend.on_changed(function()
+                depend._on_changed(function()
                     -- don't build same header unit at the same time
                     if not common.memcache():get2(headerunit.name, "building") then
                         common.memcache():set2(headerunit.name, "building", true)
@@ -442,7 +442,8 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
                         os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
                     end
 
-                end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+                end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}, changed = target:is_rebuilt()})
+
                 -- libc++ have a builtin module mapper
                 if not _use_stdlib(target, "libc++") then
                     _add_module_to_mapper(target, headerunit.name, bmifile)
@@ -504,7 +505,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
         local bmifile = path.join(outputdir, bmifilename)
         batchjobs:addjob(headerunit.name, function (index, total)
-            depend.on_changed(function()
+            depend._on_changed(function()
                 progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
                 local objectdir = path.directory(objectfile)
                 if not os.isdir(objectdir) then
@@ -523,7 +524,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
                 end
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
 
-            end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+            end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}, changed = target:is_rebuilt()})
             _add_module_to_mapper(target, headerunit.name, bmifile)
         end, {rootjob = flushjob})
     end
@@ -610,11 +611,11 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 if fileconfig and fileconfig.install then
                     batchjobs:addjob(name .. "_metafile", function(index, total)
                         local metafilepath = common.get_metafile(target, cppfile)
-                        depend.on_changed(function()
+                        depend._on_changed(function()
                             progress.show(opt.progress, "${color.build.object}generating.module.metadata %s", name)
                             local metadata = common.generate_meta_module_info(target, name, cppfile, module.requires)
                             json.savefile(metafilepath, metadata)
-                        end, {dependfile = target:dependfile(metafilepath), files = {cppfile}})
+                        end, {dependfile = target:dependfile(metafilepath), files = {cppfile}, changed = target:is_rebuilt()})
                     end, {rootjob = flushjob})
                 end
             end

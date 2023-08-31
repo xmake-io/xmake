@@ -88,7 +88,7 @@ function main(target, opt)
     end
     local dryrun = option.get("dry-run")
     local depvalues = {linkinst:program(), linkflags}
-    depend.on_changed(function ()
+    depend._on_changed(function ()
 
         -- is verbose?
         local verbose = option.get("verbose")
@@ -107,5 +107,8 @@ function main(target, opt)
             assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
         end
 
-    end, {dependfile = target:dependfile(targetfile), lastmtime = os.mtime(targetfile), values = depvalues, files = depfiles, dryrun = dryrun})
+    end, {dependfile = target:dependfile(targetfile),
+          lastmtime = os.mtime(targetfile),
+          changed = target:is_rebuilt(),
+          values = depvalues, files = depfiles, dryrun = dryrun})
 end

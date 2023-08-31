@@ -190,7 +190,7 @@ function generate_dependencies(target, sourcebatch, opt)
     local changed = false
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
-        depend.on_changed(function ()
+        depend._on_changed(function ()
             if opt.progress then
                 progress.show(opt.progress, "${color.build.object}generating.module.deps %s", sourcefile)
             end
@@ -216,7 +216,7 @@ function generate_dependencies(target, sourcebatch, opt)
 
             local dependinfo = io.readfile(jsonfile)
             return { moduleinfo = dependinfo }
-        end, {dependfile = dependfile, files = {sourcefile}})
+        end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt()})
     end
     return changed
 end
@@ -263,7 +263,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         local objectfile = bmifile .. ".obj"
         batchjobs:addjob(headerunit.name, function(index, total)
-            depend.on_changed(function()
+            depend._on_changed(function()
                 local flags = {
                     exportheaderflag,
                     headernameflag .. ":angle",
@@ -274,7 +274,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
                 }
                 generate_headerunit_for_batchjob(target, headerunit.name, flags, objectfile, index, total)
 
-            end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+            end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}, changed = target:is_rebuilt()})
             _add_module_to_mapper(target, headerunitflag .. ":angle", headerunit.name, headerunit.name, objectfile, bmifile)
         end, {rootjob = flushjob})
     end
@@ -332,7 +332,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
         local bmifile = path.join(outputdir, bmifilename)
         batchjobs:addjob(headerunit.name, function (index, total)
-            depend.on_changed(function()
+            depend._on_changed(function()
                 local objectdir = path.directory(objectfile)
                 if not os.isdir(objectdir) then
                     os.mkdir(objectdir)
@@ -351,7 +351,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
                     "/Fo" .. objectfile
                 }
                 generate_headerunit_for_batchjob(target, headerunit.name, flags, objectfile, index, total)
-            end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+            end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}, changed = target:is_rebuilt()})
             _add_module_to_mapper(target, headerunitflag, headerunit.name, headerunit.path, objectfile,  bmifile)
         end, {rootjob = flushjob})
     end
@@ -450,11 +450,11 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 if fileconfig and fileconfig.install then
                     batchjobs:addjob(name .. "_metafile", function(index, total)
                         local metafilepath = common.get_metafile(target, cppfile)
-                        depend.on_changed(function()
+                        depend._on_changed(function()
                             progress.show((index * 100) / total, "${color.build.object}generating.module.metadata %s", name)
                             local metadata = common.generate_meta_module_info(target, name, cppfile, module.requires)
                             json.savefile(metafilepath, metadata)
-                        end, {dependfile = target:dependfile(metafilepath), files = {cppfile}})
+                        end, {dependfile = target:dependfile(metafilepath), files = {cppfile}, changed = target:is_rebuilt()})
                     end, {rootjob = flushjob})
                 end
             end

@@ -77,7 +77,7 @@ rule("xcode.bundle")
         local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
 
         -- do build if changed
-        depend.on_changed(function ()
+        depend._on_changed(function ()
 
             -- trace progress info
             progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
@@ -109,7 +109,7 @@ rule("xcode.bundle")
             end
             codesign(bundledir, codesign_identity)
 
-        end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}})
+        end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}, changed = target:is_rebuilt()})
     end)
 
     on_install(function (target)

@@ -27,7 +27,7 @@ import("core.project.depend")
 import("utils.progress")
 
 -- export all symbols for dynamic library
-function main (target, opt)
+function main(target, opt)
 
     -- @note it only supports windows/dll now
     assert(target:is_shared(), 'rule("utils.symbols.export_all"): only for shared target(%s)!', target:name())
@@ -38,7 +38,7 @@ function main (target, opt)
     -- export all symbols
     local allsymbols_filepath = path.join(target:autogendir(), "rules", "symbols", "export_all.def")
     local dependfile = allsymbols_filepath .. ".d"
-    depend.on_changed(function ()
+    depend._on_changed(function ()
 
         -- trace progress info
         progress.show(opt.progress, "${color.build.target}exporting.$(mode) %s", path.filename(target:targetfile()))
@@ -95,5 +95,5 @@ function main (target, opt)
             wprint('rule("utils.symbols.export_all"): no symbols are exported for target(%s)!', target:name())
         end
 
-    end, {dependfile = dependfile, files = target:objectfiles()})
+    end, {dependfile = dependfile, files = target:objectfiles(), changed = target:is_rebuilt()})
 end

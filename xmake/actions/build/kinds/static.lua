@@ -52,7 +52,7 @@ function _do_link_target(target, opt)
     end
     local dryrun = option.get("dry-run")
     local depvalues = {linkinst:program(), linkflags}
-    depend.on_changed(function ()
+    depend._on_changed(function ()
 
         -- the target file
         local targetfile = target:targetfile()
@@ -74,7 +74,10 @@ function _do_link_target(target, opt)
             assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
         end
 
-    end, {dependfile = target:dependfile(), lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles, dryrun = dryrun})
+    end, {dependfile = target:dependfile(),
+          lastmtime = os.mtime(target:targetfile()),
+          changed = target:is_rebuilt(),
+          values = depvalues, files = depfiles, dryrun = dryrun})
 end
 
 -- on link the given target

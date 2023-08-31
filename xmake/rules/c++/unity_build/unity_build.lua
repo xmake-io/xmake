@@ -23,7 +23,7 @@ import("core.project.depend")
 
 function _merge_unityfile(target, sourcefile_unity, sourcefiles, opt)
     local dependfile = target:dependfile(sourcefile_unity)
-    depend.on_changed(function ()
+    depend._on_changed(function ()
 
         -- trace
         vprint("generating.unityfile %s", sourcefile_unity)
@@ -45,7 +45,7 @@ function _merge_unityfile(target, sourcefile_unity, sourcefiles, opt)
         end
         unityfile:close()
 
-    end, {dependfile = dependfile, files = sourcefiles})
+    end, {dependfile = dependfile, files = sourcefiles, changed = target:is_rebuilt()})
 end
 
 function generate_unityfiles(target, sourcebatch, opt)

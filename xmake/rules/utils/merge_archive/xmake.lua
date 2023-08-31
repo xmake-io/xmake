@@ -60,7 +60,7 @@ rule("utils.merge.archive")
             if #libraryfiles > 0 then
                 table.insert(libraryfiles, target:targetfile())
             end
-            depend.on_changed(function ()
+            depend._on_changed(function ()
                 progress.show(opt.progress, "${color.build.target}merging.$(mode) %s", path.filename(target:targetfile()))
                 if #libraryfiles > 0 then
                     local tmpfile = os.tmpfile() .. path.extension(target:targetfile())
@@ -68,7 +68,7 @@ rule("utils.merge.archive")
                     os.cp(tmpfile, target:targetfile())
                     os.rm(tmpfile)
                 end
-            end, {dependfile = target:dependfile(target:targetfile() .. ".merge_archive"), files = libraryfiles})
+            end, {dependfile = target:dependfile(target:targetfile() .. ".merge_archive"), files = libraryfiles, changed = target:is_rebuilt()})
         end
     end)
 

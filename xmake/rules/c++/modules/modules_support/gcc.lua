@@ -184,7 +184,7 @@ function generate_dependencies(target, sourcebatch, opt)
     local changed = false
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = target:dependfile(sourcefile)
-        depend.on_changed(function()
+        depend._on_changed(function()
             if opt.progress then
                 progress.show(opt.progress, "${color.build.object}generating.module.deps %s", sourcefile)
             end
@@ -219,7 +219,7 @@ function generate_dependencies(target, sourcebatch, opt)
 
             local dependinfo = io.readfile(jsonfile)
             return { moduleinfo = dependinfo }
-        end, {dependfile = dependfile, files = {sourcefile}})
+        end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt()})
     end
     return changed
 end
@@ -237,7 +237,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
         local bmifile = path.join(stlcachedir, headerunit.name .. get_bmi_extension())
         if not os.isfile(bmifile) then
             batchjobs:addjob(headerunit.name, function (index, total)
-                depend.on_changed(function()
+                depend._on_changed(function()
                     progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
                     local args = {"-c", "-x", "c++-system-header", headerunit.name}
                     local flags = table.join(compinst:compflags({target = target}), args)
@@ -255,7 +255,7 @@ function generate_stl_headerunits_for_batchjobs(target, batchjobs, headerunits, 
                     os.vrunv(compinst:program(), flags)
                     _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir))
                     os.tryrm(mapper_file_tmp)
-                end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+                end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}, changed = target:is_rebuilt()})
             end, {rootjob = opt.rootjob})
         else
             _add_module_to_mapper(mapper_file, headerunit.path, path.absolute(bmifile, projectdir))
@@ -305,7 +305,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
         local bmifilename = path.basename(objectfile) .. get_bmi_extension()
         local bmifile = path.join(outputdir, bmifilename)
         batchjobs:addjob(headerunit.name, function (index, total)
-            depend.on_changed(function()
+            depend._on_changed(function()
                 progress.show((index * 100) / total, "${color.build.object}compiling.headerunit.$(mode) %s", headerunit.name)
                 local objectdir = path.directory(objectfile)
                 if not os.isdir(objectdir) then
@@ -331,7 +331,7 @@ function generate_user_headerunits_for_batchjobs(target, batchjobs, headerunits,
                 end
                 os.vrunv(compinst:program(), table.join(compinst:compflags({target = target}), args))
 
-            end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}})
+            end, {dependfile = target:dependfile(bmifile), files = {headerunit.path}, changed = target:is_rebuilt()})
         end, {rootjob = opt.rootjob})
         _add_module_to_mapper(mapper_file, headerunit_path, path.absolute(bmifile, projectdir))
     end
@@ -417,11 +417,11 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 if fileconfig and fileconfig.install then
                     batchjobs:addjob(name .. "_metafile", function(index, total)
                         local metafilepath = common.get_metafile(target, cppfile)
-                        depend.on_changed(function()
+                        depend._on_changed(function()
                             progress.show((index * 100) / total, "${color.build.object}generating.module.metadata %s", name)
                             local metadata = common.generate_meta_module_info(target, name, cppfile, module.requires)
                             json.savefile(metafilepath, metadata)
-                        end, {dependfile = target:dependfile(metafilepath), files = {cppfile}})
+                        end, {dependfile = target:dependfile(metafilepath), files = {cppfile}, changed = target:is_rebuilt()})
                     end, {rootjob = opt.rootjob})
                 end
             end

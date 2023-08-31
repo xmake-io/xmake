@@ -35,7 +35,7 @@ function main (target, opt)
     local frameworksdir = path.join(contentsdir, "Frameworks")
 
     -- do build if changed
-    depend.on_changed(function ()
+    depend._on_changed(function ()
 
         -- trace progress info
         progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
@@ -106,6 +106,6 @@ function main (target, opt)
         end
         codesign(bundledir, codesign_identity, mobile_provision, {deep = true})
 
-    end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}})
+    end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}, changed = target:is_rebuilt()})
 end
 
