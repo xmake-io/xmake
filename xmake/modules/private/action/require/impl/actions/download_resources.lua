@@ -123,7 +123,8 @@ function _download(package, resource_name, resource_url, resource_hash)
 
         -- check hash
         if resource_hash and resource_hash ~= hash.sha256(resource_file) then
-            raise("resource(%s): unmatched checksum!", resource_url)
+            raise("resource(%s): unmatched checksum, current hash(%s) != original hash(%s)", resource_url,
+                hash.sha256(resource_file):sub(1, 8), resource_hash:sub(1, 8))
         end
     end
 
@@ -131,12 +132,18 @@ function _download(package, resource_name, resource_url, resource_hash)
     local resourcedir = package:resourcedir(resource_name)
     local resourcedir_tmp = resourcedir .. ".tmp"
     os.tryrm(resourcedir_tmp)
+    local extension = archive.extension(resource_file)
     if archive.extract(resource_file, resourcedir_tmp) then
         os.tryrm(resourcedir)
         os.mv(resourcedir_tmp, resourcedir)
-    else
+    elseif extension and extension ~= "" then
         os.tryrm(resourcedir_tmp)
+        os.tryrm(resourcedir)
         raise("cannot extract %s", resource_file)
+    else
+        -- if it is not archive file, we only need to create empty resource directory and use package:resourcefile(resource_name)
+        os.tryrm(resourcedir)
+        os.mkdir(resourcedir)
     end
 end
 
