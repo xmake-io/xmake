@@ -123,7 +123,7 @@ function _build_modulefile(target, sourcefile, opt)
     local dependfile = opt.dependfile
     local compinst = compiler.load("cxx", {target = target})
     local compflags = table.join("-x", "c++", compinst:compflags({sourcefile = sourcefile, target = target}))
-    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+    local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
 
     -- need build this object?
     local dryrun = option.get("dry-run")

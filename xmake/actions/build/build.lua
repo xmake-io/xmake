@@ -178,7 +178,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
         end
 
         -- clean target if rebuild
-        if option.get("rebuild") and not option.get("dry-run") then
+        if target:is_rebuilt() and not option.get("dry-run") then
             _clean_target(target)
         end
 
@@ -234,7 +234,11 @@ function get_batchjobs(targetname, group_pattern)
     -- get root targets
     local targets_root = {}
     if targetname then
-        table.insert(targets_root, project.target(targetname))
+        local target = project.target(targetname)
+        table.insert(targets_root, target)
+        if option.get("rebuild") then
+            target:data_set("rebuilt", true)
+        end
     else
         local depset = hashset.new()
         local targets = {}
@@ -252,6 +256,9 @@ function get_batchjobs(targetname, group_pattern)
         for _, target in pairs(targets) do
             if not depset:has(target:name()) then
                 table.insert(targets_root, target)
+            end
+            if option.get("rebuild") then
+                target:data_set("rebuilt", true)
             end
         end
     end

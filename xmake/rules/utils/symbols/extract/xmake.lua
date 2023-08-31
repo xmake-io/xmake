@@ -67,7 +67,7 @@ rule("utils.symbols.extract")
         local symbolfile = target:symbolfile()
         local targetfile = target:targetfile()
         local dependfile = target:dependfile(symbolfile)
-        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
             return
         end

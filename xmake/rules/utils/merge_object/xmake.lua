@@ -41,7 +41,7 @@ rule("utils.merge.object")
 
         -- load dependent info
         local dependfile = target:dependfile(objectfile)
-        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
 
         -- need build this object?
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile)}) then

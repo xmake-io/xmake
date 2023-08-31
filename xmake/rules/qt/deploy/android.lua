@@ -45,7 +45,7 @@ function main(target, opt)
     -- need re-generate this apk?
     local targetfile = target:targetfile()
     local dependfile = target:dependfile(target_apk)
-    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+    local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
     if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
         return
     end

@@ -878,6 +878,11 @@ function _instance:is_enabled()
     return self:get("enabled") ~= false
 end
 
+-- is rebuilt?
+function _instance:is_rebuilt()
+    return self:data("rebuilt")
+end
+
 -- get the enabled option
 function _instance:opt(name)
     return self:opts()[name]
