@@ -42,18 +42,24 @@ rule("swig.base")
                     end
                 end
             else
-                if target:is_plat("windows") then
+                if target:is_plat("windows", "mingw") then
                     target:set("extension", ".pyd")
                 end
             end
         elseif moduletype == "lua" then
             target:set("prefixname", "")
-            if not target:is_plat("windows") then
+            if not target:is_plat("windows", "mingw")  then
                 target:set("extension", ".so")
             end
         elseif moduletype == "java" then
-            target:set("prefixname", "lib")
-            if not target:is_plat("windows") then
+            if target:is_plat("windows", "mingw") then
+                target:set("prefixname", "")
+                target:set("extension", ".dll")
+            elseif target:is_plat("macosx") then
+                target:set("prefixname", "lib")
+                target:set("extension", ".dylib")
+            elseif target:is_plat("linux") then
+                target:set("prefixname", "lib")
                 target:set("extension", ".so")
             end
         else
