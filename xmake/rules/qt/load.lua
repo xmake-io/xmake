@@ -254,7 +254,7 @@ function main(target, opt)
 
     -- do frameworks for qt
     local frameworksset = hashset.new()
-    for _, framework in ipairs(_get_values_from_target(target, "frameworks")) do
+    for _, framework in ipairs(_get_frameworks_from_target(target)) do
 
         -- translate qt frameworks
         if framework:startswith("Qt") then
