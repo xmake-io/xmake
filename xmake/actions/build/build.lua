@@ -238,6 +238,11 @@ function get_batchjobs(targetname, group_pattern)
         table.insert(targets_root, target)
         if option.get("rebuild") then
             target:data_set("rebuilt", true)
+            if not option.get("shallow") then
+                for _, dep in ipairs(target:orderdeps()) do
+                    dep:data_set("rebuilt", true)
+                end
+            end
         end
     else
         local depset = hashset.new()
