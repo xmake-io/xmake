@@ -56,7 +56,7 @@ function main(argv)
     for _, arch in ipairs(archs) do
         local argv = {"f", "-cy", "-p", plat, "-a", arch}
         if args.config then
-            table.insert(argv, args.config)
+            table.join2(argv, os.argv(args.config))
         end
         if option.get("verbose") then
             table.insert(argv, "-v")
