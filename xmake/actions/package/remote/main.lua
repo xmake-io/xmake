@@ -105,8 +105,10 @@ function _package_target(target)
         ,   headeronly = _package_remote
         }
         local kind = target:kind()
-        assert(scripts[kind], "this target(%s) with kind(%s) can not be packaged!", target:name(), kind)
-        scripts[kind](target)
+        local script = scripts[kind]
+        if script then
+            script(target)
+        end
     end
 end
 
