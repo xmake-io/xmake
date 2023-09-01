@@ -1614,9 +1614,12 @@ function _instance:objectfiles()
     local deduplicate = batchcount > 1
 
     -- get object files from all dependent targets (object kind)
-    if self:orderdeps() then
-        for _, dep in ipairs(self:orderdeps()) do
-            if dep:kind() == "object" then
+    -- @note we only merge objects in plain deps, e.g. binary -> (static -> object, object ...)
+    local plaindeps = self:get("deps")
+    if plaindeps and (self:is_binary() or self:is_shared() or self:is_static()) then
+        for _, depname in ipairs(table.wrap(plaindeps)) do
+            local dep = self:dep(depname)
+            if dep and dep:is_object() then
                 table.join2(objectfiles, dep:objectfiles())
                 deduplicate = true
             end
