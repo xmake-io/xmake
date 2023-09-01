@@ -12,6 +12,7 @@
 
 * [#4119](https://github.com/xmake-io/xmake/issues/4119): Improve to support emcc toolchain and emscripten package
 * [#4154](https://github.com/xmake-io/xmake/issues/4154): Add `xmake -r --shallow target` to rebuild target without deps
+* Add global ccache storage directory
 
 ### Bugs fixed
 
@@ -1658,6 +1659,7 @@
 
 * [#4119](https://github.com/xmake-io/xmake/issues/4119): 改进支持 emcc 工具链和 emscripten 包的整合
 * [#4154](https://github.com/xmake-io/xmake/issues/4154): 添加 `xmake -r --shallow target` 去改进重建目标，避免重建所有依赖目标
+* 添加全局 ccache 存储目录
 
 ### Bugs 修复
 
