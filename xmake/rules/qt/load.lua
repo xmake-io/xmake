@@ -254,7 +254,8 @@ function main(target, opt)
 
     -- do frameworks for qt
     local frameworksset = hashset.new()
-    for _, framework in ipairs(_get_frameworks_from_target(target)) do
+    local qt_frameworks = _get_frameworks_from_target(target)
+    for _, framework in ipairs(qt_frameworks) do
 
         -- translate qt frameworks
         if framework:startswith("Qt") then
@@ -398,8 +399,13 @@ function main(target, opt)
         target:add("linkdirs", qt.libdir)
         -- add prebuilt object files in qt sdk.
         -- these files are located at lib/objects-Release/xxxmodule_resources_x/.rcc/xxxmodule.cpp.o
-        for _, filepath in ipairs(os.files(path.join(qt.libdir, "objects-*", "*_resources_*", ".rcc", "*.o"))) do
-            table.insert(target:objectfiles(), filepath)
+        for _, framework in ipairs(qt_frameworks) do
+            if framework:startswith("Qt") then
+                local prefix = framework:sub(3)
+                for _, filepath in ipairs(os.files(path.join(qt.libdir, "objects-*", prefix .. "_resources_*", ".rcc", "*.o"))) do
+                    table.insert(target:objectfiles(), filepath)
+                end
+            end
         end
         target:add("ldflags", "-s WASM=1", "-s FETCH=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1", "--bind")
         target:add("ldflags", "-s ERROR_ON_UNDEFINED_SYMBOLS=1", "-s EXPORTED_RUNTIME_METHODS=[\"UTF16ToString\",\"stringToUTF16\"]", "-s ALLOW_MEMORY_GROWTH=1")
