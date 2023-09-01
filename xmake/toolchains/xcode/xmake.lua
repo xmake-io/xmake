@@ -35,7 +35,9 @@ toolchain("xcode")
     on_load(function (toolchain)
 
         -- set toolset
+        local arch              = toolchain:arch()
         local bindir            = toolchain:bindir()
+        local appledev          = toolchain:config("appledev")
         local xc_clang          = bindir and path.join(bindir, "clang") or "clang"
         local xc_clangxx        = bindir and path.join(bindir, "clang++") or "clang++"
         local xc_ar             = bindir and path.join(bindir, "ar") or "ar"
@@ -61,7 +63,7 @@ toolchain("xcode")
         end
         if toolchain:is_plat("macosx") then
             toolchain:set("toolset", "as", xc_clang)
-        elseif simulator then
+        elseif appledev == "simulator" or appledev == "catalyst" then
             toolchain:set("toolset", "as", xc_clang)
         else
             toolchain:set("toolset", "as", path.join(os.programdir(), "scripts", "gas-preprocessor.pl " .. xc_clang))
