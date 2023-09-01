@@ -235,12 +235,14 @@ function get_batchjobs(targetname, group_pattern)
     local targets_root = {}
     if targetname then
         local target = project.target(targetname)
-        table.insert(targets_root, target)
-        if option.get("rebuild") then
-            target:data_set("rebuilt", true)
-            if not option.get("shallow") then
-                for _, dep in ipairs(target:orderdeps()) do
-                    dep:data_set("rebuilt", true)
+        if target then
+            table.insert(targets_root, target)
+            if option.get("rebuild") then
+                target:data_set("rebuilt", true)
+                if not option.get("shallow") then
+                    for _, dep in ipairs(target:orderdeps()) do
+                        dep:data_set("rebuilt", true)
+                    end
                 end
             end
         end
