@@ -21,6 +21,7 @@
 -- imports
 import("core.base.bytes")
 import("core.base.hashset")
+import("core.base.global")
 import("core.cache.memcache")
 import("core.project.config")
 import("core.project.policy")
@@ -124,8 +125,18 @@ end
 
 -- get cache root directory
 function rootdir()
-    local cachedir = config.get("ccachedir")
-    return cachedir or path.join(config.buildir(), ".build_cache")
+    local cachedir = _g.cachedir
+    if not cachedir then
+        cachedir = config.get("ccachedir")
+        if not cachedir and project.policy("build.ccache.global_storage") then
+            cachedir = path.join(global.directory(), ".build_cache")
+        end
+        if not cachedir then
+            cachedir = path.join(config.buildir(), ".build_cache")
+        end
+        _g.cachedir = cachedir
+    end
+    return cachedir
 end
 
 -- clean cached files
