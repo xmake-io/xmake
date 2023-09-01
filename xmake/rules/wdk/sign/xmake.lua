@@ -98,7 +98,7 @@ rule("wdk.sign")
         -- need build this object?
         local tempfile = os.tmpfile(target:targetfile())
         local dependfile = tempfile .. ".d"
-        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(tempfile)}) then
             return
         end

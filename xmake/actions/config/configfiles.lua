@@ -328,7 +328,7 @@ function main(opt)
         end, {files = srcinfo.srcfile,
               lastmtime = os.mtime(dstfile),
               dependfile = srcinfo.dependfile,
-              always_changed = opt.force})
+              changed = opt.force})
     end
 
     -- leave project directory

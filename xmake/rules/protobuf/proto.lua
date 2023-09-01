@@ -141,7 +141,7 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
         path(prefixdir and prefixdir or path.directory(sourcefile_proto), function (p) return "-I" .. p end),
         path(sourcefile_dir, function (p) return (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. p end)
     }
-    
+
     if grpc_cpp_plugin then
         table.insert(protoc_args, "--plugin=protoc-gen-grpc=" .. grpc_cpp_plugin_bin)
         table.insert(protoc_args, path(sourcefile_dir, function (p) return ("--grpc_out=") .. p end))
@@ -155,7 +155,7 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
     if grpc_cpp_plugin then
         batchcmds:compile(sourcefile_cx_grpc, objectfile_grpc, {configs = {includedirs = sourcefile_dir}})
     end
-    
+
     -- add deps
     local depmtime = os.mtime(objectfile)
     batchcmds:add_depfiles(sourcefile_proto)
@@ -194,7 +194,7 @@ function build_batchjobs(target, batchjobs, sourcebatch, opt, sourcekind)
         moduleinfo.job = batchjobs:newjob(sourcefile, function (index, total)
             local batchcmds_ = batchcmds.new({target = target})
             buildcmd(target, batchcmds_, sourcefile, {progress = (index * 100) / total}, sourcekind)
-            batchcmds_:runcmds({dryrun = option.get("dry-run")})
+            batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
         end)
     end
 

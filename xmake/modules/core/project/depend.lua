@@ -157,16 +157,15 @@ end
 --
 -- end, {dependfile = "/xx/xx",
 --       values = {compinst:program(), compflags},
---       files = {sourcefile, ...},
---       always_changed = false})
+--       files = {sourcefile, ...}})
 --
 function on_changed(callback, opt)
 
     -- init option
     opt = opt or {}
 
-    -- always changed? we only do callback directly
-    if opt.always_changed then
+    -- dry run? we only do callback directly and do not change any status
+    if opt.dryrun then
         return callback()
     end
 
@@ -180,9 +179,8 @@ function on_changed(callback, opt)
     end
 
     -- load dependent info
-    local dependinfo = option.get("rebuild") and {} or (load(dependfile) or {})
+    local dependinfo = opt.changed and {} or (load(dependfile) or {})
 
-    -- need build this object?
     -- @note we use mtime(dependfile) instead of mtime(objectfile) to ensure the object file is is fully compiled.
     -- @see https://github.com/xmake-io/xmake/issues/748
     if not is_changed(dependinfo, {lastmtime = opt.lastmtime or os.mtime(dependfile), values = opt.values, files = opt.files}) then

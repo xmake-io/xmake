@@ -109,7 +109,7 @@ rule("xcode.bundle")
             end
             codesign(bundledir, codesign_identity)
 
-        end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}})
+        end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}, changed = target:is_rebuilt()})
     end)
 
     on_install(function (target)

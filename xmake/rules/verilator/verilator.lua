@@ -241,6 +241,7 @@ function build_cppfiles(target, batchjobs, sourcebatch, opt)
 
     end, {dependfile = cmakefile .. ".d",
           files = sourcebatch.sourcefiles,
+          changed = target:is_rebuilt(),
           lastmtime = os.mtime(cmakefile)})
 
     -- get compiled source files

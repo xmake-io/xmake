@@ -45,7 +45,7 @@ function _merge_unityfile(target, sourcefile_unity, sourcefiles, opt)
         end
         unityfile:close()
 
-    end, {dependfile = dependfile, files = sourcefiles})
+    end, {dependfile = dependfile, files = sourcefiles, changed = target:is_rebuilt()})
 end
 
 function generate_unityfiles(target, sourcebatch, opt)

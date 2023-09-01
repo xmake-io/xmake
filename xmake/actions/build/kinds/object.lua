@@ -129,7 +129,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
                 local batchcmds_ = batchcmds.new({target = target})
                 local distcc = ruleinst:extraconf(scriptname, "distcc")
                 script(target, batchcmds_, sourcebatch, {progress = (index * 100) / total, distcc = distcc})
-                batchcmds_:runcmds({dryrun = option.get("dry-run")})
+                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
             end, {rootjob = rootjob})
         end
     end
@@ -144,7 +144,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
                 batchjobs:addjob(sourcefile, function (index, total)
                     local batchcmds_ = batchcmds.new({target = target})
                     script(target, batchcmds_, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
-                    batchcmds_:runcmds({dryrun = option.get("dry-run")})
+                    batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
                 end, {rootjob = rootjob, distcc = ruleinst:extraconf(scriptname, "distcc")})
             end
         end

@@ -107,5 +107,8 @@ function main(target, opt)
             assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
         end
 
-    end, {dependfile = target:dependfile(targetfile), lastmtime = os.mtime(targetfile), values = depvalues, files = depfiles, always_changed = dryrun})
+    end, {dependfile = target:dependfile(targetfile),
+          lastmtime = os.mtime(targetfile),
+          changed = target:is_rebuilt(),
+          values = depvalues, files = depfiles, dryrun = dryrun})
 end

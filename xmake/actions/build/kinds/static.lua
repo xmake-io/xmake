@@ -74,7 +74,10 @@ function _do_link_target(target, opt)
             assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
         end
 
-    end, {dependfile = target:dependfile(), lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles, always_changed = dryrun})
+    end, {dependfile = target:dependfile(),
+          lastmtime = os.mtime(target:targetfile()),
+          changed = target:is_rebuilt(),
+          values = depvalues, files = depfiles, dryrun = dryrun})
 end
 
 -- on link the given target
@@ -92,7 +95,7 @@ function _on_link_target(target, opt)
         if on_linkcmd then
             local batchcmds_ = batchcmds.new({target = target})
             on_linkcmd(target, batchcmds_, {progress = opt.progress})
-            batchcmds_:runcmds({dryrun = option.get("dry-run")})
+            batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
             done = true
         end
     end
@@ -121,7 +124,7 @@ function _link_target(target, opt)
         if before_linkcmd then
             local batchcmds_ = batchcmds.new({target = target})
             before_linkcmd(target, batchcmds_, {progress = opt.progress})
-            batchcmds_:runcmds({dryrun = option.get("dry-run")})
+            batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
         end
     end
 
@@ -144,7 +147,7 @@ function _link_target(target, opt)
         if after_linkcmd then
             local batchcmds_ = batchcmds.new({target = target})
             after_linkcmd(target, batchcmds_, {progress = opt.progress})
-            batchcmds_:runcmds({dryrun = option.get("dry-run")})
+            batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
         end
     end
 end

@@ -307,7 +307,7 @@ function link(target, opt)
         os.mkdir(path.directory(targetfile))
         os.vrunv(ld, argv)
 
-    end, {dependfile = dependfile, lastmtime = os.mtime(target:targetfile()), files = objectfiles})
+    end, {dependfile = dependfile, lastmtime = os.mtime(target:targetfile()), files = objectfiles, changed = target:is_rebuilt()})
 end
 
 function install(target)

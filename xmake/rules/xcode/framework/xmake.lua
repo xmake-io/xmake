@@ -162,7 +162,7 @@ rule("xcode.framework")
                 end
                 codesign(contentsdir, codesign_identity)
             end
-        end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}})
+        end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}, changed = target:is_rebuilt()})
     end)
 
     on_install(function (target)

@@ -70,7 +70,7 @@ function _generate_moduledeps(target, sourcefile, opt)
             return dependinfo
         end
 
-    end, {dependfile = dependfile, files = {sourcefile}})
+    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt()})
 end
 
 -- build batch jobs with deps

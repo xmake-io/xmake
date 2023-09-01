@@ -106,6 +106,6 @@ function main (target, opt)
         end
         codesign(bundledir, codesign_identity, mobile_provision, {deep = true})
 
-    end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}})
+    end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}, changed = target:is_rebuilt()})
 end
 

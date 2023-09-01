@@ -68,7 +68,7 @@ rule("utils.merge.archive")
                     os.cp(tmpfile, target:targetfile())
                     os.rm(tmpfile)
                 end
-            end, {dependfile = target:dependfile(target:targetfile() .. ".merge_archive"), files = libraryfiles})
+            end, {dependfile = target:dependfile(target:targetfile() .. ".merge_archive"), files = libraryfiles, changed = target:is_rebuilt()})
         end
     end)
 
