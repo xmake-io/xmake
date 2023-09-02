@@ -637,6 +637,11 @@ function _instance:use_external_includes()
     if external == nil then
         external = self:policy("package.include_external_headers")
     end
+    -- disable -Isystem for external packages as it seems to break. e.g. assimp
+    -- @see https://github.com/msys2/MINGW-packages/issues/10761
+    if external == nil and self:is_plat("mingw") and is_subhost("msys") then
+        external = false
+    end
     if external == nil then
         external = true
     end
