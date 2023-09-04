@@ -418,7 +418,7 @@ function main(target, opt)
         if qt_sdkver:ge("6.0") then
             -- @see https://github.com/xmake-io/xmake/issues/4137
             target:add("ldflags", "-s MODULARIZE=1", "-s EXPORT_NAME=createQtAppInstance")
-            tatget:set("extension", ".js")
+            target:set("extension", ".js")
         end
     end
 
