@@ -742,6 +742,7 @@ function buildenvs(package, opt)
     local CMAKE_LIBRARY_PATH = {}
     local CMAKE_INCLUDE_PATH = {}
     local CMAKE_PREFIX_PATH  = {}
+    local PKG_CONFIG_PATH = {}
     for _, dep in ipairs(package:librarydeps()) do
         if dep:is_system() then
             local fetchinfo = dep:fetch()
@@ -752,11 +753,20 @@ function buildenvs(package, opt)
             end
         else
             table.join2(CMAKE_PREFIX_PATH, dep:installdir())
+            local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
+            if os.isdir(pkgconfig) then
+                table.insert(PKG_CONFIG_PATH, pkgconfig)
+            end
+            pkgconfig = path.join(dep:installdir(), "share", "pkgconfig")
+            if os.isdir(pkgconfig) then
+                table.insert(PKG_CONFIG_PATH, pkgconfig)
+            end
         end
     end
     envs.CMAKE_LIBRARY_PATH = path.joinenv(CMAKE_LIBRARY_PATH)
     envs.CMAKE_INCLUDE_PATH = path.joinenv(CMAKE_INCLUDE_PATH)
     envs.CMAKE_PREFIX_PATH  = path.joinenv(CMAKE_PREFIX_PATH)
+    envs.PKG_CONFIG_PATH    = path.joinenv(PKG_CONFIG_PATH)
     return envs
 end
 
