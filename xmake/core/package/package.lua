@@ -639,7 +639,7 @@ function _instance:use_external_includes()
     end
     -- disable -Isystem for external packages as it seems to break. e.g. assimp
     -- @see https://github.com/msys2/MINGW-packages/issues/10761
-    if external == nil and self:is_plat("mingw") and is_subhost("msys") then
+    if external == nil and self:is_plat("mingw") and os.is_subhost("msys") then
         external = false
     end
     if external == nil then
