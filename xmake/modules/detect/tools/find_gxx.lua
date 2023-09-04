@@ -47,7 +47,7 @@ function main(opt)
     -- is clang++ or g++
     local is_clang = false
     if program then
-        local versioninfo = os.iorunv(program, {"--version"})
+        local versioninfo = os.iorunv(program, {"--version"}, {envs = opt.envs})
         if versioninfo and versioninfo:find("clang", 1, true) then
             is_clang = true
         end
