@@ -296,13 +296,13 @@ end
 --
 -- orderdeps: a -> b -> c
 --
-function _sort_librarydeps(package)
+function _sort_librarydeps(package, opt)
     -- we must use native deps list instead of package:deps() to generate correct link order
     local orderdeps = {}
     for _, dep in ipairs(package:plaindeps()) do
-        if dep and dep:is_library() and not dep:is_private() then
+        if dep and dep:is_library() and (opt and opt.private or not dep:is_private()) then
             table.insert(orderdeps, dep)
-            table.join2(orderdeps, _sort_librarydeps(dep))
+            table.join2(orderdeps, _sort_librarydeps(dep, opt))
         end
     end
     return orderdeps
@@ -936,6 +936,7 @@ function _load_packages(requires, opt)
                     package._PLAINDEPS = plaindeps
                     package._ORDERDEPS = table.unique(_sort_packagedeps(package))
                     package._LIBRARYDEPS = table.reverse_unique(_sort_librarydeps(package))
+                    package._LIBRARYDEPS_WITH_PRIVATE = table.reverse_unique(_sort_librarydeps(package, {private = true}))
                 end
             end
 

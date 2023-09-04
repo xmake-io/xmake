@@ -739,11 +739,13 @@ function buildenvs(package, opt)
     end
 
     -- add environments for cmake/find_packages
+    -- and we need also find them from private libraries,
+    -- @see https://github.com/xmake-io/xmake-repo/pull/2553
     local CMAKE_LIBRARY_PATH = {}
     local CMAKE_INCLUDE_PATH = {}
     local CMAKE_PREFIX_PATH  = {}
     local PKG_CONFIG_PATH = {}
-    for _, dep in ipairs(package:librarydeps()) do
+    for _, dep in ipairs(package:librarydeps({private = true})) do
         if dep:is_system() then
             local fetchinfo = dep:fetch()
             if fetchinfo then

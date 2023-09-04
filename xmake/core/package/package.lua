@@ -411,8 +411,12 @@ function _instance:plaindeps()
 end
 
 -- get library deps with correct link order
-function _instance:librarydeps()
-    return self._LIBRARYDEPS
+function _instance:librarydeps(opt)
+    if opt and opt.private then
+        return self._LIBRARYDEPS_WITH_PRIVATE
+    else
+        return self._LIBRARYDEPS
+    end
 end
 
 -- get parents
