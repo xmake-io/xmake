@@ -112,10 +112,11 @@ function main()
     end
 
     -- generate document
-    cprint("generating ..${beer}")
+    cprint("generating ..")
     os.vrunv(doxygen.program, {doxyfile}, {curdir = project.directory()})
 
     -- done
+    local outputdir = option.get("outputdir") or config.buildir()
     cprint("${bright green}result: ${default green}%s/html/index.html", outputdir)
     cprint("${color.success}doxygen ok!")
     os.setenvs(oldenvs)
