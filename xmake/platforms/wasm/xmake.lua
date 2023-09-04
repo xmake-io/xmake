@@ -28,7 +28,7 @@ platform("wasm")
     set_hosts("macosx", "linux", "windows", "bsd")
 
     -- set archs
-    set_archs("wasm32")
+    set_archs("wasm32", "wasm64")
 
     -- set formats
     set_formats("static", "lib$(name).a")
