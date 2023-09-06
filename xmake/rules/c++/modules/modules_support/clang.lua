@@ -947,6 +947,7 @@ function get_requiresflags(target, requires)
         ::continue::
     end
     if #flags > 0 then
+        table.sort(flags, function(left, right) return left < right end)
         return table.unique(flags)
     end
 end
