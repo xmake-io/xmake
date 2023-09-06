@@ -792,6 +792,11 @@ function get_requiresflags(target, requires, opt)
         end
     end
     if #requireflags > 0 then
+        if not opt.expand then
+            table.sort(requireflags, function(left, right)
+                return left[1] .. " " .. left[2] < right[1] .. " " .. right[2]
+            end)
+        end
         return requireflags
     end
 end
