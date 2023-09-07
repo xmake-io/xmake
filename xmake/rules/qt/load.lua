@@ -408,18 +408,18 @@ function main(target, opt)
                 table.insert(target:objectfiles(), filepath)
             end
         end
-        target:add("ldflags", "-s WASM=1", "-s FETCH=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1", "--bind")
-        target:add("ldflags", "-s ERROR_ON_UNDEFINED_SYMBOLS=1",
-            "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets",
-            "-s ALLOW_MEMORY_GROWTH=1")
-        target:add("shflags", "-s WASM=1", "-s FETCH=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1", "--bind")
-        target:add("shflags", "-s ERROR_ON_UNDEFINED_SYMBOLS=1",
-            "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets",
-            "-s ALLOW_MEMORY_GROWTH=1")
+        target:add("ldflags", "-s FETCH=1", "-s ERROR_ON_UNDEFINED_SYMBOLS=1", "-s ALLOW_MEMORY_GROWTH=1")
         if qt_sdkver:ge("6.0") then
             -- @see https://github.com/xmake-io/xmake/issues/4137
+            target:add("ldflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s DISABLE_EXCEPTION_CATCHING=1")
+            target:add("ldflags", "-sASYNCIFY_IMPORTS=qt_asyncify_suspend_js,qt_asyncify_resume_js")
+            target:add("ldflags", "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets")
             target:add("ldflags", "-s MODULARIZE=1", "-s EXPORT_NAME=createQtAppInstance")
             target:set("extension", ".js")
+        
+        else
+            target:add("ldflags", "-s WASM=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1", "--bind")
+            target:add("ldflags", "-s EXPORTED_RUNTIME_METHODS=[\"UTF16ToString\",\"stringToUTF16\"]")
         end
     end
 
