@@ -113,9 +113,6 @@ function _conan_find_library(name, opt)
     if result then
         local libfiles = {}
         for _, linkdir in ipairs(result.linkdirs) do
-            if not os.isdir(linkdir) then
-                return
-            end
             for _, file in ipairs(os.files(path.join(linkdir, "*"))) do
                 if file:endswith(".lib") or file:endswith(".a") then
                     result.static = true
