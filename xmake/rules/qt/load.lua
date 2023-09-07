@@ -400,20 +400,21 @@ function main(target, opt)
         -- add prebuilt object files in qt sdk.
         -- these files are located at lib/objects-Release/xxxmodule_resources_x/.rcc/xxxmodule.cpp.o
         for _, framework in ipairs(qt_frameworks) do
+            local prefix = framework
             if framework:startswith("Qt") then
-                local prefix = framework:sub(3)
-                for _, filepath in ipairs(os.files(path.join(qt.libdir, "objects-*", prefix .. "_resources_*", ".rcc", "*.o"))) do
-                    table.insert(target:objectfiles(), filepath)
-                end
+                prefix = framework:sub(3)
+            end
+            for _, filepath in ipairs(os.files(path.join(qt.libdir, "objects-*", prefix .. "_resources_*", ".rcc", "*.o"))) do
+                table.insert(target:objectfiles(), filepath)
             end
         end
         target:add("ldflags", "-s WASM=1", "-s FETCH=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1", "--bind")
         target:add("ldflags", "-s ERROR_ON_UNDEFINED_SYMBOLS=1",
-            "-s EXPORTED_RUNTIME_METHODS=[\"UTF16ToString\",\"stringToUTF16\"]",
+            "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets",
             "-s ALLOW_MEMORY_GROWTH=1")
         target:add("shflags", "-s WASM=1", "-s FETCH=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1", "--bind")
         target:add("shflags", "-s ERROR_ON_UNDEFINED_SYMBOLS=1",
-            "-s EXPORTED_RUNTIME_METHODS=[\"UTF16ToString\",\"stringToUTF16\"]",
+            "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets",
             "-s ALLOW_MEMORY_GROWTH=1")
         if qt_sdkver:ge("6.0") then
             -- @see https://github.com/xmake-io/xmake/issues/4137
