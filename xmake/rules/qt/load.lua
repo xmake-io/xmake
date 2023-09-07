@@ -408,7 +408,7 @@ function main(target, opt)
                 table.insert(target:objectfiles(), filepath)
             end
         end
-        target:add("ldflags", "-s FETCH=1", "-s ERROR_ON_UNDEFINED_SYMBOLS=1", "-s ALLOW_MEMORY_GROWTH=1")
+        target:add("ldflags", "-s FETCH=1", "-s ERROR_ON_UNDEFINED_SYMBOLS=1", "-s ALLOW_MEMORY_GROWTH=1", "--bind")
         if qt_sdkver:ge("6.0") then
             -- @see https://github.com/xmake-io/xmake/issues/4137
             target:add("ldflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s DISABLE_EXCEPTION_CATCHING=1")
@@ -418,7 +418,7 @@ function main(target, opt)
             target:set("extension", ".js")
         
         else
-            target:add("ldflags", "-s WASM=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1", "--bind")
+            target:add("ldflags", "-s WASM=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1")
             target:add("ldflags", "-s EXPORTED_RUNTIME_METHODS=[\"UTF16ToString\",\"stringToUTF16\"]")
         end
     end
