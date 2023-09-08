@@ -915,7 +915,7 @@ function get_requiresflags(target, requires)
     local flags = {}
     -- add deps required module flags
     local already_mapped_modules = {}
-    for name, _ in pairs(requires) do
+    for name, _ in table.orderpairs(requires) do
         -- if already in flags, continue
         if already_mapped_modules[name] then
             goto continue
