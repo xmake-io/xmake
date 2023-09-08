@@ -254,7 +254,8 @@ function main(target, opt)
 
     -- do frameworks for qt
     local frameworksset = hashset.new()
-    for _, framework in ipairs(_get_frameworks_from_target(target)) do
+    local qt_frameworks = _get_frameworks_from_target(target)
+    for _, framework in ipairs(qt_frameworks) do
 
         -- translate qt frameworks
         if framework:startswith("Qt") then
@@ -397,14 +398,36 @@ function main(target, opt)
         target:add("rpathdirs", qt.libdir)
         target:add("linkdirs", qt.libdir)
         -- add prebuilt object files in qt sdk.
-        -- these file is located at lib/objects-Release/xxxmodule_resources_x/.rcc/xxxmodule.cpp.o
-        for _, filepath in ipairs(os.files(path.join(qt.libdir, "objects-*", "*_resources_*", ".rcc", "*.o"))) do
-            table.insert(target:objectfiles(), filepath)
+        -- these files are located at lib/objects-Release/xxxmodule_resources_x/.rcc/xxxmodule.cpp.o
+        for _, framework in ipairs(qt_frameworks) do
+            local prefix = framework
+            if framework:startswith("Qt") then
+                prefix = framework:sub(3)
+            end
+            for _, filepath in ipairs(os.files(path.join(qt.libdir, "objects-*", prefix .. "_resources_*", ".rcc", "*.o"))) do
+                table.insert(target:objectfiles(), filepath)
+            end
         end
-        target:add("ldflags", "-s WASM=1", "-s FETCH=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1", "--bind")
-        target:add("ldflags", "-s ERROR_ON_UNDEFINED_SYMBOLS=1", "-s EXTRA_EXPORTED_RUNTIME_METHODS=[\"UTF16ToString\",\"stringToUTF16\"]", "-s ALLOW_MEMORY_GROWTH=1")
-        target:add("shflags", "-s WASM=1", "-s FETCH=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1", "--bind")
-        target:add("shflags", "-s ERROR_ON_UNDEFINED_SYMBOLS=1", "-s EXTRA_EXPORTED_RUNTIME_METHODS=[\"UTF16ToString\",\"stringToUTF16\"]", "-s ALLOW_MEMORY_GROWTH=1")
+        target:add("ldflags", "-s FETCH=1", "-s ERROR_ON_UNDEFINED_SYMBOLS=1", "-s ALLOW_MEMORY_GROWTH=1", "--bind")
+        target:add("shflags", "-s FETCH=1", "-s ERROR_ON_UNDEFINED_SYMBOLS=1", "-s ALLOW_MEMORY_GROWTH=1", "--bind")
+        if qt_sdkver:ge("6.0") then
+            -- @see https://github.com/xmake-io/xmake/issues/4137
+            target:add("ldflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s DISABLE_EXCEPTION_CATCHING=1")
+            target:add("ldflags", "-sASYNCIFY_IMPORTS=qt_asyncify_suspend_js,qt_asyncify_resume_js")
+            target:add("ldflags", "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets")
+            target:add("ldflags", "-s MODULARIZE=1", "-s EXPORT_NAME=createQtAppInstance")
+            target:add("shflags", "-s MAX_WEBGL_VERSION=2", "-s WASM_BIGINT=1", "-s DISABLE_EXCEPTION_CATCHING=1")
+            target:add("shflags", "-sASYNCIFY_IMPORTS=qt_asyncify_suspend_js,qt_asyncify_resume_js")
+            target:add("shflags", "-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,JSEvents,specialHTMLTargets")
+            target:add("shflags", "-s MODULARIZE=1", "-s EXPORT_NAME=createQtAppInstance")
+            target:set("extension", ".js")
+        
+        else
+            target:add("ldflags", "-s WASM=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1")
+            target:add("ldflags", "-s EXPORTED_RUNTIME_METHODS=[\"UTF16ToString\",\"stringToUTF16\"]")
+            target:add("shflags", "-s WASM=1", "-s FULL_ES2=1", "-s FULL_ES3=1", "-s USE_WEBGL2=1")
+            target:add("shflags", "-s EXPORTED_RUNTIME_METHODS=[\"UTF16ToString\",\"stringToUTF16\"]")
+        end
     end
 
     -- is gui application?
