@@ -18,6 +18,8 @@
 -- @file        xmake.lua
 --
 
+import("lib.detect.find_tool")
+
 -- define rule: debug mode
 rule("mode.debug")
     on_config(function (target)
@@ -213,7 +215,7 @@ rule("mode.asan")
                 local envs = target:toolchain("msvc"):runenvs()
                 local vscmd_ver = envs["VSCMD_VER"]
                 if vscmd_ver and vscmd_ver:startswith("17.7") then
-                    local cl = assert(import("lib.detect.find_tool")("cl", {envs = envs}), "cl not found!")
+                    local cl = assert(find_tool("cl", {envs = envs}), "cl not found!")
                     target:add("runenvs", "PATH", path.directory(cl.program))
                 end
             end
