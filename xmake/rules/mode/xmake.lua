@@ -208,6 +208,15 @@ rule("mode.asan")
             target:add("mxflags", "-fsanitize=address")
             target:add("ldflags", "-fsanitize=address")
             target:add("shflags", "-fsanitize=address")
+
+            if target:is_plat("windows") and target:kind() == "binary" then
+                local envs = target:toolchain("msvc"):runenvs()
+                local vscmd_ver = envs["VSCMD_VER"]
+                if vscmd_ver and vscmd_ver:startswith("17.7") then
+                    local cl = assert(import("lib.detect.find_tool").find_tool("cl", {envs = envs}), "cl not found!")
+                    target:add("runenvs", "PATH", path.directory(cl.program))
+                end
+            end
         end
     end)
 
