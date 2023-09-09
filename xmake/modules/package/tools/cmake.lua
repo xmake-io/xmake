@@ -24,6 +24,7 @@ import("core.tool.toolchain")
 import("core.project.config")
 import("core.tool.linker")
 import("core.tool.compiler")
+import("core.project.project")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 import("package.tools.ninja")
@@ -987,6 +988,9 @@ function install(package, configs, opt)
 
     -- init options
     opt = opt or {}
+    if (not opt.cmake_generator) and project.policy("package.cmake_generator.ninja") then
+        opt.cmake_generator = "Ninja"
+    end
 
     -- enter build directory
     local buildir = opt.buildir or package:buildir()
