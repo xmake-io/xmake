@@ -1617,10 +1617,24 @@ function _instance:objectfiles()
     -- @note we only merge objects in plain deps, e.g. binary -> (static -> object, object ...)
     local plaindeps = self:get("deps")
     if plaindeps and (self:is_binary() or self:is_shared() or self:is_static()) then
+        local function _get_all_objectfiles_of_object_dep (t)
+            local _objectfiles = {}
+            table.join2(_objectfiles, t:objectfiles())
+            local _plaindeps = t:get("deps")
+            if _plaindeps then
+                for _, depname in ipairs(_plaindeps) do
+                    local dep = t:dep(depname)
+                    if dep and dep:is_object() then
+                        table.join2(_objectfiles, _get_all_objectfiles_of_object_dep(dep))
+                    end
+                end
+            end
+            return _objectfiles
+        end
         for _, depname in ipairs(table.wrap(plaindeps)) do
             local dep = self:dep(depname)
             if dep and dep:is_object() then
-                table.join2(objectfiles, dep:objectfiles())
+                table.join2(objectfiles, _get_all_objectfiles_of_object_dep(dep))
                 deduplicate = true
             end
         end
