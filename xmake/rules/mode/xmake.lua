@@ -186,6 +186,7 @@ rule("mode.coverage")
 rule("mode.asan")
     on_config(function (target)
         import("lib.detect.find_tool")
+        import("core.base.semver")
 
         -- is asan mode now? xmake f -m asan
         if is_mode("asan") then
@@ -215,7 +216,7 @@ rule("mode.asan")
                 if msvc then
                     local envs = msvc:runenvs()
                     local vscmd_ver = envs and envs.VSCMD_VER
-                    if vscmd_ver and vscmd_ver:startswith("17.7") then
+                    if vscmd_ver and semver.match(vscmd_ver):ge("17.7") then
                         local cl = assert(find_tool("cl", {envs = envs}), "cl not found!")
                         target:add("runenvs", "PATH", path.directory(cl.program))
                     end
