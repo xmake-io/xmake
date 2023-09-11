@@ -32,7 +32,7 @@ function _get_librarydeps(target)
     for _, depname in ipairs(target:get("deps")) do
         local dep = project.target(depname)
         if not ((target:is_binary() or target:is_shared()) and dep:is_static()) then
-            table.insert(librarydeps, dep:name())
+            table.insert(librarydeps, dep:name():lower())
         end
     end
     return librarydeps
