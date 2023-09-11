@@ -1756,9 +1756,6 @@ function _instance:fetch(opt)
         -- we need ignore `{system = true/false}` argument if be 3rd package
         -- @see https://github.com/xmake-io/xmake/issues/726
         system = nil
-    elseif self:is_cross() then
-        -- we need to disable system package for cross-compilation
-        system = false
     end
 
     -- use sysincludedirs/-isystem instead of -I?
@@ -1782,8 +1779,8 @@ function _instance:fetch(opt)
             end
         end
 
-        -- fetch it from the system directories
-        if not fetchinfo and system ~= false then
+        -- fetch it from the system directories (disabled for cross-compilation)
+        if not fetchinfo and system ~= false and not self:is_cross() then
             fetchinfo = self:_fetch_tool({system = true, require_version = require_ver, force = opt.force})
             if fetchinfo then
                 is_system = true
@@ -1799,8 +1796,8 @@ function _instance:fetch(opt)
             end
         end
 
-        -- fetch it from the system and external package sources
-        if not fetchinfo and system ~= false then
+        -- fetch it from the system and external package sources (disabled for cross-compilation)
+        if not fetchinfo and system ~= false and not self:is_cross() then
             fetchinfo = self:_fetch_library({system = true, require_version = require_ver, external = external, force = opt.force})
             if fetchinfo then
                 is_system = true
