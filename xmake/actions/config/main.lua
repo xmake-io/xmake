@@ -399,7 +399,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
 
         -- load targets
-        project.load_targets()
+        project.load_targets({recheck = recheck})
 
         -- update the config files
         generate_configfiles({force = recheck})
