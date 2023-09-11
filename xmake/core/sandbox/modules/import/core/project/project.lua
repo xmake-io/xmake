@@ -143,6 +143,7 @@ end
 -- @param opt   the extra option, e.g. {recheck = false}
 --
 -- on_config(target, opt)
+--    -- @see https://github.com/xmake-io/xmake/issues/4173#issuecomment-1712843956
 --    if opt.recheck then
 --        target:has_cfuncs(...)
 --    end
