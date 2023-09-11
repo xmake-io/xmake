@@ -733,7 +733,11 @@ function main(requires, opt)
 
     -- exists not found packages?
     if #packages_not_found > 0 then
-        cprint("${bright color.warning}note: ${clear}the following packages were not found on your system, try again after installing them:")
+        if packages_not_found[1]:is_cross() then
+            cprint("${bright color.warning}note: ${clear}system package is not supported for cross-compilation currently, the following system packages cannot be found:")
+        else
+            cprint("${bright color.warning}note: ${clear}the following packages were not found on your system, try again after installing them:")
+        end
         for _, instance in ipairs(packages_not_found) do
             print("  -> %s %s", instance:displayname(), instance:version_str() or "")
         end
