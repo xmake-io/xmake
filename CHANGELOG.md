@@ -14,6 +14,7 @@
 * [#4154](https://github.com/xmake-io/xmake/issues/4154): Add `xmake -r --shallow target` to rebuild target without deps
 * Add global ccache storage directory
 * [#4137](https://github.com/xmake-io/xmake/issues/4137): Support Qt6 for Wasm
+* [#4137](https://github.com/xmake-io/xmake/issues/4137): Add recheck argument to on_config
 
 ### Bugs fixed
 
@@ -1662,6 +1663,7 @@
 * [#4154](https://github.com/xmake-io/xmake/issues/4154): 添加 `xmake -r --shallow target` 去改进重建目标，避免重建所有依赖目标
 * 添加全局 ccache 存储目录
 * [#4137](https://github.com/xmake-io/xmake/issues/4137): 改进 Qt，支持 Qt6 for Wasm
+* [#4137](https://github.com/xmake-io/xmake/issues/4137): 添加 recheck 参数到 on_config
 
 ### Bugs 修复
 
