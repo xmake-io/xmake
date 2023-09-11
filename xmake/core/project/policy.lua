@@ -100,7 +100,9 @@ function policy.policies()
             ["package.librarydeps.strict_compatibility"] = {description = "Set strict compatibility for package and it's all library dependencies.", type = "boolean"},
             -- Automatically passes dependency configuration for inner xmake package
             -- https://github.com/xmake-io/xmake/issues/3952
-            ["package.xmake.pass_depconfs"] = {description = "Automatically passes dependency configuration for inner xmake package", default = true, type = "boolean"}
+            ["package.xmake.pass_depconfs"] = {description = "Automatically passes dependency configuration for inner xmake package", default = true, type = "boolean"},
+            -- will force cmake package use ninja for build
+            ["package.cmake_generator.ninja"] = {description = "Set cmake package use ninja for build", default = false, type = "boolean"}
         }
         policy._POLICIES = policies
     end
