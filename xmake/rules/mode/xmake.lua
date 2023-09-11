@@ -185,6 +185,8 @@ rule("mode.coverage")
 -- define rule: asan mode
 rule("mode.asan")
     on_config(function (target)
+        import("lib.detect.find_tool")
+        import("core.base.semver")
 
         -- is asan mode now? xmake f -m asan
         if is_mode("asan") then
@@ -208,6 +210,18 @@ rule("mode.asan")
             target:add("mxflags", "-fsanitize=address")
             target:add("ldflags", "-fsanitize=address")
             target:add("shflags", "-fsanitize=address")
+
+            if target:is_plat("windows") and target:is_binary() then
+                local msvc = target:toolchain("msvc")
+                if msvc then
+                    local envs = msvc:runenvs()
+                    local vscmd_ver = envs and envs.VSCMD_VER
+                    if vscmd_ver and semver.match(vscmd_ver):ge("17.7") then
+                        local cl = assert(find_tool("cl", {envs = envs}), "cl not found!")
+                        target:add("runenvs", "PATH", path.directory(cl.program))
+                    end
+                end
+            end
         end
     end)
 
