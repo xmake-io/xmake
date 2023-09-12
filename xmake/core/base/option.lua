@@ -658,7 +658,7 @@ function option.show_main()
             table.insert(tablecontent, {{string.format("%s%ss: ", string.sub(category.name, 1, 1):upper(), string.sub(category.name, 2)), style="${reset bright}"}})
 
             -- print tasks
-            for taskname, taskinfo in pairs(category.tasks) do
+            for taskname, taskinfo in table.orderpairs(category.tasks) do
 
                 -- init the task line
                 local taskline = string.format(narrow and "  %s%s" or "    %s%s",
