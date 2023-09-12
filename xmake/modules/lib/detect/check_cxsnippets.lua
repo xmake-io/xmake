@@ -56,19 +56,15 @@ end
 -- sigsetjmp{int a = 0; sigsetjmp((void*)a, a);}
 --
 function _funccode(funcinfo)
-
-    -- parse function code
     local code = string.match(funcinfo, ".+{(.+)}")
     if code == nil then
         local pos = funcinfo:find("%(")
         if pos then
             code = funcinfo
         else
-            code = string.format("volatile void* p%s = (void*)&%s;", funcinfo, funcinfo)
+            code = string.format("volatile void* p%s = (void*)&%s; if (p%s) {}", funcinfo, funcinfo, funcinfo)
         end
     end
-
-    -- ok
     return code
 end
 
