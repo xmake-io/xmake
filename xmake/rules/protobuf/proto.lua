@@ -30,7 +30,7 @@ function _get_protoc(target, sourcekind)
     -- find protoc
     local protoc = target:data("protobuf.protoc")
     if not protoc and sourcekind == "cxx" then
-        protoc = find_tool("protoc")
+        protoc = find_tool("protoc", {envs = target:pkgenvs()})
         if protoc and protoc.program then
             target:data_set("protobuf.protoc", protoc.program)
         end
@@ -39,7 +39,7 @@ function _get_protoc(target, sourcekind)
     -- find protoc-c
     local protoc_c = target:data("protobuf.protoc-c")
     if not protoc_c and sourcekind == "cc" then
-        protoc_c = find_tool("protoc-c") or protoc
+        protoc_c = find_tool("protoc-c", {envs = target:pkgenvs()}) or protoc
         if protoc_c and protoc_c.program then
             target:data_set("protobuf.protoc-c", protoc_c.program)
         end
