@@ -358,7 +358,8 @@ function interpreter:_api_translate_paths(values, apiname, infolevel)
     for _, p in ipairs(values) do
         if type(p) ~= "string" or #p == 0 then
             local sourceinfo = debug.getinfo(infolevel or 3, "Sl")
-            interpreter._raise("%s(%s): invalid path value at %s:%d", apiname, tostring(p), sourceinfo.short_src or sourceinfo.source, sourceinfo.currentline)
+            interpreter._raise(string.format("%s(%s): invalid path value at %s:%d", apiname, tostring(p),
+                sourceinfo.short_src or sourceinfo.source, sourceinfo.currentline))
         end
         if not p:find("^%s-%$%(.-%)") and not path.is_absolute(p) then
             table.insert(results, path.relative(path.absolute(p, self:scriptdir()), self:rootdir()))
@@ -1583,7 +1584,7 @@ function interpreter:api_builtin_set_xmakever(minver)
     -- parse minimum version
     local minvers = minver:split('.', {plain = true})
     if not minvers or #minvers ~= 3 then
-        interpreter._raise("set_xmakever(\"%s\"): invalid version format!", minver)
+        interpreter._raise(string.format("set_xmakever(\"%s\"): invalid version format!", minver))
     end
 
     -- make minimum numerical version
@@ -1597,7 +1598,7 @@ function interpreter:api_builtin_set_xmakever(minver)
 
     -- check version
     if curvers_num < minvers_num then
-        interpreter._raise("xmake v%s < v%s, please run `$xmake update` to upgrade xmake!", xmake._VERSION_SHORT, minver)
+        interpreter._raise(string.format("xmake v%s < v%s, please run `$xmake update` to upgrade xmake!", xmake._VERSION_SHORT, minver))
     end
 end
 
