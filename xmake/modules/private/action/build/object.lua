@@ -24,7 +24,7 @@ import("core.theme.theme")
 import("core.tool.compiler")
 import("core.project.depend")
 import("private.cache.build_cache")
-import("private.async.runjobs")
+import("async.runjobs")
 import("utils.progress")
 import("private.service.distcc_build.client", {alias = "distcc_build_client"})
 

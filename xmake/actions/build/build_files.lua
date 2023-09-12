@@ -24,7 +24,7 @@ import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
 import("private.async.jobpool")
-import("private.async.runjobs")
+import("async.runjobs")
 import("kinds.object")
 
 -- match source files

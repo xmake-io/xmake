@@ -22,7 +22,7 @@
 import("core.base.option")
 import("core.base.task")
 import("lib.detect.find_tool")
-import("private.async.runjobs")
+import("async.runjobs")
 import("private.action.require.impl.package")
 import("private.action.require.impl.repository")
 import("private.action.require.impl.environment")

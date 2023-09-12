@@ -26,7 +26,7 @@ import("core.base.global")
 import("core.project.project")
 import("core.platform.platform")
 import("devel.debugger")
-import("private.async.runjobs")
+import("async.runjobs")
 import("private.action.run.runenvs")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 

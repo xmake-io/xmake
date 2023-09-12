@@ -23,7 +23,7 @@ rule("go.env")
 
         -- imports
         import("private.tools.go.goenv")
-        import("private.async.runjobs")
+        import("async.runjobs")
         import("core.base.tty")
         import("core.base.option")
         import("core.project.config")

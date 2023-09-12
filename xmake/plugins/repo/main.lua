@@ -26,7 +26,7 @@ import("core.platform.platform")
 import("core.package.repository")
 import("devel.git")
 import("net.proxy")
-import("private.async.runjobs")
+import("async.runjobs")
 import("private.action.require.impl.environment")
 
 function _clear_quick_search_cache(is_global)

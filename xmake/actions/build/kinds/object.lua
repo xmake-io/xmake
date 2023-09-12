@@ -23,7 +23,7 @@ import("core.base.option")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
-import("private.async.runjobs")
+import("async.runjobs")
 import("private.utils.batchcmds")
 import("private.utils.rule_groups")
 

@@ -21,7 +21,7 @@
 -- imports
 import("core.cache.detectcache")
 import("lib.detect.find_tool")
-import("private.async.runjobs")
+import("async.runjobs")
 
 -- ping host
 function _ping(ping, host)

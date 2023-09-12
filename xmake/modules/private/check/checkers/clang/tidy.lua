@@ -24,7 +24,7 @@ import("core.base.task")
 import("core.project.config")
 import("core.project.project")
 import("lib.detect.find_tool")
-import("private.async.runjobs")
+import("async.runjobs")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 

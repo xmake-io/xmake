@@ -1,4 +1,4 @@
-import("private.async.runjobs")
+import("async.runjobs")
 
 function main()
     printf("testing .. ")

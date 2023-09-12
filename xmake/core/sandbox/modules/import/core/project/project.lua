@@ -112,7 +112,7 @@ function sandbox_core_project.check_options()
 
     -- check all options
     local jobs = baseoption.get("jobs") or os.default_njob()
-    import("private.async.runjobs", {anonymous = true})("check_options", instance:fork(checktask):script(), {total = #options, comax = jobs})
+    import("async.runjobs", {anonymous = true})("check_options", instance:fork(checktask):script(), {total = #options, comax = jobs})
 
     -- save all options to the cache file
     option.save()

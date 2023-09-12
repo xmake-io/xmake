@@ -1,6 +1,6 @@
 import("core.base.scheduler")
 import("private.async.jobpool")
-import("private.async.runjobs")
+import("async.runjobs")
 
 function _jobfunc(index, total)
     print("%s: run job (%d/%d)", scheduler.co_running(), index, total)

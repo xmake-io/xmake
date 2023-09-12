@@ -48,7 +48,7 @@ function test_yield(t)
 end
 
 function test_runjobs(t)
-    import("private.async.runjobs")
+    import("async.runjobs")
 
     local total = 100
     local comax = 6
