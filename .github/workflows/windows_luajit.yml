@@ -82,8 +82,8 @@ jobs:
           Copy-Item ./7zip/7z.dll ./winenv/bin
           curl -fsSL "https://curl.se/windows/dl-8.2.1_11/curl-8.2.1_11-win32-mingw.zip" -o .\curl.zip
           Expand-Archive ./curl.zip -DestinationPath ./curl
-          Copy-Item ./curl/curl-7.85.0-win32-mingw/bin/curl.exe ./winenv/bin
-          Copy-Item ./curl/curl-7.85.0-win32-mingw/bin/curl-ca-bundle.crt ./winenv/bin
+          Copy-Item ./curl/curl-8.2.1_11-win32-mingw/bin/curl.exe ./winenv/bin
+          Copy-Item ./curl/curl-8.2.1_11-win32-mingw/bin/curl-ca-bundle.crt ./winenv/bin
           $version = (Get-Command xmake/xmake.exe).FileVersionInfo
           ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /D${{ matrix.arch }} .\scripts\installer.nsi
           (New-Item ./artifacts/${{env.RELEASE_NAME}} -ItemType Directory).FullName
