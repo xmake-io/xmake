@@ -84,8 +84,6 @@ function _checkout(package, url, sourcedir, opt)
     -- we need to enable longpaths on windows
     local longpaths = package:policy("platform.longpaths")
 
-    print("rev", package:revision(opt.url_alias))
-    print("tag", package:tag())
     -- download package from branches?
     packagedir = path.join(sourcedir .. ".tmp", package:name())
     local branch = package:branch()
