@@ -224,7 +224,7 @@ function _get_configs(package, configs, opt)
         _get_configs_for_android(package, configs, opt)
     elseif package:is_plat("iphoneos", "watchos", "appletvos") or
         -- for cross-compilation on macOS, @see https://github.com/xmake-io/xmake/issues/2804
-        (package:is_plat("macosx") and not package:is_arch(os.subarch())) then
+        (package:is_plat("macosx") and (get_config("appledev") or not package:is_arch(os.subarch()))) then
         _get_configs_for_appleos(package, configs, opt)
     elseif package:is_plat("mingw") then
         _get_configs_for_mingw(package, configs, opt)
