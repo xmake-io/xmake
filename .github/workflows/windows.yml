@@ -93,7 +93,7 @@ jobs:
           Expand-Archive ./7zip.zip -DestinationPath ./7zip
           Copy-Item ./7zip/7z.exe ./winenv/bin
           Copy-Item ./7zip/7z.dll ./winenv/bin
-          curl -fsSL "https://curl.se/windows/dl-7.85.0/curl-7.85.0-win32-mingw.zip" -o .\curl.zip
+          curl -fsSL "https://curl.se/windows/dl-8.2.1_11/curl-8.2.1_11-win32-mingw.zip" -o .\curl.zip
           Expand-Archive ./curl.zip -DestinationPath ./curl
           Copy-Item ./curl/curl-7.85.0-win32-mingw/bin/curl.exe ./winenv/bin
           Copy-Item ./curl/curl-7.85.0-win32-mingw/bin/curl-ca-bundle.crt ./winenv/bin
