@@ -128,7 +128,14 @@ function main(name, opt)
     -- find package from xxx/lib, xxx/include
     if not result then
         local nameinfo = name:split('/')
-        local pkgdir = find_path("lib", path.join(brew_pkg_rootdir, nameinfo[1], "*"))
+        local pkgdir
+        if is_host("linux") then
+            -- /home/linuxbrew/.linuxbrew/opt/llvm
+            pkgdir = find_path("lib", path.join(brew_pkg_rootdir, nameinfo[1]))
+        else
+            -- /usr/local/Cellar/llvm/16.0.6
+            pkgdir = find_path("lib", path.join(brew_pkg_rootdir, nameinfo[1], "*"))
+        end
         if pkgdir then
             local links = {}
             for _, libfile in ipairs(os.files(path.join(pkgdir, "lib", "*.a"))) do
