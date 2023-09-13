@@ -32,6 +32,7 @@ rule("utils.symbols.extract")
             and (targetkind == "binary" or targetkind == "shared") and platform.tool("strip") then -- only for strip command
             target:data_set("utils.symbols.extract", true)
             target:set("strip", "none") -- disable strip in link stage, because we need to run separate strip commands
+            target:data_set("strip.origin", strip)
         end
     end)
     after_link(function (target, opt)
@@ -109,7 +110,12 @@ rule("utils.symbols.extract")
             table.insert(strip_argv, "-S")
         else
             -- -s/--strip-all for gnu strip
-            table.insert(strip_argv, "-s")
+            local strip = target:data("strip.origin")
+            if strip == "debug" then
+                table.insert(strip_argv, "-S")
+            else
+                table.insert(strip_argv, "-s")
+            end
         end
         table.insert(strip_argv, targetfile)
         os.vrunv(strip, strip_argv, {dryrun = dryrun})
