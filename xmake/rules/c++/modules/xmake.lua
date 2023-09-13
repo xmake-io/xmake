@@ -57,54 +57,6 @@ rule("c++.build.modules")
             target:data_set("cxx.has_modules", true)
         end
     end)
-    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
-        if target:data("cxx.has_modules") then
-            import("modules_support.common")
-
-            local target_clone = target:clone()
-
-            common.patch_sourcebatch(target_clone, sourcebatch, opt)
-
-            local modules = common.get_module_dependencies(target, sourcebatch, opt)
-
-            -- we need to generate modules to get their dependencies available for `get_requiresflags`
-            common.generate_headerunits_for_batchcmds(target_clone, batchcmds, sourcebatch, modules, opt)
-            common.build_modules_for_batchcmds(target_clone, batchcmds, sourcebatch, modules, opt)
-
-            -- for each module, we add required flags 
-            local module_support = common.modules_support(target)
-            for _, objectfile in ipairs(sourcebatch.objectfiles) do
-                local module = modules[objectfile]
-                if module and module.requires then
-                    local requiresflags = module_support.get_requiresflags(target, module.requires)
-                    
-                    local sourcefile = nil
-                    for _, mod in pairs(module.provides) do
-                        if mod.sourcefile then 
-                            sourcefile = mod.sourcefile
-                            break
-                        end 
-                    end
-                    if sourcefile then 
-                        target:fileconfig_add(sourcefile, {force = {cxxflags = requiresflags}})
-                    end
-                end
-            end
-
-            -- debugging values
-            local compinst = target:compiler("cxx")
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
-                print("source: ", sourcefile, "compflags: ", compflags)
-            end
-            local compflags = compinst:compflags({sourcefile = "src/main.cpp", target = target})
-            print("source: ", "src/main.cpp", "compflags: ", compflags)
-
-        else
-            -- avoid duplicate linking of object files of non-module programs
-            sourcebatch.objectfiles = {}
-        end
-    end)
 
 -- build modules
 rule("c++.build.modules.builder")
