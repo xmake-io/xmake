@@ -53,6 +53,8 @@ platform("macosx")
                 ,   {nil, "xcode_codesign_identity", "kv", "auto",       "The Codesign Identity for Xcode"   }
                 ,   {nil, "xcode_mobile_provision",  "kv", "auto",       "The Mobile Provision for Xcode"    }
                 ,   {nil, "target_minver",           "kv", "auto",       "The Target Minimal Version"        }
+                ,   {nil, "appledev",                "kv", nil,          "The Apple Device Type",
+                                                                         values = {"simulator", "iphone", "watchtv", "appletv", "catalyst"}}
                 ,   {category = "Cuda SDK Configuration"                                                     }
                 ,   {nil, "cuda",                    "kv", "auto",       "The Cuda SDK Directory"            }
                 ,   {category = "Qt SDK Configuration"                                                       }

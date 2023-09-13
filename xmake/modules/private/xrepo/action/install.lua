@@ -75,7 +75,7 @@ function menu_options()
         {nil, "xcode",         "kv", nil, "The Xcode Application Directory"  },
         {nil, "xcode_sdkver",  "kv", nil, "The SDK Version for Xcode"        },
         {nil, "target_minver", "kv", nil, "The Target Minimal Version"       },
-        {nil, "appledev",      "kv", nil, "The Apple Device Type"            },
+        {nil, "appledev",      "kv", nil, "The Apple Device Type", values = {"simulator", "iphone", "watchtv", "appletv", "catalyst"}},
         {category = "Debug Configuration"                                    },
         {'d', "debugdir",      "kv", nil, "The source directory of the current package for debugging. It will enable --force/--shallow by default."},
         {category = "Other Configuration"                                    },
