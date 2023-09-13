@@ -711,6 +711,8 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     _batchcmds_compile(batchcmds, target, table.join(flags,
                         {"-x", "c++-module", "--precompile", "-c", path(cppfile), "-o", path(provide.bmi)}))
                     _add_module_to_mapper(target, name, provide.bmi, {namedmodule = true})
+                    -- add requiresflags to module. it will be used for project generation
+                    target:fileconfig_add(cppfile, {force = {cxxflags = requiresflags}})
                 end
                 _batchcmds_compile(batchcmds, target, file, table.join(flags,
                     not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}))

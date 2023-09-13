@@ -557,6 +557,8 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 _add_objectfile_to_link_arguments(target, path.translate(objectfile))
                 if provide then
                     _add_module_to_mapper(target, referenceflag, name, name, objectfile, provide.bmi, requiresflags)
+                    -- add requiresflags to module. it will be used for project generation
+                    target:fileconfig_add(cppfile, {force = {cxxflags = requiresflags}})
                 end
                 depmtime = math.max(depmtime, os.mtime(provide and provide.bmi or objectfile))
             elseif requiresflags then
