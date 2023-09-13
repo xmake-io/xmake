@@ -131,26 +131,37 @@ end
 
 -- add module directories
 function project._api_add_moduledirs(interp, ...)
-    sandbox_module.add_directories(...)
+    local scriptdir = project.interpreter():scriptdir()
+    for _, dir in ipairs({...}) do
+        if not path.is_absolute(dir) then
+            dir = path.absolute(dir, scriptdir)
+        end
+        sandbox_module.add_directories(dir)
+    end
 end
 
 -- add plugin directories load all plugins from the given directories
 function project._api_add_plugindirs(interp, ...)
-
-    -- get all directories
+    local scriptdir = project.interpreter():scriptdir()
     local plugindirs = {}
-    local dirs = table.join(...)
-    for _, dir in ipairs(dirs) do
+    for _, dir in ipairs({...}) do
+        if not path.is_absolute(dir) then
+            dir = path.absolute(dir, scriptdir)
+        end
         table.insert(plugindirs, dir .. "/*")
     end
-
-    -- add all plugins
     interp:api_builtin_includes(plugindirs)
 end
 
 -- add platform directories
 function project._api_add_platformdirs(interp, ...)
-    platform.add_directories(...)
+    local scriptdir = project.interpreter():scriptdir()
+    for _, dir in ipairs({...}) do
+        if not path.is_absolute(dir) then
+            dir = path.absolute(dir, scriptdir)
+        end
+        platform.add_directories(dir)
+    end
 end
 
 -- load the project file
