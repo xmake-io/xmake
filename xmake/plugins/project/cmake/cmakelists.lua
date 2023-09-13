@@ -902,7 +902,7 @@ function _add_target_link_options(cmakelists, target)
                 flag = _escape_path_in_flag(target, flag)
                 -- @see https://github.com/xmake-io/xmake/issues/4196
                 if cmake_minver:ge("3.12.0") and #os.argv(flag) > 1 then
-                    cmakelists:print("    SHELL:" .. flag)
+                    cmakelists:print("    " .. os.args("SHELL:" .. flag))
                 else
                     cmakelists:print("    " .. flag)
                 end
