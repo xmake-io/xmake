@@ -162,7 +162,8 @@ end
 function main()
 
     -- do action for remote if we are in the project directory?
-    if os.isfile(project.rootfile()) and remote_build_action.enabled() then
+    if os.isfile(project.rootfile()) and remote_build_action.enabled()
+        and xmake.argv()[2] ~= "private.utils.complete" then
         return remote_build_action()
     end
 

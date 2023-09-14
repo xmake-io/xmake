@@ -195,7 +195,8 @@ function new_diff(session_id, manifest, opt)
         code = message.CODE_DIFF,
         session_id = session_id,
         token = opt.token,
-        manifest = manifest
+        manifest = manifest,
+        xmakesrc = opt.xmakesrc
     })
 end
 
@@ -206,7 +207,8 @@ function new_sync(session_id, manifest, opt)
         code = message.CODE_SYNC,
         session_id = session_id,
         token = opt.token,
-        manifest = manifest
+        manifest = manifest,
+        xmakesrc = opt.xmakesrc
     })
 end
 

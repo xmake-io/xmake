@@ -191,12 +191,13 @@ function remote_build_client:sync()
     local errors
     local ok = false
     local diff_files
+    local xmakesrc = option.get("xmakesrc")
     cprint("${dim}%s: sync files in %s:%d ..", self, addr, port)
     while sock do
 
         -- diff files
         local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
-        diff_files, errors = self:_diff_files(stream)
+        diff_files, errors = self:_diff_files(stream, {xmakesrc = xmakesrc})
         if not diff_files then
             break
         end
@@ -208,8 +209,9 @@ function remote_build_client:sync()
         -- do sync
         cprint("Uploading files ..")
         local send_ok = false
-        if stream:send_msg(message.new_sync(session_id, diff_files, {token = self:token()}), {compress = true}) and stream:flush() then
-            if self:_send_diff_files(stream, diff_files) then
+        if stream:send_msg(message.new_sync(session_id, diff_files,
+                {token = self:token(), xmakesrc = xmakesrc and true or false}), {compress = true}) and stream:flush() then
+            if self:_send_diff_files(stream, diff_files, {rootdir = xmakesrc}) then
                 send_ok = true
             end
         end
@@ -458,16 +460,24 @@ function remote_build_client:_filesync()
 end
 
 -- diff server files
-function remote_build_client:_diff_files(stream)
+function remote_build_client:_diff_files(stream, opt)
+    opt = opt or {}
     assert(self:is_connected(), "%s: has been not connected!", self)
     print("Scanning files ..")
     local filesync = self:_filesync()
+    if opt.xmakesrc then
+        assert(os.isdir(opt.xmakesrc), "%s: %s not found!", opt.xmakesrc)
+        filesync = new_filesync(opt.xmakesrc, path.join(self:workdir(), "xmakesrc_manifest.txt"))
+        filesync:ignorefiles_add(".git/**")
+    end
     local manifest, filecount = filesync:snapshot()
     local session_id = self:session_id()
     local count = 0
     local result, errors
     cprint("Comparing ${bright}%d${clear} files ..", filecount)
-    if stream:send_msg(message.new_diff(session_id, manifest, {token = self:token()}), {compress = true}) and stream:flush() then
+    if stream:send_msg(message.new_diff(session_id, manifest,
+            {token = self:token(), xmakesrc = opt.xmakesrc and true or false}),
+                {compress = true}) and stream:flush() then
         local msg = stream:recv_msg({timeout = -1})
         if msg and msg:success() then
             result = msg:body().manifest
@@ -475,20 +485,20 @@ function remote_build_client:_diff_files(stream)
                 for _, fileitem in ipairs(result.inserted) do
                     if count < 8 then
                         cprint("    ${green}[+]: ${clear}%s", fileitem)
-                        count = count + 1
                     end
+                    count = count + 1
                 end
                 for _, fileitem in ipairs(result.modified) do
                     if count < 8 then
                         cprint("    ${yellow}[*]: ${clear}%s", fileitem)
-                        count = count + 1
                     end
+                    count = count + 1
                 end
                 for _, fileitem in ipairs(result.removed) do
                     if count < 8 then
                         cprint("    ${red}[-]: ${clear}%s", fileitem)
-                        count = count + 1
                     end
+                    count = count + 1
                 end
                 if count >= 8 then
                     print("    ...")
@@ -503,7 +513,8 @@ function remote_build_client:_diff_files(stream)
 end
 
 -- send diff files
-function remote_build_client:_send_diff_files(stream, diff_files)
+function remote_build_client:_send_diff_files(stream, diff_files, opt)
+    opt = opt or {}
     local count = 0
     local totalsize = 0
     local compressed_size = 0
@@ -511,13 +522,17 @@ function remote_build_client:_send_diff_files(stream, diff_files)
     local time = os.mclock()
     local startime = time
     for _, fileitem in ipairs(diff_files.inserted) do
-        local filesize = os.filesize(fileitem)
+        local filepath = fileitem
+        if opt.rootdir and not path.is_absolute(fileitem) then
+            filepath = path.absolute(fileitem, opt.rootdir)
+        end
+        local filesize = os.filesize(filepath)
         if os.mclock() - time > 1000 then
             cprint("Uploading ${bright}%d%%${clear} ..", math.floor(count * 100 / totalcount))
             time = os.mclock()
         end
         vprint("uploading %s, %d bytes ..", fileitem, filesize)
-        local sent, compressed_real = stream:send_file(fileitem, {compress = filesize > 4096})
+        local sent, compressed_real = stream:send_file(filepath, {compress = filesize > 4096})
         if not sent then
             return false
         end
@@ -526,13 +541,17 @@ function remote_build_client:_send_diff_files(stream, diff_files)
         compressed_size = compressed_size + compressed_real
     end
     for _, fileitem in ipairs(diff_files.modified) do
-        local filesize = os.filesize(fileitem)
+        local filepath = fileitem
+        if opt.rootdir and not path.is_absolute(fileitem) then
+            filepath = path.absolute(fileitem, opt.rootdir)
+        end
+        local filesize = os.filesize(filepath)
         if os.mclock() - time > 1000 then
             cprint("Uploading ${bright}%d%%${clear} ..", math.floor(count * 100 / totalcount))
             time = os.mclock()
         end
         vprint("uploading %s, %d bytes ..", fileitem, filesize)
-        local sent, compressed_real = stream:send_file(fileitem, {compress = filesize > 4096})
+        local sent, compressed_real = stream:send_file(filepath, {compress = filesize > 4096})
         if not sent then
             return false
         end
