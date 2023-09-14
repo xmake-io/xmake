@@ -228,8 +228,15 @@ function server_session:clean(respmsg)
     vprint("%s: clean files in %s ..", self, self:workdir())
     os.tryrm(self:sourcedir())
     os.tryrm(self:xmake_sourcedir())
+    os.tryrm(path.join(self:workdir(), "manifest.txt"))
+    os.tryrm(path.join(self:workdir(), "xmakesrc_manifest.txt"))
     if body.all then
-        os.tryrm(path.join(self:server():workdir(), "sessions"))
+        for _, sessiondir in ipairs(os.dirs(path.join(self:server():workdir(), "sessions", "*"))) do
+            os.tryrm(path.join(sessiondir, "source"))
+            os.tryrm(path.join(sessiondir, "xmake_sourcedir"))
+            os.tryrm(path.join(sessiondir, "manifest.txt"))
+            os.tryrm(path.join(sessiondir, "xmakesrc_manifest.txt"))
+        end
     end
     vprint("%s: clean files ok", self)
 end
