@@ -37,10 +37,15 @@ local server_session = server_session or object()
 function server_session:init(server, session_id)
     self._ID = session_id
     self._SERVER = server
+
     local filesync = new_filesync(self:sourcedir(), path.join(self:workdir(), "manifest.txt"))
     filesync:ignorefiles_add(".git/**")
     filesync:ignorefiles_add(".xmake/**")
     self._FILESYNC = filesync
+
+    local xmake_filesync = new_filesync(self:xmake_sourcedir(), path.join(self:workdir(), "xmakesrc_manifest.txt"))
+    xmake_filesync:ignorefiles_add(".git/**")
+    self._XMAKE_FILESYNC = xmake_filesync
 end
 
 -- get server session id
@@ -101,7 +106,7 @@ function server_session:diff(respmsg)
     self:_ensure_sourcedir()
 
     -- do snapshot
-    local filesync = self:_filesync()
+    local filesync = body.xmakesrc and self:_xmake_filesync() or self:_filesync()
     local manifest_server = assert(filesync:snapshot(), "server manifest not found!")
     local manifest_client = assert(body.manifest, "client manifest not found!")
 
@@ -146,7 +151,7 @@ function server_session:sync(respmsg)
     local body = respmsg:body()
     local stream = self:stream()
     local manifest = assert(body.manifest, "manifest not found!")
-    local filesync = self:_filesync()
+    local filesync = body.xmakesrc and self:_xmake_filesync() or self:_filesync()
     local sourcedir = self:sourcedir()
     local archivedir = os.tmpfile() .. ".dir"
     vprint("%s: sync files in %s ..", self, self:sourcedir())
@@ -297,9 +302,19 @@ function server_session:sourcedir()
     return path.join(self:workdir(), "source")
 end
 
+-- get xmake sourcedir directory
+function server_session:xmake_sourcedir()
+    return path.join(self:workdir(), "xmake_source")
+end
+
 -- get filesync
 function server_session:_filesync()
     return self._FILESYNC
+end
+
+-- get filesync for xmakesrc
+function server_session:_xmake_filesync()
+    return self._XMAKE_FILESYNC
 end
 
 -- ensure source directory
