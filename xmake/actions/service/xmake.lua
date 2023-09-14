@@ -45,7 +45,7 @@ task("service")
                 {nil, "distcc",     "k",  nil, "Start or connect the distributed build service."             },
                 {nil, "ccache",     "k",  nil, "Start or connect the remote c/c++ cache service."            },
                 {nil, "sync",       "k",  nil, "Sync current project files in the remote daemon service."    },
-                {nil, "xmakesrc",   "k",  nil, "Sync xmake program files in the remote daemon service.",
+                {nil, "xmakesrc",   "kv", nil, "Sync xmake program files in the remote daemon service.",
                                                "e.g.",
                                                "    - xmake service --sync --xmakesrc=/xmakeproj/xmake"      },
                 {nil, "pull",       "k",  nil, "Pull the given file or directory in the remote daemon service.",
