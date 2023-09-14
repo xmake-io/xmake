@@ -259,7 +259,7 @@ function server_session:runcmd(respmsg)
     if os.isfile(path.join(self:xmake_sourcedir(), "core", "main.lua")) then
         xmakesrc = self:xmake_sourcedir()
     end
-    os.execv(program, argv, {curdir = self:sourcedir(), stdout = stdout_wpipe, stdin = stdin_rpipe,
+    os.execv(program, argv, {curdir = self:sourcedir(), stdout = stdout_wpipe, stderr = stdout_wpipe, stdin = stdin_rpipe,
         envs = {XMAKE_IN_SERVICE = "true", XMAKE_PROGRAM_DIR = xmakesrc}})
     stdin_rpipe:close()
     stdout_wpipe:close()
