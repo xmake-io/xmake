@@ -32,6 +32,7 @@ import("vsxmake.vsxmake")
 import("clang.compile_flags")
 import("clang.compile_commands")
 import("private.utils.statistics")
+import("private.service.remote_build.action", {alias = "remote_build_action"})
 
 function makers()
     return {
@@ -75,6 +76,11 @@ function _make(kind)
 end
 
 function main()
+
+    -- do action for remote?
+    if remote_build_action.enabled() then
+        return remote_build_action()
+    end
 
     -- in project generator?
     os.setenv("XMAKE_IN_PROJECT_GENERATOR", "true")
