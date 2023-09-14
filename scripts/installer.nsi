@@ -39,7 +39,7 @@
 ;--------------------------------
 
 ; The name of the installer
-Name "XMake - v${VERSION}"
+Name "Xmake - v${VERSION}"
 
 ; The file to write
 OutFile "xmake.exe"
@@ -139,11 +139,11 @@ ManifestDPIAware true
 
 VIProductVersion                         ${VERSION}.0
 VIFileVersion                            ${VERSION}.0
-VIAddVersionKey /LANG=0 ProductName      XMake
+VIAddVersionKey /LANG=0 ProductName      Xmake
 VIAddVersionKey /LANG=0 Comments         "A cross-platform build utility based on Lua$\nwebsite: https://xmake.io"
 VIAddVersionKey /LANG=0 CompanyName      "The TBOOX Open Source Group"
 VIAddVersionKey /LANG=0 LegalCopyright   "Copyright (C) 2015-present Ruki Wang, tboox.org, xmake.io"
-VIAddVersionKey /LANG=0 FileDescription  "XMake Installer - v${VERSION}"
+VIAddVersionKey /LANG=0 FileDescription  "Xmake Installer - v${VERSION}"
 VIAddVersionKey /LANG=0 OriginalFilename "xmake-${ARCH}.exe"
 VIAddVersionKey /LANG=0 FileVersion      ${VERSION_FULL}
 VIAddVersionKey /LANG=0 ProductVersion   ${VERSION_FULL}
@@ -224,7 +224,7 @@ Function .onInit
 
 FunctionEnd
 
-Section "XMake (required)" InstallExeutable
+Section "Xmake (required)" InstallExeutable
 
   SectionIn RO
 
@@ -255,7 +255,7 @@ Section "XMake (required)" InstallExeutable
     WriteRegStr   ${RootKey} ${RegUninstall} "NoAdmin"               "$NOADMIN"
 
     ; Write the uninstall keys for Windows
-    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "XMake build utility (${ARCH})"
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "Xmake build utility (${ARCH})"
     WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"$InstDir\xmake.exe"'
     WriteRegStr   ${RootKey} ${RegUninstall} "Comments"              "A cross-platform build utility based on Lua"
     WriteRegStr   ${RootKey} ${RegUninstall} "Publisher"             "The TBOOX Open Source Group"
@@ -309,7 +309,7 @@ Section "Add to PATH" InstallPath
     ; Write the installation path into the $PATH environment variable
     WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1;$InstDir"
   ${EndIf}
-  
+
   ; make sure windows knows about the change
    SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
 
