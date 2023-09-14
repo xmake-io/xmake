@@ -302,7 +302,7 @@ function remote_build_client:clean()
     local ok = false
     cprint("${dim}%s: clean files in %s:%d ..", self, addr, port)
     local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
-    if stream:send_msg(message.new_clean(session_id, {token = self:token()})) and stream:flush() then
+    if stream:send_msg(message.new_clean(session_id, {token = self:token(), all = option.get("all")})) and stream:flush() then
         local msg = stream:recv_msg({timeout = -1})
         if msg then
             vprint(msg:body())

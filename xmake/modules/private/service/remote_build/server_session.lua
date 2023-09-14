@@ -223,10 +223,14 @@ function server_session:pull(respmsg)
 end
 
 -- clean files
-function server_session:clean()
+function server_session:clean(respmsg)
+    local body = respmsg:body()
     vprint("%s: clean files in %s ..", self, self:workdir())
     os.tryrm(self:sourcedir())
     os.tryrm(self:xmake_sourcedir())
+    if body.all then
+        os.tryrm(self:server():workdir())
+    end
     vprint("%s: clean files ok", self)
 end
 

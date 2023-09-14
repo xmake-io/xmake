@@ -96,7 +96,7 @@ function remote_build_server:_on_handle(stream, msg)
                 elseif msg:is_pull() then
                     session:pull(respmsg)
                 elseif msg:is_clean() then
-                    session:clean()
+                    session:clean(respmsg)
                 elseif msg:is_runcmd() then
                     session:runcmd(respmsg)
                 end

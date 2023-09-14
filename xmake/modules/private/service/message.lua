@@ -218,7 +218,8 @@ function new_clean(session_id, opt)
     return _new({
         code = message.CODE_CLEAN,
         session_id = session_id,
-        token = opt.token
+        token = opt.token,
+        all = opt.all
     })
 end
 
