@@ -152,9 +152,9 @@ function server_session:sync(respmsg)
     local stream = self:stream()
     local manifest = assert(body.manifest, "manifest not found!")
     local filesync = body.xmakesrc and self:_xmake_filesync() or self:_filesync()
-    local sourcedir = self:sourcedir()
+    local sourcedir = body.xmakesrc and self:xmake_sourcedir() or self:sourcedir()
     local archivedir = os.tmpfile() .. ".dir"
-    vprint("%s: sync files in %s ..", self, self:sourcedir())
+    vprint("%s: sync files in %s ..", self, sourcedir)
     if self:_recv_syncfiles(manifest, archivedir) then
 
         -- do sync
