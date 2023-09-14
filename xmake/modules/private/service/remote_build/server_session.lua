@@ -100,7 +100,6 @@ end
 -- diff files
 function server_session:diff(respmsg)
     local body = respmsg:body()
-    vprint("%s: diff files in %s ..", self, self:sourcedir())
 
     -- ensure sourcedir
     self:_ensure_sourcedir()
@@ -109,6 +108,7 @@ function server_session:diff(respmsg)
     local filesync = body.xmakesrc and self:_xmake_filesync() or self:_filesync()
     local manifest_server = assert(filesync:snapshot(), "server manifest not found!")
     local manifest_client = assert(body.manifest, "client manifest not found!")
+    vprint("%s: diff files in %s ..", self, filesync:rootdir())
 
     -- get all files
     local fileitems = hashset.new()
