@@ -485,20 +485,20 @@ function remote_build_client:_diff_files(stream, opt)
                 for _, fileitem in ipairs(result.inserted) do
                     if count < 8 then
                         cprint("    ${green}[+]: ${clear}%s", fileitem)
-                        count = count + 1
                     end
+                    count = count + 1
                 end
                 for _, fileitem in ipairs(result.modified) do
                     if count < 8 then
                         cprint("    ${yellow}[*]: ${clear}%s", fileitem)
-                        count = count + 1
                     end
+                    count = count + 1
                 end
                 for _, fileitem in ipairs(result.removed) do
                     if count < 8 then
                         cprint("    ${red}[-]: ${clear}%s", fileitem)
-                        count = count + 1
                     end
+                    count = count + 1
                 end
                 if count >= 8 then
                     print("    ...")
