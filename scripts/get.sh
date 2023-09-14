@@ -104,7 +104,7 @@ get_host_speed() {
     if [ `uname` == "Darwin" ]; then
         ping -c 1 -t 1 $1 2>/dev/null | egrep -o 'time=\d+' | egrep -o "\d+" || echo "65535"
     else
-        ping -c 1 -W 1 $1 2>/dev/null | grep -P -o 'time=\d+' | grep -P -o "\d+" || echo "65535"
+        ping -c 1 -W 1 $1 2>/dev/null | grep -E -o 'time=[0-9]+' | grep -E -o "[0-9]+" || echo "65535"
     fi
 }
 
