@@ -229,7 +229,7 @@ function server_session:clean(respmsg)
     os.tryrm(self:sourcedir())
     os.tryrm(self:xmake_sourcedir())
     if body.all then
-        os.tryrm(self:server():workdir())
+        os.tryrm(path.join(self:server():workdir(), "sessions"))
     end
     vprint("%s: clean files ok", self)
 end
