@@ -70,12 +70,12 @@ function remote_build_server:workdir()
 end
 
 -- get xmake sourcedir directory
-function server_session:xmake_sourcedir()
+function remote_build_server:xmake_sourcedir()
     return path.join(self:workdir(), "xmake_source")
 end
 
 -- get filesync for xmakesrc
-function server_session:_xmake_filesync()
+function remote_build_server:_xmake_filesync()
     return self._XMAKE_FILESYNC
 end
 
