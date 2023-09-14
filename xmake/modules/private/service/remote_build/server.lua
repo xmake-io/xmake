@@ -24,6 +24,7 @@ import("private.service.server_config", {alias = "config"})
 import("private.service.message")
 import("private.service.server")
 import("private.service.remote_build.server_session")
+import("private.service.remote_build.filesync", {alias = "new_filesync"})
 import("lib.detect.find_tool")
 
 -- define module
@@ -47,6 +48,11 @@ function remote_build_server:init(daemon)
     -- init timeout
     self._SEND_TIMEOUT = config.get("remote_build.send_timeout") or config.get("send_timeout") or -1
     self._RECV_TIMEOUT = config.get("remote_build.recv_timeout") or config.get("recv_timeout") or -1
+
+    -- init xmake filesync
+    local xmake_filesync = new_filesync(self:xmake_sourcedir(), path.join(self:workdir(), "xmakesrc_manifest.txt"))
+    xmake_filesync:ignorefiles_add(".git/**")
+    self._XMAKE_FILESYNC = xmake_filesync
 end
 
 -- get class
@@ -61,6 +67,16 @@ function remote_build_server:workdir()
         workdir = path.join(global.directory(), "service", "server", "remote_build")
     end
     return workdir
+end
+
+-- get xmake sourcedir directory
+function server_session:xmake_sourcedir()
+    return path.join(self:workdir(), "xmake_source")
+end
+
+-- get filesync for xmakesrc
+function server_session:_xmake_filesync()
+    return self._XMAKE_FILESYNC
 end
 
 -- on handle message

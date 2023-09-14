@@ -37,15 +37,10 @@ local server_session = server_session or object()
 function server_session:init(server, session_id)
     self._ID = session_id
     self._SERVER = server
-
     local filesync = new_filesync(self:sourcedir(), path.join(self:workdir(), "manifest.txt"))
     filesync:ignorefiles_add(".git/**")
     filesync:ignorefiles_add(".xmake/**")
     self._FILESYNC = filesync
-
-    local xmake_filesync = new_filesync(self:xmake_sourcedir(), path.join(self:workdir(), "xmakesrc_manifest.txt"))
-    xmake_filesync:ignorefiles_add(".git/**")
-    self._XMAKE_FILESYNC = xmake_filesync
 end
 
 -- get server session id
@@ -227,16 +222,14 @@ function server_session:clean(respmsg)
     local body = respmsg:body()
     vprint("%s: clean files in %s ..", self, self:workdir())
     os.tryrm(self:sourcedir())
-    os.tryrm(self:xmake_sourcedir())
     os.tryrm(path.join(self:workdir(), "manifest.txt"))
-    os.tryrm(path.join(self:workdir(), "xmakesrc_manifest.txt"))
     if body.all then
         for _, sessiondir in ipairs(os.dirs(path.join(self:server():workdir(), "sessions", "*"))) do
             os.tryrm(path.join(sessiondir, "source"))
-            os.tryrm(path.join(sessiondir, "xmake_sourcedir"))
             os.tryrm(path.join(sessiondir, "manifest.txt"))
-            os.tryrm(path.join(sessiondir, "xmakesrc_manifest.txt"))
         end
+        os.tryrm(self:xmake_sourcedir())
+        os.tryrm(path.join(self:server():workdir(), "xmakesrc_manifest.txt"))
     end
     vprint("%s: clean files ok", self)
 end
@@ -321,7 +314,7 @@ end
 
 -- get xmake sourcedir directory
 function server_session:xmake_sourcedir()
-    return path.join(self:workdir(), "xmake_source")
+    return self:server():xmake_sourcedir()
 end
 
 -- get filesync
@@ -329,9 +322,9 @@ function server_session:_filesync()
     return self._FILESYNC
 end
 
--- get filesync for xmakesrc
+-- get xmake filesync
 function server_session:_xmake_filesync()
-    return self._XMAKE_FILESYNC
+    return self:server():_xmake_filesync()
 end
 
 -- ensure source directory
