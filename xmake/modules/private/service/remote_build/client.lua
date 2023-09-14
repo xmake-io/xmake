@@ -211,7 +211,7 @@ function remote_build_client:sync()
         local send_ok = false
         if stream:send_msg(message.new_sync(session_id, diff_files,
                 {token = self:token(), xmakesrc = xmakesrc and true or false}), {compress = true}) and stream:flush() then
-            if self:_send_diff_files(stream, diff_files) then
+            if self:_send_diff_files(stream, diff_files, {rootdir = xmakesrc}) then
                 send_ok = true
             end
         end
@@ -513,7 +513,8 @@ function remote_build_client:_diff_files(stream, opt)
 end
 
 -- send diff files
-function remote_build_client:_send_diff_files(stream, diff_files)
+function remote_build_client:_send_diff_files(stream, diff_files, opt)
+    opt = opt or {}
     local count = 0
     local totalsize = 0
     local compressed_size = 0
@@ -521,13 +522,17 @@ function remote_build_client:_send_diff_files(stream, diff_files)
     local time = os.mclock()
     local startime = time
     for _, fileitem in ipairs(diff_files.inserted) do
-        local filesize = os.filesize(fileitem)
+        local filepath = fileitem
+        if opt.rootdir and not path.is_absolute(fileitem) then
+            filepath = path.absolute(fileitem, opt.rootdir)
+        end
+        local filesize = os.filesize(filepath)
         if os.mclock() - time > 1000 then
             cprint("Uploading ${bright}%d%%${clear} ..", math.floor(count * 100 / totalcount))
             time = os.mclock()
         end
         vprint("uploading %s, %d bytes ..", fileitem, filesize)
-        local sent, compressed_real = stream:send_file(fileitem, {compress = filesize > 4096})
+        local sent, compressed_real = stream:send_file(filepath, {compress = filesize > 4096})
         if not sent then
             return false
         end
@@ -536,13 +541,17 @@ function remote_build_client:_send_diff_files(stream, diff_files)
         compressed_size = compressed_size + compressed_real
     end
     for _, fileitem in ipairs(diff_files.modified) do
-        local filesize = os.filesize(fileitem)
+        local filepath = fileitem
+        if opt.rootdir and not path.is_absolute(fileitem) then
+            filepath = path.absolute(fileitem, opt.rootdir)
+        end
+        local filesize = os.filesize(filepath)
         if os.mclock() - time > 1000 then
             cprint("Uploading ${bright}%d%%${clear} ..", math.floor(count * 100 / totalcount))
             time = os.mclock()
         end
         vprint("uploading %s, %d bytes ..", fileitem, filesize)
-        local sent, compressed_real = stream:send_file(fileitem, {compress = filesize > 4096})
+        local sent, compressed_real = stream:send_file(filepath, {compress = filesize > 4096})
         if not sent then
             return false
         end
