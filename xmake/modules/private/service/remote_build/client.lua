@@ -249,6 +249,9 @@ function remote_build_client:pull(filepattern, outputdir)
     if not filepattern:find("*", 1, true) and os.isdir(filepattern) then
         filepattern = path.join(filepattern, "**")
     end
+    if not outputdir then
+        outputdir = os.curdir()
+    end
     cprint("${dim}%s: pull %s in %s:%d ..", self, filepattern, addr, port)
     local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
     if stream:send_msg(message.new_pull(session_id, filepattern, {token = self:token()})) and stream:flush() then
