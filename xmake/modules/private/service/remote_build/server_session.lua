@@ -323,6 +323,10 @@ function server_session:_ensure_sourcedir()
     if not os.isdir(sourcedir) then
         os.mkdir(sourcedir)
     end
+    local xmake_sourcedir = self:xmake_sourcedir()
+    if not os.isdir(xmake_sourcedir) then
+        os.mkdir(xmake_sourcedir)
+    end
 end
 
 -- write data to pipe
