@@ -225,7 +225,8 @@ end
 -- clean files
 function server_session:clean()
     vprint("%s: clean files in %s ..", self, self:workdir())
-    os.tryrm(self:workdir())
+    os.tryrm(self:sourcedir())
+    os.tryrm(self:xmake_sourcedir())
     vprint("%s: clean files ok", self)
 end
 
