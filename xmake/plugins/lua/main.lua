@@ -22,6 +22,8 @@
 import("core.base.option")
 import("core.sandbox.module")
 import("core.sandbox.sandbox")
+import("core.project.project")
+import("private.service.remote_build.action", {alias = "remote_build_action"})
 
 -- get all lua scripts
 function scripts()
@@ -158,6 +160,11 @@ function _get_args()
 end
 
 function main()
+
+    -- do action for remote if we are in the project directory?
+    if os.isfile(project.rootfile()) and remote_build_action.enabled() then
+        return remote_build_action()
+    end
 
     -- list builtin scripts
     if option.get("list") then
