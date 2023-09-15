@@ -51,7 +51,7 @@ function distcc_build_client:init()
     local projectfile = os.projectfile()
     if projectfile and os.isfile(projectfile) and projectdir then
         self._PROJECTDIR = projectdir
-        self._WORKDIR = path.join(project_config.directory(), "distcc_build")
+        self._WORKDIR = path.join(project_config.directory(), "service", "distcc_build")
     else
         raise("we need to enter a project directory with xmake.lua first!")
     end
@@ -686,7 +686,7 @@ function is_connected()
             local projectdir = os.projectdir()
             local projectfile = os.projectfile()
             if projectfile and os.isfile(projectfile) and projectdir then
-                local workdir = path.join(project_config.directory(), "distcc_build")
+                local workdir = path.join(project_config.directory(), "service", "distcc_build")
                 local statusfile = path.join(workdir, "status.txt")
                 if os.isfile(statusfile) then
                     local status = io.load(statusfile)

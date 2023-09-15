@@ -22,6 +22,7 @@
 import("core.base.global")
 import("core.base.base64")
 import("core.base.bytes")
+import("core.project.config")
 import("private.service.server_config")
 
 -- get a local server token
@@ -67,6 +68,13 @@ end
 
 -- get config file path
 function configfile()
+    local projectfile = os.projectfile()
+    if projectfile and os.isfile(projectfile) then
+        local localconf = path.join(config.directory(), "service", "client.conf")
+        if os.isfile(localconf) then
+            return localconf
+        end
+    end
     return path.join(global.directory(), "service", "client.conf")
 end
 

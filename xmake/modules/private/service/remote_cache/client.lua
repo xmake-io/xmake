@@ -50,7 +50,7 @@ function remote_cache_client:init()
     local projectfile = os.projectfile()
     if projectfile and os.isfile(projectfile) and projectdir then
         self._PROJECTDIR = projectdir
-        self._WORKDIR = path.join(project_config.directory(), "remote_cache")
+        self._WORKDIR = path.join(project_config.directory(), "service", "remote_cache")
     else
         raise("we need to enter a project directory with xmake.lua first!")
     end
@@ -487,7 +487,7 @@ function is_connected()
             local projectdir = os.projectdir()
             local projectfile = os.projectfile()
             if projectfile and os.isfile(projectfile) and projectdir then
-                local workdir = path.join(project_config.directory(), "remote_cache")
+                local workdir = path.join(project_config.directory(), "service", "remote_cache")
                 local statusfile = path.join(workdir, "status.txt")
                 if os.isfile(statusfile) then
                     local status = io.load(statusfile)
