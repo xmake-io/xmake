@@ -235,7 +235,7 @@ end
 
 -- do compile for batchcmds
 -- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
-function _batchcmds_compile(batchcmds, target, sourcefile, flags)
+function _batchcmds_compile(batchcmds, target, flags, sourcefile)
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
     batchcmds:compilev(table.join(compflags or {}, flags), {compiler = compinst, sourcekind = "cxx"})
@@ -709,11 +709,13 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                 batchcmds:mkdir(path.directory(objectfile))
                 if provide then
                     _batchcmds_compile(batchcmds, target, table.join(flags,
-                        {"-x", "c++-module", "--precompile", "-c", path(cppfile), "-o", path(provide.bmi)}))
+                        {"-x", "c++-module", "--precompile", "-c", path(cppfile), "-o", path(provide.bmi)}), cppfile)
                     _add_module_to_mapper(target, name, provide.bmi, {namedmodule = true})
+                    -- add requiresflags to module. it will be used for project generation
+                    target:fileconfig_add(cppfile, {force = {cxxflags = requiresflags}})
                 end
-                _batchcmds_compile(batchcmds, target, file, table.join(flags,
-                    not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}))
+                _batchcmds_compile(batchcmds, target, table.join(flags,
+                    not provide and {"-x", "c++"} or {}, {"-c", file, "-o", path(objectfile)}), file)
                 target:add("objectfiles", objectfile)
             elseif requiresflags then
                 local cxxflags = {}

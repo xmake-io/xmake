@@ -113,7 +113,7 @@ end
 -- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
 function _batchcmds_compile(batchcmds, target, flags, sourcefile)
     local compinst = target:compiler("cxx")
-    local compflags = compinst:compflags({sourcefile = sourcefile}, {target = target})
+    local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
     batchcmds:compilev(table.join(compflags or {}, flags), {compiler = compinst, sourcekind = "cxx"})
 end
 
@@ -511,13 +511,13 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     break
                 end
             end
-            local flags = {"-x", "c++", "-c", path(cppfile), "-o", path(objectfile)}
-            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
-            batchcmds:mkdir(path.directory(objectfile))
-            _batchcmds_compile(batchcmds, target, flags)
-            batchcmds:add_depfiles(cppfile)
-            target:add("objectfiles", objectfile)
-            if provide then
+            if provide or common.has_module_extension(cppfile) then
+                local flags = {"-x", "c++", "-c", path(cppfile), "-o", path(objectfile)}
+                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
+                batchcmds:mkdir(path.directory(objectfile))
+                _batchcmds_compile(batchcmds, target, flags, cppfile)
+                batchcmds:add_depfiles(cppfile)
+                target:add("objectfiles", objectfile)
                 _add_module_to_mapper(mapper_file, name, path.absolute(provide.bmi, projectdir))
             end
             depmtime = math.max(depmtime, os.mtime(provide and provide.bmi or objectfile))
