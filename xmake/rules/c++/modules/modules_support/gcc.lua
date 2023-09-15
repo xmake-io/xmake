@@ -511,13 +511,13 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
                     break
                 end
             end
-            local flags = {"-x", "c++", "-c", path(cppfile), "-o", path(objectfile)}
-            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
-            batchcmds:mkdir(path.directory(objectfile))
-            _batchcmds_compile(batchcmds, target, flags, cppfile)
-            batchcmds:add_depfiles(cppfile)
-            target:add("objectfiles", objectfile)
-            if provide then
+            if provide or common.has_module_extension(cppfile) then
+                local flags = {"-x", "c++", "-c", path(cppfile), "-o", path(objectfile)}
+                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
+                batchcmds:mkdir(path.directory(objectfile))
+                _batchcmds_compile(batchcmds, target, flags, cppfile)
+                batchcmds:add_depfiles(cppfile)
+                target:add("objectfiles", objectfile)
                 _add_module_to_mapper(mapper_file, name, path.absolute(provide.bmi, projectdir))
             end
             depmtime = math.max(depmtime, os.mtime(provide and provide.bmi or objectfile))
