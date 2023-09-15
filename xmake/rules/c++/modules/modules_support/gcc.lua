@@ -514,7 +514,7 @@ function build_modules_for_batchcmds(target, batchcmds, objectfiles, modules, op
             local flags = {"-x", "c++", "-c", path(cppfile), "-o", path(objectfile)}
             batchcmds:show_progress(opt.progress, "${color.build.object}compiling.module.$(mode) %s", name or cppfile)
             batchcmds:mkdir(path.directory(objectfile))
-            _batchcmds_compile(batchcmds, target, flags)
+            _batchcmds_compile(batchcmds, target, flags, cppfile)
             batchcmds:add_depfiles(cppfile)
             target:add("objectfiles", objectfile)
             if provide then
