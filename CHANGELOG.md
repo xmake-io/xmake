@@ -21,6 +21,7 @@
 
 * [#4110](https://github.com/xmake-io/xmake/issues/4110): Fix extrafiles
 * [#4115](https://github.com/xmake-io/xmake/issues/4115): Fix compile_commands generator for clangd
+* [#4199](https://github.com/xmake-io/xmake/pull/4199): Fix compile_commands generator for c++ modules
 
 ## v2.8.2
 
@@ -1671,6 +1672,7 @@
 
 * [#4110](https://github.com/xmake-io/xmake/issues/4110): 修复 extrafiles
 * [#4115](https://github.com/xmake-io/xmake/issues/4115): 修复 compile_commands 生成器
+* [#4199](https://github.com/xmake-io/xmake/pull/4199): 修复 compile_commands 生成器对 c++ modules 的支持
 
 ## v2.8.2
 
