@@ -87,10 +87,6 @@ function _install_for_manifest(vcpkg, name, opt)
     if require_version == "latest" then
         require_version = nil
     end
-    -- 1.2.11+13 -> 1.2.11#13
-    if require_version then
-        require_version = require_version:gsub("%+", "#")
-    end
     local minversion = require_version
     if minversion and minversion:startswith(">=") then
         minversion = minversion:sub(3)
