@@ -61,9 +61,16 @@ function main(toolchain)
         if is_host("linux") and os.isfile("/usr/bin/llvm-ar") then
             sdkdir = "/usr"
         elseif is_host("macosx") then
-            local bindir = find_path("llvm-ar", "/usr/local/Cellar/llvm/*/bin")
-            if bindir then
-                sdkdir = path.directory(bindir)
+            if os.arch() == "arm64" then
+                local bindir = find_path("llvm-ar", "/opt/homebrew/opt/llvm/bin")
+                if bindir then
+                    sdkdir = path.directory(bindir)
+                end
+            else
+                local bindir = find_path("llvm-ar", "/usr/local/Cellar/llvm/*/bin")
+                if bindir then
+                    sdkdir = path.directory(bindir)
+                end
             end
         end
     end
