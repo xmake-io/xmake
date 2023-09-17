@@ -128,6 +128,8 @@ function nf_warning(self, level)
     ,   more       = "-Wall"
     ,   all        = "-Wall"
     ,   allextra   = {"-Wall", "-Wextra"}
+    ,   extra      = "-Wextra"
+    ,   pedantic   = "-Wpedantic"
     ,   everything = self:kind() == "cxx" and {"-Wall", "-Wextra", "-Weffc++"} or {"-Wall", "-Wextra"}
     ,   error      = "-Werror"
     }

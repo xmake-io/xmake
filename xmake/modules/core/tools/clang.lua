@@ -117,13 +117,14 @@ end
 
 -- make the warning flag
 function nf_warning(self, level)
-    local maps =
-    {
+    local maps = {
         none       = "-w"
     ,   less       = "-Wall"
     ,   more       = "-Wall"
     ,   all        = "-Wall"
-    ,   allextra   = "-Wall -Wextra"
+    ,   allextra   = {"-Wall", "-Wextra"}
+    ,   extra      = "-Wextra"
+    ,   pedantic   = "-Wpedantic"
     ,   everything = "-Weverything"
     ,   error      = "-Werror"
     }

@@ -23,5 +23,6 @@ import(".api_checker")
 
 function main(opt)
     opt = opt or {}
-    api_checker.check_targets("warnings", table.join(opt, {values = {"none", "less", "more", "all", "allextra", "everything", "error"}}))
+    api_checker.check_targets("warnings", table.join(opt, {values = {
+        "none", "less", "more", "extra", "all", "allextra", "everything", "pedantic", "error"}}))
 end
