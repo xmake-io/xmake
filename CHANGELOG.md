@@ -16,6 +16,7 @@
 * [#4137](https://github.com/xmake-io/xmake/issues/4137): Support Qt6 for Wasm
 * [#4173](https://github.com/xmake-io/xmake/issues/4173): Add recheck argument to on_config
 * [#4200](https://github.com/xmake-io/xmake/pull/4200): Improve remote build to support debugging xmake source code.
+* [#4209](https://github.com/xmake-io/xmake/issues/4209): Add extra and pedantic warnings
 
 ### Bugs fixed
 
@@ -1667,6 +1668,7 @@
 * [#4137](https://github.com/xmake-io/xmake/issues/4137): 改进 Qt，支持 Qt6 for Wasm
 * [#4173](https://github.com/xmake-io/xmake/issues/4173): 添加 recheck 参数到 on_config
 * [#4200](https://github.com/xmake-io/xmake/pull/4200): 改进远程构建，支持调试本地 xmake 源码
+* [#4209](https://github.com/xmake-io/xmake/issues/4209): 添加 extra 和 pedantic 警告
 
 ### Bugs 修复
 
