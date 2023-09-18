@@ -130,8 +130,7 @@ end
 
 -- make the fp-model flag
 function nf_fpmodel(self, level)
-    local maps =
-    {
+    local maps = {
         precise    = "-fp:precise" -- default
     ,   fast       = "-fp:fast"
     ,   strict     = "-fp:strict"
@@ -142,9 +141,16 @@ function nf_fpmodel(self, level)
 end
 
 -- make the warning flag
-function nf_warning(self, level)
-    local maps =
-    {
+function nf_warnings(self, levels)
+    local flags = {}
+    local values = hashset.from(levels)
+    if values:has("all") and values:has("extra") then
+        table.insert(flags, "-W4")
+        values:remove("all")
+        values:remove("extra")
+    end
+
+    local maps = {
         none       = "-w"
     ,   less       = "-W1"
     ,   more       = "-W3"
@@ -153,7 +159,15 @@ function nf_warning(self, level)
     ,   everything = "-Wall"
     ,   error      = "-WX"
     }
-    return maps[level]
+    for _, level in values:keys() do
+        local flag = maps[level]
+        if flag then
+            table.insert(flags, flag)
+        end
+    end
+    if #flags > 0 then
+        return flags
+    end
 end
 
 -- make the optimize flag
