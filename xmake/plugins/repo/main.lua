@@ -28,6 +28,7 @@ import("devel.git")
 import("net.proxy")
 import("async.runjobs")
 import("private.action.require.impl.environment")
+import("private.service.remote_build.action", {alias = "remote_build_action"})
 
 function _clear_quick_search_cache(is_global)
     if is_global then
@@ -213,6 +214,11 @@ end
 
 -- main
 function main()
+
+    -- do action for remote?
+    if remote_build_action.enabled() then
+        return remote_build_action()
+    end
 
     -- load project if operate local repositories
     if not option.get("global") then
