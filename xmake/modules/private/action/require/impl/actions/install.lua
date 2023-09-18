@@ -365,8 +365,8 @@ function main(package)
                     end
 
                     -- install rules
-                    local rulesdir = path.join(package:scriptdir(), "rules")
-                    if os.isdir(rulesdir) then
+                    local rulesdir = package:rulesdir()
+                    if rulesdir and os.isdir(rulesdir) then
                         os.cp(rulesdir, package:installdir())
                     end
 
