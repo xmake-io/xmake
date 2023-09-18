@@ -806,6 +806,22 @@ function _instance:scriptdir()
     return self._SCRIPTDIR
 end
 
+-- get the rules directory
+function _instance:rulesdir()
+    local rulesdir = self._RULESDIR
+    if rulesdir == nil then
+        rulesdir = path.join(self:scriptdir(), "rules")
+        if not os.isdir(rulesdir) and self:base() then
+            rulesdir = self:base():rulesdir()
+        end
+        if not os.isdir(rulesdir) then
+            rulesdir = false
+        end
+        self._RULESDIR = rulesdir
+    end
+    return rulesdir or nil
+end
+
 -- get the references info of this package
 function _instance:references()
     local references_file = path.join(self:installdir({readonly = true}), "references.txt")
