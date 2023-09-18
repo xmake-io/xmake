@@ -814,7 +814,7 @@ function _instance:rulesdir()
         if not os.isdir(rulesdir) and self:base() then
             rulesdir = self:base():rulesdir()
         end
-        if not os.isdir(rulesdir) then
+        if rulesdir == nil or not os.isdir(rulesdir) then
             rulesdir = false
         end
         self._RULESDIR = rulesdir
