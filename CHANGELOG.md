@@ -7,6 +7,7 @@
 * [#4112](https://github.com/xmake-io/xmake/issues/4112): Support Lua Debugger (EmmyLua)
 * [#4132](https://github.com/xmake-io/xmake/pull/4132): Support cppfront
 * [#4147](https://github.com/xmake-io/xmake/issues/4147): Add hlsl2spv rule
+* Add lib.lua.package module
 
 ### Changes
 
@@ -1659,6 +1660,7 @@
 * [#4112](https://github.com/xmake-io/xmake/issues/4112): 支持 Lua 调试 (EmmyLua)
 * [#4132](https://github.com/xmake-io/xmake/pull/4132): 支持 cppfront
 * [#4147](https://github.com/xmake-io/xmake/issues/4147): 添加 hlsl2spv 规则
+* 添加 lib.lua.package 模块
 
 ### 改进
 
