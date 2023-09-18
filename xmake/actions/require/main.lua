@@ -34,6 +34,7 @@ import("private.action.require.export")
 import("private.action.require.import", {alias = "import_packages"})
 import("private.action.require.install")
 import("private.action.require.uninstall")
+import("private.service.remote_build.action", {alias = "remote_build_action"})
 
 --
 -- the default repositories:
@@ -69,6 +70,11 @@ end
 
 -- main
 function main()
+
+    -- do action for remote?
+    if remote_build_action.enabled() then
+        return remote_build_action()
+    end
 
     -- load project first
     _load_project()
