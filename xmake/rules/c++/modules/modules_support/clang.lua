@@ -270,6 +270,9 @@ function _build_modulefile(target, sourcefile, opt)
     local bmiflags
     if opt.provide then
         bmifile = _get_bmi_path(opt.provide.bmifile)
+        if bmifile then
+            common.memcache():set2(bmifile, "compiling", true)
+        end
         if moduleoutputflag then
             compileflags = table.join("-x", "c++-module", moduleoutputflag .. bmifile, requiresflags)
         else
@@ -664,9 +667,18 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                                 table.insert(cxxflags, flag)
                             end
                         end
-                        -- remove the objectfile to force rebuild because it's not handled automatically
-                        os.rm(target:objectfile(cppfile))
                         target:fileconfig_add(cppfile, {force = {cxxflags = cxxflags}})
+                        
+                        local rebuild = false
+                        for _, requiredfile in ipairs(requires) do
+                            if common.memcache():get2(requiredfile, "compiling") == true then
+                                rebuild = true
+                                break
+                            end
+                        end
+                        if rebuild then
+                           os.rm(target:objectfile(cppfile))
+                        end
                     end
                 end)})
             modulesjobs[name or cppfile] = moduleinfo
