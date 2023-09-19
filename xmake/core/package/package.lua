@@ -615,7 +615,7 @@ end
 -- is local embed source code package?
 -- we install directly from the local source code instead of downloading it remotely
 function _instance:is_source_embed()
-    return self:get("sourcedir") and #self:urls() == 0 and self:script("install")
+    return self:get("sourcedir") and self:script("install")
 end
 
 -- is local embed binary package? it's come from `xmake package`
