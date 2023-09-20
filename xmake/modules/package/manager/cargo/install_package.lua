@@ -143,4 +143,26 @@ target = "%s"
     else
         os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
     end
+
+    -- install metadata
+    argv = {"metadata", "--format-version", "1", "--manifest-path", cargotoml, "--color", "never"}
+    if target then
+        table.insert(argv, "--filter-platform")
+        table.insert(argv, target)
+    end
+    if configs.features then
+        table.insert(argv, "--features")
+        table.insert(argv, table.concat(configs.features, ","))
+    end
+    if configs.default_features == false then
+        table.insert(argv, "--no-default-features")
+    end
+
+    local metadata = os.iorunv(cargo.program, argv, {curdir = sourcedir})
+
+    -- fetch the direct dependencies list regradless of the target platform
+    table.insert(argv, "--no-deps")
+    local metadata_without_deps = os.iorunv(cargo.program, argv, {curdir = sourcedir})
+
+    io.save(path.join(installdir, "metadata.txt"), {metadata = metadata, metadata_without_deps = metadata_without_deps})
 end
