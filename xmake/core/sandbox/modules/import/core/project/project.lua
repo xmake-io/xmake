@@ -150,6 +150,7 @@ end
 -- end
 --
 function sandbox_core_project._config_targets(opt)
+    opt = opt or {}
     for _, target in ipairs(table.wrap(project.ordertargets())) do
         if target:is_enabled() then
             sandbox_core_project._config_target(target, opt)
