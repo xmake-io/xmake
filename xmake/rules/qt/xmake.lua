@@ -76,6 +76,7 @@ rule("qt.console")
     end)
 
     after_install("windows", "install.windows")
+    after_install("mingw", "install.mingw")
 
 -- define rule: qt widgetapp
 rule("qt.widgetapp")
@@ -110,6 +111,7 @@ rule("qt.widgetapp")
     -- install application for android
     on_install("android", "install.android")
     after_install("windows", "install.windows")
+    after_install("mingw", "install.mingw")
 
 -- define rule: qt static widgetapp
 rule("qt.widgetapp_static")
@@ -137,6 +139,7 @@ rule("qt.widgetapp_static")
     -- install application for android
     on_install("android", "install.android")
     after_install("windows", "install.windows")
+    after_install("mingw", "install.mingw")
 
 -- define rule: qt quickapp
 rule("qt.quickapp")
@@ -158,6 +161,7 @@ rule("qt.quickapp")
     -- install application for android
     on_install("android", "install.android")
     after_install("windows", "install.windows")
+    after_install("mingw", "install.mingw")
 
 -- define rule: qt static quickapp
 rule("qt.quickapp_static")
@@ -181,6 +185,7 @@ rule("qt.quickapp_static")
     -- install application for android
     on_install("android", "install.android")
     after_install("windows", "install.windows")
+    after_install("mingw", "install.mingw")
 
 -- define rule: qt qmlplugin
 rule("qt.qmlplugin")
