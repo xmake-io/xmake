@@ -87,31 +87,14 @@ end
 function _get_names_of_libraries(name, opt)
     local configs = opt.configs or {}
     local names = hashset.new()
-    if configs.cargo_toml then
-        local cargo = assert(find_tool("cargo"), "cargo not found!")
-        local cargo_args = {"metadata", "--format-version", "1", "--manifest-path", configs.cargo_toml, "--color", "never"}
-        local target = check_target(opt.arch, true) and opt.arch or nil
-        if target then
-            table.insert(cargo_args, "--filter-platform")
-            table.insert(cargo_args, target)
-        end
-        if configs.features then
-            table.insert(cargo_args, "--features")
-            table.insert(cargo_args, table.concat(configs.features, ","))
-        end
-        if configs.default_features == false then
-            table.insert(cargo_args, "--no-default-features")
-        end
+    local metadata_file = path.join(opt.installdir, "metadata.txt")
+    if configs.cargo_toml and os.isfile(metadata_file) then
+        local fileinfo = io.load(metadata_file)
+        local metadata = json.decode(fileinfo.metadata)
+        local metadata_without_deps = json.decode(fileinfo.metadata_without_deps)
 
-        local output = os.iorunv(cargo.program, cargo_args)
-        local metadata = json.decode(output)
-
-        -- fetch the direct dependencies list regradless of the target platform
-        table.insert(cargo_args, "--no-deps")
-        output = os.iorunv(cargo.program, cargo_args)
-        local metadata_no_deps = json.decode(output)
         -- FIXME: should consider the case of multiple packages in a workspace!
-        local direct_deps = metadata_no_deps.packages[1].dependencies
+        local direct_deps = metadata_without_deps.packages[1].dependencies
 
         -- get the intersection of the direct dependencies and all dependencies for the target platform
         for _, dep in ipairs(direct_deps) do
