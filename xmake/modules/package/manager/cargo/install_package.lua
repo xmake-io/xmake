@@ -144,7 +144,7 @@ target = "%s"
         os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
     end
 
-    -- installmetadata 
+    -- install metadata
     argv = {"metadata", "--format-version", "1", "--manifest-path", cargotoml, "--color", "never"}
     if target then
         table.insert(argv, "--filter-platform")
@@ -165,5 +165,4 @@ target = "%s"
     local metadata_without_deps = os.iorunv(cargo.program, argv, {curdir = sourcedir})
 
     io.save(path.join(installdir, "metadata.txt"), {metadata = metadata, metadata_without_deps = metadata_without_deps})
-    io.cat(path.join(installdir, "metadata.txt"))
 end
