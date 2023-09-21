@@ -668,6 +668,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             end
                         end
                         target:fileconfig_add(cppfile, {force = {cxxflags = cxxflags}})
+
                         -- force rebuild .cpp file if any of its module dependency is rebuilt
                         local rebuild = false
                         for _, requiredfile in ipairs(requires) do
@@ -677,7 +678,7 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             end
                         end
                         if rebuild then
-                           os.rm(target:objectfile(cppfile))
+                           os.tryrm(target:objectfile(cppfile))
                         end
                     end
                 end)})
@@ -932,14 +933,13 @@ function get_moduleoutputflag(target)
 end
 
 function get_requires(target, requires)
-  local flags = get_requiresflags(target, requires)
-  local requires
-  for _, flag in ipairs(flags) do
-    requires = requires or {}
-    table.insert(requires, flag:split("=")[3])
-  end
-
-  return requires
+    local requires
+    local flags = get_requiresflags(target, requires)
+    for _, flag in ipairs(flags) do
+        requires = requires or {}
+        table.insert(requires, flag:split("=")[3])
+    end
+    return requires
 end
 
 function get_requiresflags(target, requires)
