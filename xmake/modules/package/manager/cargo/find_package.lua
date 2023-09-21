@@ -134,7 +134,13 @@ function main(name, opt)
     local frameworks
     local librarydir = path.join(opt.installdir, "lib")
     local libfiles = os.files(path.join(librarydir, "*.rlib"))
-    for _, libraryfile in ipairs(libfiles) do
+
+    -- @see https://github.com/xmake-io/xmake/issues/4228
+    local libfiles_native
+    if opt.plat == "macosx" then
+        libfiles_native = os.files(path.join(librarydir, "*.dylib"))
+    end
+    for _, libraryfile in ipairs(table.join(libfiles, libfiles_native)) do
         local filename = path.filename(libraryfile)
         local libraryname = filename:split('-', {plain = true})[1]
         if names:has(libraryname) then
