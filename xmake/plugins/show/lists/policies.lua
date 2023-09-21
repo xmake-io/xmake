@@ -23,10 +23,9 @@ import("core.project.policy")
 
 -- show all policies
 function main()
-    local policies = policy.policies()
     local width = 45
-
-    for name, policy in pairs(policies) do
+    local policies = policy.policies()
+    for name, policy in table.orderpairs(policies) do
         cprint("${color.dump.string}%s${clear}%s%s", name, (" "):rep(width - #name), policy["description"])
         cprint("%s${bright}%s", (" "):rep(width), policy["default"] or "false")
     end
