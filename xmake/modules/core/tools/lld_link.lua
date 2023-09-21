@@ -19,5 +19,5 @@
 --
 
 -- imports
-inherit("ld")
+inherit("link")
 
