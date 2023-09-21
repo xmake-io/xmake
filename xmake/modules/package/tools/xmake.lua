@@ -250,6 +250,13 @@ function _get_configs(package, configs, opt)
             policies = "build.optimization.lto"
         end
     end
+    if package:config("asan") and (not policies or not policies:find("build.sanitizer.address", 1, true)) then
+        if policies then
+            policies = policies .. ",build.sanitizer.address"
+        else
+            policies = "build.sanitizer.address"
+        end
+    end
     if not package:use_external_includes() and (not policies or not policies:find("package.include_external_headers", 1, true)) then
         if policies then
             policies = policies .. ",package.include_external_headers:n"

@@ -2112,11 +2112,11 @@ function _instance:_generate_lto_configs(sourcekind)
 end
 
 -- generate sanitizer configs
-function _instance:_generate_sanitizer_configs(sourcekind, checkmode)
+function _instance:_generate_sanitizer_configs(checkmode, sourcekind)
 
     -- add cflags
     local configs = {}
-    if self:has_tool(sourcekind, "cl", "clang", "clangxx", "gcc", "gxx") then
+    if sourcekind and self:has_tool(sourcekind, "cl", "clang", "clangxx", "gcc", "gxx") then
         local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
         configs[cflag] = "-fsanitize=" .. checkmode
     end
@@ -2165,7 +2165,7 @@ function _instance:_generate_build_configs(configs, opt)
         end
     end
     if self:config("asan") then
-        local configs_asan = self:_generate_sanitizer_configs(opt.sourcekind or "cxx", "address")
+        local configs_asan = self:_generate_sanitizer_configs("address", opt.sourcekind or "cxx")
         if configs_asan then
             for k, v in pairs(configs_asan) do
                 configs[k] = table.wrap(configs[k] or {})

@@ -282,6 +282,11 @@ function buildenvs(package, opt)
         table.join2(cxxflags, package:_generate_lto_configs("cxx").cxxflags)
         table.join2(ldflags, package:_generate_lto_configs().ldflags)
     end
+    if package:config("asan") then
+        table.join2(cflags, package:_generate_sanitizer_configs("address", "cc").cflags)
+        table.join2(cxxflags, package:_generate_sanitizer_configs("address", "cxx").cxxflags)
+        table.join2(ldflags, package:_generate_sanitizer_configs("address").ldflags)
+    end
     envs.CFLAGS    = table.concat(cflags, ' ')
     envs.CXXFLAGS  = table.concat(cxxflags, ' ')
     envs.CPPFLAGS  = table.concat(cppflags, ' ')
