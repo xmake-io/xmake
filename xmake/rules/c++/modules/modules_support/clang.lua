@@ -270,6 +270,9 @@ function _build_modulefile(target, sourcefile, opt)
     local bmiflags
     if opt.provide then
         bmifile = _get_bmi_path(opt.provide.bmifile)
+        if bmifile then
+            common.memcache():set2(bmifile, "compiling", true)
+        end
         if moduleoutputflag then
             compileflags = table.join("-x", "c++-module", moduleoutputflag .. bmifile, requiresflags)
         else
@@ -293,11 +296,12 @@ function _build_modulefile(target, sourcefile, opt)
         if bmiflags then
             assert(compinst:compile(sourcefile, bmifile, {dependinfo = dependinfo, compflags = bmiflags}))
         end
-        assert(compinst:compile(bmiflags and bmifile or sourcefile, objectfile, {compflags = compileflags}))
+        assert(compinst:compile(bmiflags and bmifile or sourcefile, objectfile, {dependinfo = dependinfo, compflags = compileflags}))
 
         -- update files and values to the dependent file
         dependinfo.values = depvalues
         table.join2(dependinfo.files, sourcefile)
+        table.join2(dependinfo.files, opt.requires or {})
         depend.save(dependinfo, dependfile)
     end
 end
@@ -627,8 +631,10 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                 job = batchjobs:newjob(name or cppfile, function(index, total)
                     -- @note we add it at the end to ensure that the full modulemap are already stored in the mapper
                     local requiresflags
+                    local requires
                     if module.requires then
                         requiresflags = get_requiresflags(target, module.requires)
+                        requires = get_requires(target, module.requires)
                     end
 
                     if provide or common.has_module_extension(cppfile) then
@@ -643,8 +649,9 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                                 provide = provide and {bmifile = bmifile, name = name},
                                 common_args = common_args,
                                 requiresflags = requiresflags,
+                                requires = requires,
                                 progress = (index * 100) / total})
-                            end
+                        end
                         target:add("objectfiles", objectfile)
 
                         if provide then
@@ -661,6 +668,18 @@ function build_modules_for_batchjobs(target, batchjobs, objectfiles, modules, op
                             end
                         end
                         target:fileconfig_add(cppfile, {force = {cxxflags = cxxflags}})
+
+                        -- force rebuild .cpp file if any of its module dependency is rebuilt
+                        local rebuild = false
+                        for _, requiredfile in ipairs(requires) do
+                            if common.memcache():get2(requiredfile, "compiling") == true then
+                                rebuild = true
+                                break
+                            end
+                        end
+                        if rebuild then
+                           os.tryrm(target:objectfile(cppfile))
+                        end
                     end
                 end)})
             modulesjobs[name or cppfile] = moduleinfo
@@ -911,6 +930,16 @@ function get_moduleoutputflag(target)
         _g.moduleoutputflag = moduleoutputflag or false
     end
     return moduleoutputflag or nil
+end
+
+function get_requires(target, requires)
+    local requires
+    local flags = get_requiresflags(target, requires)
+    for _, flag in ipairs(flags) do
+        requires = requires or {}
+        table.insert(requires, flag:split("=")[3])
+    end
+    return requires
 end
 
 function get_requiresflags(target, requires)
