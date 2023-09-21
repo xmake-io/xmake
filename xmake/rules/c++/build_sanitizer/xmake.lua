@@ -30,3 +30,15 @@ rule("c++.build.sanitizer")
         import("config")(target, "cxx")
     end)
 
+-- define rule: objc.build.sanitizer
+rule("objc.build.sanitizer")
+    on_config(function (target)
+        import("config")(target, "mm")
+    end)
+
+-- define rule: objc++.build.sanitizer
+rule("objc++.build.sanitizer")
+    on_config(function (target)
+        import("config")(target, "mxx")
+    end)
+

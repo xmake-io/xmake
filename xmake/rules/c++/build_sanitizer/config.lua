@@ -21,15 +21,23 @@
 -- imports
 import("core.tool.compiler")
 import("core.project.project")
+import("lib.detect.find_tool")
+import("core.base.semver")
 
 -- add build sanitizer
 function _add_build_sanitizer(target, sourcekind, checkmode)
 
     -- add cflags
     local _, cc = target:tool(sourcekind)
-    local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
-    if target:has_tool(sourcekind, "cl", "clang", "clangxx", "gcc", "gxx") then
-        target:add(cflag, "-fsanitize=" .. checkmode)
+    local flagnames = {
+        cc = "cflags",
+        cxx = "cxxflags",
+        mm = "mflags",
+        mxx = "mxflags"
+    }
+    local flagname = flagnames[sourcekind]
+    if flagname and target:has_tool(sourcekind, "cl", "clang", "clangxx", "gcc", "gxx") then
+        target:add(flagname, "-fsanitize=" .. checkmode)
     end
 
     -- add ldflags and shflags
@@ -40,8 +48,22 @@ function _add_build_sanitizer(target, sourcekind, checkmode)
 end
 
 function main(target, sourcekind)
+    local sanitizer = false
     if target:policy("build.sanitizer.address") or
         project.policy("build.sanitizer.address") then
         _add_build_sanitizer(target, sourcekind, "address")
+        sanitizer = true
+    end
+
+    if sanitizer and target:is_plat("windows") and target:is_binary() then
+        local msvc = target:toolchain("msvc")
+        if msvc then
+            local envs = msvc:runenvs()
+            local vscmd_ver = envs and envs.VSCMD_VER
+            if vscmd_ver and semver.match(vscmd_ver):ge("17.7") then
+                local cl = assert(find_tool("cl", {envs = envs}), "cl not found!")
+                target:add("runenvs", "PATH", path.directory(cl.program))
+            end
+        end
     end
 end
