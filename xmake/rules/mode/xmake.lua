@@ -207,6 +207,9 @@ rule("mode.asan")
 
             -- enable asan checker
             target:set("policy", "build.sanitizer.address", true)
+
+            -- we should use "build.sanitizer.address" instead of it.
+            wprint("deprecated: please use set_policy(\"build.sanitizer.address\", true) instead of \"mode.asan\".")
         end
     end)
 

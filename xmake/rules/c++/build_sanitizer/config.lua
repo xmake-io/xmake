@@ -45,6 +45,11 @@ function _add_build_sanitizer(target, sourcekind, checkmode)
         target:add("ldflags", "-fsanitize=" .. checkmode)
         target:add("shflags", "-fsanitize=" .. checkmode)
     end
+
+    -- enable the debug symbols
+    if not target:get("symbols") then
+        target:set("symbols", "debug")
+    end
 end
 
 function main(target, sourcekind)
