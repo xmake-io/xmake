@@ -174,7 +174,7 @@ target = "%s"
     end
     if configs.features then
         table.insert(argv, "--features")
-        table.insert(argv, table.concat(configs.features, ","))
+        table.insert(argv, table.concat(table.wrap(configs.features), ","))
     end
     if configs.default_features == false then
         table.insert(argv, "--no-default-features")
