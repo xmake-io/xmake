@@ -52,6 +52,8 @@ function policy.policies()
             ["build.warning"]                     = {description = "Enable build warning output.", type = "boolean"},
             -- Enable LTO linker-time optimization for c/c++ building.
             ["build.optimization.lto"]            = {description = "Enable LTO linker-time optimization for c/c++ building.", type = "boolean"},
+            -- Enable address sanitizer for c/c++ building.
+            ["build.sanitizer.address"]           = {description = "Enable address sanitizer for c/c++ building.", type = "boolean"},
             -- Enable C++ modules for C++ building, even if no .mpp is involved in the compilation
             ["build.c++.modules"]                 = {description = "Enable C++ modules for C++ building.", type = "boolean"},
             -- Enable clang std modulemap

@@ -2111,6 +2111,24 @@ function _instance:_generate_lto_configs(sourcekind)
     return configs
 end
 
+-- generate sanitizer configs
+function _instance:_generate_sanitizer_configs(sourcekind, checkmode)
+
+    -- add cflags
+    local configs = {}
+    if self:has_tool(sourcekind, "cl", "clang", "clangxx", "gcc", "gxx") then
+        local cflag = sourcekind == "cxx" and "cxxflags" or "cflags"
+        configs[cflag] = "-fsanitize=" .. checkmode
+    end
+
+    -- add ldflags and shflags
+    if self:has_tool("ld", "link", "clang", "clangxx", "gcc", "gxx") then
+        configs.ldflags = "-fsanitize=" .. checkmode
+        configs.shflags = "-fsanitize=" .. checkmode
+    end
+    return configs
+end
+
 -- generate building configs for has_xxx/check_xxx
 function _instance:_generate_build_configs(configs, opt)
     opt = opt or {}
@@ -2141,6 +2159,15 @@ function _instance:_generate_build_configs(configs, opt)
         local configs_lto = self:_generate_lto_configs(opt.sourcekind or "cxx")
         if configs_lto then
             for k, v in pairs(configs_lto) do
+                configs[k] = table.wrap(configs[k] or {})
+                table.join2(configs[k], v)
+            end
+        end
+    end
+    if self:config("asan") then
+        local configs_asan = self:_generate_sanitizer_configs(opt.sourcekind or "cxx", "address")
+        if configs_asan then
+            for k, v in pairs(configs_asan) do
                 configs[k] = table.wrap(configs[k] or {})
                 table.join2(configs[k], v)
             end
