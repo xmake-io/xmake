@@ -46,28 +46,36 @@ function _add_build_sanitizer(target, sourcekind, checkmode)
         target:add("shflags", "-fsanitize=" .. checkmode)
     end
 
-    -- enable the debug symbols
-    if not target:get("symbols") then
-        target:set("symbols", "debug")
-    end
 end
 
 function main(target, sourcekind)
     local sanitizer = false
-    if target:policy("build.sanitizer.address") or
-        project.policy("build.sanitizer.address") then
-        _add_build_sanitizer(target, sourcekind, "address")
-        sanitizer = true
+    for _, checkmode in ipairs({"address", "thread", "memory", "leak", "undefined"}) do
+        if target:policy("build.sanitizer." .. checkmode) or
+            project.policy("build.sanitizer." .. checkmode) then
+            _add_build_sanitizer(target, sourcekind, checkmode)
+            sanitizer = true
+        end
     end
 
-    if sanitizer and target:is_plat("windows") and target:is_binary() then
-        local msvc = target:toolchain("msvc")
-        if msvc then
-            local envs = msvc:runenvs()
-            local vscmd_ver = envs and envs.VSCMD_VER
-            if vscmd_ver and semver.match(vscmd_ver):ge("17.7") then
-                local cl = assert(find_tool("cl", {envs = envs}), "cl not found!")
-                target:add("runenvs", "PATH", path.directory(cl.program))
+    if sanitizer then
+
+        -- enable the debug symbols for sanitizer
+        if not target:get("symbols") then
+            target:set("symbols", "debug")
+        end
+
+        -- we need to load runenvs for msvc
+        -- @see https://github.com/xmake-io/xmake/issues/4176
+        if target:is_plat("windows") and target:is_binary() then
+            local msvc = target:toolchain("msvc")
+            if msvc then
+                local envs = msvc:runenvs()
+                local vscmd_ver = envs and envs.VSCMD_VER
+                if vscmd_ver and semver.match(vscmd_ver):ge("17.7") then
+                    local cl = assert(find_tool("cl", {envs = envs}), "cl not found!")
+                    target:add("runenvs", "PATH", path.directory(cl.program))
+                end
             end
         end
     end

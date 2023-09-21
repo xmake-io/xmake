@@ -54,6 +54,14 @@ function policy.policies()
             ["build.optimization.lto"]            = {description = "Enable LTO linker-time optimization for c/c++ building.", type = "boolean"},
             -- Enable address sanitizer for c/c++ building.
             ["build.sanitizer.address"]           = {description = "Enable address sanitizer for c/c++ building.", type = "boolean"},
+            -- Enable thread sanitizer for c/c++ building.
+            ["build.sanitizer.thread"]            = {description = "Enable thread sanitizer for c/c++ building.", type = "boolean"},
+            -- Enable memort sanitizer for c/c++ building.
+            ["build.sanitizer.memory"]            = {description = "Enable memory sanitizer for c/c++ building.", type = "boolean"},
+            -- Enable leak sanitizer for c/c++ building.
+            ["build.sanitizer.leak"]              = {description = "Enable leak sanitizer for c/c++ building.", type = "boolean"},
+            -- Enable undefined sanitizer for c/c++ building.
+            ["build.sanitizer.undefined"]         = {description = "Enable undefined sanitizer for c/c++ building.", type = "boolean"},
             -- Enable C++ modules for C++ building, even if no .mpp is involved in the compilation
             ["build.c++.modules"]                 = {description = "Enable C++ modules for C++ building.", type = "boolean"},
             -- Enable clang std modulemap
