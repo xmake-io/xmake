@@ -184,9 +184,9 @@ rule("mode.coverage")
 
 -- define rule: asan mode
 rule("mode.asan")
-    on_config(function (target)
-        import("lib.detect.find_tool")
-        import("core.base.semver")
+
+    -- we use after_load because c++.build.sanitizer rule/on_config need it
+    after_load(function (target)
 
         -- is asan mode now? xmake f -m asan
         if is_mode("asan") then
@@ -206,28 +206,16 @@ rule("mode.asan")
             end
 
             -- enable asan checker
-            target:add("cxflags", "-fsanitize=address")
-            target:add("mxflags", "-fsanitize=address")
-            target:add("ldflags", "-fsanitize=address")
-            target:add("shflags", "-fsanitize=address")
+            target:set("policy", "build.sanitizer.address", true)
 
-            if target:is_plat("windows") and target:is_binary() then
-                local msvc = target:toolchain("msvc")
-                if msvc then
-                    local envs = msvc:runenvs()
-                    local vscmd_ver = envs and envs.VSCMD_VER
-                    if vscmd_ver and semver.match(vscmd_ver):ge("17.7") then
-                        local cl = assert(find_tool("cl", {envs = envs}), "cl not found!")
-                        target:add("runenvs", "PATH", path.directory(cl.program))
-                    end
-                end
-            end
+            -- we should use "build.sanitizer.address" instead of it.
+            wprint("deprecated: please use set_policy(\"build.sanitizer.address\", true) instead of \"mode.asan\".")
         end
     end)
 
 -- define rule: tsan mode
 rule("mode.tsan")
-    on_config(function (target)
+    after_load(function (target)
 
         -- is tsan mode now? xmake f -m tsan
         if is_mode("tsan") then
@@ -247,16 +235,16 @@ rule("mode.tsan")
             end
 
             -- enable tsan checker
-            target:add("cxflags", "-fsanitize=thread")
-            target:add("mxflags", "-fsanitize=thread")
-            target:add("ldflags", "-fsanitize=thread")
-            target:add("shflags", "-fsanitize=thread")
+            target:set("policy", "build.sanitizer.thread", true)
+
+            -- we should use "build.sanitizer.thread" instead of it.
+            wprint("deprecated: please use set_policy(\"build.sanitizer.thread\", true) instead of \"mode.tsan\".")
         end
     end)
 
 -- define rule: msan mode
 rule("mode.msan")
-    on_config(function (target)
+    after_load(function (target)
 
         -- is msan mode now? xmake f -m msan
         if is_mode("msan") then
@@ -276,16 +264,16 @@ rule("mode.msan")
             end
 
             -- enable msan checker
-            target:add("cxflags", "-fsanitize=memory")
-            target:add("mxflags", "-fsanitize=memory")
-            target:add("ldflags", "-fsanitize=memory")
-            target:add("shflags", "-fsanitize=memory")
+            target:set("policy", "build.sanitizer.memory", true)
+
+            -- we should use "build.sanitizer.memory" instead of it.
+            wprint("deprecated: please use set_policy(\"build.sanitizer.memory\", true) instead of \"mode.msan\".")
         end
     end)
 
 -- define rule: lsan mode
 rule("mode.lsan")
-    on_config(function (target)
+    after_load(function (target)
 
         -- is lsan mode now? xmake f -m lsan
         if is_mode("lsan") then
@@ -305,16 +293,16 @@ rule("mode.lsan")
             end
 
             -- enable lsan checker
-            target:add("cxflags", "-fsanitize=leak")
-            target:add("mxflags", "-fsanitize=leak")
-            target:add("ldflags", "-fsanitize=leak")
-            target:add("shflags", "-fsanitize=leak")
+            target:set("policy", "build.sanitizer.leak", true)
+
+            -- we should use "build.sanitizer.leak" instead of it.
+            wprint("deprecated: please use set_policy(\"build.sanitizer.leak\", true) instead of \"mode.lsan\".")
         end
     end)
 
 -- define rule: ubsan mode
 rule("mode.ubsan")
-    on_config(function (target)
+    after_load(function (target)
 
         -- is ubsan mode now? xmake f -m ubsan
         if is_mode("ubsan") then
@@ -333,11 +321,11 @@ rule("mode.ubsan")
                 end
             end
 
-            -- enable tsan checker
-            target:add("cxflags", "-fsanitize=undefined")
-            target:add("mxflags", "-fsanitize=undefined")
-            target:add("ldflags", "-fsanitize=undefined")
-            target:add("shflags", "-fsanitize=undefined")
+            -- enable ubsan checker
+            target:set("policy", "build.sanitizer.undefined", true)
+
+            -- we should use "build.sanitizer.undefined" instead of it.
+            wprint("deprecated: please use set_policy(\"build.sanitizer.undefined\", true) instead of \"mode.ubsan\".")
         end
     end)
 

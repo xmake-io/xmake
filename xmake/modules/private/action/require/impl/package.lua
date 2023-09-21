@@ -328,6 +328,9 @@ function _add_package_configurations(package)
     if package:extraconf("configs", "lto", "default") == nil then
         package:add("configs", "lto", {builtin = true, description = "Enable the link-time build optimization.", type = "boolean"})
     end
+    if package:extraconf("configs", "asan", "default") == nil then
+        package:add("configs", "asan", {builtin = true, description = "Enable the address sanitizer.", type = "boolean"})
+    end
     if package:extraconf("configs", "vs_runtime", "default") == nil then
         package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", values = {"MT", "MTd", "MD", "MDd"}})
     end
@@ -500,11 +503,12 @@ function _init_requireinfo(requireinfo, package, opt)
             requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or get_config("vs_runtime")
         end
         requireinfo.configs.lto = requireinfo.configs.lto or project.policy("build.optimization.lto")
+        requireinfo.configs.asan = requireinfo.configs.asan or project.policy("build.sanitizer.address")
     end
     -- but we will ignore some configs for buildhash in the headeronly and host/binary package
     -- @note on_test still need these configs, @see https://github.com/xmake-io/xmake/issues/4124
     if package:is_headeronly() or (package:is_binary() and not package:is_cross()) then
-        requireinfo.ignored_configs_for_buildhash = {"vs_runtime", "toolchains", "lto", "pic"}
+        requireinfo.ignored_configs_for_buildhash = {"vs_runtime", "toolchains", "lto", "asan", "pic"}
     end
 end
 
@@ -652,6 +656,7 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
         requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
         requireinfo_configs.vs_runtime = requireinfo_configs.vs_runtime or parentinfo_configs.vs_runtime
         requireinfo_configs.lto = requireinfo_configs.lto or parentinfo_configs.lto
+        requireinfo_configs.asan = requireinfo_configs.asan or parentinfo_configs.asan
         requireinfo.configs = requireinfo_configs
     end
 end

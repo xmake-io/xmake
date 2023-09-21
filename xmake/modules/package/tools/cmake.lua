@@ -163,6 +163,9 @@ function _get_cflags(package, opt)
     if package:config("lto") then
         table.join2(result, package:_generate_lto_configs("cc").cflags)
     end
+    if package:config("asan") then
+        table.join2(result, package:_generate_sanitizer_configs("address", "cc").cflags)
+    end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
     if #result > 0 then
         return os.args(result)
@@ -190,6 +193,9 @@ function _get_cxxflags(package, opt)
     end
     if package:config("lto") then
         table.join2(result, package:_generate_lto_configs("cxx").cxxflags)
+    end
+    if package:config("asan") then
+        table.join2(result, package:_generate_sanitizer_configs("address", "cxx").cxxflags)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
     if #result > 0 then
@@ -230,6 +236,9 @@ function _get_ldflags(package, opt)
     if package:config("lto") then
         table.join2(result, package:_generate_lto_configs().ldflags)
     end
+    if package:config("asan") then
+        table.join2(result, package:_generate_sanitizer_configs("address").ldflags)
+    end
     table.join2(result, _get_ldflags_from_packagedeps(package, opt))
     if opt.ldflags then
         table.join2(result, opt.ldflags)
@@ -252,6 +261,9 @@ function _get_shflags(package, opt)
     table.join2(result, package:config("shflags"))
     if package:config("lto") then
         table.join2(result, package:_generate_lto_configs().shflags)
+    end
+    if package:config("asan") then
+        table.join2(result, package:_generate_sanitizer_configs("address").shflags)
     end
     table.join2(result, _get_ldflags_from_packagedeps(package, opt))
     if opt.shflags then
