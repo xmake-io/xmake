@@ -9,6 +9,7 @@
 * [#4147](https://github.com/xmake-io/xmake/issues/4147): Add hlsl2spv rule
 * [#4226](https://github.com/xmake-io/xmake/issues/4226): Support sanitizers for package and policy
 * Add lib.lua.package module
+* Add `run.autobuild` policy
 
 ### Changes
 
@@ -1665,6 +1666,7 @@
 * [#4147](https://github.com/xmake-io/xmake/issues/4147): 添加 hlsl2spv 规则
 * 添加 lib.lua.package 模块
 * [#4226](https://github.com/xmake-io/xmake/issues/4226): 新增 asan 相关策略和对包的支持
+* 添加 `run.autobuild` 策略开启运行前自动构建
 
 ### 改进
 
