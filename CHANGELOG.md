@@ -10,6 +10,7 @@
 * [#4226](https://github.com/xmake-io/xmake/issues/4226): Support sanitizers for package and policy
 * Add lib.lua.package module
 * Add `run.autobuild` policy
+* Add global policies `xmake g --policies=`
 
 ### Changes
 
@@ -1667,6 +1668,7 @@
 * 添加 lib.lua.package 模块
 * [#4226](https://github.com/xmake-io/xmake/issues/4226): 新增 asan 相关策略和对包的支持
 * 添加 `run.autobuild` 策略开启运行前自动构建
+* 添加全局策略 `xmake g --policies=`
 
 ### 改进
 
