@@ -208,6 +208,11 @@ function main()
     -- load config first
     config.load()
 
+    -- Automatically build before running
+    if project.policy("run.autobuild") then
+        task.run("build")
+    end
+
     -- load targets
     project.load_targets()
 
