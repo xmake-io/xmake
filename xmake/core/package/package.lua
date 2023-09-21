@@ -605,7 +605,7 @@ end
 
 -- is debug package?
 function _instance:is_debug()
-    return self:config("debug")
+    return self:config("debug") or self:config("asan")
 end
 
 -- is the supported package?
