@@ -137,8 +137,13 @@ function main(name, opt)
 
     -- @see https://github.com/xmake-io/xmake/issues/4228
     local libfiles_native
-    if opt.plat == "macosx" then
+    local plat = opt.plat
+    if plat == "macosx" then
         libfiles_native = os.files(path.join(librarydir, "*.dylib"))
+    elseif plat == "windows" or plat == "mingw" then
+        libfiles_native = os.files(path.join(librarydir, "*.lib"))
+    else
+        libfiles_native = os.files(path.join(librarydir, "*.so"))
     end
     for _, libraryfile in ipairs(table.join(libfiles, libfiles_native)) do
         local filename = path.filename(libraryfile)
