@@ -102,7 +102,6 @@ function main(name, opt)
         tomlfile:print("edition = \"2018\"")
         tomlfile:print("")
         tomlfile:print("[dependencies]")
-        tomlfile:print("")
 
         local features = configs.features
         if features then
@@ -111,6 +110,7 @@ function main(name, opt)
         else
             tomlfile:print("%s = \"%s\"", name, require_version)
         end
+        tomlfile:print("")
         tomlfile:close()
     end
 
@@ -171,13 +171,6 @@ target = "%s"
     if target then
         table.insert(argv, "--filter-platform")
         table.insert(argv, target)
-    end
-    if configs.features then
-        table.insert(argv, "--features")
-        table.insert(argv, table.concat(table.wrap(configs.features), ","))
-    end
-    if configs.default_features == false then
-        table.insert(argv, "--no-default-features")
     end
 
     local metadata = os.iorunv(cargo.program, argv, {curdir = sourcedir})
