@@ -45,18 +45,17 @@ function _normailize_dep(dep, projectdir)
     end
 end
 
--- get the path of module mapper
-function _get_module_mapper(target)
-    return path.join(config.buildir(), target:name(), "mapper.txt")
-end
-
--- get a module from mapper
-function _get_module_from_mapper(file, module)
-    for line in io.lines(file) do
-        if line:startswith(module .. " ") then
-            return line:split(" ", {plain = true})
+-- load module mapper
+function _load_module_mapper(target)
+    local mapper = {}
+    local mapperfile = path.join(config.buildir(), target:name(), "mapper.txt")
+    for line in io.lines(mapperfile) do
+        local moduleinfo = line:split(" ", {plain = true})
+        if #moduleinfo == 2 then
+            mapper[moduleinfo[1]] = moduleinfo[2]
         end
     end
+    return mapper
 end
 
 -- parse depsfiles from string
@@ -121,14 +120,13 @@ function main(depsdata, opt)
     -- https://github.com/xmake-io/xmake/issues/4215
     local target = opt and opt.target
     if target and line:find("CXX_IMPORTS += ", 1, true) then
-        local mapperfile = _get_module_mapper(target)
+        local mapper = _load_module_mapper(target)
         local modulefiles = line:split("CXX_IMPORTS += ", plain)[2]
         if modulefiles then
             for _, modulefile in ipairs(modulefiles:split(' ', plain)) do
                 if modulefile:endswith(".c++m") then
                     local modulekey = modulefile:sub(1, #modulefile - 5)
-                    local moduleinfo = _get_module_from_mapper(mapperfile, modulekey)
-                    local modulepath = moduleinfo[2]
+                    local modulepath = mapper[modulekey]
                     if modulepath then
                         modulepath = _normailize_dep(modulepath, projectdir)
                         results:insert(modulepath)
