@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.project.config")
 import("core.project.project")
 import("core.base.hashset")
 
@@ -41,6 +42,20 @@ function _normailize_dep(dep, projectdir)
         -- we also need to check header files outside project
         -- https://github.com/xmake-io/xmake/issues/1154
         return dep
+    end
+end
+
+-- get the path of module mapper
+function _get_module_mapper(target)
+    return path.join(config.buildir(), target:name(), "mapper.txt")
+end
+
+-- get a module from mapper
+function _get_module_from_mapper(file, module)
+    for line in io.lines(file) do
+        if line:startswith(module .. " ") then
+            return line:split(" ", {plain = true})
+        end
     end
 end
 
@@ -97,27 +112,31 @@ function main(depsdata, opt)
             end
         end
     end
+
+    -- translate .c++m module file path
     -- with c++ modules (gcc):
     -- CXX_IMPORTS += bar.c++m cat.c++m\
     --
     -- @see https://github.com/xmake-io/xmake/issues/3000
-    opt = opt or {}
-    if opt.modules_cachedir and line:find("CXX_IMPORTS += ", 1, true) then
+    -- https://github.com/xmake-io/xmake/issues/4215
+    local target = opt and opt.target
+    if target and line:find("CXX_IMPORTS += ", 1, true) then
+        local mapperfile = _get_module_mapper(target)
         local modulefiles = line:split("CXX_IMPORTS += ", plain)[2]
         if modulefiles then
             for _, modulefile in ipairs(modulefiles:split(' ', plain)) do
-                modulefile = modulefile:replace(".c++m", ".gcm", plain)
-                if #modulefile > 0 then
-                    if not path.is_absolute(modulefile) then
-                        modulefile = path.absolute(modulefile, opt.modules_cachedir)
-                    end
-                    modulefile = _normailize_dep(modulefile, projectdir)
-                    if modulefile then
-                        results:insert(modulefile)
+                if modulefile:endswith(".c++m") then
+                    local modulekey = modulefile:sub(1, #modulefile - 5)
+                    local moduleinfo = _get_module_from_mapper(mapperfile, modulekey)
+                    local modulepath = moduleinfo[2]
+                    if modulepath then
+                        modulepath = _normailize_dep(modulepath, projectdir)
+                        results:insert(modulepath)
                     end
                 end
             end
         end
     end
+
     return results:to_array()
 end

@@ -28,8 +28,8 @@ import("private.tools.gcc.parse_deps", {alias = "parse_deps_gcc"})
 import("private.tools.armcc.parse_deps", {alias = "parse_deps_armcc"})
 
 -- load depfiles
-function _load_depfiles(parser, dependinfo, depfiles)
-    depfiles = parser(depfiles, dependinfo)
+function _load_depfiles(parser, dependinfo, depfiles, opt)
+    depfiles = parser(depfiles, opt)
     if depfiles then
         if dependinfo.files then
             table.join2(dependinfo.files, depfiles)
@@ -40,7 +40,7 @@ function _load_depfiles(parser, dependinfo, depfiles)
 end
 
 -- load dependent info from the given file (.d)
-function load(dependfile)
+function load(dependfile, opt)
 
     if os.isfile(dependfile) then
         -- may be the depend file has been incomplete when if the compilation process is abnormally interrupted
@@ -48,19 +48,19 @@ function load(dependfile)
         if dependinfo then
             -- attempt to load depfiles from the compilers
             if dependinfo.depfiles_gcc then
-                _load_depfiles(parse_deps_gcc, dependinfo, dependinfo.depfiles_gcc)
+                _load_depfiles(parse_deps_gcc, dependinfo, dependinfo.depfiles_gcc, opt)
                 dependinfo.depfiles_gcc = nil
             elseif dependinfo.depfiles_cl_json then
-                _load_depfiles(parse_deps_cl_json, dependinfo, dependinfo.depfiles_cl_json)
+                _load_depfiles(parse_deps_cl_json, dependinfo, dependinfo.depfiles_cl_json, opt)
                 dependinfo.depfiles_cl_json = nil
             elseif dependinfo.depfiles_cl then
-                _load_depfiles(parse_deps_cl, dependinfo, dependinfo.depfiles_cl)
+                _load_depfiles(parse_deps_cl, dependinfo, dependinfo.depfiles_cl, opt)
                 dependinfo.depfiles_cl = nil
             elseif dependinfo.depfiles_rc then
-                _load_depfiles(parse_deps_rc, dependinfo, dependinfo.depfiles_rc)
+                _load_depfiles(parse_deps_rc, dependinfo, dependinfo.depfiles_rc, opt)
                 dependinfo.depfiles_rc = nil
             elseif dependinfo.depfiles_armcc then
-                _load_depfiles(parse_deps_armcc, dependinfo, dependinfo.depfiles_armcc)
+                _load_depfiles(parse_deps_armcc, dependinfo, dependinfo.depfiles_armcc, opt)
                 dependinfo.depfiles_armcc = nil
             end
             return dependinfo

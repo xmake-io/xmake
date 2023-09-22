@@ -43,7 +43,7 @@ function _do_build_file(target, sourcefile, opt)
     local compflags = compinst:compflags({target = target, sourcefile = sourcefile, configs = opt.configs})
 
     -- load dependent info
-    local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
+    local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile, {target = target}) or {})
 
     -- dry run?
     local dryrun = option.get("dry-run")
