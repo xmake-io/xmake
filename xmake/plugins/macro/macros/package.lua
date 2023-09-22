@@ -101,7 +101,6 @@ function main(argv)
             end
         end
         for _, target in ipairs(targets) do
-            print("target", target:name())
             local modes = {}
             for _, modedir in ipairs(os.dirs(format("%s/%s.pkg/*/*/lib/*", outputdir, target:name()))) do
                 table.insert(modes, path.basename(modedir))
