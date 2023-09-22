@@ -73,21 +73,26 @@ function main(toolchain)
     end
 
     -- get xcode bin directory
-    local cross
-    if toolchain:is_plat("macosx") then
-        cross = "xcrun -sdk macosx "
-    elseif toolchain:is_plat("iphoneos") then
-        cross = simulator and "xcrun -sdk iphonesimulator " or "xcrun -sdk iphoneos "
-    elseif toolchain:is_plat("watchos") then
-        cross = simulator and "xcrun -sdk watchsimulator " or "xcrun -sdk watchos "
-    elseif toolchain:is_plat("appletvos") then
-        cross = simulator and "xcrun -sdk appletvsimulator " or "xcrun -sdk appletvos "
+    if xcode.sdkdir and os.isdir(xcode.sdkdir) then
+        local bindir = path.join(xcode.sdkdir, "Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin")
+        toolchain:config_set("bindir", bindir)
     else
-        raise("unknown platform for xcode!")
-    end
-    local xc_clang = executable_path(cross .. "clang")
-    if xc_clang then
-        toolchain:config_set("bindir", path.directory(xc_clang))
+        local cross
+        if toolchain:is_plat("macosx") then
+            cross = "xcrun -sdk macosx "
+        elseif toolchain:is_plat("iphoneos") then
+            cross = simulator and "xcrun -sdk iphonesimulator " or "xcrun -sdk iphoneos "
+        elseif toolchain:is_plat("watchos") then
+            cross = simulator and "xcrun -sdk watchsimulator " or "xcrun -sdk watchos "
+        elseif toolchain:is_plat("appletvos") then
+            cross = simulator and "xcrun -sdk appletvsimulator " or "xcrun -sdk appletvos "
+        else
+            raise("unknown platform for xcode!")
+        end
+        local xc_clang = executable_path(cross .. "clang")
+        if xc_clang then
+            toolchain:config_set("bindir", path.directory(xc_clang))
+        end
     end
 
     -- save xcode sysroot directory
