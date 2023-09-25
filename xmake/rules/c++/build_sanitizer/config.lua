@@ -51,8 +51,11 @@ end
 function main(target, sourcekind)
     local sanitizer = false
     for _, checkmode in ipairs({"address", "thread", "memory", "leak", "undefined"}) do
-        if target:policy("build.sanitizer." .. checkmode) or
-            project.policy("build.sanitizer." .. checkmode) then
+        local enabled = target:policy("build.sanitizer." .. checkmode)
+        if enabled == nil then
+            enabled = project.policy("build.sanitizer." .. checkmode)
+        end
+        if enabled then
             _add_build_sanitizer(target, sourcekind, checkmode)
             sanitizer = true
         end
