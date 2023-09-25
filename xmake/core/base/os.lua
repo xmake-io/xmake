@@ -776,25 +776,27 @@ function os.execv(program, argv, opt)
     if opt.shell and os.isfile(filename) then
         local shellfile = filename
         local file = io.open(filename, 'r')
-        local head = file:read("l")
-        if head and head:startswith("#!") then
-            -- we cannot run `/bin/sh` directly on msys2/cygwin
-            -- because `/bin/sh` is not real file path, maybe we need to convert it.
-            local subhost = os.subhost()
-            if subhost == "msys" or subhost == "cygwin" then
-                filename = "sh"
-                argv = table.join(shellfile, argv)
-            else
-                head = head:sub(3)
-                local shellargv = {}
-                local splitinfo = head:split("%s")
-                filename = splitinfo[1]
-                if #splitinfo > 1 then
-                    shellargv = table.slice(splitinfo, 2)
+        for line in file:lines() do
+            if line and line:startswith("#!") then
+                -- we cannot run `/bin/sh` directly on msys2/cygwin
+                -- because `/bin/sh` is not real file path, maybe we need to convert it.
+                local subhost = os.subhost()
+                if subhost == "msys" or subhost == "cygwin" then
+                    filename = "sh"
+                    argv = table.join(shellfile, argv)
+                else
+                    line = line:sub(3)
+                    local shellargv = {}
+                    local splitinfo = line:split("%s")
+                    filename = splitinfo[1]
+                    if #splitinfo > 1 then
+                        shellargv = table.slice(splitinfo, 2)
+                    end
+                    table.insert(shellargv, shellfile)
+                    table.join2(shellargv, argv)
+                    argv = shellargv
                 end
-                table.insert(shellargv, shellfile)
-                table.join2(shellargv, argv)
-                argv = shellargv
+                break
             end
         end
         file:close()
