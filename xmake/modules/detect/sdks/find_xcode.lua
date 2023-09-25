@@ -67,7 +67,8 @@ function _find_xcode_sdkver(sdkdir, opt)
     if platsdkdir then
 	    local dir = find_directory(platsdkdir, sdkdir)
         if dir then
-            return dir:match("%d+%.%d+")
+            local basename = path.basename(dir)
+            return basename:match("%d+%.%d+")
         end
     end
 end
