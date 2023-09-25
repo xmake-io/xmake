@@ -61,6 +61,7 @@ function main(toolchain)
         bindir = try {function () return os.iorunv("llvm-config", {"--bindir"}) end}
         if bindir then
             sdkdir = path.directory(bindir)
+            print("1", sdkdir)
         elseif is_host("linux") and os.isfile("/usr/bin/llvm-ar") then
             sdkdir = "/usr"
         elseif is_host("macosx") then
@@ -93,6 +94,7 @@ function main(toolchain)
     if cross_toolchain then
         toolchain:config_set("cross", cross_toolchain.cross)
         toolchain:config_set("bindir", cross_toolchain.bindir)
+        toolchain:config_set("sdkdir", cross_toolchain.sdkdir)
         toolchain:configs_save()
     else
         raise("llvm toolchain not found!")
