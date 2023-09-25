@@ -58,7 +58,10 @@ function main(toolchain)
     local sdkdir = toolchain:sdkdir()
     local bindir = toolchain:bindir()
     if not sdkdir and not bindir then
-        if is_host("linux") and os.isfile("/usr/bin/llvm-ar") then
+        bindir = try {function () return os.iorunv("llvm-config", {"--bindir"}) end}
+        if bindir then
+            sdkdir = path.directory(bindir)
+        elseif is_host("linux") and os.isfile("/usr/bin/llvm-ar") then
             sdkdir = "/usr"
         elseif is_host("macosx") then
             local bindir
