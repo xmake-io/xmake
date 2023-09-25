@@ -45,6 +45,9 @@ function main(names, opt)
     for _, name in ipairs(names) do
         local packages = _search_packages(name, opt)
         if packages then
+            table.sort(packages, function (a, b)
+                return name:levenshtein(a.name) < name:levenshtein(b.name)
+            end)
             results[name] = packages
         end
     end
