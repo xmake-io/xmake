@@ -93,7 +93,7 @@ rule("qt.qmltyperegistrar")
         end
 
         local args = {
-            "--generate-qmltypes=" .. target:get("targetdir") .. "/plugin.qmltypes", 
+            "--generate-qmltypes=" .. target:get("targetdir") .. "/plugin.qmltypes",
             "--import-name=" .. importname,
             "--major-version=" .. majorversion,
             "--minor-version=" .. minorversion,
