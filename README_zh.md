@@ -312,6 +312,11 @@ verilator     Verilator open-source SystemVerilog simulator and lint system
 * Pascal
 * Nim
 * Verilog
+* FASM
+* NASM
+* YASM
+* MASM32
+* Cppfront
 
 ## 支持特性
 

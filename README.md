@@ -258,6 +258,7 @@ $ xmake f --menu
 * NASM
 * YASM
 * MASM32
+* Cppfront
 
 ## Features
 
