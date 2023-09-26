@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.8.3
+
 ### New features
 
 * [#4122](https://github.com/xmake-io/xmake/issues/4122): Support Lua Debugger (EmmyLua)
@@ -1659,6 +1661,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.8.3
 
 ### 新特性
 
