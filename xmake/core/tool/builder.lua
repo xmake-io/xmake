@@ -290,51 +290,73 @@ function builder:_add_flags_from_argument(flags, target, args)
         end})
 end
 
+-- add items from getter
+function builder:_add_items_from_getter(items, name, opt)
+    local values = opt.getter(name)
+    if values then
+        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+    end
+end
+
+-- add items from config
+function builder:_add_items_from_config(items, name, opt)
+    local values = config.get(name)
+    if values and name:endswith("dirs") then
+        values = path.splitenv(values)
+    end
+    if values then
+        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+    end
+end
+
+-- add items from toolchain
+function builder:_add_items_from_toolchain(items, name, opt)
+    local values
+    local target = opt.target
+    if target and target:type() == "target" then
+        values = target:toolconfig(name)
+    else
+        values = platform.toolconfig(name)
+    end
+    if values then
+        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+    end
+end
+
+-- add items from option
+function builder:_add_items_from_option(items, name, opt)
+    local values
+    local target = opt.target
+    if target then
+        values = target:get(name)
+    end
+    if values then
+        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+    end
+end
+
+-- add items from target
+function builder:_add_items_from_target(items, name, opt)
+    local values = {}
+    local target = opt.target
+    if target then
+        -- get flagvalues of target with given flagname
+        table.join2(values, target:get(name))
+
+        -- get flagvalues of the attached options and packages
+        table.join2(values, target:get_from_opts(name))
+        table.join2(values, target:get_from_pkgs(name))
+
+        -- get flagvalues (public or interface) of all dependent targets (contain packages/options)
+        table.join2(values, target:get_from_deps(name, {interface = true}))
+    end
+    if values and #values > 0 then
+        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+    end
+end
+
 -- add flags from the language
 function builder:_add_flags_from_language(flags, target, getters)
-
-    -- init getters
-    --
-    -- e.g.
-    --
-    -- target.linkdirs => flags = getters("target")("linkdirs")
-    --
-    local getters = getters or
-    {
-        config      =   function (name)
-                            local values = config.get(name)
-                            if values and name:endswith("dirs") then
-                                values = path.splitenv(values)
-                            end
-                            return values
-                        end
-    ,   toolchain   =   function (name)
-                            if target and target:type() == "target" then
-                                return target:toolconfig(name)
-                            else
-                                return platform.toolconfig(name)
-                            end
-                        end
-    ,   target      =   function (name)
-                            local results = {}
-                            if target:type() == "target" then
-
-                                -- get flagvalues of target with given flagname
-                                table.join2(results, target:get(name))
-
-                                -- get flagvalues of the attached options and packages
-                                table.join2(results, target:get_from_opts(name))
-                                table.join2(results, target:get_from_pkgs(name))
-
-                                -- get flagvalues (public or interface) of all dependent targets (contain packages/options)
-                                table.join2(results, target:get_from_deps(name, {interface = true}))
-
-                            elseif target:type() == "option" then
-                                table.join2(results, target:get(name))
-                            end
-                            return results
-                        end
-    }
 
     -- get order named items
     local items = {}
@@ -351,27 +373,37 @@ function builder:_add_flags_from_language(flags, target, getters)
             end
         end
 
-        -- get getter
-        local getter = getters[flagscope]
-        if getter then
+        -- get api name of tool
+        local apiname  = flagname:gsub("^nf_", "")
 
-            -- get api name of tool
-            local apiname  = flagname:gsub("^nf_", "")
-
-            -- use multiple values mapper if be defined in tool module
-            local multival = false
-            if apiname:endswith("s") then
-                if self:_tool()["nf_" .. apiname] then
-                    multival = true
-                else
-                    apiname = apiname:sub(1, #apiname - 1)
-                end
+        -- use multiple values mapper if be defined in tool module
+        local multival = false
+        if apiname:endswith("s") then
+            if self:_tool()["nf_" .. apiname] then
+                multival = true
+            else
+                apiname = apiname:sub(1, #apiname - 1)
             end
+        end
 
-            -- map named flags to real flags
-            local mapper = self:_tool()["nf_" .. apiname]
-            if mapper then
-                table.insert(items, {name = flagname, values = table.wrap(getter(flagname)), check = checkstate, multival = multival, mapper = mapper})
+        -- map named flags to real flags
+        local mapper = self:_tool()["nf_" .. apiname]
+        if mapper then
+            local opt = {target = target, check = checkstate, multival = multival, mapper = mapper}
+            if getters then
+                local getter = getters[flagscope]
+                if getter then
+                    opt.getter = getter
+                    self:_add_items_from_getter(items, flagname, opt)
+                end
+            elseif flagscope == "target" and target and target:type() == "target" then
+                self:_add_items_from_target(items, flagname, opt)
+            elseif flagscope == "target" and target and target:type() == "option" then
+                self:_add_items_from_option(items, flagname, opt)
+            elseif flagscope == "config" then
+                self:_add_items_from_config(items, flagname, opt)
+            elseif flagscope == "toolchain" then
+                self:_add_items_from_toolchain(items, flagname, opt)
             end
         end
     end
