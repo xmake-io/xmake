@@ -336,7 +336,8 @@ function builder:_add_flags_from_language(flags, target, getters)
                         end
     }
 
-    -- get name flags for builder
+    -- get order named items
+    local items = {}
     for _, flaginfo in ipairs(self:_nameflags()) do
 
         -- get flag info
@@ -370,20 +371,28 @@ function builder:_add_flags_from_language(flags, target, getters)
             -- map named flags to real flags
             local mapper = self:_tool()["nf_" .. apiname]
             if mapper then
-                if multival then
-                    local results = mapper(self:_tool(), table.wrap(getter(flagname)), target, self:_targetkind())
-                    for _, flag in ipairs(table.wrap(results)) do
-                        if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
-                            table.insert(flags, flag)
-                        end
-                    end
-                else
-                    for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
-                        local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
-                        if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
-                            table.insert(flags, flag)
-                        end
-                    end
+                table.insert(items, {name = flagname, values = table.wrap(getter(flagname)), check = checkstate, multival = multival, mapper = mapper})
+            end
+        end
+    end
+
+    -- get flags from the items
+    utils.dump(items)
+    for _, item in ipairs(items) do
+        local check = item.check
+        local mapper = item.mapper
+        if item.multival then
+            local results = mapper(self:_tool(), item.values, target, self:_targetkind())
+            for _, flag in ipairs(table.wrap(results)) do
+                if flag and flag ~= "" and (not check or self:has_flags(flag)) then
+                    table.insert(flags, flag)
+                end
+            end
+        else
+            for _, flagvalue in ipairs(item.values) do
+                local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
+                if flag and flag ~= "" and (not check or self:has_flags(flag)) then
+                    table.insert(flags, flag)
                 end
             end
         end
