@@ -28,6 +28,7 @@ local utils    = require("base/utils")
 local table    = require("base/table")
 local string   = require("base/string")
 local option   = require("base/option")
+local hashset  = require("base/hashset")
 local tool     = require("tool/tool")
 local config   = require("project/config")
 local sandbox  = require("sandbox/sandbox")
@@ -439,7 +440,9 @@ end
 -- sort links of items
 function builder:_sort_links_of_items(target, items)
     local linkorders = target:get("linkorders")
-    if linkorders then
+    if linkorders and type(linkorders) == "table" and #linkorders > 1 then
+
+        -- get all links
         local links = {}
         local link_mapper
         local framework_mapper
@@ -459,7 +462,33 @@ function builder:_sort_links_of_items(target, items)
             end
             return removed
         end)
-        utils.dump(links)
+        links = table.reverse_unique(links)
+
+        -- sort sublinks
+        local linkorders_set = hashset.from(linkorders)
+        local sublinks = {}
+        for _, link in ipairs(links) do
+            if linkorders_set:has(link) then
+                table.insert(sublinks, link)
+            end
+        end
+        if #sublinks > 0 then
+            local sublinks_set = hashset.from(sublinks)
+            local sublinks_order = {}
+            for _, link in ipairs(linkorders) do
+                if sublinks_set:has(link) then
+                    table.insert(sublinks_order, link)
+                end
+            end
+            local sublinks_idx = 1
+            for idx, link in ipairs(links) do
+                if sublinks_set:has(link) then
+                    links[idx] = sublinks_order[sublinks_idx]
+                    sublinks_idx = sublinks_idx + 1
+                end
+            end
+        end
+        -- re-generate links to items list
         for _, link in ipairs(links) do
             if link:startswith("framework::") then
                 link = link:sub(12)
@@ -468,7 +497,6 @@ function builder:_sort_links_of_items(target, items)
                 table.insert(items, {name = "links", values = table.wrap(link), check = false, multival = false, mapper = link_mapper})
             end
         end
-        utils.dump(links)
     end
 end
 
