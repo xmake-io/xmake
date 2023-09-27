@@ -18,5 +18,6 @@ target("demo")
         add_frameworks("Foundation", "CoreFoundation")
     end
     add_linkorders("framework::Foundation", "png16", "foo", "m", "pthread")
+    add_linkgroups("m", "pthread")
 
 

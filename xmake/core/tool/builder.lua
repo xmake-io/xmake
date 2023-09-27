@@ -439,13 +439,22 @@ end
 
 -- sort links of items
 function builder:_sort_links_of_items(target, items)
+    local sortlinks = false
+    local makegroups = false
     local linkorders = target:get("linkorders")
     if linkorders and type(linkorders) == "table" and #linkorders > 1 then
+        sortlinks = true
+    end
+    local linkgroups = target:get("linkgroups")
+    if linkgroups and type(linkgroups) == "table" and #linkgroups > 1 then
+        makegroups = true
+    end
 
-        -- get all links
-        local links = {}
-        local link_mapper
-        local framework_mapper
+    -- get all links
+    local links = {}
+    local link_mapper
+    local framework_mapper
+    if sortlinks or makegroups then
         table.remove_if(items, function (_, item)
             local name = item.name
             local removed = false
@@ -463,8 +472,10 @@ function builder:_sort_links_of_items(target, items)
             return removed
         end)
         links = table.reverse_unique(links)
+    end
 
-        -- sort sublinks
+    -- sort sublinks
+    if sortlinks then
         local linkorders_set = hashset.from(linkorders)
         local sublinks = {}
         for _, link in ipairs(links) do
@@ -488,7 +499,10 @@ function builder:_sort_links_of_items(target, items)
                 end
             end
         end
-        -- re-generate links to items list
+    end
+
+    -- re-generate links to items list
+    if sortlinks or makegroups then
         for _, link in ipairs(links) do
             if link:startswith("framework::") then
                 link = link:sub(12)
