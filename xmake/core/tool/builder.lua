@@ -408,8 +408,13 @@ function builder:_add_flags_from_language(flags, target, getters)
         end
     end
 
+    -- process link orders
+    local kind = self:kind()
+    if (kind == "ld" or kind == "sh") and target and target:type() == "target" then
+        utils.dump(items)
+    end
+
     -- get flags from the items
-    utils.dump(items)
     for _, item in ipairs(items) do
         local check = item.check
         local mapper = item.mapper

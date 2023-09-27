@@ -29,6 +29,8 @@ function _get_apis()
     ,   "target.add_arflags"
     ,   "target.add_shflags"
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
+    ,   "target.add_linkorders"
+    ,   "target.add_linkgroups"
         -- option.add_xxx
     ,   "option.add_links"
     ,   "option.add_syslinks"

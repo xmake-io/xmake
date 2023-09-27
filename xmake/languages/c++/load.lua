@@ -36,6 +36,8 @@ function _get_apis()
     ,   "target.add_frameworks"
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
     ,   "target.add_forceincludes"
+    ,   "target.add_linkorders"
+    ,   "target.add_linkgroups"
         -- option.add_xxx
     ,   "option.add_cincludes"
     ,   "option.add_cxxincludes"
