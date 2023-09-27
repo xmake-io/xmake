@@ -188,6 +188,66 @@ function _instance:_api_add_values(name, ...)
     end
 end
 
+-- set the api groups to the scope info
+function _instance:_api_set_groups(name, ...)
+
+    -- get the scope info
+    local scope = self._INFO
+
+    -- get extra config
+    local values = {...}
+    local extra_config = values[#values]
+    if table.is_dictionary(extra_config) then
+        table.remove(values)
+    else
+        extra_config = nil
+    end
+
+    -- expand values
+    values = table.join(table.unpack(values))
+
+    -- save values
+    scope[name] = values
+
+    -- save extra config
+    if extra_config and extra_config.name then
+        scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+        local extrascope = scope["__extra_" .. name]
+        extrascope[extra_config.name] = extra_config
+    end
+end
+
+-- add the api groups to the scope info
+function _instance:_api_add_groups(name, ...)
+
+    -- get the scope info
+    local scope = self._INFO
+
+    -- get extra config
+    local values = {...}
+    local extra_config = values[#values]
+    if table.is_dictionary(extra_config) then
+        table.remove(values)
+    else
+        extra_config = nil
+    end
+
+    -- expand values
+    values = table.join(table.unpack(values))
+
+    -- save values
+    scope[name] = scope[name] or {}
+    table.insert(scope[name], values)
+    scope[name] = self:_api_handle(name, scope[name])
+
+    -- save extra config
+    if extra_config and extra_config.name then
+        scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+        local extrascope = scope["__extra_" .. name]
+        extrascope[extra_config.name] = extra_config
+    end
+end
+
 -- set the api key-values to the scope info
 function _instance:_api_set_keyvalues(name, key, ...)
 

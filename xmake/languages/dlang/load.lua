@@ -29,8 +29,6 @@ function _get_apis()
     ,   "target.add_arflags"
     ,   "target.add_shflags"
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
-    ,   "target.add_linkorders"
-    ,   "target.add_linkgroups"
         -- option.add_xxx
     ,   "option.add_links"
     ,   "option.add_syslinks"
@@ -61,6 +59,11 @@ function _get_apis()
     ,   "toolchain.add_linkdirs"
     ,   "toolchain.add_includedirs"
     ,   "toolchain.add_sysincludedirs"
+    }
+    apis.groups = {
+        -- target.add_xxx
+        "target.add_linkorders"
+    ,   "target.add_linkgroups"
     }
     apis.paths = {
         -- target.add_xxx

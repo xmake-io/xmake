@@ -449,6 +449,7 @@ function builder:_sort_links_of_items(target, items)
     if linkgroups and type(linkgroups) == "table" and #linkgroups > 1 then
         makegroups = true
     end
+    utils.dump(linkorders)
 
     -- get all links
     local links = {}

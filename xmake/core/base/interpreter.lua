@@ -1214,6 +1214,73 @@ function interpreter:api_register_set_keyvalues(scope_kind, ...)
     self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
 end
 
+-- register api for set_groups
+function interpreter:api_register_set_groups(scope_kind, ...)
+
+    -- define implementation
+    local implementation = function (self, scope, name, ...)
+
+        -- get extra config
+        local values = {...}
+        local extra_config = values[#values]
+        if table.is_dictionary(extra_config) then
+            table.remove(values)
+        else
+            extra_config = nil
+        end
+
+        -- expand values
+        values = table.join(table.unpack(values))
+
+        -- save values
+        scope[name] = values
+
+        -- save extra config
+        if extra_config and extra_config.name then
+            scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+            local extrascope = scope["__extra_" .. name]
+            extrascope[extra_config.name] = extra_config
+        end
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
+end
+
+-- register api for add_groups
+function interpreter:api_register_add_groups(scope_kind, ...)
+
+    -- define implementation
+    local implementation = function (self, scope, name, ...)
+
+        -- get extra config
+        local values = {...}
+        local extra_config = values[#values]
+        if table.is_dictionary(extra_config) then
+            table.remove(values)
+        else
+            extra_config = nil
+        end
+
+        -- expand values
+        values = table.join(table.unpack(values))
+
+        -- save values
+        scope[name] = scope[name] or {}
+        table.insert(scope[name], values)
+
+        -- save extra config
+        if extra_config and extra_config.name then
+            scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+            local extrascope = scope["__extra_" .. name]
+            extrascope[extra_config.name] = extra_config
+        end
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "add", implementation, ...)
+end
+
 -- register api for add_keyvalues
 --
 -- interp:api_register_add_keyvalues("scope_kind", "name1", "name2", ...)

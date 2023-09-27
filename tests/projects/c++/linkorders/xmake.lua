@@ -17,7 +17,8 @@ target("demo")
     if is_plat("macosx") then
         add_frameworks("Foundation", "CoreFoundation")
     end
-    add_linkorders("framework::Foundation", "png16", "foo", "m", "pthread")
+    add_linkorders("framework::Foundation", "png16", "foo")
+    add_linkorders("m", "pthread")
     add_linkgroups("m", "pthread")
 
 
