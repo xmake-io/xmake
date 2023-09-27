@@ -408,10 +408,10 @@ function builder:_add_flags_from_language(flags, target, getters)
         end
     end
 
-    -- process link orders
+    -- sort links
     local kind = self:kind()
     if (kind == "ld" or kind == "sh") and target and target:type() == "target" then
-        utils.dump(items)
+        self:_sort_links_of_items(target, items)
     end
 
     -- get flags from the items
@@ -433,6 +433,42 @@ function builder:_add_flags_from_language(flags, target, getters)
                 end
             end
         end
+    end
+end
+
+-- sort links of items
+function builder:_sort_links_of_items(target, items)
+    local linkorders = target:get("linkorders")
+    if linkorders then
+        local links = {}
+        local link_mapper
+        local framework_mapper
+        table.remove_if(items, function (_, item)
+            local name = item.name
+            local removed = false
+            for _, value in ipairs(item.values) do
+                if name == "links" or name == "syslinks" then
+                    table.insert(links, value)
+                    link_mapper = item.mapper
+                    removed = true
+                elseif name == "frameworks" then
+                    table.insert(links, "framework::" .. value)
+                    framework_mapper = item.mapper
+                    removed = true
+                end
+            end
+            return removed
+        end)
+        utils.dump(links)
+        for _, link in ipairs(links) do
+            if link:startswith("framework::") then
+                link = link:sub(12)
+                table.insert(items, {name = "frameworks", values = table.wrap(link), check = false, multival = false, mapper = framework_mapper})
+            else
+                table.insert(items, {name = "links", values = table.wrap(link), check = false, multival = false, mapper = link_mapper})
+            end
+        end
+        utils.dump(links)
     end
 end
 

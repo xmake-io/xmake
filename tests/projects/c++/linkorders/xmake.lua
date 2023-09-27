@@ -12,7 +12,11 @@ target("demo")
     add_deps("foo")
     add_files("src/main.cpp")
     if is_plat("linux", "macosx") then
-        add_syslinks("pthread", "m")
+        add_syslinks("pthread", "m", "dl")
     end
+    if is_plat("macosx") then
+        add_frameworks("Foundation", "CoreFoundation")
+    end
+    add_linkorders("framework::Foundation", "png16", "foo", "m", "pthread")
 
 
