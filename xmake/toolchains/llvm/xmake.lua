@@ -31,6 +31,8 @@ toolchain("llvm")
     -- set toolset
     set_toolset("cc",     "clang")
     set_toolset("cxx",    "clang", "clang++")
+    set_toolset("mxx",    "clang", "clang++")
+    set_toolset("mm",    "clang", "clang++")
     set_toolset("cpp",    "clang -E")
     set_toolset("as",     "clang")
     set_toolset("ld",     "clang++", "clang")
@@ -77,18 +79,18 @@ toolchain("llvm")
             local xcode_sdkdir  = nil
             if xcode_dir and xcode_sdkver then
                 xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
-                toolchain:add("cxflags", "-isysroot " .. xcode_sdkdir)
-                toolchain:add("mxflags", "-isysroot " .. xcode_sdkdir)
-                toolchain:add("ldflags", "-isysroot " .. xcode_sdkdir)
-                toolchain:add("shflags", "-isysroot " .. xcode_sdkdir)
+                toolchain:add("cxflags", {"-isysroot", xcode_sdkdir})
+                toolchain:add("mxflags", {"-isysroot", xcode_sdkdir})
+                toolchain:add("ldflags", {"-isysroot", xcode_sdkdir})
+                toolchain:add("shflags", {"-isysroot", xcode_sdkdir})
             else
                 -- @see https://github.com/xmake-io/xmake/issues/1179
                 local macsdk = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
                 if os.exists(macsdk) then
-                    toolchain:add("cxflags", "-isysroot " .. macsdk)
-                    toolchain:add("mxflags", "-isysroot " .. macsdk)
-                    toolchain:add("ldflags", "-isysroot " .. macsdk)
-                    toolchain:add("shflags", "-isysroot " .. macsdk)
+                    toolchain:add("cxflags", {"-isysroot", macsdk})
+                    toolchain:add("mxflags", {"-isysroot", macsdk})
+                    toolchain:add("ldflags", {"-isysroot", macsdk})
+                    toolchain:add("shflags", {"-isysroot", macsdk})
                 end
             end
             toolchain:add("mxflags", "-fobjc-arc")
