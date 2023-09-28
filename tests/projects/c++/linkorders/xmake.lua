@@ -2,6 +2,11 @@ add_rules("mode.debug", "mode.release")
 
 add_requires("libpng")
 
+target("bar")
+    set_kind("shared")
+    add_files("src/foo.cpp")
+    add_linkgroups("m", "pthread", {whole = true})
+
 target("foo")
     set_kind("static")
     add_files("src/foo.cpp")
@@ -18,7 +23,7 @@ target("demo")
         add_frameworks("Foundation", "CoreFoundation")
     end
     add_linkorders("framework::Foundation", "png16", "foo")
-    add_linkorders("m", "pthread")
-    add_linkgroups("m", "pthread")
+    add_linkorders("dl", "group::syslib")
+    add_linkgroups("m", "pthread", {name = "syslib"})
 
 

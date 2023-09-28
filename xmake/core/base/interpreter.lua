@@ -1236,10 +1236,11 @@ function interpreter:api_register_set_groups(scope_kind, ...)
         scope[name] = values
 
         -- save extra config
-        if extra_config and extra_config.name then
+        if extra_config then
             scope["__extra_" .. name] = scope["__extra_" .. name] or {}
             local extrascope = scope["__extra_" .. name]
-            extrascope[extra_config.name] = extra_config
+            local key = table.concat(values, "_")
+            extrascope[key] = extra_config
         end
     end
 
@@ -1270,10 +1271,11 @@ function interpreter:api_register_add_groups(scope_kind, ...)
         table.insert(scope[name], values)
 
         -- save extra config
-        if extra_config and extra_config.name then
+        if extra_config then
             scope["__extra_" .. name] = scope["__extra_" .. name] or {}
             local extrascope = scope["__extra_" .. name]
-            extrascope[extra_config.name] = extra_config
+            local key = table.concat(values, "_")
+            extrascope[key] = extra_config
         end
     end
 
