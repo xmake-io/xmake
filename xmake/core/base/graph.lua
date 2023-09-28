@@ -127,9 +127,11 @@ function graph:topological_sort()
         table.insert(order_vertices, v)
     end
     for _, v in ipairs(self:vertices()) do
-        graph_topological_sort_dfs(v)
+        if marked[v] == false then
+            graph_topological_sort_dfs(v)
+        end
     end
-    return order_vertices
+    return table.reverse(order_vertices)
 end
 
 -- get edges
