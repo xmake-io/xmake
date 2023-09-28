@@ -24,21 +24,48 @@ local object = require("base/object")
 
 -- define module
 local graph = graph or object { _init = {"_directed"} } {true}
+local edge = edge or object { _init = {"_from", "_to", "_weight"} }
+
+-- new edge, from -> to
+function edge.new(from, to, weight)
+    return edge {from, to, weight or 1.0}
+end
+
+function edge:from()
+    return self._from
+end
+
+function edge:to()
+    return self._to
+end
+
+function edge:other(v)
+    if v == self._from then
+        return self._to
+    else
+        return self._from
+    end
+end
 
 -- clear graph
 function graph:clear()
-    self._vertices_list = {}
-    self._adjacent_list = {}
+    self._vertices = {}
+    self._adjacent_edges = {}
+end
+
+-- is directed?
+function graph:is_directed()
+    return self._directed
 end
 
 -- get vertices
 function graph:vertices()
-    return self._vertices_list
+    return self._vertices
 end
 
--- get adjacent vertices of the the given vertex
-function graph:adjacent_vertices(v)
-    return self._adjacent_list[v]
+-- get adjacent edges of the the given vertex
+function graph:adjacent_edges(v)
+    return self._adjacent_edges[v]
 end
 
 -- get the vertex at the given index
@@ -61,11 +88,35 @@ function graph:edges()
 end
 
 -- add edge
-function graph:add_edge(v, w, weight)
+function graph:add_edge(from, to, weight)
+    local e = edge.new(from, to, weight)
+    if not self:has_vertex(from) then
+        table.insert(self._vertices, from)
+        self._adjacent_edges[from] = {}
+    end
+    if not self:has_vertex(to) then
+        table.insert(self._vertices, to)
+        self._adjacent_edges[to] = {}
+    end
+    if self:is_directed() then
+        table.insert(self._adjacent_edges[e:from()], e)
+    else
+        table.insert(self._adjacent_edges[e:from()], e)
+        table.insert(self._adjacent_edges[e:to()], e)
+    end
 end
 
 -- has the given edge?
-function graph:has_edge(v, w)
+function graph:has_edge(from, to)
+    local edges = self:adjacent_edges(from)
+    if edges then
+        for _, e in ipairs(edges) do
+            if e:to() == to then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 -- reverse graph
