@@ -450,5 +450,11 @@ function main(target, opt)
             target:add("ldflags", "-mwindows", {force = true})
         end
     end
+
+    -- set default runtime
+    -- @see https://github.com/xmake-io/xmake/issues/4161
+    if not target:get("runtimes") then
+        target:set("runtimes", is_mode("debug") and "MDd" or "MD")
+    end
 end
 
