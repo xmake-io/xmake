@@ -47,9 +47,14 @@ function edge:other(v)
     end
 end
 
+function edge:weight()
+    return self._weight
+end
+
 -- clear graph
 function graph:clear()
     self._vertices = {}
+    self._edges = {}
     self._adjacent_edges = {}
 end
 
@@ -80,11 +85,30 @@ end
 
 -- remove the given vertex?
 function graph:remove_vertex(v)
-    -- TODO
+    local contains = false
+    table.remove_if(self._vertices, function (_, item)
+        if item == v then
+            contains = true
+            return true
+        end
+    end)
+    if contains then
+        self._adjacent_edges[v] = nil
+        -- remove the adjacent edge with this vertex in the other vertices
+        if not self:is_directed() then
+            for _, w in ipairs(self:vertices()) do
+                local edges = self:adjacent_edges(w)
+                if edges then
+                    table.remove_if(edges, function (_, e) return e:other(w) == v end)
+                end
+            end
+        end
+    end
 end
 
 -- get edges
 function graph:edges()
+    return self._edges
 end
 
 -- add edge
@@ -104,6 +128,7 @@ function graph:add_edge(from, to, weight)
         table.insert(self._adjacent_edges[e:from()], e)
         table.insert(self._adjacent_edges[e:to()], e)
     end
+    table.insert(self._edges, e)
 end
 
 -- has the given edge?
@@ -119,8 +144,35 @@ function graph:has_edge(from, to)
     return false
 end
 
+-- clone graph
+function graph:clone()
+    local gh = graph.new(self:is_directed())
+    for _, v in ipairs(self:vertices()) do
+        local edges = self:adjacent_edges(v)
+        if edges then
+            for _, e in ipairs(edges) do
+                gh:add_edge(e:from(), e:to(), e:weight())
+            end
+        end
+    end
+    return gh
+end
+
 -- reverse graph
 function graph:reverse()
+    if not self:is_directed() then
+        return self:clone()
+    end
+    local gh = graph.new(self:is_directed())
+    for _, v in ipairs(self:vertices()) do
+        local edges = self:adjacent_edges(v)
+        if edges then
+            for _, e in ipairs(edges) do
+                gh:add_edge(e:to(), e:from(), e:weight())
+            end
+        end
+    end
+    return gh
 end
 
 -- new graph
