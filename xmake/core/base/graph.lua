@@ -18,8 +18,66 @@
 -- @file        graph.lua
 --
 
--- define module: graph
-local graph  = graph or {}
+-- load modules
+local table = require("base/table")
+local object = require("base/object")
+
+-- define module
+local graph = graph or object { _init = {"_directed"} } {true}
+
+-- clear graph
+function graph:clear()
+    self._vertices_list = {}
+    self._adjacent_list = {}
+end
+
+-- get vertices
+function graph:vertices()
+    return self._vertices_list
+end
+
+-- get adjacent vertices of the the given vertex
+function graph:adjacent_vertices(v)
+    return self._adjacent_list[v]
+end
+
+-- get the vertex at the given index
+function graph:vertex(idx)
+    return self:vertices()[idx]
+end
+
+-- has the given vertex?
+function graph:has_vertex(v)
+    return table.contains(self:vertices(), v)
+end
+
+-- remove the given vertex?
+function graph:remove_vertex(v)
+    -- TODO
+end
+
+-- get edges
+function graph:edges()
+end
+
+-- add edge
+function graph:add_edge(v, w, weight)
+end
+
+-- has the given edge?
+function graph:has_edge(v, w)
+end
+
+-- reverse graph
+function graph:reverse()
+end
+
+-- new graph
+function graph.new(directed)
+    local gh = graph {directed}
+    gh:clear()
+    return gh
+end
 
 -- return module: graph
 return graph
