@@ -478,7 +478,7 @@ function builder:_sort_links_of_items(target, items)
                     framework_mapper = item.mapper
                     removed = true
                 elseif name == "linkgroups" then
-                    local key = tostring(value)
+                    local key = target:extraconf("linkgroups", value, "name") or tostring(value)
                     table.insert(links, "linkgroup::" .. key)
                     linkgroups_map[key] = value
                     linkgroup_mapper = item.mapper
@@ -489,6 +489,8 @@ function builder:_sort_links_of_items(target, items)
         end)
         links = table.reverse_unique(links)
     end
+    utils.dump(links)
+    utils.dump(linkorders)
 
     -- sort sublinks
     --[[
