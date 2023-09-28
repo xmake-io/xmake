@@ -23,9 +23,18 @@ function test_topological_sort(t)
     for i, v in ipairs(order_path) do
         orders[v] = i
     end
-
     for _, e in ipairs(edges) do
         t:require(orders[e[1]] < orders[e[2]])
+    end
+
+    dag = dag:reverse()
+    order_path = dag:topological_sort()
+    orders = {}
+    for i, v in ipairs(order_path) do
+        orders[v] = i
+    end
+    for _, e in ipairs(edges) do
+        t:require(orders[e[1]] > orders[e[2]])
     end
 end
 
