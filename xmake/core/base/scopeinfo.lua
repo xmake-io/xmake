@@ -207,7 +207,9 @@ function _instance:_api_set_groups(name, ...)
     values = table.join(table.unpack(values))
 
     -- save values
+    table.wrap_lock(values)
     scope[name] = values
+    scope[name] = self:_api_handle(name, scope[name])
 
     -- save extra config
     if extra_config then
@@ -238,6 +240,7 @@ function _instance:_api_add_groups(name, ...)
 
     -- save values
     scope[name] = scope[name] or {}
+    table.wrap_lock(values)
     table.insert(scope[name], values)
     scope[name] = self:_api_handle(name, scope[name])
 

@@ -305,13 +305,13 @@ function nf_syslink(self, lib)
 end
 
 -- make the link group flag
-function nf_linkgroups(self, libs, target)
+function nf_linkgroup(self, linkgroup, target)
     local flags = {}
-    for _, lib in ipairs(libs) do
+    for _, lib in ipairs(linkgroup) do
         table.insert(flags, nf_link(self, lib))
     end
     if not target:is_plat("macosx", "windows", "mingw") then
-        local whole = target:extraconf("linkgroups", libs, "whole")
+        local whole = target:extraconf("linkgroups", linkgroup, "whole")
         if whole then
             table.insert(flags, 1, "-Wl,--whole-archive")
             table.insert(flags, "-Wl,--no-whole-archive")
@@ -320,7 +320,7 @@ function nf_linkgroups(self, libs, target)
             table.insert(flags, "-Wl,--end-group")
         end
     end
-    return {flags}
+    return flags
 end
 
 -- make the linkdir flag

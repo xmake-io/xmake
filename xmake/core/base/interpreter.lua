@@ -1231,6 +1231,7 @@ function interpreter:api_register_set_groups(scope_kind, ...)
 
         -- expand values
         values = table.join(table.unpack(values))
+        table.wrap_lock(values)
 
         -- save values
         scope[name] = values
@@ -1268,6 +1269,7 @@ function interpreter:api_register_add_groups(scope_kind, ...)
 
         -- save values
         scope[name] = scope[name] or {}
+        table.wrap_lock(values)
         table.insert(scope[name], values)
 
         -- save extra config

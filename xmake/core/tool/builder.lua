@@ -441,32 +441,47 @@ end
 function builder:_sort_links_of_items(target, items)
     local sortlinks = false
     local makegroups = false
-    local linkorders = target:get("linkorders")
-    if linkorders and type(linkorders) == "table" and #linkorders > 1 then
+    local linkorders = table.wrap(target:get("linkorders"))
+    if #linkorders > 0 then
         sortlinks = true
     end
-    local linkgroups = target:get("linkgroups")
-    if linkgroups and type(linkgroups) == "table" and #linkgroups > 1 then
+    local linkgroups = table.wrap(target:get("linkgroups"))
+    local linkgroups_set = hashset.new()
+    if #linkgroups > 0 then
         makegroups = true
+        for _, linkgroup in ipairs(linkgroups) do
+            for _, link in ipairs(linkgroup) do
+                linkgroups_set:insert(link)
+            end
+        end
     end
-    utils.dump(linkorders)
 
     -- get all links
     local links = {}
+    local linkgroups_map = {}
     local link_mapper
     local framework_mapper
+    local linkgroup_mapper
     if sortlinks or makegroups then
         table.remove_if(items, function (_, item)
             local name = item.name
             local removed = false
             for _, value in ipairs(item.values) do
                 if name == "links" or name == "syslinks" then
-                    table.insert(links, value)
+                    if not linkgroups_set:has(value) then
+                        table.insert(links, value)
+                    end
                     link_mapper = item.mapper
                     removed = true
                 elseif name == "frameworks" then
                     table.insert(links, "framework::" .. value)
                     framework_mapper = item.mapper
+                    removed = true
+                elseif name == "linkgroups" then
+                    local key = tostring(value)
+                    table.insert(links, "linkgroup::" .. key)
+                    linkgroups_map[key] = value
+                    linkgroup_mapper = item.mapper
                     removed = true
                 end
             end
@@ -476,6 +491,7 @@ function builder:_sort_links_of_items(target, items)
     end
 
     -- sort sublinks
+    --[[
     if sortlinks then
         local linkorders_set = hashset.from(linkorders)
         local sublinks = {}
@@ -500,7 +516,7 @@ function builder:_sort_links_of_items(target, items)
                 end
             end
         end
-    end
+    end]]
 
     -- re-generate links to items list
     if sortlinks or makegroups then
@@ -508,6 +524,10 @@ function builder:_sort_links_of_items(target, items)
             if link:startswith("framework::") then
                 link = link:sub(12)
                 table.insert(items, {name = "frameworks", values = table.wrap(link), check = false, multival = false, mapper = framework_mapper})
+            elseif link:startswith("linkgroup::") then
+                local key = link:sub(12)
+                local value = linkgroups_map[key]
+                table.insert(items, {name = "linkgroups", values = table.wrap(value), check = false, multival = false, mapper = linkgroup_mapper})
             else
                 table.insert(items, {name = "links", values = table.wrap(link), check = false, multival = false, mapper = link_mapper})
             end
