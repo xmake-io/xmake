@@ -106,6 +106,32 @@ function graph:remove_vertex(v)
     end
 end
 
+-- topological sort
+function graph:topological_sort()
+    local marked = {}
+    for _, v in ipairs(self:vertices()) do
+        marked[v] = false
+    end
+    local order_vertices = {}
+    local function graph_topological_sort_dfs(v)
+        marked[v] = true
+        local edges = self:adjacent_edges(v)
+        if edges then
+            for _, e in ipairs(edges) do
+                local w = e:other(v)
+                if marked[w] == false then
+                    graph_topological_sort_dfs(w)
+                end
+            end
+        end
+        table.insert(order_vertices, v)
+    end
+    for _, v in ipairs(self:vertices()) do
+        graph_topological_sort_dfs(v)
+    end
+    return order_vertices
+end
+
 -- get edges
 function graph:edges()
     return self._edges
