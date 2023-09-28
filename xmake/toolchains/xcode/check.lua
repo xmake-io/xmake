@@ -73,11 +73,11 @@ function main(toolchain)
     end
 
     -- get xcode bin directory
+    local cross
     if xcode.sdkdir and os.isdir(xcode.sdkdir) then
         local bindir = path.join(xcode.sdkdir, "Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin")
         toolchain:config_set("bindir", bindir)
     else
-        local cross
         if toolchain:is_plat("macosx") then
             cross = "xcrun -sdk macosx "
         elseif toolchain:is_plat("iphoneos") then
