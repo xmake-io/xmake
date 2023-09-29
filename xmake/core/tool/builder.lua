@@ -518,6 +518,9 @@ function builder:_sort_links_of_items(target, items)
         if not gh:empty() then
             links = gh:topological_sort()
         end
+        gh:dump()
+        local cycle = gh:find_cycle()
+        utils.dump(cycle)
     end
 
     -- re-generate links to items list

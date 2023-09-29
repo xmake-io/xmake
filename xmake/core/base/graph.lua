@@ -113,30 +113,74 @@ end
 
 -- topological sort
 function graph:topological_sort()
-    local marked = {}
+    local visited = {}
     for _, v in ipairs(self:vertices()) do
-        marked[v] = false
+        visited[v] = false
     end
     local order_vertices = {}
-    local function graph_topological_sort_dfs(v)
-        marked[v] = true
+    local function dfs(v)
+        visited[v] = true
         local edges = self:adjacent_edges(v)
         if edges then
             for _, e in ipairs(edges) do
                 local w = e:other(v)
-                if marked[w] == false then
-                    graph_topological_sort_dfs(w)
+                if not visited[w] then
+                    dfs(w)
                 end
             end
         end
         table.insert(order_vertices, v)
     end
     for _, v in ipairs(self:vertices()) do
-        if marked[v] == false then
-            graph_topological_sort_dfs(v)
+        if not visited[v] then
+            dfs(v)
         end
     end
     return table.reverse(order_vertices)
+end
+
+-- find cycle
+function graph:find_cycle()
+    local visited = {}
+    local stack = {}
+    local cycle = {}
+
+    local function dfs(v)
+        visited[v] = true
+        stack[v] = true
+        table.insert(cycle, v)
+        local edges = self:adjacent_edges(v)
+        if edges then
+            for _, e in ipairs(edges) do
+                local w = e:other(v)
+                if not visited[w] then
+                    if dfs(w) then
+                        return true
+                    elseif stack[w] then
+                        return true
+                    end
+                elseif stack[w] then
+                    for i = #cycle, 1, -1 do
+                        if cycle[i] == w then
+                            cycle = table.slice(cycle, i)
+                            return true
+                        end
+                    end
+                end
+            end
+        end
+        table.remove(cycle)
+        stack[v] = false
+        return false
+    end
+
+    for _, v in ipairs(self:vertices()) do
+        if not visited[v] then
+            if dfs(v) then
+                return cycle
+            end
+        end
+    end
 end
 
 -- get edges
@@ -206,6 +250,22 @@ function graph:reverse()
         end
     end
     return gh
+end
+
+-- dump graph
+function graph:dump()
+    local vertices = self:vertices()
+    local edges = self:edges()
+    print(string.format("graph: %s, vertices: %d, edges: %d", self:is_directed() and "directed" or "not-directed", #vertices, #edges))
+    print("vertices: ")
+    for _, v in ipairs(vertices) do
+        print(string.format("  %s", v))
+    end
+    print("")
+    print("edges: ")
+    for _, e in ipairs(edges) do
+        print(string.format("  %s -> %s", e:from(), e:to()))
+    end
 end
 
 -- new graph
