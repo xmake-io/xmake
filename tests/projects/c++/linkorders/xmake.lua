@@ -1,6 +1,8 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("libpng")
+if not is_host("bsd") then
+    add_requires("libpng")
+end
 
 target("bar")
     set_kind("shared")
@@ -22,7 +24,11 @@ target("demo")
     if is_plat("macosx") then
         add_frameworks("Foundation", "CoreFoundation")
     end
-    add_linkorders("framework::Foundation", "png16", "foo")
+    if is_host("bsd") then
+        add_linkorders("framework::Foundation", "foo")
+    else
+        add_linkorders("framework::Foundation", "png16", "foo")
+    end
     add_linkorders("dl", "linkgroup::syslib")
     add_linkgroups("m", "pthread", {name = "syslib"})
 
