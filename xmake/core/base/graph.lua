@@ -58,6 +58,11 @@ function graph:clear()
     self._adjacent_edges = {}
 end
 
+-- is empty?
+function graph:empty()
+    return #self:vertices() == 0
+end
+
 -- is directed?
 function graph:is_directed()
     return self._directed

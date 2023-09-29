@@ -29,6 +29,7 @@ local table    = require("base/table")
 local string   = require("base/string")
 local option   = require("base/option")
 local hashset  = require("base/hashset")
+local graph    = require("base/graph")
 local tool     = require("tool/tool")
 local config   = require("project/config")
 local sandbox  = require("sandbox/sandbox")
@@ -489,36 +490,32 @@ function builder:_sort_links_of_items(target, items)
         end)
         links = table.reverse_unique(links)
     end
-    utils.dump(links)
-    utils.dump(linkorders)
 
     -- sort sublinks
-    --[[
     if sortlinks then
-        local linkorders_set = hashset.from(linkorders)
-        local sublinks = {}
+        local gh = graph.new(true)
+        local from
         for _, link in ipairs(links) do
-            if linkorders_set:has(link) then
-                table.insert(sublinks, link)
+            local to = link
+            if from and to then
+                gh:add_edge(from, to)
+            end
+            from = to
+        end
+        for _, linkorder in ipairs(linkorders) do
+            local from
+            for _, link in ipairs(linkorder) do
+                local to = link
+                if from and to then
+                    gh:add_edge(from, to)
+                end
+                from = to
             end
         end
-        if #sublinks > 0 then
-            local sublinks_set = hashset.from(sublinks)
-            local sublinks_order = {}
-            for _, link in ipairs(linkorders) do
-                if sublinks_set:has(link) then
-                    table.insert(sublinks_order, link)
-                end
-            end
-            local sublinks_idx = 1
-            for idx, link in ipairs(links) do
-                if sublinks_set:has(link) then
-                    links[idx] = sublinks_order[sublinks_idx]
-                    sublinks_idx = sublinks_idx + 1
-                end
-            end
+        if not gh:empty() then
+            links = gh:topological_sort()
         end
-    end]]
+    end
 
     -- re-generate links to items list
     if sortlinks or makegroups then
