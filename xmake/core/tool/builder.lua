@@ -516,11 +516,12 @@ function builder:_sort_links_of_items(target, items)
             end
         end
         if not gh:empty() then
+            local cycle = gh:find_cycle()
+            if cycle then
+                utils.warning("cycle links found in add_linkorders(): %s", table.concat(cycle, " -> "))
+            end
             links = gh:topological_sort()
         end
-        gh:dump()
-        local cycle = gh:find_cycle()
-        utils.dump(cycle)
     end
 
     -- re-generate links to items list
