@@ -502,14 +502,17 @@ function builder:_sort_links_of_items(target, items)
             end
             from = to
         end
+        local links_set = hashset.from(links)
         for _, linkorder in ipairs(linkorders) do
             local from
             for _, link in ipairs(linkorder) do
-                local to = link
-                if from and to then
-                    gh:add_edge(from, to)
+                if links_set:has(link) then
+                    local to = link
+                    if from and to then
+                        gh:add_edge(from, to)
+                    end
+                    from = to
                 end
-                from = to
             end
         end
         if not gh:empty() then
