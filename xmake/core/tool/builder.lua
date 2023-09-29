@@ -495,12 +495,35 @@ function builder:_sort_links_of_items(target, items)
     if sortlinks then
         local gh = graph.new(true)
         local from
+        local original_deps = {}
         for _, link in ipairs(links) do
             local to = link
             if from and to then
-                gh:add_edge(from, to)
+                original_deps[from] = to
             end
             from = to
+        end
+        -- we need remove cycle in original links
+        -- e.g.
+        -- original_deps: a -> b -> c -> d -> e
+        -- new deps: e -> b
+        -- graph: a -> b -> c -> d    e  (remove d -> e)
+        --            /\              |
+        --             |              |
+        --              --------------
+        local function remove_cycle_in_original_deps(f, t)
+            local k
+            local v = t
+            while v ~= f do
+                k = v
+                v = original_deps[v]
+                if v == nil then
+                    break
+                end
+            end
+            if v == f and k ~= nil then
+                original_deps[k] = nil
+            end
         end
         local links_set = hashset.from(links)
         for _, linkorder in ipairs(linkorders) do
@@ -509,11 +532,15 @@ function builder:_sort_links_of_items(target, items)
                 if links_set:has(link) then
                     local to = link
                     if from and to then
+                        remove_cycle_in_original_deps(from, to)
                         gh:add_edge(from, to)
                     end
                     from = to
                 end
             end
+        end
+        for k, v in pairs(original_deps) do
+            gh:add_edge(k, v)
         end
         if not gh:empty() then
             local cycle = gh:find_cycle()
