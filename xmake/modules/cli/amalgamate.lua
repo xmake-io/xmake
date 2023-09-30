@@ -33,14 +33,79 @@ local options =
     {nil, "target",    "v",  nil, "The target name."         }
 }
 
--- generate file
-function _generate_file(inputpaths, outputpath, uniqueid)
-    local outputfile = io.open(outputpath, "w")
+-- get include files
+function _get_include_files(target, filepath)
+    local includes = {}
+    local sourcecode = io.readfile(filepath)
+    sourcecode = sourcecode:gsub("/%*.-%*/", "")
+    sourcecode = sourcecode:gsub("//.-\n", "\n")
+    sourcecode:gsub("#include%s+\"(.-)\"", function (include)
+        table.insert(includes, include)
+    end)
+    includes = table.unique(includes)
+
+    local includefiles = {}
+    local filedir = path.directory(filepath)
+    local includedirs = table.join(filedir, target:get("includedirs"))
+    for _, include in ipairs(includes) do
+        local result
+        for _, includedir in ipairs(includedirs) do
+            local includefile = path.join(includedir, include)
+            if os.isfile(includefile) then
+                includefile = path.normalize(path.absolute(includefile, os.projectdir()))
+                result = includefile
+                break
+            end
+        end
+        if result then
+            table.insert(includefiles, result)
+        else
+            wprint("#include \"%s\" not found in %s", include, filepath)
+        end
+    end
+    return includefiles
+end
+
+-- generate include graph
+function _generate_include_graph(target, inputpaths, gh, marked)
     for _, inputpath in ipairs(inputpaths) do
+        if not marked[inputpath] then
+            marked[inputpath] = true
+            local includefiles = _get_include_files(target, inputpath)
+            for _, includefile in ipairs(includefiles) do
+                gh:add_edge(inputpath, includefile)
+            end
+            if includefiles and #includefiles > 0 then
+                _generate_include_graph(target, includefiles, gh, marked)
+            end
+        end
+    end
+end
+
+-- generate file
+function _generate_file(target, inputpaths, outputpath, uniqueid)
+
+    -- generate include graph
+    local gh = graph.new(true)
+    for idx, inputpath in ipairs(inputpaths) do
+        inputpath = path.normalize(path.absolute(inputpath, os.projectdir()))
+        inputpaths[idx] = inputpath
+        gh:add_edge("__root__", inputpath)
+    end
+    _generate_include_graph(target, inputpaths, gh, {})
+
+    -- sort file paths and remove root path
+    local filepaths = gh:topological_sort()
+    table.remove(filepaths, 1)
+
+    -- generate amalgamate file
+    local outputfile = io.open(outputpath, "w")
+    for _, filepath in irpairs(filepaths) do
+        cprint("  ${color.dump.reference}+${clear} %s", filepath)
         if uniqueid then
             outputfile:print("#define %s %s", uniqueid, "unity_" .. hash.uuid():split("-", {plain = true})[1])
         end
-        outputfile:write(io.readfile(inputpath))
+        outputfile:write(io.readfile(filepath))
         if uniqueid then
             outputfile:print("#undef %s", uniqueid)
         end
@@ -61,10 +126,10 @@ function _generate_amalgamate_code(target, opt)
     local outputdir = opt.outputdir
     local uniqueid = opt.uniqueid
     for _, sourcebatch in pairs(target:sourcebatches()) do
-        local sourcekind = sourcebatch.sourcekind
-        if sourcekind == "cc" or sourcekind == "cxx" then
+        local rulename = sourcebatch.rulename
+        if rulename == "c.build" or rulename == "c++.build" then
             local outputpath = path.join(outputdir, target:name() .. (sourcekind == "cxx" and ".cpp" or ".c"))
-            _generate_file(sourcebatch.sourcefiles, outputpath, uniqueid)
+            _generate_file(target, sourcebatch.sourcefiles, outputpath, uniqueid)
         end
     end
 
@@ -72,7 +137,7 @@ function _generate_amalgamate_code(target, opt)
     local srcheaders = target:headerfiles(includedir)
     if srcheaders and #srcheaders > 0 then
         local outputpath = path.join(outputdir, target:name() .. ".h")
-        _generate_file(srcheaders, outputpath, uniqueid)
+        _generate_file(target, srcheaders, outputpath, uniqueid)
     end
 end
 
