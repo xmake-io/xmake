@@ -366,7 +366,7 @@ function _add_build_for_target(ninjafile, target, outputdir)
     ninjafile:print("")
 
     -- build target objects
-    local sourcebatches, _ = target:sourcebatches()
+    local sourcebatches = target:sourcebatches()
     for _, sourcebatch in table.orderpairs(sourcebatches) do
         if _sourcebatch_is_built(sourcebatch) then
             _add_build_for_objects(ninjafile, target, sourcebatch, outputdir)

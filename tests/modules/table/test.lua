@@ -33,9 +33,9 @@ end
 function test_orderkeys(t)
     -- sort by modulo 2 then from the smallest to largest 
     local f = function(a, b)
-        if a % 2 == 0 then
+        if a % 2 == 0 and b % 2 ~= 0 then
             return true
-        elseif b % 2 == 0 then
+        elseif b % 2 == 0 and a % 2 ~= 0 then
             return false
         end
         return a < b

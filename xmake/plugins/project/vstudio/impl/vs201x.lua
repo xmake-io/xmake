@@ -213,7 +213,7 @@ function _make_custom_commands(target, vcxprojdir)
     local commands = {}
     _make_custom_commands_for_target(commands, target, vcxprojdir, "before")
     _make_custom_commands_for_target(commands, target, vcxprojdir)
-    local sourcebatches, _ = target:sourcebatches()
+    local sourcebatches = target:sourcebatches()
     for _, sourcebatch in table.orderpairs(sourcebatches) do
         local rulename = sourcebatch.rulename
         local sourcekind = sourcebatch.sourcekind
@@ -282,7 +282,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     local firstcompflags = nil
     targetinfo.compflags = {}
     targetinfo.compargvs = {}
-    local sourcebatches, _ = target:sourcebatches()
+    local sourcebatches = target:sourcebatches()
     for _, sourcebatch in table.orderpairs(sourcebatches) do
         local sourcekind = sourcebatch.sourcekind
         local rulename = sourcebatch.rulename

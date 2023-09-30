@@ -381,7 +381,7 @@ end
 function _add_target_sources(cmakelists, target, outputdir)
     local has_cuda = false
     cmakelists:print("target_sources(%s PRIVATE", target:name())
-    local sourcebatches, _ = target:sourcebatches()
+    local sourcebatches = target:sourcebatches()
     for _, sourcebatch in table.orderpairs(sourcebatches) do
         if _sourcebatch_is_built(sourcebatch) then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -613,7 +613,7 @@ function _add_target_compile_options(cmakelists, target, outputdir)
     end
 
     -- add cflags/cxxflags for the specific source files
-    local sourcebatches, _ = target:sourcebatches()
+    local sourcebatches = target:sourcebatches()
     for _, sourcebatch in table.orderpairs(sourcebatches) do
         if _sourcebatch_is_built(sourcebatch) then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -837,7 +837,7 @@ function _add_target_link_libraries(cmakelists, target, outputdir)
 
     -- add other object files, maybe from custom rules
     local objectfiles_set = hashset.new()
-    local sourcebatches, _ = target:sourcebatches()
+    local sourcebatches = target:sourcebatches()
     for _, sourcebatch in table.orderpairs(sourcebatches) do
         if _sourcebatch_is_built(sourcebatch) then
             for _, objectfile in ipairs(sourcebatch.objectfiles) do
