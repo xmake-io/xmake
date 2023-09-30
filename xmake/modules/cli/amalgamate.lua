@@ -99,7 +99,8 @@ function main(...)
     -- generate amalgamate code
     args.outputdir = args.outputdir or config.buildir()
     if args.target then
-        _generate_amalgamate_code(args.target, args)
+        local target = assert(project.target(args.target), "target(%s): not found!", args.target)
+        _generate_amalgamate_code(target, args)
     else
         for _, target in ipairs(project.ordertargets()) do
             _generate_amalgamate_code(target, args)
