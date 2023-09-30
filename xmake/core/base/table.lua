@@ -428,9 +428,9 @@ function table.keys(tbl)
 end
 
 -- get order keys of a table
-function table.orderkeys(tbl)
+function table.orderkeys(tbl, callback)
     local keys = table.keys(tbl)
-    table.sort(keys)
+    table.sort(keys, callback)
     return keys
 end
 
@@ -439,11 +439,11 @@ end
 -- for k, v in table.orderpairs(t) do
 --   TODO
 -- end
-function table.orderpairs(t)
+function table.orderpairs(t, callback)
     if type(t) ~= "table" then
         t = t ~= nil and {t} or {}
     end
-    local orderkeys = table.orderkeys(t)
+    local orderkeys = table.orderkeys(t, callback)
     local i = 1
     return function (t, k)
         k = orderkeys[i]
