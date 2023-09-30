@@ -60,6 +60,11 @@ function _get_apis()
     ,   "toolchain.add_includedirs"
     ,   "toolchain.add_sysincludedirs"
     }
+    apis.groups = {
+        -- target.add_xxx
+        "target.add_linkorders"
+    ,   "target.add_linkgroups"
+    }
     apis.paths = {
         -- target.add_xxx
         "target.add_linkdirs"

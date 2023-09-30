@@ -90,6 +90,11 @@ function _get_apis()
     ,   "toolchain.add_sysincludedirs"
     ,   "toolchain.add_frameworkdirs"
     }
+    apis.groups = {
+        -- target.add_xxx
+        "target.add_linkorders"
+    ,   "target.add_linkgroups"
+    }
     apis.paths = {
         -- target.set_xxx
         "target.set_pcheader"

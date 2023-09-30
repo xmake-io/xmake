@@ -370,17 +370,19 @@ function language.apis()
         if not languages then
             os.raise(errors)
         end
-        apis = {values = {}, paths = {}, custom = {}, dictionary = {}}
+        apis = {values = {}, groups = {}, paths = {}, custom = {}, dictionary = {}}
         for name, instance in pairs(languages) do
             local instance_apis = instance:get("apis")
             if instance_apis then
                 table.join2(apis.values,     table.wrap(instance_apis.values))
+                table.join2(apis.groups,     table.wrap(instance_apis.groups))
                 table.join2(apis.paths,      table.wrap(instance_apis.paths))
                 table.join2(apis.custom,     table.wrap(instance_apis.custom))
                 table.join2(apis.dictionary, table.wrap(instance_apis.dictionary))
             end
         end
         apis.values = table.unique(apis.values)
+        apis.groups = table.unique(apis.groups)
         apis.paths  = table.unique(apis.paths)
         apis.custom = table.unique(apis.custom)
         language._APIS = apis

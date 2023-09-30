@@ -28,6 +28,8 @@ local utils    = require("base/utils")
 local table    = require("base/table")
 local string   = require("base/string")
 local option   = require("base/option")
+local hashset  = require("base/hashset")
+local graph    = require("base/graph")
 local tool     = require("tool/tool")
 local config   = require("project/config")
 local sandbox  = require("sandbox/sandbox")
@@ -290,53 +292,76 @@ function builder:_add_flags_from_argument(flags, target, args)
         end})
 end
 
+-- add items from getter
+function builder:_add_items_from_getter(items, name, opt)
+    local values = opt.getter(name)
+    if values then
+        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+    end
+end
+
+-- add items from config
+function builder:_add_items_from_config(items, name, opt)
+    local values = config.get(name)
+    if values and name:endswith("dirs") then
+        values = path.splitenv(values)
+    end
+    if values then
+        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+    end
+end
+
+-- add items from toolchain
+function builder:_add_items_from_toolchain(items, name, opt)
+    local values
+    local target = opt.target
+    if target and target:type() == "target" then
+        values = target:toolconfig(name)
+    else
+        values = platform.toolconfig(name)
+    end
+    if values then
+        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+    end
+end
+
+-- add items from option
+function builder:_add_items_from_option(items, name, opt)
+    local values
+    local target = opt.target
+    if target then
+        values = target:get(name)
+    end
+    if values then
+        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+    end
+end
+
+-- add items from target
+function builder:_add_items_from_target(items, name, opt)
+    local values = {}
+    local target = opt.target
+    if target then
+        -- get flagvalues of target with given flagname
+        table.join2(values, target:get(name))
+
+        -- get flagvalues of the attached options and packages
+        table.join2(values, target:get_from_opts(name))
+        table.join2(values, target:get_from_pkgs(name))
+
+        -- get flagvalues (public or interface) of all dependent targets (contain packages/options)
+        table.join2(values, target:get_from_deps(name, {interface = true}))
+    end
+    if values and #values > 0 then
+        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+    end
+end
+
 -- add flags from the language
 function builder:_add_flags_from_language(flags, target, getters)
 
-    -- init getters
-    --
-    -- e.g.
-    --
-    -- target.linkdirs => flags = getters("target")("linkdirs")
-    --
-    local getters = getters or
-    {
-        config      =   function (name)
-                            local values = config.get(name)
-                            if values and name:endswith("dirs") then
-                                values = path.splitenv(values)
-                            end
-                            return values
-                        end
-    ,   toolchain   =   function (name)
-                            if target and target:type() == "target" then
-                                return target:toolconfig(name)
-                            else
-                                return platform.toolconfig(name)
-                            end
-                        end
-    ,   target      =   function (name)
-                            local results = {}
-                            if target:type() == "target" then
-
-                                -- get flagvalues of target with given flagname
-                                table.join2(results, target:get(name))
-
-                                -- get flagvalues of the attached options and packages
-                                table.join2(results, target:get_from_opts(name))
-                                table.join2(results, target:get_from_pkgs(name))
-
-                                -- get flagvalues (public or interface) of all dependent targets (contain packages/options)
-                                table.join2(results, target:get_from_deps(name, {interface = true}))
-
-                            elseif target:type() == "option" then
-                                table.join2(results, target:get(name))
-                            end
-                            return results
-                        end
-    }
-
-    -- get name flags for builder
+    -- get order named items
+    local items = {}
     for _, flaginfo in ipairs(self:_nameflags()) do
 
         -- get flag info
@@ -350,41 +375,194 @@ function builder:_add_flags_from_language(flags, target, getters)
             end
         end
 
-        -- get getter
-        local getter = getters[flagscope]
-        if getter then
+        -- get api name of tool
+        local apiname  = flagname:gsub("^nf_", "")
 
-            -- get api name of tool
-            local apiname  = flagname:gsub("^nf_", "")
+        -- use multiple values mapper if be defined in tool module
+        local multival = false
+        if apiname:endswith("s") then
+            if self:_tool()["nf_" .. apiname] then
+                multival = true
+            else
+                apiname = apiname:sub(1, #apiname - 1)
+            end
+        end
 
-            -- use multiple values mapper if be defined in tool module
-            local multival = false
-            if apiname:endswith("s") then
-                if self:_tool()["nf_" .. apiname] then
-                    multival = true
-                else
-                    apiname = apiname:sub(1, #apiname - 1)
+        -- map named flags to real flags
+        local mapper = self:_tool()["nf_" .. apiname]
+        if mapper then
+            local opt = {target = target, check = checkstate, multival = multival, mapper = mapper}
+            if getters then
+                local getter = getters[flagscope]
+                if getter then
+                    opt.getter = getter
+                    self:_add_items_from_getter(items, flagname, opt)
+                end
+            elseif flagscope == "target" and target and target:type() == "target" then
+                self:_add_items_from_target(items, flagname, opt)
+            elseif flagscope == "target" and target and target:type() == "option" then
+                self:_add_items_from_option(items, flagname, opt)
+            elseif flagscope == "config" then
+                self:_add_items_from_config(items, flagname, opt)
+            elseif flagscope == "toolchain" then
+                self:_add_items_from_toolchain(items, flagname, opt)
+            end
+        end
+    end
+
+    -- sort links
+    local kind = self:kind()
+    if (kind == "ld" or kind == "sh") and target and target:type() == "target" then
+        self:_sort_links_of_items(target, items)
+    end
+
+    -- get flags from the items
+    for _, item in ipairs(items) do
+        local check = item.check
+        local mapper = item.mapper
+        if item.multival then
+            local results = mapper(self:_tool(), item.values, target, self:_targetkind())
+            for _, flag in ipairs(table.wrap(results)) do
+                if flag and flag ~= "" and (not check or self:has_flags(flag)) then
+                    table.insert(flags, flag)
                 end
             end
-
-            -- map named flags to real flags
-            local mapper = self:_tool()["nf_" .. apiname]
-            if mapper then
-                if multival then
-                    local results = mapper(self:_tool(), table.wrap(getter(flagname)), target, self:_targetkind())
-                    for _, flag in ipairs(table.wrap(results)) do
-                        if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
-                            table.insert(flags, flag)
-                        end
-                    end
-                else
-                    for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
-                        local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
-                        if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
-                            table.insert(flags, flag)
-                        end
-                    end
+        else
+            for _, flagvalue in ipairs(item.values) do
+                local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
+                if flag and flag ~= "" and (not check or self:has_flags(flag)) then
+                    table.insert(flags, flag)
                 end
+            end
+        end
+    end
+end
+
+-- sort links of items
+function builder:_sort_links_of_items(target, items)
+    local sortlinks = false
+    local makegroups = false
+    local linkorders = table.wrap(target:get("linkorders"))
+    if #linkorders > 0 then
+        sortlinks = true
+    end
+    local linkgroups = table.wrap(target:get("linkgroups"))
+    local linkgroups_set = hashset.new()
+    if #linkgroups > 0 then
+        makegroups = true
+        for _, linkgroup in ipairs(linkgroups) do
+            for _, link in ipairs(linkgroup) do
+                linkgroups_set:insert(link)
+            end
+        end
+    end
+
+    -- get all links
+    local links = {}
+    local linkgroups_map = {}
+    local link_mapper
+    local framework_mapper
+    local linkgroup_mapper
+    if sortlinks or makegroups then
+        table.remove_if(items, function (_, item)
+            local name = item.name
+            local removed = false
+            for _, value in ipairs(item.values) do
+                if name == "links" or name == "syslinks" then
+                    if not linkgroups_set:has(value) then
+                        table.insert(links, value)
+                    end
+                    link_mapper = item.mapper
+                    removed = true
+                elseif name == "frameworks" then
+                    table.insert(links, "framework::" .. value)
+                    framework_mapper = item.mapper
+                    removed = true
+                elseif name == "linkgroups" then
+                    local key = target:extraconf("linkgroups", value, "name") or tostring(value)
+                    table.insert(links, "linkgroup::" .. key)
+                    linkgroups_map[key] = value
+                    linkgroup_mapper = item.mapper
+                    removed = true
+                end
+            end
+            return removed
+        end)
+        links = table.reverse_unique(links)
+    end
+
+    -- sort sublinks
+    if sortlinks then
+        local gh = graph.new(true)
+        local from
+        local original_deps = {}
+        for _, link in ipairs(links) do
+            local to = link
+            if from and to then
+                original_deps[from] = to
+            end
+            from = to
+        end
+        -- we need remove cycle in original links
+        -- e.g.
+        -- original_deps: a -> b -> c -> d -> e
+        -- new deps: e -> b
+        -- graph: a -> b -> c -> d    e  (remove d -> e)
+        --            /\              |
+        --             |              |
+        --              --------------
+        local function remove_cycle_in_original_deps(f, t)
+            local k
+            local v = t
+            while v ~= f do
+                k = v
+                v = original_deps[v]
+                if v == nil then
+                    break
+                end
+            end
+            if v == f and k ~= nil then
+                original_deps[k] = nil
+            end
+        end
+        local links_set = hashset.from(links)
+        for _, linkorder in ipairs(linkorders) do
+            local from
+            for _, link in ipairs(linkorder) do
+                if links_set:has(link) then
+                    local to = link
+                    if from and to then
+                        remove_cycle_in_original_deps(from, to)
+                        gh:add_edge(from, to)
+                    end
+                    from = to
+                end
+            end
+        end
+        for k, v in pairs(original_deps) do
+            gh:add_edge(k, v)
+        end
+        if not gh:empty() then
+            local cycle = gh:find_cycle()
+            if cycle then
+                utils.warning("cycle links found in add_linkorders(): %s", table.concat(cycle, " -> "))
+            end
+            links = gh:topological_sort()
+        end
+    end
+
+    -- re-generate links to items list
+    if sortlinks or makegroups then
+        for _, link in ipairs(links) do
+            if link:startswith("framework::") then
+                link = link:sub(12)
+                table.insert(items, {name = "frameworks", values = table.wrap(link), check = false, multival = false, mapper = framework_mapper})
+            elseif link:startswith("linkgroup::") then
+                local key = link:sub(12)
+                local value = linkgroups_map[key]
+                table.insert(items, {name = "linkgroups", values = table.wrap(value), check = false, multival = false, mapper = linkgroup_mapper})
+            else
+                table.insert(items, {name = "links", values = table.wrap(link), check = false, multival = false, mapper = link_mapper})
             end
         end
     end
