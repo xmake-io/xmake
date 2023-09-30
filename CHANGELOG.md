@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#4250](https://github.com/xmake-io/xmake/pull/4250): Improve link mechanism and order
+
 ## v2.8.3
 
 ### New features
@@ -1661,6 +1665,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#4250](https://github.com/xmake-io/xmake/pull/4250): 支持链接顺序调整，链接组
 
 ## v2.8.3
 
