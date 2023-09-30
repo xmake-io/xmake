@@ -381,7 +381,8 @@ end
 function _add_target_sources(cmakelists, target, outputdir)
     local has_cuda = false
     cmakelists:print("target_sources(%s PRIVATE", target:name())
-    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
+    local sourcebatches, _ = target:sourcebatches()
+    for _, sourcebatch in table.orderpairs(sourcebatches) do
         if _sourcebatch_is_built(sourcebatch) then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 cmakelists:print("    " .. _get_relative_unix_path(sourcefile, outputdir))
@@ -612,7 +613,8 @@ function _add_target_compile_options(cmakelists, target, outputdir)
     end
 
     -- add cflags/cxxflags for the specific source files
-    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
+    local sourcebatches, _ = target:sourcebatches()
+    for _, sourcebatch in table.orderpairs(sourcebatches) do
         if _sourcebatch_is_built(sourcebatch) then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 _add_target_sourcefiles_flags(cmakelists, target, sourcefile, "cxxflags", outputdir)
@@ -835,7 +837,8 @@ function _add_target_link_libraries(cmakelists, target, outputdir)
 
     -- add other object files, maybe from custom rules
     local objectfiles_set = hashset.new()
-    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
+    local sourcebatches, _ = target:sourcebatches()
+    for _, sourcebatch in table.orderpairs(sourcebatches) do
         if _sourcebatch_is_built(sourcebatch) then
             for _, objectfile in ipairs(sourcebatch.objectfiles) do
                 objectfiles_set:insert(objectfile)
