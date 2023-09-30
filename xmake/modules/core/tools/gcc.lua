@@ -320,6 +320,10 @@ function nf_linkgroup(self, linkgroup, target)
         if whole then
             table.join2(flags, "-Wl,--whole-archive", linkflags, "-Wl,--no-whole-archive")
         end
+        local static = target:extraconf("linkgroups", linkgroup, "static")
+        if static then
+            table.join2(flags, "-Wl,-Bstatic", linkflags, "-Wl,-Bdynamic")
+        end
     end
     if #flags == 0 then
         flags = linkflags

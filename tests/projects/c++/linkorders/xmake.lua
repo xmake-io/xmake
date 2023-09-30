@@ -6,6 +6,7 @@ target("bar")
     set_kind("shared")
     add_files("src/foo.cpp")
     add_linkgroups("m", "pthread", {whole = true})
+    add_linkgroups("dl", {static = true})
 
 target("foo")
     set_kind("static")
