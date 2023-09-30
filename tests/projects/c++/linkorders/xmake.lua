@@ -24,6 +24,6 @@ target("demo")
     end
     add_linkorders("framework::Foundation", "png16", "foo")
     add_linkorders("dl", "linkgroup::syslib")
-    add_linkgroups("m", "pthread", {name = "syslib"})
+    add_linkgroups("m", "pthread", {name = "syslib", group = true})
 
 

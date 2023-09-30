@@ -306,19 +306,23 @@ end
 
 -- make the link group flag
 function nf_linkgroup(self, linkgroup, target)
-    local flags = {}
+    local linkflags = {}
     for _, lib in ipairs(linkgroup) do
-        table.insert(flags, nf_link(self, lib))
+        table.insert(linkflags, nf_link(self, lib))
     end
+    local flags = {}
     if not target:is_plat("macosx", "windows", "mingw") then
+        local group = target:extraconf("linkgroups", linkgroup, "group")
+        if group then
+            table.join2(flags, "-Wl,--start-group", linkflags, "-Wl,--end-group")
+        end
         local whole = target:extraconf("linkgroups", linkgroup, "whole")
         if whole then
-            table.insert(flags, 1, "-Wl,--whole-archive")
-            table.insert(flags, "-Wl,--no-whole-archive")
-        else
-            table.insert(flags, 1, "-Wl,--start-group")
-            table.insert(flags, "-Wl,--end-group")
+            table.join2(flags, "-Wl,--whole-archive", linkflags, "-Wl,--no-whole-archive")
         end
+    end
+    if #flags == 0 then
+        flags = linkflags
     end
     return flags
 end
