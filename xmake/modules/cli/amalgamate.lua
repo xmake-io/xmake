@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.graph")
 import("core.project.config")
 import("core.project.task")
 import("core.project.project")
@@ -31,6 +32,22 @@ local options =
     {'o', "outputdir", "kv", nil, "Set the output directory."},
     {nil, "target",    "v",  nil, "The target name."         }
 }
+
+-- generate file
+function _generate_file(inputpaths, outputpath, uniqueid)
+    local outputfile = io.open(outputpath, "w")
+    for _, inputpath in ipairs(inputpaths) do
+        if uniqueid then
+            outputfile:print("#define %s %s", uniqueid, "unity_" .. hash.uuid():split("-", {plain = true})[1])
+        end
+        outputfile:write(io.readfile(inputpath))
+        if uniqueid then
+            outputfile:print("#undef %s", uniqueid)
+        end
+    end
+    outputfile:close()
+    cprint("${bright}%s generated!", outputpath)
+end
 
 -- generate code
 function _generate_amalgamate_code(target, opt)
@@ -47,18 +64,7 @@ function _generate_amalgamate_code(target, opt)
         local sourcekind = sourcebatch.sourcekind
         if sourcekind == "cc" or sourcekind == "cxx" then
             local outputpath = path.join(outputdir, target:name() .. (sourcekind == "cxx" and ".cpp" or ".c"))
-            local outputfile = io.open(outputpath, "w")
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                if uniqueid then
-                    outputfile:print("#define %s %s", uniqueid, "unity_" .. hash.uuid():split("-", {plain = true})[1])
-                end
-                outputfile:write(io.readfile(sourcefile))
-                if uniqueid then
-                    outputfile:print("#undef %s", uniqueid)
-                end
-            end
-            outputfile:close()
-            cprint("${bright}%s generated!", outputpath)
+            _generate_file(sourcebatch.sourcefiles, outputpath, uniqueid)
         end
     end
 
@@ -66,18 +72,7 @@ function _generate_amalgamate_code(target, opt)
     local srcheaders = target:headerfiles(includedir)
     if srcheaders and #srcheaders > 0 then
         local outputpath = path.join(outputdir, target:name() .. ".h")
-        local outputfile = io.open(outputpath, "w")
-        for _, srcheader in ipairs(srcheaders) do
-            if uniqueid then
-                outputfile:print("#define %s %s", uniqueid, "unity_" .. hash.uuid():split("-", {plain = true})[1])
-            end
-            outputfile:write(io.readfile(srcheader))
-            if uniqueid then
-                outputfile:print("#undef %s", uniqueid)
-            end
-        end
-        outputfile:close()
-        cprint("${bright}%s generated!", outputpath)
+        _generate_file(srcheaders, outputpath, uniqueid)
     end
 end
 
