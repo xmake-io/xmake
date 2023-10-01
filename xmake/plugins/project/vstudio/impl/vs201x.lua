@@ -213,7 +213,8 @@ function _make_custom_commands(target, vcxprojdir)
     local commands = {}
     _make_custom_commands_for_target(commands, target, vcxprojdir, "before")
     _make_custom_commands_for_target(commands, target, vcxprojdir)
-    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
+    local sourcebatches = target:sourcebatches()
+    for _, sourcebatch in table.orderpairs(sourcebatches) do
         local rulename = sourcebatch.rulename
         local sourcekind = sourcebatch.sourcekind
         if rulename ~= "c.build" and rulename ~= "c++.build" and rulename ~= "asm.build" and rulename ~= "cuda.build" and sourcekind ~= "mrc" then
@@ -281,7 +282,8 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     local firstcompflags = nil
     targetinfo.compflags = {}
     targetinfo.compargvs = {}
-    for _, sourcebatch in table.orderpairs(target:sourcebatches()) do
+    local sourcebatches = target:sourcebatches()
+    for _, sourcebatch in table.orderpairs(sourcebatches) do
         local sourcekind = sourcebatch.sourcekind
         local rulename = sourcebatch.rulename
         if sourcekind then

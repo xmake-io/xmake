@@ -29,3 +29,18 @@ function test_unwrap(t)
     local a = table.wrap_lock({1})
     t:are_equal(table.unwrap(a), a)
 end
+
+function test_orderkeys(t)
+    -- sort by modulo 2 then from the smallest to largest 
+    local f = function(a, b)
+        if a % 2 == 0 and b % 2 ~= 0 then
+            return true
+        elseif b % 2 == 0 and a % 2 ~= 0 then
+            return false
+        end
+        return a < b
+    end
+    
+    t:are_equal(table.orderkeys({[2] = 2, [1] = 1, [4] = 4, [3] = 3}, f), {2, 4, 1, 3})
+    t:are_equal(table.orderkeys({[1] = 1, [2] = 2, [3] = 3, [4] = 4}), {1, 2 , 3, 4})
+end

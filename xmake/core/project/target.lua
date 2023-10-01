@@ -1889,7 +1889,8 @@ function _instance:sourcekinds()
     local sourcekinds = self._SOURCEKINDS
     if not sourcekinds then
         sourcekinds = {}
-        for _, sourcebatch in table.orderpairs(self:sourcebatches()) do
+        local sourcebatches = self:sourcebatches()
+        for _, sourcebatch in table.orderpairs(sourcebatches) do
             local sourcekind = sourcebatch.sourcekind
             if sourcekind then
                 table.insert(sourcekinds, sourcekind)
