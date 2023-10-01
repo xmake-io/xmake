@@ -429,6 +429,7 @@ end
 
 -- get order keys of a table
 function table.orderkeys(tbl, callback)
+    local callback = type(callback) == "function" and callback or nil
     local keys = table.keys(tbl)
     table.sort(keys, callback)
     return keys
