@@ -152,6 +152,8 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
         os.tryrm(path.join(outputdir, "pax_global_header"))
         os.tryrm(path.join(outputdir, "PaxHeaders*"))
         os.tryrm(path.join(outputdir, "@PaxHeader"))
+        -- https://github.com/xmake-io/xmake-repo/pull/2673
+        os.tryrm(path.join(outputdir, "*.paxheader"))
     end
 
     -- continue to extract *.tar file
