@@ -208,14 +208,6 @@ function main()
     -- load config first
     config.load()
 
-    -- Automatically build before running
-    if project.policy("run.autobuild") then
-        -- we need clear the previous config and reload it
-        -- to avoid trigger recheck configs
-        config.clear()
-        task.run("build")
-    end
-
     -- load targets
     project.load_targets()
 
