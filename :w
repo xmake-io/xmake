@@ -215,10 +215,11 @@ function main()
     local tests = {}
     for _, target in ipairs(project.ordertargets()) do
         if target:is_binary() or target:script("run") then
-            for name, argv in pairs(target:get("tests")) do
-                local extra = target:extraconf("tests", name)
-                print(name, extra)
-                tests[name] = table.join({argv = table.wrap(argv)}, extra)
+        print(target:name())
+            for _, test in ipairs(target:get("tests")) do
+                print(test)
+
+                --table.insert(tests, )
             end
             --[[
             local group = target:get("group")
@@ -227,7 +228,6 @@ function main()
             end]]
         end
     end
---    print(tests)
 
     --[[
     -- check targets first

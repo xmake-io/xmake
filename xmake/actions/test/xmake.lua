@@ -37,7 +37,7 @@ task("test")
                                               "    xmake test --workdir=`pwd`"                                      },
             {'j', "jobs",       "kv", "1",    "Set the number of parallel compilation jobs."                        },
             {},
-            {nil, "tests",     "vs",   nil  , "The test names. It support pattern matching.",
+            {nil, "tests",     "vs",  nil   , "The test names. It support pattern matching.",
                                               "e.g.",
                                               "    xmake test foo",
                                               "    xmake test foo_*"                                                }
