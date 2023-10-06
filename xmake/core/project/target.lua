@@ -2467,6 +2467,7 @@ function target.apis()
             -- target.add_xxx
         ,   "target.add_values"
         ,   "target.add_runenvs"
+        ,   "target.add_tests"
         }
     ,   paths =
         {
