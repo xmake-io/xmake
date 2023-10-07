@@ -295,7 +295,7 @@ function main()
     project.lock()
 
     -- load config first
-    config.load()
+    task.run("config", {}, {disable_dump = true})
 
     -- load targets
     project.load_targets()
