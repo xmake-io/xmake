@@ -44,17 +44,33 @@ function _do_test_target(target, opt)
 
     -- run test
     local outdata
+    local errors
     local rundir = opt.rundir or target:rundir()
     local targetfile = path.absolute(target:targetfile())
     local runargs = table.wrap(opt.runargs or target:get("runargs"))
-    local ok = try {
-        function ()
-            outdata = os.iorunv(targetfile, runargs, {curdir = rundir, envs = envs})
-            return true
+    local outfile = os.tmpfile()
+    local errfile = os.tmpfile()
+    local ok, syserrors = os.execv(targetfile, runargs, {try = true, curdir = rundir, envs = envs, stdout = outfile, stderr = errfile})
+    local outdata = os.isfile(outfile) and io.readfile(outfile)
+    if ok ~= 0 then
+        local errdata = os.isfile(errfile) and io.readfile(errfile)
+        errors = errdata or errors
+        if not errors or #errors == 0 then
+            local cmd = targetfile
+            if #runargs > 0 then
+                cmd = cmd .. " " .. os.args(runargs)
+            end
+            if ok ~= nil then
+                errors = string.format("run %s failed, exit code: %d", cmd, ok)
+            else
+                errors = string.format("run %s failed, exit error: %s", cmd, syserrors and syserrors or "unknown reason")
+            end
         end
-    }
+    end
+    os.tryrm(outfile)
+    os.tryrm(errfile)
 
-    if ok then
+    if ok == 0 then
         local passed
         outdata = outdata or ""
         for _, pass_output in ipairs(opt.pass_outputs) do
@@ -74,11 +90,23 @@ function _do_test_target(target, opt)
             if opt.plain then
                 if fail_output == outdata then
                     passed = false
+                    if not errors then
+                        errors = string.format("matched failed output: ${color.failure}%s${clear}", fail_output)
+                        if option.get("diagnosis") then
+                            errors = errors .. "\nactual output: " .. outdata
+                        end
+                    end
                     break
                 end
             else
                 if outdata:match("^" .. fail_output .. "$") then
                     passed = false
+                    if not errors then
+                        errors = string.format("matched failed output: ${color.failure}%s${clear}", fail_output)
+                        if option.get("diagnosis") then
+                            errors = errors .. "\nactual output: " .. outdata
+                        end
+                    end
                     break
                 end
             end
@@ -86,8 +114,15 @@ function _do_test_target(target, opt)
         if passed == nil then
             passed = true
         end
-        return passed
+        if passed == false and not errors and opt.passed_outputs then
+            errors = string.format("not matched passed output: ${color.success}%s${clear}", table.concat(opt.passed_outputs, ", "))
+            if option.get("diagnosis") then
+                errors = errors .. "\nactual output: " .. outdata
+            end
+        end
+        return passed, errors
     end
+    return false, errors
 end
 
 -- test target
@@ -95,16 +130,17 @@ function _on_test_target(target, opt)
 
     -- build target with rules
     local passed
+    local errors
     local done = false
     for _, r in ipairs(target:orderules()) do
         local on_test = r:script("test")
         if on_test then
-            passed = on_test(target, opt)
+            passed, errors = on_test(target, opt)
             done = true
         end
     end
     if done then
-        return passed
+        return passed, errors
     end
 
     -- do test
@@ -156,19 +192,21 @@ function _run_test(target, test)
 
     -- run the target scripts
     local passed
+    local errors
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            local ok = script(target, test)
+            local ok, errs = script(target, test)
             if i == 3 then
                 passed = ok
+                errors = errs
             end
         end
     end
 
     -- leave the environments of the target packages
     os.setenvs(oldenvs)
-    return passed
+    return passed, errors
 end
 
 -- run tests
@@ -197,17 +235,23 @@ function _run_tests(tests)
             local target = testinfo.target
             testinfo.target = nil
             local spent = os.mclock()
-            local passed = _run_test(target, testinfo)
+            local passed, errors = _run_test(target, testinfo)
             spent = os.mclock() - spent
             if passed then
                 report.passed = report.passed + 1
             end
             local status_color = passed and "${color.success}" or "${color.failure}"
             local progress_format = status_color .. theme.get("text.build.progress_format") .. ":${clear} "
+            if option.get("verbose") then
+                progress_format = progress_format .. "${dim}"
+            end
             local progress = math.floor(index * 100 / #ordertests)
             local padding = maxwidth - #testinfo.name
             cprint(progress_format .. "%s%s .................................... " .. status_color .. "%s${clear} ${bright}%0.3fs",
                 progress, testinfo.name, (" "):rep(padding), passed and "passed" or "failed", spent)
+            if not passed and errors and (option.get("verbose") or option.get("diagnosis")) then
+                cprint(errors)
+            end
         end
     end, {total = #ordertests,
           comax = jobs,
