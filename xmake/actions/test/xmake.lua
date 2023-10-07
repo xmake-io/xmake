@@ -40,7 +40,8 @@ task("test")
             {nil, "tests",     "vs",  nil   , "The test names. It support pattern matching.",
                                               "e.g.",
                                               "    xmake test foo",
-                                              "    xmake test foo_*"                                                }
+                                              "    xmake test */foo",
+                                              "    xmake test targetname/*"                                         }
         }
     }
 

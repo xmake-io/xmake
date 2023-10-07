@@ -25,6 +25,7 @@ import("core.project.config")
 import("core.base.global")
 import("core.project.project")
 import("core.platform.platform")
+import("core.theme.theme")
 import("async.runjobs")
 import("private.action.run.runenvs")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
@@ -123,11 +124,7 @@ function _add_target_pkgenvs(target, targets_added)
 end
 
 -- run the given test
-function _run_test(test)
-
-    -- this target has been disabled?
-    local target = test.target
-    test.target = nil
+function _run_test(target, test)
 
     -- enter the environments of the target packages
     local oldenvs = os.getenvs()
@@ -177,8 +174,12 @@ end
 -- run tests
 function _run_tests(tests)
     local ordertests = {}
+    local maxwidth = 0
     for name, testinfo in table.orderpairs(tests) do
         table.insert(ordertests, testinfo)
+        if #testinfo.name > maxwidth then
+            maxwidth = #testinfo.name
+        end
     end
     if #ordertests == 0 then
         print("nothing to test")
@@ -193,10 +194,20 @@ function _run_tests(tests)
     runjobs("run_tests", function (index)
         local testinfo = ordertests[index]
         if testinfo then
-            local passed = _run_test(testinfo)
+            local target = testinfo.target
+            testinfo.target = nil
+            local spent = os.mclock()
+            local passed = _run_test(target, testinfo)
+            spent = os.mclock() - spent
             if passed then
                 report.passed = report.passed + 1
             end
+            local status_color = passed and "${color.success}" or "${color.failure}"
+            local progress_format = status_color .. theme.get("text.build.progress_format") .. ":${clear} "
+            local progress = math.floor(index * 100 / #ordertests)
+            local padding = maxwidth - #testinfo.name
+            cprint(progress_format .. "%s%s .................................... " .. status_color .. "%s${clear} ${bright}%0.3fs",
+                progress, testinfo.name, (" "):rep(padding), passed and "passed" or "failed", spent)
         end
     end, {total = #ordertests,
           comax = jobs,
@@ -205,7 +216,8 @@ function _run_tests(tests)
     -- generate report
     spent = os.mclock() - spent
     local passed_rate = math.floor(report.passed * 100 / report.total)
-    cprint("${color.success}%3d%%${clear} tests passed, ${color.failure}%d${clear} tests failed out of ${bright}%d${clear}, spent ${bright}%0.3fs",
+    print("")
+    cprint("${color.success}%d%%${clear} tests passed, ${color.failure}%d${clear} tests failed out of ${bright}%d${clear}, spent ${bright}%0.3fs",
         passed_rate, report.total - report.passed, report.total, spent / 1000)
 end
 
@@ -234,6 +246,7 @@ function main()
     for _, target in ipairs(project.ordertargets()) do
         if target:is_binary() or target:script("run") then
             for _, name in ipairs(target:get("tests")) do
+                name = target:name() .. "/" .. name
                 local testinfo = {name = name, target = target}
                 local extra = target:extraconf("tests", name)
                 if extra then
