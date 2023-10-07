@@ -44,7 +44,7 @@ function _do_run_target(target)
     -- get the absolute target file path
     local targetfile = path.absolute(target:targetfile())
 
-    -- build run environments
+    -- get the run environments
     local addenvs, setenvs = runenvs.make(target)
 
     -- get run arguments
@@ -77,7 +77,7 @@ function _on_run_target(target)
     _do_run_target(target)
 end
 
--- recursively target add env
+-- recursively add target envs
 function _add_target_pkgenvs(target, targets_added)
     if targets_added[target:name()] then
         return

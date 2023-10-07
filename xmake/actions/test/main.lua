@@ -25,60 +25,92 @@ import("core.project.config")
 import("core.base.global")
 import("core.project.project")
 import("core.platform.platform")
-import("devel.debugger")
 import("async.runjobs")
 import("private.action.run.runenvs")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"})
 
--- run target
-function _do_run_target(target)
+-- test target
+function _do_test_target(target, opt)
+    opt = opt or {}
 
-    -- only for binary program
-    if not target:is_binary() then
-        return
+    -- get run environments
+    local envs = opt.runenvs
+    if not envs then
+        local addenvs, setenvs = runenvs.make(target)
+        envs = runenvs.join(addenvs, setenvs)
     end
 
-    -- get the run directory of target
-    local rundir = target:rundir()
-
-    -- get the absolute target file path
+    -- run test
+    local outdata
+    local rundir = opt.rundir or target:rundir()
     local targetfile = path.absolute(target:targetfile())
+    local runargs = table.wrap(opt.runargs or target:get("runargs"))
+    local ok = try {
+        function ()
+            outdata = os.iorunv(targetfile, runargs, {curdir = rundir, envs = envs})
+            return true
+        end
+    }
 
-    -- build run environments
-    local addenvs, setenvs = runenvs.make(target)
-
-    -- get run arguments
-    local args = table.wrap(option.get("arguments") or target:get("runargs"))
-
-    -- debugging?
-    if option.get("debug") then
-        debugger.run(targetfile, args, {curdir = rundir, addenvs = addenvs, setenvs = setenvs})
-    else
-        local envs = runenvs.join(addenvs, setenvs)
-        os.execv(targetfile, args, {curdir = rundir, detach = option.get("detach"), envs = envs})
+    if ok then
+        local passed
+        outdata = outdata or ""
+        for _, pass_output in ipairs(opt.pass_outputs) do
+            if opt.plain then
+                if pass_output == outdata then
+                    passed = true
+                    break
+                end
+            else
+                if outdata:match("^" .. pass_output .. "$") then
+                    passed = true
+                    break
+                end
+            end
+        end
+        for _, fail_output in ipairs(opt.fail_outputs) do
+            if opt.plain then
+                if fail_output == outdata then
+                    passed = false
+                    break
+                end
+            else
+                if outdata:match("^" .. fail_output .. "$") then
+                    passed = false
+                    break
+                end
+            end
+        end
+        if passed == nil then
+            passed = true
+        end
+        return passed
     end
 end
 
--- run target
-function _on_run_target(target)
+-- test target
+function _on_test_target(target, opt)
 
     -- build target with rules
+    local passed
     local done = false
     for _, r in ipairs(target:orderules()) do
-        local on_run = r:script("run")
-        if on_run then
-            on_run(target)
+        local on_test = r:script("test")
+        if on_test then
+            passed = on_test(target, opt)
             done = true
         end
     end
-    if done then return end
+    if done then
+        return passed
+    end
 
-    -- do run
-    _do_run_target(target)
+    -- do test
+    return _do_test_target(target, opt)
 end
 
--- recursively target add env
+-- recursively add target envs
 function _add_target_pkgenvs(target, targets_added)
     if targets_added[target:name()] then
         return
@@ -90,13 +122,12 @@ function _add_target_pkgenvs(target, targets_added)
     end
 end
 
--- run the given target
-function _run(target)
+-- run the given test
+function _run_test(test)
 
-    -- has been disabled?
-    if not target:is_enabled() then
-        return
-    end
+    -- this target has been disabled?
+    local target = test.target
+    test.target = nil
 
     -- enter the environments of the target packages
     local oldenvs = os.getenvs()
@@ -105,41 +136,77 @@ function _run(target)
     -- the target scripts
     local scripts =
     {
-        target:script("run_before")
-    ,   function (target)
+        target:script("test_before")
+    ,   function (target, opt)
             for _, r in ipairs(target:orderules()) do
-                local before_run = r:script("run_before")
-                if before_run then
-                    before_run(target)
+                local before_test = r:script("test_before")
+                if before_test then
+                    before_test(target, opt)
                 end
             end
         end
-    ,   target:script("run", _on_run_target)
-    ,   function (target)
+    ,   target:script("test", _on_test_target)
+    ,   function (target, opt)
             for _, r in ipairs(target:orderules()) do
-                local after_run = r:script("run_after")
-                if after_run then
-                    after_run(target)
+                local after_test = r:script("test_after")
+                if after_test then
+                    after_test(target, opt)
                 end
             end
         end
-    ,   target:script("run_after")
+    ,   target:script("test_after")
     }
 
     -- run the target scripts
+    local passed
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target)
+            local ok = script(target, test)
+            if i == 3 then
+                passed = ok
+            end
         end
     end
 
     -- leave the environments of the target packages
     os.setenvs(oldenvs)
+    return passed
 end
 
 -- run tests
 function _run_tests(tests)
+    local ordertests = {}
+    for name, testinfo in table.orderpairs(tests) do
+        table.insert(ordertests, testinfo)
+    end
+    if #ordertests == 0 then
+        print("nothing to test")
+        return
+    end
+
+    -- do test
+    local spent = os.mclock()
+    print("running tests ...")
+    local report = {passed = 0, total = #ordertests}
+    local jobs = tonumber(option.get("jobs") or "1")
+    runjobs("run_tests", function (index)
+        local testinfo = ordertests[index]
+        if testinfo then
+            local passed = _run_test(testinfo)
+            if passed then
+                report.passed = report.passed + 1
+            end
+        end
+    end, {total = #ordertests,
+          comax = jobs,
+          isolate = true})
+
+    -- generate report
+    spent = os.mclock() - spent
+    local passed_rate = math.floor(report.passed * 100 / report.total)
+    cprint("${color.success}%3d%%${clear} tests passed, ${color.failure}%d${clear} tests failed out of ${bright}%d${clear}, spent ${bright}%0.3fs",
+        passed_rate, report.total - report.passed, report.total, spent / 1000)
 end
 
 function main()
@@ -167,26 +234,18 @@ function main()
     for _, target in ipairs(project.ordertargets()) do
         if target:is_binary() or target:script("run") then
             for _, name in ipairs(target:get("tests")) do
-                local info = {target = target}
+                local testinfo = {name = name, target = target}
                 local extra = target:extraconf("tests", name)
                 if extra then
-                    table.join2(info, extra)
+                    table.join2(testinfo, extra)
                 end
-                if not info.group then
-                    info.group = target:get("group")
-                end
-                if not info.rundir then
-                    info.rundir = target:rundir()
-                end
-                if not info.runenvs then
-                    local addenvs, setenvs = runenvs.make(target)
-                    local envs = runenvs.join(addenvs, setenvs)
-                    info.runenvs = envs
+                if not testinfo.group then
+                    testinfo.group = target:get("group")
                 end
 
-                local group = info.group
+                local group = testinfo.group
                 if (not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                    tests[name] = info
+                    tests[name] = testinfo
                 end
             end
         end
@@ -196,9 +255,9 @@ function main()
         local tests_new = {}
         for _, pattern in ipairs(test_patterns) do
             pattern = "^" .. path.pattern(pattern) .. "$"
-            for name, info in pairs(tests) do
+            for name, testinfo in pairs(tests) do
                 if name:match(pattern) then
-                    tests_new[name] = info
+                    tests_new[name] = testinfo
                 end
             end
         end
@@ -210,8 +269,8 @@ function main()
 
     -- build targets with the given tests first
     local targetnames = {}
-    for _, info in table.orderpairs(tests) do
-        table.insert(targetnames, info.target:name())
+    for _, testinfo in table.orderpairs(tests) do
+        table.insert(targetnames, testinfo.target:name())
     end
     build_action.build_targets(targetnames)
 
