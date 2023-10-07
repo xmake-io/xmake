@@ -290,9 +290,9 @@ function main()
     for _, target in ipairs(project.ordertargets()) do
         if target:is_binary() or target:script("run") then
             for _, name in ipairs(target:get("tests")) do
-                name = target:name() .. "/" .. name
-                local testinfo = {name = name, target = target}
                 local extra = target:extraconf("tests", name)
+                local testname = target:name() .. "/" .. name
+                local testinfo = {name = testname, target = target}
                 if extra then
                     table.join2(testinfo, extra)
                 end
@@ -302,7 +302,7 @@ function main()
 
                 local group = testinfo.group
                 if (not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                    tests[name] = testinfo
+                    tests[testname] = testinfo
                 end
             end
         end
