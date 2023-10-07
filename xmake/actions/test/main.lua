@@ -59,14 +59,10 @@ function _do_test_target(target, opt)
         local errdata = os.isfile(errfile) and io.readfile(errfile)
         errors = errdata or errors
         if not errors or #errors == 0 then
-            local cmd = targetfile
-            if #runargs > 0 then
-                cmd = cmd .. " " .. os.args(runargs)
-            end
             if ok ~= nil then
-                errors = string.format("run %s failed, exit code: %d", cmd, ok)
+                errors = string.format("run failed, exit code: %d", ok)
             else
-                errors = string.format("run %s failed, exit error: %s", cmd, syserrors and syserrors or "unknown reason")
+                errors = string.format("run failed, exit error: %s", syserrors and syserrors or "unknown reason")
             end
         end
     end
