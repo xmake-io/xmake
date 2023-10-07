@@ -44,13 +44,15 @@ function _show(str, opt)
     end
 end
 
-function main(targetname, opt)
+function main(targetnames, opt)
     opt = opt or {}
 
     -- get targets
     local targets = {}
-    if targetname then
-        table.insert(targets, project.target(targetname))
+    if targetnames then
+        for _, targetname in ipairs(table.wrap(targetnames)) do
+            table.insert(targets, project.target(targetname))
+        end
     else
         for _, target in pairs(project.targets()) do
             if target:is_enabled() then

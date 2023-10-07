@@ -2455,6 +2455,7 @@ function target.apis()
         ,   "target.add_languages"
         ,   "target.add_vectorexts"
         ,   "target.add_toolchains"
+        ,   "target.add_tests"
         }
     ,   keyvalues =
         {
@@ -2467,7 +2468,6 @@ function target.apis()
             -- target.add_xxx
         ,   "target.add_values"
         ,   "target.add_runenvs"
-        ,   "target.add_tests"
         }
     ,   paths =
         {

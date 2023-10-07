@@ -29,6 +29,7 @@ import("devel.debugger")
 import("async.runjobs")
 import("private.action.run.runenvs")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
+import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"})
 
 -- run target
 function _do_run_target(target)
@@ -89,20 +90,6 @@ function _add_target_pkgenvs(target, targets_added)
     end
 end
 
--- find target names matching a specific name
-function _find_matching_target_names(targetname)
-    targetname = targetname:lower()
-    local matching_targetnames = {}
-    for _, target in ipairs(project.ordertargets()) do
-        if target:name():lower():find(targetname, 1, true) then
-            table.insert(matching_targetnames, target:name())
-        end
-    end
-
-    table.sort(matching_targetnames)
-    return matching_targetnames
-end
-
 -- run the given target
 function _run(target)
 
@@ -151,59 +138,19 @@ function _run(target)
     os.setenvs(oldenvs)
 end
 
--- check targets
-function _check_targets(targetname, group_pattern)
-
-    -- get targets
-    local targets = {}
-    if targetname then
-        local target = project.target(targetname)
-        if not target then
-            -- check if the name is part of other target to help
-            local possible_targetnames = _find_matching_target_names(targetname)
-            local errors = targetname .. " is not a valid target name for this project"
-            if #possible_targetnames > 0 then
-                errors = errors .. "\nlist of valid target names close to your input:\n - " .. table.concat(possible_targetnames, '\n - ')
-            end
-            raise(errors)
-        end
-
-        table.insert(targets, target)
-    else
-        for _, target in ipairs(project.ordertargets()) do
-            if target:is_binary() or target:script("run") then
-                local group = target:get("group")
-                if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                    table.insert(targets, target)
-                end
-            end
-        end
-    end
-
-    -- filter and check targets with builtin-run script
-    local targetnames = {}
-    for _, target in ipairs(targets) do
-        if target:targetfile() and target:is_enabled() and not target:script("run") then
-            local targetfile = target:targetfile()
-            if targetfile and not os.isfile(targetfile) then
-                table.insert(targetnames, target:name())
-            end
-        end
-    end
-
-    -- there are targets that have not yet been built?
-    if #targetnames > 0 then
-        raise("please run `$xmake build [target]` to build the following targets first:\n  -> " .. table.concat(targetnames, '\n  -> '))
-    end
+-- run tests
+function _run_tests(tests)
 end
 
--- main
 function main()
 
     -- do action for remote?
     if remote_build_action.enabled() then
         return remote_build_action()
     end
+
+    -- lock the whole project
+    project.lock()
 
     -- load config first
     config.load()
@@ -213,61 +160,68 @@ function main()
 
     -- get tests
     local tests = {}
-    for _, target in ipairs(project.ordertargets()) do
-        if target:is_binary() or target:script("run") then
-            for name, argv in pairs(target:get("tests")) do
-                local extra = target:extraconf("tests", name)
-                print(name, extra)
-                tests[name] = table.join({argv = table.wrap(argv)}, extra)
-            end
-            --[[
-            local group = target:get("group")
-            if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                table.insert(targets, target)
-            end]]
-        end
-    end
---    print(tests)
-
-    --[[
-    -- check targets first
-    local targetname
     local group_pattern = option.get("group")
     if group_pattern then
         group_pattern = "^" .. path.pattern(group_pattern) .. "$"
-    else
-        targetname = option.get("target")
     end
-    _check_targets(targetname, group_pattern)
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_binary() or target:script("run") then
+            for _, name in ipairs(target:get("tests")) do
+                local info = {target = target}
+                local extra = target:extraconf("tests", name)
+                if extra then
+                    table.join2(info, extra)
+                end
+                if not info.group then
+                    info.group = target:get("group")
+                end
+                if not info.rundir then
+                    info.rundir = target:rundir()
+                end
+                if not info.runenvs then
+                    local addenvs, setenvs = runenvs.make(target)
+                    local envs = runenvs.join(addenvs, setenvs)
+                    info.runenvs = envs
+                end
+
+                local group = info.group
+                if (not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
+                    tests[name] = info
+                end
+            end
+        end
+    end
+    local test_patterns = option.get("tests")
+    if test_patterns then
+        local tests_new = {}
+        for _, pattern in ipairs(test_patterns) do
+            pattern = "^" .. path.pattern(pattern) .. "$"
+            for name, info in pairs(tests) do
+                if name:match(pattern) then
+                    tests_new[name] = info
+                end
+            end
+        end
+        tests = tests_new
+    end
 
     -- enter project directory
     local oldir = os.cd(project.directory())
 
-    -- run the given target?
-    if targetname then
-        _run(project.target(targetname))
-    else
-        local targets = {}
-        for _, target in ipairs(project.ordertargets()) do
-            if target:is_binary() or target:script("run") then
-                local group = target:get("group")
-                if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                    table.insert(targets, target)
-                end
-            end
-        end
-        local jobs = tonumber(option.get("jobs") or "1")
-        runjobs("run_targets", function (index)
-            local target = targets[index]
-            if target then
-                _run(target)
-            end
-        end, {total = #targets,
-              comax = jobs,
-              isolate = true})
+    -- build targets with the given tests first
+    local targetnames = {}
+    for _, info in table.orderpairs(tests) do
+        table.insert(targetnames, info.target:name())
     end
+    build_action.build_targets(targetnames)
+
+    -- run tests
+    _run_tests(tests)
 
     -- leave project directory
-    os.cd(oldir)]]
+    os.cd(oldir)
+
+    -- unlock the whole project
+    project.unlock()
 end
 

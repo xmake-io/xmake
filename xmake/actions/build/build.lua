@@ -229,19 +229,21 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target)
 end
 
 -- get batch jobs, @note we need to export it for private.diagnosis.dump_buildjobs
-function get_batchjobs(targetname, group_pattern)
+function get_batchjobs(targetnames, group_pattern)
 
     -- get root targets
     local targets_root = {}
-    if targetname then
-        local target = project.target(targetname)
-        if target then
-            table.insert(targets_root, target)
-            if option.get("rebuild") then
-                target:data_set("rebuilt", true)
-                if not option.get("shallow") then
-                    for _, dep in ipairs(target:orderdeps()) do
-                        dep:data_set("rebuilt", true)
+    if targetnames then
+        for _, targetname in ipairs(table.wrap(targetnames)) do
+            local target = project.target(targetname)
+            if target then
+                table.insert(targets_root, target)
+                if option.get("rebuild") then
+                    target:data_set("rebuilt", true)
+                    if not option.get("shallow") then
+                        for _, dep in ipairs(target:orderdeps()) do
+                            dep:data_set("rebuilt", true)
+                        end
                     end
                 end
             end
@@ -280,7 +282,7 @@ function get_batchjobs(targetname, group_pattern)
 end
 
 -- the main entry
-function main(targetname, group_pattern)
+function main(targetnames, group_pattern)
 
     -- enable distcc?
     local distcc
@@ -289,7 +291,7 @@ function main(targetname, group_pattern)
     end
 
     -- build all jobs
-    local batchjobs = get_batchjobs(targetname, group_pattern)
+    local batchjobs = get_batchjobs(targetnames, group_pattern)
     if batchjobs and batchjobs:size() > 0 then
         local curdir = os.curdir()
         runjobs("build", batchjobs, {on_exit = function (errors)

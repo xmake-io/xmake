@@ -129,7 +129,62 @@ function _on_exit(ok, errors)
     end
 end
 
--- main
+-- build targets
+function build_targets(targetnames, opt)
+    opt = opt or {}
+
+    -- register exit callbacks
+    os.atexit(_on_exit)
+
+    local group_pattern = opt.group_pattern
+    try
+    {
+        function ()
+
+            -- do rules before building
+            _do_project_rules("build_before")
+
+            -- do build
+            _do_build(targetnames, group_pattern)
+
+            -- do check
+            check_targets(targetnames, {build = true})
+
+            -- dump cache stats
+            if option.get("diagnosis") then
+                build_cache.dump_stats()
+            end
+        end,
+        catch
+        {
+            function (errors)
+
+                -- maybe it's unreachable when building fails, so we also need os.atexit()
+                -- @see https://github.com/xmake-io/xmake/issues/3401
+                _on_exit(false, errors)
+
+                -- do rules after building
+                _do_project_rules("build_after", {errors = errors})
+
+                -- raise
+                if errors then
+                    raise(errors)
+                elseif group_pattern then
+                    raise("build targets with group(%s) failed!", group_pattern)
+                elseif targetnames then
+                    targetnames = table.wrap(targetnames)
+                    raise("build target: %s failed!", table.concat(targetnames, ", "))
+                else
+                    raise("build target failed!")
+                end
+            end
+        }
+    }
+
+    -- do rules after building
+    _do_project_rules("build_after")
+end
+
 function main()
 
     -- try building it using third-party buildsystem if xmake.lua not exists
@@ -164,65 +219,16 @@ function main()
     -- clean up temporary files once a day
     cleaner.cleanup()
 
-    -- register exit callbacks
-    os.atexit(_on_exit)
-
-    local build_time
-    try
-    {
-        function ()
-            local time = os.mclock()
-
-            -- do rules before building
-            _do_project_rules("build_before")
-
-            -- do build
-            _do_build(targetname, group_pattern)
-
-            -- do check
-            check_targets(targetname, {build = true})
-
-            -- get build time
-            build_time = os.mclock() - time
-
-            -- dump cache stats
-            if option.get("diagnosis") then
-                build_cache.dump_stats()
-            end
-        end,
-        catch
-        {
-            function (errors)
-
-                -- maybe it's unreachable when building fails, so we also need os.atexit()
-                -- @see https://github.com/xmake-io/xmake/issues/3401
-                _on_exit(false, errors)
-
-                -- do rules after building
-                _do_project_rules("build_after", {errors = errors})
-
-                -- raise
-                if errors then
-                    raise(errors)
-                elseif group_pattern then
-                    raise("build targets with group(%s) failed!", group_pattern)
-                elseif targetname then
-                    raise("build target: %s failed!", targetname)
-                else
-                    raise("build target failed!")
-                end
-            end
-        }
-    }
-
-    -- do rules after building
-    _do_project_rules("build_after")
-
-    -- unlock the whole project
-    project.unlock()
+    -- build targets
+    local build_time = os.mclock()
+    build_targets(targetname, {group_pattern = group_pattern})
+    build_time = os.mclock() - build_time
 
     -- leave project directory
     os.cd(oldir)
+
+    -- unlock the whole project
+    project.unlock()
 
     -- trace
     local str = ""
