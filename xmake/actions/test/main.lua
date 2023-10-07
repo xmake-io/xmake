@@ -51,7 +51,10 @@ function _do_test_target(target, opt)
     local outfile = os.tmpfile()
     local errfile = os.tmpfile()
     local ok, syserrors = os.execv(targetfile, runargs, {try = true, curdir = rundir, envs = envs, stdout = outfile, stderr = errfile})
-    local outdata = os.isfile(outfile) and io.readfile(outfile)
+    local outdata = os.isfile(outfile) and io.readfile(outfile) or ""
+    if opt.trim_output then
+        outdata = outdata:trim()
+    end
     if ok ~= 0 then
         local errdata = os.isfile(errfile) and io.readfile(errfile)
         errors = errdata or errors
@@ -72,8 +75,9 @@ function _do_test_target(target, opt)
 
     if ok == 0 then
         local passed
-        outdata = outdata or ""
-        for _, pass_output in ipairs(opt.pass_outputs) do
+        local pass_outputs = table.wrap(opt.pass_outputs)
+        local fail_outputs = table.wrap(opt.fail_outputs)
+        for _, pass_output in ipairs(pass_outputs) do
             if opt.plain then
                 if pass_output == outdata then
                     passed = true
@@ -86,38 +90,57 @@ function _do_test_target(target, opt)
                 end
             end
         end
-        for _, fail_output in ipairs(opt.fail_outputs) do
+        for _, fail_output in ipairs(fail_outputs) do
             if opt.plain then
                 if fail_output == outdata then
                     passed = false
-                    if not errors then
+                    if not errors or #errors == 0 then
                         errors = string.format("matched failed output: ${color.failure}%s${clear}", fail_output)
-                        if option.get("diagnosis") then
-                            errors = errors .. "\nactual output: " .. outdata
+                        local actual_output = outdata
+                        if not option.get("diagnosis") then
+                            actual_output = outdata:sub(1, 64)
+                            if #outdata > #actual_output then
+                                actual_output = actual_output .. "..."
+                            end
                         end
+                        errors = errors .. ", actual output: ${color.failure}" .. actual_output
                     end
                     break
                 end
             else
                 if outdata:match("^" .. fail_output .. "$") then
                     passed = false
-                    if not errors then
+                    if not errors or #errors == 0 then
                         errors = string.format("matched failed output: ${color.failure}%s${clear}", fail_output)
-                        if option.get("diagnosis") then
-                            errors = errors .. "\nactual output: " .. outdata
+                        local actual_output = outdata
+                        if not option.get("diagnosis") then
+                            actual_output = outdata:sub(1, 64)
+                            if #outdata > #actual_output then
+                                actual_output = actual_output .. "..."
+                            end
                         end
+                        errors = errors .. ", actual output: ${color.failure}" .. actual_output
                     end
                     break
                 end
             end
         end
         if passed == nil then
-            passed = true
-        end
-        if passed == false and not errors and opt.passed_outputs then
-            errors = string.format("not matched passed output: ${color.success}%s${clear}", table.concat(opt.passed_outputs, ", "))
-            if option.get("diagnosis") then
-                errors = errors .. "\nactual output: " .. outdata
+            if #pass_outputs == 0 then
+                passed = true
+            else
+                passed = false
+                if not errors or #errors == 0 then
+                    errors = string.format("not matched passed output: ${color.success}%s${clear}", table.concat(pass_outputs, ", "))
+                    local actual_output = outdata
+                    if not option.get("diagnosis") then
+                        actual_output = outdata:sub(1, 64)
+                        if #outdata > #actual_output then
+                            actual_output = actual_output .. "..."
+                        end
+                    end
+                    errors = errors .. ", actual output: ${color.failure}" .. actual_output
+                end
             end
         end
         return passed, errors

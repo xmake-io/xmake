@@ -8,7 +8,7 @@ for _, file in ipairs(os.files("src/test_*.cpp")) do
         add_files("src/" .. name .. ".cpp")
         add_tests("default")
         add_tests("args", {runargs = {"foo", "bar"}})
-        add_tests("pass_output", {runargs = "foo", pass_outputs = "hello foo"})
+        add_tests("pass_output", {trim_output = true, runargs = "foo", pass_outputs = "hello foo"})
         add_tests("fail_output", {fail_outputs = {"hello2 .*", "hello xmake"}})
 end
 
