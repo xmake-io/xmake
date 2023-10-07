@@ -320,7 +320,7 @@ function main()
                 end
 
                 local group = testinfo.group
-                if (not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
+                if (not group_pattern) or (group_pattern and group and group:match(group_pattern)) then
                     tests[testname] = testinfo
                 end
             end
