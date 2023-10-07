@@ -2455,6 +2455,7 @@ function target.apis()
         ,   "target.add_languages"
         ,   "target.add_vectorexts"
         ,   "target.add_toolchains"
+        ,   "target.add_tests"
         }
     ,   keyvalues =
         {
@@ -2493,6 +2494,7 @@ function target.apis()
         {
             -- target.on_xxx
             "target.on_run"
+        ,   "target.on_test"
         ,   "target.on_load"
         ,   "target.on_config"
         ,   "target.on_link"
@@ -2505,6 +2507,7 @@ function target.apis()
         ,   "target.on_uninstall"
             -- target.before_xxx
         ,   "target.before_run"
+        ,   "target.before_test"
         ,   "target.before_link"
         ,   "target.before_build"
         ,   "target.before_build_file"
@@ -2515,6 +2518,7 @@ function target.apis()
         ,   "target.before_uninstall"
             -- target.after_xxx
         ,   "target.after_run"
+        ,   "target.after_test"
         ,   "target.after_load"
         ,   "target.after_link"
         ,   "target.after_build"

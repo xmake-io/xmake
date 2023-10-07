@@ -6,6 +6,7 @@
 
 * [#4250](https://github.com/xmake-io/xmake/pull/4250): Improve link mechanism and order
 * [#1438](https://github.com/xmake-io/xmake/issues/1438): Support code amalgamation
+* [#3381](https://github.com/xmake-io/xmake/issues/3381): Add `xmake test` support
 
 ## v2.8.3
 
@@ -1671,6 +1672,7 @@
 
 * [#4250](https://github.com/xmake-io/xmake/pull/4250): 支持链接顺序调整，链接组
 * [#1438](https://github.com/xmake-io/xmake/issues/1438): 支持代码 amalgamation
+* [#3381](https://github.com/xmake-io/xmake/issues/3381): 添加 `xmake test` 支持
 
 ## v2.8.3
 
