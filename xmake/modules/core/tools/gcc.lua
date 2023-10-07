@@ -311,7 +311,7 @@ function nf_linkgroup(self, linkgroup, target)
         table.insert(linkflags, nf_link(self, lib))
     end
     local flags = {}
-    if not target:is_plat("macosx", "windows", "mingw") then
+    if not self:is_plat("macosx", "windows", "mingw") then
         local group = target:extraconf("linkgroups", linkgroup, "group")
         if group then
             table.join2(flags, "-Wl,--start-group", linkflags, "-Wl,--end-group")
