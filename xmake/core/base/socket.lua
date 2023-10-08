@@ -676,7 +676,7 @@ end
 
 -- tostring(socket)
 function _instance:__tostring()
-    local rawfd = self:rawfd() or "closed"
+    local rawfd = self:cdata() and self:rawfd() or "closed"
     local types = {"tcp", "udp", "icmp"}
     return string.format("<socket: %s%s/%s>", types[self:type()], self:family() == socket.IPV6 and "6" or "4", rawfd)
 end
