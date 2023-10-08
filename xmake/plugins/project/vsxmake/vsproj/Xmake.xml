@@ -12,7 +12,7 @@
     <Rule.DataSource>
       <DataSource Persistence="UserFile" Label="XmakeConfiguration"/>
     </Rule.DataSource>
-    
+
     <BoolProperty
       Name="XmakeVerbose"
       DisplayName="Print verbose information"
@@ -43,7 +43,7 @@
       Category="Common"
       Description="When use 'compile' command to build selected files, add '--rebuild' flag to force rebuild files."
       Switch="rebuild" />
-      
+
     <StringProperty
       Name="XmakeCleanFlags"
       DisplayName="Clean flags"
