@@ -102,7 +102,12 @@ function _is_cross_compilation()
 end
 
 -- get configs for windows
-function _get_configs_for_windows(configs)
+function _get_configs_for_windows(configs, opt)
+    opt = opt or {}
+    local cmake_generator = opt.cmake_generator
+    if cmake_generator and not cmake_generator:find("Visual Studio", 1, true) then
+        return
+    end
     table.insert(configs, "-A")
     if is_arch("x86", "i386") then
         table.insert(configs, "Win32")
@@ -377,7 +382,7 @@ function _get_configs(opt)
     _get_configs_for_install(configs, opt)
     _get_configs_for_generator(configs, opt)
     if is_plat("windows") then
-        _get_configs_for_windows(configs)
+        _get_configs_for_windows(configs, opt)
     elseif is_plat("android") then
         _get_configs_for_android(configs)
     elseif is_plat("iphoneos", "watchos") or
