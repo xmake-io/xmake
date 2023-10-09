@@ -271,6 +271,17 @@ function _run_tests(tests)
             if not passed and errors and (option.get("verbose") or option.get("diagnosis")) then
                 cprint(errors)
             end
+
+            -- stop it if be failed?
+            if not passed then
+                local stop = target:policy("test.stop_on_first_failure")
+                if stop == nil then
+                    stop = project.policy("test.stop_on_first_failure")
+                end
+                if stop then
+                    raise(errors)
+                end
+            end
         end
     end, {total = #ordertests,
           comax = jobs,
@@ -282,6 +293,10 @@ function _run_tests(tests)
     print("")
     cprint("${color.success}%d%%${clear} tests passed, ${color.failure}%d${clear} tests failed out of ${bright}%d${clear}, spent ${bright}%0.3fs",
         passed_rate, report.total - report.passed, report.total, spent / 1000)
+    local return_zero = project.policy("test.return_zero_on_failure")
+    if not return_zero and report.passed < report.total then
+        raise()
+    end
 end
 
 function main()

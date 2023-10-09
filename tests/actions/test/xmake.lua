@@ -1,4 +1,5 @@
 add_rules("mode.debug", "mode.release")
+set_policy("test.return_zero_on_failure", true)
 
 for _, file in ipairs(os.files("src/test_*.cpp")) do
     local name = path.basename(file)
