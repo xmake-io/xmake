@@ -72,7 +72,7 @@ end
 function _is_show_diagnosis_info()
     local show = _g.is_show_diagnosis_info
     if show == nil then
-        if option.get("diagnosis") and project.policy("diagnosis.check_build_deps") then
+        if project.policy("diagnosis.check_build_deps") then
             show = true
         else
             show = false
