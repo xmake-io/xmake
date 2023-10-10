@@ -134,39 +134,47 @@ add_requires("tbox 1.6.*", "zlib", "libpng ~1.6")
 
 <img src="https://github.com/xmake-io/xmake-docs/raw/master/assets/img/index/package.gif" width="650px" />
 
-## 创建工程
+## 命令行使用
+
+### 创建工程
 
 ```bash
 $ xmake create hello
 $ cd hello
 ```
 
-## 构建工程
+### 构建工程
 
 ```bash
 $ xmake
 ```
 
-## 运行目标
+### 运行目标
 
 ```bash
 $ xmake run console
 ```
 
-## 调试程序
+### 调试程序
 
 ```bash
 $ xmake run -d console
 ```
 
-## 配置平台
+### 运行测试
+
+```bash
+$ xmake test
+```
+
+### 配置平台
 
 ```bash
 $ xmake f -p [windows|linux|macosx|android|iphoneos ..] -a [x86|arm64 ..] -m [debug|release]
 $ xmake
 ```
 
-## 图形化菜单配置
+### 图形化菜单配置
 
 ```bash
 $ xmake f --menu

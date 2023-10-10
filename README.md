@@ -155,6 +155,12 @@ $ xmake run console
 $ xmake run -d console
 ```
 
+### Run test
+
+```bash
+$ xmake test
+```
+
 ### Configure platform
 
 ```bash
