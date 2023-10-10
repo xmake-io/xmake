@@ -60,7 +60,7 @@ function sandbox_lib_detect_find_library.main(names, paths, opt)
     for _, name in ipairs(table.wrap(names)) do
         for _, kind in ipairs(table.wrap(kinds)) do
             local filepath = find_file(target.filename(name, kind, {plat = opt.plat}), paths, opt)
-            if opt.plat == "mingw" or opt.plat == "msys" or opt.plat == "cygwin" then
+            if opt.plat == "mingw" then
                 if not filepath and kind == "shared" then
                     -- for implib/mingw, e.g. libxxx.dll.a
                     filepath = find_file(target.filename(name, kind, {plat = opt.plat}) .. ".a", paths, opt)
