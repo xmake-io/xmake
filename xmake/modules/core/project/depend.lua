@@ -115,7 +115,7 @@ function is_changed(dependinfo, opt)
         -- source and header files have been changed or not exists?
         if mtime == 0 or mtime > lastmtime then
             if _is_show_diagnosis_info() then
-                cprint("${color.warning}depend file %s is changed, mtime: %s, lastmtime: %s", file, mtime, lastmtime)
+                cprint("${color.warning}[check_build_deps]: file %s is changed, mtime: %s, lastmtime: %s", file, mtime, lastmtime)
             end
             return true
         end
@@ -135,14 +135,14 @@ function is_changed(dependinfo, opt)
             return true
         elseif deptype == "string" and depvalue ~= optvalue then
             if _is_show_diagnosis_info() then
-                cprint("${color.warning}depend value %s != %s", depvalue, optvalue)
+                cprint("${color.warning}[check_build_deps]: value %s != %s", depvalue, optvalue)
             end
             return true
         elseif deptype == "table" then
             for subidx, subvalue in ipairs(depvalue) do
                 if subvalue ~= optvalue[subidx] then
                     if _is_show_diagnosis_info() then
-                        cprint("${color.warning}depend value %s != %s at index %d", subvalue, optvalue[subidx], subidx)
+                        cprint("${color.warning}[check_build_deps]: value %s != %s at index %d", subvalue, optvalue[subidx], subidx)
                     end
                     return true
                 end
@@ -159,7 +159,7 @@ function is_changed(dependinfo, opt)
         for idx, file in ipairs(files) do
             if file ~= optfiles[idx] then
                 if _is_show_diagnosis_info() then
-                    cprint("${color.warning}depend file %s != %s at index %d", file, optfiles[subidx], idx)
+                    cprint("${color.warning}[check_build_deps]: file %s != %s at index %d", file, optfiles[subidx], idx)
                 end
                 return true
             end
