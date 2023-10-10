@@ -118,7 +118,9 @@ function policy.policies()
             -- Stop to test on the first failure
             ["test.stop_on_first_failure"]        = {description = "Stop to test on the first failure", default = false, type = "boolean"},
             -- Return zero as exit code on failure
-            ["test.return_zero_on_failure"]       = {description = "Return zero as the exit code on failure", default = false, type = "boolean"}
+            ["test.return_zero_on_failure"]       = {description = "Return zero as the exit code on failure", default = false, type = "boolean"},
+            -- Show diagnosis info for checking build dependencies
+            ["diagnosis.check_build_deps"]        = {description = "Show diagnosis info for checking build dependencies", default = false, type = "boolean"}
         }
         policy._POLICIES = policies
     end
