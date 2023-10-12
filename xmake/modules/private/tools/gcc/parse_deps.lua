@@ -30,7 +30,10 @@ local space_placeholder = "\001"
 function _normailize_dep(dep, projectdir)
     -- escape characters, e.g. \#Qt.Widget_pch.h -> #Qt.Widget_pch.h
     -- @see https://github.com/xmake-io/xmake/issues/4134
-    dep = dep:gsub("\\(.)", "%1")
+    -- https://github.com/xmake-io/xmake/issues/4273
+    if not is_host("windows") then
+        dep = dep:gsub("\\(.)", "%1")
+    end
     if path.is_absolute(dep) then
         dep = path.translate(dep)
     else
