@@ -254,5 +254,27 @@ function sandbox_core_project.chdir(projectdir, projectfile)
     config._DIRECTORY = nil
 end
 
+-- get scope
+function sandbox_core_project.scope(scopename)
+    local cachekey = "scope." .. scopename
+    local scope = project._memcache():get(cachekey)
+    if not scope then
+
+        -- load the project file first if has not been loaded?
+        local ok, errors = project._load()
+        if not ok then
+            raise("load project failed, %s", errors or "unknown")
+        end
+
+        -- load scope
+        scope, errors = project._load_scope(scopename, true, false)
+        if not scope then
+            raise("load scope(%s) failed, %s", scopename, errors or "unknown")
+        end
+        project._memcache():set(cachekey, scope)
+    end
+    return scope
+end
+
 -- return module
 return sandbox_core_project
