@@ -30,7 +30,7 @@ function check_macros(definition, macros, opt)
     opt = opt or {}
     local optname = opt.name or ("__" .. definition)
     local snippets = {}
-    save_scope()
+    interp_save_scope()
     option(optname)
         set_showmenu(false)
         for _, macro in ipairs(macros) do
@@ -69,7 +69,7 @@ function check_macros(definition, macros, opt)
             add_cxxflags(opt.cxxflags)
         end
     option_end()
-    restore_scope()
+    interp_restore_scope()
     add_options(optname)
 end
 
@@ -84,7 +84,7 @@ function configvar_check_macros(definition, macros, opt)
     local optname = opt.name or ("__" .. definition)
     local defname, defval = table.unpack(definition:split('='))
     local snippets = {}
-    save_scope()
+    interp_save_scope()
     option(optname)
         set_showmenu(false)
         for _, macro in ipairs(macros) do
@@ -125,7 +125,7 @@ function configvar_check_macros(definition, macros, opt)
             add_cxxflags(opt.cxxflags)
         end
     option_end()
-    restore_scope()
+    interp_restore_scope()
     if opt.default == nil then
         add_options(optname)
     else

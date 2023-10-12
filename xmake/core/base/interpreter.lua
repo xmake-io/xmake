@@ -688,10 +688,13 @@ function interpreter.new()
     instance:api_register(nil, "add_subdirs",  interpreter.api_builtin_add_subdirs)
     instance:api_register(nil, "add_subfiles", interpreter.api_builtin_add_subfiles)
     instance:api_register(nil, "set_xmakever", interpreter.api_builtin_set_xmakever)
-    instance:api_register(nil, "save_scope",   interpreter.api_builtin_save_scope)
-    instance:api_register(nil, "restore_scope",interpreter.api_builtin_restore_scope)
-    instance:api_register(nil, "get_scopekind",interpreter.api_builtin_get_scopekind)
-    instance:api_register(nil, "get_scopename",interpreter.api_builtin_get_scopename)
+
+    -- register the interpreter interfaces
+    instance:api_register(nil, "interp_save_scope",    interpreter.api_interp_save_scope)
+    instance:api_register(nil, "interp_restore_scope", interpreter.api_interp_restore_scope)
+    instance:api_register(nil, "interp_get_scopekind", interpreter.api_interp_get_scopekind)
+    instance:api_register(nil, "interp_get_scopename", interpreter.api_interp_get_scopename)
+    instance:api_register(nil, "interp_add_scopeapis", interpreter.api_interp_add_scopeapis)
 
     -- register the builtin modules
     for module_name, module in pairs(interpreter._builtin_modules()) do
@@ -1798,9 +1801,9 @@ function interpreter:api_builtin_add_subfiles(...)
     deprecated.add("includes(%s)", "add_subfiles(%s)", table.concat(files, ", "), table.concat(files, ", "))
 end
 
--- the builtin api: save_scope()
+-- the interpreter api: interp_save_scope()
 -- save the current scope
-function interpreter:api_builtin_save_scope()
+function interpreter:api_interp_save_scope()
     assert(self and self._PRIVATE)
 
     -- the scopes
@@ -1815,9 +1818,9 @@ function interpreter:api_builtin_save_scope()
     table.insert(self._PRIVATE._SCOPES_SAVED, scope)
 end
 
--- the builtin api: restore_scope()
+-- the interpreter api: interp_restore_scope()
 -- restore the current scope
-function interpreter:api_builtin_restore_scope()
+function interpreter:api_interp_restore_scope()
     assert(self and self._PRIVATE)
 
     -- the scopes
@@ -1836,14 +1839,14 @@ function interpreter:api_builtin_restore_scope()
     end
 end
 
--- the builtin api: get_scopekind()
-function interpreter:api_builtin_get_scopekind()
+-- the interpreter api: interp_get_scopekind()
+function interpreter:api_interp_get_scopekind()
     local scopes = self._PRIVATE._SCOPES
     return scopes._CURRENT_KIND
 end
 
--- the builtin api: get_scopename()
-function interpreter:api_builtin_get_scopename()
+-- the interpreter api: interp_get_scopename()
+function interpreter:api_interp_get_scopename()
     local scopes = self._PRIVATE._SCOPES
     local scope_kind = scopes._CURRENT_KIND
     if scope_kind and scopes[scope_kind] then
@@ -1854,6 +1857,22 @@ function interpreter:api_builtin_get_scopename()
             end
         end
     end
+end
+
+-- the interpreter api: interp_add_scopeapis()
+function interpreter:api_interp_add_scopeapis(...)
+    local apis = {...}
+    local extra_config = apis[#apis]
+    if table.is_dictionary(extra_config) then
+        table.remove(apis)
+    else
+        extra_config = nil
+    end
+    local kind = "values"
+    if extra_config and extra_config.kind then
+        kind = extra_config.kind
+    end
+    return self:api_define({[kind] = apis})
 end
 
 -- get api function

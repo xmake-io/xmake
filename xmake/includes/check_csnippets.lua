@@ -29,7 +29,7 @@
 function check_csnippets(definition, snippets, opt)
     opt = opt or {}
     local optname = opt.name or ("__" .. definition)
-    save_scope()
+    interp_save_scope()
     option(optname)
         set_showmenu(false)
         add_csnippets(definition, snippets, {tryrun = opt.tryrun, output = opt.output})
@@ -71,7 +71,7 @@ function check_csnippets(definition, snippets, opt)
             end)
         end
     option_end()
-    restore_scope()
+    interp_restore_scope()
     add_options(optname)
 end
 
@@ -89,7 +89,7 @@ function configvar_check_csnippets(definition, snippets, opt)
     opt = opt or {}
     local optname = opt.name or ("__" .. definition)
     local defname, defval = table.unpack(definition:split('='))
-    save_scope()
+    interp_save_scope()
     option(optname)
         set_showmenu(false)
         add_csnippets(definition, snippets, {tryrun = opt.tryrun, output = opt.output})
@@ -125,7 +125,7 @@ function configvar_check_csnippets(definition, snippets, opt)
             end)
         end
     option_end()
-    restore_scope()
+    interp_restore_scope()
     if opt.default == nil then
         add_options(optname)
     else
