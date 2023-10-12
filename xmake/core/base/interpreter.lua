@@ -694,7 +694,7 @@ function interpreter.new()
     instance:api_register(nil, "interp_restore_scope", interpreter.api_interp_restore_scope)
     instance:api_register(nil, "interp_get_scopekind", interpreter.api_interp_get_scopekind)
     instance:api_register(nil, "interp_get_scopename", interpreter.api_interp_get_scopename)
-    instance:api_register(nil, "interp_register_apis", interpreter.api_interp_register_apis)
+    instance:api_register(nil, "interp_add_scopeapis", interpreter.api_interp_add_scopeapis)
 
     -- register the builtin modules
     for module_name, module in pairs(interpreter._builtin_modules()) do
@@ -1859,9 +1859,20 @@ function interpreter:api_interp_get_scopename()
     end
 end
 
--- the interpreter api: interp_register_apis()
-function interpreter:api_interp_register_apis(apis)
-    return self:api_define(apis)
+-- the interpreter api: interp_add_scopeapis()
+function interpreter:api_interp_add_scopeapis(...)
+    local apis = {...}
+    local extra_config = apis[#apis]
+    if table.is_dictionary(extra_config) then
+        table.remove(apis)
+    else
+        extra_config = nil
+    end
+    local kind = "values"
+    if extra_config and extra_config.kind then
+        kind = extra_config.kind
+    end
+    return self:api_define({[kind] = apis})
 end
 
 -- get api function
