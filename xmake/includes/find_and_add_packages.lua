@@ -33,14 +33,14 @@
 function find_and_add_packages(...)
     for _, name in ipairs({...}) do
         local optname = "__" .. name
-        save_scope()
+        interp_save_scope()
         option(optname)
             set_showmenu(false)
             before_check(function (option)
                 option:add(find_packages(name))
             end)
         option_end()
-        restore_scope()
+        interp_restore_scope()
         add_options(optname)
     end
 end

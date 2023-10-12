@@ -28,7 +28,7 @@
 function check_ctypes(definition, types, opt)
     opt = opt or {}
     local optname = opt.name or ("__" .. definition)
-    save_scope()
+    interp_save_scope()
     option(optname)
         set_showmenu(false)
         add_ctypes(types)
@@ -49,7 +49,7 @@ function check_ctypes(definition, types, opt)
             add_cincludes(opt.includes)
         end
     option_end()
-    restore_scope()
+    interp_restore_scope()
     add_options(optname)
 end
 
@@ -66,7 +66,7 @@ function configvar_check_ctypes(definition, types, opt)
     opt = opt or {}
     local optname = opt.name or ("__" .. definition)
     local defname, defval = table.unpack(definition:split('='))
-    save_scope()
+    interp_save_scope()
     option(optname)
         set_showmenu(false)
         add_ctypes(types)
@@ -89,7 +89,7 @@ function configvar_check_ctypes(definition, types, opt)
             add_cincludes(opt.includes)
         end
     option_end()
-    restore_scope()
+    interp_restore_scope()
     if opt.default == nil then
         add_options(optname)
     else
