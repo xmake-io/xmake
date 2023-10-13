@@ -1686,15 +1686,33 @@ function interpreter:api_builtin_includes(...)
     local subpaths = table.join(...)
     local subpaths_matched = {}
     for _, subpath in ipairs(subpaths) do
-        -- find the given files from the project directory
         local found = false
-        local files = os.match(subpath, not subpath:endswith(".lua"))
-        if files and #files > 0 then
-            table.join2(subpaths_matched, files)
-            found = true
-        elseif not path.is_absolute(subpath) then
-            -- attempt to find files from programdir/includes/*.lua
-            files = os.files(path.join(os.programdir(), "includes", subpath))
+        -- attempt to find files from programdir/includes/*.lua
+        -- e.g. includes("@builtin/check")
+        if subpath:startswith("@builtin/") then
+            local builtin_path = subpath:sub(10)
+            local files
+            if builtin_path:endswith(".lua") then
+                files = os.files(path.join(os.programdir(), "includes", builtin_path))
+            else
+                files = os.files(path.join(os.programdir(), "includes", builtin_path, "xmake.lua"))
+            end
+            if files and #files > 0 then
+                table.join2(subpaths_matched, files)
+                found = true
+            end
+        end
+        -- find the given files from the project directory
+        if not found then
+            local files = os.match(subpath, not subpath:endswith(".lua"))
+            if files and #files > 0 then
+                table.join2(subpaths_matched, files)
+                found = true
+            end
+        end
+        -- attempt to find files from programdir/includes/*.lua (deprecated)
+        if not found and not path.is_absolute(subpath) then
+            local files = os.files(path.join(os.programdir(), "includes", subpath))
             if files and #files > 0 then
                 table.join2(subpaths_matched, files)
                 found = true
