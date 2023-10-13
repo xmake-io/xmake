@@ -143,8 +143,8 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
     }
 
     if grpc_cpp_plugin then
-        local exe = is_plat("windows") and ".exe" or ""
-        table.insert(protoc_args, "--plugin=protoc-gen-grpc=" .. grpc_cpp_plugin_bin .. exe)
+        local extension = target:is_plat("windows") and ".exe" or ""
+        table.insert(protoc_args, "--plugin=protoc-gen-grpc=" .. grpc_cpp_plugin_bin .. extension)
         table.insert(protoc_args, path(sourcefile_dir, function (p) return ("--grpc_out=") .. p end))
     end
 
