@@ -31,7 +31,8 @@ function main(toolchain)
 
     -- init target flags
     if target_minver then
-        local target = ("%s-apple-xros%s"):format(arch, target_minver)
+        local simulator = toolchain:config("appledev") == "simulator"
+        local target = (simulator and "%s-apple-xrsimulator%s" or "%s-apple-xros%s"):format(arch, target_minver)
         toolchain:add("cxflags", "-target", target)
         toolchain:add("mxflags", "-target", target)
         toolchain:add("asflags", "-target", target)
@@ -44,8 +45,8 @@ function main(toolchain)
 
     -- init flags for c/c++
     toolchain:add("cxflags", "-isysroot", xcode_sysroot)
-    toolchain:add("ldflags", "-ObjC", "-fobjc-link-runtime", "-isysroot", xcode_sysroot)
-    toolchain:add("shflags", "-ObjC", "-fobjc-link-runtime", "-isysroot", xcode_sysroot)
+    toolchain:add("ldflags", "-fobjc-link-runtime", "-isysroot", xcode_sysroot)
+    toolchain:add("shflags", "-fobjc-link-runtime", "-isysroot", xcode_sysroot)
 
     -- init flags for objc/c++
     toolchain:add("mxflags", "-isysroot", xcode_sysroot)
