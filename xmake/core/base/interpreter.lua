@@ -1720,6 +1720,13 @@ function interpreter:api_builtin_includes(...)
                     found = true
                     utils.warning("deprecated: please use includes(\"@builtin/check\") instead of includes(\"%s\")", subpath)
                 end
+            elseif subpath:startswith("qt_") then
+                local files = os.files(path.join(os.programdir(), "includes", "qt", subpath))
+                if files and #files > 0 then
+                    table.join2(subpaths_matched, files)
+                    found = true
+                    utils.warning("deprecated: please use includes(\"@builtin/qt\") instead of includes(\"%s\")", subpath)
+                end
             end
         end
         if not found then
