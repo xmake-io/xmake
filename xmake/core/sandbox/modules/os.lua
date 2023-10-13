@@ -269,9 +269,11 @@ end
 function sandbox_os.runv(program, argv, opt)
     program = vformat(program)
     local ok, errors = os.runv(program, argv, opt)
-    if not ok then
+    if not ok and not opt.try then
         os.raise(errors)
     end
+    -- we need to return results if opt.try is enabled
+    return ok, errors
 end
 
 -- quietly run command and echo verbose info if [-v|--verbose] option is enabled
@@ -288,7 +290,12 @@ function sandbox_os.vrunv(program, argv, opt)
         print(vformat(program) .. " " .. sandbox_os.args(argv))
     end
     if not (opt and opt.dryrun) then
-        (option.get("verbose") and sandbox_os.execv or sandbox_os.runv)(program, argv, opt)
+        local ok, errors = (option.get("verbose") and sandbox_os.execv or sandbox_os.runv)(program, argv, opt)
+        if not ok and not opt.try then
+            os.raise(errors)
+        end
+        -- we need to return results if opt.try is enabled
+        return ok, errors
     end
 end
 
