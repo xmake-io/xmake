@@ -86,6 +86,8 @@ function main(toolchain)
             cross = simulator and "xcrun -sdk watchsimulator " or "xcrun -sdk watchos "
         elseif toolchain:is_plat("appletvos") then
             cross = simulator and "xcrun -sdk appletvsimulator " or "xcrun -sdk appletvos "
+        elseif toolchain:is_plat("applexros") then
+            cross = simulator and "xcrun -sdk xrsimulator " or "xcrun -sdk xros "
         else
             raise("unknown platform for xcode!")
         end
@@ -108,6 +110,9 @@ function main(toolchain)
             xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
         elseif toolchain:is_plat("appletvos") then
             local platname = simulator and "AppleTVSimulator" or "AppleTVOS"
+            xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
+        elseif toolchain:is_plat("applexros") then
+            local platname = simulator and "XRSimulator" or "XROS"
             xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
         end
     else

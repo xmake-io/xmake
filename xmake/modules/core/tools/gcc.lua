@@ -86,7 +86,7 @@ function nf_strip(self, level, target)
         debug = "-Wl,-S"
     ,   all   = "-s"
     }
-    if self:is_plat("macosx", "iphoneos") then
+    if self:is_plat("macosx", "iphoneos", "watchos", "appletvos", "applexros") then
         maps.all = {"-Wl,-x", "-Wl,-dead_strip"}
     elseif self:is_plat("windows") then
         -- clang does not it on windows, TODO maybe we need test it for gcc
