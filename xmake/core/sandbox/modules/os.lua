@@ -292,6 +292,8 @@ function sandbox_os.vrunv(program, argv, opt)
         print(vformat(program) .. " " .. sandbox_os.args(argv))
     end
     if not (opt and opt.dryrun) then
+        -- init options
+        opt = opt or {}
         local ok, errors = (option.get("verbose") and sandbox_os.execv or sandbox_os.runv)(program, argv, opt)
         if not ok and not opt.try then
             os.raise(errors)
