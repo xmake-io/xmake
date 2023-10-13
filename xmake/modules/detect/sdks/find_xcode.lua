@@ -63,7 +63,7 @@ function _find_xcode_sdkver(sdkdir, opt)
         if arch == "i386" or arch == "x86_64" then
             platsdkdir = "Contents/Developer/Platforms/XRSimulator.platform/Developer/SDKs/XRSimulator*.*.sdk"
         else
-            platsdkdir = "Contents/Developer/Platforms/XROS.platform/Developer/XROS*.*.sdk"
+            platsdkdir = "Contents/Developer/Platforms/XROS.platform/Developer/SDKs/XROS*.*.sdk"
         end
     else
         platsdkdir = "Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.*.sdk"

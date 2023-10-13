@@ -30,7 +30,6 @@ function main(toolchain)
     local target_minver = toolchain:config("target_minver")
 
     -- init target flags
-    local appledev = toolchain:config("appledev")
     if target_minver then
         local target = ("%s-apple-xros%s"):format(arch, target_minver)
         toolchain:add("cxflags", "-target", target)
@@ -45,8 +44,8 @@ function main(toolchain)
 
     -- init flags for c/c++
     toolchain:add("cxflags", "-isysroot", xcode_sysroot)
-    toolchain:add("ldflags", "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot", xcode_sysroot)
-    toolchain:add("shflags", "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot", xcode_sysroot)
+    toolchain:add("ldflags", "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-isysroot", xcode_sysroot)
+    toolchain:add("shflags", "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-isysroot", xcode_sysroot)
 
     -- init flags for objc/c++
     toolchain:add("mxflags", "-isysroot", xcode_sysroot)
