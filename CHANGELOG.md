@@ -9,7 +9,11 @@
 * [#3381](https://github.com/xmake-io/xmake/issues/3381): Add `xmake test` support
 * [#4276](https://github.com/xmake-io/xmake/issues/4276): Support custom scope api
 
-## Bugs fixed
+### Changes
+
+* [#4284](https://github.com/xmake-io/xmake/issues/4284): Improve builtin includes
+
+### Bugs fixed
 
 * [#4256](https://github.com/xmake-io/xmake/issues/4256): Fix intellisense for vsxmake/c++modules
 
@@ -1680,7 +1684,11 @@
 * [#3381](https://github.com/xmake-io/xmake/issues/3381): 添加 `xmake test` 支持
 * [#4276](https://github.com/xmake-io/xmake/issues/4276): 支持自定义域 API
 
-## Bugs 修复
+### 改进
+
+* [#4284](https://github.com/xmake-io/xmake/issues/4284): 改进内置 includes 模块
+
+### Bugs 修复
 
 * [#4256](https://github.com/xmake-io/xmake/issues/4256): 为 vsxmake 生成器修复 c++ modules intellisense
 
