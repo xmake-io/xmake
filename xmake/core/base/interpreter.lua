@@ -1712,10 +1712,14 @@ function interpreter:api_builtin_includes(...)
         end
         -- attempt to find files from programdir/includes/*.lua (deprecated)
         if not found and not path.is_absolute(subpath) then
-            local files = os.files(path.join(os.programdir(), "includes", subpath))
-            if files and #files > 0 then
-                table.join2(subpaths_matched, files)
-                found = true
+            -- e.g. includes("check_cflags.lua")
+            if subpath:startswith("check_") then
+                local files = os.files(path.join(os.programdir(), "includes", "check", subpath))
+                if files and #files > 0 then
+                    table.join2(subpaths_matched, files)
+                    found = true
+                    utils.warning("deprecated: please use includes(\"@builtin/check\") instead of includes(\"%s\")", subpath)
+                end
             end
         end
         if not found then
