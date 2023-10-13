@@ -52,7 +52,7 @@ end
 -- get grpc_cpp_plugin
 function _get_grpc_cpp_plugin(target, sourcekind)
     assert(sourcekind == "cxx", "grpc_cpp_plugin only support c++")
-    local grpc_cpp_plugin = find_tool("grpc_cpp_plugin", {norun = true})
+    local grpc_cpp_plugin = find_tool("grpc_cpp_plugin", {norun = true, force = true, envs = target:pkgenvs()})
     return assert(grpc_cpp_plugin and grpc_cpp_plugin.program, "grpc_cpp_plugin not found!")
 end
 
@@ -143,7 +143,8 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
     }
 
     if grpc_cpp_plugin then
-        table.insert(protoc_args, "--plugin=protoc-gen-grpc=" .. grpc_cpp_plugin_bin)
+        local exe = is_plat("windows") and ".exe" or ""
+        table.insert(protoc_args, "--plugin=protoc-gen-grpc=" .. grpc_cpp_plugin_bin .. exe)
         table.insert(protoc_args, path(sourcefile_dir, function (p) return ("--grpc_out=") .. p end))
     end
 
