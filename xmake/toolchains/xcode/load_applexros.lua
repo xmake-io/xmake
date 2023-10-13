@@ -44,8 +44,8 @@ function main(toolchain)
 
     -- init flags for c/c++
     toolchain:add("cxflags", "-isysroot", xcode_sysroot)
-    toolchain:add("ldflags", "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-isysroot", xcode_sysroot)
-    toolchain:add("shflags", "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-isysroot", xcode_sysroot)
+    toolchain:add("ldflags", "-ObjC", "-fobjc-link-runtime", "-isysroot", xcode_sysroot)
+    toolchain:add("shflags", "-ObjC", "-fobjc-link-runtime", "-isysroot", xcode_sysroot)
 
     -- init flags for objc/c++
     toolchain:add("mxflags", "-isysroot", xcode_sysroot)
