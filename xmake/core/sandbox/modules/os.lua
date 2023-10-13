@@ -267,6 +267,8 @@ end
 
 -- quietly run command with arguments list
 function sandbox_os.runv(program, argv, opt)
+    -- init options
+    opt = opt or {}
     program = vformat(program)
     local ok, errors = os.runv(program, argv, opt)
     if not ok and not opt.try then
