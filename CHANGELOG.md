@@ -8,6 +8,7 @@
 * [#1438](https://github.com/xmake-io/xmake/issues/1438): Support code amalgamation
 * [#3381](https://github.com/xmake-io/xmake/issues/3381): Add `xmake test` support
 * [#4276](https://github.com/xmake-io/xmake/issues/4276): Support custom scope api
+* [#4286](https://github.com/xmake-io/xmake/pull/4286): Add Apple XROS support
 
 ### Changes
 
@@ -1683,6 +1684,7 @@
 * [#1438](https://github.com/xmake-io/xmake/issues/1438): 支持代码 amalgamation
 * [#3381](https://github.com/xmake-io/xmake/issues/3381): 添加 `xmake test` 支持
 * [#4276](https://github.com/xmake-io/xmake/issues/4276): 支持自定义域 API
+* [#4286](https://github.com/xmake-io/xmake/pull/4286): 添加 Apple XROS 支持
 
 ### 改进
 
