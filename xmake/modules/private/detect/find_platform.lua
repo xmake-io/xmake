@@ -94,7 +94,7 @@ function _find_arch(plat, arch)
             local appledev = config.get("appledev")
             if plat == "android" then
                 arch = "armeabi-v7a"
-            elseif plat == "iphoneos" or plat == "appletvos" then
+            elseif plat == "iphoneos" or plat == "appletvos" or plat == "applexros" then
                 arch = appledev == "simulator" and os.arch() or "arm64"
             elseif plat == "watchos" then
                 arch = appledev == "simulator" and os.arch() or "armv7k"

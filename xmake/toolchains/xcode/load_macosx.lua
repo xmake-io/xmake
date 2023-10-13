@@ -24,7 +24,6 @@ import("core.project.config")
 -- main entry
 function main(toolchain)
 
-    -- init flags for architecture
     local arch          = toolchain:arch()
     local target_minver = toolchain:config("target_minver")
     local xcode_sysroot = toolchain:config("xcode_sysroot")

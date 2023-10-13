@@ -59,6 +59,12 @@ function _find_xcode_sdkver(sdkdir, opt)
         else
             platsdkdir = "Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS*.*.sdk"
         end
+    elseif plat == "applexros" then
+        if arch == "i386" or arch == "x86_64" then
+            platsdkdir = "Contents/Developer/Platforms/XRSimulator.platform/Developer/SDKs/XRSimulator*.*.sdk"
+        else
+            platsdkdir = "Contents/Developer/Platforms/XROS.platform/Developer/XROS*.*.sdk"
+        end
     else
         platsdkdir = "Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.*.sdk"
     end
