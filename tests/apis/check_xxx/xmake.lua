@@ -1,11 +1,4 @@
-includes("check_links.lua")
-includes("check_ctypes.lua")
-includes("check_cflags.lua")
-includes("check_cfuncs.lua")
-includes("check_macros.lua")
-includes("check_features.lua")
-includes("check_csnippets.lua")
-includes("check_cincludes.lua")
+includes("@builtin/check")
 
 target("foo")
     set_kind("static")

@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-includes("qt_add_static_plugins.lua")
+includes("@builtin/qt")
 
 target("${TARGETNAME}")
     add_rules("qt.quickapp_static")
