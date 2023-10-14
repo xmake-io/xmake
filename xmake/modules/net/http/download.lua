@@ -113,6 +113,10 @@ function _curl_download(tool, url, outputfile, opt)
     table.insert(argv, outputfile)
 
     -- download it
+    if opt.try then
+        local ok = try {function () os.vrunv(tool.program, argv); return true end}
+        return ok == nil and false or true
+    end
     os.vrunv(tool.program, argv)
 end
 
@@ -175,6 +179,10 @@ function _wget_download(tool, url, outputfile, opt)
     table.insert(argv, outputfile)
 
     -- download it
+    if opt.try then
+        local ok = try {function () os.vrunv(tool.program, argv); return true end}
+        return ok == nil and false or true
+    end
     os.vrunv(tool.program, argv)
 end
 
