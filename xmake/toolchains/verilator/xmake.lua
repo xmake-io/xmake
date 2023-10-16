@@ -22,8 +22,6 @@ toolchain("verilator")
     set_homepage("https://verilator.org/")
     set_description("Verilator open-source SystemVerilog simulator and lint system")
 
-    set_kind("standalone")
-
     on_check(function (toolchain)
         import("lib.detect.find_tool")
         local paths = {}
