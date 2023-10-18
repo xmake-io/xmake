@@ -78,7 +78,7 @@ function main(target, opt)
         envs.PATH = {qt.bindir}
         local curpath = os.getenv("PATH")
         if curpath then
-            table.join2(env.PATH, path.splitenv(curpath))
+            table.join2(envs.PATH, path.splitenv(curpath))
         end
     end
 
