@@ -71,6 +71,16 @@ function main(target, opt)
             envs = {VCINSTALLDIR = vcvars.VCInstallDir}
         end
     end
+    -- bind qt bin path
+    -- https://github.com/xmake-io/xmake/issues/4297
+    if qt.bindir then
+        envs = envs or {}
+        envs.PATH = {qt.bindir}
+        local curpath = os.getenv("PATH")
+        if curpath then
+            table.join2(envs.PATH, path.splitenv(curpath))
+        end
+    end
 
     local argv = {"--force"}
     if option.get("diagnosis") then
