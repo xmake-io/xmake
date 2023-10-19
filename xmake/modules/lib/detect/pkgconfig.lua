@@ -189,7 +189,8 @@ function libinfo(name, opt)
                     table.insert(result.linkdirs, linkdir)
                 end
             elseif flag:startswith("-l") and #flag > 2 then
-                local link = flag:sub(3)
+                -- https://github.com/xmake-io/xmake/issues/4292
+                local link = flag:startswith("-l:") and flag:sub(4) or flag:sub(3)
                 result.links = result.links or {}
                 table.insert(result.links, link)
             elseif flag:startswith("-") and #flag > 1 then
