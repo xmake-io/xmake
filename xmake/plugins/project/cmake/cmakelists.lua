@@ -159,7 +159,7 @@ function _translate_flag(flag, outputdir)
             flag = "-fmodule-mapper=" .. _get_relative_unix_path_to_cmake(flag:sub(17), outputdir)
         elseif flag:match("(.+)=(.+)") then
             local k, v = flag:match("(.+)=(.+)")
-            if v and v:endswith(".ifc") then -- e.g. hello=xxx/hello.ifc
+            if v and (v:endswith(".ifc") or v:endswith(".map")) then -- e.g. hello=xxx/hello.ifc
                 flag = k .. "=" .. _get_relative_unix_path_to_cmake(v, outputdir)
             end
         end
@@ -845,13 +845,13 @@ function _add_target_link_directories(cmakelists, target, outputdir)
 end
 
 -- add target link options
-function _add_target_link_options(cmakelists, target)
+function _add_target_link_options(cmakelists, target, outputdir)
     local ldflags = _get_configs_from_target(target, "ldflags")
     local shflags = _get_configs_from_target(target, "shflags")
     if #ldflags > 0 or #shflags > 0 then
         local flags = {}
         for _, flag in ipairs(table.unique(table.join(ldflags, shflags))) do
-            table.insert(flags, flag)
+            table.insert(flags, _translate_flag(flag, outputdir))
         end
         if #flags > 0 then
             local cmake_minver = _get_cmake_minver()
@@ -1046,7 +1046,7 @@ function _add_target(cmakelists, target, outputdir)
     _add_target_link_directories(cmakelists, target, outputdir)
 
     -- add target link options
-    _add_target_link_options(cmakelists, target)
+    _add_target_link_options(cmakelists, target, outputdir)
 
     -- add target sources
     _add_target_sources(cmakelists, target, outputdir)
