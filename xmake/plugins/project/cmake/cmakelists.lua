@@ -450,8 +450,7 @@ end
 function _add_target_sysinclude_directories(cmakelists, target, outputdir)
     local includedirs = _get_configs_from_target(target, "sysincludedirs")
     if #includedirs > 0 then
-        -- TODO should be `SYSTEM PRIVATE`
-        cmakelists:print("target_include_directories(%s PRIVATE", target:name())
+        cmakelists:print("target_include_directories(%s SYSTEM PRIVATE", target:name())
         for _, includedir in ipairs(includedirs) do
             cmakelists:print("    " .. _get_relative_unix_path(includedir, outputdir))
         end
@@ -459,7 +458,7 @@ function _add_target_sysinclude_directories(cmakelists, target, outputdir)
     end
     local includedirs_interface = target:get("sysincludedirs", {interface = true})
     if includedirs_interface then
-        cmakelists:print("target_include_directories(%s INTERFACE", target:name())
+        cmakelists:print("target_include_directories(%s SYSTEM INTERFACE", target:name())
         for _, headerdir in ipairs(includedirs_interface) do
             cmakelists:print("    " .. _get_relative_unix_path(headerdir, outputdir))
         end
