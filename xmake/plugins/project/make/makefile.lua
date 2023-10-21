@@ -101,10 +101,7 @@ end
 function _get_program_from_target(target, toolkind)
     local program = target:get("toolchain." .. toolkind)
     if not program then
-        local tools = target:get("tools") -- TODO: deprecated
-        if tools then
-            program = tools[toolkind]
-        end
+        program, _ = target:tool(toolkind)
     end
     return program
 end
