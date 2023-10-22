@@ -313,11 +313,13 @@ function nf_linkgroup(self, linkgroup, target)
     local flags = {}
     if not self:is_plat("macosx", "windows", "mingw") then
         local group = target:extraconf("linkgroups", linkgroup, "group")
-        if group then
-            table.join2(flags, "-Wl,--start-group", linkflags, "-Wl,--end-group")
-        end
         local whole = target:extraconf("linkgroups", linkgroup, "whole")
-        if whole then
+        if group and whole then
+            -- https://github.com/xmake-io/xmake/issues/4308
+            table.join2(flags, "-Wl,--whole-archive", "-Wl,--start-group", linkflags, "-Wl,--end-group", "-Wl,--no-whole-archive")
+        elseif group then
+            table.join2(flags, "-Wl,--start-group", linkflags, "-Wl,--end-group")
+        elseif whole then
             table.join2(flags, "-Wl,--whole-archive", linkflags, "-Wl,--no-whole-archive")
         end
         local static = target:extraconf("linkgroups", linkgroup, "static")
