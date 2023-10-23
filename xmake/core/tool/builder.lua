@@ -279,7 +279,9 @@ function builder:_add_flags_from_argument(flags, target, args)
 
     -- add flags (named) from the language
     self:_add_flags_from_language(flags, nil, {
-        target = function (name) return args[name] end,
+        target = function (name)
+            return args[name]
+        end,
         toolchain = function (name)
             local plat, arch
             if target and target.plat then
@@ -296,7 +298,7 @@ end
 function builder:_add_items_from_getter(items, name, opt)
     local values = opt.getter(name)
     if values then
-        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper, target = opt.target})
     end
 end
 
