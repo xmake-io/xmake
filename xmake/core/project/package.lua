@@ -161,23 +161,56 @@ function _instance:components_deps()
     return self:get("__components_deps")
 end
 
--- get other extra information from package/on_fetch
+-- get user extra configuration from package/on_fetch
+-- @see https://github.com/xmake-io/xmake/issues/3106#issuecomment-1330143922
 --
 -- e.g.
 --
 -- @code
 -- package("xxx")
 --     on_fetch(function (package)
---         return {includedirs = "", links = "", extra = {foo = ""}}
+--         return {includedirs = "", links = "", extras = {foo = ""}}
 --     end)
 --
 -- @endcode
-function _instance:extra(name)
-    local extra = self:get("extra")
-    if extra and name then
-        extra = extra[name]
+--
+-- we can also get extra configuration from package/add_xxx
+--
+-- e.g.
+--
+-- @code
+-- package("xxx")
+--     add_linkgroups("foo", {group = true})
+--
+-- target:pkg("xxx"):extraconf("linkgroups", "foo", "group")
+-- @endcode
+--
+-- extras = {
+--     linkgroups = {
+--         z = {
+--             group = true
+--         }
+--     }
+-- }
+--
+function _instance:extraconf(name, item, key)
+    local extraconfs = self:get("extras")
+    if not extraconfs then
+        return
     end
-    return extra
+
+    -- get configuration
+    local extraconf = extraconfs[name]
+
+    -- get configuration value
+    local value = extraconf
+    if item then
+        value = extraconf and extraconf[item] or nil
+        if value and key then
+            value = value[key]
+        end
+    end
+    return value
 end
 
 -- get order dependencies of the given component

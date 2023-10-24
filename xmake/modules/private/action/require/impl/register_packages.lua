@@ -51,7 +51,7 @@ function _register_required_package_libs(instance, required_package, is_deps)
                 fetchinfo.static  = nil
                 fetchinfo.shared  = nil
                 fetchinfo.installdir = nil
-                fetchinfo.extra = nil
+                fetchinfo.extras = nil
                 fetchinfo.components = nil
             end
 

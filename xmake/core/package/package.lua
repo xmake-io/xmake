@@ -925,12 +925,6 @@ function _instance:manifest_save()
                         components.vars[component_name] = components.vars[component_name] or {}
                         components.vars[component_name][name] = component_value
                     end
-                    local component_extra = comp:extraconf(name)
-                    if component_extra then
-                        components.extras = components.extras or {}
-                        components.extras[component_name] = components.extras[component_name] or {}
-                        components.extras[component_name][name] = component_extra
-                    end
                 end
             end
         end

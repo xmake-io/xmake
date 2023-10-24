@@ -245,6 +245,7 @@ function _find_package_from_repo(name, opt)
     -- get version and license
     result.version = manifest.version or path.filename(path.directory(path.directory(manifest_file)))
     result.license = manifest.license
+    result.extras  = manifest.extras
     return result
 end
 
