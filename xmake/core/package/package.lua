@@ -902,6 +902,7 @@ function _instance:manifest_save()
 
     -- save global variables and component variables
     local vars
+    local extras
     local components
     local apis = language.apis()
     for _, apiname in ipairs(table.join(apis.values, apis.paths)) do
@@ -911,6 +912,8 @@ function _instance:manifest_save()
             if value ~= nil then
                 vars = vars or {}
                 vars[name] = value
+                extras = extras or {}
+                extras[name] = self:extraconf(name)
             end
             for _, component_name in ipairs(table.wrap(self:get("components"))) do
                 local comp = self:component(component_name)
@@ -922,11 +925,18 @@ function _instance:manifest_save()
                         components.vars[component_name] = components.vars[component_name] or {}
                         components.vars[component_name][name] = component_value
                     end
+                    local component_extra = comp:extraconf(name)
+                    if component_extra then
+                        components.extras = components.extras or {}
+                        components.extras[component_name] = components.extras[component_name] or {}
+                        components.extras[component_name][name] = component_extra
+                    end
                 end
             end
         end
     end
     manifest.vars = vars
+    manifest.extras = extras
     manifest.components = components
 
     -- save repository
