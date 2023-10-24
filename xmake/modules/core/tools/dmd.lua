@@ -72,7 +72,7 @@ function nf_strip(self, level)
 end
 
 -- make the symbol flag
-function nf_symbol(self, level, target)
+function nf_symbol(self, level)
     local kind = self:kind()
     if language.sourcekinds()[kind] then
         local maps = _g.symbol_maps
@@ -83,7 +83,7 @@ function nf_symbol(self, level, target)
             _g.symbol_maps = maps
         end
         return maps[level .. '_' .. kind] or maps[level]
-    elseif (kind == "dcld" or kind == "dcsh") and target:is_plat("windows") and level == "debug" then
+    elseif (kind == "dcld" or kind == "dcsh") and self:is_plat("windows") and level == "debug" then
         return "-g"
     end
 end

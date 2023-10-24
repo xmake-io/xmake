@@ -53,7 +53,7 @@ function init(self)
 end
 
 -- make the symbol flag
-function nf_symbol(self, level, target)
+function nf_symbol(self, level, opt)
 
     -- debug? generate *.pdb file
     local flags = nil
@@ -62,6 +62,7 @@ function nf_symbol(self, level, target)
         if self:is_plat("windows") then
             local host_flags = nil
             local symbolfile = nil
+            local target = opt.target
             if target and target.symbolfile then
                 symbolfile = target:symbolfile()
             end
@@ -259,12 +260,12 @@ function nf_rpathdir(self, dir)
 end
 
 -- make the c precompiled header flag
-function nf_pcheader(self, pcheaderfile, target)
+function nf_pcheader(self, pcheaderfile)
     return {"-include", pcheaderfile}
 end
 
 -- make the c++ precompiled header flag
-function nf_pcxxheader(self, pcheaderfile, target)
+function nf_pcxxheader(self, pcheaderfile)
     return {"-include", pcheaderfile}
 end
 

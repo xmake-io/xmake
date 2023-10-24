@@ -912,8 +912,11 @@ function _instance:manifest_save()
             if value ~= nil then
                 vars = vars or {}
                 vars[name] = value
-                extras = extras or {}
-                extras[name] = self:extraconf(name)
+                local extra = self:extraconf(name)
+                if extra then
+                    extras = extras or {}
+                    extras[name] = extra
+                end
             end
             for _, component_name in ipairs(table.wrap(self:get("components"))) do
                 local comp = self:component(component_name)

@@ -89,7 +89,7 @@ function nf_symbol(self, level)
 end
 
 -- make the strip flag
-function nf_strip(self, level, target)
+function nf_strip(self, level)
     if self:is_plat("linux", "macosx", "bsd") then
         if level == "debug" or level == "all" then
             return "--passL:-s"
@@ -103,7 +103,7 @@ function nf_includedir(self, dir)
 end
 
 -- make the link flag
-function nf_link(self, lib, target)
+function nf_link(self, lib)
     if self:is_plat("windows") then
         return "--passL:" .. lib .. ".lib"
     else
@@ -112,7 +112,7 @@ function nf_link(self, lib, target)
 end
 
 -- make the linkdir flag
-function nf_linkdir(self, dir, target)
+function nf_linkdir(self, dir)
     if self:is_plat("windows") then
         return {"--passL:-libpath:" .. path.translate(dir)}
     else

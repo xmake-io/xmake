@@ -88,7 +88,7 @@ function init(self)
 end
 
 -- make the symbol flags
-function nf_symbols(self, levels, target)
+function nf_symbols(self, levels, opt)
     local flags = nil
     local values = hashset.from(levels)
     if values:has("debug") then
@@ -103,6 +103,7 @@ function nf_symbols(self, levels, target)
 
         -- generate *.pdb file
         local symbolfile = nil
+        local target = opt.target
         if target and target.symbolfile and not values:has("embed") then
             symbolfile = target:symbolfile()
         end
@@ -296,7 +297,8 @@ function nf_includedir(self, dir)
 end
 
 -- make the force include flag
-function nf_forceinclude(self, headerfile, target)
+function nf_forceinclude(self, headerfile, opt)
+    local target = opt.target
     local sourcekinds = target and target:extraconf("forceincludes", headerfile, "sourcekinds")
     if not sourcekinds or table.contains(table.wrap(sourcekinds), self:kind()) then
         return {"-FI", headerfile}
@@ -377,8 +379,9 @@ function nf_encoding(self, encoding)
 end
 
 -- make the c precompiled header flag
-function nf_pcheader(self, pcheaderfile, target)
+function nf_pcheader(self, pcheaderfile, opt)
     if self:kind() == "cc" then
+        local target = opt.target
         local objectfiles = target:objectfiles()
         if objectfiles then
             table.insert(objectfiles, target:pcoutputfile("c") .. ".obj")
@@ -388,8 +391,9 @@ function nf_pcheader(self, pcheaderfile, target)
 end
 
 -- make the c++ precompiled header flag
-function nf_pcxxheader(self, pcheaderfile, target)
+function nf_pcxxheader(self, pcheaderfile, opt)
     if self:kind() == "cxx" then
+        local target = opt.target
         local objectfiles = target:objectfiles()
         if objectfiles then
             table.insert(objectfiles, target:pcoutputfile("cxx") .. ".obj")

@@ -206,6 +206,9 @@ function _instance:extraconf(name, item, key)
     local value = extraconf
     if item then
         value = extraconf and extraconf[item] or nil
+        if value == nil and extraconf and type(item) == "table" then
+            value = extraconf[table.concat(item, "_")]
+        end
         if value and key then
             value = value[key]
         end

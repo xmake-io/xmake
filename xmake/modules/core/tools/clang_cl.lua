@@ -105,7 +105,8 @@ function nf_optimize(self, level)
 end
 
 -- make the c precompiled header flag
-function nf_pcheader(self, pcheaderfile, target)
+function nf_pcheader(self, pcheaderfile, opt)
+    local target = opt.target
     if self:kind() == "cc" then
         local objectfiles = target:objectfiles()
         if objectfiles then
@@ -119,7 +120,8 @@ function nf_pcheader(self, pcheaderfile, target)
 end
 
 -- make the c++ precompiled header flag
-function nf_pcxxheader(self, pcheaderfile, target)
+function nf_pcxxheader(self, pcheaderfile, opt)
+    local target = opt.target
     if self:kind() == "cxx" then
         local objectfiles = target:objectfiles()
         if objectfiles then

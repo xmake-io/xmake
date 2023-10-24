@@ -55,7 +55,7 @@ function init(self)
 end
 
 -- make the symbol flags
-function nf_symbols(self, levels, target)
+function nf_symbols(self, levels)
     local flags = nil
     local values = hashset.from(levels)
     if values:has("debug") then

@@ -42,8 +42,9 @@ function nf_optimize(self, level)
 end
 
 -- make the symbol flag
-function nf_symbol(self, level, target, mapkind)
-    if mapkind ~= "object" then
+function nf_symbol(self, level, opt)
+    local targetkind = opt.targetkind
+    if targetkind ~= "object" then
         return
     end
     local maps = {

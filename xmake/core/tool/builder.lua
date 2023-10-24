@@ -281,6 +281,14 @@ function builder:_add_flags_from_argument(flags, target, args)
     local extras = args.extras
     self:_add_flags_from_language(flags, nil, {
         target = function (name)
+            -- we need also to get extras from arguments
+            -- @see https://github.com/xmake-io/xmake/issues/4274
+            --
+            -- e.g.
+            -- package/add_linkgroups("xxx", {group = true})
+            -- {linkgroups = , extras = {
+            --     linkgroups = {z = {group = true}}
+            -- }}
             return args[name], extras and extras[name]
         end,
         toolchain = function (name)
@@ -437,7 +445,7 @@ function builder:_add_flags_from_language(flags, target, getters)
         local mapper = item.mapper
         local extras = item.extras
         if item.multival then
-            local results = mapper(self:_tool(), item.values, target, self:_targetkind())
+            local results = mapper(self:_tool(), item.values, {target = target, targetkind = self:_targetkind(), extras = extras})
             for _, flag in ipairs(table.wrap(results)) do
                 if flag and flag ~= "" and (not check or self:has_flags(flag)) then
                     table.insert(flags, flag)
@@ -445,7 +453,7 @@ function builder:_add_flags_from_language(flags, target, getters)
             end
         else
             for _, flagvalue in ipairs(item.values) do
-                local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
+                local flag = mapper(self:_tool(), flagvalue, {target = target, targetkind = self:_targetkind(), extras = extras})
                 if flag and flag ~= "" and (not check or self:has_flags(flag)) then
                     table.insert(flags, flag)
                 end
