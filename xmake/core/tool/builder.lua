@@ -278,9 +278,10 @@ function builder:_add_flags_from_argument(flags, target, args)
     end
 
     -- add flags (named) from the language
+    local extras = args.extras
     self:_add_flags_from_language(flags, nil, {
         target = function (name)
-            return args[name]
+            return args[name], extras and extras[name]
         end,
         toolchain = function (name)
             local plat, arch
@@ -296,9 +297,16 @@ end
 
 -- add items from getter
 function builder:_add_items_from_getter(items, name, opt)
-    local values = opt.getter(name)
+    local values, extras = opt.getter(name)
     if values then
-        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper, target = opt.target})
+        table.insert(items, {
+            name = name,
+            values = table.wrap(values),
+            check = opt.check,
+            multival = opt.multival,
+            mapper = opt.mapper,
+            target = opt.target,
+            extras = extras})
     end
 end
 
@@ -309,7 +317,12 @@ function builder:_add_items_from_config(items, name, opt)
         values = path.splitenv(values)
     end
     if values then
-        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+        table.insert(items, {
+            name = name,
+            values = table.wrap(values),
+            check = opt.check,
+            multival = opt.multival,
+            mapper = opt.mapper})
     end
 end
 
@@ -422,6 +435,7 @@ function builder:_add_flags_from_language(flags, target, getters)
     for _, item in ipairs(items) do
         local check = item.check
         local mapper = item.mapper
+        local extras = item.extras
         if item.multival then
             local results = mapper(self:_tool(), item.values, target, self:_targetkind())
             for _, flag in ipairs(table.wrap(results)) do
