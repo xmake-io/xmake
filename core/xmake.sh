@@ -196,6 +196,9 @@ option_find_tbox() {
         fi
         add_cflags "${cflags}"
         add_ldflags "${ldflags}"
+        if is_plat "linux" && is_arch "armv7"; then
+            add_ldflags "-latomic"
+        fi
     option_end
 }
 
