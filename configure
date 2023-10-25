@@ -641,10 +641,12 @@ is_host() {
 os_arch=`uname -m | tr '[A-Z]' '[a-z]'`
 if test_eq "${os_arch}" "i686"; then
     os_arch="i386"
-elif test_eq "${os_arch}" "aarch64"; then
+elif test_eq "${os_arch}" "aarch64" || test_eq "${os_arch}" "arm64"; then
     os_arch="arm64"
 elif string_contains "${os_arch}" "armv7"; then
     os_arch="armv7"
+elif string_contains "${os_arch}" "arm"; then
+    os_arch="arm"
 fi
 
 # set the default target platform
@@ -668,10 +670,12 @@ elif test_nz "${EMSDK}"; then
 fi
 if test_eq "${_target_arch_default}" "i686"; then
     _target_arch_default="i386"
-elif test_eq "${_target_arch_default}" "aarch64"; then
+elif test_eq "${_target_arch_default}" "aarch64" || test_eq "${_target_arch_default}" "arm64"; then
     _target_arch_default="arm64"
 elif string_contains "${_target_arch_default}" "armv7"; then
     _target_arch_default="armv7"
+elif string_contains "${_target_arch_default}" "arm"; then
+    _target_arch_default="arm"
 fi
 
 # set the default target mode
