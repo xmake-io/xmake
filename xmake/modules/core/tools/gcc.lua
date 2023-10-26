@@ -314,18 +314,10 @@ function nf_linkgroup(self, linkgroup, opt)
         table.insert(linkflags, nf_link(self, lib))
     end
     local flags = {}
-    local target = opt.target
-    local extras = opt.extras or target:extraconf("linkgroups")
-    if extras then
-        if type(linkgroup) == "table" then
-            extras = extras[table.concat(linkgroup, "_")]
-        else
-            extras = extras[linkgroup]
-        end
-    end
-    if extras and not self:is_plat("macosx", "windows", "mingw") then
-        local group = extras.group
-        local whole = extras.whole
+    local extra = opt.extra
+    if extra and not self:is_plat("macosx", "windows", "mingw") then
+        local group = extra.group
+        local whole = extra.whole
         if group and whole then
             -- https://github.com/xmake-io/xmake/issues/4308
             table.join2(flags, "-Wl,--whole-archive", "-Wl,--start-group", linkflags, "-Wl,--end-group", "-Wl,--no-whole-archive")
@@ -334,7 +326,7 @@ function nf_linkgroup(self, linkgroup, opt)
         elseif whole then
             table.join2(flags, "-Wl,--whole-archive", linkflags, "-Wl,--no-whole-archive")
         end
-        local static = extras.static
+        local static = extra.static
         if static then
             table.join2(flags, "-Wl,-Bstatic", linkflags, "-Wl,-Bdynamic")
         end

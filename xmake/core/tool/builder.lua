@@ -281,7 +281,7 @@ function builder:_add_flags_from_argument(flags, target, args)
     local extras = args.extras
     self:_add_flags_from_language(flags, nil, {
         target = function (name)
-            -- we need also to get extras from arguments
+            -- we need also to get extra from arguments
             -- @see https://github.com/xmake-io/xmake/issues/4274
             --
             -- e.g.
@@ -289,7 +289,16 @@ function builder:_add_flags_from_argument(flags, target, args)
             -- {linkgroups = , extras = {
             --     linkgroups = {z = {group = true}}
             -- }}
-            return args[name], extras and extras[name]
+            local values = args[name]
+            local extra = extras and extras[name]
+            if extra then
+                if type(values) == "table" then
+                    extra = extra[table.concat(values, "_")]
+                else
+                    extra = extra[values]
+                end
+            end
+            return values, extra
         end,
         toolchain = function (name)
             local plat, arch
@@ -305,7 +314,7 @@ end
 
 -- add items from getter
 function builder:_add_items_from_getter(items, name, opt)
-    local values, extras = opt.getter(name)
+    local values, extra = opt.getter(name)
     if values then
         table.insert(items, {
             name = name,
@@ -313,7 +322,7 @@ function builder:_add_items_from_getter(items, name, opt)
             check = opt.check,
             multival = opt.multival,
             mapper = opt.mapper,
-            extras = extras})
+            extra = extra})
     end
 end
 
@@ -377,13 +386,13 @@ function builder:_add_items_from_target(items, name, opt)
         if result then
             for idx, values in ipairs(result) do
                 local source = sources[idx]
-                local extras = target:extraconf_from(source, name)
+                local extra = target:extraconf_from(source, name, values)
                 values = table.wrap(values)
                 if values and #values > 0 then
                     table.insert(items, {
                         name = name,
                         values = values,
-                        extras = extras,
+                        extra = extra,
                         check = opt.check,
                         multival = opt.multival,
                         mapper = opt.mapper})
@@ -456,9 +465,9 @@ function builder:_add_flags_from_language(flags, target, getters)
     for _, item in ipairs(items) do
         local check = item.check
         local mapper = item.mapper
-        local extras = item.extras
+        local extra = item.extra
         if item.multival then
-            local results = mapper(self:_tool(), item.values, {target = target, targetkind = self:_targetkind(), extras = extras})
+            local results = mapper(self:_tool(), item.values, {target = target, targetkind = self:_targetkind(), extra = extra})
             for _, flag in ipairs(table.wrap(results)) do
                 if flag and flag ~= "" and (not check or self:has_flags(flag)) then
                     table.insert(flags, flag)
@@ -466,7 +475,7 @@ function builder:_add_flags_from_language(flags, target, getters)
             end
         else
             for _, flagvalue in ipairs(item.values) do
-                local flag = mapper(self:_tool(), flagvalue, {target = target, targetkind = self:_targetkind(), extras = extras})
+                local flag = mapper(self:_tool(), flagvalue, {target = target, targetkind = self:_targetkind(), extra = extra})
                 if flag and flag ~= "" and (not check or self:has_flags(flag)) then
                     table.insert(flags, flag)
                 end
@@ -516,15 +525,8 @@ function builder:_sort_links_of_items(target, items)
                     framework_mapper = item.mapper
                     removed = true
                 elseif name == "linkgroups" then
-                    local extras = item.extras or target:extraconf("linkgroups")
-                    if extras then
-                        if type(value) == "table" then
-                            extras = extras[table.concat(value, "_")]
-                        else
-                            extras = extras[value]
-                        end
-                    end
-                    local key = extras and extras.name or tostring(value)
+                    local extra = item.extra or target:extraconf("linkgroups", value)
+                    local key = extra and extra.name or tostring(value)
                     table.insert(links, "linkgroup::" .. key)
                     linkgroups_map[key] = value
                     linkgroup_mapper = item.mapper
