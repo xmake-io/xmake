@@ -502,8 +502,17 @@ function _init_requireinfo(requireinfo, package, opt)
         if project.policy("package.inherit_external_configs") then
             requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or get_config("vs_runtime")
         end
-        requireinfo.configs.lto = requireinfo.configs.lto or project.policy("build.optimization.lto")
-        requireinfo.configs.asan = requireinfo.configs.asan or project.policy("build.sanitizer.address")
+        local function initconfig(key, default)
+            if requireinfo.configs[key] == nil then
+                requireinfo.configs[key] = default
+            end
+            -- set false key as nil so hashes match
+            if not requireinfo.configs[key] then
+                requireinfo.configs[key] = nil
+            end
+        end
+        initconfig("asan", project.policy("build.sanitizer.address"))
+        initconfig("lto", project.policy("build.optimization.lto"))
     end
     -- but we will ignore some configs for buildhash in the headeronly and host/binary package
     -- @note on_test still need these configs, @see https://github.com/xmake-io/xmake/issues/4124
