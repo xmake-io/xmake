@@ -310,10 +310,15 @@ function _instance:_get_from_deps(name, result_values, result_sources, opt)
                 table.insert(result_values, values)
                 table.insert(result_sources, "dep::" .. dep:name())
             end
-            --[[TODO
-            table.join2(values, dep:get_from_opts(name, opt))
-            table.join2(values, dep:get_from_pkgs(name, opt))
-            ]]
+            local dep_values = {}
+            local dep_sources = {}
+            dep:_get_from_options(name, dep_values, dep_sources, opt)
+            dep:_get_from_packages(name, dep_values, dep_sources, opt)
+            for idx, values in ipairs(dep_values) do
+                local dep_source = dep_sources[idx]
+                table.insert(result_values, values)
+                table.insert(result_sources, "dep::" .. depname .. "/" .. dep_source)
+            end
         end
     end
 end
@@ -396,12 +401,33 @@ function _instance:_get_from_source(name, source, result_values, result_sources,
         if depname == "*" then
             self:_get_from_deps(name, result_values, result_sources, opt)
         else
+            local depsource
+            local splitinfo = depname:split("/", {plain = true})
+            if #splitinfo == 2 then
+                depname = splitinfo[1]
+                depsource = splitinfo[2]
+            end
             local dep = self:dep(depname)
             if dep then
-                local values = dep:get(name, opt)
-                if values ~= nil then
-                    table.insert(result_values, values)
-                    table.insert(result_sources, source)
+                -- e.g.
+                -- dep::foo/option::bar
+                -- dep::foo/package::bar
+                if depsource then
+                    local dep_values = {}
+                    local dep_sources = {}
+                    dep:_get_from_source(name, depsource, dep_values, dep_sources, opt)
+                    for idx, values in ipairs(dep_values) do
+                        local dep_source = dep_sources[idx]
+                        table.insert(result_values, values)
+                        table.insert(result_sources, "dep::" .. depname .. "/" .. dep_source)
+                    end
+                else
+                    -- dep::foo
+                    local values = dep:get(name, opt)
+                    if values ~= nil then
+                        table.insert(result_values, values)
+                        table.insert(result_sources, source)
+                    end
                 end
             end
         end
@@ -587,6 +613,12 @@ end
 -- from the given package:
 --      target:get_from("links", "package::foo")
 --      target:get_from("links", "package::*")
+--
+-- from the given dep/option, dep/package
+--      target:get_from("links", "dep::foo/option::bar")
+--      target:get_from("links", "dep::foo/option::*")
+--      target:get_from("links", "dep::foo/package::bar")
+--      target:get_from("links", "dep::foo/package::*")
 --
 -- from the multiple sources:
 --      target:get_from("links", {"self", "option::foo", "dep::bar", "package::zoo"})
