@@ -353,5 +353,6 @@ function main(name, opt)
     if not result and opt.packagedirs then
         result = _find_package_from_packagedirs(name, opt)
     end
+
     return result
 end
