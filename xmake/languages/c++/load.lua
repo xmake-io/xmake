@@ -72,7 +72,6 @@ function _get_apis()
     ,   "package.add_includedirs" --@note we need not uses paths for package, see https://github.com/xmake-io/xmake/issues/717
     ,   "package.add_sysincludedirs"
     ,   "package.add_frameworkdirs"
-    ,   "package.add_linkgroups"
         -- toolchain.add_xxx
     ,   "toolchain.add_links"
     ,   "toolchain.add_syslinks"
@@ -95,6 +94,9 @@ function _get_apis()
         -- target.add_xxx
         "target.add_linkorders"
     ,   "target.add_linkgroups"
+        -- package.add_xxx
+    ,   "package.add_linkorders"
+    ,   "package.add_linkgroups"
     }
     apis.paths = {
         -- target.set_xxx
