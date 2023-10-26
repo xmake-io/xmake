@@ -725,11 +725,13 @@ function _instance:extraconf_from(source, name, item, key)
             end
         end
     elseif source:startswith("option::") then
+        local optname = source:split("::", {plain = true, limit = 2})[2]
         local opt_ = self:opt(optname, opt)
         if opt_ then
             return opt_:extraconf(name, item, key)
         end
     elseif source:startswith("package::") then
+        local pkgname = source:split("::", {plain = true, limit = 2})[2]
         local pkg = self:pkg(pkgname, opt)
         if pkg then
             return pkg:extraconf(name, item, key)

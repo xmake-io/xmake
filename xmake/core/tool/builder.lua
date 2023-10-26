@@ -377,7 +377,7 @@ function builder:_add_items_from_target(items, name, opt)
         if result then
             for idx, values in ipairs(result) do
                 local source = sources[idx]
-                local extras = target:extraconf_from(source, name, values)
+                local extras = target:extraconf_from(source, name)
                 values = table.wrap(values)
                 if values and #values > 0 then
                     table.insert(items, {
@@ -516,8 +516,15 @@ function builder:_sort_links_of_items(target, items)
                     framework_mapper = item.mapper
                     removed = true
                 elseif name == "linkgroups" then
-                    -- TODO
-                    local key = target:extraconf("linkgroups", value, "name") or tostring(value)
+                    local extras = item.extras or target:extraconf("linkgroups")
+                    if extras then
+                        if type(value) == "table" then
+                            extras = extras[table.concat(value, "_")]
+                        else
+                            extras = extras[value]
+                        end
+                    end
+                    local key = extras and extras.name or tostring(value)
                     table.insert(links, "linkgroup::" .. key)
                     linkgroups_map[key] = value
                     linkgroup_mapper = item.mapper
