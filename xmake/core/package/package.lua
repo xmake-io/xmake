@@ -910,11 +910,6 @@ function _instance:manifest_save()
             local name = apiname:sub(13)
             local values = self:get(name)
             if values ~= nil then
-                -- we need wrap locked value, e.g. linkgroups = {{"m", "pthread"}}
-                values = table.wrap(table.clone(values))
-                for _, value in ipairs(values) do
-                    table.wrap_unlock(value)
-                end
                 vars = vars or {}
                 vars[name] = values
                 local extra = self:extraconf(name)
@@ -928,11 +923,6 @@ function _instance:manifest_save()
                 if comp then
                     local component_values = comp:get(name)
                     if component_values ~= nil then
-                        -- we need wrap locked value, e.g. linkgroups = {{"m", "pthread"}}
-                        component_values = table.wrap(table.clone(component_values))
-                        for _, value in ipairs(component_values) do
-                            table.wrap_unlock(value)
-                        end
                         components = components or {}
                         components.vars = components.vars or {}
                         components.vars[component_name] = components.vars[component_name] or {}

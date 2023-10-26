@@ -377,6 +377,9 @@ function table.unique(array, barrier)
                     table.insert(unique, v)
                 end
             end
+            if array.__wrap_locked__ then
+                table.wrap_lock(unique)
+            end
             array = unique
         end
     end
@@ -401,6 +404,9 @@ function table.reverse_unique(array, barrier)
                     exists[v] = true
                     table.insert(unique, 1, v)
                 end
+            end
+            if array.__wrap_locked__ then
+                table.wrap_lock(unique)
             end
             array = unique
         end
