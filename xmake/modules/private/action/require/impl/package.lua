@@ -665,7 +665,13 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
         requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
         requireinfo_configs.vs_runtime = requireinfo_configs.vs_runtime or parentinfo_configs.vs_runtime
         requireinfo_configs.lto = requireinfo_configs.lto or parentinfo_configs.lto
+        if not requireinfo_configs.lto then
+            requireinfo_configs.lto = nil
+        end
         requireinfo_configs.asan = requireinfo_configs.asan or parentinfo_configs.asan
+        if not requireinfo_configs.asan then
+            requireinfo_configs.asan = nil
+        end
         requireinfo.configs = requireinfo_configs
     end
 end
