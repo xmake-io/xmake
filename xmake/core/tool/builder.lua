@@ -506,6 +506,7 @@ function builder:_sort_links_of_items(target, items)
     -- get all links
     local links = {}
     local linkgroups_map = {}
+    local extras_map = {}
     local link_mapper
     local framework_mapper
     local linkgroup_mapper
@@ -525,10 +526,11 @@ function builder:_sort_links_of_items(target, items)
                     framework_mapper = item.mapper
                     removed = true
                 elseif name == "linkgroups" then
-                    local extra = item.extra or target:extraconf("linkgroups", value)
+                    local extra = item.extra
                     local key = extra and extra.name or tostring(value)
                     table.insert(links, "linkgroup::" .. key)
                     linkgroups_map[key] = value
+                    extras_map[key] = extra
                     linkgroup_mapper = item.mapper
                     removed = true
                 end
@@ -606,8 +608,9 @@ function builder:_sort_links_of_items(target, items)
                 table.insert(items, {name = "frameworks", values = table.wrap(link), check = false, multival = false, mapper = framework_mapper})
             elseif link:startswith("linkgroup::") then
                 local key = link:sub(12)
-                local value = linkgroups_map[key]
-                table.insert(items, {name = "linkgroups", values = table.wrap(value), check = false, multival = false, mapper = linkgroup_mapper})
+                local values = linkgroups_map[key]
+                local extra = extras_map[key]
+                table.insert(items, {name = "linkgroups", values = table.wrap(values), extra = extra, check = false, multival = false, mapper = linkgroup_mapper})
             else
                 table.insert(items, {name = "links", values = table.wrap(link), check = false, multival = false, mapper = link_mapper})
             end
