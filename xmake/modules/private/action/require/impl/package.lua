@@ -655,8 +655,9 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
             if requireinfo_configs.pic == nil then
                 requireinfo_configs.pic = parentinfo_configs.pic
             end
-            if not requireinfo_configs.pic then
-                requireinfo_configs.pic = nil
+            -- remove pic entry if pic is true (to prevent cache mismatch), as it the default behavior
+            if requireinfo_configs.pic == true then
+                requireinfo_configs.pic = nil -- pic is enabled by default
             end
         end
         if parentinfo.plat then
