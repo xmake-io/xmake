@@ -679,6 +679,66 @@ function _instance:extraconf_set(name, item, key, value)
     self._INFO:extraconf_set(name, item, key, value)
 end
 
+-- get the extra configuration from the given source
+--
+-- e.g.
+--
+-- only from the current target:
+--      target:extraconf_from("links")
+--      target:extraconf_from("links", "self")
+--
+-- from the given dep:
+--      target:extraconf_from("links", "dep::foo")
+--
+-- from the given option:
+--      target:extraconf_from("links", "option::foo")
+--
+-- from the given package:
+--      target:extraconf_from("links", "package::foo")
+--
+-- from the given dep/option, dep/package
+--      target:extraconf_from("links", "dep::foo/option::bar")
+--      target:extraconf_from("links", "dep::foo/package::bar")
+--
+function _instance:extraconf_from(source, name, item, key)
+    source = source or "self"
+    if source == "self" then
+        return self:extraconf(name, item, key)
+    elseif source:startswith("dep::") then
+        local depname = source:split("::", {plain = true, limit = 2})[2]
+        local depsource
+        local splitinfo = depname:split("/", {plain = true})
+        if #splitinfo == 2 then
+            depname = splitinfo[1]
+            depsource = splitinfo[2]
+        end
+        local dep = self:dep(depname)
+        if dep then
+            -- e.g.
+            -- dep::foo/option::bar
+            -- dep::foo/package::bar
+            if depsource then
+                return dep:extraconf_from(dep_source, name, item, key)
+            else
+                -- dep::foo
+                return dep:extraconf(name, item, key)
+            end
+        end
+    elseif source:startswith("option::") then
+        local opt_ = self:opt(optname, opt)
+        if opt_ then
+            return opt_:extraconf(name, item, key)
+        end
+    elseif source:startswith("package::") then
+        local pkg = self:pkg(pkgname, opt)
+        if pkg then
+            return pkg:extraconf(name, item, key)
+        end
+    else
+        os.raise("target:extraconf_from(): unknown source %s", source)
+    end
+end
+
 -- get configuration source information of the given api item
 function _instance:sourceinfo(name, item)
     return self._INFO:sourceinfo(name, item)
