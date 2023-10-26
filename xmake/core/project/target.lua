@@ -297,6 +297,72 @@ function _instance:_is_loaded()
     return self._LOADED
 end
 
+-- get values from the given source
+function _instance:_get_from_source(name, source, result_values, result_sources, opt)
+    if source == "self" then
+        local value = self:get(name, opt)
+        if value ~= nil then
+            table.insert(result_values, value)
+            table.insert(result_sources, "self")
+        end
+    elseif source:startswith("dep::") then
+        local depname = source:split("::")[2]
+        if depname == "*" then
+            for _, dep in ipairs(target:orderdeps()) do
+                self:_get_from_source(name, "dep::" .. dep:name(), result_values, result_sources, opt)
+            end
+        else
+            local dep = target:dep(depname)
+            if dep then
+                local value = dep:get(name, opt)
+                if value ~= nil then
+                    table.insert(result_values, value)
+                    table.insert(result_sources, source)
+                end
+            end
+        end
+    elseif source:startswith("option::") then
+        local optname = source:split("::")[2]
+        if optname == "*" then
+            for _, opt in ipairs(target:orderopts()) do
+                self:_get_from_source(name, "option::" .. opt:name(), result_values, result_sources, opt)
+            end
+        else
+            local opt = target:opt(optname)
+            if opt then
+                local value = opt:get(name, opt)
+                if value ~= nil then
+                    table.insert(result_values, value)
+                    table.insert(result_sources, source)
+                end
+            end
+        end
+    elseif source:startswith("package::") then
+        local pkgname = source:split("::")[2]
+        if pkgname == "*" then
+            for _, pkg in ipairs(target:orderpkgs()) do
+                self:_get_from_source(name, "package::" .. pkg:name(), result_values, result_sources, opt)
+            end
+        else
+            local pkg = target:pkg(pkgname)
+            if pkg then
+                local value = pkg:get(name, opt)
+                if value ~= nil then
+                    table.insert(result_values, value)
+                    table.insert(result_sources, source)
+                end
+            end
+        end
+    elseif source == "*" then
+        -- self
+        -- opts
+        -- pkgs
+        -- deps, interface = true
+    else
+        os.raise("target:get_from(): unknown source %s", source)
+    end
+end
+
 -- clone target, @note we can just call it in after_load()
 function _instance:clone()
     if not self:_is_loaded() then
@@ -452,6 +518,52 @@ function _instance:get_from_pkgs(name, opt)
         end
     end
     return values
+end
+
+-- get values from the given sources
+--
+-- e.g.
+--
+-- only from the current target:
+--      target:get_from("links")
+--      target:get_from("links", "self")
+--
+-- from the given dep:
+--      target:get_from("links", "dep::foo")
+--      target:get_from("links", "dep::foo", {interface = true})
+--      target:get_from("links", "dep::*")
+--
+-- from the given option:
+--      target:get_from("links", "option::foo")
+--      target:get_from("links", "option::*")
+--
+-- from the given package:
+--      target:get_from("links", "package::foo")
+--      target:get_from("links", "package::*")
+--
+-- from the multiple sources:
+--      target:get_from("links", {"self", "option::foo", "dep::bar", "package::zoo"})
+--      target:get_from("links", {"self", "option::*", "dep::*", "package::*"})
+--
+-- from all:
+--      target:get_from("links", "*")
+--
+-- return:
+--      local values, sources = target:get_from("...")
+--      for idx, value in ipairs(values) do
+--          local source = sources[idx]
+--      end
+--
+function _instance:get_from(name, sources, opt)
+    local result_values = {}
+    local result_sources = {}
+    sources = sources or "self"
+    for _, source in ipairs(table.wrap(sources)) do
+        self:_get_from_source(name, source, result_values, result_sources, opt)
+    end
+    if #result_values > 0 then
+        return result_values, result_sources
+    end
 end
 
 -- set the value to the target info
