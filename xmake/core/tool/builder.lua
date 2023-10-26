@@ -125,6 +125,19 @@ function builder:_flagkinds()
     return self._FLAGKINDS
 end
 
+-- get the extra configuration from value
+function builder:_extraconf(extras, value)
+    local extra = extras
+    if extra then
+        if type(value) == "table" then
+            extra = extra[table.concat(value, "_")]
+        else
+            extra = extra[value]
+        end
+    end
+    return extra
+end
+
 -- inherit flags (only for public/interface) from target deps
 --
 -- e.g.
@@ -278,7 +291,6 @@ function builder:_add_flags_from_argument(flags, target, args)
     end
 
     -- add flags (named) from the language
-    local extras = args.extras
     self:_add_flags_from_language(flags, nil, {
         target = function (name)
             -- we need also to get extra from arguments
@@ -290,15 +302,8 @@ function builder:_add_flags_from_argument(flags, target, args)
             --     linkgroups = {z = {group = true}}
             -- }}
             local values = args[name]
-            local extra = extras and extras[name]
-            if extra then
-                if type(values) == "table" then
-                    extra = extra[table.concat(values, "_")]
-                else
-                    extra = extra[values]
-                end
-            end
-            return values, extra
+            local extras = args.extras and args.extras[name]
+            return values, extras
         end,
         toolchain = function (name)
             local plat, arch
@@ -314,7 +319,7 @@ end
 
 -- add items from getter
 function builder:_add_items_from_getter(items, name, opt)
-    local values, extra = opt.getter(name)
+    local values, extras = opt.getter(name)
     if values then
         table.insert(items, {
             name = name,
@@ -322,7 +327,7 @@ function builder:_add_items_from_getter(items, name, opt)
             check = opt.check,
             multival = opt.multival,
             mapper = opt.mapper,
-            extra = extra})
+            extras = extras})
     end
 end
 
@@ -386,13 +391,13 @@ function builder:_add_items_from_target(items, name, opt)
         if result then
             for idx, values in ipairs(result) do
                 local source = sources[idx]
-                local extra = target:extraconf_from(source, name, values)
+                local extras = target:extraconf_from(source, name)
                 values = table.wrap(values)
                 if values and #values > 0 then
                     table.insert(items, {
                         name = name,
                         values = values,
-                        extra = extra,
+                        extras = extras,
                         check = opt.check,
                         multival = opt.multival,
                         mapper = opt.mapper})
@@ -465,8 +470,9 @@ function builder:_add_flags_from_language(flags, target, getters)
     for _, item in ipairs(items) do
         local check = item.check
         local mapper = item.mapper
-        local extra = item.extra
+        local extras = item.extras
         if item.multival then
+            local extra = self:_extraconf(extras, item.values)
             local results = mapper(self:_tool(), item.values, {target = target, targetkind = self:_targetkind(), extra = extra})
             for _, flag in ipairs(table.wrap(results)) do
                 if flag and flag ~= "" and (not check or self:has_flags(flag)) then
@@ -475,6 +481,7 @@ function builder:_add_flags_from_language(flags, target, getters)
             end
         else
             for _, flagvalue in ipairs(item.values) do
+                local extra = self:_extraconf(extras, flagvalue)
                 local flag = mapper(self:_tool(), flagvalue, {target = target, targetkind = self:_targetkind(), extra = extra})
                 if flag and flag ~= "" and (not check or self:has_flags(flag)) then
                     table.insert(flags, flag)
@@ -526,11 +533,12 @@ function builder:_sort_links_of_items(target, items)
                     framework_mapper = item.mapper
                     removed = true
                 elseif name == "linkgroups" then
-                    local extra = item.extra
+                    local extras = item.extras
+                    local extra = self:_extraconf(extras, value)
                     local key = extra and extra.name or tostring(value)
                     table.insert(links, "linkgroup::" .. key)
                     linkgroups_map[key] = value
-                    extras_map[key] = extra
+                    extras_map[key] = extras
                     linkgroup_mapper = item.mapper
                     removed = true
                 end
@@ -609,8 +617,8 @@ function builder:_sort_links_of_items(target, items)
             elseif link:startswith("linkgroup::") then
                 local key = link:sub(12)
                 local values = linkgroups_map[key]
-                local extra = extras_map[key]
-                table.insert(items, {name = "linkgroups", values = table.wrap(values), extra = extra, check = false, multival = false, mapper = linkgroup_mapper})
+                local extras = extras_map[key]
+                table.insert(items, {name = "linkgroups", values = table.wrap(values), extras = extras, check = false, multival = false, mapper = linkgroup_mapper})
             else
                 table.insert(items, {name = "links", values = table.wrap(link), check = false, multival = false, mapper = link_mapper})
             end

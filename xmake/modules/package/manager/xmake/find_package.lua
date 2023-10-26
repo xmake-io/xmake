@@ -42,6 +42,11 @@ function _deduplicate_values(values)
     end
 end
 
+-- sort links
+function _sort_links(result, opt)
+    print(result)
+end
+
 -- find package from the repository (maybe only include and no links)
 function _find_package_from_repo(name, opt)
 
@@ -228,6 +233,11 @@ function _find_package_from_repo(name, opt)
                 end
             end
         end
+    end
+
+    -- sort links
+    if opt.linkorders or result.linkgroups then
+        _sort_links(result, opt)
     end
 
     -- deduplicate result

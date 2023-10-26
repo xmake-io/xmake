@@ -349,6 +349,7 @@ function table.wrap_lock(value)
     if type(value) == "table" then
         value.__wrap_locked__ = true
     end
+    return value
 end
 
 -- unlock table value to unwrap
@@ -356,6 +357,7 @@ function table.wrap_unlock(value)
     if type(value) == "table" then
         value.__wrap_locked__ = nil
     end
+    return value
 end
 
 -- remove repeat from the given array
@@ -431,7 +433,15 @@ end
 function table.orderkeys(tbl, callback)
     local callback = type(callback) == "function" and callback or nil
     local keys = table.keys(tbl)
-    table.sort(keys, callback)
+    if callback then
+        table.sort(keys, callback)
+    else
+        local ok = pcall(table.sort, keys)
+        if not ok then
+            -- maybe sort strings and numbers, {1, 2, "a"}
+            table.sort(keys, function (a, b) return tostring(a) < tostring(b) end)
+        end
+    end
     return keys
 end
 
