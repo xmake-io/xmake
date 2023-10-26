@@ -313,7 +313,6 @@ function builder:_add_items_from_getter(items, name, opt)
             check = opt.check,
             multival = opt.multival,
             mapper = opt.mapper,
-            target = opt.target,
             extras = extras})
     end
 end
@@ -344,7 +343,12 @@ function builder:_add_items_from_toolchain(items, name, opt)
         values = platform.toolconfig(name)
     end
     if values then
-        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+        table.insert(items, {
+            name = name,
+            values = table.wrap(values),
+            check = opt.check,
+            multival = opt.multival,
+            mapper = opt.mapper})
     end
 end
 
@@ -356,27 +360,36 @@ function builder:_add_items_from_option(items, name, opt)
         values = target:get(name)
     end
     if values then
-        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+        table.insert(items, {
+            name = name,
+            values = table.wrap(values),
+            check = opt.check,
+            multival = opt.multival,
+            mapper = opt.mapper})
     end
 end
 
 -- add items from target
 function builder:_add_items_from_target(items, name, opt)
-    local values = {}
     local target = opt.target
     if target then
-        -- get flagvalues of target with given flagname
-        table.join2(values, target:get(name))
-
-        -- get flagvalues of the attached options and packages
-        table.join2(values, target:get_from_opts(name))
-        table.join2(values, target:get_from_pkgs(name))
-
-        -- get flagvalues (public or interface) of all dependent targets (contain packages/options)
-        table.join2(values, target:get_from_deps(name, {interface = true}))
-    end
-    if values and #values > 0 then
-        table.insert(items, {name = name, values = table.wrap(values), check = opt.check, multival = opt.multival, mapper = opt.mapper})
+        local result, sources = target:get_from(name, "*")
+        if result then
+            for idx, values in ipairs(result) do
+                local source = sources[idx]
+                local extras = target:extraconf_from(source, name, values)
+                values = table.wrap(values)
+                if values and #values > 0 then
+                    table.insert(items, {
+                        name = name,
+                        values = values,
+                        extras = extras,
+                        check = opt.check,
+                        multival = opt.multival,
+                        mapper = opt.mapper})
+                end
+            end
+        end
     end
 end
 
@@ -503,6 +516,7 @@ function builder:_sort_links_of_items(target, items)
                     framework_mapper = item.mapper
                     removed = true
                 elseif name == "linkgroups" then
+                    -- TODO
                     local key = target:extraconf("linkgroups", value, "name") or tostring(value)
                     table.insert(links, "linkgroup::" .. key)
                     linkgroups_map[key] = value
