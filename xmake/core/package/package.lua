@@ -1736,7 +1736,6 @@ function _instance:find_package(name, opt)
                               mode = self:mode(),
                               plat = self:plat(),
                               arch = self:arch(),
-                              linkorders = self:get("linkorders"),
                               configs = table.join(self:configs(), opt.configs),
                               components = self:components_orderlist(),
                               components_extsources = opt.components_extsources,
