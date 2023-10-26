@@ -317,7 +317,7 @@ function _instance:_get_from_deps(name, result_values, result_sources, opt)
             for idx, values in ipairs(dep_values) do
                 local dep_source = dep_sources[idx]
                 table.insert(result_values, values)
-                table.insert(result_sources, "dep::" .. depname .. "/" .. dep_source)
+                table.insert(result_sources, "dep::" .. dep:name() .. "/" .. dep_source)
             end
         end
     end
@@ -397,7 +397,7 @@ function _instance:_get_from_source(name, source, result_values, result_sources,
             table.insert(result_sources, "self")
         end
     elseif source:startswith("dep::") then
-        local depname = source:split("::")[2]
+        local depname = source:split("::", {plain = true, limit = 2})[2]
         if depname == "*" then
             self:_get_from_deps(name, result_values, result_sources, opt)
         else
@@ -432,7 +432,7 @@ function _instance:_get_from_source(name, source, result_values, result_sources,
             end
         end
     elseif source:startswith("option::") then
-        local optname = source:split("::")[2]
+        local optname = source:split("::", {plain = true, limit = 2})[2]
         if optname == "*" then
             self:_get_from_options(name, result_values, result_sources, opt)
         else
@@ -446,7 +446,7 @@ function _instance:_get_from_source(name, source, result_values, result_sources,
             end
         end
     elseif source:startswith("package::") then
-        local pkgname = source:split("::")[2]
+        local pkgname = source:split("::", {plain = true, limit = 2})[2]
         if pkgname == "*" then
             self:_get_from_packages(name, result_values, result_sources, opt)
         else
