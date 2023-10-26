@@ -324,13 +324,13 @@ function _instance:_get_from_source(name, source, result_values, result_sources,
     elseif source:startswith("option::") then
         local optname = source:split("::")[2]
         if optname == "*" then
-            for _, opt in ipairs(target:orderopts()) do
-                self:_get_from_source(name, "option::" .. opt:name(), result_values, result_sources, opt)
+            for _, opt_ in ipairs(target:orderopts(opt)) do
+                self:_get_from_source(name, "option::" .. opt_:name(), result_values, result_sources, opt)
             end
         else
-            local opt = target:opt(optname)
-            if opt then
-                local value = opt:get(name, opt)
+            local opt_ = target:opt(optname, opt)
+            if opt_ then
+                local value = opt_:get(name)
                 if value ~= nil then
                     table.insert(result_values, value)
                     table.insert(result_sources, source)
@@ -340,13 +340,13 @@ function _instance:_get_from_source(name, source, result_values, result_sources,
     elseif source:startswith("package::") then
         local pkgname = source:split("::")[2]
         if pkgname == "*" then
-            for _, pkg in ipairs(target:orderpkgs()) do
+            for _, pkg in ipairs(target:orderpkgs(opt)) do
                 self:_get_from_source(name, "package::" .. pkg:name(), result_values, result_sources, opt)
             end
         else
-            local pkg = target:pkg(pkgname)
+            local pkg = target:pkg(pkgname, opt)
             if pkg then
-                local value = pkg:get(name, opt)
+                local value = pkg:get(name)
                 if value ~= nil then
                     table.insert(result_values, value)
                     table.insert(result_sources, source)
@@ -996,26 +996,28 @@ function _instance:is_rebuilt()
 end
 
 -- get the enabled option
-function _instance:opt(name)
-    return self:opts()[name]
+function _instance:opt(name, opt)
+    return self:opts(opt)[name]
 end
 
 -- get the enabled options
-function _instance:opts()
-
-    -- attempt to get it from cache first
-    if self._OPTS_ENABLED then
-        return self._OPTS_ENABLED
+function _instance:opts(opt)
+    opt = opt or {}
+    local cachekey = "opts"
+    if opt.public then
+        cachekey = cachekey .. "_public"
+    elseif opt.interface then
+        cachekey = cachekey .. "_interface"
     end
-
-    -- load options if be enabled
-    self._OPTS_ENABLED = {}
-    for _, opt in ipairs(self:orderopts()) do
-        self._OPTS_ENABLED[opt:name()] = opt
+    local opts = self:_memcache():get(cachekey)
+    if not opts then
+        opts = {}
+        for _, opt_ in ipairs(self:orderopts(opt)) do
+            opts[opt_:name()] = opt_
+        end
+        self:_memcache():set(cachekey, opts)
     end
-
-    -- get it
-    return self._OPTS_ENABLED
+    return opts
 end
 
 -- get the enabled ordered options with {public|interface = ...}
@@ -1029,25 +1031,12 @@ function _instance:orderopts(opt)
     end
     local orderopts = self:_memcache():get(cachekey)
     if not orderopts then
-
-        -- load options if be enabled
         orderopts = {}
         for _, name in ipairs(table.wrap(self:get("options", opt))) do
             local opt_ = nil
             if config.get(name) then opt_ = option.load(name) end
             if opt_ then
                 table.insert(orderopts, opt_)
-            end
-        end
-
-        -- load options from packages if no require info, be compatible with the option package in (*.pkg)
-        for _, name in ipairs(table.wrap(self:get("packages", opt))) do
-            if not project_package.load(name) then
-                local opt_ = nil
-                if config.get(name) then opt_ = option.load(name) end
-                if opt_ then
-                    table.insert(orderopts, opt_)
-                end
             end
         end
         self:_memcache():set(cachekey, orderopts)
