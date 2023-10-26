@@ -299,6 +299,23 @@ end
 
 -- get values from target deps with {interface|public = ...}
 function _instance:_get_from_deps(name, result_values, result_sources, opt)
+    local orderdeps = self:orderdeps()
+    local total = #orderdeps
+    for idx, _ in ipairs(orderdeps) do
+        local dep = orderdeps[total + 1 - idx]
+        local depinherit = self:extraconf("deps", dep:name(), "inherit")
+        if depinherit == nil or depinherit then
+            local values = dep:get(name, opt)
+            if values ~= nil then
+                table.insert(result_values, values)
+                table.insert(result_sources, "dep::" .. dep:name())
+            end
+            --[[TODO
+            table.join2(values, dep:get_from_opts(name, opt))
+            table.join2(values, dep:get_from_pkgs(name, opt))
+            ]]
+        end
+    end
 end
 
 -- get values from target options with {interface|public = ...}
@@ -516,19 +533,14 @@ end
 
 -- deprecated: get values from target dependencies
 function _instance:get_from_deps(name, opt)
-    local values = {}
-    local orderdeps = self:orderdeps()
-    local total = #orderdeps
-    for idx, _ in ipairs(orderdeps) do
-        local dep = orderdeps[total + 1 - idx]
-        local depinherit = self:extraconf("deps", dep:name(), "inherit")
-        if depinherit == nil or depinherit then
-            table.join2(values, dep:get(name, opt))
-            table.join2(values, dep:get_from_opts(name, opt))
-            table.join2(values, dep:get_from_pkgs(name, opt))
+    local result = {}
+    local values = self:get_from(name, "dep::*", opt)
+    if values then
+        for _, v in ipairs(values) do
+            table.join2(result, v)
         end
     end
-    return values
+    return result
 end
 
 -- deprecated: get values from target options with {interface|public = ...}
