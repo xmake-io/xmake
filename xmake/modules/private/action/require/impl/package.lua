@@ -308,11 +308,22 @@ function _sort_librarydeps(package, opt)
     return orderdeps
 end
 
+-- get builtin configuration default values
+function _get_default_config_value_of(name)
+    local defaults = {
+        debug = false,
+        shared = false,
+        pic = true,
+    }
+    return defaults[name]
+end
+
 -- add some builtin configurations to package
 function _add_package_configurations(package)
     -- we can define configs to override it and it's default value in package()
     if package:extraconf("configs", "debug", "default") == nil then
-        package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
+        local default = _get_default_config_value_of("debug")
+        package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = default, type = "boolean"})
     end
     if package:extraconf("configs", "shared", "default") == nil then
         -- we always use static library if it's for wasm platform
@@ -320,10 +331,12 @@ function _add_package_configurations(package)
         if package:is_plat("wasm") then
             readonly = true
         end
-        package:add("configs", "shared", {builtin = true, description = "Build shared library.", default = false, readonly = readonly, type = "boolean"})
+        local default = _get_default_config_value_of("shared")
+        package:add("configs", "shared", {builtin = true, description = "Build shared library.", default = default, readonly = readonly, type = "boolean"})
     end
     if package:extraconf("configs", "pic", "default") == nil then
-        package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
+        local default = _get_default_config_value_of("pic")
+        package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = default, type = "boolean"})
     end
     if package:extraconf("configs", "lto", "default") == nil then
         package:add("configs", "lto", {builtin = true, description = "Enable the link-time build optimization.", type = "boolean"})
@@ -502,17 +515,12 @@ function _init_requireinfo(requireinfo, package, opt)
         if project.policy("package.inherit_external_configs") then
             requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or get_config("vs_runtime")
         end
-        local function initconfig(key, default)
-            if requireinfo.configs[key] == nil then
-                requireinfo.configs[key] = default
-            end
-            -- set false key as nil so hashes match
-            if not requireinfo.configs[key] then
-                requireinfo.configs[key] = nil
-            end
+        if requireinfo.configs.lto == nil then
+            requireinfo.configs.lto = project.policy("build.optimization.lto")
         end
-        initconfig("asan", project.policy("build.sanitizer.address"))
-        initconfig("lto", project.policy("build.optimization.lto"))
+        if requireinfo.configs.asan == nil then
+            requireinfo.configs.asan = project.policy("build.sanitizer.address")
+        end
     end
     -- but we will ignore some configs for buildhash in the headeronly and host/binary package
     -- @note on_test still need these configs, @see https://github.com/xmake-io/xmake/issues/4124
@@ -544,6 +552,14 @@ function _finish_requireinfo(requireinfo, package)
             wprint("configs.%s is readonly in package(%s), it's always %s", name, package:name(), default)
             -- package:config() will use default value after loading package
             requireinfo.configs[name] = nil
+        end
+    end
+    -- sync default value to prevent cache mismatch (buildhash)
+    -- @see https://github.com/xmake-io/xmake/pull/4324
+    for k, v in pairs(requireinfo.configs) do
+        local default = _get_default_config_value_of(k)
+        if v == default then
+            requireinfo.configs[k] = nil
         end
     end
 end
@@ -655,10 +671,6 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
             if requireinfo_configs.pic == nil then
                 requireinfo_configs.pic = parentinfo_configs.pic
             end
-            -- remove pic entry if pic is true (to prevent cache mismatch), as it the default behavior
-            if requireinfo_configs.pic == true then
-                requireinfo_configs.pic = nil -- pic is enabled by default
-            end
         end
         if parentinfo.plat then
             requireinfo.plat = parentinfo.plat
@@ -669,13 +681,7 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
         requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
         requireinfo_configs.vs_runtime = requireinfo_configs.vs_runtime or parentinfo_configs.vs_runtime
         requireinfo_configs.lto = requireinfo_configs.lto or parentinfo_configs.lto
-        if not requireinfo_configs.lto then
-            requireinfo_configs.lto = nil
-        end
         requireinfo_configs.asan = requireinfo_configs.asan or parentinfo_configs.asan
-        if not requireinfo_configs.asan then
-            requireinfo_configs.asan = nil
-        end
         requireinfo.configs = requireinfo_configs
     end
 end
