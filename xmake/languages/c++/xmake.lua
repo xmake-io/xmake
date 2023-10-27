@@ -74,8 +74,8 @@ language("c++")
         ,   "toolchain.rpathdirs"
         ,   "toolchain.frameworkdirs"
         ,   "config.links"
+        ,   "target.linkgroups" -- we must move it before target.links, because we need sort correct order for package and its deps
         ,   "target.links"
-        ,   "target.linkgroups"
         ,   "toolchain.links"
         ,   "config.frameworks"
         ,   "target.frameworks"
