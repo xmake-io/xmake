@@ -599,12 +599,24 @@ function builder:_sort_links_of_items(items, opt)
         end
         -- we need remove cycle in original links
         -- e.g.
+        --
+        -- case1:
         -- original_deps: a -> b -> c -> d -> e
         -- new deps: e -> b
-        -- graph: a -> b -> c -> d    e  (remove d -> e)
-        --            /\              |
-        --             |              |
+        -- graph: a -> b -> c -> d    e  (remove d -> e, add d -> nil)
+        --            /|\             |
         --              --------------
+        --
+        -- case2:
+        -- original_deps: a -> b -> c -> d -> e
+        -- new deps: b -> a
+        --
+        --         ---------
+        --        |        \|/
+        -- graph: a    b -> c -> d -> e  (remove a -> b, add a -> c)
+        --       /|\   |
+        --         ----
+        --
         local function remove_cycle_in_original_deps(f, t)
             local k
             local v = t
@@ -616,7 +628,11 @@ function builder:_sort_links_of_items(items, opt)
                 end
             end
             if v == f and k ~= nil then
-                original_deps[k] = nil
+                -- break the original from node, link to next node
+                -- e.g.
+                -- case1: d -x-> e, d -> nil, k: d, f: e
+                -- case2: a -x-> b, a -> c, k: a, f: b
+                original_deps[k] = original_deps[f]
             end
         end
         local links_set = hashset.from(links)
