@@ -314,6 +314,8 @@ function _get_default_config_value_of(name)
         debug = false,
         shared = false,
         pic = true,
+        lto = false,
+        asan = false
     }
     return defaults[name]
 end
