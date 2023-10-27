@@ -94,6 +94,9 @@ function _get_apis()
         -- target.add_xxx
         "target.add_linkorders"
     ,   "target.add_linkgroups"
+        -- package.add_xxx
+    ,   "package.add_linkorders"
+    ,   "package.add_linkgroups"
     }
     apis.paths = {
         -- target.set_xxx

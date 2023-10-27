@@ -297,6 +297,178 @@ function _instance:_is_loaded()
     return self._LOADED
 end
 
+-- get values from target deps with {interface|public = ...}
+function _instance:_get_from_deps(name, result_values, result_sources, opt)
+    local orderdeps = self:orderdeps()
+    local total = #orderdeps
+    for idx, _ in ipairs(orderdeps) do
+        local dep = orderdeps[total + 1 - idx]
+        local depinherit = self:extraconf("deps", dep:name(), "inherit")
+        if depinherit == nil or depinherit then
+            local values = dep:get(name, opt)
+            if values ~= nil then
+                table.insert(result_values, values)
+                table.insert(result_sources, "dep::" .. dep:name())
+            end
+            local dep_values = {}
+            local dep_sources = {}
+            dep:_get_from_options(name, dep_values, dep_sources, opt)
+            dep:_get_from_packages(name, dep_values, dep_sources, opt)
+            for idx, values in ipairs(dep_values) do
+                local dep_source = dep_sources[idx]
+                table.insert(result_values, values)
+                table.insert(result_sources, "dep::" .. dep:name() .. "/" .. dep_source)
+            end
+        end
+    end
+end
+
+-- get values from target options with {interface|public = ...}
+function _instance:_get_from_options(name, result_values, result_sources, opt)
+    for _, opt_ in ipairs(self:orderopts(opt)) do
+        local values = opt_:get(name)
+        if values ~= nil then
+            table.insert(result_values, values)
+            table.insert(result_sources, "option::" .. opt_:name())
+        end
+    end
+end
+
+-- get values from target packages with {interface|public = ...}
+function _instance:_get_from_packages(name, result_values, result_sources, opt)
+    for _, pkg in ipairs(self:orderpkgs(opt)) do
+        local configinfo = self:pkgconfig(pkg:name())
+        -- get values from package components
+        -- e.g. `add_packages("sfml", {components = {"graphics", "window"}})`
+        local selected_components = configinfo and configinfo.components or pkg:components_default()
+        if selected_components and pkg:components() then
+            local components_enabled = hashset.new()
+            for _, comp in ipairs(table.wrap(selected_components)) do
+                components_enabled:insert(comp)
+                for _, dep in ipairs(table.wrap(pkg:component_orderdeps(comp))) do
+                    components_enabled:insert(dep)
+                end
+            end
+            components_enabled:insert("__base")
+            -- if we can't find the values from the component, we need to fall back to __base to find them.
+            -- it contains some common values of all components
+            local values = {}
+            local components = table.wrap(pkg:components())
+            for _, component_name in ipairs(table.join(pkg:components_orderlist(), "__base")) do
+                if components_enabled:has(component_name) then
+                    local info = components[component_name]
+                    if info then
+                        table.join2(values, info[name])
+                    else
+                        local components_str = table.concat(table.wrap(configinfo.components), ", ")
+                        utils.warning("unknown component(%s) in add_packages(%s, {components = {%s}})", component_name, pkg:name(), components_str)
+                    end
+                end
+            end
+            if #values > 0 then
+                table.insert(result_values, values)
+                table.insert(result_sources, "package::" .. pkg:name())
+            end
+        -- get values instead of the builtin configs if exists extra package config
+        -- e.g. `add_packages("xxx", {links = "xxx"})`
+        elseif configinfo and configinfo[name] then
+             local values = configinfo[name]
+             if values ~= nil then
+                table.insert(result_values, values)
+                table.insert(result_sources, "package::" .. pkg:name())
+            end
+        else
+            -- get values from the builtin package configs
+            local values = pkg:get(name)
+            if values ~= nil then
+                table.insert(result_values, values)
+                table.insert(result_sources, "package::" .. pkg:name())
+            end
+        end
+    end
+end
+
+-- get values from the given source
+function _instance:_get_from_source(name, source, result_values, result_sources, opt)
+    if source == "self" then
+        local values = self:get(name, opt)
+        if values ~= nil then
+            table.insert(result_values, values)
+            table.insert(result_sources, "self")
+        end
+    elseif source:startswith("dep::") then
+        local depname = source:split("::", {plain = true, limit = 2})[2]
+        if depname == "*" then
+            self:_get_from_deps(name, result_values, result_sources, opt)
+        else
+            local depsource
+            local splitinfo = depname:split("/", {plain = true})
+            if #splitinfo == 2 then
+                depname = splitinfo[1]
+                depsource = splitinfo[2]
+            end
+            local dep = self:dep(depname)
+            if dep then
+                -- e.g.
+                -- dep::foo/option::bar
+                -- dep::foo/package::bar
+                if depsource then
+                    local dep_values = {}
+                    local dep_sources = {}
+                    dep:_get_from_source(name, depsource, dep_values, dep_sources, opt)
+                    for idx, values in ipairs(dep_values) do
+                        local dep_source = dep_sources[idx]
+                        table.insert(result_values, values)
+                        table.insert(result_sources, "dep::" .. depname .. "/" .. dep_source)
+                    end
+                else
+                    -- dep::foo
+                    local values = dep:get(name, opt)
+                    if values ~= nil then
+                        table.insert(result_values, values)
+                        table.insert(result_sources, source)
+                    end
+                end
+            end
+        end
+    elseif source:startswith("option::") then
+        local optname = source:split("::", {plain = true, limit = 2})[2]
+        if optname == "*" then
+            self:_get_from_options(name, result_values, result_sources, opt)
+        else
+            local opt_ = self:opt(optname, opt)
+            if opt_ then
+                local values = opt_:get(name)
+                if values ~= nil then
+                    table.insert(result_values, values)
+                    table.insert(result_sources, source)
+                end
+            end
+        end
+    elseif source:startswith("package::") then
+        local pkgname = source:split("::", {plain = true, limit = 2})[2]
+        if pkgname == "*" then
+            self:_get_from_packages(name, result_values, result_sources, opt)
+        else
+            local pkg = self:pkg(pkgname, opt)
+            if pkg then
+                local values = pkg:get(name)
+                if values ~= nil then
+                    table.insert(result_values, values)
+                    table.insert(result_sources, source)
+                end
+            end
+        end
+    elseif source == "*" then
+        self:_get_from_source(name, "self", result_values, result_sources, opt)
+        self:_get_from_source(name, "option::*", result_values, result_sources, opt)
+        self:_get_from_source(name, "package::*", result_values, result_sources, opt)
+        self:_get_from_source(name, "dep::*", result_values, result_sources, {interface = true})
+    else
+        os.raise("target:get_from(): unknown source %s", source)
+    end
+end
+
 -- clone target, @note we can just call it in after_load()
 function _instance:clone()
     if not self:_is_loaded() then
@@ -385,73 +557,92 @@ function _instance:get(name, opt)
     end
 end
 
--- get values from target dependencies
+-- deprecated: get values from target dependencies
 function _instance:get_from_deps(name, opt)
-    local values = {}
-    local orderdeps = self:orderdeps()
-    local total = #orderdeps
-    for idx, _ in ipairs(orderdeps) do
-        local dep = orderdeps[total + 1 - idx]
-        local depinherit = self:extraconf("deps", dep:name(), "inherit")
-        if depinherit == nil or depinherit then
-            table.join2(values, dep:get(name, opt))
-            table.join2(values, dep:get_from_opts(name, opt))
-            table.join2(values, dep:get_from_pkgs(name, opt))
+    local result = {}
+    local values = self:get_from(name, "dep::*", opt)
+    if values then
+        for _, v in ipairs(values) do
+            table.join2(result, v)
         end
     end
-    return values
+    return result
 end
 
--- get values from target options with {interface|public = ...}
+-- deprecated: get values from target options with {interface|public = ...}
 function _instance:get_from_opts(name, opt)
-    local values = {}
-    for _, opt_ in ipairs(self:orderopts(opt)) do
-        table.join2(values, table.wrap(opt_:get(name)))
-    end
-    return values
-end
-
--- get values from target packages with {interface|public = ...}
-function _instance:get_from_pkgs(name, opt)
-    local values = {}
-    for _, pkg in ipairs(self:orderpkgs(opt)) do
-        local configinfo = self:pkgconfig(pkg:name())
-        -- get values from package components
-        -- e.g. `add_packages("sfml", {components = {"graphics", "window"}})`
-        local selected_components = configinfo and configinfo.components or pkg:components_default()
-        if selected_components and pkg:components() then
-            local components_enabled = hashset.new()
-            for _, comp in ipairs(table.wrap(selected_components)) do
-                components_enabled:insert(comp)
-                for _, dep in ipairs(table.wrap(pkg:component_orderdeps(comp))) do
-                    components_enabled:insert(dep)
-                end
-            end
-            components_enabled:insert("__base")
-            -- if we can't find the values from the component, we need to fall back to __base to find them.
-            -- it contains some common values of all components
-            local components = table.wrap(pkg:components())
-            for _, component_name in ipairs(table.join(pkg:components_orderlist(), "__base")) do
-                if components_enabled:has(component_name) then
-                    local info = components[component_name]
-                    if info then
-                        table.join2(values, info[name])
-                    else
-                        local components_str = table.concat(table.wrap(configinfo.components), ", ")
-                        utils.warning("unknown component(%s) in add_packages(%s, {components = {%s}})", component_name, pkg:name(), components_str)
-                    end
-                end
-            end
-        -- get values instead of the builtin configs if exists extra package config
-        -- e.g. `add_packages("xxx", {links = "xxx"})`
-        elseif configinfo and configinfo[name] then
-             table.join2(values, configinfo[name])
-        else
-            -- get values from the builtin package configs
-            table.join2(values, pkg:get(name))
+    local result = {}
+    local values = self:get_from(name, "option::*", opt)
+    if values then
+        for _, v in ipairs(values) do
+            table.join2(result, v)
         end
     end
-    return values
+    return result
+end
+
+-- deprecated: get values from target packages with {interface|public = ...}
+function _instance:get_from_pkgs(name, opt)
+    local result = {}
+    local values = self:get_from(name, "package::*", opt)
+    if values then
+        for _, v in ipairs(values) do
+            table.join2(result, v)
+        end
+    end
+    return result
+end
+
+-- get values from the given sources
+--
+-- e.g.
+--
+-- only from the current target:
+--      target:get_from("links")
+--      target:get_from("links", "self")
+--
+-- from the given dep:
+--      target:get_from("links", "dep::foo")
+--      target:get_from("links", "dep::foo", {interface = true})
+--      target:get_from("links", "dep::*")
+--
+-- from the given option:
+--      target:get_from("links", "option::foo")
+--      target:get_from("links", "option::*")
+--
+-- from the given package:
+--      target:get_from("links", "package::foo")
+--      target:get_from("links", "package::*")
+--
+-- from the given dep/option, dep/package
+--      target:get_from("links", "dep::foo/option::bar")
+--      target:get_from("links", "dep::foo/option::*")
+--      target:get_from("links", "dep::foo/package::bar")
+--      target:get_from("links", "dep::foo/package::*")
+--
+-- from the multiple sources:
+--      target:get_from("links", {"self", "option::foo", "dep::bar", "package::zoo"})
+--      target:get_from("links", {"self", "option::*", "dep::*", "package::*"})
+--
+-- from all:
+--      target:get_from("links", "*")
+--
+-- return:
+--      local values, sources = target:get_from("links", "*")
+--      for idx, value in ipairs(values) do
+--          local source = sources[idx]
+--      end
+--
+function _instance:get_from(name, sources, opt)
+    local result_values = {}
+    local result_sources = {}
+    sources = sources or "self"
+    for _, source in ipairs(table.wrap(sources)) do
+        self:_get_from_source(name, source, result_values, result_sources, opt)
+    end
+    if #result_values > 0 then
+        return result_values, result_sources
+    end
 end
 
 -- set the value to the target info
@@ -486,6 +677,68 @@ end
 -- set the extra configuration
 function _instance:extraconf_set(name, item, key, value)
     self._INFO:extraconf_set(name, item, key, value)
+end
+
+-- get the extra configuration from the given source
+--
+-- e.g.
+--
+-- only from the current target:
+--      target:extraconf_from("links")
+--      target:extraconf_from("links", "self")
+--
+-- from the given dep:
+--      target:extraconf_from("links", "dep::foo")
+--
+-- from the given option:
+--      target:extraconf_from("links", "option::foo")
+--
+-- from the given package:
+--      target:extraconf_from("links", "package::foo")
+--
+-- from the given dep/option, dep/package
+--      target:extraconf_from("links", "dep::foo/option::bar")
+--      target:extraconf_from("links", "dep::foo/package::bar")
+--
+function _instance:extraconf_from(source, name, item, key)
+    source = source or "self"
+    if source == "self" then
+        return self:extraconf(name, item, key)
+    elseif source:startswith("dep::") then
+        local depname = source:split("::", {plain = true, limit = 2})[2]
+        local depsource
+        local splitinfo = depname:split("/", {plain = true})
+        if #splitinfo == 2 then
+            depname = splitinfo[1]
+            depsource = splitinfo[2]
+        end
+        local dep = self:dep(depname)
+        if dep then
+            -- e.g.
+            -- dep::foo/option::bar
+            -- dep::foo/package::bar
+            if depsource then
+                return dep:extraconf_from(dep_source, name, item, key)
+            else
+                -- dep::foo
+                return dep:extraconf(name, item, key)
+            end
+        end
+    elseif source:startswith("option::") then
+        local optname = source:split("::", {plain = true, limit = 2})[2]
+        local opt_ = self:opt(optname, opt)
+        if opt_ then
+            return opt_:extraconf(name, item, key)
+        end
+    elseif source:startswith("package::") then
+        local pkgname = source:split("::", {plain = true, limit = 2})[2]
+        local pkg = self:pkg(pkgname, opt)
+        if pkg then
+            return pkg:extraconf(name, item, key)
+        end
+    else
+        os.raise("target:extraconf_from(): unknown source %s", source)
+    end
 end
 
 -- get configuration source information of the given api item
@@ -884,26 +1137,28 @@ function _instance:is_rebuilt()
 end
 
 -- get the enabled option
-function _instance:opt(name)
-    return self:opts()[name]
+function _instance:opt(name, opt)
+    return self:opts(opt)[name]
 end
 
 -- get the enabled options
-function _instance:opts()
-
-    -- attempt to get it from cache first
-    if self._OPTS_ENABLED then
-        return self._OPTS_ENABLED
+function _instance:opts(opt)
+    opt = opt or {}
+    local cachekey = "opts"
+    if opt.public then
+        cachekey = cachekey .. "_public"
+    elseif opt.interface then
+        cachekey = cachekey .. "_interface"
     end
-
-    -- load options if be enabled
-    self._OPTS_ENABLED = {}
-    for _, opt in ipairs(self:orderopts()) do
-        self._OPTS_ENABLED[opt:name()] = opt
+    local opts = self:_memcache():get(cachekey)
+    if not opts then
+        opts = {}
+        for _, opt_ in ipairs(self:orderopts(opt)) do
+            opts[opt_:name()] = opt_
+        end
+        self:_memcache():set(cachekey, opts)
     end
-
-    -- get it
-    return self._OPTS_ENABLED
+    return opts
 end
 
 -- get the enabled ordered options with {public|interface = ...}
@@ -917,25 +1172,12 @@ function _instance:orderopts(opt)
     end
     local orderopts = self:_memcache():get(cachekey)
     if not orderopts then
-
-        -- load options if be enabled
         orderopts = {}
         for _, name in ipairs(table.wrap(self:get("options", opt))) do
             local opt_ = nil
             if config.get(name) then opt_ = option.load(name) end
             if opt_ then
                 table.insert(orderopts, opt_)
-            end
-        end
-
-        -- load options from packages if no require info, be compatible with the option package in (*.pkg)
-        for _, name in ipairs(table.wrap(self:get("packages", opt))) do
-            if not project_package.load(name) then
-                local opt_ = nil
-                if config.get(name) then opt_ = option.load(name) end
-                if opt_ then
-                    table.insert(orderopts, opt_)
-                end
             end
         end
         self:_memcache():set(cachekey, orderopts)

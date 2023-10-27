@@ -81,7 +81,7 @@ function load(self)
 end
 
 -- make the strip flag
-function nf_strip(self, level, target)
+function nf_strip(self, level)
     local maps = {
         debug = "-Wl,-S"
     ,   all   = "-s"
@@ -283,7 +283,8 @@ function nf_sysincludedir(self, dir)
 end
 
 -- make the force include flag
-function nf_forceinclude(self, headerfile, target)
+function nf_forceinclude(self, headerfile, opt)
+    local target = opt.target
     local sourcekinds = target and target:extraconf("forceincludes", headerfile, "sourcekinds")
     if not sourcekinds or table.contains(table.wrap(sourcekinds), self:kind()) then
         return {"-include", headerfile}
@@ -307,15 +308,16 @@ function nf_syslink(self, lib)
 end
 
 -- make the link group flag
-function nf_linkgroup(self, linkgroup, target)
+function nf_linkgroup(self, linkgroup, opt)
     local linkflags = {}
     for _, lib in ipairs(linkgroup) do
         table.insert(linkflags, nf_link(self, lib))
     end
     local flags = {}
-    if not self:is_plat("macosx", "windows", "mingw") then
-        local group = target:extraconf("linkgroups", linkgroup, "group")
-        local whole = target:extraconf("linkgroups", linkgroup, "whole")
+    local extra = opt.extra
+    if extra and not self:is_plat("macosx", "windows", "mingw") then
+        local group = extra.group
+        local whole = extra.whole
         if group and whole then
             -- https://github.com/xmake-io/xmake/issues/4308
             table.join2(flags, "-Wl,--whole-archive", "-Wl,--start-group", linkflags, "-Wl,--end-group", "-Wl,--no-whole-archive")
@@ -324,7 +326,7 @@ function nf_linkgroup(self, linkgroup, target)
         elseif whole then
             table.join2(flags, "-Wl,--whole-archive", linkflags, "-Wl,--no-whole-archive")
         end
-        local static = target:extraconf("linkgroups", linkgroup, "static")
+        local static = extra.static
         if static then
             table.join2(flags, "-Wl,-Bstatic", linkflags, "-Wl,-Bdynamic")
         end
@@ -416,8 +418,9 @@ function nf_encoding(self, encoding)
 end
 
 -- make the c precompiled header flag
-function nf_pcheader(self, pcheaderfile, target)
+function nf_pcheader(self, pcheaderfile, opt)
     if self:kind() == "cc" then
+        local target = opt.target
         local pcoutputfile = target:pcoutputfile("c")
         if self:name() == "clang" then
             return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
@@ -428,8 +431,9 @@ function nf_pcheader(self, pcheaderfile, target)
 end
 
 -- make the c++ precompiled header flag
-function nf_pcxxheader(self, pcheaderfile, target)
+function nf_pcxxheader(self, pcheaderfile, opt)
     if self:kind() == "cxx" then
+        local target = opt.target
         local pcoutputfile = target:pcoutputfile("cxx")
         if self:name() == "clang" then
             return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
@@ -440,8 +444,9 @@ function nf_pcxxheader(self, pcheaderfile, target)
 end
 
 -- make the objc precompiled header flag
-function nf_pmheader(self, pcheaderfile, target)
+function nf_pmheader(self, pcheaderfile, opt)
     if self:kind() == "mm" then
+        local target = opt.target
         local pcoutputfile = target:pcoutputfile("m")
         if self:name() == "clang" then
             return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
@@ -452,8 +457,9 @@ function nf_pmheader(self, pcheaderfile, target)
 end
 
 -- make the objc++ precompiled header flag
-function nf_pmxxheader(self, pcheaderfile, target)
+function nf_pmxxheader(self, pcheaderfile, opt)
     if self:kind() == "mxx" then
+        local target = opt.target
         local pcoutputfile = target:pcoutputfile("mxx")
         if self:name() == "clang" then
             return {"-include", pcheaderfile, "-include-pch", pcoutputfile}

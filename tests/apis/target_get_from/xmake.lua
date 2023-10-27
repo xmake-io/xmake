@@ -1,0 +1,33 @@
+add_rules("mode.debug", "mode.release")
+
+add_requires("zlib")
+
+option("bar")
+    set_default(true)
+    add_defines("BAR")
+
+target("foo")
+    set_kind("static")
+    add_files("src/foo.cpp")
+    add_defines("foo")
+    add_defines("FOO", {public = true})
+    add_options("bar")
+    add_linkgroups("m", "pthread", {group = true})
+
+target("test")
+    set_kind("binary")
+    add_deps("foo")
+    add_files("src/main.cpp")
+    add_defines("TEST")
+    add_packages("zlib")
+    on_config(function (target)
+        print("self", target:get_from("defines", "self"))
+        print("dep::foo", target:get_from("defines", "dep::foo"))
+        print("dep::*", target:get_from("defines", "dep::*"))
+        print("dep::foo/option::bar", target:get_from("defines", "dep::foo/option::bar"))
+        print("dep::foo/option::*", target:get_from("defines", "dep::foo/option::*"))
+        print("*", target:get_from("defines", "*"))
+        print("package::zlib", target:get_from("links", "package::zlib"))
+        print("extraconf(dep::foo)", target:extraconf_from("dep::foo", "linkgroups"))
+    end)
+

@@ -22,7 +22,7 @@
 inherit("gcc")
 
 -- make the strip flag
-function nf_strip(self, level, target)
+function nf_strip(self, level)
     local maps = {
         debug = "-Wl,-S"
     ,   all   = "-s"
