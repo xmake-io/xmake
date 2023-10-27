@@ -258,7 +258,7 @@ _os_find() {
 _os_date() {
     if test_z "${SOURCE_DATE_EPOCH}"; then
         _ret=$(date +"${1}")
-    elif is_host "macosx"; then
+    elif is_host "macosx" "freebsd" "bsd"; then
         _ret=$(date -u -r "$SOURCE_DATE_EPOCH" +"${1}")
     else
         _ret=$(date -u -d "@$SOURCE_DATE_EPOCH" +"${1}")
