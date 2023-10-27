@@ -539,20 +539,38 @@ function builder:_sort_links_of_items(items, opt)
     local framework_mapper
     local linkgroup_mapper
     if sortlinks or makegroups then
+        local linkitems = {}
         table.remove_if(items, function (_, item)
             local name = item.name
             local removed = false
+            if name == "links" or name == "syslinks" then
+                link_mapper = item.mapper
+                removed = true
+                table.insert(linkitems, item)
+            elseif name == "frameworks" then
+                framework_mapper = item.mapper
+                removed = true
+                table.insert(linkitems, item)
+            elseif name == "linkgroups" then
+                linkgroup_mapper = item.mapper
+                removed = true
+                table.insert(linkitems, item)
+            end
+            return removed
+        end)
+
+        -- @note table.remove_if will traverse backwards,
+        -- we need to fix the initial link order first to make sure the syslinks are in the correct order
+        linkitems = table.reverse(linkitems)
+        for _, item in ipairs(linkitems) do
+            local name = item.name
             for _, value in ipairs(item.values) do
                 if name == "links" or name == "syslinks" then
                     if not linkgroups_set:has(value) then
                         table.insert(links, value)
                     end
-                    link_mapper = item.mapper
-                    removed = true
                 elseif name == "frameworks" then
                     table.insert(links, "framework::" .. value)
-                    framework_mapper = item.mapper
-                    removed = true
                 elseif name == "linkgroups" then
                     local extras = item.extras
                     local extra = self:_extraconf(extras, value)
@@ -560,12 +578,10 @@ function builder:_sort_links_of_items(items, opt)
                     table.insert(links, "linkgroup::" .. key)
                     linkgroups_map[key] = value
                     extras_map[key] = extras
-                    linkgroup_mapper = item.mapper
-                    removed = true
                 end
             end
-            return removed
-        end)
+        end
+
         links = table.reverse_unique(links)
     end
 
