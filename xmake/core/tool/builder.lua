@@ -481,8 +481,6 @@ function builder:_add_flags_from_language(flags, opt)
                 end
             end
         end
-        utils.dump(linkorders)
-        utils.dump(linkgroups)
         if #linkorders > 0 or #linkgroups > 0 then
             self:_sort_links_of_items(items, {linkorders = linkorders, linkgroups = linkgroups})
         end
