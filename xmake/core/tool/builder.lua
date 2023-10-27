@@ -254,7 +254,7 @@ function builder:_add_flags_from_target(flags, target)
 
         -- add flags from language
         targetflags = {}
-        self:_add_flags_from_language(targetflags, target)
+        self:_add_flags_from_language(targetflags, {target = target})
 
         -- add flags for the target
         if target_type == "target" then
@@ -291,7 +291,7 @@ function builder:_add_flags_from_argument(flags, target, args)
     end
 
     -- add flags (named) from the language
-    self:_add_flags_from_language(flags, nil, {
+    self:_add_flags_from_language(flags, {linkorders = args.linkorders, linkgroups = args.linkgroups, getters = {
         target = function (name)
             -- we need also to get extra from arguments
             -- @see https://github.com/xmake-io/xmake/issues/4274
@@ -314,7 +314,7 @@ function builder:_add_flags_from_argument(flags, target, args)
                 arch = target:arch()
             end
             return platform.toolconfig(name, plat, arch)
-        end})
+        end}})
 end
 
 -- add items from getter
@@ -408,10 +408,12 @@ function builder:_add_items_from_target(items, name, opt)
 end
 
 -- add flags from the language
-function builder:_add_flags_from_language(flags, target, getters)
+function builder:_add_flags_from_language(flags, opt)
+    opt = opt or {}
 
     -- get order named items
     local items = {}
+    local target = opt.target
     for _, flaginfo in ipairs(self:_nameflags()) do
 
         -- get flag info
@@ -441,29 +443,49 @@ function builder:_add_flags_from_language(flags, target, getters)
         -- map named flags to real flags
         local mapper = self:_tool()["nf_" .. apiname]
         if mapper then
-            local opt = {target = target, check = checkstate, multival = multival, mapper = mapper}
-            if getters then
-                local getter = getters[flagscope]
+            local opt_ = {target = target, check = checkstate, multival = multival, mapper = mapper}
+            if opt.getters then
+                local getter = opt.getters[flagscope]
                 if getter then
-                    opt.getter = getter
-                    self:_add_items_from_getter(items, flagname, opt)
+                    opt_.getter = getter
+                    self:_add_items_from_getter(items, flagname, opt_)
                 end
             elseif flagscope == "target" and target and target:type() == "target" then
-                self:_add_items_from_target(items, flagname, opt)
+                self:_add_items_from_target(items, flagname, opt_)
             elseif flagscope == "target" and target and target:type() == "option" then
-                self:_add_items_from_option(items, flagname, opt)
+                self:_add_items_from_option(items, flagname, opt_)
             elseif flagscope == "config" then
-                self:_add_items_from_config(items, flagname, opt)
+                self:_add_items_from_config(items, flagname, opt_)
             elseif flagscope == "toolchain" then
-                self:_add_items_from_toolchain(items, flagname, opt)
+                self:_add_items_from_toolchain(items, flagname, opt_)
             end
         end
     end
 
     -- sort links
     local kind = self:kind()
-    if (kind == "ld" or kind == "sh") and target and target:type() == "target" then
-        self:_sort_links_of_items(target, items)
+    if kind == "ld" or kind == "sh" then
+        local linkorders = table.wrap(opt.linkorders)
+        local linkgroups = table.wrap(opt.linkgroups)
+        if target and target:type() == "target" then
+            local values = target:get_from("linkorders", "*")
+            if values then
+                for _, value in ipairs(values) do
+                    table.join2(linkorders, value)
+                end
+            end
+            values = target:get_from("linkgroups", "*")
+            if values then
+                for _, value in ipairs(values) do
+                    table.join2(linkgroups, value)
+                end
+            end
+        end
+        utils.dump(linkorders)
+        utils.dump(linkgroups)
+        if #linkorders > 0 or #linkgroups > 0 then
+            self:_sort_links_of_items(items, {linkorders = linkorders, linkgroups = linkgroups})
+        end
     end
 
     -- get flags from the items
@@ -492,14 +514,15 @@ function builder:_add_flags_from_language(flags, target, getters)
 end
 
 -- sort links of items
-function builder:_sort_links_of_items(target, items)
+function builder:_sort_links_of_items(items, opt)
+    opt = opt or {}
     local sortlinks = false
     local makegroups = false
-    local linkorders = table.wrap(target:get("linkorders"))
+    local linkorders = table.wrap(opt.linkorders)
     if #linkorders > 0 then
         sortlinks = true
     end
-    local linkgroups = table.wrap(target:get("linkgroups"))
+    local linkgroups = table.wrap(opt.linkgroups)
     local linkgroups_set = hashset.new()
     if #linkgroups > 0 then
         makegroups = true

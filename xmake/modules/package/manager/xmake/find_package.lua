@@ -20,7 +20,6 @@
 
 -- imports
 import("core.base.global")
-import("core.base.graph")
 import("core.project.config")
 import("core.project.option")
 import("core.project.target")
@@ -41,58 +40,6 @@ function _deduplicate_values(values)
             end
         end
     end
-end
-
--- sort links
-function _sort_links(result)
-    print("sork_links")
-    print(result)
-
-    local sortlinks = false
-    local makegroups = false
-    local linkorders = table.wrap(result.linkorders)
-    if #linkorders > 0 then
-        sortlinks = true
-    end
-    local linkgroups = table.wrap(result.linkgroups)
-    local linkgroups_set = hashset.new()
-    if #linkgroups > 0 then
-        makegroups = true
-        for _, linkgroup in ipairs(linkgroups) do
-            for _, link in ipairs(linkgroup) do
-                linkgroups_set:insert(link)
-            end
-        end
-    end
-
-    -- get all links
-    --[[
-    local links = {}
-    local linkgroups_map = {}
-    if sortlinks or makegroups then
-        table.remove_if(items, function (_, item)
-            local name = item.name
-            local removed = false
-            for _, value in ipairs(item.values) do
-                if name == "links" or name == "syslinks" then
-                    if not linkgroups_set:has(value) then
-                        table.insert(links, value)
-                    end
-                    removed = true
-                elseif name == "frameworks" then
-                    table.insert(links, "framework::" .. value)
-                    removed = true
-                elseif name == "linkgroups" then
-                    --local key = extra and extra.name or tostring(value)
-                    table.insert(links, "linkgroup::" .. key)
-                    linkgroups_map[key] = value
-                    removed = true
-                end
-            end
-            return removed
-        end)
-        links = table.reverse_unique(links)
-    end]]
 end
 
 -- find package from the repository (maybe only include and no links)
@@ -281,11 +228,6 @@ function _find_package_from_repo(name, opt)
                 end
             end
         end
-    end
-
-    -- sort links
-    if result.linkorders or result.linkgroups then
-        _sort_links(result)
     end
 
     -- deduplicate result
