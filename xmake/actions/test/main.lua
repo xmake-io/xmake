@@ -35,8 +35,8 @@ import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"}
 function _do_test_target(target, opt)
     opt = opt or {}
 
-    -- test build only
-    if opt.build_only then
+    -- early out: results were computed during build
+    if opt.build_should_fail then
         return opt.passed, opt.errors
     end
 
