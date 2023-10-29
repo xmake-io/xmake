@@ -158,6 +158,8 @@ function main(name, jobs, opt)
     local priority_prev = 0
     local priority_curr = 0
     local job_pending = nil
+    local abort = false
+    local abort_errors
     while index < total do
         scheduler.co_group_begin(group_name, function (co_group)
             local freemax = comax - #co_group
@@ -218,6 +220,9 @@ function main(name, jobs, opt)
                     try
                     {
                         function()
+                            if stop then
+                                return
+                            end
                             if distcc then
                                 local co_running = scheduler.co_running()
                                 if co_running then
@@ -247,13 +252,22 @@ function main(name, jobs, opt)
                                     progress_helper:stop()
                                 end
 
-                                -- do exit callback
-                                if opt.on_exit then
-                                    opt.on_exit(errors)
+                                -- we need re-throw this errors outside scheduler
+                                abort = true
+                                if abort_errors == nil then
+                                    abort_errors = errors
                                 end
 
-                                -- re-throw this errors and abort scheduler
-                                raise(errors)
+                                -- kill all waited objects in this group
+                                local waitobjs = scheduler.co_group_waitobjs(group_name)
+                                if waitobjs:size() > 0 then
+                                    for _, obj in waitobjs:keys() do
+                                        -- TODO, kill pipe is not supported now
+                                        if obj.kill then
+                                            obj:kill()
+                                        end
+                                    end
+                                end
                             end
                         }
                     }
@@ -293,6 +307,16 @@ function main(name, jobs, opt)
 
     -- do exit callback
     if opt.on_exit then
-        opt.on_exit()
+        opt.on_exit(abort_errors)
+    end
+
+    -- re-throw abort errors
+    --
+    -- @note we cannot throw it in coroutine,
+    -- because his causes a direct exit from the entire runloop and
+    -- a quick escape from nested try-catch blocks and coroutines groups.
+    -- so we can not catch runjobs errors, e.g. build fails
+    if abort then
+        raise(abort_errors)
     end
 end
