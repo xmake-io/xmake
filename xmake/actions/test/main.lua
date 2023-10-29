@@ -30,7 +30,6 @@ import("async.runjobs")
 import("private.action.run.runenvs")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"})
-import("actions.build.build", {rootdir = os.programdir(), alias = "build_target"})
 
 -- test target
 function _do_test_target(target, opt)
@@ -38,19 +37,7 @@ function _do_test_target(target, opt)
 
     -- test build only
     if opt.build_only then
-        local errors
-        local passed = try {
-            function ()
-                build_target(target:name())
-                return true
-            end,
-            catch {
-                function (errs)
-                    errors = tostring(errs)
-                end
-            }
-        }
-        return passed, errors
+        return opt.passed, opt.errors
     end
 
     -- get run environments
@@ -379,11 +366,29 @@ function main()
     -- build targets with the given tests first
     local targetnames = {}
     for _, testinfo in table.orderpairs(tests) do
-        if not testinfo.build_only then
-            table.insert(targetnames, testinfo.target:name())
+        local targetname = testinfo.target:name()
+        if testinfo.build_only then
+            local errors
+            local passed = try {
+                function ()
+                    build_action.build_targets(targetname)
+                    return true
+                end,
+                catch {
+                    function (errs)
+                        errors = tostring(errs)
+                    end
+                }
+            }
+            testinfo.passed = passed
+            testinfo.errors = errors
+        else
+            table.insert(targetnames, targetname)
         end
     end
-    build_action.build_targets(targetnames)
+    if #targetnames > 0 then
+        build_action.build_targets(targetnames)
+    end
 
     -- run tests
     _run_tests(tests)
