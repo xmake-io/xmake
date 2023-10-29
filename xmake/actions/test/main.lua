@@ -304,6 +304,23 @@ function _run_tests(tests)
     end
 end
 
+-- try to build the given target
+function _try_build_target(targetname)
+    local errors
+    local passed = try {
+        function ()
+            build_action.build_targets(targetname)
+            return true
+        end,
+        catch {
+            function (errs)
+                errors = tostring(errs)
+            end
+        }
+    }
+    return passed, errors
+end
+
 function main()
 
     -- do action for remote?
@@ -368,18 +385,7 @@ function main()
     for _, testinfo in table.orderpairs(tests) do
         local targetname = testinfo.target:name()
         if testinfo.build_only then
-            local errors
-            local passed = try {
-                function ()
-                    build_action.build_targets(targetname)
-                    return true
-                end,
-                catch {
-                    function (errs)
-                        errors = tostring(errs)
-                    end
-                }
-            }
+            local passed, errors = _try_build_target(targetname)
             testinfo.passed = passed
             testinfo.errors = errors
         else
