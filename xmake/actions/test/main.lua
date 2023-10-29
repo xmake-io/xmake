@@ -387,7 +387,9 @@ function main()
         if testinfo.build_should_fail then
             local built, _ = _try_build_target(targetname)
             testinfo.passed = not built
-            testinfo.errors = "Build succeeded when failure was expected"
+            if built then
+                testinfo.errors = "Build succeeded when failure was expected"
+            end
         else
             table.insert(targetnames, targetname)
         end
