@@ -257,6 +257,20 @@ function main(name, jobs, opt)
                                 if abort_errors == nil then
                                     abort_errors = errors
                                 end
+
+                                -- kill all waited objects in this group
+                                local waitobjs = scheduler.co_group_waitobjs(group_name)
+                                if waitobjs:size() > 0 then
+                                    for _, obj in waitobjs:keys() do
+                                        if obj:otype() == scheduler.OT_PROC then
+                                            obj:kill()
+                                        elseif obj:otype() == scheduler.OT_SOCK then
+                                            -- TODO
+                                        elseif obj:otype() == scheduler.OT_PIPE then
+                                            -- TODO
+                                        end
+                                    end
+                                end
                             end
                         }
                     }
