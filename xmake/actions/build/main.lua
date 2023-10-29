@@ -110,31 +110,9 @@ function _do_build(targetname, group_pattern)
     end
 end
 
--- on exit
-function _on_exit(ok, errors)
-
-    -- since we call it in both os.atexit and catch block,
-    -- we need to avoid duplicate execution.
-    local handled = false
-    local exited = _g.exited
-    if not exited then
-        exited = true
-        handled = true
-        _g.exited = exited
-    end
-
-    -- we just handle the build failure
-    if handled and not ok then
-        check_targets(targetname, {build_failure = true})
-    end
-end
-
 -- build targets
 function build_targets(targetnames, opt)
     opt = opt or {}
-
-    -- register exit callbacks
-    os.atexit(_on_exit)
 
     local group_pattern = opt.group_pattern
     try
@@ -159,9 +137,8 @@ function build_targets(targetnames, opt)
         {
             function (errors)
 
-                -- maybe it's unreachable when building fails, so we also need os.atexit()
                 -- @see https://github.com/xmake-io/xmake/issues/3401
-                _on_exit(false, errors)
+                check_targets(targetnames, {build_failure = true})
 
                 -- do rules after building
                 _do_project_rules("build_after", {errors = errors})
