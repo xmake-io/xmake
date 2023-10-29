@@ -262,12 +262,9 @@ function main(name, jobs, opt)
                                 local waitobjs = scheduler.co_group_waitobjs(group_name)
                                 if waitobjs:size() > 0 then
                                     for _, obj in waitobjs:keys() do
-                                        if obj:otype() == scheduler.OT_PROC then
+                                        -- TODO, kill pipe is not supported now
+                                        if obj.kill then
                                             obj:kill()
-                                        elseif obj:otype() == scheduler.OT_SOCK then
-                                            -- TODO
-                                        elseif obj:otype() == scheduler.OT_PIPE then
-                                            -- TODO
                                         end
                                     end
                                 end

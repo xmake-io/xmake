@@ -641,6 +641,20 @@ function _instance:wait(events, timeout)
     return result, errors
 end
 
+-- kill socket
+function _instance:kill()
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    -- kill it
+    io.socket_kill(self:cdata())
+    return true
+end
+
 -- close socket
 function _instance:close()
 

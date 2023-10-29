@@ -162,6 +162,7 @@ tb_int_t xm_io_socket_sendto(lua_State* lua);
 tb_int_t xm_io_socket_sendfile(lua_State* lua);
 tb_int_t xm_io_socket_recv(lua_State* lua);
 tb_int_t xm_io_socket_recvfrom(lua_State* lua);
+tb_int_t xm_io_socket_kill(lua_State* lua);
 tb_int_t xm_io_socket_close(lua_State* lua);
 
 // the io/pipe functions
@@ -401,6 +402,7 @@ static luaL_Reg const g_io_functions[] =
 ,   { "socket_sendfile",    xm_io_socket_sendfile  }
 ,   { "socket_recv",        xm_io_socket_recv      }
 ,   { "socket_recvfrom",    xm_io_socket_recvfrom  }
+,   { "socket_kill"    ,    xm_io_socket_kill      }
 ,   { "socket_close",       xm_io_socket_close     }
 ,   { "pipe_open",          xm_io_pipe_open        }
 ,   { "pipe_openpair",      xm_io_pipe_openpair    }
