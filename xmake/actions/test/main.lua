@@ -384,10 +384,10 @@ function main()
     local targetnames = {}
     for _, testinfo in table.orderpairs(tests) do
         local targetname = testinfo.target:name()
-        if testinfo.build_only then
-            local passed, errors = _try_build_target(targetname)
-            testinfo.passed = passed
-            testinfo.errors = errors
+        if testinfo.build_should_fail then
+            local built, _ = _try_build_target(targetname)
+            testinfo.passed = not built
+            testinfo.errors = "Build succeeded when failure was expected"
         else
             table.insert(targetnames, targetname)
         end
