@@ -13,7 +13,7 @@ for _, file in ipairs(os.files("src/test_*.cpp")) do
         add_tests("fail_output", {fail_outputs = {"hello2 .*", "hello xmake"}})
 end
 
-target("test_compile")
+target("test_10")
     set_kind("binary")
     set_default(false)
     add_files("src/compile.cpp")
