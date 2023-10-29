@@ -35,6 +35,11 @@ import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"}
 function _do_test_target(target, opt)
     opt = opt or {}
 
+    -- test build only
+    if opt.build_only then
+        return opt.passed, opt.errors
+    end
+
     -- get run environments
     local envs = opt.runenvs
     if not envs then
@@ -299,6 +304,23 @@ function _run_tests(tests)
     end
 end
 
+-- try to build the given target
+function _try_build_target(targetname)
+    local errors
+    local passed = try {
+        function ()
+            build_action.build_targets(targetname)
+            return true
+        end,
+        catch {
+            function (errs)
+                errors = tostring(errs)
+            end
+        }
+    }
+    return passed, errors
+end
+
 function main()
 
     -- do action for remote?
@@ -361,9 +383,18 @@ function main()
     -- build targets with the given tests first
     local targetnames = {}
     for _, testinfo in table.orderpairs(tests) do
-        table.insert(targetnames, testinfo.target:name())
+        local targetname = testinfo.target:name()
+        if testinfo.build_only then
+            local passed, errors = _try_build_target(targetname)
+            testinfo.passed = passed
+            testinfo.errors = errors
+        else
+            table.insert(targetnames, targetname)
+        end
     end
-    build_action.build_targets(targetnames)
+    if #targetnames > 0 then
+        build_action.build_targets(targetnames)
+    end
 
     -- run tests
     _run_tests(tests)
