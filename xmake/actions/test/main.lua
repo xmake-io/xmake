@@ -36,23 +36,20 @@ import("actions.build.build", {rootdir = os.programdir(), alias = "build_target"
 function _do_test_target(target, opt)
     opt = opt or {}
 
-    -- TODO
+    -- test build only
     if opt.build_only then
         local errors
         local passed = try {
             function ()
-                print("build...")
                 build_target(target:name())
                 return true
             end,
             catch {
                 function (errs)
                     errors = tostring(errs)
-                    print("xxxx")
                 end
             }
         }
-        print("ssssssssssssss")
         return passed, errors
     end
 
