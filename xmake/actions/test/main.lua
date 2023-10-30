@@ -36,7 +36,7 @@ function _do_test_target(target, opt)
     opt = opt or {}
 
     -- early out: results were computed during build
-    if opt.build_should_fail then
+    if opt.build_should_fail or opt.build_should_pass then
         return opt.passed, opt.errors
     end
 
