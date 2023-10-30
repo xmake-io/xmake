@@ -35,8 +35,8 @@ import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"}
 function _do_test_target(target, opt)
     opt = opt or {}
 
-    -- test build only
-    if opt.build_only then
+    -- early out: results were computed during build
+    if opt.build_should_fail then
         return opt.passed, opt.errors
     end
 
@@ -384,10 +384,12 @@ function main()
     local targetnames = {}
     for _, testinfo in table.orderpairs(tests) do
         local targetname = testinfo.target:name()
-        if testinfo.build_only then
-            local passed, errors = _try_build_target(targetname)
-            testinfo.passed = passed
-            testinfo.errors = errors
+        if testinfo.build_should_fail then
+            local built, _ = _try_build_target(targetname)
+            testinfo.passed = not built
+            if built then
+                testinfo.errors = "Build succeeded when failure was expected"
+            end
         else
             table.insert(targetnames, targetname)
         end
