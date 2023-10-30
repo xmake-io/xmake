@@ -65,7 +65,7 @@ function detect()
 
     -- search packages
     local result
-    local packages_found = search_packages(packagename, {require_version = version and version:rawstr() or nil})
+    local packages_found = search_packages(packagename, {description = false, require_version = version and version:rawstr() or nil})
     for name, packages in pairs(packages_found) do
         for _, package in ipairs(packages) do
             if package.name == packagename or packagename:levenshtein(package.name) < 3 then

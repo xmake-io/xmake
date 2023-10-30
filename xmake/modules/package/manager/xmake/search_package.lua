@@ -96,7 +96,9 @@ function main(name, opt)
     opt = opt or {}
     local packages = {}
     _search_package_from_name(packages, name, opt)
-    _search_package_from_description(packages, name, opt)
+    if opt.description ~= false then
+        _search_package_from_description(packages, name, opt)
+    end
 
     local results = {}
     for name, info in table.orderpairs(packages) do
