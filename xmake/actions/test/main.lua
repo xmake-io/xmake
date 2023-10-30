@@ -384,7 +384,11 @@ function main()
     local targetnames = {}
     for _, testinfo in table.orderpairs(tests) do
         local targetname = testinfo.target:name()
-        if testinfo.build_should_fail then
+        if testinfo.build_should_pass then
+            local passed, errors = _try_build_target(targetname)
+            testinfo.passed = passed
+            testinfo.errors = errors
+        elseif testinfo.build_should_fail then
             local built, _ = _try_build_target(targetname)
             testinfo.passed = not built
             if built then
