@@ -96,7 +96,7 @@ function _find_package(dpkg, name, opt)
         local statusinfo = try {function () return os.iorunv(dpkg.program, {"--status", name}) end}
         if statusinfo then
             for _, line in ipairs(statusinfo:split("\n", {plain = true})) do
-                -- parse depends, e.g. Depends: libboost1.74-dev
+                -- parse depends, e.g. Depends: libboost1.74-dev, libomp-14-dev (>= 14~)
                 if line:startswith("Depends:") then
                     local depends = line:sub(9):gsub("%(.-%)", ""):split("%s+")
                     if #depends == 1 then
