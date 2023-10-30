@@ -98,7 +98,7 @@ function _find_package(dpkg, name, opt)
             for _, line in ipairs(statusinfo:split("\n", {plain = true})) do
                 -- parse depends, e.g. Depends: libboost1.74-dev
                 if line:startswith("Depends:") then
-                    local depends = line:sub(9):split("%s+")
+                    local depends = line:sub(9):gsub("%(.-%)", ""):split("%s+")
                     if #depends == 1 then
                         return _find_package(dpkg, depends[1], opt)
                     end
