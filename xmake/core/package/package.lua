@@ -1742,6 +1742,7 @@ function _instance:find_package(name, opt)
                               buildhash = self:buildhash(), -- for xmake package or 3rd package manager, e.g. go:: ..
                               cachekey = opt.cachekey or "fetch_package_system",
                               external = opt.external,
+                              includes = opt.includes, -- system/find_package need it
                               system = system})
 end
 
