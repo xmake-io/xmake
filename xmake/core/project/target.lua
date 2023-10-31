@@ -559,6 +559,7 @@ end
 
 -- deprecated: get values from target dependencies
 function _instance:get_from_deps(name, opt)
+    deprecated.add("target:get_from(%s, \"dep:*\")", "target:get_from_deps(%s)", name)
     local result = {}
     local values = self:get_from(name, "dep::*", opt)
     if values then
@@ -571,6 +572,7 @@ end
 
 -- deprecated: get values from target options with {interface|public = ...}
 function _instance:get_from_opts(name, opt)
+    deprecated.add("target:get_from(%s, \"option::*\")", "target:get_from_opts(%s)", name)
     local result = {}
     local values = self:get_from(name, "option::*", opt)
     if values then
@@ -583,6 +585,7 @@ end
 
 -- deprecated: get values from target packages with {interface|public = ...}
 function _instance:get_from_pkgs(name, opt)
+    deprecated.add("target:get_from(%s, \"package::*\")", "target:get_from_pkgs(%s)", name)
     local result = {}
     local values = self:get_from(name, "package::*", opt)
     if values then

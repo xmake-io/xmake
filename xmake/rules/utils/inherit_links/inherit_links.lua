@@ -21,8 +21,12 @@
 -- get values from target
 function _get_values_from_target(target, name)
     local values = table.wrap(target:get(name))
-    table.join2(values, target:get_from_opts(name))
-    table.join2(values, target:get_from_pkgs(name))
+    for _, value in ipairs((target:get_from(name, "option::*"))) do
+        table.join2(values, value)
+    end
+    for _, value in ipairs((target:get_from(name, "package::*"))) do
+        table.join2(values, value)
+    end
     return values
 end
 

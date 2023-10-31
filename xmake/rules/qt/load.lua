@@ -127,9 +127,15 @@ end
 -- @see https://github.com/xmake-io/xmake/issues/4135
 function _get_frameworks_from_target(target)
     local values = table.wrap(target:get("frameworks"))
-    table.join2(values, target:get_from_opts("frameworks"))
-    table.join2(values, target:get_from_pkgs("frameworks"))
-    table.join2(values, target:get_from_deps("__qt_frameworks", {interface = true}))
+    for _, value in ipairs((target:get_from("frameworks", "option::*"))) do
+        table.join2(values, value)
+    end
+    for _, value in ipairs((target:get_from("frameworks", "package::*"))) do
+        table.join2(values, value)
+    end
+    for _, value in ipairs((target:get_from("__qt_frameworks", "dep::*", {interface = true}))) do
+        table.join2(values, value)
+    end
     return table.unique(values)
 end
 
