@@ -37,15 +37,17 @@ function _patch_pkgconfig(package)
         return
     end
 
-    -- get lib/pkgconfig/*.pc file
-    local pkgconfigdir = path.join(package:installdir(), "lib", "pkgconfig")
-    local pcfile = os.isdir(pkgconfigdir) and find_file("*.pc", pkgconfigdir) or nil
+    -- get lib/pkgconfig/*.pc or share/pkgconfig/*.pc file
+    local libpkgconfigdir = path.join(package:installdir(), "lib", "pkgconfig")
+    local sharepkgconfigdir = path.join(package:installdir(), "share", "pkgconfig")
+    local pcfile = (os.isdir(libpkgconfigdir) and find_file("*.pc", libpkgconfigdir))
+        or (os.isdir(sharepkgconfigdir) and find_file("*.pc", sharepkgconfigdir)) or nil
     if pcfile then
         return
     end
 
     -- trace
-    pcfile = path.join(pkgconfigdir, package:name() .. ".pc")
+    pcfile = path.join(libpkgconfigdir, package:name() .. ".pc")
     vprint("patching %s ..", pcfile)
 
     -- fetch package
