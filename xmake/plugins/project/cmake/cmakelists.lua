@@ -124,10 +124,9 @@ function _get_configs_from_target(target, name)
     if name:find("flags", 1, true) then
         table.join2(values, target:toolconfig(name))
     end
-    table.join2(values, target:get(name))
-    table.join2(values, target:get_from_opts(name))
-    table.join2(values, target:get_from_pkgs(name))
-    table.join2(values, target:get_from_deps(name, {interface = true}))
+    for _, value in ipairs((target:get_from(name, "*"))) do
+        table.join2(values, value)
+    end
     if not name:find("flags", 1, true) then -- for includedirs, links ..
         table.join2(values, target:toolconfig(name))
     end

@@ -114,11 +114,17 @@ function _get_values_from_deps(target, name)
             for _, value in ipairs(dep:get(name, {interface = true})) do
                 values[value] = string.format(" -> dep(%s)", dep:name())
             end
-            for _, value in ipairs(dep:get_from_opts(name, {interface = true})) do
-                values[value] = string.format(" -> dep(%s) -> options", dep:name())
+            local values_chunks = dep:get_from(name, "option::*", {interface = true})
+            for _, values_chunk in ipairs(values_chunks) do
+                for _, value in ipairs(values_chunk) do
+                    values[value] = string.format(" -> dep(%s) -> options", dep:name())
+                end
             end
-            for _, value in ipairs(dep:get_from_pkgs(name, {interface = true})) do
-                values[value] = string.format(" -> dep(%s) -> packages", dep:name())
+            values_chunks = dep:get_from(name, "package::*", {interface = true})
+            for _, values_chunk in ipairs(values_chunks) do
+                for _, value in ipairs(values_chunk) do
+                    values[value] = string.format(" -> dep(%s) -> packages", dep:name())
+                end
             end
         end
     end
