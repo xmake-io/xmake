@@ -1522,7 +1522,12 @@ function _instance:symbolfile()
     assert(targetdir and type(targetdir) == "string")
 
     -- the symbol file name
-    local filename = target.filename(self:basename(), "symbol", {plat = self:plat(), arch = self:arch()})
+    local prefixname = self:get("prefixname")
+    local suffixname = self:get("suffixname")
+    local filename = target.filename(self:basename(), "symbol", {
+        plat = self:plat(), arch = self:arch(),
+        prefixname = prefixname,
+        suffixname = suffixname})
     assert(filename)
 
     -- make the symbol file path
