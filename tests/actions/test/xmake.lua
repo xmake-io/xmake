@@ -16,13 +16,13 @@ end
 target("test_10")
     set_kind("binary")
     set_default(false)
-    add_files("src/compile.cpp")
+    add_files("src/compile_1.cpp")
     add_tests("compile_fail", {build_should_fail = true})
 
 target("test_11")
     set_kind("binary")
     set_default(false)
-    add_files("src/compile.cpp")
+    add_files("src/compile_2.cpp")
     add_tests("compile_pass", {build_should_pass = true})
 
 target("test_13")
