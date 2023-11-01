@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: macos-latest-xlarge
+    runs-on: macos-latest-large
 
     concurrency:
         group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-macOS-Arm64
