@@ -30,14 +30,6 @@
 --
 local binary_match = 'INFO:size%[(%d+)%]'
 
-local function _match(content)
-    local match = content:match(binary_match)
-    if match == nil then
-        return false
-    end
-    return true, match
-end
-
 local check_sizeof_template = [[
 #define SIZE (sizeof(${TYPE}))
 static char info_size[] =  {'I', 'N', 'F', 'O', ':', 's','i','z','e','[',
@@ -66,7 +58,7 @@ function check_sizeof(definition, typename, opt)
     interp_save_scope()
     option(optname)
         set_showmenu(false)
-        add_csnippets(definition, check_sizeof_template:gsub('${TYPE}', typename), {binaryfind = _match})
+        add_csnippets(definition, check_sizeof_template:gsub('${TYPE}', typename), {binaryfind = binary_match})
         if opt.links then
             add_links(opt.links)
         end
@@ -115,7 +107,7 @@ function configvar_check_sizeof(definition, typename, opt)
     interp_save_scope()
     option(optname)
         set_showmenu(false)
-        add_csnippets(definition, check_sizeof_template:gsub('${TYPE}', typename), {binaryfind = _match})
+        add_csnippets(definition, check_sizeof_template:gsub('${TYPE}', typename), {binaryfind = binary_match})
         if opt.default == nil then
             set_configvar(defname, defval or 1, {quote = opt.quote})
         end

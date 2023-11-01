@@ -259,7 +259,11 @@ function main(snippets, opt)
             end
             if opt.binaryfind then
                 local content = io.readfile(binaryfile, {encoding = "binary"})
-                return opt.binaryfind(content)
+                local match = content:match(opt.binaryfind)
+                if match == nil then
+                    return false
+                end
+                return true, match
             end
             return true
         end,
