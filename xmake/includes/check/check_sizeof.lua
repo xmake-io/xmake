@@ -12,22 +12,26 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2023-present, TBOOX Open Source Group.
+-- Copyright (C) 2023, TBOOX Open Source Group.
 --
 -- @author      zeromake
 -- @file        check_sizeof.lua
 --
 
--- check c sizeof(type) add to macro definition
+-- check c sizeof(type) add to macro definition support cross compile
+--
+-- from https://github.com/xmake-io/xmake/issues/4345
 --
 -- e.g.
 --
--- check_sizeof("SIZEOF_WCHAR_T", "wchar_t")
+-- check_sizeof("SIZEOF_LONG", "long") => SIZEOF_LONG=4
+--
+-- configvar_check_sizeof("SIZEOF_LONG", "long") => #define SIZEOF_LONG 4
 --
 local binary_match = 'INFO:size%[(%d+)%]'
 
 local function _match(content)
-    local match = string.match(content, binary_match)
+    local match = content:match(binary_match)
     if match == nil then
         return false
     end
@@ -62,7 +66,7 @@ function check_sizeof(definition, typename, opt)
     interp_save_scope()
     option(optname)
         set_showmenu(false)
-        add_csnippets(definition, check_sizeof_template:gsub('${TYPE}', typename), {binaryfind=_match})
+        add_csnippets(definition, check_sizeof_template:gsub('${TYPE}', typename), {binaryfind = _match})
         if opt.links then
             add_links(opt.links)
         end
@@ -111,7 +115,7 @@ function configvar_check_sizeof(definition, typename, opt)
     interp_save_scope()
     option(optname)
         set_showmenu(false)
-        add_csnippets(definition, check_sizeof_template:gsub('${TYPE}', typename), {binaryfind=_match})
+        add_csnippets(definition, check_sizeof_template:gsub('${TYPE}', typename), {binaryfind = _match})
         if opt.default == nil then
             set_configvar(defname, defval or 1, {quote = opt.quote})
         end

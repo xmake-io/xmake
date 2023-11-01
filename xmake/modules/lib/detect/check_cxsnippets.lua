@@ -258,9 +258,7 @@ function main(snippets, opt)
                 end
             end
             if opt.binaryfind then
-                local f = io.open(binaryfile, "rb")
-                local content = f:read("*a")
-                f:close()
+                local content = io.readfile(binaryfile, {encoding = "binary"})
                 return opt.binaryfind(content)
             end
             return true
