@@ -351,6 +351,18 @@ function main()
                 local testinfo = {name = testname, target = target}
                 if extra then
                     table.join2(testinfo, extra)
+                    if extra.files then
+                        local target_new = target:clone()
+                        local scriptdir = target:scriptdir()
+                        target_new:name_set(target:name() .. "_" .. name)
+                        for _, file in ipairs(extra.files) do
+                            file = path.absolute(file, scriptdir)
+                            file = path.relative(file, os.projectdir())
+                            target_new:add("files", file, {defines = extra.defines})
+                            project.target_add(target_new)
+                        end
+                        testinfo.target = target_new
+                    end
                 end
                 if not testinfo.group then
                     testinfo.group = target:get("group")
