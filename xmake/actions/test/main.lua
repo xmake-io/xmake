@@ -354,6 +354,7 @@ function main()
                     if extra.files then
                         local target_new = target:clone()
                         local scriptdir = target:scriptdir()
+                        target_new:name_set(target:name() .. "_" .. name)
                         for _, file in ipairs(extra.files) do
                             file = path.absolute(file, scriptdir)
                             file = path.relative(file, os.projectdir())
