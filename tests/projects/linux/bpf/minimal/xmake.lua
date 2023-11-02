@@ -12,6 +12,11 @@ else
     add_requires("linux-headers")
 end
 
+-- fix error: libbpf: map 'my_pid_map': unsupported map linkage static. for bpftool >= 7.2.0
+-- we cannot add `"-fvisibility=hidden"` when compiling *.bpf.c
+-- @see https://github.com/libbpf/bpftool/issues/120
+set_symbols("none")
+
 target("minimal")
     set_kind("binary")
     add_files("src/*.c")
