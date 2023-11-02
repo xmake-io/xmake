@@ -113,12 +113,17 @@ function _instance:_do_check_cxsnippets(snippets)
             local snippets_build = {}
             local snippets_tryrun = {}
             local snippets_output = {}
+            local snippets_binaryfind = {}
+            local snippet_binaryfind = nil
             if snippets then
                 for name, snippet in pairs(snippets) do
                     if self:extraconf(kind .. "snippets", name, "output") then
                         snippets_output[name] = snippet
                     elseif self:extraconf(kind .. "snippets", name, "tryrun") then
                         snippets_tryrun[name] = snippet
+                    elseif self:extraconf(kind .. "snippets", name, "binaryfind") then
+                        snippets_binaryfind[name] = snippet
+                        snippet_binaryfind = self:extraconf(kind .. "snippets", name, "binaryfind")
                     else
                         snippets_build[name] = snippet
                     end
@@ -167,6 +172,28 @@ function _instance:_do_check_cxsnippets(snippets)
                 -- passed or no passed?
                 if results_or_errors then
                     passed = 1
+                else
+                    passed = -1
+                    break
+                end
+            end
+
+            -- check snippets (run with binaryfind)
+            if #table.keys(snippets_binaryfind) > 0 then
+                local ok, results_or_errors, output = sandbox.load(self._check_cxsnippets, snippets_binaryfind, {
+                                                            target = self,
+                                                            sourcekind = sourcekind,
+                                                            types = types,
+                                                            funcs = funcs,
+                                                            includes = includes,
+                                                            binaryfind = snippet_binaryfind})
+                if not ok then
+                    return false, -1, results_or_errors
+                end
+                -- passed or no passed?
+                if results_or_errors then
+                    passed = 1
+                    result_output = output
                 else
                     passed = -1
                     break
