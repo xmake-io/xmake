@@ -28,7 +28,7 @@
 --
 -- configvar_check_sizeof("SIZEOF_LONG", "long") => #define SIZEOF_LONG 4
 --
-local binary_match = 'INFO:size%[(%d+)%]'
+local binary_match_pattern = 'INFO:size%[(%d+)%]'
 
 local check_sizeof_template = [[
 #define SIZE (sizeof(${TYPE}))
@@ -48,6 +48,13 @@ int main(int argc, char *argv[]) {
   return require;
 }]]
 
+function _binary_match(content)
+    local match = content:match(binary_match_pattern)
+    if match then
+        return match:ltrim("0")
+    end
+end
+
 function check_sizeof(definition, typename, opt)
     opt = opt or {}
     if opt.number == nil then
@@ -58,12 +65,12 @@ function check_sizeof(definition, typename, opt)
     interp_save_scope()
     option(optname)
         set_showmenu(false)
-        add_csnippets(definition, check_sizeof_template:gsub('${TYPE}', typename), {binaryfind = binary_match})
+        add_cxxsnippets(definition, check_sizeof_template:gsub('${TYPE}', typename), {binary_match = _binary_match})
         if opt.links then
             add_links(opt.links)
         end
         if opt.includes then
-            add_cincludes(opt.includes)
+            add_cxxincludes(opt.includes)
         end
         if opt.languages then
             set_languages(opt.languages)
@@ -107,7 +114,7 @@ function configvar_check_sizeof(definition, typename, opt)
     interp_save_scope()
     option(optname)
         set_showmenu(false)
-        add_csnippets(definition, check_sizeof_template:gsub('${TYPE}', typename), {binaryfind = binary_match})
+        add_cxxsnippets(definition, check_sizeof_template:gsub('${TYPE}', typename), {binary_match = _binary_match})
         if opt.default == nil then
             set_configvar(defname, defval or 1, {quote = opt.quote})
         end
@@ -115,7 +122,7 @@ function configvar_check_sizeof(definition, typename, opt)
             add_links(opt.links)
         end
         if opt.includes then
-            add_cincludes(opt.includes)
+            add_cxxincludes(opt.includes)
         end
         if opt.languages then
             set_languages(opt.languages)
