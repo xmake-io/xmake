@@ -260,10 +260,9 @@ function main(snippets, opt)
             if opt.binaryfind then
                 local content = io.readfile(binaryfile, {encoding = "binary"})
                 local match = content:match(opt.binaryfind)
-                if match == nil then
-                    return false
+                if match then
+                    return true, match
                 end
-                return true, match
             end
             return true
         end,
