@@ -9,6 +9,7 @@
 * [#3381](https://github.com/xmake-io/xmake/issues/3381): Add `xmake test` support
 * [#4276](https://github.com/xmake-io/xmake/issues/4276): Support custom scope api
 * [#4286](https://github.com/xmake-io/xmake/pull/4286): Add Apple XROS support
+* [#4345](https://github.com/xmake-io/xmake/issues/4345): Support check sizeof
 
 ### Changes
 
@@ -1685,6 +1686,7 @@
 * [#3381](https://github.com/xmake-io/xmake/issues/3381): 添加 `xmake test` 支持
 * [#4276](https://github.com/xmake-io/xmake/issues/4276): 支持自定义域 API
 * [#4286](https://github.com/xmake-io/xmake/pull/4286): 添加 Apple XROS 支持
+* [#4345](https://github.com/xmake-io/xmake/issues/4345): 支持检测类型大小 sizeof
 
 ### 改进
 

@@ -18,6 +18,7 @@ target("foo")
         return test();
     }]], {tryrun = true})
     check_csnippets("INT_SIZE", 'printf("%d", sizeof(int)); return 0;', {output = true, number = true})
+    check_sizeof("LONG_SIZE", "long")
     configvar_check_cincludes("HAS_STRING_AND_STDIO_H", {"string.h", "stdio.h"})
     configvar_check_ctypes("HAS_WCHAR_AND_FLOAT", {"wchar_t", "float"})
     configvar_check_links("HAS_PTHREAD", {"pthread", "m", "dl"})
