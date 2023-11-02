@@ -113,17 +113,17 @@ function _instance:_do_check_cxsnippets(snippets)
             local snippets_build = {}
             local snippets_tryrun = {}
             local snippets_output = {}
-            local snippets_binaryfind = {}
-            local snippet_binaryfind = nil
+            local snippets_binary_match = {}
+            local snippet_binary_match = nil
             if snippets then
                 for name, snippet in pairs(snippets) do
                     if self:extraconf(kind .. "snippets", name, "output") then
                         snippets_output[name] = snippet
                     elseif self:extraconf(kind .. "snippets", name, "tryrun") then
                         snippets_tryrun[name] = snippet
-                    elseif self:extraconf(kind .. "snippets", name, "binaryfind") then
-                        snippets_binaryfind[name] = snippet
-                        snippet_binaryfind = self:extraconf(kind .. "snippets", name, "binaryfind")
+                    elseif self:extraconf(kind .. "snippets", name, "binary_match") then
+                        snippets_binary_match[name] = snippet
+                        snippet_binary_match = self:extraconf(kind .. "snippets", name, "binary_match")
                     else
                         snippets_build[name] = snippet
                     end
@@ -178,15 +178,15 @@ function _instance:_do_check_cxsnippets(snippets)
                 end
             end
 
-            -- check snippets (run with binaryfind)
-            if #table.keys(snippets_binaryfind) > 0 then
-                local ok, results_or_errors, output = sandbox.load(self._check_cxsnippets, snippets_binaryfind, {
+            -- check snippets (run with binary_match)
+            if #table.keys(snippets_binary_match) > 0 then
+                local ok, results_or_errors, output = sandbox.load(self._check_cxsnippets, snippets_binary_match, {
                                                             target = self,
                                                             sourcekind = sourcekind,
                                                             types = types,
                                                             funcs = funcs,
                                                             includes = includes,
-                                                            binaryfind = snippet_binaryfind})
+                                                            binary_match = snippet_binary_match})
                 if not ok then
                     return false, -1, results_or_errors
                 end
