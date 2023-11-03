@@ -276,6 +276,7 @@ function _instance:_invalidate(name)
     -- we need to flush the source files cache if target/files are modified, e.g. `target:add("files", "xxx.c")`
     if name == "files" then
         self._SOURCEFILES = nil
+        self._FILESCONFIG = nil
     elseif name == "deps" then
         self._DEPS = nil
         self._ORDERDEPS = nil

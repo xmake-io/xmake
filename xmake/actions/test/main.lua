@@ -359,6 +359,9 @@ function main()
                             file = path.absolute(file, scriptdir)
                             file = path.relative(file, os.projectdir())
                             target_new:add("files", file, {defines = extra.defines,
+                                                           cflags = extra.cflags,
+                                                           cxflags = extra.cxflags,
+                                                           cxxflags = extra.cxxflags,
                                                            undefines = extra.undefines,
                                                            languages = extra.languages})
                             project.target_add(target_new)
@@ -367,6 +370,18 @@ function main()
                             file = path.absolute(file, scriptdir)
                             file = path.relative(file, os.projectdir())
                             target_new:remove("files", file)
+                        end
+                        if extra.frameworks then
+                            target_new:add("frameworks", extra.frameworks)
+                        end
+                        if extra.links then
+                            target_new:add("links", extra.links)
+                        end
+                        if extra.syslinks then
+                            target_new:add("syslinks", extra.syslinks)
+                        end
+                        if extra.packages then
+                            target_new:add("packages", extra.packages)
                         end
                         testinfo.target = target_new
                     end
