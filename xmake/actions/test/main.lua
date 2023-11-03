@@ -65,7 +65,7 @@ function _do_test_target(target, opt)
         errors = errdata or errors
         if not errors or #errors == 0 then
             if ok ~= nil then
-                errors = string.format("run failed, exit code: %d", ok)
+                errors = string.format("%s\nrun failed, exit code: %d", outdata or "", ok)
             else
                 errors = string.format("run failed, exit error: %s", syserrors and syserrors or "unknown reason")
             end
@@ -366,7 +366,7 @@ function main()
                         for _, file in ipairs(extra.remove_files) do
                             file = path.absolute(file, scriptdir)
                             file = path.relative(file, os.projectdir())
-                            target_new:add("remove_files", file)
+                            target_new:remove("files", file)
                         end
                         testinfo.target = target_new
                     end
