@@ -358,8 +358,15 @@ function main()
                         for _, file in ipairs(extra.files) do
                             file = path.absolute(file, scriptdir)
                             file = path.relative(file, os.projectdir())
-                            target_new:add("files", file, {defines = extra.defines})
+                            target_new:add("files", file, {defines = extra.defines,
+                                                           undefines = extra.undefines,
+                                                           languages = extra.languages})
                             project.target_add(target_new)
+                        end
+                        for _, file in ipairs(extra.remove_files) do
+                            file = path.absolute(file, scriptdir)
+                            file = path.relative(file, os.projectdir())
+                            target_new:add("remove_files", file)
                         end
                         testinfo.target = target_new
                     end
