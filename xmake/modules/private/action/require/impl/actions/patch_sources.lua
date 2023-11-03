@@ -98,7 +98,7 @@ function _patch(package, patch_url, patch_hash)
     end
 
     -- apply the patch file
-    git.apply(patch_file)
+    git.apply(patch_file, {gitdir = os.curdir()})
 end
 
 -- patch the given package
