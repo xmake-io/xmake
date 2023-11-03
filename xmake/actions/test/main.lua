@@ -344,56 +344,57 @@ function main()
         group_pattern = "^" .. path.pattern(group_pattern) .. "$"
     end
     for _, target in ipairs(project.ordertargets()) do
-        if target:is_binary() or target:script("run") then
-            for _, name in ipairs(target:get("tests")) do
-                local extra = target:extraconf("tests", name)
-                local testname = target:name() .. "/" .. name
-                local testinfo = {name = testname, target = target}
-                if extra then
-                    table.join2(testinfo, extra)
-                    if extra.files then
-                        local target_new = target:clone()
-                        local scriptdir = target:scriptdir()
-                        target_new:name_set(target:name() .. "_" .. name)
-                        for _, file in ipairs(extra.files) do
-                            file = path.absolute(file, scriptdir)
-                            file = path.relative(file, os.projectdir())
-                            target_new:add("files", file, {defines = extra.defines,
-                                                           cflags = extra.cflags,
-                                                           cxflags = extra.cxflags,
-                                                           cxxflags = extra.cxxflags,
-                                                           undefines = extra.undefines,
-                                                           languages = extra.languages})
-                            project.target_add(target_new)
-                        end
-                        for _, file in ipairs(extra.remove_files) do
-                            file = path.absolute(file, scriptdir)
-                            file = path.relative(file, os.projectdir())
-                            target_new:remove("files", file)
-                        end
-                        if extra.frameworks then
-                            target_new:add("frameworks", extra.frameworks)
-                        end
-                        if extra.links then
-                            target_new:add("links", extra.links)
-                        end
-                        if extra.syslinks then
-                            target_new:add("syslinks", extra.syslinks)
-                        end
-                        if extra.packages then
-                            target_new:add("packages", extra.packages)
-                        end
-                        testinfo.target = target_new
+        for _, name in ipairs(target:get("tests")) do
+            local extra = target:extraconf("tests", name)
+            local testname = target:name() .. "/" .. name
+            local testinfo = {name = testname, target = target}
+            if extra then
+                table.join2(testinfo, extra)
+                if extra.files then
+                    local target_new = target:clone()
+                    local scriptdir = target:scriptdir()
+                    target_new:name_set(target:name() .. "_" .. name)
+                    for _, file in ipairs(extra.files) do
+                        file = path.absolute(file, scriptdir)
+                        file = path.relative(file, os.projectdir())
+                        target_new:add("files", file, {defines = extra.defines,
+                                                       cflags = extra.cflags,
+                                                       cxflags = extra.cxflags,
+                                                       cxxflags = extra.cxxflags,
+                                                       undefines = extra.undefines,
+                                                       languages = extra.languages})
+                        project.target_add(target_new)
                     end
+                    for _, file in ipairs(extra.remove_files) do
+                        file = path.absolute(file, scriptdir)
+                        file = path.relative(file, os.projectdir())
+                        target_new:remove("files", file)
+                    end
+                    if extra.kind then
+                        target_new:set("kind", kind)
+                    end
+                    if extra.frameworks then
+                        target_new:add("frameworks", extra.frameworks)
+                    end
+                    if extra.links then
+                        target_new:add("links", extra.links)
+                    end
+                    if extra.syslinks then
+                        target_new:add("syslinks", extra.syslinks)
+                    end
+                    if extra.packages then
+                        target_new:add("packages", extra.packages)
+                    end
+                    testinfo.target = target_new
                 end
-                if not testinfo.group then
-                    testinfo.group = target:get("group")
-                end
+            end
+            if not testinfo.group then
+                testinfo.group = target:get("group")
+            end
 
-                local group = testinfo.group
-                if (not group_pattern) or (group_pattern and group and group:match(group_pattern)) then
-                    tests[testname] = testinfo
-                end
+            local group = testinfo.group
+            if (not group_pattern) or (group_pattern and group and group:match(group_pattern)) then
+                tests[testname] = testinfo
             end
         end
     end
