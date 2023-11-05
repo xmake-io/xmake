@@ -37,6 +37,7 @@ rule("platform.windows.manifest")
                 end
             end
             if manifest then
+                target:add("ldflags", "/MANIFESTUAC:NO", {force = true})
                 target:add("ldflags", "/manifest:embed", {force = true})
             end
         end
