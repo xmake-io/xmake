@@ -48,6 +48,18 @@ rule("platform.windows.manifest")
                     target:add("ldflags", "/manifestuac:no", {force = true})
                 end
                 target:add("ldflags", "/manifest:embed", {force = true})
+            else
+                local level = target:policy("windows.manifest.uac")
+                if level then
+                    local level_maps = {
+                        invoker = "asInvoker",
+                        admin = "requireAdministrator",
+                        highest = "highestAvailable"
+                    }
+                    assert(level_maps[level], "unknown uac level %s, please set invoker, admin or highest", level)
+                    local ui = target:policy("windows.manifest.uac.ui") or false
+                    target:add("ldflags", "/manifest", {("/manifestuac:Level='%s' uiAccess='%s'"):format(level_maps[level], ui)}, {force = true, expand = false})
+                end
             end
         end
     end)
