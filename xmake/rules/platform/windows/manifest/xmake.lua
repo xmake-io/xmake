@@ -28,15 +28,25 @@ rule("platform.windows.manifest")
         end
         if target:has_tool("ld", "link") then
             local manifest = false
+            local uac = false
             local sourcebatch = target:sourcebatches()["platform.windows.manifest"]
             if sourcebatch then
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                    target:add("ldflags", "/ManifestInput:" .. path.translate(sourcefile), {force = true})
+                    target:add("ldflags", "/manifestinput:" .. path.translate(sourcefile), {force = true})
                     manifest = true
+                    local content = io.readfile(sourcefile)
+                    if content and content:find("requestedPrivileges", 1, true) then
+                        uac = true
+                    end
                     break
                 end
             end
             if manifest then
+                -- if manifest file is provided, we need disable default UAC manifest
+                -- @see https://github.com/xmake-io/xmake/pull/4362
+                if uac then
+                    target:add("ldflags", "/manifestuac:no", {force = true})
+                end
                 target:add("ldflags", "/manifest:embed", {force = true})
             end
         end
