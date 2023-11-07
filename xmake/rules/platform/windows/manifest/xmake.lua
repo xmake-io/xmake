@@ -23,16 +23,17 @@
 rule("platform.windows.manifest")
     set_extensions(".manifest")
     on_config("windows", function (target)
-        if not target:is_binary() then
+        if not target:is_binary() and not target:is_shared() then
             return
         end
-        if target:has_tool("ld", "link") then
+        if target:has_tool("ld", "link") or target:has_tool("sh", "link") then
             local manifest = false
             local uac = false
             local sourcebatch = target:sourcebatches()["platform.windows.manifest"]
             if sourcebatch then
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     target:add("ldflags", "/manifestinput:" .. path.translate(sourcefile), {force = true})
+                    target:add("shflags", "/manifestinput:" .. path.translate(sourcefile), {force = true})
                     manifest = true
                     local content = io.readfile(sourcefile)
                     if content then
@@ -50,7 +51,10 @@ rule("platform.windows.manifest")
                 if uac then
                     target:add("ldflags", "/manifestuac:no", {force = true})
                 end
+                target:add("shflags", "/manifestuac:no", {force = true})
+
                 target:add("ldflags", "/manifest:embed", {force = true})
+                target:add("shflags", "/manifest:embed", {force = true})
             else
                 local level = target:policy("windows.manifest.uac")
                 if level then
