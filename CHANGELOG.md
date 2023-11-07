@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.8.5
+
 ### New features
 
 * [#1452](https://github.com/xmake-io/xmake/issues/1452): Improve link mechanism and order
@@ -1679,6 +1681,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.8.5
 
 ### 新特性
 
