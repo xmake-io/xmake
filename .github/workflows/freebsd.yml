@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: macos-12
+    runs-on: ubuntu-latest
 
     concurrency:
         group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-FreeBSD
