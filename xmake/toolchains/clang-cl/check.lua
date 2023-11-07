@@ -68,8 +68,13 @@ function _check_vsenv(toolchain)
                 toolchain:config_set("vs_sdkver", vcvars.WindowsSDKVersion)
 
                 -- check compiler
-                local program = nil
-                local tool = find_tool("clang-cl.exe", {version = true, force = true, envs = vcvars})
+                local program
+                local paths
+                local pathenv = os.getenv("PATH")
+                if pathenv then
+                    paths = path.splitenv(pathenv)
+                end
+                local tool = find_tool("clang-cl.exe", {version = true, force = true, paths = paths, envs = vcvars})
                 if tool then
                     program = tool.program
                 end
