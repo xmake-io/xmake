@@ -35,8 +35,11 @@ rule("platform.windows.manifest")
                     target:add("ldflags", "/manifestinput:" .. path.translate(sourcefile), {force = true})
                     manifest = true
                     local content = io.readfile(sourcefile)
-                    if content and content:find("requestedPrivileges", 1, true) then
-                        uac = true
+                    if content then
+                        content = content:gsub("<!%-%-.-%-%->", "")
+                        if content:find("requestedPrivileges", 1, true) then
+                            uac = true
+                        end
                     end
                     break
                 end
