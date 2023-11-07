@@ -40,6 +40,7 @@ function main(opt)
     opt = opt or {}
 
     -- find program
+    opt.envs = os.getenvs() -- get clang-cl from $PATH (LLVM/bin) first
     local program = find_program(opt.program or "clang-cl.exe", opt)
 
     -- find program version
