@@ -20,7 +20,7 @@ jobs:
           submodules: true
 
       - name: Tests
-        uses: vmactions/freebsd-vm@v0
+        uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
           mem: 4096
