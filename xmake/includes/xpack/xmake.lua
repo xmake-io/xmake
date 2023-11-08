@@ -25,5 +25,21 @@
 -- @see https://github.com/xmake-io/xmake/issues/1433
 --
 
--- define package description
-interp_add_scopeapis("xpack.set_description", {kind = "values"})
+-- define apis
+local apis = {
+    values = {
+        -- set package version, we will also use project/target version if it's not configured
+        "xpack.set_version",
+        -- set pacakge homepage url
+        "xpack.set_homepage",
+        -- set package description
+        "xpack.set_description",
+        -- set package license, we will also use target license if it's not configured
+        "xpack.set_license",
+        -- add target names to be packaged
+        "xpack.add_targets"
+    }
+}
+for _, apiname in ipairs(apis.values) do
+    interp_add_scopeapis(apiname, {kind = "values"})
+end
