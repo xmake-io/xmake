@@ -19,4 +19,4 @@
 --
 
 
-interp_add_scopeapis("xpack_package.set_name", {kind = "values"})
+interp_add_scopeapis("xpack.set_description", {kind = "values"})
