@@ -15,15 +15,13 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        main.lua
 --
 
--- Define xpack interfaces to generate installation package. e.g. nsis, deb, rpm, ...
---
--- And we can call `xmake pack` plugin to pack them.
---
--- @see https://github.com/xmake-io/xmake/issues/1433
---
+-- imports
+import("core.base.option")
 
--- define package description
-interp_add_scopeapis("xpack.set_description", {kind = "values"})
+function main()
+
+end
+
