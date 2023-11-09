@@ -36,8 +36,8 @@ local apis = {
         "xpack.set_description",
         -- set package license, we will also get them from target
         "xpack.set_license",
-        -- add package formats, e.g. nsis, deb, rpm, targz, zip, runself, ...
-        "xpack.add_formats",
+        -- set package formats, e.g. nsis, deb, rpm, targz, zip, runself, ...
+        "xpack.set_formats",
         -- add targets to be packaged
         "xpack.add_targets",
         -- add install files, we will also get them from target

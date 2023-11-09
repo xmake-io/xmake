@@ -197,6 +197,9 @@ function packages()
         local formats_need = option.get("formats")
         if formats_need then
             formats_need = formats_need:split(",")
+            if formats_need[1] == "all" then
+                formats_need = nil
+            end
         end
         local xpack_scope = project.scope("xpack")
         for name, scope in pairs(xpack_scope) do

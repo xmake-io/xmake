@@ -7,7 +7,7 @@ target("test")
     add_files("src/*.cpp")
 
 xpack("test")
-    add_formats("nsis")
+    set_formats("nsis")
     set_description("hello")
     add_targets("test")
 

@@ -25,11 +25,16 @@ import("core.project.project")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("xpack")
 
+function _pack_package(package)
+    assert(package:formats(), "xpack(%s): formats not found, please use `set_formats()` to set it.", package:name())
+    for _, format in package:formats():keys() do
+        import(format)(package)
+    end
+end
+
 function _pack_packages()
-    for _, instance in pairs(xpack.packages()) do
-        print("xpack(%s)", instance:name())
-        print("    description: %s", instance:description())
-        print("    installcmd: ", instance:script("installcmd"))
+    for _, package in pairs(xpack.packages()) do
+        _pack_package(package)
     end
 end
 
