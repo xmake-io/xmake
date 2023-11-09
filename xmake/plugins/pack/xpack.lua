@@ -194,6 +194,10 @@ function packages()
         if packages_need then
             packages_need = hashset.from(packages_need)
         end
+        local formats_need = option.get("formats")
+        if formats_need then
+            formats_need = formats_need:split(",")
+        end
         local xpack_scope = project.scope("xpack")
         for name, scope in pairs(xpack_scope) do
             local need = false
@@ -206,7 +210,9 @@ function packages()
             end
             if need then
                 local instance = _new(name, scope)
-                packages[name] = instance
+                if not formats_need or instance:has_format(table.unpack(formats_need)) then
+                    packages[name] = instance
+                end
             end
         end
         _g.packages = packages
