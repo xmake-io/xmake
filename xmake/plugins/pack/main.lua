@@ -19,9 +19,46 @@
 --
 
 -- imports
+import("core.base.task")
 import("core.base.option")
+import("core.project.project")
+import("private.service.remote_build.action", {alias = "remote_build_action"})
+
+function _pack_packages()
+    local xpack_scope = project.scope("xpack")
+    for name, scope in pairs(xpack_scope) do
+        print("xpack(%s)", name)
+        print("    description: %s", scope:get("description"))
+    end
+end
 
 function main()
 
+    -- do action for remote?
+    if remote_build_action.enabled() then
+        return remote_build_action()
+    end
+
+    -- lock the whole project
+    project.lock()
+
+    -- load config first
+    task.run("config", {}, {disable_dump = true})
+
+    -- load targets
+    project.load_targets()
+
+    -- enter project directory
+    local oldir = os.cd(project.directory())
+
+    -- do pack
+    _pack_packages()
+
+    -- leave project directory
+    os.cd(oldir)
+
+    -- unlock the whole project
+    project.unlock()
 end
+
 
