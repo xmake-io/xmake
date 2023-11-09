@@ -1897,11 +1897,15 @@ function interpreter:api_interp_add_scopeapis(...)
     else
         extra_config = nil
     end
-    local kind = "values"
-    if extra_config and extra_config.kind then
-        kind = extra_config.kind
+    if extra_config and #apis == 0 then
+        self:api_define(extra_config)
+    else
+        local kind = "values"
+        if extra_config and extra_config.kind then
+            kind = extra_config.kind
+        end
+        return self:api_define({[kind] = apis})
     end
-    return self:api_define({[kind] = apis})
 end
 
 -- get api function

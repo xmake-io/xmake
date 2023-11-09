@@ -52,9 +52,4 @@ local apis = {
         "xpack.on_uninstallcmd"
     }
 }
-for _, apiname in ipairs(apis.values) do
-    interp_add_scopeapis(apiname, {kind = "values"})
-end
-for _, apiname in ipairs(apis.script) do
-    interp_add_scopeapis(apiname, {kind = "script"})
-end
+interp_add_scopeapis(apis)
