@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
+import("core.project.project")
 import("core.package.repository")
 import("devel.git")
 import("net.proxy")
@@ -49,13 +50,19 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
         repodir_local = path.join(config.directory(), "repositories", reponame)
     end
 
+    -- get the network mode?
+    local network = project.policy("network.mode")
+    if network == nil then
+        network = global.get("network")
+    end
+
     -- clone repository to local
     local lastcommit
     if not os.isdir(repodir_local) then
         if repo_global then
             git.clone(repo_global:directory(), {verbose = option.get("verbose"), outputdir = repodir_local})
             lastcommit = repo_global:commit()
-        elseif global.get("network") ~= "private" then
+        elseif network ~= "private" then
             local remoteurl = proxy.mirror(locked_repo.url) or locked_repo.url
             git.clone(remoteurl, {verbose = option.get("verbose"), branch = locked_repo.branch, outputdir = repodir_local})
         else
@@ -74,7 +81,7 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
             -- try checkout to the given commit
             ok = try {function () git.checkout(locked_repo.commit, {verbose = option.get("verbose"), repodir = repodir_local}); return true end}
             if not ok then
-                if global.get("network") ~= "private" then
+                if network ~= "private" then
                     -- pull the latest commit
                     local remoteurl = proxy.mirror(locked_repo.url) or locked_repo.url
                     git.pull({verbose = option.get("verbose"), remote = remoteurl, branch = locked_repo.branch, repodir = repodir_local})
@@ -116,7 +123,13 @@ end
 
 -- the remote repositories have been pulled?
 function pulled()
-    if global.get("network") ~= "private" then
+
+    local network = project.policy("network.mode")
+    if network == nil then
+        network = global.get("network")
+    end
+
+    if network ~= "private" then
         for _, repo in ipairs(repositories()) do
             if not os.isdir(repo:url()) then
                 -- repository not found? or xmake has been re-installed

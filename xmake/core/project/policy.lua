@@ -124,7 +124,10 @@ function policy.policies()
             -- Return zero as exit code on failure
             ["test.return_zero_on_failure"]       = {description = "Return zero as the exit code on failure", default = false, type = "boolean"},
             -- Show diagnosis info for checking build dependencies
-            ["diagnosis.check_build_deps"]        = {description = "Show diagnosis info for checking build dependencies", default = false, type = "boolean"}
+            ["diagnosis.check_build_deps"]        = {description = "Show diagnosis info for checking build dependencies", default = false, type = "boolean"},
+            -- Set the network mode, e.g. public/private
+            --   private: it will disable fetch remote package repositories
+            ["network.mode"]                      = {description = "Set the network mode", type = "string"}
         }
         policy._POLICIES = policies
     end

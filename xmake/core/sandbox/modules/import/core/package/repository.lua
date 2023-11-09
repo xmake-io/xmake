@@ -107,6 +107,12 @@ function sandbox_core_package_repository.repositories(is_global)
     -- add global xmake repositories
     if is_global then
 
+        -- get the network mode
+        local network = project.policy("network.mode")
+        if network == nil then
+            network = global.get("network")
+        end
+
         -- add artifacts urls
         local artifacts_urls = localcache.cache("repository"):get("artifacts_urls")
         if not artifacts_urls then
@@ -117,7 +123,7 @@ function sandbox_core_package_repository.repositories(is_global)
                 artifacts_urls = {"https://github.com/xmake-mirror/build-artifacts.git",
                                   "https://gitlab.com/xmake-mirror/build-artifacts.git",
                                   "https://gitee.com/xmake-mirror/build-artifacts.git"}
-                if global.get("network") ~= "private" then
+                if network ~= "private" then
                     import("net.fasturl")
                     fasturl.add(artifacts_urls)
                     artifacts_urls = fasturl.sort(artifacts_urls)
@@ -143,7 +149,7 @@ function sandbox_core_package_repository.repositories(is_global)
                 mainurls = {"https://github.com/xmake-io/xmake-repo.git",
                             "https://gitlab.com/tboox/xmake-repo.git",
                             "https://gitee.com/tboox/xmake-repo.git"}
-                if global.get("network") ~= "private" then
+                if network ~= "private" then
                     import("net.fasturl")
                     fasturl.add(mainurls)
                     mainurls = fasturl.sort(mainurls)
