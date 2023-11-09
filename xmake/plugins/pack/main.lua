@@ -23,13 +23,13 @@ import("core.base.task")
 import("core.base.option")
 import("core.project.project")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
+import("xpack")
 
 function _pack_packages()
-    local xpack_scope = project.scope("xpack")
-    for name, scope in pairs(xpack_scope) do
-        print("xpack(%s)", name)
-        print("    description: %s", scope:get("description"))
-        print("    installcmd: ", scope:get("installcmd"))
+    for _, instance in pairs(xpack.packages()) do
+        print("xpack(%s)", instance:name())
+        print("    description: %s", instance:description())
+        print("    installcmd: ", instance:script("installcmd"))
     end
 end
 
