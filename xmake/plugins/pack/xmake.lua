@@ -25,6 +25,13 @@ task("pack")
         usage = "xmake pack [options] [names]",
         description = "Pack binary installation packages.",
         options = {
-            {nil, "names",   "vs", nil, "The package names."}
+            {'o', "output",    "kv", nil,   "The output directory. (default: build/xpack)"},
+            {'f', "formats",   "kv", "all", "Pack the given package formats.",
+                                            "e.g.",
+                                            "    - xmake pack -f nsis,deb,rpm",
+                                            "values:",
+                                            values = {"nsis", "deb", "rpm", "runself", "targz", "zip"}},
+            {},
+            {nil, "packages",  "vs", nil,   "The package names."}
         }
     }

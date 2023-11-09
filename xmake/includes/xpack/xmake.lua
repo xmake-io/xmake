@@ -28,16 +28,26 @@
 -- define apis
 local apis = {
     values = {
-        -- set package version, we will also use project/target version if it's not configured
+        -- set package version,  we will also get it from project/target
         "xpack.set_version",
         -- set pacakge homepage url
         "xpack.set_homepage",
         -- set package description
         "xpack.set_description",
-        -- set package license, we will also use target license if it's not configured
+        -- set package license, we will also get them from target
         "xpack.set_license",
-        -- add target names to be packaged
-        "xpack.add_targets"
+        -- add package formats, e.g. nsis, deb, rpm, targz, zip, runself, ...
+        "xpack.add_formats",
+        -- add targets to be packaged
+        "xpack.add_targets",
+        -- add install files, we will also get them from target
+        "xpack.add_installfiles",
+        -- set install directory, we will also get it from target
+        "xpack.set_installdir",
+        -- add custom install commands script, we will also get it from target/rules
+        "xpack.on_installcmd",
+        -- add custom uninstall commands script, we will also get it from target/rules
+        "xpack.on_uninstallcmd"
     }
 }
 for _, apiname in ipairs(apis.values) do
