@@ -43,7 +43,9 @@ local apis = {
         -- add install files, we will also get them from target
         "xpack.add_installfiles",
         -- set install directory, we will also get it from target
-        "xpack.set_installdir",
+        "xpack.set_installdir"
+    },
+    script = {
         -- add custom install commands script, we will also get it from target/rules
         "xpack.on_installcmd",
         -- add custom uninstall commands script, we will also get it from target/rules
