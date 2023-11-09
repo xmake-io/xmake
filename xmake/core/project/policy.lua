@@ -127,7 +127,7 @@ function policy.policies()
             ["diagnosis.check_build_deps"]        = {description = "Show diagnosis info for checking build dependencies", default = false, type = "boolean"},
             -- Set the network mode, e.g. public/private
             --   private: it will disable fetch remote package repositories
-            ["network.mode"]                      = {description = "Set the network mode", type = "string"}
+            ["network.mode"]                      = {description = "Set the network mode", type = "string"},
             -- Install packages in the project folder instead of XMAKE_PKG_INSTALLDIR
             ["package.install_locally"]           = {description = "Install packages in the project folder instead of XMAKE_PKG_INSTALLDIR", default = false, type = "boolean"},
         }
@@ -145,7 +145,7 @@ function policy.check(name, value)
         else
             local valtype = type(value)
             if valtype ~= defined_policy.type then
-                utils.warning("policy(%s): invalid value type(%s), it shound be '%s'!", name, valtype, defined_policy.type)
+                utils.warning("policy(%s): invalid value type(%s), it should be '%s'!", name, valtype, defined_policy.type)
             end
         end
         return value
