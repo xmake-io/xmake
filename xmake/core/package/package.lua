@@ -632,8 +632,19 @@ end
 
 -- is local package?
 -- we will use local installdir and cachedir in current project
-function _instance:is_local()
-    return self:is_source_embed() or self:is_binary_embed() or self:is_thirdparty()
+function _instance:is_local(opt)
+    if self:is_source_embed() or self:is_binary_embed() or self:is_thirdparty() then
+        return true
+    end
+
+    if not opt or not opt.ignorelocal then
+        local project = package._project()
+        if project and project.policy("package.install_locally") then
+            return true
+        end
+    end
+
+    return false
 end
 
 -- use external includes?
@@ -729,10 +740,10 @@ function _instance:sourcedir()
 end
 
 -- get the build directory
-function _instance:buildir()
+function _instance:buildir(opt)
     local buildir = self._BUILDIR
     if not buildir then
-        if self:is_local() then
+        if self:is_local(opt) then
             local name = self:name():lower():gsub("::", "_")
             local rootdir = path.join(config.buildir({absolute = true}), ".packages", name:sub(1, 1):lower(), name, self:version_str())
             buildir = path.join(rootdir, "cache", "build_" .. self:buildhash():sub(1, 8))
@@ -745,7 +756,7 @@ function _instance:buildir()
 end
 
 -- get the cached directory of this package
-function _instance:cachedir()
+function _instance:cachedir(opt)
     local cachedir = self._CACHEDIR
     if not cachedir then
         cachedir = self:get("cachedir")
@@ -756,7 +767,7 @@ function _instance:cachedir()
                 -- strip `>= <=`
                 version_str = version_str:gsub("[>=<]", "")
             end
-            if self:is_local() then
+            if self:is_local(opt) then
                 cachedir = path.join(config.buildir({absolute = true}), ".packages", name:sub(1, 1):lower(), name, version_str, "cache")
             else
                 cachedir = path.join(package.cachedir(), name:sub(1, 1):lower(), name, version_str)
@@ -769,12 +780,21 @@ end
 
 -- get the installed directory of this package
 function _instance:installdir(...)
+    -- get dirs and opt
+    local dirs = table.pack(...)
+    local opt = dirs[dirs.n]
+    if table.is_dictionary(opt) then
+        table.remove(dirs)
+    else
+        opt = {}
+    end
+    -- get installdir
     local installdir = self._INSTALLDIR
-    if not installdir then
+    if not installdir or opt.ignorecache then
         installdir = self:get("installdir")
         if not installdir then
             local name = self:name():lower():gsub("::", "_")
-            if self:is_local() then
+            if self:is_local(opt) then
                 installdir = path.join(config.buildir({absolute = true}), ".packages", name:sub(1, 1):lower(), name)
             else
                 installdir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
@@ -789,14 +809,9 @@ function _instance:installdir(...)
             end
             installdir = path.join(installdir, self:buildhash())
         end
-        self._INSTALLDIR = installdir
-    end
-    local dirs = table.pack(...)
-    local opt = dirs[dirs.n]
-    if table.is_dictionary(opt) then
-        table.remove(dirs)
-    else
-        opt = nil
+        if not opt.ignorecache then
+            self._INSTALLDIR = installdir
+        end
     end
     local dir = path.join(installdir, table.unpack(dirs))
     if opt and opt.readonly then
@@ -1711,13 +1726,34 @@ end
 function _instance:find_tool(name, opt)
     opt = opt or {}
     self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
-    return self._find_tool(name, {cachekey = opt.cachekey or "fetch_package_system",
-                                  installdir = self:installdir({readonly = true}),
-                                  version = true, -- we alway check version
-                                  require_version = opt.require_version,
-                                  norun = opt.norun,
-                                  system = opt.system,
-                                  force = opt.force})
+    local fetchopt = {
+        cachekey = opt.cachekey or "fetch_package_system",
+        installdir = installdir,
+        version = true, -- we alway check version
+        require_version = opt.require_version,
+        norun = opt.norun,
+        system = opt.system,
+        force = opt.force
+    }
+
+    local installdir = self:installdir({readonly = true})
+    fetchopt.installdir = installdir
+    local fetchinfo = self._find_tool(name, fetchopt)
+    if fetchinfo then
+        return fetchinfo
+    end
+
+    -- try from global install dir (if package has install_locally policy)
+    installdir = self:installdir({readonly = true, ignorelocal = true, ignorecache = true})
+    if installdir ~= fetchopt.installdir then
+        fetchopt.installdir = installdir
+        fetchopt.cachekey = fetchopt.cachekey .. "_global"
+
+        fetchinfo = self._find_tool(name, fetchopt)
+        if fetchinfo then
+            return fetchinfo
+        end
+    end
 end
 
 -- find package
@@ -1728,22 +1764,41 @@ function _instance:find_package(name, opt)
     if system == nil and not name:startswith("xmake::") then
         system = true -- find system package by default
     end
-    return self._find_package(name, {
-                              force = opt.force,
-                              installdir = self:installdir({readonly = true}),
-                              version = true, -- we alway check version
-                              require_version = opt.require_version,
-                              mode = self:mode(),
-                              plat = self:plat(),
-                              arch = self:arch(),
-                              configs = table.join(self:configs(), opt.configs),
-                              components = self:components_orderlist(),
-                              components_extsources = opt.components_extsources,
-                              buildhash = self:buildhash(), -- for xmake package or 3rd package manager, e.g. go:: ..
-                              cachekey = opt.cachekey or "fetch_package_system",
-                              external = opt.external,
-                              includes = opt.includes, -- system/find_package need it
-                              system = system})
+    local fetchopt = {
+        force = opt.force,
+        version = true, -- we alway check version
+        require_version = opt.require_version,
+        mode = self:mode(),
+        plat = self:plat(),
+        arch = self:arch(),
+        configs = table.join(self:configs(), opt.configs),
+        components = self:components_orderlist(),
+        components_extsources = opt.components_extsources,
+        buildhash = self:buildhash(), -- for xmake package or 3rd package manager, e.g. go:: ..
+        cachekey = opt.cachekey or "fetch_package_system",
+        external = opt.external,
+        includes = opt.includes, -- system/find_package need it
+        system = system
+    }
+
+    local installdir = self:installdir({readonly = true})
+    fetchopt.installdir = installdir
+    local fetchinfo = self._find_package(name, fetchopt)
+    if fetchinfo then
+        return fetchinfo
+    end
+
+    -- try from global install dir (if package has install_locally policy)
+    installdir = self:installdir({readonly = true, ignorelocal = true, ignorecache = true})
+    if installdir ~= fetchopt.installdir then
+        fetchopt.installdir = installdir
+        fetchopt.cachekey = fetchopt.cachekey .. "_global"
+
+        fetchinfo = self._find_package(name, fetchopt)
+        if fetchinfo then
+            return fetchinfo
+        end
+    end
 end
 
 -- fetch the local package info

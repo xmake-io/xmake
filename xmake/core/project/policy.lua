@@ -128,6 +128,8 @@ function policy.policies()
             -- Set the network mode, e.g. public/private
             --   private: it will disable fetch remote package repositories
             ["network.mode"]                      = {description = "Set the network mode", type = "string"}
+            -- Install packages in the project folder instead of XMAKE_PKG_INSTALLDIR
+            ["package.install_locally"]           = {description = "Install packages in the project folder instead of XMAKE_PKG_INSTALLDIR", default = false, type = "boolean"},
         }
         policy._POLICIES = policies
     end
