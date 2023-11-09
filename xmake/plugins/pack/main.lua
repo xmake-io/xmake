@@ -29,6 +29,7 @@ function _pack_packages()
     for name, scope in pairs(xpack_scope) do
         print("xpack(%s)", name)
         print("    description: %s", scope:get("description"))
+        print("    installcmd: ", scope:get("installcmd"))
     end
 end
 
