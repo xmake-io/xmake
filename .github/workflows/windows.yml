@@ -49,9 +49,9 @@ jobs:
       - name: Prepare
         run: |
           xmake show
-          curl -fsSL "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04.zip" -o ./nsis.zip
-          curl -fsSL "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04-strlen_8192.zip" -o ./nsis-longstr.zip
-          curl -fsSL "https://github.com/xmake-mirror/nsis/releases/download/v30b3/UAC.zip" -o ./nsis-uac.zip
+          curl -fsSL "https://github.com/xmake-mirror/nsis/releases/download/v309/nsis-3.09.zip" -o ./nsis.zip
+          curl -fsSL "https://github.com/xmake-mirror/nsis/releases/download/v309/nsis-3.09-strlen_8192.zip" -o ./nsis-longstr.zip
+          curl -fsSL "https://github.com/xmake-mirror/nsis/releases/download/v309/UAC.zip" -o ./nsis-uac.zip
           Expand-Archive ./nsis.zip -DestinationPath ./nsis
           Move-Item ./nsis/*/* ./nsis
           Expand-Archive ./nsis-longstr.zip -DestinationPath ./nsis -Force
