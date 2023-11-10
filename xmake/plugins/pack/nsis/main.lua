@@ -20,9 +20,48 @@
 
 -- imports
 import("core.base.option")
+import("lib.detect.find_tool")
+import("private.action.require.impl.packagenv")
+import("private.action.require.impl.install_packages")
 
-function main(package)
+-- get the makensis
+function _get_makensis()
+
+    -- enter the environments of nsis
+    local oldenvs = packagenv.enter("nsis")
+
+    -- find makensis
+    local packages = {}
+    local makensis = find_tool("makensis", {check = "/CMDHELP"})
+    if not makensis then
+        table.join2(packages, install_packages("nsis"))
+    end
+
+    -- enter the environments of installed packages
+    for _, instance in ipairs(packages) do
+        instance:envs_enter()
+    end
+
+    -- we need to force detect and flush detect cache after loading all environments
+    if not makensis then
+        makensis = find_tool("makensis", {check = "/CMDHELP", force = true})
+    end
+    assert(makensis, "makensis not found!")
+
+    return makensis, oldenvs
+end
+
+function main(package, opt)
+
+    -- get makensis
+    local makensis, oldenvs = _get_makensis()
+    print("makensis", makensis)
+
+    -- do pack
     print("xpack(%s)", package:name())
     print("    description: %s", package:description())
     print("    installcmd: ", package:script("installcmd"))
+
+    -- done
+    os.setenvs(oldenvs)
 end
