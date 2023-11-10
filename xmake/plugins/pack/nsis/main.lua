@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.semver")
 import("lib.detect.find_tool")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
@@ -61,15 +62,31 @@ function _pack_nsis(makensis, package, opt)
         os.cp(specfile_template, specfile)
     end
 
+    -- get version
+    local version, version_build = package:version()
+    assert(version, "xpack(%s): version not found!", package:name())
+    version = semver.new(version)
+
     -- generate specfile
     print("xpack(%s)", package:name())
     print("    description: %s", package:description())
     print("    installcmd: ", package:script("installcmd"))
 
-    -- ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart)
-    -- /DMINOR=$($version.ProductMinorPart)
-    -- /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion
-    -- -split '\+')[1]) /D${{ matrix.arch }} .\scripts\installer.nsi
+    local argv = {}
+    if version:major() then
+        table.insert(argv, "/DMAJOR=" .. version:major())
+    end
+    if version:minor() then
+        table.insert(argv, "/DMINOR=" .. version:minor())
+    end
+    if version:patch() then
+        table.insert(argv, "/DALTER=" .. version:patch())
+    end
+    if version_build then
+        table.insert(argv, "/DBUILD=" .. version_build)
+    end
+    table.insert(argv, specfile)
+    os.vrunv(makensis, argv)
 end
 
 function main(package, opt)

@@ -232,6 +232,29 @@ function xpack:outputfile()
     return path.join(self:outputdir(), self:filename())
 end
 
+-- get the package version
+function xpack:version()
+    local version = self:get("version")
+    local version_build
+    if version == nil then
+        for _, target in ipairs(self:targets()) do
+            version, version_build = target:version()
+            if version then
+                break
+            end
+        end
+        if version == nil then
+            version, version_build = project.version()
+        end
+    else
+        version_build = self:extraconf("version", version, "build")
+        if type(version_build) == "string" then
+            version_build = os.date(version_build, os.time())
+        end
+    end
+    return version, version_build
+end
+
 -- new a xpack
 function _new(name, info)
     return xpack {name, info}
