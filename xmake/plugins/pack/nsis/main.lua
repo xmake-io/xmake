@@ -51,16 +51,20 @@ function _get_makensis()
     return makensis, oldenvs
 end
 
+-- pack nsis package
+function _pack_nsis(makensis, package, opt)
+    print("xpack(%s)", package:name())
+    print("    description: %s", package:description())
+    print("    installcmd: ", package:script("installcmd"))
+end
+
 function main(package, opt)
 
     -- get makensis
     local makensis, oldenvs = _get_makensis()
-    print("makensis", makensis)
 
-    -- do pack
-    print("xpack(%s)", package:name())
-    print("    description: %s", package:description())
-    print("    installcmd: ", package:script("installcmd"))
+    -- pack nsis package
+    _pack_nsis(makensis.program, package, opt)
 
     -- done
     os.setenvs(oldenvs)
