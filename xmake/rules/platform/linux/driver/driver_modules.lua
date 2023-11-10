@@ -283,9 +283,9 @@ function link(target, opt)
         -- generate target.mod.c
         local orderfile = path.join(path.directory(targetfile_o), "modules.order")
         local symversfile = path.join(path.directory(targetfile_o), "Module.symvers")
-        argv = {"-m", "-a", "-o", symversfile, "-e", "-N", "-w", "-T", "-"}
+        argv = {"-m", "-a", "-o", symversfile, "-e", "-N", "-w", "-T", orderfile}
         io.writefile(orderfile, targetfile_o .. "\n")
-        os.vrunv(modpost, argv, {stdin = orderfile})
+        os.vrunv(modpost, argv)
 
         -- compile target.mod.c
         local targetfile_mod_c = targetfile_o:gsub("%.o$", ".mod.c")
