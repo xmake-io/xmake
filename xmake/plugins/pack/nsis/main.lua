@@ -89,7 +89,7 @@ function _pack_nsis(makensis, package, opt)
     os.vrunv(makensis, argv)
 end
 
-function main(package, opt)
+function main(package)
 
     -- get makensis
     local makensis, oldenvs = _get_makensis()

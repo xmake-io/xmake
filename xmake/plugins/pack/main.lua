@@ -23,6 +23,7 @@ import("core.base.task")
 import("core.base.option")
 import("core.project.project")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
+import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"})
 import("xpack")
 
 function _pack_package(package)
@@ -36,6 +37,19 @@ end
 function _pack_packages()
     for _, package in pairs(xpack.packages()) do
         _pack_package(package)
+    end
+end
+
+function _build_targets()
+    local targetnames = {}
+    for _, package in pairs(xpack.packages()) do
+        local targets = package:get("targets")
+        if targets then
+            table.join2(targetnames, targets)
+        end
+    end
+    if #targetnames > 0 then
+        build_action.build_targets(targetnames)
     end
 end
 
@@ -57,6 +71,9 @@ function main()
 
     -- enter project directory
     local oldir = os.cd(project.directory())
+
+    -- build targets first
+    _build_targets()
 
     -- do pack
     _pack_packages()
