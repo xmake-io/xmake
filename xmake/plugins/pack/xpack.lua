@@ -171,13 +171,65 @@ function xpack:formats()
 end
 
 -- has the given format?
-function xpack:has_format(...)
+function xpack:format_has(...)
     local formats = self:formats()
     for _, v in ipairs(table.pack(...)) do
         if v and formats:has(v) then
             return true
         end
     end
+end
+
+-- set the current format
+function xpack:format_set(format)
+    self._FORMAT = format
+end
+
+-- get the current format
+function xpack:format()
+    return self._FORMAT
+end
+
+-- get the build directory
+function xpack:buildir()
+    return path.join(config.buildir(), ".xpack", self:name(), self:format())
+end
+
+-- get the output directory
+function xpack:outputdir()
+    local outputdir = option.get("outputdir")
+    if outputdir == nil then
+        outputdir = path.join(config.buildir(), "xpack", self:name(), self:format())
+    end
+    return outputdir
+end
+
+-- get the basename
+function xpack:basename()
+    return self:get("basename") or self:name()
+end
+
+-- get the specfile path
+function xpack:specfile()
+    local extensions = {
+        nsis = ".nsi"
+    }
+    local extension = extensions[self:format()] or ".spec"
+    return self:get("specfile") or path.join(self:buildir(), self:basename() .. extension)
+end
+
+-- get the output filename
+function xpack:filename()
+    local extensions = {
+        nsis = ".exe"
+    }
+    local extension = extensions[self:format()] or ""
+    return self:basename() .. extension
+end
+
+-- get the output file
+function xpack:outputfile()
+    return path.join(self:outputdir(), self:filename())
 end
 
 -- new a xpack
@@ -213,7 +265,7 @@ function packages()
             end
             if need then
                 local instance = _new(name, scope)
-                if not formats_need or instance:has_format(table.unpack(formats_need)) then
+                if not formats_need or instance:format_has(table.unpack(formats_need)) then
                     packages[name] = instance
                 end
             end

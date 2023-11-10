@@ -28,7 +28,8 @@ import("xpack")
 function _pack_package(package)
     assert(package:formats(), "xpack(%s): formats not found, please use `set_formats()` to set it.", package:name())
     for _, format in package:formats():keys() do
-        import(format)(package, {format = format})
+        package:format_set(format)
+        import(format)(package)
     end
 end
 

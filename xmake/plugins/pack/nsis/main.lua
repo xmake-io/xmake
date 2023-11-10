@@ -53,15 +53,32 @@ end
 
 -- pack nsis package
 function _pack_nsis(makensis, package, opt)
+
+    -- install the initial specfile
+    local specfile = package:specfile()
+    if not os.isfile(specfile) then
+        local specfile_template = path.join(os.programdir(), "scripts", "xpack", "nsis", "makensis.nsi")
+        os.cp(specfile_template, specfile)
+    end
+
+    -- generate specfile
     print("xpack(%s)", package:name())
     print("    description: %s", package:description())
     print("    installcmd: ", package:script("installcmd"))
+
+    -- ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart)
+    -- /DMINOR=$($version.ProductMinorPart)
+    -- /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion
+    -- -split '\+')[1]) /D${{ matrix.arch }} .\scripts\installer.nsi
 end
 
 function main(package, opt)
 
     -- get makensis
     local makensis, oldenvs = _get_makensis()
+
+    -- clean the build directory first
+    os.tryrm(package:buildir())
 
     -- pack nsis package
     _pack_nsis(makensis.program, package, opt)

@@ -38,6 +38,10 @@ local apis = {
         "xpack.set_license",
         -- set package formats, e.g. nsis, deb, rpm, targz, zip, runself, ...
         "xpack.set_formats",
+        -- set the base name of the output file
+        "xpack.set_basename",
+        -- set the spec file path
+        "xpack.set_specfile",
         -- add targets to be packaged
         "xpack.add_targets",
         -- add install files, we will also get them from target
