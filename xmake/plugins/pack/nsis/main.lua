@@ -80,7 +80,7 @@ function _pack_nsis(makensis, package, opt)
         table.insert(argv, "/DMINOR=" .. version:minor())
     end
     if version:patch() then
-        table.insert(argv, "/DALTER=" .. version:patch())
+        table.insert(argv, "/DPATCH=" .. version:patch())
     end
     if version_build then
         table.insert(argv, "/DBUILD=" .. version_build)
