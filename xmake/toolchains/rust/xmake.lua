@@ -29,8 +29,21 @@ toolchain("rust")
     set_toolset("rcar", "$(env RC)", "rustc")
 
     on_load(function (toolchain)
+
         -- e.g. x86_64-pc-windows-msvc, aarch64-unknown-none
         local arch = toolchain:arch()
+        if toolchain:is_plat("android") then
+            local targets = {
+                ["armv5te"]     = "arm-linux-androideabi" -- deprecated
+            ,   ["armv7-a"]     = "arm-linux-androideabi" -- deprecated
+            ,   ["armeabi"]     = "arm-linux-androideabi" -- removed in ndk r17
+            ,   ["armeabi-v7a"] = "arm-linux-androideabi"
+            ,   ["arm64-v8a"]   = "aarch64-linux-android"
+            }
+            if targets[arch] then
+                arch = targets[arch]
+            end
+        end
         if arch and #arch:split("%-") > 1 then
             toolchain:add("rcshflags", "--target=" .. arch)
             toolchain:add("rcldflags", "--target=" .. arch)

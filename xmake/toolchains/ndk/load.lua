@@ -322,20 +322,6 @@ function main(toolchain)
     toolchain:add("target.on_ldflags", target_on_xxflags)
     toolchain:add("target.on_shflags", target_on_xxflags)
 
-    -- init targets for rust
-    local targets_rust =
-    {
-        ["armv5te"]     = "arm-linux-androideabi" -- deprecated
-    ,   ["armv7-a"]     = "arm-linux-androideabi" -- deprecated
-    ,   ["armeabi"]     = "arm-linux-androideabi" -- removed in ndk r17
-    ,   ["armeabi-v7a"] = "arm-linux-androideabi"
-    ,   ["arm64-v8a"]   = "aarch64-linux-android"
-    }
-
-    -- init flags for rust
-    if targets_rust[arch] then
-        toolchain:add("rcflags", "--target=" .. targets_rust[arch])
-    end
     local rcshflags = table.copy(toolchain:get("shflags"))
     local rcldflags = table.copy(toolchain:get("ldflags"))
     for _, link in ipairs(toolchain:get("syslinks")) do
