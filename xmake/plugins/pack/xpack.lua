@@ -215,26 +215,29 @@ function xpack:specvars()
     local specvars = self._specvars
     if specvars == nil then
         specvars = {
-            ARCH  = self:arch()
-        ,   PLAT  = self:plat()
-        ,   HOST  = os.host()
-        ,   MODE  = config.get("mode") or "release"
+            PACKAGE_ARCH        = self:arch(),
+            PACKAGE_PLAT        = self:plat(),
+            PACKAGE_NAME        = self:name(),
+            PACKAGE_DESCRIPTION = self:description() or "",
+            PACKAGE_FILENAME    = self:filename(),
+            PACKAGE_COPYRIGHT   = self:get("copyright") or "",
+            PACKAGE_COMPANY     = self:get("company") or ""
         }
 
         -- get version
         local version, version_build = self:version()
         if version then
-            specvars.VERSION = version
+            specvars.VERSION = version or "0.0.0"
             try {function ()
                 local v = semver.new(version)
                 if v then
-                    specvars.VERSION_MAJOR = v:major()
-                    specvars.VERSION_MINOR = v:minor()
-                    specvars.VERSION_ALTER = v:patch()
+                    specvars.PACKAGE_VERSION_MAJOR = v:major() or "0"
+                    specvars.PACKAGE_VERSION_MINOR = v:minor() or "0"
+                    specvars.PACKAGE_VERSION_ALTER = v:patch() or "0"
                 end
             end}
             if version_build then
-                specvars.VERSION_BUILD = version_build
+                specvars.PACKAGE_VERSION_BUILD = version_build or ""
             end
         end
 

@@ -36,6 +36,10 @@ local apis = {
         "xpack.set_description",
         -- set package license, we will also get them from target
         "xpack.set_license",
+        -- set package copyright
+        "xpack.set_copyright",
+        -- set company name
+        "xpack.set_company",
         -- set package formats, e.g. nsis, deb, rpm, targz, zip, runself, ...
         "xpack.set_formats",
         -- set the base name of the output file
