@@ -24,6 +24,7 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
+import("lib.detect.find_tool")
 
 -- define module
 local xpack = xpack or object {_init = {"_name", "_info"}}
@@ -207,6 +208,70 @@ end
 -- get the basename
 function xpack:basename()
     return self:get("basename") or self:name()
+end
+
+-- get the spec variables
+function xpack:specvars()
+    local specvars = self._specvars
+    if specvars == nil then
+        specvars = {
+            ARCH  = self:arch()
+        ,   PLAT  = self:plat()
+        ,   HOST  = os.host()
+        ,   MODE  = config.get("mode") or "release"
+        }
+
+        -- get version
+        local version, version_build = self:version()
+        if version then
+            specvars.VERSION = version
+            try {function ()
+                local v = semver.new(version)
+                if v then
+                    specvars.VERSION_MAJOR = v:major()
+                    specvars.VERSION_MINOR = v:minor()
+                    specvars.VERSION_ALTER = v:patch()
+                end
+            end}
+            if version_build then
+                specvars.VERSION_BUILD = version_build
+            end
+        end
+
+        -- get git information
+        local cmds =
+        {
+            GIT_TAG         = {"describe", "--tags"},
+            GIT_TAG_LONG    = {"describe", "--tags", "--long"},
+            GIT_BRANCH      = {"rev-parse", "--abbrev-ref", "HEAD"},
+            GIT_COMMIT      = {"rev-parse", "--short", "HEAD"},
+            GIT_COMMIT_LONG = {"rev-parse", "HEAD"},
+            GIT_COMMIT_DATE = {"log", "-1", "--date=format:%Y%m%d%H%M%S", "--format=%ad"}
+        }
+        for name, argv in pairs(cmds) do
+            specvars[name] = function ()
+                local result
+                local git = find_tool("git")
+                if git then
+                    result = try {function ()
+                        return os.iorunv(git.program, argv)
+                    end}
+                end
+                if not result then
+                    result = "none"
+                end
+                return result:trim()
+            end
+        end
+
+        -- get user variables
+        local vars = self:get("specvar")
+        if vars then
+            table.join2(specvars, vars)
+        end
+        self._specvars = specvars
+    end
+    return specvars
 end
 
 -- get the specfile path

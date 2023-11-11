@@ -40,7 +40,7 @@ local apis = {
         "xpack.set_formats",
         -- set the base name of the output file
         "xpack.set_basename",
-        -- set the spec file path
+        -- set the spec file path, support the custom variable pattern, e.g. set_specfile("", {pattern = "%${([^\n]-)}"})
         "xpack.set_specfile",
         -- add targets to be packaged
         "xpack.add_targets",
@@ -54,6 +54,10 @@ local apis = {
         "xpack.on_installcmd",
         -- add custom uninstall commands script, we will also get it from target/rules
         "xpack.on_uninstallcmd"
+    },
+    keyvalues = {
+        -- set the spec variable
+        "xpack.set_specvar"
     }
 }
 interp_add_scopeapis(apis)

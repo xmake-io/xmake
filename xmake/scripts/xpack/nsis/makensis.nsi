@@ -11,27 +11,7 @@
 !include "UAC.nsh"
 
 ; the version information
-!ifndef MAJOR
-  !define MAJOR 1
-!endif
-!ifndef MINOR
-  !define MINOR 0
-!endif
-!ifndef PATCH
-  !define PATCH 0
-!endif
-!ifndef BUILD
-  !define BUILD 0
-!endif
-
-!define VERSION ${MAJOR}.${MINOR}.${PATCH}
-!define VERSION_FULL ${VERSION}+${BUILD}
-
-!ifdef x64
-  !define ARCH x64
-!else
-  !define ARCH x86
-!endif
+!define VERSION_FULL ${VERSION}+${VERSION_BUILD}
 
 ;--------------------------------
 
@@ -101,7 +81,7 @@ ManifestDPIAware true
 ; Install Pages
 
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "..\LICENSE.md"
+;!insertmacro MUI_PAGE_LICENSE "..\LICENSE.md"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES

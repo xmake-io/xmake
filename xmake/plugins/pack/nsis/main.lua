@@ -62,6 +62,21 @@ function _pack_nsis(makensis, package, opt)
         os.cp(specfile_template, specfile)
     end
 
+    -- replace variables in specfile
+    local specvars = package:specvars()
+    local pattern = package:extraconf("specfile", "pattern") or "%${([^\n]-)}"
+    io.gsub(specfile, "(" .. pattern .. ")", function(_, variable)
+        variable = variable:trim()
+        local value = specvars[variable]
+        if value ~= nil then
+            dprint("  > replace %s -> %s", variable, value)
+        end
+        if type(value) == "table" then
+            dprint("invalid variable value", value)
+        end
+        return value
+    end)
+
     -- get version
     local version, version_build = package:version()
     assert(version, "xpack(%s): version not found!", package:name())
@@ -71,22 +86,7 @@ function _pack_nsis(makensis, package, opt)
     print("xpack(%s)", package:name())
     print("    description: %s", package:description())
     print("    installcmd: ", package:script("installcmd"))
-
-    local argv = {}
-    if version:major() then
-        table.insert(argv, "/DMAJOR=" .. version:major())
-    end
-    if version:minor() then
-        table.insert(argv, "/DMINOR=" .. version:minor())
-    end
-    if version:patch() then
-        table.insert(argv, "/DPATCH=" .. version:patch())
-    end
-    if version_build then
-        table.insert(argv, "/DBUILD=" .. version_build)
-    end
-    table.insert(argv, specfile)
-    os.vrunv(makensis, argv)
+    os.vrunv(makensis, {specfile})
 end
 
 function main(package)
