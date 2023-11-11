@@ -79,8 +79,6 @@ ManifestDPIAware true
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
-!define MUI_FINISHPAGE_LINK "Donate $$5"
-!define MUI_FINISHPAGE_LINK_LOCATION "https://xmake.io/#/sponsor"
 !insertmacro MUI_PAGE_FINISH
 
 ; add uninstall Pages
