@@ -52,6 +52,28 @@ function _get_makensis()
     return makensis, oldenvs
 end
 
+-- get install commands
+function _get_installcmds(package)
+    return ""
+end
+
+-- get uninstall commands
+function _get_uninstallcmds(package)
+    return ""
+end
+
+-- get specvars
+function _get_specvars(package)
+    local specvars = table.clone(package:specvars())
+    specvars.PACKAGE_INSTALLCMDS = function ()
+        return _get_installcmds(package)
+    end
+    specvars.PACKAGE_UNINSTALLCMDS = function ()
+        return _get_uninstallcmds(package)
+    end
+    return specvars
+end
+
 -- pack nsis package
 function _pack_nsis(makensis, package, opt)
 
@@ -63,13 +85,16 @@ function _pack_nsis(makensis, package, opt)
     end
 
     -- replace variables in specfile
-    local specvars = package:specvars()
+    local specvars = _get_specvars(package)
     local pattern = package:extraconf("specfile", "pattern") or "%${([^\n]-)}"
-    io.gsub(specfile, "(" .. pattern .. ")", function(_, variable)
-        variable = variable:trim()
-        local value = specvars[variable]
+    io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
+        name = name:trim()
+        local value = specvars[name]
+        if type(value) == "function" then
+            value = value()
+        end
         if value ~= nil then
-            dprint("  > replace %s -> %s", variable, value)
+            dprint("  > replace %s -> %s", name, value)
         end
         if type(value) == "table" then
             dprint("invalid variable value", value)

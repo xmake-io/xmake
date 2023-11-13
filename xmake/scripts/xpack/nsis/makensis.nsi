@@ -186,7 +186,8 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
     goto file_not_found_or_end
   file_not_found_or_end:
 
-  ; install files there
+  ; add install commands
+  ${PACKAGE_INSTALLCMDS}
 
   ; add uninstaller
   WriteUninstaller "uninstall.exe"
@@ -276,6 +277,9 @@ Function un.onInit
 FunctionEnd
 
 Section "Uninstall"
+
+  ; add uninstall commands
+  ${PACKAGE_UNINSTALLCMDS}
 
   ; remove directories used
   RMDir /r "$InstDir"
