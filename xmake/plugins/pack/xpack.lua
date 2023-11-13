@@ -21,6 +21,7 @@
 -- imports
 import("core.base.object")
 import("core.base.option")
+import("core.base.semver")
 import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
@@ -220,6 +221,7 @@ function xpack:specvars()
             PACKAGE_NAME        = self:name(),
             PACKAGE_DESCRIPTION = self:description() or "",
             PACKAGE_FILENAME    = self:filename(),
+            PACKAGE_HOMEPAGE    = self:get("homepage") or "",
             PACKAGE_COPYRIGHT   = self:get("copyright") or "",
             PACKAGE_COMPANY     = self:get("company") or ""
         }
@@ -227,7 +229,7 @@ function xpack:specvars()
         -- get version
         local version, version_build = self:version()
         if version then
-            specvars.VERSION = version or "0.0.0"
+            specvars.PACKAGE_VERSION = version or "0.0.0"
             try {function ()
                 local v = semver.new(version)
                 if v then
@@ -236,9 +238,7 @@ function xpack:specvars()
                     specvars.PACKAGE_VERSION_ALTER = v:patch() or "0"
                 end
             end}
-            if version_build then
-                specvars.PACKAGE_VERSION_BUILD = version_build or ""
-            end
+            specvars.PACKAGE_VERSION_BUILD = version_build or ""
         end
 
         -- get git information

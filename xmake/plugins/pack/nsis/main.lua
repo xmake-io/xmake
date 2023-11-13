@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.semver")
 import("lib.detect.find_tool")
+import("private.utils.batchcmds")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 
@@ -52,14 +53,68 @@ function _get_makensis()
     return makensis, oldenvs
 end
 
+-- get command string
+function _get_command_string(package, cmd)
+    local kind = cmd.kind
+    local opt = cmd.opt
+    if kind == "cp" then
+        -- TODO
+    elseif kind == "rm" then
+        -- TODO
+    elseif kind == "mv" then
+        -- TODO
+    elseif kind == "cd" then
+        -- TODO
+    elseif kind == "mkdir" then
+        -- TODO
+    elseif kind == "show" then
+        -- TODO
+    end
+    return ""
+end
+
+-- get commands string
+function _get_commands_string(package, cmds)
+    local cmdstrs = {}
+    for _, cmd in ipairs(cmds) do
+        local cmdstr = _get_command_string(package, cmd)
+        if cmdstr then
+            table.insert(cmdstrs, cmdstr)
+        end
+    end
+    return table.concat(cmdstrs, "\n  ")
+end
+
 -- get install commands
 function _get_installcmds(package)
-    return ""
+    local cmds = batchcmds.new()
+
+    -- TODO
+
+    -- get custom install commands
+    local script = package:script("installcmd")
+    if script then
+        script(package, cmds)
+    end
+
+    -- generate command string
+    return _get_command_string(package, cmds)
 end
 
 -- get uninstall commands
 function _get_uninstallcmds(package)
-    return ""
+    local cmds = batchcmds.new()
+
+    -- TODO
+
+    -- get custom uninstall commands
+    local script = package:script("uninstallcmd")
+    if script then
+        script(package, cmds)
+    end
+
+    -- generate command string
+    return _get_command_string(package, cmds)
 end
 
 -- get specvars

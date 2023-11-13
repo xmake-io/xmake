@@ -10,8 +10,12 @@
 !include "UAC.nsh"
 
 ; the version information
-!define VERSION      ${PACKAGE_VERSION}
-!define VERSION_FULL ${PACKAGE_VERSION}+${PACKAGE_VERSION_BUILD}
+!define VERSION      "${PACKAGE_VERSION}"
+!if "${PACKAGE_VERSION_BUILD}" != ""
+!define VERSION_FULL "${PACKAGE_VERSION}+${PACKAGE_VERSION_BUILD}"
+!else
+!define VERSION_FULL "${PACKAGE_VERSION}"
+!endif
 
 ; set the package name
 Name "${PACKAGE_NAME} - v${VERSION}"
@@ -194,7 +198,7 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
   ; Write the uninstall keys for Windows
   !macro AddReg RootKey
     WriteRegStr   ${RootKey} ${RegUninstall} "NoAdmin"               "$NOADMIN"
-    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "${PACKAGE_NAME} (${PACAKGE_ARCH})"
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "${PACKAGE_NAME} (${PACKAGE_ARCH})"
     WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"$InstDir\${PACKAGE_FILENAME}"'
     WriteRegStr   ${RootKey} ${RegUninstall} "Comments"              "${PACKAGE_DESCRIPTION}"
     WriteRegStr   ${RootKey} ${RegUninstall} "Publisher"             "${PACKAGE_COPYRIGHT}"
@@ -280,9 +284,6 @@ Section "Uninstall"
 
   ; add uninstall commands
   ${PACKAGE_UNINSTALLCMDS}
-
-  ; remove directories used
-  RMDir /r "$InstDir"
 
   ; clean regs
   ${If} $NOADMIN == "false"
