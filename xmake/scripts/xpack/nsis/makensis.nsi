@@ -90,16 +90,16 @@ ManifestDPIAware true
 !insertmacro MUI_LANGUAGE "English"
 
 ; set product information
-VIProductVersion                         ${VERSION}.0
-VIFileVersion                            ${VERSION}.0
-VIAddVersionKey /LANG=0 ProductName      ${PACKAGE_NAME}
-VIAddVersionKey /LANG=0 Comments         ${PACKAGE_DESCRIPTION}
-VIAddVersionKey /LANG=0 CompanyName      ${PACKAGE_COMPANY}
-VIAddVersionKey /LANG=0 LegalCopyright   ${PACKAGE_COPYRIGHT}
+VIProductVersion                         "${VERSION}.0"
+VIFileVersion                            "${VERSION}.0"
+VIAddVersionKey /LANG=0 ProductName      "${PACKAGE_NAME}"
+VIAddVersionKey /LANG=0 Comments         "${PACKAGE_DESCRIPTION}"
+VIAddVersionKey /LANG=0 CompanyName      "${PACKAGE_COMPANY}"
+VIAddVersionKey /LANG=0 LegalCopyright   "${PACKAGE_COPYRIGHT}"
 VIAddVersionKey /LANG=0 FileDescription  "${PACKAGE_NAME} Installer - v${VERSION}"
-VIAddVersionKey /LANG=0 OriginalFilename ${PACKAGE_FILENAME}
-VIAddVersionKey /LANG=0 FileVersion      ${VERSION_FULL}
-VIAddVersionKey /LANG=0 ProductVersion   ${VERSION_FULL}
+VIAddVersionKey /LANG=0 OriginalFilename "${PACKAGE_FILENAME}"
+VIAddVersionKey /LANG=0 FileVersion      "${VERSION_FULL}"
+VIAddVersionKey /LANG=0 ProductVersion   "${VERSION_FULL}"
 
 ; set registry paths
 !define RegUninstall "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PACKAGE_NAME}"

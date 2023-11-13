@@ -76,16 +76,9 @@ function _pack_nsis(makensis, package, opt)
         end
         return value
     end)
+    io.cat(specfile)
 
-    -- get version
-    local version, version_build = package:version()
-    assert(version, "xpack(%s): version not found!", package:name())
-    version = semver.new(version)
-
-    -- generate specfile
-    print("xpack(%s)", package:name())
-    print("    description: %s", package:description())
-    print("    installcmd: ", package:script("installcmd"))
+    -- make package
     os.vrunv(makensis, {specfile})
 end
 
