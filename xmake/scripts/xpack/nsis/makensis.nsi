@@ -89,6 +89,9 @@ ManifestDPIAware true
 ; add languages
 !insertmacro MUI_LANGUAGE "English"
 
+; set registry paths
+!define RegUninstall "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PACKAGE_NAME}"
+
 ; set product information
 VIProductVersion                         "${VERSION}.0"
 VIFileVersion                            "${VERSION}.0"
@@ -101,6 +104,195 @@ VIAddVersionKey /LANG=0 OriginalFilename "${PACKAGE_FILENAME}"
 VIAddVersionKey /LANG=0 FileVersion      "${VERSION_FULL}"
 VIAddVersionKey /LANG=0 ProductVersion   "${VERSION_FULL}"
 
-; set registry paths
-!define RegUninstall "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PACKAGE_NAME}"
+; helper functions
+Function TrimQuote
+	Exch $R1 ; Original string
+	Push $R2
+
+Loop:
+	StrCpy $R2 "$R1" 1
+	StrCmp "$R2" "'"   TrimLeft
+	StrCmp "$R2" "$\"" TrimLeft
+	StrCmp "$R2" "$\r" TrimLeft
+	StrCmp "$R2" "$\n" TrimLeft
+	StrCmp "$R2" "$\t" TrimLeft
+	StrCmp "$R2" " "   TrimLeft
+	GoTo Loop2
+TrimLeft:
+	StrCpy $R1 "$R1" "" 1
+	Goto Loop
+
+Loop2:
+	StrCpy $R2 "$R1" 1 -1
+	StrCmp "$R2" "'"   TrimRight
+	StrCmp "$R2" "$\"" TrimRight
+	StrCmp "$R2" "$\r" TrimRight
+	StrCmp "$R2" "$\n" TrimRight
+	StrCmp "$R2" "$\t" TrimRight
+	StrCmp "$R2" " "   TrimRight
+	GoTo Done
+TrimRight:
+	StrCpy $R1 "$R1" -1
+	Goto Loop2
+
+Done:
+	Pop $R2
+	Exch $R1
+FunctionEnd
+
+; setup installer
+Var NOADMIN
+Function .onInit
+  ${GetOptions} $CMDLINE "/NOADMIN" $NOADMIN
+  ${If} ${Errors}
+    !insertmacro Init "installer"
+    StrCpy $NOADMIN "false"
+  ${Else}
+    StrCpy $NOADMIN "true"
+  ${EndIf}
+
+  ; load from reg
+  ${If} $InstDir == ""
+    ${If} $NOADMIN == "false"
+      ReadRegStr $R0 ${HKLM} ${RegUninstall} "InstallLocation"
+    ${Else}
+      ReadRegStr $R0 ${HKCU} ${RegUninstall} "InstallLocation"
+    ${EndIf}
+    ${If} $R0 != ""
+      Push $R0
+      Call TrimQuote
+      Pop  $R0
+      StrCpy $InstDir $R0
+    ${EndIf}
+  ${EndIf}
+
+  ; use default
+  ${If} $InstDir == ""
+    StrCpy $InstDir "${PROGRAMFILES}\${PACKAGE_NAME}"
+  ${EndIf}
+FunctionEnd
+
+Section "${PACKAGE_NAME} (required)" InstallExeutable
+
+  SectionIn RO
+
+  ; set output path to the installation directory.
+  SetOutPath $InstDir
+
+  ; remove previous directories used
+  IfFileExists "$InstDir\${PACKAGE_FILENAME}" file_found file_not_found_or_end
+  file_found:
+    RMDir /r "$InstDir"
+    goto file_not_found_or_end
+  file_not_found_or_end:
+
+  ; install files there
+
+  ; add uninstaller
+  WriteUninstaller "uninstall.exe"
+  ; Write the uninstall keys for Windows
+  !macro AddReg RootKey
+    WriteRegStr   ${RootKey} ${RegUninstall} "NoAdmin"               "$NOADMIN"
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "${PACKAGE_NAME} (${PACAKGE_ARCH})"
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"$InstDir\${PACKAGE_FILENAME}"'
+    WriteRegStr   ${RootKey} ${RegUninstall} "Comments"              "${PACKAGE_DESCRIPTION}"
+    WriteRegStr   ${RootKey} ${RegUninstall} "Publisher"             "${PACKAGE_COPYRIGHT}"
+    WriteRegStr   ${RootKey} ${RegUninstall} "UninstallString"       '"$InstDir\uninstall.exe"'
+    WriteRegStr   ${RootKey} ${RegUninstall} "QuiteUninstallString"  '"$InstDir\uninstall.exe" /S'
+    WriteRegStr   ${RootKey} ${RegUninstall} "InstallLocation"       $InstDir
+    WriteRegStr   ${RootKey} ${RegUninstall} "HelpLink"              "${PACKAGE_HOMEPAGE}"
+    WriteRegStr   ${RootKey} ${RegUninstall} "URLInfoAbout"          "${PACKAGE_HOMEPAGE}"
+    WriteRegStr   ${RootKey} ${RegUninstall} "URLUpdateInfo"         "${PACKAGE_HOMEPAGE}"
+    WriteRegDWORD ${RootKey} ${RegUninstall} "VersionMajor"          ${PACKAGE_VERSION_MAJOR}
+    WriteRegDWORD ${RootKey} ${RegUninstall} "VersionMinor"          ${PACKAGE_VERSION_MINOR}
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayVersion"        ${VERSION_FULL}
+    WriteRegDWORD ${RootKey} ${RegUninstall} "NoModify"              1
+    WriteRegDWORD ${RootKey} ${RegUninstall} "NoRepair"              1
+
+    ; write size to reg
+    ${GetSize} "$InstDir" "/S=0K" $0 $1 $2
+    IntFmt $0 "0x%08X" $0
+    WriteRegDWORD ${RootKey} ${RegUninstall} "EstimatedSize" "$0"
+  !macroend
+
+  ${If} $NOADMIN == "false"
+    !insertmacro AddReg ${HKLM}
+  ${Else}
+    !insertmacro AddReg ${HKCU}
+  ${EndIf}
+SectionEnd
+
+; Enable long path
+Section "Enable Long Path" LongPath
+  ${If} $NOADMIN == "false"
+    WriteRegDWORD ${HKLM} "SYSTEM\CurrentControlSet\Control\FileSystem" "LongPathsEnabled" 1
+  ${EndIf}
+SectionEnd
+
+; Add to %PATH%
+Section "Add to PATH" InstallPath
+  ${If} $NOADMIN == "false"
+    ; Remove the installation path from the $PATH environment variable first
+    ReadRegStr $R0 ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
+
+    ; Write the installation path into the $PATH environment variable
+    WriteRegExpandStr ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$InstDir"
+  ${Else}
+    ; Remove the installation path from the $PATH environment variable first
+    ReadRegStr $R0 ${HKCU} "Environment" "Path"
+    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
+
+    ; Write the installation path into the $PATH environment variable
+    WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1;$InstDir"
+  ${EndIf}
+
+   ; make sure windows knows about the change
+   SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
+SectionEnd
+
+; define language strings
+LangString DESC_InstallExeutable ${LANG_ENGLISH} "${PACKAGE_DESCRIPTION}"
+LangString DESC_InstallPath ${LANG_ENGLISH} "Add ${PACKAGE_NAME} to PATH"
+LangString DESC_LongPath ${LANG_ENGLISH} "Increases the maximum path length limit, up to 32,767 characters (before 256). This can be useful if a project has many recursive subfolders to make sure that the project is compiled without errors. A reboot might be required because some processes may have started before the new value was set"
+
+; assign language strings to sections
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+!insertmacro MUI_DESCRIPTION_TEXT ${InstallExeutable} $(DESC_InstallExeutable)
+!insertmacro MUI_DESCRIPTION_TEXT ${InstallPath} $(DESC_InstallPath)
+!insertmacro MUI_DESCRIPTION_TEXT ${LongPath} $(DESC_LongPath)
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+; setup uninstaller
+Function un.onInit
+  ; check if we need uac
+  ReadRegStr $NOADMIN ${HKLM} ${RegUninstall} "NoAdmin"
+  IfErrors 0 +2
+  ReadRegStr $NOADMIN ${HKCU} ${RegUninstall} "NoAdmin"
+
+  ${IfNot} $NOADMIN == "true"
+    !insertmacro Init "uninstaller"
+  ${EndIf}
+FunctionEnd
+
+Section "Uninstall"
+
+  ; remove directories used
+  RMDir /r "$InstDir"
+
+  ; clean regs
+  ${If} $NOADMIN == "false"
+    DeleteRegKey ${HKLM} ${RegUninstall}
+    ; Remove the installation path from the $PATH environment variable
+    ReadRegStr $R0 ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
+    WriteRegExpandStr ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1"
+  ${Else}
+    DeleteRegKey ${HKCU} ${RegUninstall}
+    ; Remove the installation path from the $PATH environment variable
+    ReadRegStr $R0 ${HKCU} "Environment" "Path"
+    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
+    WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1"
+  ${EndIf}
+SectionEnd
 
