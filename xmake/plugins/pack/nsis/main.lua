@@ -83,6 +83,21 @@ function _get_command_strings(package, cmd)
     elseif kind == "rm" then
         local filepath = path.normalize(path.join("$INSTDIR", cmd.filepath))
         table.insert(result, string.format("Delete \"%s\"", filepath))
+    elseif kind == "tryrm" then
+        --[[
+            IfFileExists "$InstDir\file" file_found file_not_found_or_end
+            file_found:
+              Delete "$InstDir\file"
+              goto file_not_found_or_end
+            file_not_found_or_end:
+        --]]
+        local filepath = path.normalize(path.join("$INSTDIR", cmd.filepath))
+        local tag = hash.uuid(filepath):split("-", {plain = true})[1]:lower()
+        table.insert(result, string.format("IfFileExists \"%s\" file_found_%s file_not_found_or_end_%s", filepath, tag, tag))
+        table.insert(result, string.format("file_found_%s:", tag))
+        table.insert(result, string.format("  Delete \"%s\"", filepath))
+        table.insert(result, string.format("  goto file_not_found_or_end_%s", tag))
+        table.insert(result, string.format("file_not_found_or_end_%s:", tag))
     elseif kind == "rmdir" then
         local dir = path.normalize(path.join("$INSTDIR", cmd.dir))
         table.insert(result, string.format("RMDir /r \"%s\"", dir))
@@ -180,8 +195,7 @@ function _on_target_uninstallcmd_binary(target, batchcmds_, opt)
 
     -- uninstall target file
     batchcmds_:rm(path.join(bindir, target:filename()))
-
-    -- TODO: tryrm symbolfile
+    batchcmds_:tryrm(path.join(bindir, path.filename(target:symbolfile())))
 end
 
 -- on uninstall shared target command
@@ -191,24 +205,24 @@ function _on_target_uninstallcmd_shared(target, batchcmds_, opt)
 
     -- uninstall target file
     batchcmds_:rm(path.join(bindir, target:filename()))
+    batchcmds_:tryrm(path.join(bindir, path.filename(target:symbolfile())))
 end
 
 -- on uninstall static target command
 function _on_target_uninstallcmd_static(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = package:bindir()
+    local libdir = package:libdir()
 
     -- uninstall target file
-    batchcmds_:rm(path.join(bindir, target:filename()))
+    batchcmds_:rm(path.join(libdir, target:filename()))
+    batchcmds_:tryrm(path.join(libdir, path.filename(target:symbolfile())))
 end
 
 -- on uninstall headeronly target command
 function _on_target_uninstallcmd_headeronly(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = package:bindir()
+    local includedir = package:includedir()
 
-    -- uninstall target file
-    batchcmds_:rm(path.join(bindir, target:filename()))
 end
 
 -- on uninstall target command
