@@ -45,7 +45,11 @@ local apis = {
         -- set the base name of the output file
         "xpack.set_basename",
         -- add targets to be packaged
-        "xpack.add_targets"
+        "xpack.add_targets",
+        -- set installed binary directory, e.g. bin
+        "xpack.set_bindir",
+        -- set installed library directory, e.g. lib
+        "xpack.set_libdir"
     },
     paths = {
         -- set the spec file path, support the custom variable pattern, e.g. set_specfile("", {pattern = "%${([^\n]-)}"})

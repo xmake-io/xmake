@@ -418,6 +418,24 @@ function xpack:installfiles(outputdir)
     return self:_copiedfiles("installfiles", outputdir)
 end
 
+-- get the binary directory
+function xpack:bindir()
+    local bindir = self:get("bindir")
+    if bindir == nil then
+        bindir = "bin"
+    end
+    return bindir
+end
+
+-- get the library directory
+function xpack:libdir()
+    local libdir = self:get("libdir")
+    if libdir == nil then
+        libdir = "lib"
+    end
+    return libdir
+end
+
 -- new a xpack
 function _new(name, info)
     return xpack {name, info}
