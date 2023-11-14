@@ -116,6 +116,9 @@ function _on_target_installcmd_binary(target, batchcmds_, opt)
 
     -- install target file
     batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
+    if os.isfile(target:symbolfile()) then
+        batchcmds_:cp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
+    end
 end
 
 -- on install shared target command
@@ -125,6 +128,9 @@ function _on_target_installcmd_shared(target, batchcmds_, opt)
 
     -- install target file
     batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
+    if os.isfile(target:symbolfile()) then
+        batchcmds_:cp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
+    end
 end
 
 -- on install static target command
@@ -134,6 +140,9 @@ function _on_target_installcmd_static(target, batchcmds_, opt)
 
     -- install target file
     batchcmds_:cp(target:targetfile(), path.join(libdir, target:filename()))
+    if os.isfile(target:symbolfile()) then
+        batchcmds_:cp(target:symbolfile(), path.join(libdir, path.filename(target:symbolfile())))
+    end
 end
 
 -- on install headeronly target command
@@ -171,6 +180,8 @@ function _on_target_uninstallcmd_binary(target, batchcmds_, opt)
 
     -- uninstall target file
     batchcmds_:rm(path.join(bindir, target:filename()))
+
+    -- TODO: tryrm symbolfile
 end
 
 -- on uninstall shared target command
