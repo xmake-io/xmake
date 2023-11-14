@@ -56,7 +56,7 @@ rule("protobuf.c")
         import("proto").build_sourcefiles_proto(target, batchjobs, sourcebatch, opt, "cc")
     end, {batch = true})
     on_build_files(function (target, batchjobs, sourcebatch, opt)
-        import("proto").build_compiled_sourcefiles_proto(target, batchjobs, sourcebatch, opt, "cxx")
+        import("proto").build_compiled_sourcefiles_proto(target, batchjobs, sourcebatch, opt, "cc")
     end, {batch = true})
 
 
