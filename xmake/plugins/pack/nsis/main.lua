@@ -109,8 +109,8 @@ function _get_commands_string(package, cmds)
     return table.concat(cmdstrs, "\n  ")
 end
 
--- on install command for target
-function _on_installcmd_target(target, batchcmds_)
+-- on install command of target
+function _on_installcmd_of_target(target, batchcmds_)
 
     -- install target file
     batchcmds_:cp(target:targetfile(), target:filename())
@@ -122,8 +122,8 @@ function _on_installcmd_target(target, batchcmds_)
     end
 end
 
--- on uninstall command for target
-function _on_uninstallcmd_target(target, batchcmds_)
+-- on uninstall command of target
+function _on_uninstallcmd_of_target(target, batchcmds_)
 
     -- uninstall target file
     batchcmds_:rm(target:filename())
@@ -149,7 +149,7 @@ function _get_installcmds_from_target(batchcmds_, target)
                 end
             end
         end,
-        target:script("installcmd", _on_installcmd_target),
+        target:script("installcmd", _on_installcmd_of_target),
         function (target)
             for _, r in ipairs(target:orderules()) do
                 local after_installcmd = r:script("installcmd_after")
@@ -182,7 +182,7 @@ function _get_uninstallcmds_from_target(batchcmds_, target)
                 end
             end
         end,
-        target:script("uninstallcmd", _on_uninstallcmd_target),
+        target:script("uninstallcmd", _on_uninstallcmd_of_target),
         function (target)
             for _, r in ipairs(target:orderules()) do
                 local after_uninstallcmd = r:script("uninstallcmd_after")
