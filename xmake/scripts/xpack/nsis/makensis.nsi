@@ -23,6 +23,9 @@ Name "${PACKAGE_NAME} - v${VERSION}"
 ; set the output file path
 OutFile "${PACKAGE_OUTPUTFILE}"
 
+; set the working directory
+!cd "${PACKAGE_WORKDIR}"
+
 ; use unicode
 Unicode true
 
