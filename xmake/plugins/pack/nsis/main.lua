@@ -54,11 +54,15 @@ function _get_makensis()
 end
 
 -- get command string
-function _get_command_string(package, cmd)
+function _get_command_strings(package, cmd)
+    local result = {}
     local kind = cmd.kind
-    local opt = cmd.opt
     if kind == "cp" then
-        -- TODO
+        -- https://nsis.sourceforge.io/Reference/File
+        local srcfiles = os.files(cmd.srcpath)
+        for _, srcfile in ipairs(srcfiles) do
+            table.insert(result, string.format("File /oname=%s %s", cmd.dstpath, srcfile))
+        end
     elseif kind == "rm" then
         -- TODO
     elseif kind == "mv" then
@@ -70,51 +74,48 @@ function _get_command_string(package, cmd)
     elseif kind == "show" then
         -- TODO
     end
-    return ""
+    return result
 end
 
 -- get commands string
 function _get_commands_string(package, cmds)
     local cmdstrs = {}
     for _, cmd in ipairs(cmds) do
-        local cmdstr = _get_command_string(package, cmd)
-        if cmdstr then
-            table.insert(cmdstrs, cmdstr)
-        end
+        table.join2(cmdstrs, _get_command_strings(package, cmd))
     end
     return table.concat(cmdstrs, "\n  ")
 end
 
 -- get install commands
 function _get_installcmds(package)
-    local cmds = batchcmds.new()
+    local batchcmds_ = batchcmds.new()
 
     -- TODO
 
     -- get custom install commands
     local script = package:script("installcmd")
     if script then
-        script(package, cmds)
+        script(package, batchcmds_)
     end
 
     -- generate command string
-    return _get_command_string(package, cmds)
+    return _get_commands_string(package, batchcmds_:cmds())
 end
 
 -- get uninstall commands
 function _get_uninstallcmds(package)
-    local cmds = batchcmds.new()
+    local batchcmds_ = batchcmds.new()
 
     -- TODO
 
     -- get custom uninstall commands
     local script = package:script("uninstallcmd")
     if script then
-        script(package, cmds)
+        script(package, batchcmds_)
     end
 
     -- generate command string
-    return _get_command_string(package, cmds)
+    return _get_commands_string(package, batchcmds_:cmds())
 end
 
 -- get specvars
@@ -156,7 +157,6 @@ function _pack_nsis(makensis, package, opt)
         end
         return value
     end)
-    io.cat(specfile)
 
     -- make package
     os.vrunv(makensis, {specfile})

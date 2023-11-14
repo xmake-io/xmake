@@ -83,6 +83,7 @@ function main()
 
     -- unlock the whole project
     project.unlock()
+    cprint("${color.success}pack ok")
 end
 
 
