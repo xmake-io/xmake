@@ -56,10 +56,18 @@ local apis = {
         "xpack.add_installfiles"
     },
     script = {
+        -- add custom commands script before installing
+        "xpack.before_installcmd",
+        -- add custom commands script before uninstalling
+        "xpack.before_uninstallcmd",
         -- add custom install commands script, we will also get it from target/rules
         "xpack.on_installcmd",
         -- add custom uninstall commands script, we will also get it from target/rules
-        "xpack.on_uninstallcmd"
+        "xpack.on_uninstallcmd",
+        -- add custom commands script after installing
+        "xpack.after_installcmd",
+        -- add custom commands script after uninstalling
+        "xpack.after_uninstallcmd"
     },
     keyvalues = {
         -- set the spec variable

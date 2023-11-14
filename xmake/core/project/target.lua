@@ -2768,7 +2768,9 @@ function target.apis()
         ,   "target.on_clean"
         ,   "target.on_package"
         ,   "target.on_install"
+        ,   "target.on_installcmd"
         ,   "target.on_uninstall"
+        ,   "target.on_uninstallcmd"
             -- target.before_xxx
         ,   "target.before_run"
         ,   "target.before_test"
@@ -2779,7 +2781,9 @@ function target.apis()
         ,   "target.before_clean"
         ,   "target.before_package"
         ,   "target.before_install"
+        ,   "target.before_installcmd"
         ,   "target.before_uninstall"
+        ,   "target.before_uninstallcmd"
             -- target.after_xxx
         ,   "target.after_run"
         ,   "target.after_test"
@@ -2791,7 +2795,9 @@ function target.apis()
         ,   "target.after_clean"
         ,   "target.after_package"
         ,   "target.after_install"
+        ,   "target.after_installcmd"
         ,   "target.after_uninstall"
+        ,   "target.after_uninstallcmd"
         }
     }
 end
