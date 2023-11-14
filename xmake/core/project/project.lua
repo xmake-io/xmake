@@ -716,8 +716,6 @@ function project.interpreter()
                 result = platform.tool(variable)
             end
         end
-
-        -- ok?
         return result
     end)
 

@@ -70,22 +70,9 @@ function _handler(package, strval)
     -- @note cannot cache it, because the package instance will be changed
     return function (variable)
         local maps = {
-            version = function ()
-                if strval then
-                    -- set_urls("https://sqlite.org/2018/sqlite-autoconf-$(version)000.tar.gz",
-                    --          {version = function (version) return version:gsub("%.", "") end})
-                    local version_filter = package:url_version(strval)
-                    if version_filter then
-                        local v = version_filter(package:version())
-                        if v ~= nil then
-                            -- may be semver version object
-                            v = tostring(v)
-                        end
-                        return v
-                    end
-                end
-                return package:version_str()
-            end
+            arch = package:arch(),
+            plat = package:plat(),
+            version = package:version()
         }
 
         -- get value
@@ -128,8 +115,6 @@ function handle(strval, package)
 
     -- register filter handler
     _filter():register("package", nil)
-
-    -- ok
     return strval
 end
 

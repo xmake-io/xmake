@@ -26,6 +26,7 @@ import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
 import("lib.detect.find_tool")
+import("filter")
 
 -- define module
 local xpack = xpack or object {_init = {"_name", "_info"}}
@@ -216,7 +217,8 @@ function xpack:basename()
             basename = basename .. "-" .. version
         end
     end
-    return basename
+    -- we need filter builtin variables, e.g. $(plat), $(arch), $(version) ...
+    return filter.handle(basename, self)
 end
 
 -- get the spec variables
