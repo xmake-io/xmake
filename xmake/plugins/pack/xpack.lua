@@ -233,7 +233,8 @@ function xpack:specvars()
             PACKAGE_FILENAME    = self:filename(),
             PACKAGE_HOMEPAGE    = self:get("homepage") or "",
             PACKAGE_COPYRIGHT   = self:get("copyright") or "",
-            PACKAGE_COMPANY     = self:get("company") or ""
+            PACKAGE_COMPANY     = self:get("company") or "",
+            PACKAGE_ICONFILE    = self:get("iconfile") or ""
         }
 
         -- get version

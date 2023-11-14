@@ -78,13 +78,15 @@ function _get_command_strings(package, cmd)
             table.insert(result, string.format("File /oname=%s \"%s\"", path.filename(dstfile), srcfile))
         end
     elseif kind == "rm" then
-        table.insert(result, string.format("RMDir /r \"$INSTDIR\\%s\"", path.directory(cmd.filepath)))
+        table.insert(result, string.format("Delete \"$INSTDIR\\%s\"", cmd.filepath))
+    elseif kind == "rmdir" then
+        table.insert(result, string.format("RMDir /r \"$INSTDIR\\%s\"", cmd.dir))
     elseif kind == "mv" then
-        -- TODO
+        table.insert(result, string.format("Rename \"$INSTDIR\\%s\" \"$INSTDIR\\%s\"", cmd.srcpath, cmd.dstpath))
     elseif kind == "cd" then
-        -- TODO
+        table.insert(result, string.format("SetOutPath \"$INSTDIR\\%s\"", cmd.dir))
     elseif kind == "mkdir" then
-        table.insert(result, string.format("CreateDirectory \"$INSTDIR\\%s\"", path.directory(cmd.dir)))
+        table.insert(result, string.format("CreateDirectory \"$INSTDIR\\%s\"", cmd.dir))
     end
     return result
 end

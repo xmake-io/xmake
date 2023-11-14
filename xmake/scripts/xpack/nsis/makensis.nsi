@@ -51,6 +51,9 @@ RequestExecutionLevel user
 ; set DPI aware
 ManifestDPIAware true
 
+; set icon
+!define MUI_ICON "${PACKAGE_ICONFILE}"
+
 ; UAC
 !macro Init thing
   uac_tryagain:

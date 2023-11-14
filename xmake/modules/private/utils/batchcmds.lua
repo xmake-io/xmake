@@ -144,6 +144,14 @@ function _runcmd_rm(cmd, opt)
     end
 end
 
+-- run command: os.rmdir
+function _runcmd_rmdir(cmd, opt)
+    local dir = cmd.dir
+    if not opt.dryrun and os.isdir(dir) then
+        os.tryrm(dir)
+    end
+end
+
 -- run command: os.cp
 function _runcmd_cp(cmd, opt)
     if not opt.dryrun then
@@ -178,6 +186,7 @@ function _runcmd(cmd, opt)
             execv  = _runcmd_execv,
             vexecv = _runcmd_vexecv,
             mkdir  = _runcmd_mkdir,
+            rmdir  = _runcmd_rmdir,
             cd     = _runcmd_cd,
             rm     = _runcmd_rm,
             cp     = _runcmd_cp,
@@ -331,6 +340,11 @@ end
 -- add command: os.mkdir
 function batchcmds:mkdir(dir)
     table.insert(self:cmds(), {kind = "mkdir", dir = dir})
+end
+
+-- add command: os.rmdir
+function batchcmds:rmdir(dir)
+    table.insert(self:cmds(), {kind = "rmdir", dir = dir})
 end
 
 -- add command: os.rm

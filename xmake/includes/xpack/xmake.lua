@@ -44,10 +44,14 @@ local apis = {
         "xpack.set_formats",
         -- set the base name of the output file
         "xpack.set_basename",
+        -- add targets to be packaged
+        "xpack.add_targets"
+    },
+    paths = {
         -- set the spec file path, support the custom variable pattern, e.g. set_specfile("", {pattern = "%${([^\n]-)}"})
         "xpack.set_specfile",
-        -- add targets to be packaged
-        "xpack.add_targets",
+        -- set icon file path, e.g foo.ico
+        "xpack.set_iconfile",
         -- add install files, we will also get them from target
         "xpack.add_installfiles",
         -- set install directory, we will also get it from target
