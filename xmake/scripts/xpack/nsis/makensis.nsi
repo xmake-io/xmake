@@ -52,7 +52,9 @@ RequestExecutionLevel user
 ManifestDPIAware true
 
 ; set icon
-!define MUI_ICON "${PACKAGE_ICONFILE}"
+!if "${PACKAGE_ICONFILE}" != ""
+  !define MUI_ICON "${PACKAGE_ICONFILE}"
+!endif
 
 ; UAC
 !macro Init thing
@@ -305,5 +307,8 @@ Section "Uninstall"
     ${WordReplace} $R0 ";$InstDir" "" "+" $R1
     WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1"
   ${EndIf}
+
+  ; remove uninstall.exe
+  Delete "$InstDir\uninstall.exe"
 SectionEnd
 
