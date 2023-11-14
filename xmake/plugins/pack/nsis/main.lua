@@ -135,11 +135,8 @@ function _get_uninstallcmds_from_target(batchcmds_, target)
     end
 end
 
--- get install commands
-function _get_installcmds(package)
-    local batchcmds_ = batchcmds.new()
-
-    -- install files
+-- on install command
+function _on_installcmd(package, batchcmds_)
     local srcfiles, dstfiles = package:installfiles(".")
     for idx, srcfile in ipairs(srcfiles) do
         batchcmds_:cp(srcfile, dstfiles[idx])
@@ -147,11 +144,34 @@ function _get_installcmds(package)
     for _, target in ipairs(package:targets()) do
         _get_installcmds_from_target(batchcmds_, target)
     end
+end
 
-    -- get custom install commands
-    local script = package:script("installcmd")
-    if script then
-        script(package, batchcmds_)
+-- on uninstall command
+function _on_uninstallcmd(package, batchcmds_)
+    local _, dstfiles = package:installfiles(".")
+    for _, dstfile in ipairs(dstfiles) do
+        batchcmds_:rm(dstfile)
+    end
+    for _, target in ipairs(package:targets()) do
+        _get_uninstallcmds_from_target(batchcmds_, target)
+    end
+end
+
+-- get install commands
+function _get_installcmds(package)
+    local batchcmds_ = batchcmds.new()
+
+    -- call script to get install commands
+    local scripts = {
+        package:script("installcmd_before"),
+        package:script("installcmd", _on_installcmd),
+        package:script("installcmd_after")
+    }
+    for i = 1, 3 do
+        local script = scripts[i]
+        if script ~= nil then
+            script(package, batchcmds_)
+        end
     end
 
     -- generate command string
@@ -162,19 +182,17 @@ end
 function _get_uninstallcmds(package)
     local batchcmds_ = batchcmds.new()
 
-    -- uninstall files
-    local _, dstfiles = package:installfiles(".")
-    for _, dstfile in ipairs(dstfiles) do
-        batchcmds_:rm(dstfile)
-    end
-    for _, target in ipairs(package:targets()) do
-        _get_uninstallcmds_from_target(batchcmds_, target)
-    end
-
-    -- get custom uninstall commands
-    local script = package:script("uninstallcmd")
-    if script then
-        script(package, batchcmds_)
+    -- call script to get uninstall commands
+    local scripts = {
+        package:script("uninstallcmd_before"),
+        package:script("uninstallcmd", _on_uninstallcmd),
+        package:script("uninstallcmd_after")
+    }
+    for i = 1, 3 do
+        local script = scripts[i]
+        if script ~= nil then
+            script(package, batchcmds_)
+        end
     end
 
     -- generate command string
