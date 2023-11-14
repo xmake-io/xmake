@@ -110,10 +110,12 @@ function _get_commands_string(package, cmds)
 end
 
 -- on install command of target
-function _on_installcmd_of_target(target, batchcmds_)
+function _on_installcmd_of_target(target, batchcmds_, opt)
+    local package = opt.package
+    local bindir = package:bindir()
 
     -- install target file
-    batchcmds_:cp(target:targetfile(), target:filename())
+    batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
 
     -- install files
     local srcfiles, dstfiles = target:installfiles(".")
@@ -123,10 +125,12 @@ function _on_installcmd_of_target(target, batchcmds_)
 end
 
 -- on uninstall command of target
-function _on_uninstallcmd_of_target(target, batchcmds_)
+function _on_uninstallcmd_of_target(target, batchcmds_, opt)
+    local package = opt.package
+    local bindir = package:bindir()
 
     -- uninstall target file
-    batchcmds_:rm(target:filename())
+    batchcmds_:rm(path.join(bindir, target:filename()))
 
     -- uninstall files
     local _, dstfiles = target:installfiles(".")
@@ -136,7 +140,7 @@ function _on_uninstallcmd_of_target(target, batchcmds_)
 end
 
 -- get install commands from targets
-function _get_installcmds_from_target(batchcmds_, target)
+function _get_installcmds_from_target(target, batchcmds_, opt)
 
     -- call script to get install commands
     local scripts = {
@@ -145,7 +149,7 @@ function _get_installcmds_from_target(batchcmds_, target)
             for _, r in ipairs(target:orderules()) do
                 local before_installcmd = r:script("installcmd_before")
                 if before_installcmd then
-                    before_installcmd(target, batchcmds_)
+                    before_installcmd(target, batchcmds_, opt)
                 end
             end
         end,
@@ -154,7 +158,7 @@ function _get_installcmds_from_target(batchcmds_, target)
             for _, r in ipairs(target:orderules()) do
                 local after_installcmd = r:script("installcmd_after")
                 if after_installcmd then
-                    after_installcmd(target, batchcmds_)
+                    after_installcmd(target, batchcmds_, opt)
                 end
             end
         end,
@@ -163,13 +167,13 @@ function _get_installcmds_from_target(batchcmds_, target)
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target, batchcmds_)
+            script(target, batchcmds_, opt)
         end
     end
 end
 
 -- get uninstall commands from targets
-function _get_uninstallcmds_from_target(batchcmds_, target)
+function _get_uninstallcmds_from_target(target, batchcmds_, opt)
 
     -- call script to get uninstall commands
     local scripts = {
@@ -178,7 +182,7 @@ function _get_uninstallcmds_from_target(batchcmds_, target)
             for _, r in ipairs(target:orderules()) do
                 local before_uninstallcmd = r:script("uninstallcmd_before")
                 if before_uninstallcmd then
-                    before_uninstallcmd(target, batchcmds_)
+                    before_uninstallcmd(target, batchcmds_, opt)
                 end
             end
         end,
@@ -187,7 +191,7 @@ function _get_uninstallcmds_from_target(batchcmds_, target)
             for _, r in ipairs(target:orderules()) do
                 local after_uninstallcmd = r:script("uninstallcmd_after")
                 if after_uninstallcmd then
-                    after_uninstallcmd(target, batchcmds_)
+                    after_uninstallcmd(target, batchcmds_, opt)
                 end
             end
         end,
@@ -196,7 +200,7 @@ function _get_uninstallcmds_from_target(batchcmds_, target)
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target, batchcmds_)
+            script(target, batchcmds_, opt)
         end
     end
 end
@@ -208,7 +212,7 @@ function _on_installcmd(package, batchcmds_)
         batchcmds_:cp(srcfile, dstfiles[idx])
     end
     for _, target in ipairs(package:targets()) do
-        _get_installcmds_from_target(batchcmds_, target)
+        _get_installcmds_from_target(target, batchcmds_, {package = package})
     end
 end
 
@@ -219,7 +223,7 @@ function _on_uninstallcmd(package, batchcmds_)
         batchcmds_:rm(dstfile)
     end
     for _, target in ipairs(package:targets()) do
-        _get_uninstallcmds_from_target(batchcmds_, target)
+        _get_uninstallcmds_from_target(target, batchcmds_, {package = package})
     end
 end
 
