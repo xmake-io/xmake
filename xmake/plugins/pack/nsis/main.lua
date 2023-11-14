@@ -53,26 +53,38 @@ function _get_makensis()
     return makensis, oldenvs
 end
 
+-- copy files or directories and we can reserve the source directory structure
+-- e.g. os.cp("src/**.h", "/tmp/", {rootdir = "src", symlink = true})
+
 -- get command string
 function _get_command_strings(package, cmd)
     local result = {}
+    local opt = cmd.opt or {}
     local kind = cmd.kind
     if kind == "cp" then
         -- https://nsis.sourceforge.io/Reference/File
         local srcfiles = os.files(cmd.srcpath)
         for _, srcfile in ipairs(srcfiles) do
-            table.insert(result, string.format("File /oname=%s %s", cmd.dstpath, srcfile))
+            -- the destination is directory? append the filename
+            local dstfile = cmd.dstpath
+            if path.islastsep(dstfile) then
+                if opt.rootdir then
+                    dstfile = path.join(dstfile, path.relative(srcfile, opt.rootdir))
+                else
+                    dstfile = path.join(dstfile, path.filename(srcfile))
+                end
+            end
+            table.insert(result, string.format("SetOutPath \"$INSTDIR\\%s\"", path.directory(dstfile)))
+            table.insert(result, string.format("File /oname=%s \"%s\"", path.filename(dstfile), srcfile))
         end
     elseif kind == "rm" then
-        -- TODO
+        table.insert(result, string.format("RMDir /r \"$INSTDIR\\%s\"", path.directory(cmd.filepath)))
     elseif kind == "mv" then
         -- TODO
     elseif kind == "cd" then
         -- TODO
     elseif kind == "mkdir" then
-        -- TODO
-    elseif kind == "show" then
-        -- TODO
+        table.insert(result, string.format("CreateDirectory \"$INSTDIR\\%s\"", path.directory(cmd.dir)))
     end
     return result
 end
