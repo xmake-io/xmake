@@ -119,6 +119,12 @@ function _get_installcmds(package)
     for idx, srcfile in ipairs(srcfiles) do
         batchcmds_:cp(srcfile, dstfiles[idx])
     end
+    for _, target in ipairs(package:targets()) do
+        srcfiles, dstfiles = target:installfiles(".")
+        for idx, srcfile in ipairs(srcfiles) do
+            batchcmds_:cp(srcfile, dstfiles[idx])
+        end
+    end
 
     -- get custom install commands
     local script = package:script("installcmd")
@@ -140,6 +146,12 @@ function _get_uninstallcmds(package)
     local _, dstfiles = package:installfiles(".")
     for _, dstfile in ipairs(dstfiles) do
         batchcmds_:rm(dstfile)
+    end
+    for _, target in ipairs(package:targets()) do
+        local _, dstfiles = target:installfiles(".")
+        for _, dstfile in ipairs(dstfiles) do
+            batchcmds_:rm(dstfile)
+        end
     end
 
     -- get custom uninstall commands
