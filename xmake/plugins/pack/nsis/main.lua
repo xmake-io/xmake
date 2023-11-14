@@ -75,9 +75,10 @@ function _get_command_strings(package, cmd)
                 end
             end
             srcfile = path.normalize(srcfile)
-            dstfile = path.normalize(path.join("$INSTDIR", dstfile))
-            table.insert(result, string.format("SetOutPath \"%s\"", path.directory(dstfile)))
-            table.insert(result, string.format("File /oname=%s \"%s\"", path.filename(dstfile), srcfile))
+            local dstname = path.filename(dstfile)
+            local dstdir = path.normalize(path.directory(path.join("$INSTDIR", dstfile)))
+            table.insert(result, string.format("SetOutPath \"%s\"", dstdir))
+            table.insert(result, string.format("File /oname=%s \"%s\"", dstname, srcfile))
         end
     elseif kind == "rm" then
         local filepath = path.normalize(path.join("$INSTDIR", cmd.filepath))
@@ -108,11 +109,35 @@ function _get_commands_string(package, cmds)
     return table.concat(cmdstrs, "\n  ")
 end
 
+-- get install commands from targets
+function _get_installcmds_from_target(batchcmds_, target)
+
+    -- install target file
+    batchcmds_:cp(target:targetfile(), target:filename())
+
+    -- install files
+    local srcfiles, dstfiles = target:installfiles(".")
+    for idx, srcfile in ipairs(srcfiles) do
+        batchcmds_:cp(srcfile, dstfiles[idx])
+    end
+end
+
+-- get uninstall commands from targets
+function _get_uninstallcmds_from_target(batchcmds_, target)
+
+    -- uninstall target file
+    batchcmds_:rm(target:filename())
+
+    -- uninstall files
+    local _, dstfiles = target:installfiles(".")
+    for _, dstfile in ipairs(dstfiles) do
+        batchcmds_:rm(dstfile)
+    end
+end
+
 -- get install commands
 function _get_installcmds(package)
     local batchcmds_ = batchcmds.new()
-
-    -- TODO
 
     -- install files
     local srcfiles, dstfiles = package:installfiles(".")
@@ -120,10 +145,7 @@ function _get_installcmds(package)
         batchcmds_:cp(srcfile, dstfiles[idx])
     end
     for _, target in ipairs(package:targets()) do
-        srcfiles, dstfiles = target:installfiles(".")
-        for idx, srcfile in ipairs(srcfiles) do
-            batchcmds_:cp(srcfile, dstfiles[idx])
-        end
+        _get_installcmds_from_target(batchcmds_, target)
     end
 
     -- get custom install commands
@@ -140,18 +162,13 @@ end
 function _get_uninstallcmds(package)
     local batchcmds_ = batchcmds.new()
 
-    -- TODO
-
     -- uninstall files
     local _, dstfiles = package:installfiles(".")
     for _, dstfile in ipairs(dstfiles) do
         batchcmds_:rm(dstfile)
     end
     for _, target in ipairs(package:targets()) do
-        local _, dstfiles = target:installfiles(".")
-        for _, dstfile in ipairs(dstfiles) do
-            batchcmds_:rm(dstfile)
-        end
+        _get_uninstallcmds_from_target(batchcmds_, target)
     end
 
     -- get custom uninstall commands
