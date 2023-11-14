@@ -136,14 +136,24 @@ function _on_target_installcmd_static(target, batchcmds_, opt)
     batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
 end
 
+-- on install headeronly target command
+function _on_target_installcmd_headeronly(target, batchcmds_, opt)
+    local package = opt.package
+    local bindir = package:bindir()
+
+    -- install target file
+    batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
+end
+
 -- on install target command
 function _on_target_installcmd(target, batchcmds_, opt)
 
     -- install target binaries
     local scripts = {
-        binary = _on_target_installcmd_binary
-        shared = _on_target_installcmd_shared
-        static = _on_target_installcmd_static
+        binary     = _on_target_installcmd_binary,
+        shared     = _on_target_installcmd_shared,
+        static     = _on_target_installcmd_static,
+        headeronly = _on_target_installcmd_headeronly
     }
     local script = scripts[target:kind()]
     if script then
@@ -184,14 +194,24 @@ function _on_target_uninstallcmd_static(target, batchcmds_, opt)
     batchcmds_:rm(path.join(bindir, target:filename()))
 end
 
+-- on uninstall headeronly target command
+function _on_target_uninstallcmd_headeronly(target, batchcmds_, opt)
+    local package = opt.package
+    local bindir = package:bindir()
+
+    -- uninstall target file
+    batchcmds_:rm(path.join(bindir, target:filename()))
+end
+
 -- on uninstall target command
 function _on_target_uninstallcmd(target, batchcmds_, opt)
 
     -- uninstall target binaries
     local scripts = {
-        binary = _on_target_uninstallcmd_binary
-        shared = _on_target_uninstallcmd_shared
-        static = _on_target_uninstallcmd_static
+        binary     = _on_target_uninstallcmd_binary,
+        shared     = _on_target_uninstallcmd_shared,
+        static     = _on_target_uninstallcmd_static,
+        headeronly = _on_target_uninstallcmd_headeronly
     }
     local script = scripts[target:kind()]
     if script then
