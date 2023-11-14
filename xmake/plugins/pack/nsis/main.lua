@@ -74,19 +74,27 @@ function _get_command_strings(package, cmd)
                     dstfile = path.join(dstfile, path.filename(srcfile))
                 end
             end
-            table.insert(result, string.format("SetOutPath \"$INSTDIR\\%s\"", path.directory(dstfile)))
+            srcfile = path.normalize(srcfile)
+            dstfile = path.normalize(path.join("$INSTDIR", dstfile))
+            table.insert(result, string.format("SetOutPath \"%s\"", path.directory(dstfile)))
             table.insert(result, string.format("File /oname=%s \"%s\"", path.filename(dstfile), srcfile))
         end
     elseif kind == "rm" then
-        table.insert(result, string.format("Delete \"$INSTDIR\\%s\"", cmd.filepath))
+        local filepath = path.normalize(path.join("$INSTDIR", cmd.filepath))
+        table.insert(result, string.format("Delete \"%s\"", filepath))
     elseif kind == "rmdir" then
-        table.insert(result, string.format("RMDir /r \"$INSTDIR\\%s\"", cmd.dir))
+        local dir = path.normalize(path.join("$INSTDIR", cmd.dir))
+        table.insert(result, string.format("RMDir /r \"%s\"", dir))
     elseif kind == "mv" then
-        table.insert(result, string.format("Rename \"$INSTDIR\\%s\" \"$INSTDIR\\%s\"", cmd.srcpath, cmd.dstpath))
+        local srcpath = path.normalize(path.join("$INSTDIR", cmd.srcpath))
+        local dstpath = path.normalize(path.join("$INSTDIR", cmd.dstpath))
+        table.insert(result, string.format("Rename \"%s\" \"%s\"", srcpath, dstpath))
     elseif kind == "cd" then
-        table.insert(result, string.format("SetOutPath \"$INSTDIR\\%s\"", cmd.dir))
+        local dir = path.normalize(path.join("$INSTDIR", cmd.dir))
+        table.insert(result, string.format("SetOutPath \"%s\"", dir))
     elseif kind == "mkdir" then
-        table.insert(result, string.format("CreateDirectory \"$INSTDIR\\%s\"", cmd.dir))
+        local dir = path.normalize(path.join("$INSTDIR", cmd.dir))
+        table.insert(result, string.format("CreateDirectory \"%s\"", dir))
     end
     return result
 end
@@ -106,6 +114,12 @@ function _get_installcmds(package)
 
     -- TODO
 
+    -- install files
+    local srcfiles, dstfiles = package:installfiles(".")
+    for idx, srcfile in ipairs(srcfiles) do
+        batchcmds_:cp(srcfile, dstfiles[idx])
+    end
+
     -- get custom install commands
     local script = package:script("installcmd")
     if script then
@@ -121,6 +135,12 @@ function _get_uninstallcmds(package)
     local batchcmds_ = batchcmds.new()
 
     -- TODO
+
+    -- uninstall files
+    local _, dstfiles = package:installfiles(".")
+    for _, dstfile in ipairs(dstfiles) do
+        batchcmds_:rm(dstfile)
+    end
 
     -- get custom uninstall commands
     local script = package:script("uninstallcmd")

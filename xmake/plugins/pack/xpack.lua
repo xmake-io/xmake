@@ -334,6 +334,90 @@ function xpack:version()
     return version, version_build
 end
 
+-- get the copied files
+function xpack:_copiedfiles(filetype, outputdir)
+
+    -- no copied files?
+    local copiedfiles = self:get(filetype)
+    if not copiedfiles then return end
+
+    -- get the extra information
+    local extrainfo = table.wrap(self:get("__extra_" .. filetype))
+
+    -- get the source paths and destinate paths
+    local srcfiles = {}
+    local dstfiles = {}
+    local fileinfos = {}
+    for _, copiedfile in ipairs(table.wrap(copiedfiles)) do
+
+        -- get the root directory
+        local rootdir, count = copiedfile:gsub("|.*$", ""):gsub("%(.*%)$", "")
+        if count == 0 then
+            rootdir = nil
+        end
+        if rootdir and rootdir:trim() == "" then
+            rootdir = "."
+        end
+
+        -- remove '(' and ')'
+        local srcpaths = copiedfile:gsub("[%(%)]", "")
+        if srcpaths then
+
+            -- get the source paths
+            srcpaths = os.match(srcpaths)
+            if srcpaths and #srcpaths > 0 then
+
+                -- add the source copied files
+                table.join2(srcfiles, srcpaths)
+
+                -- the copied directory exists?
+                if outputdir then
+
+                    -- get the file info
+                    local fileinfo = extrainfo[copiedfile] or {}
+
+                    -- get the prefix directory
+                    local prefixdir = fileinfo.prefixdir
+
+                    -- add the destinate copied files
+                    for _, srcpath in ipairs(srcpaths) do
+
+                        -- get the destinate directory
+                        local dstdir = outputdir
+                        if prefixdir then
+                            dstdir = path.join(dstdir, prefixdir)
+                        end
+
+                        -- the destinate file
+                        local dstfile = nil
+                        if rootdir then
+                            dstfile = path.absolute(path.relative(srcpath, rootdir), dstdir)
+                        else
+                            dstfile = path.join(dstdir, path.filename(srcpath))
+                        end
+                        assert(dstfile)
+
+                        -- modify filename
+                        if fileinfo.filename then
+                            dstfile = path.join(path.directory(dstfile), fileinfo.filename)
+                        end
+
+                        -- add it
+                        table.insert(dstfiles, dstfile)
+                        table.insert(fileinfos, fileinfo)
+                    end
+                end
+            end
+        end
+    end
+    return srcfiles, dstfiles, fileinfos
+end
+
+-- get the install files
+function xpack:installfiles(outputdir)
+    return self:_copiedfiles("installfiles", outputdir)
+end
+
 -- new a xpack
 function _new(name, info)
     return xpack {name, info}

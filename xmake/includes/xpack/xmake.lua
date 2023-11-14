@@ -53,9 +53,7 @@ local apis = {
         -- set icon file path, e.g foo.ico
         "xpack.set_iconfile",
         -- add install files, we will also get them from target
-        "xpack.add_installfiles",
-        -- set install directory, we will also get it from target
-        "xpack.set_installdir"
+        "xpack.add_installfiles"
     },
     script = {
         -- add custom install commands script, we will also get it from target/rules

@@ -191,6 +191,7 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
   ; set output path to the installation directory.
   SetOutPath $InstDir
 
+  ; TODO
   ; remove previous directories used
   IfFileExists "$InstDir\${PACKAGE_FILENAME}" file_found file_not_found_or_end
   file_found:
@@ -207,7 +208,7 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
   !macro AddReg RootKey
     WriteRegStr   ${RootKey} ${RegUninstall} "NoAdmin"               "$NOADMIN"
     WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "${PACKAGE_NAME} (${PACKAGE_ARCH})"
-    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"$InstDir\${PACKAGE_FILENAME}"'
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"$InstDir\${PACKAGE_FILENAME}"' ; TODO
     WriteRegStr   ${RootKey} ${RegUninstall} "Comments"              "${PACKAGE_DESCRIPTION}"
     WriteRegStr   ${RootKey} ${RegUninstall} "Publisher"             "${PACKAGE_COPYRIGHT}"
     WriteRegStr   ${RootKey} ${RegUninstall} "UninstallString"       '"$InstDir\uninstall.exe"'
