@@ -436,6 +436,15 @@ function xpack:libdir()
     return libdir
 end
 
+-- get the include directory
+function xpack:includedir()
+    local includedir = self:get("includedir")
+    if includedir == nil then
+        includedir = "include"
+    end
+    return includedir
+end
+
 -- new a xpack
 function _new(name, info)
     return xpack {name, info}

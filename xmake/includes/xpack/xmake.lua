@@ -49,7 +49,9 @@ local apis = {
         -- set installed binary directory, e.g. bin
         "xpack.set_bindir",
         -- set installed library directory, e.g. lib
-        "xpack.set_libdir"
+        "xpack.set_libdir",
+        -- set installed include directory, e.g. include
+        "xpack.set_includedir"
     },
     paths = {
         -- set the spec file path, support the custom variable pattern, e.g. set_specfile("", {pattern = "%${([^\n]-)}"})

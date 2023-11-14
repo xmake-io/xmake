@@ -130,19 +130,16 @@ end
 -- on install static target command
 function _on_target_installcmd_static(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = package:bindir()
+    local libdir = package:libdir()
 
     -- install target file
-    batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
+    batchcmds_:cp(target:targetfile(), path.join(libdir, target:filename()))
 end
 
 -- on install headeronly target command
 function _on_target_installcmd_headeronly(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = package:bindir()
-
-    -- install target file
-    batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
+    local includedir = package:includedir()
 end
 
 -- on install target command
