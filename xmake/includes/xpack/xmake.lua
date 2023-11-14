@@ -56,6 +56,8 @@ local apis = {
         "xpack.add_installfiles"
     },
     script = {
+        -- add custom load script
+        "xpack.on_load",
         -- add custom commands script before installing
         "xpack.before_installcmd",
         -- add custom commands script before uninstalling

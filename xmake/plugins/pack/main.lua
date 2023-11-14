@@ -26,10 +26,18 @@ import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"})
 import("xpack")
 
+function _load_package(package, format)
+    package:format_set(format)
+    local script = package:script("load")
+    if script then
+        script(package)
+    end
+end
+
 function _pack_package(package)
     assert(package:formats(), "xpack(%s): formats not found, please use `set_formats()` to set it.", package:name())
     for _, format in package:formats():keys() do
-        package:format_set(format)
+        _load_package(package, format)
         import(format)(package)
     end
 end
