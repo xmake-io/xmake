@@ -621,6 +621,13 @@ end
 function _add_target_exceptions(cmakelists, target)
     local flags_gcc =
     {
+        cxx = "-fexceptions",
+        ["no-cxx"] = "-fno-exceptions",
+        objc = "-fobjc-exceptions",
+        ["no-objc"] = "-fno-objc-exceptions"
+    }
+    local flags_clang =
+    {
         cxx = "-fcxx-exceptions",
         ["no-cxx"] = "-fno-cxx-exceptions",
         objc = "-fobjc-exceptions",
@@ -640,6 +647,10 @@ function _add_target_exceptions(cmakelists, target)
             -- msvc or clang-cl
             for _, exception in ipairs(exceptions) do
                 cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[exception])
+            end
+            cmakelists:print("elseif(Clang)")
+            for _, exception in ipairs(exceptions) do
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_clang[exception])
             end
             cmakelists:print("else()")
             for _, exception in ipairs(exceptions) do
