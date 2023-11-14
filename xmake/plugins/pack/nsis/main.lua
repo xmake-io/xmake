@@ -61,7 +61,7 @@ function _get_command_strings(package, cmd)
         -- https://nsis.sourceforge.io/Reference/File
         local srcfiles = os.files(cmd.srcpath)
         for _, srcfile in ipairs(srcfiles) do
-            table.insert(result, string.format("File /oname=%s %s", cmd.dstpath, srcfile))
+ --           table.insert(result, string.format("File /oname=%s %s", cmd.dstpath, srcfile))
         end
     elseif kind == "rm" then
         -- TODO
@@ -121,6 +121,7 @@ end
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
+    specvars.PACKAGE_OUTPUTFILE = path.absolute(package:outputfile()):gsub("\\", "/")
     specvars.PACKAGE_INSTALLCMDS = function ()
         return _get_installcmds(package)
     end
@@ -171,6 +172,7 @@ function main(package)
     os.tryrm(package:buildir())
 
     -- pack nsis package
+    os.mkdir(package:outputdir())
     _pack_nsis(makensis.program, package, opt)
 
     -- done

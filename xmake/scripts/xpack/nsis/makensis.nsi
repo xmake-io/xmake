@@ -20,8 +20,8 @@
 ; set the package name
 Name "${PACKAGE_NAME} - v${VERSION}"
 
-; set the output file name
-OutFile "${PACKAGE_FILENAME}"
+; set the output file path
+OutFile "${PACKAGE_OUTPUTFILE}"
 
 ; use unicode
 Unicode true

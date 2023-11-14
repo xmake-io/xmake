@@ -194,21 +194,29 @@ end
 
 -- get the build directory
 function xpack:buildir()
-    return path.join(config.buildir(), ".xpack", self:name(), self:format())
+    return path.join(config.buildir(), ".xpack", self:name())
 end
 
 -- get the output directory
 function xpack:outputdir()
     local outputdir = option.get("outputdir")
     if outputdir == nil then
-        outputdir = path.join(config.buildir(), "xpack", self:name(), self:format())
+        outputdir = path.join(config.buildir(), "xpack", self:name())
     end
     return outputdir
 end
 
 -- get the basename
 function xpack:basename()
-    return self:get("basename") or self:name()
+    local basename = self:get("basename")
+    if basename == nil then
+        basename = self:name()
+        local version = self:version()
+        if version then
+            basename = basename .. "-" .. version
+        end
+    end
+    return basename
 end
 
 -- get the spec variables
