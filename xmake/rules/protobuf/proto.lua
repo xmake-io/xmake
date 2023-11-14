@@ -204,7 +204,6 @@ end
 
 -- build batch jobs
 function build_sourcefiles_proto(target, batchjobs, sourcebatch, opt, sourcekind)
-
     -- get the root directory of protobuf
     local proto_rootdir
     if #sourcebatch.sourcefiles > 0 then
@@ -224,8 +223,8 @@ function build_sourcefiles_proto(target, batchjobs, sourcebatch, opt, sourcekind
     for i = 1, sourcefiles_total do
         local sourcefile = sourcebatch.sourcefiles[i]
         local moduleinfo = moduledeps_files[sourcefile] or {}
+        -- make build job
         moduleinfo.job = batchjobs:newjob(sourcefile, function (index, total)
-            -- make build job
             local batchcmds_ = batchcmds.new({target = target})
             build_proto_cmd(target, batchcmds_, sourcefile, {progress = (index * 100) / total}, sourcekind)
             batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
@@ -240,6 +239,7 @@ function build_compiled_sourcefiles_proto(target, batchjobs, sourcebatch, opt, s
     -- generate jobs
     for i = 1, sourcefiles_total do
         local sourcefile = sourcebatch.sourcefiles[i]
+        -- make build job
         batchjobs:newjob(sourcefile, function (index, total)
             local batchcmds_ = batchcmds.new({target = target})
             build_c_cmd(target, batchcmds_, sourcefile, {progress = (index * 100) / total}, sourcekind)
