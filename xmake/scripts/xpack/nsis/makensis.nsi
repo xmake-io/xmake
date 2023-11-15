@@ -87,7 +87,9 @@ ManifestDPIAware true
 
 ; add the install Pages
 !insertmacro MUI_PAGE_WELCOME
-;!insertmacro MUI_PAGE_LICENSE "..\LICENSE.md"
+!if "${PACKAGE_LICENSEFILE}" != ""
+  !insertmacro MUI_PAGE_LICENSE "${PACKAGE_LICENSEFILE}"
+!endif
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES

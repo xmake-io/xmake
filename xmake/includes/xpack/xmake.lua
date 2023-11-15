@@ -34,8 +34,6 @@ local apis = {
         "xpack.set_homepage",
         -- set package description
         "xpack.set_description",
-        -- set package license, we will also get them from target
-        "xpack.set_license",
         -- set package copyright
         "xpack.set_copyright",
         -- set company name
@@ -58,6 +56,8 @@ local apis = {
         "xpack.set_specfile",
         -- set icon file path, e.g foo.ico
         "xpack.set_iconfile",
+        -- set package license file, we will also get them from target
+        "xpack.set_licensefile",
         -- add install files, we will also get them from target
         "xpack.add_installfiles"
     },
