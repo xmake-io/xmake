@@ -102,6 +102,8 @@ function _get_command_string(cmd, vcxprojdir)
         return string.format("copy /Y \"%s\" \"%s\"", _translate_path(cmd.srcpath, vcxprojdir), _translate_path(cmd.dstpath, vcxprojdir))
     elseif kind == "rm" then
         return string.format("del /F /Q \"%s\" || rmdir /S /Q \"%s\"", _translate_path(cmd.filepath, vcxprojdir), _translate_path(cmd.filepath, vcxprojdir))
+    elseif kind == "rmdir" then
+        return string.format("rmdir /S /Q \"%s\"", _translate_path(cmd.filepath, vcxprojdir))
     elseif kind == "mv" then
         return string.format("rename \"%s\" \"%s\"", _translate_path(cmd.srcpath, vcxprojdir), _translate_path(cmd.dstpath, vcxprojdir))
     elseif kind == "cd" then

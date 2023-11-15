@@ -215,6 +215,15 @@ function _get_cmd_rm(filedir)
     end
 end
 
+-- get command: rmdir
+function _get_cmd_rmdir(filedir)
+    if is_subhost("windows") then
+        return string.format("@rmdir /S /Q %s > NUL 2>&1", filedir)
+    else
+        return string.format("@rm -rf %s", filedir)
+    end
+end
+
 -- get command: echo
 function _get_cmd_echo(str)
     return string.format("@echo %s", colors.ignore(str))
@@ -248,6 +257,8 @@ function _get_command_string(cmd, outputdir)
         end
     elseif kind == "rm" then
         return _get_cmd_rm(_get_relative_unix_path(cmd.filepath, outputdir))
+    elseif kind == "rmdir" then
+        return _get_cmd_rmdir(_get_relative_unix_path(cmd.dir, outputdir))
     elseif kind == "mv" then
         return _get_cmd_mv(_get_relative_unix_path(cmd.srcpath, outputdir), _get_relative_unix_path(cmd.dstpath, outputdir))
     elseif kind == "ln" then

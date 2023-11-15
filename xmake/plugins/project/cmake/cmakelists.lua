@@ -908,6 +908,8 @@ function _get_command_string(cmd, outputdir)
         end
     elseif kind == "rm" then
         return string.format("${CMAKE_COMMAND} -E rm -rf %s", _get_relative_unix_path_to_cmake(cmd.filepath, outputdir))
+    elseif kind == "rmdir" then
+        return string.format("${CMAKE_COMMAND} -E rm -rf %s", _get_relative_unix_path_to_cmake(cmd.dir, outputdir))
     elseif kind == "mv" then
         return string.format("${CMAKE_COMMAND} -E rename %s %s",
             _get_relative_unix_path_to_cmake(cmd.srcpath, outputdir), _get_relative_unix_path_to_cmake(cmd.dstpath, outputdir))
