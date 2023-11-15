@@ -535,31 +535,32 @@ function _get_specvars(package)
     specvars.PACKAGE_UNINSTALLCMDS = function ()
         return _get_uninstallcmds(package)
     end
-    specvars.PACKAGE_NSIS_SECTIONS = function ()
+    specvars.PACKAGE_NSIS_INSTALL_SECTIONS = function ()
         local result = {}
-        local sections = package:get("nsis_sections")
-        for name, section in pairs(sections) do
-            local tag = _get_unique_tag(name)
+        local cmds = package:get("nsis_installcmds")
+        for name, cmd in pairs(cmds) do
+            local tag = "Install" .. _get_unique_tag(name)
             table.insert(result, string.format('Section "%s" %s', name, tag))
-            table.insert(result, section)
+            table.insert(result, cmd)
             table.insert(result, "SectionEnd")
         end
         return table.concat(result, "\n  ")
     end
-    specvars.PACKAGE_NSIS_DESCS = function ()
+    specvars.PACKAGE_NSIS_INSTALL_DESCS = function ()
         local result = {}
-        local sections = package:get("nsis_sections")
-        for name, section in pairs(sections) do
-            local tag = _get_unique_tag(name)
-            table.insert(result, string.format('LangString DESC_%s ${LANG_ENGLISH} "%s"', tag, name))
+        local cmds = package:get("nsis_installcmds")
+        for name, cmd in pairs(cmds) do
+            local tag = "Install" .. _get_unique_tag(name)
+            local description = package:extraconf("nsis_installcmds." .. name, cmd, "description") or name
+            table.insert(result, string.format('LangString DESC_%s ${LANG_ENGLISH} "%s"', tag, description))
         end
         return table.concat(result, "\n  ")
     end
-    specvars.PACKAGE_NSIS_DESCRIPTION_TEXTS = function ()
+    specvars.PACKAGE_NSIS_INSTALL_DESCRIPTION_TEXTS = function ()
         local result = {}
-        local sections = package:get("nsis_sections")
-        for name, section in pairs(sections) do
-            local tag = _get_unique_tag(name)
+        local cmds = package:get("nsis_installcmds")
+        for name, _ in pairs(cmds) do
+            local tag = "Install" .. _get_unique_tag(name)
             table.insert(result, string.format('!insertmacro MUI_DESCRIPTION_TEXT ${%s} $(DESC_%s)', tag, tag))
         end
         return table.concat(result, "\n  ")

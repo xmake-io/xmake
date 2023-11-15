@@ -81,12 +81,13 @@ local apis = {
         -- set the spec variable
         "xpack.set_specvar",
         -- add nsis sections, e.g.
+        -- add NSIS install commands that will be added to the end of the install Section, e.g.
         --[[
-            add_nsis_sections("Enable Long Path",
+            add_nsis_installcmds("Enable Long Path",
                 'WriteRegDWORD ${HKLM} "SYSTEM\CurrentControlSet\Control\FileSystem" "LongPathsEnabled" 1',
                 {description = "Increases the maximum path length limit, up to 32,767 characters (before 256)."})
         --]]
-        "xpack.add_nsis_sections"
+        "xpack.add_nsis_installcmds"
     }
 }
 interp_add_scopeapis(apis)

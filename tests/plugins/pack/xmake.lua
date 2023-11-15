@@ -37,7 +37,7 @@ xpack("test")
         batchcmds:rmdir("stub")
     end)
 
-    add_nsis_sections("Enable Long Path", [[
+    add_nsis_installcmds("Enable Long Path", [[
   ${If} $NoAdmin == "false"
     ; Enable long path
     WriteRegDWORD ${HKLM} "SYSTEM\CurrentControlSet\Control\FileSystem" "LongPathsEnabled" 1
