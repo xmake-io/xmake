@@ -124,6 +124,80 @@ function _get_commands_string(package, cmds)
     return table.concat(cmdstrs, "\n  ")
 end
 
+-- install headers
+function _install_headers(target, batchcmds_, includedir)
+    local srcheaders, dstheaders = target:headerfiles(includedir, {installonly = true})
+    if srcheaders and dstheaders then
+        local i = 1
+        for _, srcheader in ipairs(srcheaders) do
+            local dstheader = dstheaders[i]
+            if dstheader then
+                batchcmds_:cp(srcheader, dstheader)
+            end
+            i = i + 1
+        end
+    end
+end
+
+-- install shared libraries for package
+function _install_shared_for_package(target, pkg, batchcmds_, outputdir)
+    _g.installed_dllfiles = _g.installed_dllfiles or {}
+    for _, dllpath in ipairs(table.wrap(pkg:get("libfiles"))) do
+        if dllpath:endswith(".dll") then
+            -- prevent packages using the same libfiles from overwriting each other
+            if not _g.installed_dllfiles[dllpath] then
+                local dllname = path.filename(dllpath)
+                batchcmds_:cp(dllpath, path.join(outputdir, dllname))
+                _g.installed_dllfiles[dllpath] = true
+            end
+        end
+    end
+end
+
+-- install shared libraries for packages
+function _install_shared_for_packages(target, batchcmds_, outputdir)
+    _g.installed_packages = _g.installed_packages or {}
+    for _, pkg in ipairs(target:orderpkgs()) do
+        if not _g.installed_packages[pkg:name()] then
+            if pkg:enabled() and pkg:get("libfiles") then
+                _install_shared_for_package(target, pkg, batchcmds_, outputdir)
+            end
+            _g.installed_packages[pkg:name()] = true
+        end
+    end
+end
+
+-- uninstall headers
+function _uninstall_headers(target, batchcmds_, includedir)
+    local _, dstheaders = target:headerfiles(includedir, {installonly = true})
+    for _, dstheader in ipairs(dstheaders) do
+        batchcmds_:rm(dstheader)
+    end
+end
+
+-- uninstall shared libraries for package
+function _uninstall_shared_for_package(target, pkg, batchcmds_, outputdir)
+    for _, dllpath in ipairs(table.wrap(pkg:get("libfiles"))) do
+        if dllpath:endswith(".dll") then
+            local dllname = path.filename(dllpath)
+            batchcmds_:rm(path.join(outputdir, dllname))
+        end
+    end
+end
+
+-- uninstall shared libraries for packages
+function _uninstall_shared_for_packages(target, batchcmds_, outputdir)
+    _g.uninstalled_packages = _g.uninstalled_packages or {}
+    for _, pkg in ipairs(target:orderpkgs()) do
+        if not _g.uninstalled_packages[pkg:name()] then
+            if pkg:enabled() and pkg:get("libfiles") then
+                _uninstall_shared_for_package(target, pkg, batchcmds_, outputdir)
+            end
+            _g.uninstalled_packages[pkg:name()] = true
+        end
+    end
+end
+
 -- on install binary target command
 function _on_target_installcmd_binary(target, batchcmds_, opt)
     local package = opt.package
@@ -134,30 +208,71 @@ function _on_target_installcmd_binary(target, batchcmds_, opt)
     if os.isfile(target:symbolfile()) then
         batchcmds_:cp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
     end
+
+    -- install the dependent shared/windows (*.dll) target
+    -- @see https://github.com/xmake-io/xmake/issues/961
+    _g.installed_dllfiles = _g.installed_dllfiles or {}
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:kind() == "shared" then
+            local depfile = dep:targetfile()
+            if os.isfile(depfile) then
+                if not _g.installed_dllfiles[depfile] then
+                    batchcmds_:cp(depfile, path.join(bindir, path.filename(depfile)))
+                    _g.installed_dllfiles[depfile] = true
+                end
+            end
+        end
+        -- install all shared libraries in packages in all deps
+        _install_shared_for_packages(dep, batchcmds_, bindir)
+    end
+
+    -- install shared libraries for all packages
+    _install_shared_for_packages(target, batchcmds_, bindir)
 end
 
 -- on install shared target command
 function _on_target_installcmd_shared(target, batchcmds_, opt)
     local package = opt.package
     local bindir = package:bindir()
+    local libdir = package:libdir()
+    local includedir = package:includedir()
 
     -- install target file
     batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
     if os.isfile(target:symbolfile()) then
         batchcmds_:cp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
     end
+
+    -- install *.lib for shared/windows (*.dll) target
+    -- @see https://github.com/xmake-io/xmake/issues/714
+    local targetfile = target:targetfile()
+    local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib"))
+    if os.isfile(targetfile_lib) then
+        batchcmds_:mkdir(libdir)
+        batchcmds_:cp(targetfile_lib, path.join(libdir, path.filename(targetfile_lib)))
+    end
+
+    -- install shared libraries for all packages
+    _install_shared_for_packages(target, batchcmds_, bindir)
+
+    -- install headers
+    _install_headers(target, batchcmds_, includedir)
 end
 
 -- on install static target command
 function _on_target_installcmd_static(target, batchcmds_, opt)
     local package = opt.package
     local libdir = package:libdir()
+    local includedir = package:includedir()
 
     -- install target file
     batchcmds_:cp(target:targetfile(), path.join(libdir, target:filename()))
     if os.isfile(target:symbolfile()) then
         batchcmds_:cp(target:symbolfile(), path.join(libdir, path.filename(target:symbolfile())))
     end
+
+    -- install headers
+    _install_headers(target, batchcmds_, includedir)
 end
 
 -- on install headeronly target command
@@ -196,33 +311,62 @@ function _on_target_uninstallcmd_binary(target, batchcmds_, opt)
     -- uninstall target file
     batchcmds_:rm(path.join(bindir, target:filename()))
     batchcmds_:tryrm(path.join(bindir, path.filename(target:symbolfile())))
+
+    -- remove the dependent shared/windows (*.dll) target
+    -- @see https://github.com/xmake-io/xmake/issues/961
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:is_shared() then
+            batchcmds_:rm(path.join(bindir, path.filename(dep:targetfile())))
+        end
+        _uninstall_shared_for_packages(dep, batchcmds_, bindir)
+    end
+
+    -- uninstall shared libraries for packages
+    _uninstall_shared_for_packages(target, batchcmds_, bindir)
 end
 
 -- on uninstall shared target command
 function _on_target_uninstallcmd_shared(target, batchcmds_, opt)
     local package = opt.package
     local bindir = package:bindir()
+    local libdir = package:libdir()
+    local includedir = package:includedir()
 
     -- uninstall target file
     batchcmds_:rm(path.join(bindir, target:filename()))
     batchcmds_:tryrm(path.join(bindir, path.filename(target:symbolfile())))
+
+    -- remove *.lib for shared/windows (*.dll) target
+    -- @see https://github.com/xmake-io/xmake/issues/714
+    local targetfile = target:targetfile()
+    batchcmds_:rm(path.join(libdir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")))
+
+    -- remove headers from the include directory
+    _uninstall_headers(target, batchcmds_, includedir)
+
+    -- uninstall shared libraries for packages
+    _uninstall_shared_for_packages(target, batchcmds_, bindir)
 end
 
 -- on uninstall static target command
 function _on_target_uninstallcmd_static(target, batchcmds_, opt)
     local package = opt.package
     local libdir = package:libdir()
+    local includedir = package:includedir()
 
     -- uninstall target file
     batchcmds_:rm(path.join(libdir, target:filename()))
     batchcmds_:tryrm(path.join(libdir, path.filename(target:symbolfile())))
+
+    -- remove headers from the include directory
+    _uninstall_headers(target, batchcmds_, includedir)
 end
 
 -- on uninstall headeronly target command
 function _on_target_uninstallcmd_headeronly(target, batchcmds_, opt)
     local package = opt.package
     local includedir = package:includedir()
-
+    _uninstall_headers(target, batchcmds_, includedir)
 end
 
 -- on uninstall target command

@@ -3,14 +3,22 @@ add_rules("mode.debug", "mode.release")
 
 includes("@builtin/xpack")
 
+add_requires("zlib", {configs = {shared = true}})
+
 target("test")
     set_kind("binary")
     add_files("src/*.cpp")
 
+target("foo")
+    set_kind("shared")
+    add_files("src/*.cpp")
+    add_headerfiles("include/(*.h)")
+    add_packages("zlib")
+
 xpack("test")
     set_formats("nsis")
     set_description("hello")
-    add_targets("test")
+    add_targets("test", "foo")
     set_basename("test-$(plat)-$(arch)-v$(version)")
     add_installfiles("src/(assets/*.png)", {prefixdir = "images"})
     set_iconfile("src/assets/xmake.ico")
