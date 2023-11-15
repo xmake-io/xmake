@@ -8,6 +8,9 @@ add_requires("zlib", {configs = {shared = true}})
 target("test")
     set_kind("binary")
     add_files("src/*.cpp")
+    if is_plat("windows") then
+        add_files("src/*.rc")
+    end
 
 target("foo")
     set_kind("shared")
