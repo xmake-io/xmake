@@ -53,8 +53,10 @@ function _get_makensis()
     return makensis, oldenvs
 end
 
--- copy files or directories and we can reserve the source directory structure
--- e.g. os.cp("src/**.h", "/tmp/", {rootdir = "src", symlink = true})
+-- get unique tag
+function _get_unique_tag(content)
+    return hash.uuid(content):split("-", {plain = true})[1]:lower()
+end
 
 -- get command string
 function _get_command_strings(package, cmd)
@@ -92,7 +94,7 @@ function _get_command_strings(package, cmd)
             file_not_found_or_end:
         --]]
         local filepath = path.normalize(path.join("$InstDir", cmd.filepath))
-        local tag = hash.uuid(filepath):split("-", {plain = true})[1]:lower()
+        local tag = _get_unique_tag(filepath)
         table.insert(result, string.format("IfFileExists \"%s\" file_found_%s file_not_found_or_end_%s", filepath, tag, tag))
         table.insert(result, string.format("file_found_%s:", tag))
         table.insert(result, string.format("  Delete \"%s\"", filepath))
@@ -532,6 +534,35 @@ function _get_specvars(package)
     end
     specvars.PACKAGE_UNINSTALLCMDS = function ()
         return _get_uninstallcmds(package)
+    end
+    specvars.PACKAGE_NSIS_SECTIONS = function ()
+        local result = {}
+        local sections = package:get("nsis_sections")
+        for name, section in pairs(sections) do
+            local tag = _get_unique_tag(name)
+            table.insert(result, string.format('Section "%s" %s', name, tag))
+            table.insert(result, section)
+            table.insert(result, "SectionEnd")
+        end
+        return table.concat(result, "\n  ")
+    end
+    specvars.PACKAGE_NSIS_DESCS = function ()
+        local result = {}
+        local sections = package:get("nsis_sections")
+        for name, section in pairs(sections) do
+            local tag = _get_unique_tag(name)
+            table.insert(result, string.format('LangString DESC_%s ${LANG_ENGLISH} "%s"', tag, name))
+        end
+        return table.concat(result, "\n  ")
+    end
+    specvars.PACKAGE_NSIS_DESCRIPTION_TEXTS = function ()
+        local result = {}
+        local sections = package:get("nsis_sections")
+        for name, section in pairs(sections) do
+            local tag = _get_unique_tag(name)
+            table.insert(result, string.format('!insertmacro MUI_DESCRIPTION_TEXT ${%s} $(DESC_%s)', tag, tag))
+        end
+        return table.concat(result, "\n  ")
     end
     return specvars
 end

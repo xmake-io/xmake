@@ -247,14 +247,18 @@ Section "Add to PATH" InstallPath
    SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
 SectionEnd
 
+${PACKAGE_NSIS_SECTIONS}
+
 ; define language strings
 LangString DESC_InstallExeutable ${LANG_ENGLISH} "${PACKAGE_DESCRIPTION}"
 LangString DESC_InstallPath ${LANG_ENGLISH} "Add ${PACKAGE_NAME} to PATH"
+${PACKAGE_NSIS_DESCS}
 
 ; assign language strings to sections
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 !insertmacro MUI_DESCRIPTION_TEXT ${InstallExeutable} $(DESC_InstallExeutable)
 !insertmacro MUI_DESCRIPTION_TEXT ${InstallPath} $(DESC_InstallPath)
+${PACKAGE_NSIS_DESCRIPTION_TEXTS}
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ; setup uninstaller
