@@ -126,6 +126,6 @@ toolchain("zig")
         -- @see https://github.com/ziglang/zig/issues/5825
         if toolchain:is_plat("windows") then
             toolchain:add("zcldflags", "--subsystem console")
-            toolchain:add("syslinks", "kernel32", "ntdll")
+            toolchain:add("zcldflags", "-lkernel32", "-lntdll")
         end
     end)
