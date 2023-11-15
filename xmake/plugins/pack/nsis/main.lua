@@ -524,8 +524,9 @@ end
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
-    specvars.PACKAGE_WORKDIR = path.absolute(os.projectdir()):gsub("\\", "/")
-    specvars.PACKAGE_OUTPUTFILE = path.absolute(package:outputfile()):gsub("\\", "/")
+    specvars.PACKAGE_WORKDIR = path.absolute(os.projectdir())
+    specvars.PACKAGE_BINDIR = package:bindir()
+    specvars.PACKAGE_OUTPUTFILE = path.absolute(package:outputfile())
     specvars.PACKAGE_INSTALLCMDS = function ()
         return _get_installcmds(package)
     end

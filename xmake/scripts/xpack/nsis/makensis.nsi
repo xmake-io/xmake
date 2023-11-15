@@ -153,19 +153,20 @@ Done:
 FunctionEnd
 
 ; setup installer
-Var NOADMIN
+Var NoAdmin
+Var BinDir
 Function .onInit
-  ${GetOptions} $CMDLINE "/NOADMIN" $NOADMIN
+  ${GetOptions} $CMDLINE "/NOADMIN" $NoAdmin
   ${If} ${Errors}
     !insertmacro Init "installer"
-    StrCpy $NOADMIN "false"
+    StrCpy $NoAdmin "false"
   ${Else}
-    StrCpy $NOADMIN "true"
+    StrCpy $NoAdmin "true"
   ${EndIf}
 
-  ; load from reg
+  ; get installation root directory
   ${If} $InstDir == ""
-    ${If} $NOADMIN == "false"
+    ${If} $NoAdmin == "false"
       ReadRegStr $R0 ${HKLM} ${RegUninstall} "InstallLocation"
     ${Else}
       ReadRegStr $R0 ${HKCU} ${RegUninstall} "InstallLocation"
@@ -177,11 +178,13 @@ Function .onInit
       StrCpy $InstDir $R0
     ${EndIf}
   ${EndIf}
-
-  ; use default
   ${If} $InstDir == ""
     StrCpy $InstDir "${PROGRAMFILES}\${PACKAGE_NAME}"
   ${EndIf}
+
+  ; get binary directory
+  StrCpy $BinDir "$InstDir\${PACKAGE_BINDIR}"
+
 FunctionEnd
 
 Section "${PACKAGE_NAME} (required)" InstallExeutable
@@ -191,14 +194,6 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
   ; set output path to the installation directory.
   SetOutPath $InstDir
 
-  ; TODO
-  ; remove previous directories used
-  IfFileExists "$InstDir\${PACKAGE_FILENAME}" file_found file_not_found_or_end
-  file_found:
-    RMDir /r "$InstDir"
-    goto file_not_found_or_end
-  file_not_found_or_end:
-
   ; add install commands
   ${PACKAGE_INSTALLCMDS}
 
@@ -206,9 +201,9 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
   WriteUninstaller "uninstall.exe"
   ; Write the uninstall keys for Windows
   !macro AddReg RootKey
-    WriteRegStr   ${RootKey} ${RegUninstall} "NoAdmin"               "$NOADMIN"
+    WriteRegStr   ${RootKey} ${RegUninstall} "NoAdmin"               "$NoAdmin"
     WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "${PACKAGE_NAME} (${PACKAGE_ARCH})"
-    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"$InstDir\${PACKAGE_FILENAME}"' ; TODO
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"$InstDir\${PACKAGE_BINDIR}\${PACKAGE_FILENAME}"' ; TODO
     WriteRegStr   ${RootKey} ${RegUninstall} "Comments"              "${PACKAGE_DESCRIPTION}"
     WriteRegStr   ${RootKey} ${RegUninstall} "Publisher"             "${PACKAGE_COPYRIGHT}"
     WriteRegStr   ${RootKey} ${RegUninstall} "UninstallString"       '"$InstDir\uninstall.exe"'
@@ -229,32 +224,24 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
     WriteRegDWORD ${RootKey} ${RegUninstall} "EstimatedSize" "$0"
   !macroend
 
-  ${If} $NOADMIN == "false"
+  ${If} $NoAdmin == "false"
     !insertmacro AddReg ${HKLM}
   ${Else}
     !insertmacro AddReg ${HKCU}
   ${EndIf}
 SectionEnd
 
-; Add to %PATH%
+; add the binary directory to %PATH%
 Section "Add to PATH" InstallPath
-  ${If} $NOADMIN == "false"
-    ; Remove the installation path from the $PATH environment variable first
+  ${If} $NoAdmin == "false"
     ReadRegStr $R0 ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
-    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
-
-    ; Write the installation path into the $PATH environment variable
-    WriteRegExpandStr ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$InstDir"
+    ${WordReplace} $R0 ";$BinDir" "" "+" $R1
+    WriteRegExpandStr ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$BinDir"
   ${Else}
-    ; Remove the installation path from the $PATH environment variable first
     ReadRegStr $R0 ${HKCU} "Environment" "Path"
-    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
-
-    ; Write the installation path into the $PATH environment variable
-    WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1;$InstDir"
+    ${WordReplace} $R0 ";$BinDir" "" "+" $R1
+    WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1;$BinDir"
   ${EndIf}
-
-   ; make sure windows knows about the change
    SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
 SectionEnd
 
@@ -271,11 +258,11 @@ LangString DESC_InstallPath ${LANG_ENGLISH} "Add ${PACKAGE_NAME} to PATH"
 ; setup uninstaller
 Function un.onInit
   ; check if we need uac
-  ReadRegStr $NOADMIN ${HKLM} ${RegUninstall} "NoAdmin"
+  ReadRegStr $NoAdmin ${HKLM} ${RegUninstall} "NoAdmin"
   IfErrors 0 +2
-  ReadRegStr $NOADMIN ${HKCU} ${RegUninstall} "NoAdmin"
+  ReadRegStr $NoAdmin ${HKCU} ${RegUninstall} "NoAdmin"
 
-  ${IfNot} $NOADMIN == "true"
+  ${IfNot} $NoAdmin == "true"
     !insertmacro Init "uninstaller"
   ${EndIf}
 FunctionEnd
@@ -285,18 +272,16 @@ Section "Uninstall"
   ; add uninstall commands
   ${PACKAGE_UNINSTALLCMDS}
 
-  ; clean regs
-  ${If} $NOADMIN == "false"
+  ; remove the binary directory from %Path%
+  ${If} $NoAdmin == "false"
     DeleteRegKey ${HKLM} ${RegUninstall}
-    ; Remove the installation path from the $PATH environment variable
     ReadRegStr $R0 ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
-    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
+    ${WordReplace} $R0 ";$BinDir" "" "+" $R1
     WriteRegExpandStr ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1"
   ${Else}
     DeleteRegKey ${HKCU} ${RegUninstall}
-    ; Remove the installation path from the $PATH environment variable
     ReadRegStr $R0 ${HKCU} "Environment" "Path"
-    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
+    ${WordReplace} $R0 ";$BinDir" "" "+" $R1
     WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1"
   ${EndIf}
 
