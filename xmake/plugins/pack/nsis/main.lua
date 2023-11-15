@@ -569,6 +569,7 @@ function _pack_nsis(makensis, package, opt)
 end
 
 function main(package)
+    cprint("packing %s", package:outputfile())
 
     -- get makensis
     local makensis, oldenvs = _get_makensis()
