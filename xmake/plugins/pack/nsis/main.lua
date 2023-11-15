@@ -76,12 +76,12 @@ function _get_command_strings(package, cmd)
             end
             srcfile = path.normalize(srcfile)
             local dstname = path.filename(dstfile)
-            local dstdir = path.normalize(path.directory(path.join("$INSTDIR", dstfile)))
+            local dstdir = path.normalize(path.directory(path.join("$InstDir", dstfile)))
             table.insert(result, string.format("SetOutPath \"%s\"", dstdir))
             table.insert(result, string.format("File /oname=%s \"%s\"", dstname, srcfile))
         end
     elseif kind == "rm" then
-        local filepath = path.normalize(path.join("$INSTDIR", cmd.filepath))
+        local filepath = path.normalize(path.join("$InstDir", cmd.filepath))
         table.insert(result, string.format("Delete \"%s\"", filepath))
     elseif kind == "tryrm" then
         --[[
@@ -91,7 +91,7 @@ function _get_command_strings(package, cmd)
               goto file_not_found_or_end
             file_not_found_or_end:
         --]]
-        local filepath = path.normalize(path.join("$INSTDIR", cmd.filepath))
+        local filepath = path.normalize(path.join("$InstDir", cmd.filepath))
         local tag = hash.uuid(filepath):split("-", {plain = true})[1]:lower()
         table.insert(result, string.format("IfFileExists \"%s\" file_found_%s file_not_found_or_end_%s", filepath, tag, tag))
         table.insert(result, string.format("file_found_%s:", tag))
@@ -99,17 +99,17 @@ function _get_command_strings(package, cmd)
         table.insert(result, string.format("  goto file_not_found_or_end_%s", tag))
         table.insert(result, string.format("file_not_found_or_end_%s:", tag))
     elseif kind == "rmdir" then
-        local dir = path.normalize(path.join("$INSTDIR", cmd.dir))
+        local dir = path.normalize(path.join("$InstDir", cmd.dir))
         table.insert(result, string.format("RMDir /r \"%s\"", dir))
     elseif kind == "mv" then
-        local srcpath = path.normalize(path.join("$INSTDIR", cmd.srcpath))
-        local dstpath = path.normalize(path.join("$INSTDIR", cmd.dstpath))
+        local srcpath = path.normalize(path.join("$InstDir", cmd.srcpath))
+        local dstpath = path.normalize(path.join("$InstDir", cmd.dstpath))
         table.insert(result, string.format("Rename \"%s\" \"%s\"", srcpath, dstpath))
     elseif kind == "cd" then
-        local dir = path.normalize(path.join("$INSTDIR", cmd.dir))
+        local dir = path.normalize(path.join("$InstDir", cmd.dir))
         table.insert(result, string.format("SetOutPath \"%s\"", dir))
     elseif kind == "mkdir" then
-        local dir = path.normalize(path.join("$INSTDIR", cmd.dir))
+        local dir = path.normalize(path.join("$InstDir", cmd.dir))
         table.insert(result, string.format("CreateDirectory \"%s\"", dir))
     end
     return result
