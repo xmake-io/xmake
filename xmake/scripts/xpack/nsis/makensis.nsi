@@ -153,8 +153,8 @@ Done:
 FunctionEnd
 
 ; setup installer
-Var NoAdmin
 Var BinDir
+Var NoAdmin
 Function .onInit
   ${GetOptions} $CMDLINE "/NOADMIN" $NoAdmin
   ${If} ${Errors}
@@ -265,6 +265,10 @@ Function un.onInit
   ${IfNot} $NoAdmin == "true"
     !insertmacro Init "uninstaller"
   ${EndIf}
+
+  ; get binary directory
+  StrCpy $BinDir "$InstDir\${PACKAGE_BINDIR}"
+
 FunctionEnd
 
 Section "Uninstall"
