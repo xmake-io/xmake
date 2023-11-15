@@ -236,13 +236,6 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
   ${EndIf}
 SectionEnd
 
-; Enable long path
-Section "Enable Long Path" LongPath
-  ${If} $NOADMIN == "false"
-    WriteRegDWORD ${HKLM} "SYSTEM\CurrentControlSet\Control\FileSystem" "LongPathsEnabled" 1
-  ${EndIf}
-SectionEnd
-
 ; Add to %PATH%
 Section "Add to PATH" InstallPath
   ${If} $NOADMIN == "false"
@@ -268,13 +261,11 @@ SectionEnd
 ; define language strings
 LangString DESC_InstallExeutable ${LANG_ENGLISH} "${PACKAGE_DESCRIPTION}"
 LangString DESC_InstallPath ${LANG_ENGLISH} "Add ${PACKAGE_NAME} to PATH"
-LangString DESC_LongPath ${LANG_ENGLISH} "Increases the maximum path length limit, up to 32,767 characters (before 256). This can be useful if a project has many recursive subfolders to make sure that the project is compiled without errors. A reboot might be required because some processes may have started before the new value was set"
 
 ; assign language strings to sections
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 !insertmacro MUI_DESCRIPTION_TEXT ${InstallExeutable} $(DESC_InstallExeutable)
 !insertmacro MUI_DESCRIPTION_TEXT ${InstallPath} $(DESC_InstallPath)
-!insertmacro MUI_DESCRIPTION_TEXT ${LongPath} $(DESC_LongPath)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ; setup uninstaller
