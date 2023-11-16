@@ -87,8 +87,16 @@ option_find_lua() {
     local ldflags=""
     local cflags=""
     option "lua"
+        # detect lua5.4 on debian
         cflags=`pkg-config --cflags lua5.4 2>/dev/null`
         ldflags=`pkg-config --libs lua5.4 2>/dev/null`
+        # detect it on fedora
+        if test_z "${cflags}"; then
+            cflags=`pkg-config --cflags lua 2>/dev/null`
+        fi
+        if test_z "${ldflags}"; then
+            ldflags=`pkg-config --libs lua 2>/dev/null`
+        fi
         if test_z "${cflags}"; then
             cflags="-I/usr/include/lua5.4"
         fi
