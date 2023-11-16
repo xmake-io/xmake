@@ -5,7 +5,7 @@ set_project("xmake")
 set_version("2.8.5", {build = "%Y%m%d"})
 
 -- set xmake min version
-set_xmakever("2.2.3")
+set_xmakever("2.8.5")
 
 -- set all warnings as errors
 set_warnings("all", "error")
@@ -110,4 +110,10 @@ else
 end
 if is_plat("windows") then
     includes("src/pdcurses")
+end
+
+-- add xpack
+includes("@builtin/xpack")
+if xpack then
+    includes("xpack.lua")
 end

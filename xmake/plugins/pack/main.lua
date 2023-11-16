@@ -81,7 +81,9 @@ function main()
     local oldir = os.cd(project.directory())
 
     -- build targets first
-    _build_targets()
+    if option.get("autobuild") then
+        _build_targets()
+    end
 
     -- do pack
     _pack_packages()

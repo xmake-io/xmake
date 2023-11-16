@@ -43,6 +43,13 @@ function xpack:get(name)
     end
 end
 
+-- set value
+function xpack:set(name, ...)
+    if self._info then
+        self._info:set(name, ...)
+    end
+end
+
 -- get the extra configuration
 function xpack:extraconf(name, item, key)
     if self._info then
