@@ -185,7 +185,11 @@ Function .onInit
   ${EndIf}
 
   ; get binary directory
+!if "${PACKAGE_BINDIR}" == "."
+  StrCpy $BinDir "$InstDir"
+!else
   StrCpy $BinDir "$InstDir\${PACKAGE_BINDIR}"
+!endif
 
 FunctionEnd
 
@@ -273,7 +277,11 @@ Function un.onInit
   ${EndIf}
 
   ; get binary directory
+!if "${PACKAGE_BINDIR}" == "."
+  StrCpy $BinDir "$InstDir"
+!else
   StrCpy $BinDir "$InstDir\${PACKAGE_BINDIR}"
+!endif
 
 FunctionEnd
 
