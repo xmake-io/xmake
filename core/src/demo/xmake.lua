@@ -65,6 +65,6 @@ target("demo")
         add_installfiles("$(projectdir)/../(xmake/**.lua)", {prefixdir = "share"})
         add_installfiles("$(projectdir)/../(xmake/scripts/**)", {prefixdir = "share"})
         add_installfiles("$(projectdir)/../(xmake/templates/**)", {prefixdir = "share"})
-        add_installfiles("$(projectdir)/../scripts/xrepo.sh", {prefixdir = "bin"}) -- TODO rename xrepo.sh to xrepo
+        add_installfiles("$(projectdir)/../scripts/xrepo.sh", {prefixdir = "bin", filename = "xrepo"})
     end
 

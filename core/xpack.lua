@@ -18,6 +18,20 @@ xpack("xmake")
         package:set("basename", "xmake-v$(version)." .. arch)
     end)
 
+    before_package(function (package)
+        import("net.http")
+        import("utils.archive")
+        local format = package:format()
+        if package:is_plat("windows") and (format == "nsis" or format == "zip") then
+            local winenv = path.join(os.programdir(), "winenv")
+            if os.isdir(winenv) then
+                package:add("installfiles", path.join(winenv, "**"), {rootdir = path.directory(winenv)})
+            else
+                -- TODO download
+            end
+        end
+    end)
+
     add_nsis_installcmds("Enable Long Path", [[
   ${If} $NoAdmin == "false"
     ; Enable long path

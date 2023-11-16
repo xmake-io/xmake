@@ -216,6 +216,9 @@ function _instance:_copiedfiles(filetype, outputdir, pathfilter)
 
                     -- get the prefix directory
                     local prefixdir = fileinfo.prefixdir
+                    if fileinfo.rootdir then
+                        rootdir = fileinfo.rootdir
+                    end
 
                     -- add the destinate copied files
                     for _, srcpath in ipairs(srcpaths) do

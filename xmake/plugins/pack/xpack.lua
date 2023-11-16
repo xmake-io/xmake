@@ -36,17 +36,24 @@ function xpack:name()
     return self._name
 end
 
--- get value
+-- get values
 function xpack:get(name)
     if self._info then
         return self._info:get(name)
     end
 end
 
--- set value
+-- set values
 function xpack:set(name, ...)
     if self._info then
-        self._info:set(name, ...)
+        self._info:apival_set(name, ...)
+    end
+end
+
+-- add values
+function xpack:add(name, ...)
+    if self._info then
+        self._info:apival_add(name, ...)
     end
 end
 
@@ -165,6 +172,14 @@ function xpack:targets()
         self._targets = targets
     end
     return targets
+end
+
+-- get the given target
+function xpack:target(name)
+    local targetnames = self:get("targets")
+    if targetnames and table.contains(table.wrap(targetnames), name) then
+        return project.target(name)
+    end
 end
 
 -- get formats
@@ -386,6 +401,9 @@ function xpack:_copiedfiles(filetype, outputdir)
 
                     -- get the prefix directory
                     local prefixdir = fileinfo.prefixdir
+                    if fileinfo.rootdir then
+                        rootdir = fileinfo.rootdir
+                    end
 
                     -- add the destinate copied files
                     for _, srcpath in ipairs(srcpaths) do
