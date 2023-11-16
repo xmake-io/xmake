@@ -34,11 +34,25 @@ function _load_package(package, format)
     end
 end
 
+function _on_package(package)
+    import(package:format())(package)
+end
+
 function _pack_package(package)
     assert(package:formats(), "xpack(%s): formats not found, please use `set_formats()` to set it.", package:name())
+    local scripts = {
+        package:script("package_before"),
+        package:script("package", _on_package),
+        package:script("package_after")
+    }
     for _, format in package:formats():keys() do
         _load_package(package, format)
-        import(format)(package)
+        for i = 1, 3 do
+            local script = scripts[i]
+            if script ~= nil then
+                script(package)
+            end
+        end
     end
 end
 

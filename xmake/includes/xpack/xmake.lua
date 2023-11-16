@@ -64,13 +64,19 @@ local apis = {
     script = {
         -- add custom load script
         "xpack.on_load",
+        -- add custom package script before packing package
+        "xpack.before_package",
+        -- rewrite custom package script
+        "xpack.on_package",
+        -- add custom package script after packing package
+        "xpack.after_package",
         -- add custom commands script before installing
         "xpack.before_installcmd",
         -- add custom commands script before uninstalling
         "xpack.before_uninstallcmd",
-        -- add custom install commands script, we will also get it from target/rules
+        -- rewrite custom install commands script, we will also get it from target/rules
         "xpack.on_installcmd",
-        -- add custom uninstall commands script, we will also get it from target/rules
+        -- rewrite custom uninstall commands script, we will also get it from target/rules
         "xpack.on_uninstallcmd",
         -- add custom commands script after installing
         "xpack.after_installcmd",
