@@ -606,11 +606,7 @@ function main(package)
     -- get makensis
     local makensis, oldenvs = _get_makensis()
 
-    -- clean the build directory first
-    os.tryrm(package:buildir())
-
     -- pack nsis package
-    os.mkdir(package:outputdir())
     _pack_nsis(makensis.program, package, opt)
 
     -- done

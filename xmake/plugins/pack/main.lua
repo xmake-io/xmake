@@ -39,6 +39,12 @@ function _on_package(package)
 end
 
 function _pack_package(package)
+
+    -- ensure build and output directories
+    os.tryrm(package:buildir())
+    os.mkdir(package:outputdir())
+
+    -- do pack
     assert(package:formats(), "xpack(%s): formats not found, please use `set_formats()` to set it.", package:name())
     local scripts = {
         package:script("package_before"),
