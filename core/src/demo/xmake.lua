@@ -50,6 +50,21 @@ target("demo")
         end
     end
 
+    -- add install files
+    if is_plat("windows") then
+        add_installfiles("$(projectdir)/../(*.md)")
+        add_installfiles("$(projectdir)/../(xmake/**.lua)")
+        add_installfiles("$(projectdir)/../(xmake/scripts/**)")
+        add_installfiles("$(projectdir)/../(xmake/templates/**)")
+        add_installfiles("$(projectdir)/../scripts/xrepo.bat")
+        add_installfiles("$(projectdir)/../scripts/xrepo.ps1")
+    else
+        add_installfiles("$(projectdir)/../(xmake/**.lua)", {prefixdir = "share"})
+        add_installfiles("$(projectdir)/../(xmake/scripts/**)", {prefixdir = "share"})
+        add_installfiles("$(projectdir)/../(xmake/templates/**)", {prefixdir = "share"})
+        add_installfiles("$(projectdir)/../scripts/xrepo.sh", {prefixdir = "bin"}) -- TODO rename xrepo.sh to xrepo
+    end
+
     -- copy target to the build directory
     after_build(function (target)
         os.cp(target:targetfile(), "$(buildir)/xmake" .. (is_plat("windows") and ".exe" or ""))
