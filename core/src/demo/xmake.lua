@@ -54,11 +54,11 @@ target("demo")
 
     -- add install files
     if is_plat("windows") then
-        add_installfiles("$(projectdir)/../(LICENSE.md)")
-        add_installfiles("$(projectdir)/../(NOTICE.md)")
-        add_installfiles("$(projectdir)/../(xmake/**.lua)")
-        add_installfiles("$(projectdir)/../(xmake/scripts/**)")
-        add_installfiles("$(projectdir)/../(xmake/templates/**)")
+        add_installfiles("$(projectdir)/../LICENSE.md")
+        add_installfiles("$(projectdir)/../NOTICE.md")
+        add_installfiles("$(projectdir)/../xmake/(**.lua)")
+        add_installfiles("$(projectdir)/../xmake/(scripts/**)")
+        add_installfiles("$(projectdir)/../xmake/(templates/**)")
         add_installfiles("$(projectdir)/../scripts/xrepo.bat")
         add_installfiles("$(projectdir)/../scripts/xrepo.ps1")
     else
