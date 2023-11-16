@@ -140,70 +140,13 @@ function build_proto_cmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
 
     -- add commands
     batchcmds:mkdir(sourcefile_dir)
-    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto to %s %s", (sourcekind == "cxx" and "cpp" or "c"), sourcefile_proto)
+    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
     batchcmds:vrunv(protoc, protoc_args)
-end
-
--- generate build commands
-function build_c_cmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
-    -- get protoc
-    local protoc = _get_protoc(target, sourcekind)
-
-    -- get c/c++ source file for protobuf
-    local prefixdir
-    local autogendir
-    local public
-    local grpc_cpp_plugin
-    local fileconfig = target:fileconfig(sourcefile_proto)
-    if fileconfig then
-        public = fileconfig.proto_public
-        prefixdir = fileconfig.proto_rootdir
-        -- custom autogen directory to access the generated header files
-        -- @see https://github.com/xmake-io/xmake/issues/3678
-        autogendir = fileconfig.proto_autogendir
-        grpc_cpp_plugin = fileconfig.proto_grpc_cpp_plugin
-    end
-    local rootdir = autogendir and autogendir or path.join(target:autogendir(), "rules", "protobuf")
-    local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
-    local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
-    local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
-
-    local filename_grpc
-    local sourcefile_cx_grpc
-    if grpc_cpp_plugin then
-        filename_grpc = path.basename(sourcefile_proto) .. ".grpc.pb.cc"
-        sourcefile_cx_grpc = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename_grpc})
-    end
-
-    -- add objectfile
-    local objectfile = target:objectfile(sourcefile_cx)
-    table.insert(target:objectfiles(), objectfile)
-
-    local objectfile_grpc
-    if grpc_cpp_plugin then
-        objectfile_grpc = target:objectfile(sourcefile_cx_grpc)
-        table.insert(target:objectfiles(), objectfile_grpc)
-    end
-
-    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto %s file %s", (sourcekind == "cxx" and "cpp" or "c"), sourcefile_proto)
-    batchcmds:compile(sourcefile_cx, objectfile, {configs = {includedirs = sourcefile_dir}})
-    if grpc_cpp_plugin then
-        batchcmds:compile(sourcefile_cx_grpc, objectfile_grpc, {configs = {includedirs = sourcefile_dir}})
-    end
-
-    -- add deps
-    local depmtime = os.mtime(objectfile)
-    batchcmds:add_depfiles(sourcefile_proto)
-    batchcmds:set_depcache(target:dependfile(objectfile))
-    if grpc_cpp_plugin then
-        batchcmds:set_depmtime(math.max(os.mtime(objectfile_grpc), depmtime))
-    else
-        batchcmds:set_depmtime(depmtime)
-    end
 end
 
 -- build batch jobs
 function build_sourcefiles_proto(target, batchjobs, sourcebatch, opt, sourcekind)
+
     -- get the root directory of protobuf
     local proto_rootdir
     if #sourcebatch.sourcefiles > 0 then
@@ -223,27 +166,12 @@ function build_sourcefiles_proto(target, batchjobs, sourcebatch, opt, sourcekind
     for i = 1, sourcefiles_total do
         local sourcefile = sourcebatch.sourcefiles[i]
         local moduleinfo = moduledeps_files[sourcefile] or {}
-        -- make build job
         moduleinfo.job = batchjobs:newjob(sourcefile, function (index, total)
+            -- make build job
             local batchcmds_ = batchcmds.new({target = target})
             build_proto_cmd(target, batchcmds_, sourcefile, {progress = (index * 100) / total}, sourcekind)
             batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
         end)
     end
     module_parser.build_batchjobs(moduledeps, batchjobs, opt.rootjob)
-end
-
-function build_compiled_sourcefiles_proto(target, batchjobs, sourcebatch, opt, sourcekind)
-    opt = opt or {}
-    local sourcefiles_total = #sourcebatch.sourcefiles
-    -- generate jobs
-    for i = 1, sourcefiles_total do
-        local sourcefile = sourcebatch.sourcefiles[i]
-        -- make build job
-        batchjobs:newjob(sourcefile, function (index, total)
-            local batchcmds_ = batchcmds.new({target = target})
-            build_c_cmd(target, batchcmds_, sourcefile, {progress = (index * 100) / total}, sourcekind)
-            batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
-        end)
-    end
 end
