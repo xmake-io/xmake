@@ -85,6 +85,9 @@ function _get_command_strings(package, cmd)
     elseif kind == "rm" then
         local filepath = path.normalize(path.join("$InstDir", cmd.filepath))
         table.insert(result, string.format("Delete \"%s\"", filepath))
+        if opt.emptydirs then
+            table.insert(result, string.format("${RMDirUP} \"%s\"", filepath))
+        end
     elseif kind == "tryrm" then
         --[[
             IfFileExists "$InstDir\file" file_found file_not_found_or_end
@@ -100,9 +103,15 @@ function _get_command_strings(package, cmd)
         table.insert(result, string.format("  Delete \"%s\"", filepath))
         table.insert(result, string.format("  goto file_not_found_or_end_%s", tag))
         table.insert(result, string.format("file_not_found_or_end_%s:", tag))
+        if opt.emptydirs then
+            table.insert(result, string.format("${RMDirUP} \"%s\"", filepath))
+        end
     elseif kind == "rmdir" then
         local dir = path.normalize(path.join("$InstDir", cmd.dir))
         table.insert(result, string.format("RMDir /r \"%s\"", dir))
+        if opt.emptydirs then
+            table.insert(result, string.format("${RMDirUP} \"%s\"", dir))
+        end
     elseif kind == "mv" then
         local srcpath = path.normalize(path.join("$InstDir", cmd.srcpath))
         local dstpath = path.normalize(path.join("$InstDir", cmd.dstpath))
@@ -173,7 +182,7 @@ end
 function _uninstall_headers(target, batchcmds_, includedir)
     local _, dstheaders = target:headerfiles(includedir, {installonly = true})
     for _, dstheader in ipairs(dstheaders) do
-        batchcmds_:rm(dstheader)
+        batchcmds_:rm(dstheader, {emptydirs = true})
     end
 end
 
@@ -182,7 +191,7 @@ function _uninstall_shared_for_package(target, pkg, batchcmds_, outputdir)
     for _, dllpath in ipairs(table.wrap(pkg:get("libfiles"))) do
         if dllpath:endswith(".dll") then
             local dllname = path.filename(dllpath)
-            batchcmds_:rm(path.join(outputdir, dllname))
+            batchcmds_:rm(path.join(outputdir, dllname), {emptydirs = true})
         end
     end
 end
@@ -311,14 +320,14 @@ function _on_target_uninstallcmd_binary(target, batchcmds_, opt)
     local bindir = package:bindir()
 
     -- uninstall target file
-    batchcmds_:rm(path.join(bindir, target:filename()))
-    batchcmds_:tryrm(path.join(bindir, path.filename(target:symbolfile())))
+    batchcmds_:rm(path.join(bindir, target:filename()), {emptydirs = true})
+    batchcmds_:tryrm(path.join(bindir, path.filename(target:symbolfile())), {emptydirs = true})
 
     -- remove the dependent shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/961
     for _, dep in ipairs(target:orderdeps()) do
         if dep:is_shared() then
-            batchcmds_:rm(path.join(bindir, path.filename(dep:targetfile())))
+            batchcmds_:rm(path.join(bindir, path.filename(dep:targetfile())), {emptydirs = true})
         end
         _uninstall_shared_for_packages(dep, batchcmds_, bindir)
     end
@@ -335,13 +344,13 @@ function _on_target_uninstallcmd_shared(target, batchcmds_, opt)
     local includedir = package:includedir()
 
     -- uninstall target file
-    batchcmds_:rm(path.join(bindir, target:filename()))
-    batchcmds_:tryrm(path.join(bindir, path.filename(target:symbolfile())))
+    batchcmds_:rm(path.join(bindir, target:filename()), {emptydirs = true})
+    batchcmds_:tryrm(path.join(bindir, path.filename(target:symbolfile())), {emptydirs = true})
 
     -- remove *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
     local targetfile = target:targetfile()
-    batchcmds_:rm(path.join(libdir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")))
+    batchcmds_:rm(path.join(libdir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")), {emptydirs = true})
 
     -- remove headers from the include directory
     _uninstall_headers(target, batchcmds_, includedir)
@@ -357,8 +366,8 @@ function _on_target_uninstallcmd_static(target, batchcmds_, opt)
     local includedir = package:includedir()
 
     -- uninstall target file
-    batchcmds_:rm(path.join(libdir, target:filename()))
-    batchcmds_:tryrm(path.join(libdir, path.filename(target:symbolfile())))
+    batchcmds_:rm(path.join(libdir, target:filename()), {emptydirs = true})
+    batchcmds_:tryrm(path.join(libdir, path.filename(target:symbolfile())), {emptydirs = true})
 
     -- remove headers from the include directory
     _uninstall_headers(target, batchcmds_, includedir)
@@ -389,7 +398,7 @@ function _on_target_uninstallcmd(target, batchcmds_, opt)
     -- uninstall target files
     local _, dstfiles = target:installfiles(".")
     for _, dstfile in ipairs(dstfiles) do
-        batchcmds_:rm(dstfile)
+        batchcmds_:rm(dstfile, {emptydirs = true})
     end
 end
 
@@ -474,7 +483,7 @@ end
 function _on_uninstallcmd(package, batchcmds_)
     local _, dstfiles = package:installfiles(".")
     for _, dstfile in ipairs(dstfiles) do
-        batchcmds_:rm(dstfile)
+        batchcmds_:rm(dstfile, {emptydirs = true})
     end
     for _, target in ipairs(package:targets()) do
         _get_target_uninstallcmds(target, batchcmds_, {package = package})

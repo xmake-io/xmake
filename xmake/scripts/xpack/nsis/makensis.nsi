@@ -120,38 +120,38 @@ VIAddVersionKey /LANG=0 ProductVersion   "${VERSION_FULL}"
 
 ; helper functions
 Function TrimQuote
-	Exch $R1 ; Original string
-	Push $R2
+  Exch $R1 ; Original string
+  Push $R2
 
 Loop:
-	StrCpy $R2 "$R1" 1
-	StrCmp "$R2" "'"   TrimLeft
-	StrCmp "$R2" "$\"" TrimLeft
-	StrCmp "$R2" "$\r" TrimLeft
-	StrCmp "$R2" "$\n" TrimLeft
-	StrCmp "$R2" "$\t" TrimLeft
-	StrCmp "$R2" " "   TrimLeft
-	GoTo Loop2
+  StrCpy $R2 "$R1" 1
+  StrCmp "$R2" "'"   TrimLeft
+  StrCmp "$R2" "$\"" TrimLeft
+  StrCmp "$R2" "$\r" TrimLeft
+  StrCmp "$R2" "$\n" TrimLeft
+  StrCmp "$R2" "$\t" TrimLeft
+  StrCmp "$R2" " "   TrimLeft
+  GoTo Loop2
 TrimLeft:
-	StrCpy $R1 "$R1" "" 1
-	Goto Loop
+  StrCpy $R1 "$R1" "" 1
+  Goto Loop
 
 Loop2:
-	StrCpy $R2 "$R1" 1 -1
-	StrCmp "$R2" "'"   TrimRight
-	StrCmp "$R2" "$\"" TrimRight
-	StrCmp "$R2" "$\r" TrimRight
-	StrCmp "$R2" "$\n" TrimRight
-	StrCmp "$R2" "$\t" TrimRight
-	StrCmp "$R2" " "   TrimRight
-	GoTo Done
+  StrCpy $R2 "$R1" 1 -1
+  StrCmp "$R2" "'"   TrimRight
+  StrCmp "$R2" "$\"" TrimRight
+  StrCmp "$R2" "$\r" TrimRight
+  StrCmp "$R2" "$\n" TrimRight
+  StrCmp "$R2" "$\t" TrimRight
+  StrCmp "$R2" " "   TrimRight
+  GoTo Done
 TrimRight:
-	StrCpy $R1 "$R1" -1
-	Goto Loop2
+  StrCpy $R1 "$R1" -1
+  Goto Loop2
 
 Done:
-	Pop $R2
-	Exch $R1
+  Pop $R2
+  Exch $R1
 FunctionEnd
 
 ; setup installer
@@ -282,7 +282,29 @@ Function un.onInit
 !else
   StrCpy $BinDir "$InstDir\${PACKAGE_BINDIR}"
 !endif
+FunctionEnd
 
+; remove it's parent directories if they are empty
+; ${RMDirUP} "filepath"
+Function un.RMDirUP
+  !define RMDirUP '!insertmacro RMDirUPCall'
+  !macro RMDirUPCall _PATH
+    push '${_PATH}'
+    Call un.RMDirUP
+  !macroend
+
+  ; $0 - current folder
+  ClearErrors
+
+  Exch $0
+  ;DetailPrint "ASDF - $0\.."
+  RMDir "$0\.."
+
+  IfErrors Skip
+  ${RMDirUP} "$0\.."
+  Skip:
+
+  Pop $0
 FunctionEnd
 
 Section "Uninstall"
@@ -305,5 +327,7 @@ Section "Uninstall"
 
   ; remove uninstall.exe
   Delete "$InstDir\uninstall.exe"
+  ${RMDirUP} "$InstDir\uninstall.exe"
+
 SectionEnd
 
