@@ -5,7 +5,9 @@ xpack("xmake")
     add_targets("demo")
     set_bindir(".")
     set_iconfile("src/demo/xmake.ico")
-    set_nsis_displayname("Xmake build utility ($(arch))")
+    if set_nsis_displayname then
+        set_nsis_displayname("Xmake build utility ($(arch))")
+    end
 
     on_load(function (package)
         local arch = package:arch()
