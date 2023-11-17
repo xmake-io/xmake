@@ -25,14 +25,6 @@ import("core.base.option")
 function main(filedirs, opt)
     opt = opt or {}
     for _, filedir in ipairs(filedirs) do
-        os.tryrm(filedir)
-        if option.get("all") or opt.emptydir then
-            -- remove it if the parent directory is empty
-            local parentdir = path.directory(filedir)
-            while parentdir and os.isdir(parentdir) and os.emptydir(parentdir) do
-                os.tryrm(parentdir)
-                parentdir = path.directory(parentdir)
-            end
-        end
+        os.tryrm(filedir, {emptydirs = option.get("all") or opt.emptydir})
     end
 end

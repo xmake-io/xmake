@@ -140,7 +140,7 @@ end
 function _runcmd_rm(cmd, opt)
     local filepath = cmd.filepath
     if not opt.dryrun then
-        os.tryrm(filepath)
+        os.tryrm(filepath, opt)
     end
 end
 
@@ -148,7 +148,7 @@ end
 function _runcmd_tryrm(cmd, opt)
     local filepath = cmd.filepath
     if not opt.dryrun then
-        os.tryrm(filepath)
+        os.tryrm(filepath, opt)
     end
 end
 
@@ -156,7 +156,7 @@ end
 function _runcmd_rmdir(cmd, opt)
     local dir = cmd.dir
     if not opt.dryrun and os.isdir(dir) then
-        os.tryrm(dir)
+        os.tryrm(dir, opt)
     end
 end
 
