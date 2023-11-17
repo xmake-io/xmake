@@ -352,18 +352,18 @@ function batchcmds:mkdir(dir)
 end
 
 -- add command: os.rmdir
-function batchcmds:rmdir(dir)
-    table.insert(self:cmds(), {kind = "rmdir", dir = dir})
+function batchcmds:rmdir(dir, opt)
+    table.insert(self:cmds(), {kind = "rmdir", dir = dir, opt = opt})
 end
 
 -- add command: os.rm
-function batchcmds:rm(filepath)
-    table.insert(self:cmds(), {kind = "rm", filepath = filepath})
+function batchcmds:rm(filepath, opt)
+    table.insert(self:cmds(), {kind = "rm", filepath = filepath, opt = opt})
 end
 
 -- add command: os.tryrm
-function batchcmds:tryrm(filepath)
-    table.insert(self:cmds(), {kind = "tryrm", filepath = filepath})
+function batchcmds:tryrm(filepath, opt)
+    table.insert(self:cmds(), {kind = "tryrm", filepath = filepath, opt = opt})
 end
 
 -- add command: os.cp
