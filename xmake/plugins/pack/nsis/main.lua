@@ -59,6 +59,11 @@ function _get_unique_tag(content)
     return hash.uuid(content):split("-", {plain = true})[1]:lower()
 end
 
+-- translate the file path
+function _translate_filepath(package, filepath)
+    return filepath:replace(package:installdir(), "$InstDir", {plain = true})
+end
+
 -- get command string
 function _get_command_strings(package, cmd, opt)
     opt = table.join(cmd.opt or {}, opt)
@@ -69,8 +74,8 @@ function _get_command_strings(package, cmd, opt)
         local srcfiles = os.files(cmd.srcpath)
         for _, srcfile in ipairs(srcfiles) do
             -- the destination is directory? append the filename
-            local dstfile = cmd.dstpath
-            if path.islastsep(dstfile) then
+            local dstfile = _translate_filepath(package, cmd.dstpath)
+            if #srcfiles > 1 or path.islastsep(dstfile) then
                 if opt.rootdir then
                     dstfile = path.join(dstfile, path.relative(srcfile, opt.rootdir))
                 else
@@ -79,31 +84,31 @@ function _get_command_strings(package, cmd, opt)
             end
             srcfile = path.normalize(srcfile)
             local dstname = path.filename(dstfile)
-            local dstdir = path.normalize(path.directory(path.join("$InstDir", dstfile)))
+            local dstdir = path.normalize(path.directory(dstfile))
             table.insert(result, string.format("SetOutPath \"%s\"", dstdir))
             table.insert(result, string.format("File /oname=%s \"%s\"", dstname, srcfile))
         end
     elseif kind == "rm" then
-        local filepath = path.normalize(path.join("$InstDir", cmd.filepath))
+        local filepath = _translate_filepath(package, cmd.filepath)
         table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMFileIfExists" or "unRMFileIfExists", filepath))
         if opt.emptydirs then
             table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMEmptyParentDirs" or "unRMEmptyParentDirs", filepath))
         end
     elseif kind == "rmdir" then
-        local dir = path.normalize(path.join("$InstDir", cmd.dir))
+        local dir = _translate_filepath(package, cmd.dir)
         table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMDirIfExists" or "unRMDirIfExists", dir))
         if opt.emptydirs then
             table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMEmptyParentDirs" or "unRMEmptyParentDirs", dir))
         end
     elseif kind == "mv" then
-        local srcpath = path.normalize(path.join("$InstDir", cmd.srcpath))
-        local dstpath = path.normalize(path.join("$InstDir", cmd.dstpath))
+        local srcpath = _translate_filepath(package, cmd.srcpath)
+        local dstpath = _translate_filepath(package, cmd.dstpath)
         table.insert(result, string.format("Rename \"%s\" \"%s\"", srcpath, dstpath))
     elseif kind == "cd" then
-        local dir = path.normalize(path.join("$InstDir", cmd.dir))
+        local dir = _translate_filepath(package, cmd.dir)
         table.insert(result, string.format("SetOutPath \"%s\"", dir))
     elseif kind == "mkdir" then
-        local dir = path.normalize(path.join("$InstDir", cmd.dir))
+        local dir = _translate_filepath(package, cmd.dir)
         table.insert(result, string.format("CreateDirectory \"%s\"", dir))
     end
     return result
@@ -147,7 +152,7 @@ function _get_target_filepath(package)
         end
     end
     if targetfile then
-        return path.normalize(path.join(package:bindir(), path.filename(targetfile)))
+        return _translate_filepath(package, path.join(package:bindir(), path.filename(targetfile)))
     end
 end
 
@@ -155,7 +160,7 @@ end
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
     specvars.PACKAGE_WORKDIR = path.absolute(os.projectdir())
-    specvars.PACKAGE_BINDIR = package:bindir()
+    specvars.PACKAGE_BINDIR = _translate_filepath(package, package:bindir())
     specvars.PACKAGE_OUTPUTFILE = path.absolute(package:outputfile())
     specvars.PACKAGE_INSTALLCMDS = function ()
         return _get_installcmds(package)
@@ -164,7 +169,16 @@ function _get_specvars(package)
         return _get_uninstallcmds(package)
     end
     specvars.PACKAGE_NSIS_DISPLAY_NAME = _get_filter_value(package, "nsis_displayname") or package:name()
-    specvars.PACKAGE_NSIS_DISPLAY_ICON = _get_filter_value(package, "nsis_displayicon") or _get_target_filepath(package) or ""
+    specvars.PACKAGE_NSIS_DISPLAY_ICON = function ()
+        local iconpath = _get_filter_value(package, "nsis_displayicon")
+        if iconpath then
+            iconpath = path.join(package:installdir(), iconpath)
+        end
+        if not iconpath then
+            iconpath = _get_target_filepath(package) or ""
+        end
+        return _translate_filepath(package, iconpath)
+    end
     specvars.PACKAGE_NSIS_INSTALL_SECTIONS = function ()
         local result = {}
         local cmds = package:get("nsis_installcmds")

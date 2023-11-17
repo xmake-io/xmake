@@ -178,10 +178,14 @@ end
 function _on_target_installcmd_headeronly(target, batchcmds_, opt)
     local package = opt.package
     local includedir = package:includedir()
+
+    -- install headers
+    _install_headers(target, batchcmds_, includedir)
 end
 
 -- on install target command
 function _on_target_installcmd(target, batchcmds_, opt)
+    local package = opt.package
 
     -- install target binaries
     local scripts = {
@@ -196,7 +200,7 @@ function _on_target_installcmd(target, batchcmds_, opt)
     end
 
     -- install target files
-    local srcfiles, dstfiles = target:installfiles(".")
+    local srcfiles, dstfiles = target:installfiles(package:installdir())
     for idx, srcfile in ipairs(srcfiles) do
         batchcmds_:cp(srcfile, dstfiles[idx])
     end
@@ -270,6 +274,7 @@ end
 
 -- on uninstall target command
 function _on_target_uninstallcmd(target, batchcmds_, opt)
+    local package = opt.package
 
     -- uninstall target binaries
     local scripts = {
@@ -284,7 +289,7 @@ function _on_target_uninstallcmd(target, batchcmds_, opt)
     end
 
     -- uninstall target files
-    local _, dstfiles = target:installfiles(".")
+    local _, dstfiles = target:installfiles(package:installdir())
     for _, dstfile in ipairs(dstfiles) do
         batchcmds_:rm(dstfile, {emptydirs = true})
     end
@@ -358,7 +363,7 @@ end
 
 -- on install command
 function _on_installcmd(package, batchcmds_)
-    local srcfiles, dstfiles = package:installfiles(".")
+    local srcfiles, dstfiles = package:installfiles()
     for idx, srcfile in ipairs(srcfiles) do
         batchcmds_:cp(srcfile, dstfiles[idx])
     end
@@ -369,7 +374,7 @@ end
 
 -- on uninstall command
 function _on_uninstallcmd(package, batchcmds_)
-    local _, dstfiles = package:installfiles(".")
+    local _, dstfiles = package:installfiles()
     for _, dstfile in ipairs(dstfiles) do
         batchcmds_:rm(dstfile, {emptydirs = true})
     end

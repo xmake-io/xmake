@@ -23,63 +23,22 @@ import("core.base.option")
 import("utils.archive")
 import("batchcmds")
 
--- get archive directory
-function _get_archivedir(package)
-    return path.join(package:buildir(), "archive", package:format())
-end
-
--- run command
-function _run_command(package, cmd)
-    local opt = cmd.opt or {}
-    local kind = cmd.kind
-    local archivedir = _get_archivedir(package)
-    if kind == "cp" then
-        local srcpath = cmd.srcpath
-        local dstpath = path.join(archivedir, cmd.dstpath)
-        os.vcp(srcpath, dstpath, opt)
-    elseif kind == "rm" then
-        local filepath = path.join(archivedir, cmd.filepath)
-        os.tryrm(filepath, opt)
-    elseif kind == "rmdir" then
-        local dir = path.join(archivedir, cmd.dir)
-        if os.isdir(dir) then
-            os.tryrm(dir, opt)
-        end
-    elseif kind == "mv" then
-        local srcpath = cmd.srcpath
-        local dstpath = path.join(archivedir, cmd.dstpath)
-        os.vmv(srcpath, dstpath, opt)
-    elseif kind == "cd" then
-        local dir = path.join(archivedir, cmd.dir)
-        os.cd(dir)
-    elseif kind == "mkdir" then
-        local dir = path.join(archivedir, cmd.dir)
-        os.mkdir(dir)
-    end
-end
-
--- run commands
-function _run_commands(package, cmds)
-    for _, cmd in ipairs(cmds) do
-        _run_command(package, cmd)
-    end
-end
-
 -- pack archive package
 function _pack_archive(package)
 
     -- do install
-    _run_commands(package, batchcmds.get_installcmds(package):cmds())
+    batchcmds.get_installcmds(package):runcmds()
 
     -- archive install files
-    local archivedir = _get_archivedir(package)
-    local oldir = os.cd(archivedir)
+    local installdir = package:installdir()
+    local oldir = os.cd(installdir)
     local archivefiles = os.files("**")
     os.cd(oldir)
-    archive.archive(path.absolute(package:outputfile()), archivefiles, {curdir = archivedir})
+    archive.archive(path.absolute(package:outputfile()), archivefiles, {curdir = installdir})
 end
 
 function main(package)
     cprint("packing %s .. ", package:outputfile())
+    _pack_archive(package)
 end
 

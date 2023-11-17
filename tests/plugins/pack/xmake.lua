@@ -28,13 +28,14 @@ xpack("test")
     set_iconfile("src/assets/xmake.ico")
 
     after_installcmd(function (package, batchcmds)
-        batchcmds:cp("src/assets/*.txt", "resources/", {rootdir = "src"})
-        batchcmds:mkdir("stub")
+        batchcmds:mkdir(package:installdir("resources"))
+        batchcmds:cp("src/assets/*.txt", package:installdir("resources"), {rootdir = "src"})
+        batchcmds:mkdir(package:installdir("stub"))
     end)
 
     after_uninstallcmd(function (package, batchcmds)
-        batchcmds:rmdir("resources")
-        batchcmds:rmdir("stub")
+        batchcmds:rmdir(package:installdir("resources"))
+        batchcmds:rmdir(package:installdir("stub"))
     end)
 
     add_nsis_installcmds("Enable Long Path", [[
