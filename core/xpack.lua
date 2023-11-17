@@ -1,5 +1,5 @@
 xpack("xmake")
-    set_formats("nsis")
+    set_formats("nsis", "zip")
     set_description("A cross-platform build utility based on Lua. https://xmake.io")
     set_licensefile("../LICENSE.md")
     add_targets("demo")

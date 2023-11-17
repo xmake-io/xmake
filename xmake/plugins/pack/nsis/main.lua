@@ -586,7 +586,7 @@ function _get_specvars(package)
 end
 
 -- pack nsis package
-function _pack_nsis(makensis, package, opt)
+function _pack_nsis(makensis, package)
 
     -- install the initial specfile
     local specfile = package:specfile()
@@ -618,13 +618,19 @@ function _pack_nsis(makensis, package, opt)
 end
 
 function main(package)
+
+    -- only for windows
+    if not is_host("windows") then
+        return
+    end
+
     cprint("packing %s", package:outputfile())
 
     -- get makensis
     local makensis, oldenvs = _get_makensis()
 
     -- pack nsis package
-    _pack_nsis(makensis.program, package, opt)
+    _pack_nsis(makensis.program, package)
 
     -- done
     os.setenvs(oldenvs)
