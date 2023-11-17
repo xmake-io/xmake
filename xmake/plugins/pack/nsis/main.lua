@@ -524,6 +524,20 @@ function _get_filter_value(package, name)
     return value
 end
 
+-- get target file path
+function _get_target_filepath(package)
+    local targetfile
+    for _, target in ipairs(package:targets()) do
+        if target:is_binary() then
+            targetfile = target:targetfile()
+            break
+        end
+    end
+    if targetfile then
+        return path.normalize(path.join(package:bindir(), path.filename(targetfile)))
+    end
+end
+
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
@@ -537,6 +551,7 @@ function _get_specvars(package)
         return _get_uninstallcmds(package)
     end
     specvars.PACKAGE_NSIS_DISPLAY_NAME = _get_filter_value(package, "nsis_displayname") or package:name()
+    specvars.PACKAGE_NSIS_DISPLAY_ICON = _get_filter_value(package, "nsis_displayicon") or _get_target_filepath(package) or ""
     specvars.PACKAGE_NSIS_INSTALL_SECTIONS = function ()
         local result = {}
         local cmds = package:get("nsis_installcmds")
