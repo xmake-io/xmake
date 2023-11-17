@@ -69,6 +69,7 @@ target("demo")
     end
 
     before_installcmd(function (target, batchcmds, opt)
+        -- we need to avoid some old files interfering with xmake's module import.
         if target:is_plat("windows") then
             batchcmds:rmdir("actions")
             batchcmds:rmdir("core")
