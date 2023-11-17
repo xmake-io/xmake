@@ -25,6 +25,7 @@ import("lib.detect.find_tool")
 import("private.utils.batchcmds")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
+import(".filter")
 
 -- get the makensis
 function _get_makensis()
@@ -59,9 +60,9 @@ function _get_unique_tag(content)
 end
 
 -- get command string
-function _get_command_strings(package, cmd)
+function _get_command_strings(package, cmd, opt)
+    opt = table.join(cmd.opt or {}, opt)
     local result = {}
-    local opt = cmd.opt or {}
     local kind = cmd.kind
     if kind == "cp" then
         -- https://nsis.sourceforge.io/Reference/File
@@ -84,25 +85,16 @@ function _get_command_strings(package, cmd)
         end
     elseif kind == "rm" then
         local filepath = path.normalize(path.join("$InstDir", cmd.filepath))
-        table.insert(result, string.format("Delete \"%s\"", filepath))
-    elseif kind == "tryrm" then
-        --[[
-            IfFileExists "$InstDir\file" file_found file_not_found_or_end
-            file_found:
-              Delete "$InstDir\file"
-              goto file_not_found_or_end
-            file_not_found_or_end:
-        --]]
-        local filepath = path.normalize(path.join("$InstDir", cmd.filepath))
-        local tag = _get_unique_tag(filepath)
-        table.insert(result, string.format("IfFileExists \"%s\" file_found_%s file_not_found_or_end_%s", filepath, tag, tag))
-        table.insert(result, string.format("file_found_%s:", tag))
-        table.insert(result, string.format("  Delete \"%s\"", filepath))
-        table.insert(result, string.format("  goto file_not_found_or_end_%s", tag))
-        table.insert(result, string.format("file_not_found_or_end_%s:", tag))
+        table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMFileIfExists" or "unRMFileIfExists", filepath))
+        if opt.emptydirs then
+            table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMEmptyParentDirs" or "unRMEmptyParentDirs", filepath))
+        end
     elseif kind == "rmdir" then
         local dir = path.normalize(path.join("$InstDir", cmd.dir))
-        table.insert(result, string.format("RMDir /r \"%s\"", dir))
+        table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMDirIfExists" or "unRMDirIfExists", dir))
+        if opt.emptydirs then
+            table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMEmptyParentDirs" or "unRMEmptyParentDirs", dir))
+        end
     elseif kind == "mv" then
         local srcpath = path.normalize(path.join("$InstDir", cmd.srcpath))
         local dstpath = path.normalize(path.join("$InstDir", cmd.dstpath))
@@ -118,10 +110,10 @@ function _get_command_strings(package, cmd)
 end
 
 -- get commands string
-function _get_commands_string(package, cmds)
+function _get_commands_string(package, cmds, opt)
     local cmdstrs = {}
     for _, cmd in ipairs(cmds) do
-        table.join2(cmdstrs, _get_command_strings(package, cmd))
+        table.join2(cmdstrs, _get_command_strings(package, cmd, opt))
     end
     return table.concat(cmdstrs, "\n  ")
 end
@@ -173,7 +165,7 @@ end
 function _uninstall_headers(target, batchcmds_, includedir)
     local _, dstheaders = target:headerfiles(includedir, {installonly = true})
     for _, dstheader in ipairs(dstheaders) do
-        batchcmds_:rm(dstheader)
+        batchcmds_:rm(dstheader, {emptydirs = true})
     end
 end
 
@@ -182,7 +174,7 @@ function _uninstall_shared_for_package(target, pkg, batchcmds_, outputdir)
     for _, dllpath in ipairs(table.wrap(pkg:get("libfiles"))) do
         if dllpath:endswith(".dll") then
             local dllname = path.filename(dllpath)
-            batchcmds_:rm(path.join(outputdir, dllname))
+            batchcmds_:rm(path.join(outputdir, dllname), {emptydirs = true})
         end
     end
 end
@@ -311,14 +303,14 @@ function _on_target_uninstallcmd_binary(target, batchcmds_, opt)
     local bindir = package:bindir()
 
     -- uninstall target file
-    batchcmds_:rm(path.join(bindir, target:filename()))
-    batchcmds_:tryrm(path.join(bindir, path.filename(target:symbolfile())))
+    batchcmds_:rm(path.join(bindir, target:filename()), {emptydirs = true})
+    batchcmds_:rm(path.join(bindir, path.filename(target:symbolfile())), {emptydirs = true})
 
     -- remove the dependent shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/961
     for _, dep in ipairs(target:orderdeps()) do
         if dep:is_shared() then
-            batchcmds_:rm(path.join(bindir, path.filename(dep:targetfile())))
+            batchcmds_:rm(path.join(bindir, path.filename(dep:targetfile())), {emptydirs = true})
         end
         _uninstall_shared_for_packages(dep, batchcmds_, bindir)
     end
@@ -335,13 +327,13 @@ function _on_target_uninstallcmd_shared(target, batchcmds_, opt)
     local includedir = package:includedir()
 
     -- uninstall target file
-    batchcmds_:rm(path.join(bindir, target:filename()))
-    batchcmds_:tryrm(path.join(bindir, path.filename(target:symbolfile())))
+    batchcmds_:rm(path.join(bindir, target:filename()), {emptydirs = true})
+    batchcmds_:rm(path.join(bindir, path.filename(target:symbolfile())), {emptydirs = true})
 
     -- remove *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
     local targetfile = target:targetfile()
-    batchcmds_:rm(path.join(libdir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")))
+    batchcmds_:rm(path.join(libdir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")), {emptydirs = true})
 
     -- remove headers from the include directory
     _uninstall_headers(target, batchcmds_, includedir)
@@ -357,8 +349,8 @@ function _on_target_uninstallcmd_static(target, batchcmds_, opt)
     local includedir = package:includedir()
 
     -- uninstall target file
-    batchcmds_:rm(path.join(libdir, target:filename()))
-    batchcmds_:tryrm(path.join(libdir, path.filename(target:symbolfile())))
+    batchcmds_:rm(path.join(libdir, target:filename()), {emptydirs = true})
+    batchcmds_:rm(path.join(libdir, path.filename(target:symbolfile())), {emptydirs = true})
 
     -- remove headers from the include directory
     _uninstall_headers(target, batchcmds_, includedir)
@@ -389,7 +381,7 @@ function _on_target_uninstallcmd(target, batchcmds_, opt)
     -- uninstall target files
     local _, dstfiles = target:installfiles(".")
     for _, dstfile in ipairs(dstfiles) do
-        batchcmds_:rm(dstfile)
+        batchcmds_:rm(dstfile, {emptydirs = true})
     end
 end
 
@@ -474,7 +466,7 @@ end
 function _on_uninstallcmd(package, batchcmds_)
     local _, dstfiles = package:installfiles(".")
     for _, dstfile in ipairs(dstfiles) do
-        batchcmds_:rm(dstfile)
+        batchcmds_:rm(dstfile, {emptydirs = true})
     end
     for _, target in ipairs(package:targets()) do
         _get_target_uninstallcmds(target, batchcmds_, {package = package})
@@ -499,7 +491,7 @@ function _get_installcmds(package)
     end
 
     -- generate command string
-    return _get_commands_string(package, batchcmds_:cmds())
+    return _get_commands_string(package, batchcmds_:cmds(), {install = true})
 end
 
 -- get uninstall commands
@@ -520,7 +512,16 @@ function _get_uninstallcmds(package)
     end
 
     -- generate command string
-    return _get_commands_string(package, batchcmds_:cmds())
+    return _get_commands_string(package, batchcmds_:cmds(), {install = false})
+end
+
+-- get value and filter it
+function _get_filter_value(package, name)
+    local value = package:get(name)
+    if type(value) == "string" then
+        value = filter.handle(value, package)
+    end
+    return value
 end
 
 -- get specvars
@@ -535,6 +536,7 @@ function _get_specvars(package)
     specvars.PACKAGE_UNINSTALLCMDS = function ()
         return _get_uninstallcmds(package)
     end
+    specvars.PACKAGE_NSIS_DISPLAY_NAME = _get_filter_value(package, "nsis_displayname") or package:name()
     specvars.PACKAGE_NSIS_INSTALL_SECTIONS = function ()
         local result = {}
         local cmds = package:get("nsis_installcmds")

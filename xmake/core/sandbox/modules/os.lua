@@ -152,12 +152,12 @@ function sandbox_os.vmv(srcpath, dstpath, opt)
 end
 
 -- remove file or directory with the verbose info
-function sandbox_os.vrm(filepath)
+function sandbox_os.vrm(filepath, opt)
     assert(filepath)
     if option.get("verbose") then
         utils.cprint("${dim}> remove %s", filepath)
     end
-    return sandbox_os.rm(filepath)
+    return sandbox_os.rm(filepath, opt)
 end
 
 -- link file or directory with the verbose info
@@ -182,9 +182,9 @@ function sandbox_os.trymv(srcpath, dstpath)
 end
 
 -- try to remove files or directories
-function sandbox_os.tryrm(filepath)
+function sandbox_os.tryrm(filepath, opt)
     assert(filepath)
-    return os.rm(vformat(filepath))
+    return os.rm(vformat(filepath), opt)
 end
 
 -- change to directory

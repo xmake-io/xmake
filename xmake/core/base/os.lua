@@ -159,6 +159,19 @@ function os._rm(filedir)
     return true
 end
 
+-- remove empty parent directories of this file path
+function os._rm_empty_parentdirs(filepath)
+    local parentdir = path.directory(filepath)
+    while parentdir and os.isdir(parentdir) and os.emptydir(parentdir) do
+        local ok, errors = os._rm(parentdir)
+        if not ok then
+            return false, errors
+        end
+        parentdir = path.directory(parentdir)
+    end
+    return true
+end
+
 -- get the ramdisk root directory
 -- https://github.com/xmake-io/xmake/issues/3408
 function os._ramdir()
@@ -464,7 +477,7 @@ function os.mv(srcpath, dstpath, opt)
 end
 
 -- remove files or directories
-function os.rm(filepath)
+function os.rm(filepath, opt)
 
     -- check arguments
     if not filepath then
@@ -472,15 +485,28 @@ function os.rm(filepath)
     end
 
     -- remove file or directories
+    opt = opt or {}
     filepath = tostring(filepath)
     local filepathes = os._match_wildcard_pathes(filepath)
     if type(filepathes) == "string" then
-        return os._rm(filepathes)
+        local ok, errors = os._rm(filepathes)
+        if not ok then
+            return false, errors
+        end
+        if opt.emptydirs then
+            return os._rm_empty_parentdirs(filepathes)
+        end
     else
         for _, _filepath in ipairs(filepathes) do
             local ok, errors = os._rm(_filepath)
             if not ok then
                 return false, errors
+            end
+            if opt.emptydirs then
+                ok, errors = os._rm_empty_parentdirs(filepath)
+                if not ok then
+                    return false, errors
+                end
             end
         end
     end

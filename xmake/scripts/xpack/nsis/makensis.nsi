@@ -120,39 +120,127 @@ VIAddVersionKey /LANG=0 ProductVersion   "${VERSION_FULL}"
 
 ; helper functions
 Function TrimQuote
-	Exch $R1 ; Original string
-	Push $R2
+  Exch $R1 ; Original string
+  Push $R2
 
 Loop:
-	StrCpy $R2 "$R1" 1
-	StrCmp "$R2" "'"   TrimLeft
-	StrCmp "$R2" "$\"" TrimLeft
-	StrCmp "$R2" "$\r" TrimLeft
-	StrCmp "$R2" "$\n" TrimLeft
-	StrCmp "$R2" "$\t" TrimLeft
-	StrCmp "$R2" " "   TrimLeft
-	GoTo Loop2
+  StrCpy $R2 "$R1" 1
+  StrCmp "$R2" "'"   TrimLeft
+  StrCmp "$R2" "$\"" TrimLeft
+  StrCmp "$R2" "$\r" TrimLeft
+  StrCmp "$R2" "$\n" TrimLeft
+  StrCmp "$R2" "$\t" TrimLeft
+  StrCmp "$R2" " "   TrimLeft
+  GoTo Loop2
 TrimLeft:
-	StrCpy $R1 "$R1" "" 1
-	Goto Loop
+  StrCpy $R1 "$R1" "" 1
+  Goto Loop
 
 Loop2:
-	StrCpy $R2 "$R1" 1 -1
-	StrCmp "$R2" "'"   TrimRight
-	StrCmp "$R2" "$\"" TrimRight
-	StrCmp "$R2" "$\r" TrimRight
-	StrCmp "$R2" "$\n" TrimRight
-	StrCmp "$R2" "$\t" TrimRight
-	StrCmp "$R2" " "   TrimRight
-	GoTo Done
+  StrCpy $R2 "$R1" 1 -1
+  StrCmp "$R2" "'"   TrimRight
+  StrCmp "$R2" "$\"" TrimRight
+  StrCmp "$R2" "$\r" TrimRight
+  StrCmp "$R2" "$\n" TrimRight
+  StrCmp "$R2" "$\t" TrimRight
+  StrCmp "$R2" " "   TrimRight
+  GoTo Done
 TrimRight:
-	StrCpy $R1 "$R1" -1
-	Goto Loop2
+  StrCpy $R1 "$R1" -1
+  Goto Loop2
 
 Done:
-	Pop $R2
-	Exch $R1
+  Pop $R2
+  Exch $R1
 FunctionEnd
+
+; remove directory if it exists
+Function RMDirIfExists
+!define RMDirIfExists '!insertmacro RMDirIfExistsCall'
+!macro RMDirIfExistsCall _PATH
+  push '${_PATH}'
+ Call RMDirIfExists
+!macroend
+  Exch $0
+  IfFileExists "$0" 0 fileDoesNotExist
+  RMDir /r "$0"
+  fileDoesNotExist:
+FunctionEnd
+
+Function unRMDirIfExists
+!define unRMDirIfExists '!insertmacro un.RMDirIfExistsCall'
+!macro unRMDirIfExistsCall _PATH
+  push '${_PATH}'
+  Call un.RMDirIfExists
+!macroend
+  Exch $0
+  IfFileExists "$0" 0 fileDoesNotExist
+  RMDir /r "$0"
+  fileDoesNotExist:
+FunctionEnd
+
+; remove file if it exists
+Function RMFileIfExists
+!define RMFileIfExists '!insertmacro RMFileIfExistsCall'
+!macro RMFileIfExistsCall _PATH
+  push '${_PATH}'
+  Call RMFileIfExists
+!macroend
+  Exch $0
+  IfFileExists "$0" 0 fileDoesNotExist
+  Delete "$0"
+  fileDoesNotExist:
+FunctionEnd
+
+Function un.RMFileIfExists
+!define unRMFileIfExists '!insertmacro unRMFileIfExistsCall'
+!macro unRMFileIfExistsCall _PATH
+  push '${_PATH}'
+  Call un.RMFileIfExists
+!macroend
+  Exch $0
+  IfFileExists "$0" 0 fileDoesNotExist
+  Delete "$0"
+  fileDoesNotExist:
+FunctionEnd
+
+; remove it's parent directories if they are empty
+Function RMEmptyParentDirs
+!define RMEmptyParentDirs '!insertmacro RMEmptyParentDirsCall'
+!macro RMEmptyParentDirsCall _PATH
+  push '${_PATH}'
+  Call RMEmptyParentDirs
+!macroend
+  ClearErrors
+
+  Exch $0
+  RMDir "$0\.."
+
+  IfErrors Skip
+  ${RMEmptyParentDirs} "$0\.."
+  Skip:
+
+  Pop $0
+FunctionEnd
+
+Function un.RMEmptyParentDirs
+!define unRMEmptyParentDirs '!insertmacro unRMEmptyParentDirsCall'
+!macro unRMEmptyParentDirsCall _PATH
+  push '${_PATH}'
+  Call un.RMEmptyParentDirs
+!macroend
+  ClearErrors
+
+  Exch $0
+  RMDir "$0\.."
+
+  IfErrors Skip
+  ${unRMEmptyParentDirs} "$0\.."
+  Skip:
+
+  Pop $0
+FunctionEnd
+
 
 ; setup installer
 Var BinDir
@@ -208,7 +296,7 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
   ; Write the uninstall keys for Windows
   !macro AddReg RootKey
     WriteRegStr   ${RootKey} ${RegUninstall} "NoAdmin"               "$NoAdmin"
-    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "${PACKAGE_NAME} (${PACKAGE_ARCH})"
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "${PACKAGE_NSIS_DISPLAY_NAME}"
     WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"$InstDir\${PACKAGE_BINDIR}\${PACKAGE_FILENAME}"' ; TODO
     WriteRegStr   ${RootKey} ${RegUninstall} "Comments"              "${PACKAGE_DESCRIPTION}"
     WriteRegStr   ${RootKey} ${RegUninstall} "Publisher"             "${PACKAGE_COPYRIGHT}"
@@ -282,7 +370,6 @@ Function un.onInit
 !else
   StrCpy $BinDir "$InstDir\${PACKAGE_BINDIR}"
 !endif
-
 FunctionEnd
 
 Section "Uninstall"
@@ -304,6 +391,8 @@ Section "Uninstall"
   ${EndIf}
 
   ; remove uninstall.exe
-  Delete "$InstDir\uninstall.exe"
+  ${unRMFileIfExists} "$InstDir\uninstall.exe"
+  ${unRMEmptyParentDirs} "$InstDir\uninstall.exe"
+
 SectionEnd
 
