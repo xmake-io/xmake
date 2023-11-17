@@ -449,7 +449,7 @@ end
 -- get the install directory, this is just a temporary sandbox installation path,
 -- we may replace it with the actual installation path in the specfile
 function xpack:installdir(...)
-    return path.join(self:buildir(), "installed", self:format(), ...)
+    return path.normalize(path.join(self:buildir(), "installed", self:format(), ...))
 end
 
 -- get the binary directory
