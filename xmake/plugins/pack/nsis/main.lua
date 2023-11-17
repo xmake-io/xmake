@@ -25,6 +25,7 @@ import("lib.detect.find_tool")
 import("private.utils.batchcmds")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
+import(".filter")
 
 -- get the makensis
 function _get_makensis()
@@ -514,6 +515,15 @@ function _get_uninstallcmds(package)
     return _get_commands_string(package, batchcmds_:cmds(), {install = false})
 end
 
+-- get value and filter it
+function _get_filter_value(package, name)
+    local value = package:get(name)
+    if type(value) == "string" then
+        value = filter.handle(value, package)
+    end
+    return value
+end
+
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
@@ -526,6 +536,7 @@ function _get_specvars(package)
     specvars.PACKAGE_UNINSTALLCMDS = function ()
         return _get_uninstallcmds(package)
     end
+    specvars.PACKAGE_NSIS_DISPLAY_NAME = _get_filter_value(package, "nsis_displayname") or package:name()
     specvars.PACKAGE_NSIS_INSTALL_SECTIONS = function ()
         local result = {}
         local cmds = package:get("nsis_installcmds")

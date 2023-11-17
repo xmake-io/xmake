@@ -49,7 +49,9 @@ local apis = {
         -- set installed library directory, e.g. lib
         "xpack.set_libdir",
         -- set installed include directory, e.g. include
-        "xpack.set_includedir"
+        "xpack.set_includedir",
+        -- set nsis display name
+        "xpack.set_nsis_displayname"
     },
     paths = {
         -- set the spec file path, support the custom variable pattern, e.g. set_specfile("", {pattern = "%${([^\n]-)}"})

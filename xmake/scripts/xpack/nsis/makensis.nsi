@@ -296,7 +296,7 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
   ; Write the uninstall keys for Windows
   !macro AddReg RootKey
     WriteRegStr   ${RootKey} ${RegUninstall} "NoAdmin"               "$NoAdmin"
-    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "${PACKAGE_NAME} (${PACKAGE_ARCH})"
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "${PACKAGE_NSIS_DISPLAY_NAME}"
     WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"$InstDir\${PACKAGE_BINDIR}\${PACKAGE_FILENAME}"' ; TODO
     WriteRegStr   ${RootKey} ${RegUninstall} "Comments"              "${PACKAGE_DESCRIPTION}"
     WriteRegStr   ${RootKey} ${RegUninstall} "Publisher"             "${PACKAGE_COPYRIGHT}"
