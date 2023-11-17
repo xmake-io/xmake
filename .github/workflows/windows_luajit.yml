@@ -35,17 +35,6 @@ jobs:
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
-      - name: Prepare
-        run: |
-          xmake show
-          curl -fsSL "https://github.com/xmake-mirror/nsis/releases/download/v309/nsis-3.09.zip" -o ./nsis.zip
-          curl -fsSL "https://github.com/xmake-mirror/nsis/releases/download/v309/nsis-3.09-strlen_8192.zip" -o ./nsis-longstr.zip
-          curl -fsSL "https://github.com/xmake-mirror/nsis/releases/download/v309/UAC.zip" -o ./nsis-uac.zip
-          Expand-Archive ./nsis.zip -DestinationPath ./nsis
-          Expand-Archive ./nsis-longstr.zip -DestinationPath ./nsis -Force
-          Expand-Archive ./nsis-uac.zip -DestinationPath ./nsis -Force
-          Move-Item ./nsis/UAC.nsh ./nsis/Include/
-
       - name: Set release arch name
         run: |
           if ("${{ matrix.arch }}" -eq "x64") {
@@ -64,8 +53,8 @@ jobs:
       - name: Artifact
         run: |
           cd core
-          xmake pack -vD --formats=nsis --autobuild=n -o ./artifacts/${{env.RELEASE_NAME}} --basename=xmake.exe
-          xmake pack -vD --formats=zip --autobuild=n -o ./artifacts/${{env.RELEASE_NAME}} --basename=xmake.zip
+          xmake pack -vD --formats=nsis --autobuild=n -o ./artifacts/${{env.RELEASE_NAME}} --basename=xmake
+          xmake pack -vD --formats=zip --autobuild=n -o ./artifacts/${{env.RELEASE_NAME}} --basename=xmake
           (Get-FileHash ./artifacts/${{env.RELEASE_NAME}}/xmake.zip -Algorithm SHA256).Hash.ToLower() + " *xmake.zip`n" | Out-File ./shafile -Encoding ASCII -NoNewLine -Append
           Copy-Item shafile ./artifacts/${{env.RELEASE_NAME}}
           cd ..
