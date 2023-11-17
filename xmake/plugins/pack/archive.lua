@@ -80,7 +80,6 @@ function _pack_archive(package)
 end
 
 function main(package)
-    cprint("packing %s", package:outputfile())
-    _pack_archive(package)
+    cprint("packing %s .. ", package:outputfile())
 end
 

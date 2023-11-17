@@ -323,8 +323,9 @@ end
 -- get the output filename
 function xpack:filename()
     local extensions = {
-        nsis = ".exe",
-        zip  = ".zip"
+        nsis  = ".exe",
+        zip   = ".zip",
+        targz = ".tar.gz"
     }
     local extension = extensions[self:format()] or ""
     return self:basename() .. extension

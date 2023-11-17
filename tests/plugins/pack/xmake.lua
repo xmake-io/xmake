@@ -19,7 +19,7 @@ target("foo")
     add_packages("zlib")
 
 xpack("test")
-    set_formats("nsis", "zip")
+    set_formats("nsis", "zip", "targz")
     set_description("hello")
     set_licensefile("LICENSE.md")
     add_targets("test", "foo")
