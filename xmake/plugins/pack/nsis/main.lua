@@ -120,12 +120,12 @@ end
 
 -- get install commands
 function _get_installcmds(package)
-    return _get_commands_string(package, batchcmds.get_installcmds(package), {install = true})
+    return _get_commands_string(package, batchcmds.get_installcmds(package):cmds(), {install = true})
 end
 
 -- get uninstall commands
 function _get_uninstallcmds(package)
-    return _get_commands_string(package, batchcmds.get_uninstallcmds(package), {install = false})
+    return _get_commands_string(package, batchcmds.get_uninstallcmds(package):cmds(), {install = false})
 end
 
 -- get value and filter it

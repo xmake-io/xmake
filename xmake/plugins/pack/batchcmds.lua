@@ -394,7 +394,7 @@ function get_installcmds(package)
             script(package, batchcmds_)
         end
     end
-    return batchcmds_:cmds()
+    return batchcmds_
 end
 
 -- get uninstall commands
@@ -413,6 +413,6 @@ function get_uninstallcmds(package)
             script(package, batchcmds_)
         end
     end
-    return batchcmds_:cmds()
+    return batchcmds_
 end
 

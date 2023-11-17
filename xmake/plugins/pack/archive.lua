@@ -21,10 +21,12 @@
 -- imports
 import("core.base.option")
 import("utils.archive")
-import(".batchcmds")
+import("batchcmds")
 
 -- pack archive package
 function _pack_archive(package)
+    local batchcmds_ = batchcmds.get_installcmds(package)
+--    batchcmds_:runcmds()
 end
 
 function main(package, format)
