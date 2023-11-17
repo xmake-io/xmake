@@ -68,3 +68,21 @@ target("demo")
         add_installfiles("$(projectdir)/../scripts/xrepo.sh", {prefixdir = "bin", filename = "xrepo"})
     end
 
+    before_installcmd(function (target, batchcmds, opt)
+        if target:is_plat("windows") then
+            batchcmds:rmdir("actions")
+            batchcmds:rmdir("core")
+            batchcmds:rmdir("includes")
+            batchcmds:rmdir("languages")
+            batchcmds:rmdir("modules")
+            batchcmds:rmdir("platforms")
+            batchcmds:rmdir("plugins")
+            batchcmds:rmdir("repository")
+            batchcmds:rmdir("rules")
+            batchcmds:rmdir("templates")
+            batchcmds:rmdir("scripts")
+            batchcmds:rmdir("themes")
+            batchcmds:rmdir("toolchains")
+        end
+    end)
+

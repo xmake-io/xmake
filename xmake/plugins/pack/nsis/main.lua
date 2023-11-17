@@ -59,9 +59,9 @@ function _get_unique_tag(content)
 end
 
 -- get command string
-function _get_command_strings(package, cmd)
+function _get_command_strings(package, cmd, opt)
+    opt = table.join(cmd.opt or {}, opt)
     local result = {}
-    local opt = cmd.opt or {}
     local kind = cmd.kind
     if kind == "cp" then
         -- https://nsis.sourceforge.io/Reference/File
@@ -84,33 +84,15 @@ function _get_command_strings(package, cmd)
         end
     elseif kind == "rm" then
         local filepath = path.normalize(path.join("$InstDir", cmd.filepath))
-        table.insert(result, string.format("Delete \"%s\"", filepath))
+        table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMFileIfExists" or "unRMFileIfExists", filepath))
         if opt.emptydirs then
-            table.insert(result, string.format("${RMDirUP} \"%s\"", filepath))
-        end
-    elseif kind == "tryrm" then
-        --[[
-            IfFileExists "$InstDir\file" file_found file_not_found_or_end
-            file_found:
-              Delete "$InstDir\file"
-              goto file_not_found_or_end
-            file_not_found_or_end:
-        --]]
-        local filepath = path.normalize(path.join("$InstDir", cmd.filepath))
-        local tag = _get_unique_tag(filepath)
-        table.insert(result, string.format("IfFileExists \"%s\" file_found_%s file_not_found_or_end_%s", filepath, tag, tag))
-        table.insert(result, string.format("file_found_%s:", tag))
-        table.insert(result, string.format("  Delete \"%s\"", filepath))
-        table.insert(result, string.format("  goto file_not_found_or_end_%s", tag))
-        table.insert(result, string.format("file_not_found_or_end_%s:", tag))
-        if opt.emptydirs then
-            table.insert(result, string.format("${RMDirUP} \"%s\"", filepath))
+            table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMEmptyParentDirs" or "unRMEmptyParentDirs", filepath))
         end
     elseif kind == "rmdir" then
         local dir = path.normalize(path.join("$InstDir", cmd.dir))
-        table.insert(result, string.format("RMDir /r \"%s\"", dir))
+        table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMDirIfExists" or "unRMDirIfExists", dir))
         if opt.emptydirs then
-            table.insert(result, string.format("${RMDirUP} \"%s\"", dir))
+            table.insert(result, string.format("${%s} \"%s\"", opt.install and "RMEmptyParentDirs" or "unRMEmptyParentDirs", dir))
         end
     elseif kind == "mv" then
         local srcpath = path.normalize(path.join("$InstDir", cmd.srcpath))
@@ -127,10 +109,10 @@ function _get_command_strings(package, cmd)
 end
 
 -- get commands string
-function _get_commands_string(package, cmds)
+function _get_commands_string(package, cmds, opt)
     local cmdstrs = {}
     for _, cmd in ipairs(cmds) do
-        table.join2(cmdstrs, _get_command_strings(package, cmd))
+        table.join2(cmdstrs, _get_command_strings(package, cmd, opt))
     end
     return table.concat(cmdstrs, "\n  ")
 end
@@ -321,7 +303,7 @@ function _on_target_uninstallcmd_binary(target, batchcmds_, opt)
 
     -- uninstall target file
     batchcmds_:rm(path.join(bindir, target:filename()), {emptydirs = true})
-    batchcmds_:tryrm(path.join(bindir, path.filename(target:symbolfile())), {emptydirs = true})
+    batchcmds_:rm(path.join(bindir, path.filename(target:symbolfile())), {emptydirs = true})
 
     -- remove the dependent shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/961
@@ -345,7 +327,7 @@ function _on_target_uninstallcmd_shared(target, batchcmds_, opt)
 
     -- uninstall target file
     batchcmds_:rm(path.join(bindir, target:filename()), {emptydirs = true})
-    batchcmds_:tryrm(path.join(bindir, path.filename(target:symbolfile())), {emptydirs = true})
+    batchcmds_:rm(path.join(bindir, path.filename(target:symbolfile())), {emptydirs = true})
 
     -- remove *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
@@ -367,7 +349,7 @@ function _on_target_uninstallcmd_static(target, batchcmds_, opt)
 
     -- uninstall target file
     batchcmds_:rm(path.join(libdir, target:filename()), {emptydirs = true})
-    batchcmds_:tryrm(path.join(libdir, path.filename(target:symbolfile())), {emptydirs = true})
+    batchcmds_:rm(path.join(libdir, path.filename(target:symbolfile())), {emptydirs = true})
 
     -- remove headers from the include directory
     _uninstall_headers(target, batchcmds_, includedir)
@@ -508,7 +490,7 @@ function _get_installcmds(package)
     end
 
     -- generate command string
-    return _get_commands_string(package, batchcmds_:cmds())
+    return _get_commands_string(package, batchcmds_:cmds(), {install = true})
 end
 
 -- get uninstall commands
@@ -529,7 +511,7 @@ function _get_uninstallcmds(package)
     end
 
     -- generate command string
-    return _get_commands_string(package, batchcmds_:cmds())
+    return _get_commands_string(package, batchcmds_:cmds(), {install = false})
 end
 
 -- get specvars

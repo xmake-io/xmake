@@ -144,14 +144,6 @@ function _runcmd_rm(cmd, opt)
     end
 end
 
--- run command: os.tryrm
-function _runcmd_tryrm(cmd, opt)
-    local filepath = cmd.filepath
-    if not opt.dryrun then
-        os.tryrm(filepath, opt)
-    end
-end
-
 -- run command: os.rmdir
 function _runcmd_rmdir(cmd, opt)
     local dir = cmd.dir
@@ -197,7 +189,6 @@ function _runcmd(cmd, opt)
             rmdir  = _runcmd_rmdir,
             cd     = _runcmd_cd,
             rm     = _runcmd_rm,
-            tryrm  = _runcmd_tryrm,
             cp     = _runcmd_cp,
             mv     = _runcmd_mv,
             ln     = _runcmd_ln
@@ -359,11 +350,6 @@ end
 -- add command: os.rm
 function batchcmds:rm(filepath, opt)
     table.insert(self:cmds(), {kind = "rm", filepath = filepath, opt = opt})
-end
-
--- add command: os.tryrm
-function batchcmds:tryrm(filepath, opt)
-    table.insert(self:cmds(), {kind = "tryrm", filepath = filepath, opt = opt})
 end
 
 -- add command: os.cp

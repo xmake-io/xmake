@@ -154,6 +154,94 @@ Done:
   Exch $R1
 FunctionEnd
 
+; remove directory if it exists
+Function RMDirIfExists
+!define RMDirIfExists '!insertmacro RMDirIfExistsCall'
+!macro RMDirIfExistsCall _PATH
+  push '${_PATH}'
+ Call RMDirIfExists
+!macroend
+  Exch $0
+  IfFileExists "$0" 0 fileDoesNotExist
+  RMDir /r "$0"
+  fileDoesNotExist:
+FunctionEnd
+
+Function unRMDirIfExists
+!define unRMDirIfExists '!insertmacro un.RMDirIfExistsCall'
+!macro unRMDirIfExistsCall _PATH
+  push '${_PATH}'
+  Call un.RMDirIfExists
+!macroend
+  Exch $0
+  IfFileExists "$0" 0 fileDoesNotExist
+  RMDir /r "$0"
+  fileDoesNotExist:
+FunctionEnd
+
+; remove file if it exists
+Function RMFileIfExists
+!define RMFileIfExists '!insertmacro RMFileIfExistsCall'
+!macro RMFileIfExistsCall _PATH
+  push '${_PATH}'
+  Call RMFileIfExists
+!macroend
+  Exch $0
+  IfFileExists "$0" 0 fileDoesNotExist
+  Delete "$0"
+  fileDoesNotExist:
+FunctionEnd
+
+Function un.RMFileIfExists
+!define unRMFileIfExists '!insertmacro unRMFileIfExistsCall'
+!macro unRMFileIfExistsCall _PATH
+  push '${_PATH}'
+  Call un.RMFileIfExists
+!macroend
+  Exch $0
+  IfFileExists "$0" 0 fileDoesNotExist
+  Delete "$0"
+  fileDoesNotExist:
+FunctionEnd
+
+; remove it's parent directories if they are empty
+Function RMEmptyParentDirs
+!define RMEmptyParentDirs '!insertmacro RMEmptyParentDirsCall'
+!macro RMEmptyParentDirsCall _PATH
+  push '${_PATH}'
+  Call RMEmptyParentDirs
+!macroend
+  ClearErrors
+
+  Exch $0
+  RMDir "$0\.."
+
+  IfErrors Skip
+  ${RMEmptyParentDirs} "$0\.."
+  Skip:
+
+  Pop $0
+FunctionEnd
+
+Function un.RMEmptyParentDirs
+!define unRMEmptyParentDirs '!insertmacro unRMEmptyParentDirsCall'
+!macro unRMEmptyParentDirsCall _PATH
+  push '${_PATH}'
+  Call un.RMEmptyParentDirs
+!macroend
+  ClearErrors
+
+  Exch $0
+  RMDir "$0\.."
+
+  IfErrors Skip
+  ${unRMEmptyParentDirs} "$0\.."
+  Skip:
+
+  Pop $0
+FunctionEnd
+
+
 ; setup installer
 Var BinDir
 Var NoAdmin
@@ -284,29 +372,6 @@ Function un.onInit
 !endif
 FunctionEnd
 
-; remove it's parent directories if they are empty
-; ${RMDirUP} "filepath"
-Function un.RMDirUP
-  !define RMDirUP '!insertmacro RMDirUPCall'
-  !macro RMDirUPCall _PATH
-    push '${_PATH}'
-    Call un.RMDirUP
-  !macroend
-
-  ; $0 - current folder
-  ClearErrors
-
-  Exch $0
-  ;DetailPrint "ASDF - $0\.."
-  RMDir "$0\.."
-
-  IfErrors Skip
-  ${RMDirUP} "$0\.."
-  Skip:
-
-  Pop $0
-FunctionEnd
-
 Section "Uninstall"
 
   ; add uninstall commands
@@ -326,8 +391,8 @@ Section "Uninstall"
   ${EndIf}
 
   ; remove uninstall.exe
-  Delete "$InstDir\uninstall.exe"
-  ${RMDirUP} "$InstDir\uninstall.exe"
+  ${unRMFileIfExists} "$InstDir\uninstall.exe"
+  ${unRMEmptyParentDirs} "$InstDir\uninstall.exe"
 
 SectionEnd
 
