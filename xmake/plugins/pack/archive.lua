@@ -73,8 +73,10 @@ function _pack_archive(package)
 
     -- archive install files
     local archivedir = _get_archivedir(package)
-    local archivefiles = os.files(path.join(archivedir, "**"))
-    archive.archive(package:outputfile(), archivefiles)
+    local oldir = os.cd(archivedir)
+    local archivefiles = os.files("**")
+    os.cd(oldir)
+    archive.archive(path.absolute(package:outputfile()), archivefiles, {curdir = archivedir})
 end
 
 function main(package)
