@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("utils.archive")
+import(".batchcmds")
 
 -- pack archive package
 function _pack_archive(package)
