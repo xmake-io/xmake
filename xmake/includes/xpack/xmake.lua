@@ -50,6 +50,8 @@ local apis = {
         "xpack.set_libdir",
         -- set installed include directory, e.g. include
         "xpack.set_includedir",
+        -- set prefix directory, e.g. prefixdir/bin, prefixdir/lib ..
+        "xpack.set_prefixdir",
         -- set nsis display name
         "xpack.set_nsis_displayname",
         -- set nsis display icon

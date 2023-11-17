@@ -61,7 +61,7 @@ end
 
 -- translate the file path
 function _translate_filepath(package, filepath)
-    return filepath:replace(package:installdir(), "$InstDir", {plain = true})
+    return filepath:replace(package:rootdir(), "$InstDir", {plain = true})
 end
 
 -- get command string

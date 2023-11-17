@@ -446,10 +446,20 @@ function xpack:installfiles()
     return self:_copiedfiles("installfiles", self:installdir())
 end
 
--- get the install directory, this is just a temporary sandbox installation path,
+-- get the root directory, this is just a temporary sandbox installation path,
 -- we may replace it with the actual installation path in the specfile
+function xpack:rootdir()
+    return path.join(self:buildir(), "installed", self:format())
+end
+
+-- get the installed directory
 function xpack:installdir(...)
-    return path.normalize(path.join(self:buildir(), "installed", self:format(), ...))
+    local installdir = self:rootdir()
+    local prefixdir = self:get("prefixdir")
+    if prefixdir then
+        installdir = path.join(installdir, prefixdir)
+    end
+    return path.normalize(path.join(installdir, ...))
 end
 
 -- get the binary directory

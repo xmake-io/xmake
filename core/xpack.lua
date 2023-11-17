@@ -19,6 +19,10 @@ xpack("xmake")
             end
         end
         package:set("basename", "xmake-v$(version)." .. arch)
+        local format = package:format()
+        if format == "zip" then
+            package:set("prefixdir", "xmake")
+        end
     end)
 
     before_package(function (package)

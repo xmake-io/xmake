@@ -30,11 +30,11 @@ function _pack_archive(package)
     batchcmds.get_installcmds(package):runcmds()
 
     -- archive install files
-    local installdir = package:installdir()
-    local oldir = os.cd(installdir)
+    local rootdir = package:rootdir()
+    local oldir = os.cd(rootdir)
     local archivefiles = os.files("**")
     os.cd(oldir)
-    archive.archive(path.absolute(package:outputfile()), archivefiles, {curdir = installdir})
+    archive.archive(path.absolute(package:outputfile()), archivefiles, {curdir = rootdir})
 end
 
 function main(package)
