@@ -442,8 +442,14 @@ function xpack:_copiedfiles(filetype, outputdir)
 end
 
 -- get the install files
-function xpack:installfiles(outputdir)
-    return self:_copiedfiles("installfiles", outputdir)
+function xpack:installfiles()
+    return self:_copiedfiles("installfiles", self:installdir())
+end
+
+-- get the install directory, this is just a temporary sandbox installation path,
+-- we may replace it with the actual installation path in the specfile
+function xpack:installdir(...)
+    return path.join(self:buildir(), "installed", self:format(), ...)
 end
 
 -- get the binary directory
@@ -452,7 +458,7 @@ function xpack:bindir()
     if bindir == nil then
         bindir = "bin"
     end
-    return bindir
+    return self:installdir(bindir)
 end
 
 -- get the library directory
@@ -461,7 +467,7 @@ function xpack:libdir()
     if libdir == nil then
         libdir = "lib"
     end
-    return libdir
+    return self:installdir(libdir)
 end
 
 -- get the include directory
@@ -470,7 +476,7 @@ function xpack:includedir()
     if includedir == nil then
         includedir = "include"
     end
-    return includedir
+    return self:installdir(includedir)
 end
 
 -- new a xpack
@@ -487,13 +493,6 @@ function packages()
         if packages_need then
             packages_need = hashset.from(packages_need)
         end
-        local formats_need = option.get("formats")
-        if formats_need then
-            formats_need = formats_need:split(",")
-            if formats_need[1] == "all" then
-                formats_need = nil
-            end
-        end
         local xpack_scope = project.scope("xpack")
         for name, scope in pairs(xpack_scope) do
             local need = false
@@ -506,9 +505,7 @@ function packages()
             end
             if need then
                 local instance = _new(name, scope)
-                if not formats_need or instance:format_has(table.unpack(formats_need)) then
-                    packages[name] = instance
-                end
+                packages[name] = instance
             end
         end
         _g.packages = packages

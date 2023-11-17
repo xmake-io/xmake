@@ -243,7 +243,6 @@ FunctionEnd
 
 
 ; setup installer
-Var BinDir
 Var NoAdmin
 Function .onInit
   ${GetOptions} $CMDLINE "/NOADMIN" $NoAdmin
@@ -271,14 +270,6 @@ Function .onInit
   ${If} $InstDir == ""
     StrCpy $InstDir "${PROGRAMFILES}\${PACKAGE_NAME}"
   ${EndIf}
-
-  ; get binary directory
-!if "${PACKAGE_BINDIR}" == "."
-  StrCpy $BinDir "$InstDir"
-!else
-  StrCpy $BinDir "$InstDir\${PACKAGE_BINDIR}"
-!endif
-
 FunctionEnd
 
 Section "${PACKAGE_NAME} (required)" InstallExeutable
@@ -298,7 +289,7 @@ Section "${PACKAGE_NAME} (required)" InstallExeutable
     WriteRegStr   ${RootKey} ${RegUninstall} "NoAdmin"               "$NoAdmin"
     WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "${PACKAGE_NSIS_DISPLAY_NAME}"
     !if "${PACKAGE_NSIS_DISPLAY_ICON}" != ""
-    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"$InstDir\${PACKAGE_NSIS_DISPLAY_ICON}"'
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"${PACKAGE_NSIS_DISPLAY_ICON}"'
     !endif
     WriteRegStr   ${RootKey} ${RegUninstall} "Comments"              "${PACKAGE_DESCRIPTION}"
     WriteRegStr   ${RootKey} ${RegUninstall} "Publisher"             "${PACKAGE_COPYRIGHT}"
@@ -331,12 +322,12 @@ SectionEnd
 Section "Add to PATH" InstallPath
   ${If} $NoAdmin == "false"
     ReadRegStr $R0 ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
-    ${WordReplace} $R0 ";$BinDir" "" "+" $R1
-    WriteRegExpandStr ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$BinDir"
+    ${WordReplace} $R0 ";${PACKAGE_BINDIR}" "" "+" $R1
+    WriteRegExpandStr ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;${PACKAGE_BINDIR}"
   ${Else}
     ReadRegStr $R0 ${HKCU} "Environment" "Path"
-    ${WordReplace} $R0 ";$BinDir" "" "+" $R1
-    WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1;$BinDir"
+    ${WordReplace} $R0 ";${PACKAGE_BINDIR}" "" "+" $R1
+    WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1;${PACKAGE_BINDIR}"
   ${EndIf}
    SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
 SectionEnd
@@ -365,13 +356,6 @@ Function un.onInit
   ${IfNot} $NoAdmin == "true"
     !insertmacro Init "uninstaller"
   ${EndIf}
-
-  ; get binary directory
-!if "${PACKAGE_BINDIR}" == "."
-  StrCpy $BinDir "$InstDir"
-!else
-  StrCpy $BinDir "$InstDir\${PACKAGE_BINDIR}"
-!endif
 FunctionEnd
 
 Section "Uninstall"
@@ -383,12 +367,12 @@ Section "Uninstall"
   ${If} $NoAdmin == "false"
     DeleteRegKey ${HKLM} ${RegUninstall}
     ReadRegStr $R0 ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
-    ${WordReplace} $R0 ";$BinDir" "" "+" $R1
+    ${WordReplace} $R0 ";${PACKAGE_BINDIR}" "" "+" $R1
     WriteRegExpandStr ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1"
   ${Else}
     DeleteRegKey ${HKCU} ${RegUninstall}
     ReadRegStr $R0 ${HKCU} "Environment" "Path"
-    ${WordReplace} $R0 ";$BinDir" "" "+" $R1
+    ${WordReplace} $R0 ";${PACKAGE_BINDIR}" "" "+" $R1
     WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1"
   ${EndIf}
 

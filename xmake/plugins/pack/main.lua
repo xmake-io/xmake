@@ -44,6 +44,15 @@ function _pack_package(package)
     os.tryrm(package:buildir())
     os.mkdir(package:outputdir())
 
+    -- get need formats
+    local formats_need = option.get("formats")
+    if formats_need then
+        formats_need = formats_need:split(",")
+        if formats_need[1] == "all" then
+            formats_need = nil
+        end
+    end
+
     -- do pack
     assert(package:formats(), "xpack(%s): formats not found, please use `set_formats()` to set it.", package:name())
     local scripts = {
@@ -52,11 +61,13 @@ function _pack_package(package)
         package:script("package_after")
     }
     for _, format in package:formats():keys() do
-        _load_package(package, format)
-        for i = 1, 3 do
-            local script = scripts[i]
-            if script ~= nil then
-                script(package)
+        if not formats_need or table.contains(formats_need, format) then
+            _load_package(package, format)
+            for i = 1, 3 do
+                local script = scripts[i]
+                if script ~= nil then
+                    script(package)
+                end
             end
         end
     end
