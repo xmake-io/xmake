@@ -23,13 +23,61 @@ import("core.base.option")
 import("utils.archive")
 import("batchcmds")
 
--- pack archive package
-function _pack_archive(package)
-    local batchcmds_ = batchcmds.get_installcmds(package)
---    batchcmds_:runcmds()
+-- get archive directory
+function _get_archivedir(package)
+    return path.join(package:buildir(), "archive", package:format())
 end
 
-function main(package, format)
+-- run command
+function _run_command(package, cmd)
+    local opt = cmd.opt or {}
+    local kind = cmd.kind
+    local archivedir = _get_archivedir(package)
+    if kind == "cp" then
+        local srcpath = cmd.srcpath
+        local dstpath = path.join(archivedir, cmd.dstpath)
+        os.vcp(srcpath, dstpath, opt)
+    elseif kind == "rm" then
+        local filepath = path.join(archivedir, cmd.filepath)
+        os.tryrm(filepath, opt)
+    elseif kind == "rmdir" then
+        local dir = path.join(archivedir, cmd.dir)
+        if os.isdir(dir) then
+            os.tryrm(dir, opt)
+        end
+    elseif kind == "mv" then
+        local srcpath = cmd.srcpath
+        local dstpath = path.join(archivedir, cmd.dstpath)
+        os.vmv(srcpath, dstpath, opt)
+    elseif kind == "cd" then
+        local dir = path.join(archivedir, cmd.dir)
+        os.cd(dir)
+    elseif kind == "mkdir" then
+        local dir = path.join(archivedir, cmd.dir)
+        os.mkdir(dir)
+    end
+end
+
+-- run commands
+function _run_commands(package, cmds)
+    for _, cmd in ipairs(cmds) do
+        _run_command(package, cmd)
+    end
+end
+
+-- pack archive package
+function _pack_archive(package)
+
+    -- do install
+    _run_commands(package, batchcmds.get_installcmds(package):cmds())
+
+    -- archive install files
+    local archivedir = _get_archivedir(package)
+    local archivefiles = os.files(path.join(archivedir, "**"))
+    archive.archive(package:outputfile(), archivefiles)
+end
+
+function main(package)
     cprint("packing %s", package:outputfile())
     _pack_archive(package)
 end

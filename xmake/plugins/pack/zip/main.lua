@@ -22,5 +22,5 @@
 import(".archive")
 
 function main(package)
-    archive(package, "zip")
+    archive(package)
 end
