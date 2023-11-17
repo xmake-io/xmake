@@ -231,7 +231,7 @@ end
 
 -- get the basename
 function xpack:basename()
-    local basename = self:get("basename")
+    local basename = option.get("basename") or self:get("basename")
     if basename == nil then
         basename = self:name()
         local version = self:version()

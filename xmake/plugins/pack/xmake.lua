@@ -25,7 +25,8 @@ task("pack")
         usage = "xmake pack [options] [names]",
         description = "Pack binary installation packages.",
         options = {
-            {'o', "outputdir", "kv", nil,   "The output directory. (default: build/xpack)"},
+            {'o', "outputdir", "kv", nil,   "Set the output directory. (default: build/xpack)"},
+            {nil, "basename",  "kv", nil,   "Set the basename of the output file."},
             {nil, "autobuild", "kv", true,  "Build targets automatically."},
             {'f', "formats",   "kv", "all", "Pack the given package formats.",
                                             "e.g.",
