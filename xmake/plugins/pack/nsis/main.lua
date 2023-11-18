@@ -27,6 +27,34 @@ import("private.action.require.impl.install_packages")
 import(".filter")
 import(".batchcmds")
 
+-- check makensis, we need check some plugins
+function _check_makensis(program)
+    local tmpdir = os.tmpfile() .. ".dir"
+    io.writefile(path.join(tmpdir, "test.nsis"), [[
+        !include "MUI2.nsh"
+        !include "WordFunc.nsh"
+        !include "WinMessages.nsh"
+        !include "FileFunc.nsh"
+        !include "UAC.nsh"
+
+        Name "test"
+        OutFile "test.exe"
+
+        Function .onInit
+        FunctionEnd
+
+        Section "test" InstallExeutable
+        SectionEnd
+
+        Function un.onInit
+        FunctionEnd
+
+        Section "Uninstall"
+        SectionEnd]])
+    os.runv(program, {"test.nsis"}, {curdir = tmpdir})
+    os.tryrm(tmpdir)
+end
+
 -- get the makensis
 function _get_makensis()
 
@@ -35,7 +63,7 @@ function _get_makensis()
 
     -- find makensis
     local packages = {}
-    local makensis = find_tool("makensis", {check = "/CMDHELP"})
+    local makensis = find_tool("makensis", {check = _check_makensis})
     if not makensis then
         table.join2(packages, install_packages("nsis"))
     end
@@ -47,10 +75,9 @@ function _get_makensis()
 
     -- we need to force detect and flush detect cache after loading all environments
     if not makensis then
-        makensis = find_tool("makensis", {check = "/CMDHELP", force = true})
+        makensis = find_tool("makensis", {check = _check_makensis, force = true})
     end
     assert(makensis, "makensis not found!")
-
     return makensis, oldenvs
 end
 
