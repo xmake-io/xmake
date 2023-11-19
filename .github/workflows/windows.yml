@@ -63,7 +63,6 @@ jobs:
 
       - name: Artifact
         run: |
-          $Env:XMAKE_PROGRAM_DIR = $(Resolve-Path ./xmake)
           cd core
           xrepo update-repo
           xmake pack -vD -y --formats=nsis,zip --autobuild=n -o ../artifacts/${{env.RELEASE_NAME}} --basename=xmake
