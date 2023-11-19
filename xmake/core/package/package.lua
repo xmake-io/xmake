@@ -1601,6 +1601,7 @@ function _instance:_fetch_tool(opt)
             end
         end
     end
+    -- we can disable to fallback fetch if on_fetch return false
     if fetchinfo == nil then
         self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
         if opt.system then
