@@ -578,7 +578,16 @@ function _instance:is_fetchonly()
     if project and project.policy("package.fetch_only") then
         return true
     end
-    return self:get("fetch") and not self:get("install")
+    -- only fetch script
+    if self:get("fetch") and not self:get("install") then
+        return true
+    end
+    -- only from system
+    local requireinfo = self:requireinfo()
+    if requireinfo and requireinfo.system then
+        return true
+    end
+    return false
 end
 
 -- is optional package?
