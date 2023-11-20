@@ -34,7 +34,7 @@ function _pack_archive(package)
     local oldir = os.cd(rootdir)
     local archivefiles = os.files("**")
     os.cd(oldir)
-    archive.archive(path.absolute(package:outputfile()), archivefiles, {curdir = rootdir})
+    archive.archive(path.absolute(package:outputfile()), archivefiles, {curdir = rootdir, compress = "best"})
 end
 
 function main(package)
