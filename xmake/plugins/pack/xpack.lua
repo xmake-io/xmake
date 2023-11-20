@@ -514,8 +514,16 @@ function packages()
                 need = true
             end
             if need then
-                local instance = _new(name, scope)
-                packages[name] = instance
+                local formats = scope:get("formats")
+                if formats then
+                    for _, format in ipairs(formats) do
+                        local instance = _new(name, scope)
+                        instance:format_set(format)
+                        table.insert(packages, instance)
+                    end
+                else
+                    raise("xpack(%s): formats not found, please use `set_formats()` to set it.", scope:get("name"))
+                end
             end
         end
         _g.packages = packages

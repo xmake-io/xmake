@@ -26,8 +26,7 @@ import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"})
 import("xpack")
 
-function _load_package(package, format)
-    package:format_set(format)
+function _load_package(package)
     local script = package:script("load")
     if script then
         script(package)
@@ -54,34 +53,31 @@ function _pack_package(package)
     end
 
     -- do pack
-    assert(package:formats(), "xpack(%s): formats not found, please use `set_formats()` to set it.", package:name())
     local scripts = {
         package:script("package_before"),
         package:script("package", _on_package),
         package:script("package_after")
     }
-    for _, format in package:formats():keys() do
-        if not formats_need or table.contains(formats_need, format) then
-            _load_package(package, format)
-            for i = 1, 3 do
-                local script = scripts[i]
-                if script ~= nil then
-                    script(package)
-                end
+    if not formats_need or table.contains(formats_need, package:format()) then
+        _load_package(package)
+        for i = 1, 3 do
+            local script = scripts[i]
+            if script ~= nil then
+                script(package)
             end
         end
     end
 end
 
 function _pack_packages()
-    for _, package in pairs(xpack.packages()) do
+    for _, package in ipairs(xpack.packages()) do
         _pack_package(package)
     end
 end
 
 function _build_targets()
     local targetnames = {}
-    for _, package in pairs(xpack.packages()) do
+    for _, package in ipairs(xpack.packages()) do
         local targets = package:get("targets")
         if targets then
             table.join2(targetnames, targets)
