@@ -58,7 +58,9 @@ local apis = {
         -- set nsis display name
         "xpack.set_nsis_displayname",
         -- set nsis display icon
-        "xpack.set_nsis_displayicon"
+        "xpack.set_nsis_displayicon",
+        -- set package component description
+        "xpack_component.set_description"
     },
     paths = {
         -- set the spec file path, support the custom variable pattern, e.g. set_specfile("", {pattern = "%${([^\n]-)}"})
@@ -90,7 +92,21 @@ local apis = {
         -- add custom commands script after installing
         "xpack.after_installcmd",
         -- add custom commands script after uninstalling
-        "xpack.after_uninstallcmd"
+        "xpack.after_uninstallcmd",
+        -- add custom load script in component
+        "xpack_component.on_load",
+        -- add custom commands script before installing in component
+        "xpack_component.before_installcmd",
+        -- add custom commands script before uninstalling in component
+        "xpack_component.before_uninstallcmd",
+        -- rewrite custom install commands script in component, we will also get it from target/rules
+        "xpack_component.on_installcmd",
+        -- rewrite custom uninstall commands script in component, we will also get it from target/rules
+        "xpack_component.on_uninstallcmd",
+        -- add custom commands script after installing in component
+        "xpack_component.after_installcmd",
+        -- add custom commands script after uninstalling in component
+        "xpack_component.after_uninstallcmd"
     },
     keyvalues = {
         -- set the spec variable
