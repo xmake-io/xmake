@@ -80,6 +80,9 @@ function _patch_pkgconfig(package)
         end
     end
     cflags = cflags .. " -I${includedir}"
+    for _, define in ipairs(fetchinfo.defines) do
+        cflags = cflags .. " -D" .. define
+    end
 
     -- patch a *.pc file
     local file = io.open(pcfile, 'w')
