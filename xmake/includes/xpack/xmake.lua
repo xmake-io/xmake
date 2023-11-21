@@ -30,8 +30,10 @@ local apis = {
     values = {
         -- set package version,  we will also get it from project/target
         "xpack.set_version",
-        -- set pacakge homepage url
+        -- set package homepage url
         "xpack.set_homepage",
+        -- set package title
+        "xpack.set_title",
         -- set package description
         "xpack.set_description",
         -- set package copyright
@@ -57,10 +59,10 @@ local apis = {
         "xpack.set_includedir",
         -- set prefix directory, e.g. prefixdir/bin, prefixdir/lib ..
         "xpack.set_prefixdir",
-        -- set nsis display name
-        "xpack.set_nsis_displayname",
         -- set nsis display icon
         "xpack.set_nsis_displayicon",
+        -- set package component title
+        "xpack_component.set_title",
         -- set package component description
         "xpack_component.set_description"
     },
@@ -112,15 +114,7 @@ local apis = {
     },
     keyvalues = {
         -- set the spec variable
-        "xpack.set_specvar",
-        -- add nsis sections, e.g.
-        -- add NSIS install commands that will be added to the end of the install Section, e.g.
-        --[[
-            add_nsis_installcmds("Enable Long Path",
-                'WriteRegDWORD ${HKLM} "SYSTEM\CurrentControlSet\Control\FileSystem" "LongPathsEnabled" 1',
-                {description = "Increases the maximum path length limit, up to 32,767 characters (before 256)."})
-        --]]
-        "xpack.add_nsis_installcmds"
+        "xpack.set_specvar"
     }
 }
 interp_add_scopeapis(apis)

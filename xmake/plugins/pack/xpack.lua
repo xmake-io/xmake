@@ -69,6 +69,15 @@ function xpack:license()
     return self:get("license")
 end
 
+-- get the package title
+function xpack:title()
+    local title = self:get("title")
+    if title == nil then
+        title = self:name()
+    end
+    return filter.handle(title, self)
+end
+
 -- get the package description
 function xpack:description()
     return self:get("description")
@@ -251,6 +260,7 @@ function xpack:specvars()
             PACKAGE_ARCH        = self:arch(),
             PACKAGE_PLAT        = self:plat(),
             PACKAGE_NAME        = self:name(),
+            PACKAGE_TITLE       = self:title() or "",
             PACKAGE_DESCRIPTION = self:description() or "",
             PACKAGE_FILENAME    = self:filename(),
             PACKAGE_HOMEPAGE    = self:get("homepage") or "",

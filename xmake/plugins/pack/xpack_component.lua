@@ -60,6 +60,11 @@ function xpack_component:extraconf(name, item, key)
     end
 end
 
+-- get the component title
+function xpack_component:title()
+    return self:get("title") or self:name()
+end
+
 -- get the component description
 function xpack_component:description()
     return self:get("description")

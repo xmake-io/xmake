@@ -195,7 +195,6 @@ function _get_specvars(package)
     specvars.PACKAGE_UNINSTALLCMDS = function ()
         return _get_uninstallcmds(package)
     end
-    specvars.PACKAGE_NSIS_DISPLAY_NAME = _get_filter_value(package, "nsis_displayname") or package:name()
     specvars.PACKAGE_NSIS_DISPLAY_ICON = function ()
         local iconpath = _get_filter_value(package, "nsis_displayicon")
         if iconpath then
@@ -206,6 +205,7 @@ function _get_specvars(package)
         end
         return _translate_filepath(package, iconpath)
     end
+    --[[
     specvars.PACKAGE_NSIS_INSTALL_SECTIONS = function ()
         local result = {}
         local cmds = package:get("nsis_installcmds")
@@ -235,7 +235,7 @@ function _get_specvars(package)
             table.insert(result, string.format('!insertmacro MUI_DESCRIPTION_TEXT ${%s} $(DESC_%s)', tag, tag))
         end
         return table.concat(result, "\n  ")
-    end
+    end]]
     return specvars
 end
 
