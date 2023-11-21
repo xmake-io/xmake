@@ -137,6 +137,8 @@ function _get_command_strings(package, cmd, opt)
     elseif kind == "mkdir" then
         local dir = _translate_filepath(package, cmd.dir)
         table.insert(result, string.format("CreateDirectory \"%s\"", dir))
+    elseif kind == "nsis" then
+        table.insert(result, cmd.rawstr)
     end
     return result
 end
