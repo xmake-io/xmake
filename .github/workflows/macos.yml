@@ -42,7 +42,7 @@ jobs:
         run: |
           brew install gnu-tar
           gem install --no-document fpm
-          scripts/archive-all
+          xmake pack --autobuild=n --basename=xmake -o artifacts
           scripts/makeself/build-runfile.sh
       - uses: actions/upload-artifact@v2
         with:
