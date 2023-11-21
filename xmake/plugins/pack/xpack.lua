@@ -320,15 +320,23 @@ function xpack:specfile()
     return self:get("specfile") or path.join(self:buildir(), self:basename() .. extension)
 end
 
+-- get the extension
+function xpack:extension()
+    local extension = self:get("extension")
+    if extension == nil then
+        local extensions = {
+            nsis  = ".exe",
+            zip   = ".zip",
+            targz = ".tar.gz"
+        }
+        extension = extensions[self:format()] or ""
+    end
+    return extension
+end
+
 -- get the output filename
 function xpack:filename()
-    local extensions = {
-        nsis  = ".exe",
-        zip   = ".zip",
-        targz = ".tar.gz"
-    }
-    local extension = extensions[self:format()] or ""
-    return self:basename() .. extension
+    return self:basename() .. self:extension()
 end
 
 -- get the output file

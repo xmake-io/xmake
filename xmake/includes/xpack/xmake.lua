@@ -39,9 +39,12 @@ local apis = {
         -- set company name
         "xpack.set_company",
         -- set package formats, e.g. nsis, deb, rpm, targz, zip, runself, ...
+        -- we can also add custom formats
         "xpack.set_formats",
         -- set the base name of the output file
         "xpack.set_basename",
+        -- set the extension of the output file
+        "xpack.set_extension",
         -- add targets to be packaged
         "xpack.add_targets",
         -- set installed binary directory, e.g. bin
