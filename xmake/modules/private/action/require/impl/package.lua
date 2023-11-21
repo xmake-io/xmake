@@ -1070,7 +1070,7 @@ function _compatible_with_previous_librarydeps(package, opt)
     if manifest and manifest.librarydeps then
         local deps = manifest.deps or {}
         for _, depname in ipairs(manifest.librarydeps) do
-            if strict_compatibility or (package:dep(depname) and package:dep(depname):policy("package.strict_compatibility")) then
+            if strict_compatibility or (package:dep(depname) and package:dep(depname):policy("package.strict_compatibility")) or depinfos_curr[depname] then
                 local depinfo = deps[depname]
                 if depinfo and depinfo.buildhash then
                     depinfos_prev[depname] = depinfo
