@@ -727,7 +727,7 @@ function os.runv(program, argv, opt)
     local logfile = os.tmpfile()
 
     -- execute it
-    local ok, errors = os.execv(program, argv, table.join(opt, {stdout = logfile, stderr = logfile}))
+    local ok, errors = os.execv(program, argv, table.join(opt, {stdout = opt.stdout or logfile, stderr = opt.stderr or logfile}))
     if ok ~= 0 then
 
         -- get command

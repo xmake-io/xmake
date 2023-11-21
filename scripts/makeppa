@@ -32,7 +32,7 @@ basename=xmake-$version+$patch$serie
 tarball=$workdir/$basename.tar.gz
 if [ ! -f $tarball ]; then
     cd core
-    xmake pack -vD --autobuild=n --formats=src_targz --basename=xmake -o ../artifacts
+    xmake pack --autobuild=n --formats=src_targz --basename=xmake -o ../artifacts || exit -1
     cd ..
     cp ./artifacts/xmake.tar.gz $tarball
 fi
