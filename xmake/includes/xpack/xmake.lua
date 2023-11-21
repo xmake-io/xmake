@@ -47,6 +47,8 @@ local apis = {
         "xpack.set_extension",
         -- add targets to be packaged
         "xpack.add_targets",
+        -- add package components
+        "xpack.add_components",
         -- set installed binary directory, e.g. bin
         "xpack.set_bindir",
         -- set installed library directory, e.g. lib
