@@ -205,37 +205,33 @@ function _get_specvars(package)
         end
         return _translate_filepath(package, iconpath)
     end
-    --[[
     specvars.PACKAGE_NSIS_INSTALL_SECTIONS = function ()
         local result = {}
-        local cmds = package:get("nsis_installcmds")
-        for name, cmd in pairs(cmds) do
-            local tag = "Install" .. _get_unique_tag(name)
-            table.insert(result, string.format('Section "%s" %s', name, tag))
-            table.insert(result, cmd)
+        for name, component in table.orderpairs(package:components()) do
+            local tag = "Install" .. name
+            table.insert(result, string.format('Section "%s" %s', component:title(), tag))
+            -- TODO add commands
             table.insert(result, "SectionEnd")
         end
         return table.concat(result, "\n  ")
     end
     specvars.PACKAGE_NSIS_INSTALL_DESCS = function ()
         local result = {}
-        local cmds = package:get("nsis_installcmds")
-        for name, cmd in pairs(cmds) do
-            local tag = "Install" .. _get_unique_tag(name)
-            local description = package:extraconf("nsis_installcmds." .. name, cmd, "description") or name
+        for name, component in table.orderpairs(package:components()) do
+            local tag = "Install" .. name
+            local description = component:description()
             table.insert(result, string.format('LangString DESC_%s ${LANG_ENGLISH} "%s"', tag, description))
         end
         return table.concat(result, "\n  ")
     end
     specvars.PACKAGE_NSIS_INSTALL_DESCRIPTION_TEXTS = function ()
         local result = {}
-        local cmds = package:get("nsis_installcmds")
-        for name, _ in pairs(cmds) do
-            local tag = "Install" .. _get_unique_tag(name)
+        for name, component in table.orderpairs(package:components()) do
+            local tag = "Install" .. name
             table.insert(result, string.format('!insertmacro MUI_DESCRIPTION_TEXT ${%s} $(DESC_%s)', tag, tag))
         end
         return table.concat(result, "\n  ")
-    end]]
+    end
     return specvars
 end
 
