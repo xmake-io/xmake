@@ -27,6 +27,7 @@ import("core.project.config")
 import("core.project.project")
 import("lib.detect.find_tool")
 import("filter")
+import("xpack_component")
 
 -- define module
 local xpack = xpack or object {_init = {"_name", "_info"}}
