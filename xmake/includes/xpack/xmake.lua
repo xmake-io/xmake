@@ -64,7 +64,9 @@ local apis = {
         -- set package component title
         "xpack_component.set_title",
         -- set package component description
-        "xpack_component.set_description"
+        "xpack_component.set_description",
+        -- enable/disable this component by default
+        "xpack_component.set_default"
     },
     paths = {
         -- set the spec file path, support the custom variable pattern, e.g. set_specfile("", {pattern = "%${([^\n]-)}"})

@@ -42,6 +42,7 @@ xpack("test")
     end)
 
 xpack_component("LongPath")
+    set_default(false)
     set_title("Enable Long Path")
     set_description("Increases the maximum path length limit, up to 32,767 characters (before 256).")
     on_installcmd(function (component, batchcmds)

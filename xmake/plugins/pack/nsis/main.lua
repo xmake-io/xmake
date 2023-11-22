@@ -226,7 +226,7 @@ function _get_specvars(package)
         local tag = "Install" .. name
         local cmd = _get_component_installcmds(component)
         if cmd then
-            table.insert(install_sections, string.format('Section "%s" %s', component:title(), tag))
+            table.insert(install_sections, string.format('Section%s "%s" %s', component:get("default") == false and " /o" or "", component:title(), tag))
             table.insert(install_sections, cmd)
             table.insert(install_sections, "SectionEnd")
             table.insert(install_descs, string.format('LangString DESC_%s ${LANG_ENGLISH} "%s"', tag, description))
