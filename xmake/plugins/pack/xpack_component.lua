@@ -240,6 +240,32 @@ function xpack_component:installfiles()
     return self:_copiedfiles("installfiles", self:package():installdir())
 end
 
+-- get the root directory, this is just a temporary sandbox installation path,
+-- we may replace it with the actual installation path in the specfile
+function xpack_component:rootdir()
+    return self:package():rootdir()
+end
+
+-- get the installed directory
+function xpack_component:installdir(...)
+    return self:package():installdir(...)
+end
+
+-- get the binary directory
+function xpack_component:bindir()
+    return self:package():bindir()
+end
+
+-- get the library directory
+function xpack_component:libdir()
+    return self:package():libdir()
+end
+
+-- get the include directory
+function xpack_component:includedir()
+    return self:package():includedir()
+end
+
 -- new a xpack_component
 function new(name, info, package)
     return xpack_component {name, info:clone(), package}

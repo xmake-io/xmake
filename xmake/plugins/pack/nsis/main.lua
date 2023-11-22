@@ -152,6 +152,16 @@ function _get_commands_string(package, cmds, opt)
     return table.concat(cmdstrs, "\n  ")
 end
 
+-- get install commands of component
+function _get_component_installcmds(component)
+    return _get_commands_string(component, batchcmds.get_installcmds(component):cmds(), {install = true})
+end
+
+-- get uninstall commands of component
+function _get_component_uninstallcmds(component)
+    return _get_commands_string(component, batchcmds.get_uninstallcmds(component):cmds(), {install = false})
+end
+
 -- get install commands
 function _get_installcmds(package)
     return _get_commands_string(package, batchcmds.get_installcmds(package):cmds(), {install = true})
@@ -211,8 +221,9 @@ function _get_specvars(package)
         local result = {}
         for name, component in table.orderpairs(package:components()) do
             local tag = "Install" .. name
+            local cmd = _get_component_installcmds(component)
             table.insert(result, string.format('Section "%s" %s', component:title(), tag))
-            -- TODO add commands
+            table.insert(result, cmd)
             table.insert(result, "SectionEnd")
         end
         return table.concat(result, "\n  ")
