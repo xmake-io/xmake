@@ -155,16 +155,13 @@ function _get_cross_file(package, opt)
         table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
         table.join2(shflags,  _get_ldflags_from_packagedeps(package, opt))
         if #cflags > 0 then
-            cflags = _translate_flags(package, cflags)
             file:print("c_args=['%s']", table.concat(cflags, "', '"))
         end
         if #cxxflags > 0 then
-            cxxflags = _translate_flags(package, cxxflags)
             file:print("cpp_args=['%s']", table.concat(cxxflags, "', '"))
         end
         local linkflags = table.join(ldflags or {}, shflags)
         if #linkflags > 0 then
-            linkflags = _translate_flags(package, linkflags)
             file:print("c_link_args=['%s']", table.concat(linkflags, "', '"))
             file:print("cpp_link_args=['%s']", table.concat(linkflags, "', '"))
         end
@@ -352,7 +349,7 @@ function _get_cflags_from_packagedeps(package, opt)
             end
         end
     end
-    return result
+    return _translate_flags(package, result)
 end
 
 -- get ldflags from package deps
@@ -369,7 +366,7 @@ function _get_ldflags_from_packagedeps(package, opt)
             end
         end
     end
-    return result
+    return _translate_flags(package, result)
 end
 
 -- get the build environments
