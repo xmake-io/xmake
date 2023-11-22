@@ -1,6 +1,6 @@
 xpack("xmake")
     set_homepage("https://xmake.io")
---    set_title("Xmake build utility ($(arch))")
+    set_title("Xmake build utility ($(arch))")
     set_description("A cross-platform build utility based on Lua.")
     set_copyright("Copyright (C) 2015-present, TBOOX Open Source Group")
     set_licensefile("../LICENSE.md")
@@ -8,6 +8,8 @@ xpack("xmake")
     add_targets("demo")
     set_bindir(".")
     set_iconfile("src/demo/xmake.ico")
+
+    add_components("LongPath")
 
     on_load(function (package)
         local arch = package:arch()
@@ -61,6 +63,17 @@ xpack("xmake")
                 package:add("installfiles", path.join(winenv, "**"), {rootdir = path.directory(winenv)})
             end
         end
+    end)
+
+xpack_component("LongPath")
+    set_title("Enable Long Path")
+    set_description("Increases the maximum path length limit, up to 32,767 characters (before 256).")
+    on_installcmd(function (component, batchcmds)
+        batchcmds:rawcmd("nsis", [[
+  ${If} $NoAdmin == "false"
+    ; Enable long path
+    WriteRegDWORD ${HKLM} "SYSTEM\CurrentControlSet\Control\FileSystem" "LongPathsEnabled" 1
+  ${EndIf}]])
     end)
 
 xpack("xmakesrc")

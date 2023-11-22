@@ -224,7 +224,7 @@ function _get_specvars(package)
     local install_description_texts = {}
     for name, component in table.orderpairs(package:components()) do
         local installcmds = _get_component_installcmds(component)
-        if installcmds then
+        if installcmds and #installcmds > 0 then
             local tag = "Install" .. name
             table.insert(install_sections, string.format('Section%s "%s" %s', component:get("default") == false and " /o" or "", component:title(), tag))
             table.insert(install_sections, installcmds)
@@ -233,7 +233,7 @@ function _get_specvars(package)
             table.insert(install_description_texts, string.format('!insertmacro MUI_DESCRIPTION_TEXT ${%s} $(DESC_%s)', tag, tag))
         end
         local uninstallcmds = _get_component_uninstallcmds(component)
-        if uninstallcmds then
+        if uninstallcmds and #uninstallcmds > 0 then
             local tag = "Uninstall" .. name
             table.insert(install_sections, string.format('Section "un.%s" %s', component:title(), tag))
             table.insert(install_sections, uninstallcmds)
