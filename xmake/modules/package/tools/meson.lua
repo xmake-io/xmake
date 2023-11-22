@@ -73,6 +73,13 @@ function _translate_flags(package, flags)
             end
         end
         flags = flags_new
+    elseif package:is_plat("windows") then
+        for idx, flag in ipairs(flags) do
+            -- @see https://github.com/xmake-io/xmake/issues/4407
+            if flag:startswith("-libpath:") then
+                flags[idx] = flag:gsub("%-libpath:", "/libpath:")
+            end
+        end
     end
     return flags
 end
