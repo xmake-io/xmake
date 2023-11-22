@@ -378,6 +378,11 @@ function batchcmds:show(format, ...)
     table.insert(self:cmds(), {kind = "show", showtext = showtext})
 end
 
+-- add raw command for the specific generator or xpack format
+function batchcmds:rawcmd(kind, rawstr)
+    table.insert(self:cmds(), {kind = kind, rawstr = rawstr})
+end
+
 -- add command: show progress
 function batchcmds:show_progress(progress, format, ...)
     if progress then

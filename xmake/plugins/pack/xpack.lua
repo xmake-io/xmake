@@ -27,6 +27,7 @@ import("core.project.config")
 import("core.project.project")
 import("lib.detect.find_tool")
 import("filter")
+import("xpack_component")
 
 -- define module
 local xpack = xpack or object {_init = {"_name", "_info"}}
@@ -67,6 +68,15 @@ end
 -- get the package license
 function xpack:license()
     return self:get("license")
+end
+
+-- get the package title
+function xpack:title()
+    local title = self:get("title")
+    if title == nil then
+        title = self:name()
+    end
+    return filter.handle(title, self)
 end
 
 -- get the package description
@@ -251,6 +261,7 @@ function xpack:specvars()
             PACKAGE_ARCH        = self:arch(),
             PACKAGE_PLAT        = self:plat(),
             PACKAGE_NAME        = self:name(),
+            PACKAGE_TITLE       = self:title() or "",
             PACKAGE_DESCRIPTION = self:description() or "",
             PACKAGE_FILENAME    = self:filename(),
             PACKAGE_HOMEPAGE    = self:get("homepage") or "",
@@ -497,9 +508,35 @@ function xpack:includedir()
     return self:installdir(includedir)
 end
 
--- new a xpack
+-- get the components
+function xpack:components()
+    local components = _g.components
+    if components == nil then
+        components = {}
+        local xpack_component_scope = project.scope("xpack_component")
+        for _, component_name in ipairs(self:get("components")) do
+            local scope = xpack_component_scope[component_name]
+            if scope then
+                local instance = xpack_component.new(component_name, scope, self)
+                components[component_name] = instance
+            else
+                raise("unknown xpack component(%s) in xpack(%s)", component_name, self:name())
+            end
+        end
+        _g.components = components
+    end
+    return components
+end
+
+-- get the given component
+function xpack:component(name)
+    return self:components()[name]
+end
+
+-- new a xpack, and we need to clone scope info,
+-- because two different format packages maybe have same scope
 function _new(name, info)
-    return xpack {name, info}
+    return xpack {name, info:clone()}
 end
 
 -- get xpack packages
@@ -537,9 +574,4 @@ function packages()
         _g.packages = packages
     end
     return packages
-end
-
--- get the given package
-function package(name)
-    return packages()[name]
 end

@@ -28,6 +28,11 @@ function _pack_archive(package)
 
     -- do install
     batchcmds.get_installcmds(package):runcmds()
+    for _, component in table.orderpairs(package:components()) do
+        if component:get("default") ~= false then
+            batchcmds.get_installcmds(component):runcmds()
+        end
+    end
 
     -- archive install files
     local rootdir = package:rootdir()

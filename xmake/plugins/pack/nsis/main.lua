@@ -137,6 +137,8 @@ function _get_command_strings(package, cmd, opt)
     elseif kind == "mkdir" then
         local dir = _translate_filepath(package, cmd.dir)
         table.insert(result, string.format("CreateDirectory \"%s\"", dir))
+    elseif kind == "nsis" then
+        table.insert(result, cmd.rawstr)
     end
     return result
 end
@@ -148,6 +150,16 @@ function _get_commands_string(package, cmds, opt)
         table.join2(cmdstrs, _get_command_strings(package, cmd, opt))
     end
     return table.concat(cmdstrs, "\n  ")
+end
+
+-- get install commands of component
+function _get_component_installcmds(component)
+    return _get_commands_string(component, batchcmds.get_installcmds(component):cmds(), {install = true})
+end
+
+-- get uninstall commands of component
+function _get_component_uninstallcmds(component)
+    return _get_commands_string(component, batchcmds.get_uninstallcmds(component):cmds(), {install = false})
 end
 
 -- get install commands
@@ -195,7 +207,6 @@ function _get_specvars(package)
     specvars.PACKAGE_UNINSTALLCMDS = function ()
         return _get_uninstallcmds(package)
     end
-    specvars.PACKAGE_NSIS_DISPLAY_NAME = _get_filter_value(package, "nsis_displayname") or package:name()
     specvars.PACKAGE_NSIS_DISPLAY_ICON = function ()
         local iconpath = _get_filter_value(package, "nsis_displayicon")
         if iconpath then
@@ -206,36 +217,32 @@ function _get_specvars(package)
         end
         return _translate_filepath(package, iconpath)
     end
-    specvars.PACKAGE_NSIS_INSTALL_SECTIONS = function ()
-        local result = {}
-        local cmds = package:get("nsis_installcmds")
-        for name, cmd in pairs(cmds) do
-            local tag = "Install" .. _get_unique_tag(name)
-            table.insert(result, string.format('Section "%s" %s', name, tag))
-            table.insert(result, cmd)
-            table.insert(result, "SectionEnd")
+
+    -- install sections
+    local install_sections = {}
+    local install_descs = {}
+    local install_description_texts = {}
+    for name, component in table.orderpairs(package:components()) do
+        local installcmds = _get_component_installcmds(component)
+        if installcmds then
+            local tag = "Install" .. name
+            table.insert(install_sections, string.format('Section%s "%s" %s', component:get("default") == false and " /o" or "", component:title(), tag))
+            table.insert(install_sections, installcmds)
+            table.insert(install_sections, "SectionEnd")
+            table.insert(install_descs, string.format('LangString DESC_%s ${LANG_ENGLISH} "%s"', tag, description))
+            table.insert(install_description_texts, string.format('!insertmacro MUI_DESCRIPTION_TEXT ${%s} $(DESC_%s)', tag, tag))
         end
-        return table.concat(result, "\n  ")
-    end
-    specvars.PACKAGE_NSIS_INSTALL_DESCS = function ()
-        local result = {}
-        local cmds = package:get("nsis_installcmds")
-        for name, cmd in pairs(cmds) do
-            local tag = "Install" .. _get_unique_tag(name)
-            local description = package:extraconf("nsis_installcmds." .. name, cmd, "description") or name
-            table.insert(result, string.format('LangString DESC_%s ${LANG_ENGLISH} "%s"', tag, description))
+        local uninstallcmds = _get_component_uninstallcmds(component)
+        if uninstallcmds then
+            local tag = "Uninstall" .. name
+            table.insert(install_sections, string.format('Section "un.%s" %s', component:title(), tag))
+            table.insert(install_sections, uninstallcmds)
+            table.insert(install_sections, "SectionEnd")
         end
-        return table.concat(result, "\n  ")
     end
-    specvars.PACKAGE_NSIS_INSTALL_DESCRIPTION_TEXTS = function ()
-        local result = {}
-        local cmds = package:get("nsis_installcmds")
-        for name, _ in pairs(cmds) do
-            local tag = "Install" .. _get_unique_tag(name)
-            table.insert(result, string.format('!insertmacro MUI_DESCRIPTION_TEXT ${%s} $(DESC_%s)', tag, tag))
-        end
-        return table.concat(result, "\n  ")
-    end
+    specvars.PACKAGE_NSIS_INSTALL_SECTIONS = table.concat(install_sections, "\n  ")
+    specvars.PACKAGE_NSIS_INSTALL_DESCS = table.concat(install_descs, "\n  ")
+    specvars.PACKAGE_NSIS_INSTALL_DESCRIPTION_TEXTS = table.concat(install_description_texts, "\n  ")
     return specvars
 end
 

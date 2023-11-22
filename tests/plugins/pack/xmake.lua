@@ -20,12 +20,15 @@ target("foo")
 
 xpack("test")
     set_formats("nsis", "zip", "targz")
-    set_description("hello")
+    set_title("hello")
+    set_description("A test installer.")
+    set_homepage("https://xmake.io")
     set_licensefile("LICENSE.md")
     add_targets("test", "foo")
     set_basename("test-$(plat)-$(arch)-v$(version)")
     add_installfiles("src/(assets/*.png)", {prefixdir = "images"})
     set_iconfile("src/assets/xmake.ico")
+    add_components("LongPath")
 
     after_installcmd(function (package, batchcmds)
         batchcmds:mkdir(package:installdir("resources"))
@@ -38,9 +41,14 @@ xpack("test")
         batchcmds:rmdir(package:installdir("stub"))
     end)
 
-    add_nsis_installcmds("Enable Long Path", [[
+xpack_component("LongPath")
+    set_default(false)
+    set_title("Enable Long Path")
+    set_description("Increases the maximum path length limit, up to 32,767 characters (before 256).")
+    on_installcmd(function (component, batchcmds)
+        batchcmds:rawcmd("nsis", [[
   ${If} $NoAdmin == "false"
     ; Enable long path
     WriteRegDWORD ${HKLM} "SYSTEM\CurrentControlSet\Control\FileSystem" "LongPathsEnabled" 1
-  ${EndIf}]], {description = "Increases the maximum path length limit, up to 32,767 characters (before 256)."})
-
+  ${EndIf}]])
+    end)

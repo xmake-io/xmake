@@ -27,6 +27,12 @@ import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"}
 import("xpack")
 
 function _load_package(package)
+
+    -- ensure build and output directories
+    os.tryrm(package:buildir())
+    os.mkdir(package:outputdir())
+
+    -- load it
     local script = package:script("load")
     if script then
         script(package)
@@ -38,10 +44,6 @@ function _on_package(package)
 end
 
 function _pack_package(package)
-
-    -- ensure build and output directories
-    os.tryrm(package:buildir())
-    os.mkdir(package:outputdir())
 
     -- get need formats
     local formats_need = option.get("formats")
