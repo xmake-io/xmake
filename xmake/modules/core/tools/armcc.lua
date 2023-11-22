@@ -135,7 +135,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
     try
     {
         function ()
-            
+
             local compflags = flags
             if depfile then
                 compflags = table.join(compflags, "--depend", depfile)
@@ -181,7 +181,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                     end
                     cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
                 end
-                
+
                 -- generate the dependent includes
                 if depfile and os.isfile(depfile) then
                     if dependinfo then
