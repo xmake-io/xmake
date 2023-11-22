@@ -43,6 +43,7 @@ jobs:
           ./configure --prefix=${{ matrix.prefix }}
           make
           make install
+          ls -l ${{matrix.prefix}}/bin
           xmake --version
 
       - name: Tests

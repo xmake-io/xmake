@@ -40,7 +40,6 @@ target "demo"
     # @see https://github.com/xmake-io/xmake/issues/3628
     if is_host "msys"; then
         after_install "xmake_after_install"
-        add_installfiles "${projectdir}/scripts/msys/xmake.sh" "bin" "xmake"
     fi
 
     # add syslinks
@@ -62,6 +61,7 @@ xmake_after_install() {
     local installdir=${2}
     if test_eq "${project_generator}" "gmake"; then
         print "\t@if test -f ${installdir}/bin/xmake.exe; then rm ${installdir}/bin/xmake.exe; fi" >> "${xmake_sh_makefile}"
+        print "\t@cp ${projectdir}/scripts/msys/xmake.sh ${installdir}/bin/xmake" >> "${xmake_sh_makefile}"
         print "\t@cp ${buildir}/xmake.exe ${installdir}/share/xmake" >> "${xmake_sh_makefile}"
     fi
 }
