@@ -223,14 +223,21 @@ function _get_specvars(package)
     local install_descs = {}
     local install_description_texts = {}
     for name, component in table.orderpairs(package:components()) do
-        local tag = "Install" .. name
-        local cmd = _get_component_installcmds(component)
-        if cmd then
+        local installcmds = _get_component_installcmds(component)
+        if installcmds then
+            local tag = "Install" .. name
             table.insert(install_sections, string.format('Section%s "%s" %s', component:get("default") == false and " /o" or "", component:title(), tag))
-            table.insert(install_sections, cmd)
+            table.insert(install_sections, installcmds)
             table.insert(install_sections, "SectionEnd")
             table.insert(install_descs, string.format('LangString DESC_%s ${LANG_ENGLISH} "%s"', tag, description))
             table.insert(install_description_texts, string.format('!insertmacro MUI_DESCRIPTION_TEXT ${%s} $(DESC_%s)', tag, tag))
+        end
+        local uninstallcmds = _get_component_uninstallcmds(component)
+        if uninstallcmds then
+            local tag = "Uninstall" .. name
+            table.insert(install_sections, string.format('Section "un.%s" %s', component:title(), tag))
+            table.insert(install_sections, uninstallcmds)
+            table.insert(install_sections, "SectionEnd")
         end
     end
     specvars.PACKAGE_NSIS_INSTALL_SECTIONS = table.concat(install_sections, "\n  ")
