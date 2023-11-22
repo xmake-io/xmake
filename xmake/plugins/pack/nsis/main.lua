@@ -217,34 +217,25 @@ function _get_specvars(package)
         end
         return _translate_filepath(package, iconpath)
     end
-    specvars.PACKAGE_NSIS_INSTALL_SECTIONS = function ()
-        local result = {}
-        for name, component in table.orderpairs(package:components()) do
-            local tag = "Install" .. name
-            local cmd = _get_component_installcmds(component)
-            table.insert(result, string.format('Section "%s" %s', component:title(), tag))
-            table.insert(result, cmd)
-            table.insert(result, "SectionEnd")
+
+    -- install sections
+    local install_sections = {}
+    local install_descs = {}
+    local install_description_texts = {}
+    for name, component in table.orderpairs(package:components()) do
+        local tag = "Install" .. name
+        local cmd = _get_component_installcmds(component)
+        if cmd then
+            table.insert(install_sections, string.format('Section "%s" %s', component:title(), tag))
+            table.insert(install_sections, cmd)
+            table.insert(install_sections, "SectionEnd")
+            table.insert(install_descs, string.format('LangString DESC_%s ${LANG_ENGLISH} "%s"', tag, description))
+            table.insert(install_description_texts, string.format('!insertmacro MUI_DESCRIPTION_TEXT ${%s} $(DESC_%s)', tag, tag))
         end
-        return table.concat(result, "\n  ")
     end
-    specvars.PACKAGE_NSIS_INSTALL_DESCS = function ()
-        local result = {}
-        for name, component in table.orderpairs(package:components()) do
-            local tag = "Install" .. name
-            local description = component:description()
-            table.insert(result, string.format('LangString DESC_%s ${LANG_ENGLISH} "%s"', tag, description))
-        end
-        return table.concat(result, "\n  ")
-    end
-    specvars.PACKAGE_NSIS_INSTALL_DESCRIPTION_TEXTS = function ()
-        local result = {}
-        for name, component in table.orderpairs(package:components()) do
-            local tag = "Install" .. name
-            table.insert(result, string.format('!insertmacro MUI_DESCRIPTION_TEXT ${%s} $(DESC_%s)', tag, tag))
-        end
-        return table.concat(result, "\n  ")
-    end
+    specvars.PACKAGE_NSIS_INSTALL_SECTIONS = table.concat(install_sections, "\n  ")
+    specvars.PACKAGE_NSIS_INSTALL_DESCS = table.concat(install_descs, "\n  ")
+    specvars.PACKAGE_NSIS_INSTALL_DESCRIPTION_TEXTS = table.concat(install_description_texts, "\n  ")
     return specvars
 end
 
