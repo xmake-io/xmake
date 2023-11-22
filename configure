@@ -2531,6 +2531,24 @@ add_options() {
     done
 }
 
+# before_install in target
+before_install() {
+    if ! ${_loading_targets}; then
+        return
+    fi
+    local funcname="${1}"
+    _add_target_item "${_xmake_sh_target_current}" "before_install" "${funcname}"
+}
+
+# after_install in target
+after_install() {
+    if ! ${_loading_targets}; then
+        return
+    fi
+    local funcname="${1}"
+    _add_target_item "${_xmake_sh_target_current}" "after_install" "${funcname}"
+}
+
 #-----------------------------------------------------------------------------
 # toolchain configuration apis
 #
@@ -4190,6 +4208,12 @@ _gmake_add_install_target() {
         installdir="\$(INSTALLDIR)"
     fi
 
+    # before install
+    _get_target_item "${target}" "before_install"; local before_install="${_ret}"
+    if test_nz "${before_install}"; then
+        eval ${before_install} "\${target}" "\${installdir}"
+    fi
+
     # @see https://github.com/tboox/tbox/issues/214
     install_for_soname=false
     if test_eq "${targetkind}" "shared"; then
@@ -4286,6 +4310,12 @@ _gmake_add_install_target() {
             print "\t@mkdir -p ${dstinstalldir}" >> "${xmake_sh_makefile}"
             print "\t@cp -p ${srcinstallfile} ${dstinstallfile}" >> "${xmake_sh_makefile}"
         done
+    fi
+
+    # after install
+    _get_target_item "${target}" "after_install"; local after_install="${_ret}"
+    if test_nz "${after_install}"; then
+        eval ${after_install} "\${target}" "\${installdir}"
     fi
 }
 
