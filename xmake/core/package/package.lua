@@ -899,10 +899,10 @@ function _instance:manifest_save()
     end
 
     -- save deps
-    if self:deps() then
+    if self:librarydeps() then
         manifest.deps = {}
-        for name, dep in pairs(self:deps()) do
-            manifest.deps[name] = {
+        for _, dep in ipairs(self:librarydeps()) do
+            manifest.deps[dep:name()] = {
                 version = dep:version_str(),
                 buildhash = dep:buildhash()
             }
