@@ -271,8 +271,8 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
     
     -- do build
     local sourcebatch_cx = {
-        rulename = "c++.build",
-        sourcekind = "cxx",
+        rulename = (sourcekind == "cxx" and "c++" or "c").. ".build",
+        sourcekind = sourcekind,
         sourcefiles = {},
         objectfiles = {},
         dependfiles = {}
