@@ -19,7 +19,7 @@ target("foo")
     add_packages("zlib")
 
 xpack("test")
-    set_formats("nsis", "zip", "targz")
+    set_formats("nsis", "zip", "targz", "runself")
     set_title("hello")
     set_description("A test installer.")
     set_homepage("https://xmake.io")

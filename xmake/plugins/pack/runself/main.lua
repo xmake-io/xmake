@@ -34,7 +34,7 @@ function _get_makeself()
 
     -- find makeself
     local packages = {}
-    local makeself = find_tool("makeself")
+    local makeself = find_tool("makeself.sh")
     if not makeself then
         table.join2(packages, install_packages("makeself"))
     end
@@ -46,20 +46,58 @@ function _get_makeself()
 
     -- we need to force detect and flush detect cache after loading all environments
     if not makeself then
-        makeself = find_tool("makeself", {force = true})
+        makeself = find_tool("makeself.sh", {force = true})
     end
     assert(makeself, "makeself not found!")
     return makeself, oldenvs
 end
 
+-- get specvars
+function _get_specvars(package)
+    local specvars = table.clone(package:specvars())
+    return specvars
+end
+
 -- pack runself package
 function _pack_runself(makeself, package)
+
+    -- install the initial specfile
+    local specfile = package:specfile()
+    if not os.isfile(specfile) then
+        local specfile_template = path.join(os.programdir(), "scripts", "xpack", "runself", "makeself.lsm")
+        os.cp(specfile_template, specfile)
+    end
+
+    -- replace variables in specfile
+    local specvars = _get_specvars(package)
+    local pattern = package:extraconf("specfile", "pattern") or "%${([^\n]-)}"
+    io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
+        name = name:trim()
+        local value = specvars[name]
+        if type(value) == "function" then
+            value = value()
+        end
+        if value ~= nil then
+            dprint("  > replace %s -> %s", name, value)
+        end
+        if type(value) == "table" then
+            dprint("invalid variable value", value)
+        end
+        return value
+    end)
+
+    local archivedir = package:buildir()
+    local setupfile = path.join(package:buildir(), "setup.sh")
+    io.writefile(setupfile, [[#!/bin/bash
+        echo hello]])
+
+    -- make package
+    os.vrunv(makeself, {"--gzip", "--sha256", "--lsm", specfile, archivedir, package:outputfile(), "setup.sh", "hello"})
 end
 
 function main(package)
 
-    -- only for windows
-    if not is_subhost("windows") then
+    if is_subhost("windows") then
         return
     end
 

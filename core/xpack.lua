@@ -77,7 +77,7 @@ xpack_component("LongPath")
     end)
 
 xpack("xmakesrc")
-    set_formats("zip", "targz")
+    set_formats("zip", "targz", "runself")
     set_basename("xmake-v$(version)")
     before_package(function (package)
         import("devel.git")
