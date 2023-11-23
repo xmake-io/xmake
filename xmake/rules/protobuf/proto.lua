@@ -24,7 +24,6 @@ import("lib.detect.find_tool")
 import("private.utils.batchcmds")
 import("core.project.depend")
 import("private.action.build.object", {alias = "build_objectfiles"})
-import("module_parser")
 
 -- get protoc
 function _get_protoc(target, sourcekind)
