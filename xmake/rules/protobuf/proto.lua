@@ -306,6 +306,9 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
             sourcefile_cx_grpc = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename_grpc})
         end
 
+        -- add includedirs
+        target:add("includedirs", sourcefile_dir, {public = public})
+        
         -- add objectfile
         local objectfile = target:objectfile(sourcefile_cx)
         table.insert(sourcebatch_cx.sourcefiles, sourcefile_cx)
