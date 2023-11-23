@@ -86,13 +86,14 @@ function _pack_runself(makeself, package)
         return value
     end)
 
-    local archivedir = package:buildir()
-    local setupfile = path.join(package:buildir(), "setup.sh")
-    io.writefile(setupfile, [[#!/bin/bash
-        echo hello]])
+    -- install the setup.sh script
+    local installdir = package:installdir()
+    local setupfile = path.join(installdir, "__setup__.sh")
+    os.cp(path.join(os.programdir(), "scripts", "xpack", "runself", "setup.sh"), setupfile)
 
     -- make package
-    os.vrunv(makeself, {"--gzip", "--sha256", "--lsm", specfile, archivedir, package:outputfile(), "setup.sh", "hello"})
+    os.vrunv(makeself, {"--gzip", "--sha256", "--lsm", specfile,
+        installdir, package:outputfile(), package:basename(), "./__setup__.sh"})
 end
 
 function main(package)
