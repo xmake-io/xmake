@@ -542,7 +542,9 @@ function _instance:get(name, opt)
         if not table.is_dictionary(values) then
             local results = {}
             for _, value in ipairs(table.wrap(values)) do
-                local vs_conf = self:_visibility(extraconf[value])
+                -- we always call self:extraconf() to handle group value
+                local extra = self:extraconf(name, value)
+                local vs_conf = self:_visibility(extra)
                 if bit.band(vs_required, vs_conf) ~= 0 then
                     table.insert(results, value)
                 end
@@ -554,7 +556,7 @@ function _instance:get(name, opt)
             return values
         end
     else
-        -- only get thr private values
+        -- only get the private values
         if bit.band(vs_required, vs_private) ~= 0 then
             return values
         end
