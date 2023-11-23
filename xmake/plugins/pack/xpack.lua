@@ -325,7 +325,8 @@ end
 -- get the specfile path
 function xpack:specfile()
     local extensions = {
-        nsis = ".nsi"
+        nsis = ".nsi",
+        runself = ".sh"
     }
     local extension = extensions[self:format()] or ".spec"
     return self:get("specfile") or path.join(self:buildir(), self:basename() .. extension)
@@ -338,7 +339,8 @@ function xpack:extension()
         local extensions = {
             nsis  = ".exe",
             zip   = ".zip",
-            targz = ".tar.gz"
+            targz = ".tar.gz",
+            runself = ".sh"
         }
         extension = extensions[self:format()] or ""
     end
