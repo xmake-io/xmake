@@ -43,7 +43,7 @@ jobs:
           brew install gnu-tar
           gem install --no-document fpm
           cd core
-          xmake pack --autobuild=n --formats=src_zip,src_targz --basename=xmake -o ../artifacts
+          xmake pack --autobuild=n --basename=xmake xmakesrc -o ../artifacts
           cd ..
           scripts/makeself/build-runfile.sh
       - uses: actions/upload-artifact@v2

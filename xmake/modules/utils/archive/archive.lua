@@ -330,6 +330,12 @@ function main(archivefile, inputfiles, opt)
     -- get extension
     local extension = opt.extension or get_archive_extension(archivefile)
 
+    -- ensure output directory
+    local archivedir = path.directory(archivefile)
+    if not os.isdir(archivedir) then
+        os.mkdir(archivedir)
+    end
+
     -- archive it
     return _archive(archivefile, inputfiles, extension, archivers[extension], opt)
 end

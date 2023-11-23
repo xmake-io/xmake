@@ -65,7 +65,7 @@ jobs:
         run: |
           cd core
           xrepo update-repo
-          xmake pack -vD -y --formats=nsis,zip --autobuild=n -o ../artifacts/${{env.RELEASE_NAME}} --basename=xmake
+          xmake pack -vD -y --formats=nsis,zip --autobuild=n -o ../artifacts/${{env.RELEASE_NAME}} --basename=xmake xmake
           (Get-FileHash ../artifacts/${{env.RELEASE_NAME}}/xmake.zip -Algorithm SHA256).Hash.ToLower() + " *xmake.zip`n" | Out-File ./shafile -Encoding ASCII -NoNewLine -Append
           Copy-Item shafile ../artifacts/${{env.RELEASE_NAME}}
           cd ..
