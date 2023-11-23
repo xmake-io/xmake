@@ -77,51 +77,30 @@ xpack_component("LongPath")
     end)
 
 xpack("xmakesrc")
-    set_formats("src_zip", "src_targz")
+    set_formats("zip", "targz")
     set_basename("xmake-v$(version)")
-    on_load(function (package)
-        local format = package:format()
-        if format == "src_zip" then
-            package:set("extension", ".zip")
-        elseif format == "src_targz" then
-            package:set("extension", ".tar.gz")
-        end
-    end)
-    on_package(function (package)
+    before_package(function (package)
         import("devel.git")
-        import("utils.archive")
-        print("packing %s", package:outputfile())
-        local tmpdir = os.tmpfile() .. ".dir"
-        local repodir = path.join(tmpdir, "repo")
-        local srcdir = path.join(package:rootdir(), "xmakesrc")
-        local topdir = path.join(srcdir, "xmake-" .. package:version())
-        os.tryrm(repodir)
-        os.tryrm(topdir)
-        os.cp(path.directory(path.absolute(os.projectdir())), repodir)
-        git.clean({repodir = repodir, force = true, all = true})
-        git.reset({repodir = repodir, hard = true})
-        if os.isfile(path.join(repodir, ".gitmodules")) then
-            git.submodule.clean({repodir = repodir, force = true, all = true})
-            git.submodule.reset({repodir = repodir, hard = true})
+
+        local rootdir = path.join(os.tmpfile(package:name()) .. ".dir", "repo")
+        os.tryrm(rootdir)
+        os.cp(path.directory(os.projectdir()), rootdir)
+
+        git.clean({repodir = rootdir, force = true, all = true})
+        git.reset({repodir = rootdir, hard = true})
+        if os.isfile(path.join(rootdir, ".gitmodules")) then
+            git.submodule.clean({repodir = rootdir, force = true, all = true})
+            git.submodule.reset({repodir = rootdir, hard = true})
         end
-        os.mkdir(path.join(topdir, "scripts"))
-        os.vcp(path.join(repodir, "core"), topdir)
-        os.vcp(path.join(repodir, "xmake"), topdir)
-        os.vcp(path.join(repodir, "*.md"), topdir)
-        os.vcp(path.join(repodir, "configure"), topdir)
-        os.vcp(path.join(repodir, "scripts", "*.sh"), path.join(topdir, "scripts"))
-        os.vcp(path.join(repodir, "scripts", "man"), path.join(topdir, "scripts"))
-        os.vcp(path.join(repodir, "scripts", "debian"), path.join(topdir, "scripts"))
-        os.vcp(path.join(repodir, "scripts", "msys"), path.join(topdir, "scripts"))
-        os.rm(path.join(topdir, "core", "src", "tbox", "tbox", "src", "demo"))
-        os.rm(path.join(topdir, "core", "src", "luajit"))
-        os.rm(path.join(topdir, "core", "src", "pdcurses"))
 
-        -- archive files
-        local oldir = os.cd(srcdir)
-        local archivefiles = os.files("**")
-        os.cd(oldir)
-        archive.archive(path.absolute(package:outputfile()), archivefiles, {curdir = srcdir, compress = "best"})
-        os.tryrm(tmpdir)
+        local prefixdir = "xmake-" .. package:version()
+        local extraconf = {rootdir = rootdir, prefixdir = prefixdir}
+        package:add("installfiles", path.join(rootdir, "core/**|src/pdcurses/**|src/luajit/**|src/tbox/tbox/src/demo/**"), extraconf)
+        package:add("installfiles", path.join(rootdir, "xmake/**"), extraconf)
+        package:add("installfiles", path.join(rootdir, "*.md"), extraconf)
+        package:add("installfiles", path.join(rootdir, "configure"), extraconf)
+        package:add("installfiles", path.join(rootdir, "scripts/*.sh"), extraconf)
+        package:add("installfiles", path.join(rootdir, "scripts/man/**"), extraconf)
+        package:add("installfiles", path.join(rootdir, "scripts/debian/**"), extraconf)
+        package:add("installfiles", path.join(rootdir, "scripts/msys/**"), extraconf)
     end)
-
