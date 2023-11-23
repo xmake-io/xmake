@@ -41,6 +41,7 @@ compile_commands.json
 /core/**/*.obj
 /core/**/*.lib
 /core/**/*.exe
+/core/build
 
 # for fortran
 /tests/**/*.mod
