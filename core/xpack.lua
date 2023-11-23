@@ -79,9 +79,21 @@ xpack_component("LongPath")
 xpack("xmakesrc")
     set_formats("zip", "targz")
     set_basename("xmake-v$(version)")
-    on_load(function (package)
+    before_package(function (package)
+        import("devel.git")
+
+        local rootdir = path.join(os.tmpfile(package:name()) .. ".dir", "repo")
+        os.tryrm(rootdir)
+        os.cp(path.directory(os.projectdir()), rootdir)
+
+        git.clean({repodir = rootdir, force = true, all = true})
+        git.reset({repodir = rootdir, hard = true})
+        if os.isfile(path.join(rootdir, ".gitmodules")) then
+            git.submodule.clean({repodir = rootdir, force = true, all = true})
+            git.submodule.reset({repodir = rootdir, hard = true})
+        end
+
         local prefixdir = "xmake-" .. package:version()
-        local rootdir = path.directory(os.projectdir())
         local extraconf = {rootdir = rootdir, prefixdir = prefixdir}
         package:add("installfiles", path.join(rootdir, "core/**|src/pdcurses/**|src/luajit/**|src/tbox/tbox/src/demo/**"), extraconf)
         package:add("installfiles", path.join(rootdir, "xmake/**"), extraconf)
@@ -91,14 +103,4 @@ xpack("xmakesrc")
         package:add("installfiles", path.join(rootdir, "scripts/man/**"), extraconf)
         package:add("installfiles", path.join(rootdir, "scripts/debian/**"), extraconf)
         package:add("installfiles", path.join(rootdir, "scripts/msys/**"), extraconf)
-    end)
-    before_package(function (package)
-        import("devel.git")
-        local rootdir = path.directory(os.projectdir())
-        git.clean({repodir = rootdir, force = true, all = true})
-        git.reset({repodir = rootdir, hard = true})
-        if os.isfile(path.join(rootdir, ".gitmodules")) then
-            git.submodule.clean({repodir = rootdir, force = true, all = true})
-            git.submodule.reset({repodir = rootdir, hard = true})
-        end
     end)
