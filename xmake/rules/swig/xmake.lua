@@ -74,17 +74,20 @@ rule("swig.base")
                     if fileconfig then
                         scriptdir = fileconfig.scriptdir
                     end
-                    local scriptfile = path.join(target:autogendir(), "rules", "swig", path.basename(sourcefile))
+                    local autogenfiles
+                    local autogendir = path.join(target:autogendir(), "rules", "swig")
                     if moduletype == "python" then
-                        scriptfile = scriptfile .. ".py"
+                        autogenfiles = os.files(path.join(autogendir, "*.py"))
                     elseif moduletype == "lua" then
-                        scriptfile = scriptfile .. ".lua"
+                        autogenfiles = os.files(path.join(autogendir, "*.lua"))
                     elseif moduletype == "java" then
-                        scriptfile = scriptfile .. ".java"
+                        autogenfiles = os.files(path.join(autogendir, "*.java"))
                     end
-                    table.insert(scriptfiles, scriptfile)
-                    if scriptdir then
-                        target:add("installfiles", scriptfile, {prefixdir = scriptdir})
+                    if autogenfiles then
+                        table.join2(scriptfiles, autogenfiles)
+                        if scriptdir then
+                            target:add("installfiles", autogenfiles, {prefixdir = scriptdir})
+                        end
                     end
                 end
             end
