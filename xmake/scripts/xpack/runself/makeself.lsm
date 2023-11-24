@@ -2,9 +2,9 @@ Begin3
 Title:          ${PACKAGE_TITLE}
 Version:        ${PACKAGE_VERSION}
 Description:    ${PACKAGE_DESCRIPTION}
-Keywords:       make build
-Author:         ruki (waruqi@gmail.com)
-Maintained-by:  ruki (waruqi@gmail.com)
+Keywords:       ${PACKAGE_NAME}
+Author:         $(PACKAGE_AUTHOR)
+Maintained-by:  $(PACKAGE_MAINTAINER)
 Original-site:  ${PACKAGE_HOMEPAGE}
 Platform:       Unix; Windows
 Copying-policy: ${PACKAGE_COPYRIGHT}

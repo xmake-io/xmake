@@ -296,6 +296,8 @@ function xpack:specvars()
             PACKAGE_TITLE       = self:title() or "",
             PACKAGE_DESCRIPTION = self:description() or "",
             PACKAGE_FILENAME    = self:filename(),
+            PACKAGE_AUTHOR      = self:get("author") or "",
+            PACKAGE_MAINTAINER  = self:get("maintainer") or self:get("author") or "",
             PACKAGE_HOMEPAGE    = self:get("homepage") or "",
             PACKAGE_COPYRIGHT   = self:get("copyright") or "",
             PACKAGE_COMPANY     = self:get("company") or "",

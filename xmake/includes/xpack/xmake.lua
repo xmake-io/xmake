@@ -34,6 +34,10 @@ local apis = {
         "xpack.set_homepage",
         -- set package title
         "xpack.set_title",
+        -- set author
+        "xpack.set_author",
+        -- set maintainer,
+        "xpack.set_maintainer",
         -- set package description
         "xpack.set_description",
         -- set input kind, e.g. binary, source
