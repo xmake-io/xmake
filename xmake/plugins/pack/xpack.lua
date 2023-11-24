@@ -373,7 +373,7 @@ function xpack:extension()
             targz    = ".tar.gz",
             srczip   = ".zip",
             srctargz = ".tar.gz",
-            runself  = ".sh",
+            runself  = ".gz.run",
             deb      = ".deb",
             rpm      = ".rpm"
         }

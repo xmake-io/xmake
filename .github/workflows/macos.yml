@@ -45,15 +45,10 @@ jobs:
           cd core
           xmake pack -y --autobuild=n --basename=xmake -o ../artifacts xmakesrc
           cd ..
-          scripts/makeself/build-runfile.sh
       - uses: actions/upload-artifact@v2
         with:
           name: xmake-latest.gz.run
           path: artifacts/xmake.gz.run
-      - uses: actions/upload-artifact@v2
-        with:
-          name: xmake-latest.xz.run
-          path: artifacts/xmake.xz.run
       - uses: actions/upload-artifact@v2
         with:
           name: xmake-latest.tar.gz
@@ -97,17 +92,6 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: artifacts/xmake.gz.run
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.gz.run
-          asset_content_type: application/zip
-
-      - name: Publish xz runfile
-        if: github.event.action == 'published'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/xmake.xz.run
-          asset_name: xmake-${{ steps.tagName.outputs.tag }}.xz.run
           asset_content_type: application/zip
 
       - name: Publish gz archive
