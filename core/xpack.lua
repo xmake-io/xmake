@@ -106,3 +106,7 @@ xpack("xmakesrc")
         package:add("sourcefiles", path.join(rootdir, "scripts/debian/**"), extraconf)
         package:add("sourcefiles", path.join(rootdir, "scripts/msys/**"), extraconf)
     end)
+
+    on_installcmd(function (package, batchcmds)
+        batchcmds:runv("./scripts/get.sh", {"__local__"})
+    end)
