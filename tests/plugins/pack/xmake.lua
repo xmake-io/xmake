@@ -39,9 +39,12 @@ xpack("test")
     end)
 
     after_installcmd(function (package, batchcmds)
-        batchcmds:mkdir(package:installdir("resources"))
-        batchcmds:cp("src/assets/*.txt", package:installdir("resources"), {rootdir = "src"})
-        batchcmds:mkdir(package:installdir("stub"))
+        if package:from_source() then
+        else
+            batchcmds:mkdir(package:installdir("resources"))
+            batchcmds:cp("src/assets/*.txt", package:installdir("resources"), {rootdir = "src"})
+            batchcmds:mkdir(package:installdir("stub"))
+        end
     end)
 
     after_uninstallcmd(function (package, batchcmds)

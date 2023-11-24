@@ -130,9 +130,23 @@ function _pack_runself(makeself, package)
         return value
     end)
 
-    -- install the setup.sh script
-    local installdir = package:installdir()
-    local setupfile = path.join(installdir, "__setup__.sh")
+    -- archive source files
+    local srcfiles, dstfiles = package:sourcefiles()
+    for idx, srcfile in ipairs(srcfiles) do
+        os.vcp(srcfile, dstfiles[idx])
+    end
+    for _, component in table.orderpairs(package:components()) do
+        if component:get("default") ~= false then
+            local srcfiles, dstfiles = component:sourcefiles()
+            for idx, srcfile in ipairs(srcfiles) do
+                os.vcp(srcfile, dstfiles[idx])
+            end
+        end
+    end
+
+    -- generate the setup.sh script
+    local sourcedir = package:sourcedir()
+    local setupfile = path.join(sourcedir, "__setup__.sh")
     os.cp(path.join(os.programdir(), "scripts", "xpack", "runself", "setup.sh"), setupfile)
     local scriptfile = io.open(setupfile, "a+")
     if scriptfile then
@@ -147,7 +161,7 @@ function _pack_runself(makeself, package)
 
     -- make package
     os.vrunv(makeself, {"--gzip", "--sha256", "--lsm", specfile,
-        installdir, package:outputfile(), package:basename(), "./__setup__.sh"})
+        sourcedir, package:outputfile(), package:basename(), "./__setup__.sh"})
 end
 
 function main(package)
