@@ -92,6 +92,8 @@ function _write_installcmd(package, scriptfile, cmd)
     elseif kind == "mkdir" then
         local dir = cmd.dir
         scriptfile:print("mkdir -p \"%s\"", dir)
+    elseif cmd.program then
+        scriptfile:print("%s", os.args(table.join(cmd.program, cmd.argv)))
     end
 end
 

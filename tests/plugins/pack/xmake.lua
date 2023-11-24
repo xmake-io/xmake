@@ -40,6 +40,7 @@ xpack("test")
 
     after_installcmd(function (package, batchcmds)
         if package:from_source() then
+            batchcmds:runv("echo", {"hello"})
         else
             batchcmds:mkdir(package:installdir("resources"))
             batchcmds:cp("src/assets/*.txt", package:installdir("resources"), {rootdir = "src"})
