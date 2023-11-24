@@ -19,16 +19,24 @@ target("foo")
     add_packages("zlib")
 
 xpack("test")
-    set_formats("nsis", "zip", "targz", "runself")
+    set_formats("nsis", "zip", "targz", "srczip", "srctargz", "runself")
     set_title("hello")
     set_description("A test installer.")
     set_homepage("https://xmake.io")
     set_licensefile("LICENSE.md")
     add_targets("test", "foo")
-    set_basename("test-$(plat)-$(arch)-v$(version)")
     add_installfiles("src/(assets/*.png)", {prefixdir = "images"})
+    add_sourcefiles("(src/**)")
     set_iconfile("src/assets/xmake.ico")
     add_components("LongPath")
+
+    on_load(function (package)
+        if package:from_source() then
+            package:set("basename", "test-$(plat)-src-v$(version)")
+        else
+            package:set("basename", "test-$(plat)-$(arch)-v$(version)")
+        end
+    end)
 
     after_installcmd(function (package, batchcmds)
         batchcmds:mkdir(package:installdir("resources"))

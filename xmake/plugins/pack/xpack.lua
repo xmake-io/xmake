@@ -225,6 +225,35 @@ function xpack:format()
     return self._FORMAT
 end
 
+-- get the input kind
+function xpack:inputkind()
+    local inputkind = self:get("inputkind")
+    if inputkind == nil then
+        local inputkinds = {
+            nsis  = "binary",
+            zip   = "binary",
+            targz = "binary",
+            srczip = "source",
+            srctargz = "source",
+            runself = "source",
+            deb = "source",
+            rpm = "source"
+        }
+        inputkind = inputkinds[self:format()] or "binary"
+    end
+    return inputkind
+end
+
+-- pack from source files?
+function xpack:from_source()
+    return self:inputkind() == "source"
+end
+
+-- pack from binary files?
+function xpack:from_binary()
+    return self:inputkind() == "binary"
+end
+
 -- get the build directory
 function xpack:buildir()
     return path.join(config.buildir(), ".xpack", self:name())
@@ -244,6 +273,9 @@ function xpack:basename()
     local basename = option.get("basename") or self:get("basename")
     if basename == nil then
         basename = self:name()
+        if self:from_source() then
+            basename = basename .. "-src"
+        end
         local version = self:version()
         if version then
             basename = basename .. "-" .. version
@@ -336,10 +368,14 @@ function xpack:extension()
     local extension = self:get("extension")
     if extension == nil then
         local extensions = {
-            nsis  = ".exe",
-            zip   = ".zip",
-            targz = ".tar.gz",
-            runself = ".sh"
+            nsis     = ".exe",
+            zip      = ".zip",
+            targz    = ".tar.gz",
+            srczip   = ".zip",
+            srctargz = ".tar.gz",
+            runself  = ".sh",
+            deb      = ".deb",
+            rpm      = ".rpm"
         }
         extension = extensions[self:format()] or ""
     end
@@ -466,20 +502,40 @@ function xpack:installfiles()
     return self:_copiedfiles("installfiles", self:installdir())
 end
 
--- get the root directory, this is just a temporary sandbox installation path,
+-- get the installed root directory, this is just a temporary sandbox installation path,
 -- we may replace it with the actual installation path in the specfile
-function xpack:rootdir()
+function xpack:install_rootdir()
     return path.join(self:buildir(), "installed", self:format())
 end
 
 -- get the installed directory
 function xpack:installdir(...)
-    local installdir = self:rootdir()
+    local installdir = self:install_rootdir()
     local prefixdir = self:get("prefixdir")
     if prefixdir then
         installdir = path.join(installdir, prefixdir)
     end
     return path.normalize(path.join(installdir, ...))
+end
+
+-- get the source files
+function xpack:sourcefiles()
+    return self:_copiedfiles("sourcefiles", self:sourcedir())
+end
+
+-- get the source root directory
+function xpack:source_rootdir()
+    return path.join(self:buildir(), "source", self:format())
+end
+
+-- get the source directory
+function xpack:sourcedir(...)
+    local sourcedir = self:source_rootdir()
+    local prefixdir = self:get("prefixdir")
+    if prefixdir then
+        sourcedir = path.join(sourcedir, prefixdir)
+    end
+    return path.normalize(path.join(sourcedir, ...))
 end
 
 -- get the binary directory

@@ -36,11 +36,13 @@ local apis = {
         "xpack.set_title",
         -- set package description
         "xpack.set_description",
+        -- set input kind, e.g. binary, source
+        "xpack.set_inputkind",
         -- set package copyright
         "xpack.set_copyright",
         -- set company name
         "xpack.set_company",
-        -- set package formats, e.g. nsis, deb, rpm, targz, zip, runself, ...
+        -- set package formats, e.g. nsis, deb, rpm, targz, zip, srctargz, srczip, runself, ...
         -- we can also add custom formats
         "xpack.set_formats",
         -- set the base name of the output file
@@ -75,8 +77,14 @@ local apis = {
         "xpack.set_iconfile",
         -- set package license file, we will also get them from target
         "xpack.set_licensefile",
+        -- add source files
+        "xpack.add_sourcefiles",
         -- add install files, we will also get them from target
-        "xpack.add_installfiles"
+        "xpack.add_installfiles",
+        -- add source files for component
+        "xpack_component.add_sourcefiles",
+        -- add install files for component
+        "xpack_component.add_installfiles"
     },
     script = {
         -- add custom load script

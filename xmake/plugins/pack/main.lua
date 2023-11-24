@@ -80,9 +80,11 @@ end
 function _build_targets()
     local targetnames = {}
     for _, package in ipairs(xpack.packages()) do
-        local targets = package:get("targets")
-        if targets then
-            table.join2(targetnames, targets)
+        if package:from_binary() then
+            local targets = package:get("targets")
+            if targets then
+                table.join2(targetnames, targets)
+            end
         end
     end
     if #targetnames > 0 then
