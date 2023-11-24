@@ -26,16 +26,32 @@ import("batchcmds")
 -- pack archive package
 function _pack_archive(package)
 
-    -- do install
-    batchcmds.get_installcmds(package):runcmds()
-    for _, component in table.orderpairs(package:components()) do
-        if component:get("default") ~= false then
-            batchcmds.get_installcmds(component):runcmds()
+    -- archive source files
+    if package:from_source() then
+        local srcfiles, dstfiles = package:sourcefiles()
+        for idx, srcfile in ipairs(srcfiles) do
+            os.vcp(srcfile, dstfiles[idx])
+        end
+        for _, component in table.orderpairs(package:components()) do
+            if component:get("default") ~= false then
+                local srcfiles, dstfiles = component:sourcefiles()
+                for idx, srcfile in ipairs(srcfiles) do
+                    os.vcp(srcfile, dstfiles[idx])
+                end
+            end
+        end
+    else
+        -- archive binary files
+        batchcmds.get_installcmds(package):runcmds()
+        for _, component in table.orderpairs(package:components()) do
+            if component:get("default") ~= false then
+                batchcmds.get_installcmds(component):runcmds()
+            end
         end
     end
 
     -- archive install files
-    local rootdir = package:rootdir()
+    local rootdir = package:from_source() and package:source_rootdir() or package:install_rootdir()
     local oldir = os.cd(rootdir)
     local archivefiles = os.files("**")
     os.cd(oldir)

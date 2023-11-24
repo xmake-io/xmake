@@ -77,30 +77,36 @@ xpack_component("LongPath")
     end)
 
 xpack("xmakesrc")
-    set_formats("zip", "targz")
+    set_formats("srczip", "srctargz", "runself")
     set_basename("xmake-v$(version)")
+    set_prefixdir("xmake-$(version)")
     before_package(function (package)
         import("devel.git")
 
-        local rootdir = path.join(os.tmpfile(package:name()) .. ".dir", "repo")
-        os.tryrm(rootdir)
-        os.cp(path.directory(os.projectdir()), rootdir)
+        local rootdir = path.join(os.tmpfile(package:basename()) .. ".dir", "repo")
+        if not os.isdir(rootdir) then
+            os.tryrm(rootdir)
+            os.cp(path.directory(os.projectdir()), rootdir)
 
-        git.clean({repodir = rootdir, force = true, all = true})
-        git.reset({repodir = rootdir, hard = true})
-        if os.isfile(path.join(rootdir, ".gitmodules")) then
-            git.submodule.clean({repodir = rootdir, force = true, all = true})
-            git.submodule.reset({repodir = rootdir, hard = true})
+            git.clean({repodir = rootdir, force = true, all = true})
+            git.reset({repodir = rootdir, hard = true})
+            if os.isfile(path.join(rootdir, ".gitmodules")) then
+                git.submodule.clean({repodir = rootdir, force = true, all = true})
+                git.submodule.reset({repodir = rootdir, hard = true})
+            end
         end
 
-        local prefixdir = "xmake-" .. package:version()
-        local extraconf = {rootdir = rootdir, prefixdir = prefixdir}
-        package:add("installfiles", path.join(rootdir, "core/**|src/pdcurses/**|src/luajit/**|src/tbox/tbox/src/demo/**"), extraconf)
-        package:add("installfiles", path.join(rootdir, "xmake/**"), extraconf)
-        package:add("installfiles", path.join(rootdir, "*.md"), extraconf)
-        package:add("installfiles", path.join(rootdir, "configure"), extraconf)
-        package:add("installfiles", path.join(rootdir, "scripts/*.sh"), extraconf)
-        package:add("installfiles", path.join(rootdir, "scripts/man/**"), extraconf)
-        package:add("installfiles", path.join(rootdir, "scripts/debian/**"), extraconf)
-        package:add("installfiles", path.join(rootdir, "scripts/msys/**"), extraconf)
+        local extraconf = {rootdir = rootdir}
+        package:add("sourcefiles", path.join(rootdir, "core/**|src/pdcurses/**|src/luajit/**|src/tbox/tbox/src/demo/**"), extraconf)
+        package:add("sourcefiles", path.join(rootdir, "xmake/**"), extraconf)
+        package:add("sourcefiles", path.join(rootdir, "*.md"), extraconf)
+        package:add("sourcefiles", path.join(rootdir, "configure"), extraconf)
+        package:add("sourcefiles", path.join(rootdir, "scripts/*.sh"), extraconf)
+        package:add("sourcefiles", path.join(rootdir, "scripts/man/**"), extraconf)
+        package:add("sourcefiles", path.join(rootdir, "scripts/debian/**"), extraconf)
+        package:add("sourcefiles", path.join(rootdir, "scripts/msys/**"), extraconf)
+    end)
+
+    on_installcmd(function (package, batchcmds)
+        batchcmds:runv("./scripts/get.sh", {"__local__"})
     end)
