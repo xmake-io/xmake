@@ -511,7 +511,7 @@ end
 -- get the installed directory
 function xpack:installdir(...)
     local installdir = self:install_rootdir()
-    local prefixdir = self:get("prefixdir")
+    local prefixdir = self:prefixdir()
     if prefixdir then
         installdir = path.join(installdir, prefixdir)
     end
@@ -531,11 +531,20 @@ end
 -- get the source directory
 function xpack:sourcedir(...)
     local sourcedir = self:source_rootdir()
-    local prefixdir = self:get("prefixdir")
+    local prefixdir = self:prefixdir()
     if prefixdir then
         sourcedir = path.join(sourcedir, prefixdir)
     end
     return path.normalize(path.join(sourcedir, ...))
+end
+
+-- get the prefixdir
+function xpack:prefixdir()
+    local prefixdir = self:get("prefixdir")
+    if prefixdir then
+        return filter.handle(prefixdir, self)
+    end
+    return prefixdir
 end
 
 -- get the binary directory

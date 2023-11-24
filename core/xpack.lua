@@ -79,6 +79,7 @@ xpack_component("LongPath")
 xpack("xmakesrc")
     set_formats("srczip", "srctargz", "runself")
     set_basename("xmake-v$(version)")
+    set_prefixdir("xmake-$(version)")
     before_package(function (package)
         import("devel.git")
 
@@ -95,8 +96,7 @@ xpack("xmakesrc")
             end
         end
 
-        local prefixdir = "xmake-" .. package:version()
-        local extraconf = {rootdir = rootdir, prefixdir = prefixdir}
+        local extraconf = {rootdir = rootdir}
         package:add("sourcefiles", path.join(rootdir, "core/**|src/pdcurses/**|src/luajit/**|src/tbox/tbox/src/demo/**"), extraconf)
         package:add("sourcefiles", path.join(rootdir, "xmake/**"), extraconf)
         package:add("sourcefiles", path.join(rootdir, "*.md"), extraconf)
