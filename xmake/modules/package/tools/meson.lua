@@ -307,7 +307,7 @@ function _get_configs(package, configs, opt)
     end
 
     -- add cross file
-    if package:is_cross() then
+    if package:is_cross() or package:is_plat("mingw") then
         table.insert(configs, "--cross-file=" .. _get_cross_file(package, opt))
     end
 
