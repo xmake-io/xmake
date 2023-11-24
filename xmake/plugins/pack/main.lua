@@ -26,6 +26,28 @@ import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"})
 import("xpack")
 
+-- get packages
+function _get_packages()
+
+    -- get need formats
+    local formats_need = option.get("formats")
+    if formats_need then
+        formats_need = formats_need:split(",")
+        if formats_need[1] == "all" then
+            formats_need = nil
+        end
+    end
+
+    local packages = {}
+    for _, package in ipairs(xpack.packages()) do
+        if not formats_need or table.contains(formats_need, package:format()) then
+            table.insert(packages, package)
+        end
+    end
+    return packages
+end
+
+-- load package
 function _load_package(package)
 
     -- ensure build and output directories
@@ -39,20 +61,12 @@ function _load_package(package)
     end
 end
 
+-- pack the given package
 function _on_package(package)
     import(package:format())(package)
 end
 
 function _pack_package(package)
-
-    -- get need formats
-    local formats_need = option.get("formats")
-    if formats_need then
-        formats_need = formats_need:split(",")
-        if formats_need[1] == "all" then
-            formats_need = nil
-        end
-    end
 
     -- do pack
     local scripts = {
@@ -60,26 +74,24 @@ function _pack_package(package)
         package:script("package", _on_package),
         package:script("package_after")
     }
-    if not formats_need or table.contains(formats_need, package:format()) then
-        _load_package(package)
-        for i = 1, 3 do
-            local script = scripts[i]
-            if script ~= nil then
-                script(package)
-            end
+    _load_package(package)
+    for i = 1, 3 do
+        local script = scripts[i]
+        if script ~= nil then
+            script(package)
         end
     end
 end
 
 function _pack_packages()
-    for _, package in ipairs(xpack.packages()) do
+    for _, package in ipairs(_get_packages()) do
         _pack_package(package)
     end
 end
 
 function _build_targets()
     local targetnames = {}
-    for _, package in ipairs(xpack.packages()) do
+    for _, package in ipairs(_get_packages()) do
         if package:from_binary() then
             local targets = package:get("targets")
             if targets then
