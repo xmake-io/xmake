@@ -363,6 +363,9 @@ end
 
 -- on install command
 function _on_installcmd(package, batchcmds_)
+    if not package:from_binary() then
+        return
+    end
     local srcfiles, dstfiles = package:installfiles()
     for idx, srcfile in ipairs(srcfiles) do
         batchcmds_:cp(srcfile, dstfiles[idx])
@@ -374,6 +377,9 @@ end
 
 -- on uninstall command
 function _on_uninstallcmd(package, batchcmds_)
+    if not package:from_binary() then
+        return
+    end
     local _, dstfiles = package:installfiles()
     for _, dstfile in ipairs(dstfiles) do
         batchcmds_:rm(dstfile, {emptydirs = true})
