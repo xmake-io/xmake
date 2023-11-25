@@ -21,9 +21,11 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
-import("private.utils.batchcmds")
 import("core.project.depend")
 import("private.action.build.object", {alias = "build_objectfiles"})
+import("utils.progress")
+import("private.async.jobpool")
+import("async.runjobs")
 
 -- get protoc
 function _get_protoc(target, sourcekind)
@@ -204,71 +206,7 @@ function buildcmd_cxfiles(target, batchcmds, sourcefile_proto, opt, sourcekind)
     end
 end
 
--- build batch jobs
-function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
-    -- load moduledeps
-    opt = opt or {}
-
-    -- get protoc
-    local protoc = _get_protoc(target, sourcekind)
-    
-    local sourcefiles = sourcebatch.sourcefiles
-    for _, sourcefile_proto in ipairs(sourcefiles) do
-        local dependfile = target:dependfile(sourcefile_proto)
-        depend.on_changed(function()
-            -- get c/c++ source file for protobuf
-            local prefixdir
-            local autogendir
-            local public
-            local grpc_cpp_plugin
-            local fileconfig = target:fileconfig(sourcefile_proto)
-            if fileconfig then
-                public = fileconfig.proto_public
-                prefixdir = fileconfig.proto_rootdir
-                -- custom autogen directory to access the generated header files
-                -- @see https://github.com/xmake-io/xmake/issues/3678
-                autogendir = fileconfig.proto_autogendir
-                grpc_cpp_plugin = fileconfig.proto_grpc_cpp_plugin
-            end
-            local rootdir = autogendir and autogendir or path.join(target:autogendir(), "rules", "protobuf")
-            local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
-            local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
-            local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
-        
-            local grpc_cpp_plugin_bin
-            local filename_grpc
-            local sourcefile_cx_grpc
-            if grpc_cpp_plugin then
-                grpc_cpp_plugin_bin = _get_grpc_cpp_plugin(target, sourcekind)
-                filename_grpc = path.basename(sourcefile_proto) .. ".grpc.pb.cc"
-                sourcefile_cx_grpc = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename_grpc})
-            end
-        
-            local protoc_args = {
-                path(sourcefile_proto),
-                path(prefixdir and prefixdir or path.directory(sourcefile_proto), function (p) return "-I" .. p end),
-                path(sourcefile_dir, function (p) return (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. p end)
-            }
-        
-            if grpc_cpp_plugin then
-                local extension = target:is_plat("windows") and ".exe" or ""
-                table.insert(protoc_args, "--plugin=protoc-gen-grpc=" .. grpc_cpp_plugin_bin .. extension)
-                table.insert(protoc_args, path(sourcefile_dir, function (p) return ("--grpc_out=") .. p end))
-            end
-
-            os.mkdir(sourcefile_dir)
-            if opt.progress then
-                progress.show(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
-            end
-            os.vrunv(protoc, protoc_args)
-
-        end, {
-            dependfile = dependfile,
-            files = {sourcefile_proto},
-            changed = target:is_rebuilt()
-        })
-    end
-    
+function build_cxfile_objects(target, batchjobs, opt, sourcekind)
     -- do build
     local sourcebatch_cx = {
         rulename = (sourcekind == "cxx" and "c++" or "c").. ".build",
@@ -325,4 +263,77 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
         end
     end
     build_objectfiles(target, batchjobs, sourcebatch_cx, opt)
+end
+
+-- build batch jobs
+function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
+    -- load moduledeps
+    opt = opt or {}
+
+    local jobs = jobpool.new()
+
+    local root = jobs:addjob("job/root", function(_index, _total)
+        build_cxfile_objects(target, batchjobs, opt, sourcekind)
+    end)
+
+    -- get protoc
+    local protoc = _get_protoc(target, sourcekind)
+
+    local sourcefiles = sourcebatch.sourcefiles
+    for _, sourcefile_proto in ipairs(sourcefiles) do
+        local dependfile = target:dependfile(sourcefile_proto)
+        depend.on_changed(function()
+            -- get c/c++ source file for protobuf
+            local prefixdir
+            local autogendir
+            local public
+            local grpc_cpp_plugin
+            local fileconfig = target:fileconfig(sourcefile_proto)
+            if fileconfig then
+                public = fileconfig.proto_public
+                prefixdir = fileconfig.proto_rootdir
+                -- custom autogen directory to access the generated header files
+                -- @see https://github.com/xmake-io/xmake/issues/3678
+                autogendir = fileconfig.proto_autogendir
+                grpc_cpp_plugin = fileconfig.proto_grpc_cpp_plugin
+            end
+            local rootdir = autogendir and autogendir or path.join(target:autogendir(), "rules", "protobuf")
+            local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
+            local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
+            local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
+        
+            local grpc_cpp_plugin_bin
+            local filename_grpc
+            local sourcefile_cx_grpc
+            if grpc_cpp_plugin then
+                grpc_cpp_plugin_bin = _get_grpc_cpp_plugin(target, sourcekind)
+                filename_grpc = path.basename(sourcefile_proto) .. ".grpc.pb.cc"
+                sourcefile_cx_grpc = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename_grpc})
+            end
+        
+            local protoc_args = {
+                path(sourcefile_proto),
+                path(prefixdir and prefixdir or path.directory(sourcefile_proto), function (p) return "-I" .. p end),
+                path(sourcefile_dir, function (p) return (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. p end)
+            }
+        
+            if grpc_cpp_plugin then
+                local extension = target:is_plat("windows") and ".exe" or ""
+                table.insert(protoc_args, "--plugin=protoc-gen-grpc=" .. grpc_cpp_plugin_bin .. extension)
+                table.insert(protoc_args, path(sourcefile_dir, function (p) return ("--grpc_out=") .. p end))
+            end
+
+            os.mkdir(sourcefile_dir)
+
+            local job = jobs:addjob("job/" .. sourcefile_proto, function(index, total)
+                progress.show((index * 100) / total, "${color.build.object}compiling.proto %s", sourcefile_proto)
+                os.vrunv(protoc, protoc_args)
+            end, {rootjob = root})
+        end, {
+            dependfile = dependfile,
+            files = {sourcefile_proto},
+            changed = target:is_rebuilt()
+        })
+    end
+    runjobs("build_compile_proto", jobs, opt)    
 end
