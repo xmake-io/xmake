@@ -24,8 +24,7 @@ import("lib.detect.find_tool")
 import("core.project.depend")
 import("private.action.build.object", {alias = "build_objectfiles"})
 import("utils.progress")
-import("private.async.jobpool")
-import("async.runjobs")
+import("private.async.buildjobs")
 
 -- get protoc
 function _get_protoc(target, sourcekind)
@@ -139,7 +138,13 @@ function buildcmd_pfiles(target, batchcmds, sourcefile_proto, opt, sourcekind)
 
     -- add commands
     batchcmds:mkdir(sourcefile_dir)
-    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto %s to %s", sourcefile_proto, sourcekind)
+    batchcmds:show_progress(
+        opt.progress, 
+        "${color.build.object}compiling.proto.%s %s %s", 
+        (sourcekind == "cxx" and "c++" or "c"), 
+        sourcefile_proto, 
+        sourcefile_cx
+    )
     batchcmds:vrunv(protoc, protoc_args)
 end
 
@@ -189,7 +194,7 @@ function buildcmd_cxfiles(target, batchcmds, sourcefile_proto, opt, sourcekind)
         table.insert(target:objectfiles(), objectfile_grpc)
     end
 
-    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto %s sourcefile %s", sourcefile_proto, sourcefile_cx)
+    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_cx)
     batchcmds:compile(sourcefile_cx, objectfile, {configs = {includedirs = sourcefile_dir}})
     if grpc_cpp_plugin then
         batchcmds:compile(sourcefile_cx_grpc, objectfile_grpc, {configs = {includedirs = sourcefile_dir}})
@@ -270,11 +275,16 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
     -- load moduledeps
     opt = opt or {}
 
-    local jobs = jobpool.new()
+    local nodes = {}
 
-    local root = jobs:addjob("job/root", function(_index, _total)
-        build_cxfile_objects(target, batchjobs, opt, sourcekind)
-    end)
+    local node_rulename = "rules/" .. sourcebatch.rulename .. "/node"
+    local rootname = "rules/" .. sourcebatch.rulename .. "/root"
+    nodes[rootname] = {
+        name = rootname,
+        job = batchjobs:addjob(rootname, function(_index, _total)
+            build_cxfile_objects(target, batchjobs, opt, sourcekind)
+        end)
+    }
 
     -- get protoc
     local protoc = _get_protoc(target, sourcekind)
@@ -325,15 +335,26 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
 
             os.mkdir(sourcefile_dir)
 
-            local job = jobs:addjob("job/" .. sourcefile_proto, function(index, total)
-                progress.show((index * 100) / total, "${color.build.object}compiling.proto %s", sourcefile_proto)
-                os.vrunv(protoc, protoc_args)
-            end, {rootjob = root})
+            local nodename = node_rulename .. "/" .. sourcefile_proto
+            nodes[nodename] = {
+                name = nodename,
+                deps = {rootname},
+                job = batchjobs:addjob(nodename, function(index, total)          
+                    progress.show(
+                        (index * 100) / total, 
+                        "${color.build.object}compiling.proto.%s %s %s", 
+                        (sourcekind == "cxx" and "c++" or "c"), 
+                        sourcefile_proto, 
+                        sourcefile_cx
+                    )  
+                    os.vrunv(protoc, protoc_args)
+                end)
+            }
         end, {
             dependfile = dependfile,
             files = {sourcefile_proto},
             changed = target:is_rebuilt()
         })
     end
-    runjobs("build_compile_proto", jobs, opt)    
+    buildjobs(nodes, batchjobs, opt.rootjob)    
 end
