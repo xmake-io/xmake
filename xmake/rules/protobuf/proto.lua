@@ -311,16 +311,17 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
         
         -- add objectfile
         local objectfile = target:objectfile(sourcefile_cx)
+        local dependfile = target:dependfile(sourcefile_proto)
         table.insert(sourcebatch_cx.sourcefiles, sourcefile_cx)
         table.insert(sourcebatch_cx.objectfiles, objectfile)
-        table.insert(sourcebatch_cx.dependfiles, sourcefile_proto)
+        table.insert(sourcebatch_cx.dependfiles, dependfile)
 
         local objectfile_grpc
         if grpc_cpp_plugin then
             objectfile_grpc = target:objectfile(sourcefile_cx_grpc)
             table.insert(sourcebatch_cx.sourcefiles, sourcefile_cx_grpc)
             table.insert(sourcebatch_cx.objectfiles, objectfile_grpc)
-            table.insert(sourcebatch_cx.dependfiles, sourcefile_proto)
+            table.insert(sourcebatch_cx.dependfiles, dependfile)
         end
     end
     build_objectfiles(target, batchjobs, sourcebatch_cx, opt)
