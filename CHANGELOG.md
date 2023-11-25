@@ -5,7 +5,7 @@
 ### New features
 
 * Add `network.mode` policy
-* [#1433](https://github.com/xmake-io/xmake/issues/1433): Add `xmake pack` command to generate NSIS package like cmake/cpack
+* [#1433](https://github.com/xmake-io/xmake/issues/1433): Add `xmake pack` command to generate NSIS/zip/tar.gz/runself packages like cmake/cpack
 
 ## v2.8.5
 
@@ -1690,7 +1690,7 @@
 ### 新特性
 
 * 添加 `network.mode` 策略
-* [#1433](https://github.com/xmake-io/xmake/issues/1433): 添加 `xmake pack` 命令去生成 NSIS 安装包
+* [#1433](https://github.com/xmake-io/xmake/issues/1433): 添加 `xmake pack` 命令去生成 NSIS/zip/tar.gz/runself 安装包
 
 ## v2.8.5
 
