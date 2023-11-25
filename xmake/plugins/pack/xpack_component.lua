@@ -281,6 +281,16 @@ function xpack_component:includedir()
     return self:package():includedir()
 end
 
+-- pack from source files?
+function xpack_component:from_source()
+    return self:package():from_source()
+end
+
+-- pack from binary files?
+function xpack_component:from_binary()
+    return self:package():from_binary()
+end
+
 -- new a xpack_component
 function new(name, info, package)
     return xpack_component {name, info:clone(), package}
