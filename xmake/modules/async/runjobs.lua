@@ -56,7 +56,7 @@ end
 function main(name, jobs, opt)
 
     -- init options
-    op = opt or {}
+    opt = opt or {}
     local total = opt.total or (type(jobs) == "table" and jobs:size()) or 1
     local comax = opt.comax or math.min(total, 4)
     local distcc = opt.distcc
