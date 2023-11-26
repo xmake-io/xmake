@@ -146,6 +146,16 @@ function buildcmd_pfiles(target, batchcmds, sourcefile_proto, opt, sourcekind)
         sourcefile_proto
     )
     batchcmds:vrunv(protoc, protoc_args)
+
+    -- add deps
+    local depmtime = os.mtime(sourcefile_cx)
+    batchcmds:add_depfiles(sourcefile_proto)
+    batchcmds:set_depcache(target:dependfile(sourcefile_cx))
+    if grpc_cpp_plugin then
+        batchcmds:set_depmtime(math.max(os.mtime(sourcefile_cx_grpc), depmtime))
+    else
+        batchcmds:set_depmtime(depmtime)
+    end
 end
 
 function buildcmd_cxfiles(target, batchcmds, sourcefile_proto, opt, sourcekind)
