@@ -277,28 +277,32 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
     opt = opt or {}
 
     local nodes = {}
+    local nodenames = {}
 
     local node_rulename = "rules/" .. sourcebatch.rulename .. "/node"
-    local rootname = "rules/" .. sourcebatch.rulename .. "/root"
-    nodes[rootname] = {
-        name = rootname,
-        job = batchjobs:addjob(rootname, function(_index, _total)
-            build_cxfile_objects(target, batchjobs, opt, sourcekind)
-        end)
-    }
 
     local sourcefiles = sourcebatch.sourcefiles
     for _, sourcefile_proto in ipairs(sourcefiles) do
         local nodename = node_rulename .. "/" .. sourcefile_proto
         nodes[nodename] = {
             name = nodename,
-            deps = {rootname},
             job = batchjobs:addjob(nodename, function(index, total)
                 local batchcmds_ = batchcmds.new({target = target})
                 buildcmd_pfiles(target, batchcmds_, sourcefile_proto, {progress =  (index * 100) / total}, sourcekind)
                 batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})       
             end)
         }
+        table.insert(nodenames, nodename)
     end
+
+    local rootname = "rules/" .. sourcebatch.rulename .. "/root"
+    nodes[rootname] = {
+        name = rootname,
+        deps = nodenames,
+        job = batchjobs:addjob(rootname, function(_index, _total)
+            build_cxfile_objects(target, batchjobs, opt, sourcekind)
+        end)
+    }
+
     buildjobs(nodes, batchjobs, opt.rootjob)    
 end
