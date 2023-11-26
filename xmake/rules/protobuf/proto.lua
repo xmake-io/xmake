@@ -24,6 +24,7 @@ import("lib.detect.find_tool")
 import("core.project.depend")
 import("private.action.build.object", {alias = "build_objectfiles"})
 import("utils.progress")
+import("private.utils.batchcmds")
 import("private.async.buildjobs")
 
 -- get protoc
@@ -286,75 +287,18 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
         end)
     }
 
-    -- get protoc
-    local protoc = _get_protoc(target, sourcekind)
-
     local sourcefiles = sourcebatch.sourcefiles
     for _, sourcefile_proto in ipairs(sourcefiles) do
-        local dependfile = target:dependfile(sourcefile_proto)
-        depend.on_changed(function()
-            -- get c/c++ source file for protobuf
-            local prefixdir
-            local autogendir
-            local public
-            local grpc_cpp_plugin
-            local fileconfig = target:fileconfig(sourcefile_proto)
-            if fileconfig then
-                public = fileconfig.proto_public
-                prefixdir = fileconfig.proto_rootdir
-                -- custom autogen directory to access the generated header files
-                -- @see https://github.com/xmake-io/xmake/issues/3678
-                autogendir = fileconfig.proto_autogendir
-                grpc_cpp_plugin = fileconfig.proto_grpc_cpp_plugin
-            end
-            local rootdir = autogendir and autogendir or path.join(target:autogendir(), "rules", "protobuf")
-            local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
-            local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
-            local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
-        
-            local grpc_cpp_plugin_bin
-            local filename_grpc
-            local sourcefile_cx_grpc
-            if grpc_cpp_plugin then
-                grpc_cpp_plugin_bin = _get_grpc_cpp_plugin(target, sourcekind)
-                filename_grpc = path.basename(sourcefile_proto) .. ".grpc.pb.cc"
-                sourcefile_cx_grpc = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename_grpc})
-            end
-        
-            local protoc_args = {
-                path(sourcefile_proto),
-                path(prefixdir and prefixdir or path.directory(sourcefile_proto), function (p) return "-I" .. p end),
-                path(sourcefile_dir, function (p) return (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. p end)
-            }
-        
-            if grpc_cpp_plugin then
-                local extension = target:is_plat("windows") and ".exe" or ""
-                table.insert(protoc_args, "--plugin=protoc-gen-grpc=" .. grpc_cpp_plugin_bin .. extension)
-                table.insert(protoc_args, path(sourcefile_dir, function (p) return ("--grpc_out=") .. p end))
-            end
-
-            os.mkdir(sourcefile_dir)
-
-            local nodename = node_rulename .. "/" .. sourcefile_proto
-            nodes[nodename] = {
-                name = nodename,
-                deps = {rootname},
-                job = batchjobs:addjob(nodename, function(index, total)          
-                    progress.show(
-                        (index * 100) / total, 
-                        "${color.build.object}compiling.proto.%s %s %s", 
-                        (sourcekind == "cxx" and "c++" or "c"), 
-                        sourcefile_proto, 
-                        sourcefile_cx
-                    )  
-                    os.vrunv(protoc, protoc_args)
-                end)
-            }
-        end, {
-            dependfile = dependfile,
-            files = {sourcefile_proto},
-            changed = target:is_rebuilt()
-        })
+        local nodename = node_rulename .. "/" .. sourcefile_proto
+        nodes[nodename] = {
+            name = nodename,
+            deps = {rootname},
+            job = batchjobs:addjob(nodename, function(index, total)
+                local batchcmds_ = batchcmds.new({target = target})
+                buildcmd_pfiles(target, batchcmds_, sourcefile_proto, {progress =  (index * 100) / total}, sourcekind)
+                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})       
+            end)
+        }
     end
     buildjobs(nodes, batchjobs, opt.rootjob)    
 end
