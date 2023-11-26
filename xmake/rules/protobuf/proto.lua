@@ -140,11 +140,10 @@ function buildcmd_pfiles(target, batchcmds, sourcefile_proto, opt, sourcekind)
     -- add commands
     batchcmds:mkdir(sourcefile_dir)
     batchcmds:show_progress(
-        opt.progress, 
-        "${color.build.object}compiling.proto.%s %s %s", 
+        opt.progress,
+        "${color.build.object}compiling.proto.%s %s", 
         (sourcekind == "cxx" and "c++" or "c"), 
-        sourcefile_proto, 
-        sourcefile_cx
+        sourcefile_proto
     )
     batchcmds:vrunv(protoc, protoc_args)
 end
@@ -275,12 +274,10 @@ end
 function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
     -- load moduledeps
     opt = opt or {}
-
     local nodes = {}
     local nodenames = {}
-
     local node_rulename = "rules/" .. sourcebatch.rulename .. "/node"
-
+    -- generate node for each sourcefile
     local sourcefiles = sourcebatch.sourcefiles
     for _, sourcefile_proto in ipairs(sourcefiles) do
         local nodename = node_rulename .. "/" .. sourcefile_proto
@@ -294,7 +291,6 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
         }
         table.insert(nodenames, nodename)
     end
-
     local rootname = "rules/" .. sourcebatch.rulename .. "/root"
     nodes[rootname] = {
         name = rootname,
@@ -303,6 +299,5 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
             build_cxfile_objects(target, batchjobs, opt, sourcekind)
         end)
     }
-
     buildjobs(nodes, batchjobs, opt.rootjob)    
 end
