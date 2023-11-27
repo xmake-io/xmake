@@ -141,8 +141,8 @@ function buildcmd_pfiles(target, batchcmds, sourcefile_proto, opt, sourcekind)
     batchcmds:mkdir(sourcefile_dir)
     batchcmds:show_progress(
         opt.progress,
-        "${color.build.object}compiling.proto.%s %s", 
-        (sourcekind == "cxx" and "c++" or "c"), 
+        "${color.build.object}compiling.proto.%s %s",
+        (sourcekind == "cxx" and "c++" or "c"),
         sourcefile_proto
     )
     batchcmds:vrunv(protoc, protoc_args)
@@ -204,7 +204,7 @@ function buildcmd_cxfiles(target, batchcmds, sourcefile_proto, opt, sourcekind)
         table.insert(target:objectfiles(), objectfile_grpc)
     end
 
-    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_cx)
+    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto.$(mode) %s", sourcefile_cx)
     batchcmds:compile(sourcefile_cx, objectfile, {configs = {includedirs = sourcefile_dir}})
     if grpc_cpp_plugin then
         batchcmds:compile(sourcefile_cx_grpc, objectfile_grpc, {configs = {includedirs = sourcefile_dir}})
@@ -249,7 +249,7 @@ function build_cxfile_objects(target, batchjobs, opt, sourcekind)
         local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
         local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
         local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
-        
+
         local grpc_cpp_plugin_bin
         local filename_grpc
         local sourcefile_cx_grpc
@@ -261,7 +261,7 @@ function build_cxfile_objects(target, batchjobs, opt, sourcekind)
 
         -- add includedirs
         target:add("includedirs", sourcefile_dir, {public = public})
-        
+
         -- add objectfile
         local objectfile = target:objectfile(sourcefile_cx)
         local dependfile = target:dependfile(sourcefile_proto)
@@ -282,12 +282,10 @@ end
 
 -- build batch jobs
 function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
-    -- load moduledeps
     opt = opt or {}
     local nodes = {}
     local nodenames = {}
     local node_rulename = "rules/" .. sourcebatch.rulename .. "/node"
-    -- generate node for each sourcefile
     local sourcefiles = sourcebatch.sourcefiles
     for _, sourcefile_proto in ipairs(sourcefiles) do
         local nodename = node_rulename .. "/" .. sourcefile_proto
@@ -296,7 +294,7 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
             job = batchjobs:addjob(nodename, function(index, total)
                 local batchcmds_ = batchcmds.new({target = target})
                 buildcmd_pfiles(target, batchcmds_, sourcefile_proto, {progress =  (index * 100) / total}, sourcekind)
-                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})       
+                batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
             end)
         }
         table.insert(nodenames, nodename)
@@ -309,5 +307,5 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
             build_cxfile_objects(target, batchjobs, opt, sourcekind)
         end)
     }
-    buildjobs(nodes, batchjobs, opt.rootjob)    
+    buildjobs(nodes, batchjobs, opt.rootjob)
 end
