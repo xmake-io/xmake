@@ -7,6 +7,10 @@
 * Add `network.mode` policy
 * [#1433](https://github.com/xmake-io/xmake/issues/1433): Add `xmake pack` command to generate NSIS/zip/tar.gz/runself packages like cmake/cpack
 
+### Bugs fixed
+
+* [#4372](https://github.com/xmake-io/xmake/issues/4372): Fix protobuf rules
+
 ## v2.8.5
 
 ### New features
@@ -1691,6 +1695,10 @@
 
 * 添加 `network.mode` 策略
 * [#1433](https://github.com/xmake-io/xmake/issues/1433): 添加 `xmake pack` 命令去生成 NSIS/zip/tar.gz/runself 安装包
+
+### Bugs 修复
+
+* [#4372](https://github.com/xmake-io/xmake/issues/4372): 修复 protobuf 规则
 
 ## v2.8.5
 
