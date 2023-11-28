@@ -30,22 +30,23 @@ import("private.action.require.impl.install_packages")
 
 -- the clang.tidy options
 local options = {
-    {"l", "list",       "k",   nil, "Show the clang-tidy checks list."},
-    {'j', "jobs",       "kv", tostring(os.default_njob()),
+    {"l", "list",       "k",  nil,  "Show the clang-tidy checks list."},
+    {"j", "jobs",       "kv", tostring(os.default_njob()),
                                     "Set the number of parallel check jobs."},
-    {nil, "fix",        "k", nil,   "Apply suggested fixes."},
-    {nil, "fix_errors", "k", nil,   "Apply suggested errors fixes."},
-    {nil, "fix_notes",  "k", nil,   "Apply suggested notes fixes."},
-    {nil, "create",     "k", nil,   "Create a .clang-tidy file."},
+    {"q", "quiet",      "k",  nil,  "Run clang-tidy in quiet mode."},
+    {nil, "fix",        "k",  nil,  "Apply suggested fixes."},
+    {nil, "fix_errors", "k",  nil,  "Apply suggested errors fixes."},
+    {nil, "fix_notes",  "k",  nil,  "Apply suggested notes fixes."},
+    {nil, "create",     "k",  nil,  "Create a .clang-tidy file."},
     {nil, "configfile", "kv", nil,  "Specify the path of .clang-tidy or custom config file"},
     {nil, "checks",     "kv", nil,  "Set the given checks.",
                                     "e.g.",
                                     "    - xmake check clang.tidy --checks=\"*\""},
-    {'f', "files",      "v", nil,       "Set files path with pattern",
+    {"f", "files",      "v",  nil,  "Set files path with pattern",
                                     "e.g.",
                                     "    - xmake check clang.tidy -f src/main.c",
                                     "    - xmake check clang.tidy -f 'src/*.c" .. path.envsep() .. "src/**.cpp'"},
-    {nil, "target",     "v", nil,   "Check the sourcefiles of the given target.",
+    {nil, "target",     "v",  nil,  "Check the sourcefiles of the given target.",
                                     ".e.g",
                                     "    - xmake check clang.tidy",
                                     "    - xmake check clang.tidy [target]"}
@@ -94,6 +95,9 @@ function _check_sourcefile(clang_tidy, sourcefile, opt)
     end
     if opt.configfile then
         table.insert(argv, "--config-file=" .. opt.configfile)
+    end
+    if opt.quiet then
+        table.insert(argv, "--quiet")
     end
     if not path.is_absolute(sourcefile) then
         sourcefile = path.absolute(sourcefile, projectdir)
