@@ -27,7 +27,7 @@ import("getinfo")
 import("core.project.config")
 import("core.cache.localcache")
 
-local template_root = path.join(os.scriptdir(), "vsproj", "templates")
+local template_root = path.join(os.programdir(), "vsxmake", "vsproj", "templates")
 local template_sln = path.join(template_root, "sln", "vsxmake.sln")
 local template_vcx = path.join(template_root, "vcxproj", "#target#.vcxproj")
 

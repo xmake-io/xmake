@@ -27,10 +27,10 @@
     <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">$(XMAKE_PROGRAM_DIR)</XmakeProgramDir>
     <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">#programdir#</XmakeProgramDir>
   </PropertyGroup>
-  <Import Project="$(XmakeProgramDir)\plugins\project\vsxmake\vsproj\Xmake.Defaults.props" />
+  <Import Project="$(XmakeProgramDir)\scripts\vsxmake\vsproj\Xmake.Defaults.props" />
 #Import(XmakeConfig)#
 #Import(XmakePath)#
-  <Import Project="$(XmakeProgramDir)\plugins\project\vsxmake\vsproj\Xmake.props" />
+  <Import Project="$(XmakeProgramDir)\scripts\vsxmake\vsproj\Xmake.props" />
   <ItemGroup>
 #Import(Include.c)#
 #Import(Include.natvis)#
@@ -51,5 +51,5 @@
   <!-- <ItemGroup>
 #Import(ProjectRef)#
   </ItemGroup> -->
-  <Import Project="$(XmakeProgramDir)\plugins\project\vsxmake\vsproj\Xmake.targets" />
+  <Import Project="$(XmakeProgramDir)\scripts\vsxmake\vsproj\Xmake.targets" />
 </Project>
