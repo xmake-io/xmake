@@ -98,8 +98,8 @@ function main(target, sourcebatch)
         local fileconfig = target:fileconfig(sourcefile)
         if fileconfig and fileconfig.unity_group then
             if fileconfig.batchsize then
-                local curr_group_id = group_id[fileconfig.batchsize] or 1
-                local curr_group_count = group_count[fileconfig.batchsize] or 0
+                local curr_group_id = group_id[fileconfig.unity_group] or 1
+                local curr_group_count = group_count[fileconfig.unity_group] or 0
                 if curr_group_count >= fileconfig.batchsize then
                     curr_group_id = curr_group_id + 1
                     curr_group_count = 0
