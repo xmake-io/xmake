@@ -136,42 +136,13 @@ function remote_cache_client:disconnect()
         print("%s: has been disconnected!", self)
         return
     end
-    local addr = self:addr()
-    local port = self:port()
-    local sock = socket.connect(addr, port, {timeout = self:connect_timeout()})
-    local session_id = self:session_id()
-    local errors
-    local ok = false
-    print("%s: disconnect %s:%d ..", self, addr, port)
-    if sock then
-        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
-        if stream:send_msg(message.new_disconnect(session_id, {token = self:token()})) and stream:flush() then
-            local msg = stream:recv_msg()
-            if msg then
-                vprint(msg:body())
-                if msg:success() then
-                    ok = true
-                else
-                    errors = msg:errors()
-                end
-            end
-        end
-    else
-        -- server unreachable, but we still disconnect it.
-        wprint("%s: server unreachable!", self)
-        ok = true
-    end
-    if ok then
-        print("%s: disconnected!", self)
-    else
-        print("%s: disconnect %s:%d failed, %s", self, addr, port, errors or "unknown")
-    end
 
     -- update status
     local status = self:status()
     status.token = nil
-    status.connected = not ok
+    status.connected = false
     self:status_save()
+    print("%s: disconnected!", self)
 end
 
 -- pull cache file
