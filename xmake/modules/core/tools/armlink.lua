@@ -124,6 +124,7 @@ function link(self, objectfiles, targetkind, targetfile, flags)
                 end
 
                 -- show echo output? e.g. --map data
+                -- @see https://github.com/xmake-io/xmake/issues/4420
                 if ok and outdata and #outdata > 0 and option.get("diagnosis") then
                     print(outdata)
                 end
