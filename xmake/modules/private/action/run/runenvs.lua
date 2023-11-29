@@ -58,6 +58,14 @@ function _make_runpath_on_windows(target)
                 end
                 insert_target(dep)
             end
+            for _, toolchain in ipairs(target:toolchains()) do
+                local runenvs = toolchain:get("runenvs")
+                if runenvs then
+                    for _, runenv in pairs(runenvs) do
+                        insert(runenv)
+                    end
+                end
+            end
         end
     end
 
