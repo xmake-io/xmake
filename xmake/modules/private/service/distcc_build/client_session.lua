@@ -161,7 +161,7 @@ function client_session:compile(sourcefile, objectfile, cppfile, cppflags, opt)
         end
     end
     os.tryrm(cppfile)
-    assert(ok, errors or "unknown errors!")
+    assert(ok, "%s: %s", self, errors or "unknown errors!")
     return outdata, errdata
 end
 
@@ -171,7 +171,7 @@ function client_session:workdir()
 end
 
 function client_session:__tostring()
-    return string.format("<session %s>", self:id())
+    return string.format("<session %s: %s>", self:id(), self._ADDR)
 end
 
 function main(client, session_id, token, addr, port, opt)
