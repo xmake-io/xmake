@@ -100,9 +100,6 @@ function remote_build_server:_on_handle(stream, msg)
             end
             if msg:is_connect() then
                 session:open()
-            elseif msg:is_disconnect() then
-                session:close()
-                self._SESSIONS[session_id] = nil
             else
                 assert(session:is_connected(), "session has not been connected!")
                 if msg:is_diff() then
