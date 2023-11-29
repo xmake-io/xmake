@@ -146,13 +146,9 @@ function distcc_build_client:disconnect()
     -- do disconnect
     local hosts = self:hosts()
     assert(hosts and #hosts > 0, "hosts not found!")
-    local group_name = tostring(self) .. "/disconnect"
-    scheduler.co_group_begin(group_name, function ()
-        for _, host in ipairs(hosts) do
-            scheduler.co_start(self._disconnect_host, self, host)
-        end
-    end)
-    scheduler.co_group_wait(group_name)
+    for _, host in ipairs(hosts) do
+        self:_disconnect_host(host)
+    end
 
     -- all hosts are connected?
     local connected = true
@@ -591,46 +587,16 @@ function distcc_build_client:_disconnect_host(host)
         return
     end
 
-    -- do disconnect
-    local token = host.token
-    local sock = socket.connect(addr, port, {timeout = self:connect_timeout()})
-    local session_id = self:_session_id(addr, port)
-    local errors
-    local ok = false
-    print("%s: disconnect %s:%d ..", self, addr, port)
-    if sock then
-        local stream = socket_stream(sock, {send_timeout = self:send_timeout(), recv_timeout = self:recv_timeout()})
-        if stream:send_msg(message.new_disconnect(session_id, {token = token})) and stream:flush() then
-            local msg = stream:recv_msg()
-            if msg then
-                vprint(msg:body())
-                if msg:success() then
-                    ok = true
-                else
-                    errors = msg:errors()
-                end
-            end
-        end
-    else
-        -- server unreachable, but we still disconnect it.
-        wprint("%s: server unreachable!", self)
-        ok = true
-    end
-    if ok then
-        print("%s: %s:%d disconnected!", self, addr, port)
-    else
-        print("%s: disconnect %s:%d failed, %s", self, addr, port, errors or "unknown")
-    end
-
     -- update status
     local status = self:status()
     status.hosts = status.hosts or {}
     local host_status = status.hosts[addr .. ":" .. port]
     if host_status then
         host_status.token = nil
-        host_status.connected = not ok
+        host_status.connected = false
     end
     self:status_save()
+    print("%s: %s:%d disconnected!", self, addr, port)
 end
 
 -- clean file for the host
