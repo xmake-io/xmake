@@ -10,6 +10,7 @@
 ### Bugs fixed
 
 * [#4372](https://github.com/xmake-io/xmake/issues/4372): Fix protobuf rules
+* [#4439](https://github.com/xmake-io/xmake/issues/4439): Fix asn1c rules
 
 ## v2.8.5
 
@@ -1699,6 +1700,7 @@
 ### Bugs 修复
 
 * [#4372](https://github.com/xmake-io/xmake/issues/4372): 修复 protobuf 规则
+* [#4439](https://github.com/xmake-io/xmake/issues/4439): 修复 asn1c 规则
 
 ## v2.8.5
 
