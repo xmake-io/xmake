@@ -71,7 +71,7 @@ function link(self, objectfiles, targetkind, targetfile, flags)
         function ()
             os.mkdir(path.directory(targetfile))
             local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
-            os.runv(program, argv)
+            return os.iorunv(program, argv)
         end,
         catch
         {
@@ -121,6 +121,11 @@ function link(self, objectfiles, targetkind, targetfile, flags)
                         end
                         cprint("${color.warning}%s", warnings)
                     end
+                end
+
+                -- show echo output? e.g. --map data
+                if ok and outdata and #outdata > 0 and option.get("diagnosis") then
+                    print(outdata)
                 end
             end
         }
