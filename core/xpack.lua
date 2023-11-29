@@ -98,7 +98,7 @@ xpack("xmakesrc")
 
         local extraconf = {rootdir = rootdir}
         package:add("sourcefiles", path.join(rootdir, "core/**|src/pdcurses/**|src/luajit/**|src/tbox/tbox/src/demo/**"), extraconf)
-        package:add("sourcefiles", path.join(rootdir, "xmake/**"), extraconf)
+        package:add("sourcefiles", path.join(rootdir, "xmake/**|scripts/vsxmake/**"), extraconf)
         package:add("sourcefiles", path.join(rootdir, "*.md"), extraconf)
         package:add("sourcefiles", path.join(rootdir, "configure"), extraconf)
         package:add("sourcefiles", path.join(rootdir, "scripts/*.sh"), extraconf)

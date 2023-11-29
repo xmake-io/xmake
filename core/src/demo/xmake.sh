@@ -24,7 +24,14 @@ target "demo"
 
     # add install files
     add_installfiles "${projectdir}/(xmake/**.lua)" "share"
-    add_installfiles "${projectdir}/(xmake/scripts/**)" "share"
+    add_installfiles "${projectdir}/(xmake/scripts/*)" "share"
+    add_installfiles "${projectdir}/(xmake/scripts/cmake_importfiles/**)" "share"
+    add_installfiles "${projectdir}/(xmake/scripts/completions/**)" "share"
+    add_installfiles "${projectdir}/(xmake/scripts/xpack/**)" "share"
+    add_installfiles "${projectdir}/(xmake/scripts/xrepo/**)" "share"
+    add_installfiles "${projectdir}/(xmake/scripts/virtualenvs/**)" "share"
+    add_installfiles "${projectdir}/(xmake/scripts/pac/**)" "share"
+    add_installfiles "${projectdir}/(xmake/scripts/conan/**)" "share"
     add_installfiles "${projectdir}/(xmake/templates/**)" "share"
     add_installfiles "${projectdir}/scripts/xrepo.sh" "bin" "xrepo"
 
