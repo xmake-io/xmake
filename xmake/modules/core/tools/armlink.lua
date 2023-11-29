@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.global")
+import("core.project.policy")
 import("utils.progress")
 
 function init(self)
@@ -64,7 +65,71 @@ end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags)
-    os.mkdir(path.directory(targetfile))
-    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
+    opt = opt or {}
+    try
+    {
+        function ()
+            os.mkdir(path.directory(targetfile))
+            local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
+            return os.iorunv(program, argv)
+        end,
+        catch
+        {
+            function (errors)
+
+                -- parse and strip errors
+                local lines = errors and tostring(errors):split('\n', {plain = true}) or {}
+                if not option.get("verbose") then
+
+                    -- find the start line of error
+                    local start = 0
+                    for index, line in ipairs(lines) do
+                        if line:find("error:", 1, true) or line:find("错误：", 1, true) then
+                            start = index
+                            break
+                        end
+                    end
+
+                    -- get 16 lines of errors
+                    if start > 0 then
+                        lines = table.slice(lines, start, start + ((#lines - start > 16) and 16 or (#lines - start)))
+                    end
+                end
+
+                -- raise errors
+                local results = #lines > 0 and table.concat(lines, "\n") or ""
+                if not option.get("verbose") then
+                    results = results .. "\n  ${yellow}> in ${bright}" .. sourcefile
+                end
+                raise(results)
+            end
+        },
+        finally
+        {
+            function (ok, outdata, errdata)
+
+                -- show warnings?
+                if ok and errdata and #errdata > 0 and policy.build_warnings() then
+                    local lines = errdata:split('\n', {plain = true})
+                    if #lines > 0 then
+                        if not option.get("diagnosis") then
+                            lines = table.slice(lines, 1, (#lines > 16 and 16 or #lines))
+                        end
+                        local warnings = table.concat(lines, "\n")
+                        if progress.showing_without_scroll() then
+                            print("")
+                        end
+                        cprint("${color.warning}%s", warnings)
+                    end
+                end
+
+                -- show echo output? e.g. --map data
+                -- @see https://github.com/xmake-io/xmake/issues/4420
+                if ok and outdata and #outdata > 0 and option.get("diagnosis") then
+                    print(outdata)
+                end
+            end
+        }
+    }
 end
 
