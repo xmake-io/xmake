@@ -32,15 +32,18 @@ rule("asn1c")
         batchcmds:mkdir(sourcefile_dir)
         batchcmds:vrunv(asn1c.program, {path(sourcefile_asn1):absolute()}, {curdir = sourcefile_dir})
 
+        -- add includedirs
+        target:add("includedirs", sourcefile_dir)
+    end)
+    on_buildcmd_file(function (target, batchcmds, sourcefile_asn1, opt)
+        local sourcefile_dir = path.join(target:autogendir(), "rules", "asn1c")
+        
         -- compile *.c
         for _, sourcefile in ipairs(os.files(path.join(sourcefile_dir, "*.c|converter-*.c"))) do
             local objectfile = target:objectfile(sourcefile)
             batchcmds:compile(sourcefile, objectfile, {configs = {includedirs = sourcefile_dir}})
             table.insert(target:objectfiles(), objectfile)
         end
-
-        -- add includedirs
-        target:add("includedirs", sourcefile_dir)
 
         -- add deps
         batchcmds:add_depfiles(sourcefile_asn1)
