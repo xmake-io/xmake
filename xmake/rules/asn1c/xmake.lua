@@ -31,21 +31,22 @@ rule("asn1c")
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.asn1c %s", sourcefile_asn1)
         batchcmds:mkdir(sourcefile_dir)
         batchcmds:vrunv(asn1c.program, {path(sourcefile_asn1):absolute()}, {curdir = sourcefile_dir})
+        batchcmds:add_depfiles(sourcefile_asn1)
+        batchcmds:set_depcache(target:dependfile(sourcefile_asn1))
 
         -- add includedirs
         target:add("includedirs", sourcefile_dir)
     end)
+
     on_buildcmd_file(function (target, batchcmds, sourcefile_asn1, opt)
-        local sourcefile_dir = path.join(target:autogendir(), "rules", "asn1c")
-        
+
         -- compile *.c
+        local sourcefile_dir = path.join(target:autogendir(), "rules", "asn1c")
         for _, sourcefile in ipairs(os.files(path.join(sourcefile_dir, "*.c|converter-*.c"))) do
             local objectfile = target:objectfile(sourcefile)
             batchcmds:compile(sourcefile, objectfile, {configs = {includedirs = sourcefile_dir}})
             table.insert(target:objectfiles(), objectfile)
+            batchcmds:add_depfiles(sourcefile)
         end
-
-        -- add deps
-        batchcmds:add_depfiles(sourcefile_asn1)
-        batchcmds:set_depcache(target:dependfile(sourcefile_asn1))
+        batchcmds:set_depcache(target:dependfile(sourcefile_asn1 .. ".c"))
     end)
