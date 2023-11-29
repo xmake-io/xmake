@@ -62,7 +62,13 @@ function _make_runpath_on_windows(target)
                 local runenvs = toolchain:get("runenvs")
                 if runenvs then
                     for _, runenv in pairs(runenvs) do
-                        insert(runenv)
+                        if type(runenv) == "table" then
+                            for _, env in ipairs(runenv) do
+                                insert(env)
+                            end
+                        else
+                            insert(runenv)
+                        end
                     end
                 end
             end
