@@ -6,6 +6,7 @@
 
 * Add `network.mode` policy
 * [#1433](https://github.com/xmake-io/xmake/issues/1433): Add `xmake pack` command to generate NSIS/zip/tar.gz/runself packages like cmake/cpack
+* [#4435](https://github.com/xmake-io/xmake/issues/4435): Support batchsize for UnityBuild in Group Mode
 
 ### Bugs fixed
 
@@ -1696,6 +1697,7 @@
 
 * 添加 `network.mode` 策略
 * [#1433](https://github.com/xmake-io/xmake/issues/1433): 添加 `xmake pack` 命令去生成 NSIS/zip/tar.gz/runself 安装包
+* [#4435](https://github.com/xmake-io/xmake/issues/4435): 为 UnityBuild 的组模式增加 batchsize 支持
 
 ### Bugs 修复
 
