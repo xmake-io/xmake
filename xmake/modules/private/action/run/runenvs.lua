@@ -59,16 +59,10 @@ function _make_runpath_on_windows(target)
                 insert_target(dep)
             end
             for _, toolchain in ipairs(target:toolchains()) do
-                local runenvs = toolchain:get("runenvs")
-                if runenvs then
-                    for _, runenv in pairs(runenvs) do
-                        if type(runenv) == "table" then
-                            for _, env in ipairs(runenv) do
-                                insert(env)
-                            end
-                        else
-                            insert(runenv)
-                        end
+                local runenvs = toolchain:runenvs()
+                if runenvs and runenvs.PATH then
+                    for _, env in ipairs(path.splitenv(runenvs.PATH)) do
+                        insert(env)
                     end
                 end
             end
