@@ -324,7 +324,7 @@ function buildenvs(package, opt)
                 envs.CPP      = _translate_windows_bin_path(envs.CPP)
                 envs.RANLIB   = _translate_windows_bin_path(envs.RANLIB)
             end
-        elseif package:is_plat("cross") or package:has_tool("ar", "ar") then
+        elseif package:is_plat("cross") or package:has_tool("ar", "ar", "emar") then
             -- only for cross-toolchain
             envs.CXX = package:build_getenv("cxx")
             if not envs.ARFLAGS or envs.ARFLAGS == "" then
