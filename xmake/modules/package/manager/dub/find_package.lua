@@ -41,7 +41,7 @@ function main(name, opt)
     end
 
     -- get the library pattern
-    local libpattern = (opt.plat == "windows") and "*.lib" or "*.a"
+    local libpattern = (opt.plat == "windows") and "**.lib" or "**.a"
 
     -- find package
     local result
@@ -66,9 +66,12 @@ function main(name, opt)
         end
         if pkgdir then
             local links = {}
+            local linkdirs = {}
             for _, libraryfile in ipairs(os.files(path.join(pkgdir, libpattern))) do
                 table.insert(links, target.linkname(path.filename(libraryfile), {plat = opt.plat}))
+                table.insert(linkdirs, path.directory(libraryfile))
             end
+            linkdirs = table.unique(linkdirs)
             local includedirs = {}
             local dubjson = path.join(pkgdir, "dub.json")
             if os.isfile(dubjson) then
@@ -80,7 +83,7 @@ function main(name, opt)
                 end
             end
             if #includedirs > 0 and #links > 0 then
-                result = {version = opt.require_version, links = links, linkdirs = pkgdir, includedirs = includedirs}
+                result = {version = opt.require_version, links = links, linkdirs = linkdirs, includedirs = includedirs}
             end
         end
     end
