@@ -160,7 +160,7 @@ function nf_warnings(self, levels)
     ,   everything = "-Wall"
     ,   error      = "-WX"
     }
-    for _, level in values:keys() do
+    for _, level in values:orderkeys() do
         local flag = maps[level]
         if flag then
             table.insert(flags, flag)
