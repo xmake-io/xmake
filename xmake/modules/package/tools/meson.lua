@@ -188,6 +188,15 @@ function _insert_cross_configs(package, file, opt)
     end
 end
 
+-- is the toolchain compatible with the host?
+function _is_toolchain_compatible_with_host(package)
+    for _, name in ipairs(package:config("toolchains")) do
+        if toolchain_utils.is_compatible_with_host(name) then
+            return true
+        end
+    end
+end
+
 -- get cross file
 function _get_configs_file(package, opt)
     opt = opt or {}
@@ -270,7 +279,7 @@ function _get_configs_file(package, opt)
             file:print("cpp_link_args=['%s']", table.concat(linkflags, "', '"))
         end
         
-        if package:is_cross() then
+        if package:is_cross() or opt.cross then
             file:print("")
             _insert_cross_configs(package, file, opt)
             file:print("")
@@ -315,8 +324,13 @@ function _get_configs(package, configs, opt)
     -- add cross file
     if package:is_cross() then
         table.insert(configs, "--cross-file=" .. _get_configs_file(package, opt))
-    else 
-        table.insert(configs, "--native-file=" .. _get_configs_file(package, opt))
+    else if package:config("toolchains") then
+        if _is_toolchain_compatible_with_host(package) then
+            table.insert(configs, "--native-file=" .. _get_configs_file(package, opt))
+        else
+            opt.cross = true
+            table.insert(configs, "--cross-file=" .. _get_configs_file(package, opt))
+        end
     end
 
     -- add build directory
