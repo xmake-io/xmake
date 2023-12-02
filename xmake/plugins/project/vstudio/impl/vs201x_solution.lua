@@ -43,7 +43,7 @@ function _make_projects(slnfile, vsinfo)
             table.insert(targets, 1, target)
         elseif target:is_binary() then
             local first_target = targets[1]
-            if not first_target or not first_target:is_default() then
+            if not first_target or first_target:get("default") ~= true then
                 table.insert(targets, 1, target)
             else
                 table.insert(targets, target)
