@@ -32,6 +32,26 @@ rule("c++.build")
         if target:is_plat("windows") and not target:get("exceptions") then
             target:set("exceptions", "cxx")
         end
+
+        -- if clang.libc++ policy is set, append stdlib flags
+        if target:has_tool("cxx", "clang", "clangxx") and target:policy("build.c++.clang.libcxx") then
+            local stdlibflag = "-stdlib=libc++"
+            target:add("cxxflags", stdlibflag)
+            target:add("mxflags", stdlibflag)
+
+            -- on windows, the hookup for using it automatically with -stdlib=libc++ is missing for MSVC configs, so you basically need to manually add the include directories for it
+            if is_host("windows") and not is_subhost("msys") then
+                import("lib.detect.find_path")
+                local compiler = target:compiler("cxx"):program()
+                local toolchain_root = path.is_absolute(compiler) and path.directory(compiler) or find_path(compiler, os.getenv("PATH"):split(";", {plain = true}))
+                assert(toolchain_root, "can't find llvm root directory !")
+                toolchain_root = path.join(toolchain_root, "..")
+                local cxx_includedirflag = "-cxx-isystem" .. path.join(toolchain_root, "include", "c++", "v1")
+                target:add("cxxflags", cxx_includedirflag)
+                target:add("mxflags", cxx_includedirflag)
+                target:add("linkdirs", path.join(toolchain_root, "lib"))
+            end
+        end
     end)
 
 rule("c++")

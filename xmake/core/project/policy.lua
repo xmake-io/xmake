@@ -72,6 +72,8 @@ function policy.policies()
             ["build.c++.msvc.fallbackscanner"]    = {description = "Force msvc fallback module dependency scanner.", default = false, type = "boolean"},
             -- Force C++ modules fallback dependency scanner for gcc
             ["build.c++.gcc.fallbackscanner"]     = {description = "Force gcc fallback module dependency scanner.", default = false, type = "boolean"},
+            -- Force usage of libc++ for clang
+            ["build.c++.clang.libcxx"]            = {description = "Force usage of clang libc++.", default = false, type = "boolean"},
             -- Force to enable new cxx11 abi in C++ modules for gcc
             -- If in the future, gcc can support it well, we'll turn it on by default
             -- https://github.com/xmake-io/xmake/issues/3855
