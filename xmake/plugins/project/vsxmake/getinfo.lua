@@ -580,7 +580,7 @@ function main(outputdir, vsinfo)
             table.insert(targetnames, 1, targetname)
         elseif target:is_binary() then
             local first_target = targetnames[1] and project.target(targetnames[1])
-            if not first_target or not first_target:is_default() then
+            if not first_target or first_target:get("default") ~= true then
                 table.insert(targetnames, 1, targetname)
             else
                 table.insert(targetnames, targetname)
