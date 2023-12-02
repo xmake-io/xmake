@@ -38,6 +38,8 @@ rule("c++.build")
             local stdlibflag = "-stdlib=libc++"
             target:add("cxxflags", stdlibflag)
             target:add("mxflags", stdlibflag)
+            target:add("ldflags", stdlibflag)
+            target:add("shflags", stdlibflag)
 
             -- on windows, the hookup for using it automatically with -stdlib=libc++ is missing for MSVC configs, so you basically need to manually add the include directories for it
             if is_host("windows") and not is_subhost("msys") then
