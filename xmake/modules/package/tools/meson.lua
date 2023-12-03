@@ -324,12 +324,11 @@ function _get_configs(package, configs, opt)
     -- add cross file
     if package:is_cross() then
         table.insert(configs, "--cross-file=" .. _get_configs_file(package, opt))
-    else if package:config("toolchains") then
+    elseif package:config("toolchains") or package:is_plat("mingw") then
         if _is_toolchain_compatible_with_host(package) then
             table.insert(configs, "--native-file=" .. _get_configs_file(package, opt))
         else
-            opt.cross = true
-            table.insert(configs, "--cross-file=" .. _get_configs_file(package, opt))
+            table.insert(configs, "--cross-file=" .. _get_configs_file(package, table.join2(opt, {cross = true})))
         end
     end
 
