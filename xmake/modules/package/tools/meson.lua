@@ -278,7 +278,7 @@ function _get_configs_file(package, opt)
             file:print("c_link_args=['%s']", table.concat(linkflags, "', '"))
             file:print("cpp_link_args=['%s']", table.concat(linkflags, "', '"))
         end
-        
+
         if package:is_cross() or opt.cross then
             file:print("")
             _insert_cross_configs(package, file, opt)
