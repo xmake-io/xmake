@@ -1773,12 +1773,6 @@ function _instance:fetch(opt)
         return fetchinfo
     end
 
-    -- install only?
-    local project = package._project()
-    if project and project.policy("package.install_only") then
-        return
-    end
-
     -- fetch the require version
     local require_ver = opt.version or self:requireinfo().version
     if not self:is_thirdparty() and not require_ver:find('.', 1, true) then
@@ -1797,6 +1791,12 @@ function _instance:fetch(opt)
         -- we need ignore `{system = true/false}` argument if be 3rd package
         -- @see https://github.com/xmake-io/xmake/issues/726
         system = nil
+    end
+
+    -- install only?
+    local project = package._project()
+    if project and project.policy("package.install_only") then
+        system = false
     end
 
     -- use sysincludedirs/-isystem instead of -I?
