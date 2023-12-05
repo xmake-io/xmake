@@ -31,7 +31,11 @@ function _ping(ping, host)
     elseif is_host("macosx") then
         data = try { function () return os.iorun("%s -c 1 -t 1 %s", ping.program, host) end }
     else
-        data = try { function () return os.iorun("%s -c 1 -W 1 %s", ping.program, host) end }
+        -- https://github.com/xmake-io/xmake/issues/4470#issuecomment-1840338777
+        data = try { function () return os.iorun("%s -c 1 -W 1 -n %s", ping.program, host) end }
+        if not data then
+            data = try { function () return os.iorun("%s -c 1 -W 1 %s", ping.program, host) end }
+        end
     end
     local timeval = "65535"
     if data then
