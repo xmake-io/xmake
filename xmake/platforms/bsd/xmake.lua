@@ -52,7 +52,7 @@ platform("bsd")
                 ,   {nil, "qt",             "kv", "auto",       "The Qt SDK Directory"              }
                 ,   {nil, "qt_sdkver",      "kv", "auto",       "The Qt SDK Version"                }
                 ,   {category = "Clang/llvm toolchain Configuration"                                }
-                ,   {nil, "cxxstl",        "kv", "libstdc++", "The stdc++ stl library for clang/llvm toolchain", values = {"libc++", "libstdc++"}}
+                ,   {nil, "cxxstl",        "kv", "libc++", "The stdc++ stl library for clang/llvm toolchain", values = {"libc++", "libstdc++"}}
                 }
 
             ,   global =
