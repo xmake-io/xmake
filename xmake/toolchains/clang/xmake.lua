@@ -75,7 +75,7 @@ toolchain("clang" .. suffix)
                 local sdkdir = toolchain:sdkdir()
                 if cxxstl == "libc++" and sdkdir then
                     toolchain:add("cxxflags", "-isysroot=" .. sdkdir)
-                    toolchain:add("mxxflags", "-stdlib=" .. sdkdir)
+                    toolchain:add("mxxflags", "-isysroot=" .. sdkdir)
                 end
             end
         end
