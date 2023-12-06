@@ -42,6 +42,8 @@ platform("iphoneos")
                 ,   {nil, "target_minver",           "kv", "auto",       "The Target Minimal Version"        }
                 ,   {nil, "appledev",                "kv", nil,          "The Apple Device Type",
                                                                          values = {"simulator", "iphone", "watchtv", "appletv", "catalyst"}}
+                ,   {category = "Clang/llvm toolchain Configuration"                                }
+                ,   {nil, "cxxstl",        "kv", "libc++", "The stdc++ stl library for clang/llvm toolchain", values = {"libc++"}}
                 }
 
             ,   global =

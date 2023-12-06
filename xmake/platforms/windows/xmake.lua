@@ -71,6 +71,8 @@ platform("windows")
                                                     end                                             }
                 ,   {category = "Vcpkg Configuration"                                               }
                 ,   {nil, "vcpkg",      "kv", "auto", "The Vcpkg Directory"                         }
+                ,   {category = "Clang/llvm toolchain Configuration"                                }
+                ,   {nil, "cxxstl",        "kv", "msstl", "The stdc++ stl library for clang/llvm toolchain", values = {"libc++", "libstdc++", "msstl"}}
                 }
 
             ,   global =

@@ -43,3 +43,11 @@ platform("cygwin")
     -- set toolchains
     set_toolchains("envs", "cross", "gcc", "clang", "yasm", "gfortran")
 
+    -- set menu
+    set_menu {
+                config =
+                {
+                    {category = "Clang/llvm toolchain Configuration"                                }
+                ,   {nil, "cxxstl",        "kv", "libstdc++", "The stdc++ stl library for clang/llvm toolchain", values = {"libc++", "libstdc++"}}
+                }
+             }

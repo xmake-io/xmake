@@ -62,6 +62,8 @@ platform("macosx")
                 ,   {nil, "qt_sdkver",               "kv", "auto",       "The Qt SDK Version"                }
                 ,   {category = "Vcpkg Configuration"                                                        }
                 ,   {nil, "vcpkg",                   "kv", "auto",       "The Vcpkg Directory"               }
+                ,   {category = "Clang/llvm toolchain Configuration"                                }
+                ,   {nil, "cxxstl",        "kv", "libc++", "The stdc++ stl library for clang/llvm toolchain", values = {"libc++", "libstdc++"}}
                 }
 
             ,   global =

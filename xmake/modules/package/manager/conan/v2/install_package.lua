@@ -230,7 +230,11 @@ function _conan_generate_compiler_profile(profile, configs, opt)
             profile:print("compiler=" .. toolname)
             profile:print("compiler.cppstd=gnu17")
             if toolname == "clang" then
-                profile:print("compiler.libcxx=libc++")
+                if get_config("cxxstl") == "libc++" then
+                    profile:print("compiler.libcxx=libc++")
+                elseif get_config("cxxstl") == "libstdc++" then
+                    profile:print("compiler.libcxx=libstdc++11")
+                end
             else
                 profile:print("compiler.libcxx=libstdc++11")
             end

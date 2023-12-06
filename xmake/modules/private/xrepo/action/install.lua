@@ -69,6 +69,8 @@ function menu_options()
         {category = "Cross Compilation Configuration"                        },
         {nil, "sdk",           "kv", nil, "Set the SDK directory of cross toolchain." },
         {nil, "toolchain",     "kv", nil, "Set the toolchain name."          },
+        {category = "Clang/llvm toolchain Configuration"                                },
+        {nil, "cxxstl",        "kv", is_plat("windows") and "msstl" or (is_plat("macosx") and "libc++" or "libstdc++"), "The stdc++ stl library for clang/llvm toolchain", values = {"libc++", "libstdc++", "msstl"}},
         {category = "MingW Configuration"                                    },
         {nil, "mingw",         "kv", nil, "Set the MingW SDK directory."     },
         {category = "XCode SDK Configuration"                                },
@@ -203,6 +205,10 @@ function _install_packages(packages)
     end
     if option.get("toolchain") then
         table.insert(config_argv, "--toolchain=" .. option.get("toolchain"))
+    end
+    -- for clang
+    if option.get("cxxstl") then
+        table.insert(config_argv, "--cxxstl=" .. option.get("cxxstl"))
     end
     -- for mingw
     if option.get("mingw") then

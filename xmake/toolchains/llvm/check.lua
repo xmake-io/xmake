@@ -61,7 +61,6 @@ function main(toolchain)
         bindir = try {function () return os.iorunv("llvm-config", {"--bindir"}) end}
         if bindir then
             sdkdir = path.directory(bindir)
-            print("1", sdkdir)
         elseif is_host("linux") and os.isfile("/usr/bin/llvm-ar") then
             sdkdir = "/usr"
         elseif is_host("macosx") then

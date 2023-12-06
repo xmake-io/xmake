@@ -169,6 +169,10 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     if toolchain_name then
         table.insert(configs, "--toolchain=" .. toolchain_name)
     end
+    local cxxstl_name = get_config("cxxstl")
+    if cxxstl_name then
+        table.insert(configs, "--cxxstl=" .. cxxstl_name)
+    end
     _get_configs_for_qt(package, configs, opt)
     _get_configs_for_vcpkg(package, configs, opt)
 end

@@ -60,6 +60,25 @@ toolchain("clang" .. suffix)
             toolchain:add("ldflags", march)
             toolchain:add("shflags", march)
         end
+
+        local cxxstl = get_config("cxxstl")
+        if cxxstl then
+            assert(cxxstl == "msstl" or cxxstl == "libc++" or cxxstl == "libstdc++", "cxxstl option can only be libc++|libstdc++|msstl")
+            assert((not is_plat("windows")) and cxxstl ~= "msstl", "msstl can only be used on windows plat")
+
+            if cxxstl ~= "msstl" then
+                toolchain:add("cxxflags", "-stdlib=" .. get_config("cxxstl"))
+                toolchain:add("shflags", "-stdlib=" .. get_config("cxxstl"))
+                toolchain:add("ldflags", "-stdlib=" .. get_config("cxxstl"))
+                toolchain:add("mxxflags", "-stdlib=" .. get_config("cxxstl"))
+
+                local sdkdir = toolchain:sdkdir()
+                if cxxstl == "libc++" and sdkdir then
+                    toolchain:add("cxxflags", "-isysroot=" .. sdkdir)
+                    toolchain:add("mxxflags", "-stdlib=" .. sdkdir)
+                end
+            end
+        end
     end)
 end
 toolchain_clang()

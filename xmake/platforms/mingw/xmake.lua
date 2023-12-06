@@ -46,6 +46,8 @@ platform("mingw")
                 {
                     {category = "MingW Configuration"                                     }
                 ,   {nil, "mingw",          "kv", nil,          "The MingW SDK Directory" }
+                ,   {category = "Clang/llvm toolchain Configuration"                                }
+                ,   {nil, "cxxstl",        "kv", "libstdc++", "The stdc++ stl library for clang/llvm toolchain", values = {"libc++", "libstdc++"}}
                 }
 
             ,   global =
