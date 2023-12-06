@@ -105,7 +105,9 @@ toolchain("llvm")
         local cxxstl = get_config("cxxstl")
         if cxxstl then
             assert(cxxstl == "msstl" or cxxstl == "libc++" or cxxstl == "libstdc++", "cxxstl option can only be libc++|libstdc++|msstl")
-            assert((not is_plat("windows")) and cxxstl ~= "msstl", "msstl can only be used on windows plat")
+            if not is_plat("windows") then
+                assert(cxxstl ~= "msstl", "msstl can only be used on windows plat")
+            end
 
             if cxxstl ~= "msstl" then
                 toolchain:add("cxxflags", "-stdlib=" .. get_config("cxxstl"))
