@@ -6,39 +6,26 @@ function _build()
     if ci == "true" then
         os.exec("xmake -rvD")
     else
-        os.exec("xmake -r")
+        os.exec("xmake -rvD")
     end
 end
 
 function main(t)
     local clang = find_tool("clang")
     if clang then
-        os.exec("xmake clean -a")
         os.exec("xmake f --toolchain=clang -c")
         _build()
         os.exec("xmake clean -a")
         os.exec("xmake f --toolchain=clang --cxxstl=\"libc++\" -c")
         _build()
-        os.exec("xmake clean -a")
-        os.exec("xmake f --toolchain=clang --cxxstl=\"libstdc++\" -c")
-        _build()
-        if is_plat("windows") then
+        if is_host("linux") or is_subhost("msys") then
             os.exec("xmake clean -a")
-            os.exec("xmake f --toolchain=clang --cxxstl=\"msstl\" -c")
+            os.exec("xmake f --toolchain=clang --cxxstl=\"libstdc++\" -c")
             _build()
         end
-        os.exec("xmake clean -a")
-        os.exec("xmake f --toolchain=llvm -c")
-        _build()
-        os.exec("xmake clean -a")
-        os.exec("xmake f --toolchain=llvm --cxxstl=\"libc++\" -c")
-        _build()
-        os.exec("xmake clean -a")
-        os.exec("xmake f --toolchain=llvm --cxxstl=\"libstdc++\" -c")
-        _build()
-        if is_plat("windows") then
+        if is_subhost("windows") then
             os.exec("xmake clean -a")
-            os.exec("xmake f --toolchain=llvm --cxxstl=\"msstl\" -c")
+            os.exec("xmake f --toolchain=clang --cxxstl=\"msstl\" -c")
             _build()
         end
     end
