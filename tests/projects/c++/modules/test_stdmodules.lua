@@ -31,15 +31,15 @@ function main(t)
             -- os.exec("xmake f -c")
             -- _build()
         -- end
-        local clang = find_tool("clang", {version = true})
+        -- local clang = find_tool("clang", {version = true})
         if clang and clang.version and semver.compare(clang.version, "14.0") >= 0 then
             -- clang don't support libstdc++ std modules atm
             -- os.exec("xmake clean -a")
             -- os.exec("xmake f --toolchain=clang -c")
             -- _build()
-            os.exec("xmake clean -a")
-            os.exec("xmake f --toolchain=clang --cxxflags=\"-stdlib=libc++\" -c")
-            _build()
+            -- os.exec("xmake clean -a")
+            -- os.exec("xmake f --toolchain=clang --cxxflags=\"-stdlib=libc++\" -c")
+            -- _build()
         end
     end
 end
