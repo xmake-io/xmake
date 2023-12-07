@@ -239,7 +239,10 @@ function _instance:_api_add_groups(name, ...)
     values = table.join(table.unpack(values))
 
     -- save values
-    scope[name] = scope[name] or {}
+    --
+    -- @note maybe scope[name] has been unwrapped, we need wrap it first
+    -- https://github.com/xmake-io/xmake/issues/4428
+    scope[name] = table.wrap(scope[name])
     table.wrap_lock(values)
     table.insert(scope[name], values)
     scope[name] = self:_api_handle(name, scope[name])

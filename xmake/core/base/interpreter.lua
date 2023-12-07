@@ -1271,7 +1271,10 @@ function interpreter:api_register_add_groups(scope_kind, ...)
         values = table.join(table.unpack(values))
 
         -- save values
-        scope[name] = scope[name] or {}
+        --
+        -- @note maybe scope[name] has been unwrapped, we need wrap it first
+        -- https://github.com/xmake-io/xmake/issues/4428
+        scope[name] = table.wrap(scope[name])
         table.wrap_lock(values)
         table.insert(scope[name], values)
 
