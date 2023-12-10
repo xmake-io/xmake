@@ -36,6 +36,8 @@ import("private.action.run.runenvs")
 import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("vstudio.impl.vsutils", {rootdir = path.join(os.programdir(), "plugins", "project")})
+import("detect.sdks.find_dotnet")
+import("langtype")
 
 -- strip dot directories, e.g. ..\..\.. => ..
 -- @see https://github.com/xmake-io/xmake/issues/2039
@@ -142,6 +144,11 @@ function _make_targetinfo(mode, arch, target)
 
     -- save defines
     targetinfo.defines       = _make_arrs(_get_values_from_target(target, "defines"))
+
+    -- save symbols, optimize, strip info
+    targetinfo.symbols = tostring(target:get("symbols"))
+    targetinfo.optimize = tostring(target:get("optimize"))
+    targetinfo.strip = tostring(target:get("strip"))
 
     -- save flags
     targetinfo.cflags        = _make_arrs(_get_flags_from_target(target, "cflags"), " ")
@@ -486,6 +493,7 @@ function main(outputdir, vsinfo)
                 -- init target info
                 _target.target = targetname
                 _target.vcxprojdir = path.join(vsinfo.solution_dir, targetname)
+                _target.csprojdir = path.join(vsinfo.solution_dir, targetname)
                 _target.target_id = hash.uuid4(targetname)
                 _target.kind = target:kind()
                 _target.absscriptdir = target:scriptdir()
@@ -496,9 +504,24 @@ function main(outputdir, vsinfo)
                 _target._targets = _target._targets or {}
                 _target._targets[mode] = _target._targets[mode] or {}
                 local targetinfo = _make_targetinfo(mode, arch, target)
+                _target.languages = targetinfo.languages;
+                _target.symbols = targetinfo.symbols;
+                _target.optimize = targetinfo.optimize;
+                _target.strip = targetinfo.strip;
+                if langtype.isc(_target.languages) or langtype.iscpp(_target.languages) then
+                    _target.tool_id = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
+                    _target.proj_extension = "vcxproj"
+                elseif langtype.iscsharp(_target.languages) then
+                    _target.tool_id = "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"
+                    _target.proj_extension = "csproj"
+                end
                 _target._targets[mode][arch] = targetinfo
                 _target.sdkver = targetinfo.sdkver
                 _target.default = targetinfo.default
+
+                -- dotnet
+                local dotnet = find_dotnet()
+                _target.dotnetsdkver = dotnet.sdkver
 
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))

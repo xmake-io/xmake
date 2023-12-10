@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
+  <PropertyGroup Label="XmakePathsResolve">
+    <XmakeBuilDirResolved>$(XmakeBuilDir)</XmakeBuilDirResolved>
+    <XmakeTargetDirResolved>$(XmakeTargetDir)</XmakeTargetDirResolved>
+    <XmakeConfigDirResolved>$(XmakeConfigDir)</XmakeConfigDirResolved>
+    <XmakeConfigFileDirResolved>$(XmakeConfigFileDir)</XmakeConfigFileDirResolved>
+    <XmakeRunDirResolved>$(XmakeRunDir)</XmakeRunDirResolved>
+
+    <!-- resolve if they are relative paths -->
+    <XmakeBuilDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeBuilDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeBuilDirResolved)'))</XmakeBuilDirResolved>
+    <XmakeTargetDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeTargetDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeTargetDirResolved)'))</XmakeTargetDirResolved>
+    <XmakeConfigDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeConfigDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeConfigDirResolved)'))</XmakeConfigDirResolved>
+    <XmakeConfigFileDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeConfigFileDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeConfigFileDirResolved)'))</XmakeConfigFileDirResolved>
+    <XmakeRunDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeRunDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeRunDirResolved)'))</XmakeRunDirResolved>
+
+    <!-- normalize paths -->
+    <XmakeBuilDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeBuilDirResolved)/'))</XmakeBuilDirResolved>
+    <XmakeTargetDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeTargetDirResolved)/'))</XmakeTargetDirResolved>
+    <XmakeConfigDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeConfigDirResolved)/'))</XmakeConfigDirResolved>
+    <XmakeConfigFileDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeConfigFileDirResolved)/'))</XmakeConfigFileDirResolved>
+    <XmakeRunDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeRunDirResolved)/'))</XmakeRunDirResolved>
+
+    <!-- these paths resolved in Xmake.Default.props, just normalize -->
+    <XmakeProgramDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeProgramDir)/'))</XmakeProgramDirResolved>
+    <XmakeProjectDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeProjectDir)/'))</XmakeProjectDirResolved>
+    <XmakeScriptDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeScriptDir)/'))</XmakeScriptDirResolved>
+  </PropertyGroup>
+
+  <PropertyGroup Label="XmakeInternal">
+    <_XmakeProjectFlag Condition="'$(XmakeProjectFile)' != ''">-F "$(XmakeProjectFile)"</_XmakeProjectFlag>
+    <_XmakeProjectFlag Condition="'$(XmakeProjectFile)' == ''">-P .</_XmakeProjectFlag>
+
+    <_XmakeCommonFlags>$(XmakeCommonFlags.Trim())</_XmakeCommonFlags>
+    <_XmakeCommonFlags Condition="$(XmakeVerbose)">-v $(_XmakeCommonFlags.Trim())</_XmakeCommonFlags>
+    <_XmakeCommonFlags Condition="$(XmakeDiagnosis)">-D $(_XmakeCommonFlags.Trim())</_XmakeCommonFlags>
+    <_XmakeCommonFlags>-y $(_XmakeCommonFlags.Trim()) $(_XmakeProjectFlag)</_XmakeCommonFlags>
+
+    <_XmakeOutFlag>-o "$([MSBuild]::MakeRelative('$(XmakeProjectDirResolved)', '$(XmakeBuilDirResolved)').TrimEnd('\').TrimEnd('/'))"</_XmakeOutFlag>
+
+    <_XmakeConfigFlags>$(XmakeConfigFlags.Trim())</_XmakeConfigFlags>
+    <_XmakeConfigFlags>-p $(XmakePlat) -m $(XmakeMode) -a $(XmakeArch) $(_XmakeOutFlag) $(_XmakeConfigFlags.Trim())</_XmakeConfigFlags>
+
+    <_XmakeBuildFlags>$(XmakeBuildFlags.Trim())</_XmakeBuildFlags>
+    <_XmakeBuildFlags Condition="$(XmakeWarning)">-w $(_XmakeBuildFlags.Trim())</_XmakeBuildFlags>
+
+    <_XmakeBuildFileFlags>$(_XmakeBuildFlags.Trim())</_XmakeBuildFileFlags>
+    <_XmakeBuildFileFlags Condition="$(XmakeRebuildFile)">$(_XmakeBuildFileFlags.Trim()) -r</_XmakeBuildFileFlags>
+
+    <_XmakeCleanFlags>$(XmakeCleanFlags.Trim())</_XmakeCleanFlags>
+    <_XmakeCleanFlags Condition="$(XmakeCleanAll)">-a $(_XmakeCleanFlags.Trim())</_XmakeCleanFlags>
+
+    <_XmakeBuildFlags>$(_XmakeBuildFlags.Trim())</_XmakeBuildFlags>
+    <_XmakeBuildFileFlags>$(_XmakeBuildFileFlags.Trim())</_XmakeBuildFileFlags>
+    <_XmakeCleanFlags>$(_XmakeCleanFlags.Trim())</_XmakeCleanFlags>
+    <_XmakeConfigFlags>$(_XmakeConfigFlags.Trim())</_XmakeConfigFlags>
+    <_XmakeCommonFlags>$(_XmakeCommonFlags.Trim())</_XmakeCommonFlags>
+    <_XmakeTarget>"$(XmakeTarget.Trim())"</_XmakeTarget>
+
+    <_XmakeExecutable>"$([System.IO.Path]::GetFullPath('$(XmakeProgramDirResolved)xmake.exe'))"</_XmakeExecutable>
+    <_XmakeEnv>
+      pushd $(XmakeProjectDirResolved)
+      set XMAKE_CONFIGDIR=$(XmakeConfigDirResolved.TrimEnd('\').TrimEnd('/'))
+      set XMAKE_PROGRAM_DIR=$(XmakeProgramDirResolved.TrimEnd('\').TrimEnd('/'))
+      set XMAKE_SKIP_HISTORY=1
+      set XMAKE_IN_VSTUDIO=1
+    </_XmakeEnv>
+    <_XmakeEnv Condition="$(XmakeDiagnosis)">
+      $(_XmakeEnv)
+      echo XMAKE_CONFIGDIR=%25XMAKE_CONFIGDIR%25
+      echo XMAKE_PROGRAM_DIR=%25XMAKE_PROGRAM_DIR%25
+      echo CD=%25CD%25
+    </_XmakeEnv>
+  </PropertyGroup>
+
+  <Target Name="_XmakeProjCheck">
+    <Warning Condition="'$(XmakeCudaVersion)' != '' And !Exists('$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).targets')"
+      Text="File '$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).targets' not found" />
+    <Warning Condition="'$(XmakeCudaVersion)' != '' And !Exists('$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).props')"
+      Text="File '$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).props' not found" />
+    <Error Condition="!Exists('$(XmakeProgramDirResolved)\xmake.exe')"
+      Text="xmake.exe not found at '$(XmakeProgramDirResolved)', please set XMAKE_PROGRAM_DIR in environments or XmakeProgramDir in csproj file" />
+    <Error Condition="'$(XmakeProjectFile)' == '' And !Exists('$(XmakeProjectDirResolved)\xmake.lua')"
+      Text="xmake.lua not found at '$(XmakeProjectDirResolved)', please set XmakeProjectDir in csproj file" />
+    <Error Condition="'$(XmakeProjectFile)' != '' And !Exists('$(XmakeProjectDirResolved)\$(XmakeProjectFile)')"
+      Text="$(XmakeProjectFile) not found at '$(XmakeProjectDirResolved)', please set XmakeProjectDir in csproj file" />
+  </Target>
+  <Target Name="_XmakeConfig" DependsOnTargets="_XmakeProjCheck">
+    <Message Text="$xmake config $(_XmakeCommonFlags) $(_XmakeConfigFlags)" Importance="High" />
+    <Exec Command="$(_XmakeEnv)
+      $(_XmakeExecutable) config $(_XmakeCommonFlags) $(_XmakeConfigFlags)" EchoOff="true" />
+  </Target>
+  <Target Name="_XmakeBuild" DependsOnTargets="_XmakeProjCheck">
+    <Message Text="$xmake build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(_XmakeTarget)" Importance="High" />
+    <Exec Command="$(_XmakeEnv)
+      $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(_XmakeTarget)" EchoOff="true" />
+  </Target>
+  <Target Name="_XmakeRebuild" DependsOnTargets="_XmakeProjCheck">
+    <Message Text="$xmake build -r $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(_XmakeTarget)" Importance="High" />
+    <Exec Command="$(_XmakeEnv)
+      $(_XmakeExecutable) build -r $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(_XmakeTarget)" EchoOff="true" />
+  </Target>
+  <Target Name="_XmakeBuildFile" DependsOnTargets="_XmakeProjCheck">
+    <ItemGroup>
+      <SelectedFile Include="$(SelectedFiles)" />
+      <File Include="$([MSBuild]::MakeRelative('$(XmakeProjectDirResolved)', $([System.IO.Path]::GetFullPath('%(SelectedFile.Identity)'))))" />
+    </ItemGroup>
+    <PropertyGroup>
+      <FileFlag>--files="@(File)"</FileFlag>
+    </PropertyGroup>
+    <Message Text="$xmake build $(_XmakeCommonFlags) $(_XmakeBuildFileFlags) $(FileFlag) $(_XmakeTarget)" Importance="High" />
+    <Exec Command="$(_XmakeEnv)
+      $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFileFlags) $(FileFlag) $(_XmakeTarget)" EchoOff="true" />
+  </Target>
+  <Target Name="_XmakeClean" DependsOnTargets="_XmakeProjCheck">
+    <Message Text="$xmake clean $(_XmakeCommonFlags) $(_XmakeCleanFlags) $(_XmakeTarget)" Importance="High" />
+    <Exec Command="$(_XmakeEnv)
+      $(_XmakeExecutable) clean $(_XmakeCommonFlags) $(_XmakeCleanFlags) $(_XmakeTarget)" EchoOff="true" />
+  </Target>
+
+  <Target Name="Show">
+    <Message Text="
+MSBuild Properties:
+  Xmake Props:
+    XmakeTarget: $(XmakeTarget)
+    'XmakePlat|Mode|Arch': '$(XmakePlat)|$(XmakeMode)|$(XmakeArch)'
+    XmakeBasename: $(XmakeBasename)
+    XmakeFilename: $(XmakeFilename)
+    XmakeKind: $(XmakeKind)
+    XmakeDefault: $(XmakeDefault)
+    XmakeCudaVersion: $(XmakeCudaVersion)
+    XmakeWindowsSdkVersion: $(XmakeWindowsSdkVersion)
+    XmakeMfcKind: $(XmakeMfcKind)
+    XmakeDefines: $(XmakeDefines)
+    XmakeCFlags: $(XmakeCFlags)
+    XmakeCXFlags: $(XmakeCXFlags)
+    XmakeCXXFlags: $(XmakeCXXFlags)
+    XmakeLanguages: $(XmakeLanguages)
+    XmakeSubSystem: $(XmakeSubSystem)
+    XmakeIncludeDirs: $(XmakeIncludeDirs)
+    XmakeLinkDirs: $(XmakeLinkDirs)
+    XmakeSourceDirs: $(XmakeSourceDirs)
+    XmakePrecompiledHeader: $(XmakePrecompiledHeader)
+    XmakeRunEnvs: $(XmakeRunEnvs)
+    XmakeRunArgs: $(XmakeRunArgs)
+  Xmake Path:
+    XmakeProgramDir: $(XmakeProgramDir)
+    XmakeProjectDir: $(XmakeProjectDir)
+    XmakeScriptDir: $(XmakeScriptDir)
+    XmakeBuilDir: $(XmakeBuilDir)
+    XmakeTargetDir: $(XmakeTargetDir)
+    XmakeConfigDir: $(XmakeConfigDir)
+    XmakeConfigFileDir: $(XmakeConfigFileDir)
+    XmakeRunDir: $(XmakeRunDir)
+  Xmake Resolved Path:
+    XmakeProgramDir: $(XmakeProgramDirResolved)
+    XmakeProjectDir: $(XmakeProjectDirResolved)
+    XmakeScriptDir: $(XmakeScriptDirResolved)
+    XmakeBuilDir: $(XmakeBuilDirResolved)
+    XmakeTargetDir: $(XmakeTargetDirResolved)
+    XmakeConfigDir: $(XmakeConfigDirResolved)
+    XmakeConfigFileDir: $(XmakeConfigFileDirResolved)
+    XmakeRunDir: $(XmakeRunDirResolved)
+  Xmake Flags:
+    XmakeWarning: $(XmakeWarning)
+    XmakeVerbose: $(XmakeVerbose)
+    XmakeDiagnosis: $(XmakeDiagnosis)
+    XmakeRebuildFile: $(XmakeRebuildFile)
+    XmakeCleanAll: $(XmakeCleanAll)
+    XmakeCommonFlags: $(XmakeCommonFlags)
+    XmakeConfigFlags: $(XmakeConfigFlags)
+    XmakeBuildFlags: $(XmakeBuildFlags)
+    XmakeCleanFlags: $(XmakeCleanFlags)
+  Xmake Internal:
+    _XmakeCommonFlags: $(_XmakeCommonFlags)
+    _XmakeConfigFlags: $(_XmakeConfigFlags)
+    _XmakeBuildFlags: $(_XmakeBuildFlags)
+    _XmakeBuildFileFlags: $(_XmakeBuildFileFlags)
+    _XmakeCleanFlags: $(_XmakeCleanFlags)
+    _XmakeExecutable: $(_XmakeExecutable)
+    _XmakeEnv: $(_XmakeEnv)
+  Vs Props:
+    'Configuration|Platform': '$(Configuration)|$(Platform)'
+    VisualStudioVersion: $(VisualStudioVersion)
+    MSBuildProjectDirectory: $(MSBuildProjectDirectory)
+    MSBuildProjectName: $(MSBuildProjectName)
+    PlatformTarget: $(PlatformTarget)
+    DebugType: $(DebugType)
+    Optimize: $(Optimize)
+    OutputPath: $(OutputPath)
+    BaseIntermediateOutputPath: $(BaseIntermediateOutputPath)
+    IntermediateOutputPath: $(IntermediateOutputPath)
+    DefineConstants: $(DefineConstants)
+    ErrorReport: $(ErrorReport)
+    WarningLevel: $(WarningLevel)
+    SourcePath: $(SourcePath)
+    TargetName: $(TargetName)
+    TargetExt: $(TargetExt)
+    CharacterSet: $(CharacterSet)
+    UseOfMfc: $(UseOfMfc)
+    WindowsTargetPlatformVersion: $(WindowsTargetPlatformVersion)
+    LangVersion: %(Compile.LangVersion)
+    SelectedFiles: $(SelectedFiles)
+    VCTargetsPath: $(VCTargetsPath)
+    " Importance="High" />
+  </Target>
+
+  <Target Name="BeforeBuild" />
+  <Target Name="AfterBuild" />
+  <Target Name="Build" Condition="'$(DesignTimeBuild)' != 'true'">
+    <CallTarget Targets="Show" Condition="$(XmakeDiagnosis)" />
+    <CallTarget Targets="BeforeBuild" />
+    <CallTarget Targets="_XmakeConfig;_XmakeBuild" />
+    <CallTarget Targets="AfterBuild" />
+  </Target>
+
+  <Target Name="BeforeClean" />
+  <Target Name="AfterClean" />
+  <Target Name="Clean" Condition="'$(DesignTimeBuild)' != 'true'">
+    <CallTarget Targets="Show" Condition="$(XmakeDiagnosis)" />
+    <CallTarget Targets="BeforeClean" />
+    <CallTarget Targets="_XmakeConfig;_XmakeClean" />
+    <CallTarget Targets="AfterClean" />
+  </Target>
+
+  <Target Name="BeforeRebuild" />
+  <Target Name="AfterRebuild" />
+  <Target Name="Rebuild" Condition="'$(DesignTimeBuild)' != 'true'">
+    <CallTarget Targets="Show" Condition="$(XmakeDiagnosis)" />
+    <CallTarget Targets="BeforeRebuild" />
+    <CallTarget Targets="_XmakeConfig;_XmakeRebuild" />
+    <CallTarget Targets="AfterRebuild" />
+  </Target>
+
+
+  <Target Name="BeforeBuildFiles" />
+  <Target Name="AfterBuildFiles" />
+  <Target Name="BuildFiles" Condition="'$(DesignTimeBuild)' != 'true'">
+    <CallTarget Targets="Show" Condition="$(XmakeDiagnosis)" />
+    <CallTarget Targets="BeforeBuildFiles" />
+    <CallTarget Targets="_XmakeConfig;_XmakeBuildFile" />
+    <CallTarget Targets="AfterBuildFiles" />
+  </Target>
+  <!-- override default compile commands -->
+  <Target Name="Compile" Condition="'$(DesignTimeBuild)' != 'true'">
+    <CallTarget Targets="BuildFiles" />
+  </Target>
+  <Target Name="ResourceCompile" Condition="'$(DesignTimeBuild)' != 'true'">
+    <CallTarget Targets="BuildFiles" />
+  </Target>
+  <Target Name="CudaBuild" Condition="'$(DesignTimeBuild)' != 'true'">
+    <CallTarget Targets="BuildFiles" />
+  </Target>
+
+  <ImportGroup Label="CustomTargets">
+    <!--only search 2 levels to avoid accidentally import-->
+    <Import Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.targets')"
+        Project="$(MSBuildProjectDirectory)\Xmake.Custom.targets" />
+    <Import Condition="!Exists('$(MSBuildProjectDirectory)\Xmake.Custom.targets') And Exists('$(MSBuildProjectDirectory)\..\Xmake.Custom.targets')"
+        Project="$(MSBuildProjectDirectory)\..\Xmake.Custom.targets" />
+  </ImportGroup>
+</Project>

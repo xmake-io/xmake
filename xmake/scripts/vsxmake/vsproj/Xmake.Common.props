@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Label="XmakePropsInit">
+    <!-- initialize this first to allow `Condition="'$(XmakeMode)|$(XmakeArch)' == 'release|x86'"` in custom props file -->
+    <XmakeMode Condition="'$(XmakeMode)' == ''">$(Configuration)</XmakeMode>
+    <XmakeMode Condition="'$(XmakeMode)' == ''">release</XmakeMode>
+
+    <XmakeArch Condition="'$(XmakeArch)' == '' And '$(Platform.ToLower())' == 'win32'">x86</XmakeArch>
+    <XmakeArch Condition="'$(XmakeArch)' == '' And '$(Platform.ToLower())' != 'win32'">$(Platform)</XmakeArch>
+    <XmakeArch Condition="'$(XmakeArch)' == ''">x86</XmakeArch>
+  </PropertyGroup>
+
+  <ImportGroup Label="CustomSettings">
+    <!--only search 2 levels to avoid accidentally import-->
+    <Import Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.props')"
+      Project="$(MSBuildProjectDirectory)\Xmake.Custom.props" />
+    <Import Condition="!Exists('$(MSBuildProjectDirectory)\Xmake.Custom.props') And Exists('$(MSBuildProjectDirectory)\..\Xmake.Custom.props')"
+      Project="$(MSBuildProjectDirectory)\..\Xmake.Custom.props" />
+  </ImportGroup>
+
+  <PropertyGroup Label="XmakePropsFallback">
+    <XmakeBasename Condition="'$(XmakeBasename)' == ''">$(XmakeTarget)</XmakeBasename>
+    <XmakeBasename Condition="'$(XmakeBasename)' == ''">$(AssemblyName)</XmakeBasename>
+    <XmakeBasename Condition="'$(XmakeBasename)' == ''">$(MSBuildProjectName)</XmakeBasename>
+
+    <XmakeKind Condition="'$(XmakeKind)' == ''">binary</XmakeKind>
+    <XmakePlat Condition="'$(XmakePlat)' == ''">windows</XmakePlat>
+  </PropertyGroup>
+
+  <PropertyGroup Label="XmakePathsFallback">
+    <XmakeBuilDir Condition="'$(XmakeBuilDir)' == ''">$(XmakeProjectDir)\build</XmakeBuilDir>
+    <XmakeTargetDir Condition="'$(XmakeTargetDir)' == ''">$(XmakeBuilDir)\$(XmakePlat)\$(XmakeArch)\$(XmakeMode)</XmakeTargetDir>
+    <XmakeConfigFileDir Condition="'$(XmakeConfigFileDir)' == ''">$(XmakeBuilDir)\$(XmakePlat)\$(XmakeArch)\$(XmakeMode)</XmakeConfigFileDir>
+
+    <XmakeConfigDir Condition="'$(XmakeConfigDir)' == ''">$(XMAKE_CONFIGDIR)</XmakeConfigDir>
+    <XmakeConfigDir Condition="'$(XmakeConfigDir)' == ''">$(XmakeProjectDir)</XmakeConfigDir>
+
+    <XmakeRunDir Condition="'$(XmakeRunDir)' == ''">$(XmakeTargetDir)</XmakeRunDir>
+  </PropertyGroup>
+
+  <PropertyGroup Label="XmakeFlagsFallback">
+    <XmakeCleanAll Condition="'$(XmakeCleanAll)' == ''">true</XmakeCleanAll>
+    <XmakeWarning Condition="'$(XmakeWarning)' == ''">true</XmakeWarning>
+    <XmakeVerbose Condition="'$(XmakeVerbose)' == ''">false</XmakeVerbose>
+    <XmakeDiagnosis Condition="'$(XmakeDiagnosis)' == ''">false</XmakeDiagnosis>
+    <XmakeRebuildFile Condition="'$(XmakeRebuildFile)' == ''">false</XmakeRebuildFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(WindowsTargetPlatformVersion)' == '' And '$(XmakeWindowsSdkVersion)' != ''">
+    <WindowsTargetPlatformVersion>$(XmakeWindowsSdkVersion)</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+
+  <!-- <PropertyGroup Condition="'$(TargetFrameworkVersion)' == ''">
+    <TargetFrameworkVersion>v$(XmakeDotnetSdkVersion)</TargetFrameworkVersion>
+  </PropertyGroup> -->
+
+  <PropertyGroup Label="AdditionalProps">
+    <UseOfMfc Condition="'$(XmakeMfcKind)' != ''">$(XmakeMfcKind)</UseOfMfc>
+    <CharacterSet Condition="'$(CharacterSet)' == '' And ($(XmakeDefines.Contains(';UNICODE;')) Or $(XmakeDefines.EndsWith(';UNICODE')) Or $(XmakeDefines.StartsWith('UNICODE;')) Or $(XmakeDefines.Equals('UNICODE')))">Unicode</CharacterSet>
+    <CharacterSet Condition="'$(CharacterSet)' == ''">MultiByte</CharacterSet>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Choose>
+    <When Condition="'$(XmakeKind)' == 'binary'">
+      <PropertyGroup>
+        <OutputType>Exe</OutputType>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(XmakeKind)' == 'shared'">
+      <PropertyGroup>
+        <OutputType>Library</OutputType>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
+  <ImportGroup Label="ExtensionSettings">
+    <Import Condition="'$(XmakeCudaVersion)' != '' And Exists('$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).props')"
+      Project="$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).props" />
+  </ImportGroup>
+
+  <PropertyGroup Label="GlobalsFallback">
+    <AssemblyName Condition="'$(XmakeFilename)' == ''">$(XmakeBasename)</AssemblyName>
+    <AssemblyName Condition="'$(XmakeFilename)' != ''">$([System.IO.Path]::GetFileNameWithoutExtension('$(XmakeFilename)'))</AssemblyName>
+    <TargetExt Condition="'$(XmakeFilename)' != ''">$([System.IO.Path]::GetExtension('$(XmakeFilename)'))</TargetExt>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Path">
+    <LibraryPath>$(XmakeLinkDirs);$(LibraryPath)</LibraryPath>
+    <OutputPath>$(XmakeTargetDir)\</OutputPath>
+    <BaseIntermediateOutputPath>$(XmakeBuilDir)\.vs\$(AssemblyName)\$(XmakeArch)\$(XmakeMode)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <SourcePath>$(XmakeSourceDirs);$(SourcePath)</SourcePath>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Macros">
+    <DefineConstants>$(XmakeDefines)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Label="ErrorWarningSettings">
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Platform">
+    <PlatformTarget>$(XmakeArch)</PlatformTarget>
+  </PropertyGroup>
+
+  <Choose>
+    <When Condition="'$(XmakeSymbols)' == 'debug'">
+      <PropertyGroup>
+        <DebugType>full</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(XmakeSymbols)' == 'hidden'">
+      <PropertyGroup>
+        <DebugType>none</DebugType>
+        <DebugSymbols>false</DebugSymbols>
+      </PropertyGroup>
+    </When>
+    <When Condition="($(XmakeSymbols).Contains('debug')) And ($(XmakeSymbols).Contains('embed'))">
+      <PropertyGroup>
+        <DebugType>embedded</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <DebugType>portable</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
+  <PropertyGroup Label="OptimizeSetting" Condition="'$(Optimize)' == ''">
+    <Optimize Condition="'$(XmakeOptimize)' == '' Or '$(XmakeOptimize)' == 'none'">false</Optimize>
+    <Optimize Condition="'$(Optimize)' == ''">true</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Debugger">
+    <LocalDebuggerWorkingDirectory>$(XmakeRunDir)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerEnvironment>$(XmakeRunEnvs)
+$(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
+    <LocalDebuggerCommandArguments>$(XmakeRunArgs)</LocalDebuggerCommandArguments>
+    <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
+    <RemoteDebuggerWorkingDirectory>$(XmakeRunDir)</RemoteDebuggerWorkingDirectory>
+    <RemoteDebuggerEnvironment>$(XmakeRunEnvs)
+$(RemoteDebuggerEnvironment)</RemoteDebuggerEnvironment>
+    <RemoteDebuggerCommandArguments>$(XmakeRunArgs)</RemoteDebuggerCommandArguments>
+  </PropertyGroup>
+
+  <!-- Common files -->
+  <ItemGroup>
+    <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.props')"
+      Include="$(MSBuildProjectDirectory)\Xmake.Custom.props" />
+    <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.targets')"
+      Include="$(MSBuildProjectDirectory)\Xmake.Custom.targets" />
+    <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.items')"
+      Include="$(MSBuildProjectDirectory)\Xmake.Custom.items" />
+    <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.items.filters')"
+      Include="$(MSBuildProjectDirectory)\Xmake.Custom.items.filters" />
+    <None Condition="'$(XmakeScriptDir)' != '$(XmakeProjectDir)' And Exists('$(XmakeScriptDir)\xmake.lua')"
+      Include="$(XmakeScriptDir)\xmake.lua" />
+  </ItemGroup>
+
+  <Import Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.items')"
+    Project="$(MSBuildProjectDirectory)\Xmake.Custom.items" />
+</Project>

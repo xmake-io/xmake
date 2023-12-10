@@ -24,12 +24,14 @@ import("core.base.hashset")
 import("vstudio.impl.vsinfo", { rootdir = path.directory(os.scriptdir()) })
 import("render")
 import("getinfo")
+import("langtype")
 import("core.project.config")
 import("core.cache.localcache")
 
 local template_root = path.join(os.programdir(), "scripts", "vsxmake", "vsproj", "templates")
 local template_sln = path.join(template_root, "sln", "vsxmake.sln")
 local template_vcx = path.join(template_root, "vcxproj", "#target#.vcxproj")
+local template_cs = path.join(template_root, "csproj", "#target#.csproj")
 
 local template_fil = path.join(template_root, "vcxproj.filters", "#target#.vcxproj.filters")
 local template_props = path.join(template_root, "Xmake.Custom.props")
@@ -124,6 +126,9 @@ function _buildparams(info, target, default)
         elseif args.filecxx then
             local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".cpp", ".cc", ".cxx"}))
+        elseif args.filecs then
+            local files = info._targets[target].sourcefiles
+            table.insert(r, _filter_files(files, {".cs"}))
         elseif args.filempp then
             local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".mpp", ".mxx", ".cppm", ".ixx"}))
@@ -234,15 +239,24 @@ function make(version)
 
         for _, target in ipairs(info.targets) do
             local paramsprovidertarget = _buildparams(info, target, "<!-- nil -->")
-            local proj_dir = info._targets[target].vcxprojdir
+            local proj_dir;
+            local target_lang = info._targets[target].languages;
+            if langtype.isc(target_lang) or langtype.iscpp(target_lang) then
+                proj_dir = info._targets[target].vcxprojdir
 
-            -- write project file
-            local proj = path.join(proj_dir, target .. ".vcxproj")
-            _writefileifneeded(proj, render(template_vcx, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidertarget))
+                -- write project file
+                local proj = path.join(proj_dir, target .. ".vcxproj")
+                _writefileifneeded(proj, render(template_vcx, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidertarget))
 
-            local projfil = path.join(proj_dir, target .. ".vcxproj.filters")
-            _writefileifneeded(projfil, render(template_fil, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidertarget))
+                local projfil = path.join(proj_dir, target .. ".vcxproj.filters")
+                _writefileifneeded(projfil, render(template_fil, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidertarget))
+            elseif langtype.iscsharp(target_lang) then
+                proj_dir = info._targets[target].csprojdir
 
+                local proj = path.join(proj_dir, target .. ".csproj")
+                _writefileifneeded(proj, render(template_cs, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidertarget))
+            end
+            
             -- add project custom file
             _trycp(template_props, proj_dir)
             _trycp(template_targets, proj_dir)
