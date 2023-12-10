@@ -15,9 +15,7 @@
     <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">$(XMAKE_PROGRAM_DIR)</XmakeProgramDir>
     <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">#programdir#</XmakeProgramDir>
   </PropertyGroup>
-  <Import Project="$(XmakeProgramDir)\scripts\vsxmake\vsproj\Xmake.Defaults.props" />
 #Import(XmakeConfig)#
-#Import(XmakePath)#
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
@@ -33,6 +31,8 @@
     <XmakeProjectFile>#projectfile#</XmakeProjectFile>
     <XmakeTarget>#target#</XmakeTarget>
   </PropertyGroup>
+  <Import Project="$(XmakeProgramDir)\scripts\vsxmake\vsproj\Xmake.Defaults.props" />
+#Import(XmakePath)#
   <Import Project="$(XmakeProgramDir)\scripts\vsxmake\vsproj\Xmake.Common.props" />
   <ItemGroup>
   </ItemGroup>

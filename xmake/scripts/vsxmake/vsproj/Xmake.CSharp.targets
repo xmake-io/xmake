@@ -77,10 +77,6 @@
   </PropertyGroup>
 
   <Target Name="_XmakeProjCheck">
-    <Warning Condition="'$(XmakeCudaVersion)' != '' And !Exists('$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).targets')"
-      Text="File '$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).targets' not found" />
-    <Warning Condition="'$(XmakeCudaVersion)' != '' And !Exists('$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).props')"
-      Text="File '$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).props' not found" />
     <Error Condition="!Exists('$(XmakeProgramDirResolved)\xmake.exe')"
       Text="xmake.exe not found at '$(XmakeProgramDirResolved)', please set XMAKE_PROGRAM_DIR in environments or XmakeProgramDir in csproj file" />
     <Error Condition="'$(XmakeProjectFile)' == '' And !Exists('$(XmakeProjectDirResolved)\xmake.lua')"
@@ -131,7 +127,6 @@ MSBuild Properties:
     XmakeFilename: $(XmakeFilename)
     XmakeKind: $(XmakeKind)
     XmakeDefault: $(XmakeDefault)
-    XmakeCudaVersion: $(XmakeCudaVersion)
     XmakeWindowsSdkVersion: $(XmakeWindowsSdkVersion)
     XmakeMfcKind: $(XmakeMfcKind)
     XmakeDefines: $(XmakeDefines)
@@ -197,14 +192,12 @@ MSBuild Properties:
     ErrorReport: $(ErrorReport)
     WarningLevel: $(WarningLevel)
     SourcePath: $(SourcePath)
-    TargetName: $(TargetName)
-    TargetExt: $(TargetExt)
+    AssemblyName: $(AssemblyName)
     CharacterSet: $(CharacterSet)
     UseOfMfc: $(UseOfMfc)
     WindowsTargetPlatformVersion: $(WindowsTargetPlatformVersion)
     LangVersion: %(Compile.LangVersion)
     SelectedFiles: $(SelectedFiles)
-    VCTargetsPath: $(VCTargetsPath)
     " Importance="High" />
   </Target>
 
@@ -249,9 +242,6 @@ MSBuild Properties:
     <CallTarget Targets="BuildFiles" />
   </Target>
   <Target Name="ResourceCompile" Condition="'$(DesignTimeBuild)' != 'true'">
-    <CallTarget Targets="BuildFiles" />
-  </Target>
-  <Target Name="CudaBuild" Condition="'$(DesignTimeBuild)' != 'true'">
     <CallTarget Targets="BuildFiles" />
   </Target>
 

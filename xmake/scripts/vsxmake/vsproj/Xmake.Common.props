@@ -81,11 +81,6 @@
     </PropertyPageSchema>
   </ItemGroup>
 
-  <ImportGroup Label="ExtensionSettings">
-    <Import Condition="'$(XmakeCudaVersion)' != '' And Exists('$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).props')"
-      Project="$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).props" />
-  </ImportGroup>
-
   <PropertyGroup Label="GlobalsFallback">
     <AssemblyName Condition="'$(XmakeFilename)' == ''">$(XmakeBasename)</AssemblyName>
     <AssemblyName Condition="'$(XmakeFilename)' != ''">$([System.IO.Path]::GetFileNameWithoutExtension('$(XmakeFilename)'))</AssemblyName>
