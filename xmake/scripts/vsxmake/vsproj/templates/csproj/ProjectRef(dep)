@@ -1,3 +1,4 @@
-    <ProjectReference Include="..\#target#\#target#.vcxproj">
+    <ProjectReference Include="..\#target#\#target#.#proj_extension#">
       <Project>{#target_id#}</Project>
+      <Name>{#target#}</Name>
     </ProjectReference>
