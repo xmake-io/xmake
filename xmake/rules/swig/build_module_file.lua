@@ -22,11 +22,11 @@
 import("lib.detect.find_tool")
 
 function main(target, batchcmds, sourcefile, opt)
-
     -- get swig
     opt = opt or {}
     local swig = assert(find_tool("swig"), "swig not found!")
-    local sourcefile_cx = path.join(target:autogendir(), "rules", "swig", path.basename(sourcefile) .. (opt.sourcekind == "cxx" and ".cpp" or ".c"))
+    local sourcefile_cx = path.join(target:autogendir(), "rules", "swig",
+        path.basename(sourcefile) .. (opt.sourcekind == "cxx" and ".cpp" or ".c"))
 
     -- add objectfile
     local objectfile = target:objectfile(sourcefile_cx)
@@ -34,7 +34,7 @@ function main(target, batchcmds, sourcefile, opt)
 
     -- add commands
     local moduletype = assert(target:data("swig.moduletype"), "swig.moduletype not found!")
-    local argv = {"-" .. moduletype, "-o", sourcefile_cx}
+    local argv = { "-" .. moduletype, "-o", sourcefile_cx }
     if opt.sourcekind == "cxx" then
         table.insert(argv, "-c++")
     end
@@ -42,6 +42,26 @@ function main(target, batchcmds, sourcefile, opt)
     if fileconfig.swigflags then
         table.join2(argv, fileconfig.swigflags)
     end
+
+    -- add includedirs
+    local function _get_values_from_target(target, name)
+        local values = {}
+        for _, value in ipairs((target:get_from(name, "*"))) do
+            table.join2(values, value)
+        end
+        return table.unique(values)
+    end
+    local pathmaps = {
+        { "includedirs",    "includedir" },
+        { "sysincludedirs", "includedir" },
+        { "frameworkdirs",  "frameworkdir" }
+    }
+    for _, pathmap in ipairs(pathmaps) do
+        for _, item in ipairs(_get_values_from_target(target, pathmap[1])) do
+            table.join2(argv, "-I" .. item)
+        end
+    end
+
     table.insert(argv, sourcefile)
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.swig.%s %s", moduletype, sourcefile)
     batchcmds:mkdir(path.directory(sourcefile_cx))
