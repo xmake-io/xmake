@@ -54,18 +54,20 @@ function _find_package_with_builtin_rule(package_name, opt)
         table.insert(managers, "conan")
 
         -- only support the current sub-host platform and sub-architecture, e.g. linux, macosx, or msys (subsystem)
-        if opt.plat == os.subhost() and opt.arch == os.subarch() then
+        local plat = opt.plat
+        local arch = opt.arch
+        if plat == os.subhost() and arch == os.subarch() then
 
             -- find it from pkg-config
             table.insert(managers, "pkgconfig")
 
             -- find it from pacman
-            if is_subhost("linux", "msys") and not is_plat("windows") and find_tool("pacman") then
+            if is_subhost("linux", "msys") and plat ~= "windows" and find_tool("pacman") then
                 table.insert(managers, "pacman")
             end
 
             -- find it from portage
-            if is_subhost("linux", "msys") and not is_plat("windows") and find_tool("emerge") then
+            if is_subhost("linux", "msys") and plat ~= "windows" and find_tool("emerge") then
                 table.insert(managers, "portage")
             end
 
