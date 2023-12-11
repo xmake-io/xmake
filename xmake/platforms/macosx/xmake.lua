@@ -18,31 +18,19 @@
 -- @file        xmake.lua
 --
 
--- define platform
 platform("macosx")
-
-    -- set os
     set_os("macosx")
-
-    -- set hosts
     set_hosts("macosx")
-
-    -- set archs
     set_archs("x86_64", "arm64")
 
-    -- set formats
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
     set_formats("shared", "lib$(name).dylib")
     set_formats("symbol", "$(name).dSYM")
 
-    -- set install directory
     set_installdir("/usr/local")
-
-    -- set toolchains
     set_toolchains("envs", "xcode", "clang", "gcc", "yasm", "nasm", "cuda", "rust", "go", "gfortran", "zig", "fpc", "nim")
 
-    -- set menu
     set_menu {
                 config =
                 {

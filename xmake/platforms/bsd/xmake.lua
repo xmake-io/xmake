@@ -18,31 +18,20 @@
 -- @file        xmake.lua
 --
 
--- define platform
 platform("bsd")
-
-    -- set os
     set_os("bsd")
-
-    -- set hosts
     set_hosts("bsd")
-
-    -- set archs
     set_archs("i386", "x86_64")
 
-    -- set formats
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
     set_formats("shared", "lib$(name).so")
     set_formats("symbol", "$(name).sym")
 
-    -- set install directory
     set_installdir("/usr/local")
 
-    -- set toolchains
     set_toolchains("envs", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "go", "rust", "gfortran", "zig")
 
-    -- set menu
     set_menu {
                 config =
                 {
