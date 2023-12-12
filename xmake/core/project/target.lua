@@ -473,6 +473,30 @@ function _instance:_get_from_source(name, source, result_values, result_sources,
     end
 end
 
+-- get the checked target, it's only for target:check_xxx api.
+--
+-- we should not inherit links from deps/packages when checking snippets in on_config,
+-- because the target deps has been not built.
+--
+-- @see https://github.com/xmake-io/xmake/issues/4491
+--
+function _instance:_checked_target()
+    local checked_target = self._CHECKED_TARGET
+    if checked_target == nil then
+        checked_target = self:clone()
+        -- we need update target:cachekey(), because target flags may be cached in builder
+        checked_target:_invalidate()
+        checked_target.get_from = function (target, name, sources, opt)
+            if (name == "links" or name == "linkdirs") and sources == "*" then
+                sources = "self"
+            end
+            return _instance.get_from(target, name, sources, opt)
+        end
+        self._CHECKED_TARGET = checked_target
+    end
+    return checked_target
+end
+
 -- clone target, @note we can just call it in after_load()
 function _instance:clone()
     if not self:_is_loaded() then
@@ -2606,7 +2630,7 @@ end
 --
 function _instance:has_features(features, opt)
     opt = opt or {}
-    opt.target = self
+    opt.target = self:_checked_target()
     return sandbox_module.import("core.tool.compiler", {anonymous = true}).has_features(features, opt)
 end
 
@@ -2619,7 +2643,7 @@ end
 --
 function _instance:check_sizeof(typename, opt)
     opt = opt or {}
-    opt.target = self
+    opt.target = self:_checked_target()
     return sandbox_module.import("lib.detect.check_sizeof", {anonymous = true})(typename, opt)
 end
 
@@ -2632,7 +2656,7 @@ end
 --
 function _instance:check_csnippets(snippets, opt)
     opt = opt or {}
-    opt.target = self
+    opt.target = self:_checked_target()
     return sandbox_module.import("lib.detect.check_csnippets", {anonymous = true})(snippets, opt)
 end
 
@@ -2658,7 +2682,7 @@ end
 --
 function _instance:check_msnippets(snippets, opt)
     opt = opt or {}
-    opt.target = self
+    opt.target = self:_checked_target()
     return sandbox_module.import("lib.detect.check_msnippets", {anonymous = true})(snippets, opt)
 end
 
@@ -2671,7 +2695,7 @@ end
 --
 function _instance:check_mxxsnippets(snippets, opt)
     opt = opt or {}
-    opt.target = self
+    opt.target = self:_checked_target()
     return sandbox_module.import("lib.detect.check_mxxsnippets", {anonymous = true})(snippets, opt)
 end
 
