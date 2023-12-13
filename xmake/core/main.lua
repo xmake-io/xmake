@@ -65,7 +65,7 @@ function main._show_help()
     if option.get("help") then
         option.show_menu(option.taskname())
         return true
-    elseif option.get("version") then
+    elseif option.get("version") and not option.taskname() then
         if menu.title then
             utils.cprint(menu.title)
         end
