@@ -14,7 +14,7 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      ruki
+-- @author      Kethers
 -- @file        check_main.lua
 --
 
@@ -29,7 +29,7 @@ function main(sourcefile)
     sourcecode = sourcecode:gsub("/%*.-%*/", "")
     sourcecode = sourcecode:gsub("//.-\n", "\n")
 
-    -- find int main(int argc, char** argv) {}
+    -- find static void Main(string[] args) {}
     if sourcecode:find("%s+Main%s*%(.-%)") then
         return true
     end
