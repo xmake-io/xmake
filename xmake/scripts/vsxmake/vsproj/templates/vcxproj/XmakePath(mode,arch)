@@ -3,5 +3,6 @@
     <XmakeConfigDir>#configdir#</XmakeConfigDir>
     <XmakeConfigFileDir>#configfiledir#</XmakeConfigFileDir>
     <XmakeTargetDir>#targetdir#</XmakeTargetDir>
+    <XmakeObjectDir>#objectdir#</XmakeObjectDir>
     <XmakeRunDir>#rundir#</XmakeRunDir>
   </PropertyGroup>
