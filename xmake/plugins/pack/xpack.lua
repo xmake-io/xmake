@@ -237,7 +237,7 @@ function xpack:inputkind()
             srctargz = "source",
             runself = "source",
             deb = "source",
-            rpm = "source"
+            srpm = "source"
         }
         inputkind = inputkinds[self:format()] or "binary"
     end
@@ -377,7 +377,7 @@ function xpack:extension()
             srctargz = ".tar.gz",
             runself  = ".gz.run",
             deb      = ".deb",
-            rpm      = ".rpm"
+            srpm     = ".src.rpm"
         }
         extension = extensions[self:format()] or ""
     end
