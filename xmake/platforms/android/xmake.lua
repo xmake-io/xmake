@@ -18,13 +18,8 @@
 -- @file        xmake.lua
 --
 
--- define platform
 platform("android")
-
-    -- set os
     set_os("android")
-
-    -- set hosts
     set_hosts("macosx", "linux", "windows")
 
     -- set archs, we use the latest android abi provided in android ndk now.
@@ -36,16 +31,13 @@ platform("android")
     --
     set_archs("armeabi", "armeabi-v7a", "arm64-v8a", "x86", "x86_64", "mips", "mip64")
 
-    -- set formats
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
     set_formats("shared", "lib$(name).so")
     set_formats("symbol", "$(name).sym")
 
-    -- set toolchains
     set_toolchains("envs", "ndk", "rust")
 
-    -- set menu
     set_menu {
                 config =
                 {

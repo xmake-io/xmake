@@ -26,6 +26,7 @@ import("core.tool.linker")
 import("core.tool.compiler")
 import("lib.detect.find_tool")
 import("private.utils.executable_path")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- get build directory
 function _get_buildir(package, opt)

@@ -18,31 +18,19 @@
 -- @file        xmake.lua
 --
 
--- define platform
 platform("linux")
-
-    -- set os
     set_os("linux")
-
-    -- set hosts
     set_hosts("macosx", "linux", "windows", "bsd")
-
-    -- set archs
     set_archs("i386", "x86_64", "armv7", "armv7s", "arm64-v8a", "mips", "mips64", "mipsel", "mips64el", "loongarch64")
 
-    -- set formats
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
     set_formats("shared", "lib$(name).so")
     set_formats("symbol", "$(name).sym")
 
-    -- set install directory
     set_installdir("/usr/local")
-
-    -- set toolchains
     set_toolchains("envs", "cross", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "go", "rust", "swift", "gfortran", "zig", "fpc", "nim")
 
-    -- set menu
     set_menu {
                 config =
                 {

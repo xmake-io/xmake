@@ -18,29 +18,19 @@
 -- @file        xmake.lua
 --
 
--- define platform
 platform("wasm")
-
-    -- set os
     set_os("web")
-
-    -- set hosts
     set_hosts("macosx", "linux", "windows", "bsd")
-
-    -- set archs
     set_archs("wasm32", "wasm64")
 
-    -- set formats
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
     set_formats("shared", "lib$(name).so")
     set_formats("binary", "$(name).html")
     set_formats("symbol", "$(name).sym")
 
-    -- set toolchains
     set_toolchains("emcc")
 
-    -- set menu
     set_menu {
         config =
         {

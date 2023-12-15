@@ -348,7 +348,6 @@ function main(target, opt)
             target:add("rpathdirs", "@executable_path/Frameworks", qt.libdir)
         else
             target:add("rpathdirs", qt.libdir)
-            _add_includedirs(target, qt.includedir)
 
             -- remove qt frameworks
             local frameworks = table.wrap(target:get("frameworks"))
@@ -360,6 +359,7 @@ function main(target, opt)
             end
             target:set("frameworks", frameworks)
         end
+        _add_includedirs(target, qt.includedir)
         _add_includedirs(target, path.join(qt.mkspecsdir, "macx-clang"))
         target:add("linkdirs", qt.libdir)
     elseif target:is_plat("linux") then

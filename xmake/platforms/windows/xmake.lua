@@ -18,29 +18,19 @@
 -- @file        xmake.lua
 --
 
--- define platform
 platform("windows")
-
-    -- set os
     set_os("windows")
-
-    -- set hosts
     set_hosts("windows")
-
-    -- set archs
     set_archs("x86", "x64", "arm64")
 
-    -- set formats
     set_formats("static", "$(name).lib")
     set_formats("object", "$(name).obj")
     set_formats("shared", "$(name).dll")
     set_formats("binary", "$(name).exe")
     set_formats("symbol", "$(name).pdb")
 
-    -- set toolchains
     set_toolchains("msvc", "clang", "yasm", "nasm", "cuda", "rust", "swift", "go", "gfortran", "zig", "fpc", "nim")
 
-    -- set menu
     set_menu {
                 config =
                 {

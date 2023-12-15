@@ -18,28 +18,18 @@
 -- @file        xmake.lua
 --
 
--- define platform
 platform("haiku")
-
-    -- set os
     set_os("haiku")
-
-    -- set hosts
     set_hosts("haiku")
-
-    -- set archs
     set_archs("i386", "x86_64")
 
-    -- set formats
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
     set_formats("shared", "lib$(name).so")
     set_formats("symbol", "$(name).sym")
 
-    -- set toolchains
     set_toolchains("envs", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "go", "rust", "gfortran", "zig")
 
-    -- set menu
     set_menu {
                 config =
                 {
