@@ -36,7 +36,6 @@ import("private.action.run.runenvs")
 import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("vstudio.impl.vsutils", {rootdir = path.join(os.programdir(), "plugins", "project")})
-import("detect.sdks.find_dotnet")
 import("langtype")
 
 -- strip dot directories, e.g. ..\..\.. => ..
@@ -134,6 +133,7 @@ function _make_targetinfo(mode, arch, target)
     -- save dirs
     targetinfo.targetdir     = _make_dirs(target:get("targetdir"))
     targetinfo.buildir       = _make_dirs(config.get("buildir"))
+    targetinfo.objectdir     = _make_dirs(target:get("objectdir"))
     targetinfo.rundir        = _make_dirs(target:get("rundir"))
     targetinfo.configdir     = _make_dirs(os.getenv("XMAKE_CONFIGDIR"))
     targetinfo.configfiledir = _make_dirs(target:get("configdir"))
@@ -494,15 +494,8 @@ function main(outputdir, vsinfo)
                 _target.target = targetname
                 _target.vcxprojdir = path.join(vsinfo.solution_dir, targetname)
                 _target.csprojdir = path.join(vsinfo.solution_dir, targetname)
-                _target.target_id = hash.uuid4(targetname)
-                _target.kind = target:kind()
-                _target.absscriptdir = target:scriptdir()
-                _target.scriptdir = path.relative(target:scriptdir(), _target.vcxprojdir)
-                _target.projectdir = path.relative(project.directory(), _target.vcxprojdir)
-                local targetdir = target:get("targetdir")
-                if targetdir then _target.targetdir = path.relative(targetdir, _target.vcxprojdir) end
-                _target._targets = _target._targets or {}
-                _target._targets[mode] = _target._targets[mode] or {}
+                local xxprojdir = _target.vcxprojdir
+                
                 local targetinfo = _make_targetinfo(mode, arch, target)
                 _target.languages = targetinfo.languages;
                 _target.symbols = targetinfo.symbols;
@@ -511,17 +504,27 @@ function main(outputdir, vsinfo)
                 if langtype.isc(_target.languages) or langtype.iscpp(_target.languages) then
                     _target.tool_id = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
                     _target.proj_extension = "vcxproj"
+                    xxprojdir = _target.vcxprojdir
                 elseif langtype.iscsharp(_target.languages) then
                     _target.tool_id = "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"
                     _target.proj_extension = "csproj"
+                    xxprojdir = _target.csprojdir
                 end
+
+                _target.target_id = hash.uuid4(targetname)
+                _target.kind = target:kind()
+                _target.absscriptdir = target:scriptdir()
+                _target.scriptdir = path.relative(target:scriptdir(), xxprojdir)
+                _target.projectdir = path.relative(project.directory(), xxprojdir)
+                local targetdir = target:get("targetdir")
+                if targetdir then _target.targetdir = path.relative(targetdir, xxprojdir) end
+                _target._targets = _target._targets or {}
+                _target._targets[mode] = _target._targets[mode] or {}
                 _target._targets[mode][arch] = targetinfo
                 _target.sdkver = targetinfo.sdkver
                 _target.default = targetinfo.default
 
-                -- dotnet
-                local dotnet = find_dotnet()
-                _target.dotnetsdkver = dotnet.sdkver
+                _target.dotnetframeworkver = vsinfo.dotnetframework_ver
 
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))

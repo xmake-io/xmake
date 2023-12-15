@@ -51,10 +51,6 @@
     <WindowsTargetPlatformVersion>$(XmakeWindowsSdkVersion)</WindowsTargetPlatformVersion>
   </PropertyGroup>
 
-  <!-- <PropertyGroup Condition="'$(TargetFrameworkVersion)' == ''">
-    <TargetFrameworkVersion>v$(XmakeDotnetSdkVersion)</TargetFrameworkVersion>
-  </PropertyGroup> -->
-
   <PropertyGroup Label="AdditionalProps">
     <UseOfMfc Condition="'$(XmakeMfcKind)' != ''">$(XmakeMfcKind)</UseOfMfc>
     <CharacterSet Condition="'$(CharacterSet)' == '' And ($(XmakeDefines.Contains(';UNICODE;')) Or $(XmakeDefines.EndsWith(';UNICODE')) Or $(XmakeDefines.StartsWith('UNICODE;')) Or $(XmakeDefines.Equals('UNICODE')))">Unicode</CharacterSet>
@@ -88,9 +84,10 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Path">
-    <LibraryPath>$(XmakeLinkDirs);$(LibraryPath)</LibraryPath>
+    <!-- <LibraryPath>$(XmakeLinkDirs);$(LibraryPath)</LibraryPath> -->
     <OutputPath>$(XmakeTargetDir)\</OutputPath>
-    <BaseIntermediateOutputPath>$(XmakeBuilDir)\.vs\$(AssemblyName)\$(XmakeArch)\$(XmakeMode)\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition="'$(XmakeObjectDir)' != ''">$(XmakeObjectDir)\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition="'$(XmakeObjectDir)' == ''">$(XmakeBuilDir)\.vs\$(AssemblyName)\$(XmakeArch)\$(XmakeMode)\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <SourcePath>$(XmakeSourceDirs);$(SourcePath)</SourcePath>
   </PropertyGroup>
@@ -121,7 +118,7 @@
         <DebugSymbols>false</DebugSymbols>
       </PropertyGroup>
     </When>
-    <When Condition="($(XmakeSymbols).Contains('debug')) And ($(XmakeSymbols).Contains('embed'))">
+    <When Condition="$(XmakeSymbols.Contains('debug')) And $(XmakeSymbols.Contains('embed'))">
       <PropertyGroup>
         <DebugType>embedded</DebugType>
         <DebugSymbols>true</DebugSymbols>

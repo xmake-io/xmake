@@ -83,6 +83,8 @@
       Text="xmake.lua not found at '$(XmakeProjectDirResolved)', please set XmakeProjectDir in csproj file" />
     <Error Condition="'$(XmakeProjectFile)' != '' And !Exists('$(XmakeProjectDirResolved)\$(XmakeProjectFile)')"
       Text="$(XmakeProjectFile) not found at '$(XmakeProjectDirResolved)', please set XmakeProjectDir in csproj file" />
+    <Error Condition="'$(XmakeKind)' != 'binary' And '$(XmakeKind)' != 'shared'"
+      Text="$(XmakeBasename) kind = $(XmakeKind), csharp project kind now only supports binary, shared" />
   </Target>
   <Target Name="_XmakeConfig" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake config $(_XmakeCommonFlags) $(_XmakeConfigFlags)" Importance="High" />

@@ -30,7 +30,7 @@ function main(sourcefile)
     sourcecode = sourcecode:gsub("//.-\n", "\n")
 
     -- find int main(int argc, char** argv) {}
-    if sourcecode:find("%s+main%s*%(.-%)") then
+    if sourcecode:find("%s+Main%s*%(.-%)") then
         return true
     end
 

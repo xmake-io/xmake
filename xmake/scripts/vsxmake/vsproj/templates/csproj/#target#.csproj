@@ -23,7 +23,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>#target#</RootNamespace>
     <AssemblyName>#target#</AssemblyName>
-    <TargetFrameworkVersion>v#dotnetsdkver#</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v#dotnetframeworkver#</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <XmakeScriptDir>#scriptdir#</XmakeScriptDir>
@@ -44,5 +44,5 @@
   <ItemGroup>
 #Import(ProjectRef)#
   </ItemGroup>
-  <Import Project="$(XmakeProgramDir)\scripts\vsxmake\vsproj\Xmake.CSharp.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

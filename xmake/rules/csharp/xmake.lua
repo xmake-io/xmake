@@ -20,12 +20,18 @@
 
 rule("csharp.build")
     set_sourcekinds("cs")
-    on_build_file(function (target, sourcefile)
-        os.execv("dotnet", {"build", sourcefile, "-o", target:targetdir()})
+    -- TODO: now csharp builds is using MSBuild.exe, below code does nothing
+    -- if you want this file to be used, go to #target#.csproj file and replace
+    -- $(MSBuildToolsPath)\Microsoft.CSharp.targets
+    -- $(XmakeProgramDir)\scripts\vsxmake\vsproj\Xmake.CSharp.targets
+    on_build(function(target)
+        
     end)
-    on_clean(function (target, sourcefile)
-        os.execv("dotnet", {"clean", sourcefile, "-o", target:targetdir()})
+    
+    on_clean(function(target)
+
     end)
+    
     on_link(function () end)
 
 rule("csharp")

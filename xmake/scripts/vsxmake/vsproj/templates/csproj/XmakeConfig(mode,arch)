@@ -14,7 +14,7 @@
     <XmakeSubSystem>#subsystem#</XmakeSubSystem>
     <XmakeCudaVersion>#cudaver#</XmakeCudaVersion>
     <XmakeWindowsSdkVersion>#sdkver#</XmakeWindowsSdkVersion>
-    <XmakeDotnetSdkVersion>#dotnetsdkver#</XmakeDotnetSdkVersion>
+    <XmakeDotnetFrameworkVersion>#dotnetframeworkver#</XmakeDotnetFrameworkVersion>
     <XmakeMfcKind>#mfckind#</XmakeMfcKind>
     <XmakeRunEnvs>#runenvs#</XmakeRunEnvs>
     <XmakeRunArgs>#runargs#</XmakeRunArgs>
