@@ -46,6 +46,9 @@
 #   include <sys/sysctl.h>
 #   include <signal.h>
 #endif
+#ifdef TB_CONFIG_OS_HAIKU
+#   include <image.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -675,6 +678,18 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
         {
             path[size] = '\0';
             ok = tb_true;
+        }
+#elif defined(TB_CONFIG_OS_HAIKU)
+        int32 cookie = 0;
+        image_info info;
+        while (get_next_image_info(B_CURRENT_TEAM, &cookie, &info) == B_OK)
+        {
+            if (info.type == B_APP_IMAGE)
+            {
+                tb_strlcpy(path, info.name, maxn);
+                ok = tb_true;
+                break;
+            }
         }
 #else
         static tb_char_t const* s_paths[] =
