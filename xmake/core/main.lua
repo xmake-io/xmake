@@ -266,7 +266,7 @@ function main.entry()
     end
 
     -- check run command as root
-    if not option.get("root") and os.getenv("XMAKE_ROOT") ~= 'y' then
+    if not option.get("root") and os.getenv("XMAKE_ROOT") ~= 'y' and os.host() ~= 'haiku' then
         if os.isroot() then
             errors = [[Running xmake as root is extremely dangerous and no longer supported.
 As xmake does not drop privileges on installation you would be giving all
