@@ -54,10 +54,8 @@
 // proc/self
 #if defined(TB_CONFIG_OS_LINUX)
 #   define XM_PROC_SELF_FILE        "/proc/self/exe"
-#elif defined(TB_CONFIG_OS_BSD) && !defined(__OpenBSD__)
-#   if defined(__FreeBSD__)
-#       define XM_PROC_SELF_FILE    "/proc/curproc/file"
-#   elif defined(__NetBSD__)
+#elif defined(TB_CONFIG_OS_BSD) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
+#   if defined(__NetBSD__)
 #       define XM_PROC_SELF_FILE    "/proc/curproc/exe"
 #   else
 #       define XM_PROC_SELF_FILE    "/proc/curproc/file"
@@ -661,19 +659,19 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
         tb_uint32_t bufsize = (tb_uint32_t)maxn;
         if (!_NSGetExecutablePath(path, &bufsize))
             ok = tb_true;
-#elif defined(TB_CONFIG_OS_BSD) && defined(KERN_PROC_PATHNAME)
-        // only for freebsd, https://github.com/xmake-io/xmake/issues/2948
-        tb_int_t mib[4];  mib[0] = CTL_KERN;  mib[1] = KERN_PROC;  mib[2] = KERN_PROC_PATHNAME;  mib[3] = -1;
-        size_t size = maxn;
-        if (sysctl(mib, 4, path, &size, tb_null, 0) == 0 && size < maxn)
-        {
-            path[size] = '\0';
-            ok = tb_true;
-        }
 #elif defined(XM_PROC_SELF_FILE)
         // get the executale file path as program directory
         ssize_t size = readlink(XM_PROC_SELF_FILE, path, (size_t)maxn);
         if (size > 0 && size < maxn)
+        {
+            path[size] = '\0';
+            ok = tb_true;
+        }
+#elif defined(TB_CONFIG_OS_BSD) && defined(KERN_PROC_PATHNAME)
+        // only for FreeBSD and OpenBSD, https://github.com/xmake-io/xmake/issues/2948
+        tb_int_t mib[4];  mib[0] = CTL_KERN;  mib[1] = KERN_PROC;  mib[2] = KERN_PROC_PATHNAME;  mib[3] = -1;
+        size_t size = maxn;
+        if (sysctl(mib, 4, path, &size, tb_null, 0) == 0 && size < maxn)
         {
             path[size] = '\0';
             ok = tb_true;
