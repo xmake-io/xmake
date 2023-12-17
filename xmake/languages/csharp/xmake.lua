@@ -117,21 +117,11 @@ language("csharp")
     set_menu {
                 config =
                 {
-                    {category = "Cross Complation Configuration/Compiler Configuration"                             }
-                ,   {nil, "cc",            "kv", nil,          "The C Compiler"                                     }
-                ,   {nil, "cxx",           "kv", nil,          "The C++ Compiler"                                   }
-                ,   {nil, "cpp",           "kv", nil,          "The C Preprocessor"                                 }
-
-                ,   {category = "Cross Complation Configuration/Linker Configuration"                               }
+                    {category = "Cross Complation Configuration/Linker Configuration"                               }
                 ,   {nil, "ld",            "kv", nil,          "The Linker"                                         }
                 ,   {nil, "ar",            "kv", nil,          "The Static Library Linker"                          }
                 ,   {nil, "sh",            "kv", nil,          "The Shared Library Linker"                          }
                 ,   {nil, "ranlib",        "kv", nil,          "The Static Library Index Generator"                 }
-
-                ,   {category = "Cross Complation Configuration/Compiler Flags Configuration"                       }
-                ,   {nil, "cflags",        "kv", nil,          "The C Compiler Flags"                               }
-                ,   {nil, "cxflags",       "kv", nil,          "The C/C++ compiler Flags"                           }
-                ,   {nil, "cxxflags",      "kv", nil,          "The C++ Compiler Flags"                             }
 
                 ,   {category = "Cross Complation Configuration/Linker Flags Configuration"                         }
                 ,   {nil, "ldflags",       "kv", nil,          "The Binary Linker Flags"                            }

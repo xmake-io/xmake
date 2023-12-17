@@ -29,10 +29,8 @@ rule("csharp.build")
     end)
     
     on_clean(function(target)
-
+        
     end)
-    
-    on_link(function () end)
 
 rule("csharp")
 

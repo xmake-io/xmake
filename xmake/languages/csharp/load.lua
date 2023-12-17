@@ -25,9 +25,6 @@ function _get_apis()
         -- target.add_xxx
         "target.add_links"
     ,   "target.add_syslinks"
-    ,   "target.add_cflags"
-    ,   "target.add_cxflags"
-    ,   "target.add_cxxflags"
     ,   "target.add_ldflags"
     ,   "target.add_arflags"
     ,   "target.add_shflags"
@@ -55,29 +52,9 @@ function _get_apis()
     ,   "option.add_undefines"
     ,   "option.add_frameworks"
     ,   "option.add_rpathdirs"
-        -- package.add_xxx
-    ,   "package.add_links"
-    ,   "package.add_syslinks"
-    ,   "package.add_cflags"
-    ,   "package.add_cxflags"
-    ,   "package.add_cxxflags"
-    ,   "package.add_ldflags"
-    ,   "package.add_arflags"
-    ,   "package.add_shflags"
-    ,   "package.add_defines"
-    ,   "package.add_undefines"
-    ,   "package.add_frameworks"
-    ,   "package.add_rpathdirs"
-    ,   "package.add_linkdirs"
-    ,   "package.add_includedirs" --@note we need not uses paths for package, see https://github.com/xmake-io/xmake/issues/717
-    ,   "package.add_sysincludedirs"
-    ,   "package.add_frameworkdirs"
         -- toolchain.add_xxx
     ,   "toolchain.add_links"
     ,   "toolchain.add_syslinks"
-    ,   "toolchain.add_cflags"
-    ,   "toolchain.add_cxflags"
-    ,   "toolchain.add_cxxflags"
     ,   "toolchain.add_ldflags"
     ,   "toolchain.add_arflags"
     ,   "toolchain.add_shflags"
@@ -116,8 +93,6 @@ function _get_apis()
     }
     apis.dictionary = {
         -- option.add_xxx
-        "option.add_csnippets"
-    ,   "option.add_cxxsnippets"
     }
     return apis
 end

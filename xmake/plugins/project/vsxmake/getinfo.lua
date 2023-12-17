@@ -146,9 +146,9 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.defines       = _make_arrs(_get_values_from_target(target, "defines"))
 
     -- save symbols, optimize, strip info
-    targetinfo.symbols = tostring(target:get("symbols"))
-    targetinfo.optimize = tostring(target:get("optimize"))
-    targetinfo.strip = tostring(target:get("strip"))
+    targetinfo.symbols       = target:get("symbols")
+    targetinfo.optimize      = target:get("optimize")
+    targetinfo.strip         = target:get("strip")
 
     -- save flags
     targetinfo.cflags        = _make_arrs(_get_flags_from_target(target, "cflags"), " ")
@@ -524,7 +524,7 @@ function main(outputdir, vsinfo)
                 _target.sdkver = targetinfo.sdkver
                 _target.default = targetinfo.default
 
-                _target.dotnetframeworkver = vsinfo.dotnetframework_ver
+                _target.dotnetframeworkver = vsinfo.dotnetframework_version
 
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))

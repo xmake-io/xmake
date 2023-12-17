@@ -21,84 +21,84 @@
 local vsinfo =
 {
     [2002] =
-    {   vstudio_version     = "2002"
-    ,   solution_version    = "7"
-    ,   project_version     = "7.0"
+    {   vstudio_version         = "2002"
+    ,   solution_version        = "7"
+    ,   project_version         = "7.0"
     }
 ,   [2003] =
-    {   vstudio_version     = "2003"
-    ,   solution_version    = "8"
-    ,   project_version     = "7.1"
+    {   vstudio_version         = "2003"
+    ,   solution_version        = "8"
+    ,   project_version         = "7.1"
     }
 ,   [2005] =
-    {   vstudio_version     = "2005"
-    ,   solution_version    = "9"
-    ,   project_version     = "8.0"
-    }
+    {   vstudio_version         = "2005"
+    ,   solution_version        = "9"
+    ,   project_version         = "8.0"
+    }    
 ,   [2008] =
-    {   vstudio_version     = "2008"
-    ,   solution_version    = "10"
-    ,   project_version     = "9.0"
+    {   vstudio_version         = "2008"
+    ,   solution_version        = "10"
+    ,   project_version         = "9.0"
     }
 ,   [2010] =
-    {   vstudio_version     = "2010"
-    ,   project_version     = "4"
-    ,   filters_version     = "4.0"
-    ,   solution_version    = "11"
-    ,   toolset_version     = "v100"
-    ,   dotnetframework_ver = "4.0"
+    {   vstudio_version         = "2010"
+    ,   project_version         = "4"
+    ,   filters_version         = "4.0"
+    ,   solution_version        = "11"
+    ,   toolset_version         = "v100"
+    ,   dotnetframework_version = "4.0"
     }
 ,   [2012] =
-    {   vstudio_version     = "2012"
-    ,   project_version     = "4"
-    ,   filters_version     = "4.0"
-    ,   solution_version    = "12"
-    ,   toolset_version     = "v110"
-    ,   dotnetframework_ver = "4.5"
+    {   vstudio_version         = "2012"
+    ,   project_version         = "4"
+    ,   filters_version         = "4.0"
+    ,   solution_version        = "12"
+    ,   toolset_version         = "v110"
+    ,   dotnetframework_version = "4.5"
     }
 ,   [2013] =
-    {   vstudio_version     = "2013"
-    ,   project_version     = "12"
-    ,   filters_version     = "4.0"
-    ,   solution_version    = "12"
-    ,   toolset_version     = "v120"
-    ,   dotnetframework_ver = "4.5"
+    {   vstudio_version         = "2013"
+    ,   project_version         = "12"
+    ,   filters_version         = "4.0"
+    ,   solution_version        = "12"
+    ,   toolset_version         = "v120"
+    ,   dotnetframework_version = "4.5"
     }
 ,   [2015] =
-    {   vstudio_version     = "2015"
-    ,   project_version     = "14"
-    ,   filters_version     = "4.0"
-    ,   solution_version    = "12"
-    ,   toolset_version     = "v140"
-    ,   sdk_version         = "10.0.10240.0"
-    ,   dotnetframework_ver = "4.5"
+    {   vstudio_version         = "2015"
+    ,   project_version         = "14"
+    ,   filters_version         = "4.0"
+    ,   solution_version        = "12"
+    ,   toolset_version         = "v140"
+    ,   sdk_version             = "10.0.10240.0"
+    ,   dotnetframework_version = "4.5"
     }
 ,   [2017] =
-    {   vstudio_version     = "2017"
-    ,   project_version     = "15"
-    ,   filters_version     = "4.0"
-    ,   solution_version    = "12"
-    ,   toolset_version     = "v141"
-    ,   sdk_version         = "10.0.14393.0"
-    ,   dotnetframework_ver = "4.5.2"
+    {   vstudio_version         = "2017"
+    ,   project_version         = "15"
+    ,   filters_version         = "4.0"
+    ,   solution_version        = "12"
+    ,   toolset_version         = "v141"
+    ,   sdk_version             = "10.0.14393.0"
+    ,   dotnetframework_version = "4.5.2"
     }
 ,   [2019] =
-    {   vstudio_version     = "2019"
-    ,   project_version     = "16"
-    ,   filters_version     = "4.0"
-    ,   solution_version    = "12"
-    ,   toolset_version     = "v142"
-    ,   sdk_version         = "10.0.17763.0"
-    ,   dotnetframework_ver = "4.7.2"
+    {   vstudio_version         = "2019"
+    ,   project_version         = "16"
+    ,   filters_version         = "4.0"
+    ,   solution_version        = "12"
+    ,   toolset_version         = "v142"
+    ,   sdk_version             = "10.0.17763.0"
+    ,   dotnetframework_version = "4.7.2"
     }
 ,   [2022] =
-    {   vstudio_version     = "2022"
-    ,   project_version     = "17"
-    ,   filters_version     = "4.0"
-    ,   solution_version    = "12"
-    ,   toolset_version     = "v143"
-    ,   sdk_version         = "10.0.19041.0"
-    ,   dotnetframework_ver = "4.7.2"
+    {   vstudio_version         = "2022"
+    ,   project_version         = "17"
+    ,   filters_version         = "4.0"
+    ,   solution_version        = "12"
+    ,   toolset_version         = "v143"
+    ,   sdk_version             = "10.0.19041.0"
+    ,   dotnetframework_version = "4.7.2"
     }
 }
 
