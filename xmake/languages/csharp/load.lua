@@ -34,17 +34,8 @@ function _get_apis()
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
     ,   "target.add_forceincludes"
         -- option.add_xxx
-    ,   "option.add_cincludes"
-    ,   "option.add_cxxincludes"
-    ,   "option.add_cfuncs"
-    ,   "option.add_cxxfuncs"
-    ,   "option.add_ctypes"
-    ,   "option.add_cxxtypes"
     ,   "option.add_links"
     ,   "option.add_syslinks"
-    ,   "option.add_cflags"
-    ,   "option.add_cxflags"
-    ,   "option.add_cxxflags"
     ,   "option.add_ldflags"
     ,   "option.add_arflags"
     ,   "option.add_shflags"
@@ -90,9 +81,6 @@ function _get_apis()
     ,   "option.add_includedirs"
     ,   "option.add_sysincludedirs"
     ,   "option.add_frameworkdirs"
-    }
-    apis.dictionary = {
-        -- option.add_xxx
     }
     return apis
 end
