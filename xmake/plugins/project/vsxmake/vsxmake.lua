@@ -24,7 +24,6 @@ import("core.base.hashset")
 import("vstudio.impl.vsinfo", { rootdir = path.directory(os.scriptdir()) })
 import("render")
 import("getinfo")
-import("langtype")
 import("core.project.config")
 import("core.cache.localcache")
 
@@ -240,8 +239,8 @@ function make(version)
         for _, target in ipairs(info.targets) do
             local paramsprovidertarget = _buildparams(info, target, "<!-- nil -->")
             local proj_dir;
-            local target_lang = info._targets[target].languages;
-            if langtype.isc(target_lang) or langtype.iscpp(target_lang) then
+            local proj_extension = info._targets[target].proj_extension;
+            if proj_extension == "vcxproj" then
                 proj_dir = info._targets[target].vcxprojdir
 
                 -- write project file
@@ -250,7 +249,7 @@ function make(version)
 
                 local projfil = path.join(proj_dir, target .. ".vcxproj.filters")
                 _writefileifneeded(projfil, render(template_fil, "#([A-Za-z0-9_,%.%*%(%)]+)#", "@([^@]+)@", paramsprovidertarget))
-            elseif langtype.iscsharp(target_lang) then
+            elseif proj_extension == "csproj" then
                 proj_dir = info._targets[target].csprojdir
 
                 local proj = path.join(proj_dir, target .. ".csproj")

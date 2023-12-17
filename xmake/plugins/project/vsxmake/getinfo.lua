@@ -36,7 +36,6 @@ import("private.action.run.runenvs")
 import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("vstudio.impl.vsutils", {rootdir = path.join(os.programdir(), "plugins", "project")})
-import("langtype")
 
 -- strip dot directories, e.g. ..\..\.. => ..
 -- @see https://github.com/xmake-io/xmake/issues/2039
@@ -497,18 +496,22 @@ function main(outputdir, vsinfo)
                 local xxprojdir = _target.vcxprojdir
                 
                 local targetinfo = _make_targetinfo(mode, arch, target)
-                _target.languages = targetinfo.languages;
                 _target.symbols = targetinfo.symbols;
                 _target.optimize = targetinfo.optimize;
                 _target.strip = targetinfo.strip;
-                if langtype.isc(_target.languages) or langtype.iscpp(_target.languages) then
-                    _target.tool_id = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
-                    _target.proj_extension = "vcxproj"
-                    xxprojdir = _target.vcxprojdir
-                elseif langtype.iscsharp(_target.languages) then
-                    _target.tool_id = "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"
-                    _target.proj_extension = "csproj"
-                    xxprojdir = _target.csprojdir
+                for _, sourcebatch in pairs(target:sourcebatches()) do
+                    local sourcekind = sourcebatch.sourcekind
+                    if sourcekind == "cc" or sourcekind == "cxx" then
+                        _target.tool_id = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
+                        _target.proj_extension = "vcxproj"
+                        xxprojdir = _target.vcxprojdir
+                        break
+                    elseif sourcekind == "cs"  then
+                        _target.tool_id = "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"
+                        _target.proj_extension = "csproj"
+                        xxprojdir = _target.csprojdir
+                        break
+                    end
                 end
 
                 _target.target_id = hash.uuid4(targetname)
