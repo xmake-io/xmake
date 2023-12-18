@@ -13,13 +13,11 @@ Source0:    ${PACKAGE_ARCHIVEFILE}
 
 BuildRequires: gcc
 BuildRequires: gcc-c++
-BuildRequires: xmake
 
 %description
 ${PACKAGE_DESCRIPTION}
 
 %prep
-%autosetup -n %{name}-%{version} -p1
 
 %build
 
