@@ -41,7 +41,7 @@ xpack("test")
     end)
 
     after_installcmd(function (package, batchcmds)
-        if package:from_source() then
+        if package:format() == "runself" then
             batchcmds:runv("echo", {"hello"})
         else
             batchcmds:mkdir(package:installdir("resources"))

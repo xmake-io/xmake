@@ -27,6 +27,8 @@ ${PACKAGE_INSTALLCMDS}
 %check
 
 %files
+/resources/assets/file1.txt
+/resources/assets/file2.txt
 
 %changelog
 * ${PACKAGE_DATE} ${PACKAGE_MAINTAINER} - ${PACKAGE_VERSION}-1

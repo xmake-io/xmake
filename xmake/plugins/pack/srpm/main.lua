@@ -58,6 +58,11 @@ function _get_archivefile(package)
     return path.absolute(path.join(package:buildir(), package:basename() .. ".tar.gz"))
 end
 
+-- translate the file path
+function _translate_filepath(package, filepath)
+    return filepath:replace(package:install_rootdir(), "%{buildroot}", {plain = true})
+end
+
 -- get install command
 function _get_installcmd(package, installcmds, cmd)
     local opt = cmd.opt or {}
@@ -66,7 +71,7 @@ function _get_installcmd(package, installcmds, cmd)
         local srcfiles = os.files(cmd.srcpath)
         for _, srcfile in ipairs(srcfiles) do
             -- the destination is directory? append the filename
-            local dstfile = cmd.dstpath
+            local dstfile = _translate_filepath(package, cmd.dstpath)
             if #srcfiles > 1 or path.islastsep(dstfile) then
                 if opt.rootdir then
                     dstfile = path.join(dstfile, path.relative(srcfile, opt.rootdir))
@@ -74,23 +79,23 @@ function _get_installcmd(package, installcmds, cmd)
                     dstfile = path.join(dstfile, path.filename(srcfile))
                 end
             end
-            table.insert(installcmds, string.format("cp -p \"%s\" \"%s\"", srcfile, dstfile))
+            table.insert(installcmds, string.format("install -Dpm0644 \"%s\" \"%s\"", srcfile, dstfile))
         end
     elseif kind == "rm" then
-        local filepath = cmd.filepath
+        local filepath = _translate_filepath(package, cmd.filepath)
         table.insert(installcmds, string.format("rm -f \"%s\"", filepath))
     elseif kind == "rmdir" then
-        local dir = cmd.dir
+        local dir = _translate_filepath(package, cmd.dir)
         table.insert(installcmds, string.format("rm -rf \"%s\"", dir))
     elseif kind == "mv" then
-        local srcpath = cmd.srcpath
-        local dstpath = cmd.dstpath
+        local srcpath = _translate_filepath(package, cmd.srcpath)
+        local dstpath = _translate_filepath(package, cmd.dstpath)
         table.insert(installcmds, string.format("mv \"%s\" \"%s\"", srcfile, dstfile))
     elseif kind == "cd" then
-        local dir = cmd.dir
+        local dir = _translate_filepath(package, cmd.dir)
         table.insert(installcmds, string.format("cd \"%s\"", dir))
     elseif kind == "mkdir" then
-        local dir = cmd.dir
+        local dir = _translate_filepath(package, cmd.dir)
         table.insert(installcmds, string.format("mkdir -p \"%s\"", dir))
     elseif cmd.program then
         table.insert(installcmds, string.format("%s", os.args(table.join(cmd.program, cmd.argv))))
