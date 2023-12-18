@@ -61,7 +61,12 @@ end
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
-    specvars.PACKAGE_ARCHIVEFILE = _get_archivefile(package)
+    specvars.PACKAGE_ARCHIVEFILE = path.filename(_get_archivefile(package))
+    local datestr = os.iorunv("date", {"+%a %b %d %Y"}, {envs = {LC_TIME = "en_US"}})
+    if datestr then
+        datestr = datestr:trim()
+    end
+    specvars.PACKAGE_DATE = datestr or ""
     return specvars
 end
 
@@ -117,7 +122,11 @@ function _pack_srpm(rpmbuild, package)
     archive.archive(archivefile, archivefiles, {curdir = rootdir, compress = "best"})
 
     -- do pack
-    os.vrunv(rpmbuild, {"-bs", specfile, "--define", "_srcrpmdir " .. package:outputfile()})
+    os.vrunv(rpmbuild, {"-bs", specfile,
+        "--define", "_topdir " .. package:buildir(),
+        "--define", "_sourcedir " .. package:buildir(),
+        "--define", "_srcrpmdir " .. package:outputdir(),
+        "--define", "_srcrpmfilename " .. package:filename()})
 end
 
 function main(package)

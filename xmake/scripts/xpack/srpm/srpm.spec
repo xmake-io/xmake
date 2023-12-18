@@ -32,4 +32,6 @@ xmake install
 %files
 
 %changelog
+* ${PACKAGE_DATE} ${PACKAGE_MAINTAINER} - ${PACKAGE_VERSION}-1
+- Update to ${PACKAGE_VERSION}
 
