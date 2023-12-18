@@ -22,10 +22,9 @@ ${PACKAGE_DESCRIPTION}
 %autosetup -n %{name}-%{version} -p1
 
 %build
-xmake
 
 %install
-xmake install
+${PACKAGE_INSTALLCMDS}
 
 %check
 

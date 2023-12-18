@@ -58,6 +58,52 @@ function _get_archivefile(package)
     return path.absolute(path.join(package:buildir(), package:basename() .. ".tar.gz"))
 end
 
+-- get install command
+function _get_installcmd(package, installcmds, cmd)
+    local opt = cmd.opt or {}
+    local kind = cmd.kind
+    if kind == "cp" then
+        local srcfiles = os.files(cmd.srcpath)
+        for _, srcfile in ipairs(srcfiles) do
+            -- the destination is directory? append the filename
+            local dstfile = cmd.dstpath
+            if #srcfiles > 1 or path.islastsep(dstfile) then
+                if opt.rootdir then
+                    dstfile = path.join(dstfile, path.relative(srcfile, opt.rootdir))
+                else
+                    dstfile = path.join(dstfile, path.filename(srcfile))
+                end
+            end
+            table.insert(installcmds, string.format("cp -p \"%s\" \"%s\"", srcfile, dstfile))
+        end
+    elseif kind == "rm" then
+        local filepath = cmd.filepath
+        table.insert(installcmds, string.format("rm -f \"%s\"", filepath))
+    elseif kind == "rmdir" then
+        local dir = cmd.dir
+        table.insert(installcmds, string.format("rm -rf \"%s\"", dir))
+    elseif kind == "mv" then
+        local srcpath = cmd.srcpath
+        local dstpath = cmd.dstpath
+        table.insert(installcmds, string.format("mv \"%s\" \"%s\"", srcfile, dstfile))
+    elseif kind == "cd" then
+        local dir = cmd.dir
+        table.insert(installcmds, string.format("cd \"%s\"", dir))
+    elseif kind == "mkdir" then
+        local dir = cmd.dir
+        table.insert(installcmds, string.format("mkdir -p \"%s\"", dir))
+    elseif cmd.program then
+        table.insert(installcmds, string.format("%s", os.args(table.join(cmd.program, cmd.argv))))
+    end
+end
+
+-- get install commands
+function _get_installcmds(package, installcmds, cmds)
+    for _, cmd in ipairs(cmds) do
+        _get_installcmd(package, installcmds, cmd)
+    end
+end
+
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
@@ -67,6 +113,16 @@ function _get_specvars(package)
         datestr = datestr:trim()
     end
     specvars.PACKAGE_DATE = datestr or ""
+    specvars.PACKAGE_INSTALLCMDS = function ()
+        local installcmds = {}
+        _get_installcmds(package, installcmds, batchcmds.get_installcmds(package):cmds())
+        for _, component in table.orderpairs(package:components()) do
+            if component:get("default") ~= false then
+                _get_installcmds(package, installcmds, batchcmds.get_installcmds(component):cmds())
+            end
+        end
+        return table.concat(installcmds, "\n")
+    end
     return specvars
 end
 
@@ -125,8 +181,7 @@ function _pack_srpm(rpmbuild, package)
     os.vrunv(rpmbuild, {"-bs", specfile,
         "--define", "_topdir " .. package:buildir(),
         "--define", "_sourcedir " .. package:buildir(),
-        "--define", "_srcrpmdir " .. package:outputdir(),
-        "--define", "_srcrpmfilename " .. package:filename()})
+        "--define", "_srcrpmdir " .. package:outputdir()})
 end
 
 function main(package)
