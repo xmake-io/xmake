@@ -117,6 +117,7 @@ function _get_specvars(package)
     if datestr then
         datestr = datestr:trim()
     end
+    specvars.PACKAGE_PREFIXDIR = package:prefixdir() or ""
     specvars.PACKAGE_DATE = datestr or ""
     specvars.PACKAGE_INSTALLCMDS = function ()
         local installcmds = {}
@@ -133,6 +134,13 @@ end
 
 -- pack srpm package
 function _pack_srpm(rpmbuild, package)
+
+    -- ensure prefixdir
+    local prefixdir = package:get("prefixdir")
+    if not prefixdir then
+        prefixdir = package:name() .. "-" .. package:version()
+        package:set("prefixdir", prefixdir)
+    end
 
     -- install the initial specfile
     local specfile = package:specfile()
