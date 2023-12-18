@@ -60,7 +60,7 @@ end
 
 -- translate the file path
 function _translate_filepath(package, filepath)
-    return filepath:replace(package:install_rootdir(), "%{buildroot}", {plain = true})
+    return filepath:replace(package:install_rootdir(), "%{buildroot}/%{_exec_prefix}", {plain = true})
 end
 
 -- get install command
@@ -120,6 +120,8 @@ function _get_specvars(package)
     specvars.PACKAGE_PREFIXDIR = package:prefixdir() or ""
     specvars.PACKAGE_DATE = datestr or ""
     specvars.PACKAGE_INSTALLCMDS = function ()
+        local prefixdir = package:get("prefixdir")
+        package:set("prefixdir", nil)
         local installcmds = {}
         _get_installcmds(package, installcmds, batchcmds.get_installcmds(package):cmds())
         for _, component in table.orderpairs(package:components()) do
@@ -127,6 +129,7 @@ function _get_specvars(package)
                 _get_installcmds(package, installcmds, batchcmds.get_installcmds(component):cmds())
             end
         end
+        package:set("prefixdir", prefixdir)
         return table.concat(installcmds, "\n")
     end
     return specvars

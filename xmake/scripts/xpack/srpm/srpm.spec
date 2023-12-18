@@ -28,6 +28,7 @@ ${PACKAGE_INSTALLCMDS}
 %check
 
 %files
+%{_exec_prefix}/resources/assets/file2.txt
 
 %changelog
 * ${PACKAGE_DATE} ${PACKAGE_MAINTAINER} - ${PACKAGE_VERSION}-1
