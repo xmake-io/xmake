@@ -26,12 +26,12 @@ ${PACKAGE_DESCRIPTION}
 
 %install
 ${PACKAGE_INSTALLCMDS}
+cd %{buildroot}
+find . -type f | sed 's!^\./!/!' > %{_builddir}/_installedfiles.txt
 
 %check
 
-%files
-%{_exec_prefix}/resources/assets/file1.txt
-%{_exec_prefix}/resources/assets/file2.txt
+%files -f %{_builddir}/_installedfiles.txt
 
 %changelog
 * ${PACKAGE_DATE} ${PACKAGE_MAINTAINER} - ${PACKAGE_VERSION}-1
