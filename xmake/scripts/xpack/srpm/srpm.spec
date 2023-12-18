@@ -9,7 +9,7 @@ Summary:    ${PACKAGE_TITLE}
 
 License:    ${PACKAGE_LICENSE}
 URL:        ${PACKAGE_HOMEPAGE}
-Source0:    ${PACKAGE_SOURCEDIR}
+Source0:    ${PACKAGE_ARCHIVEFILE}
 
 BuildRequires: gcc
 BuildRequires: gcc-c++

@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.semver")
 import("lib.detect.find_tool")
+import("utils.archive")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
 import(".batchcmds")
@@ -52,10 +53,15 @@ function _get_rpmbuild()
     return rpmbuild, oldenvs
 end
 
+-- get archive file
+function _get_archivefile(package)
+    return path.absolute(path.join(package:buildir(), package:basename() .. ".tar.gz"))
+end
+
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
-    specvars.PACKAGE_SOURCEDIR = package:sourcedir()
+    specvars.PACKAGE_ARCHIVEFILE = _get_archivefile(package)
     return specvars
 end
 
@@ -100,6 +106,15 @@ function _pack_srpm(rpmbuild, package)
             end
         end
     end
+
+    -- archive install files
+    local rootdir = package:source_rootdir()
+    local oldir = os.cd(rootdir)
+    local archivefiles = os.files("**")
+    os.cd(oldir)
+    local archivefile = _get_archivefile(package)
+    os.tryrm(archivefile)
+    archive.archive(archivefile, archivefiles, {curdir = rootdir, compress = "best"})
 
     -- do pack
     os.vrunv(rpmbuild, {"-bs", specfile, "--define", "_srcrpmdir " .. package:outputfile()})
