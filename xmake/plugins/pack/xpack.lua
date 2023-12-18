@@ -359,7 +359,9 @@ end
 -- get the specfile path
 function xpack:specfile()
     local extensions = {
-        nsis = ".nsi"
+        nsis = ".nsi",
+        srpm = ".spec",
+        runself = ".lsm"
     }
     local extension = extensions[self:format()] or ".spec"
     return self:get("specfile") or path.join(self:buildir(), self:basename() .. extension)
