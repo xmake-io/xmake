@@ -55,6 +55,7 @@ end
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
+    specvars.PACKAGE_SOURCEDIR = package:sourcedir()
     return specvars
 end
 
@@ -100,22 +101,8 @@ function _pack_srpm(rpmbuild, package)
         end
     end
 
-    -- generate the setup.sh script
-    --[[
-    local sourcedir = package:sourcedir()
-    local setupfile = path.join(sourcedir, "__setup__.sh")
-    os.cp(path.join(os.programdir(), "scripts", "xpack", "srpm", "setup.sh"), setupfile)
-    local scriptfile = io.open(setupfile, "a+")
-    if scriptfile then
-        _write_installcmds(package, scriptfile, batchcmds.get_installcmds(package):cmds())
-        for _, component in table.orderpairs(package:components()) do
-            if component:get("default") ~= false then
-                _write_installcmds(package, scriptfile, batchcmds.get_installcmds(component):cmds())
-            end
-        end
-        scriptfile:close()
-    end]]
-
+    -- do pack
+    os.vrunv(rpmbuild, {"-bs", specfile, "--define", "_srcrpmdir " .. package:outputfile()})
 end
 
 function main(package)

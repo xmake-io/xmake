@@ -79,6 +79,8 @@ local apis = {
         "xpack.set_specfile",
         -- set icon file path, e.g foo.ico
         "xpack.set_iconfile",
+        -- set package license
+        "xpack.set_license",
         -- set package license file, we will also get them from target
         "xpack.set_licensefile",
         -- add source files

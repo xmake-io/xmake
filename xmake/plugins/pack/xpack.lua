@@ -302,6 +302,7 @@ function xpack:specvars()
             PACKAGE_COPYRIGHT   = self:get("copyright") or "",
             PACKAGE_COMPANY     = self:get("company") or "",
             PACKAGE_ICONFILE    = self:get("iconfile") or "",
+            PACKAGE_LICENSE     = self:license() or "",
             PACKAGE_LICENSEFILE = self:get("licensefile") or ""
         }
 

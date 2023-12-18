@@ -7,9 +7,9 @@ Version:    ${PACKAGE_VERSION}
 Release:    1%{?dist}
 Summary:    ${PACKAGE_TITLE}
 
-License:    Apache-2.0 AND LicenseRef-Fedora-Public-Domain AND BSD
+License:    ${PACKAGE_LICENSE}
 URL:        ${PACKAGE_HOMEPAGE}
-Source0:    https://github.com/xmake-io/xmake/releases/download/v%{version}/%{name}-v%{version}.tar.gz
+Source0:    ${PACKAGE_SOURCEDIR}
 
 BuildRequires: gcc
 BuildRequires: gcc-c++
