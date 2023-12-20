@@ -183,6 +183,12 @@ function _on_target_installcmd_headeronly(target, batchcmds_, opt)
     _install_headers(target, batchcmds_, includedir)
 end
 
+-- on build target command
+function _on_target_buildcmd(target, batchcmds_, opt)
+    local package = opt.package
+    batchcmds_:vrunv("xmake", {"build", target:name()})
+end
+
 -- on install target command
 function _on_target_installcmd(target, batchcmds_, opt)
     local package = opt.package
@@ -295,6 +301,39 @@ function _on_target_uninstallcmd(target, batchcmds_, opt)
     end
 end
 
+-- get build commands from targets
+function _get_target_buildcmds(target, batchcmds_, opt)
+
+    -- call script to get build commands
+    local scripts = {
+        target:script("buildcmd_before"), -- TODO unused
+        function (target)
+            for _, r in ipairs(target:orderules()) do
+                local before_buildcmd = r:script("buildcmd_before")
+                if before_buildcmd then
+                    before_buildcmd(target, batchcmds_, opt)
+                end
+            end
+        end,
+        target:script("buildcmd", _on_target_buildcmd), -- TODO unused
+        function (target)
+            for _, r in ipairs(target:orderules()) do
+                local after_buildcmd = r:script("buildcmd_after")
+                if after_buildcmd then
+                    after_buildcmd(target, batchcmds_, opt)
+                end
+            end
+        end,
+        target:script("buildcmd_after") -- TODO unused
+    }
+    for i = 1, 5 do
+        local script = scripts[i]
+        if script ~= nil then
+            script(target, batchcmds_, opt)
+        end
+    end
+end
+
 -- get install commands from targets
 function _get_target_installcmds(target, batchcmds_, opt)
 
@@ -361,6 +400,16 @@ function _get_target_uninstallcmds(target, batchcmds_, opt)
     end
 end
 
+-- on build command
+function _on_buildcmd(package, batchcmds_)
+    if not package:from_source() then
+        return
+    end
+    for _, target in ipairs(package:targets()) do
+        _get_target_buildcmds(target, batchcmds_, {package = package})
+    end
+end
+
 -- on install command
 function _on_installcmd(package, batchcmds_)
     if not package:from_binary() then
@@ -387,6 +436,25 @@ function _on_uninstallcmd(package, batchcmds_)
     for _, target in ipairs(package:targets()) do
         _get_target_uninstallcmds(target, batchcmds_, {package = package})
     end
+end
+
+-- get build commands
+function get_buildcmds(package)
+    local batchcmds_ = batchcmds.new()
+
+    -- call script to get build commands
+    local scripts = {
+        package:script("buildcmd_before"),
+        package:script("buildcmd", _on_buildcmd),
+        package:script("buildcmd_after")
+    }
+    for i = 1, 3 do
+        local script = scripts[i]
+        if script ~= nil then
+            script(package, batchcmds_)
+        end
+    end
+    return batchcmds_
 end
 
 -- get install commands

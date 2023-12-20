@@ -64,7 +64,7 @@ function _translate_filepath(package, filepath)
 end
 
 -- get install command
-function _get_installcmd(package, installcmds, cmd)
+function _get_customcmd(package, installcmds, cmd)
     local opt = cmd.opt or {}
     local kind = cmd.kind
     if kind == "cp" then
@@ -102,10 +102,17 @@ function _get_installcmd(package, installcmds, cmd)
     end
 end
 
+-- get build commands
+function _get_buildcmds(package, buildcmds, cmds)
+    for _, cmd in ipairs(cmds) do
+        _get_customcmd(package, buildcmds, cmd)
+    end
+end
+
 -- get install commands
 function _get_installcmds(package, installcmds, cmds)
     for _, cmd in ipairs(cmds) do
-        _get_installcmd(package, installcmds, cmd)
+        _get_customcmd(package, installcmds, cmd)
     end
 end
 
@@ -132,6 +139,12 @@ function _get_specvars(package)
         package:set("prefixdir", prefixdir)
         return table.concat(installcmds, "\n")
     end
+    specvars.PACKAGE_BUILDCMDS = function ()
+        local buildcmds = {}
+        _get_buildcmds(package, buildcmds, batchcmds.get_buildcmds(package):cmds())
+        return table.concat(buildcmds, "\n")
+    end
+
     return specvars
 end
 

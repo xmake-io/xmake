@@ -101,6 +101,12 @@ local apis = {
         "xpack.on_package",
         -- add custom package script after packing package
         "xpack.after_package",
+        -- add custom build commands script before building, it's only for source inputkind
+        "xpack.before_buildcmd",
+        -- add custom build commands script, it's only for source inputkind
+        "xpack.on_buildcmd",
+        -- add custom build commands script after building, it's only for source inputkind
+        "xpack.after_buildcmd",
         -- add custom commands script before installing
         "xpack.before_installcmd",
         -- add custom commands script before uninstalling
