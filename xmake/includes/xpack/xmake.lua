@@ -65,6 +65,8 @@ local apis = {
         "xpack.set_includedir",
         -- set prefix directory, e.g. prefixdir/bin, prefixdir/lib ..
         "xpack.set_prefixdir",
+        -- add build requires for source inputkind
+        "xpack.add_buildrequires",
         -- set nsis display icon
         "xpack.set_nsis_displayicon",
         -- set package component title

@@ -13,8 +13,6 @@ License:    ${PACKAGE_LICENSE}
 URL:        ${PACKAGE_HOMEPAGE}
 Source0:    ${PACKAGE_ARCHIVEFILE}
 
-BuildRequires: gcc
-BuildRequires: gcc-c++
 ${PACKAGE_BUILDREQUIRES}
 
 %description

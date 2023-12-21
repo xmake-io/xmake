@@ -147,27 +147,37 @@ function _get_specvars(package)
     end
     specvars.PACKAGE_BUILDREQUIRES = function ()
         local requires = {}
-        local programs = hashset.new()
-        for _, cmd in ipairs(batchcmds.get_buildcmds(package):cmds()) do
-            local program = cmd.program
-            if program then
-                programs:insert(program)
+        local buildrequires = package:get("buildrequires")
+        if buildrequires then
+            for _, buildrequire in ipairs(buildrequires) do
+                table.insert(requires, "BuildRequires: " .. buildrequire)
             end
-        end
-        local map = {
-            xmake = "xmake",
-            cmake = "cmake",
-            make = "make"
-        }
-        for _, program in programs:keys() do
-            local requirename = map[program]
-            if requirename then
-                table.insert(requires, "BuildRequires: " .. requirename)
+        else
+            local programs = hashset.new()
+            for _, cmd in ipairs(batchcmds.get_buildcmds(package):cmds()) do
+                local program = cmd.program
+                if program then
+                    programs:insert(program)
+                end
+            end
+            local map = {
+                xmake = "xmake",
+                cmake = "cmake",
+                make = "make"
+            }
+            for _, program in programs:keys() do
+                local requirename = map[program]
+                if requirename then
+                    table.insert(requires, "BuildRequires: " .. requirename)
+                end
+            end
+            if #requires > 0 then
+                table.insert(requires, "BuildRequires: gcc")
+                table.insert(requires, "BuildRequires: gcc-c++")
             end
         end
         return table.concat(requires, "\n")
     end
-
     return specvars
 end
 
