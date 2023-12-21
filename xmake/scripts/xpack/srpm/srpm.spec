@@ -15,6 +15,7 @@ Source0:    ${PACKAGE_ARCHIVEFILE}
 
 BuildRequires: gcc
 BuildRequires: gcc-c++
+${PACKAGE_BUILDREQUIRES}
 
 %description
 ${PACKAGE_DESCRIPTION}

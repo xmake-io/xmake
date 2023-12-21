@@ -29,6 +29,7 @@ xpack("test")
     add_targets("test", "foo")
     add_installfiles("src/(assets/*.png)", {prefixdir = "images"})
     add_sourcefiles("(src/**)")
+    add_sourcefiles("xmake.lua")
     set_iconfile("src/assets/xmake.ico")
     add_components("LongPath")
 

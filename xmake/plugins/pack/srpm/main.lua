@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.semver")
+import("core.base.hashset")
 import("lib.detect.find_tool")
 import("utils.archive")
 import("private.action.require.impl.packagenv")
@@ -143,6 +144,28 @@ function _get_specvars(package)
         local buildcmds = {}
         _get_buildcmds(package, buildcmds, batchcmds.get_buildcmds(package):cmds())
         return table.concat(buildcmds, "\n")
+    end
+    specvars.PACKAGE_BUILDREQUIRES = function ()
+        local requires = {}
+        local programs = hashset.new()
+        for _, cmd in ipairs(batchcmds.get_buildcmds(package):cmds()) do
+            local program = cmd.program
+            if program then
+                programs:insert(program)
+            end
+        end
+        local map = {
+            xmake = "xmake",
+            cmake = "cmake",
+            make = "make"
+        }
+        for _, program in programs:keys() do
+            local requirename = map[program]
+            if requirename then
+                table.insert(requires, "BuildRequires: " .. requirename)
+            end
+        end
+        return table.concat(requires, "\n")
     end
 
     return specvars
