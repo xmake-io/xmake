@@ -127,6 +127,6 @@ xpack("xmakesrc")
         if format == "runself" then
             batchcmds:runv("./scripts/get.sh", {"__local__"})
         elseif format == "srpm" then
-            batchcmds:runv("make", {"install", "PREFIX=%{buildroot}"})
+            batchcmds:runv("make", {"install", path(package:install_rootdir(), function (p) return "PREFIX=" .. p end)})
         end
     end)

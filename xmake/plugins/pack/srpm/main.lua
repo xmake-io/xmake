@@ -99,6 +99,7 @@ function _get_customcmd(package, installcmds, cmd)
         local dir = _translate_filepath(package, cmd.dir)
         table.insert(installcmds, string.format("mkdir -p \"%s\"", dir))
     elseif cmd.program then
+        -- TODO translate path
         table.insert(installcmds, string.format("%s", os.args(table.join(cmd.program, cmd.argv))))
     end
 end
