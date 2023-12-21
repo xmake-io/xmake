@@ -192,7 +192,7 @@ end
 -- on build target command
 function _on_target_buildcmd(target, batchcmds_, opt)
     local package = opt.package
-    batchcmds_:vrunv("xmake", {"build", target:name()})
+    batchcmds_:vrunv("xmake", {"build", "-y", target:name()})
 end
 
 -- on install target command
