@@ -42,8 +42,18 @@ function main(name, opt)
     end
 
     -- for msys2/mingw? mingw-w64-[i686|x86_64]-xxx
-    if opt.plat == "mingw" then
-        name = (opt.arch == "x86_64" and "mingw-w64-x86_64-" or "mingw-w64-i686-") .. name
+    if is_subhost("msys") and opt.plat == "mingw" then
+        -- try to get the package prefix from the environment first
+        -- https://www.msys2.org/docs/package-naming/
+        local prefix = "mingw-w64-"
+        local arch = (opt.arch == "x86_64" and "x86_64-" or "i686-")
+        local msystem = os.getenv("MSYSTEM")
+        if msystem and not msystem:startswith("MINGW") then
+            local i, j = msystem:find("%D+")
+            name = prefix .. msystem:sub(i, j):lower() .. "-" .. arch .. name
+        else
+            name = prefix .. arch .. name
+        end
     end
 
     -- init argv

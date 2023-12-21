@@ -30,6 +30,7 @@ function _find_package_from_list(list, name, pacman, opt)
     -- mingw + pacman = cygpath available
     local cygpath = nil
     local pathtomsys = nil
+    local msystem = nil
     if is_subhost("msys") and opt.plat == "mingw" then
         cygpath = find_tool("cygpath")
         if not cygpath then
@@ -37,6 +38,10 @@ function _find_package_from_list(list, name, pacman, opt)
         end
         pathtomsys = os.iorunv(cygpath.program, {"--windows", "/"})
         pathtomsys = pathtomsys:trim()
+        msystem = os.getenv("MSYSTEM")
+        if msystem then
+            msystem = msystem:lower()
+        end
     end
 
     -- iterate over each file path inside the pacman package
@@ -48,13 +53,8 @@ function _find_package_from_list(list, name, pacman, opt)
                 local hpath = line
                 if is_subhost("msys") and opt.plat == "mingw" then 
                     hpath = path.join(pathtomsys, line)
-                    if opt.arch == "x86_64" then
-                        local basehpath = path.join(pathtomsys, "mingw64/include")
-                        table.insert(result.includedirs, basehpath)
-                    else
-                        local basehpath = path.join(pathtomsys, "mingw32/include")
-                        table.insert(result.includedirs, basehpath)
-                    end
+                    local basehpath = path.join(pathtomsys, msystem .. "/include")
+                    table.insert(result.includedirs, basehpath)
                 end
                 table.insert(result.includedirs, path.directory(hpath))
             end
@@ -112,7 +112,6 @@ function main(name, opt)
     end
 
     -- for msys2/mingw? mingw-w64-[i686|x86_64]-xxx
-    local name_alt
     if is_subhost("msys") and opt.plat == "mingw" then
         -- try to get the package prefix from the environment first
         -- https://www.msys2.org/docs/package-naming/
@@ -121,23 +120,18 @@ function main(name, opt)
         local msystem = os.getenv("MSYSTEM")
         if msystem and not msystem:startswith("MINGW") then
             local i, j = msystem:find("%D+")
-            name_alt = prefix .. msystem:sub(i, j):lower() .. "-" .. arch .. name
+            name = prefix .. msystem:sub(i, j):lower() .. "-" .. arch .. name
+        else
+            name = prefix .. arch .. name
         end
-        name = prefix .. arch .. name
     end
-
+    
     -- get package files list
-    local list
-    for _, n in ipairs({name, name_alt}) do
-        list = n and try { function() return os.iorunv(pacman.program, {"-Q", "-l", n}) end }
-        if list then
-            break
-        end
-    end
+    list = name and try { function() return os.iorunv(pacman.program, {"-Q", "-l", name}) end }
     if not list then
         return
     end
-
+    
     -- parse package files list
     local linkdirs = {}
     local pkgconfig_files = {}
@@ -185,5 +179,6 @@ function main(name, opt)
         -- if there is no .pc, we parse the package content to obtain the data we want
         result = _find_package_from_list(list, name, pacman, opt)
     end
+        
     return result
 end
