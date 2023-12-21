@@ -19,15 +19,17 @@ target("foo")
     add_packages("zlib")
 
 xpack("test")
-    set_formats("nsis", "zip", "targz", "srczip", "srctargz", "runself")
+    set_formats("nsis", "srpm", "zip", "targz", "srczip", "srctargz", "runself")
     set_title("hello")
     set_author("ruki")
     set_description("A test installer.")
     set_homepage("https://xmake.io")
+    set_license("Apache-2.0")
     set_licensefile("LICENSE.md")
     add_targets("test", "foo")
     add_installfiles("src/(assets/*.png)", {prefixdir = "images"})
     add_sourcefiles("(src/**)")
+    add_sourcefiles("xmake.lua")
     set_iconfile("src/assets/xmake.ico")
     add_components("LongPath")
 
@@ -40,7 +42,7 @@ xpack("test")
     end)
 
     after_installcmd(function (package, batchcmds)
-        if package:from_source() then
+        if package:format() == "runself" then
             batchcmds:runv("echo", {"hello"})
         else
             batchcmds:mkdir(package:installdir("resources"))
