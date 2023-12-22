@@ -143,7 +143,7 @@ function _buildparams(info, target, default)
             local files = table.join(info._targets[target].headerfiles or {}, info._targets[target].extrafiles)
             table.insert(r, _filter_files(files, nil, {".natvis"}))
         elseif args.incnatvis then
-            local files = info._targets[target].headerfiles
+            local files = table.join(info._targets[target].headerfiles or {}, info._targets[target].extrafiles)
             table.insert(r, _filter_files(files, {".natvis"}))
         end
         return r
