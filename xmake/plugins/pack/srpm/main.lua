@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.semver")
 import("core.base.hashset")
 import("lib.detect.find_tool")
+import("lib.detect.find_file")
 import("utils.archive")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
@@ -248,11 +249,19 @@ function _pack_srpm(rpmbuild, package)
     os.tryrm(archivefile)
     archive.archive(archivefile, archivefiles, {curdir = rootdir, compress = "best"})
 
-    -- do pack
+    -- pack srpm package
     os.vrunv(rpmbuild, {"-bs", specfile,
         "--define", "_topdir " .. package:buildir(),
         "--define", "_sourcedir " .. package:buildir(),
         "--define", "_srcrpmdir " .. package:outputdir()})
+
+    -- pack rpm package
+    if package:format() == "rpm" then
+        local srpmfile = find_file("*.src.rpm", package:outputdir())
+        if srpmfile then
+            os.vrunv(rpmbuild, {"--rebuild", srpmfile, "--define", "_rpmdir " .. package:outputdir()})
+        end
+    end
 end
 
 function main(package)

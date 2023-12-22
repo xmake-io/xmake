@@ -19,7 +19,7 @@ target("foo")
     add_packages("zlib")
 
 xpack("test")
-    set_formats("nsis", "srpm", "zip", "targz", "srczip", "srctargz", "runself")
+    set_formats("nsis", "srpm", "rpm", "zip", "targz", "srczip", "srctargz", "runself")
     set_title("hello")
     set_author("ruki")
     set_description("A test installer.")
