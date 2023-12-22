@@ -237,7 +237,8 @@ function xpack:inputkind()
             srctargz = "source",
             runself = "source",
             deb = "source",
-            srpm = "source"
+            srpm = "source",
+            rpm = "source"
         }
         inputkind = inputkinds[self:format()] or "binary"
     end
@@ -362,6 +363,7 @@ function xpack:specfile()
     local extensions = {
         nsis = ".nsi",
         srpm = ".spec",
+        rpm = ".spec",
         runself = ".lsm"
     }
     local extension = extensions[self:format()] or ".spec"
@@ -380,7 +382,8 @@ function xpack:extension()
             srctargz = ".tar.gz",
             runself  = ".gz.run",
             deb      = ".deb",
-            srpm     = ".src.rpm"
+            srpm     = ".src.rpm",
+            rpm      = ".rpm"
         }
         extension = extensions[self:format()] or ""
     end

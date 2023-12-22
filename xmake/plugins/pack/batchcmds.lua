@@ -183,15 +183,25 @@ function _on_target_installcmd_headeronly(target, batchcmds_, opt)
     _install_headers(target, batchcmds_, includedir)
 end
 
+-- on install source target command
+function _on_target_installcmd_source(target, batchcmds_, opt)
+    local package = opt.package
+    batchcmds_:vrunv("xmake", {"install", "-o", path(package:install_rootdir()), target:name()})
+end
+
 -- on build target command
 function _on_target_buildcmd(target, batchcmds_, opt)
     local package = opt.package
-    batchcmds_:vrunv("xmake", {"build", target:name()})
+    batchcmds_:vrunv("xmake", {"build", "-y", target:name()})
 end
 
 -- on install target command
 function _on_target_installcmd(target, batchcmds_, opt)
     local package = opt.package
+    if package:from_source() then
+        _on_target_installcmd_source(target, batchcmds_, opt)
+        return
+    end
 
     -- install target binaries
     local scripts = {
@@ -278,9 +288,18 @@ function _on_target_uninstallcmd_headeronly(target, batchcmds_, opt)
     _uninstall_headers(target, batchcmds_, includedir)
 end
 
+-- on uninstall source target command
+function _on_target_uninstallcmd_source(target, batchcmds_, opt)
+    -- TODO
+end
+
 -- on uninstall target command
 function _on_target_uninstallcmd(target, batchcmds_, opt)
     local package = opt.package
+    if package:from_source() then
+        _on_target_uninstallcmd_source(target, batchcmds_, opt)
+        return
+    end
 
     -- uninstall target binaries
     local scripts = {
@@ -412,9 +431,6 @@ end
 
 -- on install command
 function _on_installcmd(package, batchcmds_)
-    if not package:from_binary() then
-        return
-    end
     local srcfiles, dstfiles = package:installfiles()
     for idx, srcfile in ipairs(srcfiles) do
         batchcmds_:cp(srcfile, dstfiles[idx])
@@ -426,9 +442,6 @@ end
 
 -- on uninstall command
 function _on_uninstallcmd(package, batchcmds_)
-    if not package:from_binary() then
-        return
-    end
     local _, dstfiles = package:installfiles()
     for _, dstfile in ipairs(dstfiles) do
         batchcmds_:rm(dstfile, {emptydirs = true})

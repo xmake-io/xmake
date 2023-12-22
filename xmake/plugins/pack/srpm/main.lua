@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.semver")
 import("core.base.hashset")
 import("lib.detect.find_tool")
+import("lib.detect.find_file")
 import("utils.archive")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
@@ -99,7 +100,16 @@ function _get_customcmd(package, installcmds, cmd)
         local dir = _translate_filepath(package, cmd.dir)
         table.insert(installcmds, string.format("mkdir -p \"%s\"", dir))
     elseif cmd.program then
-        table.insert(installcmds, string.format("%s", os.args(table.join(cmd.program, cmd.argv))))
+        local argv = {}
+        for _, arg in ipairs(cmd.argv) do
+            if path.instance_of(arg) then
+                arg = arg:clone():set(_translate_filepath(package, arg:rawstr())):str()
+            elseif path.is_absolute(arg) then
+                arg = _translate_filepath(package, arg)
+            end
+            table.insert(argv, arg)
+        end
+        table.insert(installcmds, string.format("%s", os.args(table.join(cmd.program, argv))))
     end
 end
 
@@ -239,11 +249,19 @@ function _pack_srpm(rpmbuild, package)
     os.tryrm(archivefile)
     archive.archive(archivefile, archivefiles, {curdir = rootdir, compress = "best"})
 
-    -- do pack
+    -- pack srpm package
     os.vrunv(rpmbuild, {"-bs", specfile,
         "--define", "_topdir " .. package:buildir(),
         "--define", "_sourcedir " .. package:buildir(),
         "--define", "_srcrpmdir " .. package:outputdir()})
+
+    -- pack rpm package
+    if package:format() == "rpm" then
+        local srpmfile = find_file("*.src.rpm", package:outputdir())
+        if srpmfile then
+            os.vrunv(rpmbuild, {"--rebuild", srpmfile, "--define", "_rpmdir " .. package:outputdir()})
+        end
+    end
 end
 
 function main(package)

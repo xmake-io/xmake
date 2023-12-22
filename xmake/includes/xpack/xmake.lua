@@ -46,7 +46,7 @@ local apis = {
         "xpack.set_copyright",
         -- set company name
         "xpack.set_company",
-        -- set package formats, e.g. nsis, deb, srpm, targz, zip, srctargz, srczip, runself, ...
+        -- set package formats, e.g. nsis, deb, srpm, rpm, targz, zip, srctargz, srczip, runself, ...
         -- we can also add custom formats
         "xpack.set_formats",
         -- set the base name of the output file
