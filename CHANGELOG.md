@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.8.6
+
 ### New features
 
 * Add `network.mode` policy
@@ -1699,6 +1701,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.8.6
 
 ### 新特性
 
