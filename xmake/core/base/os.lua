@@ -876,11 +876,11 @@ function os.execv(program, argv, opt)
             if waitok > 0 then
                 ok = status
             elseif waitok == 0 and opt.timeout then
-                print("kill .. ")
                 proc:kill()
-                print("kill end")
                 waitok, status = proc:wait(-1)
-                print("waitok", waitok, status)
+                if waitok > 0 then
+                    ok = status
+                end
                 errors = "wait process timeout"
             end
         else
