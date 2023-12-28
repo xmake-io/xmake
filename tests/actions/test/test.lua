@@ -1,4 +1,4 @@
 function main(t)
-    os.exec("xmake test -vD")
+    os.exec("xmake test")
 end
 
