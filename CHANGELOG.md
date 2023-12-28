@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#4544](https://github.com/xmake-io/xmake/issues/4544): Support to wait process timeout for `xmake test`
+
 ## v2.8.6
 
 ### New features
@@ -1701,6 +1705,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#4544](https://github.com/xmake-io/xmake/issues/4544): 改进 `xmake test`，支持等待进程超时
 
 ## v2.8.6
 
