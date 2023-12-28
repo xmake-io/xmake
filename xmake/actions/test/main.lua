@@ -309,12 +309,9 @@ function _run_tests(tests)
     cprint("${color.success}%d%%${clear} tests passed, ${color.failure}%d${clear} tests failed out of ${bright}%d${clear}, spent ${bright}%0.3fs",
         passed_rate, report.total - report.passed, report.total, spent / 1000)
     local return_zero = project.policy("test.return_zero_on_failure")
-    print("return_zero", return_zero)
     if not return_zero and report.passed < report.total then
-        print("raise")
         raise()
     end
-    print("end")
 end
 
 -- try to build the given target
