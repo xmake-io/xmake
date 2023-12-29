@@ -35,7 +35,6 @@ function _make_projects(slnfile, vsinfo)
     -- make all targets
     local groups = {}
     local targets = {}
-    local vctool = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
     for targetname, target in table.orderpairs(project.targets()) do
         -- we need to set startup project for default or binary target
         -- @see https://github.com/xmake-io/xmake/issues/1249
@@ -53,8 +52,23 @@ function _make_projects(slnfile, vsinfo)
         end
     end
     for _, target in ipairs(targets) do
+        tool_id = ""
+        proj_extension = ""
+        for _, sourcebatch in pairs(target:sourcebatches()) do
+            local sourcekind = sourcebatch.sourcekind
+            if sourcekind == "cc" or sourcekind == "cxx" then
+                tool_id = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
+                proj_extension = "vcxproj"
+                break
+            elseif sourcekind == "cs"  then
+                tool_id = "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"
+                proj_extension = "csproj"
+                break
+            end
+        end
+        
         local targetname = target:name()
-        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcxproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid4(targetname))
+        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.%s\", \"{%s}\"", tool_id, targetname, targetname, targetname, proj_extension, hash.uuid4(targetname))
         for _, dep in ipairs(target:get("deps")) do
             slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
             slnfile:print("{%s} = {%s}", hash.uuid4(dep), hash.uuid4(dep))

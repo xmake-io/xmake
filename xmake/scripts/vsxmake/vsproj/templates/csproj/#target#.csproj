@@ -10,7 +10,7 @@
 
   See https://github.com/xmake-io/xmake/pull/472 for more infomation.
 -->
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="#vs_version#" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="XmakeProgram">
     <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">$(XMAKE_PROGRAM_DIR)</XmakeProgramDir>
     <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">#programdir#</XmakeProgramDir>

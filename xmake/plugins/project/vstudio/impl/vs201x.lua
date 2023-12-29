@@ -32,6 +32,7 @@ import("core.tool.toolchain")
 import("vs201x_solution")
 import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
+import("vs_csproj")
 import("vsutils")
 import("core.cache.memcache")
 import("core.cache.localcache")
@@ -288,7 +289,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     for _, sourcebatch in table.orderpairs(sourcebatches) do
         local sourcekind = sourcebatch.sourcekind
         local rulename = sourcebatch.rulename
-        if sourcekind then
+        if sourcekind and sourcekind ~= "cs" then   -- TODO: temp, delete it when cs flags are done
             for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local compflags = compiler.compflags(sourcefile, {target = target, sourcekind = sourcekind})
                 if not firstcompflags and (rulename == "c.build" or rulename == "c++.build" or rulename == "cuda.build") then
@@ -567,10 +568,18 @@ function make(outputdir, vsinfo)
     -- make solution
     vs201x_solution.make(vsinfo)
 
-    -- make .vcxproj
+    -- make .vcxproj and .csproj
     for _, target in table.orderpairs(targets) do
-        vs201x_vcxproj.make(vsinfo, target)
-        vs201x_vcxproj_filters.make(vsinfo, target)
+        for _, targetinfo in ipairs(target.info) do
+            if targetinfo.sourcekinds and table.contains(targetinfo.sourcekinds, "cc", "cxx") then
+                vs201x_vcxproj.make(vsinfo, target)
+                vs201x_vcxproj_filters.make(vsinfo, target)
+                break
+            elseif targetinfo.sourcekinds and table.contains(targetinfo.sourcekinds, "cs") then
+                vs_csproj.make(vsinfo, target)
+                break
+            end
+        end
     end
 
     -- clear local cache
