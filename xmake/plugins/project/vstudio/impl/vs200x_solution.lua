@@ -31,29 +31,15 @@ end
 -- make projects
 function _make_projects(slnfile, vsinfo)
 
+    -- the vstudio tool uuid for vc project
+    local vctool = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
+
     -- make all targets
     for targetname, target in pairs(project.targets()) do
-
-        tool_id = ""        -- the vstudio tool uuid for project
-        proj_extension = ""
-
-        for _, sourcebatch in pairs(target:sourcebatches()) do
-            local sourcekind = sourcebatch.sourcekind
-            if sourcekind == "cc" or sourcekind == "cxx" then
-                tool_id = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
-                proj_extension = "vcxproj"
-                break
-            elseif sourcekind == "cs"  then
-                tool_id = "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"
-                proj_extension = "csproj"
-                break
-            end
-        end
-
         if not target:is_phony() then
 
             -- enter project
-            slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.%s\", \"{%s}\"", tool_id, targetname, targetname, targetname, proj_extension, hash.uuid4(targetname))
+            slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid4(targetname))
 
             -- add dependences
             for _, dep in ipairs(target:get("deps")) do

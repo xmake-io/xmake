@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      Kethers
--- @file        vs_csproj.lua
+-- @file        vs201x_csproj.lua
 --
 
 -- imports
@@ -84,8 +84,8 @@ function _make_configurations(csprojfile, vsinfo, target)
         local mode = targetinfo.mode
         local arch = targetinfo.arch
 
-        symbols  = vsinfo._targets[targetname]._targets[mode][arch].symbols or ""
-        optimize = vsinfo._targets[targetname]._targets[mode][arch].optimize or ""
+        symbols  = targetinfo.symbols or ""
+        optimize = targetinfo.optimize or ""
 
         debugtype        = "portable"
         debugsymbols     = "true"
@@ -113,7 +113,7 @@ function _make_configurations(csprojfile, vsinfo, target)
             csprojfile:print("<OutputPath>%s</OutputPath>", _make_dirs(targetinfo.targetdir, target.project_dir))
             csprojfile:print("<BaseIntermediateOutputPath>%s</BaseIntermediateOutputPath>", _make_dirs(targetinfo.objectdir, target.project_dir))
             csprojfile:print("<IntermediateOutputPath>%$(BaseIntermediateOutputPath)</IntermediateOutputPath>")
-            csprojfile:print("<DefineConstants>%s</DefineConstants>", vsinfo._targets[targetname]._targets[mode][arch].defines)
+            csprojfile:print("<DefineConstants>%s</DefineConstants>", targetinfo.defines)
             csprojfile:print("<ErrorReport>prompt</ErrorReport>")
             csprojfile:print("<WarningLevel>4</WarningLevel>")
         csprojfile:leave("</PropertyGroup>")
@@ -152,15 +152,13 @@ end
 
 -- make project references
 function _make_project_references(csprojfile, vsinfo, target)
-    local deps = vsinfo._targets[target.name]._deps
-
     csprojfile:enter("<ItemGroup>")
 
-    for depname, dep in table.orderpairs(deps) do
-        proj_extension = dep.proj_extension
-        csprojfile:enter("<ProjectReference Include=\"..\\%s\\%s.%s\"> ", depname, depname, proj_extension)
-            csprojfile:print("<Project>{%s}</Project>", dep.target_id)
-            csprojfile:print("<Name>%s</Name>", depname)
+    for deptargetname, deptarget in table.orderpairs(target._deps) do
+        proj_extension = deptarget.proj_extension or ""
+        csprojfile:enter("<ProjectReference Include=\"..\\%s\\%s.%s\"> ", deptargetname, deptargetname, proj_extension)
+            csprojfile:print("<Project>{%s}</Project>", hash.uuid4(deptargetname))
+            csprojfile:print("<Name>%s</Name>", deptargetname)
         csprojfile:leave("</ProjectReference>")
     end
 
@@ -178,9 +176,6 @@ end
 -- make csproj
 function make(vsinfo, target)
 
-    -- TODO: getinfo will leads to repeat MSVC checking output, try not to use it
-    local info = getinfo(option.get("outputdir"), vsinfo)
-
     -- the target name
     local targetname = target.name
 
@@ -195,19 +190,19 @@ function make(vsinfo, target)
     vsfile.indentchar('  ')
 
     -- make headers
-    _make_header(csprojfile, info)
+    _make_header(csprojfile, vsinfo)
 
     -- make Configurations
-    _make_configurations(csprojfile, info, target)
+    _make_configurations(csprojfile, vsinfo, target)
 
     -- make source files
-    _make_source_files(csprojfile, info, target)
+    _make_source_files(csprojfile, vsinfo, target)
 
     -- make project references
-    _make_project_references(csprojfile, info, target)
+    _make_project_references(csprojfile, vsinfo, target)
 
     -- make tailer
-    _make_tailer(csprojfile, info, target)
+    _make_tailer(csprojfile, vsinfo, target)
 
     -- exit solution file
     csprojfile:close()

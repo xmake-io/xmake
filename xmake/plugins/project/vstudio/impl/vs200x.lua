@@ -22,7 +22,6 @@
 import("core.project.project")
 import("vs200x_solution")
 import("vs200x_vcproj")
-import("vs_csproj")
 
 -- make vstudio project
 function make(outputdir, vsinfo)
@@ -45,17 +44,8 @@ function make(outputdir, vsinfo)
 
     -- make vsprojs
     for _, target in pairs(project.targets()) do
-        for _, sourcebatch in pairs(target:sourcebatches()) do
-            local sourcekind = sourcebatch.sourcekind
-            if sourcekind == "cc" or sourcekind == "cxx" then
-                if not target:is_phony() then
-                    vs200x_vcproj.make(vsinfo, target)
-                end
-                break
-            elseif sourcekind == "cs"  then
-                vs_csproj.make(vsinfo, target)
-                break
-            end
+        if not target:is_phony() then
+            vs200x_vcproj.make(vsinfo, target)
         end
     end
 

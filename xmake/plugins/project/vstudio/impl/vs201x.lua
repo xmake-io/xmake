@@ -32,7 +32,7 @@ import("core.tool.toolchain")
 import("vs201x_solution")
 import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
-import("vs_csproj")
+import("vs201x_csproj")
 import("vsutils")
 import("core.cache.memcache")
 import("core.cache.localcache")
@@ -78,6 +78,30 @@ function _clear_cache()
     localcache.set("config", "recheck", true)
 
     localcache.save()
+end
+
+function _make_arrs(arr, sep)
+    if arr == nil then
+        return ""
+    end
+    if type(arr) == "string" then
+        return vsutils.escape(arr)
+    end
+    local r = {}
+    for k, v in ipairs(arr) do
+        r[k] = _make_arrs(v, sep)
+    end
+    r = table.unique(r)
+    return table.concat(r, sep or ";")
+end
+
+-- get values from target
+function _get_values_from_target(target, name)
+    local values = {}
+    for _, value in ipairs((target:get_from(name, "*"))) do
+        table.join2(values, value)
+    end
+    return table.unique(values)
 end
 
 -- get command string
@@ -254,8 +278,13 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     -- save languages
     targetinfo.languages = table.wrap(target:get("languages"))
 
-    -- save symbols
-    targetinfo.symbols = target:get("symbols")
+    -- save defines
+    targetinfo.defines       = _make_arrs(_get_values_from_target(target, "defines"))
+
+    -- save symbols, optimize, strip info
+    targetinfo.symbols       = target:get("symbols")
+    targetinfo.optimize      = target:get("optimize")
+    targetinfo.strip         = target:get("strip")
 
     -- save target kind
     targetinfo.targetkind = target:kind()
@@ -532,10 +561,23 @@ function make(outputdir, vsinfo)
                 _target.info = _target.info or {}
                 table.insert(_target.info, _make_targetinfo(mode, arch, target, _target.project_dir))
 
+                for _, sourcebatch in pairs(target:sourcebatches()) do
+                    local sourcekind = sourcebatch.sourcekind
+                    if sourcekind == "cc" or sourcekind == "cxx" then
+                        _target.proj_extension = "vcxproj"
+                        break
+                    elseif sourcekind == "cs"  then
+                        _target.proj_extension = "csproj"
+                        break
+                    end
+                end
+
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                 _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
                 _target.extrafiles = table.unique(table.join(_target.extrafiles or {}, (target:extrafiles())))
+
+                _target.deps = table.unique(table.join(_target.deps or {}, table.orderkeys(target:deps()), nil))
 
                 -- sort them to stabilize generation
                 table.sort(_target.sourcefiles)
@@ -565,20 +607,26 @@ function make(outputdir, vsinfo)
         end
     end
 
+    -- make [deptargetname, deptarget] pairs (_deps)
+    for _, target in table.orderpairs(targets) do
+        target._deps = {}
+        for _, v in ipairs(target.deps) do
+            target._deps[v] = targets[v]
+        end
+    end
+
     -- make solution
     vs201x_solution.make(vsinfo)
 
     -- make .vcxproj and .csproj
     for _, target in table.orderpairs(targets) do
-        for _, targetinfo in ipairs(target.info) do
-            if targetinfo.sourcekinds and table.contains(targetinfo.sourcekinds, "cc", "cxx") then
-                vs201x_vcxproj.make(vsinfo, target)
-                vs201x_vcxproj_filters.make(vsinfo, target)
-                break
-            elseif targetinfo.sourcekinds and table.contains(targetinfo.sourcekinds, "cs") then
-                vs_csproj.make(vsinfo, target)
-                break
-            end
+        if target.proj_extension == "vcxproj" then
+            vs201x_vcxproj.make(vsinfo, target)
+            vs201x_vcxproj_filters.make(vsinfo, target)
+            break
+        elseif target.proj_extension == "csproj" then
+            vs201x_csproj.make(vsinfo, target)
+            break
         end
     end
 
