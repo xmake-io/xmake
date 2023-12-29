@@ -62,6 +62,7 @@ function _get_windows_sdk_arguments(target)
         local envs = msvc:runenvs()
         local WindowsSdkDir = envs.WindowsSdkDir
         local WindowsSDKVersion = envs.WindowsSDKVersion
+        local VCToolsInstallDir = envs.VCToolsInstallDir
         if WindowsSdkDir and WindowsSDKVersion then
             local includedirs = os.dirs(path.join(WindowsSdkDir, "Include", envs.WindowsSDKVersion, "*"))
             for _, tool in ipairs({"atlmfc", "diasdk"}) do
@@ -69,6 +70,10 @@ function _get_windows_sdk_arguments(target)
                 if os.isdir(tool_dir) then
                     table.insert(includedirs, tool_dir)
                 end
+            end
+
+            if VCToolsInstallDir then
+                table.insert(includedirs, path.join(VCToolsInstallDir, "include"))
             end
 
             for _, dir in ipairs(includedirs) do

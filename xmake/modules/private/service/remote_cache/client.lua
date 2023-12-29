@@ -368,7 +368,7 @@ end
 
 -- get the session id, only for unique project
 function remote_cache_client:session_id()
-    return self:status().session_id or hash.uuid():split("-", {plain = true})[1]:lower()
+    return self:status().session_id or hash.uuid(option.get("session")):split("-", {plain = true})[1]:lower()
 end
 
 -- set the given client address

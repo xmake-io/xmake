@@ -55,7 +55,9 @@ function _do_test_target(target, opt)
     local runargs = table.wrap(opt.runargs or target:get("runargs"))
     local outfile = os.tmpfile()
     local errfile = os.tmpfile()
-    local ok, syserrors = os.execv(targetfile, runargs, {try = true, curdir = rundir, envs = envs, stdout = outfile, stderr = errfile})
+    local run_timeout = opt.run_timeout
+    local ok, syserrors = os.execv(targetfile, runargs, {try = true, timeout = run_timeout,
+        curdir = rundir, envs = envs, stdout = outfile, stderr = errfile})
     local outdata = os.isfile(outfile) and io.readfile(outfile) or ""
     if opt.trim_output then
         outdata = outdata:trim()
@@ -65,7 +67,15 @@ function _do_test_target(target, opt)
         errors = errdata or errors
         if not errors or #errors == 0 then
             if ok ~= nil then
-                errors = string.format("%s\nrun failed, exit code: %d", outdata or "", ok)
+                errors = outdata or ""
+                if #errors > 0 then
+                    errors = errors .. "\n"
+                end
+                if syserrors then
+                    errors = errors .. string.format("run failed, exit code: %d, exit error: %s", ok, syserrors)
+                else
+                    errors = errors .. string.format("run failed, exit code: %d", ok)
+                end
             else
                 errors = string.format("run failed, exit error: %s", syserrors and syserrors or "unknown reason")
             end

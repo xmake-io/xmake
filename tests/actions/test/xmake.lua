@@ -42,3 +42,10 @@ target("test_15")
     set_default(false)
     add_files("src/test_1.cpp")
     add_tests("stub_n", {files = "tests/stub_n*.cpp", defines = "STUB_N"})
+
+target("test_timeout")
+    set_kind("binary")
+    set_default(false)
+    add_files("src/run_timeout.cpp")
+    add_tests("run_timeout", {run_timeout = 1000})
+

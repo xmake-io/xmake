@@ -32,7 +32,7 @@ task("pack")
                                             "e.g.",
                                             "    - xmake pack -f nsis,deb,rpm",
                                             "values:",
-                                            values = {"nsis", "deb", "rpm", "runself", "targz", "zip", "srctargz", "srczip"}},
+                                            values = {"nsis", "deb", "srpm", "rpm", "runself", "targz", "zip", "srctargz", "srczip"}},
             {},
             {nil, "packages",  "vs", nil,   "The package names."}
         }

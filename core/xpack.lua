@@ -3,6 +3,7 @@ xpack("xmake")
     set_title("Xmake build utility ($(arch))")
     set_description("A cross-platform build utility based on Lua.")
     set_copyright("Copyright (C) 2015-present, TBOOX Open Source Group")
+    set_author("waruqi@gmail.com")
     set_licensefile("../LICENSE.md")
     set_formats("nsis", "zip")
     add_targets("demo")
@@ -77,9 +78,15 @@ xpack_component("LongPath")
     end)
 
 xpack("xmakesrc")
-    set_formats("srczip", "srctargz", "runself")
+    set_homepage("https://xmake.io")
+    set_title("Xmake build utility ($(arch))")
+    set_description("A cross-platform build utility based on Lua.")
+    set_copyright("Copyright (C) 2015-present, TBOOX Open Source Group")
+    set_author("waruqi@gmail.com")
+    set_formats("srczip", "srctargz", "runself", "srpm")
     set_basename("xmake-v$(version)")
     set_prefixdir("xmake-$(version)")
+    set_license("Apache-2.0")
     before_package(function (package)
         import("devel.git")
 
@@ -107,6 +114,19 @@ xpack("xmakesrc")
         package:add("sourcefiles", path.join(rootdir, "scripts/msys/**"), extraconf)
     end)
 
+    on_buildcmd(function (package, batchcmds)
+        local format = package:format()
+        if format == "srpm" then
+            batchcmds:runv("./configure")
+            batchcmds:runv("make")
+        end
+    end)
+
     on_installcmd(function (package, batchcmds)
-        batchcmds:runv("./scripts/get.sh", {"__local__"})
+        local format = package:format()
+        if format == "runself" then
+            batchcmds:runv("./scripts/get.sh", {"__local__"})
+        elseif format == "srpm" then
+            batchcmds:runv("make", {"install", path(package:install_rootdir(), function (p) return "PREFIX=" .. p end)})
+        end
     end)

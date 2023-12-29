@@ -237,6 +237,7 @@ function xpack:inputkind()
             srctargz = "source",
             runself = "source",
             deb = "source",
+            srpm = "source",
             rpm = "source"
         }
         inputkind = inputkinds[self:format()] or "binary"
@@ -302,6 +303,7 @@ function xpack:specvars()
             PACKAGE_COPYRIGHT   = self:get("copyright") or "",
             PACKAGE_COMPANY     = self:get("company") or "",
             PACKAGE_ICONFILE    = self:get("iconfile") or "",
+            PACKAGE_LICENSE     = self:license() or "",
             PACKAGE_LICENSEFILE = self:get("licensefile") or ""
         }
 
@@ -359,7 +361,10 @@ end
 -- get the specfile path
 function xpack:specfile()
     local extensions = {
-        nsis = ".nsi"
+        nsis = ".nsi",
+        srpm = ".spec",
+        rpm = ".spec",
+        runself = ".lsm"
     }
     local extension = extensions[self:format()] or ".spec"
     return self:get("specfile") or path.join(self:buildir(), self:basename() .. extension)
@@ -377,6 +382,7 @@ function xpack:extension()
             srctargz = ".tar.gz",
             runself  = ".gz.run",
             deb      = ".deb",
+            srpm     = ".src.rpm",
             rpm      = ".rpm"
         }
         extension = extensions[self:format()] or ""

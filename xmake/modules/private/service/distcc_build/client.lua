@@ -499,7 +499,7 @@ function distcc_build_client:_session_id(addr, port)
             return host.session_id
         end
     end
-    return hash.uuid():split("-", {plain = true})[1]:lower()
+    return hash.uuid(option.get("session")):split("-", {plain = true})[1]:lower()
 end
 
 -- is connected for the given host

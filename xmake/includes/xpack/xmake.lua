@@ -46,7 +46,7 @@ local apis = {
         "xpack.set_copyright",
         -- set company name
         "xpack.set_company",
-        -- set package formats, e.g. nsis, deb, rpm, targz, zip, srctargz, srczip, runself, ...
+        -- set package formats, e.g. nsis, deb, srpm, rpm, targz, zip, srctargz, srczip, runself, ...
         -- we can also add custom formats
         "xpack.set_formats",
         -- set the base name of the output file
@@ -65,6 +65,8 @@ local apis = {
         "xpack.set_includedir",
         -- set prefix directory, e.g. prefixdir/bin, prefixdir/lib ..
         "xpack.set_prefixdir",
+        -- add build requires for source inputkind
+        "xpack.add_buildrequires",
         -- set nsis display icon
         "xpack.set_nsis_displayicon",
         -- set package component title
@@ -79,6 +81,8 @@ local apis = {
         "xpack.set_specfile",
         -- set icon file path, e.g foo.ico
         "xpack.set_iconfile",
+        -- set package license
+        "xpack.set_license",
         -- set package license file, we will also get them from target
         "xpack.set_licensefile",
         -- add source files
@@ -99,6 +103,12 @@ local apis = {
         "xpack.on_package",
         -- add custom package script after packing package
         "xpack.after_package",
+        -- add custom build commands script before building, it's only for source inputkind
+        "xpack.before_buildcmd",
+        -- add custom build commands script, it's only for source inputkind
+        "xpack.on_buildcmd",
+        -- add custom build commands script after building, it's only for source inputkind
+        "xpack.after_buildcmd",
         -- add custom commands script before installing
         "xpack.before_installcmd",
         -- add custom commands script before uninstalling

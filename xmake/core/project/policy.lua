@@ -100,6 +100,8 @@ function policy.policies()
             ["package.install_only"]              = {description = "Only install packages from remote.", type = "boolean"},
             -- Always install packages every time
             ["package.install_always"]            = {description = "Always install packages every time.", type = "boolean"},
+            -- Install packages in the local project folder
+            ["package.install_locally"]           = {description = "Install packages in the local project folder.", default = false, type = "boolean"},
             -- Set custom headers when downloading package
             ["package.download.http_headers"]     = {description = "Set the custom http headers when downloading package."},
             -- Use includes as external header files? e.g. -isystem ..

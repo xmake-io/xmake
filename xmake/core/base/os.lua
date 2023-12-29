@@ -860,6 +860,7 @@ function os.execv(program, argv, opt)
 
     -- open command
     local ok = -1
+    local errors
     local proc = process.openv(filename, argv or {}, openopt)
     if proc ~= nil then
 
@@ -871,9 +872,16 @@ function os.execv(program, argv, opt)
 
         -- wait process
         if not opt.detach then
-            local waitok, status = proc:wait(-1)
+            local waitok, status = proc:wait(opt.timeout or -1)
             if waitok > 0 then
                 ok = status
+            elseif waitok == 0 and opt.timeout then
+                proc:kill()
+                waitok, status = proc:wait(-1)
+                if waitok > 0 then
+                    ok = status
+                end
+                errors = "wait process timeout"
             end
         else
             ok = 0
@@ -885,7 +893,7 @@ function os.execv(program, argv, opt)
         -- cannot execute process
         return nil, os.strerror()
     end
-    return ok
+    return ok, errors
 end
 
 -- run command and return output and error data

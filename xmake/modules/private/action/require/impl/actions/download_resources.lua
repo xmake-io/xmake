@@ -113,6 +113,8 @@ function _download(package, resource_name, resource_url, resource_hash)
         if localfile and os.isfile(localfile) then
             -- we can use local resource from the search directories directly if network is too slow
             os.cp(localfile, resource_file)
+        elseif os.isfile(resource_url) then
+            os.cp(resource_url, resource_file)
         elseif resource_url:find(string.ipattern("https-://")) or resource_url:find(string.ipattern("ftps-://")) then
             http.download(resource_url, resource_file, {
                 insecure = global.get("insecure-ssl"),
