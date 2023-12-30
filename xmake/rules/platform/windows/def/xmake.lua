@@ -21,15 +21,19 @@
 -- add *.def for windows/dll
 rule("platform.windows.def")
     set_extensions(".def")
-    on_config("windows", function (target)
+    on_config("windows", "mingw", function (target)
         if not target:is_shared() then
             return
         end
-        if target:has_tool("sh", "link") then
-            local sourcebatch = target:sourcebatches()["platform.windows.def"]
-            if sourcebatch then
-                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+
+        local sourcebatch = target:sourcebatches()["platform.windows.def"]
+        if sourcebatch then
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                if target:is_plat("windows") then
                     target:add("shflags", "/def:" .. path.translate(sourcefile), {force = true})
+                    break;
+                elseif target:is_plat("mingw") then
+                    target:add("shflags", path.translate(sourcefile), {force = true})
                     break;
                 end
             end
