@@ -65,5 +65,20 @@ function main(toolchain)
             _add_vsenv(toolchain, name)
         end
     end
+
+    
+    local march
+    if toolchain:is_arch("x86_64", "x64") then
+        march = "-m64"
+    elseif toolchain:is_arch("i386", "x86") then
+        march = "-m32"
+    end
+    if march then
+        toolchain:add("cxflags", march)
+        toolchain:add("mxflags", march)
+        toolchain:add("asflags", march)
+        toolchain:add("ldflags", march)
+        toolchain:add("shflags", march)
+    end
 end
 
