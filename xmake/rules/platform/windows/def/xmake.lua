@@ -26,13 +26,18 @@ rule("platform.windows.def")
             return
         end
 
-        local sourcebatch = target:sourcebatches()["platform.windows.def"]
-        if sourcebatch then
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                if target:is_plat("windows") then
+        if target:is_plat("windows") and target:has_tool("sh", "link") then
+            local sourcebatch = target:sourcebatches()["platform.windows.def"]
+            if sourcebatch then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     target:add("shflags", "/def:" .. path.translate(sourcefile), {force = true})
                     break;
-                elseif target:is_plat("mingw") then
+                end
+            end
+        elseif target:is_plat("mingw") then
+            local sourcebatch = target:sourcebatches()["platform.windows.def"]
+            if sourcebatch then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     target:add("shflags", path.translate(sourcefile), {force = true})
                     break;
                 end
