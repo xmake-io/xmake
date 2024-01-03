@@ -169,13 +169,13 @@ install_tools() {
     { pacman -V >/dev/null 2>&1 && $sudoprefix pacman -S --noconfirm --needed git base-devel ncurses readline; } ||
     { emerge -V >/dev/null 2>&1 && $sudoprefix emerge -atv dev-vcs/git; } ||
     { pkg list-installed >/dev/null 2>&1 && $sudoprefix pkg install -y git getconf build-essential readline; } || # termux
-    { pkg help >/dev/null 2>&1 && $sudoprefix pkg install -y git readline ccache ncurses; } || # freebsd
+    { pkg help >/dev/null 2>&1 && $sudoprefix pkg install -y git readline ncurses; } || # freebsd
     { nix-env --version >/dev/null 2>&1 && nix-env -i git gcc readline ncurses; } || # nixos
     { apk --version >/dev/null 2>&1 && $sudoprefix apk add git gcc g++ make readline-dev ncurses-dev libc-dev linux-headers; } ||
     { xbps-install --version >/dev/null 2>&1 && $sudoprefix xbps-install -Sy git base-devel; } #void
 
 }
-test_tools || { install_tools && test_tools; } || raise "$(echo -e 'Dependencies Installation Fail\nThe getter currently only support these package managers\n\t* apt\n\t* yum\n\t* zypper\n\t* pacman\n\t* portage\n\t* xbps\n Please install following dependencies manually:\n\t* git\n\t* build essential like `make`, `gcc`, etc\n\t* libreadline-dev (readline-devel)\n\t* ccache (optional)')" 1
+test_tools || { install_tools && test_tools; } || raise "$(echo -e 'Dependencies Installation Fail\nThe getter currently only support these package managers\n\t* apt\n\t* yum\n\t* zypper\n\t* pacman\n\t* portage\n\t* xbps\n Please install following dependencies manually:\n\t* git\n\t* build essential like `make`, `gcc`, etc\n\t* libreadline-dev (readline-devel)')" 1
 
 #-----------------------------------------------------------------------------
 # install xmake
