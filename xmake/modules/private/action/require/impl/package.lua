@@ -951,24 +951,26 @@ function _load_packages(requires, opt)
                 if package:get("deps") and opt.nodeps ~= true then
 
                     -- load dependent packages and do not load system/3rd packages for package/deps()
-                    local packagedeps = {}
-                    local deps, plaindeps = _load_packages(package:get("deps"), {requirepath = requirepath,
+                    local _, plaindeps = _load_packages(package:get("deps"), {requirepath = requirepath,
                                                         requires_extra = package:extraconf("deps") or {},
                                                         parentinfo = requireinfo,
                                                         nodeps = opt.nodeps,
                                                         system = false})
-                    for _, dep in ipairs(deps) do
-                        table.insert(packages, dep)
-                        packagedeps[dep:name()] = dep
-                    end
                     for _, dep in ipairs(plaindeps) do
                         dep:parents_add(package)
                     end
-                    package._DEPS = packagedeps
                     package._PLAINDEPS = plaindeps
                     package._ORDERDEPS = table.unique(_sort_packagedeps(package))
                     package._LIBRARYDEPS = table.reverse_unique(_sort_librarydeps(package))
                     package._LIBRARYDEPS_WITH_PRIVATE = table.reverse_unique(_sort_librarydeps(package, {private = true}))
+                    -- we always need load dependences everytime
+                    -- @see https://github.com/xmake-io/xmake/issues/4522
+                    local packagedeps = {}
+                    for _, dep in ipairs(package._ORDERDEPS) do
+                        table.insert(packages, dep)
+                        packagedeps[dep:name()] = dep
+                    end
+                    package._DEPS = packagedeps
                 end
             end
 
