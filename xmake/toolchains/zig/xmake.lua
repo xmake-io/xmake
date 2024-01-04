@@ -78,6 +78,8 @@ toolchain("zig")
             arch = "i386"
         elseif toolchain:is_arch("riscv64") then
             arch = "riscv64"
+        elseif toolchain:is_arch("loong64") then
+            arch = "loong64"
         elseif toolchain:is_arch("mips.*") then
             arch = toolchain:arch()
         elseif toolchain:is_arch("ppc64") then
