@@ -956,7 +956,20 @@ end
 function interpreter:api_register_scope(...)
 
     -- define implementation
-    local implementation = function (self, scopes, scope_kind, scope_name, scope_info)
+    local implementation = function (self, scopes, scope_kind, ...)
+        local scope_args = table.pack(...)
+        local scope_name = scope_args[1]
+        local scope_info = scope_args[2]
+
+        -- check invalid scope name, @see https://github.com/xmake-io/xmake/issues/4547
+        if scope_args.n > 0 and type(scope_name) ~= "string" then
+            local errors = string.format("%s(%s): invalid %s name", scope_kind, scope_name, scope_kind)
+            local sourceinfo = debug.getinfo(2, "Sl")
+            if sourceinfo then
+                errors = string.format("%s:%s: %s", sourceinfo.short_src or sourceinfo.source, sourceinfo.currentline, errors)
+            end
+            interpreter._raise(errors)
+        end
 
         -- init scope for kind
         local scope_for_kind = scopes[scope_kind] or {}
