@@ -6,6 +6,11 @@
 
 * [#4544](https://github.com/xmake-io/xmake/issues/4544): Support to wait process timeout for `xmake test`
 
+### Changes
+
+* [#4575](https://github.com/xmake-io/xmake/issues/4575): Check invalid scope name
+* Add more loong64 support
+
 ## v2.8.6
 
 ### New features
@@ -1709,6 +1714,11 @@
 ### 新特性
 
 * [#4544](https://github.com/xmake-io/xmake/issues/4544): 改进 `xmake test`，支持等待进程超时
+
+### 改进
+
+* [#4575](https://github.com/xmake-io/xmake/issues/4575): 检测无效的域参数
+* 添加更多的 loong64 支持
 
 ## v2.8.6
 
