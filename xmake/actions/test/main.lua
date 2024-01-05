@@ -154,7 +154,7 @@ function _do_test_target(target, opt)
                 end
             end
         end
-        return passed, errors
+        return passed, passed and outdata or errors
     end
     return false, errors
 end
@@ -164,17 +164,17 @@ function _on_test_target(target, opt)
 
     -- build target with rules
     local passed
-    local errors
+    local output
     local done = false
     for _, r in ipairs(target:orderules()) do
         local on_test = r:script("test")
         if on_test then
-            passed, errors = on_test(target, opt)
+            passed, output = on_test(target, opt)
             done = true
         end
     end
     if done then
-        return passed, errors
+        return passed, output
     end
 
     -- do test
@@ -226,21 +226,21 @@ function _run_test(target, test)
 
     -- run the target scripts
     local passed
-    local errors
+    local output
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            local ok, errs = script(target, test)
+            local ok, out = script(target, test)
             if i == 3 then
                 passed = ok
-                errors = errs
+                output = out
             end
         end
     end
 
     -- leave the environments of the target packages
     os.setenvs(oldenvs)
-    return passed, errors
+    return passed, output
 end
 
 -- run tests
@@ -269,7 +269,7 @@ function _run_tests(tests)
             local target = testinfo.target
             testinfo.target = nil
             local spent = os.mclock()
-            local passed, errors = _run_test(target, testinfo)
+            local passed, output = _run_test(target, testinfo)
             spent = os.mclock() - spent
             if passed then
                 report.passed = report.passed + 1
@@ -283,8 +283,8 @@ function _run_tests(tests)
             local padding = maxwidth - #testinfo.name
             cprint(progress_format .. "%s%s .................................... " .. status_color .. "%s${clear} ${bright}%0.3fs",
                 progress, testinfo.name, (" "):rep(padding), passed and "passed" or "failed", spent / 1000)
-            if not passed and errors and (option.get("verbose") or option.get("diagnosis")) then
-                cprint(errors)
+            if not passed and output and (option.get("verbose") or option.get("diagnosis")) then
+                cprint(output)
             end
 
             -- stop it if be failed?
