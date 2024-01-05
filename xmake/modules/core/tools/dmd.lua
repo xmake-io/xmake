@@ -143,6 +143,20 @@ function nf_linkdir(self, dir)
     end
 end
 
+-- make the framework flag
+function nf_framework(self, framework)
+    if self:is_plat("macosx") then
+        return {"-L-framework", "-L" .. framework}
+    end
+end
+
+-- make the frameworkdir flag
+function nf_frameworkdir(self, frameworkdir)
+    if self:is_plat("macosx") then
+        return {"-L-F" .. path.translate(frameworkdir)}
+    end
+end
+
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
     if not self:is_plat("windows") then
