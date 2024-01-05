@@ -2718,7 +2718,7 @@ Common options:
                             - linux
   --arch=ARCH             Compile for the given architecture. (default: '"${_target_arch_default}"')
                             - msys: i386 x86_64
-                            - cross: i386 x86_64 arm arm64 mips mips64 riscv riscv64 s390x ppc ppc64 sh4
+                            - cross: i386 x86_64 arm arm64 mips mips64 riscv riscv64 loong64 s390x ppc ppc64 sh4
                             - bsd: i386 x86_64
                             - mingw: i386 x86_64 arm arm64
                             - macosx: x86_64 arm64

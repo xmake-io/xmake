@@ -20,7 +20,7 @@
 
 platform("cross")
     set_hosts("macosx", "linux", "windows", "bsd")
-    set_archs("i386", "x86_64", "arm", "arm64", "mips", "mips64", "riscv", "riscv64", "s390x", "ppc", "ppc64", "sh4")
+    set_archs("i386", "x86_64", "arm", "arm64", "mips", "mips64", "riscv", "riscv64", "loong64", "s390x", "ppc", "ppc64", "sh4")
 
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
