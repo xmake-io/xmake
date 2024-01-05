@@ -386,7 +386,7 @@ function nf_pcheader(self, pcheaderfile, opt)
         if objectfiles then
             table.insert(objectfiles, target:pcoutputfile("c") .. ".obj")
         end
-        return {"-Yu" .. path.filename(pcheaderfile), "-FI" .. path.filename(pcheaderfile), "-Fp" .. target:pcoutputfile("c")}
+        return {"-Yu" .. path.absolute(pcheaderfile), "-FI" .. path.absolute(pcheaderfile), "-Fp" .. target:pcoutputfile("c")}
     end
 end
 
@@ -398,7 +398,7 @@ function nf_pcxxheader(self, pcheaderfile, opt)
         if objectfiles then
             table.insert(objectfiles, target:pcoutputfile("cxx") .. ".obj")
         end
-        return {"-Yu" .. path.filename(pcheaderfile), "-FI" .. path.filename(pcheaderfile), "-Fp" .. target:pcoutputfile("cxx")}
+        return {"-Yu" .. path.absolute(pcheaderfile), "-FI" .. path.absolute(pcheaderfile), "-Fp" .. target:pcoutputfile("cxx")}
     end
 end
 
