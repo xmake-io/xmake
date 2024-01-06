@@ -41,13 +41,14 @@ function _get_bmi_path(bmifile)
     return bmifile
 end
 
--- get clang path
+-- get clang path, we need get it's absolute path
+-- @see https://github.com/xmake-io/xmake/issues/4575#issuecomment-1879596450
 function _get_clang_path(target)
     local clang_path = _g.clang_path
     if not clang_path then
         local program, toolname = target:tool("cxx")
         if program and (toolname == "clang" or toolname == "clangxx") then
-            local clang = find_tool("clang", {program = program})
+            local clang = find_tool("clang", {program = program, envs = os.getenvs()})
             if clang then
                 clang_path = clang.program
             end
