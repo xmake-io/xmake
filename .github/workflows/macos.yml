@@ -9,7 +9,12 @@ on:
 jobs:
   build:
 
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        os: [macOS-latest]
+        arch: [x86_64, arm64]
+
+    runs-on: ${{ matrix.os }}
 
     concurrency:
         group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-macOS
@@ -41,7 +46,6 @@ jobs:
       - name: Artifact
         run: |
           brew install gnu-tar
-          gem install --no-document fpm
           cd core
           xmake pack -y --autobuild=n --basename=xmake -o ../artifacts xmakesrc
           cd ..
