@@ -48,7 +48,8 @@ function _get_clang_path(target)
     if not clang_path then
         local program, toolname = target:tool("cxx")
         if program and (toolname == "clang" or toolname == "clangxx") then
-            local clang = find_tool("clang", {program = program, envs = os.getenvs()})
+            local clang = find_tool("clang", {program = program,
+                envs = os.getenvs(), cachekey = "modules_support_clang"})
             if clang then
                 clang_path = clang.program
             end
@@ -65,7 +66,8 @@ function _get_clang_version(target)
     if not clang_version then
         local program, toolname = target:tool("cxx")
         if program and (toolname == "clang" or toolname == "clangxx") then
-            local clang = find_tool("clang", {program = program, version = true})
+            local clang = find_tool("clang", {program = program, version = true,
+                envs = os.getenvs(), cachekey = "modules_support_clang"})
             if clang then
                 clang_version = clang.version
             end
