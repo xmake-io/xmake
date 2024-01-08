@@ -283,7 +283,7 @@ function _run_tests(tests)
             local padding = maxwidth - #testinfo.name
             cprint(progress_format .. "%s%s .................................... " .. status_color .. "%s${clear} ${bright}%0.3fs",
                 progress, testinfo.name, (" "):rep(padding), passed and "passed" or "failed", spent / 1000)
-            if not passed and output and (option.get("verbose") or option.get("diagnosis")) then
+            if output and (option.get("verbose") or option.get("diagnosis")) then
                 cprint(output)
             end
 
