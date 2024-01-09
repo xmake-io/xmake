@@ -66,7 +66,7 @@ function main(packages)
             local packagelock_key = _get_packagelock_key(instance)
             results[key][packagelock_key] = _lock_package(instance)
         end
-        io.writefile(project.requireslock(), string.serialize(results, {orderkeys = true}))
+        io.writefile(project.requireslock(), string.serialize(results, {orderkeys = true}), {encoding = "binary"})
     end
 end
 
