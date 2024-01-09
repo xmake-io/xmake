@@ -280,6 +280,8 @@ function _instance:_invalidate(name)
     if name == "files" then
         self._SOURCEFILES = nil
         self._FILESCONFIG = nil
+        self._OBJECTFILES = nil
+        self._SOURCEBATCHES = nil
     elseif name == "deps" then
         self._DEPS = nil
         self._ORDERDEPS = nil
@@ -520,6 +522,12 @@ function _instance:clone()
     end
     if self._SOURCEFILES then
         instance._SOURCEFILES = table.clone(self._SOURCEFILES)
+    end
+    if self._OBJECTFILES then
+        instance._OBJECTFILES = table.clone(self._OBJECTFILES)
+    end
+    if self._SOURCEBATCHES then
+        instance._SOURCEBATCHES = table.clone(self._SOURCEBATCHES, 3)
     end
     instance._LOADED = self._LOADED
     instance._LOADED_AFTER = true

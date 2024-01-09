@@ -154,12 +154,16 @@ function table.append(array, ...)
 end
 
 -- clone table
-function table.clone(self)
+--
+-- @param depth   e.g. shallow: 1, deep: -1
+--
+function table.clone(self, depth)
+    depth = depth or 1
     local result = self
-    if type(self) == "table" then
+    if type(self) == "table" and depth > 0 then
         result = {}
         for k, v in pairs(self) do
-            result[k] = v
+            result[k] = table.clone(v, depth - 1)
         end
     end
     return result
