@@ -46,9 +46,9 @@ function init(self)
     self:set("mapflags",
     {
         -- warnings
-        ["-W4"]            = "-Wreorder"
-    ,   ["-Wextra"]        = "-Wreorder"
-    ,   ["-Weverything"]   = "-Wreorder"
+        ["-W4"]            = "-Wreorder --Wno-deprecated-gpu-targets --Wno-deprecated-declarations"
+    ,   ["-Wextra"]        = "-Wreorder --Wno-deprecated-gpu-targets --Wno-deprecated-declarations"
+    ,   ["-Weverything"]   = "-Wreorder --Wno-deprecated-gpu-targets --Wno-deprecated-declarations"
     })
 end
 
@@ -58,7 +58,7 @@ function nf_symbol(self, level, opt)
     -- debug? generate *.pdb file
     local flags = nil
     if level == "debug" then
-        flags = {"-G", "-g", "-lineinfo"}
+        flags = {"-g", "-lineinfo"}
         if self:is_plat("windows") then
             local host_flags = nil
             local symbolfile = nil
@@ -96,8 +96,8 @@ function nf_warning(self, level)
     local maps =
     {
         none       = "-w"
-    ,   everything = "-Wreorder"
-    ,   error      = "-Werror"
+    ,   everything = { "-Wreorder", "--Wno-deprecated-gpu-targets", "--Wno-deprecated-declarations" }
+    ,   error      = { "-Werror", "cross-execution-space-call,reorder,deprecated-declarations" }
     }
 
     -- for cl.exe on windows
@@ -143,7 +143,9 @@ function nf_warning(self, level)
         host_warning = gcc_clang_maps[level]
     end
     if host_warning then
-        warning = ((warning or "") .. ' -Xcompiler "' .. host_warning .. '"'):trim()
+        warning = table.wrap(warning)
+        table.insert(warning, '-Xcompiler')
+        table.insert(warning, host_warning)
     end
     return warning
 
