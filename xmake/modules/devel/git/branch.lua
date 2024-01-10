@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
-import("branches", {alias = "git_branches"})
+import("net.proxy")
 
 -- get current branch
 --
@@ -38,8 +38,29 @@ import("branches", {alias = "git_branches"})
 --
 function main(opt)
     opt = opt or {}
-    local branches = git_branches(opt.repodir)
-    if branches and #branches > 0 then
-        return branches[1]
+
+    -- find git
+    local git = assert(find_tool("git"), "git not found!")
+
+    -- init arguments
+    local argv = {"branch", "--show-current"}
+
+    -- trace
+    if option.get("verbose") then
+        print("%s %s", git.program, os.args(argv))
     end
+
+    -- use proxy?
+    local envs
+    local proxy_conf = proxy.config(url)
+    if proxy_conf then
+        envs = {ALL_PROXY = proxy_conf}
+    end
+
+    -- get current branch
+    local branch = os.iorunv(git.program, argv, {envs = envs, curdir = opt.repodir})
+    if branch then
+        branch = branch:trim()
+    end
+    return branch
 end

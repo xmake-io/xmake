@@ -38,6 +38,7 @@ import("net.proxy")
 -- @endcode
 --
 function main(opt)
+    opt = opt or {}
 
     -- find git
     local git = assert(find_tool("git"), "git not found!")
