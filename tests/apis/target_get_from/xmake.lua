@@ -28,6 +28,6 @@ target("test")
         print("dep::foo/option::*", target:get_from("defines", "dep::foo/option::*"))
         print("*", target:get_from("defines", "*"))
         print("package::zlib", target:get_from("links", "package::zlib"))
-        print("extraconf(dep::foo)", target:extraconf_from("dep::foo", "linkgroups"))
+        print("extraconf(dep::foo)", target:extraconf_from("linkgroups", "dep::foo"))
     end)
 

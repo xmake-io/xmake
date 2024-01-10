@@ -391,7 +391,7 @@ function builder:_add_items_from_target(items, name, opt)
         if result then
             for idx, values in ipairs(result) do
                 local source = sources[idx]
-                local extras = target:extraconf_from(source, name)
+                local extras = target:extraconf_from(name, source)
                 values = table.wrap(values)
                 if values and #values > 0 then
                     table.insert(items, {

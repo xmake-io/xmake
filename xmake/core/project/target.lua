@@ -741,10 +741,16 @@ end
 --      target:extraconf_from("links", "dep::foo/option::bar")
 --      target:extraconf_from("links", "dep::foo/package::bar")
 --
-function _instance:extraconf_from(source, name, item, key)
+function _instance:extraconf_from(name, source)
+    if name:find("::") then
+        local tmp = name
+        name = source
+        source = tmp
+        utils.warning("please use target:extraconf_from(%s, %s) intead of target:extraconf_from(%s, %s)", name, source, source, name)
+    end
     source = source or "self"
     if source == "self" then
-        return self:extraconf(name, item, key)
+        return self:extraconf(name)
     elseif source:startswith("dep::") then
         local depname = source:split("::", {plain = true, limit = 2})[2]
         local depsource
@@ -759,23 +765,23 @@ function _instance:extraconf_from(source, name, item, key)
             -- dep::foo/option::bar
             -- dep::foo/package::bar
             if depsource then
-                return dep:extraconf_from(dep_source, name, item, key)
+                return dep:extraconf_from(name, dep_source)
             else
                 -- dep::foo
-                return dep:extraconf(name, item, key)
+                return dep:extraconf(name)
             end
         end
     elseif source:startswith("option::") then
         local optname = source:split("::", {plain = true, limit = 2})[2]
         local opt_ = self:opt(optname, opt)
         if opt_ then
-            return opt_:extraconf(name, item, key)
+            return opt_:extraconf(name)
         end
     elseif source:startswith("package::") then
         local pkgname = source:split("::", {plain = true, limit = 2})[2]
         local pkg = self:pkg(pkgname, opt)
         if pkg then
-            return pkg:extraconf(name, item, key)
+            return pkg:extraconf(name)
         end
     else
         os.raise("target:extraconf_from(): unknown source %s", source)
