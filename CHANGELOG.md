@@ -10,6 +10,8 @@
 
 * [#4575](https://github.com/xmake-io/xmake/issues/4575): Check invalid scope name
 * Add more loong64 support
+* Improve dlang/dmd support for frameworks
+* [#4571](https://github.com/xmake-io/xmake/issues/4571): Improve `xmake test` output
 
 ## v2.8.6
 
@@ -1719,6 +1721,8 @@
 
 * [#4575](https://github.com/xmake-io/xmake/issues/4575): 检测无效的域参数
 * 添加更多的 loong64 支持
+* 改进 dlang/dmd 对 frameworks 的支持
+* [#4571](https://github.com/xmake-io/xmake/issues/4571): 改进 `xmake test` 的输出支持
 
 ## v2.8.6
 
