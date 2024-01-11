@@ -1765,7 +1765,7 @@ function _instance:find_package(name, opt)
                               sourcekind = opt.sourcekind,
                               package = self,
                               funcs = opt.funcs,
-                              snippets = snippets,
+                              snippets = opt.snippets,
                               includes = opt.includes})
 end
 
