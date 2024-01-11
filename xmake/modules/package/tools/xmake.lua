@@ -218,10 +218,6 @@ function _get_configs(package, configs, opt)
     if configs.kind == nil then
         table.insert(configs, "--kind=" .. (package:config("shared") and "shared" or "static"))
     end
-    local njob = opt.jobs or option.get("jobs")
-    if njob then
-        table.insert(configs, "--jobs=" .. njob)
-    end
     if package:is_plat("windows") then
         _get_configs_for_windows(package, configs, opt)
     elseif package:is_plat("android") then
@@ -499,6 +495,10 @@ function install(package, configs, opt)
     _set_builtin_argv(package, argv)
     if opt.target then
         table.insert(argv, opt.target)
+    end
+    local njob = opt.jobs or option.get("jobs")
+    if njob then
+        table.insert(argv, "--jobs=" .. njob)
     end
     os.vrunv("xmake", argv, {envs = envs})
 
