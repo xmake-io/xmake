@@ -197,7 +197,7 @@ function get(cachekey)
         _g.cache_hit_count = (_g.cache_hit_count or 0) + 1
         return objectfile_cached, objectfile_infofile
     elseif remote_cache_client.is_connected() then
-        try
+        return try
         {
             function ()
                 if not remote_cache_client.singleton():unreachable() then
