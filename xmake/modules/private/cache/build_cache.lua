@@ -150,34 +150,41 @@ end
 
 -- get hit rate
 function hitrate()
-    local hit_count = (_g.hit_count or 0)
+    local cache_hit_count = (_g.cache_hit_count or 0)
     local total_count = (_g.total_count or 0)
     if total_count > 0 then
-        return math.floor(hit_count * 100 / total_count)
+        return math.floor(cache_hit_count * 100 / total_count)
     end
     return 0
 end
 
 -- dump stats
 function dump_stats()
-    local hit_count = (_g.hit_count or 0)
     local total_count = (_g.total_count or 0)
+    local cache_hit_count = (_g.cache_hit_count or 0)
+    local cache_miss_count = total_count - cache_hit_count
     local newfiles_count = (_g.newfiles_count or 0)
     local remote_hit_count = (_g.remote_hit_count or 0)
     local remote_newfiles_count = (_g.remote_newfiles_count or 0)
     local preprocess_error_count = (_g.preprocess_error_count or 0)
     local compile_fallback_count = (_g.compile_fallback_count or 0)
+    local compile_total_time = (_g.compile_total_time or 0)
+    local cache_hit_total_time = (_g.cache_hit_total_time or 0)
+    local cache_miss_total_time = (_g.cache_miss_total_time or 0)
     vprint("")
     vprint("build cache stats:")
     vprint("cache directory: %s", rootdir())
     vprint("cache hit rate: %d%%", hitrate())
-    vprint("cache hit: %d", hit_count)
-    vprint("cache miss: %d", total_count - hit_count)
+    vprint("cache hit: %d", cache_hit_count)
+    vprint("cache hit total time: %0.3fs", cache_hit_total_time / 1000.0)
+    vprint("cache miss: %d", cache_miss_count)
+    vprint("cache miss total time: %0.3fs", cache_miss_total_time / 1000.0)
     vprint("new cached files: %d", newfiles_count)
     vprint("remote cache hit: %d", remote_hit_count)
     vprint("remote new cached files: %d", remote_newfiles_count)
     vprint("preprocess failed: %d", preprocess_error_count)
     vprint("compile fallback count: %d", compile_fallback_count)
+    vprint("compile total time: %0.3fs", compile_total_time / 1000.0)
     vprint("")
 end
 
@@ -187,7 +194,7 @@ function get(cachekey)
     local objectfile_cached = path.join(rootdir(), cachekey:sub(1, 2):lower(), cachekey)
     local objectfile_infofile = objectfile_cached .. ".txt"
     if os.isfile(objectfile_cached) then
-        _g.hit_count = (_g.hit_count or 0) + 1
+        _g.cache_hit_count = (_g.cache_hit_count or 0) + 1
         return objectfile_cached, objectfile_infofile
     elseif remote_cache_client.is_connected() then
         try
@@ -196,7 +203,7 @@ function get(cachekey)
                 if not remote_cache_client.singleton():unreachable() then
                     local exists, extrainfo = remote_cache_client.singleton():pull(cachekey, objectfile_cached)
                     if exists and os.isfile(objectfile_cached) then
-                        _g.hit_count = (_g.hit_count or 0) + 1
+                        _g.cache_hit_count = (_g.cache_hit_count or 0) + 1
                         _g.remote_hit_count = (_g.remote_hit_count or 0) + 1
                         if extrainfo then
                             io.save(objectfile_infofile, extrainfo)
@@ -268,6 +275,7 @@ function build(program, argv, opt)
     local cppinfo = preprocess(program, argv, opt)
     if cppinfo then
         local cachekey = cachekey(program, cppinfo, opt.envs)
+        local cache_hit_start_time = os.mclock()
         local objectfile_cached, objectfile_infofile = get(cachekey)
         if objectfile_cached then
             os.cp(objectfile_cached, cppinfo.objectfile)
@@ -281,8 +289,10 @@ function build(program, argv, opt)
                 cppinfo.outdata = extrainfo.outdata
                 cppinfo.errdata = extrainfo.errdata
             end
+            _g.cache_hit_total_time = (_g.cache_hit_total_time or 0) + (os.mclock() - cache_hit_start_time)
         else
             -- do compile
+            local compile_start_time = os.mclock()
             local compile_fallback = opt.compile_fallback
             if compile_fallback then
                 local ok = try {function () compile(program, cppinfo, opt); return true end}
@@ -297,6 +307,7 @@ function build(program, argv, opt)
             else
                 compile(program, cppinfo, opt)
             end
+            _g.compile_total_time = (_g.compile_total_time or 0) + (os.mclock() - compile_start_time)
             if cachekey then
                 local extrainfo
                 if cppinfo.outdata and #cppinfo.outdata ~= 0 then
@@ -307,7 +318,9 @@ function build(program, argv, opt)
                     extrainfo = extrainfo or {}
                     extrainfo.errdata = cppinfo.errdata
                 end
+                local cache_miss_start_time = os.mclock()
                 put(cachekey, cppinfo.objectfile, extrainfo)
+                _g.cache_miss_total_time = (_g.cache_miss_total_time or 0) + (os.mclock() - cache_miss_start_time)
             end
         end
         os.rm(cppinfo.cppfile)
