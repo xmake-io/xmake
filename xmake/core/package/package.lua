@@ -1253,26 +1253,28 @@ end
 -- get versions list
 function _instance:_versions_list()
     if self._VERSIONS_LIST == nil then
-        local versions = self:get("versions")
-        if type(versions) == "string" then
-            local versionfile = versions
-            if not os.isfile(versionfile) then
-                versionfile = path.join(self:scriptdir(), versions)
-            end
-            versions = {}
-            if os.isfile(versionfile) then
-                local list = io.readfile(versionfile)
-                for _, line in ipairs(list:split("\n")) do
-                    local splitinfo = line:split("%s+")
-                    if #splitinfo == 2 then
-                        local version = splitinfo[1]
-                        local shasum = splitinfo[2]
-                        versions[version] = shasum
+        local versions = table.wrap(self:get("versions"))
+        local versionfiles = self:get("versionfiles")
+        if versionfiles then
+            utils.dump(versionfiles)
+            for _, versionfile in ipairs(table.wrap(versionfiles)) do
+                if not os.isfile(versionfile) then
+                    versionfile = path.join(self:scriptdir(), versionfile)
+                end
+                if os.isfile(versionfile) then
+                    local list = io.readfile(versionfile)
+                    for _, line in ipairs(list:split("\n")) do
+                        local splitinfo = line:split("%s+")
+                        if #splitinfo == 2 then
+                            local version = splitinfo[1]
+                            local shasum = splitinfo[2]
+                            versions[version] = shasum
+                        end
                     end
                 end
             end
         end
-        self._VERSIONS_LIST = table.wrap(versions)
+        self._VERSIONS_LIST = versions
     end
     return self._VERSIONS_LIST
 end
@@ -2589,6 +2591,11 @@ function package.apis()
             -- package.add_xxx
         ,   "package.add_patches"
         ,   "package.add_resources"
+        }
+    ,   paths =
+        {
+            -- package.add_xxx
+            "package.add_versionfiles"
         }
     ,   dictionary =
         {
