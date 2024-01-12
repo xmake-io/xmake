@@ -13,6 +13,10 @@
 * Improve dlang/dmd support for frameworks
 * [#4571](https://github.com/xmake-io/xmake/issues/4571): Improve `xmake test` output
 
+### Bugs Fixed
+
+* [#4596](https://github.com/xmake-io/xmake/issues/4596): Fix remote build cache
+
 ## v2.8.6
 
 ### New features
@@ -1723,6 +1727,10 @@
 * 添加更多的 loong64 支持
 * 改进 dlang/dmd 对 frameworks 的支持
 * [#4571](https://github.com/xmake-io/xmake/issues/4571): 改进 `xmake test` 的输出支持
+
+### Bugs 修复
+
+* [#4596](https://github.com/xmake-io/xmake/issues/4596): 修复远程构建缓存
 
 ## v2.8.6
 
