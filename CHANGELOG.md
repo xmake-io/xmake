@@ -5,6 +5,7 @@
 ### New features
 
 * [#4544](https://github.com/xmake-io/xmake/issues/4544): Support to wait process timeout for `xmake test`
+* [#4606](https://github.com/xmake-io/xmake/pull/4606): Add `add_versionfiles` api in package
 
 ### Changes
 
@@ -1720,6 +1721,7 @@
 ### 新特性
 
 * [#4544](https://github.com/xmake-io/xmake/issues/4544): 改进 `xmake test`，支持等待进程超时
+* [#4606](https://github.com/xmake-io/xmake/pull/4606): 为 package 添加 `add_versionfiles` 接口
 
 ### 改进
 
