@@ -307,7 +307,7 @@ end
 
 -- set artifacts info
 function _instance:artifacts_set(artifacts_info)
-    local versions = self:get("versions")
+    local versions = self:_versions_list()
     if versions then
         -- backup previous package configuration
         self._ARTIFACTS_BACKUP = {
@@ -467,7 +467,7 @@ end
 
 -- get hash of the source package for the url_alias@version_str
 function _instance:sourcehash(url_alias)
-    local versions    = self:get("versions")
+    local versions    = self:_versions_list()
     local version_str = self:version_str()
     if versions and version_str then
         local sourcehash = nil
@@ -1250,11 +1250,40 @@ function _instance:originfile_set(filepath)
     self._ORIGINFILE = filepath
 end
 
+-- get versions list
+function _instance:_versions_list()
+    if self._VERSIONS_LIST == nil then
+        local versions = table.wrap(self:get("versions"))
+        local versionfiles = self:get("versionfiles")
+        if versionfiles then
+            utils.dump(versionfiles)
+            for _, versionfile in ipairs(table.wrap(versionfiles)) do
+                if not os.isfile(versionfile) then
+                    versionfile = path.join(self:scriptdir(), versionfile)
+                end
+                if os.isfile(versionfile) then
+                    local list = io.readfile(versionfile)
+                    for _, line in ipairs(list:split("\n")) do
+                        local splitinfo = line:split("%s+")
+                        if #splitinfo == 2 then
+                            local version = splitinfo[1]
+                            local shasum = splitinfo[2]
+                            versions[version] = shasum
+                        end
+                    end
+                end
+            end
+        end
+        self._VERSIONS_LIST = versions
+    end
+    return self._VERSIONS_LIST
+end
+
 -- get versions
 function _instance:versions()
     if self._VERSIONS == nil then
         local versions = {}
-        for version, _ in pairs(table.wrap(self:get("versions"))) do
+        for version, _ in pairs(self:_versions_list()) do
             -- remove the url alias prefix if exists
             local pos = version:find(':', 1, true)
             if pos then
@@ -2562,6 +2591,11 @@ function package.apis()
             -- package.add_xxx
         ,   "package.add_patches"
         ,   "package.add_resources"
+        }
+    ,   paths =
+        {
+            -- package.add_xxx
+            "package.add_versionfiles"
         }
     ,   dictionary =
         {
