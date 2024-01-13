@@ -27,3 +27,6 @@ target "tbox"
     set_configvar "TB_CONFIG_FORCE_UTF8" 1
     set_configvar "TB_CONFIG_TYPE_HAVE_FLOAT" 1
     add_includedirs "inc/${plat}" "{public}"
+    if is_mode "debug"; then
+        add_defines "__tb_debug__"
+    fi
