@@ -435,6 +435,11 @@ function _get_configs_for_appleos(package, configs, opt)
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM   = "NEVER"
     -- avoid install bundle targets
     envs.CMAKE_MACOSX_BUNDLE       = "NO"
+    -- avoids finding host include/library path
+    if package:is_cross() then
+        envs.CMAKE_FIND_USE_CMAKE_SYSTEM_PATH = "0"
+        envs.CMAKE_FIND_USE_INSTALL_PREFIX = "0"
+    end
     _insert_configs_from_envs(configs, envs, opt)
 end
 
@@ -558,9 +563,9 @@ function _get_configs_for_cross(package, configs, opt)
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
     -- avoid add -isysroot on macOS
     envs.CMAKE_OSX_SYSROOT = ""
-    -- Avoid cmake to add the flags -search_paths_first and -headerpad_max_install_names on macOS
+    -- avoid cmake to add the flags -search_paths_first and -headerpad_max_install_names on macOS
     envs.HAVE_FLAG_SEARCH_PATHS_FIRST = "0"
-    -- Avoids finding host include/library path
+    -- avoids finding host include/library path
     envs.CMAKE_FIND_USE_CMAKE_SYSTEM_PATH = "0"
     envs.CMAKE_FIND_USE_INSTALL_PREFIX = "0"
     _insert_configs_from_envs(configs, envs, opt)
