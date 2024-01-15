@@ -229,79 +229,95 @@ function main(toolchain)
         end
 
         -- only for c++ stl
-        if config.get("ndk_stdcxx") and cxxstl_sdkdir and os.isdir(cxxstl_sdkdir) then
+        if config.get("ndk_stdcxx") then
+            if cxxstl_sdkdir and os.isdir(cxxstl_sdkdir) then
 
-            -- the toolchains archs
-            local toolchains_archs =
-            {
-                ["armv5te"]     = "armeabi"         -- deprecated
-            ,   ["armv7-a"]     = "armeabi-v7a"     -- deprecated
-            ,   ["armeabi"]     = "armeabi"         -- removed in ndk r17
-            ,   ["armeabi-v7a"] = "armeabi-v7a"
-            ,   ["arm64-v8a"]   = "arm64-v8a"
-            ,   i386            = "x86"             -- deprecated
-            ,   x86             = "x86"
-            ,   x86_64          = "x86_64"
-            ,   mips            = "mips"            -- removed in ndk r17
-            ,   mips64          = "mips64"          -- removed in ndk r17
-            }
-            local toolchains_arch = toolchains_archs[arch]
+                -- the toolchains archs
+                local toolchains_archs =
+                {
+                    ["armv5te"]     = "armeabi"         -- deprecated
+                ,   ["armv7-a"]     = "armeabi-v7a"     -- deprecated
+                ,   ["armeabi"]     = "armeabi"         -- removed in ndk r17
+                ,   ["armeabi-v7a"] = "armeabi-v7a"
+                ,   ["arm64-v8a"]   = "arm64-v8a"
+                ,   i386            = "x86"             -- deprecated
+                ,   x86             = "x86"
+                ,   x86_64          = "x86_64"
+                ,   mips            = "mips"            -- removed in ndk r17
+                ,   mips64          = "mips64"          -- removed in ndk r17
+                }
+                local toolchains_arch = toolchains_archs[arch]
 
-            -- add c++ stl include and link directories
-            if toolchains_arch then
-                toolchain:add("linkdirs", format("%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
-            end
-            if ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl") then
-                toolchain:add("cxxflags", "-nostdinc++")
-                toolchain:add("sysincludedirs", format("%s/include", cxxstl_sdkdir))
+                -- add c++ stl include and link directories
                 if toolchains_arch then
-                    toolchain:add("sysincludedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
+                    toolchain:add("linkdirs", format("%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
                 end
-                local abi_path = path.join(ndk, "sources", "cxx-stl", "llvm-libc++abi")
-                local before_r13 = path.join(abi_path, "libcxxabi")
-                local after_r13 = path.join(abi_path, "include")
-                if os.isdir(before_r13) then
-                    toolchain:add("sysincludedirs", before_r13)
-                elseif os.isdir(after_r13) then
-                    toolchain:add("sysincludedirs", after_r13)
+                if ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl") then
+                    toolchain:add("cxxflags", "-nostdinc++")
+                    toolchain:add("sysincludedirs", format("%s/include", cxxstl_sdkdir))
+                    if toolchains_arch then
+                        toolchain:add("sysincludedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
+                    end
+                    local abi_path = path.join(ndk, "sources", "cxx-stl", "llvm-libc++abi")
+                    local before_r13 = path.join(abi_path, "libcxxabi")
+                    local after_r13 = path.join(abi_path, "include")
+                    if os.isdir(before_r13) then
+                        toolchain:add("sysincludedirs", before_r13)
+                    elseif os.isdir(after_r13) then
+                        toolchain:add("sysincludedirs", after_r13)
+                    end
+                elseif ndk_cxxstl:startswith("gnustl") then
+                    toolchain:add("cxxflags", "-nostdinc++")
+                    toolchain:add("sysincludedirs", format("%s/include", cxxstl_sdkdir))
+                    if toolchains_arch then
+                        toolchain:add("sysincludedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
+                    end
+                elseif ndk_cxxstl:startswith("stlport") then
+                    toolchain:add("cxxflags", "-nostdinc++")
+                    toolchain:add("sysincludedirs", format("%s/stlport", cxxstl_sdkdir))
                 end
-            elseif ndk_cxxstl:startswith("gnustl") then
-                toolchain:add("cxxflags", "-nostdinc++")
-                toolchain:add("sysincludedirs", format("%s/include", cxxstl_sdkdir))
-                if toolchains_arch then
-                    toolchain:add("sysincludedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
-                end
-            elseif ndk_cxxstl:startswith("stlport") then
-                toolchain:add("cxxflags", "-nostdinc++")
-                toolchain:add("sysincludedirs", format("%s/stlport", cxxstl_sdkdir))
-            end
 
-            -- add c++ stl links
-            if ndk_cxxstl == "c++_static" or ndk_cxxstl == "llvmstl_static" then
-                toolchain:add("syslinks", "c++_static", "c++abi")
-                if arm32 then
-                    toolchain:add("syslinks", "unwind", "atomic")
+                -- add c++ stl links
+                if ndk_cxxstl == "c++_static" or ndk_cxxstl == "llvmstl_static" then
+                    toolchain:add("syslinks", "c++_static", "c++abi")
+                    if arm32 then
+                        toolchain:add("syslinks", "unwind", "atomic")
+                    end
+                elseif ndk_cxxstl == "c++_shared" or ndk_cxxstl == "llvmstl_shared" then
+                    toolchain:add("syslinks", "c++_shared", "c++abi")
+                    if arm32 then
+                        toolchain:add("syslinks", "unwind", "atomic")
+                    end
+                elseif ndk_cxxstl == "gnustl_static" then
+                    toolchain:add("syslinks", "gnustl_static")
+                elseif ndk_cxxstl == "gnustl_shared" then
+                    toolchain:add("syslinks", "gnustl_shared")
+                elseif ndk_cxxstl == "stlport_static" then
+                    toolchain:add("syslinks", "stlport_static")
+                elseif ndk_cxxstl == "stlport_shared" then
+                    toolchain:add("syslinks", "stlport_shared")
                 end
-            elseif ndk_cxxstl == "c++_shared" or ndk_cxxstl == "llvmstl_shared" then
-                toolchain:add("syslinks", "c++_shared", "c++abi")
-                if arm32 then
-                    toolchain:add("syslinks", "unwind", "atomic")
-                end
-            elseif ndk_cxxstl == "gnustl_static" then
-                toolchain:add("syslinks", "gnustl_static")
-            elseif ndk_cxxstl == "gnustl_shared" then
-                toolchain:add("syslinks", "gnustl_shared")
-            elseif ndk_cxxstl == "stlport_static" then
-                toolchain:add("syslinks", "stlport_static")
-            elseif ndk_cxxstl == "stlport_shared" then
-                toolchain:add("syslinks", "stlport_shared")
-            end
 
-            -- fix 'ld: error: cannot find -lc++' for clang++.exe on r20/windows
-            -- @see https://github.com/xmake-io/xmake/issues/684
-            if ndkver and ndkver >= 20 and (ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl")) then
-                toolchain:add("ldflags", "-nostdlib++")
-                toolchain:add("shflags", "-nostdlib++")
+                -- fix 'ld: error: cannot find -lc++' for clang++.exe on r20/windows
+                -- @see https://github.com/xmake-io/xmake/issues/684
+                if ndkver and ndkver >= 20 and (ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl")) then
+                    toolchain:add("ldflags", "-nostdlib++")
+                    toolchain:add("shflags", "-nostdlib++")
+                end
+            else
+                -- The NDK's libc++ now comes directly from our LLVM toolchain above 26b
+                -- https://github.com/xmake-io/xmake/issues/4614
+                if ndk_cxxstl == "c++_static" then
+                    toolchain:add("syslinks", "c++_static")
+                    if arm32 then
+                        toolchain:add("syslinks", "unwind", "atomic")
+                    end
+                elseif ndk_cxxstl == "c++_shared" then
+                    toolchain:add("syslinks", "c++_shared")
+                    if arm32 then
+                        toolchain:add("syslinks", "unwind", "atomic")
+                    end
+                end
             end
         end
     end
