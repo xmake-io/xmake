@@ -267,9 +267,7 @@ function main(target, opt)
             table.insert(qtprldirs, linkdir)
         end
     end
-	
 	for _, qt_link in ipairs(target:values("qt.links")) do
-        
         for _, qt_libdir in ipairs(qtprldirs) do
             local prl_file = path.join(qt_libdir, qt_link .. ".prl")
             if os.isfile(prl_file) then                
