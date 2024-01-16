@@ -99,9 +99,12 @@ end
 
 -- load vcvarsall environment variables
 function _load_vcvarsall(vcvarsall, vsver, arch, opt)
+    opt = opt or {}
+
+    -- is VsDevCmd.bat?
+    local is_vsdevcmd = path.basename(vcvarsall):lower() == "vsdevcmd"
 
     -- make the genvcvars.bat
-    opt = opt or {}
     local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
@@ -115,10 +118,18 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     if vsver and tonumber(vsver) >= 16 then
         file:print("set VSCMD_SKIP_SENDTELEMETRY=yes")
     end
-    if opt.vcvars_ver then
-        file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+    if is_vsdevcmd then
+        if opt.vcvars_ver then
+            file:print("call \"%s\" -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+        else
+            file:print("call \"%s\" -arch=%s -winsdk=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
+        end
     else
-        file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
+        if opt.vcvars_ver then
+            file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+        else
+            file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
+        end
     end
     for idx, var in ipairs(get_vcvars()) do
         file:print("echo " .. var .. " = %%" .. var .. "%%")
@@ -339,8 +350,7 @@ function _find_vstudio(opt)
             if vswhere_Common7ToolsDir and os.isdir(vswhere_Common7ToolsDir) then
                 table.insert(paths, 1, vswhere_Common7ToolsDir)
             end
-            local vsdevcmd = find_file("VsDevCmd.bat", paths)
-            vcvarsall = vsdevcmd
+            vcvarsall = find_file("VsDevCmd.bat", paths)
         end
         if vcvarsall then
 
