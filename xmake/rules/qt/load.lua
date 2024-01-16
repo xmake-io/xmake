@@ -99,9 +99,6 @@ function _add_plugins(target, plugins)
         if plugin.linkdirs then
             target:values_add("qt.linkdirs", table.unpack(table.wrap(plugin.linkdirs)))
         end
-        if (plugin.links and plugin.linkdirs) then
-            target:values_add("qt.prls", path.join(table.unpack(table.wrap(plugin.linkdirs)), table.unpack(table.wrap(plugin.links)) .. ".prl"))
-        end
         -- TODO: add prebuilt object files in qt sdk.
         -- these file is located at plugins/xxx/objects-Release/xxxPlugin_init/xxxPlugin_init.cpp.o
     end
