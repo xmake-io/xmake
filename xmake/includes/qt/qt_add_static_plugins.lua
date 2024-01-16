@@ -33,18 +33,11 @@
 function qt_add_static_plugins(plugin, opt)
     opt = opt or {}
     add_values("qt.plugins", plugin)
-	  local linkdir = nil
-	  local link = nil
     if opt.links then
-		link = table.unpack(table.wrap(opt.links))
-        add_values("qt.links", link)
+        add_values("qt.links", table.unpack(table.wrap(opt.links)))
     end
     if opt.linkdirs then
-		linkdir = table.unpack(table.wrap(opt.linkdirs))
-        add_values("qt.linkdirs", linkdir)
+        add_values("qt.linkdirs", table.unpack(table.wrap(opt.linkdirs)))
     end
-	  if ( linkdir and link ) then
-		   add_values("qt.prls", path.join(linkdir, link .. ".prl"))
-	  end
 end
 
