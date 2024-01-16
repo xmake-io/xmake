@@ -99,9 +99,12 @@ end
 
 -- load vcvarsall environment variables
 function _load_vcvarsall(vcvarsall, vsver, arch, opt)
+    opt = opt or {}
+
+    -- is VsDevCmd.bat?
+    local is_vsdevcmd = path.basename(vcvarsall):lower() == "vsdevcmd"
 
     -- make the genvcvars.bat
-    opt = opt or {}
     local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
@@ -115,10 +118,18 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     if vsver and tonumber(vsver) >= 16 then
         file:print("set VSCMD_SKIP_SENDTELEMETRY=yes")
     end
-    if opt.vcvars_ver then
-        file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+    if is_vsdevcmd then
+        if opt.vcvars_ver then
+            file:print("call \"%s\" -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+        else
+            file:print("call \"%s\" -arch=%s -winsdk=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
+        end
     else
-        file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
+        if opt.vcvars_ver then
+            file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+        else
+            file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
+        end
     end
     for idx, var in ipairs(get_vcvars()) do
         file:print("echo " .. var .. " = %%" .. var .. "%%")
@@ -276,18 +287,19 @@ function _find_vstudio(opt)
         -- * version > 15.0 eschews registry entries; but `vswhere` (included with version >= 15.2) can be used to find VC install path
         -- ref: https://github.com/Microsoft/vswhere/blob/master/README.md @@ https://archive.is/mEmdu
         local vswhere_VCAuxiliaryBuildDir = nil
+        local vswhere_Common7ToolsDir = nil
         if (tonumber(version) >= 15) and vswhere then
             local vswhere_vrange = format("%s,%s)", version, (version + 1))
             -- build tools: https://github.com/microsoft/vswhere/issues/22 @@ https://aka.ms/vs/workloads
             local result = os.iorunv(vswhere.program, {"-products", "*", "-prerelease", "-property", "installationpath", "-version", vswhere_vrange})
             if result then
                 vswhere_VCAuxiliaryBuildDir = path.join(result:trim(), "VC", "Auxiliary", "Build")
+                vswhere_Common7ToolsDir = path.join(result:trim(), "Common7", "Tools")
             end
         end
 
         -- init paths
-        local paths =
-        {
+        local paths = {
             format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC", version),
             format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC7\\bin", version),
             format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC", version),
@@ -329,6 +341,16 @@ function _find_vstudio(opt)
                 end
             end
             vcvarsall = find_file("vcvarsall.bat", paths) or find_file("vcvars32.bat", paths)
+        end
+        if not vcvarsall then
+            local paths = {
+                format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\Common7\\Tools", version),
+                format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\Common7\\Tools", version)
+            }
+            if vswhere_Common7ToolsDir and os.isdir(vswhere_Common7ToolsDir) then
+                table.insert(paths, 1, vswhere_Common7ToolsDir)
+            end
+            vcvarsall = find_file("VsDevCmd.bat", paths)
         end
         if vcvarsall then
 
