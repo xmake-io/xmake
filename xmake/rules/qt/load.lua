@@ -264,7 +264,7 @@ function main(target, opt)
         local linkdir = path.join(qt.sdkdir, qt_linkdir)
         if os.isdir(linkdir) then
             target:add("linkdirs", linkdir)
-            table.join2(qtprldirs, linkdir)
+            table.insert(qtprldirs, linkdir)
         end
     end
 	
