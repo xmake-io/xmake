@@ -336,9 +336,9 @@ function main(target, opt)
                         _add_includedirs(target, path.join(frameworkdir, "Headers", qt.sdkver, framework))
                         frameworksset:insert(framework)
                     else
-												local link = _link(target, qt.libdir, framework, qt_sdkver)
+			local link = _link(target, qt.libdir, framework, qt_sdkver)
                         target:add("syslinks", link)
-												_add_qmakeprllibs(target, path.join(qt.libdir, link .. ".prl"), qt.libdir)
+			_add_qmakeprllibs(target, path.join(qt.libdir, link .. ".prl"), qt.libdir)
                         _add_includedirs(target, path.join(qt.includedir, framework))
                         -- e.g. QtGui/5.15.0/QtGui/qpa/qplatformopenglcontext.h
                         _add_includedirs(target, path.join(qt.includedir, framework, qt.sdkver))
