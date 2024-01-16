@@ -235,6 +235,7 @@ function table.inherit2(self, ...)
             end
         end
     end
+    setmetatable(self, metainfo)
     return self
 end
 
