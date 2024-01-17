@@ -14,6 +14,7 @@
 * Improve dlang/dmd support for frameworks
 * [#4571](https://github.com/xmake-io/xmake/issues/4571): Improve `xmake test` output
 * [#4609](https://github.com/xmake-io/xmake/issues/4609): Improve to detect vs build tool envirnoments
+* [#4614](https://github.com/xmake-io/xmake/issues/4614): Support android ndk 26b
 
 ### Bugs Fixed
 
@@ -1731,6 +1732,7 @@
 * 改进 dlang/dmd 对 frameworks 的支持
 * [#4571](https://github.com/xmake-io/xmake/issues/4571): 改进 `xmake test` 的输出支持
 * [#4609](https://github.com/xmake-io/xmake/issues/4609): 改进探测 vs 构建工具环境
+* [#4614](https://github.com/xmake-io/xmake/issues/4614): 改进支持 android ndk 26b
 
 ### Bugs 修复
 
