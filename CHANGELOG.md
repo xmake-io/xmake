@@ -13,6 +13,7 @@
 * Add more loong64 support
 * Improve dlang/dmd support for frameworks
 * [#4571](https://github.com/xmake-io/xmake/issues/4571): Improve `xmake test` output
+* [#4609](https://github.com/xmake-io/xmake/issues/4609): Improve to detect vs build tool envirnoments
 
 ### Bugs Fixed
 
@@ -1729,6 +1730,7 @@
 * 添加更多的 loong64 支持
 * 改进 dlang/dmd 对 frameworks 的支持
 * [#4571](https://github.com/xmake-io/xmake/issues/4571): 改进 `xmake test` 的输出支持
+* [#4609](https://github.com/xmake-io/xmake/issues/4609): 改进探测 vs 构建工具环境
 
 ### Bugs 修复
 
