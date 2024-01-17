@@ -268,7 +268,7 @@ function main(target, opt)
         end
     end
 	for _, qt_link in ipairs(target:values("qt.links")) do
-        for _, qt_libdir in ipairs(qtprldirs) do
+		for _, qt_libdir in ipairs(qtprldirs) do
             local prl_file = path.join(qt_libdir, qt_link .. ".prl")
             if os.isfile(prl_file) then                
                 _add_qmakeprllibs(target, prl_file, qt.libdir)
@@ -330,7 +330,7 @@ function main(target, opt)
                         _add_includedirs(target, path.join(frameworkdir, "Headers", qt.sdkver, framework))
                         frameworksset:insert(framework)
                     else
-			local link = _link(target, qt.libdir, framework, qt_sdkver)
+						local link = _link(target, qt.libdir, framework, qt_sdkver)
                         target:add("syslinks", link)
                         _add_qmakeprllibs(target, path.join(qt.libdir, link .. ".prl"), qt.libdir)
                         _add_includedirs(target, path.join(qt.includedir, framework))
