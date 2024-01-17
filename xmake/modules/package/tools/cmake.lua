@@ -435,8 +435,8 @@ function _get_configs_for_appleos(package, configs, opt)
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM   = "NEVER"
     -- avoid install bundle targets
     envs.CMAKE_MACOSX_BUNDLE       = "NO"
-    -- avoids finding host include/library path
-    if package:is_cross() then
+    -- avoids finding host include/library path for macOS/arm64 libraries on macOS/x86_64
+    if package:is_plat("macosx") and package:is_cross() then
         envs.CMAKE_FIND_USE_CMAKE_SYSTEM_PATH = "0"
         envs.CMAKE_FIND_USE_INSTALL_PREFIX = "0"
     end
