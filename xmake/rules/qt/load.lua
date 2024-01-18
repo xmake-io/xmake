@@ -140,24 +140,26 @@ function _get_frameworks_from_target(target)
 end
 
 function _add_qmakeprllibs(target, prlfile, qtlibdir)
-    local contents = io.readfile(prlfile, "r")
-    local envs = {}
-    if contents ~= nil then
-        for _, prlenv in ipairs(contents:split('\n', {plain = true})) do
-            local kv = prlenv:split('=', {plain = true})
-            if #kv == 2 then
-                envs[kv[1]:trim()] = kv[2]:trim()
+    if os.isfile(prlfile) then
+        local contents = io.readfile(prlfile)
+        local envs = {}
+        if contents then
+            for _, prlenv in ipairs(contents:split('\n', {plain = true})) do
+                local kv = prlenv:split('=', {plain = true})
+                if #kv == 2 then
+                    envs[kv[1]:trim()] = kv[2]:trim()
+                end
             end
         end
-    end
-    if envs.QMAKE_PRL_LIBS_FOR_CMAKE then			 
-        for _, lib in ipairs(envs.QMAKE_PRL_LIBS_FOR_CMAKE:split(';', {plain = true})) do
-            if lib:startswith("-L") then	
-                local libdir = string.gsub(lib, "-L", "")					
-                target:add("linkdirs", path.join(libdir, ""))
-            else
-                local libstr = string.gsub(lib, "%$%$%[QT_INSTALL_LIBS%]", qtlibdir)
-                target:add("syslinks", libstr)	
+        if envs.QMAKE_PRL_LIBS_FOR_CMAKE then
+            for _, lib in ipairs(envs.QMAKE_PRL_LIBS_FOR_CMAKE:split(';', {plain = true})) do
+                if lib:startswith("-L") then
+                    local libdir = lib:sub(3)
+                    target:add("linkdirs", libdir)
+                else
+                    local libstr = string.gsub(lib, "%$%$%[QT_INSTALL_LIBS%]", qtlibdir)
+                    target:add("syslinks", libstr)
+                end
             end
         end
     end
@@ -270,9 +272,7 @@ function main(target, opt)
     for _, qt_link in ipairs(target:values("qt.links")) do
         for _, qt_libdir in ipairs(qtprldirs) do
             local prl_file = path.join(qt_libdir, qt_link .. ".prl")
-            if os.isfile(prl_file) then
-                _add_qmakeprllibs(target, prl_file, qt.libdir)
-            end
+            _add_qmakeprllibs(target, prl_file, qt.libdir)
         end
     end
     target:add("syslinks", target:values("qt.links"))
