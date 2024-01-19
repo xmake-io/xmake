@@ -304,16 +304,16 @@ function main(toolchain)
                     toolchain:add("ldflags", "-nostdlib++")
                     toolchain:add("shflags", "-nostdlib++")
                 end
-            else
+            elseif ndkver and ndkver >= 26 then
                 -- The NDK's libc++ now comes directly from our LLVM toolchain above 26b
                 -- https://github.com/xmake-io/xmake/issues/4614
                 if ndk_cxxstl == "c++_static" then
-                    toolchain:add("syslinks", "c++_static")
+                    toolchain:add("ldflags", "-static-libstdc++")
+                    toolchain:add("shflags", "-static-libstdc++")
                     if arm32 then
                         toolchain:add("syslinks", "unwind", "atomic")
                     end
                 elseif ndk_cxxstl == "c++_shared" then
-                    toolchain:add("syslinks", "c++_shared")
                     if arm32 then
                         toolchain:add("syslinks", "unwind", "atomic")
                     end
