@@ -435,17 +435,23 @@ end
 --              , 2017 = {version = "15.0", vcvarsall = {x64 = {path = .., lib = ..}}}}
 --
 function main(opt)
+    opt = opt or {}
 
     -- only for windows
     if not is_host("windows") then
         return
     end
 
+    local key = "vstudio"
+    if opt.vcvars_ver then
+        key = key .. opt.vcvars_ver
+    end
+
     -- attempt to get it from the global cache first
-    local vstudio = global_detectcache:get2("vstudio", "msvc")
+    local vstudio = global_detectcache:get2(key, "msvc")
     if vstudio then
         local mtime = _get_last_mtime(vstudio)
-        local mtimeprev = global_detectcache:get2("vstudio", "mtime")
+        local mtimeprev = global_detectcache:get2(key, "mtime")
         if mtime and mtimeprev and mtime > 0 and mtimeprev > 0 and mtime == mtimeprev then
             return vstudio
         end
@@ -455,8 +461,8 @@ function main(opt)
     vstudio = _find_vstudio(opt)
     if vstudio then
         local mtime = _get_last_mtime(vstudio)
-        global_detectcache:set2("vstudio", "msvc", vstudio)
-        global_detectcache:set2("vstudio", "mtime", mtime)
+        global_detectcache:set2(key, "msvc", vstudio)
+        global_detectcache:set2(key, "mtime", mtime)
         global_detectcache:save()
     end
     return vstudio
