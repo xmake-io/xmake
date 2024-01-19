@@ -2380,6 +2380,35 @@ function _instance:pcoutputfile(langkind)
     end
 end
 
+-- get runtimes
+--
+-- set_runtimes("MTd")
+-- set_runtimes("MT,c++_static")
+-- set_runtimes("gcc::stdc++_static,clang::c++_static")
+--
+function _instance:runtimes()
+    local runtimes = self:_memcache():get("runtimes")
+    if runtimes == nil then
+        runtimes = self:get("runtimes") or config.get("runtimes")
+        if self:is_plat("windows") then
+            runtimes = runtimes or config.get("vs_runtime")
+        elseif self:is_plat("android") then
+            runtimes = runtimes or config.get("ndk_cxxstl")
+        end
+        if runtimes then
+            runtimes = runtimes:split(",", {plain = true})
+        end
+        runtimes = runtimes or {}
+        self:_memcache():set("runtimes", runtimes)
+    end
+    return runtimes
+end
+
+-- has the given runtime for the current toolchain?
+function _instance:has_runtime(name)
+    -- TODO
+end
+
 -- get the given toolchain
 function _instance:toolchain(name)
     local toolchains_map = self:_memcache():get("toolchains_map")
@@ -2407,6 +2436,7 @@ function _instance:toolchains()
                 local toolchain_opt = table.copy(self:extraconf("toolchains", name))
                 toolchain_opt.arch = self:arch()
                 toolchain_opt.plat = self:plat()
+                toolchain_opt.runtimes = self:runtimes()
                 local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
                 -- attempt to load toolchain from project
                 if not toolchain_inst and target._project() then

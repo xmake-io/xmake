@@ -217,9 +217,12 @@ task("config")
                                                           , "e.g. "
                                                           , "    - xmake f --runtimes=MTd"
                                                           , "    - xmake f --runtimes=MT,c++_static"
-                                                          , values = {"MT", "MTd", "MD", "MDd",           -- only for msvc
-                                                                      "c++_static", "c++_shared",         -- gcc/clang
-                                                                      "stdc++_static", "stdc++_shared"}}, -- gcc/clang
+                                                          , "    - xmake f --runtimes=gcc::stdc++_static,clang::c++_static"
+                                                          , values = {"MT", "MTd", "MD", "MDd",             -- only for msvc
+                                                                      "c++_static", "c++_shared",           -- gcc/clang/android ndk
+                                                                      "stdc++_static", "stdc++_shared",     -- gcc/clang
+                                                                      "gnustl_static", "gnustl_shared",     -- only for old android ndk
+                                                                      "stlport_static", "stlport_shared"}}, -- only for old android ndk
                     _language_menu_options,
                     _platform_menu_options,
                     {category = "Other Configuration"},
