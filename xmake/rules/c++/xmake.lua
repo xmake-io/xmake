@@ -28,7 +28,7 @@ rule("c.build")
             target:set("extensions", ".a")
             target:set("prefixname", "lib")
         end
-    end
+    end)
 
 rule("c++.build")
     set_sourcekinds("cxx")
