@@ -207,7 +207,7 @@ function main(toolchain)
 
         -- get c++ stl sdk directory
         local cxxstl_sdkdir = nil
-        local ndk_cxxstl = config.get("ndk_cxxstl")
+        local ndk_cxxstl = toolchain:runtimes() or config.get("ndk_cxxstl")
         if ndk_cxxstl then
             -- we uses c++_static/c++_shared instead of llvmstl_static/llvmstl_shared
             if ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl") then
