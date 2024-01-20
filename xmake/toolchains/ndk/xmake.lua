@@ -30,16 +30,10 @@
 -- @endcode
 --
 toolchain("ndk")
-
-    -- set homepage
+    set_kind("standalone")
     set_homepage("https://developer.android.com/ndk")
     set_description("Android NDK")
+    set_runtimes("c++_static", "c++_shared", "gnustl_static", "gnustl_shared", "stlport_static", "stlport_shared")
 
-    -- mark as standalone toolchain
-    set_kind("standalone")
-
-    -- check toolchain
     on_check("check")
-
-    -- load toolchain
     on_load("load")

@@ -18,17 +18,12 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
 toolchain("llvm")
-
-    -- set homepage
+    set_kind("standalone")
     set_homepage("https://llvm.org/")
     set_description("A collection of modular and reusable compiler and toolchain technologies")
+    set_runtimes("c++_static", "c++_shared", "stdc++_static", "stdc++_shared")
 
-    -- mark as standalone toolchain
-    set_kind("standalone")
-
-    -- set toolset
     set_toolset("cc",     "clang")
     set_toolset("cxx",    "clang", "clang++")
     set_toolset("mxx",    "clang", "clang++")
@@ -42,10 +37,8 @@ toolchain("llvm")
     set_toolset("strip",  "llvm-strip")
     set_toolset("mrc",    "llvm-rc")
 
-    -- check toolchain
     on_check("check")
 
-    -- on load
     on_load(function (toolchain)
 
         -- add march flags

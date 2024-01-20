@@ -25,11 +25,10 @@ if version then
     suffix = suffix .. "-" .. version
 end
 toolchain("clang" .. suffix)
-
+    set_kind("standalone")
     set_homepage("https://clang.llvm.org/")
     set_description("A C language family frontend for LLVM" .. (version and (" (" .. version .. ")") or ""))
-
-    set_kind("standalone")
+    set_runtimes("c++_static", "c++_shared", "stdc++_static", "stdc++_shared")
 
     set_toolset("cc", "clang" .. suffix)
     set_toolset("cxx", "clang" .. suffix, "clang++" .. suffix)

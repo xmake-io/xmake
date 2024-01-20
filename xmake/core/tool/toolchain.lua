@@ -110,7 +110,23 @@ end
 
 -- get toolchain runtimes
 function _instance:runtimes()
-    return self:config("runtimes")
+    local runtimes = self._RUNTIMES
+    if runtimes == nil then
+        runtimes = {}
+        local runtimes_supported = hashset.from(table.wrap(self:get("runtimes")))
+        for _, runtime in ipairs(table.wrap(self:config("runtimes"))) do
+            if runtimes_supported:has(runtime) then
+                table.insert(runtimes, runtime)
+            end
+        end
+        if #runtimes > 0 then
+            runtimes = table.unwrap(runtimes)
+        else
+            runtimes = false
+        end
+        self._RUNTIMES = runtimes
+    end
+    return runtimes or nil
 end
 
 -- has the given runtime for the current toolchains?
@@ -587,6 +603,7 @@ function toolchain.apis()
         ,   "toolchain.set_bindir"
         ,   "toolchain.set_sdkdir"
         ,   "toolchain.set_archs"
+        ,   "toolchain.set_runtimes"
         ,   "toolchain.set_homepage"
         ,   "toolchain.set_description"
         }

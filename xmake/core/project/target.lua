@@ -2391,7 +2391,12 @@ function _instance:runtimes()
             runtimes = runtimes or config.get("ndk_cxxstl")
         end
         if runtimes then
-            runtimes = table.unwrap(runtimes:split(",", {plain = true}))
+            runtimes = runtimes:split(",", {plain = true})
+            if #runtimes > 0 then
+                runtimes = table.unwrap(runtimes)
+            else
+                runtimes = nil
+            end
         end
         runtimes = runtimes or false
         self:_memcache():set("runtimes", runtimes)
