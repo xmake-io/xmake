@@ -2381,11 +2381,6 @@ function _instance:pcoutputfile(langkind)
 end
 
 -- get runtimes
---
--- set_runtimes("MTd")
--- set_runtimes("MT,c++_static")
--- set_runtimes("gcc::stdc++_static,clang::c++_static")
---
 function _instance:runtimes()
     local runtimes = self:_memcache():get("runtimes")
     if runtimes == nil then
@@ -2396,17 +2391,26 @@ function _instance:runtimes()
             runtimes = runtimes or config.get("ndk_cxxstl")
         end
         if runtimes then
-            runtimes = runtimes:split(",", {plain = true})
+            runtimes = table.unwrap(runtimes:split(",", {plain = true}))
         end
-        runtimes = runtimes or {}
+        runtimes = runtimes or false
         self:_memcache():set("runtimes", runtimes)
     end
-    return runtimes
+    return runtimes or nil
 end
 
--- has the given runtime for the current toolchain?
-function _instance:has_runtime(name)
-    -- TODO
+-- has the given runtime for the current toolchains?
+function _instance:has_runtime(...)
+    local runtimes_set = self._RUNTIMES_SET
+    if runtimes_set == nil then
+        runtimes_set = hashset.from(table.wrap(self:runtimes()))
+        self._RUNTIMES_SET = runtimes_set
+    end
+    for _, v in ipairs(table.pack(...)) do
+        if runtimes_set:has(v) then
+            return true
+        end
+    end
 end
 
 -- get the given toolchain

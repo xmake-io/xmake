@@ -29,6 +29,7 @@ local utils          = require("base/utils")
 local table          = require("base/table")
 local global         = require("base/global")
 local option         = require("base/option")
+local hashset        = require("base/hashset")
 local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local config         = require("project/config")
@@ -102,6 +103,25 @@ function _instance:is_arch(...)
     local arch = self:arch()
     for _, v in ipairs(table.join(...)) do
         if v and arch:find("^" .. v:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
+end
+
+-- get toolchain runtimes
+function _instance:runtimes()
+    return self:config("runtimes")
+end
+
+-- has the given runtime for the current toolchains?
+function _instance:has_runtime(...)
+    local runtimes_set = self._RUNTIMES_SET
+    if runtimes_set == nil then
+        runtimes_set = hashset.from(table.wrap(self:runtimes()))
+        self._RUNTIMES_SET = runtimes_set
+    end
+    for _, v in ipairs(table.pack(...)) do
+        if runtimes_set:has(v) then
             return true
         end
     end
