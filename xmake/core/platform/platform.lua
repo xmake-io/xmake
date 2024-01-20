@@ -157,11 +157,13 @@ function _instance:runtimes()
         elseif self:name() == "android" then
             runtimes = runtimes or config.get("ndk_cxxstl")
         end
-        runtimes = runtimes:split(",", {plain = true})
-        if #runtimes > 0 then
-            runtimes = table.unwrap(runtimes)
-        else
-            runtimes = nil
+        if runtimes then
+            runtimes = runtimes:split(",", {plain = true})
+            if #runtimes > 0 then
+                runtimes = table.unwrap(runtimes)
+            else
+                runtimes = nil
+            end
         end
         runtimes = runtimes or false
         self:_memcache():set("runtimes", runtimes)
