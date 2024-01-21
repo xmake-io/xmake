@@ -28,7 +28,7 @@ toolchain("gcc" .. suffix)
     set_kind("standalone")
     set_homepage("https://gcc.gnu.org/")
     set_description("GNU Compiler Collection" .. (version and (" (" .. version .. ")") or ""))
-    set_runtimes("c++_static", "c++_shared", "stdc++_static", "stdc++_shared")
+    set_runtimes("stdc++_static", "stdc++_shared")
 
     set_toolset("cc", "gcc" .. suffix)
     set_toolset("cxx", "gcc" .. suffix, "g++" .. suffix)
