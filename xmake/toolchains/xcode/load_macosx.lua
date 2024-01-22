@@ -18,10 +18,6 @@
 -- @file        load_macosx.lua
 --
 
--- imports
-import("core.project.config")
-
--- main entry
 function main(toolchain)
 
     local arch          = toolchain:arch()
@@ -75,8 +71,6 @@ function main(toolchain)
     end
 
     -- init flags for c/c++
-    toolchain:add("ldflags", "-stdlib=libc++")
-    toolchain:add("shflags", "-stdlib=libc++")
     toolchain:add("ldflags", "-lz")
     toolchain:add("shflags", "-lz")
 

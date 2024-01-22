@@ -18,10 +18,6 @@
 -- @file        load_applexros.lua
 --
 
--- imports
-import("core.project.config")
-
--- main entry
 function main(toolchain)
 
     local arch = toolchain:arch()
