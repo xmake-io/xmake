@@ -2384,19 +2384,9 @@ end
 function _instance:runtimes()
     local runtimes = self:_memcache():get("runtimes")
     if runtimes == nil then
-        runtimes = self:get("runtimes") or config.get("runtimes")
-        if self:is_plat("windows") then
-            runtimes = runtimes or config.get("vs_runtime")
-        elseif self:is_plat("android") then
-            runtimes = runtimes or config.get("ndk_cxxstl")
-        end
-        if type(runtimes) == "string" then
-            runtimes = runtimes:split(",", {plain = true})
-            if #runtimes > 0 then
-                runtimes = table.unwrap(runtimes)
-            else
-                runtimes = nil
-            end
+        runtimes = self:get("runtimes")
+        if runtimes and #runtimes > 0 then
+            runtimes = table.unwrap(runtimes)
         end
         runtimes = runtimes or false
         self:_memcache():set("runtimes", runtimes)

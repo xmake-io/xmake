@@ -83,4 +83,6 @@ function main(toolchain)
     -- init flags for objc/c++ (with ldflags and shflags)
     -- we can use `add_mxflags("-fno-objc-arc")` to override it in xmake.lua
     toolchain:add("mxflags", "-fobjc-arc")
+
+    print("11", toolchain:runtimes())
 end

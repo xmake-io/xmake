@@ -207,6 +207,7 @@ function nf_runtime(self, runtime)
         end
         return maps and maps[runtime]
     else
+        --[[
         local maps
         if kind == "cxx" then
             maps = {
@@ -222,7 +223,7 @@ function nf_runtime(self, runtime)
                 ["stdc++_static"] = {"-stdlib=libstdc++", "-static-libstdc++"},
                 ["stdc++_shared"] = "-stdlib=libstdc++",
             }
-        end
+        end]]
         return maps and maps[runtime]
     end
 end
