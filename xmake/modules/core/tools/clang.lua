@@ -178,18 +178,18 @@ function _has_ms_runtime_lib(self)
     return has_ms_runtime_lib
 end
 
--- make vs runtime flag
+-- make the runtime flag
 -- @see https://github.com/xmake-io/xmake/issues/3546
-function nf_runtime(self, vs_runtime)
-    if self:is_plat("windows") and vs_runtime then
+function nf_runtime(self, runtime)
+    local kind = self:kind()
+    if self:is_plat("windows") and runtime then
         if not _has_ms_runtime_lib(self) then
-            if vs_runtime:startswith("MD") then
-                wprint("%s runtime is not available for the current Clang compiler.", vs_runtime)
+            if runtime:startswith("MD") then
+                wprint("%s runtime is not available for the current Clang compiler.", runtime)
             end
             return
         end
         local maps
-        local kind = self:kind()
         if language.sourcekinds()[kind] then
             maps = {
                 MT  = "-fms-runtime-lib=static",
@@ -205,7 +205,25 @@ function nf_runtime(self, vs_runtime)
                 MDd = "-nostdlib"
             }
         end
-        return maps and maps[vs_runtime]
+        return maps and maps[runtime]
+    else
+        local maps
+        if kind == "cxx" then
+            maps = {
+                ["c++_static"]    = "-stdlib=libc++",
+                ["c++_shared"]    = "-stdlib=libc++",
+                ["stdc++_static"] = "-stdlib=libstdc++",
+                ["stdc++_shared"] = "-stdlib=libstdc++",
+            }
+        else
+            maps = {
+                ["c++_static"]    = {"-stdlib=libc++", "-static-libstdc++"},
+                ["c++_shared"]    = "-stdlib=libc++",
+                ["stdc++_static"] = {"-stdlib=libstdc++", "-static-libstdc++"},
+                ["stdc++_shared"] = "-stdlib=libstdc++",
+            }
+        end
+        return maps and maps[runtime]
     end
 end
 

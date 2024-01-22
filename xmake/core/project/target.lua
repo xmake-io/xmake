@@ -2390,7 +2390,7 @@ function _instance:runtimes()
         elseif self:is_plat("android") then
             runtimes = runtimes or config.get("ndk_cxxstl")
         end
-        if runtimes then
+        if type(runtimes) == "string" then
             runtimes = runtimes:split(",", {plain = true})
             if #runtimes > 0 then
                 runtimes = table.unwrap(runtimes)

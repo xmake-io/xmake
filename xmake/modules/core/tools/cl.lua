@@ -184,10 +184,16 @@ function nf_optimize(self, level)
     return maps[level]
 end
 
--- make vs runtime flag
-function nf_runtime(self, vs_runtime)
-    if vs_runtime then
-        return "-" .. vs_runtime
+-- make the runtime flag
+function nf_runtime(self, runtime)
+    if runtime then
+        local maps = {
+            MT = "-MT",
+            MD = "-MD",
+            MTd = "-MTd",
+            MDd = "-MDd"
+        }
+        return maps[runtime]
     end
 end
 
