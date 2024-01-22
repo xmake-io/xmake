@@ -152,6 +152,13 @@ function _load_require(require_str, requires_extra, parentinfo)
         require_build_configs.debug = true
     end
 
+    -- vs_runtime is deprecated, we should use runtimes
+    if require_build_configs and require_build_configs.vs_runtime then
+        require_build_configs.runtimes = require_build_configs.vs_runtime
+        require_build_configs.vs_runtime = nil
+        wprint("add_requires(%s): vs_runtime is deprecated, please use runtimes!", require_str)
+    end
+
     -- require packge in the current host platform
     if require_extra.host then
         if is_subhost(core_package.targetplat()) and os.subarch() == core_package.targetarch() then
@@ -346,8 +353,10 @@ function _add_package_configurations(package)
     if package:extraconf("configs", "asan", "default") == nil then
         package:add("configs", "asan", {builtin = true, description = "Enable the address sanitizer.", type = "boolean"})
     end
-    if package:extraconf("configs", "vs_runtime", "default") == nil then
-        package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", values = {"MT", "MTd", "MD", "MDd"}})
+    if package:extraconf("configs", "runtimes", "default") == nil then
+        package:add("configs", "runtimes", {builtin = true, description = "Set the compiler runtimes.", values = {
+            "MT", "MTd", "MD", "MDd",
+            "c++_static", "c++_shared", "stdc++_static", "stdc++_shared"}})
     end
     if package:extraconf("configs", "toolchains", "default") == nil then
         package:add("configs", "toolchains", {builtin = true, description = "Set package toolchains only for cross-compilation."})
@@ -513,9 +522,9 @@ function _init_requireinfo(requireinfo, package, opt)
                 requireinfo.configs.toolchains = requireinfo.configs.toolchains or get_config("toolchain")
             end
         end
-        requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or project.get("target.runtimes")
+        requireinfo.configs.runtimes = requireinfo.configs.runtimes or project.get("target.runtimes")
         if project.policy("package.inherit_external_configs") then
-            requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or get_config("vs_runtime")
+            requireinfo.configs.runtimes = requireinfo.configs.runtimes or get_config("runtimes") or get_config("vs_runtime")
         end
         if requireinfo.configs.lto == nil then
             requireinfo.configs.lto = project.policy("build.optimization.lto")
@@ -527,7 +536,7 @@ function _init_requireinfo(requireinfo, package, opt)
     -- but we will ignore some configs for buildhash in the headeronly and host/binary package
     -- @note on_test still need these configs, @see https://github.com/xmake-io/xmake/issues/4124
     if package:is_headeronly() or (package:is_binary() and not package:is_cross()) then
-        requireinfo.ignored_configs_for_buildhash = {"vs_runtime", "toolchains", "lto", "asan", "pic"}
+        requireinfo.ignored_configs_for_buildhash = {"runtimes", "toolchains", "lto", "asan", "pic"}
     end
 end
 
@@ -542,8 +551,8 @@ function _finish_requireinfo(requireinfo, package)
     end
     requireinfo.configs = requireinfo.configs or {}
     if not package:is_headeronly() then
-        if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
-            requireinfo.configs.vs_runtime = "MT"
+        if requireinfo.configs.runtimes == nil and package:is_plat("windows") then
+            requireinfo.configs.runtimes = "MT"
         end
     end
     -- we need to ensure readonly configs
@@ -568,9 +577,9 @@ end
 
 -- merge requireinfo from `add_requireconfs()`
 --
--- add_requireconfs("*",                         {system = false, configs = {vs_runtime = "MD"}})
--- add_requireconfs("lib*",                      {system = false, configs = {vs_runtime = "MD"}})
--- add_requireconfs("libwebp",                   {system = false, configs = {vs_runtime = "MD"}})
+-- add_requireconfs("*",                         {system = false, configs = {runtimes = "MD"}})
+-- add_requireconfs("lib*",                      {system = false, configs = {runtimes = "MD"}})
+-- add_requireconfs("libwebp",                   {system = false, configs = {runtimes = "MD"}})
 -- add_requireconfs("libpng.zlib",               {system = false, override = true, configs = {cxflags = "-DTEST1"}, version = "1.2.10"})
 -- add_requireconfs("libtiff.*",                 {system = false, configs = {cxflags = "-DTEST2"}})
 -- add_requireconfs("libwebp.**|cmake|autoconf", {system = false, configs = {cxflags = "-DTEST3"}}) -- recursive deps
@@ -660,15 +669,15 @@ function _get_packagelock_key(requireinfo)
 end
 
 -- inherit some builtin configs of parent package if these config values are not default value
--- e.g. add_requires("libpng", {configs = {vs_runtime = "MD", pic = false}})
+-- e.g. add_requires("libpng", {configs = {runtimes = "MD", pic = false}})
 --
 function _inherit_parent_configs(requireinfo, package, parentinfo)
     if package:is_library() then
         local requireinfo_configs = requireinfo.configs or {}
         local parentinfo_configs  = parentinfo.configs or {}
         if not requireinfo_configs.shared then
-            if requireinfo_configs.vs_runtime == nil then
-                requireinfo_configs.vs_runtime = parentinfo_configs.vs_runtime
+            if requireinfo_configs.runtimes == nil then
+                requireinfo_configs.runtimes = parentinfo_configs.runtimes
             end
             if requireinfo_configs.pic == nil then
                 requireinfo_configs.pic = parentinfo_configs.pic
@@ -681,7 +690,7 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
             requireinfo.arch = parentinfo.arch
         end
         requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
-        requireinfo_configs.vs_runtime = requireinfo_configs.vs_runtime or parentinfo_configs.vs_runtime
+        requireinfo_configs.runtimes = requireinfo_configs.runtimes or parentinfo_configs.runtimes
         requireinfo_configs.lto = requireinfo_configs.lto or parentinfo_configs.lto
         requireinfo_configs.asan = requireinfo_configs.asan or parentinfo_configs.asan
         requireinfo.configs = requireinfo_configs
@@ -838,7 +847,7 @@ function _load_package(packagename, requireinfo, opt)
     -- merge requireinfo from `add_requireconfs()`
     _merge_requireinfo(requireinfo, opt.requirepath)
 
-    -- inherit some builtin configs of parent package, e.g. vs_runtime, pic
+    -- inherit some builtin configs of parent package, e.g. runtimes, pic
     if opt.parentinfo then
         _inherit_parent_configs(requireinfo, package, opt.parentinfo)
     end

@@ -39,7 +39,7 @@ function menu_options()
                                        values = {"release", "debug"}         },
         {'f', "configs",    "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
-                                       "    - xrepo remove -f \"vs_runtime='MD'\" zlib",
+                                       "    - xrepo remove -f \"runtimes='MD'\" zlib",
                                        "    - xrepo remove -f \"regex=true,thread=true\" boost"},
         {nil, "toolchain",  "kv", nil, "Set the toolchain name."          },
         {},

@@ -182,10 +182,10 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         if tonumber(vs) >= 2015 then
             profile:print("compiler.cppstd=14")
         end
-        local vs_runtime = configs.vs_runtime
-        if vs_runtime then
-            profile:print("compiler.runtime=" .. (vs_runtime:startswith("MD") and "dynamic" or "static"))
-            profile:print("compiler.runtime_type=" .. (vs_runtime:endswith("d") and "Debug" or "Release"))
+        local runtimes = configs.runtimes
+        if runtimes then
+            profile:print("compiler.runtime=" .. (runtimes:startswith("MD") and "dynamic" or "static"))
+            profile:print("compiler.runtime_type=" .. (runtimes:endswith("d") and "Debug" or "Release"))
         end
     elseif plat == "iphoneos" then
         local target_minver = nil

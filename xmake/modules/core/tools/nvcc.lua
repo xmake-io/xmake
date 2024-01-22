@@ -170,15 +170,15 @@ function nf_optimize(self, level)
 end
 
 -- make vs runtime flag
-function nf_runtime(self, vs_runtime)
-    if self:is_plat("windows") and vs_runtime then
+function nf_runtime(self, runtime)
+    if self:is_plat("windows") and runtime then
         local maps = {
             MT = '-Xcompiler "-MT"',
             MD = '-Xcompiler "-MD"',
             MTd = '-Xcompiler "-MTd"',
             MDd = '-Xcompiler "-MDd"'
         }
-        return maps[vs_runtime]
+        return maps[runtime]
     end
 end
 
