@@ -206,8 +206,7 @@ function nf_runtime(self, runtime)
             }
         end
         return maps and maps[runtime]
-    else
-        --[[
+    elseif not self:is_plat("android") then -- we will set runtimes in android ndk toolchain
         local maps
         if kind == "cxx" then
             maps = {
@@ -223,7 +222,7 @@ function nf_runtime(self, runtime)
                 ["stdc++_static"] = {"-stdlib=libstdc++", "-static-libstdc++"},
                 ["stdc++_shared"] = "-stdlib=libstdc++",
             }
-        end]]
+        end
         return maps and maps[runtime]
     end
 end
