@@ -1130,6 +1130,34 @@ function _instance:build_envs(lazy_loading)
     return build_envs
 end
 
+-- get runtimes
+function _instance:runtimes()
+    local runtimes = self:_memcache():get("runtimes")
+    if runtimes == nil then
+        runtimes = self:config("runtimes")
+        if runtimes then
+            runtimes = table.unwrap(runtimes:split(",", {plain = true}))
+        end
+        runtimes = runtimes or false
+        self:_memcache():set("runtimes", runtimes)
+    end
+    return runtimes or nil
+end
+
+-- has the given runtime for the current toolchains?
+function _instance:has_runtime(...)
+    local runtimes_set = self._RUNTIMES_SET
+    if runtimes_set == nil then
+        runtimes_set = hashset.from(table.wrap(self:runtimes()))
+        self._RUNTIMES_SET = runtimes_set
+    end
+    for _, v in ipairs(table.pack(...)) do
+        if runtimes_set:has(v) then
+            return true
+        end
+    end
+end
+
 -- get the given toolchain
 function _instance:toolchain(name)
     local toolchains_map = self._TOOLCHAINS_MAP
@@ -1788,6 +1816,13 @@ function _instance:find_package(name, opt)
     if system == nil and not name:startswith("xmake::") then
         system = true -- find system package by default
     end
+    local configs = table.clone(self:configs()) or {}
+    if opt.configs then
+        table.join2(configs, opt.configs)
+    end
+    if configs.runtimes then
+        configs.runtimes = self:runtimes()
+    end
     return self._find_package(name, {
                               force = opt.force,
                               installdir = self:installdir({readonly = true}),
@@ -1796,7 +1831,7 @@ function _instance:find_package(name, opt)
                               mode = self:mode(),
                               plat = self:plat(),
                               arch = self:arch(),
-                              configs = table.join(self:configs(), opt.configs),
+                              configs = configs,
                               components = self:components_orderlist(),
                               components_extsources = opt.components_extsources,
                               buildhash = self:buildhash(), -- for xmake package or 3rd package manager, e.g. go:: ..
@@ -2678,7 +2713,8 @@ function package.load_from_system(packagename)
         -- on install script
         local on_install = function (pkg)
             local opt = {}
-            opt.configs         = pkg:configs()
+            local configs       = table.clone(pkg:configs()) or {}
+            opt.configs         = configs
             opt.mode            = pkg:is_debug() and "debug" or "release"
             opt.plat            = pkg:plat()
             opt.arch            = pkg:arch()
@@ -2686,6 +2722,9 @@ function package.load_from_system(packagename)
             opt.buildhash       = pkg:buildhash()
             opt.cachedir        = pkg:cachedir()
             opt.installdir      = pkg:installdir()
+            if configs.runtimes then
+                configs.runtimes = pkg:runtimes()
+            end
             import("package.manager.install_package")(pkg:name(), opt)
         end
 
