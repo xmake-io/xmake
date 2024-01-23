@@ -226,14 +226,15 @@ function _conan_generate_compiler_profile(profile, configs, opt)
     else
         local program, toolname = platform.tool("cc", plat, arch)
         if toolname == "gcc" or toolname == "clang" then
-            runtimes = table.wrap(runtimes)
             profile:print("compiler=" .. toolname)
             profile:print("compiler.cppstd=gnu17")
-            if table.contains(runtimes, "c++_static", "c++_shared") then
-                profile:print("compiler.libcxx=libc++")
-            else
-                profile:print("compiler.libcxx=libstdc++11")
+            local libcxx = "libstdc++11"
+            if runtimes and table.contains(table.wrap(runtimes), "c++_static", "c++_shared") then
+                libcxx = "libc++"
+            elseif not runtimes and toolname == "clang" then
+                libcxx = "libc++"
             end
+            profile:print("compiler.libcxx=" .. libcxx)
             local version = _conan_get_compiler_version(toolname, program)
             if version then
                 profile:print("compiler.version=" .. version)
