@@ -578,7 +578,17 @@ function _finish_requireinfo(requireinfo, package)
     for _, name in ipairs(table.keys(requireinfo.configs)) do
         local current = requireinfo.configs[name]
         local default = package:extraconf("configs", name, "default")
-        if package:extraconf("configs", name, "readonly") and current ~= default then
+        local readonly = package:extraconf("configs", name, "readonly")
+        if name == "runtimes" then
+            -- vs_runtime is deprecated, but we need also support it now.
+            if default == nil then
+                default = package:extraconf("configs", "vs_runtime", "default")
+            end
+            if readonly == nil then
+                readonly = package:extraconf("configs", "vs_runtime", "readonly")
+            end
+        end
+        if readonly and current ~= default then
             wprint("configs.%s is readonly in package(%s), it's always %s", name, package:name(), default)
             -- package:config() will use default value after loading package
             requireinfo.configs[name] = nil
