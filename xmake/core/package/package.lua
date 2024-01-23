@@ -2260,21 +2260,21 @@ function _instance:_generate_build_configs(configs, opt)
     configs = table.join(self:fetch_librarydeps(), configs)
     if self:is_plat("windows") then
         local ld = self:build_getenv("ld")
-        local vs_runtime = self:config("vs_runtime")
-        -- since we are ignoring the vs_runtime of the headeronly library,
-        -- we can only get the vs_runtime from the dependency library to detect the link.
-        if self:is_headeronly() and not vs_runtime and self:librarydeps() then
+        local runtimes = self:runtimes()
+        -- since we are ignoring the runtimes of the headeronly library,
+        -- we can only get the runtimes from the dependency library to detect the link.
+        if self:is_headeronly() and not runtimes and self:librarydeps() then
             for _, dep in ipairs(self:librarydeps()) do
-                if dep:is_plat("windows") and dep:config("vs_runtime") then
-                    vs_runtime = dep:config("vs_runtime")
+                if dep:is_plat("windows") and dep:runtimes() then
+                    runtimes = dep:runtimes()
                     break
                 end
             end
         end
-        if vs_runtime and ld and path.basename(ld:lower()) == "link" then -- for msvc?
+        if runtimes and ld and path.basename(ld:lower()) == "link" then -- for msvc?
             configs.cxflags = table.wrap(configs.cxflags)
-            table.insert(configs.cxflags, "/" .. vs_runtime)
-            if vs_runtime:startswith("MT") then
+            table.insert(configs.cxflags, "/" .. runtimes)
+            if runtimes:startswith("MT") then
                 configs.ldflags = table.wrap(configs.ldflags)
                 table.insert(configs.ldflags, "-nodefaultlib:msvcrt.lib")
             end
