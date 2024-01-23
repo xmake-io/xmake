@@ -167,6 +167,7 @@ function _conan_generate_compiler_profile(profile, configs, opt)
     local conf
     local plat = opt.plat
     local arch = opt.arch
+    local runtimes = configs.runtimes
     if plat == "windows" then
         -- https://github.com/conan-io/conan/blob/353c63b16c31c90d370305b5cbb5dc175cf8a443/conan/tools/microsoft/visual.py#L13
         local vsvers = {["2022"] = "193",
@@ -182,7 +183,6 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         if tonumber(vs) >= 2015 then
             profile:print("compiler.cppstd=14")
         end
-        local runtimes = configs.runtimes
         if runtimes then
             profile:print("compiler.runtime=" .. (runtimes:startswith("MD") and "dynamic" or "static"))
             profile:print("compiler.runtime_type=" .. (runtimes:endswith("d") and "Debug" or "Release"))
@@ -212,9 +212,8 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         if ndk_sdkver then
             profile:print("os.api_level=" .. ndk_sdkver)
         end
-        local ndk_cxxstl = config.get("ndk_cxxstl")
-        if ndk_cxxstl then
-            profile:print("compiler.libcxx=" .. ndk_cxxstl)
+        if runtimes then
+            profile:print("compiler.libcxx=" .. runtimes)
         end
         local program, toolname = ndk:tool("cc")
         local version = _conan_get_compiler_version(toolname, program)
@@ -227,9 +226,10 @@ function _conan_generate_compiler_profile(profile, configs, opt)
     else
         local program, toolname = platform.tool("cc", plat, arch)
         if toolname == "gcc" or toolname == "clang" then
+            runtimes = table.wrap(runtimes)
             profile:print("compiler=" .. toolname)
             profile:print("compiler.cppstd=gnu17")
-            if toolname == "clang" then
+            if table.contains(runtimes, "c++_static", "c++_shared") then
                 profile:print("compiler.libcxx=libc++")
             else
                 profile:print("compiler.libcxx=libstdc++11")
