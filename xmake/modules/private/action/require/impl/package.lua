@@ -371,6 +371,10 @@ function _add_package_configurations(package)
             return true
         end})
     end
+    -- deprecated, please use runtimes
+    if package:extraconf("configs", "vs_runtime", "default") == nil then
+        package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", values = {"MT", "MTd", "MD", "MDd"}})
+    end
     if package:extraconf("configs", "toolchains", "default") == nil then
         package:add("configs", "toolchains", {builtin = true, description = "Set package toolchains only for cross-compilation."})
     end
