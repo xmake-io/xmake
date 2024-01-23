@@ -50,9 +50,9 @@ function _make_modulebuildflags(target, provide, bmifile, opt)
     end
 
     if opt.name == "std" or opt.name == "std.compat" then
-       table.join2(flags[1], {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier", "-ferror-limit=1000"})
+       table.join2(flags[1], {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier"})
        if flags[2] then
-           table.join2(flags[2], {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier", "-ferror-limit=1000"})
+           table.join2(flags[2], {"-Wno-include-angled-in-module-purview", "-Wno-reserved-module-identifier"})
        end
     end
 
@@ -69,7 +69,7 @@ function _make_headerunitflags(target, headerunit, bmifile)
 
     local headertype = (headerunit.type == ":angle") and "system" or "user"
 
-    local flags = table.join(local_directory, {"-xc++-header", "-Wno-everything", module_headerflag .. headertype, "-o", bmifile, "-c", path.filename(headerunit.path)})
+    local flags = table.join(local_directory, {"-xc++-header", "-Wno-everything", module_headerflag .. headertype, "-o", bmifile, "-c", headerunit.path})
 
     return flags
 end
