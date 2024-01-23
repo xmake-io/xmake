@@ -31,7 +31,7 @@ function load(target)
     local vcvars = msvc:config("vcvars")
 
     -- enable std modules if c++23 by defaults
-    if target:data("c++.msvc.enable_std_import") == nil then
+    if target:data("c++.msvc.enable_std_import") == nil and target:policy("build.c++.modules.std") then
         local languages = target:get("languages")
         local isatleastcpp23 = false
         for _, language in ipairs(languages) do
@@ -70,22 +70,26 @@ function toolchain_includedirs(target)
     raise("msvc toolchain includedirs not found!")
 end
 
+-- build c++23 standard modules if needed
 function get_stdmodules(target)
-    -- build c++23 standard modules if needed
-    if target:data("c++.msvc.enable_std_import") then
-        local msvc = target:toolchain("msvc")
-        if msvc then
-            local vcvars = msvc:config("vcvars")
-            if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-                modules = {}
+    if target:policy("build.c++.modules.std") then
+        if target:data("c++.msvc.enable_std_import") then
+            local msvc = target:toolchain("msvc")
+            if msvc then
+                local vcvars = msvc:config("vcvars")
+                if vcvars.VCInstallDir and vcvars.VCToolsVersion then
+                    modules = {}
 
-                local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
-                assert(stdmodulesdir, "Can't enable C++23 std modules, directory missing !")
+                    local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
+                    assert(stdmodulesdir, "Can't enable C++23 std modules, directory missing !")
 
-                return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
+                    return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
+                end
             end
         end
     end
+
+    return {}
 end
 
 function get_bmi_extension()

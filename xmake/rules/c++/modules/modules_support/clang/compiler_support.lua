@@ -74,11 +74,6 @@ function load(target)
         target:add("cxxflags", modulestsflag)
     end
 
-    -- enable clang modules to emulate std modules
-    if target:policy("build.c++.clang.stdmodules") then
-       target:add("cxxflags", clangmodulesflag)
-    end
-
     -- fix default visibility for functions and variables [-fvisibility] differs in PCH file vs. current file
     -- module.pcm cannot be loaded due to a configuration mismatch with the current compilation.
     --
@@ -211,28 +206,31 @@ end
 
 -- not supported atm
 function get_stdmodules(target)
-    if _use_stdlib(target, "libc++") then
-        -- TODO support libc++ std module file when https://github.com/xmake-io/xmake/pull/4630
-        return {}
-    elseif _use_stdlib(target, "libstdc++") then
-        -- libstdc++ doesn't have a std module file atm
-        return {}
-    elseif _use_stdlib(target, "msstl") then
-        -- msstl std module file is not compatible with llvm <= 18
-        -- local toolchain = target:toolchain("clang")
-        -- local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})
-        -- if msvc then
-        --     local vcvars = msvc:config("vcvars")
-        --     if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-        --         modules = {}
-        --
-        --         local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
-        --         assert(stdmodulesdir, "Can't enable C++23 std modules, directory missing !")
-        --
-        --         return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
-        --     end
-        -- end
+    if target:policy("build.c++.modules.std") then
+        if _use_stdlib(target, "libc++") then
+            -- TODO support libc++ std module file when https://github.com/xmake-io/xmake/pull/4630
+            return {}
+        elseif _use_stdlib(target, "libstdc++") then
+            -- libstdc++ doesn't have a std module file atm
+        elseif _use_stdlib(target, "msstl") then
+            -- msstl std module file is not compatible with llvm <= 18
+            -- local toolchain = target:toolchain("clang")
+            -- local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})
+            -- if msvc then
+            --     local vcvars = msvc:config("vcvars")
+            --     if vcvars.VCInstallDir and vcvars.VCToolsVersion then
+            --         modules = {}
+            --
+            --         local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
+            --         assert(stdmodulesdir, "Can't enable C++23 std modules, directory missing !")
+            --
+            --         return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
+            --     end
+            -- end
+        end
     end
+
+    return {}
 end
 
 function get_bmi_extension()
