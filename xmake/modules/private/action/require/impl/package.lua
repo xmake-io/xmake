@@ -587,6 +587,9 @@ function _finish_requireinfo(requireinfo, package)
             if readonly == nil then
                 readonly = package:extraconf("configs", "vs_runtime", "readonly")
             end
+            if default ~= nil or readonly ~= nil then
+                wprint("please use add_configs(\"runtimes\") instead of add_configs(\"vs_runtime\").")
+            end
         end
         if readonly and current ~= default then
             wprint("configs.%s is readonly in package(%s), it's always %s", name, package:name(), default)
