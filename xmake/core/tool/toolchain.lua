@@ -108,41 +108,6 @@ function _instance:is_arch(...)
     end
 end
 
--- get toolchain runtimes
-function _instance:runtimes()
-    local runtimes = self._RUNTIMES
-    if runtimes == nil then
-        runtimes = {}
-        local runtimes_supported = hashset.from(table.wrap(self:get("runtimes")))
-        for _, runtime in ipairs(table.wrap(self:config("runtimes"))) do
-            if runtimes_supported:has(runtime) then
-                table.insert(runtimes, runtime)
-            end
-        end
-        if #runtimes > 0 then
-            runtimes = table.unwrap(runtimes)
-        else
-            runtimes = false
-        end
-        self._RUNTIMES = runtimes
-    end
-    return runtimes or nil
-end
-
--- has the given runtime for the current toolchains?
-function _instance:has_runtime(...)
-    local runtimes_set = self._RUNTIMES_SET
-    if runtimes_set == nil then
-        runtimes_set = hashset.from(table.wrap(self:runtimes()))
-        self._RUNTIMES_SET = runtimes_set
-    end
-    for _, v in ipairs(table.pack(...)) do
-        if runtimes_set:has(v) then
-            return true
-        end
-    end
-end
-
 -- get toolchain info
 function _instance:info()
     local arch = self:arch()

@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.hashset")
 import("core.project.config")
 
 -- get triple
@@ -207,8 +208,17 @@ function main(toolchain)
 
         -- get c++ stl sdk directory
         local cxxstl_sdkdir = nil
-        local ndk_cxxstl = toolchain:runtimes() or config.get("ndk_cxxstl")
+        local ndk_cxxstl = config.get("runtimes") or config.get("ndk_cxxstl")
         if ndk_cxxstl then
+            if ndk_cxxstl:find(",", 1, true) then
+                local runtimes_supported = hashset.from(toolchain:get("runtimes"))
+                for _, item in ipairs(ndk_cxxstl:split(",")) do
+                    if runtimes_supported:has(item) then
+                        ndk_cxxstl = item
+                        break
+                    end
+                end
+            end
             -- we uses c++_static/c++_shared instead of llvmstl_static/llvmstl_shared
             if ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl") then
                 cxxstl_sdkdir = cxxstl_sdkdir_llvmstl

@@ -147,30 +147,6 @@ function _instance:runenvs()
     return runenvs
 end
 
--- get runtimes
-function _instance:runtimes()
-    local runtimes = self:_memcache():get("runtimes")
-    if runtimes == nil then
-        runtimes = config.get("runtimes")
-        if self:name() == "windows" then
-            runtimes = runtimes or config.get("vs_runtime")
-        elseif self:name() == "android" then
-            runtimes = runtimes or config.get("ndk_cxxstl")
-        end
-        if runtimes then
-            runtimes = runtimes:split(",", {plain = true})
-            if #runtimes > 0 then
-                runtimes = table.unwrap(runtimes)
-            else
-                runtimes = nil
-            end
-        end
-        runtimes = runtimes or false
-        self:_memcache():set("runtimes", runtimes)
-    end
-    return runtimes or nil
-end
-
 -- get the toolchains
 function _instance:toolchains(opt)
     local toolchains = self:_memcache():get("toolchains")
@@ -187,7 +163,7 @@ function _instance:toolchains(opt)
             local toolchain_given = config.get("toolchain")
             if toolchain_given then
                 local toolchain_inst, errors = toolchain.load(toolchain_given, {
-                    plat = self:name(), arch = self:arch(), runtimes = self:runtimes()})
+                    plat = self:name(), arch = self:arch()})
                 -- attempt to load toolchain from project
                 if not toolchain_inst and platform._project() then
                     toolchain_inst = platform._project().toolchain(toolchain_given)
@@ -207,7 +183,7 @@ function _instance:toolchains(opt)
         if names then
             for _, name in ipairs(table.wrap(names)) do
                 local toolchain_inst, errors = toolchain.load(name, {
-                    plat = self:name(), arch = self:arch(), runtimes = self:runtimes()})
+                    plat = self:name(), arch = self:arch()})
                 -- attempt to load toolchain from project
                 if not toolchain_inst and platform._project() then
                     toolchain_inst = platform._project().toolchain(name)
