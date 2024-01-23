@@ -1474,6 +1474,10 @@ function _instance:configs()
                 local value = configs_required[name]
                 if value == nil then
                     value = self:extraconf("configs", name, "default")
+                    -- support for the deprecated vs_runtime in add_configs
+                    if name == "runtimes" and value == nil then
+                        value = self:extraconf("configs", "vs_runtime", "default")
+                    end
                 end
                 configs[name] = value
             end
