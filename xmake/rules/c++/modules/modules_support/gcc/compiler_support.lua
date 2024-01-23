@@ -100,7 +100,7 @@ function get_target_module_mapperpath(target)
 end
 
 -- not supported atm
-function get_stdmodules(_)
+function get_stdmodules(target)
     if target:policy("build.c++.modules.std") then
     end
     return {}
