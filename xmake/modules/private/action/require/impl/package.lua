@@ -356,14 +356,13 @@ function _add_package_configurations(package)
     if package:extraconf("configs", "runtimes", "default") == nil then
         local values = {"MT", "MTd", "MD", "MDd",
                         "c++_static", "c++_shared", "stdc++_static", "stdc++_shared"}
-        package:add("configs", "runtimes", {builtin = true, description = "Set the compiler runtimes.", values = values, restrict = function (value)
+        package:add("configs", "runtimes", {builtin = true, description = "Set the compiler runtimes.", type = "string", values = values, restrict = function (value)
             local values_set = hashset.from(values)
-            if type(value) == "string" then
-                if not values_set:has(value) then
-                    return false
-                end
-            elseif type(value) == "table" then
-                for _, item in ipairs(value) do
+            if type(value) ~= "string" then
+                return false
+            end
+            if value then
+                for _, item in ipairs(value:split(",", {plain = true})) do
                     if not values_set:has(item) then
                         return false
                     end
@@ -538,6 +537,9 @@ function _init_requireinfo(requireinfo, package, opt)
         requireinfo.configs.runtimes = requireinfo.configs.runtimes or project.get("target.runtimes")
         if project.policy("package.inherit_external_configs") then
             requireinfo.configs.runtimes = requireinfo.configs.runtimes or get_config("runtimes") or get_config("vs_runtime")
+        end
+        if type(requireinfo.configs.runtimes) == "table" then
+            requireinfo.configs.runtimes = table.concat(requireinfo.configs.runtimes, ",")
         end
         if requireinfo.configs.lto == nil then
             requireinfo.configs.lto = project.policy("build.optimization.lto")
