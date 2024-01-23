@@ -2,6 +2,6 @@ import foo;
 import bar;
 
 int main() {
-    foo::say(bar());
+    foo::say(bar::hello());
     return 0;
 }

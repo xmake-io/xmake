@@ -2,4 +2,4 @@
     add_deps("a")
     set_languages("cxxlatest")
     set_kind("object")
-    add_files("b.mpp")
+    add_files("b.mpp", {public = true})

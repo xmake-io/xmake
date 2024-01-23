@@ -3,7 +3,8 @@ set_languages("c++latest")
 
 target("mod")
     set_kind("static")
-    add_files("src/*.cpp", "src/*.mpp")
+    add_files("src/*.cpp")
+    add_files("src/*.mpp", {public = true})
     set_policy("build.c++.clang.stdmodules", true)
 
 target("stdmodules")
