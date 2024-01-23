@@ -2387,10 +2387,13 @@ function _instance:runtimes()
         runtimes = self:get("runtimes")
         if runtimes then
             local runtimes_supported = hashset.new()
-            for _, toolchain_inst in ipairs(self:toolchains()) do
-                if toolchain_inst:is_standalone() and toolchain_inst:get("runtimes") then
-                    for _, runtime in ipairs(table.wrap(toolchain_inst:get("runtimes"))) do
-                        runtimes_supported:insert(runtime)
+            local toolchains = self:toolchains() or platform.load(self:plat(), self:arch()):toolchains()
+            if toolchains then
+                for _, toolchain_inst in ipairs(toolchains) do
+                    if toolchain_inst:is_standalone() and toolchain_inst:get("runtimes") then
+                        for _, runtime in ipairs(table.wrap(toolchain_inst:get("runtimes"))) do
+                            runtimes_supported:insert(runtime)
+                        end
                     end
                 end
             end
