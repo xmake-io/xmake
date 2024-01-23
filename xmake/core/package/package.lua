@@ -1391,6 +1391,19 @@ function _instance:config(name)
     local configs = self:configs()
     if configs then
         value = configs[name]
+        -- vs_runtime is deprecated now
+        if name == "vs_runtime" then
+            local runtimes = configs.runtimes
+            if runtimes then
+                for _, item in ipairs(runtimes:split(",")) do
+                    if item:startswith("MT") or item:startswith("MD") then
+                        value = item
+                        break
+                    end
+                end
+            end
+            utils.warning("please use package:runtimes() or package:has_runtime() instead of package:config(\"vs_runtime\")")
+        end
     end
     return value
 end
