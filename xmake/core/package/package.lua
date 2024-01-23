@@ -1136,7 +1136,21 @@ function _instance:runtimes()
     if runtimes == nil then
         runtimes = self:config("runtimes")
         if runtimes then
-            runtimes = table.unwrap(runtimes:split(",", {plain = true}))
+            local runtimes_supported = hashset.new()
+            for _, toolchain_inst in ipairs(self:toolchains()) do
+                if toolchain_inst:is_standalone() and toolchain_inst:get("runtimes") then
+                    for _, runtime in ipairs(table.wrap(toolchain_inst:get("runtimes"))) do
+                        runtimes_supported:insert(runtime)
+                    end
+                end
+            end
+            local runtimes_current = {}
+            for _, runtime in ipairs(table.wrap(runtimes:split(",", {plain = true}))) do
+                if runtimes_supported:has(runtime) then
+                    table.insert(runtimes_current, runtime)
+                end
+            end
+            runtimes = table.unwrap(runtimes_current)
         end
         runtimes = runtimes or false
         self:_memcache():set("runtimes", runtimes)
@@ -1146,10 +1160,10 @@ end
 
 -- has the given runtime for the current toolchains?
 function _instance:has_runtime(...)
-    local runtimes_set = self._RUNTIMES_SET
+    local runtimes_set = self:_memcache():get("runtimes_set")
     if runtimes_set == nil then
         runtimes_set = hashset.from(table.wrap(self:runtimes()))
-        self._RUNTIMES_SET = runtimes_set
+        self:_memcache():set("runtimes_set", runtimes_set)
     end
     for _, v in ipairs(table.pack(...)) do
         if runtimes_set:has(v) then
@@ -1160,7 +1174,7 @@ end
 
 -- get the given toolchain
 function _instance:toolchain(name)
-    local toolchains_map = self._TOOLCHAINS_MAP
+    local toolchains_map = self:_memcache():get("toolchains_map")
     if toolchains_map == nil then
         toolchains_map = {}
         local toolchains = self:toolchains()
@@ -1169,7 +1183,7 @@ function _instance:toolchain(name)
                 toolchains_map[toolchain_inst:name()] = toolchain_inst
             end
         end
-        self._TOOLCHAINS_MAP = toolchains_map
+        self:_memcache():set("toolchains_map", toolchains_map)
     end
     return toolchains_map[name]
 end
