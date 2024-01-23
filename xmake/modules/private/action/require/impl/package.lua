@@ -354,9 +354,23 @@ function _add_package_configurations(package)
         package:add("configs", "asan", {builtin = true, description = "Enable the address sanitizer.", type = "boolean"})
     end
     if package:extraconf("configs", "runtimes", "default") == nil then
-        package:add("configs", "runtimes", {builtin = true, description = "Set the compiler runtimes.", values = {
-            "MT", "MTd", "MD", "MDd",
-            "c++_static", "c++_shared", "stdc++_static", "stdc++_shared"}})
+        local values = {"MT", "MTd", "MD", "MDd",
+                        "c++_static", "c++_shared", "stdc++_static", "stdc++_shared"}
+        package:add("configs", "runtimes", {builtin = true, description = "Set the compiler runtimes.", values = values, restrict = function (value)
+            local values_set = hashset.from(values)
+            if type(value) == "string" then
+                if not values_set:has(value) then
+                    return false
+                end
+            elseif type(value) == "table" then
+                for _, item in ipairs(value) do
+                    if not values_set:has(item) then
+                        return false
+                    end
+                end
+            end
+            return true
+        end})
     end
     if package:extraconf("configs", "toolchains", "default") == nil then
         package:add("configs", "toolchains", {builtin = true, description = "Set package toolchains only for cross-compilation."})
@@ -447,7 +461,11 @@ function _check_package_configurations(package)
             if config_type ~= nil and type(value) ~= config_type then
                 raise("package(%s %s): invalid type(%s) for config(%s), need type(%s)!", package:displayname(), package:version_str(), type(value), name, config_type)
             end
-            if conf.values then
+            if conf.restrict then
+                if not conf.restrict(value) then
+                    raise("package(%s %s): invalid value(%s) for config(%s)!", package:displayname(), package:version_str(), string.serialize(value, {indent = false}), name)
+                end
+            elseif conf.values then
                 local found = false
                 for _, config_value in ipairs(conf.values) do
                     if tostring(value) == tostring(config_value) then
@@ -457,11 +475,6 @@ function _check_package_configurations(package)
                 end
                 if not found then
                     raise("package(%s %s): invalid value(%s) for config(%s), please run `xmake require --info %s` to get all valid values!", package:displayname(), package:version_str(), value, name, package:name())
-                end
-            end
-            if conf.restrict then
-                if not conf.restrict(value) then
-                    raise("package(%s %s): invalid value(%s) for config(%s)!", package:displayname(), package:version_str(), value, name)
                 end
             end
         else
