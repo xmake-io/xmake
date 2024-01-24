@@ -35,9 +35,6 @@ local sandbox     = require("sandbox/sandbox")
 local raise       = require("sandbox/modules/raise")
 local scheduler   = require("sandbox/modules/import/core/base/scheduler")
 
--- globals
-local checking  = nil
-
 -- find program version
 --
 -- @param program   the program
@@ -56,17 +53,7 @@ local checking  = nil
 -- @endcode
 --
 function sandbox_lib_detect_find_programver.main(program, opt)
-
-    -- init options
     opt = opt or {}
-
-    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
-    local coroutine_running = scheduler.co_running()
-    if coroutine_running then
-        while checking ~= nil and checking == program do
-            scheduler.co_yield()
-        end
-    end
 
     -- init cachekey
     local cachekey = "find_programver"
@@ -80,8 +67,11 @@ function sandbox_lib_detect_find_programver.main(program, opt)
         return result and result or nil
     end
 
+    -- @see https://github.com/xmake-io/xmake/issues/4645
+    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
+    scheduler.co_lock(cachekey)
+
     -- attempt to get version output info
-    checking = coroutine_running and program or nil
     profiler:enter("find_programver", program)
     local ok = false
     local outdata = nil
@@ -96,7 +86,6 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     else
         ok, outdata = os.iorunv(program, {command or "--version"}, {envs = opt.envs})
     end
-    checking = nil
     profiler:leave("find_programver", program)
 
     -- find version info
@@ -119,6 +108,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     -- save result
     detectcache:set2(cachekey, program, result and result or false)
     detectcache:save()
+    scheduler.co_unlock(cachekey)
     return result
 end
 

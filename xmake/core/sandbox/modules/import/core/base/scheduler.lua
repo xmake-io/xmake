@@ -84,6 +84,22 @@ function sandbox_core_base_scheduler.co_sleep(ms)
     end
 end
 
+-- lock the current coroutine
+function sandbox_core_base_scheduler.co_lock(lockname)
+    local ok, errors = scheduler:co_lock(lockname)
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- unlock the current coroutine
+function sandbox_core_base_scheduler.co_unlock(lockname)
+    local ok, errors = scheduler:co_unlock(lockname)
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- get coroutine group with the given name
 function sandbox_core_base_scheduler.co_group(name)
     return scheduler:co_group(name)

@@ -499,6 +499,86 @@ function scheduler:co_sleep(ms)
     return true
 end
 
+-- lock the current coroutine
+function scheduler:co_lock(lockname)
+
+    -- get the running coroutine
+    local running = self:co_running()
+    if not running then
+        return false, "we must call co_lock() in coroutine with scheduler!"
+    end
+
+    -- is stopped?
+    if not self._STARTED then
+        return false, "the scheduler is stopped!"
+    end
+
+    -- do lock
+    local co_locked_tasks = self._CO_LOCKED_TASKS
+    if co_locked_tasks == nil then
+        co_locked_tasks = {}
+        self._CO_LOCKED_TASKS = co_locked_tasks
+    end
+    while true do
+        if co_locked_tasks[lockname] == nil then
+            co_locked_tasks[lockname] = running
+            return true
+        end
+
+        -- this lock has been occupied, we need to wait it
+        local co_waiting_tasks = self._CO_WAITING_TASKS
+        if co_waiting_tasks == nil then
+            co_waiting_tasks = {}
+            self._CO_WAITING_TASKS = co_waiting_tasks
+        end
+        co_waiting_tasks[lockname] = co_waiting_tasks[lockname] or {}
+        table.insert(co_waiting_tasks[lockname], running)
+
+        -- wait
+        self:co_suspend()
+    end
+    return true
+end
+
+-- unlock the current coroutine
+function scheduler:co_unlock(lockname)
+
+    -- get the running coroutine
+    local running = self:co_running()
+    if not running then
+        return false, "we must call co_unlock() in coroutine with scheduler!"
+    end
+
+    -- do unlock
+    local co_locked_tasks = self._CO_LOCKED_TASKS
+    if co_locked_tasks == nil then
+        co_locked_tasks = {}
+        self._CO_LOCKED_TASKS = co_locked_tasks
+    end
+    if co_locked_tasks[lockname] == nil then
+        return false, string.format("we need to call lock(%s) first before calling unlock(%s)", lockname, lockname)
+    end
+    if co_locked_tasks[lockname] == running then
+        co_locked_tasks[lockname] = nil
+        local co_waiting_tasks = self._CO_WAITING_TASKS
+        if co_waiting_tasks then
+            local waiting_tasks = co_waiting_tasks[lockname]
+            if waiting_tasks and #waiting_tasks > 0 then
+                co_waiting_tasks[lockname] = nil
+                for _, co_task in ipairs(waiting_tasks) do
+                    local ok, errors = self:co_resume(co_task)
+                    if not ok then
+                        return false, errors
+                    end
+                end
+            end
+        end
+    else
+        return false, string.format("unlock(%s) is called in other %s", lockname, running)
+    end
+    return true
+end
+
 -- get the given coroutine group
 function scheduler:co_group(name)
     return self._CO_GROUPS and self._CO_GROUPS[name]
