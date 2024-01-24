@@ -519,18 +519,20 @@ function scheduler:co_lock(lockname)
         co_locked_tasks = {}
         self._CO_LOCKED_TASKS = co_locked_tasks
     end
+    local co_waiting_tasks = self._CO_WAITING_TASKS
+    if co_waiting_tasks == nil then
+        co_waiting_tasks = {}
+        self._CO_WAITING_TASKS = co_waiting_tasks
+    end
     while true do
+
+        -- try to lock it
         if co_locked_tasks[lockname] == nil then
             co_locked_tasks[lockname] = running
             return true
         end
 
         -- this lock has been occupied, we need to wait it
-        local co_waiting_tasks = self._CO_WAITING_TASKS
-        if co_waiting_tasks == nil then
-            co_waiting_tasks = {}
-            self._CO_WAITING_TASKS = co_waiting_tasks
-        end
         co_waiting_tasks[lockname] = co_waiting_tasks[lockname] or {}
         table.insert(co_waiting_tasks[lockname], running)
 
@@ -547,6 +549,11 @@ function scheduler:co_unlock(lockname)
     local running = self:co_running()
     if not running then
         return false, "we must call co_unlock() in coroutine with scheduler!"
+    end
+
+    -- is stopped?
+    if not self._STARTED then
+        return false, "the scheduler is stopped!"
     end
 
     -- do unlock
