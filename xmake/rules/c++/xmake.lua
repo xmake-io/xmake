@@ -46,10 +46,35 @@ rule("c++.build")
         end
     end)
 
+rule("c")
+
+    -- add build rules
+    add_deps("c.build")
+
+    -- set compiler runtime, e.g. vs runtime
+    add_deps("utils.compiler.runtime")
+
+    -- inherit links and linkdirs of all dependent targets by default
+    add_deps("utils.inherit.links")
+
+    -- support `add_files("src/*.o")` and `add_files("src/*.a")` to merge object and archive files to target
+    add_deps("utils.merge.object", "utils.merge.archive")
+
+    -- we attempt to extract symbols to the independent file and
+    -- strip self-target binary if `set_symbols("debug")` and `set_strip("all")` are enabled
+    add_deps("utils.symbols.extract")
+
+    -- add platform rules
+    add_deps("platform.wasm")
+    add_deps("platform.windows")
+
+    -- add linker rules
+    add_deps("linker")
+
 rule("c++")
 
     -- add build rules
-    add_deps("c++.build", "c.build")
+    add_deps("c++.build")
 
     -- set compiler runtime, e.g. vs runtime
     add_deps("utils.compiler.runtime")

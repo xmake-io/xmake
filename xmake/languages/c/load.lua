@@ -25,8 +25,8 @@ function _get_apis()
         -- target.add_xxx
         "target.add_links"
     ,   "target.add_syslinks"
+    ,   "target.add_cflags"
     ,   "target.add_cxflags"
-    ,   "target.add_cxxflags"
     ,   "target.add_ldflags"
     ,   "target.add_arflags"
     ,   "target.add_shflags"
@@ -36,13 +36,13 @@ function _get_apis()
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
     ,   "target.add_forceincludes"
         -- option.add_xxx
-    ,   "option.add_cxxincludes"
-    ,   "option.add_cxxfuncs"
-    ,   "option.add_cxxtypes"
+    ,   "option.add_cincludes"
+    ,   "option.add_cfuncs"
+    ,   "option.add_ctypes"
     ,   "option.add_links"
     ,   "option.add_syslinks"
+    ,   "option.add_cflags"
     ,   "option.add_cxflags"
-    ,   "option.add_cxxflags"
     ,   "option.add_ldflags"
     ,   "option.add_arflags"
     ,   "option.add_shflags"
@@ -53,8 +53,8 @@ function _get_apis()
         -- package.add_xxx
     ,   "package.add_links"
     ,   "package.add_syslinks"
+    ,   "package.add_cflags"
     ,   "package.add_cxflags"
-    ,   "package.add_cxxflags"
     ,   "package.add_ldflags"
     ,   "package.add_arflags"
     ,   "package.add_shflags"
@@ -69,8 +69,8 @@ function _get_apis()
         -- toolchain.add_xxx
     ,   "toolchain.add_links"
     ,   "toolchain.add_syslinks"
+    ,   "toolchain.add_cflags"
     ,   "toolchain.add_cxflags"
-    ,   "toolchain.add_cxxflags"
     ,   "toolchain.add_ldflags"
     ,   "toolchain.add_arflags"
     ,   "toolchain.add_shflags"
@@ -93,7 +93,7 @@ function _get_apis()
     }
     apis.paths = {
         -- target.set_xxx
-        "target.set_pcxxheader"
+        "target.set_pcheader"
         -- target.add_xxx
     ,   "target.add_headerfiles"
     ,   "target.add_linkdirs"
@@ -108,7 +108,7 @@ function _get_apis()
     }
     apis.dictionary = {
         -- option.add_xxx
-        "option.add_cxxsnippets"
+        "option.add_csnippets"
     }
     return apis
 end

@@ -194,7 +194,8 @@ end
 
 -- make the runtime flag
 -- @see https://github.com/xmake-io/xmake/issues/3546
-function nf_runtime(self, runtime)
+function nf_runtime(self, runtime, opt)
+    opt = opt or {}
     local kind = self:kind()
     if self:is_plat("windows") and runtime then
         if not _has_ms_runtime_lib(self) then
@@ -230,15 +231,18 @@ function nf_runtime(self, runtime)
                 ["stdc++_shared"] = "-stdlib=libstdc++",
             }
         elseif kind == "ld" or kind == "sh" then
-            maps = {
-                ["c++_static"]    = "-stdlib=libc++",
-                ["c++_shared"]    = "-stdlib=libc++",
-                ["stdc++_static"] = "-stdlib=libstdc++",
-                ["stdc++_shared"] = "-stdlib=libstdc++",
-            }
-            if runtime:endswith("_static") and _has_static_libstdcxx(self) then
-                maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
-                maps["stdc++_static"] = table.join(maps["stdc++_static"], "-static-libstdc++")
+            local target = opt.target
+            if target and target.sourcekinds and table.contains(table.wrap(target:sourcekinds()), "cxx") then
+                maps = {
+                    ["c++_static"]    = "-stdlib=libc++",
+                    ["c++_shared"]    = "-stdlib=libc++",
+                    ["stdc++_static"] = "-stdlib=libstdc++",
+                    ["stdc++_shared"] = "-stdlib=libstdc++",
+                }
+                if runtime:endswith("_static") and _has_static_libstdcxx(self) then
+                    maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
+                    maps["stdc++_static"] = table.join(maps["stdc++_static"], "-static-libstdc++")
+                end
             end
         end
         return maps and maps[runtime]
