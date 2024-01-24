@@ -28,7 +28,7 @@ import("devel.git")
 -- check sha256
 function _check_sha256(patch_hash, patch_file)
     local ok = (patch_hash == hash.sha256(patch_file))
-    if not ok and is_host("windows") then
+    if not ok then
         -- `git pull` maybe will replace lf to crlf in the patch text automatically on windows.
         -- so we need to attempt to fix this sha256
         --
