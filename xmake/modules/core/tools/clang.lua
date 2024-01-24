@@ -229,7 +229,7 @@ function nf_runtime(self, runtime)
                 ["stdc++_static"] = "-stdlib=libstdc++",
                 ["stdc++_shared"] = "-stdlib=libstdc++",
             }
-        else
+        elseif kind == "ld" or kind == "sh" then
             maps = {
                 ["c++_static"]    = "-stdlib=libc++",
                 ["c++_shared"]    = "-stdlib=libc++",
