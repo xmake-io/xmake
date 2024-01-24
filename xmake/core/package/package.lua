@@ -1539,6 +1539,15 @@ function _instance:buildhash()
                 str = str .. label
             end
             if configs then
+
+                -- with old vs_runtime configs
+                -- https://github.com/xmake-io/xmake/issues/4477
+                if opt.vs_runtime then
+                    configs = table.clone(configs)
+                    configs.vs_runtime = configs.runtimes
+                    configs.runtimes = nil
+                end
+
                 -- since luajit v2.1, the key order of the table is random and undefined.
                 -- We cannot directly deserialize the table, so the result may be different each time
                 local configs_order = {}
@@ -1611,6 +1620,16 @@ function _instance:buildhash()
         -- without toolchains (< 2.6.4)
         if not buildhash then
             buildhash = _get_buildhash(self:_configs_for_buildhash(), {toolchains = false})
+            if not os.isdir(_get_installdir(buildhash)) then
+                buildhash = nil
+            end
+        end
+
+        -- we need to be compatible with the previous xmake version
+        -- with deprecated vs_runtime (< 2.8.7)
+        -- @see https://github.com/xmake-io/xmake/issues/4477
+        if not buildhash then
+            buildhash = _get_buildhash(self:_configs_for_buildhash(), {vs_runtime = true})
             if not os.isdir(_get_installdir(buildhash)) then
                 buildhash = nil
             end
