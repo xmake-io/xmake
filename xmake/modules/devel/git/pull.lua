@@ -46,6 +46,10 @@ function main(opt)
 
     -- init argv
     local argv = {}
+    if opt.force then
+        table.insert(argv, "-f")
+    end
+
     if opt.fsmonitor then
         table.insert(argv, "-c")
         table.insert(argv, "core.fsmonitor=true")
