@@ -46,10 +46,6 @@ function main(opt)
 
     -- init argv
     local argv = {}
-    if opt.force then
-        table.insert(argv, "-f")
-    end
-
     if opt.fsmonitor then
         table.insert(argv, "-c")
         table.insert(argv, "core.fsmonitor=true")
@@ -70,6 +66,10 @@ function main(opt)
     -- set tags
     if opt.tags then
         table.insert(argv, "--tags")
+    end
+
+    if opt.force then
+        table.insert(argv, "-f")
     end
 
     -- use proxy?
