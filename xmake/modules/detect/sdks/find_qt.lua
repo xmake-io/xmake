@@ -119,8 +119,9 @@ function _find_sdkdir(sdkdir, sdkver)
             end
         end
     else
-        table.insert(paths, "~/Qt")
-        table.insert(paths, "~/Qt*")
+        for _, dir in ipairs(os.dirs("~/Qt*")) do
+            table.insert(paths, dir)
+        end
     end
 
     -- special case for android on windows, where qmake is a .bat from version 6.3
