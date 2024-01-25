@@ -68,6 +68,10 @@ function main(opt)
         table.insert(argv, "--tags")
     end
 
+    if opt.force then
+        table.insert(argv, "-f")
+    end
+
     -- use proxy?
     local envs
     local proxy_conf = proxy.config()

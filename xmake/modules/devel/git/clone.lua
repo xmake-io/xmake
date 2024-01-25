@@ -115,6 +115,15 @@ function main(url, opt)
         table.insert(argv, "core.fsmonitor=false")
     end
 
+    -- set core.autocrlf
+    if opt.autocrlf then
+        table.insert(argv, "-c")
+        table.insert(argv, "core.autocrlf=true")
+    elseif opt.autocrlf == false then
+        table.insert(argv, "-c")
+        table.insert(argv, "core.autocrlf=false")
+    end
+
     -- set outputdir
     if opt.outputdir then
         table.insert(argv, path.translate(opt.outputdir))
