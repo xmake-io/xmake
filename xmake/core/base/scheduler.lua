@@ -434,7 +434,29 @@ end
 
 -- resume the given coroutine
 function scheduler:co_resume(co, ...)
-    return coroutine.resume(co:thread(), ...)
+
+    -- do resume
+    local ok, errors = coroutine.resume(co:thread(), ...)
+
+    local running = self:co_running()
+    if running then
+
+        -- has the current directory been changed? restore it
+        local curdir = self._CO_CURDIR_HASH
+        local olddir = self._CO_CURDIRS and self._CO_CURDIRS[running] or nil
+        if olddir and curdir ~= olddir[1] then -- hash changed?
+            os.cd(olddir[2])
+        end
+
+        -- has the current environments been changed? restore it
+        local curenvs = self._CO_CURENVS_HASH
+        local oldenvs = self._CO_CURENVS and self._CO_CURENVS[running] or nil
+        if oldenvs and curenvs ~= oldenvs[1] and running:is_isolated() then -- hash changed?
+            os.setenvs(oldenvs[2])
+        end
+    end
+
+    return ok, errors
 end
 
 -- suspend the current coroutine
@@ -443,7 +465,7 @@ function scheduler:co_suspend(...)
     -- suspend it
     local results = table.pack(coroutine.yield(...))
 
-    -- Has the current directory been changed? restore it
+    -- has the current directory been changed? restore it
     local running = assert(self:co_running())
     local curdir = self._CO_CURDIR_HASH
     local olddir = self._CO_CURDIRS and self._CO_CURDIRS[running] or nil
@@ -451,7 +473,7 @@ function scheduler:co_suspend(...)
         os.cd(olddir[2])
     end
 
-    -- Has the current environments been changed? restore it
+    -- has the current environments been changed? restore it
     local curenvs = self._CO_CURENVS_HASH
     local oldenvs = self._CO_CURENVS and self._CO_CURENVS[running] or nil
     if oldenvs and curenvs ~= oldenvs[1] and running:is_isolated() then -- hash changed?
