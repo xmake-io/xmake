@@ -272,6 +272,43 @@ function _instance:_visibility(opt)
     return visibility
 end
 
+-- update file rules
+--
+-- if we add files in on_load() dynamically, we need to update file rules,
+-- otherwise it will cause: unknown source file: ...
+--
+function _instance:_update_filerules()
+    local rulenames = {}
+    local extensions = {}
+    for _, sourcefile in ipairs(table.wrap(self:get("files"))) do
+        local extension = path.extension((sourcefile:gsub("|.*$", "")))
+        if not extensions[extension] then
+            local lang = language.load_ex(extension)
+            if lang and lang:rules() then
+                table.join2(rulenames, lang:rules())
+            end
+            extensions[extension] = true
+        end
+    end
+    rulenames = table.unique(rulenames)
+    for _, rulename in ipairs(rulenames) do
+        local r = target._project() and target._project().rule(rulename) or rule.rule(rulename)
+        if r then
+            -- only add target rules
+            if r:kind() == "target" then
+                if not self:rule(rulename) then
+                    self:rule_add(r)
+                    for _, deprule in ipairs(r:orderdeps()) do
+                        if not self:rule(deprule:name()) then
+                            self:rule_add(deprule)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 -- invalidate the previous cache
 function _instance:_invalidate(name)
     self._CACHEID = self._CACHEID + 1
@@ -282,6 +319,7 @@ function _instance:_invalidate(name)
         self._FILESCONFIG = nil
         self._OBJECTFILES = nil
         self._SOURCEBATCHES = nil
+        self:_update_filerules()
     elseif name == "deps" then
         self._DEPS = nil
         self._ORDERDEPS = nil
