@@ -25,6 +25,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("core.language.language")
+import("core.project.policy")
 import("utils.progress")
 
 -- init it
@@ -423,7 +424,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             function (ok, warnings)
 
                 -- print some warnings
-                if warnings and #warnings > 0 and (option.get("verbose") or option.get("warning") or global.get("build_warning")) then
+                if warnings and #warnings > 0 and policy.build_warnings() then
                     if progress.showing_without_scroll() then
                         print("")
                     end

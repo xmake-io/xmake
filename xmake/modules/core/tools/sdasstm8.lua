@@ -21,9 +21,9 @@
 -- imports
 import("core.base.option")
 import("core.base.global")
-import("utils.progress")
+import("core.project.policy")
 import("core.language.language")
-
+import("utils.progress")
 
 -- make the includedir flag
 function nf_includedir(self, dir)
@@ -85,7 +85,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             function (ok, warnings)
 
                 -- print some warnings
-                if warnings and #warnings > 0 and (option.get("verbose") or option.get("warning") or global.get("build_warning")) then
+                if warnings and #warnings > 0 and policy.build_warnings() then
                     if progress.showing_without_scroll() then
                         print("")
                     end

@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.global")
 import("core.project.config")
 import("core.project.project")
+import("core.project.policy")
 import("core.language.language")
 
 -- init it
@@ -186,7 +187,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             function (ok, warnings)
 
                 -- print some warnings
-                if warnings and #warnings > 0 and (option.get("verbose") or option.get("warning") or global.get("build_warning")) then
+                if warnings and #warnings > 0 and policy.build_warnings() then
                     cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
                 end
             end

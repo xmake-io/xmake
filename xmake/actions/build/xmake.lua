@@ -42,7 +42,7 @@ task("build")
                 ,   {'j', "jobs",       "kv", tostring(os.default_njob()),
                                                       "Set the number of parallel compilation jobs."                  }
                 ,   {nil, "linkjobs",   "kv", nil,    "Set the number of parallel link jobs."                         }
-                ,   {'w', "warning",    "k",  false , "Enable the warnings output."                                   }
+                ,   {'w', "warning",    "k",  false , "Enable the warnings output. (deprecated)"                      }
                 ,   {nil, "files",      "kv", nil   , "Build the given source files.",
                                                       "e.g. ",
                                                       "    - xmake --files=src/main.c",

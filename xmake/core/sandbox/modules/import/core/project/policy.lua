@@ -40,9 +40,6 @@ function sandbox_core_project_policy.build_warnings()
         if warnings == nil and os.isfile(os.projectfile()) and project.policy("build.warning") ~= nil then
             warnings = project.policy("build.warning")
         end
-        if warnings == nil then
-            warnings = global.get("build_warning")
-        end
         sandbox_core_project_policy._BUILD_WARNINGS = warnings or false
     end
     return warnings
