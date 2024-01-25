@@ -19,7 +19,6 @@
 ### Bugs Fixed
 
 * [#4596](https://github.com/xmake-io/xmake/issues/4596): Fix remote build cache
-* [#4645](https://github.com/xmake-io/xmake/issues/4645): Fix coroutine stuck
 
 ## v2.8.6
 
@@ -1738,7 +1737,6 @@
 ### Bugs 修复
 
 * [#4596](https://github.com/xmake-io/xmake/issues/4596): 修复远程构建缓存
-* [#4645](https://github.com/xmake-io/xmake/issues/4645): 修复协程卡死
 
 ## v2.8.6
 
