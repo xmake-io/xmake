@@ -277,15 +277,16 @@ function sandbox_lib_detect_find_program.main(name, opt)
         cachekey = cachekey .. "_" .. opt.cachekey
     end
 
-    -- attempt to get result from cache first
-    local result = detectcache:get2(cachekey, name)
-    if result ~= nil and not opt.force then
-        return result and result or nil
-    end
-
     -- @see https://github.com/xmake-io/xmake/issues/4645
     -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
     scheduler.co_lock(cachekey)
+
+    -- attempt to get result from cache first
+    local result = detectcache:get2(cachekey, name)
+    if result ~= nil and not opt.force then
+        scheduler.co_unlock(cachekey)
+        return result and result or nil
+    end
 
     -- get paths from the opt.envs.PATH
     -- @note the wrong `pathes` word will be discarded, but the interface parameters will still be compatible

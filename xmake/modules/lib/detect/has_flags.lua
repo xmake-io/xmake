@@ -80,6 +80,10 @@ function main(name, flags, opt)
               .. (tool.version or "") .. "_" .. (opt.toolkind or "")
               .. "_" .. (opt.flagkind or "") .. "_" .. table.concat(opt.sysflags, " ") .. "_" .. opt.flagskey
 
+    -- @see https://github.com/xmake-io/xmake/issues/4645
+    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
+    scheduler.co_lock(key)
+
     -- attempt to get result from cache first
     local cacheinfo = detectcache:get("lib.detect.has_flags")
     if not cacheinfo then
@@ -90,12 +94,9 @@ function main(name, flags, opt)
     end
     local result = cacheinfo[key]
     if result ~= nil and not opt.force then
+        scheduler.co_unlock(key)
         return result
     end
-
-    -- @see https://github.com/xmake-io/xmake/issues/4645
-    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
-    scheduler.co_lock(key)
 
     -- generate all checked flags
     local checkflags = table.join(flags, opt.sysflags)

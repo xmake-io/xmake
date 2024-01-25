@@ -57,15 +57,16 @@ function main(name, opt)
     _g._RESULTS = _g._RESULTS or {}
     local results = _g._RESULTS
 
-    -- get result from the cache first
-    local result = results[key]
-    if result ~= nil then
-        return result
-    end
-
     -- @see https://github.com/xmake-io/xmake/issues/4645
     -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
     scheduler.co_lock(key)
+
+    -- get result from the cache first
+    local result = results[key]
+    if result ~= nil then
+        scheduler.co_unlock(key)
+        return result
+    end
 
     -- detect.tools.xxx.features(opt)?
     local features = import("detect.tools." .. tool.name .. ".features", {try = true})
