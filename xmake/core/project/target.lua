@@ -313,6 +313,7 @@ end
 function _instance:_invalidate(name)
     self._CACHEID = self._CACHEID + 1
     self._POLICIES = nil
+    self:_memcache():clear()
     -- we need to flush the source files cache if target/files are modified, e.g. `target:add("files", "xxx.c")`
     if name == "files" then
         self._SOURCEFILES = nil
