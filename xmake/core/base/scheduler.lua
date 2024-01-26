@@ -593,9 +593,8 @@ function scheduler:co_unlock(lockname)
         if co_waiting_tasks then
             local waiting_tasks = co_waiting_tasks[lockname]
             if waiting_tasks and #waiting_tasks > 0 then
-                local co_task = waiting_tasks[#waiting_tasks]
-                if co_task then
-                    table.remove(waiting_tasks)
+                co_waiting_tasks[lockname] = nil
+                for _, co_task in ipairs(waiting_tasks) do
                     if co_task:is_suspended() then
                         local ok, errors = self:co_resume(co_task)
                         if not ok then
