@@ -18,10 +18,6 @@
 -- @file        load_iphoneos.lua
 --
 
--- imports
-import("core.project.config")
-
--- main entry
 function main(toolchain)
 
     -- init architecture
@@ -41,8 +37,8 @@ function main(toolchain)
 
     -- init flags for c/c++
     toolchain:add("cxflags", "-arch", arch, target_minver_flags, "-isysroot", xcode_sysroot)
-    toolchain:add("ldflags", "-arch", arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot", xcode_sysroot)
-    toolchain:add("shflags", "-arch", arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot", xcode_sysroot)
+    toolchain:add("ldflags", "-arch", arch, "-ObjC", "-fobjc-link-runtime", target_minver_flags, "-isysroot", xcode_sysroot)
+    toolchain:add("shflags", "-arch", arch, "-ObjC", "-fobjc-link-runtime", target_minver_flags, "-isysroot", xcode_sysroot)
 
     -- init flags for objc/c++
     toolchain:add("mxflags", "-arch", arch, target_minver_flags, "-isysroot", xcode_sysroot)

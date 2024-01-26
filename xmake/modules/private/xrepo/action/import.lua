@@ -39,7 +39,7 @@ function menu_options()
                                        values = {"release", "debug"}         },
         {'f', "configs",    "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
-                                       "    - xrepo import -f \"vs_runtime='MD'\" zlib",
+                                       "    - xrepo import -f \"runtimes='MD'\" zlib",
                                        "    - xrepo import -f \"regex=true,thread=true\" boost"},
         {},
         {'i', "packagedir",  "kv", "packages","Set the imported packages directory."},

@@ -39,7 +39,7 @@ function menu_options()
                                        values = {"release", "debug"}         },
         {'f', "configs",    "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
-                                       "    - xrepo export -f \"vs_runtime='MD'\" zlib",
+                                       "    - xrepo export -f \"runtimes='MD'\" zlib",
                                        "    - xrepo export -f \"regex=true,thread=true\" boost"},
         {},
         {nil, "includes",   "kv", nil, "Includes extra lua configuration files."},

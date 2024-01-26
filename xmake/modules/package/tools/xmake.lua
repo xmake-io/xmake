@@ -77,10 +77,10 @@ function _get_configs_for_windows(package, configs, opt)
             table.insert(configs, "--" .. name .. "=" .. tostring(value))
         end
     end
-    -- pass vs_runtime from package configs
-    local vs_runtime = package:config("vs_runtime")
-    if vs_runtime then
-        table.insert(configs, "--vs_runtime=" .. vs_runtime)
+    -- pass runtimes from package configs
+    local runtimes = package:config("runtimes")
+    if runtimes then
+        table.insert(configs, "--runtimes=" .. runtimes)
     end
     _get_configs_for_qt(package, configs, opt)
     _get_configs_for_vcpkg(package, configs, opt)

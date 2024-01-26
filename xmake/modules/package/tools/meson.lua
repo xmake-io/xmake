@@ -316,10 +316,10 @@ function _get_configs(package, configs, opt)
         table.insert(configs, "-Db_sanitize=address")
     end
 
-    -- add vs_runtime flags
-    local vs_runtime = package:config("vs_runtime")
-    if package:is_plat("windows") and vs_runtime then
-        table.insert(configs, "-Db_vscrt=" .. vs_runtime:lower())
+    -- add runtimes flags
+    local runtimes = package:runtimes()
+    if package:is_plat("windows") and runtimes then
+        table.insert(configs, "-Db_vscrt=" .. runtimes:lower())
     end
 
     -- add cross file

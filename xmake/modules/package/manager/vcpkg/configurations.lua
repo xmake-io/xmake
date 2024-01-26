@@ -52,7 +52,7 @@ function triplet(configs, plat, arch)
     local triplet = arch .. "-" .. plat
     if plat == "windows" and configs.shared ~= true then
         triplet = triplet .. "-static"
-        if configs.vs_runtime and configs.vs_runtime:startswith("MD") then
+        if configs.runtimes and configs.runtimes:startswith("MD") then
             triplet = triplet .. "-md"
         end
     elseif plat == "mingw" then

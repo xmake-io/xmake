@@ -175,7 +175,7 @@ package("sfml")
             table.insert(configs, "-DBUILD_SHARED_LIBS=ON")
         else
             table.insert(configs, "-DBUILD_SHARED_LIBS=OFF")
-            if package:is_plat("windows") and package:config("vs_runtime"):startswith("MT") then
+            if package:is_plat("windows") and package:runtimes():startswith("MT") then
                 table.insert(configs, "-DSFML_USE_STATIC_STD_LIBS=ON")
             end
         end

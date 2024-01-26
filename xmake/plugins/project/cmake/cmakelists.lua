@@ -753,31 +753,31 @@ function _add_target_symbols(cmakelists, target)
     end
 end
 
--- add target vs runtime
+-- add target runtimes
 --
 -- https://github.com/xmake-io/xmake/issues/1661#issuecomment-927979489
 -- https://cmake.org/cmake/help/latest/prop_tgt/MSVC_RUNTIME_LIBRARY.html
 --
-function _add_target_vs_runtime(cmakelists, target)
+function _add_target_runtimes(cmakelists, target)
     local cmake_minver = _get_cmake_minver()
     if cmake_minver:ge("3.15.0") then
-        local vs_runtime = target:get("runtimes")
+        local runtimes = target:get("runtimes")
         cmakelists:print("if(MSVC)")
-        if vs_runtime then
-            if vs_runtime == "MT" then
-                vs_runtime = "MultiThreaded"
-            elseif vs_runtime == "MTd" then
-                vs_runtime = "MultiThreadedDebug"
-            elseif vs_runtime == "MD" then
-                vs_runtime = "MultiThreadedDLL"
-            elseif vs_runtime == "MDd" then
-                vs_runtime = "MultiThreadedDebugDLL"
+        if runtimes then
+            if runtimes == "MT" then
+                runtimes = "MultiThreaded"
+            elseif runtimes == "MTd" then
+                runtimes = "MultiThreadedDebug"
+            elseif runtimes == "MD" then
+                runtimes = "MultiThreadedDLL"
+            elseif runtimes == "MDd" then
+                runtimes = "MultiThreadedDebugDLL"
             end
         else
-            vs_runtime = "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+            runtimes = "MultiThreaded$<$<CONFIG:Debug>:Debug>"
         end
         cmakelists:print('    set_property(TARGET %s PROPERTY', target:name())
-        cmakelists:print('        MSVC_RUNTIME_LIBRARY "%s")', vs_runtime)
+        cmakelists:print('        MSVC_RUNTIME_LIBRARY "%s")', runtimes)
         cmakelists:print("endif()")
     end
 end
@@ -1047,8 +1047,8 @@ function _add_target(cmakelists, target, outputdir)
     -- add target symbols
     _add_target_symbols(cmakelists, target)
 
-    -- add vs runtime for msvc
-    _add_target_vs_runtime(cmakelists, target)
+    -- add target runtimes
+    _add_target_runtimes(cmakelists, target)
 
     -- add target link libraries
     _add_target_link_libraries(cmakelists, target, outputdir)

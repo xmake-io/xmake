@@ -21,11 +21,24 @@
 -- define rule: utils.compiler.runtime
 rule("utils.compiler.runtime")
     on_config(function (target)
-
-        -- set vs runtime
-        local vs_runtime = get_config("vs_runtime")
-        if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
-            target:set("runtimes", vs_runtime)
+        local runtimes = get_config("runtimes")
+        if not runtimes and target:is_plat("windows") then
+            runtimes = get_config("vs_runtime")
+            if runtimes then
+                wprint("--vs_runtime=%s is deprecated, please use --runtimes=%s", runtimes, runtimes)
+            end
+        end
+        if not runtimes and target:is_plat("android") then
+            runtimes = get_config("ndk_cxxstl")
+            if runtimes then
+                wprint("--ndk_cxxstl=%s is deprecated, please use --runtimes=%s", runtimes, runtimes)
+            end
+        end
+        if runtimes and not target:get("runtimes") then
+            if type(runtimes) == "string" then
+                runtimes = runtimes:split(",", {plain = true})
+            end
+            target:set("runtimes", runtimes)
         end
     end)
 

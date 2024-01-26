@@ -18,13 +18,13 @@
 -- @file        xmake.lua
 --
 
-language("c++")
-    add_rules("c++")
-    set_sourcekinds {cxx = {".cpp", ".cc", ".cxx", ".mpp", ".mxx", ".cppm", ".ixx", ".c++"}}
-    set_sourceflags {cxx = {"cxxflags", "cxflags"}}
+language("c")
+    add_rules("c")
+    set_sourcekinds {cc = ".c"}
+    set_sourceflags {cc = {"cflags", "cxflags"}}
     set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
-    set_langkinds   {cxx = "cxx"}
+    set_langkinds   {c = "cc"}
     set_mixingkinds("cc", "cxx", "as", "mrc")
 
     on_load("load")
@@ -49,7 +49,7 @@ language("c++")
         ,   "target.frameworks"
         ,   "target.exceptions"
         ,   "target.encodings"
-        ,   "target.pcxxheader"
+        ,   "target.pcheader"
         ,   "target.forceincludes"
         ,   "toolchain.includedirs"
         ,   "toolchain.defines"
@@ -117,7 +117,7 @@ language("c++")
                 config =
                 {
                     {category = "Cross Complation Configuration/Compiler Configuration"                             }
-                ,   {nil, "cxx",           "kv", nil,          "The C++ Compiler"                                   }
+                ,   {nil, "cc",            "kv", nil,          "The C Compiler"                                     }
                 ,   {nil, "cpp",           "kv", nil,          "The C/C++ Preprocessor"                             }
 
                 ,   {category = "Cross Complation Configuration/Linker Configuration"                               }
@@ -127,8 +127,8 @@ language("c++")
                 ,   {nil, "ranlib",        "kv", nil,          "The Static Library Index Generator"                 }
 
                 ,   {category = "Cross Complation Configuration/Compiler Flags Configuration"                       }
+                ,   {nil, "cflags",        "kv", nil,          "The C Compiler Flags"                               }
                 ,   {nil, "cxflags",       "kv", nil,          "The C/C++ compiler Flags"                           }
-                ,   {nil, "cxxflags",      "kv", nil,          "The C++ Compiler Flags"                             }
 
                 ,   {category = "Cross Complation Configuration/Linker Flags Configuration"                         }
                 ,   {nil, "ldflags",       "kv", nil,          "The Binary Linker Flags"                            }

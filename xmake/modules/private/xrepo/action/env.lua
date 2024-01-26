@@ -49,7 +49,7 @@ function menu_options()
         {nil, "show",       "k",  nil, "Only show environment information."  },
         {'f', "configs",    "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
-                                       "    - xrepo env -f \"vs_runtime='MD'\" zlib cmake ..",
+                                       "    - xrepo env -f \"runtimes='MD'\" zlib cmake ..",
                                        "    - xrepo env -f \"regex=true,thread=true\" \"zlib,boost\" cmake .."},
         {nil, "add",        "k",  nil, "Add global environment config.",
                                        "e.g.",

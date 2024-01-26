@@ -272,16 +272,55 @@ function _instance:_visibility(opt)
     return visibility
 end
 
+-- update file rules
+--
+-- if we add files in on_load() dynamically, we need to update file rules,
+-- otherwise it will cause: unknown source file: ...
+--
+function _instance:_update_filerules()
+    local rulenames = {}
+    local extensions = {}
+    for _, sourcefile in ipairs(table.wrap(self:get("files"))) do
+        local extension = path.extension((sourcefile:gsub("|.*$", "")))
+        if not extensions[extension] then
+            local lang = language.load_ex(extension)
+            if lang and lang:rules() then
+                table.join2(rulenames, lang:rules())
+            end
+            extensions[extension] = true
+        end
+    end
+    rulenames = table.unique(rulenames)
+    for _, rulename in ipairs(rulenames) do
+        local r = target._project() and target._project().rule(rulename) or rule.rule(rulename)
+        if r then
+            -- only add target rules
+            if r:kind() == "target" then
+                if not self:rule(rulename) then
+                    self:rule_add(r)
+                    for _, deprule in ipairs(r:orderdeps()) do
+                        if not self:rule(deprule:name()) then
+                            self:rule_add(deprule)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 -- invalidate the previous cache
 function _instance:_invalidate(name)
     self._CACHEID = self._CACHEID + 1
     self._POLICIES = nil
+    self:_memcache():clear()
     -- we need to flush the source files cache if target/files are modified, e.g. `target:add("files", "xxx.c")`
     if name == "files" then
         self._SOURCEFILES = nil
         self._FILESCONFIG = nil
         self._OBJECTFILES = nil
         self._SOURCEBATCHES = nil
+        self:_update_filerules()
     elseif name == "deps" then
         self._DEPS = nil
         self._ORDERDEPS = nil
@@ -2377,6 +2416,51 @@ function _instance:pcoutputfile(langkind)
         pcoutputfile = path.join(path.directory(pcoutputfile), sourcekind, path.basename(pcoutputfile) .. (is_gcc and ".gch" or ".pch"))
         self._PCOUTPUTFILES[langkind] = pcoutputfile
         return pcoutputfile
+    end
+end
+
+-- get runtimes
+function _instance:runtimes()
+    local runtimes = self:_memcache():get("runtimes")
+    if runtimes == nil then
+        runtimes = self:get("runtimes")
+        if runtimes then
+            local runtimes_supported = hashset.new()
+            local toolchains = self:toolchains() or platform.load(self:plat(), self:arch()):toolchains()
+            if toolchains then
+                for _, toolchain_inst in ipairs(toolchains) do
+                    if toolchain_inst:is_standalone() and toolchain_inst:get("runtimes") then
+                        for _, runtime in ipairs(table.wrap(toolchain_inst:get("runtimes"))) do
+                            runtimes_supported:insert(runtime)
+                        end
+                    end
+                end
+            end
+            local runtimes_current = {}
+            for _, runtime in ipairs(table.wrap(runtimes)) do
+                if runtimes_supported:has(runtime) then
+                    table.insert(runtimes_current, runtime)
+                end
+            end
+            runtimes = table.unwrap(runtimes_current)
+        end
+        runtimes = runtimes or false
+        self:_memcache():set("runtimes", runtimes)
+    end
+    return runtimes or nil
+end
+
+-- has the given runtime for the current toolchains?
+function _instance:has_runtime(...)
+    local runtimes_set = self:_memcache():get("runtimes_set")
+    if runtimes_set == nil then
+        runtimes_set = hashset.from(table.wrap(self:runtimes()))
+        self:_memcache():set("runtimes_set", runtimes_set)
+    end
+    for _, v in ipairs(table.pack(...)) do
+        if runtimes_set:has(v) then
+            return true
+        end
     end
 end
 

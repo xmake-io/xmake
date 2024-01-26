@@ -15,25 +15,27 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        check_main.lua
 --
 
--- android ndk toolchain
---
--- @param sdkver    the platform sdk version
---
--- @code
--- target("test")
---     ...
---     set_toolchains("ndk")
---     set_toolchains("ndk", {sdkver = "23"})
--- @endcode
---
-toolchain("ndk")
-    set_kind("standalone")
-    set_homepage("https://developer.android.com/ndk")
-    set_description("Android NDK")
-    set_runtimes("c++_static", "c++_shared", "gnustl_static", "gnustl_shared", "stlport_static", "stlport_shared")
 
-    on_check("check")
-    on_load("load")
+-- check it
+function main(sourcefile)
+
+    -- load source code
+    local sourcecode = io.readfile(sourcefile)
+
+    -- remove comment first
+    sourcecode = sourcecode:gsub("/%*.-%*/", "")
+    sourcecode = sourcecode:gsub("//.-\n", "\n")
+
+    -- find int main(int argc, char** argv) {}
+    if sourcecode:find("%s+main%s*%(.-%)") then
+        return true
+    end
+
+    -- no main function
+    return false
+end
+
+

@@ -1130,9 +1130,38 @@ function _instance:build_envs(lazy_loading)
     return build_envs
 end
 
+-- get runtimes
+function _instance:runtimes()
+    local runtimes = self:_memcache():get("runtimes")
+    if runtimes == nil then
+        runtimes = self:config("runtimes")
+        if runtimes then
+            local runtimes_current = runtimes:split(",", {plain = true})
+            runtimes = table.unwrap(runtimes_current)
+        end
+        runtimes = runtimes or false
+        self:_memcache():set("runtimes", runtimes)
+    end
+    return runtimes or nil
+end
+
+-- has the given runtime for the current toolchains?
+function _instance:has_runtime(...)
+    local runtimes_set = self:_memcache():get("runtimes_set")
+    if runtimes_set == nil then
+        runtimes_set = hashset.from(table.wrap(self:runtimes()))
+        self:_memcache():set("runtimes_set", runtimes_set)
+    end
+    for _, v in ipairs(table.pack(...)) do
+        if runtimes_set:has(v) then
+            return true
+        end
+    end
+end
+
 -- get the given toolchain
 function _instance:toolchain(name)
-    local toolchains_map = self._TOOLCHAINS_MAP
+    local toolchains_map = self:_memcache():get("toolchains_map")
     if toolchains_map == nil then
         toolchains_map = {}
         local toolchains = self:toolchains()
@@ -1141,7 +1170,7 @@ function _instance:toolchain(name)
                 toolchains_map[toolchain_inst:name()] = toolchain_inst
             end
         end
-        self._TOOLCHAINS_MAP = toolchains_map
+        self:_memcache():set("toolchains_map", toolchains_map)
     end
     return toolchains_map[name]
 end
@@ -1391,6 +1420,19 @@ function _instance:config(name)
     local configs = self:configs()
     if configs then
         value = configs[name]
+        -- vs_runtime is deprecated now
+        if name == "vs_runtime" then
+            local runtimes = configs.runtimes
+            if runtimes then
+                for _, item in ipairs(runtimes:split(",")) do
+                    if item:startswith("MT") or item:startswith("MD") then
+                        value = item
+                        break
+                    end
+                end
+            end
+            utils.warning("please use package:runtimes() or package:has_runtime() instead of package:config(\"vs_runtime\")")
+        end
     end
     return value
 end
@@ -1416,6 +1458,10 @@ function _instance:configs()
                 local value = configs_required[name]
                 if value == nil then
                     value = self:extraconf("configs", name, "default")
+                    -- support for the deprecated vs_runtime in add_configs
+                    if name == "runtimes" and value == nil then
+                        value = self:extraconf("configs", "vs_runtime", "default")
+                    end
                 end
                 configs[name] = value
             end
@@ -1453,6 +1499,10 @@ function _instance:_configs_for_buildhash()
                     local value = configs_required[name]
                     if value == nil then
                         value = self:extraconf("configs", name, "default")
+                        -- support for the deprecated vs_runtime in add_configs
+                        if name == "runtimes" and value == nil then
+                            value = self:extraconf("configs", "vs_runtime", "default")
+                        end
                     end
                     configs[name] = value
                 end
@@ -1465,10 +1515,19 @@ function _instance:_configs_for_buildhash()
     return configs and configs or nil
 end
 
+-- compute the build hash
+function _instance:_compute_buildhash()
+    self._BUILDHASH_PREPRARED = true
+    self:buildhash()
+end
+
 -- get the build hash
 function _instance:buildhash()
     local buildhash = self._BUILDHASH
     if buildhash == nil then
+        if not self._BUILDHASH_PREPRARED then
+            os.raise("package:buildhash() must be called after loading package")
+        end
         local function _get_buildhash(configs, opt)
             opt = opt or {}
             local str = self:plat() .. self:arch()
@@ -1477,6 +1536,15 @@ function _instance:buildhash()
                 str = str .. label
             end
             if configs then
+
+                -- with old vs_runtime configs
+                -- https://github.com/xmake-io/xmake/issues/4477
+                if opt.vs_runtime then
+                    configs = table.clone(configs)
+                    configs.vs_runtime = configs.runtimes
+                    configs.runtimes = nil
+                end
+
                 -- since luajit v2.1, the key order of the table is random and undefined.
                 -- We cannot directly deserialize the table, so the result may be different each time
                 local configs_order = {}
@@ -1549,6 +1617,16 @@ function _instance:buildhash()
         -- without toolchains (< 2.6.4)
         if not buildhash then
             buildhash = _get_buildhash(self:_configs_for_buildhash(), {toolchains = false})
+            if not os.isdir(_get_installdir(buildhash)) then
+                buildhash = nil
+            end
+        end
+
+        -- we need to be compatible with the previous xmake version
+        -- with deprecated vs_runtime (< 2.8.7)
+        -- @see https://github.com/xmake-io/xmake/issues/4477
+        if not buildhash then
+            buildhash = _get_buildhash(self:_configs_for_buildhash(), {vs_runtime = true})
             if not os.isdir(_get_installdir(buildhash)) then
                 buildhash = nil
             end
@@ -1775,6 +1853,13 @@ function _instance:find_package(name, opt)
     if system == nil and not name:startswith("xmake::") then
         system = true -- find system package by default
     end
+    local configs = table.clone(self:configs()) or {}
+    if opt.configs then
+        table.join2(configs, opt.configs)
+    end
+    if configs.runtimes then
+        configs.runtimes = self:runtimes()
+    end
     return self._find_package(name, {
                               force = opt.force,
                               installdir = self:installdir({readonly = true}),
@@ -1783,7 +1868,7 @@ function _instance:find_package(name, opt)
                               mode = self:mode(),
                               plat = self:plat(),
                               arch = self:arch(),
-                              configs = table.join(self:configs(), opt.configs),
+                              configs = configs,
                               components = self:components_orderlist(),
                               components_extsources = opt.components_extsources,
                               buildhash = self:buildhash(), -- for xmake package or 3rd package manager, e.g. go:: ..
@@ -2212,21 +2297,21 @@ function _instance:_generate_build_configs(configs, opt)
     configs = table.join(self:fetch_librarydeps(), configs)
     if self:is_plat("windows") then
         local ld = self:build_getenv("ld")
-        local vs_runtime = self:config("vs_runtime")
-        -- since we are ignoring the vs_runtime of the headeronly library,
-        -- we can only get the vs_runtime from the dependency library to detect the link.
-        if self:is_headeronly() and not vs_runtime and self:librarydeps() then
+        local runtimes = self:runtimes()
+        -- since we are ignoring the runtimes of the headeronly library,
+        -- we can only get the runtimes from the dependency library to detect the link.
+        if self:is_headeronly() and not runtimes and self:librarydeps() then
             for _, dep in ipairs(self:librarydeps()) do
-                if dep:is_plat("windows") and dep:config("vs_runtime") then
-                    vs_runtime = dep:config("vs_runtime")
+                if dep:is_plat("windows") and dep:runtimes() then
+                    runtimes = dep:runtimes()
                     break
                 end
             end
         end
-        if vs_runtime and ld and path.basename(ld:lower()) == "link" then -- for msvc?
+        if runtimes and ld and path.basename(ld:lower()) == "link" then -- for msvc?
             configs.cxflags = table.wrap(configs.cxflags)
-            table.insert(configs.cxflags, "/" .. vs_runtime)
-            if vs_runtime:startswith("MT") then
+            table.insert(configs.cxflags, "/" .. runtimes)
+            if runtimes:startswith("MT") then
                 configs.ldflags = table.wrap(configs.ldflags)
                 table.insert(configs.ldflags, "-nodefaultlib:msvcrt.lib")
             end
@@ -2665,7 +2750,8 @@ function package.load_from_system(packagename)
         -- on install script
         local on_install = function (pkg)
             local opt = {}
-            opt.configs         = pkg:configs()
+            local configs       = table.clone(pkg:configs()) or {}
+            opt.configs         = configs
             opt.mode            = pkg:is_debug() and "debug" or "release"
             opt.plat            = pkg:plat()
             opt.arch            = pkg:arch()
@@ -2673,6 +2759,9 @@ function package.load_from_system(packagename)
             opt.buildhash       = pkg:buildhash()
             opt.cachedir        = pkg:cachedir()
             opt.installdir      = pkg:installdir()
+            if configs.runtimes then
+                configs.runtimes = pkg:runtimes()
+            end
             import("package.manager.install_package")(pkg:name(), opt)
         end
 

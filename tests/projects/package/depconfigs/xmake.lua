@@ -1,5 +1,5 @@
-add_requires("libpng", {system = false, configs = {vs_runtime = "MD"}})
-add_requires("libtiff", {system = false, configs = {vs_runtime = "MD", zlib = true}})
+add_requires("libpng", {system = false, configs = {runtimes = "MD"}})
+add_requires("libtiff", {system = false, configs = {runtimes = "MD", zlib = true}})
 
 add_requireconfs("libpng.zlib",        {system = false, override = true, configs = {cxflags = "-DTEST1"}, version = "1.2.10"})
 add_requireconfs("libtiff.*|cmake",    {system = false, configs = {cxflags = "-DTEST2"}})
