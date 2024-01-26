@@ -17,7 +17,7 @@ function main(t)
             os.exec("xmake f --toolchain=clang -c --yes")
             _build()
             os.exec("xmake clean -a")
-            os.exec("xmake f --toolchain=clang --cxxflags=\"-stdlib=libc++\" -c --yes")
+            os.exec("xmake f --toolchain=clang --runtimes=c++_shared -c --yes")
             _build()
         end
 
@@ -39,7 +39,7 @@ function main(t)
             os.exec("xmake f --toolchain=clang -c --yes")
             _build()
             os.exec("xmake clean -a")
-            os.exec("xmake f --toolchain=clang --cxxflags=\"-stdlib=libc++\" -c --yes")
+            os.exec("xmake f --toolchain=clang --runtimes=c++_shared -c --yes")
             _build()
         end
     end

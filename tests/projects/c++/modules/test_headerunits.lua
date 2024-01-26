@@ -21,7 +21,7 @@ function main(t)
             -- if semver.compare(clang.version, "17.0") >= 0 then
             --     os.exec("xmake clean -a")
             --     -- clang-scan-deps dependency detection doesn't support header units atm
-            --     os.exec("xmake f --toolchain=clang --policies=build.c++.clang.fallbackscanner --cxxflags=\"-stdlib=libc++\" -c --yes")
+            --     os.exec("xmake f --toolchain=clang --policies=build.c++.clang.fallbackscanner --runtimes=c++_shared -c --yes")
             --     _build()
             -- end
         end
@@ -55,7 +55,7 @@ function main(t)
             -- if semver.compare(clang.version, "17.0") >= 0 then
             --     os.exec("xmake clean -a")
             --     -- clang-scan-deps dependency detection doesn't support header units atm
-            --     os.exec("xmake f --toolchain=clang --policies=build.c++.clang.fallbackscanner --cxxflags=\"-stdlib=libc++\" -c --yes")
+            --     os.exec("xmake f --toolchain=clang --policies=build.c++.clang.fallbackscanner --runtimes=c++_shared -c --yes")
             --     _build()
             -- end
         end

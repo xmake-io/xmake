@@ -19,7 +19,7 @@ function main(t)
             -- _build()
             -- clang don't support libc++ std modules atm
             -- os.exec("xmake clean -a")
-            -- os.exec("xmake f --toolchain=clang --cxxflags=\"-stdlib=libc++\" -c --yes")
+            -- os.exec("xmake f --toolchain=clang --runtimes=c++_shared -c --yes")
             -- _build()
         -- end
         local msvc = toolchain.load("msvc")
@@ -52,7 +52,7 @@ function main(t)
             -- _build()
             -- clang don't support libc++ std modules atm
             -- os.exec("xmake clean -a")
-            -- os.exec("xmake f --toolchain=clang --cxxflags=\"-stdlib=libc++\" -c --yes")
+            -- os.exec("xmake f --toolchain=clang --runtimes=c++_shared -c --yes")
             -- _build()
         -- end
     end
