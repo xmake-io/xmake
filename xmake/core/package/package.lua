@@ -1136,23 +1136,7 @@ function _instance:runtimes()
     if runtimes == nil then
         runtimes = self:config("runtimes")
         if runtimes then
-            local runtimes_supported = hashset.new()
-            local toolchains = self:toolchains() or platform.load(self:plat(), self:arch()):toolchains()
-            if toolchains then
-                for _, toolchain_inst in ipairs(toolchains) do
-                    if toolchain_inst:is_standalone() and toolchain_inst:get("runtimes") then
-                        for _, runtime in ipairs(table.wrap(toolchain_inst:get("runtimes"))) do
-                            runtimes_supported:insert(runtime)
-                        end
-                    end
-                end
-            end
-            local runtimes_current = {}
-            for _, runtime in ipairs(table.wrap(runtimes:split(",", {plain = true}))) do
-                if runtimes_supported:has(runtime) then
-                    table.insert(runtimes_current, runtime)
-                end
-            end
+            local runtimes_current = runtimes:split(",", {plain = true})
             runtimes = table.unwrap(runtimes_current)
         end
         runtimes = runtimes or false
@@ -1515,6 +1499,10 @@ function _instance:_configs_for_buildhash()
                     local value = configs_required[name]
                     if value == nil then
                         value = self:extraconf("configs", name, "default")
+                        -- support for the deprecated vs_runtime in add_configs
+                        if name == "runtimes" and value == nil then
+                            value = self:extraconf("configs", "vs_runtime", "default")
+                        end
                     end
                     configs[name] = value
                 end
@@ -1527,10 +1515,19 @@ function _instance:_configs_for_buildhash()
     return configs and configs or nil
 end
 
+-- compute the build hash
+function _instance:_compute_buildhash()
+    self._BUILDHASH_PREPRARED = true
+    self:buildhash()
+end
+
 -- get the build hash
 function _instance:buildhash()
     local buildhash = self._BUILDHASH
     if buildhash == nil then
+        if not self._BUILDHASH_PREPRARED then
+            os.raise("package:buildhash() must be called after loading package")
+        end
         local function _get_buildhash(configs, opt)
             opt = opt or {}
             local str = self:plat() .. self:arch()

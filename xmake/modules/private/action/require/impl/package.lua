@@ -28,6 +28,7 @@ import("core.cache.memcache")
 import("core.project.project")
 import("core.project.config")
 import("core.tool.toolchain")
+import("core.platform.platform")
 import("core.package.package", {alias = "core_package"})
 import("devel.git")
 import("private.action.require.impl.repository")
@@ -805,6 +806,35 @@ function _select_artifacts(package, artifacts_manifest)
     end
 end
 
+-- select package runtimes
+function _select_package_runtimes(package)
+    local runtimes = package:config("runtimes")
+    if runtimes then
+        local runtimes_supported = hashset.new()
+        local toolchains = package:toolchains() or platform.load(package:plat(), package:arch()):toolchains()
+        if toolchains then
+            for _, toolchain_inst in ipairs(toolchains) do
+                if toolchain_inst:is_standalone() and toolchain_inst:get("runtimes") then
+                    for _, runtime in ipairs(table.wrap(toolchain_inst:get("runtimes"))) do
+                        runtimes_supported:insert(runtime)
+                    end
+                end
+            end
+        end
+        local runtimes_current = {}
+        for _, runtime in ipairs(table.wrap(runtimes:split(",", {plain = true}))) do
+            if runtimes_supported:has(runtime) then
+                table.insert(runtimes_current, runtime)
+            end
+        end
+        -- we need update runtimes for buildhash, configs ...
+        local requireinfo = package:requireinfo()
+        if requireinfo and requireinfo.configs then
+            requireinfo.configs.runtimes = #runtimes_current > 0 and table.concat(runtimes_current, ",") or nil
+        end
+    end
+end
+
 -- load required packages
 function _load_package(packagename, requireinfo, opt)
 
@@ -937,6 +967,13 @@ function _load_package(packagename, requireinfo, opt)
 
     -- check package configurations
     _check_package_configurations(package)
+
+    -- we need to select package runtimes before computing buildhash
+    -- @see https://github.com/xmake-io/xmake/pull/4630#issuecomment-1910216561
+    _select_package_runtimes(package)
+
+    -- pre-compute the package buildhash
+    package:_compute_buildhash()
 
     -- save artifacts info, we need to add it at last before buildhash need depend on package configurations
     -- it will switch to install precompiled binary package from xmake-mirror/build-artifacts

@@ -18,20 +18,13 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
 toolchain("xcode")
-
-    -- set homepage
+    set_kind("standalone")
     set_homepage("https://developer.apple.com/xcode/")
     set_description("Xcode IDE")
+    set_runtimes("c++_static", "c++_shared", "stdc++_static", "stdc++_shared")
 
-    -- mark as standalone toolchain
-    set_kind("standalone")
-
-    -- check toolchain
     on_check("check")
-
-    -- load toolchain
     on_load(function (toolchain)
 
         -- set toolset
