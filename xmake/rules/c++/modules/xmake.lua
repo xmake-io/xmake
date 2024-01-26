@@ -37,9 +37,7 @@ rule("c++.build.modules")
             -- even if some sub-targets do not contain C++ modules.
             --
             -- maybe we will have a more fine-grained configuration strategy to disable it in the future.
-
-            -- maybe not needed anymore
-            -- target:set("policy", "build.across_targets_in_parallel", false)
+            target:set("policy", "build.across_targets_in_parallel", false)
 
             -- disable ccache for this target
             --
