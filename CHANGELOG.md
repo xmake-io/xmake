@@ -6,6 +6,7 @@
 
 * [#4544](https://github.com/xmake-io/xmake/issues/4544): Support to wait process timeout for `xmake test`
 * [#4606](https://github.com/xmake-io/xmake/pull/4606): Add `add_versionfiles` api in package
+* [#4606](https://github.com/xmake-io/xmake/pull/4606): Add `add_versionfiles` api in package
 
 ### Changes
 
@@ -16,6 +17,7 @@
 * [#4609](https://github.com/xmake-io/xmake/issues/4609): Improve to detect vs build tool envirnoments
 * [#4614](https://github.com/xmake-io/xmake/issues/4614): Support android ndk 26b
 * [#4473](https://github.com/xmake-io/xmake/issues/4473): Enable warning output by default
+* [#4477](https://github.com/xmake-io/xmake/issues/4477): Improve runtimes to support libc++/libstdc++
 
 ### Bugs Fixed
 
@@ -1735,6 +1737,7 @@
 * [#4609](https://github.com/xmake-io/xmake/issues/4609): 改进探测 vs 构建工具环境
 * [#4614](https://github.com/xmake-io/xmake/issues/4614): 改进支持 android ndk 26b
 * [#4473](https://github.com/xmake-io/xmake/issues/4473): 默认启用警告输出
+* [#4477](https://github.com/xmake-io/xmake/issues/4477): 改进 runtimes 去支持 libc++/libstdc++
 
 ### Bugs 修复
 
