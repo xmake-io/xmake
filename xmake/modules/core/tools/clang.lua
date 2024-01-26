@@ -212,6 +212,14 @@ function nf_runtime(self, runtime, opt)
                 MD  = "-fms-runtime-lib=dll",
                 MDd = "-fms-runtime-lib=dll_dbg"
             }
+            if kind == "cxx" then
+                table.join2(maps, {
+                    ["c++_static"]    = "-stdlib=libc++",
+                    ["c++_shared"]    = "-stdlib=libc++",
+                    ["stdc++_static"] = "-stdlib=libstdc++",
+                    ["stdc++_shared"] = "-stdlib=libstdc++",
+                })
+            end
         elseif kind == "ld" or kind == "sh" then
             maps = {
                 MT  = "-nostdlib",
@@ -219,6 +227,19 @@ function nf_runtime(self, runtime, opt)
                 MD  = "-nostdlib",
                 MDd = "-nostdlib"
             }
+            local target = opt.target
+            if target and target.sourcekinds and table.contains(table.wrap(target:sourcekinds()), "cxx") then
+                table.join2(maps, {
+                    ["c++_static"]    = "-stdlib=libc++",
+                    ["c++_shared"]    = "-stdlib=libc++",
+                    ["stdc++_static"] = "-stdlib=libstdc++",
+                    ["stdc++_shared"] = "-stdlib=libstdc++",
+                })
+                if runtime:endswith("_static") and _has_static_libstdcxx(self) then
+                    maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
+                    maps["stdc++_static"] = table.join(maps["stdc++_static"], "-static-libstdc++")
+                end
+            end
         end
         return maps and maps[runtime]
     elseif not self:is_plat("android") then -- we will set runtimes in android ndk toolchain
