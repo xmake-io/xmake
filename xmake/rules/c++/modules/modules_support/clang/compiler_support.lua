@@ -34,8 +34,11 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     local tmpfile = os.tmpfile() .. ".cc"
     io.writefile(tmpfile, "#include <vector>")
     local argv = {"-E", "-x", "c++", tmpfile}
-    if _use_stdlib(target, "libc++") then
+    local runtime = get_cpplibrary_name(target)
+    if runtime:startswith("c++") then
         table.insert(argv, 1, "-stdlib=libc++")
+    elseif runtime:startswith("stdc++") then
+        table.insert(argv, 1, "-stdlib=libstdc++")
     end
     local result = try {function () return os.iorunv(clang, argv) end}
     if result then
@@ -53,16 +56,20 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     os.tryrm(tmpfile)
 end
 
--- use the given stdlib? e.g. libc++ or libstdc++
-function _use_stdlib(target, name)
-    local default = "libstdc++"
-    if is_plat("windows") then
-        default = "msstl"
-    elseif is_plat("macos") then
-        default = "libc++"
+function get_cpplibrary_name(target)
+    local runtime = target:runtimes()
+
+    if not runtime then
+        if is_plat("windows") then
+            runtime = "msstl"
+        elseif is_plat("linux") or is_plat("android") then
+            runtime = "stdc++_shared"
+        elseif is_plat("macosx") or is_plat("iphoneos") or is_plat("watchos") then
+            runtime = "c++_shared"
+        end
     end
-    local stdlib = target:data("cxx.modules.stdlib") or default
-    return stdlib == name
+
+    return runtime
 end
 
 -- load module support for the current target
@@ -93,19 +100,6 @@ function load(target)
         target:set("symbols", dep_symbols and dep_symbols or "none")
     end
 
-    -- if use libc++, we need to install libc++ and libc++abi
-    --
-    -- on ubuntu:
-    -- sudo apt install libc++-dev libc++abi-15-dev
-    --
-    local flags = table.join(target:get("cxxflags") or {}, get_config("cxxflags") or {})
-    if table.contains(flags, "-stdlib=libc++", "clang::-stdlib=libc++") then
-        target:data_set("cxx.modules.stdlib", "libc++")
-    elseif table.contains(flags, "-stdlib=libstdc++", "clang::-stdlib=libstdc++") then
-        target:data_set("cxx.modules.stdlib", "libstdc++")
-    end
-    set_stdlib_flags(target)
-
     -- on Windows before llvm18 we need to disable delayed-template-parsing because it's incompatible with modules, from llvm >= 18, it's disabled by default
     local clang_version = get_clang_version(target)
     if semver.compare(clang_version, "18") < 0 then
@@ -121,7 +115,14 @@ function toolchain_includedirs(target)
         local clang, toolname = target:tool("cxx")
         assert(toolname:startswith("clang"))
         _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
-        local _, result = try {function () return os.iorunv(clang, {"-E", "-stdlib=libc++", "-Wp,-v", "-xc", os.nuldev()}) end}
+        local runtime = get_cpplibrary_name(target)
+        local runtime_flag
+        if runtime:startswith("c++") then
+            runtime_flag = "-stdlib=libc++"
+        elseif runtime:startswith("stdc++") then
+            runtime_flag = "-stdlib=libstdc++"
+        end
+        local _, result = try {function () return os.iorunv(clang, {"-E", runtime_flag, "-Wp,-v", "-xc", os.nuldev()}) end}
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
                 line = line:trim()
@@ -195,24 +196,16 @@ function get_clang_scan_deps(target)
     return clang_scan_deps or nil
 end
 
--- set stdlib flags, it will use libstdc++ if we do not set `-stdlib=`
-function set_stdlib_flags(target)
-    if _use_stdlib(target, "libc++") then
-        target:add("cxxflags", "-stdlib=libc++")
-        target:add("ldflags", "-stdlib=libc++")
-        target:add("shflags", "-stdlib=libc++")
-    end
-end
-
 -- not supported atm
 function get_stdmodules(target)
     if target:policy("build.c++.modules.std") then
-        if _use_stdlib(target, "libc++") then
+        local runtime = get_cpplibrary_name(target)
+
+        if runtime:startswith("libc++") then
             -- TODO support libc++ std module file when https://github.com/xmake-io/xmake/pull/4630
-            return {}
-        elseif _use_stdlib(target, "libstdc++") then
+        elseif runtime:startswith("stdc++") then
             -- libstdc++ doesn't have a std module file atm
-        elseif _use_stdlib(target, "msstl") then
+        elseif runtime:startswith("msstl") then
             -- msstl std module file is not compatible with llvm <= 18
             -- local toolchain = target:toolchain("clang")
             -- local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})

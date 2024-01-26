@@ -47,10 +47,9 @@ function generate_dependencies(target, sourcebatch, opt)
                     clang_path = compiler_support.get_clang_path(target) or compinst:program()
                 end
                 local clangscandeps = compiler_support.get_clang_scan_deps(target)
-                local compinst = target:compiler("cxx")
                 local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
                 local flags = table.join({"--format=p1689", "--",
-                                         clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags or {})
+                                         clang_path, "-x", "c++", runtime_flag, "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags or {})
                 vprint(table.concat(table.join(clangscandeps, flags), " "))
                 local outdata, errdata = os.iorunv(clangscandeps, flags)
                 assert(errdata, errdata)
@@ -65,7 +64,7 @@ function generate_dependencies(target, sourcebatch, opt)
                         return flag:startswith("-fmodule") or flag:startswith("-std=c++") or flag:startswith("-std=gnu++")
                     end)
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    local flags = table.join(compflags or {}, {"-E", "-fkeep-system-includes", "-x", "c++", file, "-o", ifile})
+                    local flags = table.join(compflags or {}, {"-E", runtime_flag, "-fkeep-system-includes", "-x", "c++", file, "-o", ifile})
                     os.vrunv(compinst:program(), flags)
                     local content = io.readfile(ifile)
                     os.rm(ifile)
@@ -75,44 +74,8 @@ function generate_dependencies(target, sourcebatch, opt)
             changed = true
 
             local rawdependinfo = io.readfile(jsonfile)
-            if rawdependinfo then
-                local dependinfo = json.decode(rawdependinfo)
-                if target:data("cxx.modules.stdlib") == nil then
-                    local has_std_modules = false
-                    for _, r in ipairs(dependinfo.rules) do
-                        for _, required in ipairs(r.requires) do
-                            -- it may be `std:utility`, ..
-                            -- @see https://github.com/xmake-io/xmake/issues/3373
-                            local logical_name = required["logical-name"]
-                            if logical_name and (logical_name == "std" or logical_name:startswith("std.") or logical_name:startswith("std:")) then
-                                has_std_modules = true
-                                break
-                            end
-                        end
-
-                        if has_std_modules then
-                            break
-                        end
-                    end
-                    if has_std_modules then
-
-                        -- we need clang >= 17.0 or use clang stdmodules if the current target contains std module
-                        local clang_version = compiler_support.get_clang_version(target)
-                        assert((clang_version and semver.compare(clang_version, "17.0") >= 0) or target:policy("build.c++.clang.stdmodules"),
-                               [[On llvm <= 16 standard C++ modules are not supported ;
-                               they can be emulated through clang modules and supported only on libc++ ;
-                               please add -stdlib=libc++ cxx flag or disable strict mode]])
-
-                        -- we use libc++ by default if we do not explicitly specify -stdlib:libstdc++
-                        target:data_set("cxx.modules.stdlib", "libc++")
-                        compiler_support.set_stdlib_flags(target)
-                    end
-                end
-            end
-
             return {moduleinfo = rawdependinfo}
         end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt()})
     end
     return changed
 end
-
