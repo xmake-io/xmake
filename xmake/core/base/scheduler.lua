@@ -547,6 +547,9 @@ function scheduler:co_lock(lockname)
         if co_locked_tasks[lockname] == nil then
             co_locked_tasks[lockname] = running
             return true
+        -- has been locked by the current coroutine
+        elseif co_locked_tasks[lockname] == running then
+            return true
         end
 
         -- register timeout task to timer
