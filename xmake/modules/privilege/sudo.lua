@@ -85,7 +85,7 @@ function _lua(runner, luafile, luaargv)
     end
 
     -- run it with administrator permission
-    _sudov(runner, "xmake", table.join(argv, luafile, luaargv))
+    _sudov(runner, os.programfile(), table.join(argv, luafile, luaargv))
 end
 
 -- has sudo?
