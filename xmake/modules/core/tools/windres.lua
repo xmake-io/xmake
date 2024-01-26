@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.global")
+import("core.project.policy")
 import("core.project.project")
 
 -- init it
@@ -54,7 +55,7 @@ function compargv(self, sourcefile, objectfile, flags)
 end
 
 -- compile the source file
-function compile(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
     os.mkdir(path.directory(objectfile))
     try
     {
@@ -72,7 +73,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
         finally
         {
             function (ok, warnings)
-                if warnings and #warnings > 0 and (option.get("diagnosis") or option.get("warning") or global.get("build_warning")) then
+                if warnings and #warnings > 0 and policy.build_warnings(opt) then
                     cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
                 end
             end

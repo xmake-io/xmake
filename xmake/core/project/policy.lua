@@ -48,8 +48,8 @@ function policy.policies()
             ["build.ccache"]                      = {description = "Enable C/C++ build cache.", type = "boolean"},
             -- Use global storage if build.ccache is enabled
             ["build.ccache.global_storage"]       = {description = "Use global storge if build.ccache is enabled.", type = "boolean"},
-            -- Enable build warning output, it's disabled by default and we need `xmake -w/-vD` to look at it.
-            ["build.warning"]                     = {description = "Enable build warning output.", type = "boolean"},
+            -- Enable build warning output, it's enabled by default.
+            ["build.warning"]                     = {description = "Enable build warning output.", default = true, type = "boolean"},
             -- Enable LTO linker-time optimization for c/c++ building.
             ["build.optimization.lto"]            = {description = "Enable LTO linker-time optimization for c/c++ building.", type = "boolean"},
             -- Enable address sanitizer for c/c++ building.

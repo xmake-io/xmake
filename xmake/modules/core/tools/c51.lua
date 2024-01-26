@@ -110,7 +110,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         {
             function (ok, outdata, errdata)
                 -- show warnings?
-                if ok and outdata and #outdata > 0 and policy.build_warnings() then
+                if ok and outdata and #outdata > 0 and policy.build_warnings(opt) then
                     local warnings_count = outdata:match("(%d-) WARNING")
                     if warnings_count and tonumber(warnings_count) > 0 then
                         local lines = outdata:split('\n', {plain = true})

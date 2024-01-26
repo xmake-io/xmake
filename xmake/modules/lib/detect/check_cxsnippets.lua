@@ -239,6 +239,8 @@ function main(snippets, opt)
             if option.get("diagnosis") then
                 cprint("${dim}> %s", compiler.compcmd(sourcefile, objectfile, opt))
             end
+            opt = table.clone(opt)
+            opt.build_warnings = false
             compiler.compile(sourcefile, objectfile, opt)
             if #links > 0 or opt.tryrun or opt.binary_match then
                 if option.get("diagnosis") then

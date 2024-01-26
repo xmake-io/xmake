@@ -37,12 +37,11 @@ task("global")
                     {nil, "debugger",       "kv", "auto"    , "The debugger program path."                                },
                     {nil, "ccache",         "kv", nil       , "Enable or disable the c/c++ compiler cache."               },
                     {category = "Build Configuration"},
-                    {nil, "build_warning",  "kv", nil       , "Enable the warnings output by default when building."      },
                     {nil, "cachedir",       "kv", nil       , "The global cache directory."                               },
                     {nil, "policies",       "kv", nil       , "Set the global project policies.",
                                                             "    e.g.",
                                                             "    - xmake g --policies=run.autobuild",
-                                                            "    - xmake g --policies=build.warning"                      },
+                                                            "    - xmake g --policies=build.warning:n"                      },
                     -- network configuration
                     {category = "Network Configuration"},
                     {nil, "network",        "kv", "public" , "Set the network mode."

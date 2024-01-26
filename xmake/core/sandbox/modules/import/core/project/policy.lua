@@ -25,6 +25,7 @@ local sandbox_core_project_policy = sandbox_core_project_policy or {}
 local table       = require("base/table")
 local global      = require("base/global")
 local option      = require("base/option")
+local utils       = require("base/utils")
 local policy      = require("project/policy")
 local project     = require("project/project")
 local raise       = require("sandbox/modules/raise")
@@ -33,15 +34,19 @@ local raise       = require("sandbox/modules/raise")
 sandbox_core_project_policy.policies = policy.policies
 
 -- has build warnings?
-function sandbox_core_project_policy.build_warnings()
+function sandbox_core_project_policy.build_warnings(opt)
+    opt = opt or {}
+    if opt.build_warnings == false and not option.get("diagnosis") then
+        return false
+    end
     local warnings = sandbox_core_project_policy._BUILD_WARNINGS
     if warnings == nil then
-        warnings = option.get("diagnosis") or option.get("warning")
+        if option.get("warning") then
+            utils.warning("\"xmake build -w\" option has been deprecated, the warning output has been enabled by default.")
+        end
+        warnings = option.get("diagnosis")
         if warnings == nil and os.isfile(os.projectfile()) and project.policy("build.warning") ~= nil then
             warnings = project.policy("build.warning")
-        end
-        if warnings == nil then
-            warnings = global.get("build_warning")
         end
         sandbox_core_project_policy._BUILD_WARNINGS = warnings or false
     end
