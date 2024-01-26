@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.policy")
 import("core.language.language")
 
 -- init it
@@ -92,7 +93,7 @@ function compargv(self, sourcefile, objectfile, flags)
 end
 
 -- compile the source file
-function compile(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
@@ -119,7 +120,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             function (ok, outdata, errdata)
 
                 -- show warnings?
-                if ok and errdata and (option.get("diagnosis") or option.get("warning")) then
+                if ok and errdata and policy.build_warnings(opt) then
                     errdata = errdata:trim()
                     if #errdata > 0 then
                         cprint("${color.warning}%s", errdata)

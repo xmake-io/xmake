@@ -40,7 +40,7 @@ function sandbox_core_project_policy.build_warnings(opt)
     end
     local warnings = sandbox_core_project_policy._BUILD_WARNINGS
     if warnings == nil then
-        warnings = option.get("diagnosis") or option.get("warning")
+        warnings = option.get("diagnosis")
         if warnings == nil and os.isfile(os.projectfile()) and project.policy("build.warning") ~= nil then
             warnings = project.policy("build.warning")
         end

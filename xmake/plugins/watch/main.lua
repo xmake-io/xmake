@@ -91,9 +91,6 @@ function _run_command(events)
                 if option.get("diagnosis") then
                     table.insert(argv, "-D")
                 end
-                if option.get("warning") then
-                    table.insert(argv, "-w")
-                end
                 local target = option.get("target")
                 if target then
                     table.insert(argv, target)
