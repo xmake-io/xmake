@@ -15,6 +15,7 @@
 * [#4571](https://github.com/xmake-io/xmake/issues/4571): Improve `xmake test` output
 * [#4609](https://github.com/xmake-io/xmake/issues/4609): Improve to detect vs build tool envirnoments
 * [#4614](https://github.com/xmake-io/xmake/issues/4614): Support android ndk 26b
+* [#4473](https://github.com/xmake-io/xmake/issues/4473): Enable warning output by default
 
 ### Bugs Fixed
 
@@ -1733,6 +1734,7 @@
 * [#4571](https://github.com/xmake-io/xmake/issues/4571): 改进 `xmake test` 的输出支持
 * [#4609](https://github.com/xmake-io/xmake/issues/4609): 改进探测 vs 构建工具环境
 * [#4614](https://github.com/xmake-io/xmake/issues/4614): 改进支持 android ndk 26b
+* [#4473](https://github.com/xmake-io/xmake/issues/4473): 默认启用警告输出
 
 ### Bugs 修复
 
