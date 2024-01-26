@@ -541,11 +541,6 @@ function scheduler:co_lock(lockname)
         co_locked_tasks = {}
         self._CO_LOCKED_TASKS = co_locked_tasks
     end
-    local co_waiting_tasks = self._CO_WAITING_TASKS
-    if co_waiting_tasks == nil then
-        co_waiting_tasks = {}
-        self._CO_WAITING_TASKS = co_waiting_tasks
-    end
     while true do
 
         -- try to lock it
@@ -554,9 +549,18 @@ function scheduler:co_lock(lockname)
             return true
         end
 
-        -- this lock has been occupied, we need to wait it
-        co_waiting_tasks[lockname] = co_waiting_tasks[lockname] or {}
-        table.insert(co_waiting_tasks[lockname], running)
+        -- register timeout task to timer
+        local function timer_callback (cancel)
+            if co_locked_tasks[lockname] == nil then
+                if running:is_suspended() then
+                    return self:co_resume(running)
+                end
+            else
+                self:_timer():post(timer_callback, 500)
+            end
+            return true
+        end
+        self:_timer():post(timer_callback, 500)
 
         -- wait
         self:co_suspend()
@@ -589,21 +593,6 @@ function scheduler:co_unlock(lockname)
     end
     if co_locked_tasks[lockname] == running then
         co_locked_tasks[lockname] = nil
-        local co_waiting_tasks = self._CO_WAITING_TASKS
-        if co_waiting_tasks then
-            local waiting_tasks = co_waiting_tasks[lockname]
-            if waiting_tasks and #waiting_tasks > 0 then
-                co_waiting_tasks[lockname] = nil
-                for _, co_task in ipairs(waiting_tasks) do
-                    if co_task:is_suspended() then
-                        local ok, errors = self:co_resume(co_task)
-                        if not ok then
-                            return false, errors
-                        end
-                    end
-                end
-            end
-        end
     else
         return false, string.format("unlock(%s) is called in other %s", lockname, running)
     end
