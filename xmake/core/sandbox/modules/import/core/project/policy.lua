@@ -33,7 +33,11 @@ local raise       = require("sandbox/modules/raise")
 sandbox_core_project_policy.policies = policy.policies
 
 -- has build warnings?
-function sandbox_core_project_policy.build_warnings()
+function sandbox_core_project_policy.build_warnings(opt)
+    opt = opt or {}
+    if opt.build_warnings == false and not option.get("diagnosis") then
+        return false
+    end
     local warnings = sandbox_core_project_policy._BUILD_WARNINGS
     if warnings == nil then
         warnings = option.get("diagnosis") or option.get("warning")

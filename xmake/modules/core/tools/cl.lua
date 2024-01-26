@@ -714,7 +714,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             function (ok, outdata, errdata)
 
                 -- show warnings?
-                if ok and policy.build_warnings() then
+                if ok and policy.build_warnings(opt) then
                     local output = outdata or ""
                     if #output:trim() == 0 then
                         output = errdata or ""

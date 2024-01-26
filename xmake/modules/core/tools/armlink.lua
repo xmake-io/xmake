@@ -64,7 +64,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 end
 
 -- link the target file
-function link(self, objectfiles, targetkind, targetfile, flags)
+function link(self, objectfiles, targetkind, targetfile, flags, opt)
     opt = opt or {}
     try
     {
@@ -109,7 +109,7 @@ function link(self, objectfiles, targetkind, targetfile, flags)
             function (ok, outdata, errdata)
 
                 -- show warnings?
-                if ok and errdata and #errdata > 0 and policy.build_warnings() then
+                if ok and errdata and #errdata > 0 and policy.build_warnings(opt) then
                     local lines = errdata:split('\n', {plain = true})
                     if #lines > 0 then
                         if not option.get("diagnosis") then
