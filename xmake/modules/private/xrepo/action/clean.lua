@@ -62,7 +62,7 @@ function _clean_packages(packages)
     if not os.isdir(workdir) then
         os.mkdir(workdir)
         os.cd(workdir)
-        os.vrunv("xmake", {"create", "-P", "."})
+        os.vrunv(os.programfile(), {"create", "-P", "."})
     else
         os.cd(workdir)
     end
@@ -72,7 +72,7 @@ function _clean_packages(packages)
     if option.get("diagnosis") then
         table.insert(config_argv, "-vD")
     end
-    os.vrunv("xmake", config_argv)
+    os.vrunv(os.programfile(), config_argv)
 
     -- do clean
     local require_argv = {"require", "--clean"}
@@ -91,7 +91,7 @@ function _clean_packages(packages)
     if packages then
         table.join2(require_argv, packages)
     end
-    os.vexecv("xmake", require_argv)
+    os.vexecv(os.programfile(), require_argv)
 end
 
 -- main entry

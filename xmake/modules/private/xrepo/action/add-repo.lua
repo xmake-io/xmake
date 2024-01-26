@@ -59,7 +59,7 @@ function _add_repository(name, url, branch)
     if not os.isdir(workdir) then
         os.mkdir(workdir)
         os.cd(workdir)
-        os.vrunv("xmake", {"create", "-P", "."})
+        os.vrunv(os.programfile(), {"create", "-P", "."})
     else
         os.cd(workdir)
     end
@@ -77,7 +77,7 @@ function _add_repository(name, url, branch)
     if branch then
         table.insert(repo_argv, branch)
     end
-    os.vexecv("xmake", repo_argv)
+    os.vexecv(os.programfile(), repo_argv)
 end
 
 -- main entry

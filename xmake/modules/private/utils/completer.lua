@@ -272,7 +272,7 @@ function completer:_complete_option(options, segs, completing)
         if current_options.project then
             table.insert(args, 2, "--project=" .. current_options.project)
         end
-        os.execv("xmake", args)
+        os.execv(os.programfile(), args)
         return true
     end
 

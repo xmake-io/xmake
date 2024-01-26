@@ -54,7 +54,7 @@ function update_repository()
     if not os.isdir(workdir) then
         os.mkdir(workdir)
         os.cd(workdir)
-        os.vrunv("xmake", {"create", "-P", "."})
+        os.vrunv(os.programfile(), {"create", "-P", "."})
     else
         os.cd(workdir)
     end
@@ -67,7 +67,7 @@ function update_repository()
     if option.get("diagnosis") then
         table.insert(repo_argv, "-D")
     end
-    os.vexecv("xmake", repo_argv)
+    os.vexecv(os.programfile(), repo_argv)
 end
 
 -- main entry

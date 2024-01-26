@@ -54,7 +54,7 @@ function cleanup()
     try
     {
         function ()
-            process.openv("xmake", argv, {stdout = path.join(os.tmpdir(), "cleaner.log"), detach = true}):close()
+            process.openv(os.programfile(), argv, {stdout = path.join(os.tmpdir(), "cleaner.log"), detach = true}):close()
         end
     }
 end

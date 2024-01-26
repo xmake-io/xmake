@@ -467,7 +467,7 @@ function install(package, configs, opt)
         local repo_argv = {"repo"}
         _set_builtin_argv(package, repo_argv)
         table.join2(repo_argv, {"--add", repo:name(), repo:directory()})
-        os.vrunv("xmake", repo_argv, {envs = envs})
+        os.vrunv(os.programfile(), repo_argv, {envs = envs})
     end
 
     -- pass configurations
@@ -488,7 +488,7 @@ function install(package, configs, opt)
     end
 
     -- do configure
-    os.vrunv("xmake", argv, {envs = envs})
+    os.vrunv(os.programfile(), argv, {envs = envs})
 
     -- do build
     argv = {"build"}
@@ -500,7 +500,7 @@ function install(package, configs, opt)
     if njob then
         table.insert(argv, "--jobs=" .. njob)
     end
-    os.vrunv("xmake", argv, {envs = envs})
+    os.vrunv(os.programfile(), argv, {envs = envs})
 
     -- do install
     argv = {"install", "-y", "--nopkgs", "-o", package:installdir()}
@@ -508,5 +508,5 @@ function install(package, configs, opt)
     if opt.target then
         table.insert(argv, opt.target)
     end
-    os.vrunv("xmake", argv, {envs = envs})
+    os.vrunv(os.programfile(), argv, {envs = envs})
 end

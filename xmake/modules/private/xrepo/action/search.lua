@@ -60,7 +60,7 @@ function _search_packages(packages)
     if not os.isdir(workdir) then
         os.mkdir(workdir)
         os.cd(workdir)
-        os.vrunv("xmake", {"create", "-P", "."})
+        os.vrunv(os.programfile(), {"create", "-P", "."})
     else
         os.cd(workdir)
     end
@@ -70,7 +70,7 @@ function _search_packages(packages)
     if option.get("diagnosis") then
         table.insert(config_argv, "-vD")
     end
-    os.vrunv("xmake", config_argv)
+    os.vrunv(os.programfile(), config_argv)
 
     -- do search
     local require_argv = {"require", "--search"}
@@ -81,7 +81,7 @@ function _search_packages(packages)
         table.insert(require_argv, "-D")
     end
     table.join2(require_argv, packages)
-    os.vexecv("xmake", require_argv)
+    os.vexecv(os.programfile(), require_argv)
 end
 
 -- main entry
