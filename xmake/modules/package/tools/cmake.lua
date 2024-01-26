@@ -429,6 +429,7 @@ function _get_configs_for_appleos(package, configs, opt)
     elseif package:is_plat("macosx") then
         envs.CMAKE_SYSTEM_NAME = "Darwin"
     end
+    envs.CMAKE_OSX_ARCHITECTURES = package:arch()
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY   = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE   = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_FRAMEWORK = "BOTH"
