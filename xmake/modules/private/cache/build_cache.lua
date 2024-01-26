@@ -292,6 +292,8 @@ function build(program, argv, opt)
             _g.cache_hit_total_time = (_g.cache_hit_total_time or 0) + (os.mclock() - cache_hit_start_time)
         else
             -- do compile
+            local preprocess_outdata = cppinfo.outdata
+            local preprocess_errdata = cppinfo.errdata
             local compile_start_time = os.mclock()
             local compile_fallback = opt.compile_fallback
             if compile_fallback then
@@ -306,6 +308,13 @@ function build(program, argv, opt)
                 end
             else
                 compile(program, cppinfo, opt)
+            end
+            -- if no compiler output, we need use preprocessor output, because it maybe contains warning output
+            if not cppinfo.outdata or #cppinfo.outdata == 0 then
+                cppinfo.outdata = preprocess_outdata
+            end
+            if not cppinfo.errdata or #cppinfo.errdata == 0 then
+                cppinfo.errdata = preprocess_errdata
             end
             _g.compile_total_time = (_g.compile_total_time or 0) + (os.mclock() - compile_start_time)
             if cachekey then
