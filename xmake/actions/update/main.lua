@@ -149,10 +149,10 @@ function _uninstall()
         end
     else
         if os.programdir():startswith("/usr/") then
-            _sudo_v("xmake", {"lua", "rm", os.programdir()})
+            _sudo_v(os.programfile(), {"lua", "rm", os.programdir()})
             for _, f in ipairs({"/usr/local/bin/xmake", "/usr/local/bin/xrepo", "/usr/bin/xmake", "/usr/bin/xrepo"}) do
                 if os.isfile(f) then
-                    _sudo_v("xmake", {"lua", "rm", f})
+                    _sudo_v(os.programfile(), {"lua", "rm", f})
                 end
             end
         else
