@@ -828,9 +828,15 @@ function _select_package_runtimes(package)
             end
         end
         -- we need update runtimes for buildhash, configs ...
+        --
+        -- we use configs_overrided to override configs in configs and buildhash,
+        -- but we shouldn't modify requireinfo.configs directly as it affects the package cache key
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/4477#issuecomment-1913185727
         local requireinfo = package:requireinfo()
-        if requireinfo and requireinfo.configs then
-            requireinfo.configs.runtimes = #runtimes_current > 0 and table.concat(runtimes_current, ",") or nil
+        if requireinfo then
+            requireinfo.configs_overrided = requireinfo.configs_overrided or {}
+            requireinfo.configs_overrided.runtimes = #runtimes_current > 0 and table.concat(runtimes_current, ",") or nil
         end
     end
 end
@@ -1266,8 +1272,10 @@ function get_configs_str(package)
             table.insert(configs, requireinfo.kind)
         end
         local ignored_configs_for_buildhash = hashset.from(requireinfo.ignored_configs_for_buildhash or {})
+        local configs_overrided = requireinfo.configs_overrided or {}
         for k, v in pairs(requireinfo.configs) do
             if not ignored_configs_for_buildhash:has(k) then
+                v = configs_overrided[k] or v
                 if type(v) == "boolean" then
                     table.insert(configs, k .. ":" .. (v and "y" or "n"))
                 else

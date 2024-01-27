@@ -1454,8 +1454,9 @@ function _instance:configs()
             configs = {}
             local requireinfo = self:requireinfo()
             local configs_required = requireinfo and requireinfo.configs or {}
+            local configs_overrided = requireinfo and requireinfo.configs_overrided or {}
             for _, name in ipairs(table.wrap(configs_defined)) do
-                local value = configs_required[name]
+                local value = configs_overrided[name] or configs_required[name]
                 if value == nil then
                     value = self:extraconf("configs", name, "default")
                     -- support for the deprecated vs_runtime in add_configs
@@ -1493,10 +1494,11 @@ function _instance:_configs_for_buildhash()
             configs = {}
             local requireinfo = self:requireinfo()
             local configs_required = requireinfo and requireinfo.configs or {}
+            local configs_overrided = requireinfo and requireinfo.configs_overrided or {}
             local ignored_configs_for_buildhash = hashset.from(requireinfo and requireinfo.ignored_configs_for_buildhash or {})
             for _, name in ipairs(table.wrap(configs_defined)) do
                 if not ignored_configs_for_buildhash:has(name) then
-                    local value = configs_required[name]
+                    local value = configs_overrided[name] or configs_required[name]
                     if value == nil then
                         value = self:extraconf("configs", name, "default")
                         -- support for the deprecated vs_runtime in add_configs
