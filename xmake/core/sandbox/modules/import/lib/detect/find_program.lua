@@ -279,12 +279,13 @@ function sandbox_lib_detect_find_program.main(name, opt)
 
     -- @see https://github.com/xmake-io/xmake/issues/4645
     -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
-    scheduler.co_lock(cachekey)
+    local lockname = cachekey .. name
+    scheduler.co_lock(lockname)
 
     -- attempt to get result from cache first
     local result = detectcache:get2(cachekey, name)
     if result ~= nil and not opt.force then
-        scheduler.co_unlock(cachekey)
+        scheduler.co_unlock(lockname)
         return result and result or nil
     end
 
@@ -317,7 +318,7 @@ function sandbox_lib_detect_find_program.main(name, opt)
             utils.cprint("checking for %s ... ${color.nothing}${text.nothing}", name)
         end
     end
-    scheduler.co_unlock(cachekey)
+    scheduler.co_unlock(lockname)
     return result
 end
 
