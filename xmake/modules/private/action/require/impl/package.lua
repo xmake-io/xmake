@@ -847,6 +847,7 @@ function _select_package_runtimes(package)
         if requireinfo then
             requireinfo.configs_overrided = requireinfo.configs_overrided or {}
             requireinfo.configs_overrided.runtimes = #runtimes_current > 0 and table.concat(runtimes_current, ",") or nil
+            package:_invalidate_configs()
         end
     end
 end

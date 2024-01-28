@@ -1414,6 +1414,12 @@ function _instance:displayname_set(displayname)
     self._DISPLAYNAME = displayname
 end
 
+-- invalidate configs
+function _instance:_invalidate_configs()
+    self._CONFIGS = nil
+    self._CONFIGS_FOR_BUILDHASH = nil
+end
+
 -- get the given configuration value of package
 function _instance:config(name)
     local value
