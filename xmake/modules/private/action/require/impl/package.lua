@@ -571,8 +571,18 @@ function _finish_requireinfo(requireinfo, package)
     end
     requireinfo.configs = requireinfo.configs or {}
     if not package:is_headeronly() then
-        if requireinfo.configs.runtimes == nil and package:is_plat("windows") then
-            requireinfo.configs.runtimes = "MT"
+        if package:is_plat("windows") then
+            -- @see https://github.com/xmake-io/xmake/issues/4477#issuecomment-1913249489
+            local runtimes = requireinfo.configs.runtimes
+            if runtimes then
+                runtimes = runtimes:split(",")
+            else
+                runtimes = {}
+            end
+            if not table.contains(runtimes, "MT", "MD", "MTd", "MDd") then
+                table.insert(runtimes, "MT")
+            end
+            requireinfo.configs.runtimes = table.concat(runtimes, ",")
         end
     end
     -- we need to ensure readonly configs
