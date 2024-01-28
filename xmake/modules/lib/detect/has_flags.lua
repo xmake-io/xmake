@@ -80,13 +80,9 @@ function main(name, flags, opt)
               .. (tool.version or "") .. "_" .. (opt.toolkind or "")
               .. "_" .. (opt.flagkind or "") .. "_" .. table.concat(opt.sysflags, " ") .. "_" .. opt.flagskey
 
-    -- @note avoid detect the same program in the same time if running in the coroutine (e.g. ccache)
-    local coroutine_running = scheduler.co_running()
-    if coroutine_running then
-        while _g._checking ~= nil and _g._checking == key do
-            scheduler.co_yield()
-        end
-    end
+    -- @see https://github.com/xmake-io/xmake/issues/4645
+    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
+    scheduler.co_lock(key)
 
     -- attempt to get result from cache first
     local cacheinfo = detectcache:get("lib.detect.has_flags")
@@ -98,6 +94,7 @@ function main(name, flags, opt)
     end
     local result = cacheinfo[key]
     if result ~= nil and not opt.force then
+        scheduler.co_unlock(key)
         return result
     end
 
@@ -122,7 +119,6 @@ function main(name, flags, opt)
     profiler.enter("has_flags", tool.name, checkflags[1])
 
     -- detect.tools.xxx.has_flags(flags, opt)?
-    _g._checking = coroutine_running and key or nil
     local hasflags = import("detect.tools." .. tool.name .. ".has_flags", {try = true})
     local errors = nil
     if hasflags then
@@ -133,7 +129,6 @@ function main(name, flags, opt)
     if opt.on_check then
         result, errors = opt.on_check(result, errors)
     end
-    _g._checking = nil
     result = result or false
 
     -- stop profile
@@ -156,6 +151,7 @@ function main(name, flags, opt)
     cacheinfo[key] = result
     detectcache:set("lib.detect.has_flags", cacheinfo)
     detectcache:save()
+    scheduler.co_unlock(key)
     return result
 end
 

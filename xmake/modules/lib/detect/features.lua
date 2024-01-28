@@ -57,29 +57,25 @@ function main(name, opt)
     _g._RESULTS = _g._RESULTS or {}
     local results = _g._RESULTS
 
-    -- @note avoid detect the same program in the same time if running in the coroutine (e.g. ccache)
-    local coroutine_running = scheduler.co_running()
-    if coroutine_running then
-        while _g._checking ~= nil and _g._checking == key do
-            scheduler.co_yield()
-        end
-    end
+    -- @see https://github.com/xmake-io/xmake/issues/4645
+    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
+    scheduler.co_lock(key)
 
     -- get result from the cache first
     local result = results[key]
     if result ~= nil then
+        scheduler.co_unlock(key)
         return result
     end
 
     -- detect.tools.xxx.features(opt)?
-    _g._checking = coroutine_running and key or nil
     local features = import("detect.tools." .. tool.name .. ".features", {try = true})
     if features then
         result = features(opt)
     end
-    _g._checking = nil
 
     result = result or {}
     results[key] = result
+    scheduler.co_unlock(key)
     return result
 end

@@ -37,9 +37,6 @@ local raise       = require("sandbox/modules/raise")
 local vformat     = require("sandbox/modules/vformat")
 local scheduler   = require("sandbox/modules/import/core/base/scheduler")
 
--- globals
-local checking  = nil
-
 -- do check
 function sandbox_lib_detect_find_program._do_check(program, opt)
 
@@ -272,16 +269,6 @@ end
 -- @endcode
 --
 function sandbox_lib_detect_find_program.main(name, opt)
-
-    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
-    local coroutine_running = scheduler.co_running()
-    if coroutine_running then
-        while checking ~= nil and checking == name do
-            scheduler.co_yield()
-        end
-    end
-
-    -- init options
     opt = opt or {}
 
     -- init cachekey
@@ -290,9 +277,15 @@ function sandbox_lib_detect_find_program.main(name, opt)
         cachekey = cachekey .. "_" .. opt.cachekey
     end
 
+    -- @see https://github.com/xmake-io/xmake/issues/4645
+    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
+    local lockname = cachekey .. name
+    scheduler.co_lock(lockname)
+
     -- attempt to get result from cache first
     local result = detectcache:get2(cachekey, name)
     if result ~= nil and not opt.force then
+        scheduler.co_unlock(lockname)
         return result and result or nil
     end
 
@@ -309,11 +302,9 @@ function sandbox_lib_detect_find_program.main(name, opt)
     end
 
     -- find executable program
-    checking = coroutine_running and name or nil
     profiler:enter("find_program", name)
     result = sandbox_lib_detect_find_program._find(name, paths, opt)
     profiler:leave("find_program", name)
-    checking = nil
 
     -- cache result
     detectcache:set2(cachekey, name, result and result or false)
@@ -327,6 +318,7 @@ function sandbox_lib_detect_find_program.main(name, opt)
             utils.cprint("checking for %s ... ${color.nothing}${text.nothing}", name)
         end
     end
+    scheduler.co_unlock(lockname)
     return result
 end
 
