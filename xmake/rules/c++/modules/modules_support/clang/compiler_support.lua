@@ -60,11 +60,11 @@ function get_cpplibrary_name(target)
     local runtime = target:runtimes()
 
     if not runtime then
-        if is_plat("windows") then
+        if target:is_plat("windows") then
             runtime = "msstl"
-        elseif is_plat("linux") or is_plat("android") then
+        elseif target:is_plat("linux") or target:is_plat("android") then
             runtime = "stdc++_shared"
-        elseif is_plat("macosx") or is_plat("iphoneos") or is_plat("watchos") then
+        elseif target:is_plat("macosx") or target:is_plat("iphoneos") or target:is_plat("watchos") then
             runtime = "c++_shared"
         end
     end

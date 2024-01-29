@@ -33,6 +33,8 @@ import("dependency_scanner")
 function _build_modules(target, sourcebatch, modules, opt)
     local objectfiles = dependency_scanner.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
 
+    compiler_support.memcache():set2(target:name(), "need_to_repopulate", false)
+
     -- build modules
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
@@ -62,6 +64,9 @@ function _build_modules(target, sourcebatch, modules, opt)
             table.insert(deps, opt.batchjobs and target:name() .. dep or dep)
         end
 
+        if build then
+            compiler_support.memcache():set2(target:name(), "need_to_repopulate", true)
+        end
         opt.build_module(deps, build, module, name, provide, objectfile, cppfile, fileconfig)
 
         ::CONTINUE::
@@ -183,11 +188,15 @@ function _init_build_for(target, batch, modules, opt)
         return { modulemap_populatejob_name = {
             name = job_name,
             job = batch:addjob(job_name, function(index, total)
-                progress.show((index * 100) / total, "${color.build.target}<%s> populating.%s.map", target:name(), opt.type)
+                if compiler_support.memcache():get2(target:name(), "need_to_repopulate") then
+                    progress.show((index * 100) / total, "${color.build.target}<%s> populating.%s.map", target:name(), opt.type)
+                end
                 _builder(target).populate_module_map(target, modules)
             end)}}
     else
-        batch:show_progress(opt.progress, "${color.build.target}<%s> populating.%s.map", target:name(), opt.type)
+        if compiler_support.memcache():get2(target:name(), "need_to_repopulate") then
+            batch:show_progress(opt.progress, "${color.build.target}<%s> populating.%s.map", target:name(), opt.type)
+        end
         _builder(target).populate_module_map(target, modules)
     end
 end
