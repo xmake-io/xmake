@@ -33,7 +33,7 @@ import("dependency_scanner")
 function _build_modules(target, sourcebatch, modules, opt)
     local objectfiles = dependency_scanner.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
 
-    compiler_support.memcache():set2(target:name(), "need_to_repopulate", false)
+    _builder(target).populate_module_map(target, modules)
 
     -- build modules
     for _, objectfile in ipairs(objectfiles) do
@@ -64,9 +64,6 @@ function _build_modules(target, sourcebatch, modules, opt)
             table.insert(deps, opt.batchjobs and target:name() .. dep or dep)
         end
 
-        if build then
-            compiler_support.memcache():set2(target:name(), "need_to_repopulate", true)
-        end
         opt.build_module(deps, build, module, name, provide, objectfile, cppfile, fileconfig)
 
         ::CONTINUE::
@@ -180,27 +177,6 @@ function _is_duplicated_headerunit(target, headerunit)
     return false
 end
 
--- add populate job
-function _init_build_for(target, batch, modules, opt)
-
-    if opt.batchjobs then
-        local job_name = get_modulemap_populate_jobname(target)
-        return { modulemap_populatejob_name = {
-            name = job_name,
-            job = batch:addjob(job_name, function(index, total)
-                if compiler_support.memcache():get2(target:name(), "need_to_repopulate") then
-                    progress.show((index * 100) / total, "${color.build.target}<%s> populating.%s.map", target:name(), opt.type)
-                end
-                _builder(target).populate_module_map(target, modules)
-            end)}}
-    else
-        if compiler_support.memcache():get2(target:name(), "need_to_repopulate") then
-            batch:show_progress(opt.progress, "${color.build.target}<%s> populating.%s.map", target:name(), opt.type)
-        end
-        _builder(target).populate_module_map(target, modules)
-    end
-end
-
 function _builder(target)
 
     local cachekey = tostring(target)
@@ -219,10 +195,6 @@ function _builder(target)
         compiler_support.memcache():set2("builder", cachekey, builder)
     end
     return builder
-end
-
-function get_modulemap_populate_jobname(target)
-    return target:name() .. "_module_map_populate"
 end
 
 -- build batchjobs for modules
@@ -257,9 +229,6 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
       end
     }))
 
-    local tailjob = _init_build_for(target, batchjobs, modules, table.join({type = "module"}, opt))
-    table.join2(modulesjobs, tailjob)
-
     -- build batchjobs for modules
     build_batchjobs_for_modules(modulesjobs, batchjobs, opt.rootjob)
 end
@@ -269,7 +238,6 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
 
     local depmtime = 0
     opt.progress = opt.progress or 0
-    _init_build_for(target, batchcmds, modules, table.join({type = "module"}, opt))
 
     -- build modules
     _build_modules(target, sourcebatch, modules, table.join(opt, {

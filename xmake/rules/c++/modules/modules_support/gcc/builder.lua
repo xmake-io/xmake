@@ -235,11 +235,10 @@ function make_module_build_job(target, batchjobs, job_name, deps, opt)
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
     local module_mapperflag = compiler_support.get_modulemapperflag(target)
-    local populate_job_name = get_modulemap_populate_jobname(target)
 
     return {
         name = job_name,
-        deps = table.join({populate_job_name}, deps),
+        deps = deps,
         sourcefile = opt.cppfile,
         job = batchjobs:newjob(name or opt.cppfile, function(index, total)
 
