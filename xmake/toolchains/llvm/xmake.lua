@@ -41,6 +41,11 @@ toolchain("llvm")
 
     on_load(function (toolchain)
 
+        -- add runtimes
+        if toolchain:is_plat("windows") then
+            toolchain:add("runtimes", "MT", "MTd", "MD", "MDd")
+        end
+
         -- add march flags
         local march
         if toolchain:is_plat("windows") and not is_host("windows") then
