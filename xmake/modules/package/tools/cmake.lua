@@ -352,24 +352,28 @@ function _get_configs_for_windows(package, configs, opt)
     -- we maybe need patch `cmake_policy(SET CMP0091 NEW)` to enable this argument for some packages
     -- @see https://cmake.org/cmake/help/latest/policy/CMP0091.html#policy:CMP0091
     -- https://github.com/xmake-io/xmake-repo/pull/303
+    local runtime
     if package:has_runtime("MT") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded")
+        runtime = "MT"
     elseif package:has_runtime("MTd") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug")
+        runtime = "MTd"
     elseif package:has_runtime("MD") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL")
+        runtime = "MD"
     elseif package:has_runtime("MDd") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebugDLL")
+        runtime = "MDd"
     end
-    local runtimes = package:runtimes()
-    if runtimes then
+    if runtime then
         -- CMake default MSVC flags as of 3.21.2
         local default_debug_flags = "/Zi /Ob0 /Od /RTC1"
         local default_release_flags = "/O2 /Ob2 /DNDEBUG"
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG=/' .. runtimes .. ' ' .. default_debug_flags)
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE=/' .. runtimes .. ' ' .. default_release_flags)
-        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG=/' .. runtimes .. ' ' .. default_debug_flags)
-        table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE=/' .. runtimes .. ' ' .. default_release_flags)
+        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG=/' .. runtime .. ' ' .. default_debug_flags)
+        table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE=/' .. runtime .. ' ' .. default_release_flags)
+        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG=/' .. runtime .. ' ' .. default_debug_flags)
+        table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE=/' .. runtime .. ' ' .. default_release_flags)
     end
     if not opt._configs_str:find("CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY") then
         table.insert(configs, "-DCMAKE_COMPILE_PDB_OUTPUT_DIRECTORY=pdb")
