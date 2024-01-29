@@ -317,9 +317,16 @@ function _get_configs(package, configs, opt)
     end
 
     -- add runtimes flags
-    local runtimes = package:runtimes()
-    if package:is_plat("windows") and runtimes then
-        table.insert(configs, "-Db_vscrt=" .. runtimes:lower())
+    if package:is_plat("windows") then
+        if package:has_runtime("MT") then
+            table.insert(configs, "-Db_vscrt=MT")
+        elseif package:has_runtime("MTd") then
+            table.insert(configs, "-Db_vscrt=MTd")
+        elseif package:has_runtime("MD") then
+            table.insert(configs, "-Db_vscrt=MD")
+        elseif package:has_runtime("MDd") then
+            table.insert(configs, "-Db_vscrt=MDd")
+        end
     end
 
     -- add cross file
