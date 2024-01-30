@@ -49,9 +49,10 @@ function generate_dependencies(target, sourcebatch, opt)
                 local clangscandeps = compiler_support.get_clang_scan_deps(target)
                 local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
                 local flags = table.join({"--format=p1689", "--",
-                                         clang_path, "-x", "c++", runtime_flag, "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags or {})
+                                         clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags or {})
                 vprint(table.concat(table.join(clangscandeps, flags), " "))
-                local outdata = try{function() return os.iorunv(clangscandeps, flags) end}
+                local outdata, err = os.iorunv(clangscandeps, flags)
+                assert(err, err)
 
                 io.writefile(jsonfile, outdata)
             else
@@ -65,7 +66,8 @@ function generate_dependencies(target, sourcebatch, opt)
                     end)
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
                     local flags = table.join(compflags or {}, keepsystemincludesflag or {}, {"-E", "-x", "c++", file, "-o", ifile})
-                    try{function() os.iorunv(compinst:program(), flags) end}
+                    local _, err = os.iorunv(compinst:program(), flags)
+                    assert(err, err)
                     local content = io.readfile(ifile)
                     os.rm(ifile)
                     return content

@@ -89,9 +89,11 @@ function _compile(target, flags, cppfile)
     if not dryrun then
         -- do compile
         if msvc then
-            try{function() return os.iorunv(compinst:program(), flags, {envs = msvc:runenvs()}) end}
+            local _, err = os.iorunv(compinst:program(), flags, {envs = msvc:runenvs()})
+            assert(err, err)
         else
-            try{function() return os.iorunv(compinst:program(), flags) end}
+            local _, err = os.iorunv(compinst:program(), flags)
+            assert(err, err)
         end
     end
 end

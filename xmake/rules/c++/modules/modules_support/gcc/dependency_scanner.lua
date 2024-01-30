@@ -49,7 +49,8 @@ function generate_dependencies(target, sourcebatch, opt)
                 local dfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".d"))
                 local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
                 local flags = table.join(compflags or {}, baselineflags, {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depsformatflag, depsfileflag .. jsonfile, depstargetflag .. target:objectfile(sourcefile), "-o", ifile})
-                try{function() return os.iorunv(path.translate(compinst:program()), flags) end}
+                local _, err = os.iorunv(path.translate(compinst:program()), flags)
+                assert(err, err)
                 os.rm(ifile)
                 os.rm(dfile)
             else
@@ -59,7 +60,8 @@ function generate_dependencies(target, sourcebatch, opt)
                     table.remove_if(compflags, function(_, flag) return flag:startswith("-fmodule") end)
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
                     local flags = table.join(baselineflags, compflags or {}, {file,  "-o", ifile})
-                    try{function() return os.iorunv(compinst:program(), flags) end}
+                    local _, err = os.iorunv(compinst:program(), flags)
+                    assert(err, err)
                     local content = io.readfile(ifile)
                     os.rm(ifile)
                     return content
