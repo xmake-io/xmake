@@ -31,9 +31,11 @@ import("private.async.buildjobs")
 function _get_protoc(target, sourcekind)
 
     -- find protoc
+    -- @see https://github.com/xmake-io/xmake/issues/4659
+    local envs = os.joinenvs(target:pkgenvs(), os.getenvs())
     local protoc = target:data("protobuf.protoc")
     if not protoc and sourcekind == "cxx" then
-        protoc = find_tool("protoc", {envs = target:pkgenvs()})
+        protoc = find_tool("protoc", {envs = envs})
         if protoc and protoc.program then
             target:data_set("protobuf.protoc", protoc.program)
         end
@@ -42,7 +44,7 @@ function _get_protoc(target, sourcekind)
     -- find protoc-c
     local protoc_c = target:data("protobuf.protoc-c")
     if not protoc_c and sourcekind == "cc" then
-        protoc_c = find_tool("protoc-c", {envs = target:pkgenvs()}) or protoc
+        protoc_c = find_tool("protoc-c", {envs = envs}) or protoc
         if protoc_c and protoc_c.program then
             target:data_set("protobuf.protoc-c", protoc_c.program)
         end
@@ -54,8 +56,9 @@ end
 
 -- get grpc_cpp_plugin
 function _get_grpc_cpp_plugin(target, sourcekind)
+    local envs = os.joinenvs(target:pkgenvs(), os.getenvs())
     assert(sourcekind == "cxx", "grpc_cpp_plugin only support c++")
-    local grpc_cpp_plugin = find_tool("grpc_cpp_plugin", {norun = true, force = true, envs = target:pkgenvs()})
+    local grpc_cpp_plugin = find_tool("grpc_cpp_plugin", {norun = true, force = true, envs = envs})
     return assert(grpc_cpp_plugin and grpc_cpp_plugin.program, "grpc_cpp_plugin not found!")
 end
 
