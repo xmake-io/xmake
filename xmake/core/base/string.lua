@@ -80,6 +80,9 @@ end
 -- ("1.2.3.4.5"):split('%.', {limit = 3}) => 1, 2, 3.4.5
 --
 function string:split(delimiter, opt)
+    if #delimiter == 0 then
+        os.raise("string.split(%s, \"\") use empty delimiter", self)
+    end
     local limit, plain, strict
     if opt then
         limit = opt.limit
