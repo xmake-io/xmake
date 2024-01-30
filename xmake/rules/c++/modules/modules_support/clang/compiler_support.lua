@@ -372,6 +372,20 @@ function has_clangscandepssupport(target)
     return support_clangscandeps or nil
 end
 
+function get_keepsystemincludesflag(target)
+    local keepsystemincludesflag = _g.keepsystemincludesflag
+    if keepsystemincludesflag == nil then
+        local compinst = target:compiler("cxx")
+        local clang_version = get_clang_version(target)
+        if compinst:has_flags("-fkeep-system-includes", "cxxflags", {flagskey = "clang_keep_system_includes", tryrun = true}) and
+            semver.compare(clang_version, "18.0") >= 0 then
+            keepsystemincludesflag = "-fkeep-system-includes"
+        end
+        _g.keepsystemincludesflag = keepsystemincludesflag or false
+    end
+    return keepsystemincludesflag or nil
+end
+
 function get_moduleoutputflag(target)
     local moduleoutputflag = _g.moduleoutputflag
     if moduleoutputflag == nil then

@@ -57,6 +57,7 @@ function generate_dependencies(target, sourcebatch, opt)
                 io.writefile(jsonfile, outdata)
             else
                 fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
+                    local keepsystemincludesflag = compiler_support.get_keepsystemincludesflag(target)
                     local compflags = compinst:compflags({sourcefile = file, target = target})
                     -- exclude -fmodule* and -std=c++/gnu++* flags because,
                     -- when they are set clang try to find bmi of imported modules but they don't exists a this point of compilation
@@ -64,7 +65,7 @@ function generate_dependencies(target, sourcebatch, opt)
                         return flag:startswith("-fmodule") or flag:startswith("-std=c++") or flag:startswith("-std=gnu++")
                     end)
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    local flags = table.join(compflags or {}, {"-E", runtime_flag, "-fkeep-system-includes", "-x", "c++", file, "-o", ifile})
+                    local flags = table.join(compflags or {}, keepsystemincludesflag or {}, {"-E", "-x", "c++", file, "-o", ifile})
                     os.vrunv(compinst:program(), flags)
                     local content = io.readfile(ifile)
                     os.rm(ifile)
