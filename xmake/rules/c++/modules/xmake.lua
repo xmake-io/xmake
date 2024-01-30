@@ -154,13 +154,6 @@ rule("c++.build.modules.builder")
         end
     end)
 
-    before_link(function (target)
-        import("modules_support.builder")
-        if target:data("cxx.has_modules") then
-            -- builder.append_dependency_objectfiles(target)
-        end
-    end)
-
     after_clean(function (target)
         import("core.base.option")
         import("modules_support.compiler_support")
