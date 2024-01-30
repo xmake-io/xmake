@@ -86,7 +86,7 @@ function _compile(target, flags, sourcefile)
 
     if not dryrun then
         -- do compile
-        assert(os.iorunv(compinst:program(), flags, {envs = msvc:runenvs()}))
+        try{function() return os.iorunv(compinst:program(), flags, {envs = msvc:runenvs()}) end}
     end
 end
 

@@ -79,7 +79,7 @@ function _compile(target, flags, sourcefile, outputfile)
 
     if not dryrun then
         -- do compile
-        assert(compinst:compile(sourcefile, outputfile, {compflags = flags}))
+        compinst:compile(sourcefile, outputfile, {compflags = flags})
     end
 end
 

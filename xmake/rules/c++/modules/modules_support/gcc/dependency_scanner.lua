@@ -49,18 +49,17 @@ function generate_dependencies(target, sourcebatch, opt)
                 local dfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".d"))
                 local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
                 local flags = table.join(compflags or {}, baselineflags, {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depsformatflag, depsfileflag .. jsonfile, depstargetflag .. target:objectfile(sourcefile), "-o", ifile})
-                os.vrunv(path.translate(compinst:program()), flags)
+                try{function() return os.iorunv(path.translate(compinst:program()), flags) end}
                 os.rm(ifile)
                 os.rm(dfile)
             else
                 fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
-                    local compinst = target:compiler("cxx")
                     local compflags = compinst:compflags({sourcefile = file, target = target})
                     -- exclude -fmodule* flags because, when they are set gcc try to find bmi of imported modules but they don't exists a this point of compilation
                     table.remove_if(compflags, function(_, flag) return flag:startswith("-fmodule") end)
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
                     local flags = table.join(baselineflags, compflags or {}, {file,  "-o", ifile})
-                    os.vrunv(compinst:program(), flags)
+                    try{function() return os.iorunv(compinst:program(), flags) end}
                     local content = io.readfile(ifile)
                     os.rm(ifile)
                     return content
