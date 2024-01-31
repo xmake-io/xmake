@@ -121,7 +121,7 @@ function toolchain_includedirs(target)
                 runtime_flag = "-stdlib=libstdc++"
             end
         end
-        local _, result = try {function () return os.iorunv(clang, {"-E", runtime_flag, "-Wp,-v", "-xc", os.nuldev()}) end}
+        local _, result = try {function () return os.iorunv(clang, table.join({"-E", "-Wp,-v", "-xc", os.nuldev()}, runtime_flag or {})) end}
         if result then
             for _, line in ipairs(result:split("\n", {plain = true})) do
                 line = line:trim()
