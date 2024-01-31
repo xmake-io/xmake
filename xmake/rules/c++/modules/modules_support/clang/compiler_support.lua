@@ -199,7 +199,6 @@ end
 function get_stdmodules(target)
     if target:policy("build.c++.modules.std") then
         local cpplib = get_cpplibrary_name(target)
-
         if cpplib then
             if cpplib == "c++" then
                 -- TODO support libc++ std module file when https://github.com/xmake-io/xmake/pull/4630
@@ -223,7 +222,6 @@ function get_stdmodules(target)
             end
         end
     end
-
     return {}
 end
 
