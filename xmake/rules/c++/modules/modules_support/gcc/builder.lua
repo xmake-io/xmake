@@ -106,17 +106,13 @@ end
 -- generate a module mapper file for build a headerunit
 function _generate_headerunit_modulemapper_file(module)
 
-    local dryrun = option.get("dry-run")
-
     local path = os.tmpfile()
     local mapper_file = io.open(path, "wb")
 
     mapper_file:write("root " .. os.projectdir())
-    -- mapper_file:write("root " .. os.projectdir():replace("\\", "/"))
     mapper_file:write("\n")
 
     mapper_file:write(mapper_file, module.name:replace("\\", "/") .. " " .. module.bmifile:replace("\\", "/"))
-    -- mapper_file:write(mapper_file, module.name .. " " .. module.bmifile)
     mapper_file:write("\n")
 
     mapper_file:close()
@@ -208,8 +204,6 @@ end
 
 -- populate module map 
 function populate_module_map(target, modules)
-
-    local projectdir = os.projectdir()
 
     -- append all modules
     for _, module in pairs(modules) do
