@@ -345,7 +345,7 @@ function make_headerunit_build_job(target, job_name, batchjobs, headerunit, bmif
 
                     progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
                     if option.get("diagnosis") then
-                        print("mapper file --------\n%s--------", io.readfile(headerunit_mapper))
+                        print("mapper file:\n%s", io.readfile(headerunit_mapper))
                     end
                     _compile(target, _make_headerunitflags(target, headerunit, headerunit_mapper, opt), path.translate(path.filename(headerunit.name)), bmifile)
                     os.tryrm(headerunit_mapper)
@@ -372,7 +372,7 @@ function make_headerunit_build_cmds(target, batchcmds, headerunit, bmifile, outp
         local name = headerunit.unique and headerunit.name or headerunit.path
         batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), name)
         if option.get("diagnosis") then
-            batchcmds:print("mapper file: %s", io.readfile(headerunit_mapper))
+            batchcmds:print("mapper file:\n%s", io.readfile(headerunit_mapper))
         end
         _batchcmds_compile(batchcmds, target, _make_headerunitflags(target, headerunit, headerunit_mapper, {batchcmds = true, bmifile = bmifile}))
     end
