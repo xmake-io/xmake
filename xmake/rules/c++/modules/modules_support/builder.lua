@@ -324,22 +324,6 @@ function build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules
     end
 end
 
--- append headerunits objectfiles to link
-function append_dependency_objectfiles(target)
-
-    local cachekey = target:name() .. "dependency_objectfiles"
-    local cache = compiler_support.localcache():get(cachekey)
-    if cache then
-        if target:is_binary() then
-            target:add("ldflags", cache, {force = true, expand = false})
-        elseif target:is_static() then
-            target:add("arflags", cache, {force = true, expand = false})
-        elseif target:is_shared() then
-            target:add("shflags", cache, {force = true, expand = false})
-        end
-    end
-end
-
 -- get or create a target module mapper
 function get_target_module_mapper(target)
 
