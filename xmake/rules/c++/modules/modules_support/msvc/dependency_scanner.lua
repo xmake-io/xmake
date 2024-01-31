@@ -48,16 +48,14 @@ function generate_dependencies(target, sourcebatch, opt)
                 local compinst = target:compiler("cxx")
                 local msvc = target:toolchain("msvc")
                 local compflags = table.join(compinst:compflags({sourcefile = sourcefile, target = target}) or {}, common_flags, flags)
-                local _, err = os.iorunv(compinst:program(), winos.cmdargv(compflags), {envs = msvc:runenvs()})
-                assert(err, err)
+                os.vrunv(compinst:program(), winos.cmdargv(compflags), {envs = msvc:runenvs()})
             else
                 fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                     local compinst = target:compiler("cxx")
                     local compflags = compinst:compflags({sourcefile = file, target = target})
                     local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    local _, err = os.iorunv(compinst:program(), table.join(compflags,
+                    os.vrunv(compinst:program(), table.join(compflags,
                         {"/P", "-TP", file,  "/Fi" .. ifile}), {envs = msvc:runenvs()})
-                    assert(err, err)
                     local content = io.readfile(ifile)
                     os.rm(ifile)
                     return content
