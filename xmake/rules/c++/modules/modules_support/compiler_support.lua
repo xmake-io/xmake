@@ -151,7 +151,7 @@ function find_angle_header_file(target, file)
         local includedirs = table.join(dep:get("sysincludedirs") or {}, dep:get("includedirs") or {})
         table.join2(headerpaths, includedirs)
     end
-    for _, pkg in pairs(target:pkgs()) do
+    for _, pkg in ipairs(target:orderpkgs()) do
         local includedirs = table.join(pkg:get("sysincludedirs") or {}, pkg:get("includedirs") or {})
         table.join2(headerpaths, includedirs)
     end
