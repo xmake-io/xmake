@@ -168,10 +168,10 @@ function _target_module_map_cachekey(target)
 end
 
 function _is_duplicated_headerunit(target, key)
-    local mapper = get_target_module_mapper(target)
-    for _, mapped in pairs(mapper) do
-        if mapped.key == key then
-            return mapped
+    local mapper, mapper_keys = get_target_module_mapper(target)
+    for _, mapped_key in ipairs(mapper_keys) do
+        if mapped_key == key then
+            return mapper[mapped_key]
         end
     end
 end
@@ -338,7 +338,7 @@ function get_target_module_mapper(target)
         memcache:set2(target:name(), "module_mapper", mapper)
     end
 
-    return mapper
+    return mapper, table.keys(mapper)
 end
 
 -- get a module or headerunit from target mapper
