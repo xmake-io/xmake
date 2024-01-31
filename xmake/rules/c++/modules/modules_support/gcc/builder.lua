@@ -151,12 +151,27 @@ function _get_maplines(target, module)
 
         assert(dep_module, "module dependency %s required for %s not found", required, name)
 
-        local mapline = (dep_module.headerunit and dep_module.headerunit.path:replace("\\", "/") or required) .. " " .. dep_module.bmi:replace("\\", "/")
+        local bmifile
+        local mapline
+        -- aliased headerunit
+        if dep_module.aliasof then
+            local aliased = get_from_target_mapper(target, dep_module.aliasof)
+            bmifile = aliased.bmi
+            mapline = dep_module.headerunit.path:replace("\\", "/") .. " " bmifile:replace("\\", "/")
+        -- headerunit
+        elseif dep_module.headerunit then
+            bmifile = dep_module.bmi
+            mapline = dep_module.headerunit.path:replace("\\", "/") .. " " bmifile:replace("\\", "/")
+        -- named module
+        else
+            bmifile = dep_module.bmi
+            mapline = required .. " " .. bmifile:replace("\\", "/")
+        end
         table.insert(maplines, mapline)
 
         -- append deps
         if dep_module.opt and dep_module.opt.deps then
-            local deps = _get_maplines(dep_target, { name = dep_module.name, bmi = dep_module.bmifile, requires = dep_module.opt.deps })
+            local deps = _get_maplines(dep_target, { name = dep_module.name, bmi = bmifile, requires = dep_module.opt.deps })
             table.join2(maplines, deps)
         end
     end

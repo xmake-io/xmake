@@ -122,8 +122,22 @@ function _get_requiresflags(target, module, opt)
 
             assert(dep_module, "module dependency %s required for %s not found <%s>", required, name, target:name())
 
-            local bmifile = dep_module.bmi
-            local mapflag = {dep_module.headerunit and headerunitflag .. dep_module.headerunit.type or referenceflag, required .. "=" .. bmifile}
+            local mapflag
+            local bmifile
+            -- aliased headerunit
+            if dep_module.aliasof then
+                local aliased = get_from_target_mapper(target, dep_module.aliasof)
+                bmifile = aliased.bmi
+                mapflag = {headerunitflag .. aliased.headerunit.type, required .. "=" .. bmifile}
+            -- headerunit
+            elseif dep_module.headerunit then
+                bmifile = dep_module.bmi
+                mapflag = {headerunitflag .. dep_module.headerunit.type, required .. "=" .. bmifile}
+            -- named module
+            else
+                bmifile = dep_module.bmi
+                mapflag = {referenceflag, required .. "=" .. bmifile}
+            end
             table.insert(deps_flags, mapflag)
 
             -- append deps

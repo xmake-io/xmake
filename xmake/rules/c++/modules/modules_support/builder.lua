@@ -167,18 +167,13 @@ function _target_module_map_cachekey(target)
     return target:name() .. "module_mapper" .. (mode or "")
 end
 
-function _is_duplicated_headerunit(target, headerunit)
+function _is_duplicated_headerunit(target, key)
     local mapper = get_target_module_mapper(target)
-    local key = hash.md5(path.normalize(headerunit.path))
-
-    -- for _, mapped in pairs(mapper) do
-    --     print("CHECK", mapped.key, key)
-    --     if mapped.key == key then
-    --         return true
-    --     end
-    -- end
-
-    return false
+    for _, mapped in pairs(mapper) do
+        if mapped.key == key then
+            return mapped
+        end
+    end
 end
 
 function _builder(target)
@@ -363,7 +358,13 @@ end
 -- add a headerunit to target mapper
 function add_headerunit_to_target_mapper(target, headerunit, bmifile)
     local mapper = get_target_module_mapper(target)
-    mapper[headerunit.name] = {name = headerunit.name, key = path.normalize(headerunit.path), headerunit = headerunit, bmi = bmifile}
-    return _is_duplicated_headerunit(target, headerunit)
+    local key = hash.uuid(path.normalize(headerunit.path))
+    local deduplicated = _is_duplicated_headerunit(target, key)
+    if deduplicated then
+        mapper[headerunit.name] = {name = headerunit.name, key = key, aliasof = deduplicated.name}
+    else
+        mapper[headerunit.name] = {name = headerunit.name, key = key, headerunit = headerunit, bmi = bmifile}
+    end
+    return deduplicated and true or false
 end
 

@@ -134,7 +134,15 @@ function _get_requiresflags(target, module, opt)
 
             assert(dep_module, "module dependency %s required for %s not found", required, name)
 
-            local bmifile = dep_module.bmi
+            local bmifile
+            -- aliased headerunit
+            if dep_module.aliasof then
+                local aliased = get_from_target_mapper(target, dep_module.aliasof)
+                bmifile = aliased.bmi
+            -- named module or headerunit
+            else
+                bmifile = dep_module.bmi
+            end
             local mapflag = (dep_module.opt and dep_module.opt.namedmodule) and format("%s%s=%s", modulefileflag, required, bmifile) or modulefileflag .. bmifile
             table.insert(requiresflags, mapflag)
 
@@ -286,32 +294,34 @@ end
 -- build headerunit file for batchjobs
 function make_headerunit_build_job(target, job_name, batchjobs, headerunit, bmifile, outputdir, opt)
 
-    add_headerunit_to_target_mapper(target, headerunit, bmifile)
-    return {
-        name = job_name,
-        sourcefile = headerunit.path,
-        job = batchjobs:newjob(job_name, function(index, total)
-            if not os.isdir(outputdir) then
-                os.mkdir(outputdir)
-            end
+    local already_exists = add_headerunit_to_target_mapper(target, headerunit, bmifile)
+    if not already_exists then
+        return {
+            name = job_name,
+            sourcefile = headerunit.path,
+            job = batchjobs:newjob(job_name, function(index, total)
+                if not os.isdir(outputdir) then
+                    os.mkdir(outputdir)
+                end
 
-            local compinst = compiler.load("cxx", {target = target})
-            local compflags = compinst:compflags({sourcefile = headerunit.path, target = target})
+                local compinst = compiler.load("cxx", {target = target})
+                local compflags = compinst:compflags({sourcefile = headerunit.path, target = target})
 
-            local dependfile = target:dependfile(bmifile)
-            local dependinfo = depend.load(dependfile) or {}
-            dependinfo.files = {}
-            local depvalues = {compinst:program(), compflags}
+                local dependfile = target:dependfile(bmifile)
+                local dependinfo = depend.load(dependfile) or {}
+                dependinfo.files = {}
+                local depvalues = {compinst:program(), compflags}
 
-            if opt.build then
-                progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
-                _compile(target, _make_headerunitflags(target, headerunit, bmifile), headerunit.path)
-            end
+                if opt.build then
+                    progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
+                    _compile(target, _make_headerunitflags(target, headerunit, bmifile), headerunit.path)
+                end
 
-            table.insert(dependinfo.files, headerunit.path)
-            dependinfo.values = depvalues
-            depend.save(dependinfo, dependfile)
-        end)}
+                table.insert(dependinfo.files, headerunit.path)
+                dependinfo.values = depvalues
+                depend.save(dependinfo, dependfile)
+            end)}
+    end
 end
 
 -- build headerunit file for batchcmds
