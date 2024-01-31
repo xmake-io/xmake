@@ -34,11 +34,13 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     local tmpfile = os.tmpfile() .. ".cc"
     io.writefile(tmpfile, "#include <vector>")
     local argv = {"-E", "-x", "c++", tmpfile}
-    local runtime = get_cpplibrary_name(target)
-    if runtime:startswith("c++") then
-        table.insert(argv, 1, "-stdlib=libc++")
-    elseif runtime:startswith("stdc++") then
-        table.insert(argv, 1, "-stdlib=libstdc++")
+    local cpplib = get_cpplibrary_name(target)
+    if cpplib then
+        if cpplib == "c++" then
+            table.insert(argv, 1, "-stdlib=libc++")
+        elseif cpplib == "stdc++" then
+            table.insert(argv, 1, "-stdlib=libstdc++")
+        end
     end
     local result = try {function () return os.iorunv(clang, argv) end}
     if result then
@@ -57,19 +59,14 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
 end
 
 function get_cpplibrary_name(target)
-    local runtime = target:runtimes()
-
-    if not runtime then
-        if target:is_plat("windows") then
-            runtime = "msstl"
-        elseif target:is_plat("linux") or target:is_plat("android") then
-            runtime = "stdc++_shared"
-        elseif target:is_plat("macosx") or target:is_plat("iphoneos") or target:is_plat("watchos") then
-            runtime = "c++_shared"
-        end
+    -- libc++ come first because on windows, if we use libc++ clang will still use msvc crt so MD / MT / MDd / MTd can be set
+    if target:has_runtime("c++_shared", "c++_static") then
+        return "c++"
+    elseif target:has_runtime("stdc++_shared", "stdc++_static") then
+        return "stdc++"
+    elseif target:is_plat("windows") and target:has_runtime("MD", "MT", "MDd", "MTd") then
+        return "msstl"
     end
-
-    return runtime
 end
 
 -- load module support for the current target
@@ -115,12 +112,14 @@ function toolchain_includedirs(target)
         local clang, toolname = target:tool("cxx")
         assert(toolname:startswith("clang"))
         _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
-        local runtime = get_cpplibrary_name(target)
+        local cpplib = get_cpplibrary_name(target)
         local runtime_flag
-        if runtime:startswith("c++") then
-            runtime_flag = "-stdlib=libc++"
-        elseif runtime:startswith("stdc++") then
-            runtime_flag = "-stdlib=libstdc++"
+        if cpplib then
+            if cpplib == "c++" then
+                runtime_flag = "-stdlib=libc++"
+            elseif cpplib == "stdc++" then
+                runtime_flag = "-stdlib=libstdc++"
+            end
         end
         local _, result = try {function () return os.iorunv(clang, {"-E", runtime_flag, "-Wp,-v", "-xc", os.nuldev()}) end}
         if result then
@@ -199,27 +198,29 @@ end
 -- not supported atm
 function get_stdmodules(target)
     if target:policy("build.c++.modules.std") then
-        local runtime = get_cpplibrary_name(target)
+        local cpplib = get_cpplibrary_name(target)
 
-        if runtime:startswith("libc++") then
-            -- TODO support libc++ std module file when https://github.com/xmake-io/xmake/pull/4630
-        elseif runtime:startswith("stdc++") then
-            -- libstdc++ doesn't have a std module file atm
-        elseif runtime:startswith("msstl") then
-            -- msstl std module file is not compatible with llvm <= 18
-            -- local toolchain = target:toolchain("clang")
-            -- local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})
-            -- if msvc then
-            --     local vcvars = msvc:config("vcvars")
-            --     if vcvars.VCInstallDir and vcvars.VCToolsVersion then
-            --         modules = {}
-            --
-            --         local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
-            --         assert(stdmodulesdir, "Can't enable C++23 std modules, directory missing !")
-            --
-            --         return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
-            --     end
-            -- end
+        if cpplib then
+            if cpplib == "c++" then
+                -- TODO support libc++ std module file when https://github.com/xmake-io/xmake/pull/4630
+            elseif cpplib == "stdc++" then
+                -- libstdc++ doesn't have a std module file atm
+            elseif cpplib == "msstl" then
+                -- msstl std module file is not compatible with llvm <= 19
+                -- local toolchain = target:toolchain("clang")
+                -- local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})
+                -- if msvc then
+                --     local vcvars = msvc:config("vcvars")
+                --     if vcvars.VCInstallDir and vcvars.VCToolsVersion then
+                --         modules = {}
+                --
+                --         local stdmodulesdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "modules")
+                --         assert(stdmodulesdir, "Can't enable C++23 std modules, directory missing !")
+                --
+                --         return {path.join(stdmodulesdir, "std.ixx"), path.join(stdmodulesdir, "std.compat.ixx")}
+                --     end
+                -- end
+            end
         end
     end
 
