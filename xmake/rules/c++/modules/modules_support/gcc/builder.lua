@@ -151,20 +151,18 @@ function _get_maplines(target, module)
 
         assert(dep_module, "module dependency %s required for %s not found", required, name)
 
-        local bmifile
+        local bmifile = dep_module.bmi
         local mapline
         -- aliased headerunit
         if dep_module.aliasof then
             local aliased = get_from_target_mapper(target, dep_module.aliasof)
             bmifile = aliased.bmi
-            mapline = dep_module.headerunit.path:replace("\\", "/") .. " " bmifile:replace("\\", "/")
+            mapline = dep_module.headerunit.path:replace("\\", "/") .. " " .. bmifile:replace("\\", "/")
         -- headerunit
         elseif dep_module.headerunit then
-            bmifile = dep_module.bmi
-            mapline = dep_module.headerunit.path:replace("\\", "/") .. " " bmifile:replace("\\", "/")
+            mapline = dep_module.headerunit.path:replace("\\", "/") .. " " .. bmifile:replace("\\", "/")
         -- named module
         else
-            bmifile = dep_module.bmi
             mapline = required .. " " .. bmifile:replace("\\", "/")
         end
         table.insert(maplines, mapline)
@@ -214,7 +212,7 @@ function populate_module_map(target, modules)
     for _, module in pairs(modules) do
         local name, provide = compiler_support.get_provided_module(module)
         if provide then
-            add_module_to_target_mapper(target, name, provide.sourcefile, path.absolute(compiler_support.get_bmi_path(provide.bmi), projectdir))
+            add_module_to_target_mapper(target, name, provide.sourcefile, compiler_support.get_bmi_path(provide.bmi))
         end
     end
 
@@ -223,7 +221,7 @@ function populate_module_map(target, modules)
         local name, provide = compiler_support.get_provided_module(module)
         if provide then
             local bmifile = compiler_support.get_bmi_path(provide.bmi)
-            add_module_to_target_mapper(target, name, provide.sourcefile, path.absolute(bmifile, projectdir), {deps = module.requires})
+            add_module_to_target_mapper(target, name, provide.sourcefile, bmifile, {deps = module.requires})
         end
     end
 end

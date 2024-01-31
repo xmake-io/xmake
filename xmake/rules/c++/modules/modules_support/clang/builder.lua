@@ -134,14 +134,11 @@ function _get_requiresflags(target, module, opt)
 
             assert(dep_module, "module dependency %s required for %s not found", required, name)
 
-            local bmifile
+            local bmifile = dep_module.bmi
             -- aliased headerunit
             if dep_module.aliasof then
                 local aliased = get_from_target_mapper(target, dep_module.aliasof)
                 bmifile = aliased.bmi
-            -- named module or headerunit
-            else
-                bmifile = dep_module.bmi
             end
             local mapflag = (dep_module.opt and dep_module.opt.namedmodule) and format("%s%s=%s", modulefileflag, required, bmifile) or modulefileflag .. bmifile
             table.insert(requiresflags, mapflag)

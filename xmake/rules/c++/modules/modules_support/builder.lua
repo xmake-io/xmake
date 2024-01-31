@@ -361,7 +361,7 @@ function add_headerunit_to_target_mapper(target, headerunit, bmifile)
     local key = hash.uuid(path.normalize(headerunit.path))
     local deduplicated = _is_duplicated_headerunit(target, key)
     if deduplicated then
-        mapper[headerunit.name] = {name = headerunit.name, key = key, aliasof = deduplicated.name}
+        mapper[headerunit.name] = {name = headerunit.name, key = key, aliasof = deduplicated.name, headerunit = headerunit}
     else
         mapper[headerunit.name] = {name = headerunit.name, key = key, headerunit = headerunit, bmi = bmifile}
     end
