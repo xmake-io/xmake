@@ -47,7 +47,7 @@ function _build_modules(target, sourcebatch, modules, opt)
 
         local fileconfig = target:fileconfig(cppfile)
         local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
-        local build = _should_build(target, cppfile, bmifile, objectfile, module.requires)
+        local build = _should_build(target, cppfile, bmifile, {objectfile = objectfile, requires = module.requires})
 
         -- add objectfile if module is not from external dep
         if not (fileconfig and fileconfig.external) then
@@ -55,8 +55,8 @@ function _build_modules(target, sourcebatch, modules, opt)
         end
 
         -- needed to detect rebuild of dependencies
-        if provide then
-            compiler_support.memcache():set2(target:name(), name, build)
+        if provide and build then
+            _mark_build(target, name)
         end
 
         local deps = {}
@@ -85,23 +85,26 @@ function _build_headerunits(target, headerunits, opt)
         end
         local bmifile = path.join(outputdir, path.filename(headerunit.name) .. compiler_support.get_bmi_extension(target))
         local key = path.normalize(headerunit.path)
-        local build = _should_build(target, headerunit.path, bmifile, nil, nil, {key = key, headerunit = true})
+        local build = _should_build(target, headerunit.path, bmifile, {key = key, headerunit = true})
 
-        compiler_support.memcache():set2(target:name(), key, build)
+        if build then
+            _mark_build(target, key)
+        end
 
         opt.build_headerunit(headerunit, key, bmifile, outputdir, build)
     end
 end
 
 -- should we build this module or headerunit ?
-function _should_build(target, sourcefile, bmifile, objectfile, requires, opt)
+function _should_build(target, sourcefile, bmifile, opt)
 
     -- force rebuild a module if any of its module dependency is rebuilt
+    local requires = opt.requires
     if requires then
         for required, _ in pairs(requires) do
             local m = get_from_target_mapper(target, required)
             if m then
-                local rebuild = compiler_support.memcache():get2(target:name(), m.key)
+                local rebuild = compiler_support.memcache():get2("should_build_in" .. target:name(), m.key)
                 if rebuild then
                     return true
                 end
@@ -110,6 +113,7 @@ function _should_build(target, sourcefile, bmifile, objectfile, requires, opt)
     end
 
     -- or rebuild it if the file changed for headerunit and namedmodules
+    local objectfile = opt.objectfile
     if compiler_support.has_module_extension(sourcefile) or (opt and opt.headerunit) then
         local dryrun = option.get("dry-run")
         local compinst = compiler.load("cxx", {target = target})
@@ -195,6 +199,10 @@ function _builder(target)
         compiler_support.memcache():set2("builder", cachekey, builder)
     end
     return builder
+end
+
+function _mark_build(target, name)
+    compiler_support.memcache():set2("should_build_in" .. target:name(), name, true)
 end
 
 -- build batchjobs for modules
