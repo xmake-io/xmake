@@ -75,7 +75,10 @@ function _compile(target, flags, sourcefile, outputfile)
     local flags = table.join(compflags or {}, flags)
 
     -- trace
-    vprint(compinst:compcmd(sourcefile, outputfile, {compflags = flags, rawargs = true}))
+    if option.get("verbose") then
+        print(compinst:compcmd(sourcefile, outputfile, {compflags = flags, rawargs = true}))
+    end
+
 
     if not dryrun then
         -- do compile

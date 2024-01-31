@@ -82,12 +82,13 @@ function _compile(target, flags, sourcefile)
     local flags = table.join(compflags or {}, flags)
 
     -- trace
-    vprint(compinst:program(), table.unpack(flags))
+    if option.get("verbose") then
+        print(os.args(table.join(compinst:program(), flags)))
+    end
 
     if not dryrun then
         -- do compile
-        local _, err = os.iorunv(compinst:program(), flags, {envs = msvc:runenvs()})
-        assert(err, err)
+        os.vrunv(compinst:program(), flags, {envs = msvc:runenvs()})
     end
 end
 
