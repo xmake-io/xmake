@@ -47,7 +47,7 @@ rule("c++.build.modules")
             -- @see https://github.com/xmake-io/xmake/issues/3000
             target:set("policy", "build.ccache", false)
 
-            -- load module support
+            -- load compiler support
             compiler_support.load(target)
 
             -- mark this target with modules
