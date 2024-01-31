@@ -229,7 +229,7 @@ function make_module_build_job(target, batchjobs, job_name, deps, opt)
 
             -- compile if it's a named module
             if opt.build and (provide or compiler_support.has_module_extension(opt.cppfile)) then
-                progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
 
                 if not dryrun then
                     local objectdir = path.directory(opt.objectfile)
@@ -269,7 +269,7 @@ function make_module_build_cmds(target, batchcmds, opt)
 
     -- compile if it's a named module
     if opt.build and (provide or compiler_support.has_module_extension(opt.cppfile)) then
-        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
         batchcmds:mkdir(path.directory(opt.objectfile))
 
         local fileconfig = target:fileconfig(opt.cppfile)
