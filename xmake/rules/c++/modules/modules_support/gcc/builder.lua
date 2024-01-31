@@ -98,7 +98,6 @@ function _batchcmds_compile(batchcmds, target, flags, sourcefile)
 end
 
 function _module_map_cachekey(target)
-
     local mode = config.mode()
     return target:name() .. "module_mapper" .. (mode or "")
 end

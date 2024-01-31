@@ -39,7 +39,6 @@ function _make_modulebuildflags(target, provide, bmifile, sourcefile, objectfile
     local ifconlyflag = compiler_support.get_ifconlyflag(target)
     local interfaceflag = compiler_support.get_interfaceflag(target)
     local internalpartitionflag = compiler_support.get_internalpartitionflag(target)
-
     local objectfile_or_ifconlyflag = (opt.external and ifconlyflag) and ifconlyflag or "-Fo" .. objectfile
 
     local flags
@@ -48,7 +47,6 @@ function _make_modulebuildflags(target, provide, bmifile, sourcefile, objectfile
     else
         flags = {"-TP", objectfile_or_ifconlyflag, "-c", sourcefile}
     end
-
     return flags
 end
 
