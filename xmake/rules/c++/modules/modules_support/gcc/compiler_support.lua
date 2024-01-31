@@ -91,11 +91,9 @@ end
 
 function get_target_module_mapperpath(target)
     local path = path.join(modules_cachedir(target, {mkdir = true}), "..", "mapper.txt")
-
     if not os.isfile(path) then
         io.writefile(path, "")
     end
-
     return path
 end
 
