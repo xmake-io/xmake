@@ -305,7 +305,7 @@ function make_headerunit_build_job(target, job_name, batchjobs, headerunit, bmif
 
                 if opt.build then
                     progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
-                    _compile(target, _make_headerunitflags(target, headerunit, bmifile, {}), name, target:objectfile(headerunit.path), true)
+                    _compile(target, _make_headerunitflags(target, headerunit, bmifile, {}), name)
                 end
 
                 table.insert(dependinfo.files, headerunit.path)
