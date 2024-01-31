@@ -129,7 +129,7 @@ function _get_maplines(target, module)
         table.insert(maplines, m_name .. " " .. compiler_support.get_bmi_path(m.bmi))
     end
 
-    for required, _ in pairs(module.requires) do
+    for required, _ in table.orderpairs(module.requires) do
         local dep_module
         local dep_target
         for _, dep in ipairs(target:orderdeps()) do

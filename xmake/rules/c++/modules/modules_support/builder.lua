@@ -101,7 +101,7 @@ function _should_build(target, sourcefile, bmifile, opt)
     -- force rebuild a module if any of its module dependency is rebuilt
     local requires = opt.requires
     if requires then
-        for required, _ in pairs(requires) do
+        for required, _ in table.orderpairs(requires) do
             local m = get_from_target_mapper(target, required)
             if m then
                 local rebuild = compiler_support.memcache():get2("should_build_in" .. target:name(), m.key)
