@@ -49,7 +49,7 @@ function generate_dependencies(target, sourcebatch, opt)
                 local dfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".d"))
                 local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
                 local flags = table.join(compflags or {}, baselineflags, {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depsformatflag, depsfileflag .. jsonfile, depstargetflag .. target:objectfile(sourcefile), "-o", ifile})
-                os.vrunv(path.translate(compinst:program()), flags)
+                os.vrunv(compinst:program(), flags)
                 os.rm(ifile)
                 os.rm(dfile)
             else
