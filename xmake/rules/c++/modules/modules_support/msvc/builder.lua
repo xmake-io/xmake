@@ -118,7 +118,7 @@ function _get_requiresflags(target, module, opt)
                          or compiler_support.localcache():get2(cachekey, "requiresflags")
     if not requiresflags or (opt and opt.regenerate) then
         local deps_flags = {}
-        for required, _ in pairs(module.requires) do
+        for required, _ in table.orderpairs(module.requires) do
             local dep_module = get_from_target_mapper(target, required)
 
             assert(dep_module, "module dependency %s required for %s not found <%s>", required, name, target:name())

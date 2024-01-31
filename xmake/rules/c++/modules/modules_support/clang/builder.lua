@@ -101,7 +101,6 @@ end
 -- do compile for batchcmds
 -- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
 function _batchcmds_compile(batchcmds, target, flags, sourcefile)
-
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
     batchcmds:compilev(table.join(compflags or {}, flags), {compiler = compinst, sourcekind = "cxx"})
@@ -129,7 +128,7 @@ function _get_requiresflags(target, module, opt)
 
     if not requiresflags or (opt and opt.regenerate) then
         requiresflags = {}
-        for required, _ in pairs(module.requires) do
+        for required, _ in table.orderpairs(module.requires) do
             local dep_module = get_from_target_mapper(target, required)
 
             assert(dep_module, "module dependency %s required for %s not found", required, name)
