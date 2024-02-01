@@ -147,7 +147,7 @@ function _get_maplines(target, module)
             end
         end
 
-        assert(dep_module, "module dependency %s required for %s not found", required, name)
+        assert(dep_module, "module dependency %s required for %s not found", required, m_name)
 
         local bmifile = dep_module.bmi
         local mapline
