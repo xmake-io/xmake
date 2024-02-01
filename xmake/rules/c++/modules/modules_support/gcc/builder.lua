@@ -32,17 +32,11 @@ import(".builder", {inherit = true})
 
 -- get flags for building a module
 function _make_modulebuildflags(target, opt)
-
-    local flags = {"-x", "c++", "-c"}
-    if opt.batchcmds then
-        table.join2(flags, "-o", target:objectfile(opt.sourcefile), opt.sourcefile)
-    end
-
-    return flags
+    return {"-x", "c++", "-c"}
 end
 
 -- get flags for building a headerunit
-function _make_headerunitflags(target, headerunit, headerunit_mapper, opt)
+function _make_headerunitflags(target, headerunit, headerunit_mapper)
 
     -- get flags
     local module_headerflag = compiler_support.get_moduleheaderflag(target)
@@ -55,14 +49,9 @@ function _make_headerunitflags(target, headerunit, headerunit_mapper, opt)
     local headertype = (headerunit.type == ":angle") and "system" or "user"
 
     local flags = table.join(local_directory, {module_mapperflag .. headerunit_mapper,
-                                        module_headerflag .. headertype,
-                                        module_onlyflag,
-                                        "-xc++-header",
-                                        "-c"})
-    if opt.batchcmds then
-       table.join2(flags, {"-o", opt.bmifile, path.filename(headerunit.path)})
-    end
-
+                                               module_headerflag .. headertype,
+                                               module_onlyflag,
+                                               "-xc++-header"})
     return flags
 end
 
@@ -76,24 +65,22 @@ function _compile(target, flags, sourcefile, outputfile)
 
     -- trace
     if option.get("verbose") then
-        print(compinst:compcmd(sourcefile, outputfile, {compflags = flags, rawargs = true}))
+        print(compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, rawargs = true}))
     end
-
 
     if not dryrun then
         -- do compile
-        compinst:compile(sourcefile, outputfile, {compflags = flags})
+        assert(compinst:compile(sourcefile, outputfile, {target = target, compflags = flags}))
     end
 end
 
 -- do compile for batchcmds
 -- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
-function _batchcmds_compile(batchcmds, target, flags, sourcefile)
+function _batchcmds_compile(batchcmds, target, flags, sourcefile, outputfile)
 
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
-    local flags = table.join(compflags or {}, flags)
-
+    local flags = table.join("-c", compflags or {}, flags, {"-o", outputfile, sourcefile})
     batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx"})
 end
 
@@ -307,7 +294,7 @@ function make_module_build_cmds(target, batchcmds, opt)
             end
             batchcmds:mkdir(path.directory(opt.objectfile))
 
-            _batchcmds_compile(batchcmds, target, _make_modulebuildflags(target, {batchcmds = true, sourcefile = opt.cppfile}), opt.cppfile)
+            _batchcmds_compile(batchcmds, target, _make_modulebuildflags(target, {batchcmds = true, sourcefile = opt.cppfile}), opt.cppfile, opt.objectfile)
         end
     end
 
@@ -373,7 +360,7 @@ function make_headerunit_build_cmds(target, batchcmds, headerunit, bmifile, outp
         if option.get("diagnosis") then
             batchcmds:print("mapper file:\n%s", io.readfile(headerunit_mapper))
         end
-        _batchcmds_compile(batchcmds, target, _make_headerunitflags(target, headerunit, headerunit_mapper, {batchcmds = true, bmifile = bmifile}))
+        _batchcmds_compile(batchcmds, target, _make_headerunitflags(target, headerunit, headerunit_mapper), bmifile)
     end
 
     batchcmds:rm(headerunit_mapper)
