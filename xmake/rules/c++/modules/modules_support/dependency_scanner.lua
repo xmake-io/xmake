@@ -21,6 +21,8 @@
 -- imports
 import("core.base.json")
 import("core.base.hashset")
+import("core.base.option")
+import("async.runjobs")
 import("compiler_support")
 import("stl_headers")
 
@@ -289,6 +291,22 @@ function _get_package_modules(target, package, opt)
     return package_modules
 end
 
+-- generate dependency files
+function _generate_dependencies(target, sourcebatch, opt)
+    local changed = false
+    if opt.batchjobs then
+        local jobs = option.get("jobs") or os.default_njob()
+        runjobs(target:name() .. "_module_dependency_scanner", function(index) 
+            local sourcefile = sourcebatch.sourcefiles[index]
+            changed = _dependency_scanner(target).generate_dependency_for(target, sourcefile, opt) or changed
+        end, {comax = jobs, total = #sourcebatch.sourcefiles})
+    else
+        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            changed = _dependency_scanner(target).generate_dependency_for(target, sourcefile, opt) or changed
+        end
+    end
+    return changed
+end
 -- get module dependencies
 function get_module_dependencies(target, sourcebatch, opt)
     local cachekey = target:name() .. "/" .. sourcebatch.rulename
@@ -296,7 +314,7 @@ function get_module_dependencies(target, sourcebatch, opt)
     if modules == nil or opt.regenerate then
         modules = compiler_support.localcache():get2("modules", cachekey)
         opt.progress = opt.progress or 0
-        local changed = _dependency_scanner(target).generate_dependencies(target, sourcebatch, opt)
+        local changed = _generate_dependencies(target, sourcebatch, opt)
         if changed or modules == nil then
             local moduleinfos = compiler_support.load_moduleinfos(target, sourcebatch)
             modules = _parse_dependencies_data(target, moduleinfos)

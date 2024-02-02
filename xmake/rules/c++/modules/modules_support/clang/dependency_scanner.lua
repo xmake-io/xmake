@@ -27,59 +27,58 @@ import("utils.progress")
 import("compiler_support")
 import(".dependency_scanner", {inherit = true})
 
--- generate dependency files
-function generate_dependencies(target, sourcebatch, opt)
+function generate_dependency_for(target, sourcefile, opt)
     local compinst = target:compiler("cxx")
     local changed = false
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local dependfile = target:dependfile(sourcefile)
-        depend.on_changed(function()
-            if opt.progress then
-                progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:name(), sourcefile)
+    local dependfile = target:dependfile(sourcefile)
+    depend.on_changed(function()
+        if opt.progress then
+            progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:name(), sourcefile)
+        end
+
+        local outputdir = compiler_support.get_outputdir(target, sourcefile)
+        local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
+        if compiler_support.has_clangscandepssupport(target) and not target:policy("build.c++.clang.fallbackscanner") then
+            -- We need absolute path of clang to use clang-scan-deps
+            -- See https://clang.llvm.org/docs/StandardCPlusPlusModules.html#possible-issues-failed-to-find-system-headers
+            local clang_path = compinst:program()
+            if not path.is_absolute(clang_path) then
+                clang_path = compiler_support.get_clang_path(target) or compinst:program()
             end
+            local clangscandeps = compiler_support.get_clang_scan_deps(target)
+            local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
+            local flags = table.join({"--format=p1689", "--",
+                                     clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags or {})
+            if option.get("verbose") then
+                print(os.args(table.join(clangscandeps, flags)))
+            end
+            local outdata, errdata = os.iorunv(clangscandeps, flags)
+            assert(errdata, errdata)
 
-            local outputdir = compiler_support.get_outputdir(target, sourcefile)
-            local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
-            if compiler_support.has_clangscandepssupport(target) and not target:policy("build.c++.clang.fallbackscanner") then
-                -- We need absolute path of clang to use clang-scan-deps
-                -- See https://clang.llvm.org/docs/StandardCPlusPlusModules.html#possible-issues-failed-to-find-system-headers
-                local clang_path = compinst:program()
-                if not path.is_absolute(clang_path) then
-                    clang_path = compiler_support.get_clang_path(target) or compinst:program()
-                end
-                local clangscandeps = compiler_support.get_clang_scan_deps(target)
-                local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
-                local flags = table.join({"--format=p1689", "--",
-                                         clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags or {})
-                if option.get("verbose") then
-                    print(os.args(table.join(clangscandeps, flags)))
-                end
-                local outdata, errdata = os.iorunv(clangscandeps, flags)
-                assert(errdata, errdata)
-
-                io.writefile(jsonfile, outdata)
-            else
-                fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
-                    local keepsystemincludesflag = compiler_support.get_keepsystemincludesflag(target)
-                    local compflags = compinst:compflags({sourcefile = file, target = target})
-                    -- exclude -fmodule* and -std=c++/gnu++* flags because,
-                    -- when they are set clang try to find bmi of imported modules but they don't exists a this point of compilation
-                    table.remove_if(compflags, function(_, flag)
-                        return flag:startswith("-fmodule") or flag:startswith("-std=c++") or flag:startswith("-std=gnu++")
-                    end)
-                    local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    local flags = table.join(compflags or {}, keepsystemincludesflag or {}, {"-E", "-x", "c++", file, "-o", ifile})
-                    os.vrunv(compinst:program(), flags)
-                    local content = io.readfile(ifile)
-                    os.rm(ifile)
-                    return content
+            io.writefile(jsonfile, outdata)
+        else
+            fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
+                local keepsystemincludesflag = compiler_support.get_keepsystemincludesflag(target)
+                local compflags = compinst:compflags({sourcefile = file, target = target})
+                -- exclude -fmodule* and -std=c++/gnu++* flags because,
+                -- when they are set clang try to find bmi of imported modules but they don't exists a this point of compilation
+                table.remove_if(compflags, function(_, flag)
+                    return flag:startswith("-fmodule") or flag:startswith("-std=c++") or flag:startswith("-std=gnu++")
                 end)
-            end
-            changed = true
+                local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
+                local flags = table.join(compflags or {}, keepsystemincludesflag or {}, {"-E", "-x", "c++", file, "-o", ifile})
+                os.vrunv(compinst:program(), flags)
+                local content = io.readfile(ifile)
+                os.rm(ifile)
+                return content
+            end)
+        end
+        changed = true
 
-            local rawdependinfo = io.readfile(jsonfile)
-            return {moduleinfo = rawdependinfo}
-        end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt()})
-    end
+        local rawdependinfo = io.readfile(jsonfile)
+        return {moduleinfo = rawdependinfo}
+    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt()})
+
     return changed
 end
+
