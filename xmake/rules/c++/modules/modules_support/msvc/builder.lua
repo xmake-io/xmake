@@ -204,7 +204,7 @@ function get_module_required_defines(target, sourcefile)
 end
 
 -- build module file for batchjobs
-function make_module_build_job(target, batchjobs, job_name, deps, opt)
+function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
@@ -254,7 +254,7 @@ function make_module_build_job(target, batchjobs, job_name, deps, opt)
 end
 
 -- build module file for batchcmds
-function make_module_build_cmds(target, batchcmds, opt)
+function make_module_buildcmds(target, batchcmds, opt)
 
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
@@ -281,7 +281,7 @@ function make_module_build_cmds(target, batchcmds, opt)
 end
 
 -- build headerunit file for batchjobs
-function make_headerunit_build_job(target, job_name, batchjobs, headerunit, bmifile, outputdir, opt)
+function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmifile, outputdir, opt)
 
     local already_exists = add_headerunit_to_target_mapper(target, headerunit, bmifile)
     if not already_exists then
@@ -316,7 +316,7 @@ function make_headerunit_build_job(target, job_name, batchjobs, headerunit, bmif
 end
 
 -- build headerunit file for batchcmds
-function make_headerunit_build_cmds(target, batchcmds, headerunit, bmifile, outputdir, opt)
+function make_headerunit_buildcmds(target, batchcmds, headerunit, bmifile, outputdir, opt)
 
     batchcmds:mkdir(outputdir)
 

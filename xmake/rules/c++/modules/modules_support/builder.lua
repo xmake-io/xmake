@@ -214,7 +214,7 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
        build_module = function(deps, build, module, name, provide, objectfile, cppfile, fileconfig)
         local job_name = name and target:name() .. name or cppfile
 
-        modulesjobs[job_name] = _builder(target).make_module_build_job(target, batchjobs, job_name, deps, {build = build, module = module, objectfile = objectfile, cppfile = cppfile})
+        modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps, {build = build, module = module, objectfile = objectfile, cppfile = cppfile})
 
         if provide and fileconfig and fileconfig.public then
             batchjobs:addjob(name .. "_metafile", function(index, total)
@@ -242,7 +242,7 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
     -- build modules
     _build_modules(target, sourcebatch, modules, table.join(opt, {
        build_module = function(_, build, module, name, provide, objectfile, cppfile, fileconfig)
-          depmtime = math.max(depmtime, _builder(target).make_module_build_cmds(target, batchcmds, {build = build, module = module, cppfile = cppfile, objectfile = objectfile, progress = opt.progress}))
+          depmtime = math.max(depmtime, _builder(target).make_module_buildcmds(target, batchcmds, {build = build, module = module, cppfile = cppfile, objectfile = objectfile, progress = opt.progress}))
 
           if provide and fileconfig and fileconfig.public then
               local metafilepath = compiler_support.get_metafile(target, cppfile)
@@ -276,7 +276,7 @@ function build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules
         _build_headerunits(target, headerunits, table.join(opt, {
             build_headerunit = function(headerunit, key, bmifile, outputdir, build)
                 local job_name = target:name() .. key
-                local job = _builder(target).make_headerunit_build_job(target, job_name, batchjobs, headerunit, bmifile, outputdir, table.join(opt, {build = build}))
+                local job = _builder(target).make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmifile, outputdir, table.join(opt, {build = build}))
                 if job then
                   modulesjobs[job_name] = job
                 end
@@ -308,7 +308,7 @@ function build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules
         local depmtime = 0
         _build_headerunits(target, headerunits, table.join(opt, {
             build_headerunit = function(headerunit, _, bmifile, outputdir, build)
-                depmtime = math.max(depmtime, _builder(target).make_headerunit_build_cmds(target, batchcmds, headerunit, bmifile, outputdir, table.join({build = build}, opt)))
+                depmtime = math.max(depmtime, _builder(target).make_headerunit_buildcmds(target, batchcmds, headerunit, bmifile, outputdir, table.join({build = build}, opt)))
             end
         }))
         batchcmds:set_depmtime(depmtime)
