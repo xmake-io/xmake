@@ -43,7 +43,6 @@ function _make_modulebuildflags(target, provide, bmifile, opt)
     elseif provide then -- two step compilation of named module
         precompile = true
         flags = {{"-x", "c++-module", "--precompile"}}
-
         if not opt.external then
            table.insert(flags, {})
         end
@@ -68,11 +67,8 @@ function _make_headerunitflags(target, headerunit, bmifile)
     assert(module_headerflag, "compiler(clang): does not support c++ header units!")
 
     local local_directory = (headerunit.type == ":quote") and {"-I" .. path.directory(headerunit.path)} or {}
-
     local headertype = (headerunit.type == ":angle") and "system" or "user"
-
     local flags = table.join(local_directory, {"-xc++-header", "-Wno-everything", module_headerflag .. headertype})
-
     return flags
 end
 
@@ -90,8 +86,8 @@ function _compile(target, flags, sourcefile, outputfile, opt)
         print(compinst:compcmd(opt.bmifile or sourcefile, outputfile, {target = target, compflags = flags, rawargs = true}))
     end
 
+    -- do compile
     if not dryrun then
-        -- do compile
         assert(compinst:compile(opt.bmifile or sourcefile, outputfile, {target = target, compflags = flags}))
     end
 end
@@ -119,7 +115,6 @@ end
 function _get_requiresflags(target, module, opt)
 
     local modulefileflag = compiler_support.get_modulefileflag(target)
-
     local name = module.name
     local cachekey = target:name() .. name
 
@@ -130,11 +125,10 @@ function _get_requiresflags(target, module, opt)
         requiresflags = {}
         for required, _ in table.orderpairs(module.requires) do
             local dep_module = get_from_target_mapper(target, required)
-
             assert(dep_module, "module dependency %s required for %s not found", required, name)
 
-            local bmifile = dep_module.bmi
             -- aliased headerunit
+            local bmifile = dep_module.bmi
             if dep_module.aliasof then
                 local aliased = get_from_target_mapper(target, dep_module.aliasof)
                 bmifile = aliased.bmi
@@ -151,15 +145,12 @@ function _get_requiresflags(target, module, opt)
         compiler_support.memcache():set2(cachekey, "requiresflags", table.unique(requiresflags))
         compiler_support.localcache():set2(cachekey, "requiresflags", table.unique(requiresflags))
     end
-
     return requiresflags
 end
 
 function _append_requires_flags(target, module, name, cppfile, bmifile, opt)
-
     local cxxflags = {}
     local requiresflags = _get_requiresflags(target, {name = (name or cppfile), bmi = bmifile, requires = module.requires}, {regenerate = opt.build})
-
     for _, flag in ipairs(requiresflags) do
         -- we need to wrap flag to support flag with space
         if type(flag) == "string" and flag:find(" ", 1, true) then
@@ -171,11 +162,10 @@ function _append_requires_flags(target, module, name, cppfile, bmifile, opt)
     target:fileconfig_add(cppfile, {force = {cxxflags = cxxflags}})
 end
 
--- populate module map 
+-- populate module map
 function populate_module_map(target, modules)
     local clang_version = compiler_support.get_clang_version(target)
     local support_namedmodule = semver.compare(clang_version, "16.0") >= 0
-
     for _, module in pairs(modules) do
         local name, provide, cppfile = compiler_support.get_provided_module(module)
         if provide then
@@ -190,14 +180,12 @@ function get_module_required_defines(target, sourcefile)
     local compinst = compiler.load("cxx", {target = target})
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
     local defines
-
     for _, flag in ipairs(compflags) do
         if flag:startswith("-D") then
             defines = defines or {}
             table.insert(defines, flag:sub(3))
         end
     end
-
     return defines
 end
 
@@ -322,9 +310,7 @@ end
 
 -- build headerunit file for batchcmds
 function make_headerunit_build_cmds(target, batchcmds, headerunit, bmifile, outputdir, opt)
-
     batchcmds:mkdir(outputdir)
-
     add_headerunit_to_target_mapper(target, headerunit, bmifile)
 
     if opt.build then
@@ -337,7 +323,6 @@ function make_headerunit_build_cmds(target, batchcmds, headerunit, bmifile, outp
 end
 
 function get_requires(target, module)
-
     local _requires
     local flags = _get_requiresflags(target, module)
     for _, flag in ipairs(flags) do

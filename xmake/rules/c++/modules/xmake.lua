@@ -82,7 +82,7 @@ rule("c++.build.modules.builder")
             local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
             if package_modules_data then
                 -- append to sourcebatch
-                for _, package_module_data in pairs(package_modules_data) do
+                for _, package_module_data in table.orderpairs(package_modules_data) do
                     table.insert(sourcebatch.sourcefiles, package_module_data.file)
                     target:fileconfig_add(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
                 end
@@ -129,7 +129,7 @@ rule("c++.build.modules.builder")
             local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
             if package_modules_data then
                 -- append to sourcebatch
-                for _, package_module_data in pairs(package_modules_data) do
+                for _, package_module_data in table.orderpairs(package_modules_data) do
                     table.insert(sourcebatch.sourcefiles, package_module_data.file)
                     target:fileconfig_add(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
                 end

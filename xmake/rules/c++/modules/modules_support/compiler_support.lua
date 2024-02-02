@@ -242,7 +242,7 @@ function get_provided_module(module)
 
     local name, provide, cppfile
     if module.provides then
-        -- assume there that provides is only one, until we encounter the cases 
+        -- assume there that provides is only one, until we encounter the cases
         -- "Some compiler may choose to implement the :private module partition as a separate module for lookup purposes, and if so, it should be indicated as a separate provides entry."
         local length = 0
         for k, v in pairs(module.provides) do

@@ -153,12 +153,11 @@ function _generate_meta_module_info(target, name, sourcefile, requires)
 
     -- add imports
     if requires then
-        for _name, _ in pairs(requires) do
+        for _name, _ in table.orderpairs(requires) do
             module_metadata.imports = module_metadata.imports or {}
             table.append(module_metadata.imports, _name)
         end
     end
-
     return module_metadata
 end
 
@@ -177,7 +176,6 @@ function _is_duplicated_headerunit(target, key)
 end
 
 function _builder(target)
-
     local cachekey = tostring(target)
     local builder = compiler_support.memcache():get2("builder", cachekey)
     if builder == nil then
@@ -212,7 +210,6 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
     batchjobs:group_enter(target:name() .. "/build_modules", {rootjob = opt.rootjob})
 
     local modulesjobs = {}
-
     _build_modules(target, sourcebatch, modules, table.join(opt, {
        build_module = function(deps, build, module, name, provide, objectfile, cppfile, fileconfig)
         local job_name = name and target:name() .. name or cppfile
@@ -268,6 +265,7 @@ function build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules
     if not user_headerunits and not stl_headerunits then
        return
     end
+
     -- we need new group(headerunits)
     -- e.g. group(build_modules) -> group(headerunits)
     opt.rootjob = batchjobs:group_leave() or opt.rootjob
@@ -329,15 +327,12 @@ end
 
 -- get or create a target module mapper
 function get_target_module_mapper(target)
-
-    opt = opt or {}
     local memcache = compiler_support.memcache()
     local mapper = memcache:get2(target:name(), "module_mapper")
     if not mapper then
         mapper = {}
         memcache:set2(target:name(), "module_mapper", mapper)
     end
-
     return mapper, table.keys(mapper)
 end
 

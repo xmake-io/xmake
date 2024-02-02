@@ -69,7 +69,6 @@ function _parse_meta_info(target, metafile)
             break
         end
     end
-
     return filename, name, metadata
 end
 
@@ -449,23 +448,21 @@ end
 
 -- extract packages modules dependencies
 function get_all_packages_modules(target, opt)
-    local packages_modules
 
     -- parse all meta-info and append their informations to the package store
     local packages = target:pkgs() or {}
-
-    for _, deps in pairs(target:orderdeps()) do
+    for _, deps in ipairs(target:orderdeps()) do
         table.join2(packages, deps:pkgs())
     end
 
-    for _, package in pairs(packages) do
+    local packages_modules
+    for _, package in table.orderpairs(packages) do
         local package_modules = _get_package_modules(target, package, opt)
         if package_modules then
            packages_modules = packages_modules or {}
            table.join2(packages_modules, package_modules)
         end
     end
-
     return packages_modules
 end
 
@@ -511,40 +508,6 @@ end
 -- when building a library we only cull external modules because we need module objectfiles to be linked inside the library
 -- on an executable we cull explicitly referenced module
 function cull_unused_modules(target, modules)
-
-    local cull_all_modules = target:kind() == "executable"
-
-    local needed_modules = {}
-    for _, module in pairs(modules) do
-        local fileconfig = target:fileconfig(module.sourcefile)
-        local external = fileconfig and fileconfig.external
-        if not (cull_all_modules and external) then
-            goto CONTINUE
-        end
-
-        if module.provides and module.requires then
-            table.join2(needed_modules, _fill_needed_module(target, modules, module))
-        end
-
-        ::CONTINUE::
-    end
-
-    local culled = {}
-    for objectfile, module in pairs(modules) do
-        -- if cull_all_modules and modules.provides then
-        --     local name,_,_ = compiler_support.get_provided_module(module)
-        --     if module.requires then
-        --         for required, _ in pairs(module.requires) do
-        --             table.insert(needed_modules, required)
-        --         end
-        --     end
-        --     if table.find(needed_modules, name) then
-        --        culled[objectfile] = module
-        --     end
-        -- else
-             culled[objectfile] = module
-        -- end
-    end
-
-    return culled
+    -- TODO
+    return modules
 end
