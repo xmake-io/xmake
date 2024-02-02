@@ -167,12 +167,8 @@ function _target_module_map_cachekey(target)
 end
 
 function _is_duplicated_headerunit(target, key)
-    local mapper, mapper_keys = get_target_module_mapper(target)
-    for _, mapped_key in ipairs(mapper_keys) do
-        if mapped_key == key then
-            return mapper[mapped_key]
-        end
-    end
+    local _, mapper_keys = get_target_module_mapper(target)
+    return mapper_keys[key]
 end
 
 function _builder(target)
@@ -325,6 +321,12 @@ function build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules
     end
 end
 
+-- flush target module mapper keys
+function flush_target_module_mapper_keys(target)
+    local memcache = compiler_support.memcache()
+    memcache:set2(target:name(), "module_mapper_keys", nil)
+end
+
 -- get or create a target module mapper
 function get_target_module_mapper(target)
     local memcache = compiler_support.memcache()
@@ -333,7 +335,19 @@ function get_target_module_mapper(target)
         mapper = {}
         memcache:set2(target:name(), "module_mapper", mapper)
     end
-    return mapper, table.keys(mapper)
+
+    -- we generate the keys map to optimise the efficiency of _is_duplicated_headerunit
+    local mapper_keys = memcache:get2(target:name(), "module_mapper_keys")
+    if not mapper_keys then
+        mapper_keys = {}
+        for _, item in pairs(mapper) do
+            if item.key then
+                mapper_keys[item.key] = item
+            end
+        end
+        memcache:set2(target:name(), "module_mapper_keys", mapper_keys)
+    end
+    return mapper, mapper_keys
 end
 
 -- get a module or headerunit from target mapper
@@ -348,6 +362,7 @@ end
 function add_module_to_target_mapper(target, name, sourcefile, bmifile, opt)
     local mapper = get_target_module_mapper(target)
     mapper[name] = {name = name, key = name, bmi = bmifile, sourcefile = sourcefile, opt = opt}
+    flush_target_module_mapper_keys(target)
 end
 
 -- add a headerunit to target mapper
@@ -360,6 +375,7 @@ function add_headerunit_to_target_mapper(target, headerunit, bmifile)
     else
         mapper[headerunit.name] = {name = headerunit.name, key = key, headerunit = headerunit, bmi = bmifile}
     end
+    flush_target_module_mapper_keys(target)
     return deduplicated and true or false
 end
 
