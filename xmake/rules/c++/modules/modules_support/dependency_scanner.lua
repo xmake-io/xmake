@@ -169,77 +169,56 @@ function _parse_dependencies_data(target, moduleinfos)
     return modules
 end
 
+function _topological_sort_get_edges(node, nodes, modules)
+  local edges = {}
 
--- check circular dependencies for the given module
-function _check_circular_dependencies_of_module(name, moduledeps, modulesources, depspath)
-    for _, dep in ipairs(moduledeps[name]) do
-        local depinfo = moduledeps[dep]
-        if depinfo then
-            local depspath_sub
-            if depspath then
-                for idx, name in ipairs(depspath) do
-                    if name == dep then
-                        local circular_deps = table.slice(depspath, idx)
-                        table.insert(circular_deps, dep)
-                        local sourceinfo = ""
-                        for _, circular_depname in ipairs(circular_deps) do
-                            local sourcefile = modulesources[circular_depname]
-                            if sourcefile then
-                                sourceinfo = sourceinfo .. ("\n  -> module(%s) in %s"):format(circular_depname, sourcefile)
-                            end
-                        end
-                        os.raise("circular modules dependency(%s) detected!%s", table.concat(circular_deps, ", "), sourceinfo)
-                    end
-                end
-                depspath_sub = table.join(depspath, dep)
-            end
-            _check_circular_dependencies_of_module(dep, moduledeps, modulesources, depspath_sub)
-        end
-    end
-end
+  local module = modules[node.objectfile]
+  local _, provide, _ = compiler_support.get_provided_module(module)
 
--- check circular dependencies
--- @see https://github.com/xmake-io/xmake/issues/3031
-function _check_circular_dependencies(modules)
-    local moduledeps = {}
-    local modulesources = {}
-    for _, mod in pairs(modules) do
-        if mod then
-            if mod.provides and mod.requires then
-                for name, provide in pairs(mod.provides) do
-                    modulesources[name] = provide.sourcefile
-                    local deps = moduledeps[name]
-                    if deps then
-                        table.join2(deps, mod.requires)
-                    else
-                        moduledeps[name] = table.keys(mod.requires)
-                    end
-                end
-            end
-        end
-    end
-    for name, _ in pairs(moduledeps) do
-        _check_circular_dependencies_of_module(name, moduledeps, modulesources, {name})
-    end
+  if provide and module.requires then
+      for required, _ in pairs(module.requires) do
+          for objectfile, dep in pairs(modules) do
+              local name, _, _ = compiler_support.get_provided_module(dep)
+              if name and name == required then
+                  local edge
+                  for _, n in ipairs(nodes) do
+                      if n.objectfile == objectfile then
+                          edge = n
+                          break
+                      end
+                  end
+
+                  table.insert(edges, edge)
+                  break
+              end
+          end
+      end
+  end
+
+  return edges
 end
 
 function _topological_sort_visit(node, nodes, modules, output)
     if node.marked then
         return
     end
-    assert(not node.tempmarked)
+
+    local module = modules[node.objectfile]
+    local name, _, _ = compiler_support.get_provided_module(module)
+
+    if node.tempmarked then
+        return {name}
+    end
+
+    local edges = _topological_sort_get_edges(node, nodes, modules)
+
     node.tempmarked = true
-    local m1 = modules[node.objectfile]
-    for _, n in ipairs(nodes) do
-        if not n.tempmarked then
-            local m2 = modules[n.objectfile]
-            if m2 then
-                for name, _ in pairs(m1.provides) do
-                    if m2.requires and m2.requires[name] then
-                        _topological_sort_visit(n, nodes, modules, output)
-                    end
-                end
-            end
+    for _, edge in ipairs(edges) do
+        -- check circular dependencies
+        -- @see https://github.com/xmake-io/xmake/issues/3031
+        local circular_dependency = _topological_sort_visit(edge, nodes, modules, output)
+        if circular_dependency then
+            return table.join(name, circular_dependency)
         end
     end
     node.tempmarked = false
@@ -258,7 +237,7 @@ end
 
 function _topological_sort_get_first_unmarked_node(nodes)
     for _, node in ipairs(nodes) do
-        if not node.marked and not node.tempmarked then
+        if not node.marked then
             return node
         end
     end
@@ -301,9 +280,9 @@ function get_module_dependencies(target, sourcebatch, opt)
             local moduleinfos = compiler_support.load_moduleinfos(target, sourcebatch)
             modules = _parse_dependencies_data(target, moduleinfos)
             if modules then
-                _check_circular_dependencies(modules)
+                -- _check_circular_dependencies(modules)
+                modules = cull_unused_modules(target, modules)
             end
-            modules = cull_unused_modules(target, modules)
             compiler_support.localcache():set2("modules", cachekey, modules)
             compiler_support.localcache():save()
         end
