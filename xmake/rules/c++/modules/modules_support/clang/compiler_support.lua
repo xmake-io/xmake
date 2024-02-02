@@ -203,9 +203,13 @@ function get_stdmodules(target)
         local cpplib = _get_cpplibrary_name(target)
         if cpplib then
             if cpplib == "c++" then
+                -- libc++ module is found by parsing libc++.modules.json
+                -- which can be found in <llvm_path>/lib subdirectory (i.e on debian it should be <llvm_path>/lib/x86_64-unknown-linux-gnu/)
+                -- in the futur llvm may provide a way to directory get the path of libc++.modules.json 
+                -- @see https://github.com/llvm/llvm-project/pull/76451 (has been revert, so we need to wait)
                 local clang_path = path.directory(get_clang_path(target))
                 local clang_lib_path = path.join(clang_path, "..", "lib")
-                local modules_json_path = find_file("**.modules.json", clang_lib_path)
+                local modules_json_path = find_file("libc++.modules.json", clang_lib_path)
                 if modules_json_path then
                     local modules_json = json.decode(io.readfile(modules_json_path))
                     local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
