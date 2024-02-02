@@ -271,13 +271,11 @@ function make_module_buildcmds(target, batchcmds, opt)
         end
     end
     batchcmds:add_depfiles(opt.cppfile)
-
     return os.mtime(opt.objectfile)
 end
 
 -- build headerunit file for batchjobs
 function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmifile, outputdir, opt)
-
     local already_exists = add_headerunit_to_target_mapper(target, headerunit, bmifile)
     if not already_exists then
         return {

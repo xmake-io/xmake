@@ -33,8 +33,6 @@ import(".builder", {inherit = true})
 
 -- get flags for building a module
 function _make_modulebuildflags(target, provide, bmifile, sourcefile, objectfile, opt)
-
-    -- get flags
     local ifcoutputflag = compiler_support.get_ifcoutputflag(target)
     local ifconlyflag = compiler_support.get_ifconlyflag(target)
     local interfaceflag = compiler_support.get_interfaceflag(target)
@@ -60,8 +58,7 @@ function _make_headerunitflags(target, headerunit, bmifile, opt)
     assert(headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
 
     local local_directory = (headerunit.type == ":quote") and {"-I" .. path.directory(headerunit.path)} or {}
-
-    local flags = table.join(local_directory, {"-TP", 
+    local flags = table.join(local_directory, {"-TP",
                                                exportheaderflag,
                                                headernameflag .. headerunit.type,
                                                ifcoutputflag,
@@ -84,8 +81,8 @@ function _compile(target, flags, sourcefile)
         print(os.args(table.join(compinst:program(), flags)))
     end
 
+    -- do compile
     if not dryrun then
-        -- do compile
         os.vrunv(compinst:program(), flags, {envs = msvc:runenvs()})
     end
 end
@@ -93,7 +90,6 @@ end
 -- do compile for batchcmds
 -- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
 function _batchcmds_compile(batchcmds, target, flags, sourcefile)
-
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
     batchcmds:compilev(table.join(compflags or {}, flags), {compiler = compinst, sourcekind = "cxx"})
@@ -144,8 +140,8 @@ function _get_requiresflags(target, module, opt)
             end
         end
 
-        requiresflags = {}
         -- remove duplicates
+        requiresflags = {}
         local contains = {}
         for _, map in ipairs(deps_flags) do
             local name, _ = map[2]:split("=")[1], map[2]:split("=")[2]
@@ -157,14 +153,12 @@ function _get_requiresflags(target, module, opt)
         compiler_support.memcache():set2(cachekey, "requiresflags", requiresflags)
         compiler_support.localcache():set2(cachekey, "requiresflags", requiresflags)
     end
-
     return requiresflags
 end
 
 function _append_requires_flags(target, module, name, cppfile, bmifile, opt)
     local cxxflags = {}
     local requiresflags = _get_requiresflags(target, {name = (name or cppfile), bmi = bmifile, requires = module.requires}, {regenerate = opt.build})
-
     for _, flag in ipairs(requiresflags) do
         -- we need to wrap flag to support flag with space
         if type(flag) == "string" and flag:find(" ", 1, true) then
@@ -176,7 +170,7 @@ function _append_requires_flags(target, module, name, cppfile, bmifile, opt)
     target:fileconfig_add(cppfile, {force = {cxxflags = cxxflags}})
 end
 
--- populate module map 
+-- populate module map
 function populate_module_map(target, modules)
     for _, module in pairs(modules) do
         local name, provide, cppfile = compiler_support.get_provided_module(module)
@@ -192,14 +186,12 @@ function get_module_required_defines(target, sourcefile)
     local compinst = compiler.load("cxx", {target = target})
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
     local defines
-
     for _, flag in ipairs(compflags) do
         if flag:startswith("-D") or flag:startswith("/D") then
             defines = defines or {}
             table.insert(defines, flag:sub(3))
         end
     end
-
     return defines
 end
 
@@ -276,13 +268,11 @@ function make_module_buildcmds(target, batchcmds, opt)
         end
     end
     batchcmds:add_depfiles(opt.cppfile)
-
    return os.mtime(opt.objectfile)
 end
 
 -- build headerunit file for batchjobs
 function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmifile, outputdir, opt)
-
     local already_exists = add_headerunit_to_target_mapper(target, headerunit, bmifile)
     if not already_exists then
         return {
@@ -317,9 +307,7 @@ end
 
 -- build headerunit file for batchcmds
 function make_headerunit_buildcmds(target, batchcmds, headerunit, bmifile, outputdir, opt)
-
     batchcmds:mkdir(outputdir)
-
     add_headerunit_to_target_mapper(target, headerunit, bmifile)
 
     if opt.build then

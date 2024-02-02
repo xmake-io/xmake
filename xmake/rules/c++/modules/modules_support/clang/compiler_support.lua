@@ -34,7 +34,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     local tmpfile = os.tmpfile() .. ".cc"
     io.writefile(tmpfile, "#include <vector>")
     local argv = {"-E", "-x", "c++", tmpfile}
-    local cpplib = get_cpplibrary_name(target)
+    local cpplib = _get_cpplibrary_name(target)
     if cpplib then
         if cpplib == "c++" then
             table.insert(argv, 1, "-stdlib=libc++")
@@ -58,7 +58,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
     os.tryrm(tmpfile)
 end
 
-function get_cpplibrary_name(target)
+function _get_cpplibrary_name(target)
     -- libc++ come first because on windows, if we use libc++ clang will still use msvc crt so MD / MT / MDd / MTd can be set
     if target:has_runtime("c++_shared", "c++_static") then
         return "c++"
@@ -112,7 +112,7 @@ function toolchain_includedirs(target)
         local clang, toolname = target:tool("cxx")
         assert(toolname:startswith("clang"))
         _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
-        local cpplib = get_cpplibrary_name(target)
+        local cpplib = _get_cpplibrary_name(target)
         local runtime_flag
         if cpplib then
             if cpplib == "c++" then
@@ -198,7 +198,7 @@ end
 -- not supported atm
 function get_stdmodules(target)
     if target:policy("build.c++.modules.std") then
-        local cpplib = get_cpplibrary_name(target)
+        local cpplib = _get_cpplibrary_name(target)
         if cpplib then
             if cpplib == "c++" then
                 -- TODO support libc++ std module file when https://github.com/xmake-io/xmake/pull/4630

@@ -21,6 +21,7 @@
 -- imports
 import("core.base.json")
 import("core.base.semver")
+import("core.base.option")
 import("core.project.depend")
 import("utils.progress")
 import("compiler_support")
@@ -50,9 +51,11 @@ function generate_dependencies(target, sourcebatch, opt)
                 local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
                 local flags = table.join({"--format=p1689", "--",
                                          clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags or {})
-                vprint(table.concat(table.join(clangscandeps, flags), " "))
-                local outdata, err = os.iorunv(clangscandeps, flags)
-                assert(err, err)
+                if option.get("verbose") then
+                    print(os.args(table.join(clangscandeps, flags)))
+                end
+                local outdata, errdata = os.iorunv(clangscandeps, flags)
+                assert(errdata, errdata)
 
                 io.writefile(jsonfile, outdata)
             else

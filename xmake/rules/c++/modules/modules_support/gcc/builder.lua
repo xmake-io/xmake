@@ -37,17 +37,13 @@ end
 
 -- get flags for building a headerunit
 function _make_headerunitflags(target, headerunit, headerunit_mapper)
-
-    -- get flags
     local module_headerflag = compiler_support.get_moduleheaderflag(target)
     local module_onlyflag = compiler_support.get_moduleonlyflag(target)
     local module_mapperflag = compiler_support.get_modulemapperflag(target)
     assert(module_headerflag and module_onlyflag, "compiler(gcc): does not support c++ header units!")
 
     local local_directory = (headerunit.type == ":quote") and {"-I" .. path.directory(path.normalize(headerunit.path))} or {}
-
     local headertype = (headerunit.type == ":angle") and "system" or "user"
-
     local flags = table.join(local_directory, {module_mapperflag .. headerunit_mapper,
                                                module_headerflag .. headertype,
                                                module_onlyflag,
@@ -68,8 +64,8 @@ function _compile(target, flags, sourcefile, outputfile)
         print(compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, rawargs = true}))
     end
 
+    -- do compile
     if not dryrun then
-        -- do compile
         assert(compinst:compile(sourcefile, outputfile, {target = target, compflags = flags}))
     end
 end
@@ -77,7 +73,6 @@ end
 -- do compile for batchcmds
 -- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
 function _batchcmds_compile(batchcmds, target, flags, sourcefile, outputfile)
-
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
     local flags = table.join("-c", compflags or {}, flags, {"-o", outputfile, sourcefile})
@@ -91,20 +86,14 @@ end
 
 -- generate a module mapper file for build a headerunit
 function _generate_headerunit_modulemapper_file(module)
-
     local path = os.tmpfile()
     local mapper_file = io.open(path, "wb")
-
     mapper_file:write("root " .. os.projectdir())
     mapper_file:write("\n")
-
     mapper_file:write(mapper_file, module.name:replace("\\", "/") .. " " .. module.bmifile:replace("\\", "/"))
     mapper_file:write("\n")
-
     mapper_file:close()
-
     return path
-
 end
 
 function _get_maplines(target, module)
@@ -169,26 +158,20 @@ end
 -- hello build/.gens/stl_headerunit/linux/x86_64/release/rules/modules/cache/hello.gcm
 --
 function _generate_modulemapper_file(target, module)
-
     local maplines = _get_maplines(target, module)
-
     local path = os.tmpfile()
     local mapper_file = io.open(path, "wb")
-
     mapper_file:write("root " .. os.projectdir():replace("\\", "/"))
     mapper_file:write("\n")
-
     for _, mapline in ipairs(maplines) do
         mapper_file:write(mapline)
         mapper_file:write("\n")
     end
-
     mapper_file:close()
-
     return path
 end
 
--- populate module map 
+-- populate module map
 function populate_module_map(target, modules)
 
     -- append all modules
@@ -214,14 +197,12 @@ function get_module_required_defines(target, sourcefile)
     local compinst = compiler.load("cxx", {target = target})
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
     local defines
-
     for _, flag in ipairs(compflags) do
         if flag:startswith("-D") then
             defines = defines or {}
             table.insert(defines, flag:sub(3))
         end
     end
-
     return defines
 end
 
@@ -293,13 +274,10 @@ function make_module_buildcmds(target, batchcmds, opt)
                 batchcmds:print("mapper file: %s", io.readfile(module_mapper))
             end
             batchcmds:mkdir(path.directory(opt.objectfile))
-
             _batchcmds_compile(batchcmds, target, _make_modulebuildflags(target, {batchcmds = true, sourcefile = opt.cppfile}), opt.cppfile, opt.objectfile)
         end
     end
-
     batchcmds:add_depfiles(opt.cppfile)
-
     return os.mtime(opt.objectfile)
 end
 

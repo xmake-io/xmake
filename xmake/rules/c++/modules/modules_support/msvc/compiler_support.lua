@@ -88,7 +88,6 @@ function get_stdmodules(target)
             end
         end
     end
-
     return {}
 end
 
