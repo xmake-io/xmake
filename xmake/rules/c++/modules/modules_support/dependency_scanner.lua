@@ -215,9 +215,6 @@ function get_module_dependencies(target, sourcebatch, opt)
         if changed or modules == nil then
             local moduleinfos = compiler_support.load_moduleinfos(target, sourcebatch)
             modules = _parse_dependencies_data(target, moduleinfos)
-            if modules then
-                -- modules = cull_unused_modules(target, modules)
-            end
             compiler_support.localcache():set2("modules", cachekey, modules)
             compiler_support.localcache():save()
         end
