@@ -14,7 +14,7 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      ruki
+-- @author      ruki, Arthapz
 -- @file        xmake.lua
 --
 
@@ -28,11 +28,11 @@ rule("c++.build.modules")
     add_deps("c++.build.modules.install")
 
     on_config(function (target)
-        import("modules_support.common")
+        import("modules_support.compiler_support")
 
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
         -- @see https://github.com/xmake-io/xmake/issues/1858
-        if common.contains_modules(target) then
+        if compiler_support.contains_modules(target) then
             -- @note this will cause cross-parallel builds to be disabled for all sub-dependent targets,
             -- even if some sub-targets do not contain C++ modules.
             --
@@ -47,11 +47,8 @@ rule("c++.build.modules")
             -- @see https://github.com/xmake-io/xmake/issues/3000
             target:set("policy", "build.ccache", false)
 
-            -- get modules support
-            local modules_support = common.modules_support(target)
-
-            -- load module support
-            modules_support.load(target)
+            -- load compiler support
+            compiler_support.load(target)
 
             -- mark this target with modules
             target:data_set("cxx.has_modules", true)
@@ -66,48 +63,44 @@ rule("c++.build.modules.builder")
     -- parallel build support to accelerate `xmake build` to build modules
     before_build_files(function(target, batchjobs, sourcebatch, opt)
         if target:data("cxx.has_modules") then
-            import("modules_support.common")
-            common.patch_sourcebatch(target, sourcebatch, opt)
-            local modules = common.get_module_dependencies(target, sourcebatch, opt)
+            import("modules_support.compiler_support")
+            import("modules_support.dependency_scanner")
+            import("modules_support.builder")
+
+            -- add target deps modules
+            if target:orderdeps() then
+                local deps_sourcefiles = dependency_scanner.get_targetdeps_modules(target)
+                if deps_sourcefiles then
+                    table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
+                end
+            end
+
+            -- append std module
+            table.join2(sourcebatch.sourcefiles, compiler_support.get_stdmodules(target) or {})
 
             -- extract packages modules dependencies
-            local package_modules_data = common.get_all_package_modules(target, modules, opt)
+            local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
             if package_modules_data then
-                -- cull unused modules
-                package_modules_data = common.cull_unused_modules(target, modules, package_modules_data)
-                if package_modules_data then
-                    -- append to sourcebatch
-                    for name, package_module_data in pairs(package_modules_data) do
-                        table.insert(sourcebatch.sourcefiles, package_module_data.file)
-                    end
-
-                    -- we need to repatch and regenerate dependencies at this point
-                    common.patch_sourcebatch(target, sourcebatch, opt)
-                    opt.regenerate = true
-                    modules = common.get_module_dependencies(target, sourcebatch, opt)
+                -- append to sourcebatch
+                for _, package_module_data in pairs(package_modules_data) do
+                    table.insert(sourcebatch.sourcefiles, package_module_data.file)
+                    target:fileconfig_add(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
                 end
             end
+
+            compiler_support.patch_sourcebatch(target, sourcebatch, opt)
+            local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
+
+            opt.batchjobs = true
 
             -- build modules
-            common.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
+            builder.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
 
-            -- generate headerunits and we need to do it before building modules
-            local user_headerunits, stl_headerunits = common.get_headerunits(target, sourcebatch, modules)
-            if user_headerunits or stl_headerunits then
-                -- we need new group(headerunits)
-                -- e.g. group(build_modules) -> group(headerunits)
-                opt.rootjob = batchjobs:group_leave() or opt.rootjob
-                batchjobs:group_enter(target:name() .. "/generate_headerunits", {rootjob = opt.rootjob})
-                local modules_support = common.modules_support(target)
-                if stl_headerunits then
-                    -- build stl header units as other headerunits may need them
-                    -- TODO maybe we need new group(build_modules) -> group(user_headerunits) -> group(stl_headerunits)
-                    modules_support.generate_stl_headerunits_for_batchjobs(target, batchjobs, stl_headerunits, opt)
-                end
-                if user_headerunits then
-                    modules_support.generate_user_headerunits_for_batchjobs(target, batchjobs, user_headerunits, opt)
-                end
-            end
+            -- build headerunits and we need to do it before building modules
+            builder.build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
+
+            -- cull external modules objectfile
+            compiler_support.cull_objectfiles(target, sourcebatch)
         else
             -- avoid duplicate linking of object files of non-module programs
             sourcebatch.objectfiles = {}
@@ -117,43 +110,63 @@ rule("c++.build.modules.builder")
     -- serial compilation only, usually used to support project generator
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
         if target:data("cxx.has_modules") then
-            import("modules_support.common")
+            import("modules_support.compiler_support")
+            import("modules_support.dependency_scanner")
+            import("modules_support.builder")
 
-            -- patch sourcebatch
-            common.patch_sourcebatch(target, sourcebatch, opt)
+            -- add target deps modules
+            if target:orderdeps() then
+                local deps_sourcefiles = dependency_scanner.get_targetdeps_modules(target)
+                if deps_sourcefiles then
+                    table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
+                end
+            end
 
-            -- generate headerunits
-            local modules = common.get_module_dependencies(target, sourcebatch, opt)
-            common.generate_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
+            -- append std module
+            table.join2(sourcebatch.sourcefiles, compiler_support.get_stdmodules(target) or {})
+
+            -- extract packages modules dependencies
+            local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
+            if package_modules_data then
+                -- append to sourcebatch
+                for _, package_module_data in pairs(package_modules_data) do
+                    table.insert(sourcebatch.sourcefiles, package_module_data.file)
+                    target:fileconfig_add(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
+                end
+            end
+
+            compiler_support.patch_sourcebatch(target, sourcebatch, opt)
+            local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
+
+            opt.batchjobs = false
+
+            -- build headerunits
+            builder.build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
 
             -- build modules
-            common.build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
+            builder.build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
+
+            -- cull external modules objectfile
+            compiler_support.cull_objectfiles(target, sourcebatch)
         else
             -- avoid duplicate linking of object files of non-module programs
             sourcebatch.objectfiles = {}
         end
     end)
 
-    before_link(function (target)
-        import("modules_support.common")
-        if target:data("cxx.has_modules") then
-            common.append_dependency_objectfiles(target)
-        end
-    end)
-
     after_clean(function (target)
         import("core.base.option")
-        import("modules_support.common")
+        import("modules_support.compiler_support")
         import("private.action.clean.remove_files")
 
         -- we cannot use target:data("cxx.has_modules"),
         -- because on_config will be not called when cleaning targets
-        if common.contains_modules(target) then
-            remove_files(common.modules_cachedir(target))
+        if compiler_support.contains_modules(target) then
+            remove_files(compiler_support.modules_cachedir(target))
             if option.get("all") then
-                remove_files(common.stlmodules_cachedir(target))
-                common.localcache():clear()
-                common.localcache():save()
+                remove_files(compiler_support.stlmodules_cachedir(target))
+                compiler_support.localcache():clear()
+                compiler_support.localcache():save()
             end
         end
     end)
@@ -163,11 +176,11 @@ rule("c++.build.modules.install")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
 
     before_install(function (target)
-        import("modules_support.common")
+        import("modules_support.compiler_support")
 
         -- we cannot use target:data("cxx.has_modules"),
         -- because on_config will be not called when installing targets
-        if common.contains_modules(target) then
-            common.install_module_target(target)
+        if compiler_support.contains_modules(target) then
+            compiler_support.install_module_target(target)
         end
     end)

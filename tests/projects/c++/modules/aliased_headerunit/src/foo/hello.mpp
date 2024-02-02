@@ -1,0 +1,12 @@
+module;
+#include <cstdio>
+
+export module hello;
+
+import "../header.hpp";
+
+export namespace hello {
+    void say(const char *arg) {
+        printf("%s: %s\n", FOO, arg);
+    }
+}

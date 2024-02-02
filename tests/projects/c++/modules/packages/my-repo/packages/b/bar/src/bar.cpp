@@ -1,5 +1,5 @@
-module bar;
+#include <a.hpp>
 
-const char *bar() {
+const char *hello() {
     return "Hello world";
 }

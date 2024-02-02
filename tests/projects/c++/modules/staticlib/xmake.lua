@@ -3,7 +3,7 @@ set_languages("c++20")
 
 target("mod")
     set_kind("static")
-    add_files("src/mod.mpp", "src/mod.cpp")
+    add_files("src/mod.mpp", "src/mod.cpp", {public = true})
 
 target("hello")
     set_kind("binary")
