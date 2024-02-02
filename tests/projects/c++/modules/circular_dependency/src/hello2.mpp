@@ -1,0 +1,3 @@
+export module hello2;
+
+import hello;
