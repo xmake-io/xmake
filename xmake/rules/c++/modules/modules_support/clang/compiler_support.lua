@@ -204,7 +204,7 @@ function get_stdmodules(target)
         if cpplib then
             if cpplib == "c++" then
                 local clang_path = path.directory(get_clang_path(target))
-                local clang_lib_path = path.normalize(path.join(clang_path, "..", "lib"))
+                local clang_lib_path = path.join(clang_path, "..", "lib")
                 local modules_json_path = find_file("**.modules.json", clang_lib_path)
                 if modules_json_path then
                     local modules_json = json.decode(io.readfile(modules_json_path))
