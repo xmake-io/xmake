@@ -208,7 +208,6 @@ function get_stdmodules(target)
                 local modules_json_path = find_file("**.modules.json", clang_lib_path)
                 if modules_json_path then
                     local modules_json = json.decode(io.readfile(modules_json_path))
-
                     local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
                     if not path.is_absolute(std_module_directory) then
                         std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
