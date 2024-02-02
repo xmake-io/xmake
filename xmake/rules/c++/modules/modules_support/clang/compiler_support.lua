@@ -20,7 +20,10 @@
 
 -- imports
 import("core.base.semver")
+import("core.base.option")
+import("core.base.json")
 import("lib.detect.find_tool")
+import("lib.detect.find_file")
 import(".compiler_support", {inherit = true})
 
 -- get includedirs for stl headers
@@ -142,8 +145,8 @@ function get_clang_path(target)
     local clang_path = _g.clang_path
     if not clang_path then
         local program, toolname = target:tool("cxx")
-        if program and (toolname == "clang" or toolname == "clangxx") then
-            local clang = find_tool("clang", {program = program})
+        if program and toolname:startswith("clang") then
+            local clang = find_tool(toolname, {program = program})
             if clang then
                 clang_path = clang.program
             end
@@ -159,8 +162,8 @@ function get_clang_version(target)
     local clang_version = _g.clang_version
     if not clang_version then
         local program, toolname = target:tool("cxx")
-        if program and (toolname == "clang" or toolname == "clangxx") then
-            local clang = find_tool("clang", {program = program, version = true})
+        if program and toolname:startswith("clang") then
+            local clang = find_tool(toolname, {program = program, version = true})
             if clang then
                 clang_version = clang.version
             end
@@ -176,7 +179,7 @@ function get_clang_scan_deps(target)
     local clang_scan_deps = _g.clang_scan_deps
     if not clang_scan_deps then
         local program, toolname = target:tool("cxx")
-        if program and (toolname == "clang" or toolname == "clangxx") then
+        if program and toolname:startswith("clang") then
             local dir = path.directory(program)
             local basename = path.basename(program)
             local extension = path.extension(program)
@@ -195,13 +198,26 @@ function get_clang_scan_deps(target)
     return clang_scan_deps or nil
 end
 
--- not supported atm
 function get_stdmodules(target)
     if target:policy("build.c++.modules.std") then
         local cpplib = _get_cpplibrary_name(target)
         if cpplib then
             if cpplib == "c++" then
-                -- TODO support libc++ std module file when https://github.com/xmake-io/xmake/pull/4630
+                -- libc++ module is found by parsing libc++.modules.json
+                -- which can be found in <llvm_path>/lib subdirectory (i.e on debian it should be <llvm_path>/lib/x86_64-unknown-linux-gnu/)
+                -- in the futur llvm may provide a way to directory get the path of libc++.modules.json 
+                -- @see https://github.com/llvm/llvm-project/pull/76451 (has been revert, so we need to wait)
+                local clang_path = path.directory(get_clang_path(target))
+                local clang_lib_path = path.join(clang_path, "..", "lib")
+                local modules_json_path = find_file("libc++.modules.json", clang_lib_path)
+                if modules_json_path then
+                    local modules_json = json.decode(io.readfile(modules_json_path))
+                    local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
+                    if not path.is_absolute(std_module_directory) then
+                        std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
+                    end
+                    return {path.join(std_module_directory, "std.cppm"), path.join(std_module_directory, "std.compat.cppm")}
+                end
             elseif cpplib == "stdc++" then
                 -- libstdc++ doesn't have a std module file atm
             elseif cpplib == "msstl" then
@@ -222,7 +238,6 @@ function get_stdmodules(target)
             end
         end
     end
-    return {}
 end
 
 function get_bmi_extension()
