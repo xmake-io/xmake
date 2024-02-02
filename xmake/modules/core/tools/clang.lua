@@ -191,6 +191,15 @@ function _has_static_libstdcxx(self)
     return has_static_libstdcxx
 end
 
+function _get_llvm_path()
+    local llvm_path = _g._LLVM_PATH
+    if llvm_path == nil then
+        local out, _ = os.iorun("clang -print-resource-dir")
+        llvm_path = path.normalize(path.join(out, "..", "..", ".."))
+        _g._LLVM_PATH = llvm_path
+    end
+    return llvm_path
+end
 
 -- make the runtime flag
 -- @see https://github.com/xmake-io/xmake/issues/3546
@@ -198,6 +207,7 @@ function nf_runtime(self, runtime, opt)
     opt = opt or {}
     local maps
     local kind = self:kind()
+    local clang_path = _get_llvm_path()
     if self:is_plat("windows") and runtime then
         if not _has_ms_runtime_lib(self) then
             if runtime:startswith("MD") then
@@ -228,6 +238,12 @@ function nf_runtime(self, runtime, opt)
             maps["c++_shared"]    = "-stdlib=libc++"
             maps["stdc++_static"] = "-stdlib=libstdc++"
             maps["stdc++_shared"] = "-stdlib=libstdc++"
+            -- clang on windows fail to add libc++ includepath when using -stdlib=libc++ so we manually add it
+            -- @see https://github.com/llvm/llvm-project/issues/79647
+            if is_plat("windows") then
+                maps["c++_static"] = table.join(maps["c++_static"], "-cxx-isystem" .. path.join(clang_path, "include", "c++", "v1"))
+                maps["c++_shared"] = table.join(maps["c++_shared"], "-cxx-isystem" .. path.join(clang_path, "include", "c++", "v1"))
+            end
         elseif kind == "ld" or kind == "sh" then
             local target = opt.target
             if target and target.sourcekinds and table.contains(table.wrap(target:sourcekinds()), "cxx") then
@@ -235,6 +251,12 @@ function nf_runtime(self, runtime, opt)
                 maps["c++_shared"]    = "-stdlib=libc++"
                 maps["stdc++_static"] = "-stdlib=libstdc++"
                 maps["stdc++_shared"] = "-stdlib=libstdc++"
+                -- clang on windows fail to add libc++ librarypath when using -stdlib=libc++ so we manually add it
+                -- @see https://github.com/llvm/llvm-project/issues/79647
+                if is_plat("windows") then
+                    maps["c++_static"] = table.join(maps["c++_static"], "-L" .. path.join(clang_path, "lib"))
+                    maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. path.join(clang_path, "lib"))
+                end
                 if runtime:endswith("_static") and _has_static_libstdcxx(self) then
                     maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
                     maps["stdc++_static"] = table.join(maps["stdc++_static"], "-static-libstdc++")
