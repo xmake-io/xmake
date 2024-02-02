@@ -88,10 +88,10 @@ rule("c++.build.modules.builder")
                 end
             end
 
+            opt.batchjobs = true
+
             compiler_support.patch_sourcebatch(target, sourcebatch, opt)
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
-
-            opt.batchjobs = true
 
             -- build modules
             builder.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
@@ -135,10 +135,10 @@ rule("c++.build.modules.builder")
                 end
             end
 
+            opt.batchjobs = false
+
             compiler_support.patch_sourcebatch(target, sourcebatch, opt)
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
-
-            opt.batchjobs = false
 
             -- build headerunits
             builder.build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)

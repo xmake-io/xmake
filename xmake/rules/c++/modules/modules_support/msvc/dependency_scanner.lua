@@ -29,44 +29,41 @@ import("builder")
 import(".dependency_scanner", {inherit = true})
 
 -- generate dependency files
-function generate_dependencies(target, sourcebatch, opt)
+function generate_dependency_for(target, sourcefile, opt)
     local msvc = target:toolchain("msvc")
     local scandependenciesflag = compiler_support.get_scandependenciesflag(target)
     local ifcoutputflag = compiler_support.get_ifcoutputflag(target)
     local common_flags = {"-TP", scandependenciesflag}
+    local dependfile = target:dependfile(sourcefile)
     local changed = false
 
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local dependfile = target:dependfile(sourcefile)
-        depend.on_changed(function ()
-            progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:name(), sourcefile)
-            local outputdir = compiler_support.get_outputdir(target, sourcefile)
+    depend.on_changed(function ()
+        progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:name(), sourcefile)
+        local outputdir = compiler_support.get_outputdir(target, sourcefile)
 
-            local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".module.json")
-            if scandependenciesflag and not target:policy("build.c++.msvc.fallbackscanner") then
-                local flags = {jsonfile, sourcefile, ifcoutputflag, outputdir, "-Fo" .. target:objectfile(sourcefile)}
+        local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".module.json")
+        if scandependenciesflag and not target:policy("build.c++.msvc.fallbackscanner") then
+            local flags = {jsonfile, sourcefile, ifcoutputflag, outputdir, "-Fo" .. target:objectfile(sourcefile)}
+            local compinst = target:compiler("cxx")
+            local compflags = table.join(compinst:compflags({sourcefile = sourcefile, target = target}) or {}, common_flags, flags)
+            os.vrunv(compinst:program(), winos.cmdargv(compflags), {envs = msvc:runenvs()})
+        else
+            fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                 local compinst = target:compiler("cxx")
-                local msvc = target:toolchain("msvc")
-                local compflags = table.join(compinst:compflags({sourcefile = sourcefile, target = target}) or {}, common_flags, flags)
-                os.vrunv(compinst:program(), winos.cmdargv(compflags), {envs = msvc:runenvs()})
-            else
-                fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
-                    local compinst = target:compiler("cxx")
-                    local compflags = compinst:compflags({sourcefile = file, target = target})
-                    local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                    os.vrunv(compinst:program(), table.join(compflags,
-                        {"/P", "-TP", file,  "/Fi" .. ifile}), {envs = msvc:runenvs()})
-                    local content = io.readfile(ifile)
-                    os.rm(ifile)
-                    return content
-                end)
-            end
-            changed = true
+                local compflags = compinst:compflags({sourcefile = file, target = target})
+                local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
+                os.vrunv(compinst:program(), table.join(compflags,
+                    {"/P", "-TP", file,  "/Fi" .. ifile}), {envs = msvc:runenvs()})
+                local content = io.readfile(ifile)
+                os.rm(ifile)
+                return content
+            end)
+        end
+        changed = true
 
-            local dependinfo = io.readfile(jsonfile)
-            return { moduleinfo = dependinfo }
-        end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt()})
-    end
+        local dependinfo = io.readfile(jsonfile)
+        return { moduleinfo = dependinfo }
+    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt()})
     return changed
 end
 
