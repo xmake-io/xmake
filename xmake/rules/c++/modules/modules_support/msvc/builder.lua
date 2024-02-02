@@ -32,67 +32,78 @@ import("compiler_support")
 import(".builder", {inherit = true})
 
 -- get flags for building a module
-function _make_modulebuildflags(target, provide, bmifile, sourcefile, objectfile, opt)
+function _make_modulebuildflags(target, provide, bmifile, opt)
     local ifcoutputflag = compiler_support.get_ifcoutputflag(target)
     local ifconlyflag = compiler_support.get_ifconlyflag(target)
     local interfaceflag = compiler_support.get_interfaceflag(target)
     local internalpartitionflag = compiler_support.get_internalpartitionflag(target)
-    local objectfile_or_ifconlyflag = (opt.external and ifconlyflag) and ifconlyflag or "-Fo" .. objectfile
+    local ifconly = (opt.external and ifconlyflag)
 
     local flags
     if provide then -- named module
-        flags = {"-TP", ifcoutputflag, bmifile, provide.interface and interfaceflag or internalpartitionflag, objectfile_or_ifconlyflag, "-c", sourcefile}
+        flags = table.join({"-TP", ifcoutputflag, bmifile, provide.interface and interfaceflag or internalpartitionflag}, ifconly or {})
     else
-        flags = {"-TP", objectfile_or_ifconlyflag, "-c", sourcefile}
+        flags = {"-TP"}
     end
     return flags
 end
 
 -- get flags for building a headerunit
-function _make_headerunitflags(target, headerunit, bmifile, opt)
+function _make_headerunitflags(target, headerunit, bmifile)
 
     -- get flags
     local exportheaderflag = compiler_support.get_exportheaderflag(target)
     local headernameflag = compiler_support.get_headernameflag(target)
     local ifcoutputflag = compiler_support.get_ifcoutputflag(target)
+    local ifconlyflag = compiler_support.get_ifconlyflag(target)
     assert(headernameflag and exportheaderflag, "compiler(msvc): does not support c++ header units!")
 
     local local_directory = (headerunit.type == ":quote") and {"-I" .. path.directory(headerunit.path)} or {}
     local flags = table.join(local_directory, {"-TP",
                                                exportheaderflag,
                                                headernameflag .. headerunit.type,
+                                               headerunit.type == ":angle" and headerunit.name or headerunit.path,
                                                ifcoutputflag,
-                                               bmifile,
-                                               headerunit.type == ":angle" and headerunit.name or headerunit.path})
+                                               bmifile}, ifconlyflag or {})
     return flags
 end
 
 -- do compile
-function _compile(target, flags, sourcefile)
+function _compile(target, flags, sourcefile, outputfile, headerunit)
 
     local dryrun = option.get("dry-run")
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
-    local msvc = target:toolchain("msvc")
     local flags = table.join(compflags or {}, flags)
 
     -- trace
     if option.get("verbose") then
-        print(os.args(table.join(compinst:program(), flags)))
+        if headerunit then
+            print(os.args(compinst:program(), flags))
+        else
+            print(compinst:compcmd(sourcefile, outputfile, {target = target, compflags = flags, rawargs = true}))
+        end
     end
 
     -- do compile
     if not dryrun then
-        os.vrunv(compinst:program(), flags, {envs = msvc:runenvs()})
+        if headerunit then
+            local msvc = target:toolchain("msvc")
+            os.vrunv(compinst:program(), flags, {envs = msvc:runenvs()})
+        else
+            assert(compinst:compile(sourcefile, outputfile, {target = target, compflags = flags}))
+        end
     end
 end
 
 -- do compile for batchcmds
 -- @note we need to use batchcmds:compilev to translate paths in compflags for generator, e.g. -Ixx
-function _batchcmds_compile(batchcmds, target, flags, sourcefile)
+function _batchcmds_compile(batchcmds, target, flags, sourcefile, outputfile)
+    opt = opt or {}
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
-    batchcmds:compilev(table.join(compflags or {}, flags), {compiler = compinst, sourcekind = "cxx"})
+    flags = table.join("-c", compflags or {}, flags, {"/Fo", outputfile, sourcefile})
+    batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx"})
 end
 
 -- get module requires flags
@@ -234,9 +245,9 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
                 local fileconfig = target:fileconfig(opt.cppfile)
                 local external = fileconfig and fileconfig.external
-                local flags = _make_modulebuildflags(target, provide, bmifile, opt.cppfile, opt.objectfile, {external = external})
+                local flags = _make_modulebuildflags(target, provide, bmifile, {external = external})
 
-                _compile(target, flags, opt.cppfile)
+                _compile(target, flags, opt.cppfile, opt.objectfile)
             end
 
             table.insert(dependinfo.files, opt.cppfile)
@@ -264,7 +275,7 @@ function make_module_buildcmds(target, batchcmds, opt)
             local fileconfig = target:fileconfig(opt.cppfile)
                 local external = fileconfig and fileconfig.external
             local flags = _make_modulebuildflags(target, provide, bmifile, opt.cppfile, opt.objectfile, {batchcmds = true, external = external})
-            _batchcmds_compile(batchcmds, target, flags, opt.cppfile)
+            _batchcmds_compile(batchcmds, target, flags, opt.cppfile, objectfile)
         end
     end
     batchcmds:add_depfiles(opt.cppfile)
@@ -295,7 +306,7 @@ function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmif
 
                 if opt.build then
                     progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
-                    _compile(target, _make_headerunitflags(target, headerunit, bmifile, {}), name)
+                    _compile(target, _make_headerunitflags(target, headerunit, bmifile), name, target:objectfile(headerunit.path), true)
                 end
 
                 table.insert(dependinfo.files, headerunit.path)
@@ -313,7 +324,7 @@ function make_headerunit_buildcmds(target, batchcmds, headerunit, bmifile, outpu
     if opt.build then
         local name = headerunit.unique and headerunit.name or headerunit.path
         batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), name)
-        _batchcmds_compile(batchcmds, target, _make_headerunitflags(target, headerunit, bmifile, {batchcmds = true, bmifile = bmifile}))
+        _batchcmds_compile(batchcmds, target, _make_headerunitflags(target, headerunit, bmifile), target:objectfile(headerunit.path))
     end
     batchcmds:add_depfiles(headerunit.path)
     return os.mtime(bmifile)

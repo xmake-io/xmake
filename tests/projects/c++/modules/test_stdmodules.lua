@@ -13,15 +13,15 @@ end
 
 function main(t)
     if is_subhost("windows") then
-        -- local clang = find_tool("clang", {version = true})
-        -- if clang and clang.version and semver.compare(clang.version, "18.0") >= 0 then
+        local clang = find_tool("clang", {version = true})
+        if clang and clang.version and semver.compare(clang.version, "18.0") >= 0 then
+            -- clang don't support msstl std modules atm
             -- os.exec("xmake f --toolchain=clang -c --yes")
             -- _build()
-            -- clang don't support libc++ std modules atm
-            -- os.exec("xmake clean -a")
-            -- os.exec("xmake f --toolchain=clang --runtimes=c++_shared -c --yes")
-            -- _build()
-        -- end
+            os.exec("xmake clean -a")
+            os.exec("xmake f --toolchain=clang --runtimes=c++_shared -c --yes")
+            _build()
+        end
         local msvc = toolchain.load("msvc")
         if msvc and msvc:check() then
             local vcvars = msvc:config("vcvars")
@@ -44,16 +44,15 @@ function main(t)
             -- os.exec("xmake f -c --yes")
             -- _build()
         -- end
-        -- local clang = find_tool("clang", {version = true})
-        -- if clang and clang.version and semver.compare(clang.version, "18.0") >= 0 then
+        local clang = find_tool("clang", {version = true})
+        if clang and clang.version and semver.compare(clang.version, "18.0") >= 0 then
             -- clang don't support libstdc++ std modules atm
             -- os.exec("xmake clean -a")
             -- os.exec("xmake f --toolchain=clang -c --yes")
             -- _build()
-            -- clang don't support libc++ std modules atm
-            -- os.exec("xmake clean -a")
-            -- os.exec("xmake f --toolchain=clang --runtimes=c++_shared -c --yes")
-            -- _build()
-        -- end
+            os.exec("xmake clean -a")
+            os.exec("xmake f --toolchain=clang --runtimes=c++_shared -c --yes")
+            _build()
+        end
     end
 end
