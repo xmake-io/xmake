@@ -56,6 +56,61 @@ function load(target)
     end
 end
 
+-- strip flags that doesn't affect bmi generation
+function strip_flags(flags)
+    -- speculative list as there is no resource that list flags that prevent reusability, this list will likely be improve over time
+    -- @see https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-alphabetically?view=msvc-170
+    local strippable_flags = {
+        "I",
+        "TP",
+        "errorReport",
+        "W",
+        "w",
+        "sourceDependencies",
+        "scanDependencies",
+        "reference", 
+        "PD",
+        "nologo",
+        "MP",
+        "internalPartition",
+        "interface",
+        "ifcOutput",
+        "help",
+        "headerUnit",
+        "headerName",
+        "Fp",
+        "Fo",
+        "Fm",
+        "Fe",
+        "Fd",
+        "FC",
+        "exportHeader",
+        "EP",
+        "E",
+        "doc",
+        "diagnostics",
+        "cgthreads",
+        "C",
+        "analyze",
+        "?",
+    }
+    local output = {}
+    for _, flag in ipairs(flags) do
+        local strip = false
+        for _, _flag in ipairs(strippable_flags) do
+            if flag:startswith("cl::-" .. _flag) or flag:startswith("cl::/" .. _flag) or
+               flag:startswith("-" .. _flag) or flag:startswith("/" .. _flag) then
+                strip = true
+                break
+            end
+        end
+        if not strip then
+            table.insert(output, flag)
+        end
+    end
+    return output
+end
+
 -- provide toolchain include dir for stl headerunit when p1689 is not supported
 function toolchain_includedirs(target)
     for _, toolchain_inst in ipairs(target:toolchains()) do
@@ -88,7 +143,6 @@ function get_stdmodules(target)
             end
         end
     end
-    return {}
 end
 
 function get_bmi_extension()

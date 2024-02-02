@@ -207,7 +207,7 @@ function get_module_required_defines(target, sourcefile)
 end
 
 -- build module file for batchjobs
-function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
+function make_module_buildjobs(target, batchjobs, job_name, deps, mark_build, should_build, opt)
 
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
@@ -215,9 +215,27 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
     return {
         name = job_name,
-        deps = deps,
+        deps = table.join(target:name() .. "_populate_job", deps),
         sourcefile = opt.cppfile,
         job = batchjobs:newjob(name or opt.cppfile, function(index, total)
+
+            if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+                return
+            end
+
+            local build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+
+            -- needed to detect rebuild of dependencies
+            if provide and build then
+                mark_build(target, name)
+            end
+
+            local fileconfig = target:fileconfig(opt.cppfile)
+            local external = fileconfig and fileconfig.external
+            if not external or name == "std" or name == "std.compat" then
+                -- add objectfile if module is not from external dep
+                target:add("objectfiles", opt.objectfile)
+            end
 
             local compinst = compiler.load("cxx", {target = target})
             local compflags = compinst:compflags({sourcefile = opt.cppfile, target = target})
@@ -233,21 +251,23 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
             local depvalues = {compinst:program(), compflags}
 
             -- compile if it's a named module
-            if opt.build and (provide or compiler_support.has_module_extension(opt.cppfile)) then
-                progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+            if build then
+                if(provide or compiler_support.has_module_extension(opt.cppfile)) then
+                    progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
 
-                if not dryrun then
-                    local objectdir = path.directory(opt.objectfile)
-                    if not os.isdir(objectdir) then
-                        os.mkdir(objectdir)
+                    if not dryrun then
+                        local objectdir = path.directory(opt.objectfile)
+                        if not os.isdir(objectdir) then
+                            os.mkdir(objectdir)
+                        end
                     end
+
+                    local flags = _make_modulebuildflags(target, provide, bmifile, opt.cppfile, opt.objectfile, {external = external})
+
+                    _compile(target, flags, opt.cppfile)
+                else
+                    os.rm(opt.objectfile) -- force rebuild .cpp files
                 end
-
-                local fileconfig = target:fileconfig(opt.cppfile)
-                local external = fileconfig and fileconfig.external
-                local flags = _make_modulebuildflags(target, provide, bmifile, {external = external})
-
-                _compile(target, flags, opt.cppfile, opt.objectfile)
             end
 
             table.insert(dependinfo.files, opt.cppfile)
@@ -257,29 +277,47 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 end
 
 -- build module file for batchcmds
-function make_module_buildcmds(target, batchcmds, opt)
+function make_module_buildcmds(target, batchcmds, mark_build, should_build, opt)
 
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
+
+    if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+        return
+    end
+
+    local build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+
+    -- needed to detect rebuild of dependencies
+    if provide and build then
+        mark_build(target, name)
+    end
+
+    local fileconfig = target:fileconfig(opt.cppfile)
+    local external = fileconfig and fileconfig.external
+    if not external or name == "std" or name == "std.compat" then
+        -- add objectfile if module is not from external dep
+        target:add("objectfiles", opt.objectfile)
+    end
 
     -- append requires flags
     if opt.module.requires then
         _append_requires_flags(target, opt.module, name, opt.cppfile, bmifile, opt)
     end
 
-    if opt.build then
+    if build then
         if provide or compiler_support.has_module_extension(opt.cppfile) then
             batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
             batchcmds:mkdir(path.directory(opt.objectfile))
 
-            local fileconfig = target:fileconfig(opt.cppfile)
-                local external = fileconfig and fileconfig.external
             local flags = _make_modulebuildflags(target, provide, bmifile, opt.cppfile, opt.objectfile, {batchcmds = true, external = external})
-            _batchcmds_compile(batchcmds, target, flags, opt.cppfile, objectfile)
+            _batchcmds_compile(batchcmds, target, flags, opt.cppfile)
+        else
+            batchcmds:rm(opt.objectfile) -- force rebuild .cpp files
         end
     end
     batchcmds:add_depfiles(opt.cppfile)
-   return os.mtime(opt.objectfile)
+    return os.mtime(opt.objectfile)
 end
 
 -- build headerunit file for batchjobs

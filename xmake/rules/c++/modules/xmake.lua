@@ -76,7 +76,12 @@ rule("c++.build.modules.builder")
             end
 
             -- append std module
-            table.join2(sourcebatch.sourcefiles, compiler_support.get_stdmodules(target) or {})
+            local std_modules = compiler_support.get_stdmodules(target)
+            if std_modules then
+                table.join2(sourcebatch.sourcefiles, compiler_support.get_stdmodules(target) or {})
+                target:fileconfig_add(std_modules[1], {external = true})
+                target:fileconfig_add(std_modules[2], {external = true})
+            end
 
             -- extract packages modules dependencies
             local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)

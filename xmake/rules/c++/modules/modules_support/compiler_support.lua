@@ -49,6 +49,10 @@ function load(target)
     _compiler_support(target).load(target)
 end
 
+function strip_flags(target, flags)
+    return _compiler_support(target).strip_flags(flags)
+end
+
 -- patch sourcebatch
 function patch_sourcebatch(target, sourcebatch)
     sourcebatch.sourcekind = "cxx"
