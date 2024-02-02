@@ -23,6 +23,7 @@ import("core.base.semver")
 import("core.base.option")
 import("core.base.json")
 import("lib.detect.find_tool")
+import("lib.detect.find_file")
 import(".compiler_support", {inherit = true})
 
 -- get includedirs for stl headers
@@ -197,7 +198,6 @@ function get_clang_scan_deps(target)
     return clang_scan_deps or nil
 end
 
--- not supported atm
 function get_stdmodules(target)
     if target:policy("build.c++.modules.std") then
         local cpplib = _get_cpplibrary_name(target)
@@ -205,7 +205,7 @@ function get_stdmodules(target)
             if cpplib == "c++" then
                 local clang_path = path.directory(get_clang_path(target))
                 local clang_lib_path = path.normalize(path.join(clang_path, "..", "lib"))
-                local modules_json_path = os.files(path.join(clang_lib_path, "**.modules.json"))[1]
+                local modules_json_path = find_file("**.modules.json", clang_lib_path)
                 if modules_json_path then
                     local modules_json = json.decode(io.readfile(modules_json_path))
 
