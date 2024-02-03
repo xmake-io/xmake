@@ -40,6 +40,7 @@ function _translate_local_path_in_deps(cargotoml, rootdir)
         if not path.is_absolute(localpath) then
             localpath = path.absolute(localpath, rootdir)
         end
+        localpath = localpath:gsub("\\", "/")
         return "path = \"" .. localpath .. "\""
     end)
     io.writefile(cargotoml, content)
