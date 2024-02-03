@@ -418,8 +418,9 @@ function sort_modules_by_dependencies(objectfiles, modules)
     for _, objectfile in ipairs(sorted) do
         table.insert(output, objectfile)
     end
+    local _objectfiles = hashset.from(objectfiles)
     for _, objectfile in ipairs(objectfiles) do
-        if not table.find(sorted, objectfile) then
+        if not _objectfiles:has(objectfile) then
             table.insert(output, objectfile)
         end
     end
