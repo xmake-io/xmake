@@ -47,16 +47,9 @@ function _build_modules(target, sourcebatch, modules, opt)
 
         local fileconfig = target:fileconfig(cppfile)
         local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
-        local build = _should_build(target, cppfile, bmifile, {objectfile = objectfile, requires = module.requires})
-
         -- add objectfile if module is not from external dep
         if not (fileconfig and fileconfig.external) then
             target:add("objectfiles", objectfile)
-        end
-
-        -- needed to detect rebuild of dependencies
-        if provide and build then
-            _mark_build(target, name)
         end
 
         local deps = {}
@@ -64,7 +57,7 @@ function _build_modules(target, sourcebatch, modules, opt)
             table.insert(deps, opt.batchjobs and target:name() .. dep or dep)
         end
 
-        opt.build_module(deps, build, module, name, provide, objectfile, cppfile, fileconfig)
+        opt.build_module(deps, module, name, provide, objectfile, cppfile, fileconfig)
 
         ::CONTINUE::
     end
@@ -112,23 +105,21 @@ function _should_build(target, sourcefile, bmifile, opt)
         end
     end
 
-    -- or rebuild it if the file changed for headerunit and namedmodules
+    -- or rebuild it if the file changed
     local objectfile = opt.objectfile
-    if compiler_support.has_module_extension(sourcefile) or (opt and opt.headerunit) then
-        local dryrun = option.get("dry-run")
-        local compinst = compiler.load("cxx", {target = target})
-        local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
+    local dryrun = option.get("dry-run")
+    local compinst = compiler.load("cxx", {target = target})
+    local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
 
-        local dependfile = target:dependfile(bmifile or objectfile)
-        local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
+    local dependfile = target:dependfile(bmifile or objectfile)
+    local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
 
-        -- need build this object?
-        local depvalues = {compinst:program(), compflags}
-        local lastmtime = os.isfile(bmifile or objectfile) and os.mtime(dependfile) or 0
+    -- need build this object?
+    local depvalues = {compinst:program(), compflags}
+    local lastmtime = os.isfile(bmifile or objectfile) and os.mtime(dependfile) or 0
 
-        if dryrun or depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
-            return true
-        end
+    if dryrun or depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
+        return true
     end
 
     return false
@@ -207,10 +198,10 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
 
     local modulesjobs = {}
     _build_modules(target, sourcebatch, modules, table.join(opt, {
-       build_module = function(deps, build, module, name, provide, objectfile, cppfile, fileconfig)
+       build_module = function(deps, module, name, provide, objectfile, cppfile, fileconfig)
         local job_name = name and target:name() .. name or cppfile
 
-        modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps, {build = build, module = module, objectfile = objectfile, cppfile = cppfile})
+        modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps, _should_build, _mark_build, {module = module, objectfile = objectfile, cppfile = cppfile})
 
         if provide and fileconfig and fileconfig.public then
             batchjobs:addjob(name .. "_metafile", function(index, total)

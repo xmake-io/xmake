@@ -207,7 +207,7 @@ function get_module_required_defines(target, sourcefile)
 end
 
 -- build module file for batchjobs
-function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
+function make_module_buildjobs(target, batchjobs, job_name, deps, should_build, mark_build, opt)
 
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
@@ -229,6 +229,13 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                 target:fileconfig_add(opt.cppfile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
             end
 
+            local build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+
+            -- needed to detect rebuild of dependencies
+            if provide and build then
+                mark_build(target, name)
+            end
+
             local dependfile = target:dependfile(bmifile or opt.objectfile)
             local dependinfo = depend.load(dependfile) or {}
             dependinfo.files = {}
@@ -245,6 +252,8 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                     local flags = _make_modulebuildflags(target, opt)
                     _compile(target, flags, opt.cppfile, opt.objectfile)
                     os.tryrm(module_mapper)
+                else
+                    os.tryrm(opt.objectfile) -- force rebuild for .cpp files
                 end
             end
             table.insert(dependinfo.files, opt.cppfile)
@@ -254,7 +263,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 end
 
 -- build module file for batchcmds
-function make_module_buildcmds(target, batchcmds, opt)
+function make_module_buildcmds(target, batchcmds, should_build, mark_build, opt)
 
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
     local module_mapperflag = compiler_support.get_modulemapperflag(target)
@@ -266,7 +275,14 @@ function make_module_buildcmds(target, batchcmds, opt)
         target:fileconfig_add(opt.cppfile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
     end
 
-    if opt.build then
+    local build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+
+    -- needed to detect rebuild of dependencies
+    if provide and build then
+        mark_build(target, name)
+    end
+
+    if build then
         -- compile if it's a named module
         if provide or compiler_support.has_module_extension(opt.cppfile) then
             batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
@@ -275,6 +291,8 @@ function make_module_buildcmds(target, batchcmds, opt)
             end
             batchcmds:mkdir(path.directory(opt.objectfile))
             _batchcmds_compile(batchcmds, target, _make_modulebuildflags(target, {batchcmds = true, sourcefile = opt.cppfile}), opt.cppfile, opt.objectfile)
+        else
+            batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files
         end
     end
     batchcmds:add_depfiles(opt.cppfile)
