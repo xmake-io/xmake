@@ -191,12 +191,14 @@ function _has_static_libstdcxx(self)
     return has_static_libstdcxx
 end
 
-function _get_llvm_path()
+function _get_llvm_path(self)
     local llvm_path = _g._LLVM_PATH
     if llvm_path == nil then
-        local out, _ = os.iorun("clang -print-resource-dir")
-        llvm_path = path.normalize(path.join(out, "..", "..", ".."))
-        _g._LLVM_PATH = llvm_path
+        local out, _ = try { function() return os.iorun(self:program() .. " -print-resource-dir") end }
+        if out then
+            llvm_path = path.normalize(path.join(out, "..", "..", ".."))
+        end
+        _g._LLVM_PATH = llvm_path or false
     end
     return llvm_path
 end
@@ -207,7 +209,7 @@ function nf_runtime(self, runtime, opt)
     opt = opt or {}
     local maps
     local kind = self:kind()
-    local clang_path = _get_llvm_path()
+    local clang_path = _get_llvm_path(self)
     if self:is_plat("windows") and runtime then
         if not _has_ms_runtime_lib(self) then
             if runtime:startswith("MD") then
@@ -240,7 +242,7 @@ function nf_runtime(self, runtime, opt)
             maps["stdc++_shared"] = "-stdlib=libstdc++"
             -- clang on windows fail to add libc++ includepath when using -stdlib=libc++ so we manually add it
             -- @see https://github.com/llvm/llvm-project/issues/79647
-            if is_plat("windows") then
+            if self:is_plat("windows") then
                 maps["c++_static"] = table.join(maps["c++_static"], "-cxx-isystem" .. path.join(clang_path, "include", "c++", "v1"))
                 maps["c++_shared"] = table.join(maps["c++_shared"], "-cxx-isystem" .. path.join(clang_path, "include", "c++", "v1"))
             end
@@ -253,7 +255,7 @@ function nf_runtime(self, runtime, opt)
                 maps["stdc++_shared"] = "-stdlib=libstdc++"
                 -- clang on windows fail to add libc++ librarypath when using -stdlib=libc++ so we manually add it
                 -- @see https://github.com/llvm/llvm-project/issues/79647
-                if is_plat("windows") then
+                if self:is_plat("windows") then
                     maps["c++_static"] = table.join(maps["c++_static"], "-L" .. path.join(clang_path, "lib"))
                     maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. path.join(clang_path, "lib"))
                 end
