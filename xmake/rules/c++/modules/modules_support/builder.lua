@@ -228,8 +228,8 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
 
     -- build modules
     _build_modules(target, sourcebatch, modules, table.join(opt, {
-       build_module = function(_, build, module, name, provide, objectfile, cppfile, fileconfig)
-          depmtime = math.max(depmtime, _builder(target).make_module_buildcmds(target, batchcmds, {build = build, module = module, cppfile = cppfile, objectfile = objectfile, progress = opt.progress}))
+       build_module = function(_, module, name, provide, objectfile, cppfile, fileconfig)
+          depmtime = math.max(depmtime, _builder(target).make_module_buildcmds(target, batchcmds, _should_build, _mark_build, {module = module, cppfile = cppfile, objectfile = objectfile, progress = opt.progress}))
 
           if provide and fileconfig and fileconfig.public then
               local metafilepath = compiler_support.get_metafile(target, cppfile)
