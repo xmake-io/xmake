@@ -198,6 +198,9 @@ function _get_llvm_rootdir(self)
         local outdata = try { function() return os.iorun(self:program() .. " -print-resource-dir") end }
         if outdata then
             llvm_rootdir = path.normalize(path.join(outdata:trim(), "..", "..", ".."))
+            if not os.isdir(llvm_rootdir) then
+                llvm_rootdir = nil
+            end
         end
         _g._LLVM_ROOTDIR = llvm_rootdir or false
     end
@@ -244,8 +247,10 @@ function nf_runtime(self, runtime, opt)
             -- @see https://github.com/llvm/llvm-project/issues/79647
             if self:is_plat("windows") then
                 local llvm_rootdir = _get_llvm_rootdir(self)
-                maps["c++_static"] = table.join(maps["c++_static"], "-cxx-isystem" .. path.join(llvm_rootdir, "include", "c++", "v1"))
-                maps["c++_shared"] = table.join(maps["c++_shared"], "-cxx-isystem" .. path.join(llvm_rootdir, "include", "c++", "v1"))
+                if llvm_rootdir then
+                    maps["c++_static"] = table.join(maps["c++_static"], "-cxx-isystem" .. path.join(llvm_rootdir, "include", "c++", "v1"))
+                    maps["c++_shared"] = table.join(maps["c++_shared"], "-cxx-isystem" .. path.join(llvm_rootdir, "include", "c++", "v1"))
+                end
             end
         elseif kind == "ld" or kind == "sh" then
             local target = opt.target
@@ -258,8 +263,10 @@ function nf_runtime(self, runtime, opt)
                 -- @see https://github.com/llvm/llvm-project/issues/79647
                 if self:is_plat("windows") then
                     local llvm_rootdir = _get_llvm_rootdir(self)
-                    maps["c++_static"] = table.join(maps["c++_static"], "-L" .. path.join(llvm_rootdir, "lib"))
-                    maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. path.join(llvm_rootdir, "lib"))
+                    if llvm_rootdir then
+                        maps["c++_static"] = table.join(maps["c++_static"], "-L" .. path.join(llvm_rootdir, "lib"))
+                        maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. path.join(llvm_rootdir, "lib"))
+                    end
                 end
                 if runtime:endswith("_static") and _has_static_libstdcxx(self) then
                     maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
