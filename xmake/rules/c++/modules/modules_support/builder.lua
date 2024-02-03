@@ -255,7 +255,9 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
     batchjobs:group_enter(target:name() .. "/build_modules", {rootjob = opt.rootjob})
 
     local populate_job = batchjobs:addjob(target:name() .. "_populate_module_map", function(_, _)
-        _try_reuse_modules(target, modules)
+        if target:policy("build.c++.modules.tryreuse") then
+            _try_reuse_modules(target, modules)
+        end
         _builder(target).populate_module_map(target, modules)
     end, {rootjob = opt.rootjob})
 

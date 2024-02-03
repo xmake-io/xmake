@@ -66,6 +66,8 @@ function policy.policies()
             ["build.c++.modules"]                 = {description = "Enable C++ modules for C++ building.", type = "boolean"},
             -- Enable std module
             ["build.c++.modules.std"]             = {description = "Enable std modules.", default = true, type = "boolean"},
+            -- Try to reuse compiled module bmi file if targets flags permit it
+            ["build.c++.modules.tryreuse"]        = {description = "Try to reuse compiled module if possible.", default = true, type = "boolean"},
             -- Force C++ modules fallback dependency scanner for clang
             ["build.c++.clang.fallbackscanner"]   = {description = "Force clang fallback module dependency scanner.", default = false, type = "boolean"},
             -- Force C++ modules fallback dependency scanner for msvc
