@@ -412,7 +412,7 @@ function sort_modules_by_dependencies(objectfiles, modules)
         end
         local name, _, cppfile = compiler_support.get_provided_module(modules[cycle[1]])
         table.insert(names, name or cppfile)
-        os.raise("circular modules dependency detected!\n%s", table.concat(names, "\n   -> import "))
+        raise("circular modules dependency detected!\n%s", table.concat(names, "\n   -> import "))
     end
     local sorted = dag:topological_sort()
     for _, objectfile in ipairs(sorted) do
