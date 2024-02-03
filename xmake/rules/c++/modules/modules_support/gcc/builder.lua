@@ -222,18 +222,18 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, should_build, 
             local compinst = compiler.load("cxx", {target = target})
             local compflags = compinst:compflags({sourcefile = opt.cppfile, target = target})
 
-            -- generate and append module mapper file
-            local module_mapper
-            if provide or opt.module.requires then
-                module_mapper = _generate_modulemapper_file(target, opt.module)
-                target:fileconfig_add(opt.cppfile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
-            end
-
             local build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
 
             -- needed to detect rebuild of dependencies
             if provide and build then
                 mark_build(target, name)
+            end
+
+            -- generate and append module mapper file
+            local module_mapper
+            if provide or opt.module.requires then
+                module_mapper = _generate_modulemapper_file(target, opt.module)
+                target:fileconfig_add(opt.cppfile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
             end
 
             local dependfile = target:dependfile(bmifile or opt.objectfile)
@@ -266,20 +266,21 @@ end
 function make_module_buildcmds(target, batchcmds, should_build, mark_build, opt)
 
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
+    local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
     local module_mapperflag = compiler_support.get_modulemapperflag(target)
-
-    -- generate and append module mapper file
-    local module_mapper
-    if provide or opt.module.requires then
-        module_mapper = _generate_modulemapper_file(target, opt.module)
-        target:fileconfig_add(opt.cppfile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
-    end
 
     local build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
 
     -- needed to detect rebuild of dependencies
     if provide and build then
         mark_build(target, name)
+    end
+
+    -- generate and append module mapper file
+    local module_mapper
+    if provide or opt.module.requires then
+        module_mapper = _generate_modulemapper_file(target, opt.module)
+        target:fileconfig_add(opt.cppfile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
     end
 
     if build then
