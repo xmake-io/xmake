@@ -205,16 +205,23 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, should_build, 
             local compinst = compiler.load("cxx", {target = target})
             local compflags = compinst:compflags({sourcefile = opt.cppfile, target = target})
 
+            if provide or compiler_support.has_module_extension(opt.cppfile) then
+                build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+
+                -- needed to detect rebuild of dependencies
+                if provide and build then
+                    mark_build(target, name)
+                end
+            end
+
             -- append requires flags
             if opt.module.requires then
                 _append_requires_flags(target, opt.module, name, opt.cppfile, bmifile, opt)
             end
 
-            local build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
-
-            -- needed to detect rebuild of dependencies
-            if provide and build then
-                mark_build(target, name)
+            -- for cpp file we need to check after appendings the flags
+            if build == nil then
+                build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
             end
 
             local dependfile = target:dependfile(bmifile or opt.objectfile)
@@ -261,16 +268,23 @@ function make_module_buildcmds(target, batchcmds, should_build, mark_build, opt)
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
 
+    if provide or compiler_support.has_module_extension(opt.cppfile) then
+        build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+
+        -- needed to detect rebuild of dependencies
+        if provide and build then
+            mark_build(target, name)
+        end
+    end
+
     -- append requires flags
     if opt.module.requires then
         _append_requires_flags(target, opt.module, name, opt.cppfile, bmifile, opt)
     end
 
-    local build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
-
-    -- needed to detect rebuild of dependencies
-    if provide and build then
-        mark_build(target, name)
+    -- for cpp file we need to check after appendings the flags
+    if build == nil then
+        build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
     end
 
     if build then
