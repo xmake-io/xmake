@@ -1,9 +1,9 @@
 import("lib.detect.find_tool")
 import("core.base.semver")
+import("utils.ci.is_running", {alias = "ci_is_running"})
 
 function _build()
-    local ci = (os.getenv("CI") or os.getenv("GITHUB_ACTIONS") or ""):lower()
-    if ci == "true" then
+    if ci_is_running() then
         os.exec("xmake -rvD")
     else
         os.exec("xmake -r")
