@@ -5,9 +5,9 @@ import("utils.ci.is_running", {alias = "ci_is_running"})
 
 function _build()
     if ci_is_running() then
-        os.exec("xmake -rvD")
+        os.run("xmake -rvD")
     else
-        os.exec("xmake -r")
+        os.run("xmake -r")
     end
 end
 
