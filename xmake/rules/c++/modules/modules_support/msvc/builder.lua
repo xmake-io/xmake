@@ -262,9 +262,9 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, mark_build, sh
                         end
                     end
 
-                    local flags = _make_modulebuildflags(target, provide, bmifile, opt.cppfile, opt.objectfile, {external = external})
+                    local flags = _make_modulebuildflags(target, provide, bmifile, {external = external})
 
-                    _compile(target, flags, opt.cppfile)
+                    _compile(target, flags, opt.cppfile, opt.objectfile)
                 else
                     os.rm(opt.objectfile) -- force rebuild .cpp files
                 end
@@ -310,8 +310,8 @@ function make_module_buildcmds(target, batchcmds, mark_build, should_build, opt)
             batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
             batchcmds:mkdir(path.directory(opt.objectfile))
 
-            local flags = _make_modulebuildflags(target, provide, bmifile, opt.cppfile, opt.objectfile, {batchcmds = true, external = external})
-            _batchcmds_compile(batchcmds, target, flags, opt.cppfile)
+            local flags = _make_modulebuildflags(target, provide, bmifile, {external = external})
+            _batchcmds_compile(batchcmds, target, flags, opt.cppfile, opt.objectfile)
         else
             batchcmds:rm(opt.objectfile) -- force rebuild .cpp files
         end
