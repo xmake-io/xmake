@@ -37,7 +37,7 @@ function _make_modulebuildflags(target, provide, bmifile, opt)
     local ifconlyflag = compiler_support.get_ifconlyflag(target)
     local interfaceflag = compiler_support.get_interfaceflag(target)
     local internalpartitionflag = compiler_support.get_internalpartitionflag(target)
-    local ifconly = (opt.external and ifconlyflag)
+    local ifconly = (not opt.build_objectfile and ifconlyflag)
 
     local flags
     if provide then -- named module
@@ -259,9 +259,8 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                         end
                     end
 
-                    local fileconfig = target:fileconfig(opt.cppfile)
-                    local external = fileconfig and fileconfig.external
-                    local flags = _make_modulebuildflags(target, provide, bmifile, {external = external})
+                local build_objectfile = target:kind() == "binary"
+                local flags = _make_modulebuildflags(target, provide, bmifile, {build_objectfile = build_objectfile})
 
                     _compile(target, flags, opt.cppfile, opt.objectfile)
                 else
@@ -307,10 +306,9 @@ function make_module_buildcmds(target, batchcmds, should_build, mark_build, opt)
             batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
             batchcmds:mkdir(path.directory(opt.objectfile))
 
-            local fileconfig = target:fileconfig(opt.cppfile)
-                local external = fileconfig and fileconfig.external
-            local flags = _make_modulebuildflags(target, provide, bmifile, opt.cppfile, opt.objectfile, {batchcmds = true, external = external})
-            _batchcmds_compile(batchcmds, target, flags, opt.cppfile, objectfile)
+            local build_objectfile = target:kind() == "binary"
+            local flags = _make_modulebuildflags(target, provide, bmifile, opt.cppfile, {batchcmds = true, build_objectfile = build_objectfile})
+            _batchcmds_compile(batchcmds, target, flags, opt.cppfile, opt.objectfile)
         else
             batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files
         end
