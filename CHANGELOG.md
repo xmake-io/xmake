@@ -6,7 +6,6 @@
 
 * [#4544](https://github.com/xmake-io/xmake/issues/4544): Support to wait process timeout for `xmake test`
 * [#4606](https://github.com/xmake-io/xmake/pull/4606): Add `add_versionfiles` api in package
-* [#4606](https://github.com/xmake-io/xmake/pull/4606): Add `add_versionfiles` api in package
 
 ### Changes
 
