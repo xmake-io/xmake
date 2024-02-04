@@ -21,6 +21,7 @@
 -- imports
 import("core.base.json")
 import("core.base.hashset")
+import("core.base.graph")
 import("core.base.option")
 import("async.runjobs")
 import("compiler_support")
@@ -171,110 +172,24 @@ function _parse_dependencies_data(target, moduleinfos)
     return modules
 end
 
-
--- check circular dependencies for the given module
-function _check_circular_dependencies_of_module(name, moduledeps, modulesources, depspath)
-    for _, dep in ipairs(moduledeps[name]) do
-        local depinfo = moduledeps[dep]
-        if depinfo then
-            local depspath_sub
-            if depspath then
-                for idx, name in ipairs(depspath) do
-                    if name == dep then
-                        local circular_deps = table.slice(depspath, idx)
-                        table.insert(circular_deps, dep)
-                        local sourceinfo = ""
-                        for _, circular_depname in ipairs(circular_deps) do
-                            local sourcefile = modulesources[circular_depname]
-                            if sourcefile then
-                                sourceinfo = sourceinfo .. ("\n  -> module(%s) in %s"):format(circular_depname, sourcefile)
-                            end
-                        end
-                        os.raise("circular modules dependency(%s) detected!%s", table.concat(circular_deps, ", "), sourceinfo)
-                    end
-                end
-                depspath_sub = table.join(depspath, dep)
-            end
-            _check_circular_dependencies_of_module(dep, moduledeps, modulesources, depspath_sub)
-        end
-    end
-end
-
--- check circular dependencies
--- @see https://github.com/xmake-io/xmake/issues/3031
-function _check_circular_dependencies(modules)
-    local moduledeps = {}
-    local modulesources = {}
-    for _, mod in pairs(modules) do
-        if mod then
-            if mod.provides and mod.requires then
-                for name, provide in pairs(mod.provides) do
-                    modulesources[name] = provide.sourcefile
-                    local deps = moduledeps[name]
-                    if deps then
-                        table.join2(deps, mod.requires)
-                    else
-                        moduledeps[name] = table.keys(mod.requires)
-                    end
-                end
-            end
-        end
-    end
-    for name, _ in pairs(moduledeps) do
-        _check_circular_dependencies_of_module(name, moduledeps, modulesources, {name})
-    end
-end
-
-function _topological_sort_visit(node, nodes, modules, output)
-    if node.marked then
-        return
-    end
-    assert(not node.tempmarked)
-    node.tempmarked = true
-    local m1 = modules[node.objectfile]
-    for _, n in ipairs(nodes) do
-        if not n.tempmarked then
-            local m2 = modules[n.objectfile]
-            if m2 then
-                for name, _ in pairs(m1.provides) do
-                    if m2.requires and m2.requires[name] then
-                        _topological_sort_visit(n, nodes, modules, output)
-                    end
-                end
-            end
-        end
-    end
-    node.tempmarked = false
-    node.marked = true
-    table.insert(output, 1, node.objectfile)
-end
-
-function _topological_sort_has_node_without_mark(nodes)
-    for _, node in ipairs(nodes) do
-        if not node.marked then
-            return true
-        end
-    end
-    return false
-end
-
-function _topological_sort_get_first_unmarked_node(nodes)
-    for _, node in ipairs(nodes) do
-        if not node.marked and not node.tempmarked then
-            return node
-        end
-    end
-end
-
-function _fill_needed_module(target, modules, module)
-    local needed_modules = {}
-
-    for required_name, required_module in pairs(module.requires) do
-        table.insert(needed_modules, required_name)
-        table.join2(needed_modules, _fill_needed_module(target, modules, required_module))
-    end
-
-    return needed_modules
+-- generate edges for DAG
+function _get_edges(nodes, modules)
+  local edges = {}
+  for _, node in ipairs(nodes) do
+      local module = modules[node]
+      if module.requires then
+          for required_name, _ in pairs(module.requires) do
+              for _, required_node in ipairs(nodes) do
+                  local name, _, _ = compiler_support.get_provided_module(modules[required_node])
+                  if name and name == required_name then
+                      table.insert(edges, {node, required_node})
+                      break
+                  end
+              end
+          end
+      end
+  end
+  return edges
 end
 
 function _get_package_modules(target, package, opt)
@@ -318,10 +233,6 @@ function get_module_dependencies(target, sourcebatch, opt)
         if changed or modules == nil then
             local moduleinfos = compiler_support.load_moduleinfos(target, sourcebatch)
             modules = _parse_dependencies_data(target, moduleinfos)
-            if modules then
-                _check_circular_dependencies(modules)
-            end
-            modules = cull_unused_modules(target, modules)
             compiler_support.localcache():set2("modules", cachekey, modules)
             compiler_support.localcache():save()
         end
@@ -486,19 +397,34 @@ end
 
 -- topological sort
 function sort_modules_by_dependencies(objectfiles, modules)
-    local output = {}
-    local nodes  = {}
+    local result = {}
+    local edges, nodeps_nodes = _get_edges(objectfiles, modules)
+    local dag = graph.new(true)
+    for _, e in ipairs(edges) do
+        dag:add_edge(e[1], e[2])
+    end
+    local cycle = dag:find_cycle()
+    if cycle then
+        local names = {}
+        for _, objectfile in ipairs(cycle) do
+            local name, _, cppfile = compiler_support.get_provided_module(modules[objectfile])
+            table.insert(names, name or cppfile)
+        end
+        local name, _, cppfile = compiler_support.get_provided_module(modules[cycle[1]])
+        table.insert(names, name or cppfile)
+        raise("circular modules dependency detected!\n%s", table.concat(names, "\n   -> import "))
+    end
+    local objectfiles_sorted = dag:topological_sort()
+    for _, objectfile in ipairs(objectfiles_sorted) do
+        table.insert(result, objectfile)
+    end
+    local objectfiles_sorted_set = hashset.from(objectfiles_sorted)
     for _, objectfile in ipairs(objectfiles) do
-        local m = modules[objectfile]
-        if m then
-            table.insert(nodes, {marked = false, tempmarked = false, objectfile = objectfile})
+        if not objectfiles_sorted_set:has(objectfile) then
+            table.insert(result, objectfile)
         end
     end
-    while _topological_sort_has_node_without_mark(nodes) do
-        local node = _topological_sort_get_first_unmarked_node(nodes)
-        _topological_sort_visit(node, nodes, modules, output)
-    end
-    return output
+    return result
 end
 
 -- get source modulefile for external target deps
@@ -521,11 +447,3 @@ function get_targetdeps_modules(target)
     return sourcefiles
 end
 
--- cull unused packages modules
--- removed named module not used in the translation units
--- when building a library we only cull external modules because we need module objectfiles to be linked inside the library
--- on an executable we cull explicitly referenced module
-function cull_unused_modules(target, modules)
-    -- TODO
-    return modules
-end
