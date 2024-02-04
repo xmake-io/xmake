@@ -222,6 +222,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
             local compinst = compiler.load("cxx", {target = target})
             local compflags = compinst:compflags({sourcefile = opt.cppfile, target = target})
 
+            local build
             if provide or compiler_support.has_module_extension(opt.cppfile) then
                 build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
 
@@ -280,6 +281,7 @@ function make_module_buildcmds(target, batchcmds, should_build, mark_build, opt)
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
 
+    local build
     if provide or compiler_support.has_module_extension(opt.cppfile) then
         build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
 
