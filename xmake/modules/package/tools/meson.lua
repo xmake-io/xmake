@@ -319,13 +319,13 @@ function _get_configs(package, configs, opt)
     -- add runtimes flags
     if package:is_plat("windows") then
         if package:has_runtime("MT") then
-            table.insert(configs, "-Db_vscrt=MT")
+            table.insert(configs, "-Db_vscrt=mt")
         elseif package:has_runtime("MTd") then
-            table.insert(configs, "-Db_vscrt=MTd")
+            table.insert(configs, "-Db_vscrt=mtd")
         elseif package:has_runtime("MD") then
-            table.insert(configs, "-Db_vscrt=MD")
+            table.insert(configs, "-Db_vscrt=md")
         elseif package:has_runtime("MDd") then
-            table.insert(configs, "-Db_vscrt=MDd")
+            table.insert(configs, "-Db_vscrt=mdd")
         end
     end
 
