@@ -77,7 +77,14 @@ function cull_objectfiles(target, modules, sourcebatch)
         local module = modules[objectfile]
         local _, provide, _ = get_provided_module(module)
 
-        if not provide then
+        if provide then
+            local fileconfig = target:fileconfig(sourcefile)
+            local public = fileconfig and fileconfig.public
+            local external = fileconfig and fileconfig.external
+            if not public and not external then
+                table.insert(sourcebatch.objectfiles, objectfile)
+            end
+        else
             table.insert(sourcebatch.objectfiles, objectfile)
         end
     end

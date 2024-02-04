@@ -242,7 +242,10 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                         end
                     end
 
-                local build_objectfile = target:kind() == "binary"
+                local fileconfig = target:fileconfig(opt.cppfile)
+                local public = fileconfig and fileconfig.public
+                local external = fileconfig and fileconfig.external
+                local build_objectfile = target:kind() == "binary" or (not public and not external)
 
                 local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {sourcefile = opt.cppfile, build_objectfile = build_objectfile, name = name})
 
@@ -295,8 +298,13 @@ function make_module_buildcmds(target, batchcmds, opt)
             batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
             batchcmds:mkdir(path.directory(opt.objectfile))
 
-        local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {batchcmds = true, sourcefile = opt.cppfile, build_objectfile = build_objectfile, name = name})
-        _batchcmds_compile(batchcmds, target, first_step, opt.cppfile, precompile and bmifile or opt.objectfile)
+            local fileconfig = target:fileconfig(opt.cppfile)
+            local public = fileconfig and fileconfig.public
+            local external = fileconfig and fileconfig.external
+            local build_objectfile = target:kind() == "binary" or (not public and not external)
+
+            local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {batchcmds = true, sourcefile = opt.cppfile, build_objectfile = build_objectfile, name = name})
+            _batchcmds_compile(batchcmds, target, first_step, opt.cppfile, precompile and bmifile or opt.objectfile)
 
             local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {batchcmds = true, sourcefile = opt.cppfile, external = external, name = name})
             _batchcmds_compile(batchcmds, target, first_step, opt.cppfile, precompile and bmifile or opt.objectfile)

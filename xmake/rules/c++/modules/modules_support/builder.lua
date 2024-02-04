@@ -45,11 +45,6 @@ function _build_modules(target, sourcebatch, modules, opt)
         cppfile = cppfile or module.cppfile
 
         local fileconfig = target:fileconfig(cppfile)
-        local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
-        -- add objectfile if module is not from external dep
-        if not (fileconfig and fileconfig.external) then
-            target:add("objectfiles", objectfile)
-        end
 
         local deps = {}
         for _, dep in ipairs(table.keys(module.requires or {})) do

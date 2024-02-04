@@ -76,7 +76,12 @@ rule("c++.build.modules.builder")
             end
 
             -- append std module
-            table.join2(sourcebatch.sourcefiles, compiler_support.get_stdmodules(target) or {})
+            local std_modules = compiler_support.get_stdmodules(target)
+            if std_modules then
+                table.join2(sourcebatch.sourcefiles, std_modules)
+                target:fileconfig_set(std_modules[1], {external = true})
+                target:fileconfig_set(std_modules[2], {external = true})
+            end
 
             -- extract packages modules dependencies
             local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
@@ -84,7 +89,7 @@ rule("c++.build.modules.builder")
                 -- append to sourcebatch
                 for _, package_module_data in table.orderpairs(package_modules_data) do
                     table.insert(sourcebatch.sourcefiles, package_module_data.file)
-                    target:fileconfig_add(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
+                    target:fileconfig_set(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
                 end
             end
 
@@ -123,7 +128,12 @@ rule("c++.build.modules.builder")
             end
 
             -- append std module
-            table.join2(sourcebatch.sourcefiles, compiler_support.get_stdmodules(target) or {})
+            local std_modules = compiler_support.get_stdmodules(target)
+            if std_modules then
+                table.join2(sourcebatch.sourcefiles, std_modules)
+                target:fileconfig_set(std_modules[1], {external = true})
+                target:fileconfig_set(std_modules[2], {external = true})
+            end
 
             -- extract packages modules dependencies
             local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
@@ -131,7 +141,7 @@ rule("c++.build.modules.builder")
                 -- append to sourcebatch
                 for _, package_module_data in table.orderpairs(package_modules_data) do
                     table.insert(sourcebatch.sourcefiles, package_module_data.file)
-                    target:fileconfig_add(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
+                    target:fileconfig_set(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
                 end
             end
 
