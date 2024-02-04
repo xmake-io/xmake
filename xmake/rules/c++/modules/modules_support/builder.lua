@@ -78,10 +78,10 @@ function _build_headerunits(target, headerunits, opt)
         end
         local bmifile = path.join(outputdir, path.filename(headerunit.name) .. compiler_support.get_bmi_extension(target))
         local key = path.normalize(headerunit.path)
-        local build = _should_build(target, headerunit.path, bmifile, {key = key, headerunit = true})
+        local build = should_build(target, headerunit.path, bmifile, {key = key, headerunit = true})
 
         if build then
-            _mark_build(target, key)
+            mark_build(target, key)
         end
 
         opt.build_headerunit(headerunit, key, bmifile, outputdir, build)
@@ -89,7 +89,7 @@ function _build_headerunits(target, headerunits, opt)
 end
 
 -- should we build this module or headerunit ?
-function _should_build(target, sourcefile, bmifile, opt)
+function should_build(target, sourcefile, bmifile, opt)
 
     -- force rebuild a module if any of its module dependency is rebuilt
     local requires = opt.requires
@@ -181,7 +181,7 @@ function _builder(target)
     return builder
 end
 
-function _mark_build(target, name)
+function mark_build(target, name)
     compiler_support.memcache():set2("should_build_in" .. target:name(), name, true)
 end
 
@@ -201,7 +201,7 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
        build_module = function(deps, module, name, provide, objectfile, cppfile, fileconfig)
         local job_name = name and target:name() .. name or cppfile
 
-        modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps, _should_build, _mark_build, {module = module, objectfile = objectfile, cppfile = cppfile})
+        modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps, {module = module, objectfile = objectfile, cppfile = cppfile})
 
         if provide and fileconfig and fileconfig.public then
             batchjobs:addjob(name .. "_metafile", function(index, total)
@@ -229,7 +229,7 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
     -- build modules
     _build_modules(target, sourcebatch, modules, table.join(opt, {
        build_module = function(_, module, name, provide, objectfile, cppfile, fileconfig)
-          depmtime = math.max(depmtime, _builder(target).make_module_buildcmds(target, batchcmds, _should_build, _mark_build, {module = module, cppfile = cppfile, objectfile = objectfile, progress = opt.progress}))
+          depmtime = math.max(depmtime, _builder(target).make_module_buildcmds(target, batchcmds, {module = module, cppfile = cppfile, objectfile = objectfile, progress = opt.progress}))
 
           if provide and fileconfig and fileconfig.public then
               local metafilepath = compiler_support.get_metafile(target, cppfile)
