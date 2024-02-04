@@ -106,10 +106,8 @@ function _find_cuda(sdkdir)
         local subdir = is_arch("x64") and "x64" or "Win32"
         table.insert(linkdirs, path.join(sdkdir, "lib", subdir))
     elseif is_host("linux") and is_arch("x86_64") then
-        table.insert(linkdirs, path.join(sdkdir, "lib64", "stubs"))
         table.insert(linkdirs, path.join(sdkdir, "lib64"))
     else
-        table.insert(linkdirs, path.join(sdkdir, "lib", "stubs"))
         table.insert(linkdirs, path.join(sdkdir, "lib"))
     end
 
