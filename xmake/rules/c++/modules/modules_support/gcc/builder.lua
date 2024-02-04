@@ -241,7 +241,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
             dependinfo.files = {}
             local depvalues = {compinst:program(), compflags}
 
-            if opt.build then
+            if build then
                 -- compile if it's a named module
                 if provide or compiler_support.has_module_extension(opt.cppfile) then
                     progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
