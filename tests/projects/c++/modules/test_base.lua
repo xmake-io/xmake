@@ -10,6 +10,23 @@ function _build()
     end
 end
 
+function can_build()
+    if is_subhost("windows") then
+        return true
+    elseif is_subhost("msys") then
+        return true
+    elseif is_host("linux") then
+        local gcc = find_tool("gcc", {version = true})
+        if gcc and gcc.version and semver.compare(gcc.version, "11.0") >= 0 then
+            return true
+        end
+        local clang = find_tool("clang", {version = true})
+        if clang and clang.version and semver.compare(clang.version, "14.0") >= 0 then
+            return true
+        end
+    end
+end
+
 function main(t)
     if is_subhost("windows") then
         local clang = find_tool("clang", {version = true})
