@@ -397,7 +397,7 @@ end
 
 -- topological sort
 function sort_modules_by_dependencies(objectfiles, modules)
-    local output = {}
+    local result = {}
     local edges, nodeps_nodes = _get_edges(objectfiles, modules)
     local dag = graph.new(true)
     for _, e in ipairs(edges) do
@@ -414,17 +414,17 @@ function sort_modules_by_dependencies(objectfiles, modules)
         table.insert(names, name or cppfile)
         raise("circular modules dependency detected!\n%s", table.concat(names, "\n   -> import "))
     end
-    local sorted = dag:topological_sort()
-    for _, objectfile in ipairs(sorted) do
-        table.insert(output, objectfile)
+    local objectfiles_sorted = dag:topological_sort()
+    for _, objectfile in ipairs(objectfiles_sorted) do
+        table.insert(result, objectfile)
     end
-    local _objectfiles = hashset.from(sorted)
+    local objectfiles_sorted_set = hashset.from(objectfiles_sorted)
     for _, objectfile in ipairs(objectfiles) do
-        if not _objectfiles:has(objectfile) then
-            table.insert(output, objectfile)
+        if not objectfiles_sorted_set:has(objectfile) then
+            table.insert(result, objectfile)
         end
     end
-    return output
+    return result
 end
 
 -- get source modulefile for external target deps
