@@ -63,6 +63,14 @@ function ntddi_version(name)
     ,   rs1    = "0002"
     ,   rs2    = "0003"
     ,   rs3    = "0004"
+    ,   rs4    = "0005"
+    ,   rs5    = "0006"
+    ,   h1     = "0007"
+    ,   vb     = "0008"
+    ,   nm     = "0009"
+    ,   fe     = "000A"
+    ,   co     = "000B"
+    ,   ni     = "000C"
     }
 
     -- get subvalue
