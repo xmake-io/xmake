@@ -324,16 +324,23 @@ function _instance:_invalidate(name)
     elseif name == "deps" then
         self._DEPS = nil
         self._ORDERDEPS = nil
+        self._INHERITDEPS = nil
     end
 end
 
 -- build deps
 function _instance:_build_deps()
     if target._project() then
-        local instances = target._project().targets()
-        self._DEPS      = self._DEPS or {}
-        self._ORDERDEPS = self._ORDERDEPS or {}
+        local instances   = target._project().targets()
+        self._DEPS        = self._DEPS or {}
+        self._ORDERDEPS   = self._ORDERDEPS or {}
+        self._INHERITDEPS = self._INHERITDEPS or {}
         instance_deps.load_deps(self, instances, self._DEPS, self._ORDERDEPS, {self:name()})
+        -- @see https://github.com/xmake-io/xmake/issues/4689
+        instance_deps.load_deps(self, instances, {}, self._INHERITDEPS, {self:name()}, function (t, dep)
+            local depinherit = t:extraconf("deps", dep:name(), "inherit")
+            return depinherit == nil or depinherit
+        end)
     end
 end
 
@@ -344,26 +351,23 @@ end
 
 -- get values from target deps with {interface|public = ...}
 function _instance:_get_from_deps(name, result_values, result_sources, opt)
-    local orderdeps = self:orderdeps()
+    local orderdeps = self:orderdeps({inherit = true})
     local total = #orderdeps
     for idx, _ in ipairs(orderdeps) do
         local dep = orderdeps[total + 1 - idx]
-        local depinherit = self:extraconf("deps", dep:name(), "inherit")
-        if depinherit == nil or depinherit then
-            local values = dep:get(name, opt)
-            if values ~= nil then
-                table.insert(result_values, values)
-                table.insert(result_sources, "dep::" .. dep:name())
-            end
-            local dep_values = {}
-            local dep_sources = {}
-            dep:_get_from_options(name, dep_values, dep_sources, opt)
-            dep:_get_from_packages(name, dep_values, dep_sources, opt)
-            for idx, values in ipairs(dep_values) do
-                local dep_source = dep_sources[idx]
-                table.insert(result_values, values)
-                table.insert(result_sources, "dep::" .. dep:name() .. "/" .. dep_source)
-            end
+        local values = dep:get(name, opt)
+        if values ~= nil then
+            table.insert(result_values, values)
+            table.insert(result_sources, "dep::" .. dep:name())
+        end
+        local dep_values = {}
+        local dep_sources = {}
+        dep:_get_from_options(name, dep_values, dep_sources, opt)
+        dep:_get_from_packages(name, dep_values, dep_sources, opt)
+        for idx, values in ipairs(dep_values) do
+            local dep_source = dep_sources[idx]
+            table.insert(result_values, values)
+            table.insert(result_sources, "dep::" .. dep:name() .. "/" .. dep_source)
         end
     end
 end
@@ -549,6 +553,9 @@ function _instance:clone()
     end
     if self._ORDERDEPS then
         instance._ORDERDEPS = table.clone(self._ORDERDEPS)
+    end
+    if self._INHERITDEPS then
+        instance._INHERITDEPS = table.clone(self._INHERITDEPS)
     end
     if self._RULES then
         instance._RULES = table.clone(self._RULES)
@@ -1127,14 +1134,15 @@ function _instance:deps()
 end
 
 -- get target ordered deps
-function _instance:orderdeps()
+function _instance:orderdeps(opt)
+    opt = opt or {}
     if not self:_is_loaded() then
         os.raise("please call target:orderdeps() in after_load()!")
     end
     if self._DEPS == nil then
         self:_build_deps()
     end
-    return self._ORDERDEPS
+    return opt.inherit and self._INHERITDEPS or self._ORDERDEPS
 end
 
 -- get target rules

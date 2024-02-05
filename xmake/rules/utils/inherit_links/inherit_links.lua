@@ -86,7 +86,7 @@ function main(target)
         --
         if target:data("inherit.links.exportlinks") ~= false then
             if targetkind == "static" then
-                for _, name in ipairs({"rpathdirs", "frameworkdirs", "frameworks", "linkdirs", "links", "syslinks"}) do
+                for _, name in ipairs({"rpathdirs", "frameworkdirs", "frameworks", "linkdirs", "links", "syslinks", "ldflags", "shflags"}) do
                     local values = _get_values_from_target(target, name)
                     if values and #values > 0 then
                         target:add(name, values, {public = true})
@@ -99,9 +99,8 @@ function main(target)
     -- export rpathdirs for all shared library
     if targetkind == "binary" then
         local targetdir = target:targetdir()
-        for _, dep in ipairs(target:orderdeps()) do
-            local depinherit = target:extraconf("deps", dep:name(), "inherit")
-            if dep:kind() == "shared" and (depinherit == nil or depinherit) then
+        for _, dep in ipairs(target:orderdeps({inherit = true})) do
+            if dep:kind() == "shared" then
                 local rpathdir = "@loader_path"
                 local subdir = path.relative(path.directory(dep:targetfile()), targetdir)
                 if subdir and subdir ~= '.' then

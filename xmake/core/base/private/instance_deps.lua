@@ -38,7 +38,7 @@ local table = require("base/table")
 --
 -- if they're targets, their links order is reverse(orderdeps), e.g. foo: a -> b -> c -> d
 --
-function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath)
+function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath, walkdep)
     local plaindeps = table.wrap(instance:get("deps"))
     local total = #plaindeps
     for idx, _ in ipairs(plaindeps) do
@@ -47,21 +47,27 @@ function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath)
         local depname = plaindeps[total + 1 - idx]
         local depinst = instances[depname]
         if depinst then
-            local depspath_sub
-            if depspath then
-                for idx, name in ipairs(depspath) do
-                    if name == depname then
-                        local circular_deps = table.slice(depspath, idx)
-                        table.insert(circular_deps, depname)
-                        os.raise("circular dependency(%s) detected!", table.concat(circular_deps, ", "))
-                    end
-                end
-                depspath_sub = table.join(depspath, depname)
+            local continue_walk = true
+            if walkdep then
+                continue_walk = walkdep(instance, depinst)
             end
-            instance_deps.load_deps(depinst, instances, deps, orderdeps, depspath_sub)
-            if not deps[depname] then
-                deps[depname] = depinst
-                table.insert(orderdeps, depinst)
+            if continue_walk then
+                local depspath_sub
+                if depspath then
+                    for idx, name in ipairs(depspath) do
+                        if name == depname then
+                            local circular_deps = table.slice(depspath, idx)
+                            table.insert(circular_deps, depname)
+                            os.raise("circular dependency(%s) detected!", table.concat(circular_deps, ", "))
+                        end
+                    end
+                    depspath_sub = table.join(depspath, depname)
+                end
+                instance_deps.load_deps(depinst, instances, deps, orderdeps, depspath_sub, walkdep)
+                if not deps[depname] then
+                    deps[depname] = depinst
+                    table.insert(orderdeps, depinst)
+                end
             end
         end
     end

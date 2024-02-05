@@ -145,15 +145,12 @@ end
 -- add_cflags("", {interface = true})
 --
 function builder:_inherit_flags_from_targetdeps(flags, target)
-    local orderdeps = target:orderdeps()
+    local orderdeps = target:orderdeps({inherit = true})
     local total = #orderdeps
     for idx, _ in ipairs(orderdeps) do
         local dep = orderdeps[total + 1 - idx]
-        local depinherit = target:extraconf("deps", dep:name(), "inherit")
-        if depinherit == nil or depinherit then
-            for _, flagkind in ipairs(self:_flagkinds()) do
-                self:_add_flags_from_flagkind(flags, dep, flagkind, {interface = true})
-            end
+        for _, flagkind in ipairs(self:_flagkinds()) do
+            self:_add_flags_from_flagkind(flags, dep, flagkind, {interface = true})
         end
     end
 end
@@ -213,18 +210,24 @@ end
 
 -- add flags from the target options
 function builder:_add_flags_from_targetopts(flags, target)
-    for _, opt in ipairs(target:orderopts()) do
-        for _, flagkind in ipairs(self:_flagkinds()) do
-            self:_add_flags_from_flagkind(flags, opt, flagkind)
+    for _, flagkind in ipairs(self:_flagkinds()) do
+        local result = target:get_from(flagkind, "option::*")
+        if result then
+            for _, values in ipairs(table.wrap(result)) do
+                table.join2(flags, self:_mapflags(values, flagkind, target))
+            end
         end
     end
 end
 
 -- add flags from the target packages
 function builder:_add_flags_from_targetpkgs(flags, target)
-    for _, pkg in ipairs(target:orderpkgs()) do
-        for _, flagkind in ipairs(self:_flagkinds()) do
-            table.join2(flags, self:_mapflags(pkg:get(flagkind), flagkind, target))
+    for _, flagkind in ipairs(self:_flagkinds()) do
+        local result = target:get_from(flagkind, "package::*")
+        if result then
+            for _, values in ipairs(table.wrap(result)) do
+                table.join2(flags, self:_mapflags(values, flagkind, target))
+            end
         end
     end
 end
