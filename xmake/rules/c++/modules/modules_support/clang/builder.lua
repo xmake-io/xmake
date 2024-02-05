@@ -306,9 +306,6 @@ function make_module_buildcmds(target, batchcmds, opt)
             local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {batchcmds = true, sourcefile = opt.cppfile, build_objectfile = build_objectfile, name = name})
             _batchcmds_compile(batchcmds, target, first_step, opt.cppfile, precompile and bmifile or opt.objectfile)
 
-            local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {batchcmds = true, sourcefile = opt.cppfile, external = external, name = name})
-            _batchcmds_compile(batchcmds, target, first_step, opt.cppfile, precompile and bmifile or opt.objectfile)
-
             if second_step then
                 _batchcmds_compile(batchcmds, target, second_step, opt.cppfile, opt.objectfile, {bmifile = bmifile})
             end
