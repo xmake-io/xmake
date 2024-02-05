@@ -26,12 +26,6 @@
       Description="Print lots of diagnosis information (backtrace, check info ..) only for developers."
       Switch="diagnosis" />
     <BoolProperty
-      Name="XmakeWarning"
-      DisplayName="Print warnings"
-      Category="Common"
-      Description="Enable the warnings output for build tasks."
-      Switch="warning" />
-    <BoolProperty
       Name="XmakeCleanAll"
       DisplayName="Clean all"
       Category="Common"

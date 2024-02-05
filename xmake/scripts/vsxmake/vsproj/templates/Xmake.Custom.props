@@ -22,14 +22,11 @@
       Respect parents:
         <XmakeCleanFlags Condition=" '$(XmakeCleanFlags)' == '' ">-D</XmakeCleanFlags>
 
-      For -w, -v and -D, use <XmakeWarning>, <XmakeVerbose> and <XmakeDiagnosis> is more convenient.
+      For -v and -D, use <XmakeVerbose> and <XmakeDiagnosis> as its more convenient.
     -->
 
     <!-- Set -a for "xmake clean" -->
-    <!-- <XmakeCleanAll Condition="'$(XmakeCleanAll)' == ''">true</XmakeWarning> -->
-
-    <!-- Set -w for "xmake build" -->
-    <!-- <XmakeWarning Condition="'$(XmakeWarning)' == ''">true</XmakeWarning> -->
+    <!-- <XmakeCleanAll Condition="'$(XmakeCleanAll)' == ''">true</XmakeCleanAll> -->
 
     <!-- Set -v for all xmake call -->
     <!-- <XmakeVerbose Condition="'$(XmakeVerbose)' == ''">false</XmakeVerbose> -->

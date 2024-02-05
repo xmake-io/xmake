@@ -48,9 +48,6 @@
     <_XmakeConfigFlags>$(XmakeConfigFlags.Trim())</_XmakeConfigFlags>
     <_XmakeConfigFlags>-p $(XmakePlat) -m $(XmakeMode) -a $(XmakeArch) $(_XmakeOutFlag) $(_XmakeConfigFlags.Trim())</_XmakeConfigFlags>
 
-    <_XmakeBuildFlags>$(XmakeBuildFlags.Trim())</_XmakeBuildFlags>
-    <_XmakeBuildFlags Condition="$(XmakeWarning)">-w $(_XmakeBuildFlags.Trim())</_XmakeBuildFlags>
-
     <_XmakeBuildFileFlags>$(_XmakeBuildFlags.Trim())</_XmakeBuildFileFlags>
     <_XmakeBuildFileFlags Condition="$(XmakeRebuildFile)">$(_XmakeBuildFileFlags.Trim()) -r</_XmakeBuildFileFlags>
 
@@ -169,7 +166,6 @@ MSBuild Properties:
     XmakeConfigFileDir: $(XmakeConfigFileDirResolved)
     XmakeRunDir: $(XmakeRunDirResolved)
   Xmake Flags:
-    XmakeWarning: $(XmakeWarning)
     XmakeVerbose: $(XmakeVerbose)
     XmakeDiagnosis: $(XmakeDiagnosis)
     XmakeRebuildFile: $(XmakeRebuildFile)
