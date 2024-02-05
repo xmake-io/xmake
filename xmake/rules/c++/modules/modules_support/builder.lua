@@ -21,6 +21,7 @@
 -- imports
 import("core.base.json")
 import("core.base.option")
+import("async.runjobs")
 import("private.async.buildjobs")
 import("core.tool.compiler")
 import("core.project.config")
@@ -303,6 +304,34 @@ function build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules
         opt.stl_headerunit = false
         build_headerunits(user_headerunits)
     end
+end
+
+function generate_metadata(target, modules)
+    local public_modules
+
+    for _, module in pairs(modules) do
+        local _, _, cppfile = compiler_support.get_provided_module(module)
+        local fileconfig = target:fileconfig(cppfile)
+        local public = fileconfig and fileconfig.public
+        if public then
+            public_modules = public_modules or {}
+            table.insert(public_modules, module)
+        end
+    end
+
+    if not public_modules then
+        return
+    end
+
+    local jobs = option.get("jobs") or os.default_njob()
+    runjobs(target:name() .. "_install_modules", function(index) 
+        local module = public_modules[index]
+        local name, _, cppfile = compiler_support.get_provided_module(module)
+        local metafilepath = compiler_support.get_metafile(target, cppfile)
+        progress.show((index * 100) / #public_modules, "${color.build.target}<%s> generating.module.metadata %s", target:name(), name)
+        local metadata = _generate_meta_module_info(target, name, cppfile, module.requires)
+        json.savefile(metafilepath, metadata)
+    end, {comax = jobs, total = #public_modules})
 end
 
 -- flush target module mapper keys

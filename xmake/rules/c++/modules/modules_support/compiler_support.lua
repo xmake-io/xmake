@@ -116,14 +116,14 @@ end
 -- this target contains module files?
 function contains_modules(target)
     -- we can not use `"c++.build.builder"`, because it contains sourcekind/cxx.
-    local target_with_modules = target:sourcebatches()["c++.build.modules"] and true or false
+    local target_with_modules = (target:sourcebatches()["c++.moduleonly"] or target:sourcebatches()["c++.build.modules"]) and true or false
     if not target_with_modules then
         target_with_modules = target:policy("build.c++.modules")
     end
     if not target_with_modules then
         for _, dep in ipairs(target:orderdeps()) do
             local sourcebatches = dep:sourcebatches()
-            if sourcebatches["c++.build.modules"] then
+            if sourcebatches["c++.moduleonly"] or sourcebatches["c++.build.modules"] then
                 target_with_modules = true
                 break
             end
