@@ -18,7 +18,7 @@
 --
 -- Copyright (C) 2020, TBOOX Open Source Group.
 --
--- @author      Lael N. Santos
+-- @author      ruki
 -- @file        events.lua
 --
 
