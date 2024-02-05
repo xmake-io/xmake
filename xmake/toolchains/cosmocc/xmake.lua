@@ -35,10 +35,10 @@ toolchain("cosmocc")
 
     on_load(function (toolchain)
         if toolchain:is_arch("x86_64", "x64") then
-            target:set("toolset", "ranlib", "x86_64-linux-cosmo-ranlib")
-            target:set("toolset", "strip", "x86_64-linux-cosmo-strip")
+            toolchain:set("toolset", "ranlib", "x86_64-linux-cosmo-ranlib")
+            toolchain:set("toolset", "strip", "x86_64-linux-cosmo-strip")
         else
-            target:set("toolset", "ranlib", "aarch64-linux-cosmo-ranlib")
-            target:set("toolset", "strip", "aarch64-linux-cosmo-strip")
+            toolchain:set("toolset", "ranlib", "aarch64-linux-cosmo-ranlib")
+            toolchain:set("toolset", "strip", "aarch64-linux-cosmo-strip")
         end
     end)

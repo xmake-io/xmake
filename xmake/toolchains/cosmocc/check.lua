@@ -21,6 +21,7 @@
 -- imports
 import("core.project.config")
 import("lib.detect.find_path")
+import("detect.sdks.find_cross_toolchain")
 
 -- check the cross toolchain
 function main(toolchain)

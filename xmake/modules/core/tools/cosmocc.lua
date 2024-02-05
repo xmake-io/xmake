@@ -15,10 +15,18 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        clangxx.lua
+-- @file        cosmocc.lua
 --
 
--- inherit clang
-inherit("clang")
+-- inherit gcc
+inherit("gcc")
 
+-- init it
+function init(self)
+    _super.init(self)
+end
+
+-- make the strip flag
+function nf_strip(self, level)
+end
 
