@@ -222,9 +222,12 @@ end
 
 -- add flags from the target packages
 function builder:_add_flags_from_targetpkgs(flags, target)
-    for _, pkg in ipairs(target:orderpkgs()) do
-        for _, flagkind in ipairs(self:_flagkinds()) do
-            table.join2(flags, self:_mapflags(pkg:get(flagkind), flagkind, target))
+    for _, flagkind in ipairs(self:_flagkinds()) do
+        local result = target:get_from(flagkind, "package::*")
+        if result then
+            for _, values in ipairs(result) do
+                table.join2(flags, self:_mapflags(values, flagkind, target))
+            end
         end
     end
 end
