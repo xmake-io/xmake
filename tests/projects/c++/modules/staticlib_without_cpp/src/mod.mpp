@@ -1,2 +1,0 @@
-export module hello;
-export int foo() { return 0; }
