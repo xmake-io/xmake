@@ -15,14 +15,31 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        cosmocc.lua
+-- @file        find_cosmocxx.lua
 --
 
--- inherit gcc
-inherit("gcc")
+-- imports
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
--- init it
-function init(self)
-    _super.init(self)
+-- find cosmocxx
+--
+-- @param opt   the argument options, e.g. {version = true}
+--
+-- @return      program, version
+--
+-- @code
+--
+-- local cosmocxx = find_cosmocxx()
+--
+-- @endcode
+--
+function main(opt)
+    opt = opt or {}
+    local program = find_program(opt.program or "cosmoc++", opt)
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program, opt)
+    end
+    return program, version
 end
-

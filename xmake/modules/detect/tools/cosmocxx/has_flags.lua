@@ -15,14 +15,9 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        cosmocc.lua
+-- @file        has_flags.lua
 --
 
--- inherit gcc
-inherit("gcc")
-
--- init it
-function init(self)
-    _super.init(self)
-end
+-- imports
+inherit("detect.tools.gcc.has_flags")
 
