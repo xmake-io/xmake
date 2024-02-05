@@ -239,7 +239,7 @@ function nf_runtime(self, runtime, opt)
     end
     if not self:is_plat("android") then -- we will set runtimes in android ndk toolchain
         maps = maps or {}
-        local llvm_rootdir = get_config("sdk") or self:get("sdk")
+        local llvm_rootdir = self:toolchain():sdkdir()
         if kind == "cxx" then
             maps["c++_static"]    = "-stdlib=libc++"
             maps["c++_shared"]    = "-stdlib=libc++"
