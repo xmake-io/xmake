@@ -145,15 +145,12 @@ end
 -- add_cflags("", {interface = true})
 --
 function builder:_inherit_flags_from_targetdeps(flags, target)
-    local orderdeps = target:orderdeps()
+    local orderdeps = target:orderdeps({inherit = true})
     local total = #orderdeps
     for idx, _ in ipairs(orderdeps) do
         local dep = orderdeps[total + 1 - idx]
-        local depinherit = target:extraconf("deps", dep:name(), "inherit")
-        if depinherit == nil or depinherit then
-            for _, flagkind in ipairs(self:_flagkinds()) do
-                self:_add_flags_from_flagkind(flags, dep, flagkind, {interface = true})
-            end
+        for _, flagkind in ipairs(self:_flagkinds()) do
+            self:_add_flags_from_flagkind(flags, dep, flagkind, {interface = true})
         end
     end
 end

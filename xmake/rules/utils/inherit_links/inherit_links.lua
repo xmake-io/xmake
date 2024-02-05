@@ -99,9 +99,8 @@ function main(target)
     -- export rpathdirs for all shared library
     if targetkind == "binary" then
         local targetdir = target:targetdir()
-        for _, dep in ipairs(target:orderdeps()) do
-            local depinherit = target:extraconf("deps", dep:name(), "inherit")
-            if dep:kind() == "shared" and (depinherit == nil or depinherit) then
+        for _, dep in ipairs(target:orderdeps({inherit = true})) do
+            if dep:kind() == "shared" then
                 local rpathdir = "@loader_path"
                 local subdir = path.relative(path.directory(dep:targetfile()), targetdir)
                 if subdir and subdir ~= '.' then
