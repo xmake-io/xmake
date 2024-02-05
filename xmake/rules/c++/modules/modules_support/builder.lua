@@ -44,13 +44,12 @@ function _build_modules(target, sourcebatch, modules, opt)
         local name, provide, cppfile = compiler_support.get_provided_module(module)
         cppfile = cppfile or module.cppfile
 
-        local fileconfig = target:fileconfig(cppfile)
-
         local deps = {}
         for _, dep in ipairs(table.keys(module.requires or {})) do
             table.insert(deps, opt.batchjobs and target:name() .. dep or dep)
         end
 
+        local fileconfig = target:fileconfig(cppfile)
         opt.build_module(deps, module, name, provide, objectfile, cppfile, fileconfig)
 
         ::CONTINUE::

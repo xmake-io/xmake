@@ -98,8 +98,8 @@ rule("c++.build.modules.builder")
             compiler_support.patch_sourcebatch(target, sourcebatch, opt)
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
 
-            -- avoid linking culled objectfiles
-            sourcebatch.objectfiles = dependency_scanner.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
+            -- avoid building non referenced modules
+            sourcebatch.objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
 
             -- build modules
             builder.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
@@ -153,8 +153,8 @@ rule("c++.build.modules.builder")
             compiler_support.patch_sourcebatch(target, sourcebatch, opt)
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
 
-            -- avoid linking culled objectfiles
-            sourcebatch.objectfiles = dependency_scanner.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
+            -- avoid building non referenced modules
+            sourcebatch.objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
 
             -- build headerunits
             builder.build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
@@ -163,7 +163,7 @@ rule("c++.build.modules.builder")
             builder.build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
 
             -- cull external modules objectfile
-            compiler_support.cull_objectfiles(target, modules, sourcebatch)
+            -- compiler_support.cull_objectfiles(target, modules, sourcebatch)
         else
             -- avoid duplicate linking of object files of non-module programs
             sourcebatch.objectfiles = {}

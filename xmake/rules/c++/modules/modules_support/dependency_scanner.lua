@@ -396,7 +396,7 @@ function get_all_packages_modules(target, opt)
 end
 
 -- topological sort
-function sort_modules_by_dependencies(objectfiles, modules)
+function sort_modules_by_dependencies(target, objectfiles, modules)
     local result = {}
     local edges = _get_edges(objectfiles, modules)
     local dag = graph.new(true)
@@ -422,9 +422,11 @@ function sort_modules_by_dependencies(objectfiles, modules)
     local objectfiles_sorted_set = hashset.from(objectfiles_sorted)
     for _, objectfile in ipairs(objectfiles) do
         if not objectfiles_sorted_set:has(objectfile) then
-            -- cull unreferenced named module but add non-module files
-            local _, provide, _ = compiler_support.get_provided_module(modules[objectfile])
-            if not provide then
+            -- cull unreferenced non-public named module but add non-module files and implementation modules
+            local _, provide, cppfile = compiler_support.get_provided_module(modules[objectfile])
+            local fileconfig = target:fileconfig(cppfile)
+            local public = fileconfig and fileconfig.public
+            if not provide or public then
                 table.insert(result, objectfile)
             end
         end
