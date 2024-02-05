@@ -213,9 +213,12 @@ end
 
 -- add flags from the target options
 function builder:_add_flags_from_targetopts(flags, target)
-    for _, opt in ipairs(target:orderopts()) do
-        for _, flagkind in ipairs(self:_flagkinds()) do
-            self:_add_flags_from_flagkind(flags, opt, flagkind)
+    for _, flagkind in ipairs(self:_flagkinds()) do
+        local result = target:get_from(flagkind, "option::*")
+        if result then
+            for _, values in ipairs(table.wrap(result)) do
+                table.join2(flags, self:_mapflags(values, flagkind, target))
+            end
         end
     end
 end
@@ -225,7 +228,7 @@ function builder:_add_flags_from_targetpkgs(flags, target)
     for _, flagkind in ipairs(self:_flagkinds()) do
         local result = target:get_from(flagkind, "package::*")
         if result then
-            for _, values in ipairs(result) do
+            for _, values in ipairs(table.wrap(result)) do
                 table.join2(flags, self:_mapflags(values, flagkind, target))
             end
         end
