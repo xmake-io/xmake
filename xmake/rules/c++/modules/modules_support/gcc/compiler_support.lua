@@ -99,7 +99,6 @@ end
 
 -- not supported atm
 function get_stdmodules(target)
-    return {}
 end
 
 function get_bmi_extension()
