@@ -212,6 +212,7 @@ end
 function nf_runtime(self, runtime, opt)
     opt = opt or {}
     local maps
+    -- if a sdk dir is defined, we should redirect include / library path to have the correct includes / libc++ link
     local kind = self:kind()
     if self:is_plat("windows") and runtime then
         if not _has_ms_runtime_lib(self) then
@@ -238,19 +239,20 @@ function nf_runtime(self, runtime, opt)
     end
     if not self:is_plat("android") then -- we will set runtimes in android ndk toolchain
         maps = maps or {}
+        local llvm_rootdir = self:toolchain():sdkdir()
         if kind == "cxx" then
             maps["c++_static"]    = "-stdlib=libc++"
             maps["c++_shared"]    = "-stdlib=libc++"
             maps["stdc++_static"] = "-stdlib=libstdc++"
             maps["stdc++_shared"] = "-stdlib=libstdc++"
-            -- clang on windows fail to add libc++ includepath when using -stdlib=libc++ so we manually add it
-            -- @see https://github.com/llvm/llvm-project/issues/79647
-            if self:is_plat("windows") then
-                local llvm_rootdir = _get_llvm_rootdir(self)
-                if llvm_rootdir then
-                    maps["c++_static"] = table.join(maps["c++_static"], "-cxx-isystem" .. path.join(llvm_rootdir, "include", "c++", "v1"))
-                    maps["c++_shared"] = table.join(maps["c++_shared"], "-cxx-isystem" .. path.join(llvm_rootdir, "include", "c++", "v1"))
-                end
+            if not llvm_rootdir and self:is_plat("windows") then
+                -- clang on windows fail to add libc++ includepath when using -stdlib=libc++ so we manually add it
+                -- @see https://github.com/llvm/llvm-project/issues/79647
+                llvm_rootdir = _get_llvm_rootdir(self)
+            end
+            if llvm_rootdir then
+                maps["c++_static"] = table.join(maps["c++_static"], "-cxx-isystem" .. path.join(llvm_rootdir, "include", "c++", "v1"))
+                maps["c++_shared"] = table.join(maps["c++_shared"], "-cxx-isystem" .. path.join(llvm_rootdir, "include", "c++", "v1"))
             end
         elseif kind == "ld" or kind == "sh" then
             local target = opt.target
@@ -259,14 +261,14 @@ function nf_runtime(self, runtime, opt)
                 maps["c++_shared"]    = "-stdlib=libc++"
                 maps["stdc++_static"] = "-stdlib=libstdc++"
                 maps["stdc++_shared"] = "-stdlib=libstdc++"
-                -- clang on windows fail to add libc++ librarypath when using -stdlib=libc++ so we manually add it
-                -- @see https://github.com/llvm/llvm-project/issues/79647
-                if self:is_plat("windows") then
-                    local llvm_rootdir = _get_llvm_rootdir(self)
-                    if llvm_rootdir then
-                        maps["c++_static"] = table.join(maps["c++_static"], "-L" .. path.join(llvm_rootdir, "lib"))
-                        maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. path.join(llvm_rootdir, "lib"))
-                    end
+                if not llvm_rootdir and self:is_plat("windows") then
+                    -- clang on windows fail to add libc++ librarypath when using -stdlib=libc++ so we manually add it
+                    -- @see https://github.com/llvm/llvm-project/issues/79647
+                    llvm_rootdir = _get_llvm_rootdir(self)
+                end
+                if llvm_rootdir then
+                    maps["c++_static"] = table.join(maps["c++_static"], "-L" .. path.join(llvm_rootdir, "lib"))
+                    maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. path.join(llvm_rootdir, "lib"))
                 end
                 if runtime:endswith("_static") and _has_static_libstdcxx(self) then
                     maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
