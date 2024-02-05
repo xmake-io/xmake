@@ -1,4 +1,4 @@
-package("bar")
+package("bar2")
     set_kind("headeronly")
     set_sourcedir(path.join(os.scriptdir(), "src"))
 
