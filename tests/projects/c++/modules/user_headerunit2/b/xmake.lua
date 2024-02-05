@@ -1,5 +1,6 @@
 ﻿target("b")
     add_deps("a")
     set_languages("cxxlatest")
-    set_kind("object")
-    add_files("b.mpp", {public = true})
+    set_kind("headeronly")
+    add_rules("c++.moduleonly")
+    add_files("b.mpp")

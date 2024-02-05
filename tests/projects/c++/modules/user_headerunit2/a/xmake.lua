@@ -1,4 +1,6 @@
 ﻿target("a")
     set_languages("cxxlatest")
-    set_kind("object")
-    add_files("a.mpp", {public = true})
+    set_kind("headeronly")
+    add_rules("c++.moduleonly")
+    add_headerfiles("*.hpp")
+    add_files("a.mpp")
