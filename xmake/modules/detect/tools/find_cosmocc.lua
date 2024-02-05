@@ -42,5 +42,8 @@ function main(opt)
     if program and opt and opt.version then
         version = find_programver(program, opt)
     end
+    if program then
+        program = program:gsub("\\", "/")
+    end
     return program, version
 end
