@@ -259,11 +259,11 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                         end
                     end
 
-                local fileconfig = target:fileconfig(opt.cppfile)
-                local public = fileconfig and fileconfig.public
-                local external = fileconfig and fileconfig.external
-                local build_objectfile = target:kind() == "binary" or (not public and not external)
-                local flags = _make_modulebuildflags(target, provide, bmifile, {build_objectfile = build_objectfile})
+                    local fileconfig = target:fileconfig(opt.cppfile)
+                    local public = fileconfig and fileconfig.public
+                    local external = fileconfig and fileconfig.external
+                    local build_objectfile = target:kind() == "binary" or (not public and not external)
+                    local flags = _make_modulebuildflags(target, provide, bmifile, {build_objectfile = build_objectfile})
 
                     _compile(target, flags, opt.cppfile, opt.objectfile)
                 else
