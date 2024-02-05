@@ -205,9 +205,24 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
             local compinst = compiler.load("cxx", {target = target})
             local compflags = compinst:compflags({sourcefile = opt.cppfile, target = target})
 
+            local build
+            if provide or compiler_support.has_module_extension(opt.cppfile) then
+                build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+
+                -- needed to detect rebuild of dependencies
+                if provide and build then
+                    mark_build(target, name)
+                end
+            end
+
             -- append requires flags
             if opt.module.requires then
                 _append_requires_flags(target, opt.module, name, opt.cppfile, bmifile, opt)
+            end
+
+            -- for cpp file we need to check after appendings the flags
+            if build == nil then
+                build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
             end
 
             local dependfile = target:dependfile(bmifile or opt.objectfile)
@@ -215,26 +230,30 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
             dependinfo.files = {}
             local depvalues = {compinst:program(), compflags}
 
-            -- compile if it's a named module
-            if opt.build and (provide or compiler_support.has_module_extension(opt.cppfile)) then
-                progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+            if build then
+                -- compile if it's a named module
+                if provide or compiler_support.has_module_extension(opt.cppfile) then
+                    progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
 
-                if not dryrun then
-                    local objectdir = path.directory(opt.objectfile)
-                    if not os.isdir(objectdir) then
-                        os.mkdir(objectdir)
+                    if not dryrun then
+                        local objectdir = path.directory(opt.objectfile)
+                        if not os.isdir(objectdir) then
+                            os.mkdir(objectdir)
+                        end
                     end
-                end
 
-                local fileconfig = target:fileconfig(opt.cppfile)
-                local external = fileconfig and fileconfig.external
+                    local fileconfig = target:fileconfig(opt.cppfile)
+                    local external = fileconfig and fileconfig.external
 
-                local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {sourcefile = opt.cppfile, external = external, name = name})
+                    local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {sourcefile = opt.cppfile, external = external, name = name})
 
-                _compile(target, first_step, opt.cppfile, precompile and bmifile or opt.objectfile)
+                    _compile(target, first_step, opt.cppfile, precompile and bmifile or opt.objectfile)
 
-                if second_step then
-                    _compile(target, second_step, opt.cppfile, opt.objectfile, {bmifile = bmifile})
+                    if second_step then
+                        _compile(target, second_step, opt.cppfile, opt.objectfile, {bmifile = bmifile})
+                    end
+                else
+                    os.tryrm(opt.objectfile) -- force rebuild for .cpp files
                 end
             end
 
@@ -250,24 +269,43 @@ function make_module_buildcmds(target, batchcmds, opt)
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
 
+    local build
+    if provide or compiler_support.has_module_extension(opt.cppfile) then
+        build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+
+        -- needed to detect rebuild of dependencies
+        if provide and build then
+            mark_build(target, name)
+        end
+    end
+
     -- append requires flags
     if opt.module.requires then
         _append_requires_flags(target, opt.module, name, opt.cppfile, bmifile, opt)
     end
 
-    -- compile if it's a named module
-    if opt.build and (provide or compiler_support.has_module_extension(opt.cppfile)) then
-        batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-        batchcmds:mkdir(path.directory(opt.objectfile))
+    -- for cpp file we need to check after appendings the flags
+    if build == nil then
+        build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+    end
 
-        local fileconfig = target:fileconfig(opt.cppfile)
-        local external = fileconfig and fileconfig.external
+    if build then
+        -- compile if it's a named module
+        if provide or compiler_support.has_module_extension(opt.cppfile) then
+            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+            batchcmds:mkdir(path.directory(opt.objectfile))
 
-        local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {batchcmds = true, sourcefile = opt.cppfile, external = external, name = name})
-        _batchcmds_compile(batchcmds, target, first_step, opt.cppfile, precompile and bmifile or opt.objectfile)
+            local fileconfig = target:fileconfig(opt.cppfile)
+            local external = fileconfig and fileconfig.external
 
-        if second_step then
-            _batchcmds_compile(batchcmds, target, second_step, opt.cppfile, opt.objectfile, {bmifile = bmifile})
+            local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {batchcmds = true, sourcefile = opt.cppfile, external = external, name = name})
+            _batchcmds_compile(batchcmds, target, first_step, opt.cppfile, precompile and bmifile or opt.objectfile)
+
+            if second_step then
+                _batchcmds_compile(batchcmds, target, second_step, opt.cppfile, opt.objectfile, {bmifile = bmifile})
+            end
+        else
+            batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files
         end
     end
     batchcmds:add_depfiles(opt.cppfile)
