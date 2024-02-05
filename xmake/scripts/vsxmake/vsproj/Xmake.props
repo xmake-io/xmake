@@ -41,7 +41,6 @@
 
   <PropertyGroup Label="XmakeFlagsFallback">
     <XmakeCleanAll Condition="'$(XmakeCleanAll)' == ''">true</XmakeCleanAll>
-    <XmakeWarning Condition="'$(XmakeWarning)' == ''">true</XmakeWarning>
     <XmakeVerbose Condition="'$(XmakeVerbose)' == ''">false</XmakeVerbose>
     <XmakeDiagnosis Condition="'$(XmakeDiagnosis)' == ''">false</XmakeDiagnosis>
     <XmakeRebuildFile Condition="'$(XmakeRebuildFile)' == ''">false</XmakeRebuildFile>
