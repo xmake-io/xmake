@@ -118,6 +118,8 @@ rule("c++.build.modules.builder")
 
                 -- cull external modules objectfile
                 compiler_support.cull_objectfiles(target, modules, sourcebatch)
+                compiler_support.localcache():set2(target:name(), "c++.modules", modules)
+                compiler_support.localcache():save()
             else
                 -- avoid duplicate linking of object files of non-module programs
                 sourcebatch.objectfiles = {}
@@ -178,7 +180,9 @@ rule("c++.build.modules.builder")
                 builder.build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
 
                 -- cull external modules objectfile
-                -- compiler_support.cull_objectfiles(target, modules, sourcebatch)
+                compiler_support.cull_objectfiles(target, modules, sourcebatch)
+                compiler_support.localcache():set2(target:name(), "c++.modules", modules)
+                compiler_support.localcache():save()
             else
                 -- avoid duplicate linking of object files of non-module programs
                 sourcebatch.objectfiles = {}
