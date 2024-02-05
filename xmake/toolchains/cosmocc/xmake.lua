@@ -23,6 +23,11 @@ toolchain("cosmocc")
     set_homepage("https://github.com/jart/cosmopolitan")
     set_description("build-once run-anywhere c library")
 
+    set_formats("static", "lib$(name).a")
+    set_formats("object", "$(name).o")
+    set_formats("binary", "$(name).com")
+    set_formats("symbol", "$(name).sym")
+
     set_toolset("cc",     "cosmocc")
     set_toolset("cxx",    "cosmocc", "cosmoc++")
     set_toolset("cpp",    "cosmocc -E")
