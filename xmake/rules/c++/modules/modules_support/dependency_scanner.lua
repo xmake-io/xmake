@@ -422,7 +422,11 @@ function sort_modules_by_dependencies(objectfiles, modules)
     local objectfiles_sorted_set = hashset.from(objectfiles_sorted)
     for _, objectfile in ipairs(objectfiles) do
         if not objectfiles_sorted_set:has(objectfile) then
-            table.insert(result, objectfile)
+            -- cull unreferenced named module but add non-module files
+            local _, provide, _ = compiler_support.get_provided_module(modules[objectfile])
+            if not provide then
+                table.insert(result, objectfile)
+            end
         end
     end
     return result

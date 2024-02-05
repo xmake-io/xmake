@@ -31,7 +31,7 @@ import("dependency_scanner")
 
 -- build target modules
 function _build_modules(target, sourcebatch, modules, opt)
-    local objectfiles = dependency_scanner.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
+    local objectfiles = sourcebatch.objectfiles
     _builder(target).populate_module_map(target, modules)
 
     -- build modules

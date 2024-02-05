@@ -107,13 +107,6 @@ function _get_maplines(target, module)
     for required, _ in table.orderpairs(module.requires) do
         local dep_module
         local dep_target
-        for _, dep in ipairs(target:orderdeps()) do
-            dep_module = get_from_target_mapper(dep, required)
-            if dep_module then
-                dep_target = dep
-                break
-            end
-        end
 
         -- if not in target dep
         if not dep_module then
@@ -173,16 +166,6 @@ end
 
 -- populate module map
 function populate_module_map(target, modules)
-
-    -- append all modules
-    for _, module in pairs(modules) do
-        local name, provide = compiler_support.get_provided_module(module)
-        if provide then
-            add_module_to_target_mapper(target, name, provide.sourcefile, compiler_support.get_bmi_path(provide.bmi))
-        end
-    end
-
-    -- then update their deps
     for _, module in pairs(modules) do
         local name, provide = compiler_support.get_provided_module(module)
         if provide then
