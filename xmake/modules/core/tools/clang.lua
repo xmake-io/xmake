@@ -212,6 +212,7 @@ end
 function nf_runtime(self, runtime, opt)
     opt = opt or {}
     local maps
+    -- if a sdk dir is defined, we should redirect include / library path to have the correct includes / libc++ link
     local kind = self:kind()
     if self:is_plat("windows") and runtime then
         if not _has_ms_runtime_lib(self) then
@@ -238,16 +239,13 @@ function nf_runtime(self, runtime, opt)
     end
     if not self:is_plat("android") then -- we will set runtimes in android ndk toolchain
         maps = maps or {}
+        local llvm_rootdir = get_config("sdk") or self:get("sdk")
         if kind == "cxx" then
             maps["c++_static"]    = "-stdlib=libc++"
             maps["c++_shared"]    = "-stdlib=libc++"
             maps["stdc++_static"] = "-stdlib=libstdc++"
             maps["stdc++_shared"] = "-stdlib=libstdc++"
-            local llvm_rootdir
-            if get_config("sdk") then
-                -- if a sdk dir is defined, we should redirect include path to have the correct includes
-                llvm_rootdir = get_config("sdk")
-            elseif self:is_plat("windows") then
+            if not llvm_rootdir and self:is_plat("windows") then
                 -- clang on windows fail to add libc++ includepath when using -stdlib=libc++ so we manually add it
                 -- @see https://github.com/llvm/llvm-project/issues/79647
                 llvm_rootdir = _get_llvm_rootdir(self)
@@ -263,11 +261,7 @@ function nf_runtime(self, runtime, opt)
                 maps["c++_shared"]    = "-stdlib=libc++"
                 maps["stdc++_static"] = "-stdlib=libstdc++"
                 maps["stdc++_shared"] = "-stdlib=libstdc++"
-                local llvm_rootdir
-                if get_config("sdk") then
-                    -- if a sdk dir is defined, we should redirect library path for linking the right libc++
-                    llvm_rootdir = get_config("sdk")
-                elseif self:is_plat("windows") then
+                if not llvm_rootdir and self:is_plat("windows") then
                     -- clang on windows fail to add libc++ librarypath when using -stdlib=libc++ so we manually add it
                     -- @see https://github.com/llvm/llvm-project/issues/79647
                     llvm_rootdir = _get_llvm_rootdir(self)
