@@ -30,3 +30,12 @@ end
 function nf_strip(self, level)
 end
 
+-- link the target file
+function link(self, objectfiles, targetkind, targetfile, flags, opt)
+    return _super.link(self, objectfiles, targetkind, targetfile, flags, table.join(opt, {shell = true}))
+end
+
+-- compile the source file
+function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
+    return _super.compile(self, sourcefile, objectfile, dependinfo, flags, table.join(opt, {shell = true}))
+end
