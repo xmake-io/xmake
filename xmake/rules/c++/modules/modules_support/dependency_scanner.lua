@@ -438,7 +438,7 @@ end
 function get_targetdeps_modules(target)
     local sourcefiles
     for _, dep in ipairs(target:orderdeps()) do
-        local sourcebatch = dep:sourcebatches()["c++.moduleonly"] or dep:sourcebatches()["c++.build.modules.builder"]
+        local sourcebatch = dep:sourcebatches()["c++.build.modules.builder"]
         if sourcebatch and sourcebatch.sourcefiles then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local fileconfig = dep:fileconfig(sourcefile)

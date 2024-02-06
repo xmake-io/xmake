@@ -1,5 +1,5 @@
 package("bar2")
-    set_kind("headeronly")
+    set_kind("moduleonly")
     set_sourcedir(path.join(os.scriptdir(), "src"))
 
     on_install(function(package)

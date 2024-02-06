@@ -1003,6 +1003,8 @@ function _add_target(cmakelists, target, outputdir)
         _add_target_headeronly(cmakelists, target)
         _add_target_include_directories(cmakelists, target, outputdir)
         return
+    elseif targetkind == 'moduleonly' then
+        raise("target kind moduleonly is currently not supported for cmakelists")
     else
         raise("unknown target kind %s", target:kind())
     end

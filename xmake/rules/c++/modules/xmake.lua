@@ -54,8 +54,8 @@ rule("c++.build.modules")
             target:data_set("cxx.has_modules", true)
 
             -- moduleonly modules are implicitly public
-            if target:rule("c++.moduleonly") then
-                local sourcebatch = target:sourcebatches()["c++.moduleonly"]
+            if target:is_moduleonly() then
+                local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     target:fileconfig_add(sourcefile, {public = true})
                 end
@@ -70,43 +70,43 @@ rule("c++.build.modules.builder")
 
     -- parallel build support to accelerate `xmake build` to build modules
     before_build_files(function(target, batchjobs, sourcebatch, opt)
-        if not target:rule("c++.moduleonly") then
-            if target:data("cxx.has_modules") then
-                import("modules_support.compiler_support")
-                import("modules_support.dependency_scanner")
-                import("modules_support.builder")
+        if target:data("cxx.has_modules") then
+            import("modules_support.compiler_support")
+            import("modules_support.dependency_scanner")
+            import("modules_support.builder")
 
-                -- add target deps modules
-                if target:orderdeps() then
-                    local deps_sourcefiles = dependency_scanner.get_targetdeps_modules(target)
-                    if deps_sourcefiles then
-                        table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
-                    end
+            -- add target deps modules
+            if target:orderdeps() then
+                local deps_sourcefiles = dependency_scanner.get_targetdeps_modules(target)
+                if deps_sourcefiles then
+                    table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
                 end
+            end
 
-                -- append std module
-                local std_modules = compiler_support.get_stdmodules(target)
-                if std_modules then
-                    table.join2(sourcebatch.sourcefiles, std_modules)
-                    target:fileconfig_set(std_modules[1], {external = true})
-                    target:fileconfig_set(std_modules[2], {external = true})
+            -- append std module
+            local std_modules = compiler_support.get_stdmodules(target)
+            if std_modules then
+                table.join2(sourcebatch.sourcefiles, std_modules)
+                target:fileconfig_set(std_modules[1], {external = true})
+                target:fileconfig_set(std_modules[2], {external = true})
+            end
+
+            -- extract packages modules dependencies
+            local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
+            if package_modules_data then
+                -- append to sourcebatch
+                for _, package_module_data in table.orderpairs(package_modules_data) do
+                    table.insert(sourcebatch.sourcefiles, package_module_data.file)
+                    target:fileconfig_set(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
                 end
+            end
 
-                -- extract packages modules dependencies
-                local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
-                if package_modules_data then
-                    -- append to sourcebatch
-                    for _, package_module_data in table.orderpairs(package_modules_data) do
-                        table.insert(sourcebatch.sourcefiles, package_module_data.file)
-                        target:fileconfig_set(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
-                    end
-                end
+            opt.batchjobs = true
 
-                opt.batchjobs = true
+            compiler_support.patch_sourcebatch(target, sourcebatch, opt)
+            local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
 
-                compiler_support.patch_sourcebatch(target, sourcebatch, opt)
-                local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
-
+            if not target:is_moduleonly() then
                 -- avoid building non referenced modules
                 sourcebatch.objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
 
@@ -118,58 +118,57 @@ rule("c++.build.modules.builder")
 
                 -- cull external modules objectfile
                 compiler_support.cull_objectfiles(target, modules, sourcebatch)
-                compiler_support.localcache():set2(target:name(), "c++.modules", modules)
-                compiler_support.localcache():save()
             else
-                -- avoid duplicate linking of object files of non-module programs
                 sourcebatch.objectfiles = {}
             end
+
+            compiler_support.localcache():set2(target:name(), "c++.modules", modules)
+            compiler_support.localcache():save()
         else
-            sourcebatch.sourcefiles = {}
+            -- avoid duplicate linking of object files of non-module programs
             sourcebatch.objectfiles = {}
-            sourcebatch.dependfiles = {}
         end
     end, {batch = true})
 
     -- serial compilation only, usually used to support project generator
     before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
-        if not target:rule("c++.moduleonly") then
-            if target:data("cxx.has_modules") then
-                import("modules_support.compiler_support")
-                import("modules_support.dependency_scanner")
-                import("modules_support.builder")
+        if target:data("cxx.has_modules") then
+            import("modules_support.compiler_support")
+            import("modules_support.dependency_scanner")
+            import("modules_support.builder")
 
-                -- add target deps modules
-                if target:orderdeps() then
-                    local deps_sourcefiles = dependency_scanner.get_targetdeps_modules(target)
-                    if deps_sourcefiles then
-                        table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
-                    end
+            -- add target deps modules
+            if target:orderdeps() then
+                local deps_sourcefiles = dependency_scanner.get_targetdeps_modules(target)
+                if deps_sourcefiles then
+                    table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
                 end
+            end
 
-                -- append std module
-                local std_modules = compiler_support.get_stdmodules(target)
-                if std_modules then
-                    table.join2(sourcebatch.sourcefiles, std_modules)
-                    target:fileconfig_set(std_modules[1], {external = true})
-                    target:fileconfig_set(std_modules[2], {external = true})
+            -- append std module
+            local std_modules = compiler_support.get_stdmodules(target)
+            if std_modules then
+                table.join2(sourcebatch.sourcefiles, std_modules)
+                target:fileconfig_set(std_modules[1], {external = true})
+                target:fileconfig_set(std_modules[2], {external = true})
+            end
+
+            -- extract packages modules dependencies
+            local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
+            if package_modules_data then
+                -- append to sourcebatch
+                for _, package_module_data in table.orderpairs(package_modules_data) do
+                    table.insert(sourcebatch.sourcefiles, package_module_data.file)
+                    target:fileconfig_set(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
                 end
+            end
 
-                -- extract packages modules dependencies
-                local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
-                if package_modules_data then
-                    -- append to sourcebatch
-                    for _, package_module_data in table.orderpairs(package_modules_data) do
-                        table.insert(sourcebatch.sourcefiles, package_module_data.file)
-                        target:fileconfig_set(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
-                    end
-                end
+            opt.batchjobs = false
 
-                opt.batchjobs = false
+            compiler_support.patch_sourcebatch(target, sourcebatch, opt)
+            local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
 
-                compiler_support.patch_sourcebatch(target, sourcebatch, opt)
-                local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
-
+            if not target:is_moduleonly() then
                 -- avoid building non referenced modules
                 sourcebatch.objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
 
@@ -181,12 +180,13 @@ rule("c++.build.modules.builder")
 
                 -- cull external modules objectfile
                 compiler_support.cull_objectfiles(target, modules, sourcebatch)
-                compiler_support.localcache():set2(target:name(), "c++.modules", modules)
-                compiler_support.localcache():save()
             else
                 -- avoid duplicate linking of object files of non-module programs
                 sourcebatch.objectfiles = {}
             end
+
+            compiler_support.localcache():set2(target:name(), "c++.modules", modules)
+            compiler_support.localcache():save()
         else
             sourcebatch.sourcefiles = {}
             sourcebatch.objectfiles = {}
@@ -211,48 +211,6 @@ rule("c++.build.modules.builder")
         end
     end)
 
--- moduleonly
-rule("c++.moduleonly")
-    add_deps("c++.build.modules.install")
-    set_extensions(".mpp", ".mxx", ".cppm", ".ixx", ".cpp")
-
-    before_build(function(target)
-        if target:data("cxx.has_modules") then
-            import("modules_support.compiler_support")
-            import("modules_support.dependency_scanner")
-
-            local sourcebatch = target:sourcebatches()["c++.moduleonly"]
-
-            -- add target deps modules
-            if target:orderdeps() then
-                local deps_sourcefiles = dependency_scanner.get_targetdeps_modules(target)
-                if deps_sourcefiles then
-                    table.join2(sourcebatch.sourcefiles, deps_sourcefiles)
-                end
-            end
-
-            -- append std module
-            table.join2(sourcebatch.sourcefiles, compiler_support.get_stdmodules(target) or {})
-
-            -- extract packages modules dependencies
-            local package_modules_data = dependency_scanner.get_all_packages_modules(target, opt)
-            if package_modules_data then
-                -- append to sourcebatch
-                for _, package_module_data in table.orderpairs(package_modules_data) do
-                    table.insert(sourcebatch.sourcefiles, package_module_data.file)
-                    target:fileconfig_add(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
-                end
-            end
-
-            local opt = {batchjobs = true}
-
-            compiler_support.patch_sourcebatch(target, sourcebatch, opt)
-            local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
-            compiler_support.localcache():set2(target:name(), "c++.modules", modules)
-            compiler_support.localcache():save()
-        end
-    end)
-
 -- install modules
 rule("c++.build.modules.install")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
@@ -266,7 +224,7 @@ rule("c++.build.modules.install")
         if compiler_support.contains_modules(target) then
             local modules = compiler_support.localcache():get2(target:name(), "c++.modules")
             builder.generate_metadata(target, modules)
-  
+
             compiler_support.install_module_target(target)
         end
     end)
