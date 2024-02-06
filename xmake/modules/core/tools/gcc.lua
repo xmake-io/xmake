@@ -712,11 +712,11 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
     if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
         cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
             preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
-            tool = self, remote = true})
+            tool = self, remote = true, shell = opt.shell})
     elseif build_cache.is_enabled(opt.target) and build_cache.is_supported(self:kind()) then
         cppinfo = build_cache.build(program, argv, {envs = self:runenvs(),
             preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
-            tool = self})
+            tool = self, shell = opt.shell})
     end
     if cppinfo then
         return cppinfo.outdata, cppinfo.errdata
