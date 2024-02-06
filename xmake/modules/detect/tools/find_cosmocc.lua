@@ -42,7 +42,7 @@ function main(opt)
     if program and opt and opt.version then
         version = find_programver(program, opt)
     end
-    if program then
+    if program and is_host("windows") then
         program = program:gsub("\\", "/")
     end
     return program, version

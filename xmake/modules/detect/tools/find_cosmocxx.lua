@@ -38,6 +38,9 @@ function main(opt)
     opt = opt or {}
     opt.shell = true
     local program = find_program(opt.program or "cosmoc++", opt)
+    if program and is_host("windows") then
+        program = program:gsub("\\", "/")
+    end
     local version = nil
     if program and opt and opt.version then
         version = find_programver(program, opt)
