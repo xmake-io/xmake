@@ -45,9 +45,14 @@ end
 
 -- compile the source file
 function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
+    opt = opt or {}
     if is_host("windows") then
         sourcefile = sourcefile:gsub("\\", "/")
         objectfile = objectfile:gsub("\\", "/")
+        local target = opt.target
+        if target then
+            target:set("policy", "build.ccache", false)
+        end
     end
     return _super.compile(self, sourcefile, objectfile, dependinfo, flags, table.join(opt, {shell = true}))
 end
