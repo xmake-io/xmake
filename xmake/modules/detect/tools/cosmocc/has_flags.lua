@@ -112,7 +112,7 @@ function _check_try_running(flags, opt, islinker)
 
     -- check flags for compiler
     -- @note we cannot use os.nuldev() as the output file, maybe run failed for some flags, e.g. --coverage
-    return _try_running(opt.program, table.join(flags, "-S", "-o", tmpfile, sourcefile), opt)
+    return _try_running(opt.program, table.join(flags, "-o", tmpfile, sourcefile), opt)
 end
 
 -- has_flags(flags)?
