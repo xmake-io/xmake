@@ -804,10 +804,10 @@ function os.execv(program, argv, opt)
         local file = io.open(filename, 'r')
         for line in file:lines() do
             if line and line:startswith("#!") then
-                -- we cannot run `/bin/sh` directly on msys2/cygwin
+                -- we cannot run `/bin/sh` directly on windows
                 -- because `/bin/sh` is not real file path, maybe we need to convert it.
-                local subhost = os.subhost()
-                if subhost == "msys" or subhost == "cygwin" then
+                local host = os.host()
+                if host == "windows" then
                     filename = "sh"
                     argv = table.join(shellfile, argv)
                 else
