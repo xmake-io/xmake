@@ -202,4 +202,6 @@ function main(url, outputfile, opt)
     if tool then
         return _wget_download(tool, url, outputfile, opt)
     end
+
+    assert(tool, "curl or wget not found!")
 end
