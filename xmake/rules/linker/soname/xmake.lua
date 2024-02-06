@@ -45,7 +45,7 @@ rule("linker.soname")
             end
             local targetfile_with_soname = path.join(target:targetdir(), soname)
             local targetfile = target:targetfile()
-            if soname ~= filename and soname ~= path.filename(targetfile_with_version) then
+            if soname ~= filename and soname ~= path.filename(targetfile_with_version) and not os.islink(target:targetfile()) then
                 os.cp(target:targetfile(), targetfile_with_version)
                 os.rm(target:targetfile())
                 local oldir = os.cd(target:targetdir())
