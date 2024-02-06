@@ -519,13 +519,14 @@ end
 -- maybe we need to use os.vrunv() to show link output when enable verbose information
 -- @see https://github.com/xmake-io/xmake/discussions/2916
 --
-function link(self, objectfiles, targetkind, targetfile, flags)
+function link(self, objectfiles, targetkind, targetfile, flags, opt)
+    opt = opt or {}
     os.mkdir(path.directory(targetfile))
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
     if option.get("verbose") then
-        os.execv(program, argv, {envs = self:runenvs()})
+        os.execv(program, argv, {envs = self:runenvs(), shell = opt.shell})
     else
-        os.vrunv(program, argv, {envs = self:runenvs()})
+        os.vrunv(program, argv, {envs = self:runenvs(), shell = opt.shell})
     end
 end
 
@@ -705,17 +706,17 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
     opt = opt or {}
     local program, argv = compargv(self, sourcefile, objectfile, compflags)
     local function _compile_fallback()
-        return os.iorunv(program, argv, {envs = self:runenvs()})
+        return os.iorunv(program, argv, {envs = self:runenvs(), shell = opt.shell})
     end
     local cppinfo
     if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
         cppinfo = distcc_build_client.singleton():compile(program, argv, {envs = self:runenvs(),
             preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
-            tool = self, remote = true})
+            tool = self, remote = true, shell = opt.shell})
     elseif build_cache.is_enabled(opt.target) and build_cache.is_supported(self:kind()) then
         cppinfo = build_cache.build(program, argv, {envs = self:runenvs(),
             preprocess = _preprocess, compile = _compile_preprocessed_file, compile_fallback = _compile_fallback,
-            tool = self})
+            tool = self, shell = opt.shell})
     end
     if cppinfo then
         return cppinfo.outdata, cppinfo.errdata

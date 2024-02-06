@@ -15,10 +15,30 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        clangxx.lua
+-- @file        find_cosmoar.lua
 --
 
--- inherit clang
-inherit("clang")
+-- imports
+import("lib.detect.find_program")
 
-
+-- find ar
+--
+-- @param opt   the argument options, e.g. {version = true}
+--
+-- @return      program, version
+--
+-- @code
+--
+-- local ar = find_cosmoar()
+--
+-- @endcode
+--
+function main(opt)
+    opt = opt or {}
+    opt.shell = true
+    local program = find_program(opt.program or "cosmoar", opt)
+    if program and is_host("windows") then
+        program = program:gsub("\\", "/")
+    end
+    return program
+end

@@ -15,10 +15,24 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        clangxx.lua
+-- @file        cosmoar.lua
 --
 
--- inherit clang
-inherit("clang")
+inherit("ar")
 
+function init(self)
+    _super.init(self)
+end
 
+function link(self, objectfiles, targetkind, targetfile, flags, opt)
+    opt = opt or {}
+    if is_host("windows") then
+        targetfile = targetfile:gsub("\\", "/")
+        local objectfiles_new = {}
+        for idx, objectfile in ipairs(objectfiles) do
+            objectfiles_new[idx] = objectfiles[idx]:gsub("\\", "/")
+        end
+        objectfiles = objectfiles_new
+    end
+    return _super.link(self, objectfiles, targetkind, targetfile, flags, table.join(opt, {shell = true}))
+end

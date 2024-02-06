@@ -197,53 +197,52 @@ $ xmake f --menu
 
 ## Supported toolchains
 
-### IDE-Tied
-
-* Xcode
-* MSVC (Microsoft Visual C compiler)
-* Android NDK
-
-### Languages
-
-* Zig
-* Go(lang)
-* Swift
-* Nim
-* Rust
-* GCC (GNU Compiler Collection)
-* Clang
-* TinyCC
-* icc (Intel C Compiler)
-* icpc (Intel C++ Compiler)
-* icx (Intel LLVM C/C++ Compiler)
-* Clang-CL (Clang Compatability with MSVC)
-* DPC++ (Intel LLVM C++ Compiler using SYCL)
-* MinGW (GNU for Windows)
-* C51 (Keil C Compiler for the 8051)
-* GNU-RM (GNU Arm Embedded Toolchain)
-* ArmCC (Keil C Compiler for Keil MKD Version 5)
-* Circle (New C++20 compiler)
-* WASI (C/C++ WebAssembly Toolchain)
-* ArmClang (Version 6 of the Keil MDK)
-* SDCC (Small Device C Compiler)
-* GDC (GNU D Compiler)
-* LDC (LLVM D Compiler)
-* DMD (Dlang)
-* FPC (Free Pascal Programming Language Compiler)
-* GFortran (GNU Fortran Compiler)
-* Ifort (Intel Fortran Compiler)
-* CUDA (nvcc, nvc, nvc++, nvfortran)
-* Emscripten
-* LLVM
-* Icarus Verilog
-* Verilator (SystemVerilog simulator and lint system)
-
-### Assemblers
-
-* FASM
-* NASM
-* YASM
-* MASM32 (Microsoft Macro Assembler 32-bit SDK)
+```bash
+$ xmake show -l toolchains
+xcode         Xcode IDE
+msvc          Microsoft Visual C/C++ Compiler
+clang-cl      LLVM Clang C/C++ Compiler compatible with msvc
+yasm          The Yasm Modular Assembler
+clang         A C language family frontend for LLVM
+go            Go Programming Language Compiler
+dlang         D Programming Language Compiler (Auto)
+dmd           D Programming Language Compiler
+ldc           The LLVM-based D Compiler
+gdc           The GNU D Compiler (GDC)
+gfortran      GNU Fortran Programming Language Compiler
+zig           Zig Programming Language Compiler
+sdcc          Small Device C Compiler
+cuda          CUDA Toolkit (nvcc, nvc, nvc++, nvfortran)
+ndk           Android NDK
+rust          Rust Programming Language Compiler
+swift         Swift Programming Language Compiler
+llvm          A collection of modular and reusable compiler and toolchain technologies
+cross         Common cross compilation toolchain
+nasm          NASM Assembler
+gcc           GNU Compiler Collection
+mingw         Minimalist GNU for Windows
+gnu-rm        GNU Arm Embedded Toolchain
+envs          Environment variables toolchain
+fasm          Flat Assembler
+tinycc        Tiny C Compiler
+emcc          A toolchain for compiling to asm.js and WebAssembly
+icc           Intel C/C++ Compiler
+ifort         Intel Fortran Compiler
+muslcc        The musl-based cross-compilation toolchain
+fpc           Free Pascal Programming Language Compiler
+wasi          WASI-enabled WebAssembly C/C++ toolchain
+nim           Nim Programming Language Compiler
+circle        A new C++20 compiler
+armcc         ARM Compiler Version 5 of Keil MDK
+armclang      ARM Compiler Version 6 of Keil MDK
+c51           Keil development tools for the 8051 Microcontroller Architecture
+icx           Intel LLVM C/C++ Compiler
+dpcpp         Intel LLVM C++ Compiler for data parallel programming model based on Khronos SYCL
+masm32        The MASM32 SDK
+iverilog      Icarus Verilog
+verilator     Verilator open-source SystemVerilog simulator and lint system
+cosmocc       build-once run-anywhere
+```
 
 ## Supported languages
 

@@ -552,8 +552,8 @@ function platform.archs(plat, arch)
     return platform.get("archs", plat, arch)
 end
 
--- get the format of the given target kind for platform
-function platform.format(targetkind, plat, arch)
+-- get the format of the given kind for platform
+function platform.format(kind, plat, arch)
 
     -- get platform instance
     local instance, errors = platform.load(plat, arch)
@@ -564,7 +564,7 @@ function platform.format(targetkind, plat, arch)
     -- get formats
     local formats = instance:formats()
     if formats then
-        return formats[targetkind]
+        return formats[kind]
     end
 end
 

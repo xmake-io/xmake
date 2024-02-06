@@ -542,6 +542,23 @@ function _instance:_checked_target()
     return checked_target
 end
 
+-- get format
+function _instance:_format(kind)
+    local formats = self._FORMATS
+    if not formats then
+        for _, toolchain_inst in ipairs(self:toolchains()) do
+            formats = toolchain_inst:get("formats")
+            if formats then
+                break
+            end
+        end
+        self._FORMATS = formats
+    end
+    if formats then
+        return formats[kind or self:kind()]
+    end
+end
+
 -- clone target, @note we can just call it in after_load()
 function _instance:clone()
     if not self:_is_loaded() then
@@ -1575,6 +1592,7 @@ function _instance:filename()
         local suffixname = self:get("suffixname")
         local extension  = self:get("extension")
         filename = target.filename(self:basename(), targetkind, {
+            format = self:_format(),
             plat = self:plat(), arch = self:arch(),
             prefixname = prefixname,
             suffixname = suffixname,
@@ -1620,6 +1638,7 @@ function _instance:symbolfile()
     local suffixname = self:get("suffixname")
     local filename = target.filename(self:basename(), "symbol", {
         plat = self:plat(), arch = self:arch(),
+        format = self:_format("symbol"),
         prefixname = prefixname,
         suffixname = suffixname})
     assert(filename)
@@ -1924,7 +1943,10 @@ end
 -- get object file from source file
 function _instance:objectfile(sourcefile)
     return self:autogenfile(sourcefile, {rootdir = self:objectdir(),
-        filename = target.filename(path.filename(sourcefile), "object", {plat = self:plat(), arch = self:arch()})})
+        filename = target.filename(path.filename(sourcefile), "object", {
+            plat = self:plat(),
+            arch = self:arch(),
+            format = self:_format("object")})})
 end
 
 -- get the object files
@@ -2939,8 +2961,6 @@ end
 
 -- get the filename from the given target name and kind
 function target.filename(targetname, targetkind, opt)
-
-    -- check
     opt = opt or {}
     assert(targetname and targetkind)
 

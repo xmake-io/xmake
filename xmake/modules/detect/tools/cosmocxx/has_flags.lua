@@ -15,10 +15,9 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        clangxx.lua
+-- @file        has_flags.lua
 --
 
--- inherit clang
-inherit("clang")
-
+-- imports
+inherit("detect.tools.cosmocc.has_flags")
 

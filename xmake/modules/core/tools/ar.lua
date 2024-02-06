@@ -49,7 +49,8 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 end
 
 -- link the library file
-function link(self, objectfiles, targetkind, targetfile, flags)
+function link(self, objectfiles, targetkind, targetfile, flags, opt)
+    opt = opt or {}
     os.mkdir(path.directory(targetfile))
 
     -- @note remove the previous archived file first to force recreating a new file
@@ -57,7 +58,7 @@ function link(self, objectfiles, targetkind, targetfile, flags)
 
     -- link it
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
-    os.runv(program, argv, {envs = self:runenvs()})
+    os.runv(program, argv, {envs = self:runenvs(), shell = opt.shell})
 end
 
 

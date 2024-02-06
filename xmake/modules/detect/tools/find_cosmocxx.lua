@@ -15,10 +15,35 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        clangxx.lua
+-- @file        find_cosmocxx.lua
 --
 
--- inherit clang
-inherit("clang")
+-- imports
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
-
+-- find cosmocxx
+--
+-- @param opt   the argument options, e.g. {version = true}
+--
+-- @return      program, version
+--
+-- @code
+--
+-- local cosmocxx = find_cosmocxx()
+--
+-- @endcode
+--
+function main(opt)
+    opt = opt or {}
+    opt.shell = true
+    local program = find_program(opt.program or "cosmoc++", opt)
+    if program and is_host("windows") then
+        program = program:gsub("\\", "/")
+    end
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program, opt)
+    end
+    return program, version
+end

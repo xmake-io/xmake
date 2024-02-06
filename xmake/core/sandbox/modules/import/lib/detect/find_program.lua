@@ -47,7 +47,7 @@ function sandbox_lib_detect_find_program._do_check(program, opt)
 
     -- no check script? attempt to run it directly
     if not opt.check then
-        local ok, errors = os.runv(program, {"--version"}, {envs = opt.envs})
+        local ok, errors = os.runv(program, {"--version"}, {envs = opt.envs, shell = opt.shell})
         if not ok and option.get("verbose") and option.get("diagnosis") then
             utils.cprint("${color.warning}checkinfo: ${clear dim}" .. errors)
         end
@@ -58,9 +58,9 @@ function sandbox_lib_detect_find_program._do_check(program, opt)
     local ok = false
     local errors = nil
     if type(opt.check) == "string" then
-        ok, errors = os.runv(program, {opt.check}, {envs = opt.envs})
+        ok, errors = os.runv(program, {opt.check}, {envs = opt.envs, shell = opt.shell})
     elseif type(opt.check) == "table" then
-        ok, errors = os.runv(program, opt.check, {envs = opt.envs})
+        ok, errors = os.runv(program, opt.check, {envs = opt.envs, shell = opt.shell})
     else
         ok, errors = sandbox.load(opt.check, program)
     end
