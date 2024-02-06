@@ -303,6 +303,7 @@ dpcpp         Intel LLVM C++ Compiler for data parallel programming model based 
 masm32        The MASM32 SDK
 iverilog      Icarus Verilog
 verilator     Verilator open-source SystemVerilog simulator and lint system
+cosmocc       build-once run-anywhere
 ```
 
 ## 支持语言
