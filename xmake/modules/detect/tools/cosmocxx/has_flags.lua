@@ -19,5 +19,5 @@
 --
 
 -- imports
-inherit("detect.tools.gcc.has_flags")
+inherit("detect.tools.cosmocc.has_flags")
 
