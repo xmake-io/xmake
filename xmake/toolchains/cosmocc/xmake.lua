@@ -25,7 +25,6 @@ toolchain("cosmocc")
 
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
-    set_formats("binary", "$(name).com")
     set_formats("symbol", "$(name).sym")
 
     set_toolset("cc",     "cosmocc")
