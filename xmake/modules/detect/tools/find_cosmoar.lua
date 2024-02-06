@@ -15,14 +15,13 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_cosmocc.lua
+-- @file        find_cosmoar.lua
 --
 
 -- imports
 import("lib.detect.find_program")
-import("lib.detect.find_programver")
 
--- find cosmocc
+-- find ar
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
@@ -30,20 +29,16 @@ import("lib.detect.find_programver")
 --
 -- @code
 --
--- local cosmocc = find_cosmocc()
+-- local ar = find_cosmoar()
 --
 -- @endcode
 --
 function main(opt)
     opt = opt or {}
     opt.shell = true
-    local program = find_program(opt.program or "cosmocc", opt)
+    local program = find_program(opt.program or "cosmoar", opt)
     if program and is_host("windows") then
         program = program:gsub("\\", "/")
     end
-    local version = nil
-    if program and opt and opt.version then
-        version = find_programver(program, opt)
-    end
-    return program, version
+    return program
 end

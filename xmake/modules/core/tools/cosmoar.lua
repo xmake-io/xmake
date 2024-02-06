@@ -15,35 +15,24 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_cosmocc.lua
+-- @file        cosmoar.lua
 --
 
--- imports
-import("lib.detect.find_program")
-import("lib.detect.find_programver")
+inherit("ar")
 
--- find cosmocc
---
--- @param opt   the argument options, e.g. {version = true}
---
--- @return      program, version
---
--- @code
---
--- local cosmocc = find_cosmocc()
---
--- @endcode
---
-function main(opt)
+function init(self)
+    _super.init(self)
+end
+
+function link(self, objectfiles, targetkind, targetfile, flags, opt)
     opt = opt or {}
-    opt.shell = true
-    local program = find_program(opt.program or "cosmocc", opt)
-    if program and is_host("windows") then
-        program = program:gsub("\\", "/")
+    if is_host("windows") then
+        targetfile = targetfile:gsub("\\", "/")
+        local objectfiles_new = {}
+        for idx, objectfile in ipairs(objectfiles) do
+            objectfiles_new[idx] = objectfiles[idx]:gsub("\\", "/")
+        end
+        objectfiles = objectfiles_new
     end
-    local version = nil
-    if program and opt and opt.version then
-        version = find_programver(program, opt)
-    end
-    return program, version
+    return _super.link(self, objectfiles, targetkind, targetfile, flags, table.join(opt, {shell = true}))
 end

@@ -32,6 +32,7 @@ end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags, opt)
+    opt = opt or {}
     if is_host("windows") then
         targetfile = targetfile:gsub("\\", "/")
         local objectfiles_new = {}
