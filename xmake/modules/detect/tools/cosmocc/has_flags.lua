@@ -64,7 +64,7 @@ function _check_from_arglist(flags, opt, islinker)
     local allflags = detectcache:get2(key, flagskey)
     if not allflags then
         allflags = {}
-        local arglist = try {function () return os.iorunv(opt.program, {islinker and "-Wl,--help" or "--help"}, {envs = opt.envs}) end}
+        local arglist = try {function () return os.iorunv(opt.program, {islinker and "-Wl,--help" or "--help"}, {envs = opt.envs, shell = true}) end}
         if arglist then
             for arg in arglist:gmatch("%s+(%-[%-%a%d]+)%s+") do
                 allflags[arg] = true
