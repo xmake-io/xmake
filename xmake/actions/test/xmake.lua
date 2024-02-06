@@ -34,7 +34,7 @@ task("test")
                                               "e.g.",
                                               "    xmake test -w .",
                                               "    xmake test --workdir=`pwd`"                                      },
-            {'j', "jobs",       "kv", "1",    "Set the number of parallel compilation jobs."                        },
+            {'j', "jobs",       "kv", tostring(os.default_njob()), "Set the number of parallel compilation jobs."   },
             {'r', "rebuild",    "k",  nil   , "Rebuild the target."                                                 },
             {},
             {nil, "tests",     "vs",  nil   , "The test names. It support pattern matching.",

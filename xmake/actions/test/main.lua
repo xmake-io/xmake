@@ -269,7 +269,7 @@ function _run_tests(tests)
     local spent = os.mclock()
     print("running tests ...")
     local report = {passed = 0, total = #ordertests}
-    local jobs = tonumber(option.get("jobs") or "1")
+    local jobs = tonumber(option.get("jobs")) or os.default_njob()
     runjobs("run_tests", function (index)
         local testinfo = ordertests[index]
         if testinfo then
