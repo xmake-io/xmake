@@ -67,7 +67,7 @@ end
 function cull_objectfiles(target, modules, sourcebatch)
 
     -- don't cull for executables
-    if target:kind() == "binary" then
+    if target:is_binary() then
         return
     end
 
@@ -76,7 +76,6 @@ function cull_objectfiles(target, modules, sourcebatch)
         local objectfile = target:objectfile(sourcefile)
         local module = modules[objectfile]
         local _, provide, _ = get_provided_module(module)
-
         if provide then
             local fileconfig = target:fileconfig(sourcefile)
             local public = fileconfig and fileconfig.public
