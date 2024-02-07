@@ -101,6 +101,7 @@ rule("c++.build.modules.builder")
                 end
             end
 
+            opt = opt or {}
             opt.batchjobs = true
 
             compiler_support.patch_sourcebatch(target, sourcebatch, opt)
@@ -163,6 +164,7 @@ rule("c++.build.modules.builder")
                 end
             end
 
+            opt = opt or {}
             opt.batchjobs = false
 
             compiler_support.patch_sourcebatch(target, sourcebatch, opt)

@@ -41,7 +41,7 @@ function _make_modulebuildflags(target, provide, bmifile, opt)
 
     local flags
     if provide then -- named module
-        flags = table.join({"-TP", ifcoutputflag, bmifile, provide.interface and interfaceflag or internalpartitionflag}, ifconly or {})
+        flags = table.join({"-TP", ifcoutputflag, path(bmifile), provide.interface and interfaceflag or internalpartitionflag}, ifconly or {})
     else
         flags = {"-TP"}
     end
@@ -102,8 +102,8 @@ function _batchcmds_compile(batchcmds, target, flags, sourcefile, outputfile)
     opt = opt or {}
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
-    flags = table.join("-c", compflags or {}, flags, {"/Fo", outputfile, sourcefile})
-    batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx"})
+    flags = table.join(compflags or {}, flags)
+    batchcmds:compile(sourcefile, outputfile, {sourcekind = "cxx", compflags = flags})
 end
 
 -- get module requires flags
