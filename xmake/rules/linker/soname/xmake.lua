@@ -34,6 +34,7 @@ rule("linker.soname")
     end)
 
     after_link(function (target)
+        import("core.project.depend")
         local soname = target:soname()
         if target:is_shared() and soname and target:data("soname.enabled") then
             local version = target:version()
@@ -45,13 +46,18 @@ rule("linker.soname")
             end
             local targetfile_with_soname = path.join(target:targetdir(), soname)
             local targetfile = target:targetfile()
-            if soname ~= filename and soname ~= path.filename(targetfile_with_version) and not os.islink(target:targetfile()) then
-                os.cp(target:targetfile(), targetfile_with_version)
-                os.rm(target:targetfile())
-                local oldir = os.cd(target:targetdir())
-                os.ln(path.filename(targetfile_with_version), soname, {force = true})
-                os.ln(soname, path.filename(targetfile), {force = true})
-                os.cd(oldir)
+            if soname ~= filename and soname ~= path.filename(targetfile_with_version) then
+                depend.on_changed(function ()
+                    os.cp(target:targetfile(), targetfile_with_version)
+                    os.rm(target:targetfile())
+                    local oldir = os.cd(target:targetdir())
+                    os.ln(path.filename(targetfile_with_version), soname, {force = true})
+                    os.ln(soname, path.filename(targetfile), {force = true})
+                    os.cd(oldir)
+                end, {dependfile = target:dependfile(targetfile_with_version),
+                      files = {target:targetfile()},
+                      values = {soname, version},
+                      changed = target:is_rebuilt()})
             end
         end
     end)
