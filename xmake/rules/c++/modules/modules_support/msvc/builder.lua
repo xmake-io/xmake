@@ -278,7 +278,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 end
 
 -- build module file for batchcmds
-function make_module_buildcmds(target, batchcmds, should_build, mark_build, opt)
+function make_module_buildcmds(target, batchcmds, opt)
 
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
