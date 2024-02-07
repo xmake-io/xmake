@@ -131,6 +131,13 @@ function _translate_arguments(arguments)
                 if v and v:find(' ', 1, true) then
                     arg = f .. "\"" .. v .. "\""
                 end
+            elseif arg:startswith("-ccbin=") then
+                -- @see https://github.com/xmake-io/xmake/issues/4716
+                local f = arg:sub(1, 7)
+                local v = arg:sub(8)
+                if v then
+                    arg = f .. v:gsub("\\\\", "\\")
+                end
             end
         end
         if arg == "-I" then
