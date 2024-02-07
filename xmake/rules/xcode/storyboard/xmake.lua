@@ -18,7 +18,6 @@
 -- @file        xmake.lua
 --
 
--- define rule
 rule("xcode.storyboard")
 
     -- support add_files("*.storyboard")
@@ -56,6 +55,7 @@ rule("xcode.storyboard")
 
         -- clear Base.lproj first
         os.tryrm(base_lproj)
+        os.mkdir(base_lproj)
 
         -- do compile
         local target_minver = nil
