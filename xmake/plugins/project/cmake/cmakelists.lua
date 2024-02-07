@@ -323,6 +323,11 @@ function _add_target_headeronly(cmakelists, target)
     cmakelists:print("add_library(%s INTERFACE)", target:name())
 end
 
+-- add target: headeronly
+function _add_target_moduleonly(cmakelists, target)
+    cmakelists:print("add_library(%s INTERFACE)", target:name())
+end
+
 -- add target dependencies
 function _add_target_dependencies(cmakelists, target)
     local deps = target:get("deps")
@@ -1003,8 +1008,8 @@ function _add_target(cmakelists, target, outputdir)
         _add_target_headeronly(cmakelists, target)
         _add_target_include_directories(cmakelists, target, outputdir)
         return
-    elseif targetkind == 'moduleonly' then
-        raise("target kind moduleonly is currently not supported for cmakelists")
+    elseif targetkind == 'headeronly' then
+        _add_target_moduleonly(cmakelists, target)
     else
         raise("unknown target kind %s", target:kind())
     end
