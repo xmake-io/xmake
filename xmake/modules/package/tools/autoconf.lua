@@ -324,6 +324,9 @@ function buildenvs(package, opt)
                 envs.CPP      = _translate_windows_bin_path(envs.CPP)
                 envs.RANLIB   = _translate_windows_bin_path(envs.RANLIB)
             end
+        elseif package:is_plat("macosx") then
+            -- force to apply shflags on macosx https://gmplib.org/manual/Known-Build-Problems
+            envs.CC = envs.CC .. " -arch " .. package:arch()
         elseif package:is_plat("cross") or package:has_tool("ar", "ar", "emar") then
             -- only for cross-toolchain
             envs.CXX = package:build_getenv("cxx")
