@@ -287,8 +287,7 @@ end
 
 function generate_metadata(target, modules)
     local public_modules
-
-    for _, module in pairs(modules) do
+    for _, module in table.orderpairs(modules) do
         local _, _, cppfile = compiler_support.get_provided_module(module)
         local fileconfig = target:fileconfig(cppfile)
         local public = fileconfig and fileconfig.public
