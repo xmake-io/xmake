@@ -209,7 +209,11 @@ function get_stdmodules(target)
                 -- @see https://github.com/llvm/llvm-project/pull/76451 (has been revert, so we need to wait)
                 local clang_path = path.directory(get_clang_path(target))
                 local clang_lib_path = path.join(clang_path, "..", "lib")
-                local modules_json_path = find_file("*libc++.modules.json", clang_lib_path)
+                local modules_json_path = find_file("libc++.modules.json", clang_lib_path)
+                -- maybe in subdir
+                if not modules_json_path then
+                    modules_json_path = find_file("*/libc++.modules.json", clang_lib_path)
+                end
                 if modules_json_path then
                     local modules_json = json.decode(io.readfile(modules_json_path))
                     local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
