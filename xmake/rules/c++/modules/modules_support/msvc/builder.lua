@@ -38,7 +38,6 @@ function _make_modulebuildflags(target, provide, bmifile, opt)
     local interfaceflag = compiler_support.get_interfaceflag(target)
     local internalpartitionflag = compiler_support.get_internalpartitionflag(target)
     local ifconly = (not opt.build_objectfile and ifconlyflag)
-    print("AAAAAAAAAAAAAAAA", bmifile, opt.build_objectfile)
 
     local flags
     if provide then -- named module
