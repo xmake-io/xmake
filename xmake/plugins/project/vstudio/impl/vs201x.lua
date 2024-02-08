@@ -546,6 +546,13 @@ function make(outputdir, vsinfo)
                 -- save file groups
                 _target.filegroups = table.unique(table.join(_target.filegroups or {}, target:get("filegroups")))
 
+                -- save references to deps
+                for _, dep in ipairs(target:orderdeps()) do
+                    _target.deps = _target.deps or {}
+                    local dep_name = dep:name()
+                    _target.deps[dep_name] = path.relative(path.join(vsinfo.solution_dir, dep_name, dep_name .. ".vcxproj"), _target.project_dir)
+                end
+
                 for filegroup, groupconf in pairs(target:extraconf("filegroups")) do
                     _target.filegroups_extraconf = _target.filegroups_extraconf or {}
                     local mergedconf = _target.filegroups_extraconf[filegroup]

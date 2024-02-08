@@ -218,6 +218,17 @@ function _make_header(vcxprojfile, vsinfo)
     vcxprojfile:enter("<Project DefaultTargets=\"Build\" ToolsVersion=\"%s.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">", assert(vsinfo.project_version))
 end
 
+-- make references
+function _make_references(vcxprojfile, vsinfo, target)
+    vcxprojfile:print("<ItemGroup>")
+    for dep_name, dep_vcxprojfile in pairs(target.deps) do
+        vcxprojfile:print("<ProjectReference Include=\"%s\">", dep_vcxprojfile)
+            vcxprojfile:print("<Project>{%s}</Project>", hash.uuid4(dep_name))
+        vcxprojfile:print("</ProjectReference>")
+    end
+    vcxprojfile:print("</ItemGroup>")
+end
+
 -- make tailer
 function _make_tailer(vcxprojfile, vsinfo, target)
     vcxprojfile:print("<Import Project=\"%$(VCTargetsPath)\\Microsoft.Cpp.targets\" />")
@@ -1404,6 +1415,9 @@ function make(vsinfo, target)
 
     -- make source files
     _make_source_files(vcxprojfile, vsinfo, target)
+
+    -- make deps references
+    _make_references(vcxprojfile, vsinfo, target)
 
     -- make tailer
     _make_tailer(vcxprojfile, vsinfo, target)
