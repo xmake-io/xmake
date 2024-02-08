@@ -326,7 +326,7 @@ end
 
 -- add target: headeronly
 function _add_target_moduleonly(cmakelists, target)
-    cmakelists:print("add_library(%s INTERFACE)", target:name())
+    cmakelists:print("add_custom_target(%s)", target:name())
 end
 
 -- add target dependencies
@@ -1012,6 +1012,7 @@ function _add_target(cmakelists, target, outputdir)
         return
     elseif targetkind == 'moduleonly' then
         _add_target_moduleonly(cmakelists, target)
+        return
     else
         raise("unknown target kind %s", target:kind())
     end
