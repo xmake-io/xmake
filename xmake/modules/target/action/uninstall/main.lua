@@ -26,6 +26,12 @@ function _uninstall_files(target)
     end
 end
 
+-- uninstall modules
+function _uninstall_modules(target, opt)
+    local moduledir = path.join(target:installdir(), opt and opt.moduledir or "modules")
+    os.vrm(moduledir)
+end
+
 -- the builtin uninstall main entry
 function main(target, opt)
 
@@ -46,6 +52,9 @@ function main(target, opt)
             script(target, opt)
         end
     end
+
+    -- remove modules
+    _uninstall_modules(target, opt)
 
     -- uninstall the other files
     _uninstall_files(target)
