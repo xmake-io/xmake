@@ -38,6 +38,7 @@ function _make_modulebuildflags(target, provide, bmifile, opt)
     local interfaceflag = compiler_support.get_interfaceflag(target)
     local internalpartitionflag = compiler_support.get_internalpartitionflag(target)
     local ifconly = (not opt.build_objectfile and ifconlyflag)
+    print("AAAAAAAAAAAAAAAA", bmifile, opt.build_objectfile)
 
     local flags
     if provide then -- named module
@@ -313,7 +314,7 @@ function make_module_buildcmds(target, batchcmds, opt)
             local public = fileconfig and fileconfig.public
             local external = fileconfig and fileconfig.external
             local build_objectfile = target:kind() == "binary" or (not public and not external)
-            local flags = _make_modulebuildflags(target, provide, bmifile, opt.cppfile, {batchcmds = true, build_objectfile = build_objectfile})
+            local flags = _make_modulebuildflags(target, provide, bmifile, {build_objectfile = build_objectfile})
             _batchcmds_compile(batchcmds, target, flags, opt.cppfile, opt.objectfile)
         else
             batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files
