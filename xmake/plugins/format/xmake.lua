@@ -28,10 +28,20 @@ task("format")
                     {'s', "style",  "kv", nil,  "Set the path of .clang-format file, a coding style",
                                                 values = {"LLVM", "Google", "Chromium", "Mozilla", "WebKit"}},
                     {nil, "create", "k", nil,   "Create a .clang-format file from a coding style"},
-                    {'f', "files",  "v", nil,   "Set files path with pattern",
+                    {'g', "group", "kv", nil,   "Format all targets of the given group. It support path pattern matching.",
+                                                "e.g.", 
+                                                "    xmake format -g test",
+                                                "    xmake format -g test_*",
+                                                "    xmake format --group=benchmark/*"},
+                    {'f', "files",  "kv", nil,   "Build the given source files.",
                                                 "e.g.",
-                                                "    - xmake format -f src/main.c",
-                                                "    - xmake format -f 'src/*.c" .. path.envsep() .. "src/**.cpp'"}
+                                                "    - xmake format --files=src/main.c",
+                                                "    - xmake format --files='src/*.c' [target]",
+                                                "    - xmake format --files='src/**.c|excluded_file.c",
+                                                "    - xmake format --files='src/main.c" .. path.envsep() .. "src/test.c'" },
+                                                {},
+                    {nil, "target", "v",  nil, "The target name. It will format all default targets if this parameter is not specified."
+                                                    , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
                 }
             }
 
