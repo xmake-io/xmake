@@ -210,7 +210,6 @@ function get_stdmodules(target)
                 local clang_path = path.directory(get_clang_path(target))
                 local clang_lib_path = path.join(clang_path, "..", "lib")
                 local modules_json_path = path.join(clang_lib_path, "libc++.modules.json")
-                -- maybe in subdir
                 if not os.isfile(modules_json_path) then
                     modules_json_path = find_file("*/libc++.modules.json", clang_lib_path)
                 end
