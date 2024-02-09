@@ -47,7 +47,7 @@ task("build")
                                                       "e.g. ",
                                                       "    - xmake --files=src/main.c",
                                                       "    - xmake --files='src/*.c' [target]",
-                                                      "    - xmake --files='src/**c|excluded_file.c'",
+                                                      "    - xmake --files='src/**.c|excluded_file.c'",
                                                       "    - xmake --files='src/main.c" .. path.envsep() .. "src/test.c'"  }
 
                 ,   {}
