@@ -49,6 +49,11 @@ function load(target)
     _compiler_support(target).load(target)
 end
 
+-- strip flags not relevent for module reuse
+function strip_flags(target, flags)
+    return _compiler_support(target).strip_flags(target, flags)
+end
+
 -- patch sourcebatch
 function patch_sourcebatch(target, sourcebatch)
     sourcebatch.sourcekind = "cxx"

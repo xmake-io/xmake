@@ -107,6 +107,43 @@ function load(target)
     end
 end
 
+-- strip flags that doesn't affect bmi generation
+function strip_flags(target, flags)
+    -- speculative list as there is no resource that list flags that prevent reusability, this list will likely be improve over time
+    -- @see https://clang.llvm.org/docs/StandardCPlusPlusModules.html#consistency-requirement
+    local strippable_flags = {
+        "-I",
+        "-isystem",
+        "-g",
+        "-O",
+        "-W",
+        "-w",
+        "-cxx-isystem",
+        "-Q",
+    }
+    if not target:policy("build.c++.modules.tryreuse.discriminate_on_defines") then
+        table.join2(strippable_flags, {"-D", "-U"})
+    end
+    local output = {}
+    local last_flag_I = false
+    for _, flag in ipairs(flags) do
+        local strip = false
+
+        for _, _flag in ipairs(strippable_flags) do
+            if flag:startswith(_flag) or last_flag_I then
+                last_flag_I = _flag == "-I"
+                strip = true
+                break
+            end
+        end
+
+        if not strip then
+            table.insert(output, flag)
+        end
+    end
+    return output
+end
+
 -- provide toolchain include directories for stl headerunit when p1689 is not supported
 function toolchain_includedirs(target)
     local includedirs = _g.includedirs

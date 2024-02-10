@@ -33,7 +33,6 @@ import("dependency_scanner")
 -- build target modules
 function _build_modules(target, sourcebatch, modules, opt)
     local objectfiles = sourcebatch.objectfiles
-    _builder(target).populate_module_map(target, modules)
 
     -- build modules
     for _, objectfile in ipairs(objectfiles) do
@@ -81,20 +80,91 @@ function _build_headerunits(target, headerunits, opt)
     end
 end
 
+-- check if flags are compatible for module reuse
+function _are_flags_compatible(target, other, cppfile)
+  local compinst1 = target:compiler("cxx")
+  local flags1 = compinst1:compflags({sourcefile = cppfile, target = target})
+
+  local compinst2 = other:compiler("cxx")
+  local flags2 = compinst2:compflags({sourcefile = cppfile, target = other})
+
+  -- strip unrelevent flags
+  flags1 = compiler_support.strip_flags(target, flags1)
+  flags2 = compiler_support.strip_flags(target, flags2)
+
+  if #flags1 ~= #flags2 then
+      return false
+  end
+
+  table.sort(flags1)
+  table.sort(flags2)
+
+  for i = 1,#flags1 do
+      if flags1[i] ~= flags2[i] then
+          return false
+      end
+  end
+
+  return true
+end
+
+-- try to reuse modules from other target
+function _try_reuse_modules(target, modules)
+    for _, module in pairs(modules) do
+        local name, provide, cppfile = compiler_support.get_provided_module(module)
+        if not provide then
+            goto CONTINUE
+        end
+
+        cppfile = cppfile or module.cppfile
+
+        local fileconfig = target:fileconfig(cppfile)
+        local public = fileconfig and (fileconfig.public or fileconfig.external)
+        if not public then
+            goto CONTINUE
+        end
+
+        for _, dep in ipairs(target:orderdeps()) do
+            if not _are_flags_compatible(target, dep, cppfile) then
+                goto NEXT
+            end
+            local mapped = get_from_target_mapper(dep, name)
+            if mapped then
+                compiler_support.memcache():set2(target:name() .. name, "reuse", true)
+                add_module_to_target_mapper(target, mapped.name, mapped.sourcefile, mapped.bmi, table.join(mapped.opt or {}, {target = dep}))
+                break
+            end
+            ::NEXT::
+        end
+
+        ::CONTINUE::
+    end
+    return modules
+end
+
 -- should we build this module or headerunit ?
 function should_build(target, sourcefile, bmifile, opt)
 
     -- force rebuild a module if any of its module dependency is rebuilt
-    local requires = opt.requires
+    local requires = opt and opt.requires
     if requires then
         for required, _ in table.orderpairs(requires) do
             local m = get_from_target_mapper(target, required)
             if m then
-                local rebuild = compiler_support.memcache():get2("should_build_in" .. target:name(), m.key)
+                local rebuild = (m.opt and m.opt.target) and compiler_support.memcache():get2("should_build_in_" .. m.opt.target:name(), m.key)
+                                                         or compiler_support.memcache():get2("should_build_in_" .. target:name(), m.key)
                 if rebuild then
                     return true
                 end
             end
+        end
+    end
+
+    -- reused
+    if opt and opt.name then
+        local m = get_from_target_mapper(target, opt.name)
+        if m and m.opt and m.opt.target then
+            return compiler_support.memcache():get2("should_build_in_" .. m.opt.target:name(), m.key)
         end
     end
 
@@ -175,7 +245,7 @@ function _builder(target)
 end
 
 function mark_build(target, name)
-    compiler_support.memcache():set2("should_build_in" .. target:name(), name, true)
+    compiler_support.memcache():set2("should_build_in_" .. target:name(), name, true)
 end
 
 -- build batchjobs for modules
@@ -188,6 +258,11 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
 
     opt.rootjob = batchjobs:group_leave() or opt.rootjob
     batchjobs:group_enter(target:name() .. "/build_modules", {rootjob = opt.rootjob})
+
+    batchjobs:addjob(target:name() .. "_populate_module_map", function(_, _)
+        _try_reuse_modules(target, modules)
+        _builder(target).populate_module_map(target, modules)
+    end, {rootjob = opt.rootjob})
 
     local modulesjobs = {}
     _build_modules(target, sourcebatch, modules, table.join(opt, {
@@ -207,6 +282,9 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
 
     local depmtime = 0
     opt.progress = opt.progress or 0
+
+    _try_reuse_modules(target, modules)
+    _builder(target).populate_module_map(target, modules)
 
     -- build modules
     _build_modules(target, sourcebatch, modules, table.join(opt, {
@@ -352,7 +430,9 @@ end
 -- add a module to target mapper
 function add_module_to_target_mapper(target, name, sourcefile, bmifile, opt)
     local mapper = get_target_module_mapper(target)
-    mapper[name] = {name = name, key = name, bmi = bmifile, sourcefile = sourcefile, opt = opt}
+    if not mapper[name] then
+        mapper[name] = {name = name, key = name, bmi = bmifile, sourcefile = sourcefile, opt = opt}
+    end
     flush_target_module_mapper_keys(target)
 end
 
