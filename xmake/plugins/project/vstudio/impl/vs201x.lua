@@ -185,7 +185,6 @@ function _make_custom_commands_for_objectrules(commands, target, sourcebatch, vc
         scriptname = "buildcmd_file" .. (suffix and ("_" .. suffix) or "")
         script = ruleinst:script(scriptname)
         if script then
-            local sourcekind = sourcebatch.sourcekind
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local batchcmds_ = batchcmds.new({target = target})
                 script(target, batchcmds_, sourcefile, {})
@@ -219,7 +218,7 @@ function _make_custom_commands(target, vcxprojdir)
     for _, sourcebatch in table.orderpairs(sourcebatches) do
         local rulename = sourcebatch.rulename
         local sourcekind = sourcebatch.sourcekind
-        if rulename ~= "c.build" and rulename ~= "c++.build" and rulename ~= "asm.build" and rulename ~= "cuda.build" and sourcekind ~= "mrc" then
+        if rulename ~= "c.build" and rulename ~= "c++.build" and not rulename:startswith("c++.build.modules") and rulename ~= "asm.build" and rulename ~= "cuda.build" and sourcekind ~= "mrc" then
             _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, "before")
             _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, nil)
             _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, "after")
@@ -256,6 +255,9 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     -- save symbols
     targetinfo.symbols = target:get("symbols")
 
+    -- has modules
+    targetinfo.has_modules = target:data("cxx.has_modules")
+
     -- save target kind
     targetinfo.targetkind = target:kind()
     if target:is_phony() or target:is_headeronly() then
@@ -267,9 +269,6 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
 
     -- save symbol file
     targetinfo.symbolfile = target:symbolfile()
-
-    -- save sourcebatches
-    targetinfo.sourcebatches = target:sourcebatches()
 
     -- save sourcekinds
     targetinfo.sourcekinds = target:sourcekinds()
@@ -289,9 +288,9 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
         local sourcekind = sourcebatch.sourcekind
         local rulename = sourcebatch.rulename
         if sourcekind then
-            for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local compflags = compiler.compflags(sourcefile, {target = target, sourcekind = sourcekind})
-                if not firstcompflags and (rulename == "c.build" or rulename == "c++.build" or rulename == "cuda.build") then
+                if not firstcompflags and (rulename == "c.build" or rulename == "c++.build" or rulename == "c++.build.modules" or rulename == "cuda.build") then
                     firstcompflags = compflags
                 end
                 targetinfo.compflags[sourcefile] = compflags
@@ -309,8 +308,11 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
         end
     end
 
+    -- save sourcebatches
+    targetinfo.sourcebatches = target:sourcebatches()
+
     -- save linker flags
-    local linkflags = linker.linkflags(target:kind(), target:sourcekinds(), {target = target})
+    local linkflags = linker.linkflags(target:is_moduleonly() and 'static' or target:kind(), target:sourcekinds(), {target = target})
     targetinfo.linkflags = linkflags
 
     if table.contains(target:sourcekinds(), "cu") then
@@ -323,7 +325,7 @@ function _make_targetinfo(mode, arch, target, vcxprojdir)
     end
 
     -- save execution dir (when executed from VS)
-    targetinfo.rundir = target:rundir()
+    targetinfo.rundir = target:is_moduleonly() and "" or target:rundir()
 
     -- save runenvs
     local targetrunenvs = {}
@@ -543,6 +545,13 @@ function make(outputdir, vsinfo)
 
                 -- save file groups
                 _target.filegroups = table.unique(table.join(_target.filegroups or {}, target:get("filegroups")))
+
+                -- save references to deps
+                for _, dep in ipairs(target:orderdeps()) do
+                    _target.deps = _target.deps or {}
+                    local dep_name = dep:name()
+                    _target.deps[dep_name] = path.relative(path.join(vsinfo.solution_dir, dep_name, dep_name .. ".vcxproj"), _target.project_dir)
+                end
 
                 for filegroup, groupconf in pairs(target:extraconf("filegroups")) do
                     _target.filegroups_extraconf = _target.filegroups_extraconf or {}

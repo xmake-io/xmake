@@ -37,11 +37,11 @@ function _make_modulebuildflags(target, provide, bmifile, opt)
     local ifconlyflag = compiler_support.get_ifconlyflag(target)
     local interfaceflag = compiler_support.get_interfaceflag(target)
     local internalpartitionflag = compiler_support.get_internalpartitionflag(target)
-    local ifconly = (opt.external and ifconlyflag)
+    local ifconly = (not opt.build_objectfile and ifconlyflag)
 
     local flags
     if provide then -- named module
-        flags = table.join({"-TP", ifcoutputflag, bmifile, provide.interface and interfaceflag or internalpartitionflag}, ifconly or {})
+        flags = table.join({"-TP", ifcoutputflag, path(bmifile), provide.interface and interfaceflag or internalpartitionflag}, ifconly or {})
     else
         flags = {"-TP"}
     end
@@ -102,8 +102,8 @@ function _batchcmds_compile(batchcmds, target, flags, sourcefile, outputfile)
     opt = opt or {}
     local compinst = target:compiler("cxx")
     local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
-    flags = table.join("-c", compflags or {}, flags, {"/Fo", outputfile, sourcefile})
-    batchcmds:compilev(flags, {compiler = compinst, sourcekind = "cxx"})
+    flags = table.join(compflags or {}, flags)
+    batchcmds:compile(sourcefile, outputfile, {sourcekind = "cxx", compflags = flags})
 end
 
 -- get module requires flags
@@ -260,8 +260,10 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                     end
 
                     local fileconfig = target:fileconfig(opt.cppfile)
+                    local public = fileconfig and fileconfig.public
                     local external = fileconfig and fileconfig.external
-                    local flags = _make_modulebuildflags(target, provide, bmifile, {external = external})
+                    local build_objectfile = target:kind() == "binary" or (not public and not external)
+                    local flags = _make_modulebuildflags(target, provide, bmifile, {build_objectfile = build_objectfile})
 
                     _compile(target, flags, opt.cppfile, opt.objectfile)
                 else
@@ -276,7 +278,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 end
 
 -- build module file for batchcmds
-function make_module_buildcmds(target, batchcmds, should_build, mark_build, opt)
+function make_module_buildcmds(target, batchcmds, opt)
 
     local name, provide, _ = compiler_support.get_provided_module(opt.module)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
@@ -308,9 +310,11 @@ function make_module_buildcmds(target, batchcmds, should_build, mark_build, opt)
             batchcmds:mkdir(path.directory(opt.objectfile))
 
             local fileconfig = target:fileconfig(opt.cppfile)
-                local external = fileconfig and fileconfig.external
-            local flags = _make_modulebuildflags(target, provide, bmifile, opt.cppfile, opt.objectfile, {batchcmds = true, external = external})
-            _batchcmds_compile(batchcmds, target, flags, opt.cppfile, objectfile)
+            local public = fileconfig and fileconfig.public
+            local external = fileconfig and fileconfig.external
+            local build_objectfile = target:kind() == "binary" or (not public and not external)
+            local flags = _make_modulebuildflags(target, provide, bmifile, {build_objectfile = build_objectfile})
+            _batchcmds_compile(batchcmds, target, flags, opt.cppfile, opt.objectfile)
         else
             batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files
         end

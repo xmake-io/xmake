@@ -38,12 +38,12 @@ function _make_modulebuildflags(target, provide, bmifile, opt)
 
     local flags
     local precompile = false
-    if module_outputflag and provide and not opt.external then -- one step compilation of named module, clang >= 16
+    if module_outputflag and provide and opt.build_objectfile then -- one step compilation of named module, clang >= 16
         flags = {{"-x", "c++-module", module_outputflag .. bmifile}}
     elseif provide then -- two step compilation of named module
         precompile = true
         flags = {{"-x", "c++-module", "--precompile"}}
-        if not opt.external then
+        if opt.build_objectfile then
            table.insert(flags, {})
         end
     else -- internal module, no bmi needed
@@ -199,7 +199,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
     return {
         name = job_name,
         deps = deps,
-        sourcefile = cppfile,
+        sourcefile = opt.cppfile,
         job = batchjobs:newjob(name or opt.cppfile, function(index, total)
 
             local compinst = compiler.load("cxx", {target = target})
@@ -242,10 +242,12 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                         end
                     end
 
-                    local fileconfig = target:fileconfig(opt.cppfile)
-                    local external = fileconfig and fileconfig.external
+                local fileconfig = target:fileconfig(opt.cppfile)
+                local public = fileconfig and fileconfig.public
+                local external = fileconfig and fileconfig.external
+                local build_objectfile = target:kind() == "binary" or (not public and not external)
 
-                    local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {sourcefile = opt.cppfile, external = external, name = name})
+                local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {sourcefile = opt.cppfile, build_objectfile = build_objectfile, name = name})
 
                     _compile(target, first_step, opt.cppfile, precompile and bmifile or opt.objectfile)
 
@@ -289,6 +291,7 @@ function make_module_buildcmds(target, batchcmds, opt)
         build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
     end
 
+        local build_objectfile = target:kind() == "binary"
     if build then
         -- compile if it's a named module
         if provide or compiler_support.has_module_extension(opt.cppfile) then
@@ -296,9 +299,11 @@ function make_module_buildcmds(target, batchcmds, opt)
             batchcmds:mkdir(path.directory(opt.objectfile))
 
             local fileconfig = target:fileconfig(opt.cppfile)
+            local public = fileconfig and fileconfig.public
             local external = fileconfig and fileconfig.external
+            local build_objectfile = target:kind() == "binary" or (not public and not external)
 
-            local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {batchcmds = true, sourcefile = opt.cppfile, external = external, name = name})
+            local precompile, first_step, second_step = _make_modulebuildflags(target, provide, bmifile, {batchcmds = true, sourcefile = opt.cppfile, build_objectfile = build_objectfile, name = name})
             _batchcmds_compile(batchcmds, target, first_step, opt.cppfile, precompile and bmifile or opt.objectfile)
 
             if second_step then

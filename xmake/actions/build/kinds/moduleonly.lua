@@ -14,14 +14,9 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      ruki
--- @file        kind.lua
+-- @author      ruki, Arthapz
+-- @file        moduleonly.lua
 --
 
 -- imports
-import(".api_checker")
-
-function main(opt)
-    opt = opt or {}
-    api_checker.check_targets("kind", table.join(opt, {values = {"object", "binary", "static", "shared", "headeronly", "moduleonly", "phony"}}))
-end
+inherit("object")

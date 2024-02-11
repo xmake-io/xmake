@@ -21,6 +21,7 @@
 -- imports
 import("core.base.json")
 import("core.base.option")
+import("async.runjobs")
 import("private.async.buildjobs")
 import("core.tool.compiler")
 import("core.project.config")
@@ -31,8 +32,7 @@ import("dependency_scanner")
 
 -- build target modules
 function _build_modules(target, sourcebatch, modules, opt)
-    local objectfiles = dependency_scanner.sort_modules_by_dependencies(sourcebatch.objectfiles, modules)
-
+    local objectfiles = sourcebatch.objectfiles
     _builder(target).populate_module_map(target, modules)
 
     -- build modules
@@ -42,22 +42,15 @@ function _build_modules(target, sourcebatch, modules, opt)
             goto CONTINUE
         end
 
-        local name, provide, cppfile = compiler_support.get_provided_module(module)
+        local name, _, cppfile = compiler_support.get_provided_module(module)
         cppfile = cppfile or module.cppfile
-
-        local fileconfig = target:fileconfig(cppfile)
-        local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
-        -- add objectfile if module is not from external dep
-        if not (fileconfig and fileconfig.external) then
-            target:add("objectfiles", objectfile)
-        end
 
         local deps = {}
         for _, dep in ipairs(table.keys(module.requires or {})) do
             table.insert(deps, opt.batchjobs and target:name() .. dep or dep)
         end
 
-        opt.build_module(deps, module, name, provide, objectfile, cppfile, fileconfig)
+        opt.build_module(deps, module, name, objectfile, cppfile)
 
         ::CONTINUE::
     end
@@ -198,21 +191,10 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
 
     local modulesjobs = {}
     _build_modules(target, sourcebatch, modules, table.join(opt, {
-       build_module = function(deps, module, name, provide, objectfile, cppfile, fileconfig)
+       build_module = function(deps, module, name, objectfile, cppfile)
         local job_name = name and target:name() .. name or cppfile
 
         modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps, {module = module, objectfile = objectfile, cppfile = cppfile})
-
-        if provide and fileconfig and fileconfig.public then
-            batchjobs:addjob(name .. "_metafile", function(index, total)
-                local metafilepath = compiler_support.get_metafile(target, cppfile)
-                depend.on_changed(function()
-                    progress.show((index * 100) / total, "${color.build.target}<%s> generating.module.metadata %s", target:name(), name)
-                    local metadata = _generate_meta_module_info(target, name, cppfile, module.requires)
-                    json.savefile(metafilepath, metadata)
-                end, {dependfile = target:dependfile(metafilepath), files = {cppfile}, changed = target:is_rebuilt()})
-            end, {rootjob = opt.rootjob})
-        end
       end
     }))
 
@@ -228,17 +210,8 @@ function build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, op
 
     -- build modules
     _build_modules(target, sourcebatch, modules, table.join(opt, {
-       build_module = function(_, module, name, provide, objectfile, cppfile, fileconfig)
+       build_module = function(_, module, _, objectfile, cppfile)
           depmtime = math.max(depmtime, _builder(target).make_module_buildcmds(target, batchcmds, {module = module, cppfile = cppfile, objectfile = objectfile, progress = opt.progress}))
-
-          if provide and fileconfig and fileconfig.public then
-              local metafilepath = compiler_support.get_metafile(target, cppfile)
-              depend.on_changed(function()
-                  progress.show(opt.progress, "${color.build.target}<%s> generating.module.metadata %s", target:name(), name)
-                  local metadata = _generate_meta_module_info(target, name, cppfile, module.requires)
-                  json.savefile(metafilepath, metadata)
-              end, {dependfile = target:dependfile(metafilepath), files = {cppfile}, changed = target:is_rebuilt()})
-          end
       end
     }))
 
@@ -310,6 +283,33 @@ function build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules
         opt.stl_headerunit = false
         build_headerunits(user_headerunits)
     end
+end
+
+function generate_metadata(target, modules)
+    local public_modules
+    for _, module in table.orderpairs(modules) do
+        local _, _, cppfile = compiler_support.get_provided_module(module)
+        local fileconfig = target:fileconfig(cppfile)
+        local public = fileconfig and fileconfig.public
+        if public then
+            public_modules = public_modules or {}
+            table.insert(public_modules, module)
+        end
+    end
+
+    if not public_modules then
+        return
+    end
+
+    local jobs = option.get("jobs") or os.default_njob()
+    runjobs(target:name() .. "_install_modules", function(index) 
+        local module = public_modules[index]
+        local name, _, cppfile = compiler_support.get_provided_module(module)
+        local metafilepath = compiler_support.get_metafile(target, cppfile)
+        progress.show((index * 100) / #public_modules, "${color.build.target}<%s> generating.module.metadata %s", target:name(), name)
+        local metadata = _generate_meta_module_info(target, name, cppfile, module.requires)
+        json.savefile(metafilepath, metadata)
+    end, {comax = jobs, total = #public_modules})
 end
 
 -- flush target module mapper keys

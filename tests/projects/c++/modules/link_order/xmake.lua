@@ -2,14 +2,12 @@ add_rules("mode.release", "mode.debug")
 set_languages("c++20")
 
 target("foo")
-    add_rules("c++")
-    set_kind("static")
-    add_files("src/foo.mpp", {public = true})
+    set_kind("moduleonly")
+    add_files("src/foo.mpp")
 
 target("bar")
-    add_rules("c++")
-    set_kind("static")
-    add_files("src/bar.mpp", {public = true})
+    set_kind("moduleonly")
+    add_files("src/bar.mpp")
 
 target("link_order_1")
     set_kind("binary")

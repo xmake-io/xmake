@@ -99,31 +99,14 @@ end
 function _get_maplines(target, module)
     local maplines = {}
 
-    local m_name, m = compiler_support.get_provided_module(module)
+    local m_name, m, cppfile = compiler_support.get_provided_module(module)
     if m then
         table.insert(maplines, m_name .. " " .. compiler_support.get_bmi_path(m.bmi))
     end
 
     for required, _ in table.orderpairs(module.requires) do
-        local dep_module
-        local dep_target
-        for _, dep in ipairs(target:orderdeps()) do
-            dep_module = get_from_target_mapper(dep, required)
-            if dep_module then
-                dep_target = dep
-                break
-            end
-        end
-
-        -- if not in target dep
-        if not dep_module then
-            dep_module = get_from_target_mapper(target, required)
-            if dep_module then
-                dep_target = target
-            end
-        end
-
-        assert(dep_module, "module dependency %s required for %s not found", required, m_name)
+        local dep_module = get_from_target_mapper(target, required)
+        assert(dep_module, "module dependency %s required for %s not found", required, m_name or module.cppfile)
 
         local bmifile = dep_module.bmi
         local mapline
@@ -143,7 +126,7 @@ function _get_maplines(target, module)
 
         -- append deps
         if dep_module.opt and dep_module.opt.deps then
-            local deps = _get_maplines(dep_target, { name = dep_module.name, bmi = bmifile, requires = dep_module.opt.deps })
+            local deps = _get_maplines(target, {name = dep_module.name, bmi = bmifile, requires = dep_module.opt.deps})
             table.join2(maplines, deps)
         end
     end
@@ -173,16 +156,6 @@ end
 
 -- populate module map
 function populate_module_map(target, modules)
-
-    -- append all modules
-    for _, module in pairs(modules) do
-        local name, provide = compiler_support.get_provided_module(module)
-        if provide then
-            add_module_to_target_mapper(target, name, provide.sourcefile, compiler_support.get_bmi_path(provide.bmi))
-        end
-    end
-
-    -- then update their deps
     for _, module in pairs(modules) do
         local name, provide = compiler_support.get_provided_module(module)
         if provide then

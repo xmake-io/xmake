@@ -64,14 +64,26 @@ function patch_sourcebatch(target, sourcebatch)
 end
 
 -- cull sourcebatch objectfiles
-function cull_objectfiles(target, sourcebatch)
+function cull_objectfiles(target, modules, sourcebatch)
 
-    sourcebatch.sourcekind = "cxx"
+    -- don't cull for executables
+    if target:is_binary() then
+        return
+    end
+
     sourcebatch.objectfiles = {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local fileconfig = target:fileconfig(sourcefile)
-        if not (fileconfig and fileconfig.external) then
-            local objectfile = target:objectfile(sourcefile)
+        local objectfile = target:objectfile(sourcefile)
+        local module = modules[objectfile]
+        local _, provide, _ = get_provided_module(module)
+        if provide then
+            local fileconfig = target:fileconfig(sourcefile)
+            local public = fileconfig and fileconfig.public
+            local external = fileconfig and fileconfig.external
+            if not public and not external then
+                table.insert(sourcebatch.objectfiles, objectfile)
+            end
+        else
             table.insert(sourcebatch.objectfiles, objectfile)
         end
     end
