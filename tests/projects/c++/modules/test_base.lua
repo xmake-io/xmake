@@ -8,6 +8,12 @@ function _build()
     else
         os.run("xmake -r")
     end
+    local outdata = os.iorun("xmake")
+    if outdata then
+        if outdata:find("compiling") or outdata:find("linking") or outdata:find("generating") then
+            raise("Modules incremental compilation does not work\n%s", outdata)
+        end
+    end
 end
 
 function can_build()
