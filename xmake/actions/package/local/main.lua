@@ -25,6 +25,8 @@ import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 import("core.base.bit")
+import("rules.c++.modules.modules_support.compiler_support", {alias = "module_compiler_support", rootdir = os.programdir()})
+import("rules.c++.modules.modules_support.builder", {alias = "module_builder", rootdir = os.programdir()})
 
 -- get library deps
 function _get_librarydeps(target)
@@ -145,11 +147,9 @@ function _package_library(target)
 
     -- copy modules
     if target:data("cxx.has_modules") then
-        import(".rules.c++.modules.modules_support.compiler_support")
-        import(".rules.c++.modules.modules_support.builder")
 
-        local modules = compiler_support.localcache():get2(target:name(), "c++.modules")
-        builder.generate_metadata(target, modules)
+        local modules = module_compiler_support.localcache():get2(target:name(), "c++.modules")
+        module_builder.generate_metadata(target, modules)
 
         local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
         if sourcebatch and sourcebatch.sourcefiles then
@@ -157,10 +157,10 @@ function _package_library(target)
                 local fileconfig = target:fileconfig(sourcefile)
                 local install = fileconfig and fileconfig.public or false
                 if install then
-                    local modulehash = compiler_support.get_modulehash(target, sourcefile)
+                    local modulehash = module_compiler_support.get_modulehash(target, sourcefile)
                     local prefixdir = path.join(modulesdir, modulehash)
                     os.vcp(sourcefile, path.join(prefixdir, path.filename(sourcefile)))
-                    local metafile = compiler_support.get_metafile(target, sourcefile)
+                    local metafile = module_compiler_support.get_metafile(target, sourcefile)
                     if os.exists(metafile) then
                         os.vcp(metafile, path.join(prefixdir, path.filename(metafile)))
                     end
@@ -289,8 +289,6 @@ function _package_headeronly(target)
 end
 
 function _package_moduleonly(target)
-    import(".rules.c++.modules.modules_support.compiler_support")
-    import(".rules.c++.modules.modules_support.builder")
 
     -- get the output directory
     local packagedir  = target:packagedir()
@@ -298,8 +296,8 @@ function _package_moduleonly(target)
     local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
     local modulesdir  = path.join(packagedir, target:plat(), target:arch(), config.mode(), "modules")
 
-    local modules = compiler_support.localcache():get2(target:name(), "c++.modules")
-    builder.generate_metadata(target, modules)
+    local modules = module_compiler_support.localcache():get2(target:name(), "c++.modules")
+    module_builder.generate_metadata(target, modules)
 
     -- copy headers
     local srcheaders, dstheaders = target:headerfiles(headerdir)
@@ -318,10 +316,10 @@ function _package_moduleonly(target)
     local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
     if sourcebatch and sourcebatch.sourcefiles then
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            local modulehash = compiler_support.get_modulehash(target, sourcefile)
+            local modulehash = module_compiler_support.get_modulehash(target, sourcefile)
             local prefixdir = path.join(modulesdir, modulehash)
             os.vcp(sourcefile, path.join(prefixdir, path.filename(sourcefile)))
-            local metafile = compiler_support.get_metafile(target, sourcefile)
+            local metafile = module_compiler_support.get_metafile(target, sourcefile)
             if os.exists(metafile) then
                 os.vcp(metafile, path.join(prefixdir, path.filename(metafile)))
             end
