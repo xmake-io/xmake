@@ -283,7 +283,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
             local build
             if provide or compiler_support.has_module_extension(opt.cppfile) then
-                build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+                build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
 
                 -- needed to detect rebuild of dependencies
                 if provide and build then
@@ -298,7 +298,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
             -- for cpp file we need to check after appendings the flags
             if build == nil then
-                build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+                build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
             end
 
             local dependfile = target:dependfile(bmifile or opt.objectfile)
@@ -365,7 +365,7 @@ function make_module_buildcmds(target, batchcmds, opt)
 
     local build
     if provide or compiler_support.has_module_extension(opt.cppfile) then
-        build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+        build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
 
         -- needed to detect rebuild of dependencies
         if provide and build then
@@ -380,7 +380,7 @@ function make_module_buildcmds(target, batchcmds, opt)
 
     -- for cpp file we need to check after appendings the flags
     if build == nil then
-        build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+        build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
     end
 
     if build then
