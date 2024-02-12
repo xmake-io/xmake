@@ -29,7 +29,11 @@ local table = require("base/table")
 -- select the matched pattern script for the current platform/architecture
 --
 -- the supported pattern:
+--  plat@host|arch
+--  plat|arch
+--  @host|arch
 --
+-- e.g.
 -- `@linux`
 -- `@linux|x86_64`
 -- `@macosx,linux`
