@@ -25,6 +25,7 @@ import("core.base.semver")
 import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
+import("private.core.base.select_script")
 import("lib.detect.find_tool")
 import("filter")
 import("xpack_component")
@@ -116,51 +117,9 @@ end
 
 -- get xxx_script
 function xpack:script(name, generic)
-
-    -- get script
     local script = self:get(name)
-    local result = nil
-    if type(script) == "function" then
-        result = script
-    elseif type(script) == "table" then
-
-        -- get plat and arch
-        local plat = self:plat()
-        local arch = self:arch()
-
-        -- match pattern
-        --
-        -- `@linux`
-        -- `@linux|x86_64`
-        -- `@macosx,linux`
-        -- `android@macosx,linux`
-        -- `android|armeabi-v7a@macosx,linux`
-        -- `android|armeabi-v7a@macosx,linux|x86_64`
-        -- `android|armeabi-v7a@linux|x86_64`
-        --
-        for _pattern, _script in pairs(script) do
-            local hosts = {}
-            local hosts_spec = false
-            _pattern = _pattern:gsub("@(.+)", function (v)
-                for _, host in ipairs(v:split(',')) do
-                    hosts[host] = true
-                    hosts_spec = true
-                end
-                return ""
-            end)
-            if not _pattern:startswith("__") and (not hosts_spec or hosts[os.subhost() .. '|' .. os.subarch()] or hosts[os.subhost()])
-            and (_pattern:trim() == "" or (plat .. '|' .. arch):find('^' .. _pattern .. '$') or plat:find('^' .. _pattern .. '$')) then
-                result = _script
-                break
-            end
-        end
-
-        -- get generic script
-        result = result or script["__generic__"] or generic
-    end
-
-    -- only generic script
-    return result or generic
+    local result = select_script(script, {plat = self:plat(), arch = self:arch()}) or generic
+    return result
 end
 
 -- get targets
