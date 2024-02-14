@@ -119,7 +119,6 @@ rule("c++.build.modules.builder")
 
                 -- cull external modules objectfile
                 compiler_support.cull_objectfiles(target, modules, sourcebatch)
-                table.sort(sourcebatch.objectfiles)
             else
                 sourcebatch.objectfiles = {}
             end
@@ -183,7 +182,6 @@ rule("c++.build.modules.builder")
 
                 -- cull external modules objectfile
                 compiler_support.cull_objectfiles(target, modules, sourcebatch)
-                table.sort(sourcebatch.objectfiles)
             else
                 -- avoid duplicate linking of object files of non-module programs
                 sourcebatch.objectfiles = {}
