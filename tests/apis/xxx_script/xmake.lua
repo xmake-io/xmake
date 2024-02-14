@@ -16,6 +16,6 @@ target("test")
         print("after_build")
     end)
 
-    after_build("linux|*", function (target)
+    after_build("linux|.*", function (target)
         assert(target:is_plat("linux"))
     end)
