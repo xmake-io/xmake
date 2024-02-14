@@ -159,7 +159,7 @@ function is_changed(dependinfo, opt)
         for idx, file in ipairs(files) do
             if file ~= optfiles[idx] then
                 if _is_show_diagnosis_info() then
-                    cprint("${color.warning}[check_build_deps]: file %s != %s at index %d", file, optfiles[subidx], idx)
+                    cprint("${color.warning}[check_build_deps]: file %s != %s at index %d", file, optfiles[idx], idx)
                 end
                 return true
             end
