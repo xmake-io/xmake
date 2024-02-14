@@ -18,14 +18,6 @@
 -- @file        select_script.lua
 --
 
--- define module
-local instance_deps = instance_deps or {}
-
--- load modules
-local option = require("base/option")
-local string = require("base/string")
-local table = require("base/table")
-
 -- match pattern, plat|arch
 function _match_pattern(pattern, plat, arch)
     return (plat .. '|' .. arch):match('^' .. pattern .. '$') or plat:match('^' .. pattern .. '$')
