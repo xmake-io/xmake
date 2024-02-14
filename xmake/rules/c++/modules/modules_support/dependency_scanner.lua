@@ -178,7 +178,7 @@ function _get_edges(nodes, modules)
   for _, node in ipairs(nodes) do
       local module = modules[node]
       if module.requires then
-          for required_name, _ in pairs(module.requires) do
+          for required_name, _ in table.orderpairs(module.requires) do
               for _, required_node in ipairs(nodes) do
                   local name, _, _ = compiler_support.get_provided_module(modules[required_node])
                   if name and name == required_name then

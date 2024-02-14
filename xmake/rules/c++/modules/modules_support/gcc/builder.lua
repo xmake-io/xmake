@@ -30,11 +30,6 @@ import("core.project.depend")
 import("compiler_support")
 import(".builder", {inherit = true})
 
--- get flags for building a module
-function _make_modulebuildflags(target, opt)
-    return {"-x", "c++", "-c"}
-end
-
 -- get flags for building a headerunit
 function _make_headerunitflags(target, headerunit, headerunit_mapper)
     local module_headerflag = compiler_support.get_moduleheaderflag(target)
@@ -99,7 +94,7 @@ end
 function _get_maplines(target, module)
     local maplines = {}
 
-    local m_name, m, cppfile = compiler_support.get_provided_module(module)
+    local m_name, m, _ = compiler_support.get_provided_module(module)
     if m then
         table.insert(maplines, m_name .. " " .. compiler_support.get_bmi_path(m.bmi))
     end
@@ -140,10 +135,10 @@ end
 -- /usr/include/c++/11/iostream build/.gens/stl_headerunit/linux/x86_64/release/stlmodules/cache/iostream.gcm
 -- hello build/.gens/stl_headerunit/linux/x86_64/release/rules/modules/cache/hello.gcm
 --
-function _generate_modulemapper_file(target, module)
+function _generate_modulemapper_file(target, module, cppfile)
     local maplines = _get_maplines(target, module)
-    local path = os.tmpfile()
-    local mapper_file = io.open(path, "wb")
+    local mapper_path = path.join(os.tmpdir(), target:name():replace(" ", "_"), name or cppfile:replace(" ", "_"))
+    local mapper_file = io.open(mapper_path, "wb")
     mapper_file:write("root " .. os.projectdir():replace("\\", "/"))
     mapper_file:write("\n")
     for _, mapline in ipairs(maplines) do
@@ -151,7 +146,7 @@ function _generate_modulemapper_file(target, module)
         mapper_file:write("\n")
     end
     mapper_file:close()
-    return path
+    return mapper_path
 end
 
 -- populate module map
@@ -188,25 +183,33 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
     return {
         name = job_name,
-        deps = deps,
+        deps = table.join(target:name() .. "_populate_module_map", deps),
         sourcefile = opt.cppfile,
         job = batchjobs:newjob(name or opt.cppfile, function(index, total)
+            local mapped_bmi
+            if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+                if not target:is_binary() then
+                    return
+                else
+                    mapped_bmi = get_from_target_mapper(target, name).bmi
+                end
+            end
 
             local compinst = compiler.load("cxx", {target = target})
             local compflags = compinst:compflags({sourcefile = opt.cppfile, target = target})
 
-            local build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+            -- generate and append module mapper file
+            local module_mapper
+            if provide or opt.module.requires then
+                module_mapper = _generate_modulemapper_file(target, opt.module, opt.cppfile)
+                target:fileconfig_add(opt.cppfile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
+            end
+
+            local build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
 
             -- needed to detect rebuild of dependencies
             if provide and build then
                 mark_build(target, name)
-            end
-
-            -- generate and append module mapper file
-            local module_mapper
-            if provide or opt.module.requires then
-                module_mapper = _generate_modulemapper_file(target, opt.module)
-                target:fileconfig_add(opt.cppfile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
             end
 
             local dependfile = target:dependfile(bmifile or opt.objectfile)
@@ -217,13 +220,35 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
             if build then
                 -- compile if it's a named module
                 if provide or compiler_support.has_module_extension(opt.cppfile) then
-                    progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                    local fileconfig = target:fileconfig(opt.cppfile)
+                    local public = fileconfig and fileconfig.public
+                    local external = fileconfig and fileconfig.external
+                    local bmifile = mapped_bmi or bmifile
+                    local flags = {"-x", "c++"}
+                    local sourcefile
+                    if target:is_binary() then
+                        if mapped_bmi then
+                            progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
+                            sourcefile = bmifile
+                        else
+                            progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                            sourcefile = opt.cppfile
+                        end
+                    else
+                        if not public and not external then
+                            progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                            sourcefile = opt.cppfile
+                        else
+                            progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                            local module_onlyflag = compiler_support.get_moduleonlyflag(target)
+                            table.insert(flags, module_onlyflag)
+                            sourcefile = opt.cppfile
+                        end
+                    end
                     if option.get("diagnosis") then
                         print("mapper file --------\n%s--------", io.readfile(module_mapper))
                     end
-
-                    local flags = _make_modulebuildflags(target, opt)
-                    _compile(target, flags, opt.cppfile, opt.objectfile)
+                    _compile(target, flags, sourcefile, opt.objectfile)
                     os.tryrm(module_mapper)
                 else
                     os.tryrm(opt.objectfile) -- force rebuild for .cpp files
@@ -242,29 +267,63 @@ function make_module_buildcmds(target, batchcmds, opt)
     local bmifile = provide and compiler_support.get_bmi_path(provide.bmi)
     local module_mapperflag = compiler_support.get_modulemapperflag(target)
 
-    local build = should_build(target, opt.cppfile, bmifile, {objectfile = opt.objectfile, requires = opt.module.requires})
+    local mapped_bmi
+    if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
+        if not target:is_binary() then
+            return
+        else
+            mapped_bmi = get_from_target_mapper(target, name).bmi
+        end
+    end
+
+    -- generate and append module mapper file
+    local module_mapper
+    if provide or opt.module.requires then
+        module_mapper = _generate_modulemapper_file(target, opt.module, opt.cppfile)
+        target:fileconfig_add(opt.cppfile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
+    end
+
+    local build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
 
     -- needed to detect rebuild of dependencies
     if provide and build then
         mark_build(target, name)
     end
 
-    -- generate and append module mapper file
-    local module_mapper
-    if provide or opt.module.requires then
-        module_mapper = _generate_modulemapper_file(target, opt.module)
-        target:fileconfig_add(opt.cppfile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
-    end
-
     if build then
         -- compile if it's a named module
         if provide or compiler_support.has_module_extension(opt.cppfile) then
-            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+            batchcmds:mkdir(path.directory(opt.objectfile))
+            local fileconfig = target:fileconfig(opt.cppfile)
+            local public = fileconfig and fileconfig.public
+            local external = fileconfig and fileconfig.external
+            local bmifile = mapped_bmi or bmifile
+            local flags = {"-x", "c++"}
+            local sourcefile
+            if target:is_binary() then
+                if mapped_bmi then
+                    batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
+                    sourcefile = bmifile
+                else
+                    batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                    sourcefile = opt.cppfile
+                end
+            else
+                if not public and not external then
+                    batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                    sourcefile = opt.cppfile
+                else
+                    batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                    local module_onlyflag = compiler_support.get_moduleonlyflag(target)
+                    table.insert(flags, module_onlyflag)
+                    sourcefile = opt.cppfile
+                end
+            end
             if option.get("diagnosis") then
                 batchcmds:print("mapper file: %s", io.readfile(module_mapper))
             end
-            batchcmds:mkdir(path.directory(opt.objectfile))
-            _batchcmds_compile(batchcmds, target, _make_modulebuildflags(target, {batchcmds = true, sourcefile = opt.cppfile}), opt.cppfile, opt.objectfile)
+            _batchcmds_compile(batchcmds, target, flags, sourcefile, opt.objectfile)
+            batchcmds:rm(module_mapper)
         else
             batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files
         end
