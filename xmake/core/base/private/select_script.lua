@@ -18,15 +18,26 @@
 -- @file        select_script.lua
 --
 
--- match pattern, plat|arch
-function _match_pattern(pattern, plat, arch)
-    return (plat .. '|' .. arch):match('^' .. pattern .. '$') or plat:match('^' .. pattern .. '$')
+-- load modules
+local table = require("base/table")
+local utils = require("base/utils")
+
+-- match pattern, matched mode: plat|arch, excluded mode: !plat|arch
+function _match_pattern(pattern, plat, arch, excluded)
+    local is_excluded_pattern = pattern:find('!', 1, true)
+    if excluded and is_excluded_pattern then
+        return not ('!' .. plat .. '|' .. arch):match('^' .. pattern .. '$') and
+               not (plat .. '|!' .. arch):match('^' .. pattern .. '$') and
+               not ('!' .. plat):match('^' .. pattern .. '$')
+    elseif not is_excluded_pattern then
+        return (plat .. '|' .. arch):match('^' .. pattern .. '$') or plat:match('^' .. pattern .. '$')
+    end
 end
 
 -- match patterns
-function _match_patterns(patterns, plat, arch)
+function _match_patterns(patterns, plat, arch, excluded)
     for _, pattern in ipairs(patterns) do
-        if _match_pattern(pattern, plat, arch) then
+        if _match_pattern(pattern, plat, arch, excluded) then
             return true
         end
     end
@@ -34,10 +45,13 @@ end
 
 -- mattch the script pattern
 --
--- the supported pattern:
+-- @note interpreter has converted pattern to a lua pattern ('*' => '.*')
+--
+-- matched pattern:
 --  plat|arch@subhost|subarch
 --
 -- e.g.
+--
 -- `@linux`
 -- `@linux|x86_64`
 -- `@macosx,linux`
@@ -45,9 +59,23 @@ end
 -- `android|armeabi-v7a@macosx,linux`
 -- `android|armeabi-v7a,iphoneos@macosx,linux|x86_64`
 -- `android|armeabi-v7a@linux|x86_64`
--- 'linux|.*'
+-- 'linux|*'
 --
-function _match_script(pattern, plat, arch)
+-- excluded pattern:
+--  !plat|!arch@!subhost|!subarch
+--
+-- e.g.
+--
+-- `@!linux`
+-- `@!linux|x86_64`
+-- `@!macosx,!linux`
+-- `!android@macosx,!linux`
+-- `android|!armeabi-v7a@macosx,!linux`
+-- `android|armeabi-v7a,!iphoneos@macosx,!linux|x86_64`
+-- `!android|armeabi-v7a@!linux|!x86_64`
+-- '!linux|*'
+--
+function _match_script(pattern, plat, arch, excluded)
     local splitinfo = pattern:split("@", {plain = true})
     local plat_part = splitinfo[1]
     local host_part = splitinfo[2]
@@ -56,9 +84,9 @@ function _match_script(pattern, plat, arch)
     if host_part then
         host_patterns = host_part:split(",", {plain = true})
     end
-    if _match_patterns(plat_patterns, plat, arch) then
+    if _match_patterns(plat_patterns, plat, arch, excluded) then
         if host_patterns and #host_patterns > 0 and
-            not _match_patterns(host_patterns, os.subhost(), os.subarch()) then
+            not _match_patterns(host_patterns, os.subhost(), os.subarch(), excluded) then
             return false
         end
         return true
@@ -79,6 +107,29 @@ function select_script(scripts, opt)
             if not pattern:startswith("__") and _match_script(pattern, plat, arch) then
                 script_matched = script
                 break
+            end
+        end
+        if not script_matched then
+            local scripts_fallback = {}
+            local patterns_fallback = {}
+            for pattern, script in pairs(scripts) do
+                if not pattern:startswith("__") and _match_script(pattern, plat, arch, true) then
+                    table.insert(scripts_fallback, script)
+                    table.insert(patterns_fallback, pattern)
+                end
+            end
+            script_matched = scripts_fallback[1]
+            if script_matched and #scripts_fallback > 0 then
+                local conflict_patterns = {patterns_fallback[1]}
+                for idx, script in ipairs(scripts_fallback) do
+                    local pattern = patterns_fallback[idx]
+                    if script ~= script_matched then
+                        table.insert(conflict_patterns, pattern)
+                    end
+                end
+                if #conflict_patterns > 1 then
+                    utils.warning("multiple script patterns are matched, %s", table.concat(conflict_patterns, ", "))
+                end
             end
         end
         result = script_matched or scripts["__generic__"]

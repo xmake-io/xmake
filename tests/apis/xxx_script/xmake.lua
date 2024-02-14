@@ -16,6 +16,18 @@ target("test")
         print("after_build")
     end)
 
-    after_build("linux|.*", function (target)
+    after_build("!macosx", function (target)
+        print("after_build !macosx")
+    end)
+
+    after_build("!linux", function (target)
+        print("after_build !linux")
+    end)
+
+    after_build("!iphoneos", function (target)
+        print("after_build !iphoneos")
+    end)
+
+    after_build("linux|*", function (target)
         assert(target:is_plat("linux"))
     end)
