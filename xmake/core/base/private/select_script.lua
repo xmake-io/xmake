@@ -26,12 +26,10 @@ local option = require("base/option")
 local string = require("base/string")
 local table = require("base/table")
 
--- select the matched pattern script for the current platform/architecture
+-- mattch the script pattern
 --
 -- the supported pattern:
---  plat@host|arch
---  plat|arch
---  @host|arch
+--  plat|arch@subhost|subarch
 --
 -- e.g.
 -- `@linux`
@@ -42,6 +40,23 @@ local table = require("base/table")
 -- `android|armeabi-v7a@macosx,linux|x86_64`
 -- `android|armeabi-v7a@linux|x86_64`
 --
+function _match_script(pattern, plat, arch)
+    local hosts = {}
+    local hosts_spec = false
+    pattern = pattern:gsub("@(.+)", function (v)
+        for _, host in ipairs(v:split(',')) do
+            hosts[host] = true
+            hosts_spec = true
+        end
+        return ""
+    end)
+    if not pattern:startswith("__") and (not hosts_spec or hosts[os.subhost() .. '|' .. os.subarch()] or hosts[os.subhost()])
+    and (pattern:trim() == "" or (plat .. '|' .. arch):find('^' .. pattern .. '$') or plat:find('^' .. pattern .. '$')) then
+        return 1
+    end
+end
+
+-- select the matched pattern script for the current platform/architecture
 function select_script(scripts, opt)
     opt = opt or {}
     local result = nil
@@ -50,23 +65,16 @@ function select_script(scripts, opt)
     elseif type(scripts) == "table" then
         local plat = opt.plat or ""
         local arch = opt.arch or ""
+        local score_max = -1
+        local script_matched
         for pattern, script in pairs(scripts) do
-            local hosts = {}
-            local hosts_spec = false
-            pattern = pattern:gsub("@(.+)", function (v)
-                for _, host in ipairs(v:split(',')) do
-                    hosts[host] = true
-                    hosts_spec = true
-                end
-                return ""
-            end)
-            if not pattern:startswith("__") and (not hosts_spec or hosts[os.subhost() .. '|' .. os.subarch()] or hosts[os.subhost()])
-            and (pattern:trim() == "" or (plat .. '|' .. arch):find('^' .. pattern .. '$') or plat:find('^' .. pattern .. '$')) then
-                result = script
-                break
+            local score = _match_script(pattern, plat, arch)
+            if score and score > score_max then
+                score_max = score
+                script_matched = script
             end
         end
-        result = result or scripts["__generic__"]
+        result = script_matched or scripts["__generic__"]
     end
     return result
 end
