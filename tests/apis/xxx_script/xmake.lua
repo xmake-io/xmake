@@ -1,7 +1,7 @@
 target("test")
 
     before_build("iphoneos|arm64", "macosx", function (target)
-        assert(is_plat("macosx") or (is_plat("iphoneos") and is_arch("arm64")))
+        assert(target:is_plat("macosx") or (target:is_plat("iphoneos") and target:is_arch("arm64")))
     end)
 
     before_build(function (target)
@@ -17,5 +17,5 @@ target("test")
     end)
 
     after_build("linux|*", function (target)
-        assert(is_plat("linux"))
+        assert(target:is_plat("linux"))
     end)
