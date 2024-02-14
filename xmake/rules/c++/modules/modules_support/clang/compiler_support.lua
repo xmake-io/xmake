@@ -128,7 +128,6 @@ function strip_flags(target, flags)
     local last_flag_I = false
     for _, flag in ipairs(flags) do
         local strip = false
-
         for _, _flag in ipairs(strippable_flags) do
             if flag:startswith(_flag) or last_flag_I then
                 last_flag_I = _flag == "-I"
@@ -136,7 +135,6 @@ function strip_flags(target, flags)
                 break
             end
         end
-
         if not strip then
             table.insert(output, flag)
         end

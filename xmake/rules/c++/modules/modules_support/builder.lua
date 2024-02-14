@@ -99,7 +99,7 @@ function _are_flags_compatible(target, other, cppfile)
   table.sort(flags1)
   table.sort(flags2)
 
-  for i = 1,#flags1 do
+  for i = 1, #flags1 do
       if flags1[i] ~= flags2[i] then
           return false
       end
