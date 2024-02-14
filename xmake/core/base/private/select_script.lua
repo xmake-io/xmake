@@ -59,7 +59,7 @@ end
 -- `android|armeabi-v7a@macosx,linux`
 -- `android|armeabi-v7a,iphoneos@macosx,linux|x86_64`
 -- `android|armeabi-v7a@linux|x86_64`
--- 'linux|*'
+-- `linux|*`
 --
 -- excluded pattern:
 --  !plat|!arch@!subhost|!subarch
@@ -73,7 +73,7 @@ end
 -- `android|!armeabi-v7a@macosx,!linux`
 -- `android|armeabi-v7a,!iphoneos@macosx,!linux|x86_64`
 -- `!android|armeabi-v7a@!linux|!x86_64`
--- '!linux|*'
+-- `!linux|*`
 --
 function _match_script(pattern, plat, arch, excluded)
     local splitinfo = pattern:split("@", {plain = true})
