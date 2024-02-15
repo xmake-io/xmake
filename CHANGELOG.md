@@ -7,6 +7,7 @@
 * [#4544](https://github.com/xmake-io/xmake/issues/4544): Support to wait process timeout for `xmake test`
 * [#4606](https://github.com/xmake-io/xmake/pull/4606): Add `add_versionfiles` api in package
 * [#4709](https://github.com/xmake-io/xmake/issues/4709): Add cosmocc toolchain support
+* [#4715](https://github.com/xmake-io/xmake/issues/4715): Add is_cross() api in description scope
 
 ### Changes
 
@@ -18,6 +19,7 @@
 * [#4614](https://github.com/xmake-io/xmake/issues/4614): Support android ndk 26b
 * [#4473](https://github.com/xmake-io/xmake/issues/4473): Enable warning output by default
 * [#4477](https://github.com/xmake-io/xmake/issues/4477): Improve runtimes to support libc++/libstdc++
+* [#4657](https://github.com/xmake-io/xmake/issues/4657): Improve to select script pattern
 
 ### Bugs Fixed
 
@@ -1729,6 +1731,7 @@
 * [#4544](https://github.com/xmake-io/xmake/issues/4544): 改进 `xmake test`，支持等待进程超时
 * [#4606](https://github.com/xmake-io/xmake/pull/4606): 为 package 添加 `add_versionfiles` 接口
 * [#4709](https://github.com/xmake-io/xmake/issues/4709): 添加 cosmocc 工具链支持
+* [#4715](https://github.com/xmake-io/xmake/issues/4715): 在描述域添加 is_cross() 接口
 
 ### 改进
 
@@ -1740,6 +1743,7 @@
 * [#4614](https://github.com/xmake-io/xmake/issues/4614): 改进支持 android ndk 26b
 * [#4473](https://github.com/xmake-io/xmake/issues/4473): 默认启用警告输出
 * [#4477](https://github.com/xmake-io/xmake/issues/4477): 改进 runtimes 去支持 libc++/libstdc++
+* [#4657](https://github.com/xmake-io/xmake/issues/4657): 改进脚本的模式匹配
 
 ### Bugs 修复
 
