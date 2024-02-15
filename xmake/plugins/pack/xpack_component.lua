@@ -74,7 +74,7 @@ end
 -- get xxx_script
 function xpack_component:script(name, generic)
     local script = self:get(name)
-    local result = select_script(script, {plat = self:plat(), arch = self:arch()}) or generic
+    local result = select_script(script, {plat = self:package():plat(), arch = self:package():arch()}) or generic
     return result
 end
 
