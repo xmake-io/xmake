@@ -24,6 +24,17 @@ local utils = require("base/utils")
 
 -- match pattern, matched mode: plat|arch, excluded mode: !plat|arch
 function _match_pattern(pattern, plat, arch, excluded)
+    -- support native arch, e.g. macosx|native
+    -- @see https://github.com/xmake-io/xmake/issues/4657
+    if pattern:find("native", 1, true) then
+        local splitinfo = pattern:split("|")
+        local pattern_plat = splitinfo[1]
+        local pattern_arch = splitinfo[2]
+        if pattern_arch and pattern_plat:trim("!") == os.subhost() then
+            pattern_arch = pattern_arch:gsub("native", os.subarch())
+            pattern = pattern_plat .. "|" .. pattern_arch
+        end
+    end
     local is_excluded_pattern = pattern:find('!', 1, true)
     if excluded and is_excluded_pattern then
         return not ('!' .. plat .. '|' .. arch):match('^' .. pattern .. '$') and

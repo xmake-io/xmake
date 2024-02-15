@@ -8,6 +8,10 @@ target("test")
         print("before_build")
     end)
 
+    on_build("macosx|native", function (target)
+        print("build macosx:native")
+    end)
+
     on_build(function (target)
         print("build")
     end)
