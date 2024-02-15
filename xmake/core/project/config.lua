@@ -28,6 +28,7 @@ local path          = require("base/path")
 local table         = require("base/table")
 local utils         = require("base/utils")
 local option        = require("base/option")
+local is_cross      = require("base/private/is_cross")
 
 -- always use workingdir?
 --
@@ -94,6 +95,26 @@ function config.set(name, value, opt)
         config._MODES = config._MODES or {}
         config._MODES["__readonly_" .. name] = true
     end
+end
+
+-- get the current platform
+function config.plat()
+    return config.get("plat")
+end
+
+-- get the current architecture
+function config.arch()
+    return config.get("arch")
+end
+
+-- get the current mode
+function config.mode()
+    return config.get("mode")
+end
+
+-- get the current host
+function config.host()
+    return config.get("host")
 end
 
 -- get all options
@@ -255,6 +276,11 @@ end
 -- the current architecture is belong to the given architectures?
 function config.is_arch(...)
     return config.is_value("arch", ...)
+end
+
+-- is cross-compilation?
+function config.is_cross()
+    return is_cross(config.plat(), config.arch())
 end
 
 -- the current config is belong to the given config values?

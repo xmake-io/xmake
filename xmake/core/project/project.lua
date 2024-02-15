@@ -85,6 +85,11 @@ function project._api_is_arch(interp, ...)
     return config.is_arch(...)
 end
 
+-- the current platform and architecture is cross-complation?
+function project._api_is_cross(interp)
+    return config.is_cross()
+end
+
 -- the current kind is belong to the given kinds?
 function project._api_is_kind(interp, ...)
 
@@ -605,6 +610,7 @@ function project.apis()
         ,   {"is_arch",                 project._api_is_arch          }
         ,   {"is_mode",                 project._api_is_mode          }
         ,   {"is_plat",                 project._api_is_plat          }
+        ,   {"is_cross",                project._api_is_cross         }
         ,   {"is_config",               project._api_is_config        }
             -- get_xxx
         ,   {"get_config",              project._api_get_config       }
