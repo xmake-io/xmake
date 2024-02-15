@@ -34,6 +34,7 @@ local hashset         = require("base/hashset")
 local deprecated      = require("base/deprecated")
 local select_script   = require("base/private/select_script")
 local instance_deps   = require("base/private/instance_deps")
+local is_cross        = require("base/private/is_cross")
 local memcache        = require("cache/memcache")
 local rule            = require("project/rule")
 local option          = require("project/option")
@@ -1246,6 +1247,11 @@ end
 -- is rebuilt?
 function _instance:is_rebuilt()
     return self:data("rebuilt")
+end
+
+-- is cross-compilation?
+function _instance:is_cross()
+    return is_cross(self:plat(), self:arch())
 end
 
 -- get the enabled option
