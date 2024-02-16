@@ -132,6 +132,7 @@ function _make_targetinfo(mode, arch, target)
     -- save dirs
     targetinfo.targetdir     = _make_dirs(target:get("targetdir"))
     targetinfo.buildir       = _make_dirs(config.get("buildir"))
+    targetinfo.objectdir     = _make_dirs(target:get("objectdir"))
     targetinfo.rundir        = _make_dirs(target:get("rundir"))
     targetinfo.configdir     = _make_dirs(os.getenv("XMAKE_CONFIGDIR"))
     targetinfo.configfiledir = _make_dirs(target:get("configdir"))
@@ -142,6 +143,11 @@ function _make_targetinfo(mode, arch, target)
 
     -- save defines
     targetinfo.defines       = _make_arrs(_get_values_from_target(target, "defines"))
+
+    -- save symbols, optimize, strip info
+    targetinfo.symbols       = target:get("symbols")
+    targetinfo.optimize      = target:get("optimize")
+    targetinfo.strip         = target:get("strip")
 
     -- save flags
     targetinfo.cflags        = _make_arrs(_get_flags_from_target(target, "cflags"), " ")
@@ -486,19 +492,42 @@ function main(outputdir, vsinfo)
                 -- init target info
                 _target.target = targetname
                 _target.vcxprojdir = path.join(vsinfo.solution_dir, targetname)
+                _target.csprojdir = path.join(vsinfo.solution_dir, targetname)
+                local xxprojdir = _target.vcxprojdir
+                
+                local targetinfo = _make_targetinfo(mode, arch, target)
+                _target.symbols = targetinfo.symbols;
+                _target.optimize = targetinfo.optimize;
+                _target.strip = targetinfo.strip;
+                for _, sourcebatch in pairs(target:sourcebatches()) do
+                    local sourcekind = sourcebatch.sourcekind
+                    if sourcekind == "cc" or sourcekind == "cxx" then
+                        _target.tool_id = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
+                        _target.proj_extension = "vcxproj"
+                        xxprojdir = _target.vcxprojdir
+                        break
+                    elseif sourcekind == "cs"  then
+                        _target.tool_id = "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"
+                        _target.proj_extension = "csproj"
+                        xxprojdir = _target.csprojdir
+                        break
+                    end
+                end
+
                 _target.target_id = hash.uuid4(targetname)
                 _target.kind = target:kind()
                 _target.absscriptdir = target:scriptdir()
-                _target.scriptdir = path.relative(target:scriptdir(), _target.vcxprojdir)
-                _target.projectdir = path.relative(project.directory(), _target.vcxprojdir)
+                _target.scriptdir = path.relative(target:scriptdir(), xxprojdir)
+                _target.projectdir = path.relative(project.directory(), xxprojdir)
                 local targetdir = target:get("targetdir")
-                if targetdir then _target.targetdir = path.relative(targetdir, _target.vcxprojdir) end
+                if targetdir then _target.targetdir = path.relative(targetdir, xxprojdir) end
                 _target._targets = _target._targets or {}
                 _target._targets[mode] = _target._targets[mode] or {}
-                local targetinfo = _make_targetinfo(mode, arch, target)
                 _target._targets[mode][arch] = targetinfo
                 _target.sdkver = targetinfo.sdkver
                 _target.default = targetinfo.default
+
+                _target.dotnetframeworkver = vsinfo.dotnetframework_version
 
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))

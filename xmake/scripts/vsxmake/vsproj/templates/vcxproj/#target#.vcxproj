@@ -48,8 +48,8 @@
 #Import(File.rc)#
 #Import(File.ui)#
   </ItemGroup>
-  <!-- <ItemGroup>
+  <ItemGroup>
 #Import(ProjectRef)#
-  </ItemGroup> -->
+  </ItemGroup>
   <Import Project="$(XmakeProgramDir)\scripts\vsxmake\vsproj\Xmake.targets" />
 </Project>

@@ -104,7 +104,7 @@
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx14'))">stdcpp14</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx17'))">stdcpp17</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx1z'))">stdcpp17</LanguageStandard>
-      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx20'))">stdcpplatest</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx20'))">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx2a'))">stdcpplatest</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx23'))">stdcpplatest</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx2b'))">stdcpplatest</LanguageStandard>
@@ -113,7 +113,7 @@
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx14'))">stdcpp14</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx17'))">stdcpp17</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx1z'))">stdcpp17</LanguageStandard>
-      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx20'))">stdcpplatest</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx20'))">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx2a'))">stdcpplatest</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx23'))">stdcpplatest</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx2b'))">stdcpplatest</LanguageStandard>
@@ -164,7 +164,8 @@
   <PropertyGroup Label="Path">
     <LibraryPath>$(XmakeLinkDirs);$(LibraryPath)</LibraryPath>
     <OutDir>$(XmakeTargetDir)\</OutDir>
-    <IntDir>$(XmakeBuilDir)\.vs\$(TargetName)\$(XmakeArch)\$(XmakeMode)\</IntDir>
+    <IntDir Condition="'$(XmakeObjectDir)' != ''">$(XmakeObjectDir)\</IntDir>
+    <IntDir Condition="'$(XmakeObjectDir)' == ''">$(XmakeBuilDir)\.vs\$(TargetName)\$(XmakeArch)\$(XmakeMode)\</IntDir>
     <SourcePath>$(XmakeSourceDirs);$(SourcePath)</SourcePath>
   </PropertyGroup>
 
