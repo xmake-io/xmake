@@ -46,7 +46,6 @@ function task.common_options()
         ,   {'D', "diagnosis", "k",  nil,   "Print lots of diagnosis information (backtrace, check info ..) only for developers."
                                         ,   "And we can append -v to get more whole information."
                                         ,   "    e.g. $ xmake -vD"                                      }
-        ,   {nil, "version",   "k",  nil,   "Print the version number and exit."                        }
         ,   {'h', "help",      "k",  nil,   "Print this help message and exit."                         }
         ,   {}
         ,   {'F', "file",      "kv", nil,   "Read a given xmake.lua file."                              }
@@ -424,8 +423,6 @@ function task.menu(tasks)
         -- has task menu?
         local taskmenu = taskinst:get("menu")
         if taskmenu then
-
-            -- main?
             if taskinst:get("category") == "main" then
 
                 -- delay to load main menu
@@ -440,22 +437,15 @@ function task.menu(tasks)
                     -- make tasks for the main menu
                     mainmenu.tasks = {}
                     for name, inst in pairs(tasks) do
-
-                        -- has menu?
                         local m = inst:get("menu")
                         if m then
-
-                            -- add task
-                            mainmenu.tasks[name] =
-                            {
+                            mainmenu.tasks[name] = {
                                 category    = inst:get("category")
                             ,   shortname   = m.shortname
                             ,   description = m.description
                             }
                         end
                     end
-
-                    -- ok
                     return mainmenu
                 end
             end
