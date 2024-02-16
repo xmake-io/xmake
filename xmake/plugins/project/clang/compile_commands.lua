@@ -222,7 +222,7 @@ function _add_target_source_commands(jsonfile, target)
         if sourcekind and _sourcebatch_is_built(sourcebatch) then
             for index, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local objectfile = sourcebatch.objectfiles[index]
-                local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
+                local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind, rawargs=true}))
                 _make_arguments(jsonfile, arguments, {sourcefile = sourcefile, target = target})
             end
         end
