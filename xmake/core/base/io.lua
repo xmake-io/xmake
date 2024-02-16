@@ -563,9 +563,6 @@ end
 --
 function io.open(filepath, mode, opt)
 
-    -- check
-    assert(filepath)
-
     -- init option and mode
     opt  = opt or {}
     mode = mode or "r"
@@ -582,11 +579,6 @@ end
 
 -- open a filelock
 function io.openlock(filepath)
-
-    -- check
-    assert(filepath)
-
-    -- open it
     filepath = tostring(filepath)
     local lock = io.filelock_open(filepath)
     if lock then
@@ -722,42 +714,24 @@ end
 
 -- cat the given file
 function io.cat(filepath, linecount, opt)
-
-    -- init option
     opt = opt or {}
-
-    -- open file
     local file = io.open(filepath, "r", opt)
     if file then
-
-        -- show file
         local count = 1
         for line in file:lines(opt) do
-
-            -- show line
             io.write(line, "\n")
-
-            -- end?
             if linecount and count >= linecount then
                 break
             end
-
-            -- update the line count
             count = count + 1
         end
-
-        -- exit file
         file:close()
     end
 end
 
 -- tail the given file
 function io.tail(filepath, linecount, opt)
-
-    -- init option
     opt = opt or {}
-
-    -- all?
     if linecount < 0 then
         return io.cat(filepath, opt)
     end
@@ -765,43 +739,28 @@ function io.tail(filepath, linecount, opt)
     -- open file
     local file = io.open(filepath, "r", opt)
     if file then
-
-        -- read lines
         local lines = {}
         for line in file:lines(opt) do
             table.insert(lines, line)
         end
 
-        -- tail lines
         local tails = {}
         if #lines ~= 0 then
             local count = 1
             for index = #lines, 1, -1 do
-
-                -- show line
                 table.insert(tails, lines[index])
-
-                -- end?
                 if linecount and count >= linecount then
                     break
                 end
-
-                -- update the line count
                 count = count + 1
             end
         end
 
-        -- show tails
         if #tails ~= 0 then
             for index = #tails, 1, -1 do
-
-                -- show tail
                 io.print(tails[index])
-
             end
         end
-
-        -- exit file
         file:close()
     end
 end

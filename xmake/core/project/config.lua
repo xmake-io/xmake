@@ -216,6 +216,10 @@ function config.load(filepath, opt)
 end
 
 -- save the project configuration
+--
+-- @note we pass only_changed to avoid frequent changes to the file's mtime,
+-- because some plugins(vscode, compile_commands.autoupdate) depend on it's mtime.
+--
 function config.save(filepath, opt)
     opt = opt or {}
     filepath = filepath or config.filepath()
