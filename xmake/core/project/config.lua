@@ -226,9 +226,9 @@ function config.save(filepath, opt)
                 configs[name] = value
             end
         end
-        return io.save(filepath, configs, {orderkeys = true})
+        return io.save(filepath, configs, {orderkeys = true, only_changed = true})
     else
-        return io.save(filepath, config.options(), {orderkeys = true})
+        return io.save(filepath, config.options(), {orderkeys = true, only_changed = true})
     end
 end
 

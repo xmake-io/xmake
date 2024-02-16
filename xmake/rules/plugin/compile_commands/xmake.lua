@@ -66,7 +66,7 @@ rule("plugin.compile_commands.autoupdate")
                 task.run("project", {kind = "compile_commands", outputdir = outputdir, lsp = lsp})
                 print("compile_commands.json updated!")
             end, {dependfile = dependfile,
-                  files = project.allfiles(),
+                  files = table.join(project.allfiles(), config.filepath()),
                   values = sourcefiles})
             lockfile:close()
         end
