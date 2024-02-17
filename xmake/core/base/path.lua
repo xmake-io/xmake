@@ -90,7 +90,7 @@ function _instance:translate(opt)
 end
 
 function _instance:unix()
-    return self:translate({unix = true})
+    return path.new(path.unix(self:str()), self._TRANSFORM)
 end
 
 function _instance:filename()
