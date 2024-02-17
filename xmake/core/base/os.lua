@@ -330,7 +330,7 @@ function os.match(pattern, mode, callback)
     end
 
     -- translate path and remove some repeat separators
-    pattern = path.translate(pattern:gsub("|.*$", ""))
+    pattern = path.translate((pattern:gsub("|.*$", "")))
 
     -- translate mode
     if type(mode) == "string" then

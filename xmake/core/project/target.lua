@@ -1929,7 +1929,7 @@ function _instance:sourcefiles()
     if removed_count > 0 then
         table.remove_if(sourcefiles, function (i, sourcefile)
             for _, removed_file in ipairs(sourcefiles_removed) do
-                local pattern = path.translate(removed_file:gsub("|.*$", ""))
+                local pattern = path.translate((removed_file:gsub("|.*$", "")))
                 if pattern:sub(1, 2):find('%.[/\\]') then
                     pattern = pattern:sub(3)
                 end
@@ -2116,7 +2116,7 @@ function _instance:headerfiles(outputdir, opt)
     if removed_count > 0 then
         table.remove_if(srcheaders, function (i, srcheader)
             for _, removed_file in ipairs(srcheaders_removed) do
-                local pattern = path.translate(removed_file:gsub("|.*$", ""))
+                local pattern = path.translate((removed_file:gsub("|.*$", "")))
                 if pattern:sub(1, 2):find('%.[/\\]') then
                     pattern = pattern:sub(3)
                 end

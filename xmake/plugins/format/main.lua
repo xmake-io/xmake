@@ -68,7 +68,7 @@ function _get_file_patterns(sourcefiles)
         end
 
         -- translate path and remove some repeat separators
-        pattern = path.translate(pattern:gsub("|.*$", ""))
+        pattern = path.translate((pattern:gsub("|.*$", "")))
 
         -- remove "./" or '.\\' prefix
         if pattern:sub(1, 2):find('%.[/\\]') then

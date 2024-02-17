@@ -29,6 +29,7 @@ local _instance = _instance or {}
 -- save original interfaces
 path._absolute = path._absolute or path.absolute
 path._relative = path._relative or path.relative
+path._translate = path._translate or path.translate
 
 -- new a path
 function _instance.new(p, transform)
@@ -86,6 +87,10 @@ end
 
 function _instance:translate(opt)
     return path.new(path.translate(self:str(), opt), self._TRANSFORM)
+end
+
+function _instance:unix()
+    return self:translate({unix = true})
 end
 
 function _instance:filename()
@@ -151,6 +156,21 @@ function _instance:__todisplay()
     return "<path: " .. (self:empty() and "empty" or self:str()) .. ">"
 end
 
+-- get unix-style path, it is usually used on windows
+-- @see https://github.com/xmake-io/xmake/issues/4731
+function path.unix(p)
+    return (tostring(p):gsub(path.sep(), "/"))
+end
+
+-- translate path
+--
+-- @param p     the path
+-- @param opt   the option, e.g. {normalize = true}
+--
+function path.translate(p, opt)
+    return path._translate(tostring(p), opt)
+end
+
 -- path.translate:
 -- - transform the path separator
 -- - expand the user directory with the prefix: ~
@@ -162,8 +182,7 @@ end
 -- - reduce "/xxx/.." => "/"
 --
 function path.normalize(p)
-    p = tostring(p)
-    return path.translate(p, {normalize = true})
+    return path.translate(tostring(p), {normalize = true})
 end
 
 -- get the directory of the path, compatible with lower version core binary
