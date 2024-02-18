@@ -193,9 +193,6 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                 end
             end
 
-            local compinst = compiler.load("cxx", {target = target})
-            local compflags = compinst:compflags({sourcefile = opt.cppfile, target = target})
-
             -- generate and append module mapper file
             local module_mapper
             if provide or opt.module.requires then
@@ -209,6 +206,9 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
             if provide and build then
                 mark_build(target, name)
             end
+
+            local compinst = compiler.load("cxx", {target = target})
+            local compflags = compinst:compflags({sourcefile = opt.cppfile, target = target})
 
             local dependfile = target:dependfile(bmifile or opt.objectfile)
             local dependinfo = depend.load(dependfile) or {}

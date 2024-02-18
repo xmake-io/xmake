@@ -178,11 +178,9 @@ function should_build(target, sourcefile, bmifile, opt)
     -- need build this object?
     local depvalues = {compinst:program(), compflags}
     local lastmtime = os.isfile(bmifile or objectfile) and os.mtime(dependfile) or 0
-
     if dryrun or depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
         return true
     end
-
     return false
 end
 
