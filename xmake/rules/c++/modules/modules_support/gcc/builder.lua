@@ -83,9 +83,9 @@ end
 function _generate_headerunit_modulemapper_file(module)
     local mapper_path = os.tmpfile()
     local mapper_file = io.open(mapper_path, "wb")
-    mapper_file:write("root " .. os.projectdir():replace("\\", "/"))
+    mapper_file:write("root " .. path.unix(os.projectdir()))
     mapper_file:write("\n")
-    mapper_file:write(mapper_file, module.name:replace("\\", "/") .. " " .. module.bmifile:replace("\\", "/"))
+    mapper_file:write(mapper_file, path.unix(module.name) .. " " .. path.unix(module.bmifile))
     mapper_file:write("\n")
     mapper_file:close()
     return mapper_path
@@ -107,13 +107,13 @@ function _get_maplines(target, module)
         if dep_module.aliasof then
             local aliased = get_from_target_mapper(target, dep_module.aliasof)
             bmifile = aliased.bmi
-            mapline = dep_module.headerunit.path:replace("\\", "/") .. " " .. bmifile:replace("\\", "/")
+            mapline = path.unix(dep_module.headerunit.path) .. " " .. path.unix(bmifile)
         -- headerunit
         elseif dep_module.headerunit then
-            mapline = dep_module.headerunit.path:replace("\\", "/") .. " " .. bmifile:replace("\\", "/")
+            mapline = path.unix(dep_module.headerunit.path) .. " " .. path.unix(bmifile)
         -- named module
         else
-            mapline = required .. " " .. bmifile:replace("\\", "/")
+            mapline = required .. " " .. path.unix(bmifile)
         end
         table.insert(maplines, mapline)
 
@@ -137,7 +137,7 @@ function _generate_modulemapper_file(target, module, cppfile)
     local maplines = _get_maplines(target, module)
     local mapper_path = path.join(os.tmpdir(), target:name():replace(" ", "_"), name or cppfile:replace(" ", "_"))
     local mapper_file = io.open(mapper_path, "wb")
-    mapper_file:write("root " .. os.projectdir():replace("\\", "/"))
+    mapper_file:write("root " .. path.unix(os.projectdir()))
     mapper_file:write("\n")
     for _, mapline in ipairs(maplines) do
         mapper_file:write(mapline)

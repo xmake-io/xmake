@@ -67,7 +67,7 @@ end
 -- escape path
 function _escape_path(filepath)
     if is_host("windows") then
-        filepath = filepath:gsub('\\', '/')
+        filepath = path.unix(filepath)
         filepath = filepath:gsub(' ', '\\ ')
     end
     return filepath
@@ -96,7 +96,7 @@ end
 -- @see https://github.com/xmake-io/xmake/issues/2026
 function _get_relative_unix_path_to_cmake(filepath, outputdir)
     filepath = _translate_path(filepath, outputdir)
-    filepath = path.translate(filepath):gsub('\\', '/')
+    filepath = path.unix(path.translate(filepath))
     if filepath and not path.is_absolute(filepath) then
         filepath = "${CMAKE_SOURCE_DIR}/" .. filepath
     end
@@ -265,7 +265,7 @@ function _set_target_compiler(cmakelists, target)
     if config.get("toolchain") or target:get("toolchains") then
         local cc = target:tool("cc")
         if cc then
-            cc = cc:gsub("\\", "/")
+            cc = path.unix(cc)
             cmakelists:print("set(CMAKE_C_COMPILER \"%s\")", cc)
         end
         local cxx, cxx_name = target:tool("cxx")
@@ -283,7 +283,7 @@ function _set_target_compiler(cmakelists, target)
                     cxx = name
                 end
             end
-            cxx = cxx:gsub("\\", "/")
+            cxx = path.unix(cxx)
             cmakelists:print("set(CMAKE_CXX_COMPILER \"%s\")", cxx)
         end
     end
