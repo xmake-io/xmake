@@ -25,6 +25,8 @@ import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 import("core.base.bit")
+import("rules.c++.modules.modules_support.compiler_support", {alias = "module_compiler_support", rootdir = os.programdir()})
+import("rules.c++.modules.modules_support.builder", {alias = "module_builder", rootdir = os.programdir()})
 
 -- get library deps
 function _get_librarydeps(target)
@@ -95,6 +97,7 @@ function _package_library(target)
     local binarydir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "bin")
     local librarydir  = path.join(packagedir, target:plat(), target:arch(), config.mode(), "lib")
     local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
+    local modulesdir  = path.join(packagedir, target:plat(), target:arch(), config.mode(), "modules")
 
     -- copy the library file to the output directory
     local targetfile = target:targetfile()
@@ -139,6 +142,30 @@ function _package_library(target)
                 os.vcp(srcheader, dstheader)
             end
             i = i + 1
+        end
+    end
+
+    -- copy modules
+    if target:data("cxx.has_modules") then
+
+        local modules = module_compiler_support.localcache():get2(target:name(), "c++.modules")
+        module_builder.generate_metadata(target, modules)
+
+        local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
+        if sourcebatch and sourcebatch.sourcefiles then
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local fileconfig = target:fileconfig(sourcefile)
+                local install = fileconfig and fileconfig.public or false
+                if install then
+                    local modulehash = module_compiler_support.get_modulehash(target, sourcefile)
+                    local prefixdir = path.join(modulesdir, modulehash)
+                    os.vcp(sourcefile, path.join(prefixdir, path.filename(sourcefile)))
+                    local metafile = module_compiler_support.get_metafile(target, sourcefile)
+                    if os.exists(metafile) then
+                        os.vcp(metafile, path.join(prefixdir, path.filename(metafile)))
+                    end
+                end
+            end
         end
     end
 
@@ -261,6 +288,78 @@ function _package_headeronly(target)
     print("package(%s): %s generated", packagename, packagedir)
 end
 
+function _package_moduleonly(target)
+
+    -- get the output directory
+    local packagedir  = target:packagedir()
+    local packagename = target:name():lower()
+    local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
+    local modulesdir  = path.join(packagedir, target:plat(), target:arch(), config.mode(), "modules")
+
+    local modules = module_compiler_support.localcache():get2(target:name(), "c++.modules")
+    module_builder.generate_metadata(target, modules)
+
+    -- copy headers
+    local srcheaders, dstheaders = target:headerfiles(headerdir)
+    if srcheaders and dstheaders then
+        local i = 1
+        for _, srcheader in ipairs(srcheaders) do
+            local dstheader = dstheaders[i]
+            if dstheader then
+                os.vcp(srcheader, dstheader)
+            end
+            i = i + 1
+        end
+    end
+
+    -- copy modules
+    local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
+    if sourcebatch and sourcebatch.sourcefiles then
+        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            local modulehash = module_compiler_support.get_modulehash(target, sourcefile)
+            local prefixdir = path.join(modulesdir, modulehash)
+            os.vcp(sourcefile, path.join(prefixdir, path.filename(sourcefile)))
+            local metafile = module_compiler_support.get_metafile(target, sourcefile)
+            if os.exists(metafile) then
+                os.vcp(metafile, path.join(prefixdir, path.filename(metafile)))
+            end
+        end
+    end
+
+    -- generate xmake.lua
+    local file = io.open(path.join(packagedir, "xmake.lua"), "w")
+    if file then
+        local deps = _get_librarydeps(target)
+        file:print("package(\"%s\")", packagename)
+        local homepage = option.get("homepage")
+        if homepage then
+            file:print("    set_homepage(\"%s\")", homepage)
+        end
+        local description = option.get("description") or ("The " .. packagename .. " package")
+        file:print("    set_description(\"%s\")", description)
+        if target:license() then
+            file:print("    set_license(\"%s\")", target:license())
+        end
+        if #deps > 0 then
+            file:print("    add_deps(\"%s\")", table.concat(deps, "\", \""))
+        end
+        file:print("")
+        file:print([[
+    on_load(function (package)
+        package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
+    end)
+
+    on_fetch(function (package)
+        local result = {}
+        result.includedirs = package:installdir("include")
+        return result
+    end)]])
+        file:close()
+    end
+
+    -- show tips
+    print("package(%s): %s generated", packagename, packagedir)
+end
 -- do package target
 function _do_package_target(target)
     if not target:is_phony() then
@@ -269,6 +368,7 @@ function _do_package_target(target)
             binary     = _package_binary
         ,   static     = _package_library
         ,   shared     = _package_library
+        ,   moduleonly = _package_moduleonly
         ,   headeronly = _package_headeronly
         }
         local kind = target:kind()

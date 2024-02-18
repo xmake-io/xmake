@@ -218,6 +218,17 @@ function _make_header(vcxprojfile, vsinfo)
     vcxprojfile:enter("<Project DefaultTargets=\"Build\" ToolsVersion=\"%s.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">", assert(vsinfo.project_version))
 end
 
+-- make references
+function _make_references(vcxprojfile, vsinfo, target)
+    vcxprojfile:print("<ItemGroup>")
+    for dep_name, dep_vcxprojfile in pairs(target.deps) do
+        vcxprojfile:print("<ProjectReference Include=\"%s\">", dep_vcxprojfile)
+            vcxprojfile:print("<Project>{%s}</Project>", hash.uuid4(dep_name))
+        vcxprojfile:print("</ProjectReference>")
+    end
+    vcxprojfile:print("</ItemGroup>")
+end
+
 -- make tailer
 function _make_tailer(vcxprojfile, vsinfo, target)
     vcxprojfile:print("<Import Project=\"%$(VCTargetsPath)\\Microsoft.Cpp.targets\" />")
@@ -242,6 +253,7 @@ function _make_configurations(vcxprojfile, vsinfo, target)
         binary = "Application"
     ,   shared = "DynamicLibrary"
     ,   static = "StaticLibrary"
+    ,   moduleonly = "StaticLibrary" -- emulate moduleonly with staticlib
     }
 
     -- make ProjectConfigurations
@@ -307,8 +319,10 @@ function _make_configurations(vcxprojfile, vsinfo, target)
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
             vcxprojfile:print("<OutDir>%s\\</OutDir>", _make_dirs(targetinfo.targetdir, target.project_dir))
             vcxprojfile:print("<IntDir>%s\\</IntDir>", _make_dirs(targetinfo.objectdir, target.project_dir))
-            vcxprojfile:print("<TargetName>%s</TargetName>", path.basename(targetinfo.targetfile))
-            vcxprojfile:print("<TargetExt>%s</TargetExt>", path.extension(targetinfo.targetfile))
+            if targetinfo.targetfile then 
+                vcxprojfile:print("<TargetName>%s</TargetName>", path.basename(targetinfo.targetfile))
+                vcxprojfile:print("<TargetExt>%s</TargetExt>", path.extension(targetinfo.targetfile))
+            end
 
             if target.kind == "binary" then
                 vcxprojfile:print("<LinkIncremental>true</LinkIncremental>")
@@ -723,7 +737,7 @@ endlocal &amp; call :xmErrorLevel %errorlevel% &amp; goto :xmDone
 exit /b %1
 :xmDone
 if %errorlevel% neq 0 goto :VCEnd]]
-    vcxprojfile:print("<Command>%s</Command>", cmdstr)
+    vcxprojfile:print("<Command>%s</Command>", cmdstr:replace("<", " 	&lt;"):replace(">", "&gt;"):replace("/Fo ", "/Fo"))
     if suffix == "after" or suffix == "after_link" then
         vcxprojfile:print("</PostBuildEvent>")
     elseif suffix == "before" then
@@ -742,12 +756,12 @@ end
 
 -- make common item
 function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
-
     -- init the linker kinds
     local linkerkinds =
     {
         binary = "Link"
     ,   static = "Lib"
+    ,   moduleonly = "Lib" -- emulate moduleonly with staticlib
     ,   shared = "Link"
     }
     if not linkerkinds[targetinfo.targetkind] then
@@ -892,6 +906,10 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
             vcxprojfile:print("<LanguageStandard_C>%s</LanguageStandard_C>", cstandard)
         end
 
+        if targetinfo.has_modules then
+            vcxprojfile:enter("<ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>")
+        end
+
         -- use c or c++ precompiled header
         local pcheader = target.pcxxheader or target.pcheader
         if pcheader then
@@ -959,9 +977,8 @@ function _build_common_items(vsinfo, target)
         for _, sourcebatch in pairs(targetinfo.sourcebatches) do
             local sourcekind = sourcebatch.sourcekind
             local rulename = sourcebatch.rulename
-            if (rulename == "c.build" or rulename == "c++.build" or rulename == "asm.build" or sourcekind == "mrc") then
+            if (rulename == "c.build" or rulename == "c++.build" or rulename == "c++.build.modules" or rulename == "asm.build" or sourcekind == "mrc") then
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-
                     -- make compiler flags
                     local flags = _make_compflags(sourcefile, targetinfo, target.project_dir)
 
@@ -1028,7 +1045,7 @@ function _build_common_items(vsinfo, target)
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     sourceflags[sourcefile] = targetinfo.sourceflags[sourcefile]
                 end
-            elseif rulename == "c.build" or rulename == "c++.build" then -- sourcekind maybe bind multiple rules, e.g. c++modules
+            elseif rulename == "c.build" or rulename == "c++.build" or rulename == "c++.build.modules" then -- sourcekind maybe bind multiple rules, e.g. c++modules
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     local flags = targetinfo.sourceflags[sourcefile]
                     local otherflags = {}
@@ -1062,7 +1079,7 @@ function _make_common_items(vcxprojfile, vsinfo, target)
     -- for each mode and arch
     for _, targetinfo in ipairs(target.info) do
         -- make common item
-        _make_common_item(vcxprojfile, vsinfo, target, targetinfo, target.project_dir)
+        _make_common_item(vcxprojfile, vsinfo, target, targetinfo)
     end
 end
 
@@ -1325,6 +1342,19 @@ function _make_source_files(vcxprojfile, vsinfo, target)
                         sourceinfos[sourcefile] = sourceinfos[sourcefile] or {}
                         table.insert(sourceinfos[sourcefile], {targetinfo = targetinfo, mode = targetinfo.mode, arch = targetinfo.arch, sourcekind = sourcekind, objectfile = objectfile, flags = flags, compargv = targetinfo.compargvs[sourcefile]})
                     end
+                elseif rulename == "c++.build.modules" then
+                    local builder_batch = targetinfo.sourcebatches["c++.build.modules.builder"]
+                    table.sort(builder_batch.objectfiles)
+                    local objectfiles = builder_batch.objectfiles
+                    for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                        local is_named_module = table.contains(builder_batch.sourcefiles, sourcefile)
+                        if is_named_module then
+                            local objectfile    = objectfiles[idx]
+                            local flags         = targetinfo.sourceflags[sourcefile]
+                            sourceinfos[sourcefile] = sourceinfos[sourcefile] or {}
+                            table.insert(sourceinfos[sourcefile], {targetinfo = targetinfo, mode = targetinfo.mode, arch = targetinfo.arch, sourcekind = "cxx", objectfile = objectfile, flags = flags, compargv = targetinfo.compargvs[sourcefile]})
+                        end
+                    end
                 end
             end
         end
@@ -1385,6 +1415,9 @@ function make(vsinfo, target)
 
     -- make source files
     _make_source_files(vcxprojfile, vsinfo, target)
+
+    -- make deps references
+    _make_references(vcxprojfile, vsinfo, target)
 
     -- make tailer
     _make_tailer(vcxprojfile, vsinfo, target)

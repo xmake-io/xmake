@@ -68,6 +68,7 @@ end
 function _escape_path(filepath)
     if is_host("windows") then
         filepath = filepath:gsub('\\', '/')
+        filepath = filepath:gsub(' ', '\\ ')
     end
     return filepath
 end
@@ -323,6 +324,11 @@ function _add_target_headeronly(cmakelists, target)
     cmakelists:print("add_library(%s INTERFACE)", target:name())
 end
 
+-- add target: headeronly
+function _add_target_moduleonly(cmakelists, target)
+    cmakelists:print("add_custom_target(%s)", target:name())
+end
+
 -- add target dependencies
 function _add_target_dependencies(cmakelists, target)
     local deps = target:get("deps")
@@ -340,8 +346,8 @@ function _add_target_sources(cmakelists, target, outputdir)
     local has_cuda = false
     cmakelists:print("target_sources(%s PRIVATE", target:name())
     local sourcebatches = target:sourcebatches()
-    for _, sourcebatch in table.orderpairs(sourcebatches) do
-        if _sourcebatch_is_built(sourcebatch) then
+    for name, sourcebatch in table.orderpairs(sourcebatches) do
+        if _sourcebatch_is_built(sourcebatch) and not name:startswith("c++.build.modules") then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 cmakelists:print("    " .. _get_relative_unix_path(sourcefile, outputdir))
             end
@@ -1002,6 +1008,9 @@ function _add_target(cmakelists, target, outputdir)
     elseif targetkind == 'headeronly' then
         _add_target_headeronly(cmakelists, target)
         _add_target_include_directories(cmakelists, target, outputdir)
+        return
+    elseif targetkind == 'moduleonly' then
+        _add_target_moduleonly(cmakelists, target)
         return
     else
         raise("unknown target kind %s", target:kind())

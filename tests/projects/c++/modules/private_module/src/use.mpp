@@ -1,6 +1,3 @@
-import dep1;
-import dep2;
+export module use;
 
-int lib() {
-    return m() + i();
-}
+export int lib();

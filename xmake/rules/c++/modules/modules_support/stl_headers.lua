@@ -14,7 +14,7 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      Arthapz, ruki
+-- @author      ruki, Arthapz
 -- @file        stl_headers.lua
 --
 

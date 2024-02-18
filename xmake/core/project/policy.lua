@@ -64,8 +64,12 @@ function policy.policies()
             ["build.sanitizer.undefined"]         = {description = "Enable undefined sanitizer for c/c++ building.", type = "boolean"},
             -- Enable C++ modules for C++ building, even if no .mpp is involved in the compilation
             ["build.c++.modules"]                 = {description = "Enable C++ modules for C++ building.", type = "boolean"},
-            -- Enable clang std modulemap
-            ["build.c++.clang.stdmodules"]        = {description = "Enable clang std modulemap.", default = false, type = "boolean"},
+            -- Enable std module
+            ["build.c++.modules.std"]             = {description = "Enable std modules.", default = true, type = "boolean"},
+            -- Try to reuse compiled module bmi file if targets flags permit it
+            ["build.c++.modules.tryreuse"]        = {description = "Try to reuse compiled module if possible.", default = true, type = "boolean"},
+            -- Enable module taking defines acbount for bmi reuse discrimination
+            ["build.c++.modules.tryreuse.discriminate_on_defines"] = {description = "Enable defines module reuse discrimination.", default = false, type = "boolean"},
             -- Force C++ modules fallback dependency scanner for clang
             ["build.c++.clang.fallbackscanner"]   = {description = "Force clang fallback module dependency scanner.", default = false, type = "boolean"},
             -- Force C++ modules fallback dependency scanner for msvc

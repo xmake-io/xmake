@@ -1228,9 +1228,14 @@ function _instance:is_headeronly()
     return self:kind() == "headeronly"
 end
 
+-- is moduleonly target?
+function _instance:is_moduleonly()
+    return self:kind() == "moduleonly"
+end
+
 -- is library target?
 function _instance:is_library()
-    return self:is_static() or self:is_shared() or self:is_headeronly()
+    return self:is_static() or self:is_shared() or self:is_headeronly() or self:is_moduleonly()
 end
 
 -- is default target?
@@ -1587,7 +1592,7 @@ end
 function _instance:filename()
 
     -- no target file?
-    if self:is_object() or self:is_phony() or self:is_headeronly() then
+    if self:is_object() or self:is_phony() or self:is_headeronly() or self:is_moduleonly() then
         return
     end
 

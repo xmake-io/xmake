@@ -1,8 +1,8 @@
+#include <iostream>
+
 import hello;
 import say;
 import foo;
-
-#include <iostream>
 
 int main() {
     hello::say_hello();

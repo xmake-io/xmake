@@ -1,0 +1,13 @@
+export module hello;
+
+import hello3;
+
+export namespace hello {
+    class say {
+    public:
+        say(int data);
+        void hello();
+    private:
+        int data_;
+    };
+}

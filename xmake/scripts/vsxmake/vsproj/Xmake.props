@@ -93,6 +93,11 @@
         <ConfigurationType>Unknown</ConfigurationType>
       </PropertyGroup>
     </When>
+    <When Condition="'$(XmakeKind)' == 'moduleonly'">
+      <PropertyGroup>
+        <ConfigurationType>Unknown</ConfigurationType>
+      </PropertyGroup>
+    </When>
   </Choose>
 
   <ItemDefinitionGroup>
