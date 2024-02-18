@@ -20,6 +20,7 @@
 * [#4473](https://github.com/xmake-io/xmake/issues/4473): Enable warning output by default
 * [#4477](https://github.com/xmake-io/xmake/issues/4477): Improve runtimes to support libc++/libstdc++
 * [#4657](https://github.com/xmake-io/xmake/issues/4657): Improve to select script pattern
+* [#4673](https://github.com/xmake-io/xmake/pull/4673): Refactor modules support
 
 ### Bugs Fixed
 
@@ -1744,6 +1745,7 @@
 * [#4473](https://github.com/xmake-io/xmake/issues/4473): 默认启用警告输出
 * [#4477](https://github.com/xmake-io/xmake/issues/4477): 改进 runtimes 去支持 libc++/libstdc++
 * [#4657](https://github.com/xmake-io/xmake/issues/4657): 改进脚本的模式匹配
+* [#4673](https://github.com/xmake-io/xmake/pull/4673): 重构模块支持
 
 ### Bugs 修复
 
