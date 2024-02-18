@@ -33,12 +33,10 @@ import("dependency_scanner")
 -- build target modules
 function _build_modules(target, sourcebatch, modules, opt)
     local objectfiles = sourcebatch.objectfiles
-
-    -- build modules
     for _, objectfile in ipairs(objectfiles) do
         local module = modules[objectfile]
         if not module then
-            goto CONTINUE
+            goto continue
         end
 
         local name, _, cppfile = compiler_support.get_provided_module(module)
@@ -51,7 +49,7 @@ function _build_modules(target, sourcebatch, modules, opt)
 
         opt.build_module(deps, module, name, objectfile, cppfile)
 
-        ::CONTINUE::
+        ::continue::
     end
 end
 
@@ -113,7 +111,7 @@ function _try_reuse_modules(target, modules)
     for _, module in pairs(modules) do
         local name, provide, cppfile = compiler_support.get_provided_module(module)
         if not provide then
-            goto CONTINUE
+            goto continue
         end
 
         cppfile = cppfile or module.cppfile
@@ -121,12 +119,12 @@ function _try_reuse_modules(target, modules)
         local fileconfig = target:fileconfig(cppfile)
         local public = fileconfig and (fileconfig.public or fileconfig.external)
         if not public then
-            goto CONTINUE
+            goto continue
         end
 
         for _, dep in ipairs(target:orderdeps()) do
             if not _are_flags_compatible(target, dep, cppfile) then
-                goto NEXT
+                goto nextdep
             end
             local mapped = get_from_target_mapper(dep, name)
             if mapped then
@@ -134,10 +132,10 @@ function _try_reuse_modules(target, modules)
                 add_module_to_target_mapper(target, mapped.name, mapped.sourcefile, mapped.bmi, table.join(mapped.opt or {}, {target = dep}))
                 break
             end
-            ::NEXT::
+            ::nextdep::
         end
 
-        ::CONTINUE::
+        ::continue::
     end
     return modules
 end
@@ -255,7 +253,6 @@ end
 
 -- build modules for batchjobs
 function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
-
     opt.rootjob = batchjobs:group_leave() or opt.rootjob
     batchjobs:group_enter(target:name() .. "/build_modules", {rootjob = opt.rootjob})
 
@@ -268,8 +265,8 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
     _build_modules(target, sourcebatch, modules, table.join(opt, {
        build_module = function(deps, module, name, objectfile, cppfile)
         local job_name = name and target:name() .. name or cppfile
-
-        modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps, {module = module, objectfile = objectfile, cppfile = cppfile})
+        modulesjobs[job_name] = _builder(target).make_module_buildjobs(target, batchjobs, job_name, deps,
+            {module = module, objectfile = objectfile, cppfile = cppfile})
       end
     }))
 

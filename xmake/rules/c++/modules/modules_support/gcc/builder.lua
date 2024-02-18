@@ -355,12 +355,13 @@ function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmif
 
                 if opt.build then
                     local headerunit_mapper = _generate_headerunit_modulemapper_file({name = path.normalize(headerunit.path), bmifile = bmifile})
-
                     progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
                     if option.get("diagnosis") then
                         print("mapper file:\n%s", io.readfile(headerunit_mapper))
                     end
-                    _compile(target, _make_headerunitflags(target, headerunit, headerunit_mapper, opt), path.translate(path.filename(headerunit.name)), bmifile)
+                    _compile(target,
+                        _make_headerunitflags(target, headerunit, headerunit_mapper, opt),
+                        path.translate(path.filename(headerunit.name)), bmifile)
                     os.tryrm(headerunit_mapper)
                 end
 
