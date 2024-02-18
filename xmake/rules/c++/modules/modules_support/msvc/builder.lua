@@ -269,9 +269,6 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
         sourcefile = opt.cppfile,
         job = batchjobs:newjob(name or opt.cppfile, function(index, total)
 
-            local compinst = compiler.load("cxx", {target = target})
-            local compflags = compinst:compflags({sourcefile = opt.cppfile, target = target})
-
             local mapped_bmi
             if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
                 if not target:is_binary() then
@@ -300,6 +297,9 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
             if build == nil then
                 build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
             end
+
+            local compinst = compiler.load("cxx", {target = target})
+            local compflags = compinst:compflags({sourcefile = opt.cppfile, target = target})
 
             local dependfile = target:dependfile(bmifile or opt.objectfile)
             local dependinfo = depend.load(dependfile) or {}
