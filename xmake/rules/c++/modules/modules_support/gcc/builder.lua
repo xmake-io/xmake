@@ -81,24 +81,22 @@ end
 
 -- generate a module mapper file for build a headerunit
 function _generate_headerunit_modulemapper_file(module)
-    local path = os.tmpfile()
-    local mapper_file = io.open(path, "wb")
-    mapper_file:write("root " .. os.projectdir())
+    local mapper_path = os.tmpfile()
+    local mapper_file = io.open(mapper_path, "wb")
+    mapper_file:write("root " .. os.projectdir():replace("\\", "/"))
     mapper_file:write("\n")
     mapper_file:write(mapper_file, module.name:replace("\\", "/") .. " " .. module.bmifile:replace("\\", "/"))
     mapper_file:write("\n")
     mapper_file:close()
-    return path
+    return mapper_path
 end
 
 function _get_maplines(target, module)
     local maplines = {}
-
     local m_name, m, _ = compiler_support.get_provided_module(module)
     if m then
         table.insert(maplines, m_name .. " " .. compiler_support.get_bmi_path(m.bmi))
     end
-
     for required, _ in table.orderpairs(module.requires) do
         local dep_module = get_from_target_mapper(target, required)
         assert(dep_module, "module dependency %s required for %s not found", required, m_name or module.cppfile)
