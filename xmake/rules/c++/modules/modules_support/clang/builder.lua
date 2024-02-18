@@ -214,9 +214,10 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                 end
             end
 
-            local build
+            local build, dependinfo
+            local dependfile = target:dependfile(bmifile or opt.objectfile)
             if provide or compiler_support.has_module_extension(opt.cppfile) then
-                build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
+                build, dependinfo = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
 
                 -- needed to detect rebuild of dependencies
                 if provide and build then
@@ -231,16 +232,8 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
             -- for cpp file we need to check after appendings the flags
             if build == nil then
-                build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
+                build, dependinfo = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
             end
-
-            local compinst = compiler.load("cxx", {target = target})
-            local compflags = compinst:compflags({sourcefile = opt.cppfile, target = target})
-
-            local dependfile = target:dependfile(bmifile or opt.objectfile)
-            local dependinfo = depend.load(dependfile) or {}
-            dependinfo.files = {}
-            local depvalues = {compinst:program(), compflags}
 
             if build then
                 -- compile if it's a named module
@@ -276,11 +269,8 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                 else
                     os.tryrm(opt.objectfile) -- force rebuild for .cpp files
                 end
+                depend.save(dependinfo, dependfile)
             end
-
-            table.insert(dependinfo.files, opt.cppfile)
-            dependinfo.values = depvalues
-            depend.save(dependinfo, dependfile)
         end)}
 end
 

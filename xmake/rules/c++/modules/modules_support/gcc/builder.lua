@@ -200,20 +200,13 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                 target:fileconfig_add(opt.cppfile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
             end
 
-            local build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
+            local dependfile = target:dependfile(bmifile or opt.objectfile)
+            local build, dependinfo = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
 
             -- needed to detect rebuild of dependencies
             if provide and build then
                 mark_build(target, name)
             end
-
-            local compinst = compiler.load("cxx", {target = target})
-            local compflags = compinst:compflags({sourcefile = opt.cppfile, target = target})
-
-            local dependfile = target:dependfile(bmifile or opt.objectfile)
-            local dependinfo = depend.load(dependfile) or {}
-            dependinfo.files = {}
-            local depvalues = {compinst:program(), compflags}
 
             if build then
                 -- compile if it's a named module
@@ -251,10 +244,8 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                 else
                     os.tryrm(opt.objectfile) -- force rebuild for .cpp files
                 end
+                depend.save(dependinfo, dependfile)
             end
-            table.insert(dependinfo.files, opt.cppfile)
-            dependinfo.values = depvalues
-            depend.save(dependinfo, dependfile)
         end)}
 end
 

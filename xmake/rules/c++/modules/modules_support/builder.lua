@@ -142,9 +142,16 @@ end
 
 -- should we build this module or headerunit ?
 function should_build(target, sourcefile, bmifile, opt)
+    opt = opt or {}
+    local objectfile = opt.objectfile
+    local compinst = compiler.load("cxx", {target = target})
+    local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
+    local dependfile = target:dependfile(bmifile or objectfile)
+    local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
+    local depvalues = {compinst:program(), compflags}
 
     -- force rebuild a module if any of its module dependency is rebuilt
-    local requires = opt and opt.requires
+    local requires = opt.requires
     if requires then
         for required, _ in table.orderpairs(requires) do
             local m = get_from_target_mapper(target, required)
@@ -152,34 +159,37 @@ function should_build(target, sourcefile, bmifile, opt)
                 local rebuild = (m.opt and m.opt.target) and compiler_support.memcache():get2("should_build_in_" .. m.opt.target:name(), m.key)
                                                          or compiler_support.memcache():get2("should_build_in_" .. target:name(), m.key)
                 if rebuild then
-                    return true
+                    dependinfo.files = {}
+                    table.insert(dependinfo.files, sourcefile)
+                    dependinfo.values = depvalues
+                    return true, dependinfo
                 end
             end
         end
     end
 
     -- reused
-    if opt and opt.name then
+    if opt.name then
         local m = get_from_target_mapper(target, opt.name)
         if m and m.opt and m.opt.target then
-            return compiler_support.memcache():get2("should_build_in_" .. m.opt.target:name(), m.key)
+            local rebuild = compiler_support.memcache():get2("should_build_in_" .. m.opt.target:name(), m.key)
+            if rebuild then
+                dependinfo.files = {}
+                table.insert(dependinfo.files, sourcefile)
+                dependinfo.values = depvalues
+            end
+            return rebuild, dependinfo
         end
     end
 
-    -- or rebuild it if the file changed
-    local objectfile = opt.objectfile
-    local dryrun = option.get("dry-run")
-    local compinst = compiler.load("cxx", {target = target})
-    local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
-
-    local dependfile = target:dependfile(bmifile or objectfile)
-    local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
-
     -- need build this object?
-    local depvalues = {compinst:program(), compflags}
+    local dryrun = option.get("dry-run")
     local lastmtime = os.isfile(bmifile or objectfile) and os.mtime(dependfile) or 0
     if dryrun or depend.is_changed(dependinfo, {lastmtime = lastmtime, values = depvalues}) then
-        return true
+        dependinfo.files = {}
+        table.insert(dependinfo.files, sourcefile)
+        dependinfo.values = depvalues
+        return true, dependinfo
     end
     return false
 end
