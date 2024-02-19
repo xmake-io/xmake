@@ -169,6 +169,11 @@ function _sourcebatch_is_built(sourcebatch)
     end
 end
 
+-- get c++ modules rules
+function _get_cxxmodules_rules()
+    return {"c++.build.modules", "c++.build.modules.builder"}
+end
+
 -- translate flag
 function _translate_flag(flag, outputdir)
     if flag then
@@ -835,11 +840,22 @@ function _add_target_link_libraries(cmakelists, target, outputdir)
         cmakelists:print(")")
     end
 
+    -- ignore c++ modules rules
+    local cxxmodules_rules
+    if _can_native_support_for_cxxmodules() then
+        cxxmodules_rules = _get_cxxmodules_rules()
+    end
+    if cxxmodules_rules then
+        cxxmodules_rules = hashset.from(cxxmodules_rules)
+    else
+        cxxmodules_rules = hashset.new()
+    end
+
     -- add other object files, maybe from custom rules
     local objectfiles_set = hashset.new()
     local sourcebatches = target:sourcebatches()
     for _, sourcebatch in table.orderpairs(sourcebatches) do
-        if _sourcebatch_is_built(sourcebatch) then
+        if _sourcebatch_is_built(sourcebatch) or cxxmodules_rules:has(sourcebatch.rulename) then
             for _, objectfile in ipairs(sourcebatch.objectfiles) do
                 objectfiles_set:insert(objectfile)
             end
@@ -1002,7 +1018,7 @@ function _add_target_custom_commands(cmakelists, target, outputdir)
     -- ignore c++ modules rules
     local ignored_rules
     if _can_native_support_for_cxxmodules() then
-        ignored_rules = {"c++.build.modules", "c++.build.modules.builder"}
+        ignored_rules = _get_cxxmodules_rules()
     end
 
     -- add before commands
