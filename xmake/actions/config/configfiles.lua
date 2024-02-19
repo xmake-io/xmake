@@ -62,6 +62,13 @@ function _get_configfiles()
                     srcinfo.dependfile = target:dependfile(srcfile)
                 end
 
+                -- always update?
+                local always_update = target:policy("build.always_update_configfiles")
+                if always_update == nil then
+                    always_update = project.policy("build.always_update_configfiles")
+                end
+                srcinfo.always_update = always_update
+
                 -- save targets
                 srcinfo.targets = srcinfo.targets or {}
                 table.insert(srcinfo.targets, target)
@@ -320,6 +327,7 @@ function main(opt)
     opt = opt or {}
     local oldir = os.cd(project.directory())
 
+
     -- generate all configuration files
     local configfiles = _get_configfiles()
     for dstfile, srcinfo in pairs(configfiles) do
@@ -328,7 +336,7 @@ function main(opt)
         end, {files = srcinfo.srcfile,
               lastmtime = os.mtime(dstfile),
               dependfile = srcinfo.dependfile,
-              changed = opt.force})
+              changed = opt.force or srcinfo.always_update})
     end
 
     -- leave project directory
