@@ -32,14 +32,24 @@ import("private.utils.rule_groups")
 import("private.utils.target", {alias = "target_utils"})
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
 
+-- get cmake version
+function _get_cmake_version()
+    local cmake_version = _g.cmake_version
+    if not cmake_version then
+        local cmake = find_tool("cmake", {version = true})
+        if cmake and cmake.version then
+            cmake_version = semver.new(cmake.version)
+        end
+        _g.cmake_version = cmake_version
+    end
+    return cmake_version
+end
+
 -- get minimal cmake version
 function _get_cmake_minver()
     local cmake_minver = _g.cmake_minver
     if not cmake_minver then
-        local cmake = find_tool("cmake", {version = true})
-        if cmake and cmake.version then
-            cmake_minver = semver.new(cmake.version)
-        end
+        cmake_minver = _get_cmake_version()
         if not cmake_minver or cmake_minver:gt("3.15.0") then
             cmake_minver = semver.new("3.15.0")
         end
@@ -136,8 +146,8 @@ end
 
 -- Did the current cmake native support for c++ modules?
 function _can_native_support_for_cxxmodules()
-    local cmake_minver = _get_cmake_minver()
-    if cmake_minver and cmake_minver:ge("3.28") then
+    local cmake_version = _get_cmake_version()
+    if cmake_version and cmake_version:ge("3.28") then
         return true
     end
 end
