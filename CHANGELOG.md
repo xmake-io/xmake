@@ -8,6 +8,7 @@
 * [#4606](https://github.com/xmake-io/xmake/pull/4606): Add `add_versionfiles` api in package
 * [#4709](https://github.com/xmake-io/xmake/issues/4709): Add cosmocc toolchain support
 * [#4715](https://github.com/xmake-io/xmake/issues/4715): Add is_cross() api in description scope
+* [#4747](https://github.com/xmake-io/xmake/issues/4747): Add `build.always_update_configfiles` policy
 
 ### Changes
 
@@ -1734,6 +1735,7 @@
 * [#4606](https://github.com/xmake-io/xmake/pull/4606): 为 package 添加 `add_versionfiles` 接口
 * [#4709](https://github.com/xmake-io/xmake/issues/4709): 添加 cosmocc 工具链支持
 * [#4715](https://github.com/xmake-io/xmake/issues/4715): 在描述域添加 is_cross() 接口
+* [#4747](https://github.com/xmake-io/xmake/issues/4747): 添加 `build.always_update_configfiles` 策略
 
 ### 改进
 
