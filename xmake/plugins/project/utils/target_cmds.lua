@@ -42,14 +42,17 @@ end
 function get_target_buildcmd(target, cmds, opt)
     opt = opt or {}
     local suffix = opt.suffix
+    local ignored_rules = hashset.from(opt.ignored_rules or {})
     for _, ruleinst in ipairs(target:orderules()) do
-        local scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
-        local script = ruleinst:script(scriptname)
-        if script then
-            local batchcmds_ = batchcmds.new({target = target})
-            script(target, batchcmds_, {})
-            if not batchcmds_:empty() then
-                table.join2(cmds, batchcmds_:cmds())
+        if not ignored_rules:has(ruleinst:name()) then
+            local scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
+            local script = ruleinst:script(scriptname)
+            if script then
+                local batchcmds_ = batchcmds.new({target = target})
+                script(target, batchcmds_, {})
+                if not batchcmds_:empty() then
+                    table.join2(cmds, batchcmds_:cmds())
+                end
             end
         end
     end
@@ -62,6 +65,10 @@ function get_target_buildcmd_files(target, cmds, sourcebatch, opt)
     -- get rule
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
     local ruleinst = assert(target:rule(rulename) or project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+    local ignored_rules = hashset.from(opt.ignored_rules or {})
+    if ignored_rules:has(ruleinst:name()) then
+        return
+    end
 
     -- generate commands for xx_buildcmd_files
     local suffix = opt.suffix
