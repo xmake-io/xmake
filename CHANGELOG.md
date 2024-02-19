@@ -21,6 +21,7 @@
 * [#4477](https://github.com/xmake-io/xmake/issues/4477): Improve runtimes to support libc++/libstdc++
 * [#4657](https://github.com/xmake-io/xmake/issues/4657): Improve to select script pattern
 * [#4673](https://github.com/xmake-io/xmake/pull/4673): Refactor modules support
+* [#4746](https://github.com/xmake-io/xmake/pull/4746): Add native modules support for cmake generator
 
 ### Bugs Fixed
 
@@ -1746,6 +1747,7 @@
 * [#4477](https://github.com/xmake-io/xmake/issues/4477): 改进 runtimes 去支持 libc++/libstdc++
 * [#4657](https://github.com/xmake-io/xmake/issues/4657): 改进脚本的模式匹配
 * [#4673](https://github.com/xmake-io/xmake/pull/4673): 重构模块支持
+* [#4746](https://github.com/xmake-io/xmake/pull/4746): 为 cmake generator 添加原生 c++ modules 支持
 
 ### Bugs 修复
 
