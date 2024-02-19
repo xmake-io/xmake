@@ -474,8 +474,8 @@ function _add_build_custom_commands_before(makefile, target, sourcegroups, outpu
     -- add before commands
     -- we use irpairs(groups), because the last group that should be given the highest priority.
     local cmds_before = {}
-    target_cmds.get_target_buildcmd(target, cmds_before, "before")
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups, "before")
+    target_cmds.get_target_buildcmd(target, cmds_before, {suffix = "before"})
+    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups, {suffix = "before"})
     target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups)
 
     local targetname = target:name()
@@ -496,8 +496,8 @@ end
 -- add custom commands after building target
 function _add_build_custom_commands_after(makefile, target, sourcegroups, outputdir)
     local cmds_after = {}
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_after, sourcegroups, "after")
-    target_cmds.get_target_buildcmd(target, cmds_after, "after")
+    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_after, sourcegroups, {suffix = "after"})
+    target_cmds.get_target_buildcmd(target, cmds_after, {suffix = "after"})
     if #cmds_after > 0 then
         for _, cmd in ipairs(cmds_after) do
             local command = _get_command_string(cmd, outputdir)

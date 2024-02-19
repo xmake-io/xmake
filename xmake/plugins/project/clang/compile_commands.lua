@@ -245,8 +245,8 @@ function _add_target_commands(jsonfile, target)
     -- add before commands
     -- we use irpairs(groups), because the last group that should be given the highest priority.
     local cmds_before = {}
-    target_cmds.get_target_buildcmd(target, cmds_before, "before")
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups, "before")
+    target_cmds.get_target_buildcmd(target, cmds_before, {suffix = "before"})
+    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups, {suffix = "before"})
     -- rule.on_buildcmd_files should also be executed before building the target, as cmake PRE_BUILD does not work.
     target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups)
     _add_target_custom_commands(jsonfile, target, "before", cmds_before)
@@ -256,8 +256,8 @@ function _add_target_commands(jsonfile, target)
 
     -- add after commands
     local cmds_after = {}
-    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_after, sourcegroups, "after")
-    target_cmds.get_target_buildcmd(target, cmds_after, "after")
+    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_after, sourcegroups, {suffix = "after"})
+    target_cmds.get_target_buildcmd(target, cmds_after, {suffix = "after"})
     _add_target_custom_commands(jsonfile, target, "after", cmds_after)
 end
 
