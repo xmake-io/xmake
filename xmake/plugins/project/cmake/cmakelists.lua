@@ -134,15 +134,28 @@ function _get_configs_from_target(target, name)
     return table.unique(values)
 end
 
+-- Did the current cmake native support for c++ modules?
+function _can_native_support_for_cxxmodules()
+    local cmake_minver = _get_cmake_minver()
+    if cmake_minver and cmake_minver:ge("3.28") then
+        return true
+    end
+end
+
 -- this sourcebatch is built?
 function _sourcebatch_is_built(sourcebatch)
     -- we can only use rulename to filter them because sourcekind may be bound to multiple rules
     local rulename = sourcebatch.rulename
-    if rulename == "c.build" or rulename == "c++.build" or rulename == "c++.build.modules"
+    if rulename == "c.build" or rulename == "c++.build"
         or rulename == "asm.build" or rulename == "cuda.build"
         or rulename == "objc.build" or rulename == "objc++.build"
         or rulename == "win.sdk.resource" then
         return true
+    end
+    if _can_native_support_for_cxxmodules() then
+        if rulename == "c++.build.modules" then
+            return true
+        end
     end
 end
 
@@ -347,7 +360,8 @@ function _add_target_sources(cmakelists, target, outputdir)
     cmakelists:print("target_sources(%s PRIVATE", target:name())
     local sourcebatches = target:sourcebatches()
     for name, sourcebatch in table.orderpairs(sourcebatches) do
-        if _sourcebatch_is_built(sourcebatch) and not name:startswith("c++.build.modules") then
+        print(sourcebatch)
+        if _sourcebatch_is_built(sourcebatch) then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 cmakelists:print("    " .. _get_relative_unix_path(sourcefile, outputdir))
             end
@@ -974,7 +988,10 @@ function _add_target_custom_commands(cmakelists, target, outputdir)
     local sourcegroups = rule_groups.build_sourcebatch_groups(target, target:sourcebatches())
 
     -- ignore c++ modules rules
-    local ignored_rules = {"c++.build.modules", "c++.build.modules.builder"}
+    local ignored_rules
+    if _can_native_support_for_cxxmodules() then
+        ignored_rules = {"c++.build.modules", "c++.build.modules.builder"}
+    end
 
     -- add before commands
     -- we use irpairs(groups), because the last group that should be given the highest priority.
