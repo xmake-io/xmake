@@ -261,6 +261,9 @@ function _add_project(cmakelists, languages, outputdir)
             cmakelists:print("project(%s%s)", project_name, project_info)
         end
     end
+    if _can_native_support_for_cxxmodules() then
+        cmakelists:print("set(CMAKE_CXX_SCAN_FOR_MODULES ON)")
+    end
     cmakelists:print("")
 end
 
