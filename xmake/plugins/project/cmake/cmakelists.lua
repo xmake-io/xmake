@@ -360,7 +360,6 @@ function _add_target_sources(cmakelists, target, outputdir)
     cmakelists:print("target_sources(%s PRIVATE", target:name())
     local sourcebatches = target:sourcebatches()
     for name, sourcebatch in table.orderpairs(sourcebatches) do
-        print(sourcebatch)
         if _sourcebatch_is_built(sourcebatch) then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 cmakelists:print("    " .. _get_relative_unix_path(sourcefile, outputdir))
