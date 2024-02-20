@@ -160,6 +160,9 @@ end
 
 function main()
 
+    -- restore to the current working directory
+    os.cd(os.workingdir())
+
     -- list builtin scripts
     if option.get("list") then
         return _list()
