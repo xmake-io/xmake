@@ -138,6 +138,12 @@ function _split_gpucodes(flag)
     return flag:split(",")
 end
 
+-- is module file?
+function _is_modulefile(sourcefile)
+    local extension = path.extension(sourcefile)
+    return extension == ".mpp" or extension == ".mxx" or extension == ".cppm" or extension == ".ixx"
+end
+
 -- make compiling command
 function _make_compcmd(compargv, sourcefile, objectfile, vcxprojdir)
     local argv = {}
@@ -1131,6 +1137,11 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
         -- for *.c/cpp/cu files
         else
 
+            -- compile as c++ modules
+            if _is_modulefile(sourcefile) then
+                vcxprojfile:print("<CompileAs>CompileAsCppModule</CompileAs>")
+            end
+
             -- we need to use different object directory and allow parallel building
             --
             -- @see https://github.com/xmake-io/xmake/issues/2016
@@ -1263,6 +1274,11 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
 
         -- for *.c/cpp/cu files
         else
+            -- compile as c++ modules
+            if _is_modulefile(sourcefile) then
+                vcxprojfile:print("<CompileAs>CompileAsCppModule</CompileAs>")
+            end
+
            -- we need to use different object directory and allow parallel building
             --
             -- @see https://github.com/xmake-io/xmake/issues/2016

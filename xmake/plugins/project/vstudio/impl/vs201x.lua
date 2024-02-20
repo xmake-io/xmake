@@ -39,6 +39,8 @@ import("private.action.require.install", {alias = "install_requires"})
 import("private.action.run.runenvs")
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("private.utils.batchcmds")
+import("private.utils.rule_groups")
+import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
 
 function _translate_path(dir, vcxprojdir)
     if dir == nil then
@@ -79,6 +81,11 @@ function _clear_cache()
     localcache.save()
 end
 
+-- get c++ modules rules
+function _get_cxxmodules_rules()
+    return {"c++.build.modules", "c++.build.modules.builder"}
+end
+
 -- get command string
 function _get_command_string(cmd, vcxprojdir)
     local kind = cmd.kind
@@ -116,93 +123,6 @@ function _get_command_string(cmd, vcxprojdir)
     end
 end
 
--- add target custom commands for target
-function _make_custom_commands_for_target(commands, target, vcxprojdir, suffix)
-    for _, ruleinst in ipairs(target:orderules()) do
-        local scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
-        local script = ruleinst:script(scriptname)
-        if script then
-            local batchcmds_ = batchcmds.new({target = target})
-            script(target, batchcmds_, {})
-            if not batchcmds_:empty() then
-                for _, cmd in ipairs(batchcmds_:cmds()) do
-                    local command = _get_command_string(cmd, vcxprojdir)
-                    if command then
-                        local key = suffix and suffix or "before"
-                        commands[key] = commands[key] or {}
-                        table.insert(commands[key], command)
-                    end
-                end
-            end
-        end
-
-        scriptname = "linkcmd" .. (suffix and ("_" .. suffix) or "")
-        script = ruleinst:script(scriptname)
-        if script then
-            local batchcmds_ = batchcmds.new({target = target})
-            script(target, batchcmds_, {})
-            if not batchcmds_:empty() then
-                for _, cmd in ipairs(batchcmds_:cmds()) do
-                    local command = _get_command_string(cmd, vcxprojdir)
-                    if command then
-                        local key = (suffix and suffix or "before") .. "_link"
-                        commands[key] = commands[key] or {}
-                        table.insert(commands[key], command)
-                    end
-                end
-            end
-        end
-    end
-end
-
--- add target custom commands for object rules
-function _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, suffix)
-
-    -- get rule
-    local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
-    local ruleinst = assert(target:rule(rulename) or project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
-
-    -- generate commands for xx_buildcmd_files
-    local scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
-    local script = ruleinst:script(scriptname)
-    if script then
-        local batchcmds_ = batchcmds.new({target = target})
-        script(target, batchcmds_, sourcebatch, {})
-        if not batchcmds_:empty() then
-            for _, cmd in ipairs(batchcmds_:cmds()) do
-                local command = _get_command_string(cmd, vcxprojdir)
-                if command then
-                    local key = suffix and suffix or "before"
-                    commands[key] = commands[key] or {}
-                    table.insert(commands[key], command)
-                end
-            end
-        end
-    end
-
-    -- generate commands for xx_buildcmd_file
-    if not script then
-        scriptname = "buildcmd_file" .. (suffix and ("_" .. suffix) or "")
-        script = ruleinst:script(scriptname)
-        if script then
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local batchcmds_ = batchcmds.new({target = target})
-                script(target, batchcmds_, sourcefile, {})
-                if not batchcmds_:empty() then
-                    for _, cmd in ipairs(batchcmds_:cmds()) do
-                        local command = _get_command_string(cmd, vcxprojdir)
-                        if command then
-                            local key = suffix and suffix or "before"
-                            commands[key] = commands[key] or {}
-                            table.insert(commands[key], command)
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-
 -- make custom commands
 function _make_custom_commands(target, vcxprojdir)
     -- https://github.com/xmake-io/xmake/issues/2337
@@ -211,20 +131,30 @@ function _make_custom_commands(target, vcxprojdir)
     target:data_set("plugin.project.translate_path", function (p)
         return _translate_path(p, vcxprojdir)
     end)
+
+    -- build sourcebatch groups first
+    local sourcegroups = rule_groups.build_sourcebatch_groups(target, target:sourcebatches())
+
+    -- ignore c++ modules rules
+    local ignored_rules = _get_cxxmodules_rules()
+
+    -- add before commands
+    -- we use irpairs(groups), because the last group that should be given the highest priority.
+    local cmds_before = {}
+    target_cmds.get_target_buildcmd(target, cmds_before, {suffix = "before", ignored_rules = ignored_rules})
+    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups, {suffix = "before", ignored_rules = ignored_rules})
+    -- rule.on_buildcmd_files should also be executed before building the target, as cmake PRE_BUILD does not work.
+    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_before, sourcegroups, {ignored_rules = ignored_rules})
+
+    -- add after commands
+    local cmds_after = {}
+    target_cmds.get_target_buildcmd_sourcegroups(target, cmds_after, sourcegroups, {suffix = "after", ignored_rules = ignored_rules})
+    target_cmds.get_target_buildcmd(target, cmds_after, {suffix = "after", ignored_rules = ignored_rules})
+
     local commands = {}
-    _make_custom_commands_for_target(commands, target, vcxprojdir, "before")
-    _make_custom_commands_for_target(commands, target, vcxprojdir)
-    local sourcebatches = target:sourcebatches()
-    for _, sourcebatch in table.orderpairs(sourcebatches) do
-        local rulename = sourcebatch.rulename
-        local sourcekind = sourcebatch.sourcekind
-        if rulename ~= "c.build" and rulename ~= "c++.build" and not rulename:startswith("c++.build.modules") and rulename ~= "asm.build" and rulename ~= "cuda.build" and sourcekind ~= "mrc" then
-            _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, "before")
-            _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, nil)
-            _make_custom_commands_for_objectrules(commands, target, sourcebatch, vcxprojdir, "after")
-        end
+    for _, cmd in ipairs(table.join(cmds_before, cmds_after)) do
+        table.insert(commands, _get_command_string(cmd, vcxprojdir))
     end
-    _make_custom_commands_for_target(commands, target, vcxprojdir, "after")
     return commands
 end
 
