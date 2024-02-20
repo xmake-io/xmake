@@ -152,8 +152,13 @@ function _make_custom_commands(target, vcxprojdir)
     target_cmds.get_target_buildcmd(target, cmds_after, {suffix = "after", ignored_rules = ignored_rules})
 
     local commands = {}
-    for _, cmd in ipairs(table.join(cmds_before, cmds_after)) do
-        table.insert(commands, _get_command_string(cmd, vcxprojdir))
+    for _, cmd in ipairs(cmds_before) do
+        commands.before = commands.before or {}
+        table.insert(commands.before, _get_command_string(cmd, vcxprojdir))
+    end
+    for _, cmd in ipairs(cmds_after) do
+        commands.after = commands.after or {}
+        table.insert(commands.after, _get_command_string(cmd, vcxprojdir))
     end
     return commands
 end
