@@ -37,15 +37,8 @@ function init(self)
         self:set("binary.cuflags", "-Xcompiler -fPIE")
     end
 
-    -- add -ccbin
-    local cu_ccbin = platform.tool("cu-ccbin")
-    if cu_ccbin then
-        self:add("cuflags", "-ccbin=" .. os.args(cu_ccbin))
-    end
-
     -- init flags map
-    self:set("mapflags",
-    {
+    self:set("mapflags", {
         -- warnings
         ["-W4"]            = "-Wreorder --Wno-deprecated-gpu-targets --Wno-deprecated-declarations"
     ,   ["-Wextra"]        = "-Wreorder --Wno-deprecated-gpu-targets --Wno-deprecated-declarations"
