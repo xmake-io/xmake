@@ -158,6 +158,9 @@ function main()
     -- lock the whole project
     project.lock()
 
+    -- config it first
+    task.run("config", {}, {disable_dump = true})
+
     -- get the target name
     local targetname = option.get("target")
 
