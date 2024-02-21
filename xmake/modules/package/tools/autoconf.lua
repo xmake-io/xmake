@@ -315,15 +315,6 @@ function buildenvs(package, opt)
                     envs.LD = path.join(path.directory(ld), is_host("windows") and "ld" or "i686-w64-mingw32-ld")
                 end
             end
-            if is_host("windows") then
-                envs.CC       = _translate_windows_bin_path(envs.CC)
-                envs.AS       = _translate_windows_bin_path(envs.AS)
-                envs.AR       = _translate_windows_bin_path(envs.AR)
-                envs.LD       = _translate_windows_bin_path(envs.LD)
-                envs.LDSHARED = _translate_windows_bin_path(envs.LDSHARED)
-                envs.CPP      = _translate_windows_bin_path(envs.CPP)
-                envs.RANLIB   = _translate_windows_bin_path(envs.RANLIB)
-            end
         else
             if package:is_plat("macosx") then
                 -- force to apply shflags on macosx https://gmplib.org/manual/Known-Build-Problems
@@ -370,6 +361,15 @@ function buildenvs(package, opt)
             name = name:gsub("gcc%-", "g++-")
             envs.CXX = dir and path.join(dir, name) or name
         end
+    end
+    if is_host("windows") then
+        envs.CC       = _translate_windows_bin_path(envs.CC)
+        envs.AS       = _translate_windows_bin_path(envs.AS)
+        envs.AR       = _translate_windows_bin_path(envs.AR)
+        envs.LD       = _translate_windows_bin_path(envs.LD)
+        envs.LDSHARED = _translate_windows_bin_path(envs.LDSHARED)
+        envs.CPP      = _translate_windows_bin_path(envs.CPP)
+        envs.RANLIB   = _translate_windows_bin_path(envs.RANLIB)
     end
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
