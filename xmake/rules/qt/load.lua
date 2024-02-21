@@ -482,10 +482,12 @@ function main(target, opt)
             target:add("defines", "_WINDOWS")
             local subsystem = false
             for _, ldflag in ipairs(target:get("ldflags")) do
-                ldflag = ldflag:lower()
-                if ldflag:find("[/%-]subsystem:") then
-                    subsystem = true
-                    break
+                if type(ldflag) == "string" then
+                    ldflag = ldflag:lower()
+                    if ldflag:find("[/%-]subsystem:") then
+                        subsystem = true
+                        break
+                    end
                 end
             end
             -- maybe user will set subsystem to console
