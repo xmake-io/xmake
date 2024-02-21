@@ -40,10 +40,12 @@ rule("win.sdk.application")
         else
             local subsystem = false
             for _, ldflag in ipairs(target:get("ldflags")) do
-                ldflag = ldflag:lower()
-                if ldflag:find("[/%-]subsystem:") then
-                    subsystem = true
-                    break
+                if type(ldflag) == "string" then
+                    ldflag = ldflag:lower()
+                    if ldflag:find("[/%-]subsystem:") then
+                        subsystem = true
+                        break
+                    end
                 end
             end
             if not subsystem then
