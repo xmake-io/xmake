@@ -87,20 +87,29 @@ end
 -- `!linux|*`
 --
 function _match_script(pattern, plat, arch, excluded)
-    local splitinfo = pattern:split("@", {plain = true})
+    local splitinfo = pattern:split("@", {strict = true, plain = true})
     local plat_part = splitinfo[1]
     local host_part = splitinfo[2]
-    local plat_patterns = plat_part:split(",", {plain = true})
+    local plat_patterns
+    if plat_part and #plat_part > 0 then
+        plat_patterns = plat_part:split(",", {plain = true})
+    end
     local host_patterns
-    if host_part then
+    if host_part and #host_part > 0 then
         host_patterns = host_part:split(",", {plain = true})
     end
-    if _match_patterns(plat_patterns, plat, arch, excluded) then
-        if host_patterns and #host_patterns > 0 and
-            not _match_patterns(host_patterns, os.subhost(), os.subarch(), excluded) then
-            return false
+    if plat_patterns and #plat_patterns > 0 then
+        if _match_patterns(plat_patterns, plat, arch, excluded) then
+            if host_patterns and #host_patterns > 0 and
+                not _match_patterns(host_patterns, os.subhost(), os.subarch(), excluded) then
+                return false
+            end
+            return true
         end
-        return true
+    else
+        if host_patterns and #host_patterns > 0 then
+            return _match_patterns(host_patterns, os.subhost(), os.subarch(), excluded)
+        end
     end
 end
 
