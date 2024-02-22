@@ -94,13 +94,17 @@ end
 -- get msvc run environments
 function _get_msvc_runenvs(package)
     local envs = {}
+    local curenvs = os.getenvs()
     for k, v in pairs(os.joinenvs(_get_msvc(package):runenvs())) do
-        local k_upper = k:upper()
-        local k_lower = k:lower()
-        if k_upper ~= k and os.getenv(k_upper) then
-            envs[k_upper] = v
-        elseif k_lower ~= k and os.getenv(k_lower) then
-            envs[k_lower] = v
+        local ck_found
+        for ck, cv in pairs(curenvs) do
+            if k:lower() == ck:lower() and k ~= ck then
+                ck_found = ck
+                break
+            end
+        end
+        if ck_found then
+            envs[ck_found] = v
         else
             envs[k] = v
         end
