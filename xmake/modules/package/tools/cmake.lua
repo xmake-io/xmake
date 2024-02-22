@@ -93,7 +93,15 @@ end
 
 -- get msvc run environments
 function _get_msvc_runenvs(package)
-    return os.joinenvs(_get_msvc(package):runenvs())
+    local envs = {}
+    for k, v in pairs(os.joinenvs(_get_msvc(package):runenvs())) do
+        if k:upper() ~= k and os.getenv(k:upper()) then
+            envs[k:upper()] = v
+        else
+            envs[k] = v
+        end
+    end
+    return envs
 end
 
 -- get vs arch
