@@ -43,12 +43,6 @@ rule("cuda.env")
             target:add("culdflags", "-m64", {force = true})
         end
 
-        -- add ccbin
-        local cu_ccbin = platform.tool("cu-ccbin")
-        if cu_ccbin then
-            target:add("culdflags", "-ccbin=" .. os.args(cu_ccbin), {force = true})
-        end
-
         -- add rdc, @see https://github.com/xmake-io/xmake/issues/1975
         if target:values("cuda.rdc") ~= false then
             target:add("cuflags", "-rdc=true")
