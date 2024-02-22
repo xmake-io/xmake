@@ -93,25 +93,7 @@ end
 
 -- get msvc run environments
 function _get_msvc_runenvs(package)
-    local envs = {}
-    local curenvs = os.getenvs()
-    for k, v in pairs(os.joinenvs(_get_msvc(package):runenvs())) do
-        -- fix case naming conflict for msbuild between the new msvc envs and current environment, if we are running xmake in vs prompt.
-        -- @see https://github.com/xmake-io/xmake/issues/4751
-        local ck_found
-        for ck, cv in pairs(curenvs) do
-            if k:lower() == ck:lower() and k ~= ck then
-                ck_found = ck
-                break
-            end
-        end
-        if ck_found then
-            envs[ck_found] = v
-        else
-            envs[k] = v
-        end
-    end
-    return envs
+    return os.joinenvs(_get_msvc(package):runenvs())
 end
 
 -- get vs arch
