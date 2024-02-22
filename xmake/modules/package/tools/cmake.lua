@@ -95,8 +95,12 @@ end
 function _get_msvc_runenvs(package)
     local envs = {}
     for k, v in pairs(os.joinenvs(_get_msvc(package):runenvs())) do
-        if k:upper() ~= k and os.getenv(k:upper()) then
-            envs[k:upper()] = v
+        local k_upper = k:upper()
+        local k_lower = k:lower()
+        if k_upper ~= k and os.getenv(k_upper) then
+            envs[k_upper] = v
+        elseif k_lower ~= k and os.getenv(k_lower) then
+            envs[k_lower] = v
         else
             envs[k] = v
         end
