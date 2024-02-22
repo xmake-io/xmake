@@ -96,19 +96,9 @@ function _get_targets(targetname, group_pattern)
     if targetname then
         table.insert(targets_root, project.target(targetname))
     else
-        local depset = hashset.new()
-        local targets = {}
         for _, target in pairs(project.targets()) do
             local group = target:get("group")
             if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                for _, depname in ipairs(target:get("deps")) do
-                    depset:insert(depname)
-                end
-                table.insert(targets, target)
-            end
-        end
-        for _, target in pairs(targets) do
-            if not depset:has(target:name()) then
                 table.insert(targets_root, target)
             end
         end

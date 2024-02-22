@@ -28,6 +28,7 @@ task("format")
                     {'s', "style",  "kv", nil,  "Set the path of .clang-format file, a coding style",
                                                 values = {"LLVM", "Google", "Chromium", "Mozilla", "WebKit"}},
                     {nil, "create", "k", nil,   "Create a .clang-format file from a coding style"},
+                    {'a', "all",    "k",  nil   , "Format all targets."},
                     {'g', "group", "kv", nil,   "Format all targets of the given group. It support path pattern matching.",
                                                 "e.g.", 
                                                 "    xmake format -g test",
