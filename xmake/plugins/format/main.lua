@@ -92,18 +92,18 @@ end
 
 -- get all the targets that match the group or targetname
 function _get_targets(targetname, group_pattern)
-    local targets_root = {}
+    local targets = {}
     if targetname then
-        table.insert(targets_root, project.target(targetname))
+        table.insert(targets, project.target(targetname))
     else
         for _, target in pairs(project.targets()) do
             local group = target:get("group")
             if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
-                table.insert(targets_root, target)
+                table.insert(targets, target)
             end
         end
     end
-    return targets_root
+    return targets
 end
 
 -- main
