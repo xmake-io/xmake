@@ -164,6 +164,9 @@ function main()
     -- local config first
     config.load()
 
+    -- load targets
+    project.load_targets()
+
     -- enter project directory
     local oldir = os.cd(project.directory())
 
