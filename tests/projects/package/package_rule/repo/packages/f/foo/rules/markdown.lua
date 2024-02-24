@@ -1,4 +1,4 @@
-rule("test")
+rule("markdown")
     set_extensions(".md")
     on_config(function (target)
         print("test: config %s", target:name())

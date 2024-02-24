@@ -7,5 +7,5 @@ target("console")
     set_kind("binary")
     add_files("src/main.cpp", "src/*.md")
     add_packages("foo")
-    add_rules("@foo/test")
+    add_rules("@foo/markdown")
 
