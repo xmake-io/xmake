@@ -49,7 +49,10 @@ function main(toolname, parse, opt)
     local program
     local toolchains = find_cuda()
     if toolchains and toolchains.bindir then
-        program = find_program(path.join(toolchains.bindir, opt.program or toolname), opt)
+        local file = path.join(toolchains.bindir, opt.program or toolname)
+        if os.isfile(file) then
+            program = find_program(file, opt)
+        end
     end
 
     -- not found? attempt to find program only
