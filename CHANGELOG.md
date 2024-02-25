@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.8.7
+
 ### New features
 
 * [#4544](https://github.com/xmake-io/xmake/issues/4544): Support to wait process timeout for `xmake test`
@@ -1728,6 +1730,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.8.7
 
 ### 新特性
 
