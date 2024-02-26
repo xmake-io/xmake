@@ -549,7 +549,7 @@ function _instance:_format(kind)
     local formats = self._FORMATS
     if not formats then
         for _, toolchain_inst in ipairs(self:toolchains()) do
-            formats = toolchain_inst:get("formats")
+            formats = toolchain_inst:formats()
             if formats then
                 break
             end

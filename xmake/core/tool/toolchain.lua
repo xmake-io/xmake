@@ -156,6 +156,12 @@ function _instance:kind()
     return self:info():get("kind")
 end
 
+-- get toolchain formats, we must set it in description scope
+-- @see https://github.com/xmake-io/xmake/issues/4769
+function _instance:formats()
+    return self:info():get("formats")
+end
+
 -- is cross-compilation toolchain?
 function _instance:is_cross()
     if self:kind() == "cross" then
