@@ -106,6 +106,7 @@ rule("c++.build.modules.builder")
 
             compiler_support.patch_sourcebatch(target, sourcebatch, opt)
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
+            dependency_scanner.check_module_redeclaration(modules)
 
             if not target:is_moduleonly() then
                 -- avoid building non referenced modules
@@ -169,6 +170,7 @@ rule("c++.build.modules.builder")
 
             compiler_support.patch_sourcebatch(target, sourcebatch, opt)
             local modules = dependency_scanner.get_module_dependencies(target, sourcebatch, opt)
+            dependency_scanner.check_module_redeclaration(modules)
 
             if not target:is_moduleonly() then
                 -- avoid building non referenced modules

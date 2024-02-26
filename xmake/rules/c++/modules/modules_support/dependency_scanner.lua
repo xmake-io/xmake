@@ -454,3 +454,50 @@ function get_targetdeps_modules(target)
     return sourcefiles
 end
 
+-- detect multiple declarations of modules
+function check_module_redeclaration(modules)
+    local provides = {}
+    for _, module in pairs(modules) do
+        if module.provides then
+            for name, provide in pairs(module.provides) do
+                provides[name] = provides[name] or {interface = {}, implementation = {}}
+                if provide.interface then
+                    table.insert(provides[name].interface, provide.sourcefile)
+                else
+                    table.insert(provides[name].implementation, provide.sourcefile)
+                end
+            end
+        end
+    end
+    error_interface = ""
+    error_partition = ""
+    for name, provide in pairs(provides) do
+        if #provide.interface > 1 then
+            error_interface = error_interface .. string.format("module %s", name)
+            for _, interface in ipairs(provide.interface) do
+                error_interface = error_interface .. string.format("\n    - %s", interface)
+            end
+        end
+        if string.find(name, ":") then
+            if #provide.interface + #provide.implementation > 1 then
+                error_partition = error_partition .. string.format("module %s", name)
+                for _, partition in ipairs(provide.interface) do
+                    error_partition = error_partition .. string.format("\n    - %s", partition)
+                end
+                for _, partition in ipairs(provide.implementation) do
+                    error_partition = error_partition .. string.format("\n    - %s", partition)
+                end
+            end
+        end
+    end
+    errors = {}
+    if error_interface ~= "" then
+        table.insert(errors, string.format("multiple declarations of module interface detected:\n%s", error_interface))
+    end
+    if error_partition ~= "" then
+        table.insert(errors, string.format("multiple declarations of module partition detected:\n%s", error_partition))
+    end
+    if #errors > 0 then
+        raise(table.concat(errors, "\n"))
+    end
+end
