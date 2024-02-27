@@ -6,6 +6,7 @@
 
 * [#4774](https://github.com/xmake-io/xmake/issues/4774): Fix android symbol strip
 * [#4769](https://github.com/xmake-io/xmake/issues/4769): Fix cross toolchain and format
+* [#4776](https://github.com/xmake-io/xmake/issues/4776): Fix soname for linux
 
 ## v2.8.7
 
@@ -1740,6 +1741,7 @@
 
 * [#4774](https://github.com/xmake-io/xmake/issues/4774): 修复 Android NDK r26b 上的 strip 支持
 * [#4769](https://github.com/xmake-io/xmake/issues/4769): 修复交叉编译工具链问题
+* [#4776](https://github.com/xmake-io/xmake/issues/4776): 修复 soname
 
 ## v2.8.7
 
