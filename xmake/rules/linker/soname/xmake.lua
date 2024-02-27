@@ -26,7 +26,7 @@ rule("linker.soname")
                 if target:is_plat("macosx", "iphoneos", "watchos", "appletvos") then
                     target:add("shflags", "-Wl,-install_name,@rpath/" .. soname, {force = true})
                 else
-                    target:add("shflags", "-Wl,-soname,@rpath/" .. soname, {force = true})
+                    target:add("shflags", "-Wl,-soname," .. soname, {force = true})
                 end
                 target:data_set("soname.enabled", true)
             end
