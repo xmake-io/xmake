@@ -2,6 +2,11 @@
 
 ## master (unreleased)
 
+### Bugs Fixed
+
+* [#4774](https://github.com/xmake-io/xmake/issues/4774): Fix android symbol strip
+* [#4769](https://github.com/xmake-io/xmake/issues/4769): Fix cross toolchain and format
+
 ## v2.8.7
 
 ### New features
@@ -1730,6 +1735,11 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs 修复
+
+* [#4774](https://github.com/xmake-io/xmake/issues/4774): 修复 Android NDK r26b 上的 strip 支持
+* [#4769](https://github.com/xmake-io/xmake/issues/4769): 修复交叉编译工具链问题
 
 ## v2.8.7
 
