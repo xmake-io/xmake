@@ -284,14 +284,16 @@ function batchcmds:compilev(argv, opt)
     end
 
     -- we need to translate path for the project generator
+    local patterns = {"(^[%-/]external:I)(.*)", "(^[%-/]I)(.*)", "(^[%-/]Fp)(.*)", "(^[%-/]Fd)(.*)"}
     for idx, item in ipairs(argv) do
         if type(item) == "string" then
-            if item:startswith("-I") then
-                argv[idx] = path(item:sub(3), function (p) return "-I" .. p end)
-            elseif item:startswith("/I") then
-                argv[idx] = path(item:sub(3), function (p) return "/I" .. p end)
-            elseif item:startswith("-external:I") or item:startswith("/external:I") then
-                argv[idx] = path(item:sub(12), function (p) return "-external:I" .. p end)
+            for _, pattern in ipairs(patterns) do
+                local _, count = item:gsub(pattern, function (prefix, value)
+                    argv[idx] = path(value, function (p) return prefix .. p end)
+                end)
+                if count > 0 then
+                    break
+                end
             end
         end
     end
