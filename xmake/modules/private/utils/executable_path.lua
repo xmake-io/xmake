@@ -50,6 +50,14 @@ function main(program)
             end
         end
     end
+    -- patch .exe
+    -- @see https://github.com/xmake-io/xmake/discussions/4781
+    if is_host("windows") and path.is_absolute(program) then
+        local program_exe = program .. ".exe"
+        if os.isfile(program_exe) then
+            program = program_exe
+        end
+    end
     if not filepath then
         filepath = program
     end
