@@ -51,6 +51,7 @@ function _option_filter(name)
     ,   export      = true
     ,   import      = true
     ,   check       = true
+    ,   menu        = true
     }
     return not options[name]
 end
