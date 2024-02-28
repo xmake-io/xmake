@@ -8,6 +8,7 @@
 * [#4769](https://github.com/xmake-io/xmake/issues/4769): Fix cross toolchain and format
 * [#4776](https://github.com/xmake-io/xmake/issues/4776): Fix soname for linux
 * [#4638](https://github.com/xmake-io/xmake/issues/4638): Fix vsxmake with --menu config
+* [#4526](https://github.com/xmake-io/xmake/issues/4526): Fix cmake generator path
 
 ## v2.8.7
 
@@ -1744,6 +1745,7 @@
 * [#4769](https://github.com/xmake-io/xmake/issues/4769): 修复交叉编译工具链问题
 * [#4776](https://github.com/xmake-io/xmake/issues/4776): 修复 soname
 * [#4638](https://github.com/xmake-io/xmake/issues/4638): 修复 vsxmake generator
+* [#4526](https://github.com/xmake-io/xmake/issues/4526): 修复 cmake generator 的路径
 
 ## v2.8.7
 
