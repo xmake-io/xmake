@@ -38,9 +38,13 @@ import("lib.detect.find_tool")
 function main(patchfile, opt)
     opt = opt or {}
     local git = assert(find_tool("git"), "git not found!")
-    local argv = {"apply", "--reject", "--ignore-whitespace", patchfile}
+    local argv = {"apply", "--reject", "--ignore-whitespace"}
+    if opt.reverse then
+        table.insert(argv, "-R")
+    end
     if opt.gitdir then
         table.insert(argv, 1, "--git-dir=" .. opt.gitdir)
     end
+    table.insert(argv, patchfile)
     os.vrunv(git.program, argv, {curdir = opt.repodir})
 end
