@@ -49,7 +49,10 @@ function _check_sha256(patch_hash, patch_file)
 end
 
 -- do patch
-function _patch(package, patch_url, patch_hash)
+function _patch(package, patchinfo)
+    local patch_url = patchinfo.url
+    local patch_hash = patchinfo.hash
+    local patch_extra = patchinfo.extra or {}
 
     -- trace
     patch_url = proxy.mirror(patch_url) or patch_url
@@ -116,12 +119,12 @@ function _patch(package, patch_url, patch_hash)
         -- apply patch files
         for _, file in ipairs(os.files(path.join(patchdir, "**"))) do
             vprint("applying patch %s", file)
-            git.apply(file)
+            git.apply(file, {reverse = patch_extra.reverse})
         end
     else
         -- apply single plain patch file
         vprint("applying patch %s", patch_file)
-        git.apply(patch_file)
+        git.apply(patch_file, {reverse = patch_extra.reverse})
     end
 end
 
@@ -141,6 +144,6 @@ function main(package)
 
     -- do all patches
     for _, patchinfo in ipairs(patches) do
-        _patch(package, patchinfo.url, patchinfo.sha256)
+        _patch(package, patchinfo)
     end
 end

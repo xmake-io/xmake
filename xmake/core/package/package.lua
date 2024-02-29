@@ -1998,6 +1998,12 @@ function _instance:fetch_librarydeps()
 end
 
 -- get the patches of the current version
+--
+-- @code
+-- add_patches("6.7.6", "https://cdn.kernel.org/pub/linux/kernel/v6.x/patch-6.7.6.xz",
+--    "a394326aa325f8a930a4ce33c69ba7b8b454aef1107a4d3c2a8ae12908615fc4", {reverse = true})
+-- @endcode
+--
 function _instance:patches()
     local patches = self._PATCHES
     if patches == nil then
@@ -2009,7 +2015,8 @@ function _instance:patches()
                 patches = {}
                 patchinfo = table.wrap(patchinfo)
                 for idx = 1, #patchinfo, 2 do
-                    table.insert(patches , {url = patchinfo[idx], sha256 = patchinfo[idx + 1]})
+                    local extra = self:extraconf("patches." .. version_str, patchinfo[idx])
+                    table.insert(patches , {url = patchinfo[idx], sha256 = patchinfo[idx + 1], extra = extra})
                 end
             else
                 -- match semver, e.g add_patches(">=1.0.0", url, sha256)
@@ -2018,7 +2025,8 @@ function _instance:patches()
                         patches = patches or {}
                         patchinfo = table.wrap(patchinfo)
                         for idx = 1, #patchinfo, 2 do
-                            table.insert(patches , {url = patchinfo[idx], sha256 = patchinfo[idx + 1]})
+                            local extra = self:extraconf("patches." .. range, patchinfo[idx])
+                            table.insert(patches , {url = patchinfo[idx], sha256 = patchinfo[idx + 1], extra = extra})
                         end
                     end
                 end
