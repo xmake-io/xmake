@@ -79,8 +79,8 @@ function main(target, opt)
         if version then
             file:print("Version: %s", version)
         end
-        file:print("Libs: %s", libs)
-        file:print("Cflags: %s", cflags)
+        file:print("Libs:%s", libs)
+        file:print("Cflags:%s", cflags)
         file:close()
     end
 end
