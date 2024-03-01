@@ -4,7 +4,9 @@ function main(t)
         if linuxos.name() == "archlinux" then
             return
         end
+        --[[TODO
         os.vrun("xmake f -y -p android -vD")
         os.vrun("xmake -y -vD")
+        ]]
     end
 end
