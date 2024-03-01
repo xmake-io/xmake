@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* Add `package:check_sizeof()`
+
 ### Bugs Fixed
 
 * [#4774](https://github.com/xmake-io/xmake/issues/4774): Fix android symbol strip
@@ -1737,6 +1741,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* 添加 `package:check_sizeof()`
 
 ### Bugs 修复
 
