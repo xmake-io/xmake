@@ -52,6 +52,7 @@ function main(target, opt)
             libs = libs .. " -l" .. link
         end
     end
+    libs = libs:trim()
 
     -- get cflags
     local cflags = ""
@@ -61,6 +62,7 @@ function main(target, opt)
         end
     end
     cflags = cflags .. " -I${includedir}"
+    cflags = cflags:trim()
 
     -- trace
     vprint("generating %s ..", pcfile)
