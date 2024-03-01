@@ -2438,6 +2438,19 @@ function _instance:has_features(features, opt)
     return sandbox_module.import("core.tool.compiler", {anonymous = true}).has_features(features, opt)
 end
 
+-- check the size of type
+--
+-- @param typename  the typename
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
+--
+-- @return          the type size
+--
+function _instance:check_sizeof(typename, opt)
+    opt = opt or {}
+    opt.target = self
+    return sandbox_module.import("lib.detect.check_sizeof", {anonymous = true})(typename, opt)
+end
+
 -- check the given c snippets?
 --
 -- @param snippets  the snippets
