@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.8.8
+
 ### Changes
 
 * Add `package:check_sizeof()`
@@ -1741,6 +1743,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.8.8
 
 ### 改进
 
