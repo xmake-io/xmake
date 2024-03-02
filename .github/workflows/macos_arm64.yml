@@ -30,11 +30,6 @@ jobs:
         with:
           xmake-version: local#../xmake-source
 
-      - name: Installation
-        run: |
-          brew install dmd
-          brew install dub
-
       - name: Tests
         run: |
           xmake lua -v -D tests/run.lua
