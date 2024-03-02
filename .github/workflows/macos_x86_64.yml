@@ -1,4 +1,4 @@
-name: macOS
+name: macOS (x86_64)
 
 on:
   pull_request:
@@ -11,8 +11,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [macOS-latest]
-        arch: [x86_64, arm64]
+        os: [macos-12]
+        arch: [x86_64]
 
     runs-on: ${{ matrix.os }}
 

@@ -1,0 +1,42 @@
+name: macOS (arm64)
+
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        os: [macos-14]
+        arch: [arm64]
+
+    runs-on: ${{ matrix.os }}
+
+    concurrency:
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-macOS-${{ matrix.arch }}
+        cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Prepare local xmake
+        run: cp -rf . ../xmake-source
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: local#../xmake-source
+
+      - name: Installation
+        run: |
+          brew install dmd
+          brew install dub
+
+      - name: Tests
+        run: |
+          xmake lua -v -D tests/run.lua
+          xrepo --version
+
