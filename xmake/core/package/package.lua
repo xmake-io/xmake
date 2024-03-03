@@ -1267,7 +1267,6 @@ function _instance:_versions_list()
         local versions = table.wrap(self:get("versions"))
         local versionfiles = self:get("versionfiles")
         if versionfiles then
-            utils.dump(versionfiles)
             for _, versionfile in ipairs(table.wrap(versionfiles)) do
                 if not os.isfile(versionfile) then
                     versionfile = path.join(self:scriptdir(), versionfile)
