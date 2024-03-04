@@ -86,7 +86,8 @@ end
 -- `!android|armeabi-v7a@!linux|!x86_64`
 -- `!linux|*`
 --
-function _match_script(pattern, plat, arch, excluded)
+function _match_script(pattern, opt)
+    opt = opt or {}
     local splitinfo = pattern:split("@", {strict = true, plain = true})
     local plat_part = splitinfo[1]
     local host_part = splitinfo[2]
@@ -98,17 +99,22 @@ function _match_script(pattern, plat, arch, excluded)
     if host_part and #host_part > 0 then
         host_patterns = host_part:split(",", {plain = true})
     end
+    local plat = opt.plat or ""
+    local arch = opt.arch or ""
+    local subhost = opt.subhost or os.subhost()
+    local subarch = opt.subarch or os.subarch()
+    local excluded = opt.excluded
     if plat_patterns and #plat_patterns > 0 then
         if _match_patterns(plat_patterns, plat, arch, excluded) then
             if host_patterns and #host_patterns > 0 and
-                not _match_patterns(host_patterns, os.subhost(), os.subarch(), excluded) then
+                not _match_patterns(host_patterns, subhost, subarch, excluded) then
                 return false
             end
             return true
         end
     else
         if host_patterns and #host_patterns > 0 then
-            return _match_patterns(host_patterns, os.subhost(), os.subarch(), excluded)
+            return _match_patterns(host_patterns, subhost, subarch, excluded)
         end
     end
 end
@@ -120,11 +126,9 @@ function select_script(scripts, opt)
     if type(scripts) == "function" then
         result = scripts
     elseif type(scripts) == "table" then
-        local plat = opt.plat or ""
-        local arch = opt.arch or ""
         local script_matched
         for pattern, script in pairs(scripts) do
-            if not pattern:startswith("__") and _match_script(pattern, plat, arch) then
+            if not pattern:startswith("__") and _match_script(pattern, opt) then
                 script_matched = script
                 break
             end
@@ -132,8 +136,9 @@ function select_script(scripts, opt)
         if not script_matched then
             local scripts_fallback = {}
             local patterns_fallback = {}
+            local excluded_opt = table.join(opt, {excluded = true})
             for pattern, script in pairs(scripts) do
-                if not pattern:startswith("__") and _match_script(pattern, plat, arch, true) then
+                if not pattern:startswith("__") and _match_script(pattern, excluded_opt) then
                     table.insert(scripts_fallback, script)
                     table.insert(patterns_fallback, pattern)
                 end
