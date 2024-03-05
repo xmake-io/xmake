@@ -23,32 +23,53 @@ local table = require("base/table")
 local utils = require("base/utils")
 
 -- match pattern, matched mode: plat|arch, excluded mode: !plat|arch
-function _match_pattern(pattern, plat, arch, excluded)
-    -- support native arch, e.g. macosx|native
-    -- @see https://github.com/xmake-io/xmake/issues/4657
-    if pattern:find("native", 1, true) then
-        local splitinfo = pattern:split("|")
-        local pattern_plat = splitinfo[1]
-        local pattern_arch = splitinfo[2]
-        if pattern_arch and pattern_plat:trim("!") == os.subhost() then
-            pattern_arch = pattern_arch:gsub("native", os.subarch())
-            pattern = pattern_plat .. "|" .. pattern_arch
+function _match_pattern(pattern, plat, arch, opt)
+    opt = opt or {}
+    local excluded = opt.excluded
+    local subhost = opt.subhost or os.subhost()
+    local subarch = opt.subarch or os.subarch()
+    local splitinfo = pattern:split("|", {strict = true, plain = true})
+    local pattern_plat = splitinfo[1]
+    local pattern_arch = splitinfo[2]
+    if pattern_plat and #pattern_plat > 0 then
+        local matched = false
+        local is_excluded_pattern = pattern_plat:find('!', 1, true)
+        if excluded and is_excluded_pattern then
+            matched = not ('!' .. plat):match('^' .. pattern_plat .. '$')
+        elseif not is_excluded_pattern then
+            matched = plat:match('^' .. pattern_plat .. '$')
+        end
+        if not matched then
+            return false
         end
     end
-    local is_excluded_pattern = pattern:find('!', 1, true)
-    if excluded and is_excluded_pattern then
-        return not ('!' .. plat .. '|' .. arch):match('^' .. pattern .. '$') and
-               not (plat .. '|!' .. arch):match('^' .. pattern .. '$') and
-               not ('!' .. plat):match('^' .. pattern .. '$')
-    elseif not is_excluded_pattern then
-        return (plat .. '|' .. arch):match('^' .. pattern .. '$') or plat:match('^' .. pattern .. '$')
+    if pattern_arch and #pattern_arch > 0 then
+        -- support native arch, e.g. macosx|native
+        -- @see https://github.com/xmake-io/xmake/issues/4657
+        pattern_arch = pattern_arch:gsub("native", subarch)
+
+        local matched = false
+        local is_excluded_pattern = pattern_arch:find('!', 1, true)
+        if excluded and is_excluded_pattern then
+            matched = not ('!' .. arch):match('^' .. pattern_arch .. '$')
+        elseif not is_excluded_pattern then
+            matched = arch:match('^' .. pattern_arch .. '$')
+        end
+        if not matched then
+            return false
+        end
     end
+    if not pattern_plat and not pattern_arch then
+        os.raise("invalid script pattern: %s", pattern)
+    end
+    return true
 end
 
+
 -- match patterns
-function _match_patterns(patterns, plat, arch, excluded)
+function _match_patterns(patterns, plat, arch, opt)
     for _, pattern in ipairs(patterns) do
-        if _match_pattern(pattern, plat, arch, excluded) then
+        if _match_pattern(pattern, plat, arch, opt) then
             return true
         end
     end
@@ -86,7 +107,8 @@ end
 -- `!android|armeabi-v7a@!linux|!x86_64`
 -- `!linux|*`
 --
-function _match_script(pattern, plat, arch, excluded)
+function _match_script(pattern, opt)
+    opt = opt or {}
     local splitinfo = pattern:split("@", {strict = true, plain = true})
     local plat_part = splitinfo[1]
     local host_part = splitinfo[2]
@@ -98,17 +120,21 @@ function _match_script(pattern, plat, arch, excluded)
     if host_part and #host_part > 0 then
         host_patterns = host_part:split(",", {plain = true})
     end
+    local plat = opt.plat or ""
+    local arch = opt.arch or ""
+    local subhost = opt.subhost or os.subhost()
+    local subarch = opt.subarch or os.subarch()
     if plat_patterns and #plat_patterns > 0 then
-        if _match_patterns(plat_patterns, plat, arch, excluded) then
+        if _match_patterns(plat_patterns, plat, arch, opt) then
             if host_patterns and #host_patterns > 0 and
-                not _match_patterns(host_patterns, os.subhost(), os.subarch(), excluded) then
+                not _match_patterns(host_patterns, subhost, subarch, opt) then
                 return false
             end
             return true
         end
     else
         if host_patterns and #host_patterns > 0 then
-            return _match_patterns(host_patterns, os.subhost(), os.subarch(), excluded)
+            return _match_patterns(host_patterns, subhost, subarch, opt)
         end
     end
 end
@@ -120,11 +146,9 @@ function select_script(scripts, opt)
     if type(scripts) == "function" then
         result = scripts
     elseif type(scripts) == "table" then
-        local plat = opt.plat or ""
-        local arch = opt.arch or ""
         local script_matched
         for pattern, script in pairs(scripts) do
-            if not pattern:startswith("__") and _match_script(pattern, plat, arch) then
+            if not pattern:startswith("__") and _match_script(pattern, opt) then
                 script_matched = script
                 break
             end
@@ -132,8 +156,9 @@ function select_script(scripts, opt)
         if not script_matched then
             local scripts_fallback = {}
             local patterns_fallback = {}
+            local excluded_opt = table.join(opt, {excluded = true})
             for pattern, script in pairs(scripts) do
-                if not pattern:startswith("__") and _match_script(pattern, plat, arch, true) then
+                if not pattern:startswith("__") and _match_script(pattern, excluded_opt) then
                     table.insert(scripts_fallback, script)
                     table.insert(patterns_fallback, pattern)
                 end
