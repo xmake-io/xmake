@@ -23,15 +23,20 @@ local table = require("base/table")
 local utils = require("base/utils")
 
 -- match pattern, matched mode: plat|arch, excluded mode: !plat|arch
-function _match_pattern(pattern, plat, arch, excluded)
+function _match_pattern(pattern, plat, arch, opt)
+    opt = opt or {}
+    local excluded = opt.excluded
+    local subhost = opt.subhost or os.subhost()
+    local subarch = opt.subarch or os.subarch()
+
     -- support native arch, e.g. macosx|native
     -- @see https://github.com/xmake-io/xmake/issues/4657
     if pattern:find("native", 1, true) then
         local splitinfo = pattern:split("|")
         local pattern_plat = splitinfo[1]
         local pattern_arch = splitinfo[2]
-        if pattern_arch and pattern_plat:trim("!") == os.subhost() then
-            pattern_arch = pattern_arch:gsub("native", os.subarch())
+        if pattern_arch and pattern_plat:trim("!") == subhost then
+            pattern_arch = pattern_arch:gsub("native", subarch)
             pattern = pattern_plat .. "|" .. pattern_arch
         end
     end
@@ -46,9 +51,9 @@ function _match_pattern(pattern, plat, arch, excluded)
 end
 
 -- match patterns
-function _match_patterns(patterns, plat, arch, excluded)
+function _match_patterns(patterns, plat, arch, opt)
     for _, pattern in ipairs(patterns) do
-        if _match_pattern(pattern, plat, arch, excluded) then
+        if _match_pattern(pattern, plat, arch, opt) then
             return true
         end
     end
@@ -103,18 +108,17 @@ function _match_script(pattern, opt)
     local arch = opt.arch or ""
     local subhost = opt.subhost or os.subhost()
     local subarch = opt.subarch or os.subarch()
-    local excluded = opt.excluded
     if plat_patterns and #plat_patterns > 0 then
-        if _match_patterns(plat_patterns, plat, arch, excluded) then
+        if _match_patterns(plat_patterns, plat, arch, opt) then
             if host_patterns and #host_patterns > 0 and
-                not _match_patterns(host_patterns, subhost, subarch, excluded) then
+                not _match_patterns(host_patterns, subhost, subarch, opt) then
                 return false
             end
             return true
         end
     else
         if host_patterns and #host_patterns > 0 then
-            return _match_patterns(host_patterns, subhost, subarch, excluded)
+            return _match_patterns(host_patterns, subhost, subarch, opt)
         end
     end
 end
