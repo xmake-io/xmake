@@ -73,9 +73,8 @@ function main(sdkdir, opt)
     end
 
     -- find sdk
-    local sdk = _find_wasisdk(sdkdir or config.get("wasi_sdk") or global.get("wasi_sdk"))
+    local sdk = _find_wasisdk(sdkdir)
     if sdk and sdk.sdkdir and sdk.bindir then
-        config.set("wasi_sdk", sdk.sdkdir, {force = true, readonly = true})
         if opt.verbose or option.get("verbose") then
             cprint("checking for wasi-sdk directory ... ${color.success}%s", sdk.sdkdir)
         end

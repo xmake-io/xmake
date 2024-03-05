@@ -36,15 +36,11 @@ platform("wasm")
         {
             {category = "Emscripten Configuration"          }
         ,   {nil, "emsdk", "kv", nil, "The emsdk directory" }
-        ,   {category = "WASI-SDK Configuration"            }
-        ,   {nil, "wasi_sdk", "kv", nil, "The wasi-sdk directory" }
         }
     ,   global =
         {
             {category = "Emscripten Configuration"          }
         ,   {nil, "emsdk", "kv", nil, "The emsdk directory" }
-        ,   {category = "WASI-SDK Configuration"            }
-        ,   {nil, "wasi_sdk", "kv", nil, "The wasi-sdk directory" }
         }
     }
 
