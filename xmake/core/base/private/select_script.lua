@@ -28,27 +28,43 @@ function _match_pattern(pattern, plat, arch, opt)
     local excluded = opt.excluded
     local subhost = opt.subhost or os.subhost()
     local subarch = opt.subarch or os.subarch()
-
-    -- support native arch, e.g. macosx|native
-    -- @see https://github.com/xmake-io/xmake/issues/4657
-    if pattern:find("native", 1, true) then
-        local splitinfo = pattern:split("|")
-        local pattern_plat = splitinfo[1]
-        local pattern_arch = splitinfo[2]
-        if pattern_arch and pattern_plat:trim("!") == subhost then
-            pattern_arch = pattern_arch:gsub("native", subarch)
-            pattern = pattern_plat .. "|" .. pattern_arch
+    local splitinfo = pattern:split("|", {strict = true, plain = true})
+    local pattern_plat = splitinfo[1]
+    local pattern_arch = splitinfo[2]
+    if pattern_plat and #pattern_plat > 0 then
+        local matched = false
+        local is_excluded_pattern = pattern_plat:find('!', 1, true)
+        if excluded and is_excluded_pattern then
+            matched = not ('!' .. plat):match('^' .. pattern_plat .. '$')
+        elseif not is_excluded_pattern then
+            matched = plat:match('^' .. pattern_plat .. '$')
+        end
+        if not matched then
+            return false
         end
     end
-    local is_excluded_pattern = pattern:find('!', 1, true)
-    if excluded and is_excluded_pattern then
-        return not ('!' .. plat .. '|' .. arch):match('^' .. pattern .. '$') and
-               not (plat .. '|!' .. arch):match('^' .. pattern .. '$') and
-               not ('!' .. plat):match('^' .. pattern .. '$')
-    elseif not is_excluded_pattern then
-        return (plat .. '|' .. arch):match('^' .. pattern .. '$') or plat:match('^' .. pattern .. '$')
+    if pattern_arch and #pattern_arch > 0 then
+        -- support native arch, e.g. macosx|native
+        -- @see https://github.com/xmake-io/xmake/issues/4657
+        pattern_arch = pattern_arch:gsub("native", subarch)
+
+        local matched = false
+        local is_excluded_pattern = pattern_arch:find('!', 1, true)
+        if excluded and is_excluded_pattern then
+            matched = not ('!' .. arch):match('^' .. pattern_arch .. '$')
+        elseif not is_excluded_pattern then
+            matched = arch:match('^' .. pattern_arch .. '$')
+        end
+        if not matched then
+            return false
+        end
     end
+    if not pattern_plat and not pattern_arch then
+        os.raise("invalid script pattern: %s", pattern)
+    end
+    return true
 end
+
 
 -- match patterns
 function _match_patterns(patterns, plat, arch, opt)
