@@ -357,6 +357,14 @@ function _fetch_packages(packages_fetch, installdeps)
           isolate = true})
 end
 
+-- should fetch package?
+function _should_fetch_package(instance)
+    if instance:is_fetchonly() or not option.get("force") or
+        (option.get("shallow") and not instance:is_toplevel()) then
+        return true
+    end
+end
+
 -- should install package?
 function _should_install_package(instance)
     _g.package_status_cache = _g.package_status_cache or {}
@@ -672,9 +680,7 @@ function main(requires, opt)
     -- fetch and register packages (with system) from local first
     local packages_fetch = {}
     for _, instance in ipairs(packages) do
-        if instance and (instance:is_fetchonly() or
-                         not option.get("force") or
-                         (option.get("shallow") and not instance:is_toplevel())) then
+        if _should_fetch_package(instance) then
             table.insert(packages_fetch, instance)
         end
     end
