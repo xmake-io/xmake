@@ -41,6 +41,15 @@ toolchain("wasi")
 
     -- check toolchain
     on_check(function (toolchain)
+        import("lib.detect.find_tool")
+        import("detect.sdks.find_wasisdk")
+        local wasisdk = find_wasisdk(toolchain:sdkdir())
+        if wasisdk then
+            toolchain:config_set("bindir", wasisdk.bindir)
+            toolchain:config_set("sdkdir", wasisdk.sdkdir)
+            toolchain:configs_save()
+            return wasisdk
+        end
         return import("lib.detect.find_tool")("clang", {paths = toolchain:bindir()})
     end)
 
