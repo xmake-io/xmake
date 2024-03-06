@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.semver")
 import("core.tool.toolchain")
 import("core.project.config")
 import("core.tool.linker")
@@ -274,6 +275,19 @@ function _get_shflags(package, opt)
     end
 end
 
+-- get cmake version
+function _get_cmake_version()
+    local cmake_version = _g.cmake_version
+    if not cmake_version then
+        local cmake = find_tool("cmake", {version = true})
+        if cmake and cmake.version then
+            cmake_version = semver.new(cmake.version)
+        end
+        _g.cmake_version = cmake_version
+    end
+    return cmake_version
+end
+
 -- get vs toolset
 function _get_vs_toolset(package)
     local toolset_ver = nil
@@ -282,6 +296,14 @@ function _get_vs_toolset(package)
         local verinfo = vs_toolset:split('%.')
         if #verinfo >= 2 then
             toolset_ver = "v" .. verinfo[1] .. (verinfo[2]:sub(1, 1) or "0")
+        end
+    end
+    -- cmake does not support vs toolset v144 below 3.29.0, we can only use v143
+    -- @see https://github.com/xmake-io/xmake/issues/4772
+    if toolset_ver and toolset_ver >= "v144" then
+        local cmake_version = _get_cmake_version()
+        if cmake_version and cmake_version:le("3.29.0") then
+            toolset_ver = "v143"
         end
     end
     return toolset_ver
@@ -1062,3 +1084,4 @@ function install(package, configs, opt)
     end
     os.cd(oldir)
 end
+
