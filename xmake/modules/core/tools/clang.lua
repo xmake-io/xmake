@@ -207,6 +207,19 @@ function _get_llvm_rootdir(self)
     return llvm_rootdir or nil
 end
 
+-- get llvm target triple
+function _get_llvm_target_triple(self)
+    local llvm_targettriple = _g._LLVM_TARGETTRIPLE
+    if llvm_targettriple == nil then
+        local outdata = try { function() return os.iorun(self:program() .. " -print-target-triple") end }
+        if outdata then
+            llvm_targettriple = outdata:trim()
+        end
+        _g._LLVM_TARGETTRIPLE = llvm_targettriple or false
+    end
+    return llvm_targettriple or nil
+end
+
 -- make the runtime flag
 -- @see https://github.com/xmake-io/xmake/issues/3546
 function nf_runtime(self, runtime, opt)
@@ -267,8 +280,23 @@ function nf_runtime(self, runtime, opt)
                     llvm_rootdir = _get_llvm_rootdir(self)
                 end
                 if llvm_rootdir then
-                    maps["c++_static"] = table.join(maps["c++_static"], "-L" .. path.join(llvm_rootdir, "lib"))
-                    maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. path.join(llvm_rootdir, "lib"))
+                    local libdir = path.join(llvm_rootdir, "lib")
+                    maps["c++_static"] = table.join(maps["c++_static"], "-L" .. libdir)
+                    maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. libdir)
+                    -- sometimes llvm runtimes are located in a target-triple subfolder
+                    local target_triple = _get_llvm_target_triple(self)
+                    local triple_libdir = (target_triple and os.isdir(path.join(libdir, target_triple))) and path.join(libdir, target_triple)
+                    if triple_libdir then
+                        maps["c++_static"] = table.join(maps["c++_static"], "-L" .. triple_libdir)
+                        maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. triple_libdir)
+                    end
+                    -- add rpath to avoid the user need to set LD_LIBRARY_PATH by hand
+                    if not self:is_plat("windows") and not self:is_plat("mingw") then
+                        maps["c++_shared"] = table.join(maps["c++_shared"], "-Wl,-rpath=" .. libdir)
+                        if triple_libdir then
+                            maps["c++_shared"] = table.join(maps["c++_shared"], "-Wl,-rpath=" .. triple_libdir)
+                        end
+                    end
                 end
                 if runtime:endswith("_static") and _has_static_libstdcxx(self) then
                     maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
