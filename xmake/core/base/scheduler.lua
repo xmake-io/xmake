@@ -179,8 +179,10 @@ function scheduler:_poller_resume_co(co, events)
         events = poller.EV_POLLER_ERROR
     end
 
-    -- this coroutine must be suspended
-    assert(co:is_suspended())
+    -- this coroutine must be suspended, (maybe also dead)
+    if not co:is_suspended() then
+        return false, string.format("%s cannot be resumed, status: %s", co, co:status())
+    end
 
     -- resume this coroutine task
     co:waitobj_set(nil)
