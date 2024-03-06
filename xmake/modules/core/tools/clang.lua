@@ -291,7 +291,7 @@ function nf_runtime(self, runtime, opt)
                         maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. triple_libdir)
                     end
                     -- add rpath to avoid the user need to set LD_LIBRARY_PATH by hand
-                    if not self:is_plat("windows") and not self:is_plat("mingw") then
+                    if not self:is_plat("windows", "mingw") then
                         maps["c++_shared"] = table.join(maps["c++_shared"], "-Wl,-rpath=" .. libdir)
                         if triple_libdir then
                             maps["c++_shared"] = table.join(maps["c++_shared"], "-Wl,-rpath=" .. triple_libdir)
