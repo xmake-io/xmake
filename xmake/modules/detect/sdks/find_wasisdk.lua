@@ -76,8 +76,6 @@ end
 -- @endcode
 --
 function main(sdkdir, opt)
-
-    -- init arguments
     opt = opt or {}
 
     -- attempt to load cache first
@@ -93,7 +91,6 @@ function main(sdkdir, opt)
         if opt.verbose or option.get("verbose") then
             cprint("checking for wasi-sdk directory ... ${color.success}%s", sdk.sdkdir)
         end
-
     else
         if opt.verbose or option.get("verbose") then
             cprint("checking for wasi-sdk directory ... ${color.nothing}${text.nothing}")
