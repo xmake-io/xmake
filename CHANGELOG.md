@@ -2,6 +2,15 @@
 
 ## master (unreleased)
 
+### Changes
+
+* [#4798](https://github.com/xmake-io/xmake/issues/4798): Improve wasi sdk detect
+* [#4772](https://github.com/xmake-io/xmake/issues/4772): Improve tools.cmake to support vs2022 preview (v144)
+
+### Bugs Fixed
+
+* Fix select_script match pattern
+
 ## v2.8.8
 
 ### Changes
@@ -1743,6 +1752,15 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#4798](https://github.com/xmake-io/xmake/issues/4798): 改进 wasi sdk 检测
+* [#4772](https://github.com/xmake-io/xmake/issues/4772): 改进 tools.cmake 去兼容支持 vs2022 preview (v144)
+
+### Bugs 修复
+
+* 修复 select_script 的脚本模式匹配
 
 ## v2.8.8
 
