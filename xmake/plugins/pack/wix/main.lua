@@ -50,13 +50,17 @@ function _get_wix()
     return wix, oldenvs
 end
 
--- get command string
-function _get_command_strings(package, cmd, opt)
+-- translate the file path
+function _translate_filepath(package, filepath)
+    return path.relative(filepath, package:install_rootdir())
+end
+
+function _get_cp_command(package, cmd, opt)
     opt = table.join(cmd.opt or {}, opt)
     local result = {}
     local kind = cmd.kind
+
     if kind == "cp" then
-        -- https://nsis.sourceforge.io/Reference/File
         local srcfiles = os.files(cmd.srcpath)
         for _, srcfile in ipairs(srcfiles) do
             -- the destination is directory? append the filename
@@ -71,7 +75,7 @@ function _get_command_strings(package, cmd, opt)
             srcfile = path.normalize(srcfile)
             local dstname = path.filename(dstfile)
             local dstdir = path.normalize(path.directory(dstfile))
-            local relative_dstdir = path.relative(dstdir, package:install_rootdir())
+            local relative_dstdir = _translate_filepath(package, dstdir)
 
             local subdirectory = dstdir ~= package:install_rootdir() and string.format([[Subdirectory="%s"]], relative_dstdir) or ""
             local component_string = string.format([[<Component Id="%s" Directory="INSTALLFOLDER" %s>"]], dstname, subdirectory)
@@ -81,27 +85,45 @@ function _get_command_strings(package, cmd, opt)
             table.insert(result, file_string)
             table.insert(result, "</Component>")
         end
-    elseif kind == "rm" then
-        wprint("rm kind is not supported")
+    end
+    return result
+end
+
+function _get_other_commands(package, cmd, opt)
+    opt = table.join(cmd.opt or {}, opt)
+    local result = {}
+    local kind = cmd.kind
+
+    if kind == "rm" then
+        local filepath = _translate_filepath(package, cmd.filepath)
+        local subdirectory = cmd.filepath ~= package:install_rootdir() and string.format([[Subdirectory="%s"]], filepath) or ""
+        local on = opt.install and [[On="install"]] or [[On="uninstall"]]
+        
+        local remove_file = string.format([[<RemoveFile Directory="INSTALLFOLDER" %s %s/>]], subdirectory, on)
+        table.insert(result, remove_file)
     elseif kind == "rmdir" then
-        wprint("rmdir kind is not supported")
-    elseif kind == "mv" then
-        wprint("mv kind is not supported")
-    elseif kind == "cd" then
-        wprint("cd kind is not supported")
+        local dir = _translate_filepath(package, cmd.dir)
+        local subdirectory = cmd.dir ~= package:install_rootdir() and string.format([[Subdirectory="%s"]], dir) or ""
+        local on = opt.install and [[On="install"]] or [[On="uninstall"]]
+        
+        local remove_dir = string.format([[<RemoveFile Directory="INSTALLFOLDER" %s %s/>]], subdirectory, on)
+        table.insert(result, remove_dir)
     elseif kind == "mkdir" then
-        wprint("mkdir kind is not supported")
-    elseif kind == "wix" then
-        wprint("wix kind is not supported")
+        local dir = _translate_filepath(package, cmd.dir)
+        local subdirectory = cmd.dir ~= package:install_rootdir() and string.format([[Subdirectory="%s"]], dir) or ""
+        local make_dir = string.format([[<CreateFolder Directory="INSTALLFOLDER" %s/>]], subdirectory)
+        table.insert(result, make_dir)
+    else
+        wprint("kind %s is not supported with wix", kind)
     end
     return result
 end
 
 -- get commands string
-function _get_commands_string(package, cmds, opt)
+function _get_commands_string(package, cmds, opt, func)
     local cmdstrs = {}
     for _, cmd in ipairs(cmds) do
-        table.join2(cmdstrs, _get_command_strings(package, cmd, opt))
+        table.join2(cmdstrs, func(package, cmd, opt))
     end
     return table.concat(cmdstrs, "\n  ")
 end
@@ -128,9 +150,21 @@ end
 
 -- get specvars
 function _get_specvars(package)
+
     local specvars = table.clone(package:specvars())
+    -- install
+    local installcmds = batchcmds.get_installcmds(package):cmds()
     specvars.PACKAGE_INSTALLCMDS = function ()
-        return _get_installcmds(package)
+        return _get_commands_string(package, installcmds, {install = true}, _get_cp_command)
+    end
+    specvars.PACKAGE_WIX_FILE_OPERATION_INSTALL = function ()
+        return _get_commands_string(package, installcmds, {install = true}, _get_other_commands)
+    end
+
+    -- uninstall
+    local uninstallcmds = batchcmds.get_uninstallcmds(package):cmds()
+    specvars.PACKAGE_WIX_FILE_OPERATION_UNINSTALL = function ()
+        return _get_commands_string(package, uninstallcmds, {install = false}, _get_other_commands)
     end
 
     specvars.PACKAGE_WIX_UPGRADECODE = hash.uuid(package:name())

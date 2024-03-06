@@ -30,6 +30,10 @@
             </Directory>
         </StandardDirectory>
         <Feature Id="MainFeature" Title="$(PackageName)" Description="Installs all the files needed for $(PackageName)" Level="1" AllowAbsent="no" AllowAdvertise="no" ConfigurableDirectory="INSTALLFOLDER">
+            <Component Id="CreateFolder" Directory="INSTALLFOLDER">
+                ${PACKAGE_WIX_FILE_OPERATION_INSTALL}
+                ${PACKAGE_WIX_FILE_OPERATION_UNINSTALL}
+            </Component>
             ${PACKAGE_INSTALLCMDS}
         </Feature>
     </Package>
