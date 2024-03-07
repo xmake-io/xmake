@@ -314,6 +314,10 @@ function nf_runtime(self, runtime, opt)
                         end
                     end
                     if rpath_flags then
+                        if target:kind() == "shared" and self:is_plat("macosx", "iphoneos", "watchos") then
+                            table.insert(rpath_flags, "-install_name")
+                            table.insert(rpath_flags, "@rpath/" .. path.filename(target:filename()))
+                        end
                         maps["c++_shared"] = table.join(maps["c++_shared"], rpath_flags)
                     end
                 end
