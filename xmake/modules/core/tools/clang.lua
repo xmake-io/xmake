@@ -220,24 +220,6 @@ function _get_llvm_target_triple(self)
     return llvm_targettriple or nil
 end
 
--- make the rpathdir flag
-function _rpathdir(self, dir)
-    dir = path.translate(dir)
-    if self:has_flags("-Wl,-rpath=" .. dir, "ldflags") then
-        local flags = {"-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
-            local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
-            return maps[name]
-        end))}
-        if self:is_plat("bsd") then
-            -- FreeBSD ld must have "-zorigin" with "-rpath".  Otherwise, $ORIGIN is not translated and it is literal.
-            table.insert(flags, 1, "-Wl,-zorigin")
-        end
-        return flags
-    elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir, "ldflags") then
-        return {"-Xlinker", "-rpath", "-Xlinker", (dir:gsub("%$ORIGIN", "@loader_path"))}
-    end
-end
-
 -- make the runtime flag
 -- @see https://github.com/xmake-io/xmake/issues/3546
 function nf_runtime(self, runtime, opt)
@@ -309,9 +291,9 @@ function nf_runtime(self, runtime, opt)
                         maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. triple_libdir)
                     end
                     -- add rpath to avoid the user need to set LD_LIBRARY_PATH by hand
-                    maps["c++_shared"] = table.join(maps["c++_shared"], _rpathdir(self, libdir))
+                    maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, libdir))
                     if triple_libdir then
-                        maps["c++_shared"] = table.join(maps["c++_shared"], _rpathdir(self, triple_libdir))
+                        maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, triple_libdir))
                     end
                     if target:kind() == "shared" and self:is_plat("macosx", "iphoneos", "watchos") then
                         maps["c++_shared"] = table.join(maps["c++_shared"], "-install_name")
