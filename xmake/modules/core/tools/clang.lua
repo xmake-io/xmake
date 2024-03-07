@@ -295,9 +295,9 @@ function nf_runtime(self, runtime, opt)
                     if triple_libdir then
                         maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, triple_libdir))
                     end
-                    if target:kind() == "shared" and self:is_plat("macosx", "iphoneos", "watchos") then
+                    if target:is_shared() and self:is_plat("macosx", "iphoneos", "watchos") then
                         maps["c++_shared"] = table.join(maps["c++_shared"], "-install_name")
-                        maps["c++_shared"] = table.join(maps["c++_shared"], "@rpath/" .. path.filename(target:filename()))
+                        maps["c++_shared"] = table.join(maps["c++_shared"], "@rpath/" .. target:filename())
                     end
                 end
                 if runtime:endswith("_static") and _has_static_libstdcxx(self) then
