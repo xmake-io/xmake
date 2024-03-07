@@ -195,7 +195,7 @@ end
 function _get_llvm_rootdir(self)
     local llvm_rootdir = _g._LLVM_ROOTDIR
     if llvm_rootdir == nil then
-        local outdata = try { function() return os.iorun(self:program() .. " -print-resource-dir") end }
+        local outdata = try { function() return os.iorunv(self:program(), {"-print-resource-dir"}, {envs = self:runenvs()}) end }
         if outdata then
             llvm_rootdir = path.normalize(path.join(outdata:trim(), "..", "..", ".."))
             if not os.isdir(llvm_rootdir) then
@@ -205,6 +205,19 @@ function _get_llvm_rootdir(self)
         _g._LLVM_ROOTDIR = llvm_rootdir or false
     end
     return llvm_rootdir or nil
+end
+
+-- get llvm target triple
+function _get_llvm_target_triple(self)
+    local llvm_targettriple = _g._LLVM_TARGETTRIPLE
+    if llvm_targettriple == nil then
+        local outdata = try { function() return os.iorunv(self:program(), {"-print-target-triple"}, {envs = self:runenvs()}) end }
+        if outdata then
+            llvm_targettriple = outdata:trim()
+        end
+        _g._LLVM_TARGETTRIPLE = llvm_targettriple or false
+    end
+    return llvm_targettriple or nil
 end
 
 -- make the runtime flag
@@ -267,8 +280,25 @@ function nf_runtime(self, runtime, opt)
                     llvm_rootdir = _get_llvm_rootdir(self)
                 end
                 if llvm_rootdir then
-                    maps["c++_static"] = table.join(maps["c++_static"], "-L" .. path.join(llvm_rootdir, "lib"))
-                    maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. path.join(llvm_rootdir, "lib"))
+                    local libdir = path.absolute(path.join(llvm_rootdir, "lib"))
+                    maps["c++_static"] = table.join(maps["c++_static"], "-L" .. libdir)
+                    maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. libdir)
+                    -- sometimes llvm runtimes are located in a target-triple subfolder
+                    local target_triple = _get_llvm_target_triple(self)
+                    local triple_libdir = (target_triple and os.isdir(path.join(libdir, target_triple))) and path.join(libdir, target_triple)
+                    if triple_libdir then
+                        maps["c++_static"] = table.join(maps["c++_static"], "-L" .. triple_libdir)
+                        maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. triple_libdir)
+                    end
+                    -- add rpath to avoid the user need to set LD_LIBRARY_PATH by hand
+                    maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, libdir))
+                    if triple_libdir then
+                        maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, triple_libdir))
+                    end
+                    if target:is_shared() and self:is_plat("macosx", "iphoneos", "watchos") then
+                        maps["c++_shared"] = table.join(maps["c++_shared"], "-install_name")
+                        maps["c++_shared"] = table.join(maps["c++_shared"], "@rpath/" .. target:filename())
+                    end
                 end
                 if runtime:endswith("_static") and _has_static_libstdcxx(self) then
                     maps["c++_static"] = table.join(maps["c++_static"], "-static-libstdc++")
