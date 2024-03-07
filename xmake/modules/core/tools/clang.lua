@@ -220,6 +220,24 @@ function _get_llvm_target_triple(self)
     return llvm_targettriple or nil
 end
 
+-- make the rpathdir flag
+function rpathdir(self, dir)
+    dir = path.translate(dir)
+    if self:has_flags("-Wl,-rpath=" .. dir, "ldflags") then
+        local flags = {"-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
+            local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
+            return maps[name]
+        end))}
+        if self:is_plat("bsd") then
+            -- FreeBSD ld must have "-zorigin" with "-rpath".  Otherwise, $ORIGIN is not translated and it is literal.
+            table.insert(flags, 1, "-Wl,-zorigin")
+        end
+        return flags
+    elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir, "ldflags") then
+        return {"-Xlinker", "-rpath", "-Xlinker", (dir:gsub("%$ORIGIN", "@loader_path"))}
+    end
+end
+
 -- make the runtime flag
 -- @see https://github.com/xmake-io/xmake/issues/3546
 function nf_runtime(self, runtime, opt)
@@ -291,34 +309,13 @@ function nf_runtime(self, runtime, opt)
                         maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. triple_libdir)
                     end
                     -- add rpath to avoid the user need to set LD_LIBRARY_PATH by hand
-                    local rpath_flags
-                    if self:has_flags("-Wl,-rpath=" .. libdir, "ldflags") then
-                        rpath_flags = {"-Wl,-rpath=" .. (libdir:gsub("@[%w_]+", function (name)
-                            local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
-                            return maps[name]
-                        end))}
-                        if triple_libdir then
-                            table.join2(rpath_flags, "-Wl,-rpath=" .. (triple_libdir:gsub("@[%w_]+", function (name)
-                                local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
-                                return maps[name]
-                            end)))
-                        end
-                        if self:is_plat("bsd") then
-                            -- FreeBSD ld must have "-zorigin" with "-rpath".  Otherwise, $ORIGIN is not translated and it is literal.
-                            table.insert(rpath_flags, 1, "-Wl,-zorigin")
-                        end
-                    elseif self:has_flags("-Xlinker -rpath -Xlinker " .. libdir, "ldflags") then
-                        rpath_flags = {"-Xlinker", "-rpath", "-Xlinker", (libdir:gsub("%$ORIGIN", "@loader_path"))}
-                        if triple_libdir then
-                            table.join2(rpath_flags, {"-Xlinker", "-rpath", "-Xlinker", (triple_libdir:gsub("%$ORIGIN", "@loader_path"))})
-                        end
+                    maps["c++_shared"] = table.join(maps["c++_shared"], rpathdir(self, libdir))
+                    if triple_libdir then
+                        maps["c++_shared"] = table.join(maps["c++_shared"], rpathdir(self, triple_libdir))
                     end
-                    if rpath_flags then
-                        if target:kind() == "shared" and self:is_plat("macosx", "iphoneos", "watchos") then
-                            table.insert(rpath_flags, "-install_name")
-                            table.insert(rpath_flags, "@rpath/" .. path.filename(target:filename()))
-                        end
-                        maps["c++_shared"] = table.join(maps["c++_shared"], rpath_flags)
+                    if target:kind() == "shared" and self:is_plat("macosx", "iphoneos", "watchos") then
+                        table.join2(maps["c++_shared"], "-install_name")
+                        table.join2(maps["c++_shared"], "@rpath/" .. path.filename(target:filename()))
                     end
                 end
                 if runtime:endswith("_static") and _has_static_libstdcxx(self) then
