@@ -221,7 +221,7 @@ function _get_llvm_target_triple(self)
 end
 
 -- make the rpathdir flag
-function rpathdir(self, dir)
+function _rpathdir(self, dir)
     dir = path.translate(dir)
     if self:has_flags("-Wl,-rpath=" .. dir, "ldflags") then
         local flags = {"-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
@@ -309,13 +309,13 @@ function nf_runtime(self, runtime, opt)
                         maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. triple_libdir)
                     end
                     -- add rpath to avoid the user need to set LD_LIBRARY_PATH by hand
-                    maps["c++_shared"] = table.join(maps["c++_shared"], rpathdir(self, libdir))
+                    maps["c++_shared"] = table.join(maps["c++_shared"], _rpathdir(self, libdir))
                     if triple_libdir then
-                        maps["c++_shared"] = table.join(maps["c++_shared"], rpathdir(self, triple_libdir))
+                        maps["c++_shared"] = table.join(maps["c++_shared"], _rpathdir(self, triple_libdir))
                     end
                     if target:kind() == "shared" and self:is_plat("macosx", "iphoneos", "watchos") then
-                        table.join2(maps["c++_shared"], "-install_name")
-                        table.join2(maps["c++_shared"], "@rpath/" .. path.filename(target:filename()))
+                        maps["c++_shared"] = table.join(maps["c++_shared"], "-install_name")
+                        maps["c++_shared"] = table.join(maps["c++_shared"], "@rpath/" .. path.filename(target:filename()))
                     end
                 end
                 if runtime:endswith("_static") and _has_static_libstdcxx(self) then
