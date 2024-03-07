@@ -82,7 +82,8 @@ end
 function _get_std_module_manifest_path(target)
     local print_module_manifest_flag = get_print_library_module_manifest_path_flag(target)
     if print_module_manifest_flag then
-        local outdata = try { function() return os.iorun(self:program() .. " " .. print_module_manifest_flag) end }
+        local compinst = target:compiler("cxx")
+        local outdata, _ = try { function() return os.iorunv(compinst:program(), {print_module_manifest_flag}) end }
         if outdata then
             return outdata:trim()
         end
