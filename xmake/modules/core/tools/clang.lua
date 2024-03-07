@@ -195,7 +195,7 @@ end
 function _get_llvm_rootdir(self)
     local llvm_rootdir = _g._LLVM_ROOTDIR
     if llvm_rootdir == nil then
-        local outdata = try { function() return os.iorun(self:program() .. " -print-resource-dir") end }
+        local outdata = try { function() return os.iorunv(self:program(), {"-print-resource-dir"}, {envs = self:runenvs()}) end }
         if outdata then
             llvm_rootdir = path.normalize(path.join(outdata:trim(), "..", "..", ".."))
             if not os.isdir(llvm_rootdir) then
@@ -211,7 +211,7 @@ end
 function _get_llvm_target_triple(self)
     local llvm_targettriple = _g._LLVM_TARGETTRIPLE
     if llvm_targettriple == nil then
-        local outdata = try { function() return os.iorun(self:program() .. " -print-target-triple") end }
+        local outdata = try { function() return os.iorunv(self:program(), {"-print-target-triple"}, {envs = self:runenvs()}) end }
         if outdata then
             llvm_targettriple = outdata:trim()
         end
