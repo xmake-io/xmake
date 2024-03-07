@@ -45,7 +45,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
             table.insert(argv, 1, "-stdlib=libstdc++")
         end
     end
-    local result = try {function () return os.iorunv(clang, argv) end}
+    local result = try {function () return os.iorunv(clang, argv, {envs = compinst:runenvs()}) end}
     if result then
         for _, line in ipairs(result:split("\n", {plain = true})) do
             line = line:trim()
@@ -83,7 +83,7 @@ function _get_std_module_manifest_path(target)
     local print_module_manifest_flag = get_print_library_module_manifest_path_flag(target)
     if print_module_manifest_flag then
         local compinst = target:compiler("cxx")
-        local outdata, _ = try { function() return os.iorunv(compinst:program(), {print_module_manifest_flag}) end }
+        local outdata, _ = try { function() return os.iorunv(compinst:program(), {print_module_manifest_flag}, {envs = compinst:runenvs()}) end }
         if outdata then
             return outdata:trim()
         end
