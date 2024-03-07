@@ -291,11 +291,20 @@ function nf_runtime(self, runtime, opt)
                         maps["c++_shared"] = table.join(maps["c++_shared"], "-L" .. triple_libdir)
                     end
                     -- add rpath to avoid the user need to set LD_LIBRARY_PATH by hand
-                    if not self:is_plat("windows", "mingw") then
-                        maps["c++_shared"] = table.join(maps["c++_shared"], "-Wl,-rpath=" .. libdir)
+                    local rpath_flags
+                    if self:has_flags("-Wl,-rpath=" .. libdir, "ldflags") then
+                        rpath_flags = {"-Wl,-rpath=" .. libdir}
                         if triple_libdir then
-                            maps["c++_shared"] = table.join(maps["c++_shared"], "-Wl,-rpath=" .. triple_libdir)
+                            table.join2(rpath_flags, "-Wl,-rpath=" .. triple_libdir)
                         end
+                    elseif self:has_flags("-Xlinker -rpath -Xlinker " .. libdir, "ldflags") then
+                        rpath_flags = {"-Xlinker", "-rpath", "-Xlinker", (libdir:gsub("%$ORIGIN", "@loader_path"))}
+                        if triple_libdir then
+                            table.join2(rpath_flags, {"-Xlinker", "-rpath", "-Xlinker", (triple_libdir:gsub("%$ORIGIN", "@loader_path"))})
+                        end
+                    end
+                    if rpath_flags then
+                        maps["c++_shared"] = table.join(maps["c++_shared"], rpath_flags)
                     end
                 end
                 if runtime:endswith("_static") and _has_static_libstdcxx(self) then
