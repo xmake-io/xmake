@@ -293,9 +293,19 @@ function nf_runtime(self, runtime, opt)
                     -- add rpath to avoid the user need to set LD_LIBRARY_PATH by hand
                     local rpath_flags
                     if self:has_flags("-Wl,-rpath=" .. libdir, "ldflags") then
-                        rpath_flags = {"-Wl,-rpath=" .. libdir}
+                        rpath_flags = {"-Wl,-rpath=" .. (libdir:gsub("@[%w_]+", function (name)
+                            local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
+                            return maps[name]
+                        end))}
                         if triple_libdir then
-                            table.join2(rpath_flags, "-Wl,-rpath=" .. triple_libdir)
+                            table.join2(rpath_flags, "-Wl,-rpath=" .. (triple_libdir:gsub("@[%w_]+", function (name)
+                                local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
+                                return maps[name]
+                            end)))
+                        end
+                        if self:is_plat("bsd") then
+                            -- FreeBSD ld must have "-zorigin" with "-rpath".  Otherwise, $ORIGIN is not translated and it is literal.
+                            table.insert(rpath_flags, 1, "-Wl,-zorigin")
                         end
                     elseif self:has_flags("-Xlinker -rpath -Xlinker " .. libdir, "ldflags") then
                         rpath_flags = {"-Xlinker", "-rpath", "-Xlinker", (libdir:gsub("%$ORIGIN", "@loader_path"))}
