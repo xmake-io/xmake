@@ -80,7 +80,7 @@ function _get_cpplibrary_name(target)
 end
 
 function _get_std_module_manifest_path(target)
-    local print_module_manifest_flag = get_printlibrarymodulemanifestpathflag(target)
+    local print_module_manifest_flag = get_print_library_module_manifest_path_flag(target)
     if print_module_manifest_flag then
         local outdata = try { function() return os.iorun(self:program() .. " " .. print_module_manifest_flag) end }
         if outdata then
@@ -471,15 +471,15 @@ function get_moduleoutputflag(target)
     return moduleoutputflag or nil
 end
 
-function get_printlibrarymodulemanifestpathflag(target)
-    local printlibrarymodulemanifestpathflag = _g.printlibrarymodulemanifestpathflag
-    if printlibrarymodulemanifestpathflag == nil then
+function get_print_library_module_manifest_path_flag(target)
+    local print_library_module_manifest_path_flag = _g.print_library_module_manifest_path_flag
+    if print_library_module_manifest_path_flag == nil then
         local compinst = target:compiler("cxx")
         if compinst:has_flags("-print-library-module-manifest-path", "cxxflags", {flagskey = "clang_print_library_module_manifest_path", tryrun = true}) then
-            printlibrarymodulemanifestpathflag = "-print-library-module-manifest-path"
+            print_library_module_manifest_path_flag = "-print-library-module-manifest-path"
         end
-        _g.printlibrarymodulemanifestpathflag = printlibrarymodulemanifestpathflag or false
+        _g.print_library_module_manifest_path_flag = print_library_module_manifest_path_flag or false
     end
-    return printlibrarymodulemanifestpathflag or nil
+    return print_library_module_manifest_path_flag or nil
 end
 
