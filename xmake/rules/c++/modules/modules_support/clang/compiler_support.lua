@@ -63,11 +63,18 @@ end
 
 function _get_cpplibrary_name(target)
     -- libc++ come first because on windows, if we use libc++ clang will still use msvc crt so MD / MT / MDd / MTd can be set
-    if target:is_plat("macosx") and target:runtimes() == nil or target:has_runtime("c++_shared", "c++_static") then
+    if target:has_runtime("c++_shared", "c++_static") then
         return "c++"
-    elseif target:is_plat("linux") and target:runtimes() == nil or target:has_runtime("stdc++_shared", "stdc++_static") then
+    elseif target:has_runtime("stdc++_shared", "stdc++_static") then
         return "stdc++"
-    elseif target:is_plat("windows") and target:runtimes() == nil or target:has_runtime("MD", "MT", "MDd", "MTd") then
+    elseif target:has_runtime("MD", "MT", "MDd", "MTd") then
+        return "msstl"
+    end
+    if target:is_plat("macosx") then
+        return "c++"
+    elseif target:is_plat("linux") then
+        return "stdc++"
+    elseif target:is_plat("windows") then
         return "msstl"
     end
 end
