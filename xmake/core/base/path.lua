@@ -162,6 +162,13 @@ function path.unix(p)
     return (tostring(p):gsub(path.sep(), "/"))
 end
 
+-- get cygwin-style path, e.g. c:\, C:\ -> /c/
+function path.cygwin(p)
+    return (tostring(p):gsub("^(%w):", function (drive)
+        return "/" .. drive:lower()
+    end):gsub("\\", "/"))
+end
+
 -- translate path
 --
 -- @param p     the path

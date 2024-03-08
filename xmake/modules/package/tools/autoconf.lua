@@ -28,16 +28,30 @@ import("lib.detect.find_tool")
 
 -- translate paths
 function _translate_paths(package, paths)
-    if paths and is_host("windows") and (package:is_plat("mingw") or package:is_plat("msys") or package:is_plat("cygwin")) then
+    if paths and is_host("windows") and package:is_plat("mingw", "msys", "cygwin") then
         if type(paths) == "string" then
-            return (paths:gsub("\\", "/"))
+            return path.unix(paths)
         elseif type(paths) == "table" then
             local result = {}
             for _, p in ipairs(paths) do
-                table.insert(result, (p:gsub("\\", "/")))
+                table.insert(result, path.unix(p))
             end
             return result
         end
+    end
+    return paths
+end
+
+-- translate cygwin paths
+function _translate_cygwin_paths(package, paths)
+    if type(paths) == "string" then
+        return path.cygwin(paths)
+    elseif type(paths) == "table" then
+        local result = {}
+        for _, p in ipairs(paths) do
+            table.insert(result, path.cygwin(p))
+        end
+        return result
     end
     return paths
 end
@@ -389,6 +403,11 @@ function buildenvs(package, opt)
         if os.isdir(aclocal) then
             table.insert(ACLOCAL_PATH, aclocal)
         end
+    end
+    -- fix PKG_CONFIG_PATH for windows/msys2
+    -- @see https://github.com/xmake-io/xmake-repo/issues/3442
+    if is_subhost("msys", "cygwin") then
+        PKG_CONFIG_PATH = _translate_cygwin_paths(PKG_CONFIG_PATH)
     end
     envs.ACLOCAL_PATH    = path.joinenv(ACLOCAL_PATH)
     envs.PKG_CONFIG_PATH = path.joinenv(PKG_CONFIG_PATH)
