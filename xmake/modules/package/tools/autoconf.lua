@@ -44,7 +44,7 @@ function _translate_paths(package, paths)
 end
 
 -- translate cygwin paths
-function _translate_cygwin_paths(package, paths)
+function _translate_cygwin_paths(paths)
     if type(paths) == "string" then
         return path.cygwin(paths)
     elseif type(paths) == "table" then
@@ -57,20 +57,20 @@ function _translate_cygwin_paths(package, paths)
     return paths
 end
 
+-- translate windows bin path
+function _translate_windows_bin_path(bin_path)
+    if bin_path then
+        local argv = os.argv(bin_path)
+        argv[1] = path.unix(argv[1]) .. ".exe"
+        return os.args(argv)
+    end
+end
+
 -- get msvc
 function _get_msvc(package)
     local msvc = package:toolchain("msvc") or toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
     assert(msvc:check(), "vs not found!") -- we need to check vs envs if it has been not checked yet
     return msvc
-end
-
--- translate windows bin path
-function _translate_windows_bin_path(bin_path)
-    if bin_path then
-        local argv = os.argv(bin_path)
-        argv[1] = argv[1]:gsub("\\", "/") .. ".exe"
-        return os.args(argv)
-    end
 end
 
 -- map compiler flags
