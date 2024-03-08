@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.tool.linker")
 import("core.tool.compiler")
+import("core.tool.toolchain")
 import("core.cache.memcache")
 import("lib.detect.find_tool")
 
@@ -54,6 +55,13 @@ function _translate_cygwin_paths(package, paths)
         return result
     end
     return paths
+end
+
+-- get msvc
+function _get_msvc(package)
+    local msvc = package:toolchain("msvc") or toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
+    assert(msvc:check(), "vs not found!") -- we need to check vs envs if it has been not checked yet
+    return msvc
 end
 
 -- translate windows bin path
@@ -375,6 +383,9 @@ function buildenvs(package, opt)
             name = name:gsub("gcc%-", "g++-")
             envs.CXX = dir and path.join(dir, name) or name
         end
+    elseif package:is_plat("windows") and not package:config("toolchains") then
+        envs.PATH = os.getenv("PATH") -- we need to reserve PATH on msys2
+        envs = os.joinenvs(envs, _get_msvc(package):runenvs())
     end
     if is_host("windows") then
         envs.CC       = _translate_windows_bin_path(envs.CC)
