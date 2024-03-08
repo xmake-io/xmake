@@ -43,10 +43,18 @@ function _add_export_value(target, name, value)
             end
         end
     end
+    local extraconf = target:extraconf(name, value)
     if has_private then
-        target:add(name, value, {public = true})
+        target:add(name, value, table.join(extraconf or {}, {public = true}))
     else
-        target:add(name, value, {interface = true})
+        target:add(name, value, table.join(extraconf or {}, {interface = true}))
+    end
+end
+
+-- export values as public/interface in target
+function _add_export_values(target, name, values)
+    for _, value in ipairs(values) do
+        _add_export_value(target, name, value)
     end
 end
 
@@ -89,7 +97,7 @@ function main(target)
                 for _, name in ipairs({"rpathdirs", "frameworkdirs", "frameworks", "linkdirs", "links", "syslinks", "ldflags", "shflags"}) do
                     local values = _get_values_from_target(target, name)
                     if values and #values > 0 then
-                        target:add(name, values, {public = true})
+                        _add_export_values(target, name, values)
                     end
                 end
             end
@@ -111,3 +119,4 @@ function main(target)
         end
     end
 end
+
