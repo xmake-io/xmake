@@ -10,6 +10,7 @@
 ### Bugs Fixed
 
 * Fix select_script match pattern
+* [#4763](https://github.com/xmake-io/xmake/issues/4763): Fix {force = true}
 
 ## v2.8.8
 
@@ -1761,6 +1762,7 @@
 ### Bugs 修复
 
 * 修复 select_script 的脚本模式匹配
+* [#4763](https://github.com/xmake-io/xmake/issues/4763): 修复 {force = true}
 
 ## v2.8.8
 
