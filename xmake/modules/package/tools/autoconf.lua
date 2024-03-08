@@ -404,13 +404,16 @@ function buildenvs(package, opt)
             table.insert(ACLOCAL_PATH, aclocal)
         end
     end
+    envs.ACLOCAL_PATH = path.joinenv(ACLOCAL_PATH)
     -- fix PKG_CONFIG_PATH for windows/msys2
     -- @see https://github.com/xmake-io/xmake-repo/issues/3442
     if is_subhost("msys", "cygwin") then
+        -- pkg-config can only support for unix path and env seperator on msys/cygwin
         PKG_CONFIG_PATH = _translate_cygwin_paths(PKG_CONFIG_PATH)
+        envs.PKG_CONFIG_PATH = path.joinenv(PKG_CONFIG_PATH, ":")
+    else
+        envs.PKG_CONFIG_PATH = path.joinenv(PKG_CONFIG_PATH)
     end
-    envs.ACLOCAL_PATH    = path.joinenv(ACLOCAL_PATH)
-    envs.PKG_CONFIG_PATH = path.joinenv(PKG_CONFIG_PATH)
     return envs
 end
 
