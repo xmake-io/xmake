@@ -73,6 +73,11 @@ function _get_msvc(package)
     return msvc
 end
 
+-- get msvc run environments
+function _get_msvc_runenvs(package)
+    return os.joinenvs(_get_msvc(package):runenvs())
+end
+
 -- map compiler flags
 function _map_compflags(package, langkind, name, values)
     return compiler.map_flags(langkind, name, values, {target = package})
@@ -507,7 +512,13 @@ function make(package, argv, opt)
         end
     end
     assert(program, "make not found!")
-    os.vrunv(program, argv)
+
+    if package:is_plat("windows") then
+        local envs = opt.envs or buildenvs(package, opt)
+        os.vrunv(program, argv, {envs = envs})
+    else
+        os.vrunv(program, argv)
+    end
 end
 
 -- build package
