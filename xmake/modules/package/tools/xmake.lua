@@ -513,12 +513,12 @@ function install(package, configs, opt)
     -- do build
     argv = {"build"}
     _set_builtin_argv(package, argv)
-    if opt.target then
-        table.insert(argv, opt.target)
-    end
     local njob = opt.jobs or option.get("jobs")
     if njob then
         table.insert(argv, "--jobs=" .. njob)
+    end
+    if opt.target then
+        table.insert(argv, opt.target)
     end
     os.vrunv(os.programfile(), argv, {envs = envs})
 
