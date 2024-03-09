@@ -24,5 +24,5 @@ import(".api_checker")
 function main(opt)
     opt = opt or {}
     api_checker.check_targets("encodings", table.join(opt, {values = {
-        "none", "utf-8", "source:utf-8", "target:utf-8"}}))
+        "none", "utf-8", "source:utf-8", "target:utf-8", "source:gb2312", "target:gb2312"}}))
 end

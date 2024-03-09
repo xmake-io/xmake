@@ -363,7 +363,8 @@ function nf_encoding(self, encoding)
     end
     local charsets = {
         ["utf-8"] = "utf-8",
-        utf8 = "utf-8"
+        utf8 = "utf-8",
+        gb2312 = "gb2312"
     }
     local flags = {}
     charset = charsets[charset:lower()]
