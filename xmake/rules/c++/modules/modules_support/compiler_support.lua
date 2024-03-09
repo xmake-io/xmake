@@ -85,7 +85,8 @@ function cull_objectfiles(target, modules, sourcebatch)
             local fileconfig = target:fileconfig(sourcefile)
             local public = fileconfig and fileconfig.public
             local external = fileconfig and fileconfig.external
-            if not public and not external then
+            local private_dep = fileconfig and fileconfig.private_dep
+            if (not public and not external) or (external and private_dep) then
                 table.insert(sourcebatch.objectfiles, objectfile)
             end
         else
