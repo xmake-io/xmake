@@ -6,6 +6,7 @@
 
 * [#4798](https://github.com/xmake-io/xmake/issues/4798): Improve wasi sdk detect
 * [#4772](https://github.com/xmake-io/xmake/issues/4772): Improve tools.cmake to support vs2022 preview (v144)
+* [#4813](https://github.com/xmake-io/xmake/issues/4813): Add gb2312 encoding
 
 ### Bugs Fixed
 
@@ -1758,6 +1759,7 @@
 
 * [#4798](https://github.com/xmake-io/xmake/issues/4798): 改进 wasi sdk 检测
 * [#4772](https://github.com/xmake-io/xmake/issues/4772): 改进 tools.cmake 去兼容支持 vs2022 preview (v144)
+* [#4813](https://github.com/xmake-io/xmake/issues/4813): 添加 gb2312 编码
 
 ### Bugs 修复
 
