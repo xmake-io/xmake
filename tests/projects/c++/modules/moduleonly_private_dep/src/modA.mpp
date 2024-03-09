@@ -1,0 +1,3 @@
+export module A;
+
+export inline constexpr auto foo = 1;

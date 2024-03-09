@@ -1,0 +1,3 @@
+export module B;
+
+export int func();
