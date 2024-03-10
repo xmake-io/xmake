@@ -196,16 +196,19 @@ function _translate_flag(flag, outputdir)
     if flag then
         if path.instance_of(flag) then
             flag = flag:clone():set(_get_relative_unix_path_to_cmake(flag:rawstr(), outputdir)):str()
-        elseif path.is_absolute(flag) then
-            flag = _get_relative_unix_path_to_cmake(flag, outputdir)
-        elseif flag:startswith("-fmodule-file=") then
-            flag = "-fmodule-file=" .. _get_relative_unix_path_to_cmake(flag:sub(15), outputdir)
-        elseif flag:startswith("-fmodule-mapper=") then
-            flag = "-fmodule-mapper=" .. _get_relative_unix_path_to_cmake(flag:sub(17), outputdir)
-        elseif flag:match("(.+)=(.+)") then
-            local k, v = flag:match("(.+)=(.+)")
-            if v and (v:endswith(".ifc") or v:endswith(".map")) then -- e.g. hello=xxx/hello.ifc
-                flag = k .. "=" .. _get_relative_unix_path_to_cmake(v, outputdir)
+        -- it may be table, https://github.com/xmake-io/xmake/issues/4816
+        elseif type(flag) == "string" then
+            if path.is_absolute(flag) then
+                flag = _get_relative_unix_path_to_cmake(flag, outputdir)
+            elseif flag:startswith("-fmodule-file=") then
+                flag = "-fmodule-file=" .. _get_relative_unix_path_to_cmake(flag:sub(15), outputdir)
+            elseif flag:startswith("-fmodule-mapper=") then
+                flag = "-fmodule-mapper=" .. _get_relative_unix_path_to_cmake(flag:sub(17), outputdir)
+            elseif flag:match("(.+)=(.+)") then
+                local k, v = flag:match("(.+)=(.+)")
+                if v and (v:endswith(".ifc") or v:endswith(".map")) then -- e.g. hello=xxx/hello.ifc
+                    flag = k .. "=" .. _get_relative_unix_path_to_cmake(v, outputdir)
+                end
             end
         end
     end
