@@ -59,25 +59,20 @@ end
 -- print multi-variables with raw lua action
 --
 function sandbox_utils.print(format, ...)
-
-    -- print format string
     if type(format) == "string" and format:find("%", 1, true) then
         local args = {...}
-        try
-        {
+        try {
             function ()
                 local message = vformat(format, table.unpack(args))
                 utils._print(message)
                 log:printv(message)
             end,
-            catch
-            {
+            catch {
                 function (errors)
                     sandbox_utils._print(format, table.unpack(args))
                 end
             }
         }
-
     else
         sandbox_utils._print(format, ...)
     end
