@@ -23,8 +23,12 @@ rule("yacc")
     add_deps("c++")
     set_extensions(".y", ".yy")
     on_load(function (target)
-        local sourcefile_dir = path.join(target:autogendir(), "rules", "yacc_yacc")
-        target:add("includedirs", sourcefile_dir)
+        -- add yacc includedirs if there are yacc files
+        -- @see https://github.com/xmake-io/xmake/issues/4820
+        if target:sourcebatches()["yacc"] then
+            local sourcefile_dir = path.join(target:autogendir(), "rules", "yacc_yacc")
+            target:add("includedirs", sourcefile_dir)
+        end
     end)
     before_buildcmd_file(function (target, batchcmds, sourcefile_yacc, opt)
 
