@@ -270,11 +270,6 @@ function utils.show_warnings()
     end
 end
 
--- ifelse, a? b : c
-function utils.ifelse(a, b, c)
-    if a then return b else return c end
-end
-
 -- try to call script
 function utils.trycall(script, traceback, ...)
     return xpcall(script, function (errors)

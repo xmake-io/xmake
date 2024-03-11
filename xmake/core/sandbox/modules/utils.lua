@@ -39,7 +39,6 @@ sandbox_utils.confirm = utils.confirm
 sandbox_utils.error   = utils.error
 sandbox_utils.warning = utils.warning
 sandbox_utils.trycall = utils.trycall
-sandbox_utils.ifelse  = utils.ifelse
 
 -- print each arguments
 function sandbox_utils._print(...)
