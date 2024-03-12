@@ -75,6 +75,25 @@ function _parse_meta_info(target, metafile)
     return filename, name, metadata
 end
 
+-- get module requires from the module name
+function _get_module_requires(requires, modules, modulename)
+    for _, m in pairs(modules) do
+        local provides = m.provides
+        if provides and provides[modulename] then
+            for name, requireinfo in pairs(m.requires) do
+                if not requires[name] then
+                    requires[name] = requireinfo
+                end
+            end
+            local provide = provides[modulename]
+            if not requires[modulename] then
+                local requireinfo = {method = "by-name", path = provide.bmi, unique = false}
+                requires[modulename] = requireinfo
+            end
+        end
+    end
+end
+
 -- parse module dependency data
 --[[
 {
@@ -105,6 +124,7 @@ end
 }]]
 function _parse_dependencies_data(target, moduleinfos)
     local modules
+    local modules_with_provides = {}
     for _, moduleinfo in ipairs(moduleinfos) do
         assert(moduleinfo.version <= 1)
         for _, rule in ipairs(moduleinfo.rules) do
@@ -139,6 +159,7 @@ function _parse_dependencies_data(target, moduleinfos)
                         interface = provide["is-interface"]
                     }
                 end
+                table.insert(modules_with_provides, m)
             else
                 m.cppfile = moduleinfo.sourcefile
             end
@@ -169,6 +190,24 @@ function _parse_dependencies_data(target, moduleinfos)
             end
         end
     end
+
+    for _, m in ipairs(modules_with_provides) do
+        local removed_provide_cppfile
+        for name, provide in pairs(m.provides) do
+            if provide.sourcefile and
+                not compiler_support.has_module_extension(provide.sourcefile) then
+                local modulename = name:split(":")[1]
+                local requires = m.requires or {}
+                _get_module_requires(requires, modules, modulename)
+                m.requires = requires
+                removed_provide_cppfile = provide.sourcefile
+            end
+        end
+        if removed_provide_cppfile then
+            m.provides = nil
+            m.cppfile = removed_provide_cppfile
+        end
+    end
     return modules
 end
 
@@ -194,7 +233,6 @@ end
 
 function _get_package_modules(target, package, opt)
     local package_modules
-
     local modulesdir = path.join(package:installdir(), "modules")
     local metafiles = os.files(path.join(modulesdir, "*", "*.meta-info"))
     for _, metafile in ipairs(metafiles) do
@@ -202,7 +240,6 @@ function _get_package_modules(target, package, opt)
         local modulefile, name, metadata = _parse_meta_info(target, metafile)
         package_modules[name] = {file = path.join(modulesdir, modulefile), metadata = metadata}
     end
-
     return package_modules
 end
 
@@ -211,7 +248,7 @@ function _generate_dependencies(target, sourcebatch, opt)
     local changed = false
     if opt.batchjobs then
         local jobs = option.get("jobs") or os.default_njob()
-        runjobs(target:name() .. "_module_dependency_scanner", function(index) 
+        runjobs(target:name() .. "_module_dependency_scanner", function(index)
             local sourcefile = sourcebatch.sourcefiles[index]
             changed = _dependency_scanner(target).generate_dependency_for(target, sourcefile, opt) or changed
         end, {comax = jobs, total = #sourcebatch.sourcefiles})
@@ -222,6 +259,7 @@ function _generate_dependencies(target, sourcebatch, opt)
     end
     return changed
 end
+
 -- get module dependencies
 function get_module_dependencies(target, sourcebatch, opt)
     local cachekey = target:name() .. "/" .. sourcebatch.rulename
@@ -376,9 +414,9 @@ function fallback_generate_dependencies(target, jsonfile, sourcefile, preprocess
 end
 
 -- extract packages modules dependencies
+-- parse all meta-info and append their informations to the package store
 function get_all_packages_modules(target, opt)
 
-    -- parse all meta-info and append their informations to the package store
     local packages = target:pkgs() or {}
     for _, deps in ipairs(target:orderdeps()) do
         table.join2(packages, deps:pkgs())
