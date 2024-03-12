@@ -180,7 +180,7 @@ $ xmake f --menu
 
 ## Supported platforms
 
-* Windows (x86, x64)
+* Windows (x86, x64, arm64)
 * macOS (i386, x86_64, arm64)
 * Linux (i386, x86_64, cross-toolchains ..)
 * *BSD (i386, x86_64)
@@ -192,7 +192,7 @@ $ xmake f --menu
 * MSYS (i386, x86_64)
 * MinGW (i386, x86_64, arm, arm64)
 * Cygwin (i386, x86_64)
-* Wasm (wasm32)
+* Wasm (wasm32, wasm64)
 * Cross (cross-toolchains ..)
 
 ## Supported toolchains
