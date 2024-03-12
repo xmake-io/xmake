@@ -1,7 +1,5 @@
 module;
 
-// global module fragment area. Put #include directives here 
-
 module BasicPlane.Figures:Rectangle;
 
 int area(const Rectangle& r) { return width(r) * height(r); }

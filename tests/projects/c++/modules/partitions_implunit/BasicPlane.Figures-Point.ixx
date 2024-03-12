@@ -1,6 +1,5 @@
-export module BasicPlane.Figures:Point; // defines a module partition, Point, that's part of the module BasicPlane.Figures
+export module BasicPlane.Figures:Point;
 
-export struct Point
-{
+export struct Point {
     int x, y;
 };
