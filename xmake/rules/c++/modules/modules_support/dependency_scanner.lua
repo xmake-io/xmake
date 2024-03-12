@@ -85,6 +85,7 @@ function _get_module_requires(requires, modules, modulename)
                     requires[name] = requireinfo
                 end
             end
+            -- patch the root provide as requires
             local provide = provides[modulename]
             if not requires[modulename] then
                 local requireinfo = {method = "by-name", path = provide.bmi, unique = false}
@@ -191,11 +192,14 @@ function _parse_dependencies_data(target, moduleinfos)
         end
     end
 
+    -- support for partition implementation unit
+    -- @see https://github.com/xmake-io/xmake/issues/4795
     for _, m in ipairs(modules_with_provides) do
         local removed_provide_cppfile
         for name, provide in pairs(m.provides) do
             if provide.sourcefile and
                 not compiler_support.has_module_extension(provide.sourcefile) then
+                -- we need to add dependency as requires to partition implementation cpp file
                 local modulename = name:split(":")[1]
                 local requires = m.requires or {}
                 _get_module_requires(requires, modules, modulename)
