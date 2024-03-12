@@ -404,9 +404,9 @@ function _get_configs_for_windows(package, configs, opt)
 end
 
 -- get configs for android
+-- https://developer.android.google.cn/ndk/guides/cmake
 function _get_configs_for_android(package, configs, opt)
-
-    -- https://developer.android.google.cn/ndk/guides/cmake
+    opt = opt or {}
     local ndk = get_config("ndk")
     if ndk and os.isdir(ndk) then
         local ndk_sdkver = get_config("ndk_sdkver")
@@ -420,7 +420,7 @@ function _get_configs_for_android(package, configs, opt)
         if ndk_cxxstl then
             table.insert(configs, "-DANDROID_STL=" .. ndk_cxxstl)
         end
-        if is_host("windows") then
+        if is_host("windows") and opt.cmake_generator ~= "Ninja" then
             local make = path.join(ndk, "prebuilt", "windows-x86_64", "bin", "make.exe")
             if os.isfile(make) then
                 table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. make)
@@ -495,7 +495,7 @@ function _get_configs_for_mingw(package, configs, opt)
     -- Avoid cmake to add the flags -search_paths_first and -headerpad_max_install_names on macOS
     envs.HAVE_FLAG_SEARCH_PATHS_FIRST = "0"
     -- CMAKE_MAKE_PROGRAM may be required for some CMakeLists.txt (libcurl)
-    if is_subhost("windows") then
+    if is_subhost("windows") and opt.cmake_generator ~= "Ninja" then
         local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
         envs.CMAKE_MAKE_PROGRAM = path.join(mingw, "bin", "mingw32-make.exe")
     end
@@ -507,6 +507,7 @@ end
 
 -- get configs for wasm
 function _get_configs_for_wasm(package, configs, opt)
+    opt = opt or {}
     local emsdk = find_emsdk()
     assert(emsdk and emsdk.emscripten, "emscripten not found!")
     local emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk.emscripten, "cmake/Modules/Platform"))
