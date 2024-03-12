@@ -270,11 +270,13 @@ function get_stdmodules(target)
                 local modules_json_path = _get_std_module_manifest_path(target)
                 if modules_json_path then
                     local modules_json = json.decode(io.readfile(modules_json_path))
-                    local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
-                    if not path.is_absolute(std_module_directory) then
-                        std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
+                    if modules_json and modules_json.modules and #modules_json.modules > 0 then
+                        local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
+                        if not path.is_absolute(std_module_directory) then
+                            std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
+                        end
+                        return {path.join(std_module_directory, "std.cppm"), path.join(std_module_directory, "std.compat.cppm")}
                     end
-                    return {path.join(std_module_directory, "std.cppm"), path.join(std_module_directory, "std.compat.cppm")}
                 end
             elseif cpplib == "stdc++" then
                 -- libstdc++ doesn't have a std module file atm
