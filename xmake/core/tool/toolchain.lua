@@ -388,6 +388,8 @@ function _instance:_description(toolkind)
             ar         = "the static library archiver",
             mrc        = "the windows resource compiler",
             strip      = "the symbols stripper",
+            ranlib     = "the archive index generator",
+            objcopy    = "the GNU objcopy utility",
             dsymutil   = "the symbols generator",
             mm         = "the objc compiler",
             mxx        = "the objc++ compiler",
