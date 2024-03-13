@@ -63,6 +63,7 @@ toolchain("mingw")
             toolchain:add("toolset", "ar", path.join(bindir, "ar"))
             toolchain:add("toolset", "strip", path.join(bindir, "strip"))
             toolchain:add("toolset", "ranlib", path.join(bindir, "ranlib"))
+            toolchain:add("toolset", "objcopy", path.join(bindir, "objcopy"))
         end
         toolchain:add("toolset", "cc", cross .. "gcc")
         toolchain:add("toolset", "cxx", cross .. "g++", cross .. "gcc")
@@ -73,6 +74,7 @@ toolchain("mingw")
         toolchain:add("toolset", "ar", cross .. "ar")
         toolchain:add("toolset", "strip", cross .. "strip")
         toolchain:add("toolset", "ranlib", cross .. "ranlib")
+        toolchain:add("toolset", "objcopy", cross .. "objcopy")
         toolchain:add("toolset", "mrc", cross .. "windres")
         if is_host("windows") and bindir then
             -- we use bin/gcc.exe if cross not found

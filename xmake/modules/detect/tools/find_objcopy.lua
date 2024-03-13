@@ -15,14 +15,14 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_ranlib.lua
+-- @file        find_objcopy.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find ranlib
+-- find objcopy
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
@@ -30,14 +30,14 @@ import("lib.detect.find_programver")
 --
 -- @code
 --
--- local ranlib = find_ranlib()
--- local ranlib, version = find_ranlib({program = "xcrun -sdk macosx ranlib", version = true})
+-- local objcopy = find_objcopy()
+-- local objcopy, version = find_objcopy({program = "xcrun -sdk macosx objcopy", version = true})
 --
 -- @endcode
 --
 function main(opt)
     opt = opt or {}
-    local program = find_program(opt.program or "ranlib", opt)
+    local program = find_program(opt.program or "objcopy", opt)
     local version = nil
     if program and opt and opt.version then
         version = find_programver(program, opt)
