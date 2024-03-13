@@ -3,5 +3,5 @@ set_languages("c++20")
 
 target("foo")
     set_kind("static")
-    add_files("*.cpp")
-    add_files("*.ixx")
+    add_files("src/*.cpp")
+    add_files("src/*.mpp")
