@@ -5,6 +5,6 @@ module;
 // can only be imported by module Foo, and visibility of bar is only public to module Foo
 module Foo:Impl;
 
-export void bar() {
+void bar() {
     std::cout << "Hello world" << std::endl;
 }
