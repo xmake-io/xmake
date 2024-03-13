@@ -63,6 +63,7 @@ toolchain("mingw")
             toolchain:add("toolset", "ar", path.join(bindir, "ar"))
             toolchain:add("toolset", "strip", path.join(bindir, "strip"))
             toolchain:add("toolset", "ranlib", path.join(bindir, "ranlib"))
+            toolchain:add("toolset", "objcopy", path.join(bindir, "objcopy"))
         end
         toolchain:add("toolset", "cc", cross .. "gcc")
         toolchain:add("toolset", "cxx", cross .. "g++", cross .. "gcc")
