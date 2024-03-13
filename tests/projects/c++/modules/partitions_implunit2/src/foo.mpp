@@ -1,0 +1,8 @@
+// Foo.mpp
+export module Foo;
+
+import :Impl; // can't export import Impl because Impl is a implementation partition unit
+
+export void foo() {
+    bar();
+}

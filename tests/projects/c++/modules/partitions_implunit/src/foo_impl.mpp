@@ -1,0 +1,10 @@
+module;
+#include <iostream>
+
+// Foo-Impl.mpp
+// can only be imported by module Foo, and visibility of bar is only public to module Foo
+module Foo:Impl;
+
+void bar() {
+    std::cout << "Hello world" << std::endl;
+}
