@@ -182,7 +182,7 @@ function _instance:_copiedfiles(filetype, outputdir, pathfilter)
     if not copiedfiles then return end
 
     -- get the extra information
-    local extrainfo = table.wrap(self:get("__extra_" .. filetype))
+    local extrainfo = table.wrap(self:extraconf(filetype))
 
     -- get the source paths and destinate paths
     local srcfiles = {}
@@ -1403,7 +1403,7 @@ end
 
 -- get the config info of the given package
 function _instance:pkgconfig(pkgname)
-    local extra_packages = self:get("__extra_packages")
+    local extra_packages = self:extraconf("packages")
     if extra_packages then
         return extra_packages[pkgname]
     end
@@ -1773,12 +1773,10 @@ end
 
 -- get the config info of the given source file
 function _instance:fileconfig(sourcefile)
-
-    -- get files config
     local filesconfig = self._FILESCONFIG
     if not filesconfig then
         filesconfig = {}
-        for filepath, fileconfig in pairs(table.wrap(self:get("__extra_files"))) do
+        for filepath, fileconfig in pairs(table.wrap(self:extraconf("files"))) do
 
             -- match source files
             local results = os.match(filepath)
@@ -1801,8 +1799,6 @@ function _instance:fileconfig(sourcefile)
         end
         self._FILESCONFIG = filesconfig
     end
-
-    -- get file config
     return filesconfig[sourcefile]
 end
 
@@ -2055,7 +2051,7 @@ function _instance:headerfiles(outputdir, opt)
     end
 
     -- get the extra information
-    local extrainfo = table.wrap(self:get("__extra_headerfiles"))
+    local extrainfo = table.wrap(self:extraconf("headerfiles"))
 
     -- get the source paths and destinate paths
     local srcheaders = {}
