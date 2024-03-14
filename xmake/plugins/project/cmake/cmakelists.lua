@@ -1065,20 +1065,19 @@ function _add_target(cmakelists, target, outputdir)
     cmakelists:print("# target")
 
     -- is phony target?
-    local targetkind = target:kind()
     if target:is_phony() then
         return _add_target_phony(cmakelists, target)
-    elseif targetkind == "binary" then
+    elseif target:is_binary() then
         _add_target_binary(cmakelists, target, outputdir)
-    elseif targetkind == "static" then
+    elseif target:is_static() then
         _add_target_static(cmakelists, target, outputdir)
-    elseif targetkind == "shared" then
+    elseif target:is_shared() then
         _add_target_shared(cmakelists, target, outputdir)
-    elseif targetkind == 'headeronly' then
+    elseif target:is_headeronly() then
         _add_target_headeronly(cmakelists, target)
         _add_target_include_directories(cmakelists, target, outputdir)
         return
-    elseif targetkind == 'moduleonly' then
+    elseif target:is_moduleonly() then
         _add_target_moduleonly(cmakelists, target)
         return
     else
@@ -1113,7 +1112,7 @@ function _add_target(cmakelists, target, outputdir)
     -- add target warnings
     _add_target_warnings(cmakelists, target)
 
-    -- add target exceptions 
+    -- add target exceptions
     _add_target_exceptions(cmakelists, target)
 
     -- add target languages
