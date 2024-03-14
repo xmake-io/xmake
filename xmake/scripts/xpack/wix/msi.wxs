@@ -22,19 +22,13 @@
         <?if $(PackageIconFile) != "" ?>  
             <Icon Id="Icon.ico" SourceFile="$(PackageIconFile)"/>
         <?endif ?>
-        <MediaTemplate EmbedCab="yes" />
+        <MediaTemplate EmbedCab="true" />
         <ui:WixUI Id="WixUI_FeatureTree" InstallDirectory="INSTALLFOLDER" />
         <StandardDirectory Id="ProgramFiles6432Folder">
             <Directory Id="CompanyFolder" Name="$(PackageCompany)">
               <Directory Id="INSTALLFOLDER" Name="$(PackageName)"/>
             </Directory>
         </StandardDirectory>
-        <Feature Id="MainFeature" Title="$(PackageName)" Description="Installs all the files needed for $(PackageName)" Level="1" AllowAbsent="no" AllowAdvertise="no" ConfigurableDirectory="INSTALLFOLDER">
-            <Component Id="CreateFolder" Directory="INSTALLFOLDER">
-                ${PACKAGE_WIX_FILE_OPERATION_INSTALL}
-                ${PACKAGE_WIX_FILE_OPERATION_UNINSTALL}
-            </Component>
-            ${PACKAGE_INSTALLCMDS}
-        </Feature>
+        ${PACKAGE_CMDS}
     </Package>
 </Wix>

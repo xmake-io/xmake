@@ -55,19 +55,23 @@ function _translate_filepath(package, filepath)
     return path.relative(filepath, package:install_rootdir())
 end
 
-function _get_cp_command(package, cmd, opt)
-    opt = table.join(cmd.opt or {}, opt)
-    local result = {}
-    local kind = cmd.kind
+-- get a table where the key is a directory and the value a list of files
+function _get_cp_kind_table(package, cmds, opt)
 
-    if kind == "cp" then
+    local result = {}
+    for _, cmd in ipairs(cmds) do
+        if cmd.kind ~= "cp" then
+            goto continue
+        end
+        
+        local option = table.join(cmd.opt or {}, opt)
         local srcfiles = os.files(cmd.srcpath)
         for _, srcfile in ipairs(srcfiles) do
             -- the destination is directory? append the filename
             local dstfile = cmd.dstpath
             if #srcfiles > 1 or path.islastsep(dstfile) then
-                if opt.rootdir then
-                    dstfile = path.join(dstfile, path.relative(srcfile, opt.rootdir))
+                if option.rootdir then
+                    dstfile = path.join(dstfile, path.relative(srcfile, option.rootdir))
                 else
                     dstfile = path.join(dstfile, path.filename(srcfile))
                 end
@@ -75,16 +79,15 @@ function _get_cp_command(package, cmd, opt)
             srcfile = path.normalize(srcfile)
             local dstname = path.filename(dstfile)
             local dstdir = path.normalize(path.directory(dstfile))
-            local relative_dstdir = _translate_filepath(package, dstdir)
+            dstdir = _translate_filepath(package, dstdir)
 
-            local subdirectory = dstdir ~= package:install_rootdir() and string.format([[Subdirectory="%s"]], relative_dstdir) or ""
-            local component_string = string.format([[<Component Id="%s" Directory="INSTALLFOLDER" %s>"]], dstname, subdirectory)
-            local file_string = string.format([[<File Source="%s" Name="%s" KeyPath="yes"/>]], srcfile, dstname)
-
-            table.insert(result, component_string)
-            table.insert(result, file_string)
-            table.insert(result, "</Component>")
+            if result[dstdir] then
+                table.insert(result[dstdir], {srcfile, dstname})
+            else
+                result[dstdir] = {{srcfile, dstname}}
+            end
         end
+        ::continue::
     end
     return result
 end
@@ -119,53 +122,60 @@ function _get_other_commands(package, cmd, opt)
     return result
 end
 
--- get commands string
-function _get_commands_string(package, cmds, opt, func)
-    local cmdstrs = {}
-    for _, cmd in ipairs(cmds) do
-        table.join2(cmdstrs, func(package, cmd, opt))
-    end
-    return table.concat(cmdstrs, "\n  ")
+function _get_feature_string(name, opt)
+    local level = opt.default and 1 or 0
+    local description = opt.description or ""
+    local allow_absent = opt.force and "false" or "true"
+    local allow_advertise = opt.force and "false" or "true"
+    local typical_default = opt.force and [[TypicalDefault=install"]] or ""
+    local feature = string.format([[<Feature Id="%s" Title="%s" Description="%s" Level="%d" AllowAdvertise="%s" AllowAbsent="%s" %s ConfigurableDirectory="INSTALLFOLDER">]], name, name, description, level, allow_advertise, allow_absent, typical_default)
+    return feature
 end
 
--- get install commands
-function _get_installcmds(package)
-    return _get_commands_string(package, batchcmds.get_installcmds(package):cmds(), {install = true})
-end
+function _get_component_string(id, subdirectory)
+    local subdirectory = (subdirectory ~= ".") and string.format([[Subdirectory="%s"]], subdirectory) or "" 
+    return string.format([[<Component Id="%s" Guid="%s" Directory="INSTALLFOLDER" %s>]], id, hash.uuid(id), subdirectory)
+end 
 
--- get uninstall commands
-function _get_uninstallcmds(package)
-    return _get_commands_string(package, batchcmds.get_uninstallcmds(package):cmds(), {install = false})
-end
+function _build_feature(package, opt)
+    opt = opt or {}
+    local default = opt.default or package:get("default")
 
--- get install commands of component
-function _get_component_installcmds(component)
-    return _get_commands_string(component, batchcmds.get_installcmds(component):cmds(), {install = true})
-end
+    local result = {}
+    table.insert(result, _get_feature_string(package:title(), {default = default, force = opt.force, description = package:description()}))
 
--- get uninstall commands of component
-function _get_component_uninstallcmds(component)
-    return _get_commands_string(component, batchcmds.get_uninstallcmds(component):cmds(), {install = false})
-end
+    local installcmds = batchcmds.get_installcmds(package):cmds()
+    local uninstallcmds = batchcmds.get_uninstallcmds(package):cmds()
 
+    local cp_table = _get_cp_kind_table(package, installcmds, opt)
+
+    for dir, files in pairs(cp_table) do
+        local d = path.join(package:install_rootdir(), dir)
+        table.insert(result, _get_component_string(d:gsub(path.sep(), "_"), dir))
+        for _, file in ipairs(files) do
+            local srcfile = file[1]
+            local dstname = file[2]
+            table.insert(result, string.format([[<File Source="%s" Name="%s"/>]], srcfile, dstname))
+        end
+        table.insert(result, "</Component>")
+    end    
+
+    table.insert(result, _get_component_string("OtherCmds"))
+    table.insert(result, "</Component>")
+
+    table.insert(result, "</Feature>")
+    return result
+end
 -- get specvars
 function _get_specvars(package)
 
-    local specvars = table.clone(package:specvars())
-    -- install
     local installcmds = batchcmds.get_installcmds(package):cmds()
-    specvars.PACKAGE_INSTALLCMDS = function ()
-        return _get_commands_string(package, installcmds, {install = true}, _get_cp_command)
-    end
-    specvars.PACKAGE_WIX_FILE_OPERATION_INSTALL = function ()
-        return _get_commands_string(package, installcmds, {install = true}, _get_other_commands)
-    end
+    local specvars = table.clone(package:specvars())
 
-    -- uninstall
-    local uninstallcmds = batchcmds.get_uninstallcmds(package):cmds()
-    specvars.PACKAGE_WIX_FILE_OPERATION_UNINSTALL = function ()
-        return _get_commands_string(package, uninstallcmds, {install = false}, _get_other_commands)
-    end
+    local features = {}
+    table.join2(features, _build_feature(package, {default = true, force = true}))
+
+    specvars.PACKAGE_CMDS = table.concat(features, "\n  ")
 
     specvars.PACKAGE_WIX_UPGRADECODE = hash.uuid(package:name())
 
