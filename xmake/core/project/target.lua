@@ -233,9 +233,9 @@ function _instance:_invalidate(name)
     -- we need to flush the source files cache if target/files are modified, e.g. `target:add("files", "xxx.c")`
     if name == "files" then
         self._SOURCEFILES = nil
-        self._FILESCONFIG = nil
         self._OBJECTFILES = nil
         self._SOURCEBATCHES = nil
+        self:_memcache():set("filesconfig", nil)
         self:_update_filerules()
     elseif name == "deps" then
         self._DEPS = nil
@@ -1686,46 +1686,55 @@ function _instance:filerules(sourcefile)
 end
 
 -- get the config info of the given source file
-function _instance:fileconfig(sourcefile)
-    local filesconfig = self._FILESCONFIG
+function _instance:fileconfig(sourcefile, opt)
+    opt = opt or {}
+    local filetype = opt.filetype or "files"
+    local filesconfig = self:_memcache():get2("filesconfig", filetype)
     if not filesconfig then
         filesconfig = {}
-        for filepath, fileconfig in pairs(table.wrap(self:extraconf("files"))) do
-
-            -- match source files
+        for filepath, fileconfig in pairs(table.wrap(self:extraconf(filetype))) do
             local results = os.match(filepath)
-            if #results == 0 and not fileconfig.always_added then
-                local sourceinfo = self:sourceinfo("files", filepath) or {}
-                utils.warning("%s:%d${clear}: cannot match add_files(\"%s\") in %s(%s)", sourceinfo.file or "", sourceinfo.line or -1, filepath, self:type(), self:name())
-            end
-
-            -- process source files
-            for _, file in ipairs(results) do
-                if path.is_absolute(file) then
-                    file = path.relative(file, os.projectdir())
+            if #results > 0 then
+                for _, file in ipairs(results) do
+                    if path.is_absolute(file) then
+                        file = path.relative(file, os.projectdir())
+                    end
+                    filesconfig[file] = fileconfig
                 end
-                filesconfig[file] = fileconfig
-            end
-            -- we also need support always_added, @see https://github.com/xmake-io/xmake/issues/1634
-            if #results == 0 and fileconfig.always_added then
-                filesconfig[filepath] = fileconfig
+            else
+                -- we also need support always_added, @see https://github.com/xmake-io/xmake/issues/1634
+                if fileconfig.always_added then
+                    filesconfig[filepath] = fileconfig
+                end
             end
         end
-        self._FILESCONFIG = filesconfig
+        self:_memcache():set2("filesconfig", filetype, filesconfig)
     end
     return filesconfig[sourcefile]
 end
 
 -- set the config info to the given source file
-function _instance:fileconfig_set(sourcefile, info)
-    local filesconfig = self._FILESCONFIG or {}
+function _instance:fileconfig_set(sourcefile, info, opt)
+    opt = opt or {}
+    local filetype = opt.filetype or "files"
+    local filesconfig = self:_memcache():get2("filesconfig", filetype)
+    if not filesconfig then
+        filesconfig = {}
+        self:_memcache():set2("filesconfig", filetype, filesconfig)
+    end
     filesconfig[sourcefile] = info
-    self._FILESCONFIG = filesconfig
 end
 
 -- add the config info to the given source file
-function _instance:fileconfig_add(sourcefile, info)
-    local filesconfig = self._FILESCONFIG or {}
+function _instance:fileconfig_add(sourcefile, info, opt)
+    opt = opt or {}
+    local filetype = opt.filetype or "files"
+    local filesconfig = self:_memcache():get2("filesconfig", filetype)
+    if not filesconfig then
+        filesconfig = {}
+        self:_memcache():set2("filesconfig", filetype, filesconfig)
+    end
+
     local fileconfig = filesconfig[sourcefile]
     if fileconfig then
         for k, v in pairs(info) do
@@ -1752,7 +1761,6 @@ function _instance:fileconfig_add(sourcefile, info)
     else
         filesconfig[sourcefile] = info
     end
-    self._FILESCONFIG = filesconfig
 end
 
 -- get the source files
