@@ -37,7 +37,7 @@ rule("c++.build")
     on_config(function (target)
         -- we enable c++ exceptions by default
         if target:is_plat("windows") and not target:get("exceptions") then
-            target:set("exception", "cxx")
+            target:set("exceptions", "cxx")
         end
         -- https://github.com/xmake-io/xmake/issues/4621
         if target:is_plat("windows") and target:is_static() and target:has_tool("cxx", "tcc") then
