@@ -390,7 +390,7 @@ function xpack:_copiedfiles(filetype, outputdir)
     if not copiedfiles then return end
 
     -- get the extra information
-    local extrainfo = table.wrap(self:get("__extra_" .. filetype))
+    local extrainfo = table.wrap(self:extraconf(filetype))
 
     -- get the source paths and destinate paths
     local srcfiles = {}
