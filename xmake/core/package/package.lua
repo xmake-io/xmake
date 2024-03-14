@@ -749,7 +749,18 @@ function _instance:cachedir()
     if not cachedir then
         cachedir = self:get("cachedir")
         if not cachedir then
-            local name = self:name():lower():gsub("::", "_")
+            -- we need to use displayname (with package id) to avoid
+            -- multiple processes accessing it at the same time.
+            --
+            -- @see https://github.com/libbpf/libbpf-bootstrap/pull/259#issuecomment-1994914188
+            --
+            -- e.g.
+            --
+            -- lock elfutils#1 /home/runner/.xmake/cache/packages/2403/e/elfutils/0.189
+            -- lock elfutils /home/runner/.xmake/cache/packages/2403/e/elfutils/0.189
+            -- package(elfutils) is being accessed by other processes, please wait!
+            --
+            local name = self:displayname():lower():gsub("::", "_"):gsub("#", "_")
             local version_str = self:version_str()
             if self:is_thirdparty() then
                 -- strip `>= <=`
