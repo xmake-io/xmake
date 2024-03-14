@@ -99,6 +99,7 @@ end
 
 -- run application
 function application:run(...)
+    assert(curses.done, "ncurses not found, please install it first and reinstall xmake.")
 
     -- init runner
     local argv = {...}
