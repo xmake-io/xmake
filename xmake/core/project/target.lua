@@ -33,6 +33,7 @@ local baseoption      = require("base/option")
 local hashset         = require("base/hashset")
 local deprecated      = require("base/deprecated")
 local select_script   = require("base/private/select_script")
+local match_copyfiles = require("base/private/match_copyfiles")
 local instance_deps   = require("base/private/instance_deps")
 local is_cross        = require("base/private/is_cross")
 local memcache        = require("cache/memcache")
@@ -172,93 +173,6 @@ function _instance:_load_after()
     os.setenvs(oldenvs)
     self._LOADED_AFTER = true
     return true
-end
-
--- get the copied files
-function _instance:_copiedfiles(filetype, outputdir, pathfilter)
-
-    -- no copied files?
-    local copiedfiles = self:get(filetype)
-    if not copiedfiles then return end
-
-    -- get the extra information
-    local extrainfo = table.wrap(self:extraconf(filetype))
-
-    -- get the source paths and destinate paths
-    local srcfiles = {}
-    local dstfiles = {}
-    local fileinfos = {}
-    for _, copiedfile in ipairs(table.wrap(copiedfiles)) do
-
-        -- get the root directory
-        local rootdir, count = copiedfile:gsub("|.*$", ""):gsub("%(.*%)$", "")
-        if count == 0 then
-            rootdir = nil
-        end
-        if rootdir and rootdir:trim() == "" then
-            rootdir = "."
-        end
-
-        -- remove '(' and ')'
-        local srcpaths = copiedfile:gsub("[%(%)]", "")
-        if srcpaths then
-
-            -- get the source paths
-            srcpaths = os.match(srcpaths)
-            if srcpaths and #srcpaths > 0 then
-
-                -- add the source copied files
-                table.join2(srcfiles, srcpaths)
-
-                -- the copied directory exists?
-                if outputdir then
-
-                    -- get the file info
-                    local fileinfo = extrainfo[copiedfile] or {}
-
-                    -- get the prefix directory
-                    local prefixdir = fileinfo.prefixdir
-                    if fileinfo.rootdir then
-                        rootdir = fileinfo.rootdir
-                    end
-
-                    -- add the destinate copied files
-                    for _, srcpath in ipairs(srcpaths) do
-
-                        -- get the destinate directory
-                        local dstdir = outputdir
-                        if prefixdir then
-                            dstdir = path.join(dstdir, prefixdir)
-                        end
-
-                        -- the destinate file
-                        local dstfile = nil
-                        if rootdir then
-                            dstfile = path.absolute(path.relative(srcpath, rootdir), dstdir)
-                        else
-                            dstfile = path.join(dstdir, path.filename(srcpath))
-                        end
-                        assert(dstfile)
-
-                        -- modify filename
-                        if fileinfo.filename then
-                            dstfile = path.join(path.directory(dstfile), fileinfo.filename)
-                        end
-
-                        -- filter the destinate file path
-                        if pathfilter then
-                            dstfile = pathfilter(dstfile, fileinfo)
-                        end
-
-                        -- add it
-                        table.insert(dstfiles, dstfile)
-                        table.insert(fileinfos, fileinfo)
-                    end
-                end
-            end
-        end
-    end
-    return srcfiles, dstfiles, fileinfos
 end
 
 -- get the visibility, private: 1, interface: 2, public: 3 = 1 | 2
@@ -2023,135 +1937,50 @@ end
 
 -- get the header files
 function _instance:headerfiles(outputdir, opt)
-
-    -- get header files?
     opt = opt or {}
-    local headers = self:get("headerfiles")
+    local headerfiles = self:get("headerfiles")
     -- add_headerfiles("src/*.h", {install = false})
     -- @see https://github.com/xmake-io/xmake/issues/2577
     if opt.installonly then
        local installfiles = {}
-       for _, headerfile in ipairs(table.wrap(headers)) do
+       for _, headerfile in ipairs(table.wrap(headerfiles)) do
            if self:extraconf("headerfiles", headerfile, "install") ~= false then
                table.insert(installfiles, headerfile)
            end
        end
-       headers = installfiles
+       headerfiles = installfiles
     end
-    if not headers then
+    if not headerfiles then
         return
     end
 
-    -- get the installed header directory
     local headerdir = outputdir
     if not headerdir then
         if self:installdir() then
             headerdir = path.join(self:installdir(), "include")
         end
     end
-
-    -- get the extra information
-    local extrainfo = table.wrap(self:extraconf("headerfiles"))
-
-    -- get the source paths and destinate paths
-    local srcheaders = {}
-    local dstheaders = {}
-    local srcheaders_removed = {}
-    local removed_count = 0
-    for _, header in ipairs(table.wrap(headers)) do
-
-        -- mark as removed files?
-        local removed = false
-        local prefix = "__remove_"
-        if header:startswith(prefix) then
-            header = header:sub(#prefix + 1)
-            removed = true
-        end
-
-        -- get the root directory
-        local rootdir, count = header:gsub("|.*$", ""):gsub("%(.*%)$", "")
-        if count == 0 then
-            rootdir = nil
-        end
-        if rootdir and rootdir:trim() == "" then
-            rootdir = "."
-        end
-
-        -- remove '(' and ')' first
-        local srcpaths = header:gsub("[%(%)]", "")
-        if srcpaths then
-
-            -- get the source paths
-            srcpaths = os.match(srcpaths)
-            if srcpaths then
-                if removed then
-                    removed_count = removed_count + #srcpaths
-                    table.join2(srcheaders_removed, srcpaths)
-                else
-                    -- add the source headers
-                    table.join2(srcheaders, srcpaths)
-
-                    -- get the destinate directories if the install directory exists
-                    if headerdir then
-                        local prefixdir = (extrainfo[header] or {}).prefixdir
-                        for _, srcpath in ipairs(srcpaths) do
-                            local dstdir = headerdir
-                            if prefixdir then
-                                dstdir = path.join(dstdir, prefixdir)
-                            end
-                            local dstheader = nil
-                            if rootdir then
-                                dstheader = path.absolute(path.relative(srcpath, rootdir), dstdir)
-                            else
-                                dstheader = path.join(dstdir, path.filename(srcpath))
-                            end
-                            table.insert(dstheaders, dstheader)
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    -- remove all header files which need be removed
-    if removed_count > 0 then
-        table.remove_if(srcheaders, function (i, srcheader)
-            for _, removed_file in ipairs(srcheaders_removed) do
-                local pattern = path.translate((removed_file:gsub("|.*$", "")))
-                if pattern:sub(1, 2):find('%.[/\\]') then
-                    pattern = pattern:sub(3)
-                end
-                pattern = path.pattern(pattern)
-                if srcheader:match(pattern) then
-                    if i <= #dstheaders then
-                        table.remove(dstheaders, i)
-                    end
-                    return true
-                end
-            end
-        end)
-    end
-    return srcheaders, dstheaders
+    return match_copyfiles(self, "headerfiles", headerdir, {copyfiles = headerfiles})
 end
 
 -- get the configuration files
 function _instance:configfiles(outputdir)
-    return self:_copiedfiles("configfiles", outputdir or self:configdir(), function (dstpath, fileinfo)
+    return match_copyfiles(self, "configfiles", outputdir or self:configdir(), {pathfilter = function (dstpath, fileinfo)
             if dstpath:endswith(".in") then
                 dstpath = dstpath:sub(1, -4)
             end
             return dstpath
-        end)
+        end})
 end
 
 -- get the install files
 function _instance:installfiles(outputdir)
-    return self:_copiedfiles("installfiles", outputdir or self:installdir())
+    return match_copyfiles(self, "installfiles", outputdir or self:installdir())
 end
 
 -- get the extra files
 function _instance:extrafiles()
-    return (self:_copiedfiles("extrafiles"))
+    return (match_copyfiles(self, "extrafiles"))
 end
 
 -- get depend file from object file
@@ -2877,6 +2706,9 @@ function target.apis()
             -- target.remove_xxx
         ,   "target.remove_files"
         ,   "target.remove_headerfiles"
+        ,   "target.remove_configfiles"
+        ,   "target.remove_installfiles"
+        ,   "target.remove_extrafiles"
         }
     ,   script =
         {
