@@ -2026,7 +2026,7 @@ function _instance:headerfiles(outputdir, opt)
 
     -- get header files?
     opt = opt or {}
-    local headers = table.join(headers or {}, self:get("headerfiles"))
+    local headers = self:get("headerfiles")
     -- add_headerfiles("src/*.h", {install = false})
     -- @see https://github.com/xmake-io/xmake/issues/2577
     if opt.installonly then
