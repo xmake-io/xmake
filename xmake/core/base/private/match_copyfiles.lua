@@ -31,11 +31,14 @@ local os    = require("base/os")
 -- add_configfiles
 -- add_installfiles
 -- add_extrafiles
-function match_copyfiles(instance, filetype, outputdir, pathfilter)
+function match_copyfiles(instance, filetype, outputdir, opt)
+    opt = opt or {}
 
-    -- no copied files?
-    local copyfiles = instance:get(filetype)
-    if not copyfiles then return end
+    -- get copyfiles?
+    local copyfiles = opt.copyfiles or instance:get(filetype)
+    if not copyfiles then
+        return
+    end
 
     -- get the extra information
     local extrainfo = table.wrap(instance:extraconf(filetype))
@@ -44,7 +47,17 @@ function match_copyfiles(instance, filetype, outputdir, pathfilter)
     local srcfiles = {}
     local dstfiles = {}
     local fileinfos = {}
+    local srcfiles_removed = {}
+    local removed_count = 0
     for _, copyfile in ipairs(table.wrap(copyfiles)) do
+
+        -- mark as removed files?
+        local removed = false
+        local prefix = "__remove_"
+        if copyfile:startswith(prefix) then
+            copyfile = copyfile:sub(#prefix + 1)
+            removed = true
+        end
 
         -- get the root directory
         local rootdir, count = copyfile:gsub("|.*$", ""):gsub("%(.*%)$", "")
@@ -62,57 +75,81 @@ function match_copyfiles(instance, filetype, outputdir, pathfilter)
             -- get the source paths
             srcpaths = os.match(srcpaths)
             if srcpaths and #srcpaths > 0 then
+                if removed then
+                    removed_count = removed_count + #srcpaths
+                    table.join2(srcfiles_removed, srcpaths)
+                else
 
-                -- add the source copied files
-                table.join2(srcfiles, srcpaths)
+                    -- add the source copied files
+                    table.join2(srcfiles, srcpaths)
 
-                -- the copied directory exists?
-                if outputdir then
+                    -- the copied directory exists?
+                    if outputdir then
 
-                    -- get the file info
-                    local fileinfo = extrainfo[copyfile] or {}
+                        -- get the file info
+                        local fileinfo = extrainfo[copyfile] or {}
 
-                    -- get the prefix directory
-                    local prefixdir = fileinfo.prefixdir
-                    if fileinfo.rootdir then
-                        rootdir = fileinfo.rootdir
-                    end
-
-                    -- add the destinate copied files
-                    for _, srcpath in ipairs(srcpaths) do
-
-                        -- get the destinate directory
-                        local dstdir = outputdir
-                        if prefixdir then
-                            dstdir = path.join(dstdir, prefixdir)
+                        -- get the prefix directory
+                        local prefixdir = fileinfo.prefixdir
+                        if fileinfo.rootdir then
+                            rootdir = fileinfo.rootdir
                         end
 
-                        -- the destinate file
-                        local dstfile = nil
-                        if rootdir then
-                            dstfile = path.absolute(path.relative(srcpath, rootdir), dstdir)
-                        else
-                            dstfile = path.join(dstdir, path.filename(srcpath))
-                        end
-                        assert(dstfile)
+                        -- add the destinate copied files
+                        for _, srcpath in ipairs(srcpaths) do
 
-                        -- modify filename
-                        if fileinfo.filename then
-                            dstfile = path.join(path.directory(dstfile), fileinfo.filename)
-                        end
+                            -- get the destinate directory
+                            local dstdir = outputdir
+                            if prefixdir then
+                                dstdir = path.join(dstdir, prefixdir)
+                            end
 
-                        -- filter the destinate file path
-                        if pathfilter then
-                            dstfile = pathfilter(dstfile, fileinfo)
-                        end
+                            -- the destinate file
+                            local dstfile = nil
+                            if rootdir then
+                                dstfile = path.absolute(path.relative(srcpath, rootdir), dstdir)
+                            else
+                                dstfile = path.join(dstdir, path.filename(srcpath))
+                            end
+                            assert(dstfile)
 
-                        -- add it
-                        table.insert(dstfiles, dstfile)
-                        table.insert(fileinfos, fileinfo)
+                            -- modify filename
+                            if fileinfo.filename then
+                                dstfile = path.join(path.directory(dstfile), fileinfo.filename)
+                            end
+
+                            -- filter the destinate file path
+                            if opt.pathfilter then
+                                dstfile = opt.pathfilter(dstfile, fileinfo)
+                            end
+
+                            -- add it
+                            table.insert(dstfiles, dstfile)
+                            table.insert(fileinfos, fileinfo)
+                        end
                     end
                 end
             end
         end
+    end
+
+    -- remove all srcfiles which need be removed
+    if removed_count > 0 then
+        table.remove_if(srcfiles, function (i, srcfile)
+            for _, removed_file in ipairs(srcfiles_removed) do
+                local pattern = path.translate((removed_file:gsub("|.*$", "")))
+                if pattern:sub(1, 2):find('%.[/\\]') then
+                    pattern = pattern:sub(3)
+                end
+                pattern = path.pattern(pattern)
+                if srcfile:match(pattern) then
+                    if i <= #dstfiles then
+                        table.remove(dstfiles, i)
+                    end
+                    return true
+                end
+            end
+        end)
     end
     return srcfiles, dstfiles, fileinfos
 end

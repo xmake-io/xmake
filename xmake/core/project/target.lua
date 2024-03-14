@@ -1937,125 +1937,40 @@ end
 
 -- get the header files
 function _instance:headerfiles(outputdir, opt)
-
-    -- get header files?
     opt = opt or {}
-    local headers = self:get("headerfiles")
+    local headerfiles = self:get("headerfiles")
     -- add_headerfiles("src/*.h", {install = false})
     -- @see https://github.com/xmake-io/xmake/issues/2577
     if opt.installonly then
        local installfiles = {}
-       for _, headerfile in ipairs(table.wrap(headers)) do
+       for _, headerfile in ipairs(table.wrap(headerfiles)) do
            if self:extraconf("headerfiles", headerfile, "install") ~= false then
                table.insert(installfiles, headerfile)
            end
        end
-       headers = installfiles
+       headerfiles = installfiles
     end
-    if not headers then
+    if not headerfiles then
         return
     end
 
-    -- get the installed header directory
     local headerdir = outputdir
     if not headerdir then
         if self:installdir() then
             headerdir = path.join(self:installdir(), "include")
         end
     end
-
-    -- get the extra information
-    local extrainfo = table.wrap(self:extraconf("headerfiles"))
-
-    -- get the source paths and destinate paths
-    local srcheaders = {}
-    local dstheaders = {}
-    local srcheaders_removed = {}
-    local removed_count = 0
-    for _, header in ipairs(table.wrap(headers)) do
-
-        -- mark as removed files?
-        local removed = false
-        local prefix = "__remove_"
-        if header:startswith(prefix) then
-            header = header:sub(#prefix + 1)
-            removed = true
-        end
-
-        -- get the root directory
-        local rootdir, count = header:gsub("|.*$", ""):gsub("%(.*%)$", "")
-        if count == 0 then
-            rootdir = nil
-        end
-        if rootdir and rootdir:trim() == "" then
-            rootdir = "."
-        end
-
-        -- remove '(' and ')' first
-        local srcpaths = header:gsub("[%(%)]", "")
-        if srcpaths then
-
-            -- get the source paths
-            srcpaths = os.match(srcpaths)
-            if srcpaths then
-                if removed then
-                    removed_count = removed_count + #srcpaths
-                    table.join2(srcheaders_removed, srcpaths)
-                else
-                    -- add the source headers
-                    table.join2(srcheaders, srcpaths)
-
-                    -- get the destinate directories if the install directory exists
-                    if headerdir then
-                        local prefixdir = (extrainfo[header] or {}).prefixdir
-                        for _, srcpath in ipairs(srcpaths) do
-                            local dstdir = headerdir
-                            if prefixdir then
-                                dstdir = path.join(dstdir, prefixdir)
-                            end
-                            local dstheader = nil
-                            if rootdir then
-                                dstheader = path.absolute(path.relative(srcpath, rootdir), dstdir)
-                            else
-                                dstheader = path.join(dstdir, path.filename(srcpath))
-                            end
-                            table.insert(dstheaders, dstheader)
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    -- remove all header files which need be removed
-    if removed_count > 0 then
-        table.remove_if(srcheaders, function (i, srcheader)
-            for _, removed_file in ipairs(srcheaders_removed) do
-                local pattern = path.translate((removed_file:gsub("|.*$", "")))
-                if pattern:sub(1, 2):find('%.[/\\]') then
-                    pattern = pattern:sub(3)
-                end
-                pattern = path.pattern(pattern)
-                if srcheader:match(pattern) then
-                    if i <= #dstheaders then
-                        table.remove(dstheaders, i)
-                    end
-                    return true
-                end
-            end
-        end)
-    end
-    return srcheaders, dstheaders
+    return match_copyfiles(self, "headerfiles", headerdir, {copyfiles = headerfiles})
 end
 
 -- get the configuration files
 function _instance:configfiles(outputdir)
-    return match_copyfiles(self, "configfiles", outputdir or self:configdir(), function (dstpath, fileinfo)
+    return match_copyfiles(self, "configfiles", outputdir or self:configdir(), {pathfilter = function (dstpath, fileinfo)
             if dstpath:endswith(".in") then
                 dstpath = dstpath:sub(1, -4)
             end
             return dstpath
-        end)
+        end})
 end
 
 -- get the install files
