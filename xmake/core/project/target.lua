@@ -2706,6 +2706,9 @@ function target.apis()
             -- target.remove_xxx
         ,   "target.remove_files"
         ,   "target.remove_headerfiles"
+        ,   "target.remove_configfiles"
+        ,   "target.remove_installfiles"
+        ,   "target.remove_extrafiles"
         }
     ,   script =
         {
