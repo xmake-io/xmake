@@ -235,12 +235,14 @@ function _instance:_invalidate(name)
         self._SOURCEFILES = nil
         self._OBJECTFILES = nil
         self._SOURCEBATCHES = nil
-        self:_memcache():set("filesconfig", nil)
         self:_update_filerules()
     elseif name == "deps" then
         self._DEPS = nil
         self._ORDERDEPS = nil
         self._INHERITDEPS = nil
+    end
+    if self._FILESCONFIG then
+        self._FILESCONFIG[name] = nil
     end
 end
 
@@ -1689,7 +1691,19 @@ end
 function _instance:fileconfig(sourcefile, opt)
     opt = opt or {}
     local filetype = opt.filetype or "files"
-    local filesconfig = self:_memcache():get2("filesconfig", filetype)
+
+    -- get configs from user, e.g. target:fileconfig_set/add
+    -- it has contained all original configs
+    if self._FILESCONFIG_USER then
+        local filesconfig = self._FILESCONFIG_USER[filetype]
+        if filesconfig and filesconfig[sourcefile] then
+            return filesconfig[sourcefile]
+        end
+    end
+
+    -- get orignal configs from `add_xxxfiles()`
+    self._FILESCONFIG = self._FILESCONFIG or {}
+    local filesconfig = self._FILESCONFIG[filetype]
     if not filesconfig then
         filesconfig = {}
         for filepath, fileconfig in pairs(table.wrap(self:extraconf(filetype))) do
@@ -1708,7 +1722,7 @@ function _instance:fileconfig(sourcefile, opt)
                 end
             end
         end
-        self:_memcache():set2("filesconfig", filetype, filesconfig)
+        self._FILESCONFIG[filetype] = filesconfig
     end
     return filesconfig[sourcefile]
 end
@@ -1716,11 +1730,12 @@ end
 -- set the config info to the given source file
 function _instance:fileconfig_set(sourcefile, info, opt)
     opt = opt or {}
+    self._FILESCONFIG_USER = self._FILESCONFIG_USER or {}
     local filetype = opt.filetype or "files"
-    local filesconfig = self:_memcache():get2("filesconfig", filetype)
+    local filesconfig = self._FILESCONFIG_USER[filetype]
     if not filesconfig then
         filesconfig = {}
-        self:_memcache():set2("filesconfig", filetype, filesconfig)
+        self._FILESCONFIG_USER[filetype] = filesconfig
     end
     filesconfig[sourcefile] = info
 end
@@ -1728,14 +1743,20 @@ end
 -- add the config info to the given source file
 function _instance:fileconfig_add(sourcefile, info, opt)
     opt = opt or {}
+    self._FILESCONFIG_USER = self._FILESCONFIG_USER or {}
     local filetype = opt.filetype or "files"
-    local filesconfig = self:_memcache():get2("filesconfig", filetype)
+    local filesconfig = self._FILESCONFIG_USER[filetype]
     if not filesconfig then
         filesconfig = {}
-        self:_memcache():set2("filesconfig", filetype, filesconfig)
+        self._FILESCONFIG_USER[filetype] = filesconfig
     end
 
+    -- we fetch orignal configs first if no user configs
     local fileconfig = filesconfig[sourcefile]
+    if not filesconfig then
+        fileconfig = table.clone(self:fileconfig(sourcefile, opt))
+        filesconfig[sourcefile] = fileconfig
+    end
     if fileconfig then
         for k, v in pairs(info) do
             if k == "force" then
