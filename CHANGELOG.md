@@ -8,6 +8,7 @@
 * [#4772](https://github.com/xmake-io/xmake/issues/4772): Improve tools.cmake to support vs2022 preview (v144)
 * [#4813](https://github.com/xmake-io/xmake/issues/4813): Add gb2312 encoding
 * [#4864](https://github.com/xmake-io/xmake/issues/4864): Improve to extract symbols for gdb
+* [#4831](https://github.com/xmake-io/xmake/issues/4831): Allow target:fileconfig() for headerfiles
 
 ### Bugs Fixed
 
@@ -1762,6 +1763,7 @@
 * [#4772](https://github.com/xmake-io/xmake/issues/4772): 改进 tools.cmake 去兼容支持 vs2022 preview (v144)
 * [#4813](https://github.com/xmake-io/xmake/issues/4813): 添加 gb2312 编码
 * [#4864](https://github.com/xmake-io/xmake/issues/4864): 改进抽取符号，支持 gdb 断点调试
+* [#4831](https://github.com/xmake-io/xmake/issues/4831): 改进 target:fileconfig() 支持 headerfiles
 
 ### Bugs 修复
 
