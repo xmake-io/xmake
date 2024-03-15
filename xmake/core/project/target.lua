@@ -1753,7 +1753,7 @@ function _instance:fileconfig_add(sourcefile, info, opt)
 
     -- we fetch orignal configs first if no user configs
     local fileconfig = filesconfig[sourcefile]
-    if not filesconfig then
+    if not fileconfig then
         fileconfig = table.clone(self:fileconfig(sourcefile, opt))
         filesconfig[sourcefile] = fileconfig
     end
