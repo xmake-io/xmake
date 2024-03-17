@@ -18,6 +18,7 @@
 -- @file        xmake.lua
 --
 
+includes("@builtin/check/check_bigendian.lua")
 includes("@builtin/check/check_cflags.lua")
 includes("@builtin/check/check_cfuncs.lua")
 includes("@builtin/check/check_cincludes.lua")

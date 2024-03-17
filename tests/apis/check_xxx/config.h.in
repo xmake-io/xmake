@@ -19,6 +19,7 @@ ${define HAS_C_STD_11}
 ${define HAS_C_STD_17}
 ${define HAS_GCC}
 ${define HAS_CXX20}
+${define IS_BIG_ENDIAN}
 ${define NO_GCC}
 ${define PTR_SIZE}
 ${define HAVE_VISIBILITY}

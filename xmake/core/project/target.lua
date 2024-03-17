@@ -2600,6 +2600,18 @@ function _instance:check_sizeof(typename, opt)
     return sandbox_module.import("lib.detect.check_sizeof", {anonymous = true})(typename, opt)
 end
 
+-- check the endianness of compiler
+--
+-- @param opt       the argument options, e.g. {includes = "xxx.h", configs = {defines = ""}}
+--
+-- @return          the type size
+--
+function _instance:check_bigendian(opt)
+  opt = opt or {}
+  opt.target = self:_checked_target()
+  return sandbox_module.import("lib.detect.check_bigendian", {anonymous = true})(opt)
+end
+
 -- check the given c snippets?
 --
 -- @param snippets  the snippets
