@@ -84,7 +84,7 @@ function _get_std_module_manifest_path(target)
     if print_module_manifest_flag then
         local compinst = target:compiler("cxx")
         local outdata, _ = try { function() return os.iorunv(compinst:program(), {print_module_manifest_flag}, {envs = compinst:runenvs()}) end }
-        if outdata then
+        if outdata and outdata ~= "<NOT PRESENT>" then
             return outdata:trim()
         end
     end
