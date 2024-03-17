@@ -83,8 +83,8 @@ function _get_std_module_manifest_path(target)
     local print_module_manifest_flag = get_print_library_module_manifest_path_flag(target)
     if print_module_manifest_flag then
         local compinst = target:compiler("cxx")
-        local outdata, _ = try { function() return os.iorunv(compinst:program(), {print_module_manifest_flag}, {envs = compinst:runenvs()}) end }
-        if outdata and outdata ~= "<NOT PRESENT>" then
+        local outdata, _ = try { function() return os.iorunv(compinst:program(), {"-std=c++23", "-stdlib=libc++", print_module_manifest_flag}, {envs = compinst:runenvs()}) end }
+        if outdata and not outdata:startswith("<NOT PRESENT>") then
             return outdata:trim()
         end
     end
