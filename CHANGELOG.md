@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#4843](https://github.com/xmake-io/xmake/issues/4843): Endianness/Byte-order detection on build machine
+
 ### Changes
 
 * [#4798](https://github.com/xmake-io/xmake/issues/4798): Improve wasi sdk detect
@@ -1756,6 +1760,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#4843](https://github.com/xmake-io/xmake/issues/4843): 添加 check_bigendian 接口实现大小端探测
 
 ### 改进
 
