@@ -299,7 +299,7 @@ function main(targetnames, group_pattern)
             if errors and progress.showing_without_scroll() then
                 print("")
             end
-        end, comax = option.get("jobs") or 1, curdir = curdir, count_as_index = true, distcc = distcc})
+        end, comax = option.get("jobs") or 1, curdir = curdir, distcc = distcc})
         os.cd(curdir)
     end
 end
