@@ -13,6 +13,7 @@
 * [#4813](https://github.com/xmake-io/xmake/issues/4813): Add gb2312 encoding
 * [#4864](https://github.com/xmake-io/xmake/issues/4864): Improve to extract symbols for gdb
 * [#4831](https://github.com/xmake-io/xmake/issues/4831): Allow target:fileconfig() for headerfiles
+* [#4846](https://github.com/xmake-io/xmake/issues/4846): Improve to show progress
 
 ### Bugs Fixed
 
@@ -1772,6 +1773,7 @@
 * [#4813](https://github.com/xmake-io/xmake/issues/4813): 添加 gb2312 编码
 * [#4864](https://github.com/xmake-io/xmake/issues/4864): 改进抽取符号，支持 gdb 断点调试
 * [#4831](https://github.com/xmake-io/xmake/issues/4831): 改进 target:fileconfig() 支持 headerfiles
+* [#4846](https://github.com/xmake-io/xmake/issues/4846): 改进进度显示，解决顺序错乱问题
 
 ### Bugs 修复
 
