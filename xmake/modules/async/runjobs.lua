@@ -40,12 +40,12 @@ end
 -- runjobs("test", function () os.sleep(10000) end, { progress = { chars = {'/','\'} } }) -- see module utils.progress
 --
 -- local jobs = jobpool.new()
--- local root = jobs:addjob("job/root", function (index, total)
---   print(index, total)
+-- local root = jobs:addjob("job/root", function (index, total, opt)
+--   print(index, total, opt.progress)
 -- end)
 -- for i = 1, 3 do
---     local job = jobs:addjob("job/" .. i, function (index, total)
---         print(index, total)
+--     local job = jobs:addjob("job/" .. i, function (index, total, opt)
+--         print(index, total, opt.progress)
 --     end, {rootjob = root})
 -- end
 -- runjobs("test", jobs, {comax = 6, timeout = 1000, on_timer = function (running_jobs_indices) end})
@@ -252,8 +252,8 @@ function main(name, jobs, opt)
                                 if opt.curdir then
                                     os.cd(opt.curdir)
                                 end
-                                jobfunc(i, total, {progress = progress_wrapper})
                                 count = count + 1
+                                jobfunc(i, total, {progress = progress_wrapper})
                             end
                             running_jobs_indices[i] = nil
                         end,

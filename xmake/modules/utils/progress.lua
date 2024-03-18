@@ -75,7 +75,7 @@ end
 
 -- show the message with progress
 function show(progress, format, ...)
-    progress = math.floor(progress)
+    progress = type(progress) == "table" and progress:percent() or math.floor(progress)
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if option.get("verbose") then
         cprint(progress_prefix .. "${dim}" .. format, progress, ...)
@@ -114,7 +114,7 @@ end
 
 -- get the message text with progress
 function text(progress, format, ...)
-    progress = math.floor(progress)
+    progress = type(progress) == "table" and progress:percent() or math.floor(progress)
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if option.get("verbose") then
         return string.format(progress_prefix .. "${dim}" .. format, progress, ...)

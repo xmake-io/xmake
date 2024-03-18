@@ -100,8 +100,8 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
         if ruleinst:extraconf(scriptname, "batch") then
             script(target, batchjobs, sourcebatch, {rootjob = rootjob, distcc = ruleinst:extraconf(scriptname, "distcc")})
         else
-            batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total)
-                script(target, sourcebatch, {progress = (index * 100) / total})
+            batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total, opt)
+                script(target, sourcebatch, {progress = opt.progress})
             end, {rootjob = rootjob})
         end
     end
@@ -113,8 +113,8 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
         if script then
             local sourcekind = sourcebatch.sourcekind
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                batchjobs:addjob(sourcefile, function (index, total)
-                    script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
+                batchjobs:addjob(sourcefile, function (index, total, opt)
+                    script(target, sourcefile, {sourcekind = sourcekind, progress = opt.progress})
                 end, {rootjob = rootjob, distcc = ruleinst:extraconf(scriptname, "distcc")})
             end
         end
@@ -125,10 +125,10 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
         scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
         script = ruleinst:script(scriptname)
         if script then
-            batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total)
+            batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total, opt)
                 local batchcmds_ = batchcmds.new({target = target})
                 local distcc = ruleinst:extraconf(scriptname, "distcc")
-                script(target, batchcmds_, sourcebatch, {progress = (index * 100) / total, distcc = distcc})
+                script(target, batchcmds_, sourcebatch, {progress = opt.progress, distcc = distcc})
                 batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
             end, {rootjob = rootjob})
         end
@@ -141,9 +141,9 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
         if script then
             local sourcekind = sourcebatch.sourcekind
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                batchjobs:addjob(sourcefile, function (index, total)
+                batchjobs:addjob(sourcefile, function (index, total, opt)
                     local batchcmds_ = batchcmds.new({target = target})
-                    script(target, batchcmds_, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
+                    script(target, batchcmds_, sourcefile, {sourcekind = sourcekind, progress = opt.progress})
                     batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
                 end, {rootjob = rootjob, distcc = ruleinst:extraconf(scriptname, "distcc")})
             end
@@ -177,8 +177,8 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suff
         if target:extraconf(scriptname, "batch") then
             script(target, batchjobs, sourcebatch, {rootjob = rootjob, distcc = target:extraconf(scriptname, "distcc")})
         else
-            batchjobs:addjob(target:name() .. "/" .. scriptname, function (index, total)
-                script(target, sourcebatch, {progress = (index * 100) / total})
+            batchjobs:addjob(target:name() .. "/" .. scriptname, function (index, total, opt)
+                script(target, sourcebatch, {progress = opt.progress})
             end, {rootjob = rootjob})
         end
         return true
@@ -188,8 +188,8 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suff
         if script then
             local sourcekind = sourcebatch.sourcekind
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                batchjobs:addjob(sourcefile, function (index, total)
-                    script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
+                batchjobs:addjob(sourcefile, function (index, total, opt)
+                    script(target, sourcefile, {sourcekind = sourcekind, progress = opt.progress})
                 end, {rootjob = rootjob, distcc = target:extraconf(scriptname, "distcc")})
             end
             return true

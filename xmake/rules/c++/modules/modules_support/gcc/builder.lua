@@ -183,7 +183,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
         name = job_name,
         deps = table.join(target:name() .. "_populate_module_map", deps),
         sourcefile = opt.cppfile,
-        job = batchjobs:newjob(name or opt.cppfile, function(index, total)
+        job = batchjobs:newjob(name or opt.cppfile, function(index, total, jobopt)
             local mapped_bmi
             if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
                 if not target:is_binary() then
@@ -220,18 +220,18 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                     local sourcefile
                     if target:is_binary() then
                         if mapped_bmi then
-                            progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
+                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
                             sourcefile = bmifile
                         else
-                            progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
                             sourcefile = opt.cppfile
                         end
                     else
                         if (not public and not external) or (external and private_dep) then
-                            progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
                             sourcefile = opt.cppfile
                         else
-                            progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
                             local module_onlyflag = compiler_support.get_moduleonlyflag(target)
                             table.insert(flags, module_onlyflag)
                             sourcefile = opt.cppfile
@@ -333,7 +333,7 @@ function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmif
         return {
             name = job_name,
             sourcefile = headerunit.path,
-            job = batchjobs:newjob(job_name, function(index, total)
+            job = batchjobs:newjob(job_name, function(index, total, jobopt)
                 if not os.isdir(outputdir) then
                     os.mkdir(outputdir)
                 end
@@ -348,7 +348,7 @@ function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmif
 
                 if opt.build then
                     local headerunit_mapper = _generate_headerunit_modulemapper_file({name = path.normalize(headerunit.path), bmifile = bmifile})
-                    progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
+                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
                     if option.get("diagnosis") then
                         print("mapper file:\n%s", io.readfile(headerunit_mapper))
                     end

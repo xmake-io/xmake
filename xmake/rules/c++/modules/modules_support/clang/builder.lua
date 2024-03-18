@@ -204,7 +204,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
         name = job_name,
         deps = table.join(target:name() .. "_populate_module_map", deps),
         sourcefile = opt.cppfile,
-        job = batchjobs:newjob(name or opt.cppfile, function(index, total)
+        job = batchjobs:newjob(name or opt.cppfile, function(index, total, jobopt)
             local mapped_bmi
             if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
                 if not target:is_binary() then
@@ -252,18 +252,18 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                     local bmifile = mapped_bmi or bmifile
                     if target:is_binary() then
                         if mapped_bmi then
-                            progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
+                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
                             _compile_objectfile_step(target, bmifile, opt.cppfile, opt.objectfile)
                         else
-                            progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
                             _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {std = (name == "std" or name == "std.compat")})
                         end
                     else
                         if (not public and not external) or (external and private_dep) then
-                            progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
                             _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {std = (name == "std" or name == "std.compat")})
                         else
-                            progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
                             _compile_bmi_step(target, bmifile, opt.cppfile, {std = (name == "std" or name == "std.compat")})
                         end
                     end
@@ -352,7 +352,7 @@ function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmif
         return {
             name = job_name,
             sourcefile = headerunit.path,
-            job = batchjobs:newjob(job_name, function(index, total)
+            job = batchjobs:newjob(job_name, function(index, total, jobopt)
                 if not os.isdir(outputdir) then
                     os.mkdir(outputdir)
                 end
@@ -366,7 +366,7 @@ function make_headerunit_buildjobs(target, job_name, batchjobs, headerunit, bmif
                 local depvalues = {compinst:program(), compflags}
 
                 if opt.build then
-                    progress.show((index * 100) / total, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
+                    progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.headerunit.$(mode) %s", target:name(), headerunit.name)
                     _compile(target, _make_headerunitflags(target, headerunit, bmifile), headerunit.path, bmifile)
                 end
 
