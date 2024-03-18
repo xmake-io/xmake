@@ -1,5 +1,5 @@
 add_rules("mode.debug", "mode.release")
-add_requires("zig 0.9.x")
+add_requires("zig")
 
 target("test")
     set_kind("binary")
