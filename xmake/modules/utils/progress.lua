@@ -26,10 +26,10 @@ import("core.base.tty")
 import("core.theme.theme")
 
 -- define module
-local process = process or object { _init = { "_RUNNING", "_INDEX", "_STREAM", "_OPT" } }
+local progress = progress or object { _init = { "_RUNNING", "_INDEX", "_STREAM", "_OPT" } }
 
 -- stop the progress indicator, clear written frames
-function process:stop()
+function progress:stop()
     if self._RUNNING ~= 0 then
         self:clear()
         self._RUNNING = 0
@@ -37,7 +37,7 @@ function process:stop()
     end
 end
 
-function process:_clear()
+function progress:_clear()
     if self._RUNNING == 1 then
         tty.erase_line_to_end()
         self._RUNNING = 2
@@ -46,14 +46,14 @@ function process:_clear()
 end
 
 -- clear previous frame of the progress indicator
-function process:clear()
+function progress:clear()
     if self:_clear() then
         self._STREAM:flush()
     end
 end
 
 -- write next frame of the progress indicator
-function process:write()
+function progress:write()
     local chars = self._OPT.chars[self._INDEX % #self._OPT.chars + 1]
     tty.cursor_and_attrs_save()
     self._STREAM:write(chars)
@@ -64,7 +64,7 @@ function process:write()
 end
 
 -- check if the progress indicator is running
-function process:running()
+function progress:running()
     return self._RUNNING and true or false
 end
 
@@ -73,9 +73,9 @@ function showing_without_scroll()
     return _g.showing_without_scroll
 end
 
--- show the message with process
+-- show the message with progress
 function show(progress, format, ...)
-    progress = math.floor(progress)
+    progress = type(progress) == "table" and progress:percent() or math.floor(progress)
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if option.get("verbose") then
         cprint(progress_prefix .. "${dim}" .. format, progress, ...)
@@ -112,9 +112,9 @@ function show(progress, format, ...)
     end
 end
 
--- get the message text with process
+-- get the message text with progress
 function text(progress, format, ...)
-    progress = math.floor(progress)
+    progress = type(progress) == "table" and progress:percent() or math.floor(progress)
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if option.get("verbose") then
         return string.format(progress_prefix .. "${dim}" .. format, progress, ...)
@@ -135,5 +135,5 @@ function new(stream, opt)
     if opt.chars == nil or #opt.chars == 0 then
         opt.chars = theme.get("text.spinner.chars")
     end
-    return process {_OPT = opt, _STREAM = stream, _RUNNING = 0, _INDEX = 0}
+    return progress {_OPT = opt, _STREAM = stream, _RUNNING = 0, _INDEX = 0}
 end

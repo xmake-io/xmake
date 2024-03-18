@@ -48,16 +48,16 @@ function _add_batchjobs_builtin(batchjobs, rootjob, target)
             if r:extraconf("build", "batch") then
                 job, job_leaf = assert(script(target, batchjobs, {rootjob = job or rootjob}), "rule(%s):on_build(): no returned job!", r:name())
             else
-                job = batchjobs:addjob("rule/" .. r:name() .. "/build", function (index, total)
-                    script(target, {progress = (index * 100) / total})
+                job = batchjobs:addjob("rule/" .. r:name() .. "/build", function (index, total, opt)
+                    script(target, {progress = opt.progress})
                 end, {rootjob = job or rootjob})
             end
         else
             local buildcmd = r:script("buildcmd")
             if buildcmd then
-                job = batchjobs:addjob("rule/" .. r:name() .. "/build", function (index, total)
+                job = batchjobs:addjob("rule/" .. r:name() .. "/build", function (index, total, opt)
                     local batchcmds_ = batchcmds.new({target = target})
-                    buildcmd(target, batchcmds_, {progress =  (index * 100) / total})
+                    buildcmd(target, batchcmds_, {progress = opt.progress})
                     batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
                 end, {rootjob = job or rootjob})
             end
@@ -100,8 +100,8 @@ function _add_batchjobs(batchjobs, rootjob, target)
         --         print("build it")
         --     end)
         --
-        job = batchjobs:addjob(target:name() .. "/build", function (index, total)
-            script(target, {progress = (index * 100) / total})
+        job = batchjobs:addjob(target:name() .. "/build", function (index, total, opt)
+            script(target, {progress = opt.progress})
         end, {rootjob = rootjob})
     end
     return job, job_leaf or job
@@ -118,10 +118,10 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
     -- add after_build job for target
     local pkgenvs = _g.pkgenvs or {}
     _g.pkgenvs = pkgenvs
-    local job_build_after = batchjobs:addjob(target:name() .. "/after_build", function (index, total)
+    local job_build_after = batchjobs:addjob(target:name() .. "/after_build", function (index, total, opt)
 
         -- do after_build
-        local progress = (index * 100) / total
+        local progress = opt.progress
         local after_build = target:script("build_after")
         if after_build then
             after_build(target, {progress = progress})
@@ -158,7 +158,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
     local job_build, job_build_leaf = _add_batchjobs(batchjobs, job_build_after, target)
 
     -- add before_build job for target
-    local job_build_before = batchjobs:addjob(target:name() .. "/before_build", function (index, total)
+    local job_build_before = batchjobs:addjob(target:name() .. "/before_build", function (index, total, opt)
 
         -- enter package environments
         -- https://github.com/xmake-io/xmake/issues/4033
@@ -184,7 +184,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
 
         -- do before_build
         -- we cannot add batchjobs for this rule scripts, @see https://github.com/xmake-io/xmake/issues/2684
-        local progress = (index * 100) / total
+        local progress = opt.progress
         local before_build = target:script("build_before")
         if before_build then
             before_build(target, {progress = progress})
@@ -299,7 +299,7 @@ function main(targetnames, group_pattern)
             if errors and progress.showing_without_scroll() then
                 print("")
             end
-        end, comax = option.get("jobs") or 1, curdir = curdir, count_as_index = true, distcc = distcc})
+        end, comax = option.get("jobs") or 1, curdir = curdir, distcc = distcc})
         os.cd(curdir)
     end
 end

@@ -156,8 +156,8 @@ end
 function main(batchjobs, rootjob, target)
 
     -- add link job
-    local job_link = batchjobs:addjob(target:name() .. "/link", function (index, total)
-        _link_target(target, {progress = (index * 100) / total})
+    local job_link = batchjobs:addjob(target:name() .. "/link", function (index, total, opt)
+        _link_target(target, {progress = opt.progress})
     end, {rootjob = rootjob})
 
     -- we only need to return and depend the link job for each target,

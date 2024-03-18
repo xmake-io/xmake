@@ -2,12 +2,12 @@ import("core.base.scheduler")
 import("private.async.jobpool")
 import("async.runjobs")
 
-function _jobfunc(index, total)
+function _jobfunc(index, total, opt)
     print("%s: run job (%d/%d)", scheduler.co_running(), index, total)
     local dt = os.mclock()
     os.sleep(1000)
     dt = os.mclock() - dt
-    print("%s: run job (%d/%d) end, dt: %d ms", scheduler.co_running(), index, total, dt)
+    print("%s: run job (%d/%d) end, progress: %s, dt: %d ms", scheduler.co_running(), index, total, opt.progress, dt)
 end
 
 function main()
@@ -22,16 +22,16 @@ function main()
     -- test jobs
     print("==================================== test jobs ====================================")
     local jobs = jobpool.new()
-    local root = jobs:addjob("job/root", function (idx, total)
-        _jobfunc(idx, total)
+    local root = jobs:addjob("job/root", function (index, total, opt)
+        _jobfunc(index, total, opt)
     end)
     for i = 1, 3 do
-        local job = jobs:addjob("job/" .. i, function (idx, total)
-            _jobfunc(idx, total)
+        local job = jobs:addjob("job/" .. i, function (index, total, opt)
+            _jobfunc(index, total, opt)
         end, {rootjob = root})
         for j = 1, 50 do
-            jobs:addjob("job/" .. i .. "/" .. j, function (idx, total)
-                _jobfunc(idx, total)
+            jobs:addjob("job/" .. i .. "/" .. j, function (index, total, opt)
+                _jobfunc(index, total, opt)
             end, {rootjob = job})
         end
     end

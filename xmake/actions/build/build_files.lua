@@ -202,7 +202,7 @@ function main(targetname, group_pattern, sourcefiles)
     local batchjobs = _get_batchjobs(targetname, group_pattern, filepatterns)
     if batchjobs and batchjobs:size() > 0 then
         local curdir = os.curdir()
-        runjobs("build_files", batchjobs, {comax = option.get("jobs") or 1, curdir = curdir, count_as_index = true})
+        runjobs("build_files", batchjobs, {comax = option.get("jobs") or 1, curdir = curdir})
         os.cd(curdir)
     else
         wprint("%s not found!", sourcefiles)

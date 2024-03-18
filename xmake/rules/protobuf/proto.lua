@@ -294,9 +294,9 @@ function build_cxfiles(target, batchjobs, sourcebatch, opt, sourcekind)
         local nodename = node_rulename .. "/" .. sourcefile_proto
         nodes[nodename] = {
             name = nodename,
-            job = batchjobs:addjob(nodename, function(index, total)
+            job = batchjobs:addjob(nodename, function(index, total, jobopt)
                 local batchcmds_ = batchcmds.new({target = target})
-                buildcmd_pfiles(target, batchcmds_, sourcefile_proto, {progress =  (index * 100) / total}, sourcekind)
+                buildcmd_pfiles(target, batchcmds_, sourcefile_proto, {progress = jobopt.progress}, sourcekind)
                 batchcmds_:runcmds({changed = target:is_rebuilt(), dryrun = option.get("dry-run")})
             end)
         }

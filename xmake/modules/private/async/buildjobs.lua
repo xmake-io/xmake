@@ -51,7 +51,7 @@ end
     nodes["node1"] = {
         name = "node1",
         deps = {"node2", "node3"},
-        job = batchjobs:newjob("/job/node1", function(index, total)
+        job = batchjobs:newjob("/job/node1", function(index, total, opt)
         end)
     }
 --]]
