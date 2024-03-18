@@ -385,11 +385,11 @@ function generate_metadata(target, modules)
     end
 
     local jobs = option.get("jobs") or os.default_njob()
-    runjobs(target:name() .. "_install_modules", function(index) 
+    runjobs(target:name() .. "_install_modules", function(index, total, jobopt)
         local module = public_modules[index]
         local name, _, cppfile = compiler_support.get_provided_module(module)
         local metafilepath = compiler_support.get_metafile(target, cppfile)
-        progress.show((index * 100) / #public_modules, "${color.build.target}<%s> generating.module.metadata %s", target:name(), name)
+        progress.show(jobopt.progress, "${color.build.target}<%s> generating.module.metadata %s", target:name(), name)
         local metadata = _generate_meta_module_info(target, name, cppfile, module.requires)
         json.savefile(metafilepath, metadata)
     end, {comax = jobs, total = #public_modules})
