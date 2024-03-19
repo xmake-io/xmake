@@ -273,51 +273,42 @@ function make_module_buildcmds(target, batchcmds, opt)
         target:fileconfig_add(opt.cppfile, {force = {cxxflags = {module_mapperflag .. module_mapper}}})
     end
 
-    local build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
-
-    -- needed to detect rebuild of dependencies
-    if provide and build then
-        mark_build(target, name)
-    end
-
-    if build then
-        -- compile if it's a named module
-        if provide or compiler_support.has_module_extension(opt.cppfile) then
-            batchcmds:mkdir(path.directory(opt.objectfile))
-            local fileconfig = target:fileconfig(opt.cppfile)
-            local public = fileconfig and fileconfig.public
-            local external = fileconfig and fileconfig.external
-            local private_dep = fileconfig and fileconfig.private_dep
-            local bmifile = mapped_bmi or bmifile
-            local flags = {"-x", "c++"}
-            local sourcefile
-            if target:is_binary() then
-                if mapped_bmi then
-                    batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
-                    sourcefile = bmifile
-                else
-                    batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                    sourcefile = opt.cppfile
-                end
+    -- compile if it's a named module
+    if provide or compiler_support.has_module_extension(opt.cppfile) then
+        batchcmds:mkdir(path.directory(opt.objectfile))
+        local fileconfig = target:fileconfig(opt.cppfile)
+        local public = fileconfig and fileconfig.public
+        local external = fileconfig and fileconfig.external
+        local private_dep = fileconfig and fileconfig.private_dep
+        local bmifile = mapped_bmi or bmifile
+        local flags = {"-x", "c++"}
+        local sourcefile
+        if target:is_binary() then
+            if mapped_bmi then
+                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
+                sourcefile = bmifile
             else
-                if (not public and not external) or (external and private_dep) then
-                    batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                    sourcefile = opt.cppfile
-                else
-                    batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
-                    local module_onlyflag = compiler_support.get_moduleonlyflag(target)
-                    table.insert(flags, module_onlyflag)
-                    sourcefile = opt.cppfile
-                end
+                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                sourcefile = opt.cppfile
             end
-            if option.get("diagnosis") then
-                batchcmds:print("mapper file: %s", io.readfile(module_mapper))
-            end
-            _batchcmds_compile(batchcmds, target, flags, sourcefile, opt.objectfile)
-            batchcmds:rm(module_mapper)
         else
-            batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files
+            if (not public and not external) or (external and private_dep) then
+                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                sourcefile = opt.cppfile
+            else
+                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                local module_onlyflag = compiler_support.get_moduleonlyflag(target)
+                table.insert(flags, module_onlyflag)
+                sourcefile = opt.cppfile
+            end
         end
+        if option.get("diagnosis") then
+            batchcmds:print("mapper file: %s", io.readfile(module_mapper))
+        end
+        _batchcmds_compile(batchcmds, target, flags, sourcefile, opt.objectfile)
+        batchcmds:rm(module_mapper)
+    else
+        batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files
     end
     batchcmds:add_depfiles(opt.cppfile)
     return os.mtime(opt.objectfile)
