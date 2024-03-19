@@ -1,11 +1,11 @@
 $script:SCRIPT_PATH = $myinvocation.mycommand.path
 $script:BASE_DIR = Split-Path $SCRIPT_PATH -Parent
-$Env:XMAKE_EXE = Join-Path $BASE_DIR xmake.exe
+$Env:XMAKE_PROGRAM_FILE = Join-Path $BASE_DIR xmake.exe
 
 
 if ($Args.Count -eq 0) {
     # No args, just call the underlying xmake executable.
-    & $Env:XMAKE_EXE lua private.xrepo;
+    & $Env:XMAKE_PROGRAM_FILE lua private.xrepo;
 } else {
     $Command = $Args[0];
     if (($Command -eq "env") -and ($Args.Count -ge 2)) {
@@ -43,5 +43,5 @@ if ($Args.Count -eq 0) {
         }
     }
 
-    & $Env:XMAKE_EXE lua private.xrepo $Args;
+    & $Env:XMAKE_PROGRAM_FILE lua private.xrepo $Args;
 }
