@@ -1,5 +1,5 @@
 @set "XMAKE_ROOTDIR=%~dp0"
-IF NOT DEFINED XMAKE_PROGRAM_FILE (
+@if not defined XMAKE_PROGRAM_FILE (
     @set "XMAKE_PROGRAM_FILE=%XMAKE_ROOTDIR%xmake.exe"
 )
 
