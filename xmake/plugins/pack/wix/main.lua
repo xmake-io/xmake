@@ -94,29 +94,27 @@ end
 
 function _get_other_commands(package, cmd, opt)
     opt = table.join(cmd.opt or {}, opt)
-    local result = {}
+    local result = ""
     local kind = cmd.kind
 
     if kind == "rm" then
-        local filepath = _translate_filepath(package, cmd.filepath)
-        local subdirectory = cmd.filepath ~= package:install_rootdir() and string.format([[Subdirectory="%s"]], filepath) or ""
+        local subdirectory = _translate_filepath(package, path.directory(cmd.filepath))
+        subdirectory = subdirectory ~= "." and string.format([[Subdirectory="%s"]], subdirectory) or ""
         local on = opt.install and [[On="install"]] or [[On="uninstall"]]
+        local filename = path.filename(cmd.filepath)
         
-        local remove_file = string.format([[<RemoveFile Directory="INSTALLFOLDER" %s %s/>]], subdirectory, on)
-        table.insert(result, remove_file)
+        result = string.format([[<RemoveFile Directory="INSTALLFOLDER" Name="%s" %s %s/>]], filename, subdirectory, on)
     elseif kind == "rmdir" then
         local dir = _translate_filepath(package, cmd.dir)
-        local subdirectory = cmd.dir ~= package:install_rootdir() and string.format([[Subdirectory="%s"]], dir) or ""
+        local subdirectory = dir ~= "." and string.format([[Subdirectory="%s"]], dir) or ""
         local on = opt.install and [[On="install"]] or [[On="uninstall"]]
         
-        local remove_dir = string.format([[<RemoveFile Directory="INSTALLFOLDER" %s %s/>]], subdirectory, on)
-        table.insert(result, remove_dir)
+        result = string.format([[<RemoveFolder Directory="INSTALLFOLDER" %s %s/>]], subdirectory, on)
     elseif kind == "mkdir" then
         local dir = _translate_filepath(package, cmd.dir)
-        local subdirectory = cmd.dir ~= package:install_rootdir() and string.format([[Subdirectory="%s"]], dir) or ""
-        local make_dir = string.format([[<CreateFolder Directory="INSTALLFOLDER" %s/>]], subdirectory)
-        table.insert(result, make_dir)
-    else
+        local subdirectory = dir ~= "." and string.format([[Subdirectory="%s"]], dir) or ""
+        result = string.format([[<CreateFolder Directory="INSTALLFOLDER" %s/>]], subdirectory)
+    elseif kind ~= "cp" then
         wprint("kind %s is not supported with wix", kind)
     end
     return result
@@ -127,13 +125,13 @@ function _get_feature_string(name, opt)
     local description = opt.description or ""
     local allow_absent = opt.force and "false" or "true"
     local allow_advertise = opt.force and "false" or "true"
-    local typical_default = opt.force and [[TypicalDefault=install"]] or ""
+    local typical_default = opt.force and [[TypicalDefault="install"]] or ""
     local feature = string.format([[<Feature Id="%s" Title="%s" Description="%s" Level="%d" AllowAdvertise="%s" AllowAbsent="%s" %s ConfigurableDirectory="INSTALLFOLDER">]], name, name, description, level, allow_advertise, allow_absent, typical_default)
     return feature
 end
 
 function _get_component_string(id, subdirectory)
-    local subdirectory = (subdirectory ~= ".") and string.format([[Subdirectory="%s"]], subdirectory) or "" 
+    local subdirectory = (subdirectory ~= "." and subdirectory ~= nil) and string.format([[Subdirectory="%s"]], subdirectory) or "" 
     return string.format([[<Component Id="%s" Guid="%s" Directory="INSTALLFOLDER" %s>]], id, hash.uuid(id), subdirectory)
 end 
 
@@ -161,11 +159,18 @@ function _build_feature(package, opt)
     end    
 
     table.insert(result, _get_component_string("OtherCmds"))
+    for _, cmd in ipairs(installcmds) do
+        table.insert(result, _get_other_commands(package, cmd, {install = true}))
+    end
+    for _, cmd in ipairs(uninstallcmds) do
+        table.insert(result, _get_other_commands(package, cmd, {install = false}))
+    end
+    
     table.insert(result, "</Component>")
-
     table.insert(result, "</Feature>")
     return result
 end
+
 -- get specvars
 function _get_specvars(package)
 
