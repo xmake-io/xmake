@@ -354,59 +354,42 @@ function make_module_buildcmds(target, batchcmds, opt)
         end
     end
 
-    local build
-    if provide or compiler_support.has_module_extension(opt.cppfile) then
-        build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
-
-        -- needed to detect rebuild of dependencies
-        if provide and build then
-            mark_build(target, name)
-        end
-    end
-
     -- append requires flags
     if opt.module.requires then
         _append_requires_flags(target, opt.module, name, opt.cppfile, bmifile, opt)
     end
 
-    -- for cpp file we need to check after appendings the flags
-    if build == nil then
-        build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
-    end
+    -- compile if it's a named module
+    if provide or compiler_support.has_module_extension(opt.cppfile) then
+        batchcmds:mkdir(path.directory(opt.objectfile))
 
-    if build then
-        -- compile if it's a named module
-        if provide or compiler_support.has_module_extension(opt.cppfile) then
-            batchcmds:mkdir(path.directory(opt.objectfile))
-
-            local fileconfig = target:fileconfig(opt.cppfile)
-            local public = fileconfig and fileconfig.public
-            local external = fileconfig and fileconfig.external
-            local private_dep = fileconfig and fileconfig.private_dep
-            local bmifile = mapped_bmi or bmifile
-            if target:is_binary() then
-                if mapped_bmi then
-                    batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
-                    _compile_objectfile_step(target, bmifile, opt.cppfile, opt.objectfile, provide, {batchcmds = batchcmds})
-                else
-                    batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                    _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, provide, {batchcmds = batchcmds})
-                end
+        local fileconfig = target:fileconfig(opt.cppfile)
+        local public = fileconfig and fileconfig.public
+        local external = fileconfig and fileconfig.external
+        local private_dep = fileconfig and fileconfig.private_dep
+        local bmifile = mapped_bmi or bmifile
+        if target:is_binary() then
+            if mapped_bmi then
+                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
+                _compile_objectfile_step(target, bmifile, opt.cppfile, opt.objectfile, provide, {batchcmds = batchcmds})
             else
-                if (not public and not external) or (external and private_dep) then
-                    batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                    _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, provide {batchcmds = batchcmds})
-                else
-                    batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
-                    _compile_bmi_step(target, bmifile, opt.cppfile, provide, {batchcmds = batchcmds})
-                end
+                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, provide, {batchcmds = batchcmds})
             end
         else
-            batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files
+            if (not public and not external) or (external and private_dep) then
+                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, provide {batchcmds = batchcmds})
+            else
+                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                _compile_bmi_step(target, bmifile, opt.cppfile, provide, {batchcmds = batchcmds})
+            end
         end
+    else
+        batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files
     end
     batchcmds:add_depfiles(opt.cppfile)
-   return os.mtime(opt.objectfile)
+    return os.mtime(opt.objectfile)
 end
 
 -- build headerunit file for batchjobs
