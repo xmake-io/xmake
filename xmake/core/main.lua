@@ -103,6 +103,13 @@ function main._find_root(projectfile)
     return projectfile
 end
 
+-- get project directory and project file from the argument option
+--
+-- @note we need to put `-P` in the first argument avoid option.parse() parsing errors
+-- e.g. `xmake f -c -P xxx` will be parsed as `-c=-P`, it's incorrect.
+--
+-- @see https://github.com/xmake-io/xmake/issues/4857
+--
 function main._basicparse()
 
     -- check command
@@ -114,8 +121,29 @@ function main._basicparse()
         xmake._COMMAND_ARGV = xmake._ARGV
     end
 
-    -- parse options
-    return option.parse(xmake._COMMAND_ARGV, task.common_options(), { allow_unknown = true })
+    -- parse options, only parse -P xxx/-F xxx/--project=xxx/--file=xxx
+    local options = {}
+    local argv = xmake._COMMAND_ARGV
+    local idx = 1
+    while idx <= #argv do
+        local arg = argv[idx]
+        if arg == "-P" and idx < #argv then
+            options.project = argv[idx + 1]
+            idx = idx + 1
+        elseif arg == "-F" and idx < #argv then
+            options.file = argv[idx + 1]
+            idx = idx + 1
+        elseif arg:startswith("--project=") then
+            options.project = arg:sub(11)
+        elseif arg:startswith("--file=") then
+            options.file = arg:sub(8)
+        end
+        idx = idx + 1
+        if options.project and options.file then
+            break
+        end
+    end
+    return options
 end
 
 -- get the project configuration from cache if we are in the independent working directory
@@ -152,11 +180,6 @@ function main._init()
     scheduler:enable(false)
 
     -- get project directory and project file from the argument option
-    --
-    -- @note we need to put `-P` in the first argument avoid option.parse() parsing errors
-    -- e.g. `xmake f -c -P xxx` will be parsed as `-c=-P`, it's incorrect.
-    --
-    -- maybe we will improve this later
     local options, errors = main._basicparse()
     if not options then
         return false, errors
