@@ -33,7 +33,7 @@ import("lib.detect.find_file")
 -- zip  [(version: 0.3.1, checksum: 747aab3c43ecb7b50671cdd0ec3b2edc2c83494c)]
 --
 function _parse_packageinfo(line)
-    local splitinfo = line:split("%s+")
+    local splitinfo = line:split("%s+", {limit = 2})
     local package_name = splitinfo[1]
     local version_str = splitinfo[2]
     if version_str then
