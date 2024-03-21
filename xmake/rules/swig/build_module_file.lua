@@ -39,7 +39,7 @@ function main(target, batchcmds, sourcefile, opt)
         table.insert(argv, "-c++")
     end
     local fileconfig = target:fileconfig(sourcefile)
-    if fileconfig.swigflags then
+    if fileconfig and fileconfig.swigflags then
         table.join2(argv, fileconfig.swigflags)
     end
 
