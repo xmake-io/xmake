@@ -154,3 +154,8 @@ end
 function install_headeronly(target, opt)
     _install_headers(target, opt)
 end
+
+-- install moduleonly library
+function install_moduleonly(target, opt)
+    _install_headers(target, opt)
+end
