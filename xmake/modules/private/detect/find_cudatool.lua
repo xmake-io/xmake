@@ -49,10 +49,13 @@ function main(toolname, parse, opt)
     local program
     local toolchains = find_cuda()
     if toolchains and toolchains.bindir then
-        local file = path.join(toolchains.bindir, opt.program or toolname)
-        if os.isfile(file) then
-            program = find_program(file, opt)
-        end
+        -- prepend the toolchain's bin dir to the paths
+        local opt2 = table.join(opt) -- duplicate opt
+        local paths = table.join(opt2.paths or {}, opt2.pathes or {})
+        opt2.paths = table.join({toolchains.bindir}, paths)
+        opt2.pathes = nil
+
+        program = find_program(opt2.program or toolname, opt2)
     end
 
     -- not found? attempt to find program only
