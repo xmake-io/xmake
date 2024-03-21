@@ -19,6 +19,7 @@
 
 * Fix select_script match pattern
 * [#4763](https://github.com/xmake-io/xmake/issues/4763): Fix {force = true}
+* [#4807](https://github.com/xmake-io/xmake/issues/4807): Fix nimble::find_package
 
 ## v2.8.8
 
@@ -1779,6 +1780,7 @@
 
 * 修复 select_script 的脚本模式匹配
 * [#4763](https://github.com/xmake-io/xmake/issues/4763): 修复 {force = true}
+* [#4807](https://github.com/xmake-io/xmake/issues/4807): 修复 nimble::find_package
 
 ## v2.8.8
 
