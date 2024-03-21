@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.8.9
+
 ### New features
 
 * [#4843](https://github.com/xmake-io/xmake/issues/4843): Endianness/Byte-order detection on build machine
@@ -1763,6 +1765,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.8.9
 
 ### 新特性
 
