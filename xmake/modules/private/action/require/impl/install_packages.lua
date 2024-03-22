@@ -325,12 +325,9 @@ function _fetch_packages(packages_fetch, installdeps)
                 end
             end
             fetching_count = fetching_count + 1
-            packages_fetching[index] = instance
-
-            -- check package toolchains, system/find_package maybe will call toolchains
-            _check_package_toolchains(instance)
 
             -- fetch this package
+            packages_fetching[index] = instance
             local oldenvs = os.getenvs()
             instance:envs_enter()
             instance:fetch()
@@ -377,15 +374,6 @@ function _should_install_package(instance)
         _g.package_status_cache[tostring(instance)] = result
     end
     return result
-end
-
--- check package toolchains
-function _check_package_toolchains(package)
-    for _, toolchain_inst in pairs(package:toolchains()) do
-        if not toolchain_inst:check() then
-            raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
-        end
-    end
 end
 
 -- install packages
@@ -496,11 +484,6 @@ function _install_packages(packages_install, packages_download, installdeps)
                 -- install this package
                 packages_installing[index] = instance
                 if downloaded then
-
-                    -- check package toolchains
-                    _check_package_toolchains(instance)
-
-                    -- do install
                     if not action_install(instance) then
                         assert(instance:is_precompiled(), "package(%s) should be precompiled", instance:name())
                         -- we need to disable built and re-download and re-install it
