@@ -25,7 +25,7 @@ function is_compatible_with_host(name)
             return true
         end
     elseif is_host("windows") then
-        if name == "msvc" or name == "llvm" then
+        if name == "msvc" or name == "llvm" or name == "clang-cl" then
             return true
         end
     end
