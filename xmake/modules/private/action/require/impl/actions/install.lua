@@ -222,7 +222,6 @@ function _fix_paths_for_precompiled_package(package)
     end
 end
 
-
 -- check package toolchains
 function _check_package_toolchains(package)
     for _, toolchain_inst in pairs(package:toolchains()) do

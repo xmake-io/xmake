@@ -1165,6 +1165,9 @@ function _instance:toolchain(name)
         end
         self:_memcache():set("toolchains_map", toolchains_map)
     end
+    if not toolchains_map[name] then
+        toolchains_map[name] = toolchain.load(name, {plat = self:plat(), arch = self:arch()})
+    end
     return toolchains_map[name]
 end
 
