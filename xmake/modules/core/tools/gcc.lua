@@ -185,6 +185,39 @@ function nf_vectorext(self, extension)
     return maps[extension]
 end
 
+-- has -static-libstdc++?
+function _has_static_libstdcxx(self)
+    local has_static_libstdcxx = _g._HAS_STATIC_LIBSTDCXX
+    if has_static_libstdcxx == nil then
+        if self:has_flags("-static-libstdc++ -Werror", "ldflags", {flagskey = "gcc_static_libstdcxx"}) then
+            has_static_libstdcxx = true
+        end
+        has_static_libstdcxx = has_static_libstdcxx or false
+        _g._HAS_STATIC_LIBSTDCXX = has_static_libstdcxx
+    end
+    return has_static_libstdcxx
+end
+
+-- make the runtime flag
+function nf_runtime(self, runtime, opt)
+    opt = opt or {}
+    local maps
+    -- if a sdk dir is defined, we should redirect include / library path to have the correct includes / libc++ link
+    local kind = self:kind()
+    if not self:is_plat("android") then -- we will set runtimes in android ndk toolchain
+        maps = maps or {}
+        if kind == "ld" or kind == "sh" then
+            local target = opt.target
+            if target and target.sourcekinds and table.contains(table.wrap(target:sourcekinds()), "cxx") then
+                if runtime:endswith("_static") and _has_static_libstdcxx(self) then
+                    maps["stdc++_static"] = "-static-libstdc++"
+                end
+            end
+        end
+    end
+    return maps and maps[runtime]
+end
+
 -- make the language flag
 function nf_language(self, stdname)
 
