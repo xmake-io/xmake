@@ -108,3 +108,8 @@ end
 function uninstall_headeronly(target, opt)
     _uninstall_headers(target, opt)
 end
+
+-- uninstall moduleonly library
+function uninstall_moduleonly(target, opt)
+    _uninstall_headers(target, opt)
+end
