@@ -66,8 +66,11 @@ function main(name, opt)
     end
     snippet_configs.links = snippet_configs.links or name
 
-    -- we need to check package toolchain first
+    -- We need to check package toolchain first
     -- https://github.com/xmake-io/xmake/issues/4596#issuecomment-2014528801
+    --
+    -- But if it depends on some toolchain packages,
+    -- then they can't be detected early in the fetch and we have to disable system.find_package
     if opt.package and not _check_package_toolchains(opt.package) then
         return
     end
