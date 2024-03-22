@@ -56,6 +56,7 @@ function _translate_filepath(package, filepath)
 end
 
 -- get a table where the key is a directory and the value a list of files
+-- used to regroup all files that are placed in the same directory under the same component.
 function _get_cp_kind_table(package, cmds, opt)
 
     local result = {}
@@ -121,12 +122,13 @@ function _get_other_commands(package, cmd, opt)
 end
 
 function _get_feature_string(name, opt)
-    local level = opt.default and 1 or 0
+    local level = opt.default and 1 or 2
     local description = opt.description or ""
     local allow_absent = opt.force and "false" or "true"
     local allow_advertise = opt.force and "false" or "true"
     local typical_default = opt.force and [[TypicalDefault="install"]] or ""
-    local feature = string.format([[<Feature Id="%s" Title="%s" Description="%s" Level="%d" AllowAdvertise="%s" AllowAbsent="%s" %s ConfigurableDirectory="INSTALLFOLDER">]], name, name, description, level, allow_advertise, allow_absent, typical_default)
+    local directory = opt.config_dir and [[ConfigurableDirectory="INSTALLFOLDER]] or ""
+    local feature = string.format([[<Feature Id="%s" Title="%s" Description="%s" Level="%d" AllowAdvertise="%s" AllowAbsent="%s" %s %s>]], name, name, description, level, allow_advertise, allow_absent, typical_default, directory)
     return feature
 end
 
@@ -135,17 +137,19 @@ function _get_component_string(id, subdirectory)
     return string.format([[<Component Id="%s" Guid="%s" Directory="INSTALLFOLDER" %s>]], id, hash.uuid(id), subdirectory)
 end 
 
+-- build a feature from batchcmds
 function _build_feature(package, opt)
     opt = opt or {}
     local default = opt.default or package:get("default")
 
     local result = {}
-    table.insert(result, _get_feature_string(package:title(), {default = default, force = opt.force, description = package:description()}))
+    table.insert(result, _get_feature_string(package:title(), table.join(opt, {default = default, description = package:description()})))
 
     local installcmds = batchcmds.get_installcmds(package):cmds()
     local uninstallcmds = batchcmds.get_uninstallcmds(package):cmds()
-
+ 
     local cp_table = _get_cp_kind_table(package, installcmds, opt)
+    table.remove_if(installcmds, function (_, cmd) return cmd.kind == "cp" end)
 
     for dir, files in pairs(cp_table) do
         local d = path.join(package:install_rootdir(), dir)
@@ -171,6 +175,17 @@ function _build_feature(package, opt)
     return result
 end
 
+-- add to path feature
+function _add_to_path(package)
+    local result = {}
+    table.insert(result, _get_feature_string("PATH", {default = false, force = false, description = "Add to PATH", config_dir = false}))
+    table.insert(result, _get_component_string("PATH"))
+    table.insert(result, [[<Environment Id="PATH" Name="PATH"  Value="[INSTALLDIR]/bin" Permanent="yes" Part="last" Action="set" System="yes" />]])
+    table.insert(result, "</Component>")
+    table.insert(result, "</Feature>")
+    return result
+end
+
 -- get specvars
 function _get_specvars(package)
 
@@ -179,6 +194,7 @@ function _get_specvars(package)
 
     local features = {}
     table.join2(features, _build_feature(package, {default = true, force = true}))
+    table.join2(features, _add_to_path(package))
 
     specvars.PACKAGE_CMDS = table.concat(features, "\n  ")
 
