@@ -18,23 +18,14 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
 toolchain("mingw")
-
-    -- set homepage
+    set_kind("standalone")
     set_homepage("http://www.mingw.org/")
     set_description("Minimalist GNU for Windows")
+    set_runtimes("stdc++_static", "stdc++_shared")
 
-    -- mark as standalone toolchain
-    set_kind("standalone")
-
-    -- check toolchain
     on_check("check")
-
-    -- on load
     on_load(function (toolchain)
-
-        -- imports
         import("core.project.config")
 
         -- get cross
