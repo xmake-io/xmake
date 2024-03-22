@@ -208,6 +208,9 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
+    if not self._CHECKED then
+        os.raise("we cannot get tool(%s) in toolchain(%s), it's not checked", toolkind, self:name())
+    end
     -- ensure to do load for initializing toolset first
     -- @note we cannot call self:check() here, because it can only be called on config
     self:_load()
