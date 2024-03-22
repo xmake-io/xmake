@@ -49,10 +49,10 @@ function main(toolname, parse, opt)
     local program
     local toolchains = find_cuda()
     if toolchains and toolchains.bindir then
-        local file = path.join(toolchains.bindir, opt.program or toolname)
-        if os.isfile(file) then
-            program = find_program(file, opt)
-        end
+        local opt2 = table.clone(opt)
+        opt2.paths = opt2.paths or {}
+        table.insert(opt2.paths, toolchains.bindir)
+        program = find_program(opt2.program or toolname, opt2)
     end
 
     -- not found? attempt to find program only
