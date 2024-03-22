@@ -645,31 +645,40 @@ end
 function _add_target_warnings(cmakelists, target)
     local flags_gcc =
     {
-        none     = "-w"
-    ,   less     = "-Wall"
-    ,   more     = "-Wall"
-    ,   all      = "-Wall"
-    ,   allextra = "-Wall -Wextra"
-    ,   error    = "-Werror"
+        none       = "-w"
+    ,   less       = "-Wall"
+    ,   more       = "-Wall"
+    ,   all        = "-Wall"
+    ,   allextra   = "-Wall -Wextra"
+    ,   pedantic   = "-Wpedantic"
+    ,   everything = "-Wall -Wextra"
+    ,   error      = "-Werror"
     }
     local flags_msvc =
     {
-        none     = "-W0"
-    ,   less     = "-W1"
-    ,   more     = "-W3"
-    ,   all      = "-W3" -- = "-Wall" will enable too more warnings
-    ,   allextra = "-W4"
-    ,   error    = "-WX"
+        none       = "-W0"
+    ,   less       = "-W1"
+    ,   more       = "-W3"
+    ,   all        = "-W3" -- = "-Wall" will enable too more warnings
+    ,   allextra   = "-W4"
+    ,   everything = "-Wall"
+    ,   error      = "-WX"
     }
     local warnings = target:get("warnings")
     if warnings then
         cmakelists:print("if(MSVC)")
         for _, warn in ipairs(warnings) do
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[warn])
+            local flag = flags_msvc[warn]
+            if flag then
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
+            end
         end
         cmakelists:print("else()")
         for _, warn in ipairs(warnings) do
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[warn])
+            local flag = flags_gcc[warn]
+            if flag then
+                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
+            end
         end
         cmakelists:print("endif()")
     end
