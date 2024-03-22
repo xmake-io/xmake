@@ -49,12 +49,9 @@ function main(toolname, parse, opt)
     local program
     local toolchains = find_cuda()
     if toolchains and toolchains.bindir then
-        -- prepend the toolchain's bin dir to the paths
-        local opt2 = table.join(opt) -- duplicate opt
-        local paths = table.join(opt2.paths or {}, opt2.pathes or {})
-        opt2.paths = table.join({toolchains.bindir}, paths)
-        opt2.pathes = nil
-
+        local opt2 = table.clone(opt)
+        opt2.paths = opt2.paths or {}
+        table.insert(opt2.paths, toolchains.bindir)
         program = find_program(opt2.program or toolname, opt2)
     end
 
