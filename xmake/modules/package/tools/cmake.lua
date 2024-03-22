@@ -371,6 +371,15 @@ function _get_configs_for_windows(package, configs, opt)
             table.insert(configs, "-DCMAKE_GENERATOR_TOOLSET=" .. vs_toolset)
         end
     end
+
+    -- use clang-cl
+    if package:has_tool("cc", "clang_cl") then
+        table.insert(configs, "-DCMAKE_C_COMPILER=" .. _translate_bin_path(package:build_getenv("cc")))
+    end
+    if package:has_tool("cxx", "clang_cl") then
+        table.insert(configs, "-DCMAKE_CXX_COMPILER=" .. _translate_bin_path(package:build_getenv("cxx")))
+    end
+
     -- we maybe need patch `cmake_policy(SET CMP0091 NEW)` to enable this argument for some packages
     -- @see https://cmake.org/cmake/help/latest/policy/CMP0091.html#policy:CMP0091
     -- https://github.com/xmake-io/xmake-repo/pull/303
@@ -964,22 +973,39 @@ function _install_for_cmakebuild(package, configs, opt)
     os.vrunv(cmake.program, {"--install", os.curdir()})
 end
 
+-- get cmake generator
+function _get_cmake_generator(package, opt)
+    opt = opt or {}
+    local cmake_generator = opt.cmake_generator
+    if not cmake_generator then
+        if project.policy("package.cmake_generator.ninja") then
+            cmake_generator = "Ninja"
+        end
+        if not cmake_generator then
+            if package:has_tool("cc", "clang_cl") or package:has_tool("cxx", "clang_cl") then
+                cmake_generator = "Ninja"
+            end
+        end
+        local cmake_generator_env = os.getenv("CMAKE_GENERATOR")
+        if not cmake_generator and cmake_generator_env then
+            cmake_generator = cmake_generator_env
+        end
+        if cmake_generator then
+            opt.cmake_generator = cmake_generator
+        end
+    end
+    return cmake_generator
+end
+
 -- build package
 function build(package, configs, opt)
-
-    -- init options
     opt = opt or {}
+    local cmake_generator = _get_cmake_generator(package, opt)
 
     -- enter build directory
     local buildir = opt.buildir or package:buildir()
     os.mkdir(path.join(buildir, "install"))
     local oldir = os.cd(buildir)
-
-    -- exists $CMAKE_GENERATOR? use it
-    local cmake_generator_env = os.getenv("CMAKE_GENERATOR")
-    if not opt.cmake_generator and cmake_generator_env then
-        opt.cmake_generator = cmake_generator_env
-    end
 
     -- pass configurations
     local argv = {}
@@ -1000,7 +1026,6 @@ function build(package, configs, opt)
     os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package, opt)})
 
     -- do build
-    local cmake_generator = opt.cmake_generator
     if opt.cmake_build then
         _build_for_cmakebuild(package, configs, opt)
     elseif cmake_generator then
@@ -1025,12 +1050,8 @@ end
 
 -- install package
 function install(package, configs, opt)
-
-    -- init options
     opt = opt or {}
-    if (not opt.cmake_generator) and project.policy("package.cmake_generator.ninja") then
-        opt.cmake_generator = "Ninja"
-    end
+    local cmake_generator = _get_cmake_generator(package, opt)
 
     -- enter build directory
     local buildir = opt.buildir or package:buildir()
@@ -1056,7 +1077,6 @@ function install(package, configs, opt)
     os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package, opt)})
 
     -- do build and install
-    local cmake_generator = opt.cmake_generator
     if opt.cmake_build then
         _install_for_cmakebuild(package, configs, opt)
     elseif cmake_generator then
