@@ -202,7 +202,6 @@ end
 function nf_runtime(self, runtime, opt)
     opt = opt or {}
     local maps
-    -- if a sdk dir is defined, we should redirect include / library path to have the correct includes / libc++ link
     local kind = self:kind()
     if not self:is_plat("android") then -- we will set runtimes in android ndk toolchain
         maps = maps or {}
