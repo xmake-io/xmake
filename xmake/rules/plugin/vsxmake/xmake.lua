@@ -50,7 +50,7 @@ rule("plugin.vsxmake.autoupdate")
             if os.getenv("XMAKE_IN_VSTUDIO") and not os.getenv("XMAKE_IN_XREPO") then
                 local sourcefiles = {}
                 for _, target in pairs(project.targets()) do
-                    table.join2(sourcefiles, target:sourcefiles(), target:headerfiles())
+                    table.join2(sourcefiles, target:sourcefiles(), (target:headerfiles()))
                 end
                 table.sort(sourcefiles)
                 depend.on_changed(function ()
