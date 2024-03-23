@@ -81,9 +81,10 @@ end
 
 function _get_std_module_manifest_path(target)
     local print_module_manifest_flag = get_print_library_module_manifest_path_flag(target)
+    local clang_path = path.directory(get_clang_path(target))
     if print_module_manifest_flag then
         local compinst = target:compiler("cxx")
-        local outdata, _ = try { function() return os.iorunv(compinst:program(), {"-std=c++23", "-stdlib=libc++", print_module_manifest_flag}, {envs = compinst:runenvs()}) end }
+        local outdata, _ = try { function() return os.iorunv(compinst:program(), {"-std=c++23", "-stdlib=libc++", "--sysroot=" .. path.join(clang_path, ".."), print_module_manifest_flag}, {envs = compinst:runenvs()}) end }
         if outdata and not outdata:startswith("<NOT PRESENT>") then
             return outdata:trim()
         end
@@ -91,7 +92,6 @@ function _get_std_module_manifest_path(target)
 
     -- fallback on custom detection
     -- manifest can be found in <llvm_path>/lib subdirectory (i.e on debian it should be <llvm_path>/lib/x86_64-unknown-linux-gnu/)
-    local clang_path = path.directory(get_clang_path(target))
     local clang_lib_path = path.join(clang_path, "..", "lib")
     local modules_json_path = path.join(clang_lib_path, "libc++.modules.json")
     if not os.isfile(modules_json_path) then
