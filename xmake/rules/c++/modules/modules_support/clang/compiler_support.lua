@@ -45,7 +45,7 @@ function _get_toolchain_includedirs_for_stlheaders(target, includedirs, clang)
             table.insert(argv, 1, "-stdlib=libstdc++")
         end
     end
-    local result = try {function () return os.iorunv(clang, argv) end}
+    local result = try {function () return os.iorunv(clang, argv, {envs = compinst:runenvs()}) end}
     if result then
         for _, line in ipairs(result:split("\n", {plain = true})) do
             line = line:trim()
@@ -77,6 +77,27 @@ function _get_cpplibrary_name(target)
     elseif target:is_plat("windows") then
         return "msstl"
     end
+end
+
+function _get_std_module_manifest_path(target)
+    local print_module_manifest_flag = get_print_library_module_manifest_path_flag(target)
+    local clang_path = path.directory(get_clang_path(target))
+    if print_module_manifest_flag then
+        local compinst = target:compiler("cxx")
+        local outdata, _ = try { function() return os.iorunv(compinst:program(), {"-std=c++23", "-stdlib=libc++", "--sysroot=" .. path.join(clang_path, ".."), print_module_manifest_flag}, {envs = compinst:runenvs()}) end }
+        if outdata and not outdata:startswith("<NOT PRESENT>") then
+            return outdata:trim()
+        end
+    end
+
+    -- fallback on custom detection
+    -- manifest can be found in <llvm_path>/lib subdirectory (i.e on debian it should be <llvm_path>/lib/x86_64-unknown-linux-gnu/)
+    local clang_lib_path = path.join(clang_path, "..", "lib")
+    local modules_json_path = path.join(clang_lib_path, "libc++.modules.json")
+    if not os.isfile(modules_json_path) then
+        modules_json_path = find_file("*/libc++.modules.json", clang_lib_path)
+    end
+    return modules_json_path
 end
 
 -- load module support for the current target
@@ -246,22 +267,16 @@ function get_stdmodules(target)
         if cpplib then
             if cpplib == "c++" then
                 -- libc++ module is found by parsing libc++.modules.json
-                -- which can be found in <llvm_path>/lib subdirectory (i.e on debian it should be <llvm_path>/lib/x86_64-unknown-linux-gnu/)
-                -- in the futur llvm may provide a way to directory get the path of libc++.modules.json
-                -- @see https://github.com/llvm/llvm-project/pull/76451 (has been revert, so we need to wait)
-                local clang_path = path.directory(get_clang_path(target))
-                local clang_lib_path = path.join(clang_path, "..", "lib")
-                local modules_json_path = path.join(clang_lib_path, "libc++.modules.json")
-                if not os.isfile(modules_json_path) then
-                    modules_json_path = find_file("*/libc++.modules.json", clang_lib_path)
-                end
+                local modules_json_path = _get_std_module_manifest_path(target)
                 if modules_json_path then
                     local modules_json = json.decode(io.readfile(modules_json_path))
-                    local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
-                    if not path.is_absolute(std_module_directory) then
-                        std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
+                    if modules_json and modules_json.modules and #modules_json.modules > 0 then
+                        local std_module_directory = path.directory(modules_json.modules[1]["source-path"])
+                        if not path.is_absolute(std_module_directory) then
+                            std_module_directory = path.join(path.directory(modules_json_path), std_module_directory)
+                        end
+                        return {path.join(std_module_directory, "std.cppm"), path.join(std_module_directory, "std.compat.cppm")}
                     end
-                    return {path.join(std_module_directory, "std.cppm"), path.join(std_module_directory, "std.compat.cppm")}
                 end
             elseif cpplib == "stdc++" then
                 -- libstdc++ doesn't have a std module file atm
@@ -457,5 +472,17 @@ function get_moduleoutputflag(target)
         _g.moduleoutputflag = moduleoutputflag or false
     end
     return moduleoutputflag or nil
+end
+
+function get_print_library_module_manifest_path_flag(target)
+    local print_library_module_manifest_path_flag = _g.print_library_module_manifest_path_flag
+    if print_library_module_manifest_path_flag == nil then
+        local compinst = target:compiler("cxx")
+        if compinst:has_flags("-print-library-module-manifest-path", "cxxflags", {flagskey = "clang_print_library_module_manifest_path", tryrun = true}) then
+            print_library_module_manifest_path_flag = "-print-library-module-manifest-path"
+        end
+        _g.print_library_module_manifest_path_flag = print_library_module_manifest_path_flag or false
+    end
+    return print_library_module_manifest_path_flag or nil
 end
 
