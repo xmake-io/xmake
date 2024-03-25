@@ -112,6 +112,8 @@ function _find_arch(plat, arch)
                 else
                     arch = "x86_64"
                 end
+            elseif plat == "harmony" then
+                arch = "arm64-v8a"
             elseif plat == "cross" then
                 arch = _find_arch_from_cross()
             else
