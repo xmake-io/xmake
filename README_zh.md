@@ -255,6 +255,7 @@ $ xmake f --menu
 * Cygwin (i386, x86_64)
 * Wasm (wasm32, wasm64)
 * Haiku (i386, x86_64)
+* Harmony (x86_64, armeabi-v7a, arm64-v8a)
 * Cross (cross-toolchains ..)
 
 ## 支持工具链
@@ -304,6 +305,7 @@ masm32        The MASM32 SDK
 iverilog      Icarus Verilog
 verilator     Verilator open-source SystemVerilog simulator and lint system
 cosmocc       build-once run-anywhere
+hdk           Harmony SDK
 ```
 
 ## 支持语言
