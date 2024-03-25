@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#4874](https://github.com/xmake-io/xmake/pull/4874): Add Harmony SDK support
+
 ### Changes
 
 * Improve packages to support for clang-cl
@@ -1769,6 +1773,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#4874](https://github.com/xmake-io/xmake/pull/4874): 添加鸿蒙 SDK 支持
 
 ### 改进
 
