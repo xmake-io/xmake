@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* Improve packages to support for clang-cl
+
 ## v2.8.9
 
 ### New features
@@ -1765,6 +1769,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* 改进包管理，支持切换 clang-cl
 
 ## v2.8.9
 
