@@ -275,26 +275,20 @@ function main(sdkdir, opt)
     end
 
     -- get arch
-    local arch = opt.arch or config.get("arch") or "armv7-a"
+    local arch = opt.arch or config.get("arch") or "armeabi-v7a"
 
     -- find ndk
     local ndk = _find_ndk(sdkdir or config.get("ndk") or global.get("ndk"), arch, opt.sdkver or config.get("ndk_sdkver"), opt.toolchains_ver or config.get("ndk_toolchains_ver"))
     if ndk and ndk.sdkdir then
-
-        -- save to config
         config.set("ndk", ndk.sdkdir, {force = true, readonly = true})
         config.set("ndkver", ndk.ndkver, {force = true, readonly = true})
         config.set("ndk_sdkver", ndk.sdkver, {force = true, readonly = true})
         config.set("ndk_toolchains_ver", ndk.toolchains_ver, {force = true, readonly = true})
-
-        -- trace
         if opt.verbose or option.get("verbose") then
             cprint("checking for NDK directory ... ${color.success}%s", ndk.sdkdir)
             cprint("checking for SDK version of NDK ... ${color.success}%s", ndk.sdkver)
         end
     else
-
-        -- trace
         if opt.verbose or option.get("verbose") then
             cprint("checking for NDK directory ... ${color.nothing}${text.nothing}")
         end
