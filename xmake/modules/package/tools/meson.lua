@@ -506,20 +506,17 @@ end
 -- install package
 function install(package, configs, opt)
 
-    -- generate build files
+    -- do build
     opt = opt or {}
-    generate(package, configs, opt)
+    build(package, configs, opt)
 
     -- configure install
     local buildir = _get_buildir(package, opt)
     local argv = {"install", "-C", buildir}
-    if option.get("verbose") then
-        table.insert(argv, "-v")
-    end
 
-    -- do build and install
+    -- do install
     local meson = assert(find_tool("meson"), "meson not found!")
-    os.vrunv(meson.program, {"install", "-C", buildir}, {envs = opt.envs or buildenvs(package, opt)})
+    os.vrunv(meson.program, argv, {envs = opt.envs or buildenvs(package, opt)})
 
     -- fix static libname on windows
     if package:is_plat("windows") and not package:config("shared") then
