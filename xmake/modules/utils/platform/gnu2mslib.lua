@@ -104,7 +104,7 @@ function main(mslib, gnulib_or_defpath, opt)
     assert(defpath and os.isfile(defpath), "gnu2mslib(): convert failed, cannot get .def file!")
 
     -- generate mslib from gnulib
-    os.vrunv(libtool.program, {"/def:" .. defpath, "/name:" .. path.filename(dllname), "/out:" .. mslib}, {envs = msvc:runenvs()})
+    os.vrunv(libtool.program, {"/machine:" .. opt.arch, "/def:" .. defpath, "/name:" .. path.filename(dllname), "/out:" .. mslib}, {envs = msvc:runenvs()})
 
     -- remove temporary .def file
     if not gnulib_or_defpath:endswith(".def") then
