@@ -2520,6 +2520,24 @@ function _instance:check_mxxsnippets(snippets, opt)
     return sandbox_module.import("lib.detect.check_mxxsnippets", {anonymous = true})(snippets, opt)
 end
 
+-- runs an executable, passing package toolchain envs
+function _instance:vrunv(program, argv, opt)
+    opt = opt or {}
+    -- pass toolchain runenvs to avoid missing DLL errors 
+    if self:is_plat("windows") then
+        local msvc = self:toolchain("msvc")
+        if msvc and msvc:check() then
+            opt.envs = os.joinenvs(msvc:runenvs(), opt.envs)
+        end
+    elseif self:is_plat("mingw") then
+        local mingw = self:toolchain("mingw")
+        if mingw and mingw:check() then
+            opt.envs = os.joinenvs(mingw:runenvs(), opt.envs)
+        end
+    end
+    os.vrunv(program, argv, opt)
+end
+
 -- the current mode is belong to the given modes?
 function package._api_is_mode(interp, ...)
     return config.is_mode(...)
