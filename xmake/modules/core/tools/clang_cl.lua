@@ -83,6 +83,12 @@ function _has_color_diagnostics(self)
                 elseif self:has_flags("-fdiagnostics-color=always", "cxflags") then
                     colors_diagnostics = "-fdiagnostics-color=always"
                 end
+
+                -- enable color output for windows, @see https://github.com/xmake-io/xmake-vscode/discussions/260
+                if colors_diagnostics and
+                    self:has_flags("-fansi-escape-codes", "cxflags") then
+                    colors_diagnostics = table.join(colors_diagnostics, "-fansi-escape-codes")
+                end
             end
         end
         colors_diagnostics = colors_diagnostics or false
