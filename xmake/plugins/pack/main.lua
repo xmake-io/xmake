@@ -21,6 +21,7 @@
 -- imports
 import("core.base.task")
 import("core.base.option")
+import("core.project.config")
 import("core.project.project")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"})
@@ -115,10 +116,7 @@ function main()
     project.lock()
 
     -- load config first
-    task.run("config", {}, {disable_dump = true})
-
-    -- load targets
-    project.load_targets()
+    config.load()
 
     -- enter project directory
     local oldir = os.cd(project.directory())
@@ -127,6 +125,9 @@ function main()
     if option.get("autobuild") then
         _build_targets()
     end
+
+    -- load targets
+    project.load_targets()
 
     -- do pack
     _pack_packages()
