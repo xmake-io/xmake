@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.tty")
 import("core.package.package", {alias = "core_package"})
 import("core.project.target")
+import("core.platform.platform")
 import("lib.detect.find_file")
 import("private.action.require.impl.actions.test")
 import("private.action.require.impl.actions.patch_sources")
@@ -315,6 +316,41 @@ function _leave_workdir(package, oldir)
     _clear_sourcedir(package)
 end
 
+-- enter package install environments
+function _enter_package_installenvs(package)
+    for _, dep in ipairs(package:orderdeps()) do
+        dep:envs_enter()
+    end
+end
+
+-- enter package test environments
+function _enter_package_testenvs(package)
+
+    -- add compiler runtime library directory to $PATH
+    -- @see https://github.com/xmake-io/xmake-repo/pull/3606
+    if is_host("windows") and package:is_plat("windows", "mingw") then -- bin/*.dll for windows
+        local toolchains = package:toolchains()
+        if not toolchains then
+            local platform_inst = platform.load(package:plat(), package:arch())
+            toolchains = platform_inst:toolchains()
+            for _, toolchain_inst in ipairs(toolchains) do
+                local runenvs = toolchain_inst:runenvs()
+                if runenvs and runenvs.PATH then
+                    local envs = {PATH = runenvs.PATH}
+                    os.addenvs(envs)
+                end
+            end
+        end
+    end
+
+    -- enter package environments
+    for _, dep in ipairs(package:orderdeps()) do
+        dep:envs_enter()
+    end
+    package:envs_enter()
+end
+
+
 function main(package)
 
     -- enter working directory
@@ -356,9 +392,7 @@ function main(package)
                     patch_sources(package)
 
                     -- enter the environments of all package dependencies
-                    for _, dep in ipairs(package:orderdeps()) do
-                        dep:envs_enter()
-                    end
+                    _enter_package_installenvs(package)
 
                     -- check package toolchains
                     _check_package_toolchains(package)
@@ -384,10 +418,7 @@ function main(package)
             end
 
             -- enter the package environments
-            for _, dep in ipairs(package:orderdeps()) do
-                dep:envs_enter()
-            end
-            package:envs_enter()
+            _enter_package_testenvs(package)
 
             -- fetch package and force to flush the cache
             local fetchinfo = package:fetch({force = true})

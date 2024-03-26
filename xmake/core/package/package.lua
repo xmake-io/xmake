@@ -979,9 +979,12 @@ function _instance:_rawenvs()
     local envs = self._RAWENVS
     if not envs then
         envs = {}
+
+        -- add bin PATH
         if self:is_binary() or self:is_plat("windows", "mingw") then -- bin/*.dll for windows
             envs.PATH = {"bin"}
         end
+
         -- add LD_LIBRARY_PATH to load *.so directory
         if os.host() ~= "windows" and self:is_plat(os.host()) and self:is_arch(os.arch()) then
             envs.LD_LIBRARY_PATH = {"lib"}
