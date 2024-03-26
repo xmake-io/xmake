@@ -979,9 +979,29 @@ function _instance:_rawenvs()
     local envs = self._RAWENVS
     if not envs then
         envs = {}
+
+        -- add bin PATH
         if self:is_binary() or self:is_plat("windows", "mingw") then -- bin/*.dll for windows
             envs.PATH = {"bin"}
         end
+
+        -- add compiler runtime library directory to $PATH
+        -- @see https://github.com/xmake-io/xmake-repo/pull/3606
+        if is_host("windows") and self:is_plat("windows", "mingw") then -- bin/*.dll for windows
+            local toolchains = self:toolchains()
+            if not toolchains then
+                local platform_inst = platform.load(self:plat(), self:arch())
+                toolchains = platform_inst:toolchains()
+                for _, toolchain_inst in ipairs(toolchains) do
+                    local runenvs = toolchain_inst:runenvs()
+                    if runenvs then
+                        envs.PATH = envs.PATH or {}
+                        table.join2(envs.PATH, runenvs.PATH)
+                    end
+                end
+            end
+        end
+
         -- add LD_LIBRARY_PATH to load *.so directory
         if os.host() ~= "windows" and self:is_plat(os.host()) and self:is_arch(os.arch()) then
             envs.LD_LIBRARY_PATH = {"lib"}
