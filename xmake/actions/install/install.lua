@@ -107,19 +107,21 @@ end
 
 -- install targets
 function main(targetname, group_pattern)
-
-    -- install the given target?
+    local targets = {}
     if targetname and not targetname:startswith("__") then
         local target = project.target(targetname)
-        _install_targets(target:orderdeps())
-        _install_target(target)
+        table.join2(targets, target:orderdeps())
+        table.insert(targets, target)
     else
-        -- install default or all targets
         for _, target in ipairs(project.ordertargets()) do
             local group = target:get("group")
             if (target:is_default() and not group_pattern) or targetname == "__all" or (group_pattern and group and group:match(group_pattern)) then
-                _install_target(target)
+                table.join2(targets, target:orderdeps())
+                table.insert(targets, target)
             end
         end
+    end
+    if #targets > 0 then
+        _install_targets(table.unique(targets))
     end
 end
