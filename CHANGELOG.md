@@ -10,6 +10,11 @@
 
 * Improve packages to support for clang-cl
 
+### Bugs fixed
+
+* [#4882](https://github.com/xmake-io/xmake/issues/4882): Fix install deps with --group
+* [#4877](https://github.com/xmake-io/xmake/issues/4877): Fix compile error for xpack with unity build
+
 ## v2.8.9
 
 ### New features
@@ -1781,6 +1786,11 @@
 ### 改进
 
 * 改进包管理，支持切换 clang-cl
+
+### Bugs 修复
+
+* [#4882](https://github.com/xmake-io/xmake/issues/4882): 修复安装组依赖问题
+* [#4877](https://github.com/xmake-io/xmake/issues/4877): 修复 xpack 打包时，unit build 编译失败问题
 
 ## v2.8.9
 
