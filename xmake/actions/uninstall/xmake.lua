@@ -46,6 +46,11 @@ task("uninstall")
                                                       "    $ xmake uninstall -o /usr/local",
                                                       "or  $ DESTDIR=/usr/local xmake uninstall",
                                                       "or  $ INSTALLDIR=/usr/local xmake uninstall" }
+                ,   {'g', "group",      "kv",  nil  , "Uninstall all targets of the given group. It support path pattern matching.",
+                                                      "e.g.",
+                                                      "    xmake uninstall -g test",
+                                                      "    xmake uninstall -g test_*",
+                                                      "    xmake uninstall --group=benchmark/*"     }
                 ,   {'p', "prefix",     "kv", nil   , "Set the prefix directory.",
                                                       "e.g.",
                                                       "    $ xmake uninstall --prefix=local",
