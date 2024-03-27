@@ -22,30 +22,30 @@ task("install")
     set_category("action")
     on_run("main")
     set_menu {
-                usage = "xmake install|i [options] [target]"
-            ,   description = "Package and install the target binary files."
-            ,   shortname = 'i'
-            ,   options =
-                {
-                    {'o', "installdir", "kv", nil   , "Set the install directory.",
-                                                      "e.g.",
-                                                      "    $ xmake install -o /usr/local",
-                                                      "or  $ DESTDIR=/usr/local xmake install",
-                                                      "or  $ INSTALLDIR=/usr/local xmake install" }
-                ,   {'g', "group",      "kv",  nil  , "Install all targets of the given group. It support path pattern matching.",
-                                                      "e.g.",
-                                                      "    xmake install -g test",
-                                                      "    xmake install -g test_*",
-                                                      "    xmake install --group=benchmark/*"     }
-                ,   {'a', "all",        "k",  nil   , "Install all targets."                      }
-                ,   {nil, "nopkgs",     "k",  nil   , "Only install targets without packages."    }
-                ,   {nil, "admin",      "k",  nil   , "Try to request administrator permission to install"}
-
-                ,   {                                                                               }
-                ,   {nil, "target",     "v",  nil   , "The target name. It will install all default targets if this parameter is not specified."
-                                                    , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
-                }
-            }
+        usage = "xmake install|i [options] [target]",
+        description = "Package and install the target binary files.",
+        shortname = 'i',
+        options = {
+            {'o', "installdir", "kv", nil   , "Set the install directory.",
+                                              "e.g.",
+                                              "    $ xmake install -o /usr/local",
+                                              "or  $ DESTDIR=/usr/local xmake install",
+                                              "or  $ INSTALLDIR=/usr/local xmake install" },
+            {'g', "group",      "kv",  nil  , "Install all targets of the given group. It support path pattern matching.",
+                                              "e.g.",
+                                              "    xmake install -g test",
+                                              "    xmake install -g test_*",
+                                              "    xmake install --group=benchmark/*"     },
+            {'a', "all",        "k",  nil   , "Install all targets."                      },
+            {nil, "nopkgs",     "k",  nil   , "Only install targets without packages."    },
+            {nil, "admin",      "k",  nil   , "Try to request administrator permission to install"},
+            {},
+            {nil, "target",     "v",  nil   , "The target name. It will install all default targets if this parameter is not specified.",
+                                              values = function (complete, opt)
+                                                  return import("private.utils.complete_helper.targets")(complete, opt)
+                                              end}
+        }
+    }
 
 
 
