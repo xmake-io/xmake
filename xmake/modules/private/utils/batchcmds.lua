@@ -284,7 +284,12 @@ function batchcmds:compilev(argv, opt)
     end
 
     -- we need to translate path for the project generator
-    local patterns = {"(^[%-/]external:I)(.*)", "(^[%-/]I)(.*)", "(^[%-/]Fp)(.*)", "(^[%-/]Fd)(.*)"}
+    local patterns = {"^([%-/]external:I)(.*)",
+                      "^([%-/]I)(.*)",
+                      "^([%-/]Fp)(.*)",
+                      "^([%-/]Fd)(.*)",
+                      "^([%-/]Yu)(.*)",
+                      "^([%-/]FI)(.*)"}
     for idx, item in ipairs(argv) do
         if type(item) == "string" then
             for _, pattern in ipairs(patterns) do
@@ -322,14 +327,18 @@ function batchcmds:link(objectfiles, targetfile, opt)
     local program, argv = linker_inst:linkargv(objectfiles, path(targetfile), opt)
 
     -- we need to translate path for the project generator
+    local patterns = {"^([%-/]L)(.*)",
+                      "^([%-/]F)(.*)",
+                      "^([%-/]libpath:)(.*)"}
     for idx, item in ipairs(argv) do
         if type(item) == "string" then
-            if item:startswith("-L") then
-                argv[idx] = path(item:sub(3), function (p) return "-L" .. p end)
-            elseif item:startswith("-F") then
-                argv[idx] = path(item:sub(3), function (p) return "-F" .. p end)
-            elseif item:startswith("-libpath:") then
-                argv[idx] = path(item:sub(10), function (p) return "-libpath:" .. p end)
+            for _, pattern in ipairs(patterns) do
+                local _, count = item:gsub(pattern, function (prefix, value)
+                    argv[idx] = path(value, function (p) return prefix .. p end)
+                end)
+                if count > 0 then
+                    break
+                end
             end
         end
     end
@@ -452,3 +461,4 @@ function new(opt)
     opt = opt or {}
     return batchcmds {_TARGET = opt.target, _CMDS = {}}
 end
+
