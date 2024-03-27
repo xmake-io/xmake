@@ -284,7 +284,12 @@ function batchcmds:compilev(argv, opt)
     end
 
     -- we need to translate path for the project generator
-    local patterns = {"^([%-/]external:I)(.*)", "^([%-/]I)(.*)", "^([%-/]Fp)(.*)", "^([%-/]Fd)(.*)"}
+    local patterns = {"^([%-/]external:I)(.*)",
+                      "^([%-/]I)(.*)",
+                      "^([%-/]Fp)(.*)",
+                      "^([%-/]Fd)(.*)",
+                      "^([%-/]Yu)(.*)",
+                      "^([%-/]FI)(.*)"}
     for idx, item in ipairs(argv) do
         if type(item) == "string" then
             for _, pattern in ipairs(patterns) do
@@ -322,7 +327,9 @@ function batchcmds:link(objectfiles, targetfile, opt)
     local program, argv = linker_inst:linkargv(objectfiles, path(targetfile), opt)
 
     -- we need to translate path for the project generator
-    local patterns = {"^([%-/]L)(.*)", "^([%-/]F)(.*)", "^([%-/]libpath:)(.*)"}
+    local patterns = {"^([%-/]L)(.*)",
+                      "^([%-/]F)(.*)",
+                      "^([%-/]libpath:)(.*)"}
     for idx, item in ipairs(argv) do
         if type(item) == "string" then
             for _, pattern in ipairs(patterns) do
