@@ -49,6 +49,12 @@ typedef enum __xm_os_signal_e {
     XM_OS_SIGINT = 1
 }xm_os_signal_e;
 
+typedef enum __xm_os_signal_handler_e {
+    XM_OS_SIGFUN = 0,
+    XM_OS_SIGDFL = 1,
+    XM_OS_SIGIGN = 2,
+}xm_os_signal_handler_e;
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
@@ -103,35 +109,66 @@ tb_int_t xm_os_signal(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
     g_lua = lua;
+    tb_int_t handler = XM_OS_SIGFUN;
 
     // check signal handler
-    if (!lua_isfunction(lua, 2))
+    if (lua_isnumber(lua, 2))
+        handler = (tb_int_t) luaL_checkinteger(lua, 2);
+    else if (!lua_isfunction(lua, 2))
         return 0;
 
     // save signal handler
     tb_int_t signo = (tb_int_t)luaL_checkinteger(lua, 1);
-    tb_char_t name[64] = {0};
-    tb_snprintf(name, sizeof(name), "_SIGNAL_HANDLER_%d", signo);
-    lua_pushvalue(lua, 2);
-    lua_setglobal(lua, name);
+    if (handler == XM_OS_SIGFUN)
+    {
+        tb_char_t name[64] = {0};
+        tb_snprintf(name, sizeof(name), "_SIGNAL_HANDLER_%d", signo);
+        lua_pushvalue(lua, 2);
+        lua_setglobal(lua, name);
+    }
 
 #if defined(TB_CONFIG_OS_WINDOWS)
-    if (signo == XM_OS_SIGINT)
-        SetConsoleCtrlHandler(xm_os_signal_handler, TRUE);
-#elif defined(SIGINT) // for checking signal
-    tb_int_t signo_native = -1;
+    if (signo != XM_OS_SIGINT)
+        return 0;
+
+    switch (handler)
+    {
+        case XM_OS_SIGFUN:
+            SetConsoleCtrlHandler(xm_os_signal_handler, TRUE);
+            break;
+        case XM_OS_SIGDFL:
+            SetConsoleCtrlHandler(NULL, FALSE);
+            break;
+        case XM_OS_SIGIGN:
+            SetConsoleCtrlHandler(NULL, TRUE);
+            break;
+        default:
+            break;
+    }
+#elif defined(SIGINT)
     switch (signo)
     {
     case XM_OS_SIGINT:
-#ifdef SIGINT
-        signo_native = SIGINT;
-#endif
+        signo = SIGINT;
         break;
     default:
-        break;
+        return 0;
     }
-    if (signo_native >= 0)
-        signal(signo_native, xm_os_signal_handler);
+
+    switch (handler)
+    {
+        case XM_OS_SIGFUN:
+            signal(signo, xm_os_signal_handler);
+            break;
+        case XM_OS_SIGDFL:
+            signal(signo, SIG_DFL);
+            break;
+        case XM_OS_SIGIGN:
+            signal(signo, SIG_IGN);
+            break;
+        default:
+            break;
+    }
 #endif
     return 0;
 }
