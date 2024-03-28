@@ -93,6 +93,8 @@ sandbox_os.SYSERR_NOT_ACCESS  = os.SYSERR_NOT_ACCESS
 
 -- signal code
 sandbox_os.SIGINT = os.SIGINT
+sandbox_os.SIGDFL = os.SIGDFL
+sandbox_os.SIGIGN = os.SIGIGN
 
 -- copy file or directory
 function sandbox_os.cp(srcpath, dstpath, opt)

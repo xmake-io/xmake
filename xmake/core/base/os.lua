@@ -56,6 +56,8 @@ os.SYSERR_NOT_ACCESS  = 3
 
 -- signal code
 os.SIGINT = 1
+os.SIGDFL = 1
+os.SIGIGN = 2
 
 -- copy single file or directory
 function os._cp(src, dst, rootdir, opt)
