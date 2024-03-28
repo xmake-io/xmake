@@ -82,6 +82,7 @@ sandbox_os.projectdir   = os.projectdir
 sandbox_os.projectfile  = os.projectfile
 sandbox_os.getwinsize   = os.getwinsize
 sandbox_os.getpid       = os.getpid
+sandbox_os.signal       = os.signal
 
 -- syserror code
 sandbox_os.SYSERR_UNKNOWN     = os.SYSERR_UNKNOWN
@@ -89,6 +90,9 @@ sandbox_os.SYSERR_NONE        = os.SYSERR_NONE
 sandbox_os.SYSERR_NOT_PERM    = os.SYSERR_NOT_PERM
 sandbox_os.SYSERR_NOT_FILEDIR = os.SYSERR_NOT_FILEDIR
 sandbox_os.SYSERR_NOT_ACCESS  = os.SYSERR_NOT_ACCESS
+
+-- signal code
+sandbox_os.SIGINT = os.SIGINT
 
 -- copy file or directory
 function sandbox_os.cp(srcpath, dstpath, opt)

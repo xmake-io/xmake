@@ -45,6 +45,7 @@ os._getenvs  = os._getenvs or os.getenvs
 os._cpuinfo  = os._cpuinfo or os.cpuinfo
 os._meminfo  = os._meminfo or os.meminfo
 os._readlink = os._readlink or os.readlink
+os._signal   = os._signal or os.signal
 
 -- syserror code
 os.SYSERR_UNKNOWN     = -1
@@ -52,6 +53,9 @@ os.SYSERR_NONE        = 0
 os.SYSERR_NOT_PERM    = 1
 os.SYSERR_NOT_FILEDIR = 2
 os.SYSERR_NOT_ACCESS  = 3
+
+-- signal code
+os.SIGINT = 1
 
 -- copy single file or directory
 function os._cp(src, dst, rootdir, opt)
@@ -1413,6 +1417,11 @@ end
 -- read the content of symlink
 function os.readlink(symlink)
     return os._readlink(path.absolute(symlink))
+end
+
+-- register signal handler
+function os.signal(signo, handler)
+    os._signal(signo, handler)
 end
 
 -- get the program directory
