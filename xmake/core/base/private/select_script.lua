@@ -36,6 +36,9 @@ function _match_pattern(pattern, plat, arch, opt)
         local is_excluded_pattern = pattern_plat:find('!', 1, true)
         if excluded and is_excluded_pattern then
             matched = not ('!' .. plat):match('^' .. pattern_plat .. '$')
+            if matched then
+                return true
+            end
         elseif not is_excluded_pattern then
             matched = plat:match('^' .. pattern_plat .. '$')
         end
@@ -68,10 +71,24 @@ end
 
 -- match patterns
 function _match_patterns(patterns, plat, arch, opt)
+    local patterns_excluded = {}
     for _, pattern in ipairs(patterns) do
-        if _match_pattern(pattern, plat, arch, opt) then
-            return true
+        if pattern:startswith("!") then
+            table.insert(patterns_excluded, pattern)
+        else
+            if _match_pattern(pattern, plat, arch, opt) then
+                return true
+            end
         end
+    end
+    local matched = 0
+    for _, pattern in ipairs(patterns_excluded) do
+        if _match_pattern(pattern, plat, arch, opt) then
+            matched = matched + 1
+        end
+    end
+    if #patterns_excluded > 0 and #patterns_excluded == matched then
+        return true
     end
 end
 
