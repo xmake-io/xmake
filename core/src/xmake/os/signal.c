@@ -57,44 +57,41 @@ static lua_State* g_lua = tb_null;
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_void_t xm_os_signal_handler_impl(tb_int_t signo_native)
+static tb_void_t xm_os_signal_handler_impl(tb_int_t signo)
 {
     // do callback(signo)
     lua_State* lua = g_lua;
     if (lua)
     {
-        tb_int_t signo = -1;
-        switch (signo_native)
-        {
-#ifdef SIGINT
-        case SIGINT:
-            signo = XM_OS_SIGINT;
-            break;
-#endif
-        default:
-            break;
-        }
-        if (signo >= 0)
-        {
-            tb_char_t name[64] = {0};
-            tb_snprintf(name, sizeof(name), "_SIGNAL_HANDLER_%d", signo);
-            lua_getglobal(lua, name);
-            lua_pushinteger(lua, signo);
-            lua_call(lua, 1, 0);
-        }
+        tb_char_t name[64] = {0};
+        tb_snprintf(name, sizeof(name), "_SIGNAL_HANDLER_%d", signo);
+        lua_getglobal(lua, name);
+        lua_pushinteger(lua, signo);
+        lua_call(lua, 1, 0);
     }
 }
 
 #if defined(TB_CONFIG_OS_WINDOWS)
-static BOOL WINAPI xm_os_signal_handler(DWORD signo)
+static BOOL WINAPI xm_os_signal_handler(DWORD ctrl_type)
 {
-    xm_os_signal_handler_impl((tb_int_t)signo)
+    if (ctrl_type == CTRL_C_EVENT)
+        xm_os_signal_handler_impl(XM_OS_SIGINT);
     return TRUE;
 }
 #elif defined(SIGINT)
-static tb_void_t xm_os_signal_handler(tb_int_t signo)
+static tb_void_t xm_os_signal_handler(tb_int_t signo_native)
 {
-    xm_os_signal_handler_impl(signo);
+    tb_int_t signo = -1;
+    switch (signo_native)
+    {
+    case SIGINT:
+        signo = XM_OS_SIGINT;
+        break;
+    default:
+        break;
+    }
+    if (signo >= 0)
+        xm_os_signal_handler_impl(signo);
 }
 #endif
 
