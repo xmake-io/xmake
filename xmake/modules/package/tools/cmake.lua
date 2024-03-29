@@ -506,7 +506,7 @@ function _get_configs_for_mingw(package, configs, opt)
     -- CMAKE_MAKE_PROGRAM may be required for some CMakeLists.txt (libcurl)
     if is_subhost("windows") and opt.cmake_generator ~= "Ninja" then
         local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
-        envs.CMAKE_MAKE_PROGRAM = path.join(mingw, "bin", "mingw32-make.exe")
+        envs.CMAKE_MAKE_PROGRAM = _translate_bin_path(path.join(mingw, "bin", "mingw32-make.exe"))
     end
     if opt.cmake_generator == "Ninja" then
         envs.CMAKE_MAKE_PROGRAM = "ninja"
