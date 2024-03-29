@@ -128,7 +128,13 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
     if cl then
         local outfile = os.tmpfile() .. ".rc.out"
         local errfile = os.tmpfile() .. ".rc.err"
-        local ok = try {function () os.execv(cl, {"-E", sourcefile}, {stdout = outfile, stderr = errfile, envs = self:runenvs()}); return true end}
+        local includeflags = {}
+        for _, flag in ipairs(flags) do
+            if flag:match("^[-/]I") then
+                table.insert(includeflags, flag)
+            end
+        end
+        local ok = try {function () os.execv(cl, table.join("-E", includeflags, sourcefile), {stdout = outfile, stderr = errfile, envs = self:runenvs()}); return true end}
         if ok and os.isfile(outfile) then
             local depfiles_rc
             local includeset = hashset.new()
