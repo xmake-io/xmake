@@ -21,7 +21,8 @@
 -- add *.def for windows/dll
 rule("platform.windows.def")
     set_extensions(".def")
-    on_config("windows", "mingw", function (target)
+
+    before_buildcmd_file("windows", "mingw", function (target, batchcmds, sourcefile, opt)
         if not target:is_shared() then
             return
         end
@@ -30,16 +31,14 @@ rule("platform.windows.def")
             return
         end
 
-        local sourcebatch = target:sourcebatches()["platform.windows.def"]
-        if sourcebatch then
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local flag = path.translate(sourcefile)
-                if target:is_plat("windows") then
-                    flag = "/def:" .. flag
-                end
-                target:add("shflags", flag, {force = true})
-                break;
-            end
+        local flag = path.translate(sourcefile)
+        if target:is_plat("windows") then
+            flag = "/def:" .. flag
         end
-    end)
+        target:add("shflags", flag, {force = true})
 
+        batchcmds:mkdir(target:targetdir())
+        batchcmds:add_depfiles(sourcefile)
+        batchcmds:set_depmtime(os.mtime(target:targetfile()))
+        batchcmds:set_depcache(target:dependfile(target:targetfile()))
+    end)
