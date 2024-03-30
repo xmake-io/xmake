@@ -309,10 +309,18 @@ function buildenvs(package, opt)
         table.join2(cxxflags, package:_generate_sanitizer_configs("address", "cxx").cxxflags)
         table.join2(ldflags, package:_generate_sanitizer_configs("address").ldflags)
     end
-    envs.CFLAGS    = table.concat(_translate_paths(cflags), ' ')
-    envs.CXXFLAGS  = table.concat(_translate_paths(cxxflags), ' ')
-    envs.CPPFLAGS  = table.concat(_translate_paths(cppflags), ' ')
-    envs.ASFLAGS   = table.concat(_translate_paths(asflags), ' ')
+    if cflags then
+        envs.CFLAGS    = table.concat(_translate_paths(cflags), ' ')
+    end
+    if cxxflags then
+        envs.CXXFLAGS  = table.concat(_translate_paths(cxxflags), ' ')
+    end
+    if cppflags then
+        envs.CPPFLAGS  = table.concat(_translate_paths(cppflags), ' ')
+    end
+    if asflags then
+        envs.ASFLAGS   = table.concat(_translate_paths(asflags), ' ')
+    end
     if arflags then
         envs.ARFLAGS   = table.concat(_translate_paths(arflags), ' ')
     end
