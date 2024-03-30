@@ -29,7 +29,7 @@ import("lib.detect.find_tool")
 
 -- translate paths
 function _translate_paths(package, paths)
-    if paths and is_host("windows") and package:is_plat("mingw", "msys", "cygwin") then
+    if paths and is_host("windows") then
         if type(paths) == "string" then
             return path.unix(paths)
         elseif type(paths) == "table" then
@@ -243,11 +243,6 @@ function buildenvs(package, opt)
         table.join2(cxxflags, _get_cflags_from_packagedeps(package, opt))
         table.join2(cppflags, _get_cflags_from_packagedeps(package, opt))
         table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
-        envs.CFLAGS    = table.concat(cflags, ' ')
-        envs.CXXFLAGS  = table.concat(cxxflags, ' ')
-        envs.CPPFLAGS  = table.concat(cppflags, ' ')
-        envs.ASFLAGS   = table.concat(asflags, ' ')
-        envs.LDFLAGS   = table.concat(ldflags, ' ')
     else
         cross = true
         cppflags = {}
@@ -314,18 +309,18 @@ function buildenvs(package, opt)
         table.join2(cxxflags, package:_generate_sanitizer_configs("address", "cxx").cxxflags)
         table.join2(ldflags, package:_generate_sanitizer_configs("address").ldflags)
     end
-    envs.CFLAGS    = table.concat(cflags, ' ')
-    envs.CXXFLAGS  = table.concat(cxxflags, ' ')
-    envs.CPPFLAGS  = table.concat(cppflags, ' ')
-    envs.ASFLAGS   = table.concat(asflags, ' ')
+    envs.CFLAGS    = table.concat(_translate_paths(cflags), ' ')
+    envs.CXXFLAGS  = table.concat(_translate_paths(cxxflags), ' ')
+    envs.CPPFLAGS  = table.concat(_translate_paths(cppflags), ' ')
+    envs.ASFLAGS   = table.concat(_translate_paths(asflags), ' ')
     if arflags then
-        envs.ARFLAGS   = table.concat(arflags, ' ')
+        envs.ARFLAGS   = table.concat(_translate_paths(arflags), ' ')
     end
     if ldflags then
-        envs.LDFLAGS   = table.concat(ldflags, ' ')
+        envs.LDFLAGS   = table.concat(_translate_paths(ldflags), ' ')
     end
     if shflags then
-        envs.SHFLAGS   = table.concat(shflags, ' ')
+        envs.SHFLAGS   = table.concat(_translate_paths(shflags), ' ')
     end
 
     -- cross-compilation? pass the full build environments
@@ -400,22 +395,6 @@ function buildenvs(package, opt)
         envs.LDSHARED = _translate_windows_bin_path(envs.LDSHARED)
         envs.CPP      = _translate_windows_bin_path(envs.CPP)
         envs.RANLIB   = _translate_windows_bin_path(envs.RANLIB)
-        if package:is_plat("android") then
-            -- use unix path separator on android as windows seps may not be understood by some tools (e.g. openssl's perl)
-            envs.CFLAGS    = path.unix(envs.CFLAGS)
-            envs.CXXFLAGS  = path.unix(envs.CXXFLAGS)
-            envs.CPPFLAGS  = path.unix(envs.CPPFLAGS)
-            envs.ASFLAGS   = path.unix(envs.ASFLAGS)
-            if envs.ARFLAGS then
-                envs.ARFLAGS   = path.unix(envs.ARFLAGS)
-            end
-            if envs.LDFLAGS then
-                envs.LDFLAGS   = path.unix(envs.LDFLAGS)
-            end
-            if envs.SHFLAGS then
-                envs.SHFLAGS   = path.unix(envs.SHFLAGS)
-            end
-        end
     end
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
