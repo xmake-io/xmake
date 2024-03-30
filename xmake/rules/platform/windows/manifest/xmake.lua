@@ -34,6 +34,7 @@ rule("platform.windows.manifest")
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     target:add("ldflags", "/manifestinput:" .. path.translate(sourcefile), {force = true})
                     target:add("shflags", "/manifestinput:" .. path.translate(sourcefile), {force = true})
+                    target:data_add("linkdepfiles", sourcefile)
                     manifest = true
                     local content = io.readfile(sourcefile)
                     if content then

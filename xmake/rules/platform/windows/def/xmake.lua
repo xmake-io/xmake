@@ -38,8 +38,8 @@ rule("platform.windows.def")
                     flag = "/def:" .. flag
                 end
                 -- https://github.com/xmake-io/xmake/pull/4901
-                target:data_add("linkdepfiles", sourcefile)
                 target:add("shflags", flag, {force = true})
+                target:data_add("linkdepfiles", sourcefile)
                 break;
             end
         end
