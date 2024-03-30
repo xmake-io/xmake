@@ -169,7 +169,7 @@ function _get_cflags(package, opt)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
     if #result > 0 then
-        return os.args(result)
+        return _translate_paths(os.args(result))
     end
 end
 
@@ -200,7 +200,7 @@ function _get_cxxflags(package, opt)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
     if #result > 0 then
-        return os.args(result)
+        return _translate_paths(os.args(result))
     end
 end
 
@@ -219,7 +219,7 @@ function _get_asflags(package, opt)
         table.join2(result, opt.asflags)
     end
     if #result > 0 then
-        return os.args(result)
+        return _translate_paths(os.args(result))
     end
 end
 
@@ -245,7 +245,7 @@ function _get_ldflags(package, opt)
         table.join2(result, opt.ldflags)
     end
     if #result > 0 then
-        return os.args(result)
+        return _translate_paths(os.args(result))
     end
 end
 
@@ -271,7 +271,7 @@ function _get_shflags(package, opt)
         table.join2(result, opt.shflags)
     end
     if #result > 0 then
-        return os.args(result)
+        return _translate_paths(os.args(result))
     end
 end
 

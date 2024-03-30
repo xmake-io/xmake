@@ -166,8 +166,6 @@ function main(toolchain)
         -- add sysroot flags
         local ndk_sysroot = toolchain:config("ndk_sysroot")
         if ndk_sysroot and os.isdir(ndk_sysroot) then
-            -- use unix path separator on android as windows seps may not be understood by some tools (e.g. openssl's perl)
-            ndk_sysroot = path.unix(ndk_sysroot)
             local triple = _get_triple(arch)
             if ndkver and tonumber(ndkver) < 22 then
                 toolchain:add("cxflags", "-D__ANDROID_API__=" .. ndk_sdkver)
@@ -176,9 +174,9 @@ function main(toolchain)
             toolchain:add("cflags",  "--sysroot=" .. ndk_sysroot)
             toolchain:add("cxxflags","--sysroot=" .. ndk_sysroot)
             toolchain:add("asflags", "--sysroot=" .. ndk_sysroot)
-            toolchain:add("cflags",  "-isystem " .. format("%s/%s/%s/%s", ndk_sysroot, "usr", "include", triple))
-            toolchain:add("cxxflags","-isystem " .. format("%s/%s/%s/%s", ndk_sysroot, "usr", "include", triple))
-            toolchain:add("asflags", "-isystem " .. format("%s/%s/%s/%s", ndk_sysroot, "usr", "include", triple))
+            toolchain:add("cflags",  "-isystem " .. path.join(ndk_sysroot, "usr", "include", triple))
+            toolchain:add("cxxflags","-isystem " .. path.join(ndk_sysroot, "usr", "include", triple))
+            toolchain:add("asflags", "-isystem " .. path.join(ndk_sysroot, "usr", "include", triple))
         else
             local ndk_sdkdir = path.translate(format("%s/platforms/android-%d", ndk, ndk_sdkver))
             if os.isdir(ndk_sdkdir) then

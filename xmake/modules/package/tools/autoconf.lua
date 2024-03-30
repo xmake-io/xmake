@@ -400,6 +400,22 @@ function buildenvs(package, opt)
         envs.LDSHARED = _translate_windows_bin_path(envs.LDSHARED)
         envs.CPP      = _translate_windows_bin_path(envs.CPP)
         envs.RANLIB   = _translate_windows_bin_path(envs.RANLIB)
+        if package:is_plat("android") then
+            -- use unix path separator on android as windows seps may not be understood by some tools (e.g. openssl's perl)
+            envs.CFLAGS    = path.unix(envs.CFLAGS)
+            envs.CXXFLAGS  = path.unix(envs.CXXFLAGS)
+            envs.CPPFLAGS  = path.unix(envs.CPPFLAGS)
+            envs.ASFLAGS   = path.unix(envs.ASFLAGS)
+            if envs.ARFLAGS then
+                envs.ARFLAGS   = path.unix(envs.ARFLAGS)
+            end
+            if envs.LDFLAGS then
+                envs.LDFLAGS   = path.unix(envs.LDFLAGS)
+            end
+            if envs.SHFLAGS then
+                envs.SHFLAGS   = path.unix(envs.SHFLAGS)
+            end
+        end
     end
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
