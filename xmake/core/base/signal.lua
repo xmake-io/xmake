@@ -25,7 +25,7 @@ local signal = signal or {}
 local os = require("base/os")
 
 -- signal code
-signal.SIGINT = 1
+signal.SIGINT = 2
 
 -- register signal handler
 function signal.register(signo, handler)

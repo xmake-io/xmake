@@ -46,7 +46,7 @@
  * types
  */
 typedef enum __xm_os_signal_e {
-    XM_OS_SIGINT = 1
+    XM_OS_SIGINT = 2
 }xm_os_signal_e;
 
 typedef enum __xm_os_signal_handler_e {
