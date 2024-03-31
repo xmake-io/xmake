@@ -42,8 +42,10 @@ rule("linker.link_scripts")
         if target:has_tool("ld", "gcc", "gxx", "clang", "clangxx") or
             target:has_tool("sh", "gcc", "gxx", "clang", "clangxx") then
             target:add(target:is_shared() and "shflags" or "ldflags", "-T " .. scriptfile, {force = true})
+            target:data_add("linkdepfiles", scriptfile)
         elseif target:has_tool("ld", "ld") or target:has_tool("sh", "ld") then
             target:add(target:is_shared() and "shflags" or "ldflags", "-T " .. scriptfile, {force = true})
+            target:data_add("linkdepfiles", scriptfile)
         end
     end)
 

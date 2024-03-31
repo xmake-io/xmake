@@ -37,7 +37,9 @@ rule("platform.windows.def")
                 if target:is_plat("windows") then
                     flag = "/def:" .. flag
                 end
+                -- https://github.com/xmake-io/xmake/pull/4901
                 target:add("shflags", flag, {force = true})
+                target:data_add("linkdepfiles", sourcefile)
                 break;
             end
         end
