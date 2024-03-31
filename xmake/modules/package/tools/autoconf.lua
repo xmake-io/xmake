@@ -28,7 +28,7 @@ import("core.cache.memcache")
 import("lib.detect.find_tool")
 
 -- translate paths
-function _translate_paths(package, paths)
+function _translate_paths(paths)
     if paths and is_host("windows") then
         if type(paths) == "string" then
             return path.unix(paths)
@@ -123,7 +123,7 @@ function _get_configs(package, configs)
 
     -- add prefix
     local configs = configs or {}
-    table.insert(configs, "--prefix=" .. _translate_paths(package, package:installdir()))
+    table.insert(configs, "--prefix=" .. _translate_paths(package:installdir()))
 
     -- add host for cross-complation
     if not configs.host and _is_cross_compilation(package) then
@@ -188,8 +188,8 @@ function _get_cflags_from_packagedeps(package, opt)
             local fetchinfo = dep:fetch({external = false})
             if fetchinfo then
                 table.join2(result, _map_compflags(package, "cxx", "define", fetchinfo.defines))
-                table.join2(result, _translate_paths(package, _map_compflags(package, "cxx", "includedir", fetchinfo.includedirs)))
-                table.join2(result, _translate_paths(package, _map_compflags(package, "cxx", "sysincludedir", fetchinfo.sysincludedirs)))
+                table.join2(result, _translate_paths(_map_compflags(package, "cxx", "includedir", fetchinfo.includedirs)))
+                table.join2(result, _translate_paths(_map_compflags(package, "cxx", "sysincludedir", fetchinfo.sysincludedirs)))
             end
         end
     end
@@ -204,9 +204,9 @@ function _get_ldflags_from_packagedeps(package, opt)
         if dep then
             local fetchinfo = dep:fetch({external = false})
             if fetchinfo then
-                table.join2(result, _translate_paths(package, _map_linkflags(package, "binary", {"cxx"}, "linkdir", fetchinfo.linkdirs)))
+                table.join2(result, _translate_paths(_map_linkflags(package, "binary", {"cxx"}, "linkdir", fetchinfo.linkdirs)))
                 table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "link", fetchinfo.links))
-                table.join2(result, _translate_paths(package, _map_linkflags(package, "binary", {"cxx"}, "syslink", fetchinfo.syslinks)))
+                table.join2(result, _translate_paths(_map_linkflags(package, "binary", {"cxx"}, "syslink", fetchinfo.syslinks)))
                 table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "framework", fetchinfo.frameworks))
             end
         end
@@ -578,4 +578,3 @@ function install(package, configs, opt)
     end
     make(package, argv, opt)
 end
-
