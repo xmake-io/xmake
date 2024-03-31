@@ -28,8 +28,8 @@ import("core.cache.memcache")
 import("lib.detect.find_tool")
 
 -- translate paths
-function _translate_paths(package, paths)
-    if paths and is_host("windows") and package:is_plat("mingw", "msys", "cygwin") then
+function _translate_paths(paths)
+    if paths and is_host("windows") then
         if type(paths) == "string" then
             return path.unix(paths)
         elseif type(paths) == "table" then
@@ -123,7 +123,7 @@ function _get_configs(package, configs)
 
     -- add prefix
     local configs = configs or {}
-    table.insert(configs, "--prefix=" .. _translate_paths(package, package:installdir()))
+    table.insert(configs, "--prefix=" .. _translate_paths(package:installdir()))
 
     -- add host for cross-complation
     if not configs.host and _is_cross_compilation(package) then
@@ -188,8 +188,8 @@ function _get_cflags_from_packagedeps(package, opt)
             local fetchinfo = dep:fetch({external = false})
             if fetchinfo then
                 table.join2(result, _map_compflags(package, "cxx", "define", fetchinfo.defines))
-                table.join2(result, _translate_paths(package, _map_compflags(package, "cxx", "includedir", fetchinfo.includedirs)))
-                table.join2(result, _translate_paths(package, _map_compflags(package, "cxx", "sysincludedir", fetchinfo.sysincludedirs)))
+                table.join2(result, _translate_paths(_map_compflags(package, "cxx", "includedir", fetchinfo.includedirs)))
+                table.join2(result, _translate_paths(_map_compflags(package, "cxx", "sysincludedir", fetchinfo.sysincludedirs)))
             end
         end
     end
@@ -204,9 +204,9 @@ function _get_ldflags_from_packagedeps(package, opt)
         if dep then
             local fetchinfo = dep:fetch({external = false})
             if fetchinfo then
-                table.join2(result, _translate_paths(package, _map_linkflags(package, "binary", {"cxx"}, "linkdir", fetchinfo.linkdirs)))
+                table.join2(result, _translate_paths(_map_linkflags(package, "binary", {"cxx"}, "linkdir", fetchinfo.linkdirs)))
                 table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "link", fetchinfo.links))
-                table.join2(result, _translate_paths(package, _map_linkflags(package, "binary", {"cxx"}, "syslink", fetchinfo.syslinks)))
+                table.join2(result, _translate_paths(_map_linkflags(package, "binary", {"cxx"}, "syslink", fetchinfo.syslinks)))
                 table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "framework", fetchinfo.frameworks))
             end
         end
@@ -243,11 +243,6 @@ function buildenvs(package, opt)
         table.join2(cxxflags, _get_cflags_from_packagedeps(package, opt))
         table.join2(cppflags, _get_cflags_from_packagedeps(package, opt))
         table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
-        envs.CFLAGS    = table.concat(cflags, ' ')
-        envs.CXXFLAGS  = table.concat(cxxflags, ' ')
-        envs.CPPFLAGS  = table.concat(cppflags, ' ')
-        envs.ASFLAGS   = table.concat(asflags, ' ')
-        envs.LDFLAGS   = table.concat(ldflags, ' ')
     else
         cross = true
         cppflags = {}
@@ -314,18 +309,26 @@ function buildenvs(package, opt)
         table.join2(cxxflags, package:_generate_sanitizer_configs("address", "cxx").cxxflags)
         table.join2(ldflags, package:_generate_sanitizer_configs("address").ldflags)
     end
-    envs.CFLAGS    = table.concat(cflags, ' ')
-    envs.CXXFLAGS  = table.concat(cxxflags, ' ')
-    envs.CPPFLAGS  = table.concat(cppflags, ' ')
-    envs.ASFLAGS   = table.concat(asflags, ' ')
+    if cflags then
+        envs.CFLAGS    = table.concat(_translate_paths(cflags), ' ')
+    end
+    if cxxflags then
+        envs.CXXFLAGS  = table.concat(_translate_paths(cxxflags), ' ')
+    end
+    if cppflags then
+        envs.CPPFLAGS  = table.concat(_translate_paths(cppflags), ' ')
+    end
+    if asflags then
+        envs.ASFLAGS   = table.concat(_translate_paths(asflags), ' ')
+    end
     if arflags then
-        envs.ARFLAGS   = table.concat(arflags, ' ')
+        envs.ARFLAGS   = table.concat(_translate_paths(arflags), ' ')
     end
     if ldflags then
-        envs.LDFLAGS   = table.concat(ldflags, ' ')
+        envs.LDFLAGS   = table.concat(_translate_paths(ldflags), ' ')
     end
     if shflags then
-        envs.SHFLAGS   = table.concat(shflags, ' ')
+        envs.SHFLAGS   = table.concat(_translate_paths(shflags), ' ')
     end
 
     -- cross-compilation? pass the full build environments
@@ -575,4 +578,3 @@ function install(package, configs, opt)
     end
     make(package, argv, opt)
 end
-
