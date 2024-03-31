@@ -155,7 +155,8 @@ function _find_qmake(sdkdir, sdkver)
     if sdkver then
         sdkver = semver.try_parse(sdkver)
         if sdkver then
-            qmake = find_tool("qmake", {program = "qmake" .. sdkver:major(), paths = sdkdir and path.join(sdkdir, "bin")})
+            local cachekey = "qmake-" .. sdkver:major()
+            qmake = find_tool("qmake", {program = "qmake" .. sdkver:major(), cachekey = cachekey, paths = sdkdir and path.join(sdkdir, "bin")})
         end
     end
 
@@ -164,7 +165,8 @@ function _find_qmake(sdkdir, sdkver)
     if not qmake then
         local suffixes = {"", "6", "-qt5"}
         for _, suffix in ipairs(suffixes) do
-            qmake = find_tool("qmake", {program = "qmake" .. suffix, paths = sdkdir and path.join(sdkdir, "bin")})
+            local cachekey = "qmake-" .. suffix
+            qmake = find_tool("qmake", {program = "qmake" .. suffix, cachekey = cachekey, paths = sdkdir and path.join(sdkdir, "bin")})
             if qmake then
                 break
             end
