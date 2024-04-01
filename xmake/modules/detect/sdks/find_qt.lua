@@ -134,7 +134,19 @@ function _find_sdkdir(sdkdir, sdkver)
     end
 
     -- attempt to find qmake
-    local qmake = find_file(is_host("windows") and "qmake.exe" or "qmake", paths, {suffixes = subdirs})
+    local qmake
+    if is_host("windows") then
+        qmake = find_file("qmake.exe", paths, {suffixes = subdirs})
+    else
+        -- @see https://github.com/xmake-io/xmake/issues/4881
+        if sdkver then
+            local major = sdkver:sub(1, 1)
+            qmake = find_file("qmake" .. major, paths, {suffixes = subdirs})
+        end
+        if not qmake then
+            qmake = find_file("qmake", paths, {suffixes = subdirs})
+        end
+    end
     if qmake then
         return path.directory(path.directory(qmake)), qmake
     end
