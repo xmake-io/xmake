@@ -198,23 +198,14 @@ function core_sandbox_module._load(dir, name, opt)
     local module
     local modulekind = opt.modulekind
     if modulekind == MODULE_KIND_LUAFILE then
-        local result, errors = core_sandbox_module._load_from_scriptfile(module_fullpath, opt)
-        if not result then
-            return nil, errors
-        end
-        module = result
-        script = errors
+        module, script = core_sandbox_module._load_from_scriptfile(module_fullpath, opt)
     elseif modulekind == MODULE_KIND_LUADIR then
-        local result, errors = core_sandbox_module._load_from_scriptdir(module_fullpath, opt)
-        if not result then
-            return nil, errors
-        end
-        module = result
-        script = errors
+        module, script = core_sandbox_module._load_from_scriptdir(module_fullpath, opt)
     elseif modulekind == MODULE_KIND_BINARY then -- load binary module
     end
     if not module then
-        return nil, string.format("module: %s not found!", name)
+        local errors = script
+        return nil, errors or string.format("module: %s not found!", name)
     end
     return module, script
 end
@@ -399,7 +390,7 @@ function core_sandbox_module.import(name, opt)
 
         -- load module.interface
         if module2_name and interface_name then
-            found2, module2, errors2 = core_sandbox_module._find_and_load(module2_name, opt, instance, modules, modules_directories)
+            found2, module2, errors2 = core_sandbox_module._find_and_load(module2_name, loadopt)
             if found2 and module2 and module2[interface_name] then
                 module = module2[interface_name]
                 found = true
