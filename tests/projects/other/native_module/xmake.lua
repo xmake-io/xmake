@@ -9,6 +9,6 @@ target("test")
 --        import("shared.foo")
         import("binary.bar")
 --        print("1 + 1 = %d", foo.add(1, 1))
-        print("1 - 1 = %s", bar("1", "1"))
+        print("%s", bar("hello", "xmake!"))
     end)
 

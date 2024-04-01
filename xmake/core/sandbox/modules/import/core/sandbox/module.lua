@@ -181,6 +181,14 @@ function core_sandbox_module._load_from_scriptdir(module_fullpath, opt)
     return module, script
 end
 
+-- load module from the binary module
+function core_sandbox_module._load_from_binary(module_fullpath, opt)
+end
+
+-- load module from the shared module
+function core_sandbox_module._load_from_shared(module_fullpath, opt)
+end
+
 -- load module
 function core_sandbox_module._load(dir, name, opt)
     opt = opt or {}
@@ -201,7 +209,10 @@ function core_sandbox_module._load(dir, name, opt)
         module, script = core_sandbox_module._load_from_scriptfile(module_fullpath, opt)
     elseif modulekind == MODULE_KIND_LUADIR then
         module, script = core_sandbox_module._load_from_scriptdir(module_fullpath, opt)
-    elseif modulekind == MODULE_KIND_BINARY then -- load binary module
+    elseif modulekind == MODULE_KIND_BINARY then
+        module, script = core_sandbox_module._load_from_binary(module_fullpath, opt)
+    elseif modulekind == MODULE_KIND_SHARED then
+        module, script = core_sandbox_module._load_from_shared(module_fullpath, opt)
     end
     if not module then
         local errors = script
@@ -251,17 +262,10 @@ end
 
 -- get module name
 function core_sandbox_module.name(name)
-
-    -- check
-    assert(name)
-
-    -- find modulename
     local i = name:lastof(".", true)
     if i then
         name = name:sub(i + 1)
     end
-
-    -- get it
     return name
 end
 
