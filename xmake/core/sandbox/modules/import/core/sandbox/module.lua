@@ -132,7 +132,8 @@ function core_sandbox_module._find(dir, name)
 end
 
 -- load module
-function core_sandbox_module._load(dir, name, instance, module)
+function core_sandbox_module._load(dir, name, opt)
+    opt = opt or {}
     assert(dir and name)
 
     -- get module subpath
@@ -144,28 +145,22 @@ function core_sandbox_module._load(dir, name, instance, module)
 
     -- load the single module?
     local script = nil
+    local module = opt.module
     if os.isfile(module_fullpath .. ".lua") then
         assert(not module)
-
-        -- load module
-        local result, errors = core_sandbox_module._loadfile(module_fullpath .. ".lua", instance)
+        local result, errors = core_sandbox_module._loadfile(module_fullpath .. ".lua", opt.instance)
         if not result then
             return nil, errors
         end
-
         module = result
         script = errors
 
     -- load modules
     elseif os.isdir(module_fullpath) then
-
-        -- get modulefiles
         local modulefiles = os.match(path.join(module_fullpath, "**.lua"))
         if modulefiles then
             for _, modulefile in ipairs(modulefiles) do
-
-                -- load module
-                local result, errors = core_sandbox_module._loadfile(modulefile, instance)
+                local result, errors = core_sandbox_module._loadfile(modulefile, opt.instance)
                 if not result then
                     return nil, errors
                 end
@@ -180,29 +175,17 @@ function core_sandbox_module._load(dir, name, instance, module)
                 if not modulepath then
                     return nil, string.format("cannot get the path for module: %s", module_subpath)
                 end
-
-                -- init the root module
                 module = module or {}
-
-                -- save script
                 script = errors
 
                 -- save module
                 local scope = module
                 for _, modulename in ipairs(path.split(modulepath)) do
-
-                    -- is end?
                     local pos = modulename:find(".lua", 1, true)
                     if pos then
-
-                        -- get the module name
                         modulename = modulename:sub(1, pos - 1)
                         assert(modulename)
-
-                        -- save module
                         scope[modulename] = result
-
-                    -- is scope?
                     else
                         -- enter submodule
                         scope[modulename] = scope[modulename] or {}
@@ -212,8 +195,6 @@ function core_sandbox_module._load(dir, name, instance, module)
             end
         end
     end
-
-    -- this module not found?
     if not module then
         return nil, string.format("module: %s not found!", name)
     end
@@ -221,44 +202,35 @@ function core_sandbox_module._load(dir, name, instance, module)
 end
 
 -- find and load module
-function core_sandbox_module._find_and_load(name, opt, instance, modules, modules_directories)
-
-    -- load module
+function core_sandbox_module._find_and_load(name, opt)
+    opt = opt or {}
     local found = false
     local errors = nil
     local module = nil
     local modulekey = nil
     local modulekind = MODULE_KIND_LUAFILE
+    local modules = opt.modules
+    local modules_directories = opt.modules_directories
     local loadnext = false
     for idx, moduledir in ipairs(modules_directories) do
-
-        -- find module and key
         modulekey, modulekind = core_sandbox_module._find(moduledir, name)
         if modulekey then
-
-            -- load it from cache first
             local moduleinfo = modules[modulekey]
             if moduleinfo and not opt.nocache and not opt.inherit then
                 module = moduleinfo[1]
                 errors = moduleinfo[2]
             else
-                -- load it from the script file
-                module, errors = core_sandbox_module._load(   moduledir, name
-                                                            , idx < #modules_directories and instance or nil  -- last modules need not fork sandbox
-                                                            , module)
-
-
-                -- cache this module
+                module, errors = core_sandbox_module._load(moduledir, name, {
+                                                           instance = idx < #modules_directories and opt.instance or nil,  -- last modules need not fork sandbox
+                                                           module = module,
+                                                           modulekind = modulekind})
                 if not opt.nocache then
                     modules[modulekey] = {module, errors}
                 end
             end
-
-            -- continue to load?
             if module and modulekind == MODULE_KIND_LUADIRS then
                 loadnext = true
             end
-
             found = true
             if not loadnext then
                 break
@@ -388,7 +360,11 @@ function core_sandbox_module.import(name, opt)
     local modules_directories = (opt.nolocal or not rootdir) and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
 
     -- load module
-    local found, module, errors = core_sandbox_module._find_and_load(name, opt, instance, modules, modules_directories)
+    local loadopt = table.clone(opt) or {}
+    loadopt.instance = instance
+    loadopt.modules = modules
+    loadopt.modules_directories = modules_directories
+    local found, module, errors = core_sandbox_module._find_and_load(name, loadopt)
 
     -- not found? attempt to load module.interface
     if not found and not opt.inherit then
