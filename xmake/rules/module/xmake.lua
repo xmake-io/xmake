@@ -20,11 +20,15 @@
 
 rule("module.binary")
     on_load(function (target)
+        import("core.project.config")
         target:set("kind", "binary")
+        target:set("targetdir", config.buildir())
     end)
 
 rule("module.shared")
     on_load(function (target)
+        import("core.project.config")
         target:set("kind", "shared")
+        target:set("targetdir", config.buildir())
     end)
 

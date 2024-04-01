@@ -3,7 +3,7 @@ add_rules("mode.debug", "mode.release")
 add_moduledirs("modules")
 
 target("test")
-    add_rules("module.binary")
+    set_kind("binary")
     add_files("src/*.cpp")
     on_config(function (target)
 --        import("shared.foo")
