@@ -104,7 +104,7 @@ function core_sandbox_module._find(dir, name)
     assert(dir and name)
 
     -- get module subpath
-    module_subpath = core_sandbox_module._modulepath(name)
+    local module_subpath = core_sandbox_module._modulepath(name)
     assert(module_subpath)
 
     -- get module full path
@@ -117,7 +117,7 @@ function core_sandbox_module._find(dir, name)
     -- module directories?
     elseif os.isdir(module_fullpath) then
         local module_projectfile = path.join(module_fullpath, "xmake.lua")
-        if os.isfile(module_projectfile) then
+        if os.isfile(module_projectfile) then -- native module? e.g. binary/shared modules
             local content = io.readfile(module_projectfile)
             local kind = content:match("set_kind%(\"(.-)\"%)")
             if kind == "binary" then
@@ -135,33 +135,32 @@ end
 function core_sandbox_module._load(dir, name, instance, module)
     assert(dir and name)
 
-    -- get module path
-    name = core_sandbox_module._modulepath(name)
-    assert(name)
+    -- get module subpath
+    local module_subpath = core_sandbox_module._modulepath(name)
+    assert(module_subpath)
+
+    -- get module full path
+    local module_fullpath = path.join(dir, module_subpath)
 
     -- load the single module?
     local script = nil
-    if os.isfile(path.join(dir, name .. ".lua")) then
+    if os.isfile(module_fullpath .. ".lua") then
         assert(not module)
 
         -- load module
-        local result, errors = core_sandbox_module._loadfile(path.join(dir, name .. ".lua"), instance)
+        local result, errors = core_sandbox_module._loadfile(module_fullpath .. ".lua", instance)
         if not result then
             return nil, errors
         end
 
-        -- save module
         module = result
-
-        -- save script
         script = errors
 
     -- load modules
-    elseif os.isdir(path.join(dir, name)) then
+    elseif os.isdir(module_fullpath) then
 
         -- get modulefiles
-        local moduleroot = path.join(path.join(dir, name))
-        local modulefiles = os.match(path.join(moduleroot, "**.lua"))
+        local modulefiles = os.match(path.join(module_fullpath, "**.lua"))
         if modulefiles then
             for _, modulefile in ipairs(modulefiles) do
 
@@ -177,9 +176,9 @@ function core_sandbox_module._load(dir, name, instance, module)
                 end
 
                 -- get the module path
-                local modulepath = path.relative(modulefile, moduleroot)
+                local modulepath = path.relative(modulefile, module_fullpath)
                 if not modulepath then
-                    return nil, string.format("cannot get the path for module: %s", name)
+                    return nil, string.format("cannot get the path for module: %s", module_subpath)
                 end
 
                 -- init the root module
@@ -205,7 +204,6 @@ function core_sandbox_module._load(dir, name, instance, module)
 
                     -- is scope?
                     else
-
                         -- enter submodule
                         scope[modulename] = scope[modulename] or {}
                         scope = scope[modulename]
@@ -219,8 +217,6 @@ function core_sandbox_module._load(dir, name, instance, module)
     if not module then
         return nil, string.format("module: %s not found!", name)
     end
-
-    -- return it
     return module, script
 end
 
@@ -246,7 +242,6 @@ function core_sandbox_module._find_and_load(name, opt, instance, modules, module
                 module = moduleinfo[1]
                 errors = moduleinfo[2]
             else
-
                 -- load it from the script file
                 module, errors = core_sandbox_module._load(   moduledir, name
                                                             , idx < #modules_directories and instance or nil  -- last modules need not fork sandbox
@@ -264,10 +259,7 @@ function core_sandbox_module._find_and_load(name, opt, instance, modules, module
                 loadnext = true
             end
 
-            -- found
             found = true
-
-            -- end?
             if not loadnext then
                 break
             end
