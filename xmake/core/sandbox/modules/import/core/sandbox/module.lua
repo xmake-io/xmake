@@ -34,7 +34,7 @@ local raise     = require("sandbox/modules/raise")
 
 -- the module kinds
 local MODULE_KIND_LUAFILE = 1
-local MODULE_KIND_LUADIRS = 2
+local MODULE_KIND_LUADIR = 2
 local MODULE_KIND_BINARY  = 3
 local MODULE_KIND_SHARED  = 4
 
@@ -114,7 +114,6 @@ function core_sandbox_module._find(dir, name)
     local modulekey = path.normalize(path.absolute(module_fullpath))
     if os.isfile(module_fullpath .. ".lua") then
         return modulekey, MODULE_KIND_LUAFILE
-    -- module directories?
     elseif os.isdir(module_fullpath) then
         local module_projectfile = path.join(module_fullpath, "xmake.lua")
         if os.isfile(module_projectfile) then -- native module? e.g. binary/shared modules
@@ -126,9 +125,60 @@ function core_sandbox_module._find(dir, name)
                 return modulekey, MODULE_KIND_SHARED
             end
         else
-            return modulekey, MODULE_KIND_LUADIRS
+            -- module directory
+            return modulekey, MODULE_KIND_LUADIR
         end
     end
+end
+
+-- load module from the single script file
+function core_sandbox_module._load_from_scriptfile(module_fullpath, opt)
+    assert(not opt.module)
+    return core_sandbox_module._loadfile(module_fullpath .. ".lua", opt.instance)
+end
+
+-- load module from the script directory
+function core_sandbox_module._load_from_scriptdir(module_fullpath, opt)
+    local script
+    local module = opt.module
+    local modulefiles = os.match(path.join(module_fullpath, "**.lua"))
+    if modulefiles then
+        for _, modulefile in ipairs(modulefiles) do
+            local result, errors = core_sandbox_module._loadfile(modulefile, opt.instance)
+            if not result then
+                return nil, errors
+            end
+
+            -- bind main entry
+            if type(result) == "table" and result.main then
+                setmetatable(result, { __call = function (_, ...) return result.main(...) end})
+            end
+
+            -- get the module path
+            local modulepath = path.relative(modulefile, module_fullpath)
+            if not modulepath then
+                return nil, string.format("cannot get the path for module: %s", module_subpath)
+            end
+            module = module or {}
+            script = errors
+
+            -- save module
+            local scope = module
+            for _, modulename in ipairs(path.split(modulepath)) do
+                local pos = modulename:find(".lua", 1, true)
+                if pos then
+                    modulename = modulename:sub(1, pos - 1)
+                    assert(modulename)
+                    scope[modulename] = result
+                else
+                    -- enter submodule
+                    scope[modulename] = scope[modulename] or {}
+                    scope = scope[modulename]
+                end
+            end
+        end
+    end
+    return module, script
 end
 
 -- load module
@@ -143,57 +193,25 @@ function core_sandbox_module._load(dir, name, opt)
     -- get module full path
     local module_fullpath = path.join(dir, module_subpath)
 
-    -- load the single module?
-    local script = nil
-    local module = opt.module
-    if os.isfile(module_fullpath .. ".lua") then
-        assert(not module)
-        local result, errors = core_sandbox_module._loadfile(module_fullpath .. ".lua", opt.instance)
+    -- load module
+    local script
+    local module
+    local modulekind = opt.modulekind
+    if modulekind == MODULE_KIND_LUAFILE then
+        local result, errors = core_sandbox_module._load_from_scriptfile(module_fullpath, opt)
         if not result then
             return nil, errors
         end
         module = result
         script = errors
-
-    -- load modules
-    elseif os.isdir(module_fullpath) then
-        local modulefiles = os.match(path.join(module_fullpath, "**.lua"))
-        if modulefiles then
-            for _, modulefile in ipairs(modulefiles) do
-                local result, errors = core_sandbox_module._loadfile(modulefile, opt.instance)
-                if not result then
-                    return nil, errors
-                end
-
-                -- bind main entry
-                if type(result) == "table" and result.main then
-                    setmetatable(result, { __call = function (_, ...) return result.main(...) end})
-                end
-
-                -- get the module path
-                local modulepath = path.relative(modulefile, module_fullpath)
-                if not modulepath then
-                    return nil, string.format("cannot get the path for module: %s", module_subpath)
-                end
-                module = module or {}
-                script = errors
-
-                -- save module
-                local scope = module
-                for _, modulename in ipairs(path.split(modulepath)) do
-                    local pos = modulename:find(".lua", 1, true)
-                    if pos then
-                        modulename = modulename:sub(1, pos - 1)
-                        assert(modulename)
-                        scope[modulename] = result
-                    else
-                        -- enter submodule
-                        scope[modulename] = scope[modulename] or {}
-                        scope = scope[modulename]
-                    end
-                end
-            end
+    elseif modulekind == MODULE_KIND_LUADIR then
+        local result, errors = core_sandbox_module._load_from_scriptdir(module_fullpath, opt)
+        if not result then
+            return nil, errors
         end
+        module = result
+        script = errors
+    elseif modulekind == MODULE_KIND_BINARY then -- load binary module
     end
     if not module then
         return nil, string.format("module: %s not found!", name)
@@ -228,7 +246,7 @@ function core_sandbox_module._find_and_load(name, opt)
                     modules[modulekey] = {module, errors}
                 end
             end
-            if module and modulekind == MODULE_KIND_LUADIRS then
+            if module and modulekind == MODULE_KIND_LUADIR then
                 loadnext = true
             end
             found = true
