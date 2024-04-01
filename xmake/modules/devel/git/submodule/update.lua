@@ -36,11 +36,7 @@ import("lib.detect.find_tool")
 -- @endcode
 --
 function main(opt)
-
-    -- init options
     opt = opt or {}
-
-    -- find git
     local git = assert(find_tool("git"), "git not found!")
 
     -- init argv

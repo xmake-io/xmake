@@ -38,6 +38,9 @@ import("utils.archive")
 function _checkout(package, url, sourcedir, opt)
     opt = opt or {}
 
+    -- we need to enable longpaths on windows
+    local longpaths = package:policy("platform.longpaths")
+
     -- use previous source directory if exists
     local packagedir = path.join(sourcedir, package:name())
     if os.isdir(path.join(packagedir, ".git")) and
@@ -50,7 +53,7 @@ function _checkout(package, url, sourcedir, opt)
         -- clean and reset submodules
         if os.isfile(path.join(packagedir, ".gitmodules")) then
             git.submodule.clean({repodir = packagedir, force = true, all = true})
-            git.submodule.reset({repodir = packagedir, hard = true})
+            git.submodule.reset({repodir = packagedir, hard = true, longpaths = longpaths})
         end
         tty.erase_line_to_start().cr()
         return
@@ -71,7 +74,7 @@ function _checkout(package, url, sourcedir, opt)
         git.reset({repodir = localdir, hard = true})
         if os.isfile(path.join(localdir, ".gitmodules")) then
             git.submodule.clean({repodir = localdir, force = true, all = true})
-            git.submodule.reset({repodir = localdir, hard = true})
+            git.submodule.reset({repodir = localdir, hard = true, longpaths = longpaths})
         end
         os.cp(localdir, packagedir)
         tty.erase_line_to_start().cr()
@@ -80,9 +83,6 @@ function _checkout(package, url, sourcedir, opt)
 
     -- remove temporary directory
     os.rm(sourcedir .. ".tmp")
-
-    -- we need to enable longpaths on windows
-    local longpaths = package:policy("platform.longpaths")
 
     -- download package from branches?
     packagedir = path.join(sourcedir .. ".tmp", package:name())
