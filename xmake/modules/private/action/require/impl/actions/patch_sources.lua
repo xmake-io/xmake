@@ -51,7 +51,7 @@ end
 -- do patch
 function _patch(package, patchinfo)
     local patch_url = patchinfo.url
-    local patch_hash = patchinfo.hash
+    local patch_hash = patchinfo.sha256
     local patch_extra = patchinfo.extra or {}
 
     -- trace
