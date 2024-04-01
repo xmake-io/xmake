@@ -427,16 +427,9 @@ function _get_configs_for_android(package, configs, opt)
             table.insert(configs, "-DANDROID_NATIVE_API_LEVEL=" .. ndk_sdkver)
         end
         -- https://cmake.org/cmake/help/latest/variable/CMAKE_ANDROID_STL_TYPE.html
-        local supported_runtimes = {
-            "gnustl_static", "gnustl_shared",
-            "c++_static", "c++_shared",
-            "stlport_static", "stlport_shared"
-        }
-        for _, runtime in ipairs(supported_runtimes) do
-            if package:has_runtime(runtime) then
-                table.insert(configs, "-DCMAKE_ANDROID_STL_TYPE=" .. runtime)
-                break
-            end
+        local runtime = package:runtimes()
+        if runtime then
+            table.insert(configs, "-DCMAKE_ANDROID_STL_TYPE=" .. runtime)
         end
         if is_host("windows") and opt.cmake_generator ~= "Ninja" then
             local make = path.join(ndk, "prebuilt", "windows-x86_64", "bin", "make.exe")
