@@ -428,8 +428,6 @@ function _get_configs_for_android(package, configs, opt)
         end
         -- https://cmake.org/cmake/help/latest/variable/CMAKE_ANDROID_STL_TYPE.html
         local supported_runtimes = {
-            "none", "system", 
-            "gabi++_static", "gabi++_shared",
             "gnustl_static", "gnustl_shared",
             "c++_static", "c++_shared",
             "stlport_static", "stlport_shared"
