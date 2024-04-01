@@ -6,7 +6,6 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t add(tb_int_t a, tb_int_t b)
-{
+tb_int_t add(tb_int_t a, tb_int_t b) {
     return a + b;
 }
