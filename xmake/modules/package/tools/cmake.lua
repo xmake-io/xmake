@@ -419,15 +419,17 @@ function _get_configs_for_android(package, configs, opt)
     local ndk = get_config("ndk")
     if ndk and os.isdir(ndk) then
         local ndk_sdkver = get_config("ndk_sdkver")
-        local ndk_cxxstl = get_config("ndk_cxxstl")
         table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. path.join(ndk, "build/cmake/android.toolchain.cmake"))
+        table.insert(configs, "-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF")
         table.insert(configs, "-DANDROID_ABI=" .. package:arch())
         if ndk_sdkver then
             table.insert(configs, "-DANDROID_PLATFORM=android-" .. ndk_sdkver)
             table.insert(configs, "-DANDROID_NATIVE_API_LEVEL=" .. ndk_sdkver)
         end
-        if ndk_cxxstl then
-            table.insert(configs, "-DANDROID_STL=" .. ndk_cxxstl)
+        -- https://cmake.org/cmake/help/latest/variable/CMAKE_ANDROID_STL_TYPE.html
+        local runtime = package:runtimes()
+        if runtime then
+            table.insert(configs, "-DCMAKE_ANDROID_STL_TYPE=" .. runtime)
         end
         if is_host("windows") and opt.cmake_generator ~= "Ninja" then
             local make = path.join(ndk, "prebuilt", "windows-x86_64", "bin", "make.exe")
