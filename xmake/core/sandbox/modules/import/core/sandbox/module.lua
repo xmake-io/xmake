@@ -32,6 +32,12 @@ local memcache  = require("cache/memcache")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 
+-- the module kinds
+local MODULE_KIND_LUAFILE = 1
+local MODULE_KIND_LUADIRS = 2
+local MODULE_KIND_BINARY  = 3
+local MODULE_KIND_SHARED  = 4
+
 -- get module path from name
 function core_sandbox_module._modulepath(name)
 
@@ -60,8 +66,6 @@ end
 
 -- load module from file
 function core_sandbox_module._loadfile(filepath, instance)
-
-    -- check
     assert(filepath)
 
     -- load module script
@@ -84,8 +88,6 @@ function core_sandbox_module._loadfile(filepath, instance)
         if not result then
             return nil, errors
         end
-
-        -- ok
         return result, instance:script()
     end
 
@@ -94,37 +96,43 @@ function core_sandbox_module._loadfile(filepath, instance)
     if not ok then
         return nil, result
     end
-
-    -- ok?
     return result, script
 end
 
 -- find module
 function core_sandbox_module._find(dir, name)
-
-    -- check
     assert(dir and name)
 
-    -- get module path
-    name = core_sandbox_module._modulepath(name)
-    assert(name)
+    -- get module subpath
+    module_subpath = core_sandbox_module._modulepath(name)
+    assert(module_subpath)
 
-    -- get module key
-    local key = path.join(dir, name)
+    -- get module full path
+    local module_fullpath = path.join(dir, module_subpath)
 
-    -- the single module?
-    if os.isfile(key .. ".lua") then
-        return path.normalize(path.absolute(key)), false
-    -- modules?
-    elseif os.isdir(key) then
-        return path.normalize(path.absolute(key)), true
+    -- single lua module?
+    local modulekey = path.normalize(path.absolute(module_fullpath))
+    if os.isfile(module_fullpath .. ".lua") then
+        return modulekey, MODULE_KIND_LUAFILE
+    -- module directories?
+    elseif os.isdir(module_fullpath) then
+        local module_projectfile = path.join(module_fullpath, "xmake.lua")
+        if os.isfile(module_projectfile) then
+            local content = io.readfile(module_projectfile)
+            local kind = content:match("set_kind%(\"(.-)\"%)")
+            if kind == "binary" then
+                return modulekey, MODULE_KIND_BINARY
+            elseif kind == "shared" then
+                return modulekey, MODULE_KIND_SHARED
+            end
+        else
+            return modulekey, MODULE_KIND_LUADIRS
+        end
     end
 end
 
 -- load module
 function core_sandbox_module._load(dir, name, instance, module)
-
-    -- check
     assert(dir and name)
 
     -- get module path
@@ -134,8 +142,6 @@ function core_sandbox_module._load(dir, name, instance, module)
     -- load the single module?
     local script = nil
     if os.isfile(path.join(dir, name .. ".lua")) then
-
-        -- check
         assert(not module)
 
         -- load module
@@ -226,12 +232,12 @@ function core_sandbox_module._find_and_load(name, opt, instance, modules, module
     local errors = nil
     local module = nil
     local modulekey = nil
-    local isdirs = false
+    local modulekind = MODULE_KIND_LUAFILE
     local loadnext = false
     for idx, moduledir in ipairs(modules_directories) do
 
         -- find module and key
-        modulekey, isdirs = core_sandbox_module._find(moduledir, name)
+        modulekey, modulekind = core_sandbox_module._find(moduledir, name)
         if modulekey then
 
             -- load it from cache first
@@ -254,7 +260,7 @@ function core_sandbox_module._find_and_load(name, opt, instance, modules, module
             end
 
             -- continue to load?
-            if module and isdirs then
+            if module and modulekind == MODULE_KIND_LUADIRS then
                 loadnext = true
             end
 
@@ -313,8 +319,6 @@ end
 
 -- find module
 function core_sandbox_module.find(name)
-
-    -- find it from the module directories
     for _, moduledir in ipairs(core_sandbox_module.directories()) do
         if (core_sandbox_module._find(moduledir, name)) then
             return true
