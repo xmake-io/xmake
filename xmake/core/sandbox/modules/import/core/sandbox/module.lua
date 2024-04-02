@@ -24,17 +24,19 @@ local core_sandbox_module = core_sandbox_module or {}
 -- load modules
 local os        = require("base/os")
 local path      = require("base/path")
+local hash      = require("base/hash")
 local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
 local global    = require("base/global")
+local config    = require("project/config")
 local memcache  = require("cache/memcache")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 
 -- the module kinds
 local MODULE_KIND_LUAFILE = 1
-local MODULE_KIND_LUADIR = 2
+local MODULE_KIND_LUADIR  = 2
 local MODULE_KIND_BINARY  = 3
 local MODULE_KIND_SHARED  = 4
 
@@ -118,7 +120,7 @@ function core_sandbox_module._find(dir, name)
         local module_projectfile = path.join(module_fullpath, "xmake.lua")
         if os.isfile(module_projectfile) then -- native module? e.g. binary/shared modules
             local content = io.readfile(module_projectfile)
-            local kind = content:match("set_kind%(\"(.-)\"%)")
+            local kind = content:match("add_rules%(\"module.(.-)\"%)")
             if kind == "binary" then
                 return modulekey, MODULE_KIND_BINARY
             elseif kind == "shared" then
@@ -141,7 +143,7 @@ end
 function core_sandbox_module._load_from_scriptdir(module_fullpath, opt)
     local script
     local module = opt.module
-    local modulefiles = os.match(path.join(module_fullpath, "**.lua"))
+    local modulefiles = os.files(path.join(module_fullpath, "**.lua"))
     if modulefiles then
         for _, modulefile in ipairs(modulefiles) do
             local result, errors = core_sandbox_module._loadfile(modulefile, opt.instance)
@@ -181,12 +183,54 @@ function core_sandbox_module._load_from_scriptdir(module_fullpath, opt)
     return module, script
 end
 
+-- build module
+function core_sandbox_module._build_module(module_fullpath)
+    local projectdir = path.normalize(path.absolute(module_fullpath))
+    local programdir = path.normalize(os.programdir())
+    local modulehash = hash.uuid4(projectdir):split("-", {plain = true})[1]:lower()
+    local buildir
+    if projectdir:startswith(programdir) then
+        buildir = path.join(global.directory(), "cache", "modules", modulehash)
+    elseif os.isfile(os.projectfile()) then
+        buildir = path.join(config.directory(), "cache", "modules", modulehash)
+    else
+        buildir = path.join(projectdir, "cache", "modules", modulehash)
+    end
+    local envs = {XMAKE_CONFIGDIR = buildir}
+    local argv = {"config", "-P", projectdir, "-o", buildir}
+    os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
+    argv = {"-P", projectdir}
+    os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
+    return buildir
+end
+
 -- load module from the binary module
 function core_sandbox_module._load_from_binary(module_fullpath, opt)
+    local module
+    local module_bindir = core_sandbox_module._build_module(module_fullpath)
+    local binaryfiles = os.files(path.join(module_bindir, "module_*"))
+    if binaryfiles then
+        module = {}
+        for _, binaryfile in ipairs(binaryfiles) do
+            local modulename = path.basename(binaryfile):sub(8)
+            module[modulename] = function (...)
+                local argv = {}
+                for _, arg in ipairs(table.pack(...)) do
+                    table.insert(argv, tostring(arg))
+                end
+                local ok, outdata, errdata = os.iorunv(binaryfile, argv, {curdir = module_bindir})
+                if ok then
+                    return outdata
+                end
+            end
+        end
+    end
+    return module
 end
 
 -- load module from the shared module
 function core_sandbox_module._load_from_shared(module_fullpath, opt)
+    core_sandbox_module._build_module(module_fullpath)
 end
 
 -- load module
