@@ -1,6 +1,10 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("lua 5.4")
+if xmake.luajit() then
+    add_requires("luajit", {alias = "lua"})
+else
+    add_requires("lua 5.4")
+end
 
 target("foo")
     add_rules("module.shared")
