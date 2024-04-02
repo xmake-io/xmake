@@ -218,9 +218,17 @@ function core_sandbox_module._load_from_binary(module_fullpath, opt)
                 for _, arg in ipairs(table.pack(...)) do
                     table.insert(argv, tostring(arg))
                 end
-                local ok, outdata, errdata = os.iorunv(binaryfile, argv, {curdir = module_bindir})
+                local ok, outdata, errdata, errors = os.iorunv(binaryfile, argv)
                 if ok then
                     return outdata
+                else
+                    if not errors then
+                        errors = errdata or ""
+                        if #errors:trim() == 0 then
+                            errors = outdata or ""
+                        end
+                    end
+                    os.raise({errors = errors, stderr = errdata, stdout = outdata})
                 end
             end
         end
