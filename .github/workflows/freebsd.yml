@@ -25,7 +25,7 @@ jobs:
           usesh: true
           mem: 4096
           copyback: false
-          prepare: pkg install -y curl unzip gmake llvm gsed bash perl5
+          prepare: pkg install -y git curl unzip gmake llvm gsed bash perl5
           run: |
             ./configure
             gmake -j4

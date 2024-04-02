@@ -28,6 +28,7 @@ local hash      = require("base/hash")
 local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
+local option    = require("base/option")
 local global    = require("base/global")
 local config    = require("project/config")
 local memcache  = require("cache/memcache")
@@ -183,6 +184,20 @@ function core_sandbox_module._load_from_scriptdir(module_fullpath, opt)
     return module, script
 end
 
+-- add some builtin global options from the parent xmake
+function core_sandbox_module._add_builtin_argv(argv, projectdir)
+    table.insert(argv, "-P")
+    table.insert(argv, projectdir)
+    for _, name in ipairs({"diagnosis", "verbose", "quiet", "yes", "confirm", "root"}) do
+        local value = option.get(name)
+        if type(value) == "boolean" then
+            table.insert(argv, "--" .. name)
+        elseif value ~= nil then
+            table.insert(argv, "--" .. name .. "=" .. value)
+        end
+    end
+end
+
 -- build module
 function core_sandbox_module._build_module(module_fullpath)
     local projectdir = path.normalize(path.absolute(module_fullpath))
@@ -197,9 +212,11 @@ function core_sandbox_module._build_module(module_fullpath)
         buildir = path.join(projectdir, "cache", "modules", modulehash)
     end
     local envs = {XMAKE_CONFIGDIR = buildir}
-    local argv = {"config", "-P", projectdir, "-o", buildir, "-y"}
+    local argv = {"config", "-o", buildir}
+    core_sandbox_module._add_builtin_argv(argv, projectdir)
     os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
-    argv = {"-P", projectdir}
+    argv = {}
+    core_sandbox_module._add_builtin_argv(argv, projectdir)
     os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
     return buildir
 end
