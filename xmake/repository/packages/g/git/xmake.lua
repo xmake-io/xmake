@@ -29,7 +29,7 @@ package("git")
         package:addenv("PATH", path.join("share", "MinGit", "cmd"))
     end)
 
-    on_install("macosx", "linux", function (package)
+    on_install("macosx", "linux", "bsd", function (package)
         import("package.manager.install_package")("git")
     end)
 
