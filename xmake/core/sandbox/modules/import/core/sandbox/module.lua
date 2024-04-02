@@ -212,7 +212,7 @@ function core_sandbox_module._build_module(module_fullpath)
         buildir = path.join(projectdir, "cache", "modules", modulehash)
     end
     local envs = {XMAKE_CONFIGDIR = buildir}
-    local argv = {"config", "-o", buildir}
+    local argv = {"config", "-o", buildir, "-a", xmake.arch()}
     core_sandbox_module._add_builtin_argv(argv, projectdir)
     os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
     argv = {}
