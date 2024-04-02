@@ -1,14 +1,9 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("lua")
+add_requires("lua 5.4", {system = false})
 
-target("add")
+target("foo")
     add_rules("module.shared")
-    add_files("src/add.cpp")
-    add_packages("lua")
-
-target("sub")
-    add_rules("module.shared")
-    add_files("src/sub.cpp")
+    add_files("src/foo.c")
     add_packages("lua")
 

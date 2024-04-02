@@ -241,16 +241,18 @@ function core_sandbox_module._load_from_shared(module_fullpath, opt)
     local script
     local module
     local module_bindir = core_sandbox_module._build_module(module_fullpath)
-    local libraryfiles = os.files(path.join(module_bindir, "module_*"))
+    local libraryfiles = os.files(path.join(module_bindir, "*module_*"))
     if libraryfiles then
-        module = {}
         for _, libraryfile in ipairs(libraryfiles) do
-            local modulename = path.basename(binaryfile):sub(8)
+            local modulename = path.basename(libraryfile):match("module_(.+)")
             script, errors = package.loadlib(libraryfile, "luaopen_" .. modulename)
             if not script then
                 return nil, errors
             end
-            module[modulename] = script()
+            module = script()
+            if module then
+                break
+            end
         end
     end
     return module, script
