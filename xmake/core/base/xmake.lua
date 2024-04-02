@@ -37,6 +37,11 @@ function xmake.version()
     return xmake._VERSION_CACHE or nil
 end
 
+-- get the xmake binary architecture
+function xmake.arch()
+    return xmake._XMAKE_ARCH
+end
+
 -- get the git branch of xmake version, e.g. build: {"dev", "d4cff6e11"}
 function xmake.branch()
     return xmake.version():build()[1]

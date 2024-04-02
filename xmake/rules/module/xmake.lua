@@ -18,20 +18,22 @@
 -- @file        xmake.lua
 --
 
--- load modules
-local xmake   = require("base/xmake")
+rule("module.binary")
+    on_load(function (target)
+        import("core.project.config")
+        target:set("kind", "binary")
+        target:set("basename", "module_" .. target:name())
+        target:set("targetdir", config.buildir())
+    end)
 
--- define module
-local sandbox_xmake = sandbox_xmake or {}
+rule("module.shared")
+    add_deps("utils.symbols.export_all")
+    on_load(function (target)
+        assert(not xmake.luajit(), "rule(module.shared) only support for lua54 runtime!")
+        import("core.project.config")
+        target:set("kind", "shared")
+        target:set("basename", "module_" .. target:name())
+        target:set("targetdir", config.buildir())
+        target:set("strip", "none")
+    end)
 
--- inherit some builtin interfaces
-sandbox_xmake.arch        = xmake.arch
-sandbox_xmake.version     = xmake.version
-sandbox_xmake.branch      = xmake.branch
-sandbox_xmake.programdir  = xmake.programdir
-sandbox_xmake.programfile = xmake.programfile
-sandbox_xmake.luajit      = xmake.luajit
-sandbox_xmake.argv        = xmake.argv
-
--- return module
-return sandbox_xmake

@@ -26,7 +26,7 @@ jobs:
           args: >
             bash -c
             "uname -a &&
-            apt update &&
+            apt update && apt install -y unzip &&
             cd /github/workspace &&
             ./scripts/get.sh __local__ &&
             source ~/.xmake/profile &&

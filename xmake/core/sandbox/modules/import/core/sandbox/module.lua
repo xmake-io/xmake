@@ -24,13 +24,22 @@ local core_sandbox_module = core_sandbox_module or {}
 -- load modules
 local os        = require("base/os")
 local path      = require("base/path")
+local hash      = require("base/hash")
 local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
+local option    = require("base/option")
 local global    = require("base/global")
+local config    = require("project/config")
 local memcache  = require("cache/memcache")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
+
+-- the module kinds
+local MODULE_KIND_LUAFILE = 1
+local MODULE_KIND_LUADIR  = 2
+local MODULE_KIND_BINARY  = 3
+local MODULE_KIND_SHARED  = 4
 
 -- get module path from name
 function core_sandbox_module._modulepath(name)
@@ -60,8 +69,6 @@ end
 
 -- load module from file
 function core_sandbox_module._loadfile(filepath, instance)
-
-    -- check
     assert(filepath)
 
     -- load module script
@@ -84,8 +91,6 @@ function core_sandbox_module._loadfile(filepath, instance)
         if not result then
             return nil, errors
         end
-
-        -- ok
         return result, instance:script()
     end
 
@@ -94,174 +99,245 @@ function core_sandbox_module._loadfile(filepath, instance)
     if not ok then
         return nil, result
     end
-
-    -- ok?
     return result, script
 end
 
 -- find module
 function core_sandbox_module._find(dir, name)
-
-    -- check
     assert(dir and name)
 
-    -- get module path
-    name = core_sandbox_module._modulepath(name)
-    assert(name)
+    -- get module subpath
+    local module_subpath = core_sandbox_module._modulepath(name)
+    assert(module_subpath)
 
-    -- get module key
-    local key = path.join(dir, name)
+    -- get module full path
+    local module_fullpath = path.join(dir, module_subpath)
 
-    -- the single module?
-    if os.isfile(key .. ".lua") then
-        return path.normalize(path.absolute(key)), false
-    -- modules?
-    elseif os.isdir(key) then
-        return path.normalize(path.absolute(key)), true
+    -- single lua module?
+    local modulekey = path.normalize(path.absolute(module_fullpath))
+    if os.isfile(module_fullpath .. ".lua") then
+        return modulekey, MODULE_KIND_LUAFILE
+    elseif os.isdir(module_fullpath) then
+        local module_projectfile = path.join(module_fullpath, "xmake.lua")
+        if os.isfile(module_projectfile) then -- native module? e.g. binary/shared modules
+            local content = io.readfile(module_projectfile)
+            local kind = content:match("add_rules%(\"module.(.-)\"%)")
+            if kind == "binary" then
+                return modulekey, MODULE_KIND_BINARY
+            elseif kind == "shared" then
+                return modulekey, MODULE_KIND_SHARED
+            end
+        else
+            -- module directory
+            return modulekey, MODULE_KIND_LUADIR
+        end
     end
 end
 
--- load module
-function core_sandbox_module._load(dir, name, instance, module)
+-- load module from the single script file
+function core_sandbox_module._load_from_scriptfile(module_fullpath, opt)
+    assert(not opt.module)
+    return core_sandbox_module._loadfile(module_fullpath .. ".lua", opt.instance)
+end
 
-    -- check
-    assert(dir and name)
+-- load module from the script directory
+function core_sandbox_module._load_from_scriptdir(module_fullpath, opt)
+    local script
+    local module = opt.module
+    local modulefiles = os.files(path.join(module_fullpath, "**.lua"))
+    if modulefiles then
+        for _, modulefile in ipairs(modulefiles) do
+            local result, errors = core_sandbox_module._loadfile(modulefile, opt.instance)
+            if not result then
+                return nil, errors
+            end
 
-    -- get module path
-    name = core_sandbox_module._modulepath(name)
-    assert(name)
+            -- bind main entry
+            if type(result) == "table" and result.main then
+                setmetatable(result, { __call = function (_, ...) return result.main(...) end})
+            end
 
-    -- load the single module?
-    local script = nil
-    if os.isfile(path.join(dir, name .. ".lua")) then
+            -- get the module path
+            local modulepath = path.relative(modulefile, module_fullpath)
+            if not modulepath then
+                return nil, string.format("cannot get the path for module: %s", module_subpath)
+            end
+            module = module or {}
+            script = errors
 
-        -- check
-        assert(not module)
-
-        -- load module
-        local result, errors = core_sandbox_module._loadfile(path.join(dir, name .. ".lua"), instance)
-        if not result then
-            return nil, errors
-        end
-
-        -- save module
-        module = result
-
-        -- save script
-        script = errors
-
-    -- load modules
-    elseif os.isdir(path.join(dir, name)) then
-
-        -- get modulefiles
-        local moduleroot = path.join(path.join(dir, name))
-        local modulefiles = os.match(path.join(moduleroot, "**.lua"))
-        if modulefiles then
-            for _, modulefile in ipairs(modulefiles) do
-
-                -- load module
-                local result, errors = core_sandbox_module._loadfile(modulefile, instance)
-                if not result then
-                    return nil, errors
-                end
-
-                -- bind main entry
-                if type(result) == "table" and result.main then
-                    setmetatable(result, { __call = function (_, ...) return result.main(...) end})
-                end
-
-                -- get the module path
-                local modulepath = path.relative(modulefile, moduleroot)
-                if not modulepath then
-                    return nil, string.format("cannot get the path for module: %s", name)
-                end
-
-                -- init the root module
-                module = module or {}
-
-                -- save script
-                script = errors
-
-                -- save module
-                local scope = module
-                for _, modulename in ipairs(path.split(modulepath)) do
-
-                    -- is end?
-                    local pos = modulename:find(".lua", 1, true)
-                    if pos then
-
-                        -- get the module name
-                        modulename = modulename:sub(1, pos - 1)
-                        assert(modulename)
-
-                        -- save module
-                        scope[modulename] = result
-
-                    -- is scope?
-                    else
-
-                        -- enter submodule
-                        scope[modulename] = scope[modulename] or {}
-                        scope = scope[modulename]
-                    end
+            -- save module
+            local scope = module
+            for _, modulename in ipairs(path.split(modulepath)) do
+                local pos = modulename:find(".lua", 1, true)
+                if pos then
+                    modulename = modulename:sub(1, pos - 1)
+                    assert(modulename)
+                    scope[modulename] = result
+                else
+                    -- enter submodule
+                    scope[modulename] = scope[modulename] or {}
+                    scope = scope[modulename]
                 end
             end
         end
     end
+    return module, script
+end
 
-    -- this module not found?
-    if not module then
-        return nil, string.format("module: %s not found!", name)
+-- add some builtin global options from the parent xmake
+function core_sandbox_module._add_builtin_argv(argv, projectdir)
+    table.insert(argv, "-P")
+    table.insert(argv, projectdir)
+    for _, name in ipairs({"diagnosis", "verbose", "quiet", "yes", "confirm", "root"}) do
+        local value = option.get(name)
+        if type(value) == "boolean" then
+            table.insert(argv, "--" .. name)
+        elseif value ~= nil then
+            table.insert(argv, "--" .. name .. "=" .. value)
+        end
     end
+end
 
-    -- return it
+-- build module
+function core_sandbox_module._build_module(module_fullpath)
+    local projectdir = path.normalize(path.absolute(module_fullpath))
+    local programdir = path.normalize(os.programdir())
+    local modulehash = hash.uuid4(projectdir):split("-", {plain = true})[1]:lower()
+    local buildir
+    if projectdir:startswith(programdir) then
+        buildir = path.join(global.directory(), "cache", "modules", modulehash)
+    elseif os.isfile(os.projectfile()) then
+        buildir = path.join(config.directory(), "cache", "modules", modulehash)
+    else
+        buildir = path.join(projectdir, "cache", "modules", modulehash)
+    end
+    local envs = {XMAKE_CONFIGDIR = buildir}
+    local argv = {"config", "-o", buildir, "-a", xmake.arch()}
+    core_sandbox_module._add_builtin_argv(argv, projectdir)
+    os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
+    argv = {}
+    core_sandbox_module._add_builtin_argv(argv, projectdir)
+    os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
+    return buildir
+end
+
+-- load module from the binary module
+function core_sandbox_module._load_from_binary(module_fullpath, opt)
+    local module
+    local module_buildir = core_sandbox_module._build_module(module_fullpath)
+    local binaryfiles = os.files(path.join(module_buildir, "module_*"))
+    if binaryfiles then
+        module = {}
+        for _, binaryfile in ipairs(binaryfiles) do
+            local modulename = path.basename(binaryfile):sub(8)
+            module[modulename] = function (...)
+                local argv = {}
+                for _, arg in ipairs(table.pack(...)) do
+                    table.insert(argv, tostring(arg))
+                end
+                local ok, outdata, errdata, errors = os.iorunv(binaryfile, argv)
+                if ok then
+                    return outdata
+                else
+                    if not errors then
+                        errors = errdata or ""
+                        if #errors:trim() == 0 then
+                            errors = outdata or ""
+                        end
+                    end
+                    os.raise({errors = errors, stderr = errdata, stdout = outdata})
+                end
+            end
+        end
+    end
+    return module
+end
+
+-- load module from the shared module
+function core_sandbox_module._load_from_shared(module_fullpath, opt)
+    local script
+    local module
+    local module_buildir = core_sandbox_module._build_module(module_fullpath)
+    local libraryfiles = os.files(path.join(module_buildir, "*module_*"))
+    if libraryfiles then
+        for _, libraryfile in ipairs(libraryfiles) do
+            local modulename = path.basename(libraryfile):match("module_(.+)")
+            script, errors = package.loadlib(libraryfile, "luaopen_" .. modulename)
+            if not script then
+                return nil, errors
+            end
+            module = script()
+            if module then
+                break
+            end
+        end
+    end
+    return module, script
+end
+
+-- load module
+function core_sandbox_module._load(dir, name, opt)
+    opt = opt or {}
+    assert(dir and name)
+
+    -- get module subpath
+    local module_subpath = core_sandbox_module._modulepath(name)
+    assert(module_subpath)
+
+    -- get module full path
+    local module_fullpath = path.join(dir, module_subpath)
+
+    -- load module
+    local script
+    local module
+    local modulekind = opt.modulekind
+    if modulekind == MODULE_KIND_LUAFILE then
+        module, script = core_sandbox_module._load_from_scriptfile(module_fullpath, opt)
+    elseif modulekind == MODULE_KIND_LUADIR then
+        module, script = core_sandbox_module._load_from_scriptdir(module_fullpath, opt)
+    elseif modulekind == MODULE_KIND_BINARY then
+        module, script = core_sandbox_module._load_from_binary(module_fullpath, opt)
+    elseif modulekind == MODULE_KIND_SHARED then
+        module, script = core_sandbox_module._load_from_shared(module_fullpath, opt)
+    end
+    if not module then
+        local errors = script
+        return nil, errors or string.format("module: %s not found!", name)
+    end
     return module, script
 end
 
 -- find and load module
-function core_sandbox_module._find_and_load(name, opt, instance, modules, modules_directories)
-
-    -- load module
+function core_sandbox_module._find_and_load(name, opt)
+    opt = opt or {}
     local found = false
     local errors = nil
     local module = nil
     local modulekey = nil
-    local isdirs = false
+    local modulekind = MODULE_KIND_LUAFILE
+    local modules = opt.modules
+    local modules_directories = opt.modules_directories
     local loadnext = false
     for idx, moduledir in ipairs(modules_directories) do
-
-        -- find module and key
-        modulekey, isdirs = core_sandbox_module._find(moduledir, name)
+        modulekey, modulekind = core_sandbox_module._find(moduledir, name)
         if modulekey then
-
-            -- load it from cache first
             local moduleinfo = modules[modulekey]
             if moduleinfo and not opt.nocache and not opt.inherit then
                 module = moduleinfo[1]
                 errors = moduleinfo[2]
             else
-
-                -- load it from the script file
-                module, errors = core_sandbox_module._load(   moduledir, name
-                                                            , idx < #modules_directories and instance or nil  -- last modules need not fork sandbox
-                                                            , module)
-
-
-                -- cache this module
+                module, errors = core_sandbox_module._load(moduledir, name, {
+                                                           instance = idx < #modules_directories and opt.instance or nil,  -- last modules need not fork sandbox
+                                                           module = module,
+                                                           modulekind = modulekind})
                 if not opt.nocache then
                     modules[modulekey] = {module, errors}
                 end
             end
-
-            -- continue to load?
-            if module and isdirs then
+            if module and modulekind == MODULE_KIND_LUADIR then
                 loadnext = true
             end
-
-            -- found
             found = true
-
-            -- end?
             if not loadnext then
                 break
             end
@@ -272,17 +348,10 @@ end
 
 -- get module name
 function core_sandbox_module.name(name)
-
-    -- check
-    assert(name)
-
-    -- find modulename
     local i = name:lastof(".", true)
     if i then
         name = name:sub(i + 1)
     end
-
-    -- get it
     return name
 end
 
@@ -313,8 +382,6 @@ end
 
 -- find module
 function core_sandbox_module.find(name)
-
-    -- find it from the module directories
     for _, moduledir in ipairs(core_sandbox_module.directories()) do
         if (core_sandbox_module._find(moduledir, name)) then
             return true
@@ -392,7 +459,11 @@ function core_sandbox_module.import(name, opt)
     local modules_directories = (opt.nolocal or not rootdir) and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
 
     -- load module
-    local found, module, errors = core_sandbox_module._find_and_load(name, opt, instance, modules, modules_directories)
+    local loadopt = table.clone(opt) or {}
+    loadopt.instance = instance
+    loadopt.modules = modules
+    loadopt.modules_directories = modules_directories
+    local found, module, errors = core_sandbox_module._find_and_load(name, loadopt)
 
     -- not found? attempt to load module.interface
     if not found and not opt.inherit then
@@ -409,7 +480,7 @@ function core_sandbox_module.import(name, opt)
 
         -- load module.interface
         if module2_name and interface_name then
-            found2, module2, errors2 = core_sandbox_module._find_and_load(module2_name, opt, instance, modules, modules_directories)
+            found2, module2, errors2 = core_sandbox_module._find_and_load(module2_name, loadopt)
             if found2 and module2 and module2[interface_name] then
                 module = module2[interface_name]
                 found = true
