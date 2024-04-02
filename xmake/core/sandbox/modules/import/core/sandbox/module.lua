@@ -197,7 +197,7 @@ function core_sandbox_module._build_module(module_fullpath)
         buildir = path.join(projectdir, "cache", "modules", modulehash)
     end
     local envs = {XMAKE_CONFIGDIR = buildir}
-    local argv = {"config", "-P", projectdir, "-o", buildir}
+    local argv = {"config", "-P", projectdir, "-o", buildir, "-y"}
     os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
     argv = {"-P", projectdir}
     os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
