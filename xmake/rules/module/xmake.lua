@@ -27,10 +27,12 @@ rule("module.binary")
     end)
 
 rule("module.shared")
+    add_deps("utils.symbols.export_all")
     on_load(function (target)
         import("core.project.config")
         target:set("kind", "shared")
         target:set("basename", "module_" .. target:name())
         target:set("targetdir", config.buildir())
+        target:set("strip", "none")
     end)
 

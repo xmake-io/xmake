@@ -1,5 +1,4 @@
 package("git")
-
     set_kind("binary")
     set_homepage("https://git-scm.com/")
     set_description("A free and open source distributed version control system")
