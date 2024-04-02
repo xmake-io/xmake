@@ -207,8 +207,8 @@ end
 -- load module from the binary module
 function core_sandbox_module._load_from_binary(module_fullpath, opt)
     local module
-    local module_bindir = core_sandbox_module._build_module(module_fullpath)
-    local binaryfiles = os.files(path.join(module_bindir, "module_*"))
+    local module_buildir = core_sandbox_module._build_module(module_fullpath)
+    local binaryfiles = os.files(path.join(module_buildir, "module_*"))
     if binaryfiles then
         module = {}
         for _, binaryfile in ipairs(binaryfiles) do
@@ -240,8 +240,8 @@ end
 function core_sandbox_module._load_from_shared(module_fullpath, opt)
     local script
     local module
-    local module_bindir = core_sandbox_module._build_module(module_fullpath)
-    local libraryfiles = os.files(path.join(module_bindir, "*module_*"))
+    local module_buildir = core_sandbox_module._build_module(module_fullpath)
+    local libraryfiles = os.files(path.join(module_buildir, "*module_*"))
     if libraryfiles then
         for _, libraryfile in ipairs(libraryfiles) do
             local modulename = path.basename(libraryfile):match("module_(.+)")
