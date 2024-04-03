@@ -315,15 +315,14 @@ function core_sandbox_module._load_from_shared(module_fullpath, opt)
             local modulename = path.basename(libraryfile):match("module_(.+)")
             if modulename then
                 if package.loadxmi then
-                    module, errors1 = package.loadxmi(libraryfile, "xmiopen_" .. modulename)
+                    script, errors1 = package.loadxmi(libraryfile, "xmiopen_" .. modulename)
                 end
-                if not module then
+                if not script then
                     script, errors2 = package.loadlib(libraryfile, "luaopen_" .. modulename)
-                    if script then
-                        module = script()
-                    end
                 end
-                if not module then
+                if script then
+                    module = script()
+                else
                     return nil, errors1 or errors2 or string.format("xmiopen_%s and luaopen_%s not found!", modulename, modulename)
                 end
                 break

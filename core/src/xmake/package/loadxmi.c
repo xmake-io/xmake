@@ -34,7 +34,6 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
-typedef int (*xm_open_func_t)(lua_State* lua);
 typedef int (*xm_setup_func_t)(xmi_lua_ops_t* ops);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +60,7 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     }
 
     // get xmiopen_xxx function
-    xm_open_func_t luaopen_func = (xm_open_func_t)tb_dynamic_func(lib, name);
+    lua_CFunction luaopen_func = (lua_CFunction)tb_dynamic_func(lib, name);
     if (!luaopen_func)
     {
         lua_pushnil(lua);
@@ -79,11 +78,19 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     }
 
     // setup lua interfaces
-    xmi_lua_ops_t luaops = {0};
-    luaops._lua_createtable = &lua_createtable;
-    luaops._luaL_setfuncs = &luaL_setfuncs;
-    xmisetup_func(&luaops);
+    static xmi_lua_ops_t s_luaops = {0};
+    static tb_bool_t     s_luaops_inited = tb_false;
+    if (!s_luaops_inited)
+    {
+        s_luaops._lua_createtable = &lua_createtable;
+        s_luaops._lua_tointegerx  = &lua_tointegerx;
+        s_luaops._lua_pushinteger = &lua_pushinteger;
+        s_luaops._luaL_setfuncs   = &luaL_setfuncs;
+        s_luaops_inited = tb_true;
+    }
+    xmisetup_func(&s_luaops);
 
     // load module
-    return luaopen_func(lua);
+    lua_pushcfunction(lua, luaopen_func);
+    return 1;
 }
