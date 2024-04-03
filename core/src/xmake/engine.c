@@ -294,6 +294,9 @@ tb_int_t xm_libc_setbyte(lua_State* lua);
 // the tty functions
 tb_int_t xm_tty_term_mode(lua_State* lua);
 
+// the package functions
+tb_int_t xm_package_loadxmi(lua_State* lua);
+
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses functions
 tb_int_t xm_lua_curses_register(lua_State* lua, tb_char_t const* module);
@@ -568,6 +571,13 @@ static luaL_Reg const g_libc_functions[] =
 static luaL_Reg const g_tty_functions[] =
 {
     { "term_mode",      xm_tty_term_mode    }
+,   { tb_null,          tb_null             }
+};
+
+// the package functions
+static luaL_Reg const g_package_functions[] =
+{
+    { "loadxmi",        xm_package_loadxmi  }
 ,   { tb_null,          tb_null             }
 };
 
@@ -1157,6 +1167,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
         // bind tty functions
         xm_lua_register(engine->lua, "tty", g_tty_functions);
+
+        // bind package functions
+        xm_lua_register(engine->lua, "package", g_package_functions);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
         // bind curses

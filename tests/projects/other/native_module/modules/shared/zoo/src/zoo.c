@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <xmi.h>
 
 static int add(lua_State* lua) {
@@ -18,7 +19,8 @@ static int sub(lua_State* lua) {
     return 1;
 }
 
-int xmi_luaopen_foo(lua_State* lua) {
+int xmiopen_zoo(lua_State* lua) {
+    printf("xxx\n");
     static const luaL_Reg funcs[] = {
         {"add", add},
         {"sub", sub},
