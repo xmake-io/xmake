@@ -6,6 +6,7 @@
 
 * [#4874](https://github.com/xmake-io/xmake/pull/4874): Add Harmony SDK support
 * [#4889](https://github.com/xmake-io/xmake/issues/4889): Add signal module to register signal handler in lua
+* [#4925](https://github.com/xmake-io/xmake/issues/4925): Add native modules support
 
 ### Changes
 
@@ -1786,6 +1787,7 @@
 
 * [#4874](https://github.com/xmake-io/xmake/pull/4874): 添加鸿蒙 SDK 支持
 * [#4889](https://github.com/xmake-io/xmake/issues/4889): 添加 signal 模块 去注册信号处理
+* [#4925](https://github.com/xmake-io/xmake/issues/4925): 添加 native 模块支持
 
 ### 改进
 
