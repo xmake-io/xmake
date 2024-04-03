@@ -214,17 +214,26 @@ function core_sandbox_module._build_module(module_fullpath)
     local envs = {XMAKE_CONFIGDIR = buildir}
     local argv = {"config", "-o", buildir, "-a", xmake.arch()}
     core_sandbox_module._add_builtin_argv(argv, projectdir)
-    os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
+    local ok, errors = os.runv(os.programfile(), argv, {envs = envs, curdir = projectdir})
+    if not ok then
+        return nil, errors
+    end
     argv = {}
     core_sandbox_module._add_builtin_argv(argv, projectdir)
-    os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
+    ok, errors = os.runv(os.programfile(), argv, {envs = envs, curdir = projectdir})
+    if not ok then
+        return nil, errors
+    end
     return buildir
 end
 
 -- load module from the binary module
 function core_sandbox_module._load_from_binary(module_fullpath, opt)
     local module
-    local module_buildir = core_sandbox_module._build_module(module_fullpath)
+    local module_buildir, errors = core_sandbox_module._build_module(module_fullpath)
+    if not module_buildir then
+        return nil, errors
+    end
     local binaryfiles = os.files(path.join(module_buildir, "module_*"))
     if binaryfiles then
         module = {}
@@ -257,7 +266,10 @@ end
 function core_sandbox_module._load_from_shared(module_fullpath, opt)
     local script
     local module
-    local module_buildir = core_sandbox_module._build_module(module_fullpath)
+    local module_buildir, errors = core_sandbox_module._build_module(module_fullpath)
+    if not module_buildir then
+        return nil, errors
+    end
     local libraryfiles = os.files(path.join(module_buildir, "*module_*"))
     if libraryfiles then
         for _, libraryfile in ipairs(libraryfiles) do
