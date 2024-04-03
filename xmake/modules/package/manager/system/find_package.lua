@@ -39,7 +39,7 @@ end
 -- check package toolchains
 function _check_package_toolchains(package)
     local has_standalone
-    for _, toolchain_inst in pairs(package:toolchains()) do
+    for _, toolchain_inst in ipairs(package:toolchains()) do
         if toolchain_inst:check() and toolchain_inst:is_standalone() then
             has_standalone = true
         end
@@ -71,7 +71,8 @@ function main(name, opt)
     --
     -- But if it depends on some toolchain packages,
     -- then they can't be detected early in the fetch and we have to disable system.find_package
-    if opt.package and not _check_package_toolchains(opt.package) then
+    local package = opt.package
+    if package and package:toolchains() and not _check_package_toolchains(package) then
         return
     end
 
