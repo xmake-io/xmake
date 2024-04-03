@@ -61,10 +61,22 @@
 #   define lua_Integer              xmi_lua_Integer
 #endif
 
+// extern c
+#ifdef __cplusplus
+#   define xmi_extern_c_enter       extern "C" {
+#   define xmi_extern_c_leave       }
+#else
+#   define xmi_extern_c_enter
+#   define xmi_extern_c_leave
+#endif
+
 // define lua module entry function
 #define luaopen(name, lua) \
 __dummy = 1; \
 xmi_lua_ops_t* g_lua_ops = NULL; \
+xmi_extern_c_enter \
+int xmiopen_##name(lua); \
+xmi_extern_c_leave \
 int xmisetup(xmi_lua_ops_t* ops) { \
     g_lua_ops = ops; \
     return __dummy; \
@@ -100,18 +112,12 @@ extern xmi_lua_ops_t* g_lua_ops;
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+xmi_extern_c_enter
 
 // setup lua interfaces
 int xmisetup(xmi_lua_ops_t* ops);
 
-#ifdef __cplusplus
-}
-#endif
-
+xmi_extern_c_leave
 #endif
 
 

@@ -1,8 +1,4 @@
-#include <stdlib.h>
-extern "C" {
-#include <lua.h>
-#include <lauxlib.h>
-}
+#include <xmi.h>
 
 static int add(lua_State* lua) {
     int a = lua_tointeger(lua, 1);
@@ -18,15 +14,14 @@ static int sub(lua_State* lua) {
     return 1;
 }
 
-extern "C" {
-    int luaopen_foo(lua_State* lua) {
-        static const luaL_Reg funcs[] = {
-            {"add", add},
-            {"sub", sub},
-            {NULL, NULL}
-        };
-        lua_newtable(lua);
-        luaL_setfuncs(lua, funcs, 0);
-        return 1;
-    }
+int luaopen(foo, lua_State* lua) {
+    static const luaL_Reg funcs[] = {
+        {"add", add},
+        {"sub", sub},
+        {NULL, NULL}
+    };
+    lua_newtable(lua);
+    luaL_setfuncs(lua, funcs, 0);
+    return 1;
 }
+
