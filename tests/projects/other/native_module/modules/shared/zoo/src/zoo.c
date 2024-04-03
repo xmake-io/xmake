@@ -18,15 +18,13 @@ static int sub(lua_State* lua) {
     return 1;
 }
 
-int xmiopen(zoo, lua_State* lua) {
+int luaopen(zoo, lua_State* lua) {
     static const luaL_Reg funcs[] = {
         {"add", add},
         {"sub", sub},
         {NULL, NULL}
     };
     lua_newtable(lua);
-#if 0
     luaL_setfuncs(lua, funcs, 0);
-#endif
     return 1;
 }

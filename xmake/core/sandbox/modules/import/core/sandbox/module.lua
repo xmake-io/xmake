@@ -305,26 +305,27 @@ function core_sandbox_module._load_from_shared(module_fullpath, opt)
         end
         libraryfiles = {}
     end
-    local script
     local module
     if #libraryfiles == 0 then
         libraryfiles = os.files(path.join(moduleinfo.buildir, "*module_*"))
     end
     if #libraryfiles > 0 then
-        local errors1, errors2
+        local script, errors1, errors2
         for _, libraryfile in ipairs(libraryfiles) do
             local modulename = path.basename(libraryfile):match("module_(.+)")
-            if package.loadxmi then
-                script, errors1 = package.loadxmi(libraryfile, "xmiopen_" .. modulename)
-            end
-            if not script then
-                script, errors2 = package.loadlib(libraryfile, "luaopen_" .. modulename)
-            end
-            if not script then
-                return nil, errors1 or errors2 or string.format("xmiopen_%s and luaopen_%s not found!", modulename, modulename)
-            end
-            module = script()
-            if module then
+            if modulename then
+                if package.loadxmi then
+                    module, errors1 = package.loadxmi(libraryfile, "xmiopen_" .. modulename)
+                end
+                if not module then
+                    script, errors2 = package.loadlib(libraryfile, "luaopen_" .. modulename)
+                    if script then
+                        module = script()
+                    end
+                end
+                if not module then
+                    return nil, errors1 or errors2 or string.format("xmiopen_%s and luaopen_%s not found!", modulename, modulename)
+                end
                 break
             end
         end

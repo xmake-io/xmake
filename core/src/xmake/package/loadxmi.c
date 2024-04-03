@@ -61,8 +61,8 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     }
 
     // get xmiopen_xxx function
-    xm_open_func_t luaopen = (xm_open_func_t)tb_dynamic_func(lib, name);
-    if (!luaopen)
+    xm_open_func_t luaopen_func = (xm_open_func_t)tb_dynamic_func(lib, name);
+    if (!luaopen_func)
     {
         lua_pushnil(lua);
         lua_pushfstring(lua, "cannot get symbol %s failed", name);
@@ -70,8 +70,8 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     }
 
     // get xmisetup function
-    xm_setup_func_t xmisetup = (xm_setup_func_t)tb_dynamic_func(lib, "xmisetup");
-    if (!xmisetup)
+    xm_setup_func_t xmisetup_func = (xm_setup_func_t)tb_dynamic_func(lib, "xmisetup");
+    if (!xmisetup_func)
     {
         lua_pushnil(lua);
         lua_pushfstring(lua, "cannot get symbol xmisetup failed");
@@ -81,8 +81,9 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     // setup lua interfaces
     xmi_lua_ops_t luaops = {0};
     luaops._lua_createtable = &lua_createtable;
-    xmisetup(&luaops);
+    luaops._luaL_setfuncs = &luaL_setfuncs;
+    xmisetup_func(&luaops);
 
     // load module
-    return luaopen(lua);
+    return luaopen_func(lua);
 }

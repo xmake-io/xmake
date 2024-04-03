@@ -29,19 +29,29 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
+
+// lua interfaces
 #define xmi_lua_createtable(lua, narr, nrec)    (g_lua_ops)->_lua_createtable(lua, narr, nrec)
 #define xmi_lua_newtable(lua)		            xmi_lua_createtable(lua, 0, 0)
 
+// luaL interfaces
+#define xmi_luaL_setfuncs(lua, narr, nrec)    (g_lua_ops)->_luaL_setfuncs(lua, narr, nrec)
+
+/* we cannot redefine lua functions in loadxmi.c,
+ * because original lua.h has been included
+ */
 #ifndef LUA_VERSION
 #   define lua_createtable          xmi_lua_createtable
 #   define lua_newtable             xmi_lua_newtable
+
+#   define luaL_setfuncs            xmi_luaL_setfuncs
 
 #   define luaL_Reg                 xmi_luaL_Reg
 #   define lua_State                xmi_lua_State
 #endif
 
 // define lua module entry function
-#define xmiopen(name, lua) \
+#define luaopen(name, lua) \
 __dummy = 1; \
 xmi_lua_ops_t* g_lua_ops; \
 int xmisetup(xmi_lua_ops_t* ops) { \
@@ -64,7 +74,8 @@ typedef struct xmi_luaL_Reg_ {
 }xmi_luaL_Reg;
 
 typedef struct xmi_lua_ops_t_ {
-    void  (*_lua_createtable)(lua_State* lua, int narr, int nrec);
+    void (*_lua_createtable)(lua_State* lua, int narr, int nrec);
+    void (*_luaL_setfuncs)(lua_State* lua, const luaL_Reg* l, int nup);
 }xmi_lua_ops_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
