@@ -18,7 +18,7 @@ static int sub(lua_State* lua) {
     return 1;
 }
 
-int xmiopen_zoo(lua_State* lua) {
+int xmiopen(zoo, lua_State* lua) {
     static const luaL_Reg funcs[] = {
         {"add", add},
         {"sub", sub},

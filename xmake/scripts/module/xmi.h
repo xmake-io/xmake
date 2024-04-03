@@ -29,7 +29,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
-#define xmi_lua_createtable(lua, narr, nrec)    lua->_lua_createtable(lua->_lua, narr, nrec)
+#define xmi_lua_createtable(lua, narr, nrec)    (g_lua_ops)->_lua_createtable(lua, narr, nrec)
 #define xmi_lua_newtable(lua)		            xmi_lua_createtable(lua, 0, 0)
 
 #ifndef LUA_VERSION
@@ -37,24 +37,50 @@
 #   define lua_newtable             xmi_lua_newtable
 
 #   define luaL_Reg                 xmi_luaL_Reg
-#   define lua_State                struct xmi_lua_State_
+#   define lua_State                xmi_lua_State
 #endif
+
+// define lua module entry function
+#define xmiopen(name, lua) \
+__dummy = 1; \
+xmi_lua_ops_t* g_lua_ops; \
+int xmisetup(xmi_lua_ops_t* ops) { \
+    g_lua_ops = ops; \
+    return __dummy; \
+} \
+int xmiopen_##name(lua)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
 
-struct xmi_lua_State_;
+typedef struct xmi_lua_State_ {
+    int dummy;
+}xmi_lua_State;
+
 typedef struct xmi_luaL_Reg_ {
     char const* name;
     int (*func)(struct xmi_lua_State_* lua);
 }xmi_luaL_Reg;
 
-typedef struct xmi_lua_State_ {
-    void* _lua;
+typedef struct xmi_lua_ops_t_ {
     void  (*_lua_createtable)(lua_State* lua, int narr, int nrec);
-}xmi_lua_State;
+}xmi_lua_ops_t;
 
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * interfaces
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// setup lua interfaces
+int xmisetup(xmi_lua_ops_t* ops);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
