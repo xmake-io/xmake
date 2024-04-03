@@ -35,5 +35,6 @@ rule("module.shared")
         target:set("basename", "module_" .. target:name())
         target:set("targetdir", config.buildir())
         target:set("strip", "none")
+        target:add("sysincludedirs", path.join(os.programdir(), "scripts", "module"))
     end)
 
