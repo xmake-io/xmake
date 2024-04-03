@@ -13,10 +13,13 @@ target("pdcurses")
     add_includedirs("pdcurses", {public = true})
 
     -- add the common source files
-    add_files("pdcurses/pdcurses/*.c", "pdcurses/win32/*.c")
+    add_files("pdcurses/pdcurses/*.c", "pdcurses/wincon/*.c")
 
     -- add definitions
     add_defines("PDC_WIDE")
 
     -- set languages
     set_languages("c89")
+
+    -- unset warnings
+    set_warnings("none")

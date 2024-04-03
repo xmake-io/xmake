@@ -35,6 +35,7 @@
 // fix macro redefinition
 #   undef MOUSE_MOVED
 #endif
+#define NCURSES_MOUSE_VERSION 2
 #include <curses.h>
 #if defined(NCURSES_VERSION)
 #   include <locale.h>
@@ -131,6 +132,7 @@ static int xm_curses_window_getch_impl(WINDOW* w)
     }
 
     key = wgetch(w);
+    if (key == KEY_RESIZE) resize_term(0, 0);
     if (key == ERR || !g_mapkey) return key;
     if (key >= ALT_A && key <= ALT_Z)
     {
