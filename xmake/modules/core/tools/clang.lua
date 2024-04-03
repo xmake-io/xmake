@@ -268,8 +268,9 @@ function nf_runtime(self, runtime, opt)
                 maps["c++_shared"] = table.join(maps["c++_shared"], "-cxx-isystem" .. path.join(llvm_rootdir, "include", "c++", "v1"))
             end
         elseif kind == "ld" or kind == "sh" then
-            local target = opt.target
-            if target and target.sourcekinds and table.contains(table.wrap(target:sourcekinds()), "cxx") then
+            local target = opt.target or opt
+            local is_cxx = target and (target.sourcekinds and table.contains(table.wrap(target:sourcekinds()), "cxx"))
+            if is_cxx then
                 maps["c++_static"]    = "-stdlib=libc++"
                 maps["c++_shared"]    = "-stdlib=libc++"
                 maps["stdc++_static"] = "-stdlib=libstdc++"
