@@ -59,7 +59,7 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     }
 
     // get xmiopen_xxx function
-    xm_open_func_t func = (xm_open_func_t)tb_dynamic_func(path, name);
+    xm_open_func_t func = (xm_open_func_t)tb_dynamic_func(lib, name);
     if (!func)
     {
         lua_pushnil(lua);
