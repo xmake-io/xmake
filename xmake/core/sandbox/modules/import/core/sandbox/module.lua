@@ -252,13 +252,15 @@ end
 
 -- load module from the binary module
 function core_sandbox_module._load_from_binary(module_fullpath, opt)
+    opt = opt or {}
     local moduleinfo = core_sandbox_module._native_moduleinfo(module_fullpath, MODULE_KIND_BINARY)
     local binaryfiles = os.files(path.join(moduleinfo.buildir, "module_*"))
-    if #binaryfiles == 0 then
+    if #binaryfiles == 0 or (not moduleinfo.is_global and opt.always_build) then
         local ok, errors = core_sandbox_module._build_module(moduleinfo)
         if not ok then
             return nil, errors
         end
+        binaryfiles = {}
     end
     local module
     if #binaryfiles == 0 then
@@ -293,13 +295,15 @@ end
 
 -- load module from the shared module
 function core_sandbox_module._load_from_shared(module_fullpath, opt)
+    opt = opt or {}
     local moduleinfo = core_sandbox_module._native_moduleinfo(module_fullpath, MODULE_KIND_SHARED)
     local libraryfiles = os.files(path.join(moduleinfo.buildir, "*module_*"))
-    if #libraryfiles == 0 then
+    if #libraryfiles == 0 or (not moduleinfo.is_global and opt.always_build) then
         local ok, errors = core_sandbox_module._build_module(moduleinfo)
         if not ok then
             return nil, errors
         end
+        libraryfiles = {}
     end
     local script
     local module
@@ -365,6 +369,7 @@ function core_sandbox_module._find_and_load(name, opt)
     local modulekind = MODULE_KIND_LUAFILE
     local modules = opt.modules
     local modules_directories = opt.modules_directories
+    local always_build = opt.always_build
     local loadnext = false
     for idx, moduledir in ipairs(modules_directories) do
         modulekey, modulekind = core_sandbox_module._find(moduledir, name)
@@ -377,6 +382,7 @@ function core_sandbox_module._find_and_load(name, opt)
                 module, errors = core_sandbox_module._load(moduledir, name, {
                                                            instance = idx < #modules_directories and opt.instance or nil,  -- last modules need not fork sandbox
                                                            module = module,
+                                                           always_build = always_build,
                                                            modulekind = modulekind})
                 if not opt.nocache then
                     modules[modulekey] = {module, errors}
@@ -469,14 +475,13 @@ end
 -- import("core.project.config", {try = true})
 -- => cannot raise errors if the imported module not found
 --
+-- import("native.module", {always_build = true})
+-- => always build module when calling import
+--
 -- @note the polymiorphism is not supported for import.inherit mode now.
 --
 function core_sandbox_module.import(name, opt)
-
-    -- check
     assert(name)
-
-    -- the argument options
     opt = opt or {}
 
     -- init module cache
