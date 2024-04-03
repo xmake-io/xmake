@@ -198,44 +198,73 @@ function core_sandbox_module._add_builtin_argv(argv, projectdir)
     end
 end
 
--- build module
-function core_sandbox_module._build_module(module_fullpath)
+-- get the native module info
+function core_sandbox_module._native_moduleinfo(module_fullpath, modulekind)
     local projectdir = path.normalize(path.absolute(module_fullpath))
     local programdir = path.normalize(os.programdir())
+    local modulename = path.basename(module_fullpath)
     local modulehash = hash.uuid4(projectdir):split("-", {plain = true})[1]:lower()
     local buildir
+    local is_global = false
+    local modulepath
     if projectdir:startswith(programdir) then
+        is_global = true
         buildir = path.join(global.directory(), "cache", "modules", modulehash)
+        modulepath = path.join("@programdir", path.relative(projectdir, programdir))
     elseif os.isfile(os.projectfile()) then
         buildir = path.join(config.directory(), "cache", "modules", modulehash)
+        modulepath = path.relative(projectdir, os.projectdir())
     else
         buildir = path.join(projectdir, "cache", "modules", modulehash)
+        modulepath = projectdir
     end
+    return {buildir = buildir, projectdir = projectdir, is_global = is_global, modulename = modulename, modulekind = modulekind, modulepath = modulepath}
+end
+
+-- build module
+function core_sandbox_module._build_module(moduleinfo)
+    local modulekind_str
+    if moduleinfo.modulekind == MODULE_KIND_BINARY then
+        modulekind_str = "binary"
+    elseif moduleinfo.modulekind == MODULE_KIND_SHARED then
+        modulekind_str = "shared"
+    else
+        return nil, "unknown module kind!"
+    end
+    utils.cprint("${color.build.target}building native %s module(%s) in %s ...", modulekind_str, moduleinfo.modulename, moduleinfo.modulepath)
+    local buildir = moduleinfo.buildir
+    local projectdir = moduleinfo.projectdir
     local envs = {XMAKE_CONFIGDIR = buildir}
     local argv = {"config", "-o", buildir, "-a", xmake.arch()}
     core_sandbox_module._add_builtin_argv(argv, projectdir)
-    local ok, errors = os.runv(os.programfile(), argv, {envs = envs, curdir = projectdir})
-    if not ok then
+    local ok, errors = os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
+    if ok ~= 0 then
         return nil, errors
     end
     argv = {}
     core_sandbox_module._add_builtin_argv(argv, projectdir)
-    ok, errors = os.runv(os.programfile(), argv, {envs = envs, curdir = projectdir})
-    if not ok then
+    ok, errors = os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
+    if ok ~= 0 then
         return nil, errors
     end
-    return buildir
+    return true
 end
 
 -- load module from the binary module
 function core_sandbox_module._load_from_binary(module_fullpath, opt)
-    local module
-    local module_buildir, errors = core_sandbox_module._build_module(module_fullpath)
-    if not module_buildir then
-        return nil, errors
+    local moduleinfo = core_sandbox_module._native_moduleinfo(module_fullpath, MODULE_KIND_BINARY)
+    local binaryfiles = os.files(path.join(moduleinfo.buildir, "module_*"))
+    if #binaryfiles == 0 then
+        local ok, errors = core_sandbox_module._build_module(moduleinfo)
+        if not ok then
+            return nil, errors
+        end
     end
-    local binaryfiles = os.files(path.join(module_buildir, "module_*"))
-    if binaryfiles then
+    local module
+    if #binaryfiles == 0 then
+        binaryfiles = os.files(path.join(moduleinfo.buildir, "module_*"))
+    end
+    if #binaryfiles > 0 then
         module = {}
         for _, binaryfile in ipairs(binaryfiles) do
             local modulename = path.basename(binaryfile):sub(8)
@@ -264,14 +293,21 @@ end
 
 -- load module from the shared module
 function core_sandbox_module._load_from_shared(module_fullpath, opt)
+    local moduleinfo = core_sandbox_module._native_moduleinfo(module_fullpath, MODULE_KIND_SHARED)
+    local libraryfiles = os.files(path.join(moduleinfo.buildir, "*module_*"))
+    if #libraryfiles == 0 then
+        local ok, errors = core_sandbox_module._build_module(moduleinfo)
+        if not ok then
+            return nil, errors
+        end
+    end
     local script
     local module
-    local module_buildir, errors = core_sandbox_module._build_module(module_fullpath)
-    if not module_buildir then
-        return nil, errors
+    if #libraryfiles == 0 then
+        libraryfiles = os.files(path.join(moduleinfo.buildir, "*module_*"))
     end
-    local libraryfiles = os.files(path.join(module_buildir, "*module_*"))
-    if libraryfiles then
+    if #libraryfiles > 0 then
+        local errors
         for _, libraryfile in ipairs(libraryfiles) do
             local modulename = path.basename(libraryfile):match("module_(.+)")
             script, errors = package.loadlib(libraryfile, "luaopen_" .. modulename)
