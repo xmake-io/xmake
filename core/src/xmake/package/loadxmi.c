@@ -29,11 +29,12 @@
  * includes
  */
 #include "prefix.h"
+#include "xmi.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
-typedef int (*xm_open_func_t)(lua_State* lua);
+typedef int (*xm_open_func_t)(xmi_lua_State* lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -68,5 +69,8 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     }
 
     // load module
-    return func(lua);
+    xmi_lua_State xmi_lua = {0};
+    xmi_lua._lua = lua;
+    xmi_lua._lua_createtable = &lua_createtable;
+    return func(&xmi_lua);
 }

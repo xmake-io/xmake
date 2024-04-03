@@ -24,8 +24,8 @@ int xmiopen_zoo(lua_State* lua) {
         {"sub", sub},
         {NULL, NULL}
     };
-#if 0
     lua_newtable(lua);
+#if 0
     luaL_setfuncs(lua, funcs, 0);
 #endif
     return 1;

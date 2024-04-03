@@ -50,6 +50,7 @@ target "xmake"
     add_includedirs ".." "{public}"
     add_includedirs "${buildir}/${plat}/${arch}/${mode}" "{public}"
     add_includedirs "../xxhash"
+    add_includedirs "${projectdir}/xmake/scripts/module"
 
     # add the common source files
     add_files "*.c"

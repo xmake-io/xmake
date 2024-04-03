@@ -27,18 +27,34 @@
 #include <stdlib.h>
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+#define xmi_lua_createtable(lua, narr, nrec)    lua->_lua_createtable(lua->_lua, narr, nrec)
+#define xmi_lua_newtable(lua)		            xmi_lua_createtable(lua, 0, 0)
+
+#ifndef LUA_VERSION
+#   define lua_createtable          xmi_lua_createtable
+#   define lua_newtable             xmi_lua_newtable
+
+#   define luaL_Reg                 xmi_luaL_Reg
+#   define lua_State                struct xmi_lua_State_
+#endif
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
 
-struct lua_State_;
-typedef struct luaL_Reg_ {
+struct xmi_lua_State_;
+typedef struct xmi_luaL_Reg_ {
     char const* name;
-    int (*func)(struct lua_State_* lua);
-}luaL_Reg;
+    int (*func)(struct xmi_lua_State_* lua);
+}xmi_luaL_Reg;
 
-typedef struct lua_State_ {
-    void* ctx;
-}lua_State;
+typedef struct xmi_lua_State_ {
+    void* _lua;
+    void  (*_lua_createtable)(lua_State* lua, int narr, int nrec);
+}xmi_lua_State;
+
 
 #endif
 
