@@ -65,8 +65,8 @@
 
 // lua macros
 #define xmi_lua_newtable(lua)		                xmi_lua_createtable(lua, 0, 0)
-#define xmi_lua_gettop(lua)                         (g_lua_ops)->_lua_gettop(lua)
 #define xmi_lua_type(lua, idx)                      (g_lua_ops)->_lua_type(lua, idx)
+#define xmi_lua_pop(lua, n)		                    xmi_lua_settop(lua, -(n)-1)
 
 // get macros
 #define xmi_lua_getglobal(lua, name)                (g_lua_ops)->_lua_getglobal(lua, name)
@@ -113,6 +113,17 @@
 #define xmi_lua_pushcclosure(lua, fn, n)            (g_lua_ops)->_lua_pushcclosure(lua, fn, n)
 #define xmi_lua_pushlightuserdata(lua, p)           (g_lua_ops)->_lua_pushlightuserdata(lua, p)
 #define xmi_lua_pushthread(lua)                     (g_lua_ops)->_lua_pushthread(lua)
+#define xmi_lua_pushcfunction(lua, f)	            xmi_lua_pushcclosure(lua, (f), 0)
+
+// stack functions
+#define xmi_lua_absindex(lua, idx)                  (g_lua_ops)->_lua_absindex(lua, idx)
+#define xmi_lua_gettop(lua)                         (g_lua_ops)->_lua_gettop(lua)
+#define xmi_lua_settop(lua, idx)                    (g_lua_ops)->_lua_settop(lua, idx)
+#define xmi_lua_pushvalue(lua, idx)                 (g_lua_ops)->_lua_pushvalue(lua, idx)
+#define xmi_lua_rotate(lua, idx, n)                 (g_lua_ops)->_lua_rotate(lua, idx, n)
+#define xmi_lua_copy(lua, fromidx, toidx)           (g_lua_ops)->_lua_copy(lua, fromidx, toidx)
+#define xmi_lua_checkstack(lua, n)                  (g_lua_ops)->_lua_checkstack(lua, n)
+#define xmi_lua_xmove(from, to, n)                  (g_lua_ops)->_lua_xmove(from, to, n)
 
 // compatibility macros
 #define xmi_lua_newuserdata(lua, s)	    xmi_lua_newuserdatauv(lua, s, 1)
@@ -154,9 +165,9 @@
  */
 #ifndef XM_PREFIX_H
 #   define lua_upvalueindex         xmi_lua_upvalueindex
-#   define lua_gettop               xmi_lua_gettop
 #   define lua_type                 xmi_lua_type
 #   define lua_newtable             xmi_lua_newtable
+#   define lua_pop                  xmi_lua_pop
 
 // get macros
 #   define lua_getglobal            xmi_lua_getglobal
@@ -199,10 +210,21 @@
 #   define lua_pushcclosure         xmi_lua_pushcclosure
 #   define lua_pushlightuserdata    xmi_lua_pushlightuserdata
 #   define lua_pushthread           xmi_lua_pushthread
+#   define lua_pushcfunction        xmi_lua_pushcfunction
 
 #   define lua_newuserdata          xmi_lua_newuserdata
 #   define lua_getuservalue         xmi_lua_getuservalue
 #   define lua_setuservalue         xmi_lua_setuservalue
+
+// stack functions
+#   define lua_absindex             xmi_lua_absindex
+#   define lua_gettop               xmi_lua_gettop
+#   define lua_settop               xmi_lua_settop
+#   define lua_pushvalue            xmi_lua_pushvalue
+#   define lua_rotate               xmi_lua_rotate
+#   define lua_copy                 xmi_lua_copy
+#   define lua_checkstack           xmi_lua_checkstack
+#   define lua_xmove                xmi_lua_xmove
 
 // luaL macros
 #   define luaL_setfuncs            xmi_luaL_setfuncs
@@ -287,7 +309,6 @@ typedef struct xmi_luaL_Reg_ {
 }xmi_luaL_Reg;
 
 typedef struct xmi_lua_ops_t_ {
-    int         (*_lua_gettop)(lua_State* lua);
     int         (*_lua_type)(lua_State* lua, int idx);
 
     // get functions
@@ -320,6 +341,16 @@ typedef struct xmi_lua_ops_t_ {
     void        (*_lua_pushcclosure)(lua_State* lua, lua_CFunction fn, int n);
     void        (*_lua_pushlightuserdata)(lua_State* lua, void* p);
     int         (*_lua_pushthread)(lua_State* lua);
+
+    // stack functions
+    int         (*_lua_absindex)(lua_State* lua, int idx);
+    int         (*_lua_gettop)(lua_State* lua);
+    void        (*_lua_settop)(lua_State* lua, int idx);
+    void        (*_lua_pushvalue)(lua_State* lua, int idx);
+    void        (*_lua_rotate)(lua_State* lua, int idx, int n);
+    void        (*_lua_copy)(lua_State* lua, int fromidx, int toidx);
+    int         (*_lua_checkstack)(lua_State* lua, int n);
+    void        (*_lua_xmove)(lua_State* from, lua_State* to, int n);
 
     // luaL functions
     void        (*_luaL_setfuncs)(lua_State* lua, const luaL_Reg* l, int nup);

@@ -85,7 +85,6 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     static tb_bool_t     s_luaops_inited = tb_false;
     if (!s_luaops_inited)
     {
-        s_luaops._lua_gettop            = &lua_gettop;
         s_luaops._lua_type              = &lua_type;
 
         // get functions
@@ -109,7 +108,6 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
         // push functions
         s_luaops._lua_pushnil           = &lua_pushnil;
         s_luaops._lua_pushinteger       = &lua_pushinteger;
-
         s_luaops._lua_pushboolean       = &lua_pushboolean;
         s_luaops._lua_pushnumber        = &lua_pushnumber;
         s_luaops._lua_pushlstring       = &lua_pushlstring;
@@ -119,6 +117,16 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
         s_luaops._lua_pushcclosure      = &lua_pushcclosure;
         s_luaops._lua_pushlightuserdata = &lua_pushlightuserdata;
         s_luaops._lua_pushthread        = &lua_pushthread;
+
+        // stack functions
+        s_luaops._lua_absindex          = &lua_absindex;
+        s_luaops._lua_gettop            = &lua_gettop;
+        s_luaops._lua_settop            = &lua_settop;
+        s_luaops._lua_pushvalue         = &lua_pushvalue;
+        s_luaops._lua_rotate            = &lua_rotate;
+        s_luaops._lua_copy              = &lua_copy;
+        s_luaops._lua_checkstack        = &lua_checkstack;
+        s_luaops._lua_xmove             = &lua_xmove;
 
         // luaL functions
         s_luaops._luaL_setfuncs         = &luaL_setfuncs;
