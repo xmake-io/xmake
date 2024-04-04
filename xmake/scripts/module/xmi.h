@@ -81,6 +81,17 @@
 #define xmi_lua_getmetatable(lua, objindex)         (g_lua_ops)->_lua_getmetatable(lua, objindex)
 #define xmi_lua_getiuservalue(lua, idx, n)          (g_lua_ops)->_lua_getiuservalue(lua, idx, n)
 
+// set macros
+#define xmi_lua_setglobal(lua, name)                (g_lua_ops)->_lua_setglobal(lua, name)
+#define xmi_lua_settable(lua, idx)                  (g_lua_ops)->_lua_settable(lua, idx)
+#define xmi_lua_setfield(lua, idx, k)               (g_lua_ops)->_lua_setfield(lua, idx, k)
+#define xmi_lua_seti(lua, idx, n)                   (g_lua_ops)->_lua_seti(lua, idx, n)
+#define xmi_lua_rawset(lua, idx)                    (g_lua_ops)->_lua_rawset(lua, idx)
+#define xmi_lua_rawseti(lua, idx, n)                (g_lua_ops)->_lua_rawseti(lua, idx, n)
+#define xmi_lua_rawsetp(lua, idx, p)                (g_lua_ops)->_lua_rawsetp(lua, idx, p)
+#define xmi_lua_setmetatable(lua, objidx)           (g_lua_ops)->_lua_setmetatable(lua, objidx)
+#define xmi_lua_setiuservalue(lua, idx, n)          (g_lua_ops)->_lua_setiuservalue(lua, idx, n)
+
 // to macros
 #define xmi_lua_tointegerx(lua, idx, isnum)         (g_lua_ops)->_lua_tointegerx(lua, idx, isnum)
 #define xmi_lua_tointeger(lua, i)                   xmi_lua_tointegerx(lua, (i), NULL)
@@ -182,7 +193,18 @@
 #   define lua_getmetatable         xmi_lua_getmetatable
 #   define lua_getiuservalue        xmi_lua_getiuservalue
 
-// access macros
+// set macros
+#   define lua_setglobal            xmi_lua_setglobal
+#   define lua_settable             xmi_lua_settable
+#   define lua_setfield             xmi_lua_setfield
+#   define lua_seti                 xmi_lua_seti
+#   define lua_rawset               xmi_lua_rawset
+#   define lua_rawseti              xmi_lua_rawseti
+#   define lua_rawsetp              xmi_lua_rawsetp
+#   define lua_setmetatable         xmi_lua_setmetatable
+#   define lua_setiuservalue        xmi_lua_setiuservalue
+
+// to macros
 #   define lua_tointeger            xmi_lua_tointeger
 #   define lua_tointegerx           xmi_lua_tointegerx
 #   define lua_toboolean            xmi_lua_toboolean
@@ -323,6 +345,17 @@ typedef struct xmi_lua_ops_t_ {
     void*       (*_lua_newuserdatauv)(lua_State* lua, size_t sz, int nuvalue);
     int         (*_lua_getmetatable)(lua_State* lua, int objindex);
     int         (*_lua_getiuservalue)(lua_State* lua, int idx, int n);
+
+    // set functions
+    void        (*_lua_setglobal)(lua_State* lua, const char* name);
+    void        (*_lua_settable)(lua_State* lua, int idx);
+    void        (*_lua_setfield)(lua_State* lua, int idx, const char* k);
+    void        (*_lua_seti)(lua_State* lua, int idx, lua_Integer n);
+    void        (*_lua_rawset)(lua_State* lua, int idx);
+    void        (*_lua_rawseti)(lua_State* lua, int idx, lua_Integer n);
+    void        (*_lua_rawsetp)(lua_State* lua, int idx, const void* p);
+    int         (*_lua_setmetatable)(lua_State* lua, int objindex);
+    int         (*_lua_setiuservalue)(lua_State* lua, int idx, int n);
 
     // to functions
     lua_Integer (*_lua_tointegerx)(lua_State* lua, int idx, int* isnum);

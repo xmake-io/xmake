@@ -100,6 +100,17 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
         s_luaops._lua_getmetatable      = &lua_getmetatable;
         s_luaops._lua_getiuservalue     = &lua_getiuservalue;
 
+        // set functions
+        s_luaops._lua_setglobal         = &lua_setglobal;
+        s_luaops._lua_settable          = &lua_settable;
+        s_luaops._lua_setfield          = &lua_setfield;
+        s_luaops._lua_seti              = &lua_seti;
+        s_luaops._lua_rawset            = &lua_rawset;
+        s_luaops._lua_rawseti           = &lua_rawseti;
+        s_luaops._lua_rawsetp           = &lua_rawsetp;
+        s_luaops._lua_setmetatable      = &lua_setmetatable;
+        s_luaops._lua_setiuservalue     = &lua_setiuservalue;
+
         // to functions
         s_luaops._lua_tointegerx        = &lua_tointegerx;
         s_luaops._lua_toboolean         = &lua_toboolean;
