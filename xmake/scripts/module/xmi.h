@@ -26,6 +26,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #ifndef LUA_VERSION
 #   include "luawrap/luaconf.h"
 #endif
@@ -62,30 +63,19 @@
 #   define xmi_lua_upvalueindex(i)	(XMI_LUA_REGISTRYINDEX - (i))
 #endif
 
-// lua interfaces
+// lua macros
 #define xmi_lua_createtable(lua, narr, nrec)        (g_lua_ops)->_lua_createtable(lua, narr, nrec)
-#define xmi_lua_tointegerx(lua, idx, isnum)         (g_lua_ops)->_lua_tointegerx(lua, idx, isnum)
-#define xmi_lua_toboolean(lua, idx)                 (g_lua_ops)->_lua_toboolean(lua, idx)
-#define xmi_lua_touserdata(lua, idx)                (g_lua_ops)->_lua_touserdata(lua, idx)
-#define xmi_lua_pushinteger(lua, n)                 (g_lua_ops)->_lua_pushinteger(lua, n)
+#define xmi_lua_newtable(lua)		                xmi_lua_createtable(lua, 0, 0)
 #define xmi_lua_gettop(lua)                         (g_lua_ops)->_lua_gettop(lua)
-#define xmi_lua_pushnil(lua)                        (g_lua_ops)->_lua_pushnil(lua)
 #define xmi_lua_type(lua, idx)                      (g_lua_ops)->_lua_type(lua, idx)
 
-// luaL interfaces
-#define xmi_luaL_setfuncs(lua, narr, nrec)          (g_lua_ops)->_luaL_setfuncs(lua, narr, nrec)
-#if defined(_MSC_VER)
-#   define xmi_luaL_error(lua, fmt, ...)            (g_lua_ops)->_luaL_error(lua, fmt, __VA_ARGS__)
-#else
-#   define xmi_luaL_error(lua, fmt, arg ...)        (g_lua_ops)->_luaL_error(lua, fmt, ## arg)
-#endif
-#define xmi_luaL_argerror(lua, numarg, extramsg)    (g_lua_ops)->_luaL_argerror(lua, numarg, extramsg)
-#define xmi_luaL_checkinteger(lua, idx)             (g_lua_ops)->_luaL_checkinteger(lua, idx)
-
-// helper interfaces
-#define xmi_lua_newtable(lua)		                xmi_lua_createtable(lua, 0, 0)
+// to macros
+#define xmi_lua_tointegerx(lua, idx, isnum)         (g_lua_ops)->_lua_tointegerx(lua, idx, isnum)
 #define xmi_lua_tointeger(lua, i)                   xmi_lua_tointegerx(lua, (i), NULL)
+#define xmi_lua_toboolean(lua, idx)                 (g_lua_ops)->_lua_toboolean(lua, idx)
+#define xmi_lua_touserdata(lua, idx)                (g_lua_ops)->_lua_touserdata(lua, idx)
 
+// is macros
 #define xmi_lua_isfunction(lua, n)	                (xmi_lua_type(lua, (n)) == XMI_LUA_TFUNCTION)
 #define xmi_lua_istable(lua, n)	                    (xmi_lua_type(lua, (n)) == XMI_LUA_TTABLE)
 #define xmi_lua_islightuserdata(lua, n)	            (xmi_lua_type(lua, (n)) == XMI_LUA_TLIGHTUSERDATA)
@@ -94,6 +84,34 @@
 #define xmi_lua_isthread(lua, n)	                (xmi_lua_type(lua, (n)) == XMI_LUA_TTHREAD)
 #define xmi_lua_isnone(lua, n)		                (xmi_lua_type(lua, (n)) == XMI_LUA_TNONE)
 #define xmi_lua_isnoneornil(lua, n)	                (xmi_lua_type(lua, (n)) <= 0)
+
+// push macros
+#define xmi_lua_pushnil(lua)                        (g_lua_ops)->_lua_pushnil(lua)
+#define xmi_lua_pushinteger(lua, n)                 (g_lua_ops)->_lua_pushinteger(lua, n)
+#define xmi_lua_pushboolean(lua, b)                 (g_lua_ops)->_lua_pushboolean(lua, b)
+#define xmi_lua_pushnumber(lua, b)                  (g_lua_ops)->_lua_pushnumber(lua, n)
+#define xmi_lua_pushlstring(lua, s, len)            (g_lua_ops)->_lua_pushlstring(lua, s, len)
+#define xmi_lua_pushstring(lua, s)                  (g_lua_ops)->_lua_pushstring(lua, s)
+#define xmi_lua_pushvfstring(lua, fmt, argp)        (g_lua_ops)->_lua_pushvfstring(lua, fmt, argp)
+#if defined(_MSC_VER)
+#   define xmi_lua_pushfstring(lua, fmt, ...)       (g_lua_ops)->_lua_pushfstring(lua, fmt, __VA_ARGS__)
+#else
+#   define xmi_lua_pushfstring(lua, fmt, arg ...)   (g_lua_ops)->_lua_pushfstring(lua, fmt, ## arg)
+#endif
+#define xmi_lua_pushcclosure(lua, fn, n)            (g_lua_ops)->_lua_pushcclosure(lua, fn, n)
+#define xmi_lua_pushlightuserdata(lua, p)           (g_lua_ops)->_lua_pushlightuserdata(lua, p)
+#define xmi_lua_pushthread(lua)                     (g_lua_ops)->_lua_pushthread(lua)
+
+// luaL macros
+#define xmi_luaL_setfuncs(lua, narr, nrec)          (g_lua_ops)->_luaL_setfuncs(lua, narr, nrec)
+#if defined(_MSC_VER)
+#   define xmi_luaL_error(lua, fmt, ...)            (g_lua_ops)->_luaL_error(lua, fmt, __VA_ARGS__)
+#else
+#   define xmi_luaL_error(lua, fmt, arg ...)        (g_lua_ops)->_luaL_error(lua, fmt, ## arg)
+#endif
+#define xmi_luaL_argerror(lua, numarg, extramsg)    (g_lua_ops)->_luaL_argerror(lua, numarg, extramsg)
+#define xmi_luaL_checkinteger(lua, idx)             (g_lua_ops)->_luaL_checkinteger(lua, idx)
+#define xmi_luaL_checkoption(lua, arg, def, lst)    (g_lua_ops)->_luaL_checkoption(lua, arg, def, lst)
 
 #define xmi_luaL_newlibtable(lua, l)	            xml_lua_createtable(lua, 0, sizeof(l)/sizeof((l)[0]) - 1)
 #define xmi_luaL_newlib(lua, l) \
@@ -119,23 +137,18 @@
  */
 #ifndef XM_PREFIX_H
 #   define lua_upvalueindex         xmi_lua_upvalueindex
-
 #   define lua_createtable          xmi_lua_createtable
+#   define lua_gettop               xmi_lua_gettop
+#   define lua_type                 xmi_lua_type
+#   define lua_newtable             xmi_lua_newtable
+#   define lua_tointeger            xmi_lua_tointeger
+
+// to macros
 #   define lua_tointegerx           xmi_lua_tointegerx
 #   define lua_toboolean            xmi_lua_toboolean
 #   define lua_touserdata           xmi_lua_touserdata
-#   define lua_pushinteger          xmi_lua_pushinteger
-#   define lua_gettop               xmi_lua_gettop
-#   define lua_pushnil              xmi_lua_pushnil
-#   define lua_type                 xmi_lua_type
 
-#   define luaL_setfuncs            xmi_luaL_setfuncs
-#   define luaL_error               xmi_luaL_error
-#   define luaL_argerror            xmi_luaL_argerror
-#   define luaL_checkinteger        xmi_luaL_checkinteger
-
-#   define lua_newtable             xmi_lua_newtable
-#   define lua_tointeger            xmi_lua_tointeger
+// is macros
 #   define lua_isfunction           xmi_lua_isfunction
 #   define lua_istable              xmi_lua_istable
 #   define lua_islightuserdata      xmi_lua_islightuserdata
@@ -144,6 +157,26 @@
 #   define lua_isthread             xmi_lua_isthread
 #   define lua_isnone               xmi_lua_isnone
 #   define lua_isnoneornil          xmi_lua_isnoneornil
+
+// push macros
+#   define lua_pushnil              xmi_lua_pushnil
+#   define lua_pushinteger          xmi_lua_pushinteger
+#   define lua_pushboolean          xmi_lua_pushboolean
+#   define lua_pushnumber           xmi_lua_pushnumber
+#   define lua_pushlstring          xmi_lua_pushlstring
+#   define lua_pushstring           xmi_lua_pushstring
+#   define lua_pushvfstring         xmi_lua_pushvfstring
+#   define lua_pushfstring          xmi_lua_pushfstring
+#   define lua_pushcclosure         xmi_lua_pushcclosure
+#   define lua_pushlightuserdata    xmi_lua_pushlightuserdata
+#   define lua_pushthread           xmi_lua_pushthread
+
+// luaL macros
+#   define luaL_setfuncs            xmi_luaL_setfuncs
+#   define luaL_error               xmi_luaL_error
+#   define luaL_argerror            xmi_luaL_argerror
+#   define luaL_checkinteger        xmi_luaL_checkinteger
+#   define luaL_checkoption         xmi_luaL_checkoption
 
 #   define luaL_newlibtable         xmi_luaL_newlibtable
 #   define luaL_newlib              xmi_luaL_newlib
@@ -159,9 +192,19 @@
 #   define luaL_loadbuffer          xmi_luaL_loadbuffer
 #   define luaL_pushfail            xmi_luaL_pushfail
 
+// types
 #   define luaL_Reg                 xmi_luaL_Reg
 #   define lua_State                xmi_lua_State
+#   define lua_Number               xmi_lua_Number
 #   define lua_Integer              xmi_lua_Integer
+#   define lua_Unsigned             xmi_lua_Unsigned
+#   define lua_KContext             xmi_lua_KContext
+#   define lua_CFunction            xmi_lua_CFunction
+#   define lua_KFunction            xmi_lua_KFunction
+#   define lua_Reader               xmi_lua_Reader
+#   define lua_Writer               xmi_lua_Writer
+#   define lua_Alloc                xmi_lua_Alloc
+#   define lua_WarnFunction         xmi_lua_WarnFunction
 #endif
 
 // extern c
@@ -189,31 +232,56 @@ int xmiopen_##name(lua)
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
+typedef LUA_NUMBER xmi_lua_Number;
 typedef LUA_INTEGER xmi_lua_Integer;
+typedef LUA_UNSIGNED xmi_lua_Unsigned;
+typedef LUA_KCONTEXT xmi_lua_KContext;
 
 typedef struct xmi_lua_State_ {
     int dummy;
 }xmi_lua_State;
 
+typedef int (*xmi_lua_CFunction)(lua_State* lua);
+typedef int (*xmi_lua_KFunction)(lua_State* lua, int status, lua_KContext ctx);
+typedef const char* (*xmi_lua_Reader)(lua_State* lua, void* ud, size_t* sz);
+typedef int (*xmi_lua_Writer)(lua_State* lua, const void* p, size_t sz, void* ud);
+typedef void* (*xmi_lua_Alloc)(void* ud, void* ptr, size_t osize, size_t nsize);
+typedef void (*xmi_lua_WarnFunction)(void* ud, const char* msg, int tocont);
+
 typedef struct xmi_luaL_Reg_ {
-    char const* name;
-    int (*func)(lua_State* lua);
+    char const*         name;
+    xmi_lua_CFunction   func;
 }xmi_luaL_Reg;
 
 typedef struct xmi_lua_ops_t_ {
     void        (*_lua_createtable)(lua_State* lua, int narr, int nrec);
+    int         (*_lua_gettop)(lua_State* lua);
+    int         (*_lua_type)(lua_State* lua, int idx);
+
+    // to functions
     lua_Integer (*_lua_tointegerx)(lua_State* lua, int idx, int* isnum);
     int         (*_lua_toboolean) (lua_State* lua, int idx);
     void*       (*_lua_touserdata)(lua_State* lua, int idx);
-    void        (*_lua_pushinteger)(lua_State* lua, lua_Integer n);
-    int         (*_lua_gettop)(lua_State* lua);
-    void        (*_lua_pushnil)(lua_State* lua);
-    int         (*_lua_type)(lua_State* lua, int idx);
 
+    // push functions
+    void        (*_lua_pushnil)(lua_State* lua);
+    void        (*_lua_pushinteger)(lua_State* lua, lua_Integer n);
+    void        (*_lua_pushboolean)(lua_State* lua, int b);
+    void        (*_lua_pushnumber)(lua_State* lua, lua_Number n);
+    const char* (*_lua_pushlstring)(lua_State* lua, const char* s, size_t len);
+    const char* (*_lua_pushstring)(lua_State* lua, const char* s);
+    const char* (*_lua_pushvfstring)(lua_State* lua, const char* fmt, va_list argp);
+    const char* (*_lua_pushfstring)(lua_State* lua, const char* fmt, ...);
+    void        (*_lua_pushcclosure)(lua_State* lua, lua_CFunction fn, int n);
+    void        (*_lua_pushlightuserdata)(lua_State* lua, void* p);
+    int         (*_lua_pushthread)(lua_State* lua);
+
+    // luaL functions
     void        (*_luaL_setfuncs)(lua_State* lua, const luaL_Reg* l, int nup);
     int         (*_luaL_error)(lua_State* lua, const char* fmt, ...);
     int         (*_luaL_argerror)(lua_State* lua, int numarg, const char* extramsg);
     lua_Integer (*_luaL_checkinteger)(lua_State* lua, int idx);
+    int         (*_luaL_checkoption)(lua_State* lua, int arg, const char *def, const char *const lst[]);
 
 }xmi_lua_ops_t;
 
