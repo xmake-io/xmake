@@ -114,6 +114,11 @@
 #define xmi_lua_pushlightuserdata(lua, p)           (g_lua_ops)->_lua_pushlightuserdata(lua, p)
 #define xmi_lua_pushthread(lua)                     (g_lua_ops)->_lua_pushthread(lua)
 
+// compatibility macros
+#define xmi_lua_newuserdata(lua, s)	    xmi_lua_newuserdatauv(lua, s, 1)
+#define xmi_lua_getuservalue(lua, idx)	xmi_lua_getiuservalue(lua, idx, 1)
+#define xmi_lua_setuservalue(lua, idx)	xmi_lua_setiuservalue(lua, idx, 1)
+
 // luaL macros
 #define xmi_luaL_setfuncs(lua, narr, nrec)          (g_lua_ops)->_luaL_setfuncs(lua, narr, nrec)
 #if defined(_MSC_VER)
@@ -194,6 +199,10 @@
 #   define lua_pushcclosure         xmi_lua_pushcclosure
 #   define lua_pushlightuserdata    xmi_lua_pushlightuserdata
 #   define lua_pushthread           xmi_lua_pushthread
+
+#   define lua_newuserdata          xmi_lua_newuserdata
+#   define lua_getuservalue         xmi_lua_getuservalue
+#   define lua_setuservalue         xmi_lua_setuservalue
 
 // luaL macros
 #   define luaL_setfuncs            xmi_luaL_setfuncs
