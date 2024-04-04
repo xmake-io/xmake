@@ -85,7 +85,6 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     static tb_bool_t     s_luaops_inited = tb_false;
     if (!s_luaops_inited)
     {
-        s_luaops._lua_type              = &lua_type;
 
         // get functions
         s_luaops._lua_getglobal         = &lua_getglobal;
@@ -111,10 +110,24 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
         s_luaops._lua_setmetatable      = &lua_setmetatable;
         s_luaops._lua_setiuservalue     = &lua_setiuservalue;
 
-        // to functions
+        // access functions
+        s_luaops._lua_isnumber          = &lua_isnumber;
+        s_luaops._lua_isstring          = &lua_isstring;
+        s_luaops._lua_iscfunction       = &lua_iscfunction;
+        s_luaops._lua_isinteger         = &lua_isinteger;
+        s_luaops._lua_isuserdata        = &lua_isuserdata;
+        s_luaops._lua_type              = &lua_type;
+        s_luaops._lua_typename          = &lua_typename;
+
+        s_luaops._lua_tonumberx         = &lua_tonumberx;
         s_luaops._lua_tointegerx        = &lua_tointegerx;
         s_luaops._lua_toboolean         = &lua_toboolean;
+        s_luaops._lua_tolstring         = &lua_tolstring;
+        s_luaops._lua_rawlen            = &lua_rawlen;
+        s_luaops._lua_tocfunction       = &lua_tocfunction;
         s_luaops._lua_touserdata        = &lua_touserdata;
+        s_luaops._lua_tothread          = &lua_tothread;
+        s_luaops._lua_topointer         = &lua_topointer;
 
         // push functions
         s_luaops._lua_pushnil           = &lua_pushnil;
