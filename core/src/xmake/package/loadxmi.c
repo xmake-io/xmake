@@ -29,6 +29,9 @@
  * includes
  */
 #include "prefix.h"
+#ifdef USE_LUAJIT
+#   define XMI_USE_LUAJIT
+#endif
 #include "xmi.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
