@@ -34,15 +34,32 @@
  * macros
  */
 
+// pseudo-indices
+#ifdef XMI_USE_LUAJIT
+#   define XMI_LUA_REGISTRYINDEX	(-10000)
+#   define XMI_LUA_ENVIRONINDEX	    (-10001)
+#   define XMI_LUA_GLOBALSINDEX	    (-10002)
+#   define xmi_lua_upvalueindex(i)	(XMI_LUA_GLOBALSINDEX - (i))
+#else
+#   define XMI_LUA_REGISTRYINDEX	(-LUAI_MAXSTACK - 1000)
+#   define xmi_lua_upvalueindex(i)	(XMI_LUA_REGISTRYINDEX - (i))
+#endif
+
 // lua interfaces
 #define xmi_lua_createtable(lua, narr, nrec)    (g_lua_ops)->_lua_createtable(lua, narr, nrec)
 #define xmi_lua_tointegerx(lua, idx, isnum)     (g_lua_ops)->_lua_tointegerx(lua, idx, isnum)
+#define xmi_lua_touserdata(lua, idx)            (g_lua_ops)->_lua_touserdata(lua, idx)
 #define xmi_lua_pushinteger(lua, n)             (g_lua_ops)->_lua_pushinteger(lua, n)
 #define xmi_lua_newtable(lua)		            xmi_lua_createtable(lua, 0, 0)
 #define xmi_lua_tointeger(lua, i)               lua_tointegerx(lua, (i), NULL)
 
 // luaL interfaces
-#define xmi_luaL_setfuncs(lua, narr, nrec)    (g_lua_ops)->_luaL_setfuncs(lua, narr, nrec)
+#define xmi_luaL_setfuncs(lua, narr, nrec)      (g_lua_ops)->_luaL_setfuncs(lua, narr, nrec)
+#if defined(_MSC_VER)
+#   define xmi_luaL_error(lua, fmt, ...)        (g_lua_ops)->_luaL_error(lua, fmt, __VA_ARGS__)
+#else
+#   define xmi_luaL_error(lua, fmt, arg ...)    (g_lua_ops)->_luaL_error(lua, fmt, ## arg)
+#endif
 
 /* we cannot redefine lua functions in loadxmi.c,
  * because original lua.h has been included
@@ -50,11 +67,14 @@
 #ifndef LUA_VERSION
 #   define lua_createtable          xmi_lua_createtable
 #   define lua_tointegerx           xmi_lua_tointegerx
+#   define lua_touserdata           xmi_lua_touserdata
 #   define lua_pushinteger          xmi_lua_pushinteger
 #   define lua_newtable             xmi_lua_newtable
 #   define lua_tointeger            xmi_lua_tointeger
+#   define lua_upvalueindex         xmi_lua_upvalueindex
 
 #   define luaL_setfuncs            xmi_luaL_setfuncs
+#   define luaL_error               xmi_luaL_error
 
 #   define luaL_Reg                 xmi_luaL_Reg
 #   define lua_State                xmi_lua_State
@@ -98,10 +118,13 @@ typedef struct xmi_luaL_Reg_ {
 }xmi_luaL_Reg;
 
 typedef struct xmi_lua_ops_t_ {
-    void (*_lua_createtable)(lua_State* lua, int narr, int nrec);
-    void (*_luaL_setfuncs)(lua_State* lua, const luaL_Reg* l, int nup);
+    void        (*_lua_createtable)(lua_State* lua, int narr, int nrec);
     lua_Integer (*_lua_tointegerx)(lua_State* lua, int idx, int* isnum);
-    void (*_lua_pushinteger)(lua_State* lua, lua_Integer n);
+    void        (*_lua_pushinteger)(lua_State* lua, lua_Integer n);
+    void*       (*_lua_touserdata)(lua_State* lua, int idx);
+
+    void        (*_luaL_setfuncs)(lua_State* lua, const luaL_Reg* l, int nup);
+    int         (*_luaL_error)(lua_State* lua, const char* fmt, ...);
 }xmi_lua_ops_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////

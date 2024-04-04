@@ -35,5 +35,8 @@ rule("module.shared")
         target:set("targetdir", config.buildir())
         target:set("strip", "none")
         target:add("includedirs", path.join(os.programdir(), "scripts", "module"))
+        if xmake.luajit() then
+            target:add("defines", "XMI_USE_LUAJIT")
+        end
     end)
 

@@ -84,8 +84,11 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     {
         s_luaops._lua_createtable = &lua_createtable;
         s_luaops._lua_tointegerx  = &lua_tointegerx;
+        s_luaops._lua_touserdata  = &lua_touserdata;
         s_luaops._lua_pushinteger = &lua_pushinteger;
+
         s_luaops._luaL_setfuncs   = &luaL_setfuncs;
+        s_luaops._luaL_error      = &luaL_error;
         s_luaops_inited = tb_true;
     }
     xmisetup_func(&s_luaops);
