@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #ifndef LUA_VERSION
-#   include "luaconf.h"
+#   include "luawrap/luaconf.h"
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
