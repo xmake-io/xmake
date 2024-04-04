@@ -62,20 +62,19 @@
 // helper interfaces
 #define xmi_lua_newtable(lua)		            xmi_lua_createtable(lua, 0, 0)
 #define xmi_lua_tointeger(lua, i)               xmi_lua_tointegerx(lua, (i), NULL)
-#define luaL_newlibtable(lua, l)	            xml_lua_createtable(lua, 0, sizeof(l)/sizeof((l)[0]) - 1)
-//#define luaL_newlib(lua, l)                     (luaL_checkversion(L), luaL_newlibtable(L,l), luaL_setfuncs(L,l,0))
+#define xmi_luaL_newlibtable(lua, l)	        xml_lua_createtable(lua, 0, sizeof(l)/sizeof((l)[0]) - 1)
+#define xmi_luaL_newlib(lua, l) \
+    (xmi_luaL_checkversion(lua), xmi_luaL_newlibtable(lua,l), xmi_luaL_setfuncs(lua,l,0))
+#define xmi_luaL_argcheck(lua, cond, arg, extramsg)	\
+    ((void)(xmi_luai_likely(cond) || xmi_luaL_argerror(lua, (arg), (extramsg))))
+#define xmi_luaL_argexpected(lua, cond, arg, tname)	\
+	((void)(xmi_luai_likely(cond) || xmi_luaL_typeerror(lua, (arg), (tname))))
+#define xmi_luaL_checkstring(lua, n)	        (xmi_luaL_checklstring(lua, (n), NULL))
+#define xmi_luaL_optstring(lua, n, d)	        (xmi_luaL_optlstring(lua, (n), (d), NULL))
+#define xmi_luaL_typename(lua, i)	            xmi_lua_typename(lua, lua_type(lua,(i)))
+
 
 #if 0
-#define xmi_luaL_argcheck(lua, cond, arg, extramsg)	\
-    ((void)(luai_likely(cond) || luaL_argerror(L, (arg), (extramsg))))
-
-#define luaL_argexpected(L,cond,arg,tname)	\
-	((void)(luai_likely(cond) || luaL_typeerror(L, (arg), (tname))))
-
-#define luaL_checkstring(L,n)	(luaL_checklstring(L, (n), NULL))
-#define luaL_optstring(L,n,d)	(luaL_optlstring(L, (n), (d), NULL))
-
-#define luaL_typename(L,i)	lua_typename(L, lua_type(L,(i)))
 
 #define luaL_dofile(L, fn) \
 	(luaL_loadfile(L, fn) || lua_pcall(L, 0, LUA_MULTRET, 0))
@@ -97,16 +96,25 @@
  * because original lua.h has been included
  */
 #ifndef XM_PREFIX_H
+#   define lua_upvalueindex         xmi_lua_upvalueindex
+
 #   define lua_createtable          xmi_lua_createtable
 #   define lua_tointegerx           xmi_lua_tointegerx
 #   define lua_touserdata           xmi_lua_touserdata
 #   define lua_pushinteger          xmi_lua_pushinteger
-#   define lua_newtable             xmi_lua_newtable
-#   define lua_tointeger            xmi_lua_tointeger
-#   define lua_upvalueindex         xmi_lua_upvalueindex
 
 #   define luaL_setfuncs            xmi_luaL_setfuncs
 #   define luaL_error               xmi_luaL_error
+
+#   define lua_newtable             xmi_lua_newtable
+#   define lua_tointeger            xmi_lua_tointeger
+#   define luaL_newlibtable         xmi_luaL_newlibtable
+#   define luaL_newlib              xmi_luaL_newlib
+#   define luaL_argcheck            xmi_luaL_argcheck
+#   define luaL_argexpected         xmi_luaL_argexpected
+#   define luaL_checkstring         xmi_luaL_checkstring
+#   define luaL_optstring           xmi_luaL_optstring
+#   define luaL_typename            xmi_luaL_typename
 
 #   define luaL_Reg                 xmi_luaL_Reg
 #   define lua_State                xmi_lua_State
