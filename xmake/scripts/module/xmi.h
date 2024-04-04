@@ -34,6 +34,8 @@
  * macros
  */
 
+#define XMI_LUA_MULTRET  (-1)
+
 // pseudo-indices
 #ifdef XMI_USE_LUAJIT
 #   define XMI_LUA_REGISTRYINDEX	(-10000)
@@ -72,25 +74,14 @@
 #define xmi_luaL_checkstring(lua, n)	        (xmi_luaL_checklstring(lua, (n), NULL))
 #define xmi_luaL_optstring(lua, n, d)	        (xmi_luaL_optlstring(lua, (n), (d), NULL))
 #define xmi_luaL_typename(lua, i)	            xmi_lua_typename(lua, lua_type(lua,(i)))
-
-
-#if 0
-
-#define luaL_dofile(L, fn) \
-	(luaL_loadfile(L, fn) || lua_pcall(L, 0, LUA_MULTRET, 0))
-
-#define luaL_dostring(L, s) \
-	(luaL_loadstring(L, s) || lua_pcall(L, 0, LUA_MULTRET, 0))
-
-#define luaL_getmetatable(L,n)	(lua_getfield(L, LUA_REGISTRYINDEX, (n)))
-
-#define luaL_opt(L,f,n,d)	(lua_isnoneornil(L,(n)) ? (d) : f(L,(n)))
-
-#define luaL_loadbuffer(L,s,sz,n)	luaL_loadbufferx(L,s,sz,n,NULL)
-
-#define luaL_pushfail(L)	lua_pushnil(L)
-
-#endif
+#define xmi_luaL_dofile(lua, fn) \
+	(xmi_luaL_loadfile(lua, fn) || xmi_lua_pcall(lua, 0, XMI_LUA_MULTRET, 0))
+#define xmi_luaL_dostring(lua, s) \
+	(xmi_luaL_loadstring(lua, s) || xmi_lua_pcall(lua, 0, XMI_LUA_MULTRET, 0))
+#define xmi_luaL_getmetatable(lua, n)	        (xmi_lua_getfield(lua, XMI_LUA_REGISTRYINDEX, (n)))
+#define xmi_luaL_opt(lua, f, n, d)	            (xmi_lua_isnoneornil(lua,(n)) ? (d) : f(lua,(n)))
+#define xmi_luaL_loadbuffer(lua, s, sz, n)	    xmi_luaL_loadbufferx(lua, s, sz, n, NULL)
+#define xmi_luaL_pushfail(lua)	                xmi_lua_pushnil(lua)
 
 /* we cannot redefine lua functions in loadxmi.c,
  * because original lua.h has been included
@@ -115,6 +106,12 @@
 #   define luaL_checkstring         xmi_luaL_checkstring
 #   define luaL_optstring           xmi_luaL_optstring
 #   define luaL_typename            xmi_luaL_typename
+#   define luaL_dofile              xmi_luaL_dofile
+#   define luaL_dostring            xmi_luaL_dostring
+#   define luaL_getmetatable        xmi_luaL_getmetatable
+#   define luaL_opt                 xmi_luaL_opt
+#   define luaL_loadbuffer          xmi_luaL_loadbuffer
+#   define luaL_pushfail            xmi_luaL_pushfail
 
 #   define luaL_Reg                 xmi_luaL_Reg
 #   define lua_State                xmi_lua_State
