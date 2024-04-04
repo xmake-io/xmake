@@ -50,8 +50,6 @@
 #define xmi_lua_tointegerx(lua, idx, isnum)     (g_lua_ops)->_lua_tointegerx(lua, idx, isnum)
 #define xmi_lua_touserdata(lua, idx)            (g_lua_ops)->_lua_touserdata(lua, idx)
 #define xmi_lua_pushinteger(lua, n)             (g_lua_ops)->_lua_pushinteger(lua, n)
-#define xmi_lua_newtable(lua)		            xmi_lua_createtable(lua, 0, 0)
-#define xmi_lua_tointeger(lua, i)               lua_tointegerx(lua, (i), NULL)
 
 // luaL interfaces
 #define xmi_luaL_setfuncs(lua, narr, nrec)      (g_lua_ops)->_luaL_setfuncs(lua, narr, nrec)
@@ -59,6 +57,40 @@
 #   define xmi_luaL_error(lua, fmt, ...)        (g_lua_ops)->_luaL_error(lua, fmt, __VA_ARGS__)
 #else
 #   define xmi_luaL_error(lua, fmt, arg ...)    (g_lua_ops)->_luaL_error(lua, fmt, ## arg)
+#endif
+
+// helper interfaces
+#define xmi_lua_newtable(lua)		            xmi_lua_createtable(lua, 0, 0)
+#define xmi_lua_tointeger(lua, i)               xmi_lua_tointegerx(lua, (i), NULL)
+#define luaL_newlibtable(lua, l)	            xml_lua_createtable(lua, 0, sizeof(l)/sizeof((l)[0]) - 1)
+//#define luaL_newlib(lua, l)                     (luaL_checkversion(L), luaL_newlibtable(L,l), luaL_setfuncs(L,l,0))
+
+#if 0
+#define xmi_luaL_argcheck(lua, cond, arg, extramsg)	\
+    ((void)(luai_likely(cond) || luaL_argerror(L, (arg), (extramsg))))
+
+#define luaL_argexpected(L,cond,arg,tname)	\
+	((void)(luai_likely(cond) || luaL_typeerror(L, (arg), (tname))))
+
+#define luaL_checkstring(L,n)	(luaL_checklstring(L, (n), NULL))
+#define luaL_optstring(L,n,d)	(luaL_optlstring(L, (n), (d), NULL))
+
+#define luaL_typename(L,i)	lua_typename(L, lua_type(L,(i)))
+
+#define luaL_dofile(L, fn) \
+	(luaL_loadfile(L, fn) || lua_pcall(L, 0, LUA_MULTRET, 0))
+
+#define luaL_dostring(L, s) \
+	(luaL_loadstring(L, s) || lua_pcall(L, 0, LUA_MULTRET, 0))
+
+#define luaL_getmetatable(L,n)	(lua_getfield(L, LUA_REGISTRYINDEX, (n)))
+
+#define luaL_opt(L,f,n,d)	(lua_isnoneornil(L,(n)) ? (d) : f(L,(n)))
+
+#define luaL_loadbuffer(L,s,sz,n)	luaL_loadbufferx(L,s,sz,n,NULL)
+
+#define luaL_pushfail(L)	lua_pushnil(L)
+
 #endif
 
 /* we cannot redefine lua functions in loadxmi.c,
