@@ -241,7 +241,7 @@ function core_sandbox_module._build_module(moduleinfo)
     if ok ~= 0 then
         return nil, errors
     end
-    argv = {"-v"}
+    argv = {}
     core_sandbox_module._add_builtin_argv(argv, projectdir)
     ok, errors = os.execv(os.programfile(), argv, {envs = envs, curdir = projectdir})
     if ok ~= 0 then

@@ -85,13 +85,18 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     static tb_bool_t     s_luaops_inited = tb_false;
     if (!s_luaops_inited)
     {
-        s_luaops._lua_createtable = &lua_createtable;
-        s_luaops._lua_tointegerx  = &lua_tointegerx;
-        s_luaops._lua_touserdata  = &lua_touserdata;
-        s_luaops._lua_pushinteger = &lua_pushinteger;
+        s_luaops._lua_createtable   = &lua_createtable;
+        s_luaops._lua_tointegerx    = &lua_tointegerx;
+        s_luaops._lua_touserdata    = &lua_touserdata;
+        s_luaops._lua_pushinteger   = &lua_pushinteger;
+        s_luaops._lua_gettop        = &lua_gettop;
+        s_luaops._lua_pushnil       = &lua_pushnil;
+        s_luaops._lua_type          = &lua_type;
 
-        s_luaops._luaL_setfuncs   = &luaL_setfuncs;
-        s_luaops._luaL_error      = &luaL_error;
+        s_luaops._luaL_setfuncs     = &luaL_setfuncs;
+        s_luaops._luaL_error        = &luaL_error;
+        s_luaops._luaL_argerror     = &luaL_argerror;
+        s_luaops._luaL_checkinteger = &luaL_checkinteger;
         s_luaops_inited = tb_true;
     }
     xmisetup_func(&s_luaops);
