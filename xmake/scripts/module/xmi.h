@@ -50,7 +50,7 @@
 #define XMI_LUA_TUSERDATA		7
 #define XMI_LUA_TTHREAD		    8
 
-#define LUA_NUMTYPES		9
+#define XMI_LUA_NUMTYPES		9
 
 // pseudo-indices
 #ifdef XMI_USE_LUAJIT
@@ -199,6 +199,19 @@
  * because original lua.h has been included
  */
 #ifndef XM_PREFIX_H
+
+// basic types
+#   define LUA_TNONE                XMI_LUA_TNONE
+#   define LUA_TNIL                 XMI_LUA_TNIL
+#   define LUA_TBOOLEAN             XMI_LUA_TBOOLEAN
+#   define LUA_TLIGHTUSERDATA       XMI_LUA_TLIGHTUSERDATA
+#   define LUA_TNUMBER              XMI_LUA_TNUMBER
+#   define LUA_TSTRING              XMI_LUA_TSTRING
+#   define LUA_TTABLE               XMI_LUA_TTABLE
+#   define LUA_TFUNCTION            XMI_LUA_TFUNCTION
+#   define LUA_TUSERDATA            XMI_LUA_TUSERDATA
+#   define LUA_TTHREAD              XMI_LUA_TTHREAD
+#   define LUA_NUMTYPES             XMI_LUA_NUMTYPES
 
 // get macros
 #   define lua_getglobal            xmi_lua_getglobal
