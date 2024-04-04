@@ -63,10 +63,6 @@
 #   define xmi_lua_upvalueindex(i)	(XMI_LUA_REGISTRYINDEX - (i))
 #endif
 
-// lua macros
-#define xmi_lua_newtable(lua)		                xmi_lua_createtable(lua, 0, 0)
-#define xmi_lua_pop(lua, n)		                    xmi_lua_settop(lua, -(n)-1)
-
 // get macros
 #define xmi_lua_getglobal(lua, name)                (g_lua_ops)->_lua_getglobal(lua, name)
 #define xmi_lua_gettable(lua, idx)                  (g_lua_ops)->_lua_gettable(lua, idx)
@@ -79,6 +75,8 @@
 #define xmi_lua_newuserdatauv(lua, sz, nuvalue)     (g_lua_ops)->_lua_newuserdatauv(lua, sz, nuvalue)
 #define xmi_lua_getmetatable(lua, objindex)         (g_lua_ops)->_lua_getmetatable(lua, objindex)
 #define xmi_lua_getiuservalue(lua, idx, n)          (g_lua_ops)->_lua_getiuservalue(lua, idx, n)
+#define xmi_lua_newtable(lua)		                xmi_lua_createtable(lua, 0, 0)
+#define xmi_lua_pop(lua, n)		                    xmi_lua_settop(lua, -(n)-1)
 
 // set macros
 #define xmi_lua_setglobal(lua, name)                (g_lua_ops)->_lua_setglobal(lua, name)
@@ -118,6 +116,9 @@
 #define xmi_lua_touserdata(lua, idx)                (g_lua_ops)->_lua_touserdata(lua, idx)
 #define xmi_lua_tothread(lua, idx)                  (g_lua_ops)->_lua_tothread(lua, idx)
 #define xmi_lua_topointer(lua, idx)                 (g_lua_ops)->_lua_topointer(lua, idx)
+#define xmi_lua_tonumber(lua, idx)	                xmi_lua_tonumberx(lua, (idx), NULL)
+#define xmi_lua_tostring(lua, idx)	                xmi_lua_tolstring(lua, (idx), NULL)
+#define xmi_lua_tointeger(lua, idx)	                xmi_lua_tointegerx(lua, (idx), NULL)
 
 // push macros
 #define xmi_lua_pushnil(lua)                        (g_lua_ops)->_lua_pushnil(lua)
@@ -136,6 +137,7 @@
 #define xmi_lua_pushlightuserdata(lua, p)           (g_lua_ops)->_lua_pushlightuserdata(lua, p)
 #define xmi_lua_pushthread(lua)                     (g_lua_ops)->_lua_pushthread(lua)
 #define xmi_lua_pushcfunction(lua, f)	            xmi_lua_pushcclosure(lua, (f), 0)
+#define xmi_lua_pushliteral(lua, s)	                xmi_lua_pushstring(lua, "" s)
 
 // stack functions
 #define xmi_lua_absindex(lua, idx)                  (g_lua_ops)->_lua_absindex(lua, idx)
@@ -147,10 +149,21 @@
 #define xmi_lua_checkstack(lua, n)                  (g_lua_ops)->_lua_checkstack(lua, n)
 #define xmi_lua_xmove(from, to, n)                  (g_lua_ops)->_lua_xmove(from, to, n)
 
+// miscellaneous functions
+#define xmi_lua_error(lua)                          (g_lua_ops)->_lua_error(lua)
+#define xmi_lua_next(lua, idx)                      (g_lua_ops)->_lua_next(lua, idx)
+#define xmi_lua_concat(lua, n)                      (g_lua_ops)->_lua_concat(lua, n)
+#define xmi_lua_len(lua, idx)                       (g_lua_ops)->_lua_len(lua, idx)
+#define xmi_lua_stringtonumber(lua, s)              (g_lua_ops)->_lua_stringtonumber(lua, s)
+#define xmi_lua_getallocf(lua, ud)                  (g_lua_ops)->_lua_getallocf(lua, ud)
+#define xmi_lua_setallocf(lua, f, ud)               (g_lua_ops)->_lua_setallocf(lua, f, ud)
+#define xmi_lua_toclose(lua, idx)                   (g_lua_ops)->_lua_toclose(lua, idx)
+#define xmi_lua_closeslot(lua, idx)                 (g_lua_ops)->_lua_closeslot(lua, idx)
+
 // compatibility macros
-#define xmi_lua_newuserdata(lua, s)	    xmi_lua_newuserdatauv(lua, s, 1)
-#define xmi_lua_getuservalue(lua, idx)	xmi_lua_getiuservalue(lua, idx, 1)
-#define xmi_lua_setuservalue(lua, idx)	xmi_lua_setiuservalue(lua, idx, 1)
+#define xmi_lua_newuserdata(lua, s)	                xmi_lua_newuserdatauv(lua, s, 1)
+#define xmi_lua_getuservalue(lua, idx)	            xmi_lua_getiuservalue(lua, idx, 1)
+#define xmi_lua_setuservalue(lua, idx)	            xmi_lua_setiuservalue(lua, idx, 1)
 
 // luaL macros
 #define xmi_luaL_setfuncs(lua, narr, nrec)          (g_lua_ops)->_luaL_setfuncs(lua, narr, nrec)
@@ -186,9 +199,6 @@
  * because original lua.h has been included
  */
 #ifndef XM_PREFIX_H
-#   define lua_upvalueindex         xmi_lua_upvalueindex
-#   define lua_newtable             xmi_lua_newtable
-#   define lua_pop                  xmi_lua_pop
 
 // get macros
 #   define lua_getglobal            xmi_lua_getglobal
@@ -202,6 +212,9 @@
 #   define lua_newuserdatauv        xmi_lua_newuserdatauv
 #   define lua_getmetatable         xmi_lua_getmetatable
 #   define lua_getiuservalue        xmi_lua_getiuservalue
+#   define lua_upvalueindex         xmi_lua_upvalueindex
+#   define lua_newtable             xmi_lua_newtable
+#   define lua_pop                  xmi_lua_pop
 
 // set macros
 #   define lua_setglobal            xmi_lua_setglobal
@@ -233,16 +246,17 @@
 #   define lua_isnoneornil          xmi_lua_isnoneornil
 
 #   define lua_tonumberx            xmi_lua_tonumberx
-#   define lua_tointeger            xmi_lua_tointeger
 #   define lua_tointegerx           xmi_lua_tointegerx
 #   define lua_toboolean            xmi_lua_toboolean
-
 #   define lua_tolstring            xmi_lua_tolstring
 #   define lua_rawlen               xmi_lua_rawlen
 #   define lua_tocfunction          xmi_lua_tocfunction
 #   define lua_touserdata           xmi_lua_touserdata
 #   define lua_tothread             xmi_lua_tothread
 #   define lua_topointer            xmi_lua_topointer
+#   define lua_tostring             xmi_lua_tostring
+#   define lua_tonumber             xmi_lua_tonumber
+#   define lua_tointeger            xmi_lua_tointeger
 
 // push macros
 #   define lua_pushnil              xmi_lua_pushnil
@@ -257,6 +271,7 @@
 #   define lua_pushlightuserdata    xmi_lua_pushlightuserdata
 #   define lua_pushthread           xmi_lua_pushthread
 #   define lua_pushcfunction        xmi_lua_pushcfunction
+#   define lua_pushliteral          xmi_lua_pushliteral
 
 #   define lua_newuserdata          xmi_lua_newuserdata
 #   define lua_getuservalue         xmi_lua_getuservalue
@@ -271,6 +286,17 @@
 #   define lua_copy                 xmi_lua_copy
 #   define lua_checkstack           xmi_lua_checkstack
 #   define lua_xmove                xmi_lua_xmove
+
+// miscellaneous functions
+#   define lua_error                xmi_lua_error
+#   define lua_next                 xmi_lua_next
+#   define lua_concat               xmi_lua_concat
+#   define lua_len                  xmi_lua_len
+#   define lua_stringtonumber       xmi_lua_stringtonumber
+#   define lua_getallocf            xmi_lua_getallocf
+#   define lua_setallocf            xmi_lua_setallocf
+#   define lua_toclose              xmi_lua_toclose
+#   define lua_closeslot            xmi_lua_closeslot
 
 // luaL macros
 #   define luaL_setfuncs            xmi_luaL_setfuncs
@@ -421,6 +447,17 @@ typedef struct xmi_lua_ops_t_ {
     void            (*_lua_copy)(lua_State* lua, int fromidx, int toidx);
     int             (*_lua_checkstack)(lua_State* lua, int n);
     void            (*_lua_xmove)(lua_State* from, lua_State* to, int n);
+
+    // miscellaneous functions
+    int             (*_lua_error)(lua_State* lua);
+    int             (*_lua_next)(lua_State* lua, int idx);
+    void            (*_lua_concat)(lua_State* lua, int n);
+    void            (*_lua_len)(lua_State* lua, int idx);
+    size_t          (*_lua_stringtonumber)(lua_State* lua, const char* s);
+    lua_Alloc       (*_lua_getallocf)(lua_State* lua, void** ud);
+    void            (*_lua_setallocf)(lua_State* lua, lua_Alloc f, void* ud);
+    void            (*_lua_toclose)(lua_State* lua, int idx);
+    void            (*_lua_closeslot)(lua_State* lua, int idx);
 
     // luaL functions
     void            (*_luaL_setfuncs)(lua_State* lua, const luaL_Reg* l, int nup);

@@ -152,6 +152,17 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
         s_luaops._lua_checkstack        = &lua_checkstack;
         s_luaops._lua_xmove             = &lua_xmove;
 
+        // miscellaneous functions
+        s_luaops._lua_error             = &lua_error;
+        s_luaops._lua_next              = &lua_next;
+        s_luaops._lua_concat            = &lua_concat;
+        s_luaops._lua_len               = &lua_len;
+        s_luaops._lua_stringtonumber    = &lua_stringtonumber;
+        s_luaops._lua_getallocf         = &lua_getallocf;
+        s_luaops._lua_setallocf         = &lua_setallocf;
+        s_luaops._lua_toclose           = &lua_toclose;
+        s_luaops._lua_closeslot         = &lua_closeslot;
+
         // luaL functions
         s_luaops._luaL_setfuncs         = &luaL_setfuncs;
         s_luaops._luaL_error            = &luaL_error;
