@@ -87,6 +87,7 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     {
         s_luaops._lua_createtable   = &lua_createtable;
         s_luaops._lua_tointegerx    = &lua_tointegerx;
+        s_luaops._lua_toboolean     = &lua_toboolean;
         s_luaops._lua_touserdata    = &lua_touserdata;
         s_luaops._lua_pushinteger   = &lua_pushinteger;
         s_luaops._lua_gettop        = &lua_gettop;

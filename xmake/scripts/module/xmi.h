@@ -65,6 +65,7 @@
 // lua interfaces
 #define xmi_lua_createtable(lua, narr, nrec)        (g_lua_ops)->_lua_createtable(lua, narr, nrec)
 #define xmi_lua_tointegerx(lua, idx, isnum)         (g_lua_ops)->_lua_tointegerx(lua, idx, isnum)
+#define xmi_lua_toboolean(lua, idx)                 (g_lua_ops)->_lua_toboolean(lua, idx)
 #define xmi_lua_touserdata(lua, idx)                (g_lua_ops)->_lua_touserdata(lua, idx)
 #define xmi_lua_pushinteger(lua, n)                 (g_lua_ops)->_lua_pushinteger(lua, n)
 #define xmi_lua_gettop(lua)                         (g_lua_ops)->_lua_gettop(lua)
@@ -121,6 +122,7 @@
 
 #   define lua_createtable          xmi_lua_createtable
 #   define lua_tointegerx           xmi_lua_tointegerx
+#   define lua_toboolean            xmi_lua_toboolean
 #   define lua_touserdata           xmi_lua_touserdata
 #   define lua_pushinteger          xmi_lua_pushinteger
 #   define lua_gettop               xmi_lua_gettop
@@ -201,6 +203,7 @@ typedef struct xmi_luaL_Reg_ {
 typedef struct xmi_lua_ops_t_ {
     void        (*_lua_createtable)(lua_State* lua, int narr, int nrec);
     lua_Integer (*_lua_tointegerx)(lua_State* lua, int idx, int* isnum);
+    int         (*_lua_toboolean) (lua_State* lua, int idx);
     void*       (*_lua_touserdata)(lua_State* lua, int idx);
     void        (*_lua_pushinteger)(lua_State* lua, lua_Integer n);
     int         (*_lua_gettop)(lua_State* lua);
