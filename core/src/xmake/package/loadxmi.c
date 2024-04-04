@@ -85,9 +85,21 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     static tb_bool_t     s_luaops_inited = tb_false;
     if (!s_luaops_inited)
     {
-        s_luaops._lua_createtable       = &lua_createtable;
         s_luaops._lua_gettop            = &lua_gettop;
         s_luaops._lua_type              = &lua_type;
+
+        // get functions
+        s_luaops._lua_getglobal         = &lua_getglobal;
+        s_luaops._lua_gettable          = &lua_gettable;
+        s_luaops._lua_getfield          = &lua_getfield;
+        s_luaops._lua_geti              = &lua_geti;
+        s_luaops._lua_rawget            = &lua_rawget;
+        s_luaops._lua_rawgeti           = &lua_rawgeti;
+        s_luaops._lua_rawgetp           = &lua_rawgetp;
+        s_luaops._lua_createtable       = &lua_createtable;
+        s_luaops._lua_newuserdatauv     = &lua_newuserdatauv;
+        s_luaops._lua_getmetatable      = &lua_getmetatable;
+        s_luaops._lua_getiuservalue     = &lua_getiuservalue;
 
         // to functions
         s_luaops._lua_tointegerx        = &lua_tointegerx;

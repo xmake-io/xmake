@@ -64,10 +64,22 @@
 #endif
 
 // lua macros
-#define xmi_lua_createtable(lua, narr, nrec)        (g_lua_ops)->_lua_createtable(lua, narr, nrec)
 #define xmi_lua_newtable(lua)		                xmi_lua_createtable(lua, 0, 0)
 #define xmi_lua_gettop(lua)                         (g_lua_ops)->_lua_gettop(lua)
 #define xmi_lua_type(lua, idx)                      (g_lua_ops)->_lua_type(lua, idx)
+
+// get macros
+#define xmi_lua_getglobal(lua, name)                (g_lua_ops)->_lua_getglobal(lua, name)
+#define xmi_lua_gettable(lua, idx)                  (g_lua_ops)->_lua_gettable(lua, idx)
+#define xmi_lua_getfield(lua, idx, k)               (g_lua_ops)->_lua_getfield(lua, idx, k)
+#define xmi_lua_geti(lua, idx, n)                   (g_lua_ops)->_lua_geti(lua, idx, n)
+#define xmi_lua_rawget(lua, idx)                    (g_lua_ops)->_lua_rawget(lua, idx)
+#define xmi_lua_rawgeti(lua, idx, n)                (g_lua_ops)->_lua_rawgeti(lua, idx, n)
+#define xmi_lua_rawgetp(lua, idx, p)                (g_lua_ops)->_lua_rawgetp(lua, idx, p)
+#define xmi_lua_createtable(lua, narr, nrec)        (g_lua_ops)->_lua_createtable(lua, narr, nrec)
+#define xmi_lua_newuserdatauv(lua, sz, nuvalue)     (g_lua_ops)->_lua_newuserdatauv(lua, sz, nuvalue)
+#define xmi_lua_getmetatable(lua, objindex)         (g_lua_ops)->_lua_getmetatable(lua, objindex)
+#define xmi_lua_getiuservalue(lua, idx, n)          (g_lua_ops)->_lua_getiuservalue(lua, idx, n)
 
 // to macros
 #define xmi_lua_tointegerx(lua, idx, isnum)         (g_lua_ops)->_lua_tointegerx(lua, idx, isnum)
@@ -75,7 +87,7 @@
 #define xmi_lua_toboolean(lua, idx)                 (g_lua_ops)->_lua_toboolean(lua, idx)
 #define xmi_lua_touserdata(lua, idx)                (g_lua_ops)->_lua_touserdata(lua, idx)
 
-// is macros
+// access macros
 #define xmi_lua_isfunction(lua, n)	                (xmi_lua_type(lua, (n)) == XMI_LUA_TFUNCTION)
 #define xmi_lua_istable(lua, n)	                    (xmi_lua_type(lua, (n)) == XMI_LUA_TTABLE)
 #define xmi_lua_islightuserdata(lua, n)	            (xmi_lua_type(lua, (n)) == XMI_LUA_TLIGHTUSERDATA)
@@ -137,18 +149,30 @@
  */
 #ifndef XM_PREFIX_H
 #   define lua_upvalueindex         xmi_lua_upvalueindex
-#   define lua_createtable          xmi_lua_createtable
 #   define lua_gettop               xmi_lua_gettop
 #   define lua_type                 xmi_lua_type
 #   define lua_newtable             xmi_lua_newtable
-#   define lua_tointeger            xmi_lua_tointeger
 
-// to macros
+// get macros
+#   define lua_getglobal            xmi_lua_getglobal
+#   define lua_gettable             xmi_lua_gettable
+#   define lua_getfield             xmi_lua_getfield
+#   define lua_geti                 xmi_lua_geti
+#   define lua_rawget               xmi_lua_rawget
+#   define lua_rawgeti              xmi_lua_rawgeti
+#   define lua_rawgetp              xmi_lua_rawgetp
+#   define lua_createtable          xmi_lua_createtable
+#   define lua_newuserdatauv        xmi_lua_newuserdatauv
+#   define lua_getmetatable         xmi_lua_getmetatable
+#   define lua_getiuservalue        xmi_lua_getiuservalue
+
+// access macros
+#   define lua_tointeger            xmi_lua_tointeger
 #   define lua_tointegerx           xmi_lua_tointegerx
 #   define lua_toboolean            xmi_lua_toboolean
 #   define lua_touserdata           xmi_lua_touserdata
 
-// is macros
+// access macros
 #   define lua_isfunction           xmi_lua_isfunction
 #   define lua_istable              xmi_lua_istable
 #   define lua_islightuserdata      xmi_lua_islightuserdata
@@ -254,13 +278,25 @@ typedef struct xmi_luaL_Reg_ {
 }xmi_luaL_Reg;
 
 typedef struct xmi_lua_ops_t_ {
-    void        (*_lua_createtable)(lua_State* lua, int narr, int nrec);
     int         (*_lua_gettop)(lua_State* lua);
     int         (*_lua_type)(lua_State* lua, int idx);
 
+    // get functions
+    int         (*_lua_getglobal)(lua_State* lua, const char *name);
+    int         (*_lua_gettable)(lua_State* lua, int idx);
+    int         (*_lua_getfield)(lua_State* lua, int idx, const char* k);
+    int         (*_lua_geti)(lua_State* lua, int idx, lua_Integer n);
+    int         (*_lua_rawget)(lua_State* lua, int idx);
+    int         (*_lua_rawgeti)(lua_State* lua, int idx, lua_Integer n);
+    int         (*_lua_rawgetp)(lua_State* lua, int idx, const void* p);
+    void        (*_lua_createtable)(lua_State* lua, int narr, int nrec);
+    void*       (*_lua_newuserdatauv)(lua_State* lua, size_t sz, int nuvalue);
+    int         (*_lua_getmetatable)(lua_State* lua, int objindex);
+    int         (*_lua_getiuservalue)(lua_State* lua, int idx, int n);
+
     // to functions
     lua_Integer (*_lua_tointegerx)(lua_State* lua, int idx, int* isnum);
-    int         (*_lua_toboolean) (lua_State* lua, int idx);
+    int         (*_lua_toboolean)(lua_State* lua, int idx);
     void*       (*_lua_touserdata)(lua_State* lua, int idx);
 
     // push functions
