@@ -37,17 +37,17 @@
 #define XMI_LUA_MULTRET  (-1)
 
 // basic types
-#define LUA_TNONE		    (-1)
+#define XMI_LUA_TNONE		    (-1)
 
-#define LUA_TNIL		    0
-#define LUA_TBOOLEAN		1
-#define LUA_TLIGHTUSERDATA	2
-#define LUA_TNUMBER		    3
-#define LUA_TSTRING		    4
-#define LUA_TTABLE		    5
-#define LUA_TFUNCTION		6
-#define LUA_TUSERDATA		7
-#define LUA_TTHREAD		    8
+#define XMI_LUA_TNIL		    0
+#define XMI_LUA_TBOOLEAN		1
+#define XMI_LUA_TLIGHTUSERDATA	2
+#define XMI_LUA_TNUMBER		    3
+#define XMI_LUA_TSTRING		    4
+#define XMI_LUA_TTABLE		    5
+#define XMI_LUA_TFUNCTION		6
+#define XMI_LUA_TUSERDATA		7
+#define XMI_LUA_TTHREAD		    8
 
 #define LUA_NUMTYPES		9
 
@@ -84,7 +84,16 @@
 // helper interfaces
 #define xmi_lua_newtable(lua)		                xmi_lua_createtable(lua, 0, 0)
 #define xmi_lua_tointeger(lua, i)                   xmi_lua_tointegerx(lua, (i), NULL)
-#define xmi_lua_isnil(lua, n)                       (xmi_lua_type(lua, (n)) == LUA_TNIL)
+
+#define xmi_lua_isfunction(lua, n)	                (xmi_lua_type(lua, (n)) == XMI_LUA_TFUNCTION)
+#define xmi_lua_istable(lua, n)	                    (xmi_lua_type(lua, (n)) == XMI_LUA_TTABLE)
+#define xmi_lua_islightuserdata(lua, n)	            (xmi_lua_type(lua, (n)) == XMI_LUA_TLIGHTUSERDATA)
+#define xmi_lua_isnil(lua, n)                       (xmi_lua_type(lua, (n)) == XMI_LUA_TNIL)
+#define xmi_lua_isboolean(lua, n)	                (xmi_lua_type(lua, (n)) == XMI_LUA_TBOOLEAN)
+#define xmi_lua_isthread(lua, n)	                (xmi_lua_type(lua, (n)) == XMI_LUA_TTHREAD)
+#define xmi_lua_isnone(lua, n)		                (xmi_lua_type(lua, (n)) == XMI_LUA_TNONE)
+#define xmi_lua_isnoneornil(lua, n)	                (xmi_lua_type(lua, (n)) <= 0)
+
 #define xmi_luaL_newlibtable(lua, l)	            xml_lua_createtable(lua, 0, sizeof(l)/sizeof((l)[0]) - 1)
 #define xmi_luaL_newlib(lua, l) \
     (xmi_luaL_checkversion(lua), xmi_luaL_newlibtable(lua,l), xmi_luaL_setfuncs(lua,l,0))
@@ -94,7 +103,7 @@
 	((void)(luai_likely(cond) || xmi_luaL_typeerror(lua, (arg), (tname))))
 #define xmi_luaL_checkstring(lua, n)	            (xmi_luaL_checklstring(lua, (n), NULL))
 #define xmi_luaL_optstring(lua, n, d)	            (xmi_luaL_optlstring(lua, (n), (d), NULL))
-#define xmi_luaL_typename(lua, i)	                xmi_lua_typename(lua, lua_type(lua,(i)))
+#define xmi_luaL_typename(lua, i)	                xmi_lua_typename(lua, xmi_lua_type(lua,(i)))
 #define xmi_luaL_dofile(lua, fn) \
 	(xmi_luaL_loadfile(lua, fn) || xmi_lua_pcall(lua, 0, XMI_LUA_MULTRET, 0))
 #define xmi_luaL_dostring(lua, s) \
@@ -125,7 +134,15 @@
 
 #   define lua_newtable             xmi_lua_newtable
 #   define lua_tointeger            xmi_lua_tointeger
+#   define lua_isfunction           xmi_lua_isfunction
+#   define lua_istable              xmi_lua_istable
+#   define lua_islightuserdata      xmi_lua_islightuserdata
 #   define lua_isnil                xmi_lua_isnil
+#   define lua_isboolean            xmi_lua_isboolean
+#   define lua_isthread             xmi_lua_isthread
+#   define lua_isnone               xmi_lua_isnone
+#   define lua_isnoneornil          xmi_lua_isnoneornil
+
 #   define luaL_newlibtable         xmi_luaL_newlibtable
 #   define luaL_newlib              xmi_luaL_newlib
 #   define luaL_argcheck            xmi_luaL_argcheck
