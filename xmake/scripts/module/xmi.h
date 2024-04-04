@@ -64,7 +64,7 @@
 /* we cannot redefine lua functions in loadxmi.c,
  * because original lua.h has been included
  */
-#ifndef LUA_VERSION
+#ifndef XM_PREFIX_H
 #   define lua_createtable          xmi_lua_createtable
 #   define lua_tointegerx           xmi_lua_tointegerx
 #   define lua_touserdata           xmi_lua_touserdata
