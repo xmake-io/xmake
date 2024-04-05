@@ -91,28 +91,28 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
         s_luaops._lua_getglobal         = &lua_getglobal;
         s_luaops._lua_geti              = &lua_geti;
         s_luaops._lua_rawgetp           = &lua_rawgetp;
+        s_luaops._lua_getiuservalue     = &lua_getiuservalue;
+        s_luaops._lua_newuserdatauv     = &lua_newuserdatauv;
 #endif
         s_luaops._lua_gettable          = &lua_gettable;
         s_luaops._lua_getfield          = &lua_getfield;
         s_luaops._lua_rawget            = &lua_rawget;
         s_luaops._lua_rawgeti           = &lua_rawgeti;
         s_luaops._lua_createtable       = &lua_createtable;
-        s_luaops._lua_newuserdatauv     = &lua_newuserdatauv;
         s_luaops._lua_getmetatable      = &lua_getmetatable;
-        s_luaops._lua_getiuservalue     = &lua_getiuservalue;
 
         // set functions
 #ifndef XMI_USE_LUAJIT
         s_luaops._lua_setglobal         = &lua_setglobal;
         s_luaops._lua_seti              = &lua_seti;
         s_luaops._lua_rawsetp           = &lua_rawsetp;
+        s_luaops._lua_setiuservalue     = &lua_setiuservalue;
 #endif
         s_luaops._lua_settable          = &lua_settable;
         s_luaops._lua_setfield          = &lua_setfield;
         s_luaops._lua_rawset            = &lua_rawset;
         s_luaops._lua_rawseti           = &lua_rawseti;
         s_luaops._lua_setmetatable      = &lua_setmetatable;
-        s_luaops._lua_setiuservalue     = &lua_setiuservalue;
 
         // access functions
         s_luaops._lua_isnumber          = &lua_isnumber;

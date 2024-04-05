@@ -78,17 +78,19 @@
 #   define xmi_lua_getglobal(lua, name)             (g_lua_ops)->_lua_getglobal(lua, name)
 #   define xmi_lua_geti(lua, idx, n)                (g_lua_ops)->_lua_geti(lua, idx, n)
 #   define xmi_lua_rawgetp(lua, idx, p)             (g_lua_ops)->_lua_rawgetp(lua, idx, p)
+#   define xmi_lua_getiuservalue(lua, idx, n)       (g_lua_ops)->_lua_getiuservalue(lua, idx, n)
+#   define xmi_lua_newuserdatauv(lua, sz, nuvalue)  (g_lua_ops)->_lua_newuserdatauv(lua, sz, nuvalue)
+#   define xmi_lua_newuserdata(lua, s)              xmi_lua_newuserdatauv(lua, s, 1)
 #endif
 #define xmi_lua_gettable(lua, idx)                  (g_lua_ops)->_lua_gettable(lua, idx)
 #define xmi_lua_getfield(lua, idx, k)               (g_lua_ops)->_lua_getfield(lua, idx, k)
 #define xmi_lua_rawget(lua, idx)                    (g_lua_ops)->_lua_rawget(lua, idx)
 #define xmi_lua_rawgeti(lua, idx, n)                (g_lua_ops)->_lua_rawgeti(lua, idx, n)
 #define xmi_lua_createtable(lua, narr, nrec)        (g_lua_ops)->_lua_createtable(lua, narr, nrec)
-#define xmi_lua_newuserdatauv(lua, sz, nuvalue)     (g_lua_ops)->_lua_newuserdatauv(lua, sz, nuvalue)
 #define xmi_lua_getmetatable(lua, objindex)         (g_lua_ops)->_lua_getmetatable(lua, objindex)
-#define xmi_lua_getiuservalue(lua, idx, n)          (g_lua_ops)->_lua_getiuservalue(lua, idx, n)
 #define xmi_lua_newtable(lua)                       xmi_lua_createtable(lua, 0, 0)
 #define xmi_lua_pop(lua, n)                         xmi_lua_settop(lua, -(n)-1)
+#define xmi_lua_getuservalue(lua, idx)              xmi_lua_getiuservalue(lua, idx, 1)
 
 // set macros
 #ifdef XMI_USE_LUAJIT
@@ -97,13 +99,14 @@
 #   define xmi_lua_setglobal(lua, name)             (g_lua_ops)->_lua_setglobal(lua, name)
 #   define xmi_lua_seti(lua, idx, n)                (g_lua_ops)->_lua_seti(lua, idx, n)
 #   define xmi_lua_rawsetp(lua, idx, p)             (g_lua_ops)->_lua_rawsetp(lua, idx, p)
+#   define xmi_lua_setiuservalue(lua, idx, n)       (g_lua_ops)->_lua_setiuservalue(lua, idx, n)
 #endif
 #define xmi_lua_settable(lua, idx)                  (g_lua_ops)->_lua_settable(lua, idx)
 #define xmi_lua_setfield(lua, idx, k)               (g_lua_ops)->_lua_setfield(lua, idx, k)
 #define xmi_lua_rawset(lua, idx)                    (g_lua_ops)->_lua_rawset(lua, idx)
 #define xmi_lua_rawseti(lua, idx, n)                (g_lua_ops)->_lua_rawseti(lua, idx, n)
 #define xmi_lua_setmetatable(lua, objidx)           (g_lua_ops)->_lua_setmetatable(lua, objidx)
-#define xmi_lua_setiuservalue(lua, idx, n)          (g_lua_ops)->_lua_setiuservalue(lua, idx, n)
+#define xmi_lua_setuservalue(lua, idx)              xmi_lua_setiuservalue(lua, idx, 1)
 
 // access macros
 #define xmi_lua_isnumber(lua, idx)                  (g_lua_ops)->_lua_isnumber(lua, idx)
@@ -193,11 +196,6 @@
 #endif
 #define xmi_lua_load(lua, r, dt, ch, mode)          (g_lua_ops)->_lua_load(lua, r, dt, ch, mode)
 #define xmi_lua_dump(lua, w, d, strip)              (g_lua_ops)->_lua_dump(lua, r, d, strip)
-
-// compatibility macros
-#define xmi_lua_newuserdata(lua, s)                 xmi_lua_newuserdatauv(lua, s, 1)
-#define xmi_lua_getuservalue(lua, idx)              xmi_lua_getiuservalue(lua, idx, 1)
-#define xmi_lua_setuservalue(lua, idx)              xmi_lua_setiuservalue(lua, idx, 1)
 
 // luaL macros
 #define xmi_luaL_getmetafield(lua, obj, e)          (g_lua_ops)->_luaL_getmetafield(lua, obj, e)
@@ -289,6 +287,8 @@
 #   define lua_upvalueindex         xmi_lua_upvalueindex
 #   define lua_newtable             xmi_lua_newtable
 #   define lua_pop                  xmi_lua_pop
+#   define lua_newuserdata          xmi_lua_newuserdata
+#   define lua_getuservalue         xmi_lua_getuservalue
 
 // set macros
 #   define lua_setglobal            xmi_lua_setglobal
@@ -300,6 +300,7 @@
 #   define lua_rawsetp              xmi_lua_rawsetp
 #   define lua_setmetatable         xmi_lua_setmetatable
 #   define lua_setiuservalue        xmi_lua_setiuservalue
+#   define lua_setuservalue         xmi_lua_setuservalue
 
 // access macros
 #   define lua_isnumber             xmi_lua_isnumber
@@ -348,10 +349,6 @@
 #   define lua_pushthread           xmi_lua_pushthread
 #   define lua_pushcfunction        xmi_lua_pushcfunction
 #   define lua_pushliteral          xmi_lua_pushliteral
-
-#   define lua_newuserdata          xmi_lua_newuserdata
-#   define lua_getuservalue         xmi_lua_getuservalue
-#   define lua_setuservalue         xmi_lua_setuservalue
 
 // stack functions
 #   define lua_absindex             xmi_lua_absindex
@@ -499,28 +496,28 @@ typedef struct xmi_lua_ops_t_ {
     int             (*_lua_getglobal)(lua_State* lua, const char* name);
     int             (*_lua_geti)(lua_State* lua, int idx, lua_Integer n);
     int             (*_lua_rawgetp)(lua_State* lua, int idx, const void* p);
+    int             (*_lua_getiuservalue)(lua_State* lua, int idx, int n);
+    void*           (*_lua_newuserdatauv)(lua_State* lua, size_t sz, int nuvalue);
 #endif
     int             (*_lua_gettable)(lua_State* lua, int idx);
     int             (*_lua_getfield)(lua_State* lua, int idx, const char* k);
     int             (*_lua_rawget)(lua_State* lua, int idx);
     int             (*_lua_rawgeti)(lua_State* lua, int idx, lua_Integer n);
     void            (*_lua_createtable)(lua_State* lua, int narr, int nrec);
-    void*           (*_lua_newuserdatauv)(lua_State* lua, size_t sz, int nuvalue);
     int             (*_lua_getmetatable)(lua_State* lua, int objindex);
-    int             (*_lua_getiuservalue)(lua_State* lua, int idx, int n);
 
     // set functions
 #ifndef XMI_USE_LUAJIT
     void            (*_lua_setglobal)(lua_State* lua, const char* name);
     void            (*_lua_seti)(lua_State* lua, int idx, lua_Integer n);
     void            (*_lua_rawsetp)(lua_State* lua, int idx, const void* p);
+    int             (*_lua_setiuservalue)(lua_State* lua, int idx, int n);
 #endif
     void            (*_lua_settable)(lua_State* lua, int idx);
     void            (*_lua_setfield)(lua_State* lua, int idx, const char* k);
     void            (*_lua_rawset)(lua_State* lua, int idx);
     void            (*_lua_rawseti)(lua_State* lua, int idx, lua_Integer n);
     int             (*_lua_setmetatable)(lua_State* lua, int objindex);
-    int             (*_lua_setiuservalue)(lua_State* lua, int idx, int n);
 
     // access functions
     int             (*_lua_isnumber)(lua_State* lua, int idx);
