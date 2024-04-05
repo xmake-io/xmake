@@ -29,11 +29,15 @@ rule("module.binary")
 rule("module.shared")
     add_deps("utils.symbols.export_all")
     on_load(function (target)
-        assert(not xmake.luajit(), "rule(module.shared) only support for lua54 runtime!")
         import("core.project.config")
         target:set("kind", "shared")
         target:set("basename", "module_" .. target:name())
         target:set("targetdir", config.buildir())
         target:set("strip", "none")
+        target:add("includedirs", path.join(os.programdir(), "scripts", "module"))
+        target:add("includedirs", path.join(os.programdir(), "scripts", "module", "luawrap"))
+        if xmake.luajit() then
+            target:add("defines", "XMI_USE_LUAJIT")
+        end
     end)
 
