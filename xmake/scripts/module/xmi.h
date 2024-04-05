@@ -609,7 +609,7 @@ typedef struct xmi_lua_ops_t_ {
     int             (*_lua_dump)(lua_State* lua, lua_Writer writer, void* data, int strip);
 
     // luaL functions
-#ifdef XMI_USE_LUAJIT
+#ifndef XMI_USE_LUAJIT
     const char*     (*_luaL_tolstring)(lua_State* lua, int idx, size_t* len);
     int             (*_luaL_typeerror)(lua_State* lua, int arg, const char* tname);
 #endif
