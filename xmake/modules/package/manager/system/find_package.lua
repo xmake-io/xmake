@@ -73,7 +73,7 @@ function main(name, opt)
     -- then they can't be detected early in the fetch and we have to disable system.find_package
     -- FIXME
     local package = opt.package
-    if package and not _check_package_toolchains(package) then
+    if package and package:toolchains() and not _check_package_toolchains(package) then
         return
     end
 
