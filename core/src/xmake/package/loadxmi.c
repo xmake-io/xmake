@@ -164,11 +164,30 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
         s_luaops._lua_closeslot         = &lua_closeslot;
 
         // luaL functions
-        s_luaops._luaL_setfuncs         = &luaL_setfuncs;
-        s_luaops._luaL_error            = &luaL_error;
+        s_luaops._luaL_getmetafield     = &luaL_getmetafield;
+        s_luaops._luaL_callmeta         = &luaL_callmeta;
+        s_luaops._luaL_tolstring        = &luaL_tolstring;
         s_luaops._luaL_argerror         = &luaL_argerror;
+        s_luaops._luaL_typeerror        = &luaL_typeerror;
+        s_luaops._luaL_checklstring     = &luaL_checklstring;
+        s_luaops._luaL_optlstring       = &luaL_optlstring;
+        s_luaops._luaL_checknumber      = &luaL_checknumber;
+        s_luaops._luaL_optnumber        = &luaL_optnumber;
         s_luaops._luaL_checkinteger     = &luaL_checkinteger;
+        s_luaops._luaL_optinteger       = &luaL_optinteger;
+        s_luaops._luaL_checkstack       = &luaL_checkstack;
+        s_luaops._luaL_checktype        = &luaL_checktype;
+        s_luaops._luaL_checkany         = &luaL_checkany;
+        s_luaops._luaL_newmetatable     = &luaL_newmetatable;
+        s_luaops._luaL_testudata        = &luaL_testudata;
+        s_luaops._luaL_checkudata       = &luaL_checkudata;
+        s_luaops._luaL_where            = &luaL_where;
+        s_luaops._luaL_error            = &luaL_error;
         s_luaops._luaL_checkoption      = &luaL_checkoption;
+        s_luaops._luaL_fileresult       = &luaL_fileresult;
+        s_luaops._luaL_execresult       = &luaL_execresult;
+        s_luaops._luaL_setfuncs         = &luaL_setfuncs;
+
         s_luaops_inited                 = tb_true;
     }
     xmisetup_func(&s_luaops);

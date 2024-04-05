@@ -124,7 +124,7 @@
 #define xmi_lua_pushnil(lua)                        (g_lua_ops)->_lua_pushnil(lua)
 #define xmi_lua_pushinteger(lua, n)                 (g_lua_ops)->_lua_pushinteger(lua, n)
 #define xmi_lua_pushboolean(lua, b)                 (g_lua_ops)->_lua_pushboolean(lua, b)
-#define xmi_lua_pushnumber(lua, b)                  (g_lua_ops)->_lua_pushnumber(lua, n)
+#define xmi_lua_pushnumber(lua, n)                  (g_lua_ops)->_lua_pushnumber(lua, n)
 #define xmi_lua_pushlstring(lua, s, len)            (g_lua_ops)->_lua_pushlstring(lua, s, len)
 #define xmi_lua_pushstring(lua, s)                  (g_lua_ops)->_lua_pushstring(lua, s)
 #define xmi_lua_pushvfstring(lua, fmt, argp)        (g_lua_ops)->_lua_pushvfstring(lua, fmt, argp)
@@ -166,15 +166,34 @@
 #define xmi_lua_setuservalue(lua, idx)	            xmi_lua_setiuservalue(lua, idx, 1)
 
 // luaL macros
-#define xmi_luaL_setfuncs(lua, narr, nrec)          (g_lua_ops)->_luaL_setfuncs(lua, narr, nrec)
+#define xmi_luaL_getmetafield(lua, obj, e)          (g_lua_ops)->_luaL_getmetafield(lua, obj, e)
+#define xmi_luaL_callmeta(lua, obj, e)              (g_lua_ops)->_luaL_callmeta(lua, obj, e)
+#define xmi_luaL_tolstring(lua, idx, len)           (g_lua_ops)->_luaL_tolstring(lua, idx, len)
+#define xmi_luaL_argerror(lua, numarg, extramsg)    (g_lua_ops)->_luaL_argerror(lua, numarg, extramsg)
+#define xmi_luaL_typeerror(lua, arg, tname)         (g_lua_ops)->_luaL_typeerror(lua, arg, tname)
+#define xmi_luaL_checklstring(lua, arg, l)          (g_lua_ops)->_luaL_checklstring(lua, arg, l)
+#define xmi_luaL_optlstring(lua, arg, def, l)       (g_lua_ops)->_luaL_optlstring(lua, arg, def, l)
+#define xmi_luaL_checknumber(lua, arg)              (g_lua_ops)->_luaL_checknumber(lua, arg)
+#define xmi_luaL_optnumber(lua, arg, def)           (g_lua_ops)->_luaL_optnumber(lua, arg, def)
+#define xmi_luaL_checkinteger(lua, idx)             (g_lua_ops)->_luaL_checkinteger(lua, idx)
+#define xmi_luaL_optinteger(lua, arg, def)          (g_lua_ops)->_luaL_optinteger(lua, arg, def)
+#define xmi_luaL_checkstack(lua, sz, msg)           (g_lua_ops)->_luaL_checkstack(lua, sz, msg)
+#define xmi_luaL_checktype(lua, arg, t)             (g_lua_ops)->_luaL_checktype(lua, arg, t)
+#define xmi_luaL_checkany(lua, arg)                 (g_lua_ops)->_luaL_checkany(lua, arg)
+#define xmi_luaL_newmetatable(lua, tname)           (g_lua_ops)->_luaL_newmetatable(lua, tname)
+#define xmi_luaL_setmetatable(lua, tname)           (g_lua_ops)->_luaL_setmetatable(lua, tname)
+#define xmi_luaL_testudata(lua, tname)              (g_lua_ops)->_luaL_testudata(lua, tname)
+#define xmi_luaL_checkudata(lua, tname)             (g_lua_ops)->_luaL_checkudata(lua, tname)
+#define xmi_luaL_where(lua, lvl)                    (g_lua_ops)->_luaL_where(lua, lvl)
 #if defined(_MSC_VER)
 #   define xmi_luaL_error(lua, fmt, ...)            (g_lua_ops)->_luaL_error(lua, fmt, __VA_ARGS__)
 #else
 #   define xmi_luaL_error(lua, fmt, arg ...)        (g_lua_ops)->_luaL_error(lua, fmt, ## arg)
 #endif
-#define xmi_luaL_argerror(lua, numarg, extramsg)    (g_lua_ops)->_luaL_argerror(lua, numarg, extramsg)
-#define xmi_luaL_checkinteger(lua, idx)             (g_lua_ops)->_luaL_checkinteger(lua, idx)
 #define xmi_luaL_checkoption(lua, arg, def, lst)    (g_lua_ops)->_luaL_checkoption(lua, arg, def, lst)
+#define xmi_luaL_fileresult(lua, stat, fname)       (g_lua_ops)->_luaL_fileresult(lua, stat, fname)
+#define xmi_luaL_execresult(lua, stat)              (g_lua_ops)->_luaL_execresult(lua, stat)
+#define xmi_luaL_setfuncs(lua, l, nup)              (g_lua_ops)->_luaL_setfuncs(lua, l, nup)
 
 #define xmi_luaL_newlibtable(lua, l)	            xml_lua_createtable(lua, 0, sizeof(l)/sizeof((l)[0]) - 1)
 #define xmi_luaL_newlib(lua, l) \
@@ -312,11 +331,30 @@
 #   define lua_closeslot            xmi_lua_closeslot
 
 // luaL macros
-#   define luaL_setfuncs            xmi_luaL_setfuncs
-#   define luaL_error               xmi_luaL_error
+#   define luaL_getmetafield        xmi_luaL_getmetafield
+#   define luaL_callmeta            xmi_luaL_callmeta
+#   define luaL_tolstring           xmi_luaL_tolstring
 #   define luaL_argerror            xmi_luaL_argerror
+#   define luaL_typeerror           xmi_luaL_typeerror
+#   define luaL_checklstring        xmi_luaL_checklstring
+#   define luaL_optlstring          xmi_luaL_optlstring
+#   define luaL_checknumber         xmi_luaL_checknumber
+#   define luaL_optnumber           xmi_luaL_optnumber
 #   define luaL_checkinteger        xmi_luaL_checkinteger
+#   define luaL_optinteger          xmi_luaL_optinteger
+#   define luaL_checkstack          xmi_luaL_checkstack
+#   define luaL_checktype           xmi_luaL_checktype
+#   define luaL_checkany            xmi_luaL_checkany
+#   define luaL_newmetatable        xmi_luaL_newmetatable
+#   define luaL_setmetatable        xmi_luaL_setmetatable
+#   define luaL_testudata           xmi_luaL_testudata
+#   define luaL_checkudata          xmi_luaL_checkudata
+#   define luaL_where               xmi_luaL_where
+#   define luaL_error               xmi_luaL_error
 #   define luaL_checkoption         xmi_luaL_checkoption
+#   define luaL_fileresult          xmi_luaL_fileresult
+#   define luaL_execresult          xmi_luaL_execresult
+#   define luaL_setfuncs            xmi_luaL_setfuncs
 
 #   define luaL_newlibtable         xmi_luaL_newlibtable
 #   define luaL_newlib              xmi_luaL_newlib
@@ -396,7 +434,7 @@ typedef struct xmi_luaL_Reg_ {
 typedef struct xmi_lua_ops_t_ {
 
     // get functions
-    int             (*_lua_getglobal)(lua_State* lua, const char *name);
+    int             (*_lua_getglobal)(lua_State* lua, const char* name);
     int             (*_lua_gettable)(lua_State* lua, int idx);
     int             (*_lua_getfield)(lua_State* lua, int idx, const char* k);
     int             (*_lua_geti)(lua_State* lua, int idx, lua_Integer n);
@@ -473,11 +511,30 @@ typedef struct xmi_lua_ops_t_ {
     void            (*_lua_closeslot)(lua_State* lua, int idx);
 
     // luaL functions
-    void            (*_luaL_setfuncs)(lua_State* lua, const luaL_Reg* l, int nup);
-    int             (*_luaL_error)(lua_State* lua, const char* fmt, ...);
+    int             (*_luaL_getmetafield)(lua_State* lua, int obj, const char* e);
+    int             (*_luaL_callmeta)(lua_State* lua, int obj, const char* e);
+    const char*     (*_luaL_tolstring)(lua_State* lua, int idx, size_t* len);
     int             (*_luaL_argerror)(lua_State* lua, int numarg, const char* extramsg);
+    int             (*_luaL_typeerror)(lua_State* lua, int arg, const char* tname);
+    const char*     (*_luaL_checklstring)(lua_State* lua, int arg, size_t* l);
+    const char*     (*_luaL_optlstring)(lua_State* lua, int arg, const char* def, size_t* l);
+    lua_Number      (*_luaL_checknumber)(lua_State* lua, int arg);
+    lua_Number      (*_luaL_optnumber)(lua_State* lua, int arg, lua_Number def);
     lua_Integer     (*_luaL_checkinteger)(lua_State* lua, int idx);
-    int             (*_luaL_checkoption)(lua_State* lua, int arg, const char *def, const char *const lst[]);
+    lua_Integer     (*_luaL_optinteger)(lua_State* lua, int arg, lua_Integer def);
+    void            (*_luaL_checkstack)(lua_State* lua, int sz, const char* msg);
+    void            (*_luaL_checktype)(lua_State* lua, int arg, int t);
+    void            (*_luaL_checkany)(lua_State* lua, int arg);
+    int             (*_luaL_newmetatable)(lua_State* lua, const char* tname);
+    void            (*_luaL_setmetatable)(lua_State* lua, const char* tname);
+    void*           (*_luaL_testudata)(lua_State* lua, int ud, const char* tname);
+    void*           (*_luaL_checkudata)(lua_State* lua, int ud, const char* tname);
+    void            (*_luaL_where)(lua_State* lua, int lvl);
+    int             (*_luaL_error)(lua_State* lua, const char* fmt, ...);
+    int             (*_luaL_checkoption)(lua_State* lua, int arg, const char* def, const char* const lst[]);
+    int             (*_luaL_fileresult)(lua_State* lua, int stat, const char* fname);
+    int             (*_luaL_execresult)(lua_State* lua, int stat);
+    void            (*_luaL_setfuncs)(lua_State* lua, const luaL_Reg* l, int nup);
 
 }xmi_lua_ops_t;
 
