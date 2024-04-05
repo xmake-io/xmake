@@ -37,30 +37,38 @@
 
 #define XMI_LUA_MULTRET  (-1)
 
+// thread status
+#define XMI_LUA_OK              0
+#define XMI_LUA_YIELD           1
+#define XMI_LUA_ERRRUN          2
+#define XMI_LUA_ERRSYNTAX       3
+#define XMI_LUA_ERRMEM          4
+#define XMI_LUA_ERRERR          5
+
 // basic types
-#define XMI_LUA_TNONE		    (-1)
+#define XMI_LUA_TNONE           (-1)
 
-#define XMI_LUA_TNIL		    0
-#define XMI_LUA_TBOOLEAN		1
-#define XMI_LUA_TLIGHTUSERDATA	2
-#define XMI_LUA_TNUMBER		    3
-#define XMI_LUA_TSTRING		    4
-#define XMI_LUA_TTABLE		    5
-#define XMI_LUA_TFUNCTION		6
-#define XMI_LUA_TUSERDATA		7
-#define XMI_LUA_TTHREAD		    8
+#define XMI_LUA_TNIL            0
+#define XMI_LUA_TBOOLEAN        1
+#define XMI_LUA_TLIGHTUSERDATA  2
+#define XMI_LUA_TNUMBER         3
+#define XMI_LUA_TSTRING         4
+#define XMI_LUA_TTABLE          5
+#define XMI_LUA_TFUNCTION       6
+#define XMI_LUA_TUSERDATA       7
+#define XMI_LUA_TTHREAD         8
 
-#define XMI_LUA_NUMTYPES		9
+#define XMI_LUA_NUMTYPES        9
 
 // pseudo-indices
 #ifdef XMI_USE_LUAJIT
-#   define XMI_LUA_REGISTRYINDEX	(-10000)
-#   define XMI_LUA_ENVIRONINDEX	    (-10001)
-#   define XMI_LUA_GLOBALSINDEX	    (-10002)
-#   define xmi_lua_upvalueindex(i)	(XMI_LUA_GLOBALSINDEX - (i))
+#   define XMI_LUA_REGISTRYINDEX    (-10000)
+#   define XMI_LUA_ENVIRONINDEX     (-10001)
+#   define XMI_LUA_GLOBALSINDEX     (-10002)
+#   define xmi_lua_upvalueindex(i)  (XMI_LUA_GLOBALSINDEX - (i))
 #else
-#   define XMI_LUA_REGISTRYINDEX	(-LUAI_MAXSTACK - 1000)
-#   define xmi_lua_upvalueindex(i)	(XMI_LUA_REGISTRYINDEX - (i))
+#   define XMI_LUA_REGISTRYINDEX    (-LUAI_MAXSTACK - 1000)
+#   define xmi_lua_upvalueindex(i)  (XMI_LUA_REGISTRYINDEX - (i))
 #endif
 
 // get macros
@@ -75,8 +83,8 @@
 #define xmi_lua_newuserdatauv(lua, sz, nuvalue)     (g_lua_ops)->_lua_newuserdatauv(lua, sz, nuvalue)
 #define xmi_lua_getmetatable(lua, objindex)         (g_lua_ops)->_lua_getmetatable(lua, objindex)
 #define xmi_lua_getiuservalue(lua, idx, n)          (g_lua_ops)->_lua_getiuservalue(lua, idx, n)
-#define xmi_lua_newtable(lua)		                xmi_lua_createtable(lua, 0, 0)
-#define xmi_lua_pop(lua, n)		                    xmi_lua_settop(lua, -(n)-1)
+#define xmi_lua_newtable(lua)                       xmi_lua_createtable(lua, 0, 0)
+#define xmi_lua_pop(lua, n)                         xmi_lua_settop(lua, -(n)-1)
 
 // set macros
 #define xmi_lua_setglobal(lua, name)                (g_lua_ops)->_lua_setglobal(lua, name)
@@ -98,14 +106,14 @@
 #define xmi_lua_type(lua, idx)                      (g_lua_ops)->_lua_type(lua, idx)
 #define xmi_lua_typename(lua, idx)                  (g_lua_ops)->_lua_typename(lua, idx)
 
-#define xmi_lua_isfunction(lua, n)	                (xmi_lua_type(lua, (n)) == XMI_LUA_TFUNCTION)
-#define xmi_lua_istable(lua, n)	                    (xmi_lua_type(lua, (n)) == XMI_LUA_TTABLE)
-#define xmi_lua_islightuserdata(lua, n)	            (xmi_lua_type(lua, (n)) == XMI_LUA_TLIGHTUSERDATA)
+#define xmi_lua_isfunction(lua, n)                  (xmi_lua_type(lua, (n)) == XMI_LUA_TFUNCTION)
+#define xmi_lua_istable(lua, n)                     (xmi_lua_type(lua, (n)) == XMI_LUA_TTABLE)
+#define xmi_lua_islightuserdata(lua, n)             (xmi_lua_type(lua, (n)) == XMI_LUA_TLIGHTUSERDATA)
 #define xmi_lua_isnil(lua, n)                       (xmi_lua_type(lua, (n)) == XMI_LUA_TNIL)
-#define xmi_lua_isboolean(lua, n)	                (xmi_lua_type(lua, (n)) == XMI_LUA_TBOOLEAN)
-#define xmi_lua_isthread(lua, n)	                (xmi_lua_type(lua, (n)) == XMI_LUA_TTHREAD)
-#define xmi_lua_isnone(lua, n)		                (xmi_lua_type(lua, (n)) == XMI_LUA_TNONE)
-#define xmi_lua_isnoneornil(lua, n)	                (xmi_lua_type(lua, (n)) <= 0)
+#define xmi_lua_isboolean(lua, n)                   (xmi_lua_type(lua, (n)) == XMI_LUA_TBOOLEAN)
+#define xmi_lua_isthread(lua, n)                    (xmi_lua_type(lua, (n)) == XMI_LUA_TTHREAD)
+#define xmi_lua_isnone(lua, n)                      (xmi_lua_type(lua, (n)) == XMI_LUA_TNONE)
+#define xmi_lua_isnoneornil(lua, n)                 (xmi_lua_type(lua, (n)) <= 0)
 
 #define xmi_lua_tonumberx(lua, idx, isnum)          (g_lua_ops)->_lua_tonumberx(lua, idx, isnum)
 #define xmi_lua_tointegerx(lua, idx, isnum)         (g_lua_ops)->_lua_tointegerx(lua, idx, isnum)
@@ -116,9 +124,9 @@
 #define xmi_lua_touserdata(lua, idx)                (g_lua_ops)->_lua_touserdata(lua, idx)
 #define xmi_lua_tothread(lua, idx)                  (g_lua_ops)->_lua_tothread(lua, idx)
 #define xmi_lua_topointer(lua, idx)                 (g_lua_ops)->_lua_topointer(lua, idx)
-#define xmi_lua_tonumber(lua, idx)	                xmi_lua_tonumberx(lua, (idx), NULL)
-#define xmi_lua_tostring(lua, idx)	                xmi_lua_tolstring(lua, (idx), NULL)
-#define xmi_lua_tointeger(lua, idx)	                xmi_lua_tointegerx(lua, (idx), NULL)
+#define xmi_lua_tonumber(lua, idx)                  xmi_lua_tonumberx(lua, (idx), NULL)
+#define xmi_lua_tostring(lua, idx)                  xmi_lua_tolstring(lua, (idx), NULL)
+#define xmi_lua_tointeger(lua, idx)                 xmi_lua_tointegerx(lua, (idx), NULL)
 
 // push macros
 #define xmi_lua_pushnil(lua)                        (g_lua_ops)->_lua_pushnil(lua)
@@ -136,8 +144,8 @@
 #define xmi_lua_pushcclosure(lua, fn, n)            (g_lua_ops)->_lua_pushcclosure(lua, fn, n)
 #define xmi_lua_pushlightuserdata(lua, p)           (g_lua_ops)->_lua_pushlightuserdata(lua, p)
 #define xmi_lua_pushthread(lua)                     (g_lua_ops)->_lua_pushthread(lua)
-#define xmi_lua_pushcfunction(lua, f)	            xmi_lua_pushcclosure(lua, (f), 0)
-#define xmi_lua_pushliteral(lua, s)	                xmi_lua_pushstring(lua, "" s)
+#define xmi_lua_pushcfunction(lua, f)               xmi_lua_pushcclosure(lua, (f), 0)
+#define xmi_lua_pushliteral(lua, s)                 xmi_lua_pushstring(lua, "" s)
 
 // stack functions
 #define xmi_lua_absindex(lua, idx)                  (g_lua_ops)->_lua_absindex(lua, idx)
@@ -165,11 +173,13 @@
 #define xmi_lua_pcallk(lua, nargs, nr, ef, ctx, k)  (g_lua_ops)->_lua_pcallk(lua, nargs, nr, ef, ctx, k)
 #define xmi_lua_load(lua, r, dt, ch, mode)          (g_lua_ops)->_lua_load(lua, r, dt, ch, mode)
 #define xmi_lua_dump(lua, w, d, strip)              (g_lua_ops)->_lua_dump(lua, r, d, strip)
+#define xmi_lua_call(lua, n, r)                     xmi_lua_callk(lua, (n), (r), 0, NULL)
+#define xmi_lua_pcall(lua, n, r, f)                 xmi_lua_pcallk(lua, (n), (r), (f), 0, NULL)
 
 // compatibility macros
-#define xmi_lua_newuserdata(lua, s)	                xmi_lua_newuserdatauv(lua, s, 1)
-#define xmi_lua_getuservalue(lua, idx)	            xmi_lua_getiuservalue(lua, idx, 1)
-#define xmi_lua_setuservalue(lua, idx)	            xmi_lua_setiuservalue(lua, idx, 1)
+#define xmi_lua_newuserdata(lua, s)                 xmi_lua_newuserdatauv(lua, s, 1)
+#define xmi_lua_getuservalue(lua, idx)              xmi_lua_getiuservalue(lua, idx, 1)
+#define xmi_lua_setuservalue(lua, idx)              xmi_lua_setiuservalue(lua, idx, 1)
 
 // luaL macros
 #define xmi_luaL_getmetafield(lua, obj, e)          (g_lua_ops)->_luaL_getmetafield(lua, obj, e)
@@ -201,29 +211,37 @@
 #define xmi_luaL_execresult(lua, stat)              (g_lua_ops)->_luaL_execresult(lua, stat)
 #define xmi_luaL_setfuncs(lua, l, nup)              (g_lua_ops)->_luaL_setfuncs(lua, l, nup)
 
-#define xmi_luaL_newlibtable(lua, l)	            xml_lua_createtable(lua, 0, sizeof(l)/sizeof((l)[0]) - 1)
+#define xmi_luaL_newlibtable(lua, l)                xml_lua_createtable(lua, 0, sizeof(l)/sizeof((l)[0]) - 1)
 #define xmi_luaL_newlib(lua, l) \
     (xmi_luaL_checkversion(lua), xmi_luaL_newlibtable(lua,l), xmi_luaL_setfuncs(lua,l,0))
-#define xmi_luaL_argcheck(lua, cond, arg, extramsg)	\
+#define xmi_luaL_argcheck(lua, cond, arg, extramsg) \
     ((void)(luai_likely(cond) || xmi_luaL_argerror(lua, (arg), (extramsg))))
-#define xmi_luaL_argexpected(lua, cond, arg, tname)	\
-	((void)(luai_likely(cond) || xmi_luaL_typeerror(lua, (arg), (tname))))
-#define xmi_luaL_checkstring(lua, n)	            (xmi_luaL_checklstring(lua, (n), NULL))
-#define xmi_luaL_optstring(lua, n, d)	            (xmi_luaL_optlstring(lua, (n), (d), NULL))
-#define xmi_luaL_typename(lua, i)	                xmi_lua_typename(lua, xmi_lua_type(lua,(i)))
+#define xmi_luaL_argexpected(lua, cond, arg, tname) \
+    ((void)(luai_likely(cond) || xmi_luaL_typeerror(lua, (arg), (tname))))
+#define xmi_luaL_checkstring(lua, n)                (xmi_luaL_checklstring(lua, (n), NULL))
+#define xmi_luaL_optstring(lua, n, d)               (xmi_luaL_optlstring(lua, (n), (d), NULL))
+#define xmi_luaL_typename(lua, i)                   xmi_lua_typename(lua, xmi_lua_type(lua,(i)))
 #define xmi_luaL_dofile(lua, fn) \
-	(xmi_luaL_loadfile(lua, fn) || xmi_lua_pcall(lua, 0, XMI_LUA_MULTRET, 0))
+    (xmi_luaL_loadfile(lua, fn) || xmi_lua_pcall(lua, 0, XMI_LUA_MULTRET, 0))
 #define xmi_luaL_dostring(lua, s) \
-	(xmi_luaL_loadstring(lua, s) || xmi_lua_pcall(lua, 0, XMI_LUA_MULTRET, 0))
-#define xmi_luaL_getmetatable(lua, n)	            (xmi_lua_getfield(lua, XMI_LUA_REGISTRYINDEX, (n)))
-#define xmi_luaL_opt(lua, f, n, d)	                (xmi_lua_isnoneornil(lua,(n)) ? (d) : f(lua,(n)))
-#define xmi_luaL_loadbuffer(lua, s, sz, n)	        xmi_luaL_loadbufferx(lua, s, sz, n, NULL)
-#define xmi_luaL_pushfail(lua)	                    xmi_lua_pushnil(lua)
+    (xmi_luaL_loadstring(lua, s) || xmi_lua_pcall(lua, 0, XMI_LUA_MULTRET, 0))
+#define xmi_luaL_getmetatable(lua, n)               (xmi_lua_getfield(lua, XMI_LUA_REGISTRYINDEX, (n)))
+#define xmi_luaL_opt(lua, f, n, d)                  (xmi_lua_isnoneornil(lua,(n)) ? (d) : f(lua,(n)))
+#define xmi_luaL_loadbuffer(lua, s, sz, n)          xmi_luaL_loadbufferx(lua, s, sz, n, NULL)
+#define xmi_luaL_pushfail(lua)                      xmi_lua_pushnil(lua)
 
 /* we cannot redefine lua functions in loadxmi.c,
  * because original lua.h has been included
  */
 #ifndef XM_PREFIX_H
+
+// thread status
+#   define LUA_OK                   XMI_LUA_OK
+#   define LUA_YIELD                XMI_LUA_YIELD
+#   define LUA_ERRRUN               XMI_LUA_ERRRUN
+#   define LUA_ERRSYNTAX            XMI_LUA_ERRSYNTAX
+#   define LUA_ERRMEM               XMI_LUA_ERRMEM
+#   define LUA_ERRERR               XMI_LUA_ERRERR
 
 // basic types
 #   define LUA_TNONE                XMI_LUA_TNONE
@@ -341,6 +359,8 @@
 #   define lua_pcallk               xmi_lua_pcallk
 #   define lua_load                 xmi_lua_load
 #   define lua_dump                 xmi_lua_dump
+#   define lua_call                 xmi_lua_call
+#   define lua_pcall                xmi_lua_pcall
 
 // luaL macros
 #   define luaL_getmetafield        xmi_luaL_getmetafield
