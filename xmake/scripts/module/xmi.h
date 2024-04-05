@@ -197,14 +197,16 @@
 #ifdef XMI_USE_LUAJIT
 #   define xmi_lua_call(lua, n, nr)                 (g_lua_ops)->_lua_call(lua, n, nr)
 #   define xmi_lua_pcall(lua, n, nr, ef)            (g_lua_ops)->_lua_pcall(lua, n, nr, ef)
+#   define xmi_lua_load(lua, r, dt, ch)             (g_lua_ops)->_lua_load(lua, r, dt, ch)
+#   define xmi_lua_dump(lua, w, d)                  (g_lua_ops)->_lua_dump(lua, r, d)
 #else
 #   define xmi_lua_callk(lua, n, nr, ctx, k)        (g_lua_ops)->_lua_callk(lua, n, nr, ctx, k)
 #   define xmi_lua_pcallk(lua, n, nr, ef, ctx, k)   (g_lua_ops)->_lua_pcallk(lua, n, nr, ef, ctx, k)
 #   define xmi_lua_call(lua, n, r)                  xmi_lua_callk(lua, (n), (r), 0, NULL)
 #   define xmi_lua_pcall(lua, n, r, f)              xmi_lua_pcallk(lua, (n), (r), (f), 0, NULL)
+#   define xmi_lua_load(lua, r, dt, ch, mode)       (g_lua_ops)->_lua_load(lua, r, dt, ch, mode)
+#   define xmi_lua_dump(lua, w, d, strip)           (g_lua_ops)->_lua_dump(lua, r, d, strip)
 #endif
-#define xmi_lua_load(lua, r, dt, ch, mode)          (g_lua_ops)->_lua_load(lua, r, dt, ch, mode)
-#define xmi_lua_dump(lua, w, d, strip)              (g_lua_ops)->_lua_dump(lua, r, d, strip)
 
 // luaL macros
 #ifndef XMI_USE_LUAJIT
@@ -505,31 +507,37 @@ typedef struct xmi_lua_ops_t_ {
     // get functions
 #ifdef XMI_USE_LUAJIT
     void*           (*_lua_newuserdata)(lua_State* lua, size_t sz);
+    void            (*_lua_gettable)(lua_State* lua, int idx);
+    void            (*_lua_getfield)(lua_State* lua, int idx, const char* k);
+    void            (*_lua_rawgeti)(lua_State* lua, int idx, int n);
+    void            (*_lua_rawget)(lua_State* lua, int idx);
 #else
     int             (*_lua_getglobal)(lua_State* lua, const char* name);
     int             (*_lua_geti)(lua_State* lua, int idx, lua_Integer n);
     int             (*_lua_rawgetp)(lua_State* lua, int idx, const void* p);
     int             (*_lua_getiuservalue)(lua_State* lua, int idx, int n);
     void*           (*_lua_newuserdatauv)(lua_State* lua, size_t sz, int nuvalue);
-#endif
     int             (*_lua_gettable)(lua_State* lua, int idx);
     int             (*_lua_getfield)(lua_State* lua, int idx, const char* k);
-    int             (*_lua_rawget)(lua_State* lua, int idx);
     int             (*_lua_rawgeti)(lua_State* lua, int idx, lua_Integer n);
+    int             (*_lua_rawget)(lua_State* lua, int idx);
+#endif
     void            (*_lua_createtable)(lua_State* lua, int narr, int nrec);
     int             (*_lua_getmetatable)(lua_State* lua, int objindex);
 
     // set functions
-#ifndef XMI_USE_LUAJIT
+#ifdef XMI_USE_LUAJIT
+    void            (*_lua_rawseti)(lua_State* lua, int idx, int n);
+#else
     void            (*_lua_setglobal)(lua_State* lua, const char* name);
     void            (*_lua_seti)(lua_State* lua, int idx, lua_Integer n);
     void            (*_lua_rawsetp)(lua_State* lua, int idx, const void* p);
     int             (*_lua_setiuservalue)(lua_State* lua, int idx, int n);
+    void            (*_lua_rawseti)(lua_State* lua, int idx, lua_Integer n);
 #endif
     void            (*_lua_settable)(lua_State* lua, int idx);
     void            (*_lua_setfield)(lua_State* lua, int idx, const char* k);
     void            (*_lua_rawset)(lua_State* lua, int idx);
-    void            (*_lua_rawseti)(lua_State* lua, int idx, lua_Integer n);
     int             (*_lua_setmetatable)(lua_State* lua, int objindex);
 
     // access functions
@@ -560,8 +568,13 @@ typedef struct xmi_lua_ops_t_ {
     void            (*_lua_pushinteger)(lua_State* lua, lua_Integer n);
     void            (*_lua_pushboolean)(lua_State* lua, int b);
     void            (*_lua_pushnumber)(lua_State* lua, lua_Number n);
+#ifdef XMI_USE_LUAJIT
+    void            (*_lua_pushlstring)(lua_State* lua, const char* s, size_t len);
+    void            (*_lua_pushstring)(lua_State* lua, const char* s);
+#else
     const char*     (*_lua_pushlstring)(lua_State* lua, const char* s, size_t len);
     const char*     (*_lua_pushstring)(lua_State* lua, const char* s);
+#endif
     const char*     (*_lua_pushvfstring)(lua_State* lua, const char* fmt, va_list argp);
     const char*     (*_lua_pushfstring)(lua_State* lua, const char* fmt, ...);
     void            (*_lua_pushcclosure)(lua_State* lua, lua_CFunction fn, int n);
@@ -601,12 +614,14 @@ typedef struct xmi_lua_ops_t_ {
 #ifdef XMI_USE_LUAJIT
     void            (*_lua_call)(lua_State* lua, int nargs, int nresults);
     int             (*_lua_pcall)(lua_State* lua, int nargs, int nresults, int errfunc);
+    int             (*_lua_load)(lua_State* lua, lua_Reader reader, void* dt, const char* chunkname);
+    int             (*_lua_dump)(lua_State* lua, lua_Writer writer, void* data);
 #else
     void            (*_lua_callk)(lua_State* lua, int nargs, int nresults, lua_KContext ctx, lua_KFunction k);
     int             (*_lua_pcallk)(lua_State* lua, int nargs, int nresults, int errfunc, lua_KContext ctx, lua_KFunction k);
-#endif
     int             (*_lua_load)(lua_State* lua, lua_Reader reader, void* dt, const char* chunkname, const char* mode);
     int             (*_lua_dump)(lua_State* lua, lua_Writer writer, void* data, int strip);
+#endif
 
     // luaL functions
 #ifndef XMI_USE_LUAJIT
