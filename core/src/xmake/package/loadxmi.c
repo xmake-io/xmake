@@ -87,26 +87,30 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
     {
 
         // get functions
+#ifndef XMI_USE_LUAJIT
         s_luaops._lua_getglobal         = &lua_getglobal;
+        s_luaops._lua_geti              = &lua_geti;
+        s_luaops._lua_rawgetp           = &lua_rawgetp;
+#endif
         s_luaops._lua_gettable          = &lua_gettable;
         s_luaops._lua_getfield          = &lua_getfield;
-        s_luaops._lua_geti              = &lua_geti;
         s_luaops._lua_rawget            = &lua_rawget;
         s_luaops._lua_rawgeti           = &lua_rawgeti;
-        s_luaops._lua_rawgetp           = &lua_rawgetp;
         s_luaops._lua_createtable       = &lua_createtable;
         s_luaops._lua_newuserdatauv     = &lua_newuserdatauv;
         s_luaops._lua_getmetatable      = &lua_getmetatable;
         s_luaops._lua_getiuservalue     = &lua_getiuservalue;
 
         // set functions
+#ifndef XMI_USE_LUAJIT
         s_luaops._lua_setglobal         = &lua_setglobal;
+        s_luaops._lua_seti              = &lua_seti;
+        s_luaops._lua_rawsetp           = &lua_rawsetp;
+#endif
         s_luaops._lua_settable          = &lua_settable;
         s_luaops._lua_setfield          = &lua_setfield;
-        s_luaops._lua_seti              = &lua_seti;
         s_luaops._lua_rawset            = &lua_rawset;
         s_luaops._lua_rawseti           = &lua_rawseti;
-        s_luaops._lua_rawsetp           = &lua_rawsetp;
         s_luaops._lua_setmetatable      = &lua_setmetatable;
         s_luaops._lua_setiuservalue     = &lua_setiuservalue;
 
@@ -114,20 +118,24 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
         s_luaops._lua_isnumber          = &lua_isnumber;
         s_luaops._lua_isstring          = &lua_isstring;
         s_luaops._lua_iscfunction       = &lua_iscfunction;
-        s_luaops._lua_isinteger         = &lua_isinteger;
         s_luaops._lua_isuserdata        = &lua_isuserdata;
         s_luaops._lua_type              = &lua_type;
         s_luaops._lua_typename          = &lua_typename;
+#ifndef XMI_USE_LUAJIT
+        s_luaops._lua_isinteger         = &lua_isinteger;
+#endif
 
         s_luaops._lua_tonumberx         = &lua_tonumberx;
         s_luaops._lua_tointegerx        = &lua_tointegerx;
         s_luaops._lua_toboolean         = &lua_toboolean;
         s_luaops._lua_tolstring         = &lua_tolstring;
-        s_luaops._lua_rawlen            = &lua_rawlen;
         s_luaops._lua_tocfunction       = &lua_tocfunction;
         s_luaops._lua_touserdata        = &lua_touserdata;
         s_luaops._lua_tothread          = &lua_tothread;
         s_luaops._lua_topointer         = &lua_topointer;
+#ifndef XMI_USE_LUAJIT
+        s_luaops._lua_rawlen            = &lua_rawlen;
+#endif
 
         // push functions
         s_luaops._lua_pushnil           = &lua_pushnil;
@@ -164,8 +172,13 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
         s_luaops._lua_closeslot         = &lua_closeslot;
 
         // 'load' and 'call' functions
+#ifdef XMI_USE_LUAJIT
+        s_luaops._lua_call              = &lua_call;
+        s_luaops._lua_pcall             = &lua_pcall;
+#else
         s_luaops._lua_callk             = &lua_callk;
         s_luaops._lua_pcallk            = &lua_pcallk;
+#endif
         s_luaops._lua_load              = &lua_load;
         s_luaops._lua_dump              = &lua_dump;
 
