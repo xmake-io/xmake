@@ -74,6 +74,7 @@
 // get macros
 #ifdef XMI_USE_LUAJIT
 #   define xmi_lua_getglobal(lua, s)                xmi_lua_getfield(lua, LUA_GLOBALSINDEX, (s))
+#   define xmi_lua_newuserdata(lua, s)              (g_lua_ops)->_lua_newuserdata(lua, s)
 #else
 #   define xmi_lua_getglobal(lua, name)             (g_lua_ops)->_lua_getglobal(lua, name)
 #   define xmi_lua_geti(lua, idx, n)                (g_lua_ops)->_lua_geti(lua, idx, n)
@@ -161,28 +162,36 @@
 #define xmi_lua_pushliteral(lua, s)                 xmi_lua_pushstring(lua, "" s)
 
 // stack functions
-#define xmi_lua_absindex(lua, idx)                  (g_lua_ops)->_lua_absindex(lua, idx)
+#ifdef XMI_USE_LUAJIT
+#   define xmi_lua_insert(lua, idx)                 (g_lua_ops)->_lua_insert(lua, idx)
+#   define xmi_lua_remove(lua, idx)                 (g_lua_ops)->_lua_remove(lua, idx)
+#   define xmi_lua_replace(lua, idx)                (g_lua_ops)->_lua_replace(lua, idx)
+#else
+#   define xmi_lua_absindex(lua, idx)               (g_lua_ops)->_lua_absindex(lua, idx)
+#   define xmi_lua_rotate(lua, idx, n)              (g_lua_ops)->_lua_rotate(lua, idx, n)
+#   define xmi_lua_insert(lua, idx)	                xmi_lua_rotate(lua, (idx), 1)
+#   define xmi_lua_remove(lua, idx)	                (xmi_lua_rotate(lua, (idx), -1), xmi_lua_pop(lua, 1))
+#   define xmi_lua_replace(lua, idx)	            (xmi_lua_copy(lua, -1, (idx)), xmi_lua_pop(lua, 1))
+#endif
 #define xmi_lua_gettop(lua)                         (g_lua_ops)->_lua_gettop(lua)
 #define xmi_lua_settop(lua, idx)                    (g_lua_ops)->_lua_settop(lua, idx)
 #define xmi_lua_pushvalue(lua, idx)                 (g_lua_ops)->_lua_pushvalue(lua, idx)
-#define xmi_lua_rotate(lua, idx, n)                 (g_lua_ops)->_lua_rotate(lua, idx, n)
 #define xmi_lua_copy(lua, fromidx, toidx)           (g_lua_ops)->_lua_copy(lua, fromidx, toidx)
 #define xmi_lua_checkstack(lua, n)                  (g_lua_ops)->_lua_checkstack(lua, n)
 #define xmi_lua_xmove(from, to, n)                  (g_lua_ops)->_lua_xmove(from, to, n)
-#define xmi_lua_insert(lua, idx)	                xmi_lua_rotate(lua, (idx), 1)
-#define xmi_lua_remove(lua, idx)	                (xmi_lua_rotate(lua, (idx), -1), xmi_lua_pop(lua, 1))
-#define xmi_lua_replace(lua, idx)	                (xmi_lua_copy(lua, -1, (idx)), xmi_lua_pop(lua, 1))
 
 // miscellaneous functions
 #define xmi_lua_error(lua)                          (g_lua_ops)->_lua_error(lua)
 #define xmi_lua_next(lua, idx)                      (g_lua_ops)->_lua_next(lua, idx)
 #define xmi_lua_concat(lua, n)                      (g_lua_ops)->_lua_concat(lua, n)
-#define xmi_lua_len(lua, idx)                       (g_lua_ops)->_lua_len(lua, idx)
-#define xmi_lua_stringtonumber(lua, s)              (g_lua_ops)->_lua_stringtonumber(lua, s)
 #define xmi_lua_getallocf(lua, ud)                  (g_lua_ops)->_lua_getallocf(lua, ud)
 #define xmi_lua_setallocf(lua, f, ud)               (g_lua_ops)->_lua_setallocf(lua, f, ud)
-#define xmi_lua_toclose(lua, idx)                   (g_lua_ops)->_lua_toclose(lua, idx)
-#define xmi_lua_closeslot(lua, idx)                 (g_lua_ops)->_lua_closeslot(lua, idx)
+#ifndef XMI_USE_LUAJIT
+#   define xmi_lua_len(lua, idx)                    (g_lua_ops)->_lua_len(lua, idx)
+#   define xmi_lua_toclose(lua, idx)                (g_lua_ops)->_lua_toclose(lua, idx)
+#   define xmi_lua_closeslot(lua, idx)              (g_lua_ops)->_lua_closeslot(lua, idx)
+#   define xmi_lua_stringtonumber(lua, s)           (g_lua_ops)->_lua_stringtonumber(lua, s)
+#endif
 
 // 'load' and 'call' functions
 #ifdef XMI_USE_LUAJIT
@@ -198,11 +207,13 @@
 #define xmi_lua_dump(lua, w, d, strip)              (g_lua_ops)->_lua_dump(lua, r, d, strip)
 
 // luaL macros
+#ifndef XMI_USE_LUAJIT
+#   define xmi_luaL_tolstring(lua, idx, len)        (g_lua_ops)->_luaL_tolstring(lua, idx, len)
+#   define xmi_luaL_typeerror(lua, arg, tname)      (g_lua_ops)->_luaL_typeerror(lua, arg, tname)
+#endif
 #define xmi_luaL_getmetafield(lua, obj, e)          (g_lua_ops)->_luaL_getmetafield(lua, obj, e)
 #define xmi_luaL_callmeta(lua, obj, e)              (g_lua_ops)->_luaL_callmeta(lua, obj, e)
-#define xmi_luaL_tolstring(lua, idx, len)           (g_lua_ops)->_luaL_tolstring(lua, idx, len)
 #define xmi_luaL_argerror(lua, numarg, extramsg)    (g_lua_ops)->_luaL_argerror(lua, numarg, extramsg)
-#define xmi_luaL_typeerror(lua, arg, tname)         (g_lua_ops)->_luaL_typeerror(lua, arg, tname)
 #define xmi_luaL_checklstring(lua, arg, l)          (g_lua_ops)->_luaL_checklstring(lua, arg, l)
 #define xmi_luaL_optlstring(lua, arg, def, l)       (g_lua_ops)->_luaL_optlstring(lua, arg, def, l)
 #define xmi_luaL_checknumber(lua, arg)              (g_lua_ops)->_luaL_checknumber(lua, arg)
@@ -492,7 +503,9 @@ typedef struct xmi_luaL_Reg_ {
 typedef struct xmi_lua_ops_t_ {
 
     // get functions
-#ifndef XMI_USE_LUAJIT
+#ifdef XMI_USE_LUAJIT
+    void*           (*_lua_newuserdata)(lua_State* lua, size_t sz);
+#else
     int             (*_lua_getglobal)(lua_State* lua, const char* name);
     int             (*_lua_geti)(lua_State* lua, int idx, lua_Integer n);
     int             (*_lua_rawgetp)(lua_State* lua, int idx, const void* p);
@@ -556,11 +569,17 @@ typedef struct xmi_lua_ops_t_ {
     int             (*_lua_pushthread)(lua_State* lua);
 
     // stack functions
+#ifdef XMI_USE_LUAJIT
+    void            (*_lua_insert)(lua_State* lua, int idx);
+    void            (*_lua_remove)(lua_State* lua, int idx);
+    void            (*_lua_replace)(lua_State* lua, int idx);
+#else
     int             (*_lua_absindex)(lua_State* lua, int idx);
+    void            (*_lua_rotate)(lua_State* lua, int idx, int n);
+#endif
     int             (*_lua_gettop)(lua_State* lua);
     void            (*_lua_settop)(lua_State* lua, int idx);
     void            (*_lua_pushvalue)(lua_State* lua, int idx);
-    void            (*_lua_rotate)(lua_State* lua, int idx, int n);
     void            (*_lua_copy)(lua_State* lua, int fromidx, int toidx);
     int             (*_lua_checkstack)(lua_State* lua, int n);
     void            (*_lua_xmove)(lua_State* from, lua_State* to, int n);
@@ -569,12 +588,14 @@ typedef struct xmi_lua_ops_t_ {
     int             (*_lua_error)(lua_State* lua);
     int             (*_lua_next)(lua_State* lua, int idx);
     void            (*_lua_concat)(lua_State* lua, int n);
-    void            (*_lua_len)(lua_State* lua, int idx);
-    size_t          (*_lua_stringtonumber)(lua_State* lua, const char* s);
     lua_Alloc       (*_lua_getallocf)(lua_State* lua, void** ud);
     void            (*_lua_setallocf)(lua_State* lua, lua_Alloc f, void* ud);
+#ifndef XMI_USE_LUAJIT
+    void            (*_lua_len)(lua_State* lua, int idx);
     void            (*_lua_toclose)(lua_State* lua, int idx);
     void            (*_lua_closeslot)(lua_State* lua, int idx);
+    size_t          (*_lua_stringtonumber)(lua_State* lua, const char* s);
+#endif
 
     // 'load' and 'call' functions
 #ifdef XMI_USE_LUAJIT
@@ -588,11 +609,13 @@ typedef struct xmi_lua_ops_t_ {
     int             (*_lua_dump)(lua_State* lua, lua_Writer writer, void* data, int strip);
 
     // luaL functions
+#ifdef XMI_USE_LUAJIT
+    const char*     (*_luaL_tolstring)(lua_State* lua, int idx, size_t* len);
+    int             (*_luaL_typeerror)(lua_State* lua, int arg, const char* tname);
+#endif
     int             (*_luaL_getmetafield)(lua_State* lua, int obj, const char* e);
     int             (*_luaL_callmeta)(lua_State* lua, int obj, const char* e);
-    const char*     (*_luaL_tolstring)(lua_State* lua, int idx, size_t* len);
     int             (*_luaL_argerror)(lua_State* lua, int numarg, const char* extramsg);
-    int             (*_luaL_typeerror)(lua_State* lua, int arg, const char* tname);
     const char*     (*_luaL_checklstring)(lua_State* lua, int arg, size_t* l);
     const char*     (*_luaL_optlstring)(lua_State* lua, int arg, const char* def, size_t* l);
     lua_Number      (*_luaL_checknumber)(lua_State* lua, int arg);
