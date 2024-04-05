@@ -156,6 +156,9 @@
 #define xmi_lua_copy(lua, fromidx, toidx)           (g_lua_ops)->_lua_copy(lua, fromidx, toidx)
 #define xmi_lua_checkstack(lua, n)                  (g_lua_ops)->_lua_checkstack(lua, n)
 #define xmi_lua_xmove(from, to, n)                  (g_lua_ops)->_lua_xmove(from, to, n)
+#define xmi_lua_insert(lua, idx)	                xmi_lua_rotate(lua, (idx), 1)
+#define xmi_lua_remove(lua, idx)	                (xmi_lua_rotate(lua, (idx), -1), xmi_lua_pop(lua, 1))
+#define xmi_lua_replace(lua, idx)	                (xmi_lua_copy(lua, -1, (idx)), xmi_lua_pop(lua, 1))
 
 // miscellaneous functions
 #define xmi_lua_error(lua)                          (g_lua_ops)->_lua_error(lua)
@@ -342,6 +345,9 @@
 #   define lua_copy                 xmi_lua_copy
 #   define lua_checkstack           xmi_lua_checkstack
 #   define lua_xmove                xmi_lua_xmove
+#   define lua_insert               xmi_lua_insert
+#   define lua_remove               xmi_lua_remove
+#   define lua_replace              xmi_lua_replace
 
 // miscellaneous functions
 #   define lua_error                xmi_lua_error
