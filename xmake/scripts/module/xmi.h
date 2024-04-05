@@ -160,6 +160,12 @@
 #define xmi_lua_toclose(lua, idx)                   (g_lua_ops)->_lua_toclose(lua, idx)
 #define xmi_lua_closeslot(lua, idx)                 (g_lua_ops)->_lua_closeslot(lua, idx)
 
+// 'load' and 'call' functions
+#define xmi_lua_callk(lua, nargs, nr, ctx, k)       (g_lua_ops)->_lua_callk(lua, nargs, nr, ctx, k)
+#define xmi_lua_pcallk(lua, nargs, nr, ef, ctx, k)  (g_lua_ops)->_lua_pcallk(lua, nargs, nr, ef, ctx, k)
+#define xmi_lua_load(lua, r, dt, ch, mode)          (g_lua_ops)->_lua_load(lua, r, dt, ch, mode)
+#define xmi_lua_dump(lua, w, d, strip)              (g_lua_ops)->_lua_dump(lua, r, d, strip)
+
 // compatibility macros
 #define xmi_lua_newuserdata(lua, s)	                xmi_lua_newuserdatauv(lua, s, 1)
 #define xmi_lua_getuservalue(lua, idx)	            xmi_lua_getiuservalue(lua, idx, 1)
@@ -329,6 +335,12 @@
 #   define lua_setallocf            xmi_lua_setallocf
 #   define lua_toclose              xmi_lua_toclose
 #   define lua_closeslot            xmi_lua_closeslot
+
+// 'load' and 'call' functions
+#   define lua_callk                xmi_lua_callk
+#   define lua_pcallk               xmi_lua_pcallk
+#   define lua_load                 xmi_lua_load
+#   define lua_dump                 xmi_lua_dump
 
 // luaL macros
 #   define luaL_getmetafield        xmi_luaL_getmetafield
@@ -509,6 +521,12 @@ typedef struct xmi_lua_ops_t_ {
     void            (*_lua_setallocf)(lua_State* lua, lua_Alloc f, void* ud);
     void            (*_lua_toclose)(lua_State* lua, int idx);
     void            (*_lua_closeslot)(lua_State* lua, int idx);
+
+    // 'load' and 'call' functions
+    void            (*_lua_callk)(lua_State* lua, int nargs, int nresults, lua_KContext ctx, lua_KFunction k);
+    int             (*_lua_pcallk)(lua_State* lua, int nargs, int nresults, int errfunc, lua_KContext ctx, lua_KFunction k);
+    int             (*_lua_load)(lua_State* lua, lua_Reader reader, void* dt, const char* chunkname, const char* mode);
+    int             (*_lua_dump)(lua_State* lua, lua_Writer writer, void* data, int strip);
 
     // luaL functions
     int             (*_luaL_getmetafield)(lua_State* lua, int obj, const char* e);

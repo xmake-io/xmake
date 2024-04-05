@@ -163,6 +163,12 @@ tb_int_t xm_package_loadxmi(lua_State* lua)
         s_luaops._lua_toclose           = &lua_toclose;
         s_luaops._lua_closeslot         = &lua_closeslot;
 
+        // 'load' and 'call' functions
+        s_luaops._lua_callk             = &lua_callk;
+        s_luaops._lua_pcallk            = &lua_pcallk;
+        s_luaops._lua_load              = &lua_load;
+        s_luaops._lua_dump              = &lua_dump;
+
         // luaL functions
         s_luaops._luaL_getmetafield     = &luaL_getmetafield;
         s_luaops._luaL_callmeta         = &luaL_callmeta;
