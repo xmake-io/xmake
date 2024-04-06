@@ -2297,18 +2297,6 @@ function _instance:_generate_build_configs(configs, opt)
         local ldflags = linker:map_flags("runtime", runtimes, {target = fake_target})
         configs.ldflags = table.wrap(configs.ldflags)
         table.join2(configs.ldflags, ldflags)
-
-        -- if self:is_plat("windows") then
-        --     local ld = self:build_getenv("ld")
-        --     if ld and path.basename(ld:lower()) == "link" then -- for msvc?
-        --         configs.cxflags = table.wrap(configs.cxflags)
-        --         table.insert(configs.cxflags, "/" .. runtimes)
-        --         if runtimes:startswith("MT") then
-        --             configs.ldflags = table.wrap(configs.ldflags)
-        --             table.insert(configs.ldflags, "-nodefaultlib:msvcrt.lib")
-        --         end
-        --     end
-        -- end
     end
     if self:config("lto") then
         local configs_lto = self:_generate_lto_configs(opt.sourcekind or "cxx")
