@@ -2271,7 +2271,7 @@ function _instance:_generate_build_configs(configs, opt)
     configs = table.join(self:fetch_librarydeps(), configs)
     -- since we are ignoring the runtimes of the headeronly library,
     -- we can only get the runtimes from the dependency library to detect the link.
-    local runtimes = self:config("runtimes") or self:runtimes()
+    local runtimes = self:runtimes()
     if self:is_headeronly() and not runtimes and self:librarydeps() then
         for _, dep in ipairs(self:librarydeps()) do
             if dep:is_plat("windows") and dep:runtimes() then
