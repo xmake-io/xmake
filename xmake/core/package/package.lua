@@ -39,6 +39,7 @@ local is_cross       = require("base/private/is_cross")
 local memcache       = require("cache/memcache")
 local toolchain      = require("tool/toolchain")
 local compiler       = require("tool/compiler")
+local linker         = require("tool/linker")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local policy         = require("project/policy")
@@ -2268,27 +2269,34 @@ end
 function _instance:_generate_build_configs(configs, opt)
     opt = opt or {}
     configs = table.join(self:fetch_librarydeps(), configs)
-    if self:is_plat("windows") then
-        local ld = self:build_getenv("ld")
-        local runtimes = self:runtimes()
-        -- since we are ignoring the runtimes of the headeronly library,
-        -- we can only get the runtimes from the dependency library to detect the link.
-        if self:is_headeronly() and not runtimes and self:librarydeps() then
-            for _, dep in ipairs(self:librarydeps()) do
-                if dep:is_plat("windows") and dep:runtimes() then
-                    runtimes = dep:runtimes()
-                    break
-                end
+    -- since we are ignoring the runtimes of the headeronly library,
+    -- we can only get the runtimes from the dependency library to detect the link.
+    local runtimes = self:runtimes()
+    if self:is_headeronly() and not runtimes and self:librarydeps() then
+        for _, dep in ipairs(self:librarydeps()) do
+            if dep:is_plat("windows") and dep:runtimes() then
+                runtimes = dep:runtimes()
+                break
             end
         end
-        if runtimes and ld and path.basename(ld:lower()) == "link" then -- for msvc?
-            configs.cxflags = table.wrap(configs.cxflags)
-            table.insert(configs.cxflags, "/" .. runtimes)
-            if runtimes:startswith("MT") then
-                configs.ldflags = table.wrap(configs.ldflags)
-                table.insert(configs.ldflags, "-nodefaultlib:msvcrt.lib")
-            end
+    end
+    if runtimes then
+        local sourcekind = opt.sourcekind or "cxx"
+        local tool, name = self:tool("ld")
+        local linker, errors = linker.load("binary", sourcekind, {target = package})
+        if not linker then
+            os.raise(errors)
         end
+        local fake_target = {is_shared = function(_) return false end, 
+                             sourcekinds = function(_) return sourcekind end}
+        local compiler = self:compiler(sourcekind)
+        local cxflags = compiler:map_flags("runtime", runtimes, {target = fake_target})
+        configs.cxflags = table.wrap(configs.cxflags)
+        table.join2(configs.cxflags, cxflags)
+
+        local ldflags = linker:map_flags("runtime", runtimes, {target = fake_target})
+        configs.ldflags = table.wrap(configs.ldflags)
+        table.join2(configs.ldflags, ldflags)
     end
     if self:config("lto") then
         local configs_lto = self:_generate_lto_configs(opt.sourcekind or "cxx")
