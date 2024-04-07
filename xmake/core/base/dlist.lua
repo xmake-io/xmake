@@ -31,25 +31,10 @@ function dlist:clear()
     self._last   = nil
 end
 
--- push item to tail
-function dlist:push(t)
-    assert(t)
-    if self._last then
-        self._last._next = t
-        t._prev = self._last
-        self._last = t
-    else
-        self._first = t
-        self._last = t
-    end
-    self._length = self._length + 1
-end
-
 -- insert item after the given item
 function dlist:insert(t, after)
-    assert(t)
     if not after then
-        return self:push(t)
+        return self:insert_tail(t)
     end
     assert(t ~= after)
     if after._next then
@@ -63,41 +48,8 @@ function dlist:insert(t, after)
     self._length = self._length + 1
 end
 
--- pop item from tail
-function dlist:pop()
-    if not self._last then return end
-    local t = self._last
-    if t._prev then
-        t._prev._next = nil
-        self._last = t._prev
-        t._prev = nil
-    else
-        self._first = nil
-        self._last = nil
-    end
-    self._length = self._length - 1
-    return t
-end
-
--- shift item: 1 2 3 <- 2 3
-function dlist:shift()
-    if not self._first then return end
-    local t = self._first
-    if t._next then
-        t._next._prev = nil
-        self._first = t._next
-        t._next = nil
-    else
-        self._first = nil
-        self._last = nil
-    end
-    self._length = self._length - 1
-    return t
-end
-
--- unshift item: 1 2 -> t 1 2
-function dlist:unshift(t)
-    assert(t)
+-- insert item in head
+function dlist:insert_head(t)
     if self._first then
         self._first._prev = t
         t._next = self._first
@@ -109,9 +61,21 @@ function dlist:unshift(t)
     self._length = self._length + 1
 end
 
+-- insert item in tail
+function dlist:insert_tail(t)
+    if self._last then
+        self._last._next = t
+        t._prev = self._last
+        self._last = t
+    else
+        self._first = t
+        self._last = t
+    end
+    self._length = self._length + 1
+end
+
 -- remove item
 function dlist:remove(t)
-    assert(t)
     if t._next then
         if t._prev then
             t._next._prev = t._prev
@@ -134,6 +98,62 @@ function dlist:remove(t)
     t._prev = nil
     self._length = self._length - 1
     return t
+end
+
+-- remove the first item
+function dlist:remove_first()
+    if not self._first then
+        return
+    end
+    local t = self._first
+    if t._next then
+        t._next._prev = nil
+        self._first = t._next
+        t._next = nil
+    else
+        self._first = nil
+        self._last = nil
+    end
+    self._length = self._length - 1
+    return t
+end
+
+-- remove last item
+function dlist:remove_last()
+    if not self._last then
+        return
+    end
+    local t = self._last
+    if t._prev then
+        t._prev._next = nil
+        self._last = t._prev
+        t._prev = nil
+    else
+        self._first = nil
+        self._last = nil
+    end
+    self._length = self._length - 1
+    return t
+end
+
+-- push item to tail
+function dlist:push(t)
+    self:insert_tail(t)
+end
+
+-- pop item from tail
+function dlist:pop()
+    self:remove_last()
+end
+
+-- shift item: 1 2 3 <- 2 3
+function dlist:shift()
+    self:remove_first()
+end
+
+-- unshift item: 1 2 -> t 1 2
+function dlist:unshift(t)
+    self:insert_head(t)
 end
 
 -- get first item
@@ -183,25 +203,17 @@ end
 -- end
 --
 function dlist:items()
-
-    -- init iterator
     local iter = function (list, item)
         return list:next(item)
     end
-
-    -- return iterator and initialized state
     return iter, self, nil
 end
 
 -- get reverse items
 function dlist:ritems()
-
-    -- init iterator
     local iter = function (list, item)
         return list:prev(item)
     end
-
-    -- return iterator and initialized state
     return iter, self, nil
 end
 

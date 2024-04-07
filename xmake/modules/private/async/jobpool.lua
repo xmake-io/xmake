@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.object")
+import("core.base.dlist")
 import("core.base.hashset")
 
 -- define module
@@ -111,14 +112,13 @@ function jobpool:pop()
     end
 
     -- pop a job from the leaf jobs
-    if #leafjobs > 0 then
+    if not leafjobs:empty() then
 
         -- get job
-        local job = leafjobs[#leafjobs]
-        table.remove(leafjobs, #leafjobs)
+        local job = leafjobs:last()
+        leafjobs:remove(job)
 
-        -- get priority and parents node
-        local priority = job._priority or 0
+        -- get parents node
         local parents = assert(job._parents, "invalid job without parents node!")
 
         -- update all parents nodes
@@ -126,7 +126,6 @@ function jobpool:pop()
             -- we need to avoid adding it to leafjobs repeatly, it will cause dead-loop when poping group job
             -- @see https://github.com/xmake-io/xmake/issues/2740
             if not p._leaf then
-                p._priority = math.max(p._priority or 0, priority + 1)
                 p._deps:remove(job)
                 if p._deps:empty() and self._size > 0 then
                     p._leaf = true
@@ -145,9 +144,13 @@ function jobpool:pop()
             -- pop this job
             self._size = self._size - 1
             poprefs[jobkey] = true
-            return job, priority
+            return job
         end
     end
+end
+
+-- get free jobs
+function jobpool:freejobs()
 end
 
 -- enter group
@@ -191,7 +194,7 @@ function jobpool:_genleafjobs(job, leafjobs, refs)
         end
     else
         job._leaf = true
-        table.insert(leafjobs, job)
+        leafjobs:push(job)
     end
 end
 
@@ -232,5 +235,5 @@ end
 
 -- new a jobpool
 function new()
-    return jobpool {0, {name = "root"}, {}, {}}
+    return jobpool {0, {name = "root"}, dlist.new(), {}}
 end
