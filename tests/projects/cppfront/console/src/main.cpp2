@@ -1,5 +1,7 @@
-#include "println.h2"
-
 main: () -> int =
     println("Hello world!\n");
 
+println: (msg: _) -> int = {
+    std::cout << msg;
+    return 0;
+}

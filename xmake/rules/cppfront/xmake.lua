@@ -20,7 +20,7 @@
 
 -- define rule: cppfront.build
 rule("cppfront.build")
-    set_extensions(".cpp2", ".h2")
+    set_extensions(".cpp2")
     on_load(function (target)
         -- only cppfront source files? we need to patch cxx source kind for linker
         local sourcekinds = target:sourcekinds()
@@ -35,58 +35,31 @@ rule("cppfront.build")
             end
         end
     end)
-    on_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
-        -- order files h2->cpp2
-        cpp2_files = {}
-        all_files = {}
-        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do 
-            if string.endswith(sourcefile, ".h2") then 
-                table.insert(all_files, sourcefile)
-            elseif string.endswith(sourcefile, ".cpp2") then 
-                table.insert(cpp2_files, sourcefile)
-            end 
-        end
-        table.join2(all_files, cpp2_files)
+    on_buildcmd_file(function (target, batchcmds, sourcefile_cpp2, opt)
 
         -- get cppfront
         import("lib.detect.find_tool")
         local cppfront = assert(find_tool("cppfront", {check = "-h"}), "cppfront not found!")
 
-        for _, sourcefile_cpp2 in ipairs(all_files) do   -- get c++ source file for cpp2
-            local sourcefile_cpp = ""
-            local is_h2 = string.endswith(sourcefile_cpp2, ".h2")
-            if is_h2 then 
-                sourcefile_cpp = target:autogenfile((sourcefile_cpp2:gsub(".h2$", ".h")))
-            else
-                sourcefile_cpp = target:autogenfile((sourcefile_cpp2:gsub(".cpp2$", ".cpp")))
-            end 
-            local basedir = path.directory(sourcefile_cpp)
+        -- get c++ source file for cpp2
+        local sourcefile_cpp = target:autogenfile((sourcefile_cpp2:gsub(".cpp2$", ".cpp")))
+        local basedir = path.directory(sourcefile_cpp)
 
-            -- add objectfile
-            local objectfile = ""
-            if not is_h2 then
-                objectfile = target:objectfile(sourcefile_cpp)
-                table.insert(target:objectfiles(), objectfile)
-            end
+        -- add objectfile
+        local objectfile = target:objectfile(sourcefile_cpp)
+        table.insert(target:objectfiles(), objectfile)
 
-            -- add commands
-            local argv = {"-verb", "-e", "-o", path(sourcefile_cpp), path(sourcefile_cpp2)}
+        -- add commands
+        local argv = {"-o", path(sourcefile_cpp), path(sourcefile_cpp2)}
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.cpp2 %s", sourcefile_cpp2)
+        batchcmds:mkdir(basedir)
+        batchcmds:vrunv(cppfront.program, argv)
+        batchcmds:compile(sourcefile_cpp, objectfile, {configs = {languages = "c++20"}})
 
-            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.cpp2 %s", sourcefile_cpp2)
-            batchcmds:mkdir(basedir)
-            batchcmds:vrunv(cppfront.program, argv)
-            if not is_h2 then
-                batchcmds:compile(sourcefile_cpp, objectfile, {configs = {languages = "c++20"}})
-            end
-
-            -- add deps
-            batchcmds:add_depfiles(sourcefile_cpp2)
-            if not is_h2 then 
-                batchcmds:set_depmtime(os.mtime(objectfile))
-                batchcmds:set_depcache(target:dependfile(objectfile))
-            end
-        end
-     
+        -- add deps
+        batchcmds:add_depfiles(sourcefile_cpp2)
+        batchcmds:set_depmtime(os.mtime(objectfile))
+        batchcmds:set_depcache(target:dependfile(objectfile))
     end)
 
 

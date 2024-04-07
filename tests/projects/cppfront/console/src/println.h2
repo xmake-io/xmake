@@ -1,4 +1,0 @@
-println: (msg: _) -> int = {
-    std::cout << msg;
-    return 0;
-}
