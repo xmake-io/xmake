@@ -18,9 +18,38 @@
 -- @file        xmake.lua
 --
 
+rule("cppfront.build.h2")
+    set_extensions(".h2")
+
+    on_buildcmd_file(function (target, batchcmds, sourcefile_h2, opt)
+
+        -- get cppfront
+        import("lib.detect.find_tool")
+        local cppfront = assert(find_tool("cppfront", {check = "-h"}), "cppfront not found!")
+
+        -- get h header file for h2
+        local sourcefile_h = target:autogenfile((sourcefile_h2:gsub(".h2$", ".h")))
+        local basedir = path.directory(sourcefile_h)
+
+        -- add commands
+        local argv = {"-o", path(sourcefile_h), path(sourcefile_h2)}
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.cpp2 %s", sourcefile_h2)
+        batchcmds:mkdir(basedir)
+        batchcmds:vrunv(cppfront.program, argv)
+
+        -- add deps
+        batchcmds:add_depfiles(sourcefile_h2) 
+        batchcmds:set_depmtime(os.mtime(sourcefile_h))
+        batchcmds:set_depcache(target:dependfile(sourcefile_h))
+    end)
+
 -- define rule: cppfront.build
 rule("cppfront.build")
     set_extensions(".cpp2")
+
+    -- .h2 must compile before .cpp2
+    add_deps("cppfront.build.h2", {order = true})
+
     on_load(function (target)
         -- only cppfront source files? we need to patch cxx source kind for linker
         local sourcekinds = target:sourcekinds()
@@ -65,6 +94,9 @@ rule("cppfront.build")
 
 -- define rule: cppfront
 rule("cppfront")
+
+    -- add_build.h2 rules
+    add_deps("cppfront.build.h2")
 
     -- add build rules
     add_deps("cppfront.build")
