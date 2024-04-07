@@ -29,6 +29,7 @@ function _is_match_version(current_version, require_version)
     if current_version then
         if current_version == require_version then
             return true
+        end
         if semver.is_valid(current_version) and semver.satisfies(current_version, require_version) then
             return true
         end
