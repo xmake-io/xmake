@@ -33,7 +33,7 @@ rule("cppfront.build.h2")
 
         -- add commands
         local argv = {"-o", path(sourcefile_h), path(sourcefile_h2)}
-        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.cpp2 %s", sourcefile_h2)
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.h2 %s", sourcefile_h2)
         batchcmds:mkdir(basedir)
         batchcmds:vrunv(cppfront.program, argv)
 
@@ -44,7 +44,7 @@ rule("cppfront.build.h2")
     end)
 
 -- define rule: cppfront.build
-rule("cppfront.build")
+rule("cppfront.build.cpp2")
     set_extensions(".cpp2")
 
     -- .h2 must compile before .cpp2
@@ -99,7 +99,7 @@ rule("cppfront")
     add_deps("cppfront.build.h2")
 
     -- add build rules
-    add_deps("cppfront.build")
+    add_deps("cppfront.build.cpp2")
 
     -- set compiler runtime, e.g. vs runtime
     add_deps("utils.compiler.runtime")
