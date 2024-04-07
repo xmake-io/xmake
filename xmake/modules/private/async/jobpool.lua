@@ -106,7 +106,7 @@ function jobpool:pop()
 
     -- init leaf jobs first
     local leafjobs = self._leafjobs
-    if #leafjobs == 0 then
+    if leafjobs:empty() then
         local refs = {}
         self:_genleafjobs(self:rootjob(), leafjobs, refs)
     end
@@ -116,7 +116,7 @@ function jobpool:pop()
 
         -- get job
         local job = leafjobs:last()
-        leafjobs:remove(job)
+        leafjobs:remove_last()
 
         -- get parents node
         local parents = assert(job._parents, "invalid job without parents node!")
@@ -129,7 +129,7 @@ function jobpool:pop()
                 p._deps:remove(job)
                 if p._deps:empty() and self._size > 0 then
                     p._leaf = true
-                    table.insert(leafjobs, 1, p)
+                    leafjobs:insert_first(p)
                 end
             end
         end
@@ -147,10 +147,6 @@ function jobpool:pop()
             return job
         end
     end
-end
-
--- get free jobs
-function jobpool:freejobs()
 end
 
 -- enter group
@@ -194,7 +190,7 @@ function jobpool:_genleafjobs(job, leafjobs, refs)
         end
     else
         job._leaf = true
-        leafjobs:push(job)
+        leafjobs:insert_last(job)
     end
 end
 
