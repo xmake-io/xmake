@@ -24,6 +24,17 @@ import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
 
+-- Is the current version matched?
+function _is_match_version(current_version, require_version)
+    if current_version then
+        if current_version == require_version then
+            return true
+        if semver.is_valid(current_version) and semver.satisfies(current_version, require_version) then
+            return true
+        end
+    end
+end
+
 -- find package with the builtin rule
 --
 -- opt.system:
@@ -196,7 +207,7 @@ function main(name, opt)
 
     -- match version?
     if opt.require_version and opt.require_version:find('.', 1, true) and result then
-        if not (result.version and (result.version == opt.require_version or semver.satisfies(result.version, opt.require_version))) then
+        if not _is_match_version(result.version, opt.require_version) then
             result = nil
         end
     end
