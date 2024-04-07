@@ -15,26 +15,26 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        dlist.lua
+-- @file        list.lua
 --
 
 -- load modules
 local object = require("base/object")
 
 -- define module
-local dlist = dlist or object { _init = {"_length"} } {0}
+local list = list or object { _init = {"_length"} } {0}
 
 -- clear list
-function dlist:clear()
+function list:clear()
     self._length = 0
     self._first  = nil
     self._last   = nil
 end
 
 -- insert item after the given item
-function dlist:insert(t, after)
+function list:insert(t, after)
     if not after then
-        return self:insert_tail(t)
+        return self:insert_last(t)
     end
     assert(t ~= after)
     if after._next then
@@ -48,8 +48,8 @@ function dlist:insert(t, after)
     self._length = self._length + 1
 end
 
--- insert item in head
-function dlist:insert_head(t)
+-- insert the first item in head
+function list:insert_first(t)
     if self._first then
         self._first._prev = t
         t._next = self._first
@@ -61,8 +61,8 @@ function dlist:insert_head(t)
     self._length = self._length + 1
 end
 
--- insert item in tail
-function dlist:insert_tail(t)
+-- insert the last item in tail
+function list:insert_last(t)
     if self._last then
         self._last._next = t
         t._prev = self._last
@@ -75,7 +75,7 @@ function dlist:insert_tail(t)
 end
 
 -- remove item
-function dlist:remove(t)
+function list:remove(t)
     if t._next then
         if t._prev then
             t._next._prev = t._prev
@@ -101,7 +101,7 @@ function dlist:remove(t)
 end
 
 -- remove the first item
-function dlist:remove_first()
+function list:remove_first()
     if not self._first then
         return
     end
@@ -119,7 +119,7 @@ function dlist:remove_first()
 end
 
 -- remove last item
-function dlist:remove_last()
+function list:remove_last()
     if not self._last then
         return
     end
@@ -137,37 +137,37 @@ function dlist:remove_last()
 end
 
 -- push item to tail
-function dlist:push(t)
-    self:insert_tail(t)
+function list:push(t)
+    self:insert_last(t)
 end
 
 -- pop item from tail
-function dlist:pop()
+function list:pop()
     self:remove_last()
 end
 
 -- shift item: 1 2 3 <- 2 3
-function dlist:shift()
+function list:shift()
     self:remove_first()
 end
 
 -- unshift item: 1 2 -> t 1 2
-function dlist:unshift(t)
-    self:insert_head(t)
+function list:unshift(t)
+    self:insert_first(t)
 end
 
 -- get first item
-function dlist:first()
+function list:first()
     return self._first
 end
 
 -- get last item
-function dlist:last()
+function list:last()
     return self._last
 end
 
 -- get next item
-function dlist:next(last)
+function list:next(last)
     if last then
         return last._next
     else
@@ -176,7 +176,7 @@ function dlist:next(last)
 end
 
 -- get the previous item
-function dlist:prev(last)
+function list:prev(last)
     if last then
         return last._prev
     else
@@ -185,12 +185,12 @@ function dlist:prev(last)
 end
 
 -- get list size
-function dlist:size()
+function list:size()
     return self._length
 end
 
 -- is empty?
-function dlist:empty()
+function list:empty()
     return self:size() == 0
 end
 
@@ -198,11 +198,11 @@ end
 --
 -- e.g.
 --
--- for item in dlist:items() do
+-- for item in list:items() do
 --     print(item)
 -- end
 --
-function dlist:items()
+function list:items()
     local iter = function (list, item)
         return list:next(item)
     end
@@ -210,17 +210,17 @@ function dlist:items()
 end
 
 -- get reverse items
-function dlist:ritems()
+function list:ritems()
     local iter = function (list, item)
         return list:prev(item)
     end
     return iter, self, nil
 end
 
--- new dlist
-function dlist.new()
-    return dlist()
+-- new list
+function list.new()
+    return list()
 end
 
--- return module: dlist
-return dlist
+-- return module: list
+return list

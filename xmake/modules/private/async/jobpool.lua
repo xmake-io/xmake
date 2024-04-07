@@ -20,7 +20,7 @@
 
 -- imports
 import("core.base.object")
-import("core.base.dlist")
+import("core.base.list")
 import("core.base.hashset")
 
 -- define module
@@ -235,5 +235,5 @@ end
 
 -- new a jobpool
 function new()
-    return jobpool {0, {name = "root"}, dlist.new(), {}}
+    return jobpool {0, {name = "root"}, list.new(), {}}
 end

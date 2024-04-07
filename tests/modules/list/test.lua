@@ -1,7 +1,7 @@
-import("core.base.dlist")
+import("core.base.list")
 
 function test_push(t)
-    local d = dlist.new()
+    local d = list.new()
     d:push({v = 1})
     d:push({v = 2})
     d:push({v = 3})
@@ -17,7 +17,7 @@ function test_push(t)
 end
 
 function test_insert(t)
-    local d = dlist.new()
+    local d = list.new()
     local v3 = {v = 3}
     d:insert({v = 1})
     d:insert({v = 2})
@@ -34,7 +34,7 @@ function test_insert(t)
 end
 
 function test_remove(t)
-    local d = dlist.new()
+    local d = list.new()
     local v3 = {v = 3}
     d:insert({v = 1})
     d:insert({v = 2})
@@ -53,7 +53,7 @@ function test_remove(t)
 end
 
 function test_remove_first(t)
-    local d = dlist.new()
+    local d = list.new()
     d:push({v = 1})
     d:push({v = 2})
     d:push({v = 3})
@@ -70,7 +70,7 @@ function test_remove_first(t)
 end
 
 function test_remove_last(t)
-    local d = dlist.new()
+    local d = list.new()
     d:push({v = 1})
     d:push({v = 2})
     d:push({v = 3})
@@ -86,13 +86,13 @@ function test_remove_last(t)
     end
 end
 
-function test_insert_head(t)
-    local d = dlist.new()
+function test_insert_first(t)
+    local d = list.new()
     d:push({v = 2})
     d:push({v = 3})
     d:push({v = 4})
     d:push({v = 5})
-    d:insert_head({v = 1})
+    d:insert_first({v = 1})
     t:are_equal(d:first().v, 1)
     t:are_equal(d:last().v, 5)
     local idx = 1
@@ -102,13 +102,13 @@ function test_insert_head(t)
     end
 end
 
-function test_insert_tail(t)
-    local d = dlist.new()
+function test_insert_last(t)
+    local d = list.new()
     d:push({v = 1})
     d:push({v = 2})
     d:push({v = 3})
     d:push({v = 4})
-    d:insert_tail({v = 5})
+    d:insert_last({v = 5})
     t:are_equal(d:first().v, 1)
     t:are_equal(d:last().v, 5)
     local idx = 1
