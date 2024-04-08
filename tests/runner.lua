@@ -54,7 +54,7 @@ function main(script)
                         if errors then
                             errors = tostring(errors)
                         end
-                        if not errors:find("aborting because of ") then
+                        if errors and not errors:find("aborting because of ") then
                             context:print_error(errors, v, "unhandled error")
                         else
                             raise(errors)

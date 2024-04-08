@@ -16,10 +16,8 @@ end
 
 -- run test with the given name
 function _run_test_filter(name)
-
     local tests = {}
     local root = path.absolute(os.scriptdir())
-    -- find the test script
     for _, script in ipairs(os.files(path.join(root, "**", name, "**", "test.lua"))) do
         if not script:find(".xmake", 1, true) then
             table.insert(tests, path.absolute(script))
@@ -55,9 +53,6 @@ function _run_test_filter(name)
     end
 end
 
--- main entry
 function main(name)
-
-    -- run the given test
     return _run_test_filter(name or "/")
 end
