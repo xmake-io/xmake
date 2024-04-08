@@ -80,30 +80,29 @@ end
 
 -- check if flags are compatible for module reuse
 function _are_flags_compatible(target, other, cppfile)
-  local compinst1 = target:compiler("cxx")
-  local flags1 = compinst1:compflags({sourcefile = cppfile, target = target})
+    local compinst1 = target:compiler("cxx")
+    local flags1 = compinst1:compflags({sourcefile = cppfile, target = target})
 
-  local compinst2 = other:compiler("cxx")
-  local flags2 = compinst2:compflags({sourcefile = cppfile, target = other})
+    local compinst2 = other:compiler("cxx")
+    local flags2 = compinst2:compflags({sourcefile = cppfile, target = other})
 
-  -- strip unrelevent flags
-  flags1 = compiler_support.strip_flags(target, flags1)
-  flags2 = compiler_support.strip_flags(target, flags2)
+    -- strip unrelevent flags
+    flags1 = compiler_support.strip_flags(target, flags1)
+    flags2 = compiler_support.strip_flags(target, flags2)
 
-  if #flags1 ~= #flags2 then
-      return false
-  end
+    if #flags1 ~= #flags2 then
+        return false
+    end
 
-  table.sort(flags1)
-  table.sort(flags2)
+    table.sort(flags1)
+    table.sort(flags2)
 
-  for i = 1, #flags1 do
-      if flags1[i] ~= flags2[i] then
-          return false
-      end
-  end
-
-  return true
+    for i = 1, #flags1 do
+        if flags1[i] ~= flags2[i] then
+            return false
+        end
+    end
+    return true
 end
 
 -- try to reuse modules from other target
