@@ -48,7 +48,7 @@ function main(t)
         os.exec("xmake f -c --yes")
         _build()
     elseif is_subhost("msys") then
-        os.exec("xmake f -c -p mingw --yes")
+        os.exec("xmake f -c -p mingw -vD --yes")
         _build()
     elseif is_host("linux") then
         local gcc = find_tool("gcc", {version = true})
