@@ -942,7 +942,6 @@ function _load_package(packagename, requireinfo, opt)
 
     -- get package key
     local packagekey = _get_packagekey(packagename, requireinfo, version)
-    print("packagekey", packagekey)
 
     -- get package from cache first
     local package_cached = _memcache():get2("packages", packagekey)
