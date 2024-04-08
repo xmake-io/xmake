@@ -154,7 +154,6 @@ function main(name, jobs, opt)
     -- run jobs
     local index = 0
     local count = 0
-    local job_pending = nil
     local abort = false
     local abort_errors
     local progress_wrapper = {}
@@ -188,21 +187,18 @@ function main(name, jobs, opt)
             while index < total_max do
 
                 -- uses job pool?
+                local job
                 local jobname
                 local distccjob = false
                 if not jobs_cb then
 
-                    -- get job
-                    local job
-                    if job_pending then
-                        job = job_pending
-                    else
-                        job = jobs:pop()
-                    end
+                    -- get free job
+                    job = jobs:getfree()
                     if not job then
                         break
                     end
 
+                    -- TODO
                     -- we can only continue to run the job with distcc if local jobs are full
                     if distcc and index >= local_max then
                         if job.distcc then
@@ -216,7 +212,6 @@ function main(name, jobs, opt)
                     -- get run function
                     jobfunc = job.run
                     jobname = job.name
-                    job_pending = nil
                 else
                     jobname = tostring(index)
                 end
@@ -243,6 +238,9 @@ function main(name, jobs, opt)
                                 end
                                 count = count + 1
                                 jobfunc(i, total, {progress = progress_wrapper})
+                                if job then
+                                    jobs:remove(job)
+                                end
                                 print("finished", jobname)
                             end
                             running_jobs_indices[i] = nil
@@ -283,13 +281,8 @@ function main(name, jobs, opt)
             end
         end)
 
-        -- only need one job exited if be same priority
-        if priority_curr == priority_prev then
-            scheduler.co_group_wait(group_name, {limit = 1})
-        else
-            -- need to wait all running jobs exited first if be different priority
-            scheduler.co_group_wait(group_name)
-        end
+        -- wait for free jobs
+        scheduler.co_group_wait(group_name, {limit = 1})
     end
 
     -- wait all jobs exited

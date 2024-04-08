@@ -86,6 +86,48 @@ function test_remove_last(t)
     end
 end
 
+function test_for_remove(t)
+    local d = list.new()
+    d:push({v = 1})
+    d:push({v = 2})
+    d:push({v = 3})
+    d:push({v = 4})
+    d:push({v = 5})
+    t:are_equal(d:first().v, 1)
+    t:are_equal(d:last().v, 5)
+    local idx = 1
+    local item = d:first()
+    while item ~= nil do
+        local next = d:next(item)
+        t:are_equal(item.v, idx)
+        d:remove(item)
+        item = next
+        idx = idx + 1
+    end
+    t:require(d:empty())
+end
+
+function test_rfor_remove(t)
+    local d = list.new()
+    d:push({v = 1})
+    d:push({v = 2})
+    d:push({v = 3})
+    d:push({v = 4})
+    d:push({v = 5})
+    t:are_equal(d:first().v, 1)
+    t:are_equal(d:last().v, 5)
+    local idx = 5
+    local item = d:last()
+    while item ~= nil do
+        local prev = d:prev(item)
+        t:are_equal(item.v, idx)
+        d:remove(item)
+        item = prev
+        idx = idx - 1
+    end
+    t:require(d:empty())
+end
+
 function test_insert_first(t)
     local d = list.new()
     d:push({v = 2})
