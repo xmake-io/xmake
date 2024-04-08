@@ -110,6 +110,7 @@ function jobpool:getfree()
     -- get a free job from the leaf jobs
     local leafjobs = self:_getleafjobs()
     if not leafjobs:empty() then
+        -- try to get next free job fastly
         if self._nextfree then
             local job = self._nextfree
             local nextfree = leafjobs:prev(job)
@@ -121,6 +122,7 @@ function jobpool:getfree()
             job.status = JOB_STATUS_PENDING
             return job
         end
+        -- find the next free job
         local removed_jobs = {}
         for job in leafjobs:ritems() do
             if self:_isfree(job) then
@@ -134,12 +136,12 @@ function jobpool:getfree()
                 table.insert(removed_jobs, job)
             end
         end
+        -- not found? if remove group and referenced node exist,
+        -- we try to remove them and find the next free job again
         if #removed_jobs > 0 then
-            -- try to remove group and referenced node
             for _, job in ipairs(removed_jobs) do
                 self:remove(job)
             end
-            -- get free job again
             for job in leafjobs:ritems() do
                 if self:_isfree(job) then
                     local nextfree = leafjobs:prev(job)
