@@ -38,7 +38,7 @@ rule("cppfront.build.h2")
         batchcmds:vrunv(cppfront.program, argv)
 
         -- add deps
-        batchcmds:add_depfiles(sourcefile_h2) 
+        batchcmds:add_depfiles(sourcefile_h2)
         batchcmds:set_depmtime(os.mtime(sourcefile_h))
         batchcmds:set_depcache(target:dependfile(sourcefile_h))
     end)
