@@ -101,32 +101,6 @@ function jobpool:add(job, rootjob)
     return job
 end
 
--- has free jobs?
-function jobpool:hasfree()
-    if self:size() == 0 then
-        return
-    end
-
-    -- peak a free job from the leaf jobs
-    local leafjobs = self:_getleafjobs()
-    if not leafjobs:empty() then
-        if self._nextfree then
-            return true
-        end
-        local job = leafjobs:last()
-        while job ~= nil do
-            local prevjob = leafjobs:prev(job)
-            if self:_isfree(job) then
-                self._nextfree = job
-                return true
-            elseif job.group or job.status == JOB_STATUS_FINISHED then
-                self:remove(job)
-            end
-            job = prevjob
-        end
-    end
-end
-
 -- get a free job from the leaf jobs
 function jobpool:getfree()
     if self:size() == 0 then
@@ -147,20 +121,35 @@ function jobpool:getfree()
             job.status = JOB_STATUS_PENDING
             return job
         end
-        local job = leafjobs:last()
-        while job ~= nil do
-            local prevjob = leafjobs:prev(job)
+        local removed_jobs = {}
+        for job in leafjobs:ritems() do
             if self:_isfree(job) then
-                local nextfree = prevjob
+                local nextfree = leafjobs:prev(job)
                 if nextfree ~= job and self:_isfree(nextfree) then
                     self._nextfree = nextfree
                 end
                 job.status = JOB_STATUS_PENDING
                 return job
             elseif job.group or job.status == JOB_STATUS_FINISHED then
+                table.insert(removed_jobs, job)
+            end
+        end
+        if #removed_jobs > 0 then
+            -- try to remove group and referenced node
+            for _, job in ipairs(removed_jobs) do
                 self:remove(job)
             end
-            job = prevjob
+            -- get free job again
+            for job in leafjobs:ritems() do
+                if self:_isfree(job) then
+                    local nextfree = leafjobs:prev(job)
+                    if nextfree ~= job and self:_isfree(nextfree) then
+                        self._nextfree = nextfree
+                    end
+                    job.status = JOB_STATUS_PENDING
+                    return job
+                end
+            end
         end
     end
 end

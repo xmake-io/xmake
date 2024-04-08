@@ -236,9 +236,6 @@ function main(name, jobs, opt)
                                 end
                                 count = count + 1
                                 jobfunc(i, total, {progress = progress_wrapper})
-                                if job then
-                                    jobs:remove(job)
-                                end
                             end
                             running_jobs_indices[i] = nil
                         end,
@@ -270,6 +267,14 @@ function main(name, jobs, opt)
                                             obj:kill()
                                         end
                                     end
+                                end
+                            end
+                        },
+                        finally
+                        {
+                            function ()
+                                if job then
+                                    jobs:remove(job)
                                 end
                             end
                         }
