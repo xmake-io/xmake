@@ -263,12 +263,18 @@ function build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, op
     opt.rootjob = batchjobs:group_leave() or opt.rootjob
     batchjobs:group_enter(target:name() .. "/build_modules", {rootjob = opt.rootjob})
 
-    batchjobs:addjob(target:name() .. "_populate_module_map", function(_, _)
-        _try_reuse_modules(target, modules)
-        _builder(target).populate_module_map(target, modules)
-    end, {rootjob = opt.rootjob})
-
+    -- add populate module job
     local modulesjobs = {}
+    local populate_jobname = target:name() .. "_populate_module_map"
+    modulesjobs[populate_jobname] = {
+        name = populate_jobname,
+        job = batchjobs:newjob(populate_jobname, function(_, _)
+            _try_reuse_modules(target, modules)
+            _builder(target).populate_module_map(target, modules)
+        end)
+    }
+
+    -- add module jobs
     _build_modules(target, sourcebatch, modules, table.join(opt, {
        build_module = function(deps, module, name, objectfile, cppfile)
         local job_name = name and target:name() .. name or cppfile
