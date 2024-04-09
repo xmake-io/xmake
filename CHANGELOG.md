@@ -7,11 +7,14 @@
 * [#4874](https://github.com/xmake-io/xmake/pull/4874): Add Harmony SDK support
 * [#4889](https://github.com/xmake-io/xmake/issues/4889): Add signal module to register signal handler in lua
 * [#4925](https://github.com/xmake-io/xmake/issues/4925): Add native modules support
+* [#4938](https://github.com/xmake-io/xmake/issues/4938): Support for cppfront/h2
 
 ### Changes
 
 * Improve packages to support for clang-cl
 * [#4893](https://github.com/xmake-io/xmake/issues/4893): Improve rc includes deps
+* [#4928](https://github.com/xmake-io/xmake/issues/4928): Improve to build and link speed
+* [#4931](https://github.com/xmake-io/xmake/pull/4931): Update pdcurses
 
 ### Bugs fixed
 
@@ -1788,11 +1791,14 @@
 * [#4874](https://github.com/xmake-io/xmake/pull/4874): 添加鸿蒙 SDK 支持
 * [#4889](https://github.com/xmake-io/xmake/issues/4889): 添加 signal 模块 去注册信号处理
 * [#4925](https://github.com/xmake-io/xmake/issues/4925): 添加 native 模块支持
+* [#4938](https://github.com/xmake-io/xmake/issues/4938): 增加对 cppfront/h2 的支持
 
 ### 改进
 
 * 改进包管理，支持切换 clang-cl
 * [#4893](https://github.com/xmake-io/xmake/issues/4893): 改进 rc 头文件依赖检测
+* [#4928](https://github.com/xmake-io/xmake/issues/4928): 改进构建和链接速度，增量编译时候效果更加明显
+* [#4931](https://github.com/xmake-io/xmake/pull/4931): 更新 pdcurses
 
 ### Bugs 修复
 
