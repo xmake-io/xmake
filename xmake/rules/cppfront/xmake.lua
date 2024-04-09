@@ -77,11 +77,11 @@ rule("cppfront.build.cpp2")
         table.insert(target:objectfiles(), objectfile)
 
         -- add_depfiles for #include "xxxx/xxxx/xxx.h2" ,exclude // #include "xxxx.h2"
-        local lines = io.lines(sourcefile_cpp2)
-        for line in lines do
-            match_h2 = line:match("^ -#include *\"([%w%p]+.h2)\"")
+        local root_dir = path.directory(sourcefile_cpp2)
+        for line in io.lines(sourcefile_cpp2) do
+            local match_h2 = line:match("^ -#include *\"([%w%p]+.h2)\"")
             if match_h2 ~= nil then
-                batchcmds:add_depfiles(path.join(path.directory(sourcefile_cpp2), match_h2))
+                batchcmds:add_depfiles(path.join(root_dir, match_h2))
             end
         end
         -- add commands
