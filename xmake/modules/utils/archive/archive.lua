@@ -281,12 +281,25 @@ end
 
 -- archive archive file using archivers
 function _archive(archivefile, inputfiles, extension, archivers, opt)
+    local errors
     for _, archive in ipairs(archivers) do
-        if archive(archivefile, inputfiles, extension, opt) then
-            return true
+        local ok = try {
+            function ()
+                return archive(archivefile, inputfiles, extension, opt)
+            end,
+            catch {
+                function (errs)
+                    if errs then
+                        errors = tostring(errs)
+                    end
+                end
+            }
+        }
+        if ok then
+            return
         end
     end
-    return false
+    raise("cannot archive %s, %s!", path.filename(archivefile), errors or "archivers not found!")
 end
 
 -- only archive tar file
