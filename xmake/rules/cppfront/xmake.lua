@@ -21,7 +21,7 @@
 rule("cppfront.build.h2")
     set_extensions(".h2")
 
-    before_buildcmd_file(function (target, batchcmds, sourcefile_h2, opt)
+    on_buildcmd_file(function (target, batchcmds, sourcefile_h2, opt)
         -- get cppfront
         import("lib.detect.find_tool")
         local cppfront = assert(find_tool("cppfront", {check = "-h"}), "cppfront not found!")
@@ -79,7 +79,7 @@ rule("cppfront.build.cpp2")
         -- add_depfiles for #include "xxxx/xxxx/xxx.h2" ,exclude // #include "xxxx.h2"
         local lines = io.lines(sourcefile_cpp2)
         for line in lines do
-            match_h2 = string.match(line, "^ -#include *\"([%w%p]+.h2)\"")
+            match_h2 = line:match("^ -#include *\"([%w%p]+.h2)\"")
             if match_h2 ~= nil then
                 batchcmds:add_depfiles(path.join(path.directory(sourcefile_cpp2), match_h2))
             end
