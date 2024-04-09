@@ -50,11 +50,14 @@ function main(script)
                 end,
                 catch
                 {
-                    function (error)
-                        if not error:find("aborting because of ") then
-                            context:print_error(error, v, "unhandled error")
+                    function (errors)
+                        if errors then
+                            errors = tostring(errors)
+                        end
+                        if errors and not errors:find("aborting because of ") then
+                            context:print_error(errors, v, "unhandled error")
                         else
-                            raise(error)
+                            raise(errors)
                         end
                     end
                 }

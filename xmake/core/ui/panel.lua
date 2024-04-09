@@ -26,7 +26,7 @@ local event  = require("ui/event")
 local point  = require("ui/point")
 local curses = require("ui/curses")
 local action = require("ui/action")
-local dlist  = require("base/dlist")
+local list   = require("base/list")
 
 -- define module
 local panel = panel or view()
@@ -44,7 +44,7 @@ function panel:init(name, bounds)
     self:option_set("selectable", true)
 
     -- init child views
-    self._VIEWS = dlist.new()
+    self._VIEWS = list.new()
 
     -- init views cache
     self._VIEWS_CACHE = {}
