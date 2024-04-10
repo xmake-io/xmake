@@ -388,7 +388,7 @@ function _extract(archivefile, outputdir, extension, extractors, opt)
             }
         }
         if ok then
-            return
+            return true
         end
     end
     raise("cannot extract %s, %s!", path.filename(archivefile), errors or "extractors not found!")
@@ -401,12 +401,8 @@ end
 -- @param options       the options, e.g.. {excludes = {"*/dir/*", "dir/*"}}
 --
 function main(archivefile, outputdir, opt)
-
-    -- init outputdir
-    outputdir = outputdir or os.curdir()
-
-    -- init options
     opt = opt or {}
+    outputdir = outputdir or os.curdir()
 
     -- init extractors
     local extractors

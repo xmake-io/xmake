@@ -296,7 +296,7 @@ function _archive(archivefile, inputfiles, extension, archivers, opt)
             }
         }
         if ok then
-            return
+            return true
         end
     end
     raise("cannot archive %s, %s!", path.filename(archivefile), errors or "archivers not found!")
@@ -319,12 +319,8 @@ end
 -- @param options       the options, e.g.. {curdir = "/tmp", recurse = true, compress = "fastest|faster|default|better|best", excludes = {"*/dir/*", "dir/*"}}
 --
 function main(archivefile, inputfiles, opt)
-
-    -- init inputfiles
-    inputfiles = inputfiles or os.curdir()
-
-    -- init options
     opt = opt or {}
+    inputfiles = inputfiles or os.curdir()
     if opt.recurse == nil then
         opt.recurse = true
     end
