@@ -1729,8 +1729,9 @@ end
 function _instance:_fetch_library(opt)
     opt = opt or {}
     local fetchinfo
+    local is_cross = self:is_cross()
     local on_fetch = self:script("fetch")
-    if on_fetch then
+    if on_fetch and not is_cross() then
         fetchinfo = on_fetch(self, {force = opt.force,
                                     system = opt.system,
                                     external = opt.external,
@@ -1947,7 +1948,7 @@ function _instance:fetch(opt)
             end
         end
 
-        -- fetch it from the system and external package sources (disabled for cross-compilation)
+        -- fetch it from the system and external package sources
         if not fetchinfo and system ~= false then
             fetchinfo = self:_fetch_library({system = true, require_version = require_ver, external = external, force = opt.force})
             if fetchinfo then
