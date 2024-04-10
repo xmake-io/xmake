@@ -116,8 +116,6 @@ end
 
 -- build package
 function build(package, configs, opt)
-
-    -- init options
     opt = opt or {}
 
     -- pass configurations

@@ -26,8 +26,8 @@ import("lib.detect.find_tool")
 
 -- get msvc
 function _get_msvc(package)
-    local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
-    assert(msvc:check(), "vs not found!") -- we need check vs envs if it has been not checked yet
+    local msvc = package:toolchain("msvc")
+    assert(msvc:check(), "vs not found!") -- we need to check vs envs if it has been not checked yet
     return msvc
 end
 
@@ -36,10 +36,21 @@ function buildenvs(package, opt)
     return os.joinenvs(_get_msvc(package):runenvs())
 end
 
+-- do make
+function make(package, argv, opt)
+    opt = opt or {}
+    local program
+    local runenvs = opt.envs or buildenvs(package)
+    local tool = find_tool("nmake", {envs = runenvs})
+    if tool then
+        program = tool.program
+    end
+    assert(program, "nmake not found!")
+    os.vrunv(program, argv or {}, {envs = runenvs, curdir = opt.curdir})
+end
+
 -- build package
 function build(package, configs, opt)
-
-    -- pass configurations
     opt = opt or {}
     local argv = {}
     if option.get("verbose") then
@@ -57,33 +68,21 @@ function build(package, configs, opt)
     end
 
     -- do build
-    local runenvs = opt.envs or buildenvs(package, opt)
-    local nmake = find_tool("nmake", {envs = runenvs})
-    os.vrunv(nmake.program, argv, {envs = runenvs})
+    make(package, argv, opt)
 end
 
 -- install package
 function install(package, configs, opt)
 
-    -- pass configurations
+    -- do build
     opt = opt or {}
+    build(package, configs, opt)
+
+    -- do install
     local argv = {"install"}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
+        table.insert(argv, "V=1")
     end
-    for name, value in pairs(configs) do
-        value = tostring(value):trim()
-        if value ~= "" then
-            if type(name) == "number" then
-                table.insert(argv, value)
-            else
-                table.insert(argv, name .. "=" .. value)
-            end
-        end
-    end
-
-    -- do install
-    local runenvs = opt.envs or buildenvs(package, opt)
-    local nmake = find_tool("nmake", {envs = runenvs})
-    os.vrunv(nmake.program, argv, {envs = runenvs})
+    make(package, argv, opt)
 end
