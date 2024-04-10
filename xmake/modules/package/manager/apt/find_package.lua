@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.target")
 import("lib.detect.find_tool")
+import("private.core.base.is_cross")
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
 -- find package
@@ -129,19 +130,14 @@ end
 -- @param opt   the options, e.g. {verbose = true, version = "1.12.0")
 --
 function main(name, opt)
-
-    -- check
     opt = opt or {}
-    if not is_host(opt.plat) or os.arch() ~= opt.arch then
+    if is_cross(opt.plat, opt.arch) then
         return
     end
 
-    -- find dpkg
     local dpkg = find_tool("dpkg")
     if not dpkg then
         return
     end
-
-    -- find package
     return _find_package(dpkg, name, opt)
 end

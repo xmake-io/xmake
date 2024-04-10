@@ -20,6 +20,7 @@
 
 -- imports
 import("core.language.language")
+import("private.core.base.is_cross")
 import("lib.detect.check_cxsnippets")
 
 -- get package items
@@ -57,8 +58,11 @@ end
 --
 function main(name, opt)
     opt = opt or {}
-    local configs = opt.configs or {}
+    if is_cross(opt.plat, opt.arch) then
+        return
+    end
 
+    local configs = opt.configs or {}
     local items = _get_package_items()
     local snippet_configs = {}
     for _, name in ipairs(items) do

@@ -23,6 +23,8 @@ local os = require("base/os")
 
 -- is cross-compilation?
 function is_cross(plat, arch)
+    plat = plat or os.subhost()
+    arch = arch or os.subarch()
     if os.host() == "windows" then
         local host_arch = os.arch()
         if plat == "windows" then

@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.target")
 import("lib.detect.find_tool")
+import("private.core.base.is_cross")
 import("package.manager.pkgconfig.find_package", { alias = "find_package_from_pkgconfig" })
 
 -- find package
@@ -137,7 +138,7 @@ end
 --
 function main(name, opt)
     opt = opt or {}
-    if not is_host(opt.plat) or os.arch() ~= opt.arch then
+    if is_cross(opt.plat, opt.arch) then
         return
     end
     local rpm = find_tool("rpm")
