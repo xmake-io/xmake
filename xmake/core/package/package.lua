@@ -1729,9 +1729,8 @@ end
 function _instance:_fetch_library(opt)
     opt = opt or {}
     local fetchinfo
-    local is_cross = self:is_cross()
     local on_fetch = self:script("fetch")
-    if on_fetch and not is_cross() then
+    if on_fetch and not self:is_cross() then
         fetchinfo = on_fetch(self, {force = opt.force,
                                     system = opt.system,
                                     external = opt.external,
