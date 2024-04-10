@@ -107,7 +107,8 @@ function _patch(package, patchinfo)
         local patchdir = patch_file .. ".dir"
         local patchdir_tmp = patchdir .. ".tmp"
         os.tryrm(patchdir_tmp)
-        if archive.extract(patch_file, patchdir_tmp) then
+        local ok = try {function() archive.extract(patch_file, patchdir_tmp); return true end}
+        if ok then
             os.tryrm(patchdir)
             os.mv(patchdir_tmp, patchdir)
         else

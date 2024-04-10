@@ -373,13 +373,25 @@ end
 
 -- extract archive file using extractors
 function _extract(archivefile, outputdir, extension, extractors, opt)
+    local errors
     for _, extract in ipairs(extractors) do
-        local ok = try {function () return extract(archivefile, outputdir, extension, opt) end}
+        local ok = try {
+            function ()
+                return extract(archivefile, outputdir, extension, opt)
+            end,
+            catch {
+                function (errs)
+                    if errs then
+                        errors = tostring(errs)
+                    end
+                end
+            }
+        }
         if ok then
             return true
         end
     end
-    return false
+    raise("cannot extract %s, %s!", path.filename(archivefile), errors or "extractors not found!")
 end
 
 -- extract archive file
@@ -389,12 +401,8 @@ end
 -- @param options       the options, e.g.. {excludes = {"*/dir/*", "dir/*"}}
 --
 function main(archivefile, outputdir, opt)
-
-    -- init outputdir
-    outputdir = outputdir or os.curdir()
-
-    -- init options
     opt = opt or {}
+    outputdir = outputdir or os.curdir()
 
     -- init extractors
     local extractors

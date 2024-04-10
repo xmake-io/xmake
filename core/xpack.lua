@@ -48,18 +48,12 @@ xpack("xmake")
                 local winenv_bindir = path.join(package:buildir(), "winenv", "bin")
                 os.mkdir(winenv_bindir)
                 http.download(url_7z, archive_7z, {insecure = global.get("insecure-ssl")})
-                if archive.extract(archive_7z, tmpdir_7z) then
-                    os.cp(path.join(tmpdir_7z, "*"), winenv_bindir)
-                else
-                    raise("extract 7z.zip failed!")
-                end
+                archive.extract(archive_7z, tmpdir_7z)
+                os.cp(path.join(tmpdir_7z, "*"), winenv_bindir)
                 http.download(url_curl, archive_curl, {insecure = global.get("insecure-ssl")})
-                if archive.extract(archive_curl, tmpdir_curl) then
-                    os.cp(path.join(tmpdir_curl, "*", "bin", "*.exe"), winenv_bindir)
-                    os.cp(path.join(tmpdir_curl, "*", "bin", "*.crt"), winenv_bindir)
-                else
-                    raise("extract curl.zip failed!")
-                end
+                archive.extract(archive_curl, tmpdir_curl)
+                os.cp(path.join(tmpdir_curl, "*", "bin", "*.exe"), winenv_bindir)
+                os.cp(path.join(tmpdir_curl, "*", "bin", "*.crt"), winenv_bindir)
                 winenv = path.directory(winenv_bindir)
                 package:add("installfiles", path.join(winenv, "**"), {rootdir = path.directory(winenv)})
             end

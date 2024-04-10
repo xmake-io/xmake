@@ -281,12 +281,25 @@ end
 
 -- archive archive file using archivers
 function _archive(archivefile, inputfiles, extension, archivers, opt)
+    local errors
     for _, archive in ipairs(archivers) do
-        if archive(archivefile, inputfiles, extension, opt) then
+        local ok = try {
+            function ()
+                return archive(archivefile, inputfiles, extension, opt)
+            end,
+            catch {
+                function (errs)
+                    if errs then
+                        errors = tostring(errs)
+                    end
+                end
+            }
+        }
+        if ok then
             return true
         end
     end
-    return false
+    raise("cannot archive %s, %s!", path.filename(archivefile), errors or "archivers not found!")
 end
 
 -- only archive tar file
@@ -306,12 +319,8 @@ end
 -- @param options       the options, e.g.. {curdir = "/tmp", recurse = true, compress = "fastest|faster|default|better|best", excludes = {"*/dir/*", "dir/*"}}
 --
 function main(archivefile, inputfiles, opt)
-
-    -- init inputfiles
-    inputfiles = inputfiles or os.curdir()
-
-    -- init options
     opt = opt or {}
+    inputfiles = inputfiles or os.curdir()
     if opt.recurse == nil then
         opt.recurse = true
     end

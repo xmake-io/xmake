@@ -135,7 +135,8 @@ function _download(package, resource_name, resource_url, resource_hash)
     local resourcedir_tmp = resourcedir .. ".tmp"
     os.tryrm(resourcedir_tmp)
     local extension = archive.extension(resource_file)
-    if archive.extract(resource_file, resourcedir_tmp) then
+    local ok = try {function() archive.extract(resource_file, resourcedir_tmp); return true end}
+    if ok then
         os.tryrm(resourcedir)
         os.mv(resourcedir_tmp, resourcedir)
     elseif extension and extension ~= "" then

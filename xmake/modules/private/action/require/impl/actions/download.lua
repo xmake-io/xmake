@@ -211,7 +211,8 @@ function _download(package, url, sourcedir, opt)
     local sourcedir_tmp = sourcedir .. ".tmp"
     os.rm(sourcedir_tmp)
     local extension = archive.extension(packagefile)
-    if archive.extract(packagefile, sourcedir_tmp, {excludes = opt.url_excludes}) then
+    local ok = try {function() archive.extract(packagefile, sourcedir_tmp, {excludes = opt.url_excludes}); return true end}
+    if ok then
         -- move to source directory and we skip it to avoid long path issues on windows if only one root directory
         os.rm(sourcedir)
         local filedirs = os.filedirs(path.join(sourcedir_tmp, "*"))
