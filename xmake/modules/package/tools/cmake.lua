@@ -184,8 +184,7 @@ function _get_cxxflags(package, opt)
         table.join2(result, _map_compflags(package, "cxx", "includedir", package:build_getenv("includedirs")))
         table.join2(result, _map_compflags(package, "cxx", "sysincludedir", package:build_getenv("sysincludedirs")))
     end
-    table.join2(result, _map_compflags(package, "cxx", "runtime", package:config("runtimes")))
-    local runtimes = package:config("runtimes")
+    local runtimes = package:runtimes()
     if runtimes then
         local fake_target = {is_shared = function(_) return false end, 
                              sourcekinds = function(_) return "cxx" end}

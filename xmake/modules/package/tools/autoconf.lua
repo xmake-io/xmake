@@ -304,7 +304,7 @@ function buildenvs(package, opt)
         table.join2(cxxflags, package:_generate_lto_configs("cxx").cxxflags)
         table.join2(ldflags, package:_generate_lto_configs().ldflags)
     end
-    local runtimes = package:config("runtimes")
+    local runtimes = package:runtimes()
     if runtimes then
         local fake_target = {is_shared = function(_) return false end, 
                              sourcekinds = function(_) return "cxx" end}

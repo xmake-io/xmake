@@ -269,7 +269,7 @@ function _get_configs_file(package, opt)
         table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
         table.join2(shflags,  _get_ldflags_from_packagedeps(package, opt))
         -- add runtimes flags
-        for _, runtime in ipairs(package:config("runtimes")) do
+        for _, runtime in ipairs(package:runtimes()) do
             if not runtime:startswith("M") then
                 local fake_target = {is_shared = function(_) return false end, 
                                      sourcekinds = function(_) return "cxx" end}

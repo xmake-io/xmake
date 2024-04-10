@@ -49,8 +49,7 @@ function buildenvs(package)
     local asflags  = table.copy(table.wrap(package:config("asflags")))
     local ldflags  = table.copy(table.wrap(package:config("ldflags")))
     local shflags  = table.copy(table.wrap(package:config("shflags")))
-    local runtimes = package:config("runtimes")
-    local runtimes = package:config("runtimes")
+    local runtimes = package:runtimes()
     if runtimes then
         local fake_target = {is_shared = function(_) return false end, 
                              sourcekinds = function(_) return "cxx" end}
