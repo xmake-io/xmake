@@ -379,7 +379,7 @@ function make_module_buildcmds(target, batchcmds, opt)
         else
             if (not public and not external) or (external and private_dep) then
                 batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, provide {batchcmds = batchcmds})
+                _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, provide, {batchcmds = batchcmds})
             else
                 batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
                 _compile_bmi_step(target, bmifile, opt.cppfile, provide, {batchcmds = batchcmds})
