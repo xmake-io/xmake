@@ -81,7 +81,7 @@ toolchain("tinycc")
             end
         end
         local sdkdir = toolchain:sdkdir()
-        if os.isdir(sdkdir) then
+        if sdkdir and os.isdir(sdkdir) then
             local includedir = path.join(sdkdir, "include")
             if os.isdir(includedir) then
                 toolchain:add("sysincludedirs", includedir)
