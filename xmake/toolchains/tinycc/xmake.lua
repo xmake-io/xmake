@@ -39,7 +39,7 @@ toolchain("tinycc")
                 table.insert(paths, path.join(installdir, "bin"))
             end
         end
-        local tcc = find_tool("tcc", {paths = paths})
+        local tcc = find_tool("tcc", {paths = paths, force = true})
         if tcc then
             toolchain:config_set("tcc", tcc.program)
             if os.isfile(tcc.program) then
