@@ -20,22 +20,14 @@
 
 -- define toolchain
 toolchain("tinycc")
-
-    -- set homepage
+    set_kind("standalone")
     set_homepage("https://bellard.org/tcc/")
     set_description("Tiny C Compiler")
 
-    -- mark as standalone toolchain
-    set_kind("standalone")
-
-    -- check toolchain
     on_check(function (toolchain)
-
-        -- imports
         import("core.project.config")
         import("lib.detect.find_tool")
 
-        -- find tcc
         local paths = {toolchain:bindir()}
         local sdkdir = toolchain:sdkdir()
         if sdkdir then
@@ -55,10 +47,7 @@ toolchain("tinycc")
         end
     end)
 
-    -- on load
     on_load(function (toolchain)
-
-        -- imports
         import("core.project.config")
 
         -- add march flags
@@ -89,6 +78,17 @@ toolchain("tinycc")
             if installdir then
                 toolchain:add("sysincludedirs", path.join(installdir, "include"))
                 toolchain:add("linkdirs", path.join(installdir, "lib"))
+            end
+        end
+        local sdkdir = package:sdkdir()
+        if os.isdir(sdkdir) then
+            local includedir = path.join(sdkdir, "include")
+            if os.isdir(includedir) then
+                toolchain:add("sysincludedirs", includedir)
+            end
+            local libdir = path.join(sdkdir, "lib")
+            if os.isdir(libdir) then
+                toolchain:add("linkdirs", libdir)
             end
         end
     end)
