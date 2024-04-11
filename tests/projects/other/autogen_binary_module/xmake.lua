@@ -8,7 +8,7 @@ rule("autogen")
         import("utils.progress")
         import("core.project.depend")
         import("core.tool.compiler")
-        import("autogen")
+        import("autogen.foo", {always_build = true})
 
         local sourcefile_cx = path.join(target:autogendir(), "rules", "autogen", path.basename(sourcefile) .. ".cpp")
         local objectfile = target:objectfile(sourcefile_cx)
@@ -17,7 +17,7 @@ rule("autogen")
         depend.on_changed(function ()
             progress.show(opt.progress, "${color.build.object}compiling.autogen %s", sourcefile)
             os.mkdir(path.directory(sourcefile_cx))
-            autogen.generate(sourcefile, sourcefile_cx)
+            foo.generate(sourcefile, sourcefile_cx)
             compiler.compile(sourcefile_cx, objectfile, {target = target})
         end, {dependfile = target:dependfile(objectfile),
               files = sourcefile,
