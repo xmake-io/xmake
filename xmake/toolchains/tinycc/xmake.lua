@@ -42,6 +42,9 @@ toolchain("tinycc")
         local tcc = find_tool("tcc", {paths = paths})
         if tcc then
             toolchain:config_set("tcc", tcc.program)
+            if os.isfile(tcc.program) then
+                toolchain:config_set("bindir", path.directory(tcc.program))
+            end
             toolchain:configs_save()
             return true
         end
