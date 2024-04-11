@@ -1731,10 +1731,13 @@ function _instance:_fetch_library(opt)
     local fetchinfo
     local on_fetch = self:script("fetch")
     if on_fetch then
-        fetchinfo = on_fetch(self, {force = opt.force,
-                                    system = opt.system,
-                                    external = opt.external,
-                                    require_version = opt.require_version})
+        -- we cannot fetch it from system if it's cross-compilation package
+        if not opt.system or (opt.system and not self:is_cross()) then
+            fetchinfo = on_fetch(self, {force = opt.force,
+                                        system = opt.system,
+                                        external = opt.external,
+                                        require_version = opt.require_version})
+        end
         if fetchinfo and opt.require_version and opt.require_version:find(".", 1, true) then
             local version = fetchinfo.version
             if not (version and (version == opt.require_version or semver.satisfies(version, opt.require_version))) then
@@ -1947,8 +1950,8 @@ function _instance:fetch(opt)
             end
         end
 
-        -- fetch it from the system and external package sources (disabled for cross-compilation)
-        if not fetchinfo and system ~= false and not self:is_cross() then
+        -- fetch it from the system and external package sources
+        if not fetchinfo and system ~= false then
             fetchinfo = self:_fetch_library({system = true, require_version = require_ver, external = external, force = opt.force})
             if fetchinfo then
                 is_system = true

@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.target")
 import("lib.detect.find_tool")
+import("private.core.base.is_cross")
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
 -- get result from list of file inside pacman package
@@ -51,7 +52,7 @@ function _find_package_from_list(list, name, pacman, opt)
         if line:find("/include/", 1, true) and (line:endswith(".h") or line:endswith(".hpp")) then
             if not line:startswith("/usr/include/") then
                 local hpath = line
-                if is_subhost("msys") and opt.plat == "mingw" then 
+                if is_subhost("msys") and opt.plat == "mingw" then
                     hpath = path.join(pathtomsys, line)
                     local basehpath = path.join(pathtomsys, msystem .. "/include")
                     table.insert(result.includedirs, basehpath)
@@ -103,9 +104,12 @@ end
 -- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
 --
 function main(name, opt)
+    opt = opt or {}
+    if is_cross(opt.plat, opt.arch) then
+        return
+    end
 
     -- find pacman
-    opt = opt or {}
     local pacman = find_tool("pacman")
     if not pacman then
         return
@@ -125,13 +129,13 @@ function main(name, opt)
             name = prefix .. arch .. name
         end
     end
-    
+
     -- get package files list
     list = name and try { function() return os.iorunv(pacman.program, {"-Q", "-l", name}) end }
     if not list then
         return
     end
-    
+
     -- parse package files list
     local linkdirs = {}
     local pkgconfig_files = {}
@@ -179,6 +183,5 @@ function main(name, opt)
         -- if there is no .pc, we parse the package content to obtain the data we want
         result = _find_package_from_list(list, name, pacman, opt)
     end
-        
     return result
 end

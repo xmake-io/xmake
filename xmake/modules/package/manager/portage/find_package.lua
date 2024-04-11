@@ -22,6 +22,7 @@
 import("core.base.option")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
+import("private.core.base.is_cross")
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
 -- find package from the system directories
@@ -30,9 +31,10 @@ import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkg
 -- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
 --
 function main(name, opt)
-
-    -- init options
     opt = opt or {}
+    if is_cross(opt.plat, opt.arch) then
+        return
+    end
 
     -- for msys2/mingw? mingw-w64-[i686|x86_64]-xxx
     if opt.plat == "mingw" then
