@@ -80,7 +80,7 @@ toolchain("tinycc")
                 toolchain:add("linkdirs", path.join(installdir, "lib"))
             end
         end
-        local sdkdir = package:sdkdir()
+        local sdkdir = toolchain:sdkdir()
         if os.isdir(sdkdir) then
             local includedir = path.join(sdkdir, "include")
             if os.isdir(includedir) then
