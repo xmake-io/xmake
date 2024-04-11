@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=@CMAKE_INSTALL_PREFIX@
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+
+Name: libcmark
+Description: CommonMark parsing, rendering, and manipulation
+Version: @PROJECT_VERSION@
+Libs: -L${libdir} -lcmark
+Cflags: -I${includedir}
