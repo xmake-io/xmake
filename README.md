@@ -182,7 +182,7 @@ $ xmake f --menu
 
 * Windows (x86, x64, arm64)
 * macOS (i386, x86_64, arm64)
-* Linux (i386, x86_64, cross-toolchains ..)
+* Linux (i386, x86_64, arm, arm64, riscv, mips, 390x, sh4 ...)
 * *BSD (i386, x86_64)
 * Android (x86, x86_64, armeabi, armeabi-v7a, arm64-v8a)
 * iOS (armv7, armv7s, arm64, i386, x86_64)
