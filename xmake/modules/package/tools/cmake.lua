@@ -373,10 +373,10 @@ function _get_configs_for_windows(package, configs, opt)
     end
 
     -- use clang-cl
-    if package:has_tool("cc", "clang_cl") then
+    if package:has_tool("cc", "clang-cl") then
         table.insert(configs, "-DCMAKE_C_COMPILER=" .. _translate_bin_path(package:build_getenv("cc")))
     end
-    if package:has_tool("cxx", "clang_cl") then
+    if package:has_tool("cxx", "clang-cl") then
         table.insert(configs, "-DCMAKE_CXX_COMPILER=" .. _translate_bin_path(package:build_getenv("cxx")))
     end
 
@@ -982,7 +982,7 @@ function _get_cmake_generator(package, opt)
             cmake_generator = "Ninja"
         end
         if not cmake_generator then
-            if package:has_tool("cc", "clang_cl") or package:has_tool("cxx", "clang_cl") then
+            if package:has_tool("cc", "clang-cl") or package:has_tool("cxx", "clang-cl") then
                 cmake_generator = "Ninja"
             end
         end
