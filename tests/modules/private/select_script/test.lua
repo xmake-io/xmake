@@ -3,7 +3,7 @@ import("private.core.base.select_script")
 function _match_patterns(patterns, opt)
     local scripts = {}
     for _, pattern in ipairs(patterns) do
-        pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+        pattern = pattern:gsub("([%+%.%-%^%$%%])", "%%%1")
         pattern = pattern:gsub("%*", "\001")
         pattern = pattern:gsub("\001", ".*")
         scripts[pattern] = true
@@ -28,6 +28,8 @@ function test_plat_only(t)
 end
 
 function test_plat_arch(t)
+    t:require(_match_patterns("!wasm|!arm*", {plat = "linux", arch = "x86_64"}))
+    t:require_not(_match_patterns("!wasm|!arm*", {plat = "linux", arch = "arm64"}))
     t:require(_match_patterns("*|x86_64", {plat = "macosx", arch = "x86_64"}))
     t:require(_match_patterns("macosx|x86_64", {plat = "macosx", arch = "x86_64"}))
     t:require(_match_patterns("macosx|x86_64,linux|x86_64", {plat = "macosx", arch = "x86_64"}))
@@ -119,3 +121,10 @@ function test_plat_arch_subhost_subarch(t)
     t:require_not(_match_patterns("iphon*|arm64@macosx|x86_64", {plat = "iphoneos", subhost = "linux", arch = "arm64", subarch = "x86_64"}))
     t:require(_match_patterns("android|native@macosx|x86_64", {plat = "android", subhost = "macosx", arch = "x86_64", subarch = "x86_64"}))
 end
+
+function test_logical_expr(t)
+    t:require(_match_patterns("!wasm|!arm* and !cross|!arm*", {plat = "linux", arch = "x86_64"}))
+    t:require_not(_match_patterns("!wasm|!arm* and !cross|!arm*", {plat = "linux", arch = "arm64"}))
+    t:require_not(_match_patterns("!wasm|!arm* and !cross|!arm*", {plat = "wasm", arch = "x86_64"}))
+end
+
