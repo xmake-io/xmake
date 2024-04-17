@@ -37,9 +37,6 @@ function _match_pattern(pattern, plat, arch, opt)
         local is_excluded_pattern = pattern_plat:find('!', 1, true)
         if excluded and is_excluded_pattern then
             matched = not ('!' .. plat):match('^' .. pattern_plat .. '$')
-            if matched then
-                return true
-            end
         elseif not is_excluded_pattern then
             matched = plat:match('^' .. pattern_plat .. '$')
         end
@@ -158,6 +155,12 @@ function _match_script_pattern(pattern, opt)
 end
 
 -- match the script expression pattern
+--
+-- e.g.
+-- !wasm|!arm* and !cross|!arm*
+-- wasm|!arm* or cross
+-- (!macosx and !iphoneos) or (!linux|!arm* and !cross|!arm*)
+--
 function _match_script(pattern, opt)
     local idx = 0
     local funcs = {}
