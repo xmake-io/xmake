@@ -19,8 +19,9 @@
 --
 
 -- load modules
-local table = require("base/table")
-local utils = require("base/utils")
+local table   = require("base/table")
+local utils   = require("base/utils")
+local hashset = require("base/hashset")
 
 -- match pattern, matched mode: plat|arch, excluded mode: !plat|arch
 function _match_pattern(pattern, plat, arch, opt)
@@ -36,9 +37,6 @@ function _match_pattern(pattern, plat, arch, opt)
         local is_excluded_pattern = pattern_plat:find('!', 1, true)
         if excluded and is_excluded_pattern then
             matched = not ('!' .. plat):match('^' .. pattern_plat .. '$')
-            if matched then
-                return true
-            end
         elseif not is_excluded_pattern then
             matched = plat:match('^' .. pattern_plat .. '$')
         end
@@ -71,24 +69,10 @@ end
 
 -- match patterns
 function _match_patterns(patterns, plat, arch, opt)
-    local patterns_excluded = {}
     for _, pattern in ipairs(patterns) do
-        if pattern:startswith("!") then
-            table.insert(patterns_excluded, pattern)
-        else
-            if _match_pattern(pattern, plat, arch, opt) then
-                return true
-            end
-        end
-    end
-    local matched = 0
-    for _, pattern in ipairs(patterns_excluded) do
         if _match_pattern(pattern, plat, arch, opt) then
-            matched = matched + 1
+            return true
         end
-    end
-    if #patterns_excluded > 0 and #patterns_excluded == matched then
-        return true
     end
 end
 
@@ -124,7 +108,7 @@ end
 -- `!android|armeabi-v7a@!linux|!x86_64`
 -- `!linux|*`
 --
-function _match_script(pattern, opt)
+function _match_script_pattern(pattern, opt)
     opt = opt or {}
     local splitinfo = pattern:split("@", {strict = true, plain = true})
     local plat_part = splitinfo[1]
@@ -153,6 +137,44 @@ function _match_script(pattern, opt)
         if host_patterns and #host_patterns > 0 then
             return _match_patterns(host_patterns, subhost, subarch, opt)
         end
+    end
+end
+
+-- match the script expression pattern
+--
+-- e.g.
+-- !wasm|!arm* and !cross|!arm*
+-- wasm|!arm* or cross
+-- (!macosx and !iphoneos) or (!linux|!arm* and !cross|!arm*)
+--
+function _match_script(pattern, opt)
+    local idx = 0
+    local funcs = {}
+    local keywords = hashset.of("and", "or")
+    local has_logical_op = false
+    local pattern_expr = pattern:gsub("[^%(%)%s]+", function (w)
+        if keywords:has(w) then
+            has_logical_op = true
+            return
+        end
+        local name = "func_" .. idx
+        local func = function ()
+            return _match_script_pattern(w, opt)
+        end
+        funcs[name] = func
+        idx = idx + 1
+        return name .. "()"
+    end)
+    if has_logical_op then
+        local script = assert(load("return (" .. pattern_expr .. ")"), "invalid pattern: " .. pattern)
+        setfenv(script, funcs)
+        local ok, results = utils.trycall(script)
+        if not ok then
+            os.raise("invalid pattern: %s, error: %s", pattern, results or "unknown")
+        end
+        return results
+    else
+        return _match_script_pattern(pattern, opt)
     end
 end
 

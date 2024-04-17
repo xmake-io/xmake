@@ -323,7 +323,7 @@ function interpreter:_api_register_xxx_script(scope_kind, action, ...)
                 assert(type(pattern) == "string")
 
                 -- convert pattern to a lua pattern ('*' => '.*')
-                pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+                pattern = pattern:gsub("([%+%.%-%^%$%%])", "%%%1")
                 pattern = pattern:gsub("%*", "\001")
                 pattern = pattern:gsub("\001", ".*")
 
