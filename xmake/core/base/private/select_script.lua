@@ -69,24 +69,10 @@ end
 
 -- match patterns
 function _match_patterns(patterns, plat, arch, opt)
-    local patterns_excluded = {}
     for _, pattern in ipairs(patterns) do
-        if pattern:startswith("!") then
-            table.insert(patterns_excluded, pattern)
-        else
-            if _match_pattern(pattern, plat, arch, opt) then
-                return true
-            end
-        end
-    end
-    local matched = 0
-    for _, pattern in ipairs(patterns_excluded) do
         if _match_pattern(pattern, plat, arch, opt) then
-            matched = matched + 1
+            return true
         end
-    end
-    if #patterns_excluded > 0 and #patterns_excluded == matched then
-        return true
     end
 end
 
