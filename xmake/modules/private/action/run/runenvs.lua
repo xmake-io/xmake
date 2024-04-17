@@ -23,7 +23,6 @@ import("core.base.hashset")
 
 -- add search directories for all dependent shared libraries on windows
 function _make_runpath_on_windows(target)
-
     local pathenv = {}
     local searchdirs = hashset.new()
     local function insert(dir)
@@ -68,9 +67,7 @@ function _make_runpath_on_windows(target)
             end
         end
     end
-
     insert_target(target)
-
     return pathenv
 end
 
@@ -93,9 +90,6 @@ function join(addenvs, setenvs)
 end
 
 function make(target)
-
-    -- check
-    assert(target)
 
     -- add run environments
     local set = {}

@@ -830,17 +830,37 @@ function os.execv(program, argv, opt)
 
     -- uses the given environments?
     local envs = nil
-    if opt.envs then
+    local setenvs = opt.setenvs or opt.envs
+    local addenvs = opt.addenvs
+    if setenvs or addenvs then
         local envars = os.getenvs()
-        for k, v in pairs(opt.envs) do
-            if type(v) == "table" then
-                v = path.joinenv(v)
+        if setenvs then
+            for k, v in pairs(setenvs) do
+                if type(v) == "table" then
+                    v = path.joinenv(v)
+                end
+                -- we try to fix too long value before running process
+                if type(v) == "string" and #v > 4096 and os.host() == "windows" then
+                    v = os._deduplicate_pathenv(v)
+                end
+                envars[k] = v
             end
-            -- we try to fix too long value before running process
-            if type(v) == "string" and #v > 4096 and os.host() == "windows" then
-                v = os._deduplicate_pathenv(v)
+        end
+        if addenvs then
+            for k, v in pairs(addenvs) do
+                if type(v) == "table" then
+                    v = path.joinenv(v)
+                end
+                if type(v) == "string" and #v > 4096 and os.host() == "windows" then
+                    v = os._deduplicate_pathenv(v)
+                end
+                local o = envars[k]
+                if o then
+                    envars[k] = v .. path.envsep() .. o
+                else
+                    envars[k] = v
+                end
             end
-            envars[k] = v
         end
         envs = {}
         for k, v in pairs(envars) do

@@ -50,9 +50,6 @@ function _run_gdb(program, argv, opt)
     table.insert(argv, 1, program)
     table.insert(argv, 1, "--args")
 
-    -- handle envs
-    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
-
     -- run it
     os.execv(gdb, argv, table.join(opt, {exclusive = true}))
     return true
@@ -72,9 +69,6 @@ function _run_cudagdb(program, argv, opt)
     argv = argv or {}
     table.insert(argv, 1, program)
     table.insert(argv, 1, "--args")
-
-    -- handle envs
-    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     os.execv(gdb, argv, table.join(opt, {exclusive = true}))
@@ -103,9 +97,6 @@ function _run_lldb(program, argv, opt)
         table.insert(argv, 1, names[i])
     end
 
-    -- handle envs
-    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
-
     -- run it
     os.execv(names[1], argv, table.join(opt, {exclusive = true}))
     return true
@@ -123,9 +114,6 @@ function _run_windbg(program, argv, opt)
     -- patch arguments
     argv = argv or {}
     table.insert(argv, 1, program)
-
-    -- handle envs
-    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     opt.detach = true
@@ -146,9 +134,6 @@ function _run_cudamemcheck(program, argv, opt)
     argv = argv or {}
     table.insert(argv, 1, program)
 
-    -- handle envs
-    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
-
     -- run it
     os.execv(cudamemcheck, argv, opt)
     return true
@@ -166,9 +151,6 @@ function _run_x64dbg(program, argv, opt)
     -- patch arguments
     argv = argv or {}
     table.insert(argv, 1, program)
-
-    -- handle envs
-    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     opt.detach = true
@@ -189,9 +171,6 @@ function _run_ollydbg(program, argv, opt)
     argv = argv or {}
     table.insert(argv, 1, program)
 
-    -- handle envs
-    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
-
     -- run it
     opt.detach = true
     os.execv(ollydbg, argv, opt)
@@ -210,9 +189,6 @@ function _run_vsjitdebugger(program, argv, opt)
     -- patch arguments
     argv = argv or {}
     table.insert(argv, 1, program)
-
-    -- handle envs
-    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     opt.detach = true
@@ -233,9 +209,6 @@ function _run_devenv(program, argv, opt)
     argv = argv or {}
     table.insert(argv, 1, "/DebugExe")
     table.insert(argv, 2, program)
-
-    -- handle envs
-    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     opt.detach = true
@@ -332,9 +305,6 @@ function _run_gede(program, argv, opt)
     table.insert(argv, 1, "--args")
     table.insert(argv, 1, "--no-show-config")
 
-    -- handle envs
-    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
-
     -- run it
     os.execv(gede.program, argv, table.join(opt, {exclusive = true}))
     return true
@@ -354,9 +324,6 @@ function _run_seergdb(program, argv, opt)
     argv = argv or {}
     table.insert(argv, 1, program)
     table.insert(argv, 1, "--start")
-
-    -- handle envs
-    opt.envs = runenvs.join(opt.addenvs, opt.setenvs)
 
     -- run it
     os.execv(seergdb.program, argv, table.join(opt, {exclusive = true}))
