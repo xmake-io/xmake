@@ -839,10 +839,6 @@ function os.execv(program, argv, opt)
                 if type(v) == "table" then
                     v = path.joinenv(v)
                 end
-                -- we try to fix too long value before running process
-                if type(v) == "string" and #v > 4096 and os.host() == "windows" then
-                    v = os._deduplicate_pathenv(v)
-                end
                 envars[k] = v
             end
         end
@@ -851,19 +847,19 @@ function os.execv(program, argv, opt)
                 if type(v) == "table" then
                     v = path.joinenv(v)
                 end
-                if type(v) == "string" and #v > 4096 and os.host() == "windows" then
-                    v = os._deduplicate_pathenv(v)
-                end
                 local o = envars[k]
                 if o then
-                    envars[k] = v .. path.envsep() .. o
-                else
-                    envars[k] = v
+                    v = v .. path.envsep() .. o
                 end
+                envars[k] = v
             end
         end
         envs = {}
         for k, v in pairs(envars) do
+            -- we try to fix too long value before running process
+            if type(v) == "string" and #v > 4096 and os.host() == "windows" then
+                v = os._deduplicate_pathenv(v)
+            end
             table.insert(envs, k .. '=' .. v)
         end
     end
