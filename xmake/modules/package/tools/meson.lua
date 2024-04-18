@@ -210,24 +210,28 @@ function _get_configs_file(package, opt)
         if cc then
             file:print("c=['%s']", executable_path(cc))
         end
+
         local cxx = package:build_getenv("cxx")
-        -- https://github.com/xmake-io/xmake/discussions/4979
-        if cxx and package:has_tool("cxx", "clang", "gcc") then
-            local dir = path.directory(cxx)
-            local name = path.filename(cxx)
-            name = name:gsub("clang$", "clang++")
-            name = name:gsub("clang%-", "clang++-") -- clang-xx
-            name = name:gsub("clang%.", "clang++.") -- clang.exe
-            name = name:gsub("gcc$", "g++")
-            name = name:gsub("gcc%-", "g++-")
-            name = name:gsub("gcc%.", "g++.")
-            if dir and dir ~= "." then
-                cxx = path.join(dir, name)
-            else
-                cxx = name
+        if cxx then
+            -- https://github.com/xmake-io/xmake/discussions/4979
+            if package:has_tool("cxx", "clang", "gcc") then
+                local dir = path.directory(cxx)
+                local name = path.filename(cxx)
+                name = name:gsub("clang$", "clang++")
+                name = name:gsub("clang%-", "clang++-") -- clang-xx
+                name = name:gsub("clang%.", "clang++.") -- clang.exe
+                name = name:gsub("gcc$", "g++")
+                name = name:gsub("gcc%-", "g++-")
+                name = name:gsub("gcc%.", "g++.")
+                if dir and dir ~= "." then
+                    cxx = path.join(dir, name)
+                else
+                    cxx = name
+                end
             end
             file:print("cpp=['%s']", executable_path(cxx))
         end
+
         local ld = package:build_getenv("ld")
         if ld then
             file:print("ld=['%s']", executable_path(ld))
