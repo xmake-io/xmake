@@ -211,7 +211,21 @@ function _get_configs_file(package, opt)
             file:print("c=['%s']", executable_path(cc))
         end
         local cxx = package:build_getenv("cxx")
-        if cxx then
+        -- https://github.com/xmake-io/xmake/discussions/4979
+        if cxx and package:has_tool("cxx", "clang", "gcc") then
+            local dir = path.directory(cxx)
+            local name = path.filename(cxx)
+            name = name:gsub("clang$", "clang++")
+            name = name:gsub("clang%-", "clang++-") -- clang-xx
+            name = name:gsub("clang%.", "clang++.") -- clang.exe
+            name = name:gsub("gcc$", "g++")
+            name = name:gsub("gcc%-", "g++-")
+            name = name:gsub("gcc%.", "g++.")
+            if dir and dir ~= "." then
+                cxx = path.join(dir, name)
+            else
+                cxx = name
+            end
             file:print("cpp=['%s']", executable_path(cxx))
         end
         local ld = package:build_getenv("ld")
@@ -295,7 +309,7 @@ function _get_configs(package, configs, opt)
 
     -- add prefix
     configs = configs or {}
-    table.insert(configs, "--prefix=" .. package:installdir())
+    table.insert(configs, "--prefix=" .. (opt.prefix or package:installdir()))
     table.insert(configs, "--libdir=lib")
 
     -- set build type
