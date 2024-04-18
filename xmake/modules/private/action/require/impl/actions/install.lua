@@ -334,10 +334,12 @@ function _enter_package_testenvs(package)
             local platform_inst = platform.load(package:plat(), package:arch())
             toolchains = platform_inst:toolchains()
             for _, toolchain_inst in ipairs(toolchains) do
-                local runenvs = toolchain_inst:runenvs()
-                if runenvs and runenvs.PATH then
-                    local envs = {PATH = runenvs.PATH}
-                    os.addenvs(envs)
+                if toolchain_inst:check() then
+                    local runenvs = toolchain_inst:runenvs()
+                    if runenvs and runenvs.PATH then
+                        local envs = {PATH = runenvs.PATH}
+                        os.addenvs(envs)
+                    end
                 end
             end
         end
