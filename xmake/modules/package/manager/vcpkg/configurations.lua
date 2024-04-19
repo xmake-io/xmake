@@ -41,6 +41,7 @@ end
 function plat(plat)
     local plats = {
         macosx          = "osx",
+        iphoneos        = "ios",
         bsd             = "freebsd",
     }
     return plats[plat] or plat
