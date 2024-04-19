@@ -56,6 +56,9 @@ function main(requireinfo, opt)
     if configs then
         local configs_order = {}
         for k, v in pairs(configs) do
+            if type(v) == "table" then
+                v = string.serialize(v, {strip = true, indent = false, orderkeys = true})
+            end
             table.insert(configs_order, k .. "=" .. tostring(v))
         end
         table.sort(configs_order)
