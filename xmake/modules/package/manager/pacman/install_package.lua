@@ -63,7 +63,7 @@ function main(name, opt)
     end
 
     -- install package directly if the current user is root
-    if is_subhost("msys") or os.isroot() then
+    if is_host("windows") or os.isroot() then
         os.vrunv(pacman.program, argv)
     -- install with administrator permission?
     elseif sudo.has() then
