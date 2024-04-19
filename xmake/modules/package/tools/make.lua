@@ -31,14 +31,35 @@ function _translate_bin_path(bin_path)
     return bin_path
 end
 
+-- map compiler flags
+function _map_compflags(package, langkind, name, values)
+    return compiler.map_flags(langkind, name, values, {target = package})
+end
+
+-- map linker flags
+function _map_linkflags(package, targetkind, sourcekinds, name, values)
+    return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
+end
+
 -- get the build environments
 function buildenvs(package)
     local envs = {}
+    local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
+    local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
+    local asflags  = table.copy(table.wrap(package:config("asflags")))
+    local ldflags  = table.copy(table.wrap(package:config("ldflags")))
+    local shflags  = table.copy(table.wrap(package:config("shflags")))
+    local runtimes = package:runtimes()
+    if runtimes then
+        local fake_target = {is_shared = function(_) return false end, 
+                             sourcekinds = function(_) return "cxx" end}
+        table.join2(cxxflags, _map_compflags(fake_target, "cxx", "runtime", runtimes))
+        table.join2(ldflags, _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes))
+        fake_target = {is_shared = function(_) return true end, 
+                       sourcekinds = function(_) return "cxx" end}
+        table.join2(shflags, _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes))
+    end
     if package:is_plat(os.host()) then
-        local cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
-        local cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
-        local asflags  = table.copy(table.wrap(package:config("asflags")))
-        local ldflags  = table.copy(table.wrap(package:config("ldflags")))
         if package:is_plat("linux") and package:is_arch("i386") then
             table.insert(cflags,   "-m32")
             table.insert(cxxflags, "-m32")
@@ -49,9 +70,8 @@ function buildenvs(package)
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
         envs.ASFLAGS   = table.concat(asflags, ' ')
         envs.LDFLAGS   = table.concat(ldflags, ' ')
+        envs.SHFLAGS   = table.concat(shflags, ' ')
     else
-        local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
-        local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
         envs.CC        = _translate_bin_path(package:build_getenv("cc"))
         envs.CXX       = _translate_bin_path(package:build_getenv("cxx"))
         envs.AS        = _translate_bin_path(package:build_getenv("as"))
@@ -62,10 +82,10 @@ function buildenvs(package)
         envs.RANLIB    = _translate_bin_path(package:build_getenv("ranlib"))
         envs.CFLAGS    = table.concat(cflags, ' ')
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
-        envs.ASFLAGS   = table.concat(table.wrap(package:build_getenv("asflags")), ' ')
+        envs.ASFLAGS   = table.concat(asflags, ' ')
         envs.ARFLAGS   = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
-        envs.LDFLAGS   = table.concat(table.wrap(package:build_getenv("ldflags")), ' ')
-        envs.SHFLAGS   = table.concat(table.wrap(package:build_getenv("shflags")), ' ')
+        envs.LDFLAGS   = table.concat(ldflags, ' ')
+        envs.SHFLAGS   = table.concat(shflags, ' ')
     end
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}

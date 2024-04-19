@@ -304,6 +304,16 @@ function buildenvs(package, opt)
         table.join2(cxxflags, package:_generate_lto_configs("cxx").cxxflags)
         table.join2(ldflags, package:_generate_lto_configs().ldflags)
     end
+    local runtimes = package:runtimes()
+    if runtimes then
+        local fake_target = {is_shared = function(_) return false end, 
+                             sourcekinds = function(_) return "cxx" end}
+        table.join2(cxxflags, _map_compflags(fake_target, "cxx", "runtime", runtimes))
+        table.join2(ldflags, _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes))
+        fake_target = {is_shared = function(_) return true end, 
+                       sourcekinds = function(_) return "cxx" end}
+        table.join2(shflags, _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes))
+    end
     if package:config("asan") then
         table.join2(cflags, package:_generate_sanitizer_configs("address", "cc").cflags)
         table.join2(cxxflags, package:_generate_sanitizer_configs("address", "cxx").cxxflags)

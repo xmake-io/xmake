@@ -286,6 +286,18 @@ function _get_configs_file(package, opt)
         table.join2(cxxflags, _get_cflags_from_packagedeps(package, opt))
         table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
         table.join2(shflags,  _get_ldflags_from_packagedeps(package, opt))
+        -- add runtimes flags
+        for _, runtime in ipairs(package:runtimes()) do
+            if not runtime:startswith("M") then
+                local fake_target = {is_shared = function(_) return false end, 
+                                     sourcekinds = function(_) return "cxx" end}
+                table.join2(cxxflags, _map_compflags(fake_target, "cxx", "runtime", {runtime}))
+                table.join2(ldflags, _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", {runtime}))
+                fake_target = {is_shared = function(_) return true end, 
+                               sourcekinds = function(_) return "cxx" end}
+                table.join2(shflags, _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", {runtime}))
+            end
+        end
         if #cflags > 0 then
             file:print("c_args=['%s']", table.concat(cflags, "', '"))
         end
@@ -334,8 +346,8 @@ function _get_configs(package, configs, opt)
         table.insert(configs, "-Db_sanitize=address")
     end
 
-    -- add runtimes flags
-    if package:is_plat("windows") then
+    -- add vs runtimes flags
+    if package:has_runtime("MT*", "MD*") then
         if package:has_runtime("MT") then
             table.insert(configs, "-Db_vscrt=mt")
         elseif package:has_runtime("MTd") then
