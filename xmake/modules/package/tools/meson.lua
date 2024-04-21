@@ -357,6 +357,17 @@ function _get_configs(package, configs, opt)
         elseif package:has_runtime("MDd") then
             table.insert(configs, "-Db_vscrt=mdd")
         end
+    else
+        local runtime = package:config("vs_runtime")
+        if runtime == "MT" then
+            table.insert(configs, "-Db_vscrt=mt")
+        elseif runtime == "MTd" then
+            table.insert(configs, "-Db_vscrt=mtd")
+        elseif runtime == "MD" then
+            table.insert(configs, "-Db_vscrt=md")
+        elseif runtime == "MDd" then
+            table.insert(configs, "-Db_vscrt=mdd")
+        end
     end
 
     -- add cross file
