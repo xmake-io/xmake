@@ -186,7 +186,7 @@ function _get_cxxflags(package, opt)
     end
     local runtimes = package:runtimes()
     if runtimes then
-        local fake_target = {is_shared = function(_) return false end, 
+        local fake_target = {is_shared = function(_) return false end,
                              sourcekinds = function(_) return "cxx" end}
         table.join2(result, _map_compflags(fake_target, "cxx", "runtime", runtimes))
     end
@@ -239,9 +239,9 @@ function _get_ldflags(package, opt)
         table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "syslink", package:build_getenv("syslinks")))
         table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
     end
-    local runtimes = package:config("runtimes")
+    local runtimes = package:runtimes()
     if runtimes then
-        local fake_target = {is_shared = function(_) return false end, 
+        local fake_target = {is_shared = function(_) return false end,
                              sourcekinds = function(_) return "cxx" end}
         table.join2(result, _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes))
     end
@@ -271,9 +271,9 @@ function _get_shflags(package, opt)
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "syslink", package:build_getenv("syslinks")))
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
     end
-    local runtimes = package:config("runtimes")
+    local runtimes = package:runtimes()
     if runtimes then
-        local fake_target = {is_shared = function(_) return true end, 
+        local fake_target = {is_shared = function(_) return true end,
                              sourcekinds = function(_) return "cxx" end}
         table.join2(result, _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes))
     end

@@ -289,11 +289,11 @@ function _get_configs_file(package, opt)
         -- add runtimes flags
         for _, runtime in ipairs(package:runtimes()) do
             if not runtime:startswith("M") then
-                local fake_target = {is_shared = function(_) return false end, 
+                local fake_target = {is_shared = function(_) return false end,
                                      sourcekinds = function(_) return "cxx" end}
                 table.join2(cxxflags, _map_compflags(fake_target, "cxx", "runtime", {runtime}))
                 table.join2(ldflags, _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", {runtime}))
-                fake_target = {is_shared = function(_) return true end, 
+                fake_target = {is_shared = function(_) return true end,
                                sourcekinds = function(_) return "cxx" end}
                 table.join2(shflags, _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", {runtime}))
             end
@@ -347,7 +347,7 @@ function _get_configs(package, configs, opt)
     end
 
     -- add vs runtimes flags
-    if package:has_runtime("MT*", "MD*") then
+    if package:is_plat("windows") then
         if package:has_runtime("MT") then
             table.insert(configs, "-Db_vscrt=mt")
         elseif package:has_runtime("MTd") then
