@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.9.1
+
 ### New features
 
 * [#4874](https://github.com/xmake-io/xmake/pull/4874): Add Harmony SDK support
@@ -1786,6 +1788,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.9.1
 
 ### 新特性
 
