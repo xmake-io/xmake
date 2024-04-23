@@ -25,8 +25,20 @@ import("core.project.target")
 import("core.project.project")
 import("core.project.option")
 import("core.package.package")
+import("core.sandbox.sandbox")
 import("core.tool.toolchain")
 import(".showlist")
+
+function _is_callable(func)
+    if type(func) == "function" then
+        return true
+    elseif type(func) == "table" then
+        local meta = debug.getmetatable(func)
+        if meta and meta.__call then
+            return true
+        end
+    end
+end
 
 -- get project scope apis
 function project_scope_apis()
@@ -186,9 +198,63 @@ function instance_apis()
     return result
 end
 
+-- get builtin module apis
+function builtin_module_apis()
+    local builtin_modules = table.clone(sandbox.builtin_modules())
+    builtin_modules.pairs = nil
+    builtin_modules.ipairs = nil
+    local result = {}
+    for name, value in pairs(builtin_modules) do
+        if type(value) == "table" then
+            for k, v in pairs(value) do
+                if not k:startswith("_") and type(v) == "function" then
+                    table.insert(result, name .. "." .. k)
+                end
+            end
+        elseif type(value) == "function" then
+            table.insert(result, name)
+        end
+    end
+    table.insert(result, "ipairs")
+    table.insert(result, "pairs")
+    table.sort(result)
+    return result
+end
+
+-- get import module apis
+function import_module_apis()
+    local result = {}
+    local modulefiles = os.files(path.join(os.programdir(), "modules/**.lua|private/**.lua|core/tools/**.lua|detect/tools/**.lua"))
+    if modulefiles then
+        for _, modulefile in ipairs(modulefiles) do
+            local modulename = path.relative(modulefile, path.join(os.programdir(), "modules"))
+            if path.filename(modulename) == "main.lua" then
+                modulename = path.directory(modulename)
+            end
+            modulename = modulename:gsub("/", "."):gsub("%.lua", "")
+            local instance = import(modulename, {try = true, anonymous = true})
+            if _is_callable(instance) then
+                table.insert(result, modulename)
+            elseif type(instance) == "table" then
+                for k, v in pairs(instance) do
+                    print(k)
+                    if not k:startswith("_") and type(v) == "function" then
+                        table.insert(result, modulename .. "." .. k)
+                    end
+                end
+            end
+        end
+    end
+    table.sort(result)
+    return result
+end
+
 -- get all apis
 function apis()
-    return {scope = scope_apis(), instance = instance_apis()}
+    return {scope = scope_apis(),
+            instance = instance_apis(),
+            builtin_module = builtin_module_apis(),
+            import_module = import_module_apis()}
 end
 
 -- show all apis

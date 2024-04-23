@@ -90,48 +90,8 @@ end
 
 -- register api for builtin
 function sandbox._api_register_builtin(self, name, func)
-
-    -- check
     assert(self and self._PUBLIC and func)
-
-    -- register it
     self._PUBLIC[name] = func
-end
-
--- get builtin modules
-function sandbox._builtin_modules()
-    local builtin_modules = sandbox._BUILTIN_MODULES
-    if builtin_modules == nil then
-        builtin_modules = {}
-        local builtin_module_files = os.match(path.join(os.programdir(), "core/sandbox/modules/*.lua"))
-        if builtin_module_files then
-            for _, builtin_module_file in ipairs(builtin_module_files) do
-
-                -- the module name
-                local module_name = path.basename(builtin_module_file)
-                assert(module_name)
-
-                -- load script
-                local script, errors = loadfile(builtin_module_file)
-                if script then
-
-                    -- load module
-                    local ok, results = utils.trycall(script)
-                    if not ok then
-                        os.raise(results)
-                    end
-
-                    -- save module
-                    builtin_modules[module_name] = results
-                else
-                    -- error
-                    os.raise(errors)
-                end
-            end
-        end
-        sandbox._BUILTIN_MODULES = builtin_modules
-    end
-    return builtin_modules
 end
 
 -- new a sandbox instance
@@ -145,7 +105,7 @@ function sandbox._new()
 
     -- register the builtin modules
     instance:_api_register_builtin("_g", {})
-    for module_name, module in pairs(sandbox._builtin_modules()) do
+    for module_name, module in pairs(sandbox.builtin_modules()) do
         instance:_api_register_builtin(module_name, module)
     end
 
@@ -349,6 +309,35 @@ function sandbox.instance(script)
     end
     return instance
 end
+
+-- get builtin modules
+function sandbox.builtin_modules()
+    local builtin_modules = sandbox._BUILTIN_MODULES
+    if builtin_modules == nil then
+        builtin_modules = {}
+        local builtin_module_files = os.files(path.join(os.programdir(), "core/sandbox/modules/*.lua"))
+        if builtin_module_files then
+            for _, builtin_module_file in ipairs(builtin_module_files) do
+                local module_name = path.basename(builtin_module_file)
+                assert(module_name)
+
+                local script, errors = loadfile(builtin_module_file)
+                if script then
+                    local ok, results = utils.trycall(script)
+                    if not ok then
+                        os.raise(results)
+                    end
+                    builtin_modules[module_name] = results
+                else
+                    os.raise(errors)
+                end
+            end
+        end
+        sandbox._BUILTIN_MODULES = builtin_modules
+    end
+    return builtin_modules
+end
+
 
 -- return module
 return sandbox
