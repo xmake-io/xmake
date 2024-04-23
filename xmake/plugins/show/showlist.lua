@@ -40,13 +40,20 @@ function _show_text(values)
 end
 
 function _show_json(values)
-    print(json.encode(json.mark_as_array(values)))
+    print(json.encode(values))
 end
 
 function main(values)
     if option.get("json") then
         _show_json(values)
     else
-        _show_text(values)
+        if table.is_dictionary(values) then
+            for k, v in pairs(values) do
+                cprint("${bright}%s:", k)
+                _show_text(v)
+            end
+        else
+            _show_text(values)
+        end
     end
 end

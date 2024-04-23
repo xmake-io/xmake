@@ -27,14 +27,20 @@ import("core.package.package")
 import("core.tool.toolchain")
 import(".showlist")
 
--- get target apis
-function target_apis()
+-- get target scope apis
+function target_scope_apis()
     local result = {}
     for _, names in pairs(target.apis()) do
         for _, name in ipairs(names) do
             table.insert(result, name)
         end
     end
+    return result
+end
+
+-- get target instance apis
+function target_instance_apis()
+    local result = {}
     local instance = target.new()
     for k, v in pairs(instance) do
         if not k:startswith("_") and type(v) == "function" then
@@ -44,14 +50,20 @@ function target_apis()
     return result
 end
 
--- get option apis
-function option_apis()
+-- get option scope apis
+function option_scope_apis()
     local result = {}
     for _, names in pairs(option.apis()) do
         for _, name in ipairs(names) do
             table.insert(result, name)
         end
     end
+    return result
+end
+
+-- get option instance apis
+function option_instance_apis()
+    local result = {}
     local instance = option.new()
     for k, v in pairs(instance) do
         if not k:startswith("_") and type(v) == "function" then
@@ -61,14 +73,20 @@ function option_apis()
     return result
 end
 
--- get rule apis
-function rule_apis()
+-- get rule scope apis
+function rule_scope_apis()
     local result = {}
     for _, names in pairs(rule.apis()) do
         for _, name in ipairs(names) do
             table.insert(result, name)
         end
     end
+    return result
+end
+
+-- get rule instance apis
+function rule_instance_apis()
+    local result = {}
     local instance = rule.new()
     for k, v in pairs(instance) do
         if not k:startswith("_") and type(v) == "function" then
@@ -78,8 +96,9 @@ function rule_apis()
     return result
 end
 
--- get package apis
-function package_apis()
+
+-- get package scope apis
+function package_scope_apis()
     local result = {}
     for _, names in pairs(package.apis()) do
         for _, name in ipairs(names) do
@@ -89,6 +108,12 @@ function package_apis()
             table.insert(result, name)
         end
     end
+    return result
+end
+
+-- get package instance apis
+function package_instance_apis()
+    local result = {}
     local instance = package.new()
     for k, v in pairs(instance) do
         if not k:startswith("_") and type(v) == "function" then
@@ -98,14 +123,20 @@ function package_apis()
     return result
 end
 
--- get toolchain apis
-function toolchain_apis()
+-- get toolchain scope apis
+function toolchain_scope_apis()
     local result = {}
     for _, names in pairs(toolchain.apis()) do
         for _, name in ipairs(names) do
             table.insert(result, name)
         end
     end
+    return result
+end
+
+-- get toolchain instance apis
+function toolchain_instance_apis()
+    local result = {}
     local instance = toolchain.load("clang")
     for k, v in pairs(instance) do
         if not k:startswith("_") and type(v) == "function" then
@@ -115,15 +146,33 @@ function toolchain_apis()
     return result
 end
 
+-- get scope apis
+function scope_apis()
+    local result = {}
+    table.join2(result, target_scope_apis())
+    table.join2(result, option_scope_apis())
+    table.join2(result, rule_scope_apis())
+    table.join2(result, package_scope_apis())
+    table.join2(result, toolchain_scope_apis())
+    table.sort(result)
+    return result
+end
+
+-- get instance apis
+function instance_apis()
+    local result = {}
+    table.join2(result, target_instance_apis())
+    table.join2(result, option_instance_apis())
+    table.join2(result, rule_instance_apis())
+    table.join2(result, package_instance_apis())
+    table.join2(result, toolchain_instance_apis())
+    table.sort(result)
+    return result
+end
+
 -- get all apis
 function apis()
-    local result = {}
-    table.join2(result, target_apis())
-    table.join2(result, option_apis())
-    table.join2(result, rule_apis())
-    table.join2(result, package_apis())
-    table.join2(result, toolchain_apis())
-    return result
+    return {scope = scope_apis(), instance = instance_apis()}
 end
 
 -- show all apis
@@ -131,7 +180,6 @@ function main()
     config.load()
     local result = apis()
     if result then
-        table.sort(result)
         showlist(result)
     end
 end
