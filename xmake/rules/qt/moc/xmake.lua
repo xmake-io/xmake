@@ -71,7 +71,6 @@ rule("qt.moc")
         -- generate c++ source file for moc
         local flags = {}
         table.join2(flags, compiler.map_flags("cxx", "define", _get_values_from_target(target, "defines")))
-        table.join2(flags, compiler.map_flags("cxx", "runtime", _get_values_from_target(target, "runtimes")))
         local pathmaps = {
             {"includedirs", "includedir"},
             {"sysincludedirs", "includedir"}, -- for now, moc process doesn't support MSVC external includes flags and will fail
