@@ -22,10 +22,25 @@
 import("core.project.config")
 import("core.project.rule")
 import("core.project.target")
+import("core.project.project")
 import("core.project.option")
 import("core.package.package")
 import("core.tool.toolchain")
 import(".showlist")
+
+-- get project scope apis
+function project_scope_apis()
+    local result = {}
+    for _, names in pairs(project.apis()) do
+        for _, name in ipairs(names) do
+            if type(name) == "table" then
+                name = name[1]
+            end
+            table.insert(result, name)
+        end
+    end
+    return result
+end
 
 -- get target scope apis
 function target_scope_apis()
@@ -149,6 +164,7 @@ end
 -- get scope apis
 function scope_apis()
     local result = {}
+    table.join2(result, project_scope_apis())
     table.join2(result, target_scope_apis())
     table.join2(result, option_scope_apis())
     table.join2(result, rule_scope_apis())
