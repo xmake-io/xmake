@@ -25,11 +25,12 @@ task("show")
         usage = "xmake show [options] [arguments]",
         description = "Show the given project information.",
         options = {
-            {'l', "list",   "kv", nil, "Show the values list of the given name.",
+            {'l', "list",   "kv", nil,   "Show the values list of the given name.",
                 values = function (complete, opt)
                     return import("list").lists()
                 end},
-            {'t', "target", "kv", nil, "Show the information of the given target.",
+            {nil, "json",   "k",  false, "Show information with json format."},
+            {'t', "target", "kv", nil,   "Show the information of the given target.",
                 values = function (complete, opt)
                     return import("private.utils.complete_helper.targets")(complete, opt)
                 end}

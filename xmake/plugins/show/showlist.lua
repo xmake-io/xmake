@@ -21,9 +21,9 @@
 -- imports
 import("core.base.option")
 import("core.base.text")
+import("core.base.json")
 
--- show values
-function main(values)
+function _show_text(values)
     local tbl = {align = 'l', sep = "    "}
     local row = {}
     for _, value in ipairs(values) do
@@ -37,4 +37,16 @@ function main(values)
         table.insert(tbl, row)
     end
     print(text.table(tbl))
+end
+
+function _show_json(values)
+    print(json.encode(json.mark_as_array(values)))
+end
+
+function main(values)
+    if option.get("json") then
+        _show_json(values)
+    else
+        _show_text(values)
+    end
 end
