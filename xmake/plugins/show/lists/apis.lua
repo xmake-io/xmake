@@ -26,6 +26,7 @@ import("core.project.project")
 import("core.project.option")
 import("core.package.package")
 import("core.sandbox.sandbox")
+import("core.sandbox.module")
 import("core.tool.toolchain")
 import(".showlist")
 
@@ -224,22 +225,25 @@ end
 -- get import module apis
 function import_module_apis()
     local result = {}
-    local modulefiles = os.files(path.join(os.programdir(), "modules/**.lua|private/**.lua|core/tools/**.lua|detect/tools/**.lua"))
-    if modulefiles then
-        for _, modulefile in ipairs(modulefiles) do
-            local modulename = path.relative(modulefile, path.join(os.programdir(), "modules"))
-            if path.filename(modulename) == "main.lua" then
-                modulename = path.directory(modulename)
-            end
-            modulename = modulename:gsub("/", "."):gsub("%.lua", "")
-            local instance = import(modulename, {try = true, anonymous = true})
-            if _is_callable(instance) then
-                table.insert(result, modulename)
-            elseif type(instance) == "table" then
-                for k, v in pairs(instance) do
-                    print(k)
-                    if not k:startswith("_") and type(v) == "function" then
-                        table.insert(result, modulename .. "." .. k)
+    local moduledirs = module.directories()
+    for _, moduledir in ipairs(moduledirs) do
+        moduledir = path.absolute(moduledir)
+        local modulefiles = os.files(path.join(moduledir, "**.lua|private/**.lua|core/tools/**.lua|detect/tools/**.lua"))
+        if modulefiles then
+            for _, modulefile in ipairs(modulefiles) do
+                local modulename = path.relative(modulefile, moduledir)
+                if path.filename(modulename) == "main.lua" then
+                    modulename = path.directory(modulename)
+                end
+                modulename = modulename:gsub("/", "."):gsub("%.lua", "")
+                local instance = import(modulename, {try = true, anonymous = true})
+                if _is_callable(instance) then
+                    table.insert(result, modulename)
+                elseif type(instance) == "table" then
+                    for k, v in pairs(instance) do
+                        if not k:startswith("_") and type(v) == "function" then
+                            table.insert(result, modulename .. "." .. k)
+                        end
                     end
                 end
             end
