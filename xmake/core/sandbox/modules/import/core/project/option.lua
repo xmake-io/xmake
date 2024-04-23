@@ -25,10 +25,10 @@ local sandbox_core_project_option = sandbox_core_project_option or {}
 local option = require("project/option")
 local raise  = require("sandbox/modules/raise")
 
--- get the option interpreter
-function sandbox_core_project_option.interpreter()
-    return option.interpreter()
-end
+-- inherit some builtin interfaces
+sandbox_core_project_option.interpreter = option.interpreter
+sandbox_core_project_option.new         = option.new
+sandbox_core_project_option.apis        = option.apis
 
 -- return module
 return sandbox_core_project_option

@@ -28,15 +28,11 @@ local project   = require("project/project")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 
--- get the given global rule
-function sandbox_core_project_rule.rule(name)
-    return rule.rule(name)
-end
-
--- get the all global rules
-function sandbox_core_project_rule.rules()
-    return rule.rules()
-end
+-- inherit some builtin interfaces
+sandbox_core_project_rule.rule  = rule.rule
+sandbox_core_project_rule.rules = rule.rules
+sandbox_core_project_rule.new   = rule.new
+sandbox_core_project_rule.apis  = rule.apis
 
 -- return module
 return sandbox_core_project_rule

@@ -2905,5 +2905,11 @@ function package.load_from_repository(packagename, packagedir, opt)
     return instance
 end
 
+-- new a package instance
+function package.new(...)
+    return _instance.new(...)
+end
+
+
 -- return module
 return package

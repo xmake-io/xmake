@@ -127,15 +127,16 @@ end
 
 -- get the filter of the current sandbox for the given script
 function sandbox_core_sandbox.filter(script)
-
-    -- get the current sandbox instance
     local instance = sandbox.instance(script)
     if not instance then
         raise("cannot get sandbox instance!")
     end
-
-    -- get it
     return instance:filter()
+end
+
+-- get all builtin modules
+function sandbox_core_sandbox.builtin_modules()
+    return sandbox.builtin_modules()
 end
 
 -- return module

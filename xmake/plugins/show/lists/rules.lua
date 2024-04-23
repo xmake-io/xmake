@@ -23,7 +23,7 @@ import("core.project.config")
 import("core.project.rule")
 import(".showlist")
 
--- show all platforms
+-- show all rules
 function main()
     config.load()
     local rules = {}

@@ -27,6 +27,9 @@ local toolchain = require("tool/toolchain")
 local project   = require("project/project")
 local raise     = require("sandbox/modules/raise")
 
+-- inherit some builtin interfaces
+sandbox_core_tool_toolchain.apis = toolchain.apis
+
 -- get all toolchains list
 function sandbox_core_tool_toolchain.list()
     local names = table.copy(platform.toolchains())
