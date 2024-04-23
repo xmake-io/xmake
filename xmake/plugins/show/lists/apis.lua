@@ -24,6 +24,7 @@ import("core.project.rule")
 import("core.project.target")
 import("core.project.option")
 import("core.package.package")
+import("core.tool.toolchain")
 import(".showlist")
 
 -- get target apis
@@ -97,6 +98,23 @@ function package_apis()
     return result
 end
 
+-- get toolchain apis
+function toolchain_apis()
+    local result = {}
+    for _, names in pairs(toolchain.apis()) do
+        for _, name in ipairs(names) do
+            table.insert(result, name)
+        end
+    end
+    local instance = toolchain.load("clang")
+    for k, v in pairs(instance) do
+        if not k:startswith("_") and type(v) == "function" then
+            table.insert(result, "toolchain:" .. k)
+        end
+    end
+    return result
+end
+
 -- get all apis
 function apis()
     local result = {}
@@ -104,6 +122,7 @@ function apis()
     table.join2(result, option_apis())
     table.join2(result, rule_apis())
     table.join2(result, package_apis())
+    table.join2(result, toolchain_apis())
     return result
 end
 
