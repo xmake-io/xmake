@@ -89,7 +89,7 @@ end
 --
 -- @param sourcefiles   the source files
 -- @param opt           the argument options (contain all the compiler attributes of target),
---                      e.g. {target = ..., targetkind = "static", config = {cxflags = "", defines = "", includedirs = "", ...}}
+--                      e.g. {target = ..., targetkind = "static", configs = {cxflags = "", defines = "", includedirs = "", ...}}
 --
 -- @return              the flags list
 --
