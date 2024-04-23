@@ -226,8 +226,6 @@ function buildenvs(package, opt)
         cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
         asflags  = table.copy(table.wrap(package:config("asflags")))
         ldflags  = table.copy(table.wrap(package:config("ldflags")))
-        shflags  = table.copy(table.wrap(package:config("shflags")))
-        arflags  = table.copy(table.wrap(package:config("arflags")))
         if package:is_plat("linux") and package:is_arch("i386") then
             table.insert(cflags,   "-m32")
             table.insert(cxxflags, "-m32")
@@ -241,8 +239,6 @@ function buildenvs(package, opt)
         table.join2(cppflags, opt.cppflags) -- @see https://github.com/xmake-io/xmake/issues/1688
         table.join2(asflags,  opt.asflags)
         table.join2(ldflags,  opt.ldflags)
-        table.join2(shflags,  opt.shflags)
-        table.join2(arflags,  opt.arflags)
         table.join2(cflags,   _get_cflags_from_packagedeps(package, opt))
         table.join2(cxxflags, _get_cflags_from_packagedeps(package, opt))
         table.join2(cppflags, _get_cflags_from_packagedeps(package, opt))
@@ -316,7 +312,7 @@ function buildenvs(package, opt)
         table.join2(ldflags, _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes))
         fake_target = {is_shared = function(_) return true end, 
                        sourcekinds = function(_) return "cxx" end}
-        table.join2(shflags, _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes))
+        shflags = table.join2(shflags or {}, _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes))
     end
     if package:config("asan") then
         table.join2(cflags, package:_generate_sanitizer_configs("address", "cc").cflags)
