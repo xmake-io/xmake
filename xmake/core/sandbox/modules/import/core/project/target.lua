@@ -25,15 +25,11 @@ local sandbox_core_project_target = sandbox_core_project_target or {}
 local target    = require("project/target")
 local raise     = require("sandbox/modules/raise")
 
--- get the filename from the given name and kind
-function sandbox_core_project_target.filename(name, kind, opt)
-    return target.filename(name, kind, opt)
-end
-
--- get the link name of the target file
-function sandbox_core_project_target.linkname(filename, opt)
-    return target.linkname(filename, opt)
-end
+-- inherit some builtin interfaces
+sandbox_core_project_target.filename = target.filename
+sandbox_core_project_target.linkname = target.linkname
+sandbox_core_project_target.new      = target.new
+sandbox_core_project_target.apis     = target.apis
 
 -- return module
 return sandbox_core_project_target
