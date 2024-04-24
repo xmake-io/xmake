@@ -81,7 +81,7 @@ function description_package_scope_apis()
     for _, names in pairs(package.apis()) do
         for _, name in ipairs(names) do
             if type(name) == "table" then
-                name = name[1]
+                name = "package." .. name[1]
             end
             table.insert(result, name)
         end
