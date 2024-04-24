@@ -127,7 +127,7 @@ function _get_feature_string(name, opt)
     local allow_absent = opt.force and "false" or "true"
     local allow_advertise = opt.force and "false" or "true"
     local typical_default = opt.force and [[TypicalDefault="install"]] or ""
-    local directory = opt.config_dir and [[ConfigurableDirectory="INSTALLFOLDER]] or ""
+    local directory = opt.config_dir and [[ConfigurableDirectory="INSTALLFOLDER"]] or ""
     local feature = string.format([[<Feature Id="%s" Title="%s" Description="%s" Level="%d" AllowAdvertise="%s" AllowAbsent="%s" %s %s>]], name, name, description, level, allow_advertise, allow_absent, typical_default, directory)
     return feature
 end
@@ -143,7 +143,7 @@ function _build_feature(package, opt)
     local default = opt.default or package:get("default")
 
     local result = {}
-    table.insert(result, _get_feature_string(package:title(), table.join(opt, {default = default, description = package:description()})))
+    table.insert(result, _get_feature_string(opt.name or package:title(), table.join(opt, {default = default, description = package:description()})))
 
     local installcmds = batchcmds.get_installcmds(package):cmds()
     local uninstallcmds = batchcmds.get_uninstallcmds(package):cmds()
@@ -196,8 +196,11 @@ function _get_specvars(package)
     table.join2(features, _build_feature(package, {default = true, force = true}))
     table.join2(features, _add_to_path(package))
 
-    specvars.PACKAGE_CMDS = table.concat(features, "\n  ")
+    for name, component in table.orderpairs(package:components()) do
+        table.join2(features, _build_feature(component, {name = "Install " .. name}))
+    end
 
+    specvars.PACKAGE_CMDS = table.concat(features, "\n  ")
     specvars.PACKAGE_WIX_UPGRADECODE = hash.uuid(package:name())
 
     -- company cannot be empty with wix
