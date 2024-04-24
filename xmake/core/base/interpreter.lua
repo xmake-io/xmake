@@ -604,32 +604,24 @@ function interpreter:_script(script)
 end
 
 -- get builtin modules
-function interpreter._builtin_modules()
+function interpreter.builtin_modules()
     local builtin_modules = interpreter._BUILTIN_MODULES
     if builtin_modules == nil then
         builtin_modules = {}
         local builtin_module_files = os.match(path.join(os.programdir(), "core/sandbox/modules/interpreter/*.lua"))
         if builtin_module_files then
             for _, builtin_module_file in ipairs(builtin_module_files) do
-
-                -- the module name
                 local module_name = path.basename(builtin_module_file)
                 assert(module_name)
 
-                -- load script
                 local script, errors = loadfile(builtin_module_file)
                 if script then
-
-                    -- load module
                     local ok, results = utils.trycall(script)
                     if not ok then
                         os.raise(results)
                     end
-
-                    -- save module
                     builtin_modules[module_name] = results
                 else
-                    -- error
                     os.raise(errors)
                 end
             end
@@ -697,7 +689,7 @@ function interpreter.new()
     instance:api_register(nil, "interp_add_scopeapis", interpreter.api_interp_add_scopeapis)
 
     -- register the builtin modules
-    for module_name, module in pairs(interpreter._builtin_modules()) do
+    for module_name, module in pairs(interpreter.builtin_modules()) do
         instance:api_register_builtin(module_name, module)
     end
 
@@ -1949,14 +1941,8 @@ function interpreter.instance(script)
     if script then
         local scope = getfenv(script)
         if scope then
-
-            -- enable to read _INTERPRETER
             rawset(scope, "_INTERPRETER_READABLE", true)
-
-            -- attempt to get it
             instance = scope._INTERPRETER
-
-            -- disable to read _INTERPRETER
             rawset(scope, "_INTERPRETER_READABLE", nil)
         end
         if instance then return instance end
@@ -1965,27 +1951,15 @@ function interpreter.instance(script)
     -- find self instance for the current sandbox
     local level = 2
     while level < 32 do
-
-        -- get scope
         local scope = getfenv(level)
         if scope then
-
-            -- enable to read _INTERPRETER
             rawset(scope, "_INTERPRETER_READABLE", true)
-
-            -- attempt to get it
             instance = scope._INTERPRETER
-
-            -- disable to read _INTERPRETER
             rawset(scope, "_INTERPRETER_READABLE", nil)
         end
-
-        -- found?
         if instance then
             break
         end
-
-        -- next
         level = level + 1
     end
     return instance

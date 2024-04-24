@@ -18,5 +18,17 @@
 -- @file        interpreter.lua
 --
 
+-- load modules
+local interpreter = require("base/interpreter")
+
+-- define module
+local sandbox_core_base_interpreter = sandbox_core_base_interpreter or {}
+
+-- inherit some builtin interfaces
+sandbox_core_base_interpreter.instance        = interpreter.instance
+sandbox_core_base_interpreter.builtin_modules = interpreter.builtin_modules
+
 -- return module
-return require("base/interpreter")
+return sandbox_core_base_interpreter
+
+

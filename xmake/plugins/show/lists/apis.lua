@@ -28,6 +28,7 @@ import("core.package.package")
 import("core.sandbox.sandbox")
 import("core.sandbox.module")
 import("core.tool.toolchain")
+import("core.base.interpreter")
 import(".showlist")
 
 function _is_callable(func)
@@ -41,22 +42,8 @@ function _is_callable(func)
     end
 end
 
--- get project scope apis
-function project_scope_apis()
-    local result = {}
-    for _, names in pairs(project.apis()) do
-        for _, name in ipairs(names) do
-            if type(name) == "table" then
-                name = name[1]
-            end
-            table.insert(result, name)
-        end
-    end
-    return result
-end
-
--- get target scope apis
-function target_scope_apis()
+-- get target description scope apis
+function description_target_scope_apis()
     local result = {}
     for _, names in pairs(target.apis()) do
         for _, name in ipairs(names) do
@@ -66,20 +53,8 @@ function target_scope_apis()
     return result
 end
 
--- get target instance apis
-function target_instance_apis()
-    local result = {}
-    local instance = target.new()
-    for k, v in pairs(instance) do
-        if not k:startswith("_") and type(v) == "function" then
-            table.insert(result, "target:" .. k)
-        end
-    end
-    return result
-end
-
--- get option scope apis
-function option_scope_apis()
+-- get option description scope apis
+function description_option_scope_apis()
     local result = {}
     for _, names in pairs(option.apis()) do
         for _, name in ipairs(names) do
@@ -89,20 +64,8 @@ function option_scope_apis()
     return result
 end
 
--- get option instance apis
-function option_instance_apis()
-    local result = {}
-    local instance = option.new()
-    for k, v in pairs(instance) do
-        if not k:startswith("_") and type(v) == "function" then
-            table.insert(result, "option:" .. k)
-        end
-    end
-    return result
-end
-
--- get rule scope apis
-function rule_scope_apis()
+-- get rule description scope apis
+function description_rule_scope_apis()
     local result = {}
     for _, names in pairs(rule.apis()) do
         for _, name in ipairs(names) do
@@ -112,21 +75,8 @@ function rule_scope_apis()
     return result
 end
 
--- get rule instance apis
-function rule_instance_apis()
-    local result = {}
-    local instance = rule.new()
-    for k, v in pairs(instance) do
-        if not k:startswith("_") and type(v) == "function" then
-            table.insert(result, "rule:" .. k)
-        end
-    end
-    return result
-end
-
-
--- get package scope apis
-function package_scope_apis()
+-- get package description scope apis
+function description_package_scope_apis()
     local result = {}
     for _, names in pairs(package.apis()) do
         for _, name in ipairs(names) do
@@ -139,20 +89,8 @@ function package_scope_apis()
     return result
 end
 
--- get package instance apis
-function package_instance_apis()
-    local result = {}
-    local instance = package.new()
-    for k, v in pairs(instance) do
-        if not k:startswith("_") and type(v) == "function" then
-            table.insert(result, "package:" .. k)
-        end
-    end
-    return result
-end
-
--- get toolchain scope apis
-function toolchain_scope_apis()
+-- get toolchain description scope apis
+function description_toolchain_scope_apis()
     local result = {}
     for _, names in pairs(toolchain.apis()) do
         for _, name in ipairs(names) do
@@ -162,8 +100,105 @@ function toolchain_scope_apis()
     return result
 end
 
--- get toolchain instance apis
-function toolchain_instance_apis()
+-- get description scope apis
+function description_scope_apis()
+    local result = {}
+    table.join2(result, description_target_scope_apis())
+    table.join2(result, description_option_scope_apis())
+    table.join2(result, description_rule_scope_apis())
+    table.join2(result, description_package_scope_apis())
+    table.join2(result, description_toolchain_scope_apis())
+    table.sort(result)
+    return result
+end
+
+-- get description builtin apis
+function description_builtin_apis()
+    -- add builtin interpreter apis
+    local builtin_module_apis = table.clone(interpreter.builtin_modules())
+    builtin_module_apis.pairs = nil
+    builtin_module_apis.ipairs = nil
+    local result = {}
+    for name, value in pairs(builtin_module_apis) do
+        if type(value) == "function" then
+            table.insert(result, name)
+        end
+    end
+    table.insert(result, "ipairs")
+    table.insert(result, "pairs")
+    table.insert(result, "includes")
+    table.insert(result, "set_xmakever")
+
+    -- add root project apis
+    for _, names in pairs(project.apis()) do
+        for _, name in ipairs(names) do
+            if type(name) == "table" then
+                name = name[1]
+            end
+            table.insert(result, name)
+        end
+    end
+    table.sort(result)
+    return result
+end
+
+-- get description builtin module apis
+function description_builtin_module_apis()
+    local builtin_module_apis = table.clone(interpreter.builtin_modules())
+    builtin_module_apis.pairs = nil
+    builtin_module_apis.ipairs = nil
+    local result = {}
+    for name, value in pairs(builtin_module_apis) do
+        if type(value) == "table" then
+            for k, v in pairs(value) do
+                if not k:startswith("_") and type(v) == "function" then
+                    table.insert(result, name .. "." .. k)
+                end
+            end
+        end
+    end
+    table.sort(result)
+    return result
+end
+
+-- get script target instance apis
+function script_target_instance_apis()
+    local result = {}
+    local instance = target.new()
+    for k, v in pairs(instance) do
+        if not k:startswith("_") and type(v) == "function" then
+            table.insert(result, "target:" .. k)
+        end
+    end
+    return result
+end
+
+-- get script option instance apis
+function script_option_instance_apis()
+    local result = {}
+    local instance = option.new()
+    for k, v in pairs(instance) do
+        if not k:startswith("_") and type(v) == "function" then
+            table.insert(result, "option:" .. k)
+        end
+    end
+    return result
+end
+
+-- get script rule instance apis
+function script_rule_instance_apis()
+    local result = {}
+    local instance = rule.new()
+    for k, v in pairs(instance) do
+        if not k:startswith("_") and type(v) == "function" then
+            table.insert(result, "rule:" .. k)
+        end
+    end
+    return result
+end
+
+-- get script toolchain instance apis
+function script_toolchain_instance_apis()
     local result = {}
     local instance = toolchain.load("clang")
     for k, v in pairs(instance) do
@@ -174,45 +209,38 @@ function toolchain_instance_apis()
     return result
 end
 
--- get scope apis
-function scope_apis()
+-- get script package instance apis
+function script_package_instance_apis()
     local result = {}
-    table.join2(result, project_scope_apis())
-    table.join2(result, target_scope_apis())
-    table.join2(result, option_scope_apis())
-    table.join2(result, rule_scope_apis())
-    table.join2(result, package_scope_apis())
-    table.join2(result, toolchain_scope_apis())
+    local instance = package.new()
+    for k, v in pairs(instance) do
+        if not k:startswith("_") and type(v) == "function" then
+            table.insert(result, "package:" .. k)
+        end
+    end
+    return result
+end
+
+-- get script instance apis
+function script_instance_apis()
+    local result = {}
+    table.join2(result, script_target_instance_apis())
+    table.join2(result, script_option_instance_apis())
+    table.join2(result, script_rule_instance_apis())
+    table.join2(result, script_package_instance_apis())
+    table.join2(result, script_toolchain_instance_apis())
     table.sort(result)
     return result
 end
 
--- get instance apis
-function instance_apis()
+-- get script builtin apis
+function script_builtin_apis()
+    local builtin_module_apis = table.clone(sandbox.builtin_modules())
+    builtin_module_apis.pairs = nil
+    builtin_module_apis.ipairs = nil
     local result = {}
-    table.join2(result, target_instance_apis())
-    table.join2(result, option_instance_apis())
-    table.join2(result, rule_instance_apis())
-    table.join2(result, package_instance_apis())
-    table.join2(result, toolchain_instance_apis())
-    table.sort(result)
-    return result
-end
-
--- get builtin module apis
-function builtin_module_apis()
-    local builtin_modules = table.clone(sandbox.builtin_modules())
-    builtin_modules.pairs = nil
-    builtin_modules.ipairs = nil
-    local result = {}
-    for name, value in pairs(builtin_modules) do
-        if type(value) == "table" then
-            for k, v in pairs(value) do
-                if not k:startswith("_") and type(v) == "function" then
-                    table.insert(result, name .. "." .. k)
-                end
-            end
-        elseif type(value) == "function" then
+    for name, value in pairs(builtin_module_apis) do
+        if type(value) == "function" then
             table.insert(result, name)
         end
     end
@@ -222,8 +250,27 @@ function builtin_module_apis()
     return result
 end
 
--- get import module apis
-function import_module_apis()
+-- get script builtin module apis
+function script_builtin_module_apis()
+    local builtin_module_apis = table.clone(sandbox.builtin_modules())
+    builtin_module_apis.pairs = nil
+    builtin_module_apis.ipairs = nil
+    local result = {}
+    for name, value in pairs(builtin_module_apis) do
+        if type(value) == "table" then
+            for k, v in pairs(value) do
+                if not k:startswith("_") and type(v) == "function" then
+                    table.insert(result, name .. "." .. k)
+                end
+            end
+        end
+    end
+    table.sort(result)
+    return result
+end
+
+-- get script extension modules
+function script_extension_module_apis()
     local result = {}
     local moduledirs = module.directories()
     for _, moduledir in ipairs(moduledirs) do
@@ -254,11 +301,26 @@ function import_module_apis()
 end
 
 -- get all apis
+--
+-- the api kind:
+--  - description
+--    - builtin api
+--    - builtin module api
+--    - scope api
+--  - script
+--    - builtin api
+--    - builtin module api
+--    - extension module api
+--    - instance api
 function apis()
-    return {scope = scope_apis(),
-            instance = instance_apis(),
-            builtin_module = builtin_module_apis(),
-            import_module = import_module_apis()}
+    return {description_scope_apis = description_scope_apis(),
+            description_builtin_apis = description_builtin_apis(),
+            description_builtin_module_apis = description_builtin_module_apis(),
+            script_builtin_apis = script_builtin_apis(),
+            script_builtin_module_apis = script_builtin_module_apis(),
+            script_extension_module_apis = script_extension_module_apis(),
+            script_instance_apis = script_instance_apis()
+        }
 end
 
 -- show all apis
