@@ -228,7 +228,7 @@ function import_module_apis()
     local moduledirs = module.directories()
     for _, moduledir in ipairs(moduledirs) do
         moduledir = path.absolute(moduledir)
-        local modulefiles = os.files(path.join(moduledir, "**.lua|private/**.lua|core/tools/**.lua|detect/tools/**.lua"))
+        local modulefiles = os.files(path.join(moduledir, "**.lua|xmake.lua|private/**.lua|core/tools/**.lua|detect/tools/**.lua"))
         if modulefiles then
             for _, modulefile in ipairs(modulefiles) do
                 local modulename = path.relative(modulefile, moduledir)
