@@ -381,7 +381,7 @@ function main(package)
             else
 
                 -- build and install package to the install directory
-                local force_reinstall = package:data("force_reinstall") or option.get("force")
+                local force_reinstall = package:policy("package.install_always") or package:data("force_reinstall") or option.get("force")
                 if force_reinstall or not package:manifest_load() then
 
                     -- clear install directory
