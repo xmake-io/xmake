@@ -310,11 +310,11 @@ function buildenvs(package, opt)
     end
     local runtimes = package:runtimes()
     if runtimes then
-        local fake_target = {is_shared = function(_) return false end, 
+        local fake_target = {is_shared = function(_) return false end,
                              sourcekinds = function(_) return "cxx" end}
         table.join2(cxxflags, _map_compflags(fake_target, "cxx", "runtime", runtimes))
         table.join2(ldflags, _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes))
-        fake_target = {is_shared = function(_) return true end, 
+        fake_target = {is_shared = function(_) return true end,
                        sourcekinds = function(_) return "cxx" end}
         table.join2(shflags, _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes))
     end
