@@ -145,10 +145,12 @@ function check_flag(target, toolinst, flagkind, flag)
     local extraconf = target:extraconf(flagkind)
     flag = target_utils.flag_belong_to_tool(target, flag, toolinst, extraconf)
     if flag then
-        return toolinst:has_flags(flag)
-    else
-        return true
+        extraconf = extraconf and extraconf[flag]
+        if not extraconf or not extraconf.force then
+            return toolinst:has_flags(flag)
+        end
     end
+    return true
 end
 
 -- check api configuration in targets
