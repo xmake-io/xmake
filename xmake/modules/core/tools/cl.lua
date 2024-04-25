@@ -177,9 +177,9 @@ function nf_optimize(self, level)
     {
         none        = "-Od"
     ,   faster      = "-Ox"
-    ,   fastest     = "-O2 -fp:fast"
+    ,   fastest     = "-O2"
     ,   smallest    = "-O1 -GL" -- /GL and (/OPT:REF is on by default in linker), we need to enable /ltcg
-    ,   aggressive  = "-O2 -fp:fast"
+    ,   aggressive  = "-O2"
     }
     return maps[level]
 end

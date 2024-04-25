@@ -105,7 +105,7 @@ function nf_optimize(self, level)
     ,   faster      = "-Ox"
     ,   fastest     = "-O2"
     ,   smallest    = "-O1"
-    ,   aggressive  = "-O2 -fp:fast"
+    ,   aggressive  = "-O2"
     }
     return maps[level]
 end
