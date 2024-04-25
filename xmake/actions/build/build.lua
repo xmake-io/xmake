@@ -207,7 +207,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
 end
 
 -- add batch jobs for the given target and deps
-function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target)
+function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target, before_job_refs)
     local targetjob_ref = jobrefs[target:name()]
     if targetjob_ref then
         batchjobs:add(targetjob_ref, rootjob)
@@ -215,6 +215,7 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target)
         local job_build_before, job_build, job_build_after = _add_batchjobs_for_target(batchjobs, rootjob, target)
         if job_build_before and job_build and job_build_after then
             jobrefs[target:name()] = job_build_after
+            before_job_refs[target:name()] = job_build_before
             for _, depname in ipairs(target:get("deps")) do
                 local dep = project.target(depname)
                 local targetjob = job_build
@@ -222,7 +223,7 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target)
                 if dep:policy("build.across_targets_in_parallel") == false then
                     targetjob = job_build_before
                 end
-                _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs, dep)
+                _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs, dep, before_job_refs)
             end
         end
     end
@@ -274,10 +275,35 @@ function get_batchjobs(targetnames, group_pattern)
 
     -- generate batch jobs for default or all targets
     local jobrefs = {}
+    local before_job_refs = {}
     local batchjobs = jobpool.new()
     for _, target in pairs(targets_root) do
-        _add_batchjobs_for_target_and_deps(batchjobs, batchjobs:rootjob(), jobrefs, target)
+        _add_batchjobs_for_target_and_deps(batchjobs, batchjobs:rootjob(), jobrefs, target, before_job_refs)
     end
+
+    -- add fence
+    for _, target in pairs(project.targets()) do
+        local target_before_job = before_job_refs[target:name()]
+
+        if target_before_job then
+            -- collect fence
+            local fences = {}
+            for _, dep in ipairs(target:orderdeps()) do
+                if dep:policy("build.fence") == true then
+                    fence_job = jobrefs[dep:name()]
+                    table.insert(fences, fence_job)
+                end
+            end
+
+            -- add fence
+            if #fences > 0 then
+                for _, fence_job in ipairs(fences) do
+                    batchjobs:add(fence_job, target_before_job)
+                end
+            end
+        end
+    end
+
     return batchjobs
 end
 
