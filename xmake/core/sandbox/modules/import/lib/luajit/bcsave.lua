@@ -44,4 +44,7 @@ function main(luafile, bcfile, opt)
         raise(errors)
     end
 end
-return main
+
+if xmake._LUAJIT then
+    return main
+end

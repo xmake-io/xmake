@@ -18,5 +18,6 @@
 -- @file        jit.lua
 --
 
--- return module
-return require("jit")
+if xmake._LUAJIT then
+    return require("jit")
+end

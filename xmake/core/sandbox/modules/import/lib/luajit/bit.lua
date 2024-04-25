@@ -18,5 +18,6 @@
 -- @file        bit.lua
 --
 
--- return module
-return require("bit")
+if xmake._LUAJIT then
+    return require("bit")
+end

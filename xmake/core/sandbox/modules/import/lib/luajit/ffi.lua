@@ -18,5 +18,6 @@
 -- @file        ffi.lua
 --
 
--- return module
-return require("ffi")
+if xmake._LUAJIT then
+    return require("ffi")
+end

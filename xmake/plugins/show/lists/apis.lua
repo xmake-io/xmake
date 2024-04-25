@@ -284,12 +284,14 @@ function script_extension_module_apis()
                 end
                 modulename = modulename:gsub("/", "."):gsub("%.lua", "")
                 local instance = import(modulename, {try = true, anonymous = true})
-                if _is_callable(instance) then
-                    table.insert(result, modulename)
-                elseif type(instance) == "table" then
-                    for k, v in pairs(instance) do
-                        if not k:startswith("_") and type(v) == "function" then
-                            table.insert(result, modulename .. "." .. k)
+                if instance then
+                    if _is_callable(instance) then
+                        table.insert(result, modulename)
+                    elseif type(instance) == "table" then
+                        for k, v in pairs(instance) do
+                            if not k:startswith("_") and type(v) == "function" then
+                                table.insert(result, modulename .. "." .. k)
+                            end
                         end
                     end
                 end
