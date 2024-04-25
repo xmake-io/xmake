@@ -207,7 +207,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
 end
 
 -- add batch jobs for the given target and deps
-function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target, before_job_refs)
+function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, target, jobrefs, jobrefs_before)
     local targetjob_ref = jobrefs[target:name()]
     if targetjob_ref then
         batchjobs:add(targetjob_ref, rootjob)
@@ -215,7 +215,7 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target,
         local job_build_before, job_build, job_build_after = _add_batchjobs_for_target(batchjobs, rootjob, target)
         if job_build_before and job_build and job_build_after then
             jobrefs[target:name()] = job_build_after
-            before_job_refs[target:name()] = job_build_before
+            jobrefs_before[target:name()] = job_build_before
             for _, depname in ipairs(target:get("deps")) do
                 local dep = project.target(depname)
                 local targetjob = job_build
@@ -223,7 +223,7 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target,
                 if dep:policy("build.across_targets_in_parallel") == false then
                     targetjob = job_build_before
                 end
-                _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs, dep, before_job_refs)
+                _add_batchjobs_for_target_and_deps(batchjobs, targetjob, dep, jobrefs, jobrefs_before)
             end
         end
     end
@@ -252,7 +252,7 @@ function get_batchjobs(targetnames, group_pattern)
     else
         local depset = hashset.new()
         local targets = {}
-        for _, target in pairs(project.targets()) do
+        for _, target in ipairs(project.ordertargets()) do
             if target:is_enabled() then
                 local group = target:get("group")
                 if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
@@ -263,7 +263,7 @@ function get_batchjobs(targetnames, group_pattern)
                 end
             end
         end
-        for _, target in pairs(targets) do
+        for _, target in ipairs(targets) do
             if not depset:has(target:name()) then
                 table.insert(targets_root, target)
             end
@@ -275,30 +275,22 @@ function get_batchjobs(targetnames, group_pattern)
 
     -- generate batch jobs for default or all targets
     local jobrefs = {}
-    local before_job_refs = {}
+    local jobrefs_before = {}
     local batchjobs = jobpool.new()
-    for _, target in pairs(targets_root) do
-        _add_batchjobs_for_target_and_deps(batchjobs, batchjobs:rootjob(), jobrefs, target, before_job_refs)
+    for _, target in ipairs(targets_root) do
+        _add_batchjobs_for_target_and_deps(batchjobs, batchjobs:rootjob(), target, jobrefs, jobrefs_before)
     end
 
-    -- add fence
-    for _, target in pairs(project.targets()) do
-        local target_before_job = before_job_refs[target:name()]
-
-        if target_before_job then
-            -- collect fence
-            local fences = {}
+    -- add fence jobs, @see https://github.com/xmake-io/xmake/issues/5003
+    for _, target in ipairs(project.ordertargets()) do
+        local target_job_before = jobrefs_before[target:name()]
+        if target_job_before then
             for _, dep in ipairs(target:orderdeps()) do
-                if dep:policy("build.fence") == true then
-                    fence_job = jobrefs[dep:name()]
-                    table.insert(fences, fence_job)
-                end
-            end
-
-            -- add fence
-            if #fences > 0 then
-                for _, fence_job in ipairs(fences) do
-                    batchjobs:add(fence_job, target_before_job)
+                if dep:policy("build.fence") then
+                    local fence_job = jobrefs[dep:name()]
+                    if fence_job then
+                        batchjobs:add(fence_job, target_job_before)
+                    end
                 end
             end
         end
@@ -329,4 +321,3 @@ function main(targetnames, group_pattern)
         os.cd(curdir)
     end
 end
-
