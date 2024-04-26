@@ -5,6 +5,7 @@
 ### New features
 
 * [#5005](https://github.com/xmake-io/xmake/pull/5005): Show all apis
+* [#5003](https://github.com/xmake-io/xmake/issues/5003): Add build.fence policy
 
 ## v2.9.1
 
@@ -1796,6 +1797,7 @@
 ### 新特性
 
 * [#5005](https://github.com/xmake-io/xmake/pull/5005): 显示所有 API
+* [#5003](https://github.com/xmake-io/xmake/issues/5003): 添加 build.fence 策略
 
 ## v2.9.1
 
