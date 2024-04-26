@@ -24,6 +24,7 @@ target("autogen")
     set_arch(os.arch())
     add_files("src/autogen.cpp")
     set_languages("c++11")
+    set_policy("build.fence", true)
 
 target("test")
     set_kind("binary")
@@ -31,5 +32,4 @@ target("test")
     add_rules("autogen")
     add_files("src/main.cpp")
     add_files("src/*.in")
-    set_policy("build.across_targets_in_parallel", false)
 

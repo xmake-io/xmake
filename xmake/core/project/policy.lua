@@ -40,6 +40,8 @@ function policy.policies()
             ["check.auto_map_flags"]              = {description = "Enable map gcc flags to the current compiler and linker automatically.", default = true, type = "boolean"},
             -- We will check the compatibility of target and package licenses
             ["check.target_package_licenses"]     = {description = "Enable check the compatibility of target and package licenses.", default = true, type = "boolean"},
+            -- Provide a way to block all targets build that depends on self
+            ["build.fence"]                       = {description = "Block all targets build that depends on self.", default = false, type = "boolean"},
             -- We can compile the source files for each target in parallel
             ["build.across_targets_in_parallel"]  = {description = "Enable compile the source files for each target in parallel.", default = true, type = "boolean"},
             -- Merge archive intead of linking for all dependent targets
