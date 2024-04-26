@@ -282,7 +282,7 @@ function script_extension_module_apis()
                 if path.filename(modulename) == "main.lua" then
                     modulename = path.directory(modulename)
                 end
-                modulename = modulename:gsub("/", "."):gsub("%.lua", "")
+                modulename = modulename:gsub("[\\/]", "."):gsub("%.lua", "")
                 local instance = import(modulename, {try = true, anonymous = true})
                 if instance then
                     if _is_callable(instance) then
