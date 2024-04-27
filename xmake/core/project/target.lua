@@ -2833,6 +2833,7 @@ end
 
 -- get the link name of the target file
 function target.linkname(filename, opt)
+    print(filename, opt)
     -- for implib/mingw, e.g. libxxx.dll.a
     opt = opt or {}
     if filename:startswith("lib") and filename:endswith(".dll.a") then
@@ -2850,6 +2851,11 @@ function target.linkname(filename, opt)
     if count == 0 and opt.plat == "mingw" then
         linkname, count = filename:gsub(target.filename("__pattern__", "static", {plat = "windows"}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
     end
+    -- for custom shared libraries name, xxx.so, xxx.dylib
+    if filename:endswith(".so") or filename:endswith(".dylib") then
+        return filename;
+    end
+
     return count > 0 and linkname or nil
 end
 
