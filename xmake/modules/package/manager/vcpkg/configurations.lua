@@ -56,6 +56,14 @@ function triplet(configs, plat, arch)
         if configs.runtimes and configs.runtimes:startswith("MD") then
             triplet = triplet .. "-md"
         end
+    elseif plat == "linux" then
+        if (arch == "x64" or arch == "x86") and configs.shared == true then
+            triplet = triplet .. "-dynamic"
+        end
+    elseif plat == "macosx" then
+        if arch == "x64" and configs.shared == true then
+            triplet = triplet .. "-dynamic"
+        end
     elseif plat == "mingw" then
         triplet = triplet .. (configs.shared ~= true and "-static" or "-dynamic")
     end
