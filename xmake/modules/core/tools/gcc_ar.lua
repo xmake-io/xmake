@@ -15,11 +15,8 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        gcc_ar.lua
 --
 
-toolchain("cross")
-    set_description("Common cross compilation toolchain")
-    set_kind("cross")
-    on_check("check")
-    on_load("load")
+inherit("ar")
+

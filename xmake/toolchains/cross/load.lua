@@ -41,7 +41,8 @@ function main(toolchain)
     toolchain:add("toolset", "as", cross .. "gcc", cross .. "clang")
     toolchain:add("toolset", "ld", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
     toolchain:add("toolset", "sh", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
-    toolchain:add("toolset", "ar", cross .. "ar")
+    -- old gcc need gcc-ar for lto, @see https://github.com/xmake-io/xmake/issues/5015
+    toolchain:add("toolset", "gcc-ar", cross .. "gcc-ar", "ar", cross .. "ar")
     toolchain:add("toolset", "ranlib", cross .. "ranlib")
     toolchain:add("toolset", "strip", cross .. "strip")
 
