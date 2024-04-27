@@ -57,11 +57,11 @@ function triplet(configs, plat, arch)
             triplet = triplet .. "-md"
         end
     elseif plat == "linux" then
-        if (arch == "x64" or arch == "x86") and configs.shared == true then
+        if (arch == "x64" or arch == "x86") and configs.shared then
             triplet = triplet .. "-dynamic"
         end
     elseif plat == "macosx" then
-        if arch == "x64" and configs.shared == true then
+        if arch == "x64" and configs.shared then
             triplet = triplet .. "-dynamic"
         end
     elseif plat == "mingw" then
