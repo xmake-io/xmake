@@ -42,8 +42,8 @@ function main(toolchain)
     toolchain:add("toolset", "ld", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
     toolchain:add("toolset", "sh", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
     -- old gcc need gcc-ar for lto, @see https://github.com/xmake-io/xmake/issues/5015
-    toolchain:add("toolset", "gcc-ar", cross .. "gcc-ar", "ar", cross .. "ar")
-    toolchain:add("toolset", "gcc-ranlib", cross .. "gcc-ranlib", "ranlib", cross .. "ranlib")
+    toolchain:add("toolset", "ar", "gcc-ar", cross .. "gcc-ar", "ar", cross .. "ar")
+    toolchain:add("toolset", "ranlib", "gcc-ranlib", cross .. "gcc-ranlib", "ranlib", cross .. "ranlib")
     toolchain:add("toolset", "strip", cross .. "strip")
 
     -- add bin search library for loading some dependent .dll files windows
