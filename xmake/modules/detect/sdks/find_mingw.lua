@@ -20,6 +20,7 @@
 
 -- imports
 import("lib.detect.find_path")
+import("lib.detect.find_directory")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
@@ -37,7 +38,7 @@ function _find_mingwdir(sdkdir)
             sdkdir = "/usr/local/opt/mingw-w64"
             cprint("_find_mingwdir #2 %s", sdkdir)
         elseif is_host("macosx") and os.isdir("/opt/homebrew/Cellar/mingw-w64") then
-            sdkdir = string.sub(find_path("bin", "/opt/homebrew/Cellar/mingw-w64"), 1, -5)
+            sdkdir = string.sub(find_directory("bin", "/opt/homebrew/Cellar/mingw-w64"), 1, -5)
             cprint("_find_mingwdir #2 %s", sdkdir)    
         elseif is_host("linux") then
             sdkdir = "/usr"
