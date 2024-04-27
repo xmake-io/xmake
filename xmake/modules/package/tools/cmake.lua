@@ -723,43 +723,8 @@ function _get_configs_for_install(package, configs, opt)
     end
 end
 
--- get configs
-function _get_configs(package, configs, opt)
-    configs = configs or {}
-    opt._configs_str = string.serialize(configs, {indent = false, strip = true})
-    _get_configs_for_install(package, configs, opt)
-    _get_configs_for_generator(package, configs, opt)
-    if package:is_plat("windows") then
-        _get_configs_for_windows(package, configs, opt)
-    elseif package:is_plat("android") then
-        _get_configs_for_android(package, configs, opt)
-    elseif package:is_plat("iphoneos", "watchos") or
-        -- for cross-compilation on macOS, @see https://github.com/xmake-io/xmake/issues/2804
-        (package:is_plat("macosx") and (get_config("appledev") or not package:is_arch(os.subarch()))) then
-        _get_configs_for_appleos(package, configs, opt)
-    elseif package:is_plat("mingw") then
-        _get_configs_for_mingw(package, configs, opt)
-    elseif package:is_plat("wasm") then
-        _get_configs_for_wasm(package, configs, opt)
-    elseif package:is_cross() then
-        _get_configs_for_cross(package, configs, opt)
-    elseif package:config("toolchains") then
-        -- we still need find system libraries,
-        -- it just pass toolchain environments if the toolchain is compatible with host
-        if _is_toolchain_compatible_with_host(package) then
-            _get_configs_for_host_toolchain(package, configs, opt)
-        else
-            _get_configs_for_cross(package, configs, opt)
-        end
-    else
-        _get_configs_for_generic(package, configs, opt)
-    end
-    _get_configs_for_default_flags(package, configs, opt)
-    return configs
-end
-
 function _get_default_flags(package, configs, buildtype, opt)
-    local cmake_default_flags = _g.cmake_default_flags
+    local cmake_default_flags = _g.cmake_default_flags and _g.cmake_default_flags[buildtype]
     if not cmake_default_flags then
         local tmpdir = path.join(os.tmpdir(), package:name(), package:mode())
         local dummy_cmakelist = path.join(tmpdir, "CMakeLists.txt")
@@ -797,58 +762,99 @@ function _get_default_flags(package, configs, buildtype, opt)
         cmake_default_flags.arflags = outdata:match("CMAKE_STATIC_LINKER_FLAGS is (.-)\n"):split(" ")
         table.join2(cmake_default_flags.arflags, outdata:match(format("CMAKE_STATIC_LINKER_FLAGS_%s is (.-)\n", buildtype)):split(" "))
 
-        cmake_default_flags.cflags = table.unique(cmake_default_flags.cflags)
-        cmake_default_flags.cxxflags = table.unique(cmake_default_flags.cxxflags)
-        cmake_default_flags.ldflags = table.unique(cmake_default_flags.ldflags)
-        cmake_default_flags.shflags = table.unique(cmake_default_flags.shflags)
-        cmake_default_flags.arflags = table.unique(cmake_default_flags.arflags)
-        
-        _g.cmake_default_flags = cmake_default_flags
+        _g.cmake_default_flags = _g.cmake_default_flags or {}
+        _g.cmake_default_flags[buildtype] = cmake_default_flags
     end
     return cmake_default_flags
 end
 
-function _get_configs_for_default_flags(package, configs, opt)
+function _get_cmake_buildtype(package)
     local cmake_buildtype_map = {
         debug = "DEBUG",
         release = "RELEASE",
         releasedbg = "RELWITHDEBINFO"
     }
     local buildtype = package:mode()
-    if not buildtype:startswith("release") and buildtype ~= "debug" then
-        buildtype = "release"
-    end
-    buildtype = cmake_buildtype_map[buildtype]
+    return cmake_buildtype_map[buildtype] or "RELEASE"
+end
 
+function _get_envs_for_default_flags(package, configs, opt)
+    local buildtype = _get_cmake_buildtype(package)
+    local envs = {}
+    local default_flags = _get_default_flags(package, configs, buildtype, opt)
+    if default_flags then
+        envs[format("CMAKE_CXX_FLAGS_%s", buildtype)]           = (not opt.cxxflags and not opt.cxflags) and default_flags.cxxflags
+        envs[format("CMAKE_C_FLAGS_%s", buildtype)]             = (not opt.cflags and not opt.cxflags) and default_flags.cflags
+        envs[format("CMAKE_EXE_LINKER_FLAGS_%s", buildtype)]    = not opt.ldflags and default_flags.ldflags
+        envs[format("CMAKE_STATIC_LINKER_FLAGS_%s", buildtype)] = not opt.arflags and default_flags.arflags
+        envs[format("CMAKE_SHARED_LINKER_FLAGS_%s", buildtype)] = not opt.shflags and default_flags.shflags
+    end
+    return envs
+end
+
+function _get_envs_for_runtime_flags(package, configs, opt)
+    local buildtype = _get_cmake_buildtype(package)
+    local envs = {}
     local runtimes = package:runtimes()
-    local cxx_runtimeflags
-    local c_runtimeflags
-    local ld_runtimeflags
-    local sh_runtimeflags
-    local ar_runtimeflags
     if runtimes then
         local fake_target = {is_shared = function(_) return false end,
-                             sourcekinds = function(_) return "cxx" end}
-         c_runtimeflags = _map_compflags(fake_target, "c", "runtime", runtimes)
-         fake_target.sourcekinds = function(_) return "cxx" end
-         cxx_runtimeflags = _map_compflags(fake_target, "cxx", "runtime", runtimes)
-         ld_runtimeflags = _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes)
-         ar_runtimeflags = _map_linkflags(fake_target, "static", {"cxx"}, "runtime", runtimes)
-         fake_target.is_shared = function(_) return true end
-         sh_runtimeflags = _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes)
+                             sourcekinds = function(_) return "c" end}
+        envs[format("CMAKE_C_FLAGS_%s", buildtype)]             = _map_compflags(fake_target, "c", "runtime", runtimes)
+        fake_target.sourcekinds = function(_) return "cxx" end
+        envs[format("CMAKE_CXX_FLAGS_%s", buildtype)]           = _map_compflags(fake_target, "cxx", "runtime", runtimes)
+        envs[format("CMAKE_EXE_LINKER_FLAGS_%s", buildtype)]    = _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes)
+        envs[format("CMAKE_STATIC_LINKER_FLAGS_%s", buildtype)] = _map_linkflags(fake_target, "static", {"cxx"}, "runtime", runtimes)
+        fake_target.is_shared = function(_) return true end
+        envs[format("CMAKE_SHARED_LINKER_FLAGS_%s", buildtype)] = _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes)
     end
-    local default_flags = _get_default_flags(package, configs, buildtype, opt)
-    local cxx_init_flags = (opt.cxxflags or opt.cxflags) and (cxx_runtimeflags or {}) or table.join(default_flags.cxxflags, cxx_runtimeflags or {})
-    local c_init_flags = (opt.cflags or opt.cxflags) and (c_runtimeflags or {}) or table.join(default_flags.cflags, c_runtimeflags or {})
-    local ld_init_flags = (opt.ldflags) and (ld_runtimeflags or {}) or table.join(default_flags.ldflags, ld_runtimeflags or {})
-    local ar_init_flags = (opt.arflags) and (ar_runtimeflags or {}) or table.join(default_flags.arflags, ar_runtimeflags or {})
-    local sh_init_flags = (opt.shflags) and (sh_runtimeflags or {}) or table.join(default_flags.shflags, sh_runtimeflags or {})
-
-    table.insert(configs, format("-DCMAKE_CXX_FLAGS_%s=", buildtype) .. table.concat(cxx_init_flags, " "))
-    table.insert(configs, format("-DCMAKE_C_FLAGS_%s=", buildtype) .. table.concat(c_init_flags, " "))
-    table.insert(configs, format("-DCMAKE_EXE_LINKER_FLAGS_%s=", buildtype) .. table.concat(ld_init_flags, " "))
-    table.insert(configs, format("-DCMAKE_STATIC_LINKER_FLAGS_%s=", buildtype) .. table.concat(ar_init_flags, " "))
-    table.insert(configs, format("-DCMAKE_SHARED_LINKER_FLAGS_%s=", buildtype) .. table.concat(sh_init_flags, " "))
+    return envs
+end
+-- get configs
+function _get_configs(package, configs, opt)
+    configs = configs or {}
+    opt._configs_str = string.serialize(configs, {indent = false, strip = true})
+    _get_configs_for_install(package, configs, opt)
+    _get_configs_for_generator(package, configs, opt)
+    if package:is_plat("windows") then
+        _get_configs_for_windows(package, configs, opt)
+    elseif package:is_plat("android") then
+        _get_configs_for_android(package, configs, opt)
+    elseif package:is_plat("iphoneos", "watchos") or
+        -- for cross-compilation on macOS, @see https://github.com/xmake-io/xmake/issues/2804
+        (package:is_plat("macosx") and (get_config("appledev") or not package:is_arch(os.subarch()))) then
+        _get_configs_for_appleos(package, configs, opt)
+    elseif package:is_plat("mingw") then
+        _get_configs_for_mingw(package, configs, opt)
+    elseif package:is_plat("wasm") then
+        _get_configs_for_wasm(package, configs, opt)
+    elseif package:is_cross() then
+        _get_configs_for_cross(package, configs, opt)
+    elseif package:config("toolchains") then
+        -- we still need find system libraries,
+        -- it just pass toolchain environments if the toolchain is compatible with host
+        if _is_toolchain_compatible_with_host(package) then
+            _get_configs_for_host_toolchain(package, configs, opt)
+        else
+            _get_configs_for_cross(package, configs, opt)
+        end
+    else
+        _get_configs_for_generic(package, configs, opt)
+    end
+    local envs = _get_envs_for_default_flags(package, configs, opt)
+    local runtime_envs = _get_envs_for_runtime_flags(package, configs, opt)
+    if runtime_envs then
+        envs = envs or {}
+        for name, value in pairs(runtime_envs) do
+            envs[name] = table.join(envs[name], value)
+        end
+    end
+    if envs then
+        for name, value in pairs(envs) do
+            envs[name] = table.concat(table.unique(value), " ")
+        end
+    end
+    _insert_configs_from_envs(configs, envs or {}, opt)
+    return configs
 end
 
 -- get build environments
