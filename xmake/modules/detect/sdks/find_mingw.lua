@@ -28,6 +28,7 @@ import("detect.sdks.find_cross_toolchain")
 
 -- find mingw directory
 function _find_mingwdir(sdkdir)
+
     -- get mingw directory
     if not sdkdir then
         if is_host("macosx", "linux") and os.isdir("/opt/llvm-mingw") then
