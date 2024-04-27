@@ -23,6 +23,10 @@ local io        = require("base/io")
 local string    = require("base/string")
 local raise     = require("sandbox/modules/raise")
 
+if not xmake._LUAJIT then
+    return
+end
+
 -- save lua file to bitcode file
 --
 -- @param luafile       the lua file
@@ -45,6 +49,4 @@ function main(luafile, bcfile, opt)
     end
 end
 
-if xmake._LUAJIT then
-    return main
-end
+return main
