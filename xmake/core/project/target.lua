@@ -2850,13 +2850,13 @@ function target.linkname(filename, opt)
     if count == 0 and opt.plat == "mingw" then
         linkname, count = filename:gsub(target.filename("__pattern__", "static", {plat = "windows"}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
     end
-    -- for custom shared libraries name, xxx.so, xxx.dylib
-    if count == 0 and not filename:startswith("lib") then
-        count = count + 1
-        linkname = filename
+    if count > 0 and linkname then
+        return linkname
     end
-
-    return count > 0 and linkname or nil
+    -- for custom shared libraries name, xxx.so, xxx.dylib
+    if not filename:startswith("lib") and (filename:endswith(".so") or filename:endswith(".dylib")) then
+        return filename
+    end
 end
 
 -- new a target instance
