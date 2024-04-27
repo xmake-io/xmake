@@ -184,12 +184,6 @@ function _get_cxxflags(package, opt)
         table.join2(result, _map_compflags(package, "cxx", "includedir", package:build_getenv("includedirs")))
         table.join2(result, _map_compflags(package, "cxx", "sysincludedir", package:build_getenv("sysincludedirs")))
     end
-    local runtimes = package:runtimes()
-    if runtimes then
-        local fake_target = {is_shared = function(_) return false end,
-                             sourcekinds = function(_) return "cxx" end}
-        table.join2(result, _map_compflags(fake_target, "cxx", "runtime", runtimes))
-    end
     table.join2(result, package:config("cxxflags"))
     table.join2(result, package:config("cxflags"))
     if opt.cxxflags then
@@ -239,12 +233,6 @@ function _get_ldflags(package, opt)
         table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "syslink", package:build_getenv("syslinks")))
         table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
     end
-    local runtimes = package:runtimes()
-    if runtimes then
-        local fake_target = {is_shared = function(_) return false end,
-                             sourcekinds = function(_) return "cxx" end}
-        table.join2(result, _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes))
-    end
     table.join2(result, package:config("ldflags"))
     if package:config("lto") then
         table.join2(result, package:_generate_lto_configs().ldflags)
@@ -270,12 +258,6 @@ function _get_shflags(package, opt)
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "link", package:build_getenv("links")))
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "syslink", package:build_getenv("syslinks")))
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
-    end
-    local runtimes = package:runtimes()
-    if runtimes then
-        local fake_target = {is_shared = function(_) return true end,
-                             sourcekinds = function(_) return "cxx" end}
-        table.join2(result, _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes))
     end
     table.join2(result, package:config("shflags"))
     if package:config("lto") then
@@ -401,28 +383,14 @@ function _get_configs_for_windows(package, configs, opt)
     -- we maybe need patch `cmake_policy(SET CMP0091 NEW)` to enable this argument for some packages
     -- @see https://cmake.org/cmake/help/latest/policy/CMP0091.html#policy:CMP0091
     -- https://github.com/xmake-io/xmake-repo/pull/303
-    local runtime
     if package:has_runtime("MT") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded")
-        runtime = "MT"
     elseif package:has_runtime("MTd") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug")
-        runtime = "MTd"
     elseif package:has_runtime("MD") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL")
-        runtime = "MD"
     elseif package:has_runtime("MDd") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebugDLL")
-        runtime = "MDd"
-    end
-    if runtime then
-        -- CMake default MSVC flags as of 3.21.2
-        local default_debug_flags = "/Zi /Ob0 /Od /RTC1"
-        local default_release_flags = "/O2 /Ob2 /DNDEBUG"
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG=/' .. runtime .. ' ' .. default_debug_flags)
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE=/' .. runtime .. ' ' .. default_release_flags)
-        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG=/' .. runtime .. ' ' .. default_debug_flags)
-        table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE=/' .. runtime .. ' ' .. default_release_flags)
     end
     if not opt._configs_str:find("CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY") then
         table.insert(configs, "-DCMAKE_COMPILE_PDB_OUTPUT_DIRECTORY=pdb")
@@ -786,7 +754,101 @@ function _get_configs(package, configs, opt)
     else
         _get_configs_for_generic(package, configs, opt)
     end
+    _get_configs_for_default_flags(package, configs, opt)
     return configs
+end
+
+function _get_default_flags(package, configs, buildtype, opt)
+    local cmake_default_flags = _g.cmake_default_flags
+    if not cmake_default_flags then
+        local tmpdir = path.join(os.tmpdir(), package:name(), package:mode())
+        local dummy_cmakelist = path.join(tmpdir, "CMakeLists.txt")
+
+        io.writefile(dummy_cmakelist, format([[
+    message("CMAKE_C_FLAGS is ${CMAKE_C_FLAGS}")
+    message("CMAKE_C_FLAGS_%s is ${CMAKE_C_FLAGS_%s}")
+
+    message("CMAKE_CXX_FLAGS is ${CMAKE_CXX_FLAGS}")
+    message("CMAKE_CXX_FLAGS_%s is ${CMAKE_CXX_FLAGS_%s}")
+
+    message("CMAKE_EXE_LINKER_FLAGS is ${CMAKE_EXE_LINKER_FLAGS}")
+    message("CMAKE_EXE_LINKER_FLAGS_%s is ${CMAKE_EXE_LINKER_FLAGS_%s}")
+
+    message("CMAKE_SHARED_LINKER_FLAGS is ${CMAKE_SHARED_LINKER_FLAGS}")
+    message("CMAKE_SHARED_LINKER_FLAGS_%s is ${CMAKE_SHARED_LINKER_FLAGS_%s}")
+
+    message("CMAKE_STATIC_LINKER_FLAGS is ${CMAKE_STATIC_LINKER_FLAGS}")
+    message("CMAKE_STATIC_LINKER_FLAGS_%s is ${CMAKE_STATIC_LINKER_FLAGS_%s}")
+        ]], buildtype, buildtype, buildtype, buildtype, buildtype, buildtype, buildtype, buildtype, buildtype, buildtype))
+
+        local runenvs = opt.envs or buildenvs(package)
+        local cmake = find_tool("cmake", {envs = runenvs})
+        local _configs = table.join(configs, "-S " .. path.directory(dummy_cmakelist), "-B " .. tmpdir)
+        local _, outdata = os.iorunv(cmake.program, _configs, {envs = runenvs})
+        cmake_default_flags = {}
+        cmake_default_flags.cflags = outdata:match("CMAKE_C_FLAGS is (.-)\n"):split(" ")
+        table.join2(cmake_default_flags.cflags, outdata:match(format("CMAKE_C_FLAGS_%s is (.-)\n", buildtype)):replace("/MDd", ""):replace("/MD", ""):split(" "))
+        cmake_default_flags.cxxflags = outdata:match("CMAKE_CXX_FLAGS is (.-)\n"):split(" ")
+        table.join2(cmake_default_flags.cxxflags, outdata:match(format("CMAKE_CXX_FLAGS_%s is (.-)\n", buildtype)):replace("/MDd", ""):replace("/MD", ""):split(" "))
+        cmake_default_flags.ldflags = outdata:match("CMAKE_EXE_LINKER_FLAGS is (.-)\n"):split(" ")
+        table.join2(cmake_default_flags.ldflags, outdata:match(format("CMAKE_EXE_LINKER_FLAGS_%s is (.-)\n", buildtype)):split(" "))
+        cmake_default_flags.shflags = outdata:match("CMAKE_SHARED_LINKER_FLAGS is (.-)\n"):split(" ")
+        table.join2(cmake_default_flags.shflags, outdata:match(format("CMAKE_SHARED_LINKER_FLAGS_%s is (.-)\n", buildtype)):split(" "))
+        cmake_default_flags.arflags = outdata:match("CMAKE_STATIC_LINKER_FLAGS is (.-)\n"):split(" ")
+        table.join2(cmake_default_flags.arflags, outdata:match(format("CMAKE_STATIC_LINKER_FLAGS_%s is (.-)\n", buildtype)):split(" "))
+
+        cmake_default_flags.cflags = table.unique(cmake_default_flags.cflags)
+        cmake_default_flags.cxxflags = table.unique(cmake_default_flags.cxxflags)
+        cmake_default_flags.ldflags = table.unique(cmake_default_flags.ldflags)
+        cmake_default_flags.shflags = table.unique(cmake_default_flags.shflags)
+        cmake_default_flags.arflags = table.unique(cmake_default_flags.arflags)
+        
+        _g.cmake_default_flags = cmake_default_flags
+    end
+    return cmake_default_flags
+end
+
+function _get_configs_for_default_flags(package, configs, opt)
+    local cmake_buildtype_map = {
+        debug = "DEBUG",
+        release = "RELEASE",
+        releasedbg = "RELWITHDEBINFO"
+    }
+    local buildtype = package:mode()
+    if not buildtype:startswith("release") and buildtype ~= "debug" then
+        buildtype = "release"
+    end
+    buildtype = cmake_buildtype_map[buildtype]
+
+    local runtimes = package:runtimes()
+    local cxx_runtimeflags
+    local c_runtimeflags
+    local ld_runtimeflags
+    local sh_runtimeflags
+    local ar_runtimeflags
+    if runtimes then
+        local fake_target = {is_shared = function(_) return false end,
+                             sourcekinds = function(_) return "cxx" end}
+         c_runtimeflags = _map_compflags(fake_target, "c", "runtime", runtimes)
+         fake_target.sourcekinds = function(_) return "cxx" end
+         cxx_runtimeflags = _map_compflags(fake_target, "cxx", "runtime", runtimes)
+         ld_runtimeflags = _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes)
+         ar_runtimeflags = _map_linkflags(fake_target, "static", {"cxx"}, "runtime", runtimes)
+         fake_target.is_shared = function(_) return true end
+         sh_runtimeflags = _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes)
+    end
+    local default_flags = _get_default_flags(package, configs, buildtype, opt)
+    local cxx_init_flags = (opt.cxxflags or opt.cxflags) and (cxx_runtimeflags or {}) or table.join(default_flags.cxxflags, cxx_runtimeflags or {})
+    local c_init_flags = (opt.cflags or opt.cxflags) and (c_runtimeflags or {}) or table.join(default_flags.cflags, c_runtimeflags or {})
+    local ld_init_flags = (opt.ldflags) and (ld_runtimeflags or {}) or table.join(default_flags.ldflags, ld_runtimeflags or {})
+    local ar_init_flags = (opt.arflags) and (ar_runtimeflags or {}) or table.join(default_flags.arflags, ar_runtimeflags or {})
+    local sh_init_flags = (opt.shflags) and (sh_runtimeflags or {}) or table.join(default_flags.shflags, sh_runtimeflags or {})
+
+    table.insert(configs, format("-DCMAKE_CXX_FLAGS_%s=", buildtype) .. table.concat(cxx_init_flags, " "))
+    table.insert(configs, format("-DCMAKE_C_FLAGS_%s=", buildtype) .. table.concat(c_init_flags, " "))
+    table.insert(configs, format("-DCMAKE_EXE_LINKER_FLAGS_%s=", buildtype) .. table.concat(ld_init_flags, " "))
+    table.insert(configs, format("-DCMAKE_STATIC_LINKER_FLAGS_%s=", buildtype) .. table.concat(ar_init_flags, " "))
+    table.insert(configs, format("-DCMAKE_SHARED_LINKER_FLAGS_%s=", buildtype) .. table.concat(sh_init_flags, " "))
 end
 
 -- get build environments
