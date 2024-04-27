@@ -28,13 +28,14 @@ import("detect.sdks.find_cross_toolchain")
 
 -- find mingw directory
 function _find_mingwdir(sdkdir)
-
+    cprint("_find_mingwdir #1 %s", sdkdir)
     -- get mingw directory
     if not sdkdir then
         if is_host("macosx", "linux") and os.isdir("/opt/llvm-mingw") then
             sdkdir = "/opt/llvm-mingw"
         elseif is_host("macosx") and os.isdir("/usr/local/opt/mingw-w64") then
             sdkdir = "/usr/local/opt/mingw-w64"
+            cprint("_find_mingwdir #2 %s", sdkdir)
         elseif is_host("linux") then
             sdkdir = "/usr"
         elseif is_subhost("msys") then
@@ -78,6 +79,7 @@ function _find_mingw(sdkdir, bindir, cross)
 
     -- find mingw root directory
     sdkdir = _find_mingwdir(sdkdir)
+    cprint("_find_mingw #1 %s", sdkdir)
     if not sdkdir then
         return
     end
