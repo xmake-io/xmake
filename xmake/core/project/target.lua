@@ -2851,8 +2851,9 @@ function target.linkname(filename, opt)
         linkname, count = filename:gsub(target.filename("__pattern__", "static", {plat = "windows"}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
     end
     -- for custom shared libraries name, xxx.so, xxx.dylib
-    if filename:endswith(".so") or filename:endswith(".dylib") then
-        return filename;
+    if count == 0 and not filename:startswith("lib") then
+        count = count + 1
+        linkname = filename
     end
 
     return count > 0 and linkname or nil
