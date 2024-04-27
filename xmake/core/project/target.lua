@@ -2833,7 +2833,6 @@ end
 
 -- get the link name of the target file
 function target.linkname(filename, opt)
-    print(filename, opt)
     -- for implib/mingw, e.g. libxxx.dll.a
     opt = opt or {}
     if filename:startswith("lib") and filename:endswith(".dll.a") then
