@@ -339,12 +339,9 @@ function buildenvs(package, opt)
     if arflags then
         envs.ARFLAGS   = table.concat(_translate_paths(arflags), ' ')
     end
-    if ldflags then
-        envs.LDFLAGS   = table.concat(_translate_paths(ldflags), ' ')
-    end
-    if shflags then
+    if ldflags or shflags then
         -- autoconf does not use SHFLAGS
-        envs.LDFLAGS   = table.concat(_translate_paths(shflags), ' ')
+        envs.LDFLAGS   = table.concat(_translate_paths(table.join(ldflags or {}, shflags)), ' ')
     end
 
     -- cross-compilation? pass the full build environments
