@@ -726,44 +726,47 @@ end
 function _get_default_flags(package, configs, buildtype, opt)
     local cmake_default_flags = _g.cmake_default_flags and _g.cmake_default_flags[buildtype]
     if not cmake_default_flags then
-        local tmpdir = path.join(os.tmpdir(), package:name(), package:mode())
+        local tmpdir = path.join(os.tmpdir() .. ".dir", package:name(), package:mode())
         local dummy_cmakelist = path.join(tmpdir, "CMakeLists.txt")
 
         io.writefile(dummy_cmakelist, format([[
-    message("CMAKE_C_FLAGS is ${CMAKE_C_FLAGS}")
-    message("CMAKE_C_FLAGS_%s is ${CMAKE_C_FLAGS_%s}")
+    message(STATUS "CMAKE_C_FLAGS is ${CMAKE_C_FLAGS}")
+    message(STATUS "CMAKE_C_FLAGS_%s is ${CMAKE_C_FLAGS_%s}")
 
-    message("CMAKE_CXX_FLAGS is ${CMAKE_CXX_FLAGS}")
-    message("CMAKE_CXX_FLAGS_%s is ${CMAKE_CXX_FLAGS_%s}")
+    message(STATUS "CMAKE_CXX_FLAGS is ${CMAKE_CXX_FLAGS}")
+    message(STATUS "CMAKE_CXX_FLAGS_%s is ${CMAKE_CXX_FLAGS_%s}")
 
-    message("CMAKE_EXE_LINKER_FLAGS is ${CMAKE_EXE_LINKER_FLAGS}")
-    message("CMAKE_EXE_LINKER_FLAGS_%s is ${CMAKE_EXE_LINKER_FLAGS_%s}")
+    message(STATUS "CMAKE_EXE_LINKER_FLAGS is ${CMAKE_EXE_LINKER_FLAGS}")
+    message(STATUS "CMAKE_EXE_LINKER_FLAGS_%s is ${CMAKE_EXE_LINKER_FLAGS_%s}")
 
-    message("CMAKE_SHARED_LINKER_FLAGS is ${CMAKE_SHARED_LINKER_FLAGS}")
-    message("CMAKE_SHARED_LINKER_FLAGS_%s is ${CMAKE_SHARED_LINKER_FLAGS_%s}")
+    message(STATUS "CMAKE_SHARED_LINKER_FLAGS is ${CMAKE_SHARED_LINKER_FLAGS}")
+    message(STATUS "CMAKE_SHARED_LINKER_FLAGS_%s is ${CMAKE_SHARED_LINKER_FLAGS_%s}")
 
-    message("CMAKE_STATIC_LINKER_FLAGS is ${CMAKE_STATIC_LINKER_FLAGS}")
-    message("CMAKE_STATIC_LINKER_FLAGS_%s is ${CMAKE_STATIC_LINKER_FLAGS_%s}")
+    message(STATUS "CMAKE_STATIC_LINKER_FLAGS is ${CMAKE_STATIC_LINKER_FLAGS}")
+    message(STATUS "CMAKE_STATIC_LINKER_FLAGS_%s is ${CMAKE_STATIC_LINKER_FLAGS_%s}")
         ]], buildtype, buildtype, buildtype, buildtype, buildtype, buildtype, buildtype, buildtype, buildtype, buildtype))
 
         local runenvs = opt.envs or buildenvs(package)
-        local cmake = find_tool("cmake", {envs = runenvs})
+        local cmake = find_tool("cmake")
         local _configs = table.join(configs, "-S " .. path.directory(dummy_cmakelist), "-B " .. tmpdir)
-        local _, outdata = os.iorunv(cmake.program, _configs, {envs = runenvs})
-        cmake_default_flags = {}
-        cmake_default_flags.cflags = outdata:match("CMAKE_C_FLAGS is (.-)\n"):split(" ")
-        table.join2(cmake_default_flags.cflags, outdata:match(format("CMAKE_C_FLAGS_%s is (.-)\n", buildtype)):replace("/MDd", ""):replace("/MD", ""):split(" "))
-        cmake_default_flags.cxxflags = outdata:match("CMAKE_CXX_FLAGS is (.-)\n"):split(" ")
-        table.join2(cmake_default_flags.cxxflags, outdata:match(format("CMAKE_CXX_FLAGS_%s is (.-)\n", buildtype)):replace("/MDd", ""):replace("/MD", ""):split(" "))
-        cmake_default_flags.ldflags = outdata:match("CMAKE_EXE_LINKER_FLAGS is (.-)\n"):split(" ")
-        table.join2(cmake_default_flags.ldflags, outdata:match(format("CMAKE_EXE_LINKER_FLAGS_%s is (.-)\n", buildtype)):split(" "))
-        cmake_default_flags.shflags = outdata:match("CMAKE_SHARED_LINKER_FLAGS is (.-)\n"):split(" ")
-        table.join2(cmake_default_flags.shflags, outdata:match(format("CMAKE_SHARED_LINKER_FLAGS_%s is (.-)\n", buildtype)):split(" "))
-        cmake_default_flags.arflags = outdata:match("CMAKE_STATIC_LINKER_FLAGS is (.-)\n"):split(" ")
-        table.join2(cmake_default_flags.arflags, outdata:match(format("CMAKE_STATIC_LINKER_FLAGS_%s is (.-)\n", buildtype)):split(" "))
+        local outdata = try{ function() return os.iorunv(cmake.program, _configs, {envs = runenvs}) end}
+        if outdata then
+            cmake_default_flags = {}
+            cmake_default_flags.cflags = outdata:match("CMAKE_C_FLAGS is (.-)\n") or " "
+            cmake_default_flags.cflags = cmake_default_flags.cflags .. " " .. outdata:match(format("CMAKE_C_FLAGS_%s is (.-)\n", buildtype)):replace("/MDd", ""):replace("/MD", "")
+            cmake_default_flags.cxxflags = outdata:match("CMAKE_CXX_FLAGS is (.-)\n") or " "
+            cmake_default_flags.cxxflags = cmake_default_flags.cxxflags .. " " .. outdata:match(format("CMAKE_CXX_FLAGS_%s is (.-)\n", buildtype)):replace("/MDd", ""):replace("/MD", "")
+            cmake_default_flags.ldflags = outdata:match("CMAKE_EXE_LINKER_FLAGS is (.-)\n") or " "
+            cmake_default_flags.ldflags = cmake_default_flags.ldflags .. " " .. outdata:match(format("CMAKE_EXE_LINKER_FLAGS_%s is (.-)\n", buildtype))
+            cmake_default_flags.shflags = outdata:match("CMAKE_SHARED_LINKER_FLAGS is (.-)\n") or " "
+            cmake_default_flags.shflags = cmake_default_flags.shflags .. " " .. outdata:match(format("CMAKE_SHARED_LINKER_FLAGS_%s is (.-)\n", buildtype))
+            cmake_default_flags.arflags = outdata:match("CMAKE_STATIC_LINKER_FLAGS is (.-)\n") or " "
+            cmake_default_flags.arflags = cmake_default_flags.arflags .. " " ..outdata:match(format("CMAKE_STATIC_LINKER_FLAGS_%s is (.-)\n", buildtype))
 
-        _g.cmake_default_flags = _g.cmake_default_flags or {}
-        _g.cmake_default_flags[buildtype] = cmake_default_flags
+            _g.cmake_default_flags = _g.cmake_default_flags or {}
+            _g.cmake_default_flags[buildtype] = cmake_default_flags
+        end
+        os.rm(tmpdir)
     end
     return cmake_default_flags
 end
@@ -845,12 +848,7 @@ function _get_configs(package, configs, opt)
     if runtime_envs then
         envs = envs or {}
         for name, value in pairs(runtime_envs) do
-            envs[name] = table.join(envs[name], value)
-        end
-    end
-    if envs then
-        for name, value in pairs(envs) do
-            envs[name] = table.concat(table.unique(value), " ")
+            envs[name] = (envs[name] or " ") .. " " .. table.concat(value, " ")
         end
     end
     _insert_configs_from_envs(configs, envs or {}, opt)
