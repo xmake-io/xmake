@@ -184,12 +184,6 @@ function _get_cxxflags(package, opt)
         table.join2(result, _map_compflags(package, "cxx", "includedir", package:build_getenv("includedirs")))
         table.join2(result, _map_compflags(package, "cxx", "sysincludedir", package:build_getenv("sysincludedirs")))
     end
-    local runtimes = package:runtimes()
-    if runtimes then
-        local fake_target = {is_shared = function(_) return false end,
-                             sourcekinds = function(_) return "cxx" end}
-        table.join2(result, _map_compflags(fake_target, "cxx", "runtime", runtimes))
-    end
     table.join2(result, package:config("cxxflags"))
     table.join2(result, package:config("cxflags"))
     if opt.cxxflags then
@@ -239,12 +233,6 @@ function _get_ldflags(package, opt)
         table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "syslink", package:build_getenv("syslinks")))
         table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
     end
-    local runtimes = package:runtimes()
-    if runtimes then
-        local fake_target = {is_shared = function(_) return false end,
-                             sourcekinds = function(_) return "cxx" end}
-        table.join2(result, _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes))
-    end
     table.join2(result, package:config("ldflags"))
     if package:config("lto") then
         table.join2(result, package:_generate_lto_configs().ldflags)
@@ -270,12 +258,6 @@ function _get_shflags(package, opt)
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "link", package:build_getenv("links")))
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "syslink", package:build_getenv("syslinks")))
         table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
-    end
-    local runtimes = package:runtimes()
-    if runtimes then
-        local fake_target = {is_shared = function(_) return true end,
-                             sourcekinds = function(_) return "cxx" end}
-        table.join2(result, _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes))
     end
     table.join2(result, package:config("shflags"))
     if package:config("lto") then
@@ -401,28 +383,14 @@ function _get_configs_for_windows(package, configs, opt)
     -- we maybe need patch `cmake_policy(SET CMP0091 NEW)` to enable this argument for some packages
     -- @see https://cmake.org/cmake/help/latest/policy/CMP0091.html#policy:CMP0091
     -- https://github.com/xmake-io/xmake-repo/pull/303
-    local runtime
     if package:has_runtime("MT") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded")
-        runtime = "MT"
     elseif package:has_runtime("MTd") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug")
-        runtime = "MTd"
     elseif package:has_runtime("MD") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL")
-        runtime = "MD"
     elseif package:has_runtime("MDd") then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebugDLL")
-        runtime = "MDd"
-    end
-    if runtime then
-        -- CMake default MSVC flags as of 3.21.2
-        local default_debug_flags = "/Zi /Ob0 /Od /RTC1"
-        local default_release_flags = "/O2 /Ob2 /DNDEBUG"
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG=/' .. runtime .. ' ' .. default_debug_flags)
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE=/' .. runtime .. ' ' .. default_release_flags)
-        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG=/' .. runtime .. ' ' .. default_debug_flags)
-        table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE=/' .. runtime .. ' ' .. default_release_flags)
     end
     if not opt._configs_str:find("CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY") then
         table.insert(configs, "-DCMAKE_COMPILE_PDB_OUTPUT_DIRECTORY=pdb")
@@ -755,6 +723,95 @@ function _get_configs_for_install(package, configs, opt)
     end
 end
 
+function _get_default_flags(package, configs, buildtype, opt)
+    local cmake_default_flags = _g.cmake_default_flags and _g.cmake_default_flags[buildtype]
+    if not cmake_default_flags then
+        local tmpdir = path.join(os.tmpdir() .. ".dir", package:name(), package:mode())
+        local dummy_cmakelist = path.join(tmpdir, "CMakeLists.txt")
+
+        io.writefile(dummy_cmakelist, format([[
+    message(STATUS "CMAKE_C_FLAGS is ${CMAKE_C_FLAGS}")
+    message(STATUS "CMAKE_C_FLAGS_%s is ${CMAKE_C_FLAGS_%s}")
+
+    message(STATUS "CMAKE_CXX_FLAGS is ${CMAKE_CXX_FLAGS}")
+    message(STATUS "CMAKE_CXX_FLAGS_%s is ${CMAKE_CXX_FLAGS_%s}")
+
+    message(STATUS "CMAKE_EXE_LINKER_FLAGS is ${CMAKE_EXE_LINKER_FLAGS}")
+    message(STATUS "CMAKE_EXE_LINKER_FLAGS_%s is ${CMAKE_EXE_LINKER_FLAGS_%s}")
+
+    message(STATUS "CMAKE_SHARED_LINKER_FLAGS is ${CMAKE_SHARED_LINKER_FLAGS}")
+    message(STATUS "CMAKE_SHARED_LINKER_FLAGS_%s is ${CMAKE_SHARED_LINKER_FLAGS_%s}")
+
+    message(STATUS "CMAKE_STATIC_LINKER_FLAGS is ${CMAKE_STATIC_LINKER_FLAGS}")
+    message(STATUS "CMAKE_STATIC_LINKER_FLAGS_%s is ${CMAKE_STATIC_LINKER_FLAGS_%s}")
+        ]], buildtype, buildtype, buildtype, buildtype, buildtype, buildtype, buildtype, buildtype, buildtype, buildtype))
+
+        local runenvs = opt.envs or buildenvs(package)
+        local cmake = find_tool("cmake")
+        local _configs = table.join(configs, "-S " .. path.directory(dummy_cmakelist), "-B " .. tmpdir)
+        local outdata = try{ function() return os.iorunv(cmake.program, _configs, {envs = runenvs}) end}
+        if outdata then
+            cmake_default_flags = {}
+            cmake_default_flags.cflags = outdata:match("CMAKE_C_FLAGS is (.-)\n") or " "
+            cmake_default_flags.cflags = cmake_default_flags.cflags .. " " .. outdata:match(format("CMAKE_C_FLAGS_%s is (.-)\n", buildtype)):replace("/MDd", ""):replace("/MD", "")
+            cmake_default_flags.cxxflags = outdata:match("CMAKE_CXX_FLAGS is (.-)\n") or " "
+            cmake_default_flags.cxxflags = cmake_default_flags.cxxflags .. " " .. outdata:match(format("CMAKE_CXX_FLAGS_%s is (.-)\n", buildtype)):replace("/MDd", ""):replace("/MD", "")
+            cmake_default_flags.ldflags = outdata:match("CMAKE_EXE_LINKER_FLAGS is (.-)\n") or " "
+            cmake_default_flags.ldflags = cmake_default_flags.ldflags .. " " .. outdata:match(format("CMAKE_EXE_LINKER_FLAGS_%s is (.-)\n", buildtype))
+            cmake_default_flags.shflags = outdata:match("CMAKE_SHARED_LINKER_FLAGS is (.-)\n") or " "
+            cmake_default_flags.shflags = cmake_default_flags.shflags .. " " .. outdata:match(format("CMAKE_SHARED_LINKER_FLAGS_%s is (.-)\n", buildtype))
+            cmake_default_flags.arflags = outdata:match("CMAKE_STATIC_LINKER_FLAGS is (.-)\n") or " "
+            cmake_default_flags.arflags = cmake_default_flags.arflags .. " " ..outdata:match(format("CMAKE_STATIC_LINKER_FLAGS_%s is (.-)\n", buildtype))
+
+            _g.cmake_default_flags = _g.cmake_default_flags or {}
+            _g.cmake_default_flags[buildtype] = cmake_default_flags
+        end
+        os.rm(tmpdir)
+    end
+    return cmake_default_flags
+end
+
+function _get_cmake_buildtype(package)
+    local cmake_buildtype_map = {
+        debug = "DEBUG",
+        release = "RELEASE",
+        releasedbg = "RELWITHDEBINFO"
+    }
+    local buildtype = package:mode()
+    return cmake_buildtype_map[buildtype] or "RELEASE"
+end
+
+function _get_envs_for_default_flags(package, configs, opt)
+    local buildtype = _get_cmake_buildtype(package)
+    local envs = {}
+    local default_flags = _get_default_flags(package, configs, buildtype, opt)
+    if default_flags then
+        envs[format("CMAKE_CXX_FLAGS_%s", buildtype)]           = (not opt.cxxflags and not opt.cxflags) and default_flags.cxxflags
+        envs[format("CMAKE_C_FLAGS_%s", buildtype)]             = (not opt.cflags and not opt.cxflags) and default_flags.cflags
+        envs[format("CMAKE_EXE_LINKER_FLAGS_%s", buildtype)]    = not opt.ldflags and default_flags.ldflags
+        envs[format("CMAKE_STATIC_LINKER_FLAGS_%s", buildtype)] = not opt.arflags and default_flags.arflags
+        envs[format("CMAKE_SHARED_LINKER_FLAGS_%s", buildtype)] = not opt.shflags and default_flags.shflags
+    end
+    return envs
+end
+
+function _get_envs_for_runtime_flags(package, configs, opt)
+    local buildtype = _get_cmake_buildtype(package)
+    local envs = {}
+    local runtimes = package:runtimes()
+    if runtimes then
+        local fake_target = {is_shared = function(_) return false end,
+                             sourcekinds = function(_) return "c" end}
+        envs[format("CMAKE_C_FLAGS_%s", buildtype)]             = _map_compflags(fake_target, "c", "runtime", runtimes)
+        fake_target.sourcekinds = function(_) return "cxx" end
+        envs[format("CMAKE_CXX_FLAGS_%s", buildtype)]           = _map_compflags(fake_target, "cxx", "runtime", runtimes)
+        envs[format("CMAKE_EXE_LINKER_FLAGS_%s", buildtype)]    = _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes)
+        envs[format("CMAKE_STATIC_LINKER_FLAGS_%s", buildtype)] = _map_linkflags(fake_target, "static", {"cxx"}, "runtime", runtimes)
+        fake_target.is_shared = function(_) return true end
+        envs[format("CMAKE_SHARED_LINKER_FLAGS_%s", buildtype)] = _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes)
+    end
+    return envs
+end
 -- get configs
 function _get_configs(package, configs, opt)
     configs = configs or {}
@@ -786,6 +843,15 @@ function _get_configs(package, configs, opt)
     else
         _get_configs_for_generic(package, configs, opt)
     end
+    local envs = _get_envs_for_default_flags(package, configs, opt)
+    local runtime_envs = _get_envs_for_runtime_flags(package, configs, opt)
+    if runtime_envs then
+        envs = envs or {}
+        for name, value in pairs(runtime_envs) do
+            envs[name] = (envs[name] or " ") .. " " .. table.concat(value, " ")
+        end
+    end
+    _insert_configs_from_envs(configs, envs or {}, opt)
     return configs
 end
 
