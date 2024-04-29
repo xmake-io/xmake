@@ -403,6 +403,9 @@ function _get_configs_for_windows(package, configs, opt)
     if not opt._configs_str:find("CMAKE_SHARED_LINKER_FLAGS") then
         table.insert(configs, "-DCMAKE_SHARED_LINKER_FLAGS=\"/opt:ref /opt:icf /pdbcompress\"")
     end
+    if not opt._configs_str:find("CMAKE_STATIC_LINKER_FLAGS") then
+        table.insert(configs, "-DCMAKE_STATIC_LINKER_FLAGS=\"/opt:ref /opt:icf /pdbcompress\"")
+    end
 
     _get_configs_for_generic(package, configs, opt)
 end
