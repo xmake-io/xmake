@@ -78,7 +78,8 @@ end
 -- make the framework flag, crate module
 function nf_framework(self, framework)
     local basename = path.basename(framework)
-    local cratename = basename:match("lib(.-)%-.-") or basename:match("lib(.-)")
+    -- return "mycrate" from libmycrate-f882feaebb8ba0ca.rlib or libmycrate.rlib
+    local cratename = basename:match("lib(.-)%-.-") or basename:match("lib(.+)")
     if cratename then
         return {"--extern", cratename .. "=" .. framework}
     end
