@@ -136,14 +136,15 @@ end
 function _generate_modulemapper_file(target, module, cppfile)
     local maplines = _get_maplines(target, module)
     local mapper_path = path.join(os.tmpdir(), target:name():replace(" ", "_"), name or cppfile:replace(" ", "_"))
-    local mapper_file = io.open(mapper_path, "wb")
-    mapper_file:write("root " .. path.unix(os.projectdir()))
-    mapper_file:write("\n")
+    local mapper_content = {}
+    table.insert(mapper_content, "root " .. path.unix(os.projectdir()))
     for _, mapline in ipairs(maplines) do
-        mapper_file:write(mapline)
-        mapper_file:write("\n")
+        table.insert(mapper_content, mapline)
     end
-    mapper_file:close()
+    mapper_content = table.concat(mapper_content, "\n") .. "\n"
+    if not os.isfile(mapper_path) or io.readfile(mapper_path, {encoding = "binary"}) ~= mapper_content then
+        io.writefile(mapper_path, mapper_content, {encoding = "binary"})
+    end
     return mapper_path
 end
 
