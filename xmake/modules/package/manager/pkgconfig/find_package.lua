@@ -29,8 +29,6 @@ import("package.manager.system.find_package", {alias = "find_package_from_system
 -- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
 --
 function main(name, opt)
-
-    -- init options
     opt = opt or {}
     if is_cross(opt.plat, opt.arch) then
         return
