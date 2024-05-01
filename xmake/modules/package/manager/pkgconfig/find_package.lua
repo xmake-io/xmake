@@ -20,6 +20,7 @@
 
 -- imports
 import("lib.detect.pkgconfig")
+import("private.core.base.is_cross")
 import("package.manager.system.find_package", {alias = "find_package_from_system"})
 
 -- find package from the pkg-config package manager
