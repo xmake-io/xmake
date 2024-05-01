@@ -31,6 +31,9 @@ function main(name, opt)
 
     -- init options
     opt = opt or {}
+    if is_cross(opt.plat, opt.arch) then
+        return
+    end
 
     -- get library info
     local libinfo = pkgconfig.libinfo(name, opt)
