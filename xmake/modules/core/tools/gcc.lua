@@ -235,8 +235,10 @@ function nf_language(self, stdname)
         ,   gnu11       = "-std=gnu11"
         ,   c17         = "-std=c17"
         ,   gnu17       = "-std=gnu17"
-        ,   clatest     = {"-std=c2x", "-std=c17", "-std=c11", "-std=c99", "-std=c89", "-ansi"}
-        ,   gnulatest   = {"-std=c2x", "-std=gnu17", "-std=gnu11", "-std=gnu99", "-std=gnu89", "-ansi"}
+        ,   c23         = {"-std=c23", "-std=c2x"}
+        ,   gnu23       = {"-std=gnu23", "-std=gnu2x"}
+        ,   clatest     = {"-std=c23", "-std=c2x", "-std=c17", "-std=c11", "-std=c99", "-std=c89", "-ansi"}
+        ,   gnulatest   = {"-std=gnu23", "-std=gnu2x", "-std=gnu17", "-std=gnu11", "-std=gnu99", "-std=gnu89", "-ansi"}
         }
     end
 
@@ -263,8 +265,12 @@ function nf_language(self, stdname)
         ,   gnuxx23      = {"-std=gnu++23", "-std=c++2b"}
         ,   cxx2b        = "-std=c++2b"
         ,   gnuxx2b      = "-std=gnu++2b"
-        ,   cxxlatest    = {"-std=c++23", "-std=c++2b", "-std=c++20", "-std=c++2a", "-std=c++17", "-std=c++14", "-std=c++11", "-std=c++1z", "-std=c++98"}
-        ,   gnuxxlatest  = {"-std=gnu++23", "-std=gnu++2b", "-std=gnu++20", "-std=gnu++2a", "-std=gnu++17", "-std=gnu++14", "-std=gnu++11", "-std=c++1z", "-std=gnu++98"}
+        ,   cxx2c        = "-std=c++2c"
+        ,   gnuxx2c      = "-std=gnu++2c"
+        ,   cxx26        = {"-std=c++26", "-std=c++2c"}
+        ,   gnuxx26      = {"-std=gnu++26", "-std=gnu++2c"}
+        ,   cxxlatest    = {"-std=c++26", "-std=c++2c", "-std=c++23", "-std=c++2b", "-std=c++20", "-std=c++2a", "-std=c++17", "-std=c++14", "-std=c++11", "-std=c++1z", "-std=c++98"}
+        ,   gnuxxlatest  = {"-std=gnu++26", "-std=gnu++2c", "-std=gnu++23", "-std=gnu++2", "-std=gnu++20", "-std=gnu++2a", "-std=gnu++17", "-std=gnu++14", "-std=gnu++11", "-std=c++1z", "-std=gnu++98"}
         }
         local cxxmaps2 = {}
         for k, v in pairs(_g.cxxmaps) do
