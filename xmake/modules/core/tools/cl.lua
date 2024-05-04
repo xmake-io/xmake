@@ -76,10 +76,16 @@ function init(self)
 
         -- language
     ,   ["-ansi"]                   = ""
-    ,   ["-std=c99"]                = "-TP" -- compile as c++ files because msvc only support c89
-    ,   ["-std=c11"]                = "-TP" -- compile as c++ files because msvc only support c89
-    ,   ["-std=gnu99"]              = "-TP" -- compile as c++ files because msvc only support c89
-    ,   ["-std=gnu11"]              = "-TP" -- compile as c++ files because msvc only support c89
+    ,   ["-std=c99"]                = "-TP" -- compile as c++ files because msvc doesn't support c99
+    ,   ["-std=c11"]                = "-std:c11" 
+    ,   ["-std=c17"]                = "-std:c17" 
+    ,   ["-std=c2x"]                = "-std:clatest" 
+    ,   ["-std=c23"]                = "-std:clatest" 
+    ,   ["-std=gnu99"]              = "-TP" -- compile as c++ files because msvc doesn't support c99
+    ,   ["-std=gnu11"]              = "-std:c11" 
+    ,   ["-std=gnu17"]              = "-std:c17"
+    ,   ["-std=gnu2x"]              = "-std:clatest" 
+    ,   ["-std=gnu23"]              = "-std:clatest" 
     ,   ["-std=.*"]                 = ""
 
         -- others
@@ -227,12 +233,16 @@ function nf_language(self, stdname)
             -- stdc
             c99       = "-TP" -- compile as c++ files because older msvc only support c89
         ,   gnu99     = "-TP"
-        ,   c11       = {"-std:c11", "-TP"}
-        ,   gnu11     = {"-std:c11", "-TP"}
-        ,   c17       = {"-std:c17", "-TP"}
-        ,   gnu17     = {"-std:c17", "-TP"}
-        ,   clatest   = {"-std:c17", "-std:c11"}
-        ,   gnulatest = {"-std:c17", "-std:c11"}
+        ,   c11       = {"-std:c11", "-std:clatest", "-TP"}
+        ,   gnu11     = {"-std:c11", "-std:clatest", "-TP"}
+        ,   c17       = {"-std:c17", "-std:clatest", "-TP"}
+        ,   gnu17     = {"-std:c17", "-std:clatest", "-TP"}
+        ,   c2x       = {"-std:c23", "-std:clatest", "-TP"}
+        ,   gnu2x     = {"-std:c23", "-std:clatest", "-TP"}
+        ,   c23       = {"-std:c23", "-std:clatest", "-TP"}
+        ,   gnu23     = {"-std:c23", "-std:clatest", "-TP"}
+        ,   clatest   = {"-std:clatest", "-std:c23", "-std:c17", "-std:c11", "-TP"}
+        ,   gnulatest   = {"-std:clatest", "-std:c23", "-std:c17", "-std:c11", "-TP"}
         }
     end
 
@@ -256,6 +266,8 @@ function nf_language(self, stdname)
         ,   gnuxx23     = {"-std:c++23", "-std:c++latest"}
         ,   cxx2b       = {"-std:c++23", "-std:c++latest"}
         ,   gnuxx2b     = {"-std:c++23", "-std:c++latest"}
+        ,   cxx26       = {"-std:c++26", "-std:c++latest"}
+        ,   gnuxx26     = {"-std:c++26", "-std:c++latest"}
         ,   cxxlatest   = "-std:c++latest"
         ,   gnuxxlatest = "-std:c++latest"
         }
