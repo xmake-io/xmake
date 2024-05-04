@@ -2857,6 +2857,7 @@ function target.linkname(filename, opt)
     if not filename:startswith("lib") and (filename:endswith(".so") or filename:endswith(".dylib")) then
         return filename
     end
+    return nil
 end
 
 -- new a target instance
