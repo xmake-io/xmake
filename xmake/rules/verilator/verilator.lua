@@ -174,9 +174,9 @@ endmodule]])
     if not os.isfile(autogendir) then
         os.mkdir(autogendir)
     end
-    target:add("includedirs", autogendir)
-    target:add("includedirs", path.join(verilator_root, "include"))
-    target:add("includedirs", path.join(verilator_root, "include", "vltstd"))
+    target:add("includedirs", autogendir, {public = true})
+    target:add("includedirs", path.join(verilator_root, "include"), {public = true})
+    target:add("includedirs", path.join(verilator_root, "include", "vltstd"), {public = true})
 
     -- set languages
     local languages = target:get("languages")
@@ -188,12 +188,12 @@ endmodule]])
         end
     end
     if not cxxlang then
-        target:add("languages", "c++20")
+        target:add("languages", "c++20", {public = true})
     end
 
     -- add definitions for switches
     for k, v in table.orderpairs(switches) do
-        target:add("defines", "VM_" .. k .. "=" .. v)
+        target:add("defines", "VM_" .. k .. "=" .. v, {public = true})
     end
 
     -- add syslinks
