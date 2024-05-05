@@ -52,20 +52,20 @@ function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath,
                 continue_walk = walkdep(instance, depinst)
             end
             if continue_walk then
-                local depspath_sub
-                if depspath then
-                    for idx, name in ipairs(depspath) do
-                        if name == depname then
-                            local circular_deps = table.slice(depspath, idx)
-                            table.insert(circular_deps, depname)
-                            os.raise("circular dependency(%s) detected!", table.concat(circular_deps, ", "))
-                        end
-                    end
-                    depspath_sub = table.join(depspath, depname)
-                end
-                instance_deps.load_deps(depinst, instances, deps, orderdeps, depspath_sub, walkdep)
                 if not deps[depname] then
                     deps[depname] = depinst
+                    local depspath_sub
+                    if depspath then
+                        for idx, name in ipairs(depspath) do
+                            if name == depname then
+                                local circular_deps = table.slice(depspath, idx)
+                                table.insert(circular_deps, depname)
+                                os.raise("circular dependency(%s) detected!", table.concat(circular_deps, ", "))
+                            end
+                        end
+                        depspath_sub = table.join(depspath, depname)
+                    end
+                    instance_deps.load_deps(depinst, instances, deps, orderdeps, depspath_sub, walkdep)
                     table.insert(orderdeps, depinst)
                 end
             end
