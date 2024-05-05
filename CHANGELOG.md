@@ -6,6 +6,7 @@
 
 * [#5005](https://github.com/xmake-io/xmake/pull/5005): Show all apis
 * [#5003](https://github.com/xmake-io/xmake/issues/5003): Add build.fence policy
+* [#5060](https://github.com/xmake-io/xmake/issues/5060): Support Verilator target build to static library
 
 ### Bugs Fixed
 
@@ -1802,6 +1803,7 @@
 
 * [#5005](https://github.com/xmake-io/xmake/pull/5005): 显示所有 API
 * [#5003](https://github.com/xmake-io/xmake/issues/5003): 添加 build.fence 策略
+* [#5060](https://github.com/xmake-io/xmake/issues/5060): 支持 Verilator 静态库目标构建
 
 ### Bugs 修复
 
