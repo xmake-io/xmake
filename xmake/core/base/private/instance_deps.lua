@@ -52,6 +52,34 @@ function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath,
                 continue_walk = walkdep(instance, depinst)
             end
             if continue_walk then
+                if not deps[depname] then
+                    deps[depname] = depinst
+                    local depspath_sub
+                    if depspath then
+                        for idx, name in ipairs(depspath) do
+                            if name == depname then
+                                local circular_deps = table.slice(depspath, idx)
+                                table.insert(circular_deps, depname)
+                                os.raise("circular dependency(%s) detected!", table.concat(circular_deps, ", "))
+                            end
+                        end
+                        depspath_sub = table.join(depspath, depname)
+                    end
+                    instance_deps.load_deps(depinst, instances, deps, orderdeps, depspath_sub, walkdep)
+                    table.insert(orderdeps, depinst)
+                end
+            end
+        end
+    end
+end
+
+-- sort the given instance with deps
+function instance_deps._sort_instance(instance, instances, orderinstances, instancerefs, depspath)
+    if not instancerefs[instance:name()] then
+        instancerefs[instance:name()] = true
+        for _, depname in ipairs(table.wrap(instance:get("deps"))) do
+            local depinst = instances[depname]
+            if depinst then
                 local depspath_sub
                 if depspath then
                     for idx, name in ipairs(depspath) do
@@ -63,37 +91,9 @@ function instance_deps.load_deps(instance, instances, deps, orderdeps, depspath,
                     end
                     depspath_sub = table.join(depspath, depname)
                 end
-                instance_deps.load_deps(depinst, instances, deps, orderdeps, depspath_sub, walkdep)
-                if not deps[depname] then
-                    deps[depname] = depinst
-                    table.insert(orderdeps, depinst)
-                end
+                instance_deps._sort_instance(depinst, instances, orderinstances, instancerefs, depspath_sub)
             end
         end
-    end
-end
-
--- sort the given instance with deps
-function instance_deps._sort_instance(instance, instances, orderinstances, instancerefs, depspath)
-    for _, depname in ipairs(table.wrap(instance:get("deps"))) do
-        local depinst = instances[depname]
-        if depinst then
-            local depspath_sub
-            if depspath then
-                for idx, name in ipairs(depspath) do
-                    if name == depname then
-                        local circular_deps = table.slice(depspath, idx)
-                        table.insert(circular_deps, depname)
-                        os.raise("circular dependency(%s) detected!", table.concat(circular_deps, ", "))
-                    end
-                end
-                depspath_sub = table.join(depspath, depname)
-            end
-            instance_deps._sort_instance(depinst, instances, orderinstances, instancerefs, depspath_sub)
-        end
-    end
-    if not instancerefs[instance:name()] then
-        instancerefs[instance:name()] = true
         table.insert(orderinstances, instance)
     end
 end

@@ -101,20 +101,24 @@ function _need_check(changed)
 end
 
 -- check target
-function _check_target(target)
-    for _, depname in ipairs(target:get("deps")) do
-        assert(depname ~= target:name(), "the target(%s) cannot depend self!", depname)
-        local deptarget = project.target(depname)
-        assert(deptarget, "unknown target(%s) for %s.deps!", depname, target:name())
-        _check_target(deptarget)
+function _check_target(target, checked_targets)
+    if not checked_targets[target:name()] then
+        checked_targets[target:name()] = target
+        for _, depname in ipairs(target:get("deps")) do
+            assert(depname ~= target:name(), "the target(%s) cannot depend self!", depname)
+            local deptarget = project.target(depname)
+            assert(deptarget, "unknown target(%s) for %s.deps!", depname, target:name())
+            _check_target(deptarget, checked_targets)
+        end
     end
 end
 
 -- check targets
 function _check_targets()
     assert(not project.is_loaded(), "project and targets may have been loaded early!")
+    local checked_targets = {}
     for _, target in pairs(project.targets()) do
-        _check_target(target)
+        _check_target(target, checked_targets)
     end
 end
 
