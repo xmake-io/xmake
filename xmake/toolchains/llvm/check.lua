@@ -73,6 +73,20 @@ function main(toolchain)
             if bindir then
                 sdkdir = path.directory(bindir)
             end
+        elseif is_host("windows") then
+            bindir = try {function () return path.directory(os.iorunv("where", {"llvm-ar.exe"})) end}
+            if not bindir then
+                local paths = os.getenv("PATH"):split(';')
+                for i, v in ipairs(paths) do
+                    if os.isfile(path.join(v, "llvm-ar.exe")) then
+                        bindir = v
+                        break
+                    end
+                end
+            end
+            if bindir then
+                sdkdir = path.directory(bindir)
+            end
         end
     end
 
