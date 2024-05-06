@@ -28,8 +28,6 @@ local string    = require("base/string")
 
 -- get the version info
 function _instance:get(name)
-
-    -- get it from info first
     local value = self._INFO[name]
     if value ~= nil then
         return value
