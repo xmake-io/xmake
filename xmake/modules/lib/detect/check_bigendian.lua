@@ -61,7 +61,7 @@ end
 -- local is_bigendian = check_bigendian()
 -- @endcode
 --
-function main(typename, opt)
+function main(opt)
     local snippets = check_bigendian_template
     local ok, is_bigendian = check_cxxsnippets(snippets, table.join(table.wrap(opt), {binary_match = _byteorder_binary_match}))
     if ok then
