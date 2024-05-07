@@ -54,7 +54,7 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
 
     // get data
     tb_byte_t* data = tb_null;
-    if (lua_isinteger(lua, 2))
+    if (xm_lua_isinteger(lua, 2))
         data = (tb_byte_t*)(tb_size_t)(tb_long_t)lua_tointeger(lua, 2);
     if (!data)
     {
@@ -66,7 +66,7 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
 
     // get size
     tb_long_t size = 0;
-    if (lua_isinteger(lua, 3)) size = (tb_long_t)lua_tointeger(lua, 3);
+    if (xm_lua_isinteger(lua, 3)) size = (tb_long_t)lua_tointeger(lua, 3);
     if (size <= 0)
     {
         lua_pushinteger(lua, -1);

@@ -130,6 +130,15 @@ static __tb_inline__ tb_void_t xm_lua_register(lua_State *lua, tb_char_t const* 
 #endif
 }
 
+static __tb_inline__ tb_int_t xm_lua_isinteger(lua_State* lua, int idx)
+{
+#ifdef USE_LUAJIT
+    return lua_isnumber(lua, idx);
+#else
+    return lua_isinteger(lua, idx);
+#endif
+}
+
 #endif
 
 

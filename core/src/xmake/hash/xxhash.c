@@ -52,7 +52,7 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
     }
 
     // is bytes? get data and size
-    if (lua_isinteger(lua, 2) && lua_isinteger(lua, 3))
+    if (xm_lua_isinteger(lua, 2) && xm_lua_isinteger(lua, 3))
     {
         tb_assert_static(sizeof(lua_Integer) == sizeof(tb_pointer_t));
         tb_byte_t const* data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tointeger(lua, 2);
