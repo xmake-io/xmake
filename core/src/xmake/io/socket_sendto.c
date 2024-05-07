@@ -63,7 +63,7 @@ tb_int_t xm_io_socket_sendto(lua_State* lua)
         lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
         return 2;
     }
-    tb_assert_static(sizeof(lua_Integer) == sizeof(tb_pointer_t));
+    tb_assert_static(sizeof(lua_Integer) >= sizeof(tb_pointer_t));
 
     // get address
     tb_char_t const* addr = lua_tostring(lua, 4);

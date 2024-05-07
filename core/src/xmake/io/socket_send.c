@@ -63,7 +63,7 @@ tb_int_t xm_io_socket_send(lua_State* lua)
         lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
         return 2;
     }
-    tb_assert_static(sizeof(lua_Integer) == sizeof(tb_pointer_t));
+    tb_assert_static(sizeof(lua_Integer) >= sizeof(tb_pointer_t));
 
     // send data
     tb_long_t real = tb_socket_send(sock, data, size);

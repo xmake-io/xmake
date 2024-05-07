@@ -52,7 +52,7 @@ tb_int_t xm_hash_sha(lua_State* lua)
             lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
             return 2;
         }
-        tb_assert_static(sizeof(lua_Integer) == sizeof(tb_pointer_t));
+        tb_assert_static(sizeof(lua_Integer) >= sizeof(tb_pointer_t));
 
         // compute sha
         tb_sha_t sha;

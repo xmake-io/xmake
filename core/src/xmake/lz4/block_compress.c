@@ -49,7 +49,7 @@ tb_int_t xm_lz4_block_compress(lua_State* lua)
         lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
         return 2;
     }
-    tb_assert_static(sizeof(lua_Integer) == sizeof(tb_pointer_t));
+    tb_assert_static(sizeof(lua_Integer) >= sizeof(tb_pointer_t));
 
     // do compress
     tb_bool_t ok = tb_false;

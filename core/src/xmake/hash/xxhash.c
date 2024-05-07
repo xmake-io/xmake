@@ -54,7 +54,6 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
     // is bytes? get data and size
     if (xm_lua_isinteger(lua, 2) && xm_lua_isinteger(lua, 3))
     {
-        tb_assert_static(sizeof(lua_Integer) == sizeof(tb_pointer_t));
         tb_byte_t const* data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tointeger(lua, 2);
         tb_size_t size = (tb_size_t)lua_tointeger(lua, 3);
         if (!data || !size)
@@ -63,6 +62,7 @@ tb_int_t xm_hash_xxhash(lua_State* lua)
             lua_pushfstring(lua, "invalid data(%p) and size(%d)!", data, (tb_int_t)size);
             return 2;
         }
+        tb_assert_static(sizeof(lua_Integer) >= sizeof(tb_pointer_t));
 
         // compuate hash
         tb_byte_t const* buffer;
