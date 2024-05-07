@@ -11,6 +11,7 @@
 ### Bugs Fixed
 
 * [#5059](https://github.com/xmake-io/xmake/issues/5059): Fix load huge targets stuck
+* [#5029](https://github.com/xmake-io/xmake/issues/5029): Fix crash on termux
 
 ## v2.9.1
 
@@ -1808,6 +1809,7 @@
 ### Bugs 修复
 
 * [#5059](https://github.com/xmake-io/xmake/issues/5059): 修复加载大量 targets 时候卡住
+* [#5029](https://github.com/xmake-io/xmake/issues/5029): 修复在 termux 上崩溃问题
 
 ## v2.9.1
 
