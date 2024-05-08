@@ -24,9 +24,6 @@ import("core.project.config")
 -- load the cross toolchain
 function main(toolchain)
 
-    -- imports
-    import("core.project.config")
-
     -- get cross prefix
     local cross = toolchain:cross() or ""
 

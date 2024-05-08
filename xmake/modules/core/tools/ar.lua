@@ -30,8 +30,7 @@ end
 
 -- make the strip flag
 function strip(self, level)
-    local maps =
-    {
+    local maps = {
         debug = "-S"
     ,   all   = "-s"
     }
@@ -57,7 +56,7 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     os.tryrm(targetfile)
 
     -- link it
-    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
+    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     os.runv(program, argv, {envs = self:runenvs(), shell = opt.shell})
 end
 
