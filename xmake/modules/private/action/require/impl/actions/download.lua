@@ -207,8 +207,8 @@ function _download(package, url, sourcedir, opt)
         end
     end
 
-    -- we do not extract it
-    if opt.extract == false then
+    -- we do not extract it if we download only it.
+    if opt.download_only then
         return
     end
 
@@ -340,7 +340,7 @@ function main(package, opt)
                 local script = package:script("download")
                 if script then
                     _download_from_script(package, script, {
-                        extract = opt.extract,
+                        download_only = opt.download_only,
                         sourcedir = sourcedir,
                         url = url,
                         url_alias = url_alias,
@@ -352,7 +352,7 @@ function main(package, opt)
                         url_submodules = url_submodules})
                 else
                     _download(package, url, sourcedir, {
-                        extract = opt.extract,
+                        download_only = opt.download_only,
                         url_alias = url_alias,
                         url_excludes = url_excludes,
                     url_http_headers = url_http_headers})
@@ -416,7 +416,7 @@ function main(package, opt)
 
         if ok then
             -- download only packages, we need not to install it, so we need flush console output
-            if opt.extract == false then
+            if opt.download_only then
                 tty.erase_line_to_start().cr()
                 if git.checkurl(url) then
                     cprint("${yellow}  => ${clear}clone %s %s .. ${color.success}${text.success}", url, package:version_str())

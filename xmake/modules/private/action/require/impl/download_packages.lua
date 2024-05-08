@@ -147,7 +147,7 @@ function _download_packages(packages_download)
             packages_downloading[index] = instance
 
             -- download this package
-            action_download(instance, {outputdir = option.get("packagedir"), extract = false})
+            action_download(instance, {outputdir = option.get("packagedir"), download_only = true})
 
             -- reset package status cache
             _g.package_status_cache = nil
