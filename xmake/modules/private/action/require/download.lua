@@ -53,7 +53,7 @@ function main(requires_raw)
 
     -- download packages
     environment.enter()
-    download_packages(requires, {requires_extra = requires_extra})
+    download_packages(requires, {requires_extra = requires_extra, nodeps = true})
     environment.leave()
 end
 

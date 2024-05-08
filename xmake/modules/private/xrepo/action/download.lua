@@ -46,8 +46,7 @@ function menu_options()
                                        "e.g.",
                                        "    - xrepo download -p cross --toolchain=mytool --includes='toolchain1.lua" .. path.envsep() .. "toolchain2.lua'"},
         {category = "Other Configuration"                                    },
-        {nil, "force",         "k",  nil, "Force to redownload all package dependencies."},
-        {nil, "shallow",       "k",  nil, "Does not download dependent packages."},
+        {nil, "force",         "k",  nil, "Force to redownload all packages."},
         {'o', "outputdir",     "kv", "packages","Set the packages download output directory."},
         {},
         {nil, "packages",      "vs", nil, "The packages list.",
@@ -168,9 +167,6 @@ function _download_packages(packages)
     end
     if option.get("force") then
         table.insert(require_argv, "--force")
-    end
-    if option.get("shallow") then
-        table.insert(require_argv, "--shallow")
     end
     local outputdir = option.get("outputdir")
     if outputdir then
