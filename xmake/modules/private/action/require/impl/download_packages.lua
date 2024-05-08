@@ -113,7 +113,7 @@ function _should_download_package(instance)
 end
 
 -- download packages
-function _download_packages(packages_download, packagedeps)
+function _download_packages(packages_download)
 
     -- we need to hide wait characters if is not a tty
     local show_wait = io.isatty()
@@ -138,36 +138,8 @@ function _download_packages(packages_download, packagedeps)
         -- fetch a new package
         local instance = nil
         while instance == nil and #packages_pending > 0 do
-            for idx, pkg in ipairs(packages_pending) do
-
-                -- all dependences has been downloaded? we download it now
-                local ready = true
-                local dep_not_found = nil
-                for _, dep in pairs(packagedeps[tostring(pkg)]) do
-                    local downloaded = packages_downloaded[tostring(dep)]
-                    if downloaded == false or (downloaded == nil and _should_download_package(dep) and not dep:is_optional()) then
-                        ready = false
-                        dep_not_found = dep
-                        break
-                    end
-                end
-
-                -- get a package with the ready status
-                if ready then
-                    instance = pkg
-                    table.remove(packages_pending, idx)
-                    break
-                elseif working_count == 0 then
-                    if #packages_pending == 1 and dep_not_found then
-                        raise("package(%s): cannot be downloaded, there are dependencies(%s) that cannot be downloaded!", pkg:displayname(), dep_not_found:displayname())
-                    elseif #packages_pending == 1 then
-                        raise("package(%s): cannot be downloaded!", pkg:displayname())
-                    end
-                end
-            end
-            if instance == nil and #packages_pending > 0 then
-                os.sleep(100)
-            end
+            instance = packages_pending[1]
+            table.remove(packages_pending, 1)
         end
         if instance then
             working_count = working_count + 1
@@ -260,57 +232,12 @@ function _download_packages(packages_download, packagedeps)
     end})
 end
 
--- sort packages for downloadation dependencies
-function _sort_packages_for_packagedeps(packages, packagedeps, order_packages)
-    for _, instance in ipairs(packages) do
-        local deps = packagedeps[tostring(instance)]
-        if deps then
-            _sort_packages_for_packagedeps(deps, packagedeps, order_packages)
-        end
-        table.insert(order_packages, instance)
-    end
-end
-
--- get package dependencies
-function _get_packagedeps(packages)
-    local packagedeps = {}
-    local packagesmap = {}
-    for _, instance in ipairs(packages) do
-        -- we need to use alias name first for toolchain/packages
-        packagesmap[instance:alias() or instance:name()] = instance
-    end
-    for _, instance in ipairs(packages) do
-        local deps = {}
-        if instance:orderdeps() then
-            deps = table.copy(instance:orderdeps())
-        end
-        -- patch toolchain/packages to packagedeps, because we need to download toolchain package first
-        for _, toolchain in ipairs(instance:toolchains()) do
-            for _, packagename in ipairs(toolchain:config("packages")) do
-                if packagesmap[packagename] ~= instance then -- avoid loop recursion
-                    table.insert(deps, packagesmap[packagename])
-                end
-            end
-        end
-        packagedeps[tostring(instance)] = deps
-    end
-    return packagedeps
-end
-
 -- download packages
 function main(requires, opt)
     opt = opt or {}
 
     -- load packages
     local packages = package.load_packages(requires, opt)
-
-    -- get package dependencies
-    local packagedeps = _get_packagedeps(packages)
-
-    -- sort packages for packagedeps
-    local order_packages = {}
-    _sort_packages_for_packagedeps(packages, packagedeps, order_packages)
-    packages = table.unique(order_packages)
 
     -- save terminal mode for stdout
     local term_mode_stdout = tty.term_mode("stdout")
@@ -369,7 +296,7 @@ function main(requires, opt)
     _sort_packages_urls(packages_download)
 
     -- download all required packages from repositories
-    _download_packages(packages_download, packagedeps)
+    _download_packages(packages_download)
     return packages
 end
 
