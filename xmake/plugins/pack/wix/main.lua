@@ -125,7 +125,7 @@ function _get_feature_string(name, opt)
     local description = opt.description or ""
     local allow_absent = opt.force and "false" or "true"
     local allow_advertise = opt.force and "false" or "true"
-    local typical_default = opt.force and [[TypicalDefault="install"]] or ""
+    local typical_default = [[TypicalDefault="install"]]
     local directory = opt.config_dir and [[ConfigurableDirectory="INSTALLFOLDER"]] or ""
     local feature = string.format([[<Feature Id="%s" Title="%s" Description="%s" Level="%d" AllowAdvertise="%s" AllowAbsent="%s" %s %s>]], name, name, description, level, allow_advertise, allow_absent, typical_default, directory)
     return feature
@@ -179,7 +179,7 @@ function _add_to_path(package)
     local result = {}
     table.insert(result, _get_feature_string("PATH", {default = false, force = false, description = "Add to PATH"}))
     table.insert(result, _get_component_string("PATH"))
-    table.insert(result, [[<Environment Id="PATH" Name="PATH"  Value="[INSTALLDIR]/bin" Permanent="yes" Part="last" Action="set" System="yes" />]])
+    table.insert(result, [[<Environment Id="PATH" Name="PATH"  Value="[INSTALLFOLDER]bin" Permanent="false" Part="last" Action="set" System="true" />]])
     table.insert(result, "</Component>")
     table.insert(result, "</Feature>")
     return result
@@ -199,7 +199,7 @@ function _get_specvars(package)
         table.join2(features, _build_feature(component, {name = "Install " .. name}))
     end
 
-    specvars.PACKAGE_CMDS = table.concat(features, "\n  ")
+    specvars.PACKAGE_WIX_CMDS = table.concat(features, "\n  ")
     specvars.PACKAGE_WIX_UPGRADECODE = hash.uuid(package:name())
 
     -- company cannot be empty with wix

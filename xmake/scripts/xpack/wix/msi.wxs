@@ -29,6 +29,6 @@
               <Directory Id="INSTALLFOLDER" Name="$(PackageName)"/>
             </Directory>
         </StandardDirectory>
-        ${PACKAGE_CMDS}
+        ${PACKAGE_WIX_CMDS}
     </Package>
 </Wix>
