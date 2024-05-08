@@ -414,8 +414,18 @@ function main(package, opt)
             }
         }
 
-        -- ok? break it
-        if ok then break end
+        if ok then
+            -- download only packages, we need not to install it, so we need flush console output
+            if opt.extract == false then
+                tty.erase_line_to_start().cr()
+                if git.checkurl(url) then
+                    cprint("${yellow}  => ${clear}clone %s %s .. ${color.success}${text.success}", url, package:version_str())
+                else
+                    cprint("${yellow}  => ${clear}download %s .. ${color.success}${text.success}", url)
+                end
+            end
+            break
+        end
     end
 
     -- unlock this package

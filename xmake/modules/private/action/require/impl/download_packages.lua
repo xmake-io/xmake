@@ -297,6 +297,8 @@ function main(requires, opt)
 
     -- download all required packages from repositories
     _download_packages(packages_download)
+    cprint("outputdir: ${bright}%s", option.get("packagedir"))
+    cprint("${color.success}install packages ok")
     return packages
 end
 
