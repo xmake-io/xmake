@@ -148,6 +148,9 @@ function _download(package, url, sourcedir, opt)
 
     -- get package file
     local packagefile = url_filename(url)
+    if opt.download_only then
+        packagefile = package:name() .. "-" .. package:version_str() .. archive.extension(packagefile)
+    end
 
     -- get sourcehash from the given url
     --
@@ -205,6 +208,11 @@ function _download(package, url, sourcedir, opt)
             end
             raise("unmatched checksum, current hash(%s) != original hash(%s)", hash.sha256(packagefile):sub(1, 8), sourcehash:sub(1, 8))
         end
+    end
+
+    -- we do not extract it if we download only it.
+    if opt.download_only then
+        return
     end
 
     -- extract package file
@@ -280,10 +288,11 @@ function _urls(package)
 end
 
 -- download the given package
-function main(package)
+function main(package, opt)
+    opt = opt or {}
 
     -- get working directory of this package
-    local workdir = package:cachedir()
+    local workdir = opt.outputdir or package:cachedir()
 
     -- ensure the working directory first
     os.mkdir(workdir)
@@ -334,6 +343,7 @@ function main(package)
                 local script = package:script("download")
                 if script then
                     _download_from_script(package, script, {
+                        download_only = opt.download_only,
                         sourcedir = sourcedir,
                         url = url,
                         url_alias = url_alias,
@@ -345,6 +355,7 @@ function main(package)
                         url_submodules = url_submodules})
                 else
                     _download(package, url, sourcedir, {
+                        download_only = opt.download_only,
                         url_alias = url_alias,
                         url_excludes = url_excludes,
                     url_http_headers = url_http_headers})
@@ -406,8 +417,18 @@ function main(package)
             }
         }
 
-        -- ok? break it
-        if ok then break end
+        if ok then
+            -- download only packages, we need not to install it, so we need flush console output
+            if opt.download_only then
+                tty.erase_line_to_start().cr()
+                if git.checkurl(url) then
+                    cprint("${yellow}  => ${clear}clone %s %s .. ${color.success}${text.success}", url, package:version_str())
+                else
+                    cprint("${yellow}  => ${clear}download %s .. ${color.success}${text.success}", url)
+                end
+            end
+            break
+        end
     end
 
     -- unlock this package
