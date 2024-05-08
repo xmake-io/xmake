@@ -55,6 +55,20 @@ function _translate_filepath(package, filepath)
     return path.relative(filepath, package:install_rootdir())
 end
 
+function _to_rtf_string(str)
+    if str == "" then
+        return str
+    end
+
+    local escape_text = str:gsub("\\", "\\\\")
+    escape_text = escape_text:gsub("{", "\\{")
+    escape_text = escape_text:gsub("}", "\\}")
+
+    local rtf = "{\\rtf1\\ansi{\\fonttbl\\f0\\fswiss Helvetica;}\\f0\\pard ";
+    rtf = rtf .. escape_text:gsub("\r\n", " \\par ") .. "}" 
+    return rtf
+end
+
 -- get a table where the key is a directory and the value a list of files
 -- used to regroup all files that are placed in the same directory under the same component.
 function _get_cp_kind_table(package, cmds, opt)
@@ -199,6 +213,18 @@ function _get_specvars(package)
         table.join2(features, _build_feature(component, {name = "Install " .. name}))
     end
 
+    specvars.PACKAGE_LICENSEFILE = function ()
+        local rtf_string = ""
+        local licensefile = package:get("licensefile")
+        if licensefile then
+            rtf_string =  _to_rtf_string(io.readfile(licensefile))
+        end
+
+        local rtf_file = path.join(package:buildir(), "license.rtf")
+        io.writefile(rtf_file, rtf_string)
+        return rtf_file
+    end
+
     specvars.PACKAGE_WIX_CMDS = table.concat(features, "\n  ")
     specvars.PACKAGE_WIX_UPGRADECODE = hash.uuid(package:name())
 
@@ -257,7 +283,6 @@ function main(package)
     end
 
     cprint("packing %s", package:outputfile())
-
     -- get wix
     local wix, oldenvs = _get_wix()
 
