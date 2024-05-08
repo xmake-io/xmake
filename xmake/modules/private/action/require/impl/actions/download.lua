@@ -148,6 +148,9 @@ function _download(package, url, sourcedir, opt)
 
     -- get package file
     local packagefile = url_filename(url)
+    if opt.download_only then
+        packagefile = package:name() .. "-" .. package:version_str() .. archive.extension(packagefile)
+    end
 
     -- get sourcehash from the given url
     --
