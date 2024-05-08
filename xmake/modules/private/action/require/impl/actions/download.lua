@@ -207,6 +207,11 @@ function _download(package, url, sourcedir, opt)
         end
     end
 
+    -- we do not extract it
+    if opt.extract == false then
+        return
+    end
+
     -- extract package file
     local sourcedir_tmp = sourcedir .. ".tmp"
     os.rm(sourcedir_tmp)
@@ -280,10 +285,11 @@ function _urls(package)
 end
 
 -- download the given package
-function main(package)
+function main(package, opt)
+    opt = opt or {}
 
     -- get working directory of this package
-    local workdir = package:cachedir()
+    local workdir = opt.outputdir or package:cachedir()
 
     -- ensure the working directory first
     os.mkdir(workdir)
@@ -334,6 +340,7 @@ function main(package)
                 local script = package:script("download")
                 if script then
                     _download_from_script(package, script, {
+                        extract = opt.extract,
                         sourcedir = sourcedir,
                         url = url,
                         url_alias = url_alias,
@@ -345,6 +352,7 @@ function main(package)
                         url_submodules = url_submodules})
                 else
                     _download(package, url, sourcedir, {
+                        extract = opt.extract,
                         url_alias = url_alias,
                         url_excludes = url_excludes,
                     url_http_headers = url_http_headers})

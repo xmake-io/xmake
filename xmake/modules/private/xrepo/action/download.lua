@@ -174,6 +174,9 @@ function _download_packages(packages)
     end
     local outputdir = option.get("outputdir")
     if outputdir then
+        if not path.is_absolute(outputdir) then
+            outputdir = path.absolute(outputdir, os.workingdir())
+        end
         table.insert(require_argv, "--packagedir=" .. outputdir)
     end
     local extra = {system = false}
