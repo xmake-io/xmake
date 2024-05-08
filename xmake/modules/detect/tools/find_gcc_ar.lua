@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_ar.lua
+-- @file        find_gcc_ar.lua
 --
 
 -- imports
@@ -45,7 +45,7 @@ end
 --
 -- @code
 --
--- local ar = find_ar()
+-- local ar = find_gcc_ar()
 -- local ar, version = find_ar({program = "xcrun -sdk macosx g++", version = true})
 --
 -- @endcode
@@ -53,5 +53,5 @@ end
 function main(opt)
     opt       = opt or {}
     opt.check = opt.check or _check
-    return find_program(opt.program or "ar", opt)
+    return find_program(opt.program or "gcc-ar", opt)
 end
