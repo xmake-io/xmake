@@ -115,12 +115,11 @@ function _get_other_commands(package, cmd, opt)
         local dir = _translate_filepath(package, cmd.dir)
         local subdirectory = dir ~= "." and string.format([[Subdirectory="%s"]], dir) or ""
         result = string.format([[<CreateFolder Directory="INSTALLFOLDER" %s/>]], subdirectory)
-    elseif kind ~= "cp" then
-        wprint("kind %s is not supported with wix", kind)
     end
     return result
 end
 
+-- get the string of a wix feature
 function _get_feature_string(name, opt)
     local level = opt.default and 1 or 2
     local description = opt.description or ""
@@ -178,7 +177,7 @@ end
 -- add to path feature
 function _add_to_path(package)
     local result = {}
-    table.insert(result, _get_feature_string("PATH", {default = false, force = false, description = "Add to PATH", config_dir = false}))
+    table.insert(result, _get_feature_string("PATH", {default = false, force = false, description = "Add to PATH"}))
     table.insert(result, _get_component_string("PATH"))
     table.insert(result, [[<Environment Id="PATH" Name="PATH"  Value="[INSTALLDIR]/bin" Permanent="yes" Part="last" Action="set" System="yes" />]])
     table.insert(result, "</Component>")
@@ -193,7 +192,7 @@ function _get_specvars(package)
     local specvars = table.clone(package:specvars())
 
     local features = {}
-    table.join2(features, _build_feature(package, {default = true, force = true}))
+    table.join2(features, _build_feature(package, {default = true, force = true, config_dir = true}))
     table.join2(features, _add_to_path(package))
 
     for name, component in table.orderpairs(package:components()) do
@@ -237,8 +236,18 @@ function _pack_wix(wix, package)
         return value
     end)
 
+    local argv = {"build", specfile}
+    table.join2(argv, {"-ext", "WixToolset.UI.wixext"})
+    table.join2(argv, {"-o", package:outputfile()})
+
+    if package:arch() == "x64" then
+        table.join2(argv, {"-arch", "x64"})
+    elseif package:arch() == "x86" then
+        table.join2(argv, {"-arch", "x86"})
+    end
+
     -- make package
-    -- os.vrunv(wix, {specfile})
+    os.vrunv(wix, argv)
 end
 
 function main(package)
