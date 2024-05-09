@@ -1202,7 +1202,8 @@ end
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
     if self:toolchains() then
-        return toolchain.tool(self:toolchains(), toolkind, {cachekey = "package", plat = self:plat(), arch = self:arch()})
+        local cachekey = "package_" .. tostring(self)
+        return toolchain.tool(self:toolchains(), toolkind, {cachekey = cachekey, plat = self:plat(), arch = self:arch()})
     else
         return platform.tool(toolkind, self:plat(), self:arch())
     end
@@ -1211,7 +1212,8 @@ end
 -- get tool configuration from the toolchains
 function _instance:toolconfig(name)
     if self:toolchains() then
-        return toolchain.toolconfig(self:toolchains(), name, {cachekey = "package", plat = self:plat(), arch = self:arch()})
+        local cachekey = "package_" .. tostring(self)
+        return toolchain.toolconfig(self:toolchains(), name, {cachekey = cachekey, plat = self:plat(), arch = self:arch()})
     else
         return platform.toolconfig(name, self:plat(), self:arch())
     end
