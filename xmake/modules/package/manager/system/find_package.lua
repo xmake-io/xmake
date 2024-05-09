@@ -20,6 +20,7 @@
 
 -- imports
 import("core.language.language")
+import("core.platform.platform")
 import("private.core.base.is_cross")
 import("lib.detect.check_cxsnippets")
 
@@ -40,8 +41,17 @@ end
 -- check package toolchains
 function _check_package_toolchains(package)
     local has_standalone
-    for _, toolchain_inst in ipairs(package:toolchains()) do
-        if toolchain_inst:check() and toolchain_inst:is_standalone() then
+    if package:toolchains() then
+        for _, toolchain_inst in ipairs(package:toolchains()) do
+            if toolchain_inst:check() and toolchain_inst:is_standalone() then
+                has_standalone = true
+            end
+        end
+    else
+        -- we need also check platform toolchain, perhaps it has a different platform arch.
+        -- @see https://github.com/xmake-io/xmake/issues/4043#issuecomment-2102486249
+        local platform_inst = platform.load(package:plat(), package:arch())
+        if platform_inst:check() then
             has_standalone = true
         end
     end
@@ -76,7 +86,7 @@ function main(name, opt)
     -- But if it depends on some toolchain packages,
     -- then they can't be detected early in the fetch and we have to disable system.find_package
     local package = opt.package
-    if package and package:toolchains() and not _check_package_toolchains(package) then
+    if package and not _check_package_toolchains(package) then
         return
     end
 
