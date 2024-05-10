@@ -16,6 +16,7 @@
     <XmakeRunArgs>#runargs#</XmakeRunArgs>
     <XmakeConfigFlags>#configflags#</XmakeConfigFlags>
     <XmakeIncludeDirs>#includedirs#</XmakeIncludeDirs>
+    <XmakeForceIncludes>#forceincludes#</XmakeForceIncludes>
     <XmakeLinkDirs>#linkdirs#</XmakeLinkDirs>
     <XmakeSourceDirs>#sourcedirs#</XmakeSourceDirs>
     <XmakePrecompiledHeader>#pcheaderfile#</XmakePrecompiledHeader>
