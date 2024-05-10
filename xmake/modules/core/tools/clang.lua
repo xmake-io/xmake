@@ -271,7 +271,7 @@ function nf_runtime(self, runtime, opt)
             local target = opt.target or opt
             local is_cxx = target and (target.sourcekinds and table.contains(table.wrap(target:sourcekinds()), "cxx"))
             if is_cxx then
-                maps["c++_static"]    = "-stdlib=libc++"
+                maps["c++_static"]    = {"-stdlib=libc++", "-lc++abi"}
                 maps["c++_shared"]    = "-stdlib=libc++"
                 maps["stdc++_static"] = "-stdlib=libstdc++"
                 maps["stdc++_shared"] = "-stdlib=libstdc++"
