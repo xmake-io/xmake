@@ -9,6 +9,10 @@
 * [#5060](https://github.com/xmake-io/xmake/issues/5060): Support Verilator target build to static library
 * [#5074](https://github.com/xmake-io/xmake/pull/5074): Add `xrepo download` command to download package source
 
+### Changes
+
+* [#5077](https://github.com/xmake-io/xmake/issues/5077): Use x64 host compiler for msvc when building x86 target
+
 ### Bugs Fixed
 
 * [#5059](https://github.com/xmake-io/xmake/issues/5059): Fix load huge targets stuck
@@ -1807,6 +1811,10 @@
 * [#5003](https://github.com/xmake-io/xmake/issues/5003): 添加 build.fence 策略
 * [#5060](https://github.com/xmake-io/xmake/issues/5060): 支持 Verilator 静态库目标构建
 * [#5074](https://github.com/xmake-io/xmake/pull/5074): 添加 `xrepo download` 命令去快速下载包源码
+
+### 改进
+
+* [#5077](https://github.com/xmake-io/xmake/issues/5077): 当构建 x86 目标时，使用 x64 的 msvc 编译工具
 
 ### Bugs 修复
 
