@@ -318,8 +318,8 @@ function main(toolchain)
                 -- The NDK's libc++ now comes directly from our LLVM toolchain above 26b
                 -- https://github.com/xmake-io/xmake/issues/4614
                 if ndk_cxxstl == "c++_static" then
-                    toolchain:add("ldflags", "-static-libstdc++")
-                    toolchain:add("shflags", "-static-libstdc++")
+                    toolchain:add("ldflags", "-static-libstdc++", "-lc++abi")
+                    toolchain:add("shflags", "-static-libstdc++", "-lc++abi")
                     if arm32 then
                         toolchain:add("syslinks", "unwind", "atomic")
                     end
