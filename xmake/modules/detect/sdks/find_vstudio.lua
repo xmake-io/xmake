@@ -120,14 +120,22 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     end
     local host_arch = os.arch()
     if is_vsdevcmd then
-        if opt.vcvars_ver then
-            file:print("call \"%s\" -host_arch=%s -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, host_arch, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+        if vsver and tonumber(vsver) >= 16 then
+            if opt.vcvars_ver then
+                file:print("call \"%s\" -host_arch=%s -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, host_arch, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+            else
+                file:print("call \"%s\" -host_arch=%s -arch=%s -winsdk=%s > nul", vcvarsall, host_arch, arch, opt.sdkver and opt.sdkver or "")
+            end
         else
-            file:print("call \"%s\" -host_arch=%s -arch=%s -winsdk=%s > nul", vcvarsall, host_arch, arch, opt.sdkver and opt.sdkver or "")
+            if opt.vcvars_ver then
+                file:print("call \"%s\" -arch=%s -winsdk=%s -vcvars_ver=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
+            else
+                file:print("call \"%s\" -arch=%s -winsdk=%s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
+            end
         end
     else
         -- @see https://github.com/xmake-io/xmake/issues/5077
-        if host_arch ~= arch then
+        if vsver and tonumber(vsver) >= 16 and host_arch ~= arch then
             if host_arch == "x64" then
                 host_arch = "amd64"
             end
