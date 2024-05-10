@@ -107,7 +107,7 @@ tb_int_t xm_winos_cp_info(lua_State* lua)
     lua_pushliteral(lua, "name");
     tb_char_t* namebuf = tb_malloc_cstr(sizeof(cp_info.CodePageName) * 2);
     tb_assert_and_check_return_val(namebuf, 0);
-    tb_size_t namelen = tb_wtoa(namebuf, cp_info.CodePageName, sizeof(cp_info.CodePageName) * 2);
+    tb_size_t namelen = tb_wtoa(namebuf, (const tb_wchar_t *)cp_info.CodePageName, sizeof(cp_info.CodePageName) * 2);
     tb_assert_and_check_return_val(namelen < sizeof(cp_info.CodePageName) * 2, 0);
     lua_pushlstring(lua, namebuf, namelen);
     tb_free(namebuf);
