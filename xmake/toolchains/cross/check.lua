@@ -21,6 +21,27 @@
 -- imports
 import("core.project.config")
 import("detect.sdks.find_cross_toolchain")
+import("lib.detect.find_file")
+
+-- find liblto_plugin.so path for gcc
+function _find_gcc_liblto_plugin_path(cross_toolchain)
+    local gcc = find_file((cross_toolchain.cross or "*-") .. "gcc", cross_toolchain.bindir)
+    if gcc then
+        local plugin_path
+        local outdata = try { function() return os.iorunv(gcc, {"-print-prog-name=lto-wrapper"}) end }
+        if outdata then
+            local lto_plugindir = path.directory(outdata:trim())
+            if os.isdir(lto_plugindir) then
+                if is_host("windows") then
+                    plugin_path = find_file("liblto_plugin*.dll", lto_plugindir)
+                else
+                    plugin_path = find_file("liblto_plugin.so", lto_plugindir)
+                end
+            end
+        end
+        return plugin_path
+    end
+end
 
 -- check the cross toolchain
 function main(toolchain)
@@ -47,6 +68,7 @@ function main(toolchain)
             end
         end
     end
+
     if cross_toolchain then
         toolchain:config_set("cross", cross_toolchain.cross)
         toolchain:config_set("bindir", cross_toolchain.bindir)
@@ -55,6 +77,14 @@ function main(toolchain)
         -- init default target os
         if not config.get("target_os") then
             config.set("target_os", "linux", {readonly = true, force = true})
+        end
+
+        -- find lto_plugin.so path for gcc
+        -- @see https://github.com/xmake-io/xmake/issues/5015
+        -- https://github.com/xmake-io/xmake/issues/5051
+        local lto_plugin = _find_gcc_liblto_plugin_path(cross_toolchain)
+        if lto_plugin then
+            toolchain:config_set("lto_plugin", lto_plugin)
         end
     else
         raise("cross toolchain not found!")
