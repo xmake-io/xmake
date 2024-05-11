@@ -57,7 +57,7 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
         -- gcc-ar.exe does not support `@file`, so we need use ar.exe to instead of it.
         -- @see https://github.com/xmake-io/xmake/issues/5051
         --
-        -- but ar.exe does not support lto, we need also add lto_plugin.so path in `@file` for gcc
+        -- but ar.exe does not support lto, we need also add lto_plugin-0.dll path in `@file` for gcc
         -- @see https://github.com/xmake-io/xmake/issues/5015
         --
         -- gcc-ar is the wrapper of `ar --plugin lto_plugin.so ...`
