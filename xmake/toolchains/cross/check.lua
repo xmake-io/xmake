@@ -47,6 +47,7 @@ function main(toolchain)
             end
         end
     end
+
     if cross_toolchain then
         toolchain:config_set("cross", cross_toolchain.cross)
         toolchain:config_set("bindir", cross_toolchain.bindir)

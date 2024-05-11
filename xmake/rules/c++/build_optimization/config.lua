@@ -37,7 +37,7 @@ function _add_lto_optimization(target, sourcekind)
     end
 
     -- add ldflags and shflags
-    local _, ld = target:tool("ld")
+    local program, ld = target:tool("ld")
     if ld == "link" then
         target:add("ldflags", "-LTCG")
         target:add("shflags", "-LTCG")
@@ -47,6 +47,7 @@ function _add_lto_optimization(target, sourcekind)
     elseif ld == "gcc" or ld == "gxx" then
         target:add("ldflags", "-flto")
         target:add("shflags", "-flto")
+
         -- to use the link-time optimizer, -flto and optimization options should be specified at compile time and during the final link.
         -- @see https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
         local optimize = target:get("optimize")
