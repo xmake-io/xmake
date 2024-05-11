@@ -104,6 +104,7 @@
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);$(XmakeDefines)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(XmakeIncludeDirs)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(XmakeForceIncludes)</ForcedIncludeFiles>
       <AdditionalOptions>%(AdditionalOptions) $(XmakeCFlags) $(XmakeCXFlags) $(XmakeCXXFlags)</AdditionalOptions>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx11'))">stdcpp11</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx14'))">stdcpp14</LanguageStandard>
