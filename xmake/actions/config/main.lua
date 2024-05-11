@@ -30,7 +30,7 @@ import("core.cache.localcache")
 import("scangen")
 import("menuconf", {alias = "menuconf_show"})
 import("configfiles", {alias = "generate_configfiles"})
-import("private.action.require.check", {alias = "check_packages"})
+import("private.action.require.register", {alias = "register_packages"})
 import("private.action.require.install", {alias = "install_packages"})
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 
@@ -384,13 +384,13 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         -- check configs
         _check_configs()
 
-        -- install and update packages
+        -- install and register packages
         local require_enable = option.boolean(option.get("require"))
         if (recheck or require_enable) then
             if require_enable ~= false then
                 install_packages()
             else
-                check_packages()
+                register_packages()
             end
         end
 

@@ -65,6 +65,9 @@ task("require")
                 ,   {nil, "info",       "k",  nil,       "Show the given package info.",
                                                          "e.g.",
                                                          "    $ xmake require --info tbox"                                     }
+                ,   {nil, "check",      "k",  nil,      "Check whether the given package is supported",
+                                                         "e.g.",
+                                                         "    $ xmake require --check tbox"                                    }
                 ,   {nil, "fetch",      "k",  nil,      "Fetch the library info of given package.",
                                                          "e.g.",
                                                          "    $ xmake require --fetch tbox"                                    }

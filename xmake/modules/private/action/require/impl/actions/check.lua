@@ -25,6 +25,13 @@ import("core.project.config")
 -- check the given package
 function main(package, opt)
     opt = opt or {}
+
+    -- we need not check it if this package is precompiled now
+    if package:is_precompiled() then
+        return
+    end
+
+    -- do check
     local script = package:script("check")
     if script then
         script(package)

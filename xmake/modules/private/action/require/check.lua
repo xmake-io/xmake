@@ -20,16 +20,16 @@
 
 -- imports
 import("core.base.option")
-import("core.base.task")
-import("lib.detect.find_tool")
-import("async.runjobs")
+import("core.base.hashset")
+import("core.base.json")
+import("core.project.project")
+import("core.package.package", {alias = "core_package"})
 import("private.action.require.impl.package")
 import("private.action.require.impl.repository")
-import("private.action.require.impl.environment")
-import("private.action.require.impl.register_packages")
 import("private.action.require.impl.utils.get_requires")
+import("private.action.require.impl.actions.check", {alias = "action_check"})
 
--- install packages
+-- check the given package info
 function main(requires_raw)
 
     -- get requires and extra config
@@ -39,36 +39,9 @@ function main(requires_raw)
         return
     end
 
-    -- find git
-    environment.enter()
-    local git = find_tool("git")
-    environment.leave()
-
-    -- pull all repositories first if not exists
-    --
-    -- attempt to install git from the builtin-packages first if git not found
-    --
-    if git and (not repository.pulled() or option.get("upgrade")) then
-        task.run("repo", {update = true})
-    end
-
-    -- install packages
-    local packages = package.load_packages(requires, {requires_extra = requires_extra})
-    if packages then
-
-        -- fetch and register packages (with system) from local first
-        runjobs("fetch_packages", function (index)
-            local instance = packages[index]
-            if instance and (not option.get("force") or (option.get("shallow") and not instance:is_toplevel())) then
-                local oldenvs = os.getenvs()
-                instance:envs_enter()
-                instance:fetch()
-                os.setenvs(oldenvs)
-            end
-        end, {total = #packages, isolate = true})
-
-        -- register all required root packages to local cache
-        register_packages(packages)
+    -- check the given packages
+    for _, instance in irpairs(package.load_packages(requires, {requires_extra = requires_extra, nodeps = true})) do
+        action_check(instance)
     end
 end
 
