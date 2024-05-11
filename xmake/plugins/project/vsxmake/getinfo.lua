@@ -137,7 +137,7 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.configfiledir = _make_dirs(target:get("configdir"))
     targetinfo.includedirs   = _make_dirs(table.join(_get_values_from_target(target, "includedirs") or {}, _get_values_from_target(target, "sysincludedirs")))
     targetinfo.linkdirs      = _make_dirs(_get_values_from_target(target, "linkdirs"))
-    targetinfo.forceincludes = _make_dirs(_get_values_from_target(target, "forceincludes"))
+    targetinfo.forceincludes = _get_values_from_target(target, "forceincludes")
     targetinfo.sourcedirs    = _make_dirs(_get_values_from_target(target, "values.project.vsxmake.sourcedirs"))
     targetinfo.pcheaderfile  = target:pcheaderfile("cxx") or target:pcheaderfile("c")
 
