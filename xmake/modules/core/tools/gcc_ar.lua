@@ -20,25 +20,3 @@
 
 inherit("ar")
 
--- make the link arguments list
--- @see https://github.com/xmake-io/xmake/issues/5051
--- @note gcc-ar.exe does not support `gcc-ar.exe @file`
-function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
-    local argv = table.join(flags, targetfile, objectfiles)
-    return self:program(), argv
-end
-
--- link the library file
-function link(self, objectfiles, targetkind, targetfile, flags, opt)
-    opt = opt or {}
-    os.mkdir(path.directory(targetfile))
-
-    -- @note remove the previous archived file first to force recreating a new file
-    os.tryrm(targetfile)
-
-    -- link it
-    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
-    os.runv(program, argv, {envs = self:runenvs(), shell = opt.shell})
-end
-
-

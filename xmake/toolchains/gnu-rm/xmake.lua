@@ -18,23 +18,14 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
 toolchain("gnu-rm")
-
-    -- set homepage
     set_homepage("https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm")
     set_description("GNU Arm Embedded Toolchain")
-
-    -- mark as cross-complation toolchain
     set_kind("cross")
 
-    -- on load
     on_load(function (toolchain)
-
-        -- load basic configuration of cross toolchain
         toolchain:load_cross_toolchain()
 
-        -- add basic flags
         toolchain:add("ldflags", "--specs=nosys.specs", "--specs=nano.specs", {force = true})
         toolchain:add("shflags", "--specs=nosys.specs", "--specs=nano.specs", {force = true})
         toolchain:add("syslinks", "c", "m")
