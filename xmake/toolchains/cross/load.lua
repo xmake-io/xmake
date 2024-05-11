@@ -37,7 +37,7 @@ function main(toolchain)
     toolchain:add("toolset", "ld", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
     toolchain:add("toolset", "sh", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
     toolchain:add("toolset", "ar", cross .. "ar")
-    toolchain:add("toolset", "ranlib", cross .. "ranlib")
+    toolchain:add("toolset", "ranlib", cross .. "gcc-ranlib", cross .. "ranlib")
     toolchain:add("toolset", "strip", cross .. "strip")
 
     -- add bin search library for loading some dependent .dll files windows
@@ -48,7 +48,9 @@ function main(toolchain)
 
     -- add lto_plugin.so path for gcc
     -- @see https://github.com/xmake-io/xmake/issues/5015
-    -- https://github.com/xmake-io/xmake/issues/5051
+    --
+    -- and we cannot use gcc-ar, @see https://github.com/xmake-io/xmake/issues/5051
+    --
     local lto_plugin = toolchain:config("lto_plugin")
     if lto_plugin then
         toolchain:add("arflags", {"--plugin", lto_plugin}, {force = true})
