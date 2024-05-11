@@ -21,11 +21,24 @@
 inherit("ar")
 import("lib.detect.find_file")
 
+-- replace gcc-ar
+function _replace_gcc_ar(program, name)
+    local dir = path.directory(program)
+    local filename = path.filename(program)
+    filename = filename:gsub("gcc%-ar", name)
+    if dir and dir ~= "." then
+        program = path.join(dir, filename)
+    else
+        program = filename
+    end
+    return program
+end
+
 -- get liblto_plugin.so path for gcc
 function _get_gcc_liblto_plugin_path(self, program)
     local plugin_path = _g.LTO_PLUGIN_PATH
     if plugin_path == nil then
-        local gcc = program:gsub("gcc%-ar", "gcc")
+        local gcc = _replace_gcc_ar(program, "gcc")
         local outdata = try { function() return os.iorunv(gcc, {"-print-prog-name=lto-wrapper"}) end }
         if outdata then
             local lto_plugindir = path.directory(outdata:trim())
@@ -67,7 +80,7 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
         if plugin_path then
             argv = winos.cmdargv(table.join({"--plugin", plugin_path}, rawargv), {escape = true})
         end
-        program = program:gsub("gcc%-ar", "ar")
+        program = _replace_gcc_ar(program, "ar")
     end
 
     -- link it
