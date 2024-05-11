@@ -20,28 +20,22 @@
 
 -- imports
 import("core.base.option")
-import("core.base.hashset")
-import("core.base.json")
-import("core.project.project")
-import("core.package.package", {alias = "core_package"})
-import("private.action.require.impl.package")
-import("private.action.require.impl.repository")
-import("private.action.require.impl.utils.get_requires")
-import("private.action.require.impl.actions.check", {alias = "action_check"})
+import("core.project.config")
 
--- check the given package info
-function main(requires_raw)
+-- check the given package
+function main(package, opt)
+    opt = opt or {}
 
-    -- get requires and extra config
-    local requires_extra = nil
-    local requires, requires_extra = get_requires(requires_raw)
-    if not requires or #requires == 0 then
+    -- we need not check it if this package is precompiled now
+    if package:is_precompiled() then
         return
     end
 
-    -- check the given packages
-    for _, instance in irpairs(package.load_packages(requires, {requires_extra = requires_extra, nodeps = true})) do
-        action_check(instance)
+    -- do check
+    local script = package:script("check")
+    if script then
+        script(package)
     end
 end
+
 

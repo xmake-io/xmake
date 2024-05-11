@@ -30,6 +30,7 @@ import("net.fasturl")
 import("private.action.require.impl.package")
 import("private.action.require.impl.lock_packages")
 import("private.action.require.impl.register_packages")
+import("private.action.require.impl.actions.check", {alias = "action_check"})
 import("private.action.require.impl.actions.install", {alias = "action_install"})
 import("private.action.require.impl.actions.download", {alias = "action_download"})
 
@@ -477,6 +478,7 @@ function _install_packages(packages_install, packages_download, installdeps)
                 local downloaded = true
                 if packages_download[tostring(instance)] then
                     packages_downloading[index] = instance
+                    action_check(instance)
                     downloaded = action_download(instance)
                     packages_downloading[index] = nil
                 end
@@ -488,6 +490,7 @@ function _install_packages(packages_install, packages_download, installdeps)
                         assert(instance:is_precompiled(), "package(%s) should be precompiled", instance:name())
                         -- we need to disable built and re-download and re-install it
                         instance:fallback_build()
+                        action_check(instance)
                         action_download(instance)
                         action_install(instance)
                     end

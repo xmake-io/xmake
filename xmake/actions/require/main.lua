@@ -35,6 +35,7 @@ import("private.action.require.import", {alias = "import_packages"})
 import("private.action.require.install")
 import("private.action.require.uninstall")
 import("private.action.require.download")
+import("private.action.require.check")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 
 --
@@ -110,7 +111,7 @@ function main()
 
         info(option.get("requires"))
 
-    -- fetch the library info of the given package
+    -- fetch the library info of the given packages
     elseif option.get("fetch") then
 
         fetch(option.get("requires"))
@@ -119,6 +120,11 @@ function main()
     elseif option.get("download") then
 
         download(option.get("requires"))
+
+    -- check the given packages
+    elseif option.get("check") then
+
+        check(option.get("requires"))
 
     -- list all package dependencies in project
     elseif option.get("list") then
