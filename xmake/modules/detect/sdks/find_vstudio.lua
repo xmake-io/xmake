@@ -440,6 +440,9 @@ function main(opt)
     if opt.vcvars_ver then
         key = key .. opt.vcvars_ver
     end
+    if opt.sdkver then
+        key = key .. opt.sdkver
+    end
 
     -- attempt to get it from the global cache first
     local vstudio = global_detectcache:get2(key, "msvc")
