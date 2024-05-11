@@ -62,12 +62,12 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
         --
         -- gcc-ar is the wrapper of `ar --plugin lto_plugin.so ...`
         --
-        program = program:gsub("gcc%-ar", "ar")
         local _, rawargv = linkargv(self, objectfiles, targetkind, targetfile, flags, table.join(opt, {rawargs = true}))
         local plugin_path = _get_gcc_liblto_plugin_path(self, program)
         if plugin_path then
             argv = winos.cmdargv(table.join({"--plugin", plugin_path}, rawargv), {escape = true})
         end
+        program = program:gsub("gcc%-ar", "ar")
     end
 
     -- link it
