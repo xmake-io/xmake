@@ -36,7 +36,6 @@ function main(toolchain)
     toolchain:add("toolset", "as", cross .. "gcc", cross .. "clang")
     toolchain:add("toolset", "ld", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
     toolchain:add("toolset", "sh", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
-    toolchain:add("toolset", "ar", cross .. "ar")
     toolchain:add("toolset", "ranlib", cross .. "gcc-ranlib", cross .. "ranlib")
     toolchain:add("toolset", "strip", cross .. "strip")
 
@@ -52,8 +51,11 @@ function main(toolchain)
     -- and we cannot use gcc-ar, @see https://github.com/xmake-io/xmake/issues/5051
     --
     local lto_plugin = toolchain:config("lto_plugin")
-    if lto_plugin then
+    if is_host("windows") and lto_plugin then
         toolchain:add("arflags", {"--plugin", lto_plugin}, {force = true})
+        toolchain:add("toolset", "ar", cross .. "ar")
+    else
+        toolchain:add("toolset", "ar", cross .. "gcc-ar", cross .. "ar")
     end
 end
 
