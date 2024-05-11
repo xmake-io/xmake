@@ -8,6 +8,7 @@
 * [#5003](https://github.com/xmake-io/xmake/issues/5003): Add build.fence policy
 * [#5060](https://github.com/xmake-io/xmake/issues/5060): Support Verilator target build to static library
 * [#5074](https://github.com/xmake-io/xmake/pull/5074): Add `xrepo download` command to download package source
+* [#5086](https://github.com/xmake-io/xmake/issues/5986): Add check support for package
 
 ### Changes
 
@@ -1811,6 +1812,7 @@
 * [#5003](https://github.com/xmake-io/xmake/issues/5003): 添加 build.fence 策略
 * [#5060](https://github.com/xmake-io/xmake/issues/5060): 支持 Verilator 静态库目标构建
 * [#5074](https://github.com/xmake-io/xmake/pull/5074): 添加 `xrepo download` 命令去快速下载包源码
+* [#5086](https://github.com/xmake-io/xmake/issues/5986): 添加包检测支持
 
 ### 改进
 
