@@ -21,6 +21,28 @@
 -- imports
 import("core.tool.compiler")
 import("core.project.project")
+import("lib.detect.find_file")
+
+-- get liblto_plugin.so path of gcc
+function _get_gcc_liblto_plugin_path(target, gcc)
+    local cachekey = "lto_plugin_" .. gcc
+    local plugin_path = target:data(cachekey)
+    if plugin_path == nil then
+        local outdata = try { function() return os.iorunv(gcc, {"-print-prog-name=lto-wrapper"}) end }
+        if outdata then
+            local lto_plugindir = path.directory(outdata:trim())
+            if os.isdir(lto_plugindir) then
+                if is_host("windows") then
+                    plugin_path = find_file("liblto_plugin*.dll", lto_plugindir)
+                else
+                    plugin_path = find_file("liblto_plugin.so", lto_plugindir)
+                end
+            end
+        end
+        target:data_set(cachekey, plugin_path or false)
+    end
+    return plugin_path or nil
+end
 
 -- add lto optimization
 function _add_lto_optimization(target, sourcekind)
@@ -37,7 +59,7 @@ function _add_lto_optimization(target, sourcekind)
     end
 
     -- add ldflags and shflags
-    local _, ld = target:tool("ld")
+    local program, ld = target:tool("ld")
     if ld == "link" then
         target:add("ldflags", "-LTCG")
         target:add("shflags", "-LTCG")
@@ -47,6 +69,14 @@ function _add_lto_optimization(target, sourcekind)
     elseif ld == "gcc" or ld == "gxx" then
         target:add("ldflags", "-flto")
         target:add("shflags", "-flto")
+
+        -- @see https://github.com/xmake-io/xmake/issues/5015
+        -- add lto_plugin.so to ar
+        local lto_plugin = _get_gcc_liblto_plugin_path(target, program)
+        if lto_plugin then
+            target:add("arflags", {"--plugin", lto_plugin}, {force = true, expand = false})
+        end
+
         -- to use the link-time optimizer, -flto and optimization options should be specified at compile time and during the final link.
         -- @see https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
         local optimize = target:get("optimize")
