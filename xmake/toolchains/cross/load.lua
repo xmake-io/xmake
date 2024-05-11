@@ -51,7 +51,7 @@ function main(toolchain)
     -- https://github.com/xmake-io/xmake/issues/5051
     local lto_plugin = toolchain:config("lto_plugin")
     if lto_plugin then
-        toolchain:add("arflags", {"--plugin", lto_plugin})
+        toolchain:add("arflags", {"--plugin", lto_plugin}, {force = true})
     end
 end
 
