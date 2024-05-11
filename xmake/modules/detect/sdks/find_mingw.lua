@@ -41,6 +41,11 @@ function _find_mingwdir(sdkdir)
             sdkdir = "/opt/homebrew/opt/mingw-w64"
         elseif is_host("linux") then
             sdkdir = "/usr"
+        elseif is_host("windows") then
+            local bindir = try {function () return path.directory(os.iorunv("where", {"gcc.exe"})) end}
+            if bindir then
+                sdkdir = path.directory(bindir)
+            end
         elseif is_subhost("msys") then
             local mingw_prefix = os.getenv("MINGW_PREFIX")
             if mingw_prefix and os.isdir(mingw_prefix) then
