@@ -42,14 +42,16 @@ function _find_mingwdir(sdkdir)
         elseif is_host("linux") then
             sdkdir = "/usr"
         elseif is_host("windows") then
-            local bindir = try {function () return path.directory(os.iorunv("where", {"gcc.exe"})) end}
-            if bindir then
-                sdkdir = path.directory(bindir)
-            end
-        elseif is_subhost("msys") then
-            local mingw_prefix = os.getenv("MINGW_PREFIX")
-            if mingw_prefix and os.isdir(mingw_prefix) then
-                sdkdir = mingw_prefix
+            if is_subhost("msys") then
+                local mingw_prefix = os.getenv("MINGW_PREFIX")
+                if mingw_prefix and os.isdir(mingw_prefix) then
+                    sdkdir = mingw_prefix
+                end
+            else
+                local bindir = try {function () return path.directory(os.iorunv("where", {"x86_64-w64-mingw32-gcc.exe"})) end}
+                if bindir then
+                    sdkdir = path.directory(bindir)
+                end
             end
         end
         -- attempt to get it from $PATH
