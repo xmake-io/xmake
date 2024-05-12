@@ -38,7 +38,7 @@ option "external" "Always use external dependencies" false
 # the readline option
 option "readline"
     add_links "readline"
-    add_cincludes "readline/readline.h"
+    add_cincludes "stdio.h" "readline/readline.h"
     add_cfuncs "readline"
     add_defines "XM_CONFIG_API_HAVE_READLINE"
 option_end
@@ -52,11 +52,15 @@ option "curses"
 option_end
 
 option_find_curses() {
+    local ncurses="ncurses"
+    if is_plat "mingw"; then
+        ncurses="ncursesw"
+    fi
     local ncurses_ldflags=""
-    ncurses_ldflags=$(pkg-config --libs ncurses 2>/dev/null)
+    ncurses_ldflags=$(pkg-config --libs ${ncurses} 2>/dev/null)
     option "curses"
         if test_nz "${ncurses_ldflags}"; then
-            add_cflags `pkg-config --cflags ncurses 2>/dev/null`
+            add_cflags `pkg-config --cflags ${ncurses} 2>/dev/null`
             add_ldflags "${ncurses_ldflags}"
         else
             add_links "curses"
