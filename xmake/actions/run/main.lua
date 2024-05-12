@@ -212,7 +212,7 @@ function main()
         -- we need clear the previous config and reload it
         -- to avoid trigger recheck configs
         config.clear()
-        task.run("build", {target = option.get("target")})
+        task.run("build", {target = option.get("target"), all = option.get("all")})
     end
 
     -- load targets
