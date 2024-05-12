@@ -24,7 +24,7 @@ import(".api_checker")
 function main(opt)
     opt = opt or {}
     local values = {
-        "ansi", "c89", "c90", "c99", "c11", "c17", "clatest",
+        "ansi", "c89", "c90", "c99", "c11", "c17", "c23", "clatest",
         "cxx98", "cxx03", "cxx11", "cxx14", "cxx17", "cxx1z", "cxx20", "cxx2a", "cxx23", "cxx2b", "cxx2c", "cxx26", "cxxlatest"
     }
     local languages = {}
