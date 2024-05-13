@@ -46,6 +46,21 @@ end
 
 -- load module support for the current target
 function load(target)
+
+    -- At least std c++20 is required, and we should call `set_languages("c++20")` to set it
+    local languages = target:get("languages")
+    local cxxlang = false
+    for _, lang in ipairs(languages) do
+        if lang:find("cxx", 1, true) or lang:find("c++", 1, true) then
+            cxxlang = true
+            break
+        end
+    end
+    if not cxxlang then
+        target:add("languages", "c++20")
+    end
+
+    -- load module support for the specific compiler
     _compiler_support(target).load(target)
 end
 
