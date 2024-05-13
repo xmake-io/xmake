@@ -303,6 +303,15 @@ end
 
 -- get values from target packages with {interface|public = ...}
 function _instance:_get_from_packages(name, result_values, result_sources, opt)
+    local function _filter_libfiles(libfiles)
+        local result = {}
+        for _, libfile in ipairs(table.wrap(libfiles)) do
+            if not libfile:endswith(".dll") then
+                table.insert(result, libfile)
+            end
+        end
+        return table.unwrap(result)
+    end
     for _, pkg in ipairs(self:orderpkgs(opt)) do
         local configinfo = self:pkgconfig(pkg:name())
         -- get values from package components
@@ -325,7 +334,22 @@ function _instance:_get_from_packages(name, result_values, result_sources, opt)
                 if components_enabled:has(component_name) then
                     local info = components[component_name]
                     if info then
-                        table.join2(values, info[name])
+                        local compvalues = info[name]
+                        -- use full link path instead of links
+                        -- @see https://github.com/xmake-io/xmake/issues/5066
+                        if configinfo and configinfo.linkpath then
+                            local libfiles = info.libfiles
+                            if name == "links" then
+                                if libfiles then
+                                    compvalues = _filter_libfiles(libfiles)
+                                end
+                            elseif name == "linkdirs" then
+                                if libfiles then
+                                    compvalues = nil
+                                end
+                            end
+                        end
+                        table.join2(values, compvalues)
                     else
                         local components_str = table.concat(table.wrap(configinfo.components), ", ")
                         utils.warning("unknown component(%s) in add_packages(%s, {components = {%s}})", component_name, pkg:name(), components_str)
@@ -347,6 +371,20 @@ function _instance:_get_from_packages(name, result_values, result_sources, opt)
         else
             -- get values from the builtin package configs
             local values = pkg:get(name)
+            -- use full link path instead of links
+            -- @see https://github.com/xmake-io/xmake/issues/5066
+            if configinfo and configinfo.linkpath then
+                local libfiles = pkg:libraryfiles()
+                if name == "links" then
+                    if libfiles then
+                        values = _filter_libfiles(libfiles)
+                    end
+                elseif name == "linkdirs" then
+                    if libfiles then
+                        values = nil
+                    end
+                end
+            end
             if values ~= nil then
                 table.insert(result_values, values)
                 table.insert(result_sources, "package::" .. pkg:name())
