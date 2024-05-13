@@ -304,7 +304,13 @@ end
 -- get values from target packages with {interface|public = ...}
 function _instance:_get_from_packages(name, result_values, result_sources, opt)
     for _, pkg in ipairs(self:orderpkgs(opt)) do
+        -- use full link path instead of links
+        -- @see https://github.com/xmake-io/xmake/issues/5066
+        local valuename = name
         local configinfo = self:pkgconfig(pkg:name())
+        if name == "links" and configinfo and configinfo.linkpath and pkg:get("libfiles") then
+            valuename = "libfiles"
+        end
         -- get values from package components
         -- e.g. `add_packages("sfml", {components = {"graphics", "window"}})`
         local selected_components = configinfo and configinfo.components or pkg:components_default()
@@ -325,7 +331,7 @@ function _instance:_get_from_packages(name, result_values, result_sources, opt)
                 if components_enabled:has(component_name) then
                     local info = components[component_name]
                     if info then
-                        table.join2(values, info[name])
+                        table.join2(values, info[valuename])
                     else
                         local components_str = table.concat(table.wrap(configinfo.components), ", ")
                         utils.warning("unknown component(%s) in add_packages(%s, {components = {%s}})", component_name, pkg:name(), components_str)
@@ -346,7 +352,7 @@ function _instance:_get_from_packages(name, result_values, result_sources, opt)
             end
         else
             -- get values from the builtin package configs
-            local values = pkg:get(name)
+            local values = pkg:get(valuename)
             if values ~= nil then
                 table.insert(result_values, values)
                 table.insert(result_sources, "package::" .. pkg:name())
