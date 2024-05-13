@@ -307,7 +307,7 @@ function _instance:_get_from_packages(name, result_values, result_sources, opt)
         local result = {}
         for _, libfile in ipairs(table.wrap(libfiles)) do
             if not libfile:endswith(".dll") then
-                table.insert(result, libfiles)
+                table.insert(result, libfile)
             end
         end
         return table.unwrap(result)
