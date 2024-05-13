@@ -47,6 +47,7 @@
   <ItemGroup>
 #Import(File.rc)#
 #Import(File.ui)#
+#Import(File.qrc)#
   </ItemGroup>
   <Import Condition="Exists('$(MSBuildThisFileDirectory)\Xmake.Custom.files.filters')"
     Project="$(MSBuildThisFileDirectory)\Xmake.Custom.files.filters" />
