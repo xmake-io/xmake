@@ -72,7 +72,6 @@ target "xmake"
     add_files "string/*.c"
     add_files "tty/*.c"
     if is_plat "mingw"; then
-        add_defines "UNICODE" "_UNICODE"
         add_files "winos/*.c"
     fi
 
