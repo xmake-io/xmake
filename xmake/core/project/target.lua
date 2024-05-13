@@ -337,10 +337,16 @@ function _instance:_get_from_packages(name, result_values, result_sources, opt)
                         local compvalues = info[name]
                         -- use full link path instead of links
                         -- @see https://github.com/xmake-io/xmake/issues/5066
-                        if name == "links" and configinfo and configinfo.linkpath then
+                        if configinfo and configinfo.linkpath then
                             local libfiles = info.libfiles
-                            if libfiles then
-                                compvalues = _filter_libfiles(libfiles)
+                            if name == "links" then
+                                if libfiles then
+                                    compvalues = _filter_libfiles(libfiles)
+                                end
+                            elseif name == "linkdirs" then
+                                if libfiles then
+                                    compvalues = nil
+                                end
                             end
                         end
                         table.join2(values, compvalues)
@@ -367,10 +373,16 @@ function _instance:_get_from_packages(name, result_values, result_sources, opt)
             local values = pkg:get(name)
             -- use full link path instead of links
             -- @see https://github.com/xmake-io/xmake/issues/5066
-            if name == "links" and configinfo and configinfo.linkpath then
+            if configinfo and configinfo.linkpath then
                 local libfiles = pkg:libraryfiles()
-                if libfiles then
-                    values = _filter_libfiles(libfiles)
+                if name == "links" then
+                    if libfiles then
+                        values = _filter_libfiles(libfiles)
+                    end
+                elseif name == "linkdirs" then
+                    if libfiles then
+                        values = nil
+                    end
                 end
             end
             if values ~= nil then
