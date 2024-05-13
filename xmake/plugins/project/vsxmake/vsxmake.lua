@@ -139,6 +139,9 @@ function _buildparams(info, target, default)
         elseif args.fileui then -- for qt/.ui
             local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".ui"}))
+        elseif args.fileqrc then -- for qt/.qrc
+            local files = info._targets[target].sourcefiles
+            table.insert(r, _filter_files(files, {".qrc"}))
         elseif args.incc then
             local files = table.join(info._targets[target].headerfiles or {}, info._targets[target].extrafiles)
             table.insert(r, _filter_files(files, nil, {".natvis"}))
