@@ -33,8 +33,7 @@ rule("qt.ts")
         -- get source file
         local lupdate_argv = {"-no-obsolete"}
         for _, sourcebatch in pairs(target:sourcebatches()) do
-            local sourcefiles = sourcebatch.sourcefiles
-            if sourcefiles then
+            if sourcebatch.sourcefiles then
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     table.join2(lupdate_argv, path(sourcefile))
                 end
