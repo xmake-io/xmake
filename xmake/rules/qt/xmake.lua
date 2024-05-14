@@ -38,7 +38,7 @@ rule("qt._wasm_app")
 
 -- define rule: qt static library
 rule("qt.static")
-    add_deps("qt.qrc", "qt.ui", "qt.moc")
+    add_deps("qt.qrc", "qt.ui", "qt.moc", "qt.ts")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
@@ -51,7 +51,7 @@ rule("qt.static")
 
 -- define rule: qt shared library
 rule("qt.shared")
-    add_deps("qt.qrc", "qt.ui", "qt.moc")
+    add_deps("qt.qrc", "qt.ui", "qt.moc", "qt.ts")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
@@ -64,7 +64,7 @@ rule("qt.shared")
 
 -- define rule: qt console
 rule("qt.console")
-    add_deps("qt.qrc", "qt.ui", "qt.moc")
+    add_deps("qt.qrc", "qt.ui", "qt.moc", "qt.ts")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
@@ -80,7 +80,7 @@ rule("qt.console")
 
 -- define rule: qt widgetapp
 rule("qt.widgetapp")
-    add_deps("qt.ui", "qt.moc", "qt._wasm_app", "qt.qrc")
+    add_deps("qt.ui", "qt.moc", "qt._wasm_app", "qt.qrc", "qt.ts")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
@@ -115,7 +115,7 @@ rule("qt.widgetapp")
 
 -- define rule: qt static widgetapp
 rule("qt.widgetapp_static")
-    add_deps("qt.ui", "qt.moc", "qt._wasm_app", "qt.qrc")
+    add_deps("qt.ui", "qt.moc", "qt._wasm_app", "qt.qrc", "qt.ts")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
@@ -143,7 +143,7 @@ rule("qt.widgetapp_static")
 
 -- define rule: qt quickapp
 rule("qt.quickapp")
-    add_deps("qt.qrc", "qt.moc", "qt._wasm_app")
+    add_deps("qt.qrc", "qt.moc", "qt._wasm_app", "qt.ts")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
@@ -165,7 +165,7 @@ rule("qt.quickapp")
 
 -- define rule: qt static quickapp
 rule("qt.quickapp_static")
-    add_deps("qt.qrc", "qt.moc", "qt._wasm_app")
+    add_deps("qt.qrc", "qt.moc", "qt._wasm_app", "qt.ts")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     on_load(function (target)
@@ -189,7 +189,7 @@ rule("qt.quickapp_static")
 
 -- define rule: qt qmlplugin
 rule("qt.qmlplugin")
-    add_deps("qt.shared", "qt.qmltyperegistrar")
+    add_deps("qt.shared", "qt.qmltyperegistrar", "qt.ts")
     on_config(function(target)
         import("load")(target, {frameworks = { "QtCore", "QtGui", "QtQuick", "QtQml", "QtNetwork" }})
     end)
