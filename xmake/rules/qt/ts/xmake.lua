@@ -32,25 +32,19 @@ rule("qt.ts")
         local lrelease = target:data("qt.ts.lrelease")
         -- get source file
         local lupdate_argv = {"-no-obsolete"}
-        print(target:sourcebatches())
         for _, sourcebatch in pairs(target:sourcebatches()) do
             local sourcefiles = sourcebatch.sourcefiles
             if sourcefiles then
-                print(sourcefiles)
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                    print(sourcefile)
                     table.join2(lupdate_argv, path(sourcefile))
                 end
             end
         end
         table.join2(lupdate_argv, {"-ts", path(sourcefile_ts)})
-        print(lupdate_argv)
         batchcmds:vrunv(lupdate, lupdate_argv)
         local outfile = path.join(target:targetdir(), path.basename(sourcefile_ts) .. ".qm")
-        print(outfile)
         batchcmds:mkdir(target:targetdir())
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.qt.ts %s", sourcefile_ts)
-        print(sourcefile_ts)
         batchcmds:vrunv(lrelease, {path(sourcefile_ts), "-qm", path(outfile)})
         batchcmds:add_depfiles(sourcefile_ts)
     end)
