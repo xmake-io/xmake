@@ -205,6 +205,16 @@ function sandbox_lib_detect_find_program._find(name, paths, opt)
                 end
             end
         end
+
+        -- attempt to find it use `where.exe program` command
+        local ok, program_path = os.iorunv("where.exe", {name})
+        if ok and program_path then
+            program_path = program_path:trim()
+            local program_path_real = sandbox_lib_detect_find_program._check(program_path, opt)
+            if program_path_real then
+                return program_path_real
+            end
+        end
     else
         -- attempt to find it use `which program` command
         local ok, program_path = os.iorunv("which", {name})
