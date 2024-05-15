@@ -18,6 +18,9 @@
 # @homepage    profile-unix.sh
 #
 
+# register PATH
+[[ "$PATH" =~ (^|:)"$XMAKE_ROOTDIR"(:|$) ]] && export PATH="$XMAKE_ROOTDIR:$PATH"
+
 # register completions
 if   [[ -n "$ZSH_VERSION" ]]; then
   export XMAKE_SHELL=zsh
