@@ -9,6 +9,7 @@
 * [#5060](https://github.com/xmake-io/xmake/issues/5060): Support Verilator target build to static library
 * [#5074](https://github.com/xmake-io/xmake/pull/5074): Add `xrepo download` command to download package source
 * [#5086](https://github.com/xmake-io/xmake/issues/5986): Add check support for package
+* [#5103](https://github.com/xmake-io/xmake/pull/5103): Add qt ts files building
 
 ### Changes
 
@@ -1813,6 +1814,7 @@
 * [#5060](https://github.com/xmake-io/xmake/issues/5060): 支持 Verilator 静态库目标构建
 * [#5074](https://github.com/xmake-io/xmake/pull/5074): 添加 `xrepo download` 命令去快速下载包源码
 * [#5086](https://github.com/xmake-io/xmake/issues/5986): 添加包检测支持
+* [#5103](https://github.com/xmake-io/xmake/pull/5103): 添加 qt ts 构建支持
 
 ### 改进
 
