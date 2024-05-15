@@ -36,7 +36,7 @@ rule("qt.ts")
             end
             assert(os.isexec(lupdate), "lupdate not found!")
             assert(os.isexec(lrelease), "lrelease not found!")
-            for _,tsfile in ipairs(sourcefile_ts) do
+            for _, tsfile in ipairs(sourcefile_ts) do
                 local tsargv = {}
                 table.join2(tsargv, lupdate_argv)
                 table.join2(tsargv, {"-ts", path(tsfile)})
