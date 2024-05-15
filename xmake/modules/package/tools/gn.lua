@@ -66,7 +66,9 @@ function _get_configs(package, configs, opt)
     elseif package:is_arch("arm.*") then
         configs.target_cpu = "arm"
     end
-    configs.is_debug = package:is_debug() and "true" or "false"
+    if configs.is_debug == nil then
+        configs.is_debug = package:is_debug() and true or false
+    end
     return configs
 end
 
