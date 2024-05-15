@@ -48,6 +48,7 @@
 #Import(File.rc)#
 #Import(File.ui)#
 #Import(File.qrc)#
+#Import(File.ts)#
   </ItemGroup>
   <!-- <ItemGroup>
 #Import(ProjectRef)#
