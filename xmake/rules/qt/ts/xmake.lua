@@ -8,7 +8,7 @@ rule("qt.ts")
         local sourcefile_ts
         for _, sourcebatch in pairs(target:sourcebatches()) do
             if sourcebatch.rulename == "qt.ts" then
-                sourcefile_ts = sourcebatch.sourcefiles[1]
+                sourcefile_ts = sourcebatch.sourcefiles
             else
                 if sourcebatch.sourcefiles then
                     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -36,8 +36,12 @@ rule("qt.ts")
             end
             assert(os.isexec(lupdate), "lupdate not found!")
             assert(os.isexec(lrelease), "lrelease not found!")
-            table.join2(lupdate_argv, {"-ts", path(sourcefile_ts)})
-            os.vrunv(lupdate, lupdate_argv)
+            for _,tsfile in ipairs(sourcefile_ts) do
+                local tsargv = {}
+                table.join2(tsargv, lupdate_argv)
+                table.join2(tsargv, {"-ts", path(tsfile)})
+                os.vrunv(lupdate, tsargv)
+            end
             -- save lrelease
             target:data_set("qt.ts.lrelease", lrelease)
         end
