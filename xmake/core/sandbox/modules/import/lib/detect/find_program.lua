@@ -243,6 +243,28 @@ function sandbox_lib_detect_find_program._find(name, paths, opt)
     if program_path_real then
         return program_path_real
     end
+
+    -- attempt to find it use `where.exe program.exe` command
+    --
+    -- and we need to add `.exe` suffix to avoid find some incorrect programs. e.g. pkg-config.bat
+    if os.host() == "windows" then
+        local program_name = name:lower()
+        if not program_name:endswith(".exe") then
+            program_name = program_name .. ".exe"
+        end
+        local ok, wherepaths = os.iorunv("where.exe", {program_name})
+        if ok and wherepaths then
+            for _, program_path in ipairs(wherepaths:split("\n")) do
+                program_path = program_path:trim()
+                if #program_path > 0 then
+                    local program_path_real = sandbox_lib_detect_find_program._check(program_path, opt)
+                    if program_path_real then
+                        return program_path_real
+                    end
+                end
+            end
+        end
+    end
 end
 
 -- find program

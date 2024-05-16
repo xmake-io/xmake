@@ -21,6 +21,7 @@
 -- imports
 import("core.project.config")
 import("lib.detect.find_path")
+import("lib.detect.find_tool")
 import("detect.sdks.find_xcode")
 import("detect.sdks.find_cross_toolchain")
 
@@ -64,7 +65,6 @@ function main(toolchain)
         elseif is_host("linux") and os.isfile("/usr/bin/llvm-ar") then
             sdkdir = "/usr"
         elseif is_host("macosx") then
-            local bindir
             if os.arch() == "arm64" then
                 bindir = find_path("llvm-ar", "/opt/homebrew/opt/llvm/bin")
             else
@@ -74,19 +74,9 @@ function main(toolchain)
                 sdkdir = path.directory(bindir)
             end
         elseif is_host("windows") then
-            bindir = try {function () return path.directory(os.iorunv("where", {"llvm-ar.exe"})) end}
-            if not bindir then
-                local pathenv = os.getenv("PATH")
-                if pathenv then
-                    for _, v in ipairs(path.splitenv(pathenv)) do
-                        if os.isfile(path.join(v, "llvm-ar.exe")) then
-                            bindir = v
-                            break
-                        end
-                    end
-                end
-            end
-            if bindir then
+            local llvm_ar = find_tool("llvm-ar", {force = true, envs = {PATH = os.getenvs("PATH")}})
+            if llvm_ar and llvm_ar.program and os.isfile(llvm_ar.program) then
+                bindir = path.directory(llvm_ar.program)
                 sdkdir = path.directory(bindir)
             end
         end
