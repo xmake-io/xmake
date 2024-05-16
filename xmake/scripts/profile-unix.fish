@@ -18,6 +18,10 @@
 # @homepage    profile-unix.fish
 #
 
+# register PATH
+string match --regex --quiet "(^|:)$XMAKE_ROOTDIR(:|\$)" "$PATH" || \
+    export PATH="$XMAKE_ROOTDIR:$PATH"
+
 # register environments
 export XMAKE_SHELL=fish
 

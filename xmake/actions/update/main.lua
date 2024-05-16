@@ -318,7 +318,7 @@ function _initialize_shell()
         local profile_fish = "$XMAKE_PROGRAM_DIR/scripts/profile-unix.fish"
         local bridge_command = format([[export XMAKE_ROOTDIR="%s"
 export XMAKE_PROGRAM_DIR="%s"
-export PATH="$XMAKE_ROOTDIR:$PATH"
+# export PATH="$XMAKE_ROOTDIR:$PATH"
 test $FISH_VERSION && test -f "%s" && source "%s" && exit 0
 test -f "%s" && source "%s"
 ]], path.directory(os.programfile()), os.programdir(), profile_fish, profile_fish, profile, profile)

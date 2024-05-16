@@ -237,7 +237,7 @@ fi
 #
 install_profile() {
     export XMAKE_ROOTDIR="$prefix/bin"
-    export PATH="$XMAKE_ROOTDIR:$PATH"
+    [[ "$PATH" =~ (^|:)"$XMAKE_ROOTDIR"(:|$) ]] || export PATH="$XMAKE_ROOTDIR:$PATH"
     xmake --version
     xmake update --integrate
 }
