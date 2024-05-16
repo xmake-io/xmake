@@ -19,7 +19,7 @@
 #
 
 # register PATH
-[[ "$PATH" =~ (^|:)"$XMAKE_ROOTDIR"(:|$) ]] && export PATH="$XMAKE_ROOTDIR:$PATH"
+[[ "$PATH" =~ (^|:)"$XMAKE_ROOTDIR"(:|$) ]] || export PATH="$XMAKE_ROOTDIR:$PATH"
 
 # register completions
 if   [[ -n "$ZSH_VERSION" ]]; then

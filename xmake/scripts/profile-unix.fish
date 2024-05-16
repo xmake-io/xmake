@@ -19,7 +19,7 @@
 #
 
 # register PATH
-string match --regex --quiet "(^|:)$XMAKE_ROOTDIR(:|\$)" "$PATH" && \
+string match --regex --quiet "(^|:)$XMAKE_ROOTDIR(:|\$)" "$PATH" || \
     export PATH="$XMAKE_ROOTDIR:$PATH"
 
 # register environments
