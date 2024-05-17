@@ -33,6 +33,7 @@ local sandbox       = require("sandbox/sandbox")
 local toolchain     = require("tool/toolchain")
 local platform      = require("platform/platform")
 local language      = require("language/language")
+local is_cross      = require("base/private/is_cross")
 local import        = require("sandbox/modules/import")
 
 -- new an instance
@@ -109,6 +110,11 @@ function _instance:is_arch(...)
             return true
         end
     end
+end
+
+-- is cross-compilation?
+function _instance:is_cross()
+    return is_cross(self:plat(), self:arch())
 end
 
 -- get the tool program

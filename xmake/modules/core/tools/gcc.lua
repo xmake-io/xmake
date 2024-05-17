@@ -182,6 +182,10 @@ function nf_vectorext(self, extension)
     ,   neon       = "-mfpu=neon"
     ,   all        = "-march=native"
     }
+    if extension == "all" and self:is_cross() then
+        -- https://github.com/xmake-io/xmake-repo/pull/4040#discussion_r1605121207
+        maps[extension] = nil
+    end
     return maps[extension]
 end
 
