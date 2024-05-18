@@ -724,7 +724,10 @@ function _get_configs_for_install(package, configs, opt)
 end
 
 function _get_default_flags(package, configs, buildtype, opt)
-    local cmake_default_flags = _g.cmake_default_flags and _g.cmake_default_flags[buildtype]
+    -- The default flags are different for different platforms
+    -- @see https://github.com/xmake-io/xmake-repo/pull/4038#issuecomment-2116489448
+    local cachekey = buildtype .. package:plat() .. package:arch()
+    local cmake_default_flags = _g.cmake_default_flags and _g.cmake_default_flags[cachekey]
     if not cmake_default_flags then
         local tmpdir = path.join(os.tmpdir() .. ".dir", package:name(), package:mode())
         local dummy_cmakelist = path.join(tmpdir, "CMakeLists.txt")
@@ -764,7 +767,7 @@ function _get_default_flags(package, configs, buildtype, opt)
             cmake_default_flags.arflags = cmake_default_flags.arflags .. " " ..outdata:match(format("CMAKE_STATIC_LINKER_FLAGS_%s is (.-)\n", buildtype))
 
             _g.cmake_default_flags = _g.cmake_default_flags or {}
-            _g.cmake_default_flags[buildtype] = cmake_default_flags
+            _g.cmake_default_flags[cachekey] = cmake_default_flags
         end
         os.rm(tmpdir)
     end
@@ -822,7 +825,7 @@ function _get_envs_for_runtime_flags(package, configs, opt)
     end
     return envs
 end
--- get configs
+
 function _get_configs(package, configs, opt)
     configs = configs or {}
     opt._configs_str = string.serialize(configs, {indent = false, strip = true})
