@@ -32,7 +32,7 @@ toolchain("gfortran")
 
     -- on load
     on_load(function (toolchain)
-        local march = toolchain:is_arch("x86_64", "x64") and "-m64" or "-m32"
+        local march = toolchain:is_arch("x86_64", "x64", "arm64") and "-m64" or "-m32"
         toolchain:add("fcflags",   march)
         toolchain:add("fcshflags", march)
         toolchain:add("fcldflags", march)
