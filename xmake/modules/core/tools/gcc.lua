@@ -385,13 +385,24 @@ function nf_linkdir(self, dir)
 end
 
 -- make the rpathdir flag
-function nf_rpathdir(self, dir)
+function nf_rpathdir(self, dir, opt)
+    opt = opt or {}
     dir = path.translate(dir)
     if self:has_flags("-Wl,-rpath=" .. dir, "ldflags") then
         local flags = {"-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
             local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
             return maps[name]
         end))}
+        -- add_rpathdirs("...", {runpath = false})
+        -- https://github.com/xmake-io/xmake/issues/5109
+        local extra = opt.extra
+        if extra then
+            if extra.runpath == false and self:has_flags("-Wl,-rpath=" .. dir .. ",--disable-new-dtags", "ldflags") then
+                flags[1] = flags[1] .. ",--disable-new-dtags"
+            elseif extra.runpath == true and self:has_flags("-Wl,-rpath=" .. dir .. ",--enable-new-dtags", "ldflags") then
+                flags[1] = flags[1] .. ",--enable-new-dtags"
+            end
+        end
         if self:is_plat("bsd") then
             -- FreeBSD ld must have "-zorigin" with "-rpath".  Otherwise, $ORIGIN is not translated and it is literal.
             table.insert(flags, 1, "-Wl,-zorigin")
