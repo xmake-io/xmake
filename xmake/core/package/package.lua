@@ -2273,7 +2273,7 @@ end
 -- generate building configs for has_xxx/check_xxx
 function _instance:_generate_build_configs(configs, opt)
     opt = opt or {}
-    configs = table.join(self:fetch_librarydeps(), configs)
+    configs = table.join(self:fetch_librarydeps() or {}, configs)
     -- since we are ignoring the runtimes of the headeronly library,
     -- we can only get the runtimes from the dependency library to detect the link.
     local runtimes = self:runtimes()
