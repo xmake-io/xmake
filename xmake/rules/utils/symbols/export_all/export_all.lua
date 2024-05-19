@@ -123,7 +123,7 @@ function main(target, opt)
         -- get all symbols
         local allsymbols
         local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
-        if false then--msvc:check() then
+        if msvc:check() then
             local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
             allsymbols = _get_allsymbols_by_dumpbin(target, dumpbin.program, {export_classes = export_classes})
         elseif target:has_tool("cc", "clang", "clang_cl", "clangxx") then
