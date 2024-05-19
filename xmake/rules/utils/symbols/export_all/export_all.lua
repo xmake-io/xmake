@@ -73,7 +73,27 @@ function _get_allsymbols_by_objdump(target, objdump, opt)
         local objectsymbols = try { function () return os.iorunv(objdump, {"--syms", objectfile}) end }
         if objectsymbols then
             for _, line in ipairs(objectsymbols:split('\n', {plain = true})) do
-                print(line)
+                if line:find("(scl   2)", 1, true) then
+                    local splitinfo = line:split("%s")
+                    local symbol = splitinfo[#splitinfo]
+                    if symbol then
+                        if not symbol:startswith("__") then
+                            -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
+                            if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("_DllMain@") then
+                                symbol = symbol:sub(2)
+                            end
+                            if export_classes or not symbol:startswith("?") then
+                                if export_classes then
+                                    if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
+                                        allsymbols:insert(symbol)
+                                    end
+                                else
+                                    allsymbols:insert(symbol)
+                                end
+                            end
+                        end
+                    end
+                end
             end
         end
     end
@@ -103,12 +123,12 @@ function main(target, opt)
         -- get all symbols
         local allsymbols
         local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
-        if msvc:check() then
+        if false then--msvc:check() then
             local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
             allsymbols = _get_allsymbols_by_dumpbin(target, dumpbin.program, {export_classes = export_classes})
         elseif target:has_tool("cc", "clang", "clang_cl", "clangxx") then
             local objdump = assert(find_tool("llvm-objdump") or find_tool("objdump"), "objdump not found!")
-            allsymbols = _get_allsymbols_by_dumpbin(target, objdump.program, {export_classes = export_classes})
+            allsymbols = _get_allsymbols_by_objdump(target, objdump.program, {export_classes = export_classes})
         end
 
         -- export all symbols
@@ -125,3 +145,4 @@ function main(target, opt)
 
     end, {dependfile = dependfile, files = target:objectfiles(), changed = target:is_rebuilt()})
 end
+
