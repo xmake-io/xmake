@@ -31,6 +31,7 @@ function _get_allsymbols_by_dumpbin(target, dumpbin, opt)
     opt = opt or {}
     local allsymbols = hashset.new()
     local export_classes = opt.export_classes
+    local export_filter = opt.export_filter
     for _, objectfile in ipairs(target:objectfiles()) do
         local objectsymbols = try { function () return os.iorunv(dumpbin, {"/symbols", "/nologo", objectfile}) end }
         if objectsymbols then
@@ -41,7 +42,11 @@ function _get_allsymbols_by_dumpbin(target, dumpbin, opt)
                     local symbol = line:match(".*External%s+| (.*)")
                     if symbol then
                         symbol = symbol:split('%s')[1]
-                        if not symbol:startswith("__") then
+                        if export_filter then
+                            if export_filter(symbol) then
+                                allsymbols:insert(symbol)
+                            end
+                        elseif not symbol:startswith("__") then
                             -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
                             if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("_DllMain@") then
                                 symbol = symbol:sub(2)
@@ -69,6 +74,7 @@ function _get_allsymbols_by_objdump(target, objdump, opt)
     opt = opt or {}
     local allsymbols = hashset.new()
     local export_classes = opt.export_classes
+    local export_filter = opt.export_filter
     for _, objectfile in ipairs(target:objectfiles()) do
         local objectsymbols = try { function () return os.iorunv(objdump, {"--syms", objectfile}) end }
         if objectsymbols then
@@ -77,7 +83,11 @@ function _get_allsymbols_by_objdump(target, objdump, opt)
                     local splitinfo = line:split("%s")
                     local symbol = splitinfo[#splitinfo]
                     if symbol then
-                        if not symbol:startswith("__") then
+                        if export_filter then
+                            if export_filter(symbol) then
+                                allsymbols:insert(symbol)
+                            end
+                        elseif not symbol:startswith("__") then
                             -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
                             if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("_DllMain@") then
                                 symbol = symbol:sub(2)
@@ -120,15 +130,22 @@ function main(target, opt)
         -- export c++ class?
         local export_classes = target:extraconf("rules", "utils.symbols.export_all", "export_classes")
 
+        -- the export filter
+        local export_filter = target:extraconf("rules", "utils.symbols.export_all", "export_filter")
+
         -- get all symbols
         local allsymbols
         local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
         if msvc:check() then
             local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
-            allsymbols = _get_allsymbols_by_dumpbin(target, dumpbin.program, {export_classes = export_classes})
+            allsymbols = _get_allsymbols_by_dumpbin(target, dumpbin.program, {
+                export_classes = export_classes,
+                export_filter = export_filter})
         elseif target:has_tool("cc", "clang", "clang_cl", "clangxx", "gcc", "gxx") then
             local objdump = assert(find_tool("llvm-objdump") or find_tool("objdump"), "objdump not found!")
-            allsymbols = _get_allsymbols_by_objdump(target, objdump.program, {export_classes = export_classes})
+            allsymbols = _get_allsymbols_by_objdump(target, objdump.program, {
+                export_classes = export_classes,
+                export_filter = export_filter})
         end
 
         -- export all symbols
