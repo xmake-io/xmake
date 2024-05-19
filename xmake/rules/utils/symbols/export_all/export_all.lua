@@ -126,7 +126,7 @@ function main(target, opt)
         if msvc:check() then
             local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
             allsymbols = _get_allsymbols_by_dumpbin(target, dumpbin.program, {export_classes = export_classes})
-        elseif target:has_tool("cc", "clang", "clang_cl", "clangxx") then
+        elseif target:has_tool("cc", "clang", "clang_cl", "clangxx", "gcc", "gxx") then
             local objdump = assert(find_tool("llvm-objdump") or find_tool("objdump"), "objdump not found!")
             allsymbols = _get_allsymbols_by_objdump(target, objdump.program, {export_classes = export_classes})
         end
