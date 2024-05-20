@@ -135,17 +135,20 @@ function main(target, opt)
 
         -- get all symbols
         local allsymbols
-        local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
-        if msvc:check() then
-            local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
-            allsymbols = _get_allsymbols_by_dumpbin(target, dumpbin.program, {
-                export_classes = export_classes,
-                export_filter = export_filter})
-        elseif target:has_tool("cc", "clang", "clang_cl", "clangxx", "gcc", "gxx") then
+        if target:has_tool("cc", "clang", "clang_cl", "clangxx", "gcc", "gxx") then
             local objdump = assert(find_tool("llvm-objdump") or find_tool("objdump"), "objdump not found!")
             allsymbols = _get_allsymbols_by_objdump(target, objdump.program, {
                 export_classes = export_classes,
                 export_filter = export_filter})
+        end
+        if not allsymbols then
+            local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
+            if msvc:check() then
+                local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
+                allsymbols = _get_allsymbols_by_dumpbin(target, dumpbin.program, {
+                    export_classes = export_classes,
+                    export_filter = export_filter})
+            end
         end
 
         -- export all symbols
