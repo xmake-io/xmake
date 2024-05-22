@@ -74,7 +74,7 @@ function main(toolchain)
                 sdkdir = path.directory(bindir)
             end
         elseif is_host("windows") then
-            local llvm_ar = find_tool("llvm-ar", {force = true, envs = {PATH = os.getenvs("PATH")}})
+            local llvm_ar = find_tool("llvm-ar", {force = true, envs = {PATH = os.getenv("PATH")}})
             if llvm_ar and llvm_ar.program and os.isfile(llvm_ar.program) then
                 bindir = path.directory(llvm_ar.program)
                 sdkdir = path.directory(bindir)
