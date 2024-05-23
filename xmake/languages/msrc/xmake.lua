@@ -20,7 +20,7 @@
 
 language("msrc")
     add_rules("win.sdk.resource")
-    set_sourcekinds {mrc = ".rc"}
+    set_sourcekinds {mrc = {".rc", ".rc2"}}
     set_sourceflags {mrc = "mrcflags"}
     set_langkinds   {msrc = "mrc"}
     set_mixingkinds("mrc")
