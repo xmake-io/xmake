@@ -116,6 +116,12 @@ function _find_intel_on_windows(opt)
             "$(env ICPP_COMPILER23)"
         }
         iclvars_bat = find_file("../../../setvars.bat", paths)
+        if not iclvars_bat then
+            paths = {
+                "$(env ICPP_COMPILER24)"
+            }
+            iclvars_bat = find_file("../../setvars.bat", paths)
+        end
     end
     if iclvars_bat then
 
