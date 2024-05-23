@@ -22,11 +22,113 @@
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 
--- find intel c/c++ envirnoment on windows
-function _find_intel_on_windows(opt)
+-- init icx variables
+local icxvars = {"path",
+                 "lib",
+                 "libpath",
+                 "include",
+                 "DevEnvdir",
+                 "VSInstallDir",
+                 "VCInstallDir",
+                 "WindowsSdkDir",
+                 "WindowsLibPath",
+                 "WindowsSDKVersion",
+                 "WindowsSdkBinPath",
+                 "UniversalCRTSdkDir",
+                 "UCRTVersion"}
+
+-- load icxvars_bat environment variables
+function _load_icxvars(icxvars_bat, arch, opt)
+
+    -- make the genicxvars.bat
+    opt = opt or {}
+    local genicxvars_bat = os.tmpfile() .. "_genicxvars.bat"
+    local genicxvars_dat = os.tmpfile() .. "_genicxvars.txt"
+    local file = io.open(genicxvars_bat, "w")
+    file:print("@echo off")
+    file:print("call \"%s\" -arch %s > nul", icxvars_bat, arch)
+    for idx, var in ipairs(icxvars) do
+        file:print("echo " .. var .. " = %%" .. var .. "%% %s %s", idx == 1 and ">" or ">>", genicxvars_dat)
+    end
+    file:close()
+
+    -- run genicxvars.bat
+    os.run(genicxvars_bat)
+
+    -- load all envirnoment variables
+    local variables = {}
+    for _, line in ipairs((io.readfile(genicxvars_dat) or ""):split("\n")) do
+        local p = line:find('=', 1, true)
+        if p then
+            local name = line:sub(1, p - 1):trim()
+            local value = line:sub(p + 1):trim()
+            variables[name] = value
+        end
+    end
+    if not variables.path then
+        return
+    end
+
+    -- remove some empty entries
+    for _, name in ipairs(icxvars) do
+        if variables[name] and #variables[name]:trim() == 0 then
+            variables[name] = nil
+        end
+    end
+
+    -- fix bin path for ia32
+    if variables.path and arch == "ia32" then
+        variables.path = variables.path:gsub("windows\\bin\\intel64;", "windows\\bin\\intel64_ia32;")
+    end
+
+    -- convert path/lib/include to PATH/LIB/INCLUDE
+    variables.PATH    = variables.path
+    variables.LIB     = variables.lib
+    variables.LIBPATH = variables.libpath
+    variables.INCLUDE = variables.include
+    variables.path    = nil
+    variables.lib     = nil
+    variables.include = nil
+    variables.libpath = nil
+    return variables
 end
 
--- find intel c/c++ envirnoment on linux
+-- find intel llvm c/c++ envirnoment on windows
+function _find_intel_on_windows(opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- find icxvars_bat.bat
+    local paths = {"$(env ICPP_COMPILER20)"}
+    local icxvars_bat = find_file("bin/icxvars.bat", paths)
+    -- look for setvars.bat which is new in 2021
+    if not icxvars_bat then
+        -- find setvars.bat in intel oneapi toolkits rootdir
+        paths = {"$(env ONEAPI_ROOT)"}
+        icxvars_bat = find_file("setvars.bat", paths)
+    end
+    if not icxvars_bat then
+        -- find setvars.bat using ICPP_COMPILER.*
+        paths = {
+            "$(env ICPP_COMPILER21)",
+            "$(env ICPP_COMPILER22)",
+            "$(env ICPP_COMPILER23)"
+        }
+        icxvars_bat = find_file("../../../setvars.bat", paths)
+    end
+    if icxvars_bat then
+
+        -- load icxvars_bat
+        local icxvars_x86 = _load_icxvars(icxvars_bat, "ia32", opt)
+        local icxvars_x64 = _load_icxvars(icxvars_bat, "intel64", opt)
+
+        -- save results
+        return {icxvars_bat = icxvars_bat, icxvars = {x86 = icxvars_x86, x64 = icxvars_x64}}
+     end
+end
+
+-- find intel llvm c/c++ envirnoment on linux
 function _find_intel_on_linux(opt)
 
     -- attempt to find the sdk directory
