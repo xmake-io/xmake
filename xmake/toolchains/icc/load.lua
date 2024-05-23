@@ -21,9 +21,34 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("detect.sdks.find_vstudio")
+
+-- add the given vs environment
+function _add_vsenv(toolchain, name, curenvs)
+
+    -- get vcvars
+    local vcvars = toolchain:config("vcvars")
+    if not vcvars then
+        return
+    end
+
+    -- get the paths for the vs environment
+    local new = vcvars[name]
+    if new then
+        -- fix case naming conflict for cmake/msbuild between the new msvc envs and current environment, if we are running xmake in vs prompt.
+        -- @see https://github.com/xmake-io/xmake/issues/4751
+        for k, c in pairs(curenvs) do
+            if name:lower() == k:lower() and name ~= k then
+                name = k
+                break
+            end
+        end
+        toolchain:add("runenvs", name, table.unpack(path.splitenv(new)))
+    end
+end
 
 -- add the given icl environment
-function _add_iclenv(toolchain, name)
+function _add_iclenv(toolchain, name, curenvs)
 
     -- get iclvarsall
     local iclvarsall = toolchain:config("varsall")
@@ -36,9 +61,17 @@ function _add_iclenv(toolchain, name)
     local iclenv = iclvarsall[arch] or {}
 
     -- get the paths for the icl environment
-    local env = iclenv[name]
-    if env then
-        toolchain:add("runenvs", name:upper(), path.splitenv(env))
+    local new = iclenv[name]
+    if new then
+        -- fix case naming conflict for cmake/msbuild between the new msvc envs and current environment, if we are running xmake in vs prompt.
+        -- @see https://github.com/xmake-io/xmake/issues/4751
+        for k, c in pairs(curenvs) do
+            if name:lower() == k:lower() and name ~= k then
+                name = k
+                break
+            end
+        end
+        toolchain:add("runenvs", name, table.unpack(path.splitenv(new)))
     end
 end
 
@@ -68,11 +101,18 @@ function _load_intel_on_windows(toolchain)
         toolchain:set("toolset", "as", "icc")
     end
 
-    -- add icl environments
-    _add_iclenv(toolchain, "PATH")
-    _add_iclenv(toolchain, "LIB")
-    _add_iclenv(toolchain, "INCLUDE")
-    _add_iclenv(toolchain, "LIBPATH")
+    -- add vs/icl environments
+    local expect_vars = {"PATH", "LIB", "INCLUDE", "LIBPATH"}
+    local curenvs = os.getenvs()
+    for _, name in ipairs(expect_vars) do
+        _add_vsenv(toolchain, name, curenvs)
+        _add_iclenv(toolchain, name, curenvs)
+    end
+    for _, name in ipairs(find_vstudio.get_vcvars()) do
+        if not table.contains(expect_vars, name:upper()) then
+            _add_vsenv(toolchain, name, curenvs)
+        end
+    end
 end
 
 -- load intel on linux

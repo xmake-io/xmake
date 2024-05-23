@@ -106,7 +106,6 @@ function _check_vstudio(toolchain)
     return vs
 end
 
-
 -- check intel on windows
 function _check_intel_on_windows(toolchain)
 
