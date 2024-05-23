@@ -61,7 +61,7 @@ function _add_ifortenv(toolchain, name, curenvs)
     local ifortenv = ifortvarsall[arch] or {}
 
     -- get the paths for the ifort environment
-    local new = ifortvarsall[name]
+    local new = ifortenv[name]
     if new then
         -- fix case naming conflict for cmake/msbuild between the new msvc envs and current environment, if we are running xmake in vs prompt.
         -- @see https://github.com/xmake-io/xmake/issues/4751

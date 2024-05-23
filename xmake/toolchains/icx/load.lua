@@ -61,7 +61,7 @@ function _add_icxenv(toolchain, name, curenvs)
     local icxenv = icxvarsall[arch] or {}
 
     -- get the paths for the icx environment
-    local new = icxvarsall[name]
+    local new = icxenv[name]
     if new then
         -- fix case naming conflict for cmake/msbuild between the new msvc envs and current environment, if we are running xmake in vs prompt.
         -- @see https://github.com/xmake-io/xmake/issues/4751
