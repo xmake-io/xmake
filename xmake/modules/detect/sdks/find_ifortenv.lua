@@ -53,11 +53,7 @@ function _load_ifortvars(ifortvars_bat, arch, opt)
     file:close()
 
     -- run genifortvars.bat
-    local oneapi_rootdir = os.getenv("ONEAPI_ROOT")
-    if not oneapi_rootdir then
-        oneapi_rootdir = path.directory(ifortvars_bat)
-    end
-    os.runv(genifortvars_bat, {envs = {ONEAPI_ROOT = oneapi_rootdir}})
+    os.run(genifortvars_bat)
 
     -- load all envirnoment variables
     local variables = {}
