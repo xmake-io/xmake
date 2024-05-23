@@ -43,12 +43,12 @@ function _add_vsenv(toolchain, name, curenvs)
                 break
             end
         end
-        toolchain:add("runenvs", name, table.unwrap(path.splitenv(new)))
+        toolchain:add("runenvs", name, table.unpack(path.splitenv(new)))
     end
 end
 
 -- add the given icx environment
-function _add_icxenv(toolchain, name)
+function _add_icxenv(toolchain, name, curenvs)
 
     -- get icxvarsall
     local icxvarsall = toolchain:config("varsall")
@@ -61,9 +61,17 @@ function _add_icxenv(toolchain, name)
     local icxenv = icxvarsall[arch] or {}
 
     -- get the paths for the icx environment
-    local env = icxenv[name]
-    if env then
-        toolchain:add("runenvs", name:upper(), path.splitenv(env))
+    local new = icxvarsall[name]
+    if new then
+        -- fix case naming conflict for cmake/msbuild between the new msvc envs and current environment, if we are running xmake in vs prompt.
+        -- @see https://github.com/xmake-io/xmake/issues/4751
+        for k, c in pairs(curenvs) do
+            if name:lower() == k:lower() and name ~= k then
+                name = k
+                break
+            end
+        end
+        toolchain:add("runenvs", name, table.unpack(path.splitenv(new)))
     end
 end
 
@@ -93,17 +101,12 @@ function _load_intel_on_windows(toolchain)
         toolchain:set("toolset", "as", "icx")
     end
 
-    -- add icx environments
-    _add_icxenv(toolchain, "PATH")
-    _add_icxenv(toolchain, "LIB")
-    _add_icxenv(toolchain, "INCLUDE")
-    _add_icxenv(toolchain, "LIBPATH")
-
-    -- add vs environments
+    -- add vs/icx environments
     local expect_vars = {"PATH", "LIB", "INCLUDE", "LIBPATH"}
     local curenvs = os.getenvs()
     for _, name in ipairs(expect_vars) do
         _add_vsenv(toolchain, name, curenvs)
+        _add_icxenv(toolchain, name, curenvs)
     end
     for _, name in ipairs(find_vstudio.get_vcvars()) do
         if not table.contains(expect_vars, name:upper()) then
