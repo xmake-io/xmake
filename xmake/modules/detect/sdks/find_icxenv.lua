@@ -95,35 +95,22 @@ end
 
 -- find intel llvm c/c++ envirnoment on windows
 function _find_intel_on_windows(opt)
-
-    -- init options
     opt = opt or {}
 
     -- find icxvars_bat.bat
-    local paths = {"$(env ICPP_COMPILER20)"}
-    local icxvars_bat = find_file("bin/icxvars.bat", paths)
-    -- look for setvars.bat which is new in 2021
+    local paths = {"$(env ONEAPI_ROOT)"}
+    local icxvars_bat = find_file("setvars.bat", paths)
     if not icxvars_bat then
-        -- find setvars.bat in intel oneapi toolkits rootdir
-        paths = {"$(env ONEAPI_ROOT)"}
-        icxvars_bat = find_file("setvars.bat", paths)
-    end
-    if not icxvars_bat then
-        -- find setvars.bat using ICPP_COMPILER.*
-        paths = {
-            "$(env ICPP_COMPILER21)",
-            "$(env ICPP_COMPILER22)",
-            "$(env ICPP_COMPILER23)"
-        }
-        icxvars_bat = find_file("../../../setvars.bat", paths)
+        paths = {}
+        local keys = winos.registry_keys("HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Intel\\DPCPPSuites\\**\\DPC++")
+        for _, key in ipairs(keys) do
+            table.insert(paths, format("$(reg %s;ProductDir)", key))
+        end
+        icxvars_bat = find_file("../../setvars.bat", paths)
     end
     if icxvars_bat then
-
-        -- load icxvars_bat
         local icxvars_x86 = _load_icxvars(icxvars_bat, "ia32", opt)
         local icxvars_x64 = _load_icxvars(icxvars_bat, "intel64", opt)
-
-        -- save results
         return {icxvars_bat = icxvars_bat, icxvars = {x86 = icxvars_x86, x64 = icxvars_x64}}
      end
 end
