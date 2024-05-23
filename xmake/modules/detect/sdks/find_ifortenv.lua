@@ -116,6 +116,12 @@ function _find_intel_on_windows(opt)
             "$(env IFORT_COMPILER23)"
         }
         ifortvars_bat = find_file("../../../setvars.bat", paths)
+        if not ifortvars_bat then
+            paths = {
+                "$(env IFORT_COMPILER24)"
+            }
+            ifortvars_bat = find_file("../../setvars.bat", paths)
+        end
     end
 
     if ifortvars_bat then
