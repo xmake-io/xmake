@@ -129,6 +129,8 @@ function _get_other_commands(package, cmd, opt)
         local dir = _translate_filepath(package, cmd.dir)
         local subdirectory = dir ~= "." and string.format([[Subdirectory="%s"]], dir) or ""
         result = string.format([[<CreateFolder Directory="INSTALLFOLDER" %s/>]], subdirectory)
+    elseif kind == "wix" then
+        table.insert(result, cmd.rawstr)
     end
     return result
 end
@@ -141,14 +143,29 @@ function _get_feature_string(name, opt)
     local allow_advertise = opt.force and "false" or "true"
     local typical_default = [[TypicalDefault="install"]]
     local directory = opt.config_dir and [[ConfigurableDirectory="INSTALLFOLDER"]] or ""
-    local feature = string.format([[<Feature Id="%s" Title="%s" Description="%s" Level="%d" AllowAdvertise="%s" AllowAbsent="%s" %s %s>]], name, name, description, level, allow_advertise, allow_absent, typical_default, directory)
+    local feature = string.format([[<Feature Id="%s" Title="%s" Description="%s" Level="%d" AllowAdvertise="%s" AllowAbsent="%s" %s %s>]], name:gsub(" ", ""), name, description, level, allow_advertise, allow_absent, typical_default, directory)
     return feature
 end
 
 function _get_component_string(id, subdirectory)
     local subdirectory = (subdirectory ~= "." and subdirectory ~= nil) and string.format([[Subdirectory="%s"]], subdirectory) or "" 
-    return string.format([[<Component Id="%s" Guid="%s" Directory="INSTALLFOLDER" %s>]], id, hash.uuid(id), subdirectory)
+    return string.format([[<Component Id="%s" Guid="%s" Directory="INSTALLFOLDER" %s>]], id:gsub(" ", ""), hash.uuid(id), subdirectory)
 end 
+
+-- for each id/guid in the file wix want them to be unique
+-- so compute a hash for each directory based on the file that are inside
+function _get_dir_id(cp_table)
+    local hashes = {}
+    for dir, files in pairs(cp_table) do
+        local s = ""
+        for _, file in ipairs(files) do
+            s = s .. table.concat(file, "")
+        end
+        -- wix required id to start with a letter and without any hyphen
+        hashes[dir] = "A".. hash.uuid(s):gsub("-", ".")
+    end
+    return hashes
+end
 
 -- build a feature from batchcmds
 function _build_feature(package, opt)
@@ -156,7 +173,8 @@ function _build_feature(package, opt)
     local default = opt.default or package:get("default")
 
     local result = {}
-    table.insert(result, _get_feature_string(opt.name or package:title(), table.join(opt, {default = default, description = package:description()})))
+    local name = opt.name or package:title()
+    table.insert(result, _get_feature_string(name, table.join(opt, {default = default, description = package:description()})))
 
     local installcmds = batchcmds.get_installcmds(package):cmds()
     local uninstallcmds = batchcmds.get_uninstallcmds(package):cmds()
@@ -164,9 +182,10 @@ function _build_feature(package, opt)
     local cp_table = _get_cp_kind_table(package, installcmds, opt)
     table.remove_if(installcmds, function (_, cmd) return cmd.kind == "cp" end)
 
+    local dir_id = _get_dir_id(cp_table)
+
     for dir, files in pairs(cp_table) do
-        local d = path.join(package:install_rootdir(), dir)
-        table.insert(result, _get_component_string(d:gsub(path.sep(), "_"), dir))
+        table.insert(result, _get_component_string(dir_id[dir], dir))
         for _, file in ipairs(files) do
             local srcfile = file[1]
             local dstname = file[2]
@@ -175,7 +194,7 @@ function _build_feature(package, opt)
         table.insert(result, "</Component>")
     end    
 
-    table.insert(result, _get_component_string("OtherCmds"))
+    table.insert(result, _get_component_string(name.. "Cmds"))
     for _, cmd in ipairs(installcmds) do
         table.insert(result, _get_other_commands(package, cmd, {install = true}))
     end
