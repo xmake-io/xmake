@@ -126,7 +126,7 @@ jobs:
 
         # publish release
       - name: Publish
-        if: github.event.action == 'published'
+        if: github.event.action == 'published' && matrix.os == 'windows-2022'
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -137,7 +137,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: Publish
-        if: github.event.action == 'published'
+        if: github.event.action == 'published' && matrix.os == 'windows-2022'
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -148,7 +148,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: Publish
-        if: github.event.action == 'published'
+        if: github.event.action == 'published' && matrix.os == 'windows-2022'
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
