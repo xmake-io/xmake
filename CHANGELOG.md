@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.9.2
+
 ### New features
 
 * [#5005](https://github.com/xmake-io/xmake/pull/5005): Show all apis
@@ -1809,6 +1811,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.9.2
 
 ### 新特性
 
