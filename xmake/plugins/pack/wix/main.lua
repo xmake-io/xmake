@@ -130,7 +130,7 @@ function _get_other_commands(package, cmd, opt)
         local subdirectory = dir ~= "." and string.format([[Subdirectory="%s"]], dir) or ""
         result = string.format([[<CreateFolder Directory="INSTALLFOLDER" %s/>]], subdirectory)
     elseif kind == "wix" then
-        table.insert(result, cmd.rawstr)
+        result = cmd.rawstr
     end
     return result
 end
