@@ -44,8 +44,9 @@ target "lua"
 
     # add definitions
     add_defines "LUA_COMPAT_5_1" "LUA_COMPAT_5_2" "LUA_COMPAT_5_3" "{public}"
-    if is_plat "mingw"; then
-        add_defines "LUA_USE_WINDOWS"
+    if is_plat "mingw"; then true
+        # it has been defined in luaconf.h
+        #add_defines "LUA_USE_WINDOWS"
     elif is_plat "macosx"; then
         add_defines "LUA_USE_MACOSX"
     else

@@ -36,7 +36,11 @@
 #   undef MOUSE_MOVED
 #endif
 #define NCURSES_MOUSE_VERSION 2
-#include <curses.h>
+#ifdef TB_COMPILER_IS_MINGW
+#   include <ncursesw/curses.h>
+#else
+#   include <curses.h>
+#endif
 #if defined(NCURSES_VERSION)
 #   include <locale.h>
 #endif
