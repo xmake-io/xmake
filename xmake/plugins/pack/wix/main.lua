@@ -136,14 +136,14 @@ function _get_other_commands(package, cmd, opt)
 end
 
 -- get the string of a wix feature
-function _get_feature_string(name, opt)
+function _get_feature_string(name, title, opt)
     local level = opt.default and 1 or 2
     local description = opt.description or ""
     local allow_absent = opt.force and "false" or "true"
     local allow_advertise = opt.force and "false" or "true"
     local typical_default = [[TypicalDefault="install"]]
     local directory = opt.config_dir and [[ConfigurableDirectory="INSTALLFOLDER"]] or ""
-    local feature = string.format([[<Feature Id="%s" Title="%s" Description="%s" Level="%d" AllowAdvertise="%s" AllowAbsent="%s" %s %s>]], name:gsub(" ", ""), name, description, level, allow_advertise, allow_absent, typical_default, directory)
+    local feature = string.format([[<Feature Id="%s" Title="%s" Description="%s" Level="%d" AllowAdvertise="%s" AllowAbsent="%s" %s %s>]], name:gsub(" ", ""), title, description, level, allow_advertise, allow_absent, typical_default, directory)
     return feature
 end
 
@@ -174,7 +174,7 @@ function _build_feature(package, opt)
 
     local result = {}
     local name = opt.name or package:title()
-    table.insert(result, _get_feature_string(name, table.join(opt, {default = default, description = package:description()})))
+    table.insert(result, _get_feature_string(name, package:title(), table.join(opt, {default = default, description = package:description()})))
 
     local installcmds = batchcmds.get_installcmds(package):cmds()
     local uninstallcmds = batchcmds.get_uninstallcmds(package):cmds()
@@ -210,7 +210,7 @@ end
 -- add to path feature
 function _add_to_path(package)
     local result = {}
-    table.insert(result, _get_feature_string("PATH", {default = false, force = false, description = "Add to PATH"}))
+    table.insert(result, _get_feature_string("PATH", "Add to PATH", {default = false, force = false, description = "Add to PATH"}))
     table.insert(result, _get_component_string("PATH"))
     table.insert(result, [[<Environment Id="PATH" Name="PATH"  Value="[INSTALLFOLDER]bin" Permanent="false" Part="last" Action="set" System="true" />]])
     table.insert(result, "</Component>")
