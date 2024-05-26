@@ -423,6 +423,13 @@ function _get_configs_for_android(package, configs, opt)
                 table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. make)
             end
         end
+
+        -- avoid find and add system include/library path
+        -- @see https://github.com/xmake-io/xmake/issues/2037
+        table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH")
+        table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH")
+        table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH")
+        table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER")
     end
     _get_configs_for_generic(package, configs, opt)
 end
