@@ -21,7 +21,7 @@ target("lua")
 
     -- add definitions
     add_defines("LUA_COMPAT_5_1", "LUA_COMPAT_5_2", "LUA_COMPAT_5_3", {public = true})
-    if is_plat("windows") then
+    if is_plat("windows", "mingw") then
         -- it has been defined in luaconf.h
         --add_defines("LUA_USE_WINDOWS")
     elseif is_plat("macosx", "iphoneos") then

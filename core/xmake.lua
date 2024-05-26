@@ -65,7 +65,7 @@ option_end()
 option("readline")
     set_description("Enable or disable readline library")
     add_links("readline")
-    add_cincludes("readline/readline.h")
+    add_cincludes("stdio.h", "readline/readline.h")
     add_cfuncs("readline")
     add_defines("XM_CONFIG_API_HAVE_READLINE")
 option_end()
@@ -73,8 +73,15 @@ option_end()
 -- the curses option
 option("curses")
     set_description("Enable or disable curses library")
-    add_links("curses")
-    add_cincludes("curses.h")
+    before_check(function (option)
+        if is_plat("mingw") then
+            option:add("cincludes", "ncursesw/curses.h")
+            option:add("links", "ncursesw")
+        else
+            option:add("cincludes", "curses.h")
+            option:add("links", "curses")
+        end
+    end)
     add_defines("XM_CONFIG_API_HAVE_CURSES")
 option_end()
 

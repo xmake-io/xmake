@@ -96,7 +96,6 @@ tb_int_t xm_winos_cp_info(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_int_t    n  = lua_gettop(lua);
     lua_Integer cp = luaL_checkinteger(lua, 1);
     luaL_argcheck(lua, cp >= 0 && cp < 65536, 1, "invalid code page");
     CPINFOEX cp_info;

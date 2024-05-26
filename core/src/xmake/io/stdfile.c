@@ -56,7 +56,7 @@ static tb_size_t xm_io_stdfile_isatty(tb_size_t type)
     tb_bool_t answer = tb_false;
 #if defined(TB_CONFIG_OS_WINDOWS)
     DWORD  mode;
-    HANDLE console_handle;
+    HANDLE console_handle = tb_null;
     switch (type)
     {
     case XM_IO_FILE_TYPE_STDIN: console_handle = GetStdHandle(STD_INPUT_HANDLE); break;
