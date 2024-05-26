@@ -134,6 +134,13 @@ function _get_configs_for_android(configs)
         if ndk_cxxstl then
             table.insert(configs, "-DANDROID_STL=" .. ndk_cxxstl)
         end
+
+        -- avoid find and add system include/library path
+        -- @see https://github.com/xmake-io/xmake/issues/2037
+        table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH")
+        table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH")
+        table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH")
+        table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER")
     end
 end
 
@@ -195,8 +202,9 @@ function _get_configs_for_mingw(configs)
     -- avoid find and add system include/library path
     envs.CMAKE_FIND_ROOT_PATH      = sdkdir
     envs.CMAKE_SYSROOT             = sdkdir
-    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
-    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_PACKAGE = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
     -- avoid add -isysroot on macOS
     envs.CMAKE_OSX_SYSROOT = ""
@@ -260,8 +268,9 @@ function _get_configs_for_cross(configs)
     -- avoid find and add system include/library path
     envs.CMAKE_FIND_ROOT_PATH      = sdkdir
     envs.CMAKE_SYSROOT             = sdkdir
-    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
-    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_PACKAGE = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
     -- avoid add -isysroot on macOS
     envs.CMAKE_OSX_SYSROOT = ""
