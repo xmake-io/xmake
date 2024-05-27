@@ -62,9 +62,9 @@ xpack_component("LongPath")
     set_description("Increases the maximum path length limit, up to 32,767 characters (before 256).")
     on_installcmd(function (component, batchcmds)
         batchcmds:rawcmd("wix", [[
-        <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Control\FileSystem">
-                <RegistryValue Type="integer" Name="LongPathsEnabled" Value="1" KeyPath="yes"/>
-        </RegistryKey>
+    <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Control\FileSystem">
+        <RegistryValue Type="integer" Name="LongPathsEnabled" Value="1" KeyPath="yes"/>
+    </RegistryKey>
         ]])
         batchcmds:rawcmd("nsis", [[
   ${If} $NoAdmin == "false"
