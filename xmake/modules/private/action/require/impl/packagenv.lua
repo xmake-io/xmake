@@ -19,7 +19,7 @@
 --
 
 -- imports
-imports("core.base.hashset")
+import("core.base.hashset")
 import("core.package.package", {alias = "core_package"})
 
 -- enter the package environments
