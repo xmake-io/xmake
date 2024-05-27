@@ -684,84 +684,22 @@ function _add_target_warnings(cmakelists, target)
     end
 end
 
--- copy from core.tools.cl
-function nf_encoding_cl(encoding)
-    local kind
-    local charset
-    local splitinfo = encoding:split(":")
-    if #splitinfo > 1 then
-        kind = splitinfo[1]
-        charset = splitinfo[2]
-    else
-        charset = encoding
-    end
-    local charsets = {
-        ["utf-8"] = "utf-8",
-        utf8 = "utf-8",
-        gb2312 = "gb2312"
-    }
-    local flags = {}
-    charset = charsets[charset:lower()]
-    if charset then
-        if not kind and charset == "utf-8" then
-            table.insert(flags, "/utf-8")
-        else
-            if kind == "source" or not kind then
-                table.insert(flags, "-source-charset:" .. charset)
-            end
-            if kind == "target" or not kind then
-                table.insert(flags, "-execution-charset:" .. charset)
-            end
-        end
-    end
-    if #flags > 0 then
-        return flags
-    end
-end
-
--- copy from core.tools.gcc
-function nf_encoding_gcc(encoding)
-    local kind
-    local charset
-    local splitinfo = encoding:split(":")
-    if #splitinfo > 1 then
-        kind = splitinfo[1]
-        charset = splitinfo[2]
-    else
-        charset = encoding
-    end
-    local charsets = {
-        ["utf-8"] = "UTF-8",
-        utf8 = "UTF-8"
-    }
-    local flags = {}
-    charset = charsets[charset:lower()]
-    if charset then
-        if kind == "source" or not kind then
-            table.insert(flags, "-finput-charset=" .. charset)
-        end
-        if kind == "target" or not kind then
-            table.insert(flags, "-fexec-charset=" .. charset)
-        end
-    end
-    if #flags > 0 then
-        return flags
-    end
-end
-
 -- add target encodings
 function _add_target_encodings(cmakelists, target)
+    local tools_cl = import("core.tools.cl", {alias = "tools_cl"})
+    local tools_gcc = import("core.tools.gcc", {alias = "tools_gcc"})
     local encodings = target:get("encodings")
     if encodings then
         cmakelists:print("if(MSVC)")
         -- msvc or clang-cl
         for _, encoding in ipairs(encodings) do
-            local flags_msvc = nf_encoding_cl(encoding)
+            local flags_msvc = tools_cl.nf_encoding(target, encoding)
             cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[1])
         end
-        cmakelists:print("else()")
+        cmakelists:print("elseif(Gcc)")
+        -- gcc
         for _, encoding in ipairs(encodings) do
-            local flags_gcc = nf_encoding_gcc(encoding)
+            local flags_gcc = tools_gcc.nf_encoding(target, encoding)
             cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[1])
         end
         cmakelists:print("endif()")
