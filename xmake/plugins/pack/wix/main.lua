@@ -31,7 +31,8 @@ function _get_wix()
 
     -- find makensis
     local packages = {}
-    local wix = find_tool("wix", {require_version = ">=4.0.0"})
+    local require_version = ">=4.0.0"
+    local wix = find_tool("wix", {require_version = require_version})
     if not wix then
         table.join2(packages, install_packages("wixtoolset"))
     end
@@ -43,7 +44,7 @@ function _get_wix()
 
     -- we need to force detect and flush detect cache after loading all environments
     if not wix then
-        wix = find_tool("wix", {force = true})
+        wix = find_tool("wix", {force = true, require_version = require_version})
     end
     assert(wix, "wix not found (ensure that wix is up to date)!")
     return wix, oldenvs
