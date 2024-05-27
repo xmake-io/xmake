@@ -298,11 +298,11 @@ function _get_vs_toolset(package)
             toolset_ver = "v" .. verinfo[1] .. (verinfo[2]:sub(1, 1) or "0")
         end
     end
-    -- cmake does not support vs toolset v144 below 3.29.0, we can only use v143
+    -- cmake does not support vs toolset v144 below 3.29.3, we can only use v143
     -- @see https://github.com/xmake-io/xmake/issues/4772
     if toolset_ver and toolset_ver >= "v144" then
         local cmake_version = _get_cmake_version()
-        if cmake_version and cmake_version:le("3.29.0") then
+        if cmake_version and cmake_version:le("3.29.3") then
             toolset_ver = "v143"
         end
     end
