@@ -19,7 +19,7 @@ target("foo")
     add_packages("zlib")
 
 xpack("test")
-    set_formats("nsis", "srpm", "rpm", "zip", "targz", "srczip", "srctargz", "runself")
+    set_formats("nsis", "srpm", "rpm", "zip", "targz", "srczip", "srctargz", "runself", "wix")
     set_title("hello")
     set_author("ruki")
     set_description("A test installer.")
@@ -61,6 +61,11 @@ xpack_component("LongPath")
     set_title("Enable Long Path")
     set_description("Increases the maximum path length limit, up to 32,767 characters (before 256).")
     on_installcmd(function (component, batchcmds)
+        batchcmds:rawcmd("wix", [[
+        <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Control\FileSystem">
+                <RegistryValue Type="integer" Name="LongPathsEnabled" Value="1" KeyPath="yes"/>
+        </RegistryKey>
+        ]])
         batchcmds:rawcmd("nsis", [[
   ${If} $NoAdmin == "false"
     ; Enable long path
