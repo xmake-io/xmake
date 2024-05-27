@@ -889,6 +889,7 @@ function _instance:manifest_save()
     manifest.mode        = self:mode()
     manifest.configs     = self:configs()
     manifest.envs        = self:_rawenvs()
+    manifest.pathenvs    = self:_pathenvs():to_array()
 
     -- save enabled library deps
     if self:librarydeps() then
