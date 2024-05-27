@@ -975,6 +975,22 @@ function _instance:manifest_save()
     end
 end
 
+-- init package source
+function _instance:_init_source()
+    local on_source = self:script("source")
+    if on_source then
+        on_source(self)
+    end
+end
+
+-- load package
+function _instance:_load()
+    local on_load = self:script("load")
+    if on_load then
+        on_load(self)
+    end
+end
+
 -- get the raw environments
 function _instance:_rawenvs()
     local envs = self._RAWENVS
@@ -2661,7 +2677,8 @@ function package.apis()
     ,   script =
         {
             -- package.on_xxx
-            "package.on_load"
+            "package.on_source"
+        ,   "package.on_load"
         ,   "package.on_fetch"
         ,   "package.on_check"
         ,   "package.on_download"
