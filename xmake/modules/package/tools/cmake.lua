@@ -423,6 +423,13 @@ function _get_configs_for_android(package, configs, opt)
                 table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. make)
             end
         end
+
+        -- avoid find and add system include/library path
+        -- @see https://github.com/xmake-io/xmake/issues/2037
+        table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH")
+        table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH")
+        table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH")
+        table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER")
     end
     _get_configs_for_generic(package, configs, opt)
 end
@@ -453,6 +460,7 @@ function _get_configs_for_appleos(package, configs, opt)
         envs.CMAKE_SYSTEM_NAME = "Darwin"
     end
     envs.CMAKE_OSX_ARCHITECTURES = package:arch()
+    envs.CMAKE_FIND_ROOT_PATH_MODE_PACKAGE   = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY   = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE   = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_FRAMEWORK = "BOTH"
@@ -484,6 +492,7 @@ function _get_configs_for_mingw(package, configs, opt)
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
     envs.CMAKE_FIND_ROOT_PATH      = sdkdir
+    envs.CMAKE_FIND_ROOT_PATH_MODE_PACKAGE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
@@ -578,6 +587,7 @@ function _get_configs_for_cross(package, configs, opt)
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
     envs.CMAKE_FIND_ROOT_PATH              = sdkdir
+    envs.CMAKE_FIND_ROOT_PATH_MODE_PACKAGE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
