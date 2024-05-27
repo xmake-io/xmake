@@ -190,16 +190,16 @@ function xpack:inputkind()
     local inputkind = self:get("inputkind")
     if inputkind == nil then
         local inputkinds = {
-            wix = "binary",
-            nsis  = "binary",
-            zip   = "binary",
-            targz = "binary",
-            srczip = "source",
+            wix      = "binary",
+            nsis     = "binary",
+            zip      = "binary",
+            targz    = "binary",
+            srczip   = "source",
             srctargz = "source",
-            runself = "source",
-            deb = "source",
-            srpm = "source",
-            rpm = "source"
+            runself  = "source",
+            deb      = "source",
+            srpm     = "source",
+            rpm      = "source"
         }
         inputkind = inputkinds[self:format()] or "binary"
     end
@@ -322,10 +322,10 @@ end
 -- get the specfile path
 function xpack:specfile()
     local extensions = {
-        wix = ".wxs",
-        nsis = ".nsi",
-        srpm = ".spec",
-        rpm = ".spec",
+        wix     = ".wxs",
+        nsis    = ".nsi",
+        srpm    = ".spec",
+        rpm     = ".spec",
         runself = ".lsm"
     }
     local extension = extensions[self:format()] or ".spec"

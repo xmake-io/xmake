@@ -21,7 +21,6 @@
 import("lib.detect.find_tool")
 import("private.action.require.impl.packagenv")
 import("private.action.require.impl.install_packages")
-
 import(".batchcmds")
 
 -- get the wixtoolset
@@ -65,7 +64,7 @@ function _to_rtf_string(str)
     escape_text = escape_text:gsub("}", "\\}")
 
     local rtf = "{\\rtf1\\ansi{\\fonttbl\\f0\\fswiss Helvetica;}\\f0\\pard ";
-    rtf = rtf .. escape_text:gsub("\r\n", " \\par ") .. "}" 
+    rtf = rtf .. escape_text:gsub("\r\n", " \\par ") .. "}"
     return rtf
 end
 
@@ -78,7 +77,7 @@ function _get_cp_kind_table(package, cmds, opt)
         if cmd.kind ~= "cp" then
             goto continue
         end
-        
+
         local option = table.join(cmd.opt or {}, opt)
         local srcfiles = os.files(cmd.srcpath)
         for _, srcfile in ipairs(srcfiles) do
@@ -111,19 +110,16 @@ function _get_other_commands(package, cmd, opt)
     opt = table.join(cmd.opt or {}, opt)
     local result = ""
     local kind = cmd.kind
-
     if kind == "rm" then
         local subdirectory = _translate_filepath(package, path.directory(cmd.filepath))
         subdirectory = subdirectory ~= "." and string.format([[Subdirectory="%s"]], subdirectory) or ""
         local on = opt.install and [[On="install"]] or [[On="uninstall"]]
         local filename = path.filename(cmd.filepath)
-        
         result = string.format([[<RemoveFile Directory="INSTALLFOLDER" Name="%s" %s %s/>]], filename, subdirectory, on)
     elseif kind == "rmdir" then
         local dir = _translate_filepath(package, cmd.dir)
         local subdirectory = dir ~= "." and string.format([[Subdirectory="%s"]], dir) or ""
         local on = opt.install and [[On="install"]] or [[On="uninstall"]]
-        
         result = string.format([[<RemoveFolder Directory="INSTALLFOLDER" %s %s/>]], subdirectory, on)
     elseif kind == "mkdir" then
         local dir = _translate_filepath(package, cmd.dir)
@@ -148,9 +144,9 @@ function _get_feature_string(name, title, opt)
 end
 
 function _get_component_string(id, subdirectory)
-    local subdirectory = (subdirectory ~= "." and subdirectory ~= nil) and string.format([[Subdirectory="%s"]], subdirectory) or "" 
+    local subdirectory = (subdirectory ~= "." and subdirectory ~= nil) and string.format([[Subdirectory="%s"]], subdirectory) or ""
     return string.format([[<Component Id="%s" Guid="%s" Directory="INSTALLFOLDER" %s>]], id:gsub(" ", ""), hash.uuid(id), subdirectory)
-end 
+end
 
 -- for each id/guid in the file wix want them to be unique
 -- so compute a hash for each directory based on the file that are inside
@@ -178,12 +174,11 @@ function _build_feature(package, opt)
 
     local installcmds = batchcmds.get_installcmds(package):cmds()
     local uninstallcmds = batchcmds.get_uninstallcmds(package):cmds()
- 
+
     local cp_table = _get_cp_kind_table(package, installcmds, opt)
     table.remove_if(installcmds, function (_, cmd) return cmd.kind == "cp" end)
 
     local dir_id = _get_dir_id(cp_table)
-
     for dir, files in pairs(cp_table) do
         table.insert(result, _get_component_string(dir_id[dir], dir))
         for _, file in ipairs(files) do
@@ -192,7 +187,7 @@ function _build_feature(package, opt)
             table.insert(result, string.format([[<File Source="%s" Name="%s"/>]], srcfile, dstname))
         end
         table.insert(result, "</Component>")
-    end    
+    end
 
     table.insert(result, _get_component_string(name.. "Cmds"))
     for _, cmd in ipairs(installcmds) do
@@ -201,7 +196,7 @@ function _build_feature(package, opt)
     for _, cmd in ipairs(uninstallcmds) do
         table.insert(result, _get_other_commands(package, cmd, {install = false}))
     end
-    
+
     table.insert(result, "</Component>")
     table.insert(result, "</Feature>")
     return result
@@ -220,14 +215,12 @@ end
 
 -- get specvars
 function _get_specvars(package)
-
     local installcmds = batchcmds.get_installcmds(package):cmds()
     local specvars = table.clone(package:specvars())
 
     local features = {}
     table.join2(features, _build_feature(package, {default = true, force = true, config_dir = true}))
     table.join2(features, _add_to_path(package))
-
     for name, component in table.orderpairs(package:components()) do
         table.join2(features, _build_feature(component, {name = "Install " .. name}))
     end
@@ -296,12 +289,14 @@ function _pack_wix(wix, package)
 end
 
 function main(package)
+
     -- only for windows
     if not is_host("windows") then
         return
     end
 
     cprint("packing %s", package:outputfile())
+
     -- get wix
     local wix, oldenvs = _get_wix()
 
