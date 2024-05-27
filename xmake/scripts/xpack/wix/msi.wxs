@@ -30,9 +30,7 @@
         <WixVariable Id="WixUILicenseRtf" Value="$(PackageLicenseFile)" />
         <ui:WixUI Id="WixUI_FeatureTree" InstallDirectory="INSTALLFOLDER" />
         <StandardDirectory Id="ProgramFiles6432Folder">
-            <Directory Id="CompanyFolder" Name="$(PackageCompany)">
               <Directory Id="INSTALLFOLDER" Name="$(PackageName)"/>
-            </Directory>
         </StandardDirectory>
         ${PACKAGE_WIX_CMDS}
     </Package>
