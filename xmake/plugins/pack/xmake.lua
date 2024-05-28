@@ -28,6 +28,7 @@ task("pack")
             {'o', "outputdir", "kv", nil,   "Set the output directory. (default: build/xpack)"},
             {nil, "basename",  "kv", nil,   "Set the basename of the output file."},
             {nil, "autobuild", "kv", true,  "Build targets automatically."},
+            {'j', "jobs",      "kv", tostring(os.default_njob()), "Set the number of parallel compilation jobs."   },
             {'f', "formats",   "kv", "all", "Pack the given package formats.",
                                             "e.g.",
                                             "    - xmake pack -f nsis,deb,rpm",
