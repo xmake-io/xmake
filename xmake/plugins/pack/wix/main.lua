@@ -192,7 +192,7 @@ function _build_feature(package, opt)
         for _, file in ipairs(files) do
             local srcfile = file[1]
             local dstname = file[2]
-            table.insert(result, string.format([[<File Source="%s" Name="%s" Id="%s"/>]], srcfile, dstname, _get_id(srcfile .. dstname)))
+            table.insert(result, string.format([[<File Source="%s" Name="%s" Id="%s"/>]], srcfile, dstname, _get_id()))
         end
         table.insert(result, "</Component>")
     end
