@@ -109,11 +109,21 @@ end
 
 -- set the value to the package info
 function _instance:set(name, ...)
+    if self._SOURCE_INITED then
+        if self:_sourceset():has(name) then
+            os.raise("package:set(\"%s\", ...) can only be called in on_source().", name)
+        end
+    end
     self._INFO:apival_set(name, ...)
 end
 
 -- add the value to the package info
 function _instance:add(name, ...)
+    if self._SOURCE_INITED then
+        if self:_sourceset():has(name) then
+            os.raise("package:add(\"%s\", ...) can only be called in on_source().", name)
+        end
+    end
     self._INFO:apival_add(name, ...)
 end
 
@@ -975,19 +985,37 @@ function _instance:manifest_save()
     end
 end
 
+-- get the source configuration set
+function _instance:_sourceset()
+    local sourceset = self._SOURCESET
+    if sourceset == nil then
+        sourceset = hashset.of("urls", "versions", "versionfiles", "configs")
+        self._SOURCESET = sourceset
+    end
+    return sourceset
+end
+
 -- init package source
 function _instance:_init_source()
-    local on_source = self:script("source")
-    if on_source then
-        on_source(self)
+    local inited = self._SOURCE_INITED
+    if not inited then
+        local on_source = self:script("source")
+        if on_source then
+            on_source(self)
+        end
     end
 end
 
 -- load package
 function _instance:_load()
-    local on_load = self:script("load")
-    if on_load then
-        on_load(self)
+    self._SOURCE_INITED = true
+    local loaded = self._LOADED
+    if not loaded then
+        local on_load = self:script("load")
+        if on_load then
+            on_load(self)
+        end
+        self._LOADED = true
     end
 end
 
