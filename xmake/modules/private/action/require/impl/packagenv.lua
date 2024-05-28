@@ -19,17 +19,21 @@
 --
 
 -- imports
+import("core.base.hashset")
 import("core.package.package", {alias = "core_package"})
 
 -- enter the package environments
-function _enter_package(package_name, envs, installdir)
+function _enter_package(package_name, envs, pathenvs, installdir)
+    if pathenvs then
+        pathenvs = hashset.from(pathenvs)
+    end
     for name, values in pairs(envs) do
-        if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
+        if pathenvs and pathenvs:has(name) then
             for _, value in ipairs(values) do
                 if path.is_absolute(value) then
                     os.addenv(name, value)
                 else
-                    os.addenv(name, path.join(installdir, value))
+                    os.addenv(name, path.normalize(path.join(installdir, value)))
                 end
             end
         else
@@ -45,7 +49,7 @@ function enter(...)
         for _, manifest_file in ipairs(os.files(path.join(core_package.installdir(), name:sub(1, 1), name, "*", "*", "manifest.txt"))) do
             local manifest = io.load(manifest_file)
             if manifest and manifest.plat == os.host() and manifest.arch == os.arch() then
-                _enter_package(name, manifest.envs, path.directory(manifest_file))
+                _enter_package(name, manifest.envs, manifest.pathenvs, path.directory(manifest_file))
             end
         end
     end

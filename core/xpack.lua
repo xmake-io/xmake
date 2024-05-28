@@ -5,7 +5,7 @@ xpack("xmake")
     set_copyright("Copyright (C) 2015-present, TBOOX Open Source Group")
     set_author("waruqi@gmail.com")
     set_licensefile("../LICENSE.md")
-    set_formats("nsis", "zip")
+    set_formats("nsis", "wix", "zip")
     add_targets("demo")
     set_bindir(".")
     set_iconfile("src/demo/xmake.ico")
@@ -33,7 +33,7 @@ xpack("xmake")
         import("utils.archive")
         import("core.base.global")
         local format = package:format()
-        if package:is_plat("windows") and (format == "nsis" or format == "zip") then
+        if package:is_plat("windows") and (format == "nsis" or format == "wix" or format == "zip") then
             local winenv = path.join(os.programdir(), "winenv")
             if os.isdir(winenv) then
                 package:add("installfiles", path.join(winenv, "**"), {rootdir = path.directory(winenv)})
@@ -69,6 +69,11 @@ xpack_component("LongPath")
     ; Enable long path
     WriteRegDWORD ${HKLM} "SYSTEM\CurrentControlSet\Control\FileSystem" "LongPathsEnabled" 1
   ${EndIf}]])
+        batchcmds:rawcmd("wix", [[
+    <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Control\FileSystem">
+        <RegistryValue Type="integer" Name="LongPathsEnabled" Value="1" KeyPath="yes"/>
+    </RegistryKey>
+        ]])
     end)
 
 xpack("xmakesrc")
