@@ -139,13 +139,14 @@ function _get_feature_string(name, title, opt)
     local allow_advertise = opt.force and "false" or "true"
     local typical_default = [[TypicalDefault="install"]]
     local directory = opt.config_dir and [[ConfigurableDirectory="INSTALLFOLDER"]] or ""
-    local feature = string.format([[<Feature Id="%s" Title="%s" Description="%s" Level="%d" AllowAdvertise="%s" AllowAbsent="%s" %s %s>]], name:gsub(" ", ""), title, description, level, allow_advertise, allow_absent, typical_default, directory)
+    local feature = string.format([[<Feature Id="%s" Title="%s" Description="%s" Level="%d" AllowAdvertise="%s" AllowAbsent="%s" %s %s>]],
+        name:gsub("[ ()]", ""), title, description, level, allow_advertise, allow_absent, typical_default, directory)
     return feature
 end
 
 function _get_component_string(id, subdirectory)
     local subdirectory = (subdirectory ~= "." and subdirectory ~= nil) and string.format([[Subdirectory="%s"]], subdirectory) or ""
-    return string.format([[<Component Id="%s" Guid="%s" Directory="INSTALLFOLDER" %s>]], id:gsub(" ", ""), hash.uuid(id), subdirectory)
+    return string.format([[<Component Id="%s" Guid="%s" Directory="INSTALLFOLDER" %s>]], id:gsub("[ ()]", ""), hash.uuid(id), subdirectory)
 end
 
 -- for each id/guid in the file wix want them to be unique
@@ -189,7 +190,7 @@ function _build_feature(package, opt)
         table.insert(result, "</Component>")
     end
 
-    table.insert(result, _get_component_string(name.. "Cmds"))
+    table.insert(result, _get_component_string(name .. "Cmds"))
     for _, cmd in ipairs(installcmds) do
         table.insert(result, _get_other_commands(package, cmd, {install = true}))
     end
