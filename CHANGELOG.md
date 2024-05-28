@@ -2,6 +2,12 @@
 
 ## master (unreleased)
 
+## v2.9.3
+
+### New features
+
+* [#4637](https://github.com/xmake-io/xmake/issues/4637): Add mix generator for xpack
+
 ## v2.9.2
 
 ### New features
@@ -1811,6 +1817,12 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.9.3
+
+### 新特性
+
+* [#4637](https://github.com/xmake-io/xmake/issues/4637): 为 xpack 添加 mix 支持
 
 ## v2.9.2
 
