@@ -934,6 +934,12 @@ function _load_package(packagename, requireinfo, opt)
     -- finish requireinfo
     _finish_requireinfo(requireinfo, package)
 
+    -- save require info
+    package:requireinfo_set(requireinfo)
+
+    -- init urls source
+    package:_init_source()
+
     -- select package version
     local version, source = _select_package_version(package, requireinfo, locked_requireinfo)
     if version then
@@ -957,9 +963,6 @@ function _load_package(packagename, requireinfo, opt)
         end
         return package_cached
     end
-
-    -- save require info
-    package:requireinfo_set(requireinfo)
 
     -- save display name
     if not displayname then
@@ -1002,10 +1005,7 @@ function _load_package(packagename, requireinfo, opt)
     end
 
     -- do load
-    local on_load = package:script("load")
-    if on_load then
-        on_load(package)
-    end
+    package:_load()
 
     -- load all components
     for _, component in pairs(package:components()) do
