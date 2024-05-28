@@ -106,25 +106,47 @@ function _get_cp_kind_table(package, cmds, opt)
     return result
 end
 
+-- get id
+function _get_id(name)
+    return "A" .. hash.uuid(name):gsub("-", ".")
+end
+
+-- for each id/guid in the file wix want them to be unique
+-- so compute a hash for each directory based on the file that are inside
+function _get_dir_id(cp_table)
+    local hashes = {}
+    for dir, files in pairs(cp_table) do
+        local s = ""
+        for _, file in ipairs(files) do
+            s = s .. table.concat(file, "")
+        end
+        -- wix required id to start with a letter and without any hyphen
+        hashes[dir] = _get_id(s)
+    end
+    return hashes
+end
+
+-- get custom commands
 function _get_other_commands(package, cmd, opt)
     opt = table.join(cmd.opt or {}, opt)
     local result = ""
     local kind = cmd.kind
+    local id = _get_id()
     if kind == "rm" then
         local subdirectory = _translate_filepath(package, path.directory(cmd.filepath))
         subdirectory = subdirectory ~= "." and string.format([[Subdirectory="%s"]], subdirectory) or ""
         local on = opt.install and [[On="install"]] or [[On="uninstall"]]
         local filename = path.filename(cmd.filepath)
-        result = string.format([[<RemoveFile Directory="INSTALLFOLDER" Name="%s" %s %s/>]], filename, subdirectory, on)
+        result = string.format([[<RemoveFile Id="%s" Directory="INSTALLFOLDER" Name="%s" %s %s/>]], id, filename, subdirectory, on)
     elseif kind == "rmdir" then
         local dir = _translate_filepath(package, cmd.dir)
         local subdirectory = dir ~= "." and string.format([[Subdirectory="%s"]], dir) or ""
         local on = opt.install and [[On="install"]] or [[On="uninstall"]]
-        result = string.format([[<RemoveFolder Directory="INSTALLFOLDER" %s %s/>]], subdirectory, on)
+        result = string.format([[<RemoveFolder Id="%s" Directory="INSTALLFOLDER" %s %s/>]], id, subdirectory, on)
     elseif kind == "mkdir" then
         local dir = _translate_filepath(package, cmd.dir)
         local subdirectory = dir ~= "." and string.format([[Subdirectory="%s"]], dir) or ""
-        result = string.format([[<CreateFolder Directory="INSTALLFOLDER" %s/>]], subdirectory)
+        result = string.format([[<CreateFolder Id="%s" Directory="INSTALLFOLDER" %s/>]], id, subdirectory)
     elseif kind == "wix" then
         result = cmd.rawstr
     end
@@ -149,21 +171,6 @@ function _get_component_string(id, subdirectory)
     return string.format([[<Component Id="%s" Guid="%s" Directory="INSTALLFOLDER" %s>]], id:gsub("[ ()]", ""), hash.uuid(id), subdirectory)
 end
 
--- for each id/guid in the file wix want them to be unique
--- so compute a hash for each directory based on the file that are inside
-function _get_dir_id(cp_table)
-    local hashes = {}
-    for dir, files in pairs(cp_table) do
-        local s = ""
-        for _, file in ipairs(files) do
-            s = s .. table.concat(file, "")
-        end
-        -- wix required id to start with a letter and without any hyphen
-        hashes[dir] = "A".. hash.uuid(s):gsub("-", ".")
-    end
-    return hashes
-end
-
 -- build a feature from batchcmds
 function _build_feature(package, opt)
     opt = opt or {}
@@ -185,7 +192,7 @@ function _build_feature(package, opt)
         for _, file in ipairs(files) do
             local srcfile = file[1]
             local dstname = file[2]
-            table.insert(result, string.format([[<File Source="%s" Name="%s"/>]], srcfile, dstname))
+            table.insert(result, string.format([[<File Source="%s" Name="%s" Id="%s"/>]], srcfile, dstname, _get_id(srcfile .. dstname)))
         end
         table.insert(result, "</Component>")
     end
