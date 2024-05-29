@@ -62,8 +62,22 @@ rule("rust.build")
         local edition = target:values("rust.edition") or "2018"
         target:add("rcflags", "--edition", edition, {force = true})
 
-        -- set panic
-        target:add("rcflags", "-C panic=abort", {force = true})
+        -- set abort panic for no_std
+        -- https://github.com/xmake-io/xmake/issues/4929
+        local no_std = false
+        local sourcebatch = target:sourcebatches()["rust.build"]
+        if sourcebatch then
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local content = io.readfile(sourcefile)
+                if content and content:find("#![no_std]", 1, true) then
+                    no_std = true
+                    break
+                end
+            end
+        end
+        if no_std then
+            target:add("rcflags", "-C panic=abort", {force = true})
+        end
     end)
     on_build("build.target")
 
