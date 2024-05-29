@@ -92,11 +92,17 @@ function main(name, opt)
         -- https://github.com/rust-lang/cargo/issues/10534#issuecomment-1087631050
         local tomlfile = io.open(cargotoml, "a")
         tomlfile:print("")
+        tomlfile:print("[lib]")
+        tomlfile:print("crate-type = [\"staticlib\"]")
+        tomlfile:print("")
         tomlfile:print("[workspace]")
         tomlfile:print("")
         tomlfile:close()
     else
         local tomlfile = io.open(cargotoml, "w")
+        tomlfile:print("[lib]")
+        tomlfile:print("crate-type = [\"staticlib\"]")
+        tomlfile:print("")
         tomlfile:print("[package]")
         tomlfile:print("name = \"cargodeps\"")
         tomlfile:print("version = \"0.1.0\"")
@@ -125,7 +131,7 @@ target = "%s"
     end
 
     -- generate main.rs
-    local file = io.open(path.join(sourcedir, "src", "main.rs"), "w")
+    local file = io.open(path.join(sourcedir, "src", "lib.rs"), "w")
     if configs.main == false then
         file:print("#![no_main]")
     end
