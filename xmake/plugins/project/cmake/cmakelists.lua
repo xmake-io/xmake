@@ -233,6 +233,26 @@ function _translate_flags(flags, outputdir)
     return result
 end
 
+-- map compiler flags
+function _map_compflags(toolname, langkind, name, values)
+    local fake_target = {
+        is_shared = function() return false end,
+        tool = function()
+            local program
+            if toolname == "cl" then
+                program = "cl.exe"
+            elseif toolname == "gcc" then
+                program = "gcc"
+            end
+            return program, toolname
+        end,
+        sourcekinds = function()
+            return langkind == "c" and "cc" or "cxx"
+        end
+    }
+    return compiler.map_flags(langkind, name, values, {target = fake_target})
+end
+
 -- get flags from fileconfig
 function _get_flags_from_fileconfig(fileconfig, outputdir, name)
     local flags = {}
@@ -686,21 +706,17 @@ end
 
 -- add target encodings
 function _add_target_encodings(cmakelists, target)
-    local tools_cl = import("core.tools.cl", {alias = "tools_cl"})
-    local tools_gcc = import("core.tools.gcc", {alias = "tools_gcc"})
     local encodings = target:get("encodings")
     if encodings then
         cmakelists:print("if(MSVC)")
-        -- msvc or clang-cl
-        for _, encoding in ipairs(encodings) do
-            local flags_msvc = tools_cl.nf_encoding(target, encoding)
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[1])
+        local flags_cl = _map_compflags("cl", "c", "encoding", encodings)
+        for _, flag in ipairs(flags_cl) do
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
         end
         cmakelists:print("elseif(Gcc)")
-        -- gcc
-        for _, encoding in ipairs(encodings) do
-            local flags_gcc = tools_gcc.nf_encoding(target, encoding)
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[1])
+        local flags_gcc = _map_compflags("gcc", "c", "encoding", encodings)
+        for _, flag in ipairs(flags_gcc) do
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
         end
         cmakelists:print("endif()")
     end
