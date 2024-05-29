@@ -22,6 +22,8 @@
 import("core.project.project")
 import("core.platform.platform")
 import("core.base.text")
+import("core.base.option")
+import(".showlist")
 
 -- show all platforms
 function main()
@@ -35,6 +37,7 @@ function main()
 
     -- get all architectures
     local result = {align = 'l', sep = " "}
+    local json_result = {}
     for i, plat in ipairs(plats) do
         local archs = try {function () return project.allowed_archs(plat) end}
         if archs then
@@ -45,7 +48,12 @@ function main()
         end
         if archs and #archs > 0 then
             table.insert(result, table.join(plat, archs))
+            json_result[plat] = archs
         end
     end
-    print(text.table(result))
+    if option.get("json") then
+        showlist(json_result)
+    else
+        print(text.table(result))
+    end
 end
