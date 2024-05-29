@@ -61,6 +61,9 @@ rule("rust.build")
         -- set edition
         local edition = target:values("rust.edition") or "2018"
         target:add("rcflags", "--edition", edition, {force = true})
+
+        -- set panic
+        target:add("rcflags", "-C panic=abort", {force = true})
     end)
     on_build("build.target")
 
