@@ -233,6 +233,26 @@ function _translate_flags(flags, outputdir)
     return result
 end
 
+-- map compiler flags
+function _map_compflags(toolname, langkind, name, values)
+    local fake_target = {
+        is_shared = function() return false end,
+        tool = function()
+            local program
+            if toolname == "cl" then
+                program = "cl.exe"
+            elseif toolname == "gcc" then
+                program = "gcc"
+            end
+            return program, toolname
+        end,
+        sourcekinds = function()
+            return langkind == "c" and "cc" or "cxx"
+        end
+    }
+    return compiler.map_flags(langkind, name, values, {target = fake_target})
+end
+
 -- get flags from fileconfig
 function _get_flags_from_fileconfig(fileconfig, outputdir, name)
     local flags = {}
@@ -684,6 +704,24 @@ function _add_target_warnings(cmakelists, target)
     end
 end
 
+-- add target encodings
+function _add_target_encodings(cmakelists, target)
+    local encodings = target:get("encodings")
+    if encodings then
+        cmakelists:print("if(MSVC)")
+        local flags_cl = _map_compflags("cl", "c", "encoding", encodings)
+        for _, flag in ipairs(flags_cl) do
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
+        end
+        cmakelists:print("elseif(Gcc)")
+        local flags_gcc = _map_compflags("gcc", "c", "encoding", encodings)
+        for _, flag in ipairs(flags_gcc) do
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
+        end
+        cmakelists:print("endif()")
+    end
+end
+
 -- add target exceptions
 function _add_target_exceptions(cmakelists, target)
     local flags_gcc =
@@ -1120,6 +1158,9 @@ function _add_target(cmakelists, target, outputdir)
 
     -- add target warnings
     _add_target_warnings(cmakelists, target)
+
+    -- add target exceptions
+    _add_target_encodings(cmakelists, target)
 
     -- add target exceptions
     _add_target_exceptions(cmakelists, target)

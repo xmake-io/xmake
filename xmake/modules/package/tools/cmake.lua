@@ -824,7 +824,7 @@ function _get_envs_for_runtime_flags(package, configs, opt)
     local runtimes = package:runtimes()
     if runtimes then
         local fake_target = {is_shared = function(_) return false end,
-                             sourcekinds = function(_) return "c" end}
+                             sourcekinds = function(_) return "cc" end}
         envs[format("CMAKE_C_FLAGS_%s", buildtype)]             = _map_compflags(fake_target, "c", "runtime", runtimes)
         fake_target.sourcekinds = function(_) return "cxx" end
         envs[format("CMAKE_CXX_FLAGS_%s", buildtype)]           = _map_compflags(fake_target, "cxx", "runtime", runtimes)
