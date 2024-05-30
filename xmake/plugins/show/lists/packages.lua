@@ -20,7 +20,7 @@
 
 -- imports
 import("core.project.config")
-import("require.list", {rootdir = path.join(os.programdir(), "actions"), alias = "show_packages"})
+import("private.action.require.list", { alias = "show_packages" })
 import(".showlist")
 
 -- show all packages
