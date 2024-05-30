@@ -701,44 +701,12 @@ end
 
 -- add target exceptions
 function _add_target_exceptions(cmakelists, target)
-    local flags_gcc =
-    {
-        cxx = "-fexceptions",
-        ["no-cxx"] = "-fno-exceptions",
-        objc = "-fobjc-exceptions",
-        ["no-objc"] = "-fno-objc-exceptions"
-    }
-    local flags_clang =
-    {
-        cxx = "-fcxx-exceptions",
-        ["no-cxx"] = "-fno-cxx-exceptions",
-        objc = "-fobjc-exceptions",
-        ["no-objc"] = "-fno-objc-exceptions"
-    }
-    local flags_msvc =
-    {
-        cxx = "/EHsc",
-        ["no-cxx"] = "/EHsc-"
-    }
     local exceptions = target:get("exceptions")
     if exceptions then
         if exceptions == "none" then
             cmakelists:print("string(REPLACE \"/EHsc\" \"\" CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")")
         else
-            cmakelists:print("if(MSVC)")
-            -- msvc or clang-cl
-            for _, exception in ipairs(exceptions) do
-                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[exception])
-            end
-            cmakelists:print("elseif(Clang)")
-            for _, exception in ipairs(exceptions) do
-                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_clang[exception])
-            end
-            cmakelists:print("else()")
-            for _, exception in ipairs(exceptions) do
-                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[exception])
-            end
-            cmakelists:print("endif()")
+            _add_target_values(cmakelists, target, "exceptions")
         end
     end
 end
