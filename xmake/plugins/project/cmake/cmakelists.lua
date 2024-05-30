@@ -243,6 +243,8 @@ function _map_compflags(toolname, langkind, name, values)
                 program = "cl.exe"
             elseif toolname == "gcc" then
                 program = "gcc"
+            elseif toolname == "clang" then
+                program = "clang"
             end
             return program, toolname
         end,
@@ -661,60 +663,25 @@ function _add_target_compile_options(cmakelists, target, outputdir)
     end
 end
 
--- add target warnings
-function _add_target_warnings(cmakelists, target)
-    local flags_gcc =
-    {
-        none       = "-w"
-    ,   less       = "-Wall"
-    ,   more       = "-Wall"
-    ,   all        = "-Wall"
-    ,   allextra   = "-Wall -Wextra"
-    ,   pedantic   = "-Wpedantic"
-    ,   everything = "-Wall -Wextra"
-    ,   error      = "-Werror"
-    }
-    local flags_msvc =
-    {
-        none       = "-W0"
-    ,   less       = "-W1"
-    ,   more       = "-W3"
-    ,   all        = "-W3" -- = "-Wall" will enable too more warnings
-    ,   allextra   = "-W4"
-    ,   everything = "-Wall"
-    ,   error      = "-WX"
-    }
-    local warnings = target:get("warnings")
-    if warnings then
-        cmakelists:print("if(MSVC)")
-        for _, warn in ipairs(warnings) do
-            local flag = flags_msvc[warn]
-            if flag then
-                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
-            end
+-- add target values
+function _add_target_values(cmakelists, target, name)
+    local values = target:get(name)
+    if values then
+        if name:endswith("s") then
+            name = name:sub(1, #name - 1)
         end
-        cmakelists:print("else()")
-        for _, warn in ipairs(warnings) do
-            local flag = flags_gcc[warn]
-            if flag then
-                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
-            end
-        end
-        cmakelists:print("endif()")
-    end
-end
-
--- add target encodings
-function _add_target_encodings(cmakelists, target)
-    local encodings = target:get("encodings")
-    if encodings then
         cmakelists:print("if(MSVC)")
-        local flags_cl = _map_compflags("cl", "c", "encoding", encodings)
+        local flags_cl = _map_compflags("cl", "c", name, values)
         for _, flag in ipairs(flags_cl) do
             cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
         end
+        cmakelists:print("elseif(Clang)")
+        local flags_clang = _map_compflags("clang", "c", name, values)
+        for _, flag in ipairs(flags_clang) do
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
+        end
         cmakelists:print("elseif(Gcc)")
-        local flags_gcc = _map_compflags("gcc", "c", "encoding", encodings)
+        local flags_gcc = _map_compflags("gcc", "c", name, values)
         for _, flag in ipairs(flags_gcc) do
             cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flag)
         end
@@ -722,46 +689,24 @@ function _add_target_encodings(cmakelists, target)
     end
 end
 
+-- add target warnings
+function _add_target_warnings(cmakelists, target)
+    _add_target_values(cmakelists, target, "warnings")
+end
+
+-- add target encodings
+function _add_target_encodings(cmakelists, target)
+    _add_target_values(cmakelists, target, "encodings")
+end
+
 -- add target exceptions
 function _add_target_exceptions(cmakelists, target)
-    local flags_gcc =
-    {
-        cxx = "-fexceptions",
-        ["no-cxx"] = "-fno-exceptions",
-        objc = "-fobjc-exceptions",
-        ["no-objc"] = "-fno-objc-exceptions"
-    }
-    local flags_clang =
-    {
-        cxx = "-fcxx-exceptions",
-        ["no-cxx"] = "-fno-cxx-exceptions",
-        objc = "-fobjc-exceptions",
-        ["no-objc"] = "-fno-objc-exceptions"
-    }
-    local flags_msvc =
-    {
-        cxx = "/EHsc",
-        ["no-cxx"] = "/EHsc-"
-    }
     local exceptions = target:get("exceptions")
     if exceptions then
         if exceptions == "none" then
             cmakelists:print("string(REPLACE \"/EHsc\" \"\" CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")")
         else
-            cmakelists:print("if(MSVC)")
-            -- msvc or clang-cl
-            for _, exception in ipairs(exceptions) do
-                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[exception])
-            end
-            cmakelists:print("elseif(Clang)")
-            for _, exception in ipairs(exceptions) do
-                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_clang[exception])
-            end
-            cmakelists:print("else()")
-            for _, exception in ipairs(exceptions) do
-                cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[exception])
-            end
-            cmakelists:print("endif()")
+            _add_target_values(cmakelists, target, "exceptions")
         end
     end
 end

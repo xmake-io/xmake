@@ -773,12 +773,32 @@ end
 function builder:map_flags(name, values, opt)
     local flags  = {}
     local mapper = self:_tool()["nf_" .. name]
+    local multival = false
+    if name:endswith("s") then
+        multival = true
+    elseif not mapper then
+        mapper = self:_tool()["nf_" .. name .. "s"]
+        if mapper then
+            multival = true
+        end
+    end
     if mapper then
         opt = opt or {}
-        for _, value in ipairs(table.wrap(values)) do
-            local flag = mapper(self:_tool(), value, opt.target, opt.targetkind)
-            if flag and flag ~= "" and (not opt.check or self:has_flags(flag)) then
-                table.join2(flags, flag)
+        if multival then
+            local extra = self:_extraconf(opt.extras, values)
+            local results = mapper(self:_tool(), values, {target = opt.target, targetkind = opt.targetkind, extra = extra})
+            for _, flag in ipairs(table.wrap(results)) do
+                if flag and flag ~= "" and (not opt.check or self:has_flags(flag)) then
+                    table.insert(flags, flag)
+                end
+            end
+        else
+            for _, value in ipairs(table.wrap(values)) do
+                local extra = self:_extraconf(opt.extras, value)
+                local flag = mapper(self:_tool(), value, {target = opt.target, targetkind = opt.targetkind, extra = extra})
+                if flag and flag ~= "" and (not opt.check or self:has_flags(flag)) then
+                    table.join2(flags, flag)
+                end
             end
         end
     end
