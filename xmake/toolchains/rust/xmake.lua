@@ -46,8 +46,6 @@ toolchain("rust")
         end
         if arch and #arch:split("%-") > 1 then
             toolchain:add("rcflags", "--target=" .. arch)
-            toolchain:add("rcshflags", "--target=" .. arch)
-            toolchain:add("rcldflags", "--target=" .. arch)
         else
             toolchain:set("rcshflags", "")
             toolchain:set("rcldflags", "")
