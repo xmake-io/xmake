@@ -161,6 +161,10 @@ function main(name, opt)
         result.libfiles = libfiles
         result.frameworkdirs = frameworkdirs and table.unique(frameworkdirs) or nil
         result.frameworks = frameworks
+        local hostlibdir = path.join(librarydir, "host")
+        if os.isdir(hostlibdir) then
+            result.linkdirs = hostlibdir
+        end
         result.version = opt.require_version
     end
     return result
