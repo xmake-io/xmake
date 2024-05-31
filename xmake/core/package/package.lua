@@ -110,8 +110,8 @@ end
 -- set the value to the package info
 function _instance:set(name, ...)
     if self._SOURCE_INITED then
-        if self:_sourceset():has(name) then
-            os.raise("package:set(\"%s\", ...) can only be called in on_source().", name)
+        if self:_sourceset():has(name) and self:get(name) == nil then
+            os.raise("'%s' can only be initied in on_source() or description scope.", name)
         end
     end
     self._INFO:apival_set(name, ...)
@@ -120,8 +120,8 @@ end
 -- add the value to the package info
 function _instance:add(name, ...)
     if self._SOURCE_INITED then
-        if self:_sourceset():has(name) then
-            os.raise("package:add(\"%s\", ...) can only be called in on_source().", name)
+        if self:_sourceset():has(name) and self:get(name) == nil then
+            os.raise("'%s' can only be initied in on_source() or description scope.", name)
         end
     end
     self._INFO:apival_add(name, ...)
