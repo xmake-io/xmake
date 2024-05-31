@@ -110,8 +110,13 @@ end
 -- set the value to the package info
 function _instance:set(name, ...)
     if self._SOURCE_INITED then
+        -- we can use set/add to modify urls, .. in on_load() if urls have been inited.
+        -- but we cannot init urls, ... in on_load() if it has been not inited
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/5148
+        -- https://github.com/xmake-io/xmake-repo/pull/4204
         if self:_sourceset():has(name) and self:get(name) == nil then
-            os.raise("'%s' can only be initied in on_source() or description scope.", name)
+            os.raise("'%s' can only be initied in on_source() or the description scope.", name)
         end
     end
     self._INFO:apival_set(name, ...)
@@ -121,7 +126,7 @@ end
 function _instance:add(name, ...)
     if self._SOURCE_INITED then
         if self:_sourceset():has(name) and self:get(name) == nil then
-            os.raise("'%s' can only be initied in on_source() or description scope.", name)
+            os.raise("'%s' can only be initied in on_source() or the description scope.", name)
         end
     end
     self._INFO:apival_add(name, ...)
