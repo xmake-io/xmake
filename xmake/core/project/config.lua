@@ -291,6 +291,8 @@ function config.is_value(name, ...)
             return true
         end
     end
+
+    return false
 end
 
 -- has the given configs?
@@ -300,6 +302,8 @@ function config.has(...)
             return true
         end
     end
+
+    return false
 end
 
 -- dump the configure
