@@ -166,12 +166,15 @@ target = "%s"
 
     -- do install
     local installdir = opt.installdir
-    os.tryrm(path.join(installdir, "lib"))
+    local librarydir = path.join(installdir, "lib")
+    local librarydir_host = path.join(installdir, "lib", "host")
+    os.tryrm(librarydir)
     if target then
-        os.vcp(path.join(sourcedir, "target", target, opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
-        os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib", "host"))
+        os.vcp(path.join(sourcedir, "target", target, opt.mode == "debug" and "debug" or "release", "deps"), librarydir)
+        -- @see https://github.com/xmake-io/xmake/issues/5156#issuecomment-2142566862
+        os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), librarydir_host)
     else
-        os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
+        os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), librarydir)
     end
 
     -- install metadata
