@@ -31,3 +31,19 @@ function is_compatible_with_host(name)
     end
 end
 
+-- toolset v144 doesn't exist and will cause issues with cmake/vs generation
+local vs_toolset_mapping = {
+    ["v144"] = "v143"
+}
+
+function get_vs_toolset_ver(vs_toolset)
+    local toolset_ver
+    if vs_toolset then
+        local verinfo = vs_toolset:split('%.')
+        if #verinfo >= 2 then
+            toolset_ver = "v" .. verinfo[1] .. (verinfo[2]:sub(1, 1) or "0")
+            toolset_ver = vs_toolset_mapping[toolset_ver] or toolset_ver
+        end
+    end
+    return toolset_ver
+end
