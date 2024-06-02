@@ -148,6 +148,10 @@ function main(name, opt)
     for _, libraryfile in ipairs(table.join(libfiles, libfiles_native)) do
         local filename = path.filename(libraryfile)
         local libraryname = filename:split('-', {plain = true})[1]
+        -- https://github.com/xmake-io/xmake/issues/5156#issuecomment-2143509207
+        if not libraryname:startswith("lib") then
+            libraryname = "lib" .. libraryname
+        end
         if names:has(libraryname) then
             frameworkdirs = frameworkdirs or {}
             frameworks = frameworks or {}
