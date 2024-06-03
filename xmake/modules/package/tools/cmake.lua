@@ -288,27 +288,6 @@ function _get_cmake_version()
     return cmake_version
 end
 
--- get vs toolset
-function _get_vs_toolset(package)
-    local toolset_ver = nil
-    local vs_toolset = _get_msvc(package):config("vs_toolset") or config.get("vs_toolset")
-    if vs_toolset then
-        local verinfo = vs_toolset:split('%.')
-        if #verinfo >= 2 then
-            toolset_ver = "v" .. verinfo[1] .. (verinfo[2]:sub(1, 1) or "0")
-        end
-    end
-    -- cmake does not support vs toolset v144 below 3.29.3, we can only use v143
-    -- @see https://github.com/xmake-io/xmake/issues/4772
-    if toolset_ver and toolset_ver >= "v144" then
-        local cmake_version = _get_cmake_version()
-        if cmake_version and cmake_version:le("3.29.3") then
-            toolset_ver = "v143"
-        end
-    end
-    return toolset_ver
-end
-
 -- insert configs from envs
 function _insert_configs_from_envs(configs, envs, opt)
     opt = opt or {}
@@ -366,7 +345,7 @@ function _get_configs_for_windows(package, configs, opt)
         else
             table.insert(configs, "x64")
         end
-        local vs_toolset = _get_vs_toolset(package)
+        local vs_toolset = toolchain_utils.get_vs_toolset_ver(_get_msvc(package):config("vs_toolset") or config.get("vs_toolset"))
         if vs_toolset then
             table.insert(configs, "-DCMAKE_GENERATOR_TOOLSET=" .. vs_toolset)
         end
