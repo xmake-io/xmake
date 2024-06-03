@@ -715,28 +715,65 @@ end
 function _add_target_languages(cmakelists, target)
     local features =
     {
-        c89   = "c_std_90"
-    ,   c99   = "c_std_99"
-    ,   c11   = "c_std_11"
-    ,   cxx98 = "cxx_std_98"
-    ,   cxx11 = "cxx_std_11"
-    ,   cxx14 = "cxx_std_14"
-    ,   cxx17 = "cxx_std_17"
-    ,   cxx20 = "cxx_std_20"
-    ,   cxx23 = "cxx_std_23"
+        c89       = "c_std_90"
+    ,   c99       = "c_std_99"
+    ,   c11       = "c_std_11"
+    ,   c17       = "c_std_17"
+    ,   c23       = "c_std_23"
+    ,   clatest   = "c_std_latest"
+    ,   cxx98     = "cxx_std_98"
+    ,   cxx11     = "cxx_std_11"
+    ,   cxx14     = "cxx_std_14"
+    ,   cxx17     = "cxx_std_17"
+    ,   cxx20     = "cxx_std_20"
+    ,   cxx23     = "cxx_std_23"
+    ,   cxx26     = "cxx_std_26"
+    ,   cxxlatest = "cxx_std_latest"
     }
     local languages = target:get("languages")
     if languages then
         for _, lang in ipairs(languages) do
             local has_ext = false
+            -- c | c++ | gnu | gnu++
+            local flag = lang:replace('xx', '++'):replace('latest', ''):gsub('%d', '')
             if lang:startswith("gnu") then
-                lang = lang:sub(4)
+                lang = 'c' .. lang:sub(4)
                 has_ext = true
             end
             local feature = features[lang] or (features[lang:replace("++", "xx")])
             if feature then
-                cmakelists:print("set_target_properties(%s PROPERTIES CXX_EXTENSIONS %s)", target:name(), has_ext and "ON" or "OFF")
-                cmakelists:print("target_compile_features(%s PRIVATE %s)", target:name(), feature)
+                cmakelists:print("set_target_properties(%s PROPERTIES %s_EXTENSIONS %s)", target:name(), flag:endswith('++') and 'CXX' or 'C', has_ext and "ON" or "OFF")
+                if feature:endswith('_latest') then
+                    if flag:endswith('++') then
+                        cmakelists:print('foreach(standard 26 23 20 17 14 11 98)')
+                        cmakelists:print('    include(CheckCXXCompilerFlag)')
+                        cmakelists:print('    if(MSVC)')
+                        cmakelists:print('        check_cxx_compiler_flag("/std:%s${standard}" %s_support_%s_standard_${standard})', flag, target:name(), flag)
+                        cmakelists:print('    else()')
+                        cmakelists:print('        check_cxx_compiler_flag("-std=%s${standard}" %s_support_%s_standard_${standard})', flag, target:name(), flag)
+                        cmakelists:print('    endif()')
+                        cmakelists:print('    if(%s_support_%s_standard_${standard})', target:name(), flag)
+                        cmakelists:print('        target_compile_features(%s PRIVATE cxx_std_${standard})', target:name())
+                        cmakelists:print('        break()')
+                        cmakelists:print('    endif()')
+                        cmakelists:print('endforeach()')
+                    else
+                        cmakelists:print('foreach(standard 23 17 11 99 90)')
+                        cmakelists:print('    include(CheckCCompilerFlag)')
+                        cmakelists:print('    if(MSVC)')
+                        cmakelists:print('        check_c_compiler_flag("/std:%s${standard}" %s_support_%s_standard_${standard})', flag, target:name(), flag)
+                        cmakelists:print('    else()')
+                        cmakelists:print('        check_c_compiler_flag("-std=%s${standard}" %s_support_%s_standard_${standard})', flag, target:name(), flag)
+                        cmakelists:print('    endif()')
+                        cmakelists:print('    if(%s_support_%s_standard_${standard})', target:name(), flag)
+                        cmakelists:print('        target_compile_features(%s PRIVATE c_std_${standard})', target:name())
+                        cmakelists:print('        break()')
+                        cmakelists:print('    endif()')
+                        cmakelists:print('endforeach()')
+                    end
+                else
+                    cmakelists:print('target_compile_features(%s PRIVATE %s)', target:name(), feature)
+                end
             end
         end
     end
