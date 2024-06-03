@@ -151,7 +151,8 @@ function main(name, opt)
     if is_host("macosx") then
         libfiles_native_host = os.files(path.join(librarydir_host, "*.dylib"))
     elseif is_host("windows") then
-        libfiles_native_host = os.files(path.join(librarydir_host, "*.lib"))
+        libfiles_native_host = os.files(path.join(librarydir_host, "*.lib|*.dll.lib"))
+        table.join2(libfiles_native_host, os.files(path.join(librarydir_host, "*.dll")))
     else
         libfiles_native_host = os.files(path.join(librarydir_host, "*.so"))
     end
