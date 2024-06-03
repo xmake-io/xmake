@@ -2,12 +2,14 @@
 
 ## master (unreleased)
 
-## v2.9.3
-
 ### New features
 
 * [#4637](https://github.com/xmake-io/xmake/issues/4637): Add mix generator for xpack
 * [#5148](https://github.com/xmake-io/xmake/issues/5148): Add on_source in package
+
+### Bugs fixed
+
+* [#5176](https://github.com/xmake-io/xmake/pull/5176): Fix VS toolset v144
 
 ## v2.9.2
 
@@ -1819,12 +1821,14 @@
 
 ## master (开发中)
 
-## v2.9.3
-
 ### 新特性
 
 * [#4637](https://github.com/xmake-io/xmake/issues/4637): 为 xpack 添加 mix 支持
 * [#5148](https://github.com/xmake-io/xmake/issues/5148): 为包添加 on_source 配置域
+
+### 问题修复
+
+* [#5176](https://github.com/xmake-io/xmake/pull/5176): 修复 VS toolset v144 支持
 
 ## v2.9.2
 
