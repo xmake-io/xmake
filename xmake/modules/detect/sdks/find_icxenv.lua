@@ -123,6 +123,7 @@ function _find_intel_on_linux(opt)
     paths = {}
     for _, rootdir in ipairs(oneapi_rootdirs) do
         table.insert(paths, path.join(rootdir, "*", is_host("macosx") and "mac" or "linux", "bin"))
+        table.insert(paths, path.join(rootdir, "*", "bin"))
     end
     if #paths > 0 then
         local icx = find_file("icx", paths)
