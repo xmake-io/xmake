@@ -42,7 +42,11 @@ function clean()
     local projectfile = _find_projectfile()
     local runenvs = toolchain.load("msvc"):runenvs()
     local msbuild = find_tool("msbuild", {envs = runenvs})
-    os.vexecv(msbuild.program, {projectfile, "-nologo", "-t:Clean", "-p:Configuration=Release", "-p:Platform=" .. (is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+    local projectdata = io.readfile(projectfile)
+    if projectdata and projectdata:find("Any CPU", 1, true) then
+        platform = "Any CPU"
+    end
+    os.vexecv(msbuild.program, {projectfile, "-nologo", "-t:Clean", "-p:Configuration=Release", "-p:Platform=" .. platform}, {envs = runenvs})
 end
 
 -- do build
@@ -55,6 +59,11 @@ function build()
     local projectfile = _find_projectfile()
     local runenvs = toolchain.load("msvc"):runenvs()
     local msbuild = find_tool("msbuild", {envs = runenvs})
-    os.vexecv(msbuild.program, {projectfile, "-nologo", "-t:Build", "-p:Configuration=Release", "-p:Platform=" .. (is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+    local platform = is_arch("x64") and "x64" or "Win32"
+    local projectdata = io.readfile(projectfile)
+    if projectdata and projectdata:find("Any CPU", 1, true) then
+        platform = "Any CPU"
+    end
+    os.vexecv(msbuild.program, {projectfile, "-nologo", "-t:Build", "-p:Configuration=Release", "-p:Platform=" .. platform}, {envs = runenvs})
     cprint("${color.success}build ok!")
 end
