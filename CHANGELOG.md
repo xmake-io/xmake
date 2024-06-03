@@ -7,6 +7,10 @@
 * [#4637](https://github.com/xmake-io/xmake/issues/4637): Add mix generator for xpack
 * [#5148](https://github.com/xmake-io/xmake/issues/5148): Add on_source in package
 
+### Changes
+
+* [#5156](https://github.com/xmake-io/xmake/issues/5156): Improve to install cargo packages for rust
+
 ### Bugs fixed
 
 * [#5176](https://github.com/xmake-io/xmake/pull/5176): Fix VS toolset v144
@@ -1825,6 +1829,10 @@
 
 * [#4637](https://github.com/xmake-io/xmake/issues/4637): 为 xpack 添加 mix 支持
 * [#5148](https://github.com/xmake-io/xmake/issues/5148): 为包添加 on_source 配置域
+
+### 改进
+
+* [#5156](https://github.com/xmake-io/xmake/issues/5156): 改进安装 cargo 包
 
 ### 问题修复
 
