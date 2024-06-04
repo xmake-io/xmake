@@ -1338,8 +1338,12 @@ function _instance:_versions_list()
         local versionfiles = self:get("versionfiles")
         if versionfiles then
             for _, versionfile in ipairs(table.wrap(versionfiles)) do
-                if not os.isfile(versionfile) then
-                    versionfile = path.join(self:scriptdir(), versionfile)
+                if not path.is_absolute(versionfile) then
+                    local subpath = versionfile
+                    versionfile = path.join(self:scriptdir(), subpath)
+                    if not os.isfile(versionfile) then
+                        versionfile = path.join(self:base():scriptdir(), subpath)
+                    end
                 end
                 if os.isfile(versionfile) then
                     local list = io.readfile(versionfile)
