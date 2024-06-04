@@ -37,7 +37,7 @@ which can be obtained at:
   * HOMEPAGE:
     * http://luajit.org/
 
-This product depends on 'Lua', The Lua Programing Language,
+This product depends on 'Lua', The Lua Programming Language,
 which can be obtained at:
 
   * LICENSE:

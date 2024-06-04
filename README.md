@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://xmake.io">
-    <img width="160" heigth="160" src="https://tboox.org/static/img/xmake/logo256c.png">
+    <img width="160" height="160" src="https://tboox.org/static/img/xmake/logo256c.png">
   </a>
 
   <h1>xmake</h1>
@@ -53,7 +53,7 @@ Support this project by [becoming a sponsor](https://xmake.io/#/about/sponsor). 
 
 ## Technical support
 
-You can also consider sponsoring us to get extra technical support services via the [Github sponsor program](https://github.com/sponsors/waruqi). If you do, you can get access to the [xmake-io/technical-support](https://github.com/xmake-io/technical-support) repository, which has the following bennefits:
+You can also consider sponsoring us to get extra technical support services via the [Github sponsor program](https://github.com/sponsors/waruqi). If you do, you can get access to the [xmake-io/technical-support](https://github.com/xmake-io/technical-support) repository, which has the following benefits:
 
 - [X] Handling Issues with higher priority
 - [X] One-to-one technical consulting service
@@ -119,7 +119,7 @@ target("console")
 
 Creates a new target `console` of kind `binary`, and adds all the files ending in `.c` in the `src` directory.
 
-## Package dependences
+## Package dependencies
 
 ```lua
 add_requires("tbox 1.6.*", "zlib", "libpng ~1.6")
@@ -133,7 +133,7 @@ The official xmake package repository exists at: [xmake-repo](https://github.com
 <img src="https://github.com/xmake-io/xmake-docs/raw/master/assets/img/index/package.gif" width="650px" />
 </p>
 
-## Commandline interface reference
+## Command line interface reference
 
 The below assumes you are currently in the project's root directory.
 
