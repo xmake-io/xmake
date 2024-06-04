@@ -112,6 +112,20 @@ function _add_target_pkgenvs(addenvs, target, targets_added)
     end
 end
 
+-- deduplicate envs
+-- @see https://github.com/xmake-io/xmake/issues/5184
+function _dedup_envs(envs)
+    local envs_new = {}
+    for k, v in pairs(envs) do
+        if type(v) == "table" then
+            envs_new[k] = table.unique(v)
+        else
+            envs_new[k] = v
+        end
+    end
+    return envs_new
+end
+
 function make(target)
 
     -- add run environments
@@ -146,6 +160,14 @@ function make(target)
         else
             table.join2(pathenv, runpath)
         end
+    end
+
+    -- deduplicate envs
+    if addenvs then
+        addenvs = _dedup_envs(addenvs)
+    end
+    if setenvs then
+        setenvs = _dedup_envs(setenvs)
     end
     return addenvs, setenvs
 end
