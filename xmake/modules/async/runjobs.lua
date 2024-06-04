@@ -157,6 +157,7 @@ function main(name, jobs, opt)
     local abort = false
     local abort_errors
     local progress_wrapper = {}
+    local job_pending
     progress_wrapper.current = function ()
         return count
     end
@@ -192,24 +193,26 @@ function main(name, jobs, opt)
                 local distccjob = false
                 if not jobs_cb then
 
+                    -- get free job
+                    job = job_pending and job_pending or jobs:getfree()
+                    if not job then
+                        break
+                    end
+
                     -- we can only continue to run the job with distcc if local jobs are full
                     if distcc and index >= local_max then
                         if job.distcc then
                             distccjob = true
                         else
+                            job_pending = job
                             break
                         end
-                    end
-
-                    -- get free job
-                    job = jobs:getfree()
-                    if not job then
-                        break
                     end
 
                     -- get run function
                     jobfunc = job.run
                     jobname = job.name
+                    job_pending = nil
                 else
                     jobname = tostring(index)
                 end
