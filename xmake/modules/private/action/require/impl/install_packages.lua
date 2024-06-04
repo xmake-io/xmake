@@ -282,7 +282,7 @@ function _fetch_packages(packages_fetch, installdeps)
         while instance == nil and #packages_pending > 0 do
             for idx, pkg in ipairs(packages_pending) do
 
-                -- all dependences has been fetched? we fetch it now
+                -- all dependencies has been fetched? we fetch it now
                 local ready = true
                 local dep_not_ready = nil
                 for _, dep in pairs(installdeps[tostring(pkg)]) do
@@ -408,7 +408,7 @@ function _install_packages(packages_install, packages_download, installdeps)
         while instance == nil and #packages_pending > 0 do
             for idx, pkg in ipairs(packages_pending) do
 
-                -- all dependences has been installed? we install it now
+                -- all dependencies has been installed? we install it now
                 local ready = true
                 local dep_not_found = nil
                 for _, dep in pairs(installdeps[tostring(pkg)]) do

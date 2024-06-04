@@ -41,7 +41,7 @@ function _make_projects(slnfile, vsinfo)
             -- enter project
             slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid4(targetname))
 
-            -- add dependences
+            -- add dependencies
             for _, dep in ipairs(target:get("deps")) do
                 slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
                 slnfile:print("{%s} = {%s}", hash.uuid4(dep), hash.uuid4(dep))
