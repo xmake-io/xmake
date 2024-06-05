@@ -36,7 +36,7 @@ end
 function main(t)
     if is_subhost("windows") then
         local clang = find_tool("clang", {version = true})
-        if clang and clang.version and semver.compare(clang.version, "14.0") >= 0 then
+        if clang and clang.version and semver.compare(clang.version, "17.0") >= 0 then
             os.exec("xmake f --toolchain=clang -c --yes")
             _build()
             os.exec("xmake clean -a")
