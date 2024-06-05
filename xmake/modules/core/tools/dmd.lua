@@ -173,7 +173,8 @@ function nf_rpathdir(self, dir)
 end
 
 -- make the link arguments list
-function linkargv(self, objectfiles, targetkind, targetfile, flags)
+function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
+    opt = opt or {}
 
     -- add rpath for dylib (macho), e.g. -install_name @rpath/file.dylib
     local flags_extra = {}
@@ -183,7 +184,11 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
     end
 
     -- init arguments
-    return self:program(), table.join(flags, flags_extra, "-of" .. targetfile, objectfiles)
+    local argv = table.join(flags, flags_extra, "-of" .. targetfile, objectfiles)
+    if is_host("windows") and not opt.rawargs then
+        argv = winos.cmdargv(argv, {escape = true})
+    end
+    return self:program(), argv
 end
 
 -- link the target file
