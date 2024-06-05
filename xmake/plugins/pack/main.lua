@@ -116,7 +116,7 @@ function main()
     project.lock()
 
     -- load config first
-    config.load()
+    task.run("config", {}, {disable_dump = true})
 
     -- enter project directory
     local oldir = os.cd(project.directory())
