@@ -158,6 +158,9 @@ function _add_qmakeprllibs(target, prlfile, qtlibdir)
                     target:add("linkdirs", libdir)
                 else
                     local libstr = string.gsub(lib, "%$%$%[QT_INSTALL_LIBS%]", qtlibdir)
+                    if libstr:startswith("-l") then
+                        libstr = lib:sub(3)
+                    end
                     target:add("syslinks", libstr)
                 end
             end
