@@ -158,6 +158,9 @@ function _add_qmakeprllibs(target, prlfile, qtlibdir)
                     target:add("linkdirs", libdir)
                 else
                     local libstr = string.gsub(lib, "%$%$%[QT_INSTALL_LIBS%]", qtlibdir)
+                    if libstr:startswith("-l") then
+                        libstr = libstr:sub(3)
+                    end
                     target:add("syslinks", libstr)
                 end
             end
@@ -261,6 +264,7 @@ function main(target, opt)
     target:set("syslinks", nil)
 
     -- add qt links and directories
+    target:add("syslinks", target:values("qt.links"))
     local qtprldirs = {}
     for _, qt_linkdir in ipairs(target:values("qt.linkdirs")) do
         local linkdir = path.join(qt.sdkdir, qt_linkdir)
@@ -275,7 +279,6 @@ function main(target, opt)
             _add_qmakeprllibs(target, prl_file, qt.libdir)
         end
     end
-    target:add("syslinks", target:values("qt.links"))
 
     -- backup qt frameworks
     local qt_frameworks = target:get("frameworks")
