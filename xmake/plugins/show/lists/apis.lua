@@ -25,6 +25,7 @@ import("core.project.target")
 import("core.project.project")
 import("core.project.option")
 import("core.package.package")
+import("core.language.language")
 import("core.sandbox.sandbox")
 import("core.sandbox.module")
 import("core.tool.toolchain")
@@ -46,6 +47,17 @@ end
 function description_target_scope_apis()
     local result = {}
     for _, names in pairs(target.apis()) do
+        for _, name in ipairs(names) do
+            table.insert(result, name)
+        end
+    end
+    return result
+end
+
+-- get language description scope apis
+function description_language_scope_apis()
+    local result = {}
+    for _, names in pairs(language.apis()) do
         for _, name in ipairs(names) do
             table.insert(result, name)
         end
@@ -105,6 +117,7 @@ function description_scope_apis()
     local result = {}
     table.join2(result, description_target_scope_apis())
     table.join2(result, description_option_scope_apis())
+    table.join2(result, description_language_scope_apis())
     table.join2(result, description_rule_scope_apis())
     table.join2(result, description_package_scope_apis())
     table.join2(result, description_toolchain_scope_apis())
