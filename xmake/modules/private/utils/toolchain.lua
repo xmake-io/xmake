@@ -17,6 +17,7 @@
 -- @author      ruki
 -- @file        toolchain.lua
 --
+import("core.base.semver")
 
 -- is the compatible with the host?
 function is_compatible_with_host(name)
@@ -35,15 +36,14 @@ end
 function get_vs_toolset_ver(vs_toolset)
     local toolset_ver
     if vs_toolset then
-        local verinfo = vs_toolset:split('%.')
-        if #verinfo >= 2 then
-            toolset_ver = "v" .. verinfo[1] .. (verinfo[2]:sub(1, 1) or "0")
-        end
+        local verinfo = semver.new(vs_toolset)
+        toolset_ver = "v" .. verinfo:major() .. (tostring(verinfo:minor()):sub(1, 1) or "0")
 
         -- @see https://github.com/xmake-io/xmake/pull/5176
-        if toolset_ver and toolset_ver == "v144" and vs_toolset:startswith("14.40.") then
+        if toolset_ver and toolset_ver == "v144" and verinfo:ge("14.40") and verinfo:lt("14.42") then
             toolset_ver = "v143"
         end
     end
     return toolset_ver
 end
+
