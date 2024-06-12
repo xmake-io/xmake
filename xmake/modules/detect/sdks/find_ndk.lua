@@ -86,6 +86,7 @@ function _find_ndk_sdkver(sdkdir, bindir, sysroot, arch)
 
     -- get triple
     local triple = _get_triple(arch)
+    assert(triple, "no triple found for arch %s (wrong arch?)", arch)
 
     -- try to select the best compatible version
     local sdkver = "16"
