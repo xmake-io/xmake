@@ -36,14 +36,16 @@ end
 
 -- get archive file
 function _get_archivefile(package)
-    return path.absolute(path.join(package:buildir(), package:basename() .. ".tar.gz"))
+    return path.absolute(path.join(package:buildir(), package:basename() .. ".orig.tar.gz"))
 end
 
 -- pack deb package
 function _pack_deb(debuild, package)
+    local buildir = package:buildir()
+    local workdir = path.join(buildir, "working")
 
     -- install the initial specfile
-    local specfile = path.join(package:buildir(), "debian")
+    local specfile = path.join(workdir, "debian")
     if not os.isdir(specfile) then
         local specfile_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "deb", "debian")
         os.cp(specfile_template, specfile)
@@ -73,7 +75,7 @@ function _pack_deb(debuild, package)
     archive.archive(archivefile, archivefiles, {curdir = rootdir, compress = "best"})
 
     -- build package, TODO modify key
-    os.vrunv(debuild, {"-S", "-k02713554FA2CE4AADA20AB23167A22F22C0C68C9"}, {curdir = package:buildir()})
+    os.vrunv(debuild, {"-S", "-k02713554FA2CE4AADA20AB23167A22F22C0C68C9"}, {curdir = workdir})
 end
 
 function main(package)
