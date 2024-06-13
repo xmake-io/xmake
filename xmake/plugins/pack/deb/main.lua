@@ -36,6 +36,14 @@ end
 
 -- pack deb package
 function _pack_deb(debuild, package)
+
+    -- install the initial specfile
+    local specfile = path.join(package:buildir(), "debian")
+    if not os.isdir(specfile) then
+        local specfile_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "deb", "debian")
+        os.cp(specfile_template, specfile)
+    end
+
 end
 
 function main(package)
