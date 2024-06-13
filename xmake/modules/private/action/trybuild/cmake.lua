@@ -166,8 +166,9 @@ function _get_configs_for_appleos(configs)
         if is_arch("x86_64", "i386") then
             envs.CMAKE_OSX_SYSROOT = "iphonesimulator"
         end
-    elseif is_plat("macosx") then
+    elseif _is_cross_compilation() then
         envs.CMAKE_SYSTEM_NAME = "Darwin"
+        envs.CMAKE_SYSTEM_PROCESSOR = package:targetarch()
     end
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY   = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE   = "BOTH"
@@ -199,6 +200,7 @@ function _get_configs_for_mingw(configs)
     envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
     envs.CMAKE_SYSTEM_NAME         = "Windows"
+    envs.CMAKE_SYSTEM_PROCESSOR    = package:targetarch()
     -- avoid find and add system include/library path
     envs.CMAKE_FIND_ROOT_PATH      = sdkdir
     envs.CMAKE_SYSROOT             = sdkdir
@@ -321,8 +323,8 @@ function _get_configs_for_host_toolchain(configs)
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
     -- we don't need to set it as cross compilation if we just pass toolchain
     -- https://github.com/xmake-io/xmake/issues/2170
-    if not is_plat(os.subhost()) then
-        envs.CMAKE_SYSTEM_NAME     = "Linux"
+    if _is_cross_compilation() then
+        envs.CMAKE_SYSTEM_NAME = "Linux"
     end
     for k, v in pairs(envs) do
         table.insert(configs, "-D" .. k .. "=" .. v)
