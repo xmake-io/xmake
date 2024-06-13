@@ -200,7 +200,7 @@ function _get_configs_for_mingw(configs)
     envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
     envs.CMAKE_SYSTEM_NAME         = "Windows"
-    envs.CMAKE_SYSTEM_PROCESSOR    = package:targetarch()
+    envs.CMAKE_SYSTEM_PROCESSOR    = os.subarch()
     -- avoid find and add system include/library path
     envs.CMAKE_FIND_ROOT_PATH      = sdkdir
     envs.CMAKE_SYSROOT             = sdkdir
