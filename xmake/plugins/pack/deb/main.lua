@@ -72,6 +72,8 @@ function _pack_deb(debuild, package)
     os.tryrm(archivefile)
     archive.archive(archivefile, archivefiles, {curdir = rootdir, compress = "best"})
 
+    -- build package, TODO modify key
+    os.vrunv(debuild, {"-S", "-k02713554FA2CE4AADA20AB23167A22F22C0C68C9"}, {curdir = package:buildir()})
 end
 
 function main(package)
