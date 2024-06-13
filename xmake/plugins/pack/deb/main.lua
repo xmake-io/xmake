@@ -36,7 +36,13 @@ end
 
 -- get archive file
 function _get_archivefile(package)
-    return path.absolute(path.join(package:buildir(), package:basename() .. ".orig.tar.gz"))
+    return path.absolute(path.join(package:buildir(), package:name() .. "_" .. package:version() .. ".orig.tar.gz"))
+end
+
+-- get specvars
+function _get_specvars(package)
+    local specvars = table.clone(package:specvars())
+    return specvars
 end
 
 -- pack deb package
@@ -44,11 +50,31 @@ function _pack_deb(debuild, package)
     local buildir = package:buildir()
     local workdir = path.join(buildir, "working")
 
-    -- install the initial specfile
-    local specfile = path.join(workdir, "debian")
-    if not os.isdir(specfile) then
-        local specfile_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "deb", "debian")
-        os.cp(specfile_template, specfile)
+    -- install the initial debian directory
+    local debiandir = path.join(workdir, "debian")
+    if not os.isdir(debiandir) then
+        local debiandir_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "deb", "debian")
+        os.cp(debiandir_template, debiandir)
+    end
+
+    -- replace variables in specfile
+    local specvars = _get_specvars(package)
+    local pattern = package:extraconf("specfile", "pattern") or "%${([^\n]-)}"
+    for _, specfile in ipairs(os.files(path.join(debiandir, "**"))) do
+        io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
+            name = name:trim()
+            local value = specvars[name]
+            if type(value) == "function" then
+                value = value()
+            end
+            if value ~= nil then
+                dprint("[%s]:  > replace %s -> %s", path.filename(specfile), name, value)
+            end
+            if type(value) == "table" then
+                dprint("invalid variable value", value)
+            end
+            return value
+        end)
     end
 
     -- archive source files
