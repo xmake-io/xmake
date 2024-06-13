@@ -168,7 +168,7 @@ function _get_configs_for_appleos(configs)
         end
     elseif _is_cross_compilation() then
         envs.CMAKE_SYSTEM_NAME = "Darwin"
-        envs.CMAKE_SYSTEM_PROCESSOR = package:targetarch()
+        envs.CMAKE_SYSTEM_PROCESSOR = os.subarch()
     end
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY   = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE   = "BOTH"
