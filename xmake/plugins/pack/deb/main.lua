@@ -34,6 +34,11 @@ function _get_debuild()
     return debuild
 end
 
+-- get archive file
+function _get_archivefile(package)
+    return path.absolute(path.join(package:buildir(), package:basename() .. ".tar.gz"))
+end
+
 -- pack deb package
 function _pack_deb(debuild, package)
 
@@ -43,6 +48,29 @@ function _pack_deb(debuild, package)
         local specfile_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "deb", "debian")
         os.cp(specfile_template, specfile)
     end
+
+    -- archive source files
+    local srcfiles, dstfiles = package:sourcefiles()
+    for idx, srcfile in ipairs(srcfiles) do
+        os.vcp(srcfile, dstfiles[idx])
+    end
+    for _, component in table.orderpairs(package:components()) do
+        if component:get("default") ~= false then
+            local srcfiles, dstfiles = component:sourcefiles()
+            for idx, srcfile in ipairs(srcfiles) do
+                os.vcp(srcfile, dstfiles[idx])
+            end
+        end
+    end
+
+    -- archive install files
+    local rootdir = package:source_rootdir()
+    local oldir = os.cd(rootdir)
+    local archivefiles = os.files("**")
+    os.cd(oldir)
+    local archivefile = _get_archivefile(package)
+    os.tryrm(archivefile)
+    archive.archive(archivefile, archivefiles, {curdir = rootdir, compress = "best"})
 
 end
 
