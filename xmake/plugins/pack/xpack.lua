@@ -319,23 +319,6 @@ function xpack:specvars()
     return specvars
 end
 
--- get the specfile path
-function xpack:specfile()
-    local specfile = self:get("specfile")
-    if not specfile then
-        local extensions = {
-            wix     = ".wxs",
-            nsis    = ".nsi",
-            srpm    = ".spec",
-            rpm     = ".spec",
-            runself = ".lsm"
-        }
-        local extension = extensions[self:format()] or ".spec"
-        specfile = path.join(self:buildir(), self:basename() .. extension)
-    end
-    return specfile
-end
-
 -- get the extension
 function xpack:extension()
     local extension = self:get("extension")

@@ -202,9 +202,9 @@ function _pack_srpm(rpmbuild, package)
     end
 
     -- install the initial specfile
-    local specfile = package:specfile()
+    local specfile = path.join(package:buildir(), package:basename() .. ".spec")
     if not os.isfile(specfile) then
-        local specfile_template = path.join(os.programdir(), "scripts", "xpack", "srpm", "srpm.spec")
+        local specfile_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "srpm", "srpm.spec")
         os.cp(specfile_template, specfile)
     end
 
