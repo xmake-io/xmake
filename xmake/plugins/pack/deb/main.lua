@@ -106,6 +106,12 @@ function _get_installcmds(package, installcmds, cmds)
     end
 end
 
+-- get uninstall commands
+function _get_uninstallcmds(package, uninstallcmds, cmds)
+    for _, cmd in ipairs(cmds) do
+        _get_customcmd(package, uninstallcmds, cmd)
+    end
+end
 
 -- get specvars
 function _get_specvars(package)
@@ -129,6 +135,16 @@ function _get_specvars(package)
         end
         package:set("prefixdir", prefixdir)
         return table.concat(installcmds, "\n\t")
+    end
+    specvars.PACKAGE_UNINSTALLCMDS = function ()
+        local uninstallcmds = {}
+        _get_uninstallcmds(package, uninstallcmds, batchcmds.get_uninstallcmds(package):cmds())
+        for _, component in table.orderpairs(package:components()) do
+            if component:get("default") ~= false then
+                _get_uninstallcmds(package, uninstallcmds, batchcmds.get_uninstallcmds(component):cmds())
+            end
+        end
+        return table.concat(uninstallcmds, "\n\t")
     end
     specvars.PACKAGE_BUILDCMDS = function ()
         local buildcmds = {}
@@ -214,7 +230,7 @@ function _pack_deb(debuild, package)
 
     -- archive install files
     local rootdir = package:source_rootdir()
-    local oldir = os.cd(sourcedir)
+    local oldir = os.cd(rootdir)
     local archivefiles = os.files("**")
     os.cd(oldir)
     local archivefile = _get_archivefile(package)

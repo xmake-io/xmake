@@ -115,7 +115,7 @@ xpack("xmakesrc")
 
     on_buildcmd(function (package, batchcmds)
         local format = package:format()
-        if format == "srpm" then
+        if format == "srpm" or format == "deb" then
             batchcmds:runv("./configure")
             batchcmds:runv("make")
         end
@@ -125,7 +125,7 @@ xpack("xmakesrc")
         local format = package:format()
         if format == "runself" then
             batchcmds:runv("./scripts/get.sh", {"__local__"})
-        elseif format == "srpm" then
+        elseif format == "srpm" or format == "deb" then
             batchcmds:runv("make", {"install", path(package:install_rootdir(), function (p) return "PREFIX=" .. p end)})
         end
     end)
