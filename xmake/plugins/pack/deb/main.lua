@@ -36,7 +36,7 @@ end
 
 -- get archive file
 function _get_archivefile(package)
-    return path.absolute(path.join(package:buildir(), package:name() .. "_" .. package:version() .. ".orig.tar.gz"))
+    return path.absolute(path.join(path.directory(package:sourcedir()), package:name() .. "_" .. package:version() .. ".orig.tar.gz"))
 end
 
 -- translate the file path
@@ -169,11 +169,10 @@ end
 
 -- pack deb package
 function _pack_deb(debuild, package)
-    local buildir = package:buildir()
-    local workdir = path.join(buildir, "working")
 
     -- install the initial debian directory
-    local debiandir = path.join(workdir, "debian")
+    local sourcedir = package:sourcedir()
+    local debiandir = path.join(sourcedir, "debian")
     if not os.isdir(debiandir) then
         local debiandir_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "deb", "debian")
         os.cp(debiandir_template, debiandir)
@@ -215,15 +214,15 @@ function _pack_deb(debuild, package)
 
     -- archive install files
     local rootdir = package:source_rootdir()
-    local oldir = os.cd(rootdir)
+    local oldir = os.cd(sourcedir)
     local archivefiles = os.files("**")
     os.cd(oldir)
     local archivefile = _get_archivefile(package)
     os.tryrm(archivefile)
     archive.archive(archivefile, archivefiles, {curdir = rootdir, compress = "best"})
 
-    -- build package, TODO modify key
-    os.vrunv(debuild, {"-us", "-uc"}, {curdir = workdir})
+    -- build package
+    os.vrunv(debuild, {"-us", "-uc"}, {curdir = sourcedir})
 end
 
 function main(package)
