@@ -41,7 +41,7 @@ end
 
 -- translate the file path
 function _translate_filepath(package, filepath)
-    return filepath:replace(package:install_rootdir(), "%{buildroot}/%{_exec_prefix}", {plain = true})
+    return filepath:replace(package:install_rootdir(), "/usr", {plain = true})
 end
 
 -- get install command
@@ -128,12 +128,12 @@ function _get_specvars(package)
             end
         end
         package:set("prefixdir", prefixdir)
-        return table.concat(installcmds, "\n")
+        return table.concat(installcmds, "\n\t")
     end
     specvars.PACKAGE_BUILDCMDS = function ()
         local buildcmds = {}
         _get_buildcmds(package, buildcmds, batchcmds.get_buildcmds(package):cmds())
-        return table.concat(buildcmds, "\n")
+        return table.concat(buildcmds, "\n\t")
     end
     specvars.PACKAGE_BUILDREQUIRES = function ()
         local requires = {}

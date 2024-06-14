@@ -7,6 +7,12 @@ configure-stamp:
 	dh_testdir
 	touch configure-stamp
 
+build-arch:
+	# pass
+
+build-indep:
+	# pass
+
 build: build-stamp
 build-stamp: configure-stamp
 	dh_testdir
@@ -22,7 +28,6 @@ clean:
 install: build
 	dh_testdir
 	dh_testroot
-	dh_clean -k
 	dh_installdirs
 	${PACKAGE_INSTALLCMDS}
 
