@@ -186,13 +186,13 @@ end
 -- on install source target command
 function _on_target_installcmd_source(target, batchcmds_, opt)
     local package = opt.package
-    batchcmds_:vrunv("xmake", {"install", "-o", path(package:install_rootdir()), target:name()})
+    batchcmds_:vrunv("xmake", {"install", "-P", ".", "-y", "-o", path(package:install_rootdir()), target:name()})
 end
 
 -- on build target command
 function _on_target_buildcmd(target, batchcmds_, opt)
     local package = opt.package
-    batchcmds_:vrunv("xmake", {"build", "-y", target:name()})
+    batchcmds_:vrunv("xmake", {"build", "-P", ".",  "-y", target:name()})
 end
 
 -- on install target command
