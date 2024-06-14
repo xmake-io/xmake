@@ -140,7 +140,7 @@ function _get_specvars(package)
         local buildrequires = package:get("buildrequires")
         if buildrequires then
             for _, buildrequire in ipairs(buildrequires) do
-                table.insert(requires, " " .. buildrequire .. ",")
+                table.insert(requires, buildrequire)
             end
         else
             local programs = hashset.new()
@@ -158,11 +158,11 @@ function _get_specvars(package)
             for _, program in programs:keys() do
                 local requirename = map[program]
                 if requirename then
-                    table.insert(requires, " " .. requirename .. ",")
+                    table.insert(requires, requirename)
                 end
             end
         end
-        return table.concat(requires, "\n")
+        return table.concat(requires, ", ")
     end
     return specvars
 end
@@ -223,7 +223,7 @@ function _pack_deb(debuild, package)
     archive.archive(archivefile, archivefiles, {curdir = rootdir, compress = "best"})
 
     -- build package, TODO modify key
-    os.vrunv(debuild, {"-S", "-k02713554FA2CE4AADA20AB23167A22F22C0C68C9"}, {curdir = workdir})
+    os.vrunv(debuild, {"-us", "-uc"}, {curdir = workdir})
 end
 
 function main(package)

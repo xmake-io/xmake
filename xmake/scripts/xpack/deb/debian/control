@@ -3,8 +3,7 @@ Section: devel
 Priority: optional
 Maintainer: ${PACKAGE_MAINTAINER}
 Build-Depends: debhelper-compat (= 13)
-Build-Depends-Arch:
- ${PACKAGE_BUILDREQUIRES}
+Build-Depends-Arch: ${PACKAGE_BUILDREQUIRES}
 Standards-Version: 4.6.0
 Homepage: ${PACKAGE_HOMEPAGE}
 #Vcs-Browser: https://salsa.debian.org/debian/xmake
