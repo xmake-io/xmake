@@ -1,4 +1,4 @@
-% xmake(SECTION) | User Commands
+% ${PACKAGE_NAME}(SECTION) | User Commands
 %
 % "June 13 2024"
 
@@ -25,24 +25,24 @@
 
 # NAME
 
-xmake - program to do something
+${PACKAGE_NAME} - program to do something
 
 # SYNOPSIS
 
-**xmake** **-e** _this_ [**\-\-example=that**] [{**-e** | **\-\-example**} _this_]
+**${PACKAGE_NAME}** **-e** _this_ [**\-\-example=that**] [{**-e** | **\-\-example**} _this_]
                  [{**-e** | **\-\-example**} {_this_ | _that_}]
 
-**xmake** [{**-h** | *\-\-help**} | {**-v** | **\-\-version**}]
+**${PACKAGE_NAME}** [{**-h** | *\-\-help**} | {**-v** | **\-\-version**}]
 
 # DESCRIPTION
 
-This manual page documents briefly the **xmake** and **bar** commands.
+This manual page documents briefly the **${PACKAGE_NAME}** and **bar** commands.
 
 This manual page was written for the Debian distribution because the
 original program does not have a manual page. Instead, it has documentation
 in the GNU info(1) format; see below.
 
-**xmake** is a program that...
+**${PACKAGE_NAME}** is a program that...
 
 # OPTIONS
 
@@ -63,11 +63,11 @@ a complete description, see the **info**(1) files.
 
 /etc/foo.conf
 :   The system-wide configuration file to control the behaviour of
-    xmake. See **foo.conf**(5) for further details.
+    ${PACKAGE_NAME}. See **foo.conf**(5) for further details.
 
 ${HOME}/.foo.conf
 :   The per-user configuration file to control the behaviour of
-    xmake. See **foo.conf**(5) for further details.
+    ${PACKAGE_NAME}. See **foo.conf**(5) for further details.
 
 # ENVIRONMENT
 
@@ -83,7 +83,7 @@ Bad configuration file. Exiting.
 :   The configuration file seems to contain a broken configuration
     line. Use the **\-\-verbose** option, to get more info.
 
-**xmake** provides some return codes, that can be used in scripts:
+**${PACKAGE_NAME}** provides some return codes, that can be used in scripts:
 
     Code Diagnostic
     0 Program exited successfully.

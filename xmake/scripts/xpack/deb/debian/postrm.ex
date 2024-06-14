@@ -1,5 +1,5 @@
 #!/bin/sh
-# postrm script for xmake
+# postrm script for ${PACKAGE_NAME}
 #
 # see: dh_installdeb(1)
 

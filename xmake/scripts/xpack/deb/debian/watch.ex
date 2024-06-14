@@ -11,28 +11,28 @@ version=4
 
 # HTTP site (basic)
 #http://example.com/downloads.html \
-#  files/xmake-([\d\.]+)\.tar\.gz debian uupdate
+#  files/${PACKAGE_NAME}-([\d\.]+)\.tar\.gz debian uupdate
 
 # Uncomment to examine an FTP server
-#ftp://ftp.example.com/pub/xmake-(.*)\.tar\.gz debian uupdate
+#ftp://ftp.example.com/pub/${PACKAGE_NAME}-(.*)\.tar\.gz debian uupdate
 
 # SourceForge hosted projects
-# http://sf.net/xmake/ xmake-(.*)\.tar\.gz debian uupdate
+# http://sf.net/${PACKAGE_NAME}/ ${PACKAGE_NAME}-(.*)\.tar\.gz debian uupdate
 
 # GitHub hosted projects
 #opts="filenamemangle=s%(?:.*?)?v?(\d[\d.]*)\.tar\.gz%<project>-$1.tar.gz%" \
-#   https://github.com/<user>/xmake/tags \
+#   https://github.com/<user>/${PACKAGE_NAME}/tags \
 #   (?:.*?/)?v?(\d[\d.]*)\.tar\.gz debian uupdate
 
 # PyPI
-# https://pypi.debian.net/xmake/xmake-(.+)\.(?:zip|tgz|tbz|txz|(?:tar\.(?:gz|bz2|xz)))
+# https://pypi.debian.net/${PACKAGE_NAME}/${PACKAGE_NAME}-(.+)\.(?:zip|tgz|tbz|txz|(?:tar\.(?:gz|bz2|xz)))
 
 # Direct Git
-# opts="mode=git" http://git.example.com/xmake.git \
+# opts="mode=git" http://git.example.com/${PACKAGE_NAME}.git \
 #   refs/tags/v([\d\.]+) debian uupdate
 
 
 
 
 # Uncomment to find new files on GooglePages
-# http://example.googlepages.com/foo.html xmake-(.*)\.tar\.gz
+# http://example.googlepages.com/foo.html ${PACKAGE_NAME}-(.*)\.tar\.gz

@@ -42,6 +42,13 @@ end
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
+    local datestr = os.iorunv("date", {"-u", "+%a, %d %b %Y %H:%M:%S +0000"}, {envs = {LC_TIME = "en_US"}})
+    if datestr then
+        datestr = datestr:trim()
+    end
+    specvars.PACKAGE_DATE = datestr or ""
+    local author = package:get("author") or "unknown <unknown@unknown.com>"
+    specvars.PACKAGE_COPYRIGHT = os.date("%Y") .. " " .. author
     return specvars
 end
 

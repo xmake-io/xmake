@@ -1,5 +1,5 @@
 #!/bin/sh
-# preinst script for xmake
+# preinst script for ${PACKAGE_NAME}
 #
 # see: dh_installdeb(1)
 

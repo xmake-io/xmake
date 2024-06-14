@@ -26,8 +26,8 @@ manpage.1: manpage.sgml
   <!ENTITY dhsection   "<manvolnum>SECTION</manvolnum>">
   <!ENTITY dhemail     "<email>waruqi@gmail.com</email>">
   <!ENTITY dhusername  "unknown">
-  <!ENTITY dhucpackage "<refentrytitle>Xmake</refentrytitle>">
-  <!ENTITY dhpackage   "xmake">
+  <!ENTITY dhucpackage "<refentrytitle>${PACKAGE_NAME}</refentrytitle>">
+  <!ENTITY dhpackage   "${PACKAGE_NAME}">
 
   <!ENTITY debian      "<productname>Debian</productname>">
   <!ENTITY gnu         "<acronym>GNU</acronym>">
