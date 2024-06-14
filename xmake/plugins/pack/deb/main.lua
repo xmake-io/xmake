@@ -41,7 +41,7 @@ end
 
 -- translate the file path
 function _translate_filepath(package, filepath)
-    return filepath:replace(package:install_rootdir(), "debian/usr", {plain = true})
+    return filepath:replace(package:install_rootdir(), "$(PREFIX)", {plain = true})
 end
 
 -- get install command

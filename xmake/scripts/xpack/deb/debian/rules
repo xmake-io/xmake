@@ -2,6 +2,8 @@
 
 #export DH_VERBOSE = 1
 
+PREFIX=$(CURDIR)/debian/${PACKAGE_NAME}/usr
+
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
