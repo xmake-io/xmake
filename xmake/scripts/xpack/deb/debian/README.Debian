@@ -3,4 +3,4 @@ ${PACKAGE_NAME} for Debian
 
 <possible notes regarding this package - if none, delete this file>
 
- -- unknown <waruqi@gmail.com>  Thu, 13 Jun 2024 01:47:13 +0000
+ -- ${PACKAGE_MAINTAINER}  ${PACKAGE_DATE}
