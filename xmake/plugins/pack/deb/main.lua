@@ -39,6 +39,74 @@ function _get_archivefile(package)
     return path.absolute(path.join(package:buildir(), package:name() .. "_" .. package:version() .. ".orig.tar.gz"))
 end
 
+-- translate the file path
+function _translate_filepath(package, filepath)
+    return filepath:replace(package:install_rootdir(), "%{buildroot}/%{_exec_prefix}", {plain = true})
+end
+
+-- get install command
+function _get_customcmd(package, installcmds, cmd)
+    local opt = cmd.opt or {}
+    local kind = cmd.kind
+    if kind == "cp" then
+        local srcfiles = os.files(cmd.srcpath)
+        for _, srcfile in ipairs(srcfiles) do
+            -- the destination is directory? append the filename
+            local dstfile = _translate_filepath(package, cmd.dstpath)
+            if #srcfiles > 1 or path.islastsep(dstfile) then
+                if opt.rootdir then
+                    dstfile = path.join(dstfile, path.relative(srcfile, opt.rootdir))
+                else
+                    dstfile = path.join(dstfile, path.filename(srcfile))
+                end
+            end
+            table.insert(installcmds, string.format("install -Dpm0644 \"%s\" \"%s\"", srcfile, dstfile))
+        end
+    elseif kind == "rm" then
+        local filepath = _translate_filepath(package, cmd.filepath)
+        table.insert(installcmds, string.format("rm -f \"%s\"", filepath))
+    elseif kind == "rmdir" then
+        local dir = _translate_filepath(package, cmd.dir)
+        table.insert(installcmds, string.format("rm -rf \"%s\"", dir))
+    elseif kind == "mv" then
+        local srcpath = _translate_filepath(package, cmd.srcpath)
+        local dstpath = _translate_filepath(package, cmd.dstpath)
+        table.insert(installcmds, string.format("mv \"%s\" \"%s\"", srcfile, dstfile))
+    elseif kind == "cd" then
+        local dir = _translate_filepath(package, cmd.dir)
+        table.insert(installcmds, string.format("cd \"%s\"", dir))
+    elseif kind == "mkdir" then
+        local dir = _translate_filepath(package, cmd.dir)
+        table.insert(installcmds, string.format("mkdir -p \"%s\"", dir))
+    elseif cmd.program then
+        local argv = {}
+        for _, arg in ipairs(cmd.argv) do
+            if path.instance_of(arg) then
+                arg = arg:clone():set(_translate_filepath(package, arg:rawstr())):str()
+            elseif path.is_absolute(arg) then
+                arg = _translate_filepath(package, arg)
+            end
+            table.insert(argv, arg)
+        end
+        table.insert(installcmds, string.format("%s", os.args(table.join(cmd.program, argv))))
+    end
+end
+
+-- get build commands
+function _get_buildcmds(package, buildcmds, cmds)
+    for _, cmd in ipairs(cmds) do
+        _get_customcmd(package, buildcmds, cmd)
+    end
+end
+
+-- get install commands
+function _get_installcmds(package, installcmds, cmds)
+    for _, cmd in ipairs(cmds) do
+        _get_customcmd(package, installcmds, cmd)
+    end
+end
+
+
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
@@ -49,6 +117,53 @@ function _get_specvars(package)
     specvars.PACKAGE_DATE = datestr or ""
     local author = package:get("author") or "unknown <unknown@unknown.com>"
     specvars.PACKAGE_COPYRIGHT = os.date("%Y") .. " " .. author
+    specvars.PACKAGE_INSTALLCMDS = function ()
+        local prefixdir = package:get("prefixdir")
+        package:set("prefixdir", nil)
+        local installcmds = {}
+        _get_installcmds(package, installcmds, batchcmds.get_installcmds(package):cmds())
+        for _, component in table.orderpairs(package:components()) do
+            if component:get("default") ~= false then
+                _get_installcmds(package, installcmds, batchcmds.get_installcmds(component):cmds())
+            end
+        end
+        package:set("prefixdir", prefixdir)
+        return table.concat(installcmds, "\n")
+    end
+    specvars.PACKAGE_BUILDCMDS = function ()
+        local buildcmds = {}
+        _get_buildcmds(package, buildcmds, batchcmds.get_buildcmds(package):cmds())
+        return table.concat(buildcmds, "\n")
+    end
+    specvars.PACKAGE_BUILDREQUIRES = function ()
+        local requires = {}
+        local buildrequires = package:get("buildrequires")
+        if buildrequires then
+            for _, buildrequire in ipairs(buildrequires) do
+                table.insert(requires, " " .. buildrequire .. ",")
+            end
+        else
+            local programs = hashset.new()
+            for _, cmd in ipairs(batchcmds.get_buildcmds(package):cmds()) do
+                local program = cmd.program
+                if program then
+                    programs:insert(program)
+                end
+            end
+            local map = {
+                xmake = "xmake",
+                cmake = "cmake",
+                make = "make"
+            }
+            for _, program in programs:keys() do
+                local requirename = map[program]
+                if requirename then
+                    table.insert(requires, " " .. requirename .. ",")
+                end
+            end
+        end
+        return table.concat(requires, "\n")
+    end
     return specvars
 end
 
