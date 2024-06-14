@@ -223,6 +223,9 @@ function _pack_deb(debuild, package)
 
     -- build package
     os.vrunv(debuild, {"-us", "-uc"}, {curdir = sourcedir})
+
+    -- copy deb file
+    os.vcp(path.join(path.directory(sourcedir), "*.deb"), package:outputfile())
 end
 
 function main(package)

@@ -34,7 +34,7 @@ xpack("test")
     add_components("LongPath")
 
     on_load(function (package)
-        if package:from_source() then
+        if package:with_source() then
             package:set("basename", "test-$(plat)-src-v$(version)")
         else
             package:set("basename", "test-$(plat)-$(arch)-v$(version)")

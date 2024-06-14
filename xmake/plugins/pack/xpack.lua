@@ -206,6 +206,24 @@ function xpack:inputkind()
     return inputkind
 end
 
+-- get the output kind
+function xpack:outputkind()
+    local outputkinds = {
+        wix      = "binary",
+        nsis     = "binary",
+        zip      = "binary",
+        targz    = "binary",
+        srczip   = "source",
+        srctargz = "source",
+        runself  = "source",
+        deb      = "binary",
+        srpm     = "source",
+        rpm      = "binary"
+    }
+    local outputkind = outputkinds[self:format()] or "binary"
+    return outputkind
+end
+
 -- pack from source files?
 function xpack:from_source()
     return self:inputkind() == "source"
@@ -214,6 +232,16 @@ end
 -- pack from binary files?
 function xpack:from_binary()
     return self:inputkind() == "binary"
+end
+
+-- pack with source files?
+function xpack:with_source()
+    return self:outputkind() == "source"
+end
+
+-- pack with binary files?
+function xpack:with_binary()
+    return self:outputkind() == "binary"
 end
 
 -- get the build directory
@@ -235,7 +263,7 @@ function xpack:basename()
     local basename = option.get("basename") or self:get("basename")
     if basename == nil then
         basename = self:name()
-        if self:from_source() then
+        if self:with_source() then
             basename = basename .. "-src"
         end
         local version = self:version()
