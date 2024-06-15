@@ -101,6 +101,22 @@ function _is_cross_compilation()
     return false
 end
 
+function _get_cmake_system_processor()
+    -- on Windows, CMAKE_SYSTEM_PROCESSOR comes from PROCESSOR_ARCHITECTURE
+    -- on other systems it's the output of uname -m
+    if is_plat("windows") then
+        local archs = {
+            x86 = "x86",
+            x64 = "AMD64",
+            x86_64 = "AMD64",
+            arm = "ARM",
+            arm64 = "ARM64"
+        }
+        return archs[os.subarch()] or os.subarch()
+    end
+    return os.subarch()
+end
+
 -- get configs for windows
 function _get_configs_for_windows(configs, opt)
     opt = opt or {}
@@ -168,7 +184,7 @@ function _get_configs_for_appleos(configs)
         end
     elseif _is_cross_compilation() then
         envs.CMAKE_SYSTEM_NAME = "Darwin"
-        envs.CMAKE_SYSTEM_PROCESSOR = os.subarch()
+        envs.CMAKE_SYSTEM_PROCESSOR = _get_cmake_system_processor()
     end
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY   = "BOTH"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE   = "BOTH"
@@ -200,7 +216,7 @@ function _get_configs_for_mingw(configs)
     envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
     envs.CMAKE_SYSTEM_NAME         = "Windows"
-    envs.CMAKE_SYSTEM_PROCESSOR    = os.subarch()
+    envs.CMAKE_SYSTEM_PROCESSOR    = _get_cmake_system_processor()
     -- avoid find and add system include/library path
     envs.CMAKE_FIND_ROOT_PATH      = sdkdir
     envs.CMAKE_SYSROOT             = sdkdir
