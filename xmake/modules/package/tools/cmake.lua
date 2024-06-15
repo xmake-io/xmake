@@ -294,7 +294,7 @@ function _get_cmake_system_processor(package)
     if package:is_plat("windows") then
         local archs = {
             x86 = "x86",
-            x64 = "AMD64"
+            x64 = "AMD64",
             x86_64 = "AMD64",
             arm = "ARM",
             arm64 = "ARM64"
