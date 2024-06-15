@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.hashset")
 import("core.project.target")
 import("lib.detect.find_tool")
 
@@ -258,8 +259,19 @@ function _find_package(cmake, name, opt)
 
                 values = line:match("<PreprocessorDefinitions>%%%(PreprocessorDefinitions%);(.+)</PreprocessorDefinitions>")
                 if values then
+                    -- https://github.com/xmake-io/xmake/issues/5217
+                    local excludes = hashset.from {
+                        "NDEBUG", "_DEBUG", "CMAKE_INTDIR", "WIN32",
+                        "_WINDOWS", "USE_DISTRIBUTED", "USE_C10D_GLOO"
+                    }
                     defines = defines or {}
-                    table.join2(defines, path.splitenv(values))
+                    values = path.splitenv(values)
+                    for _, value in ipairs(values) do
+                        local name = value:split("=")[1]
+                        if not excludes:has(name) then
+                            table.insert(defines, value)
+                        end
+                    end
                 end
             end
         end
