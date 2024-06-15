@@ -30,7 +30,7 @@ import(".batchcmds")
 -- get the debuild
 function _get_debuild()
     local debuild = find_tool("debuild", {force = true})
-    assert(debuild, "debuild not found!")
+    assert(debuild, "debuild not found, please run `sudo apt install devscripts` to install it!")
     return debuild
 end
 
