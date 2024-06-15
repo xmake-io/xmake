@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
     Verilated::traceEverOn(true);
     tfp->open(vcdfile);
     while (!contextp->gotFinish()) { top->eval(); }
+    tfp->close();
     delete top;
     delete contextp;
     return 0;
