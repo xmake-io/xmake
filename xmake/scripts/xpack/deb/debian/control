@@ -1,0 +1,15 @@
+Source: ${PACKAGE_NAME}
+Section: devel
+Priority: optional
+Maintainer: ${PACKAGE_MAINTAINER}
+Build-Depends: debhelper-compat (= 13)
+Build-Depends-Arch: ${PACKAGE_BUILDREQUIRES}
+Standards-Version: 4.6.0
+Homepage: ${PACKAGE_HOMEPAGE}
+Rules-Requires-Root: no
+
+Package: ${PACKAGE_NAME}
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: ${PACKAGE_TITLE}
+ ${PACKAGE_DESCRIPTION}

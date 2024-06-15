@@ -3,7 +3,7 @@ xpack("xmake")
     set_title("Xmake build utility ($(arch))")
     set_description("A cross-platform build utility based on Lua.")
     set_copyright("Copyright (C) 2015-present, TBOOX Open Source Group")
-    set_author("waruqi@gmail.com")
+    set_author("ruki <waruqi@gmail.com>")
     set_licensefile("../LICENSE.md")
     set_formats("nsis", "wix", "zip")
     add_targets("demo")
@@ -81,8 +81,8 @@ xpack("xmakesrc")
     set_title("Xmake build utility ($(arch))")
     set_description("A cross-platform build utility based on Lua.")
     set_copyright("Copyright (C) 2015-present, TBOOX Open Source Group")
-    set_author("waruqi@gmail.com")
-    set_formats("srczip", "srctargz", "runself", "srpm")
+    set_author("ruki <waruqi@gmail.com>")
+    set_formats("srczip", "srctargz", "runself", "srpm", "deb")
     set_basename("xmake-v$(version)")
     set_prefixdir("xmake-$(version)")
     set_license("Apache-2.0")
@@ -115,7 +115,7 @@ xpack("xmakesrc")
 
     on_buildcmd(function (package, batchcmds)
         local format = package:format()
-        if format == "srpm" then
+        if format == "srpm" or format == "deb" then
             batchcmds:runv("./configure")
             batchcmds:runv("make")
         end
@@ -125,7 +125,7 @@ xpack("xmakesrc")
         local format = package:format()
         if format == "runself" then
             batchcmds:runv("./scripts/get.sh", {"__local__"})
-        elseif format == "srpm" then
+        elseif format == "srpm" or format == "deb" then
             batchcmds:runv("make", {"install", path(package:install_rootdir(), function (p) return "PREFIX=" .. p end)})
         end
     end)

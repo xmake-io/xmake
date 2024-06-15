@@ -258,9 +258,9 @@ end
 function _pack_wix(wix, package)
 
     -- install the initial specfile
-    local specfile = package:specfile()
+    local specfile = path.join(package:buildir(), package:basename() .. ".wxs")
     if not os.isfile(specfile) then
-        local specfile_template = path.join(os.programdir(), "scripts", "xpack", "wix", "msi.wxs")
+        local specfile_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "wix", "msi.wxs")
         os.cp(specfile_template, specfile)
     end
 

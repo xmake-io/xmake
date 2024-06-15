@@ -1,0 +1,5 @@
+${PACKAGE_NAME} (${PACKAGE_VERSION}-1) UNRELEASED; urgency=medium
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- ${PACKAGE_MAINTAINER}  ${PACKAGE_DATE}

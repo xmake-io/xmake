@@ -25,44 +25,23 @@ import("core.base.hashset")
 import("lib.detect.find_tool")
 import("lib.detect.find_file")
 import("utils.archive")
-import("private.action.require.impl.packagenv")
-import("private.action.require.impl.install_packages")
 import(".batchcmds")
 
--- get the rpmbuild
-function _get_rpmbuild()
-
-    -- enter the environments of rpmbuild
-    local oldenvs = packagenv.enter("rpm")
-
-    -- find rpmbuild
-    local packages = {}
-    local rpmbuild = find_tool("rpmbuild")
-    if not rpmbuild then
-        table.join2(packages, install_packages("rpm"))
-    end
-
-    -- enter the environments of installed packages
-    for _, instance in ipairs(packages) do
-        instance:envs_enter()
-    end
-
-    -- we need to force detect and flush detect cache after loading all environments
-    if not rpmbuild then
-        rpmbuild = find_tool("rpmbuild", {force = true})
-    end
-    assert(rpmbuild, "rpmbuild not found!")
-    return rpmbuild, oldenvs
+-- get the debuild
+function _get_debuild()
+    local debuild = find_tool("debuild", {force = true})
+    assert(debuild, "debuild not found!")
+    return debuild
 end
 
 -- get archive file
 function _get_archivefile(package)
-    return path.absolute(path.join(package:buildir(), package:basename() .. ".tar.gz"))
+    return path.absolute(path.join(path.directory(package:sourcedir()), package:name() .. "_" .. package:version() .. ".orig.tar.gz"))
 end
 
 -- translate the file path
 function _translate_filepath(package, filepath)
-    return filepath:replace(package:install_rootdir(), "%{buildroot}/%{_exec_prefix}", {plain = true})
+    return filepath:replace(package:install_rootdir(), "$(PREFIX)", {plain = true})
 end
 
 -- get install command
@@ -127,16 +106,23 @@ function _get_installcmds(package, installcmds, cmds)
     end
 end
 
+-- get uninstall commands
+function _get_uninstallcmds(package, uninstallcmds, cmds)
+    for _, cmd in ipairs(cmds) do
+        _get_customcmd(package, uninstallcmds, cmd)
+    end
+end
+
 -- get specvars
 function _get_specvars(package)
     local specvars = table.clone(package:specvars())
-    specvars.PACKAGE_ARCHIVEFILE = path.filename(_get_archivefile(package))
-    local datestr = os.iorunv("date", {"+%a %b %d %Y"}, {envs = {LC_TIME = "en_US"}})
+    local datestr = os.iorunv("date", {"-u", "+%a, %d %b %Y %H:%M:%S +0000"}, {envs = {LC_TIME = "en_US"}})
     if datestr then
         datestr = datestr:trim()
     end
-    specvars.PACKAGE_PREFIXDIR = package:prefixdir() or ""
     specvars.PACKAGE_DATE = datestr or ""
+    local author = package:get("author") or "unknown <unknown@unknown.com>"
+    specvars.PACKAGE_COPYRIGHT = os.date("%Y") .. " " .. author
     specvars.PACKAGE_INSTALLCMDS = function ()
         local prefixdir = package:get("prefixdir")
         package:set("prefixdir", nil)
@@ -148,19 +134,29 @@ function _get_specvars(package)
             end
         end
         package:set("prefixdir", prefixdir)
-        return table.concat(installcmds, "\n")
+        return table.concat(installcmds, "\n\t")
+    end
+    specvars.PACKAGE_UNINSTALLCMDS = function ()
+        local uninstallcmds = {}
+        _get_uninstallcmds(package, uninstallcmds, batchcmds.get_uninstallcmds(package):cmds())
+        for _, component in table.orderpairs(package:components()) do
+            if component:get("default") ~= false then
+                _get_uninstallcmds(package, uninstallcmds, batchcmds.get_uninstallcmds(component):cmds())
+            end
+        end
+        return table.concat(uninstallcmds, "\n\t")
     end
     specvars.PACKAGE_BUILDCMDS = function ()
         local buildcmds = {}
         _get_buildcmds(package, buildcmds, batchcmds.get_buildcmds(package):cmds())
-        return table.concat(buildcmds, "\n")
+        return table.concat(buildcmds, "\n\t")
     end
     specvars.PACKAGE_BUILDREQUIRES = function ()
         local requires = {}
         local buildrequires = package:get("buildrequires")
         if buildrequires then
             for _, buildrequire in ipairs(buildrequires) do
-                table.insert(requires, "BuildRequires: " .. buildrequire)
+                table.insert(requires, buildrequire)
             end
         else
             local programs = hashset.new()
@@ -178,53 +174,45 @@ function _get_specvars(package)
             for _, program in programs:keys() do
                 local requirename = map[program]
                 if requirename then
-                    table.insert(requires, "BuildRequires: " .. requirename)
+                    table.insert(requires, requirename)
                 end
             end
-            if #requires > 0 then
-                table.insert(requires, "BuildRequires: gcc")
-                table.insert(requires, "BuildRequires: gcc-c++")
-            end
         end
-        return table.concat(requires, "\n")
+        return table.concat(requires, ", ")
     end
     return specvars
 end
 
--- pack srpm package
-function _pack_srpm(rpmbuild, package)
+-- pack deb package
+function _pack_deb(debuild, package)
 
-    -- ensure prefixdir
-    local prefixdir = package:get("prefixdir")
-    if not prefixdir then
-        prefixdir = package:name() .. "-" .. package:version()
-        package:set("prefixdir", prefixdir)
-    end
-
-    -- install the initial specfile
-    local specfile = path.join(package:buildir(), package:basename() .. ".spec")
-    if not os.isfile(specfile) then
-        local specfile_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "srpm", "srpm.spec")
-        os.cp(specfile_template, specfile)
+    -- install the initial debian directory
+    local sourcedir = package:sourcedir()
+    local debiandir = path.join(sourcedir, "debian")
+    if not os.isdir(debiandir) then
+        local debiandir_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "deb", "debian")
+        os.cp(debiandir_template, debiandir)
     end
 
     -- replace variables in specfile
     local specvars = _get_specvars(package)
     local pattern = package:extraconf("specfile", "pattern") or "%${([^\n]-)}"
-    io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
-        name = name:trim()
-        local value = specvars[name]
-        if type(value) == "function" then
-            value = value()
-        end
-        if value ~= nil then
-            dprint("  > replace %s -> %s", name, value)
-        end
-        if type(value) == "table" then
-            dprint("invalid variable value", value)
-        end
-        return value
-    end)
+    for _, specfile in ipairs(os.files(path.join(debiandir, "**"))) do
+        io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
+            name = name:trim()
+            local value = specvars[name]
+            if type(value) == "function" then
+                value = value()
+            end
+            if value ~= nil then
+                dprint("[%s]:  > replace %s -> %s", path.filename(specfile), name, value)
+            end
+            if type(value) == "table" then
+                dprint("invalid variable value", value)
+            end
+            return value
+        end)
+    end
 
     -- archive source files
     local srcfiles, dstfiles = package:sourcefiles()
@@ -249,35 +237,23 @@ function _pack_srpm(rpmbuild, package)
     os.tryrm(archivefile)
     archive.archive(archivefile, archivefiles, {curdir = rootdir, compress = "best"})
 
-    -- pack srpm package
-    os.vrunv(rpmbuild, {"-bs", specfile,
-        "--define", "_topdir " .. package:buildir(),
-        "--define", "_sourcedir " .. package:buildir(),
-        "--define", "_srcrpmdir " .. package:outputdir()})
+    -- build package
+    os.vrunv(debuild, {"-us", "-uc"}, {curdir = sourcedir})
 
-    -- pack rpm package
-    if package:format() == "rpm" then
-        local srpmfile = find_file("*.src.rpm", package:outputdir())
-        if srpmfile then
-            os.vrunv(rpmbuild, {"--rebuild", srpmfile, "--define", "_rpmdir " .. package:outputdir()})
-        end
-    end
+    -- copy deb file
+    os.vcp(path.join(path.directory(sourcedir), "*.deb"), package:outputfile())
 end
 
 function main(package)
-
     if not is_host("linux") then
         return
     end
 
     cprint("packing %s", package:outputfile())
 
-    -- get rpmbuild
-    local rpmbuild, oldenvs = _get_rpmbuild()
+    -- get debuild
+    local debuild = _get_debuild()
 
-    -- pack srpm package
-    _pack_srpm(rpmbuild.program, package)
-
-    -- done
-    os.setenvs(oldenvs)
+    -- pack deb package
+    _pack_deb(debuild.program, package)
 end

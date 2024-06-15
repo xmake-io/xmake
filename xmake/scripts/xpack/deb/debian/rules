@@ -1,0 +1,60 @@
+#!/usr/bin/make -f
+
+#export DH_VERBOSE = 1
+
+PREFIX=$(CURDIR)/debian/${PACKAGE_NAME}/usr
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	touch configure-stamp
+
+build-arch:
+	# pass
+
+build-indep:
+	# pass
+
+build: build-stamp
+build-stamp: configure-stamp
+	dh_testdir
+	${PACKAGE_BUILDCMDS}
+	touch $@
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp configure-stamp
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+	${PACKAGE_INSTALLCMDS}
+
+distclean: clean
+
+uninstall:
+	${PACKAGE_UNINSTALLCMDS}
+
+binary-indep: build install
+# We have nothing to do by default.
+# # Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installdocs
+	dh_installexamples
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install uninstall configure

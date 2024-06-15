@@ -19,9 +19,9 @@ target("foo")
     add_packages("zlib")
 
 xpack("test")
-    set_formats("nsis", "srpm", "rpm", "zip", "targz", "srczip", "srctargz", "runself", "wix")
+    set_formats("nsis", "srpm", "rpm", "deb", "zip", "targz", "srczip", "srctargz", "runself", "wix")
     set_title("hello")
-    set_author("ruki")
+    set_author("ruki <waruqi@gmail.com>")
     set_description("A test installer.")
     set_homepage("https://xmake.io")
     set_license("Apache-2.0")
@@ -34,7 +34,7 @@ xpack("test")
     add_components("LongPath")
 
     on_load(function (package)
-        if package:from_source() then
+        if package:with_source() then
             package:set("basename", "test-$(plat)-src-v$(version)")
         else
             package:set("basename", "test-$(plat)-$(arch)-v$(version)")

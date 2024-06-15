@@ -1,0 +1,10 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: ${PACKAGE_NAME}
+Upstream-Contact: ${PACKAGE_AUTHOR}
+Source: ${PACKAGE_HOMEPAGE}
+
+Files: *
+Copyright: ${PACKAGE_COPYRIGHT}
+License: ${PACKAGE_LICENSE}
+ .
+
