@@ -288,6 +288,22 @@ function _get_cmake_version()
     return cmake_version
 end
 
+function _get_cmake_system_processor(package)
+    -- on Windows, CMAKE_SYSTEM_PROCESSOR comes from PROCESSOR_ARCHITECTURE
+    -- on other systems it's the output of uname -m
+    if package:is_plat("windows") then
+        local archs = {
+            x86 = "x86",
+            x64 = "AMD64"
+            x86_64 = "AMD64",
+            arm = "ARM",
+            arm64 = "ARM64"
+        }
+        return archs[package:arch()] or package:arch()
+    end
+    return package:arch()
+end
+
 -- insert configs from envs
 function _insert_configs_from_envs(configs, envs, opt)
     opt = opt or {}
@@ -437,7 +453,7 @@ function _get_configs_for_appleos(package, configs, opt)
         end
     elseif package:is_cross() then
         envs.CMAKE_SYSTEM_NAME = "Darwin"
-        envs.CMAKE_SYSTEM_PROCESSOR = package:targetarch()
+        envs.CMAKE_SYSTEM_PROCESSOR = _get_cmake_system_processor(package)
     end
     envs.CMAKE_OSX_ARCHITECTURES = package:arch()
     envs.CMAKE_FIND_ROOT_PATH_MODE_PACKAGE   = "BOTH"
@@ -469,7 +485,7 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
     envs.CMAKE_SYSTEM_NAME         = "Windows"
-    envs.CMAKE_SYSTEM_PROCESSOR    = package:targetarch()
+    envs.CMAKE_SYSTEM_PROCESSOR    = _get_cmake_system_processor(package)
     -- avoid find and add system include/library path
     -- @see https://github.com/xmake-io/xmake/issues/2037
     envs.CMAKE_FIND_ROOT_PATH      = sdkdir
