@@ -24,6 +24,21 @@ import("core.base.hashset")
 import("core.project.target")
 import("lib.detect.find_tool")
 
+-- exclude cmake internal definitions https://github.com/xmake-io/xmake/issues/5217
+function _should_exclude(define)
+    local name = define:split("=")[1]
+    return table.contains({"CMAKE_INTDIR", "_DEBUG", "NDEBUG"}, name)
+end
+
+-- map xmake mode to cmake mode
+function _cmake_mode(mode)
+    if mode == "debug" then return "Debug"
+    elseif mode == "releasedbg" then return "RelWithDebInfo"
+    elseif mode == "minsizerel" then return "MinSizeRel"
+    else return "Release"
+    end
+end
+
 -- find package
 function _find_package(cmake, name, opt)
 
@@ -113,11 +128,7 @@ function _find_package(cmake, name, opt)
 
     -- run cmake
     local envs = configs.envs or opt.envs or {}
-    if opt.mode == "debug" then envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or "Debug"
-    elseif opt.mode == "releasedbg" then envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or "RelWithDebInfo"
-    elseif opt.mode == "minsizerel" then envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or "MinSizeRel"
-    else envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or "Release"
-    end
+    envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or _cmake_mode(opt.mode or "release")
     try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = envs}) end}
 
     -- pares defines and includedirs for macosx/linux
@@ -151,17 +162,12 @@ function _find_package(cmake, name, opt)
                         end
                     end
                 elseif line:find("CXX_DEFINES =", 1, true) then
-                    -- https://github.com/xmake-io/xmake/issues/5217
-                    local excludes = hashset.from {
-                        "NDEBUG", "_DEBUG", "CMAKE_INTDIR"
-                    }
                     defines = defines or {}
-
                     local flags = os.argv(line:split("=", {plain = true})[2]:trim())
                     for _, flag in ipairs(flags) do
                         if flag:startswith("-D") and #flag > 2 then
                             local define = flag:sub(3)
-                            if define and not excludes:has(define) then
+                            if define and not _should_exclude(define) then
                                 table.insert(defines, define)
                             end
                         end
@@ -231,13 +237,7 @@ function _find_package(cmake, name, opt)
     local vcprojfile = path.join(workdir, testname .. ".vcxproj")
     if os.isfile(vcprojfile) then
         local vcprojdata = io.readfile(vcprojfile)
-
-        -- https://github.com/xmake-io/xmake/issues/5217
-        local vs_mode = "Release"
-        if opt.mode == "debug" then vs_mode = "Debug"
-        elseif opt.mode == "releasedbg" then vs_mode = "RelWithDebInfo"
-        elseif opt.mode == "minsizerel" then vs_mode = "MinSizeRel"
-        end
+        local vs_mode = _cmake_mode(opt.mode or "release")
         vcprojdata = vcprojdata:match("<ItemDefinitionGroup Condition=\"'$%(Configuration%)|$%(Platform%)'=='" .. vs_mode .. "|.->(.-)</ItemDefinitionGroup>")
 
         if vcprojdata then
@@ -274,15 +274,10 @@ function _find_package(cmake, name, opt)
 
                 values = line:match("<PreprocessorDefinitions>%%%(PreprocessorDefinitions%);(.+)</PreprocessorDefinitions>")
                 if values then
-                    -- https://github.com/xmake-io/xmake/issues/5217
-                    local excludes = hashset.from {
-                        "NDEBUG", "_DEBUG", "CMAKE_INTDIR"
-                    }
                     defines = defines or {}
                     values = path.splitenv(values)
                     for _, value in ipairs(values) do
-                        local name = value:split("=")[1]
-                        if not excludes:has(name) then
+                        if not _should_exclude(value) then
                             table.insert(defines, value)
                         end
                     end
