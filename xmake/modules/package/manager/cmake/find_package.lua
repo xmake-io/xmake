@@ -112,10 +112,11 @@ function _find_package(cmake, name, opt)
     end
 
     -- run cmake
-    local envs = configs.envs or opt.envs
-    if opt.mode == "debug" then
-        envs = envs or {}
-        envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or "Debug"
+    local envs = configs.envs or opt.envs or {}
+    if opt.mode == "debug" then envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or "Debug"
+    elseif opt.mode == "releasedbg" then envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or "RelWithDebInfo"
+    elseif opt.mode == "minsizerel" then envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or "MinSizeRel"
+    else envs.CMAKE_BUILD_TYPE = envs.CMAKE_BUILD_TYPE or "Release"
     end
     try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = envs}) end}
 
@@ -150,12 +151,17 @@ function _find_package(cmake, name, opt)
                         end
                     end
                 elseif line:find("CXX_DEFINES =", 1, true) then
+                    -- https://github.com/xmake-io/xmake/issues/5217
+                    local excludes = hashset.from {
+                        "NDEBUG", "_DEBUG", "CMAKE_INTDIR"
+                    }
+                    defines = defines or {}
+
                     local flags = os.argv(line:split("=", {plain = true})[2]:trim())
                     for _, flag in ipairs(flags) do
                         if flag:startswith("-D") and #flag > 2 then
                             local define = flag:sub(3)
-                            if define then
-                                defines = defines or {}
+                            if define and not excludes:has(define) then
                                 table.insert(defines, define)
                             end
                         end
@@ -225,6 +231,15 @@ function _find_package(cmake, name, opt)
     local vcprojfile = path.join(workdir, testname .. ".vcxproj")
     if os.isfile(vcprojfile) then
         local vcprojdata = io.readfile(vcprojfile)
+
+        -- https://github.com/xmake-io/xmake/issues/5217
+        local vs_mode = "Release"
+        if opt.mode == "debug" then vs_mode = "Debug"
+        elseif opt.mode == "releasedbg" then vs_mode = "RelWithDebInfo"
+        elseif opt.mode == "minsizerel" then vs_mode = "MinSizeRel"
+        end
+        vcprojdata = vcprojdata:match("<ItemDefinitionGroup Condition=\"'$%(Configuration%)|$%(Platform%)'=='" .. vs_mode .. "|.->(.-)</ItemDefinitionGroup>")
+
         if vcprojdata then
             for _, line in ipairs(vcprojdata:split("\n", {plain = true})) do
                 local values = line:match("<AdditionalIncludeDirectories>(.+);%%%(AdditionalIncludeDirectories%)</AdditionalIncludeDirectories>")
@@ -261,8 +276,7 @@ function _find_package(cmake, name, opt)
                 if values then
                     -- https://github.com/xmake-io/xmake/issues/5217
                     local excludes = hashset.from {
-                        "NDEBUG", "_DEBUG", "CMAKE_INTDIR", "WIN32",
-                        "_WINDOWS", "USE_DISTRIBUTED", "USE_C10D_GLOO"
+                        "NDEBUG", "_DEBUG", "CMAKE_INTDIR"
                     }
                     defines = defines or {}
                     values = path.splitenv(values)
