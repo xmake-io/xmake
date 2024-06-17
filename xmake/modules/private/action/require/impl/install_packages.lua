@@ -331,7 +331,9 @@ function _fetch_packages(packages_fetch, installdeps)
             packages_fetching[index] = instance
             local oldenvs = os.getenvs()
             instance:envs_enter()
+            instance:lock()
             instance:fetch()
+            instance:unlock()
             os.setenvs(oldenvs)
 
             -- fix terminal mode to avoid some subprocess to change it
