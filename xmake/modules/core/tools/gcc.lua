@@ -739,6 +739,9 @@ function _preprocess(program, argv, opt)
 
     -- do preprocess
     local cppinfo = try {function ()
+        if is_host("windows") then
+            cppflags = winos.cmdargv(cppflags, {escape = true})
+        end
         local outdata, errdata = os.iorunv(program, cppflags, opt)
         return {outdata = outdata, errdata = errdata,
                 sourcefile = sourcefile, objectfile = objectfile, cppfile = cppfile, cppflags = flags}
@@ -754,7 +757,11 @@ end
 
 -- compile preprocessed file
 function _compile_preprocessed_file(program, cppinfo, opt)
-    local outdata, errdata = os.iorunv(program, table.join(cppinfo.cppflags, "-o", cppinfo.objectfile, cppinfo.cppfile), opt)
+    local argv = table.join(cppinfo.cppflags, "-o", cppinfo.objectfile, cppinfo.cppfile)
+    if is_host("windows") then
+        argv = winos.cmdargv(argv, {escape = true})
+    end
+    local outdata, errdata = os.iorunv(program, argv, opt)
     -- we need to get warning information from output
     cppinfo.outdata = outdata
     cppinfo.errdata = errdata
@@ -763,9 +770,13 @@ end
 -- do compile
 function _compile(self, sourcefile, objectfile, compflags, opt)
     opt = opt or {}
-    local program, argv = compargv(self, sourcefile, objectfile, compflags)
+    local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
     local function _compile_fallback()
-        return os.iorunv(program, argv, {envs = self:runenvs(), shell = opt.shell})
+        local runargv = argv
+        if is_host("windows") then
+            runargv = winos.cmdargv(argv, {escape = true})
+        end
+        return os.iorunv(program, runargv, {envs = self:runenvs(), shell = opt.shell})
     end
     local cppinfo
     if distcc_build_client.is_distccjob() and distcc_build_client.singleton():has_freejobs() then
@@ -785,7 +796,7 @@ function _compile(self, sourcefile, objectfile, compflags, opt)
 end
 
 -- make the compile arguments list for the precompiled header
-function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
+function _compargv_pch(self, pcheaderfile, pcoutputfile, flags, opt)
 
     -- remove "-include xxx.h" and "-include-pch xxx.pch"
     local pchflags = {}
@@ -817,17 +828,21 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
     end
 
     -- make the compile arguments list
-    return self:program(), table.join("-c", pchflags, "-o", pcoutputfile, pcheaderfile)
+    local argv = table.join("-c", pchflags, "-o", pcoutputfile, pcheaderfile)
+    return self:program(), argv
 end
 
 -- make the compile arguments list
-function compargv(self, sourcefile, objectfile, flags)
+function compargv(self, sourcefile, objectfile, flags, opt)
+
     -- precompiled header?
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then
-        return _compargv_pch(self, sourcefile, objectfile, flags)
+        return _compargv_pch(self, sourcefile, objectfile, flags, opt)
     end
-    return self:program(), table.join("-c", flags, "-o", objectfile, sourcefile)
+
+    local argv = table.join("-c", flags, "-o", objectfile, sourcefile)
+    return self:program(), argv
 end
 
 -- compile the source file
