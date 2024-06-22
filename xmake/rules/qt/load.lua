@@ -26,7 +26,7 @@ import("core.base.hashset")
 import("lib.detect.find_library")
 
 -- make link for framework
-function _link(target, linkdirs, framework, qt_sdkver)
+function _link(target, linkdirs, framework, qt_sdkver, infix)
     if framework:startswith("Qt") then
         local debug_suffix = "_debug"
         if target:is_plat("windows") then
@@ -41,12 +41,12 @@ function _link(target, linkdirs, framework, qt_sdkver)
             debug_suffix = ""
         end
         if qt_sdkver:ge("5.0") then
-            framework = "Qt" .. qt_sdkver:major() .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
+            framework = "Qt" .. qt_sdkver:major() .. framework:sub(3) .. infix .. (is_mode("debug") and debug_suffix or "")
         else -- for qt4.x, e.g. QtGui4.lib
             if target:is_plat("windows", "mingw") then
-                framework = "Qt" .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "") .. qt_sdkver:major()
+                framework = "Qt" .. framework:sub(3) .. infix .. (is_mode("debug") and debug_suffix or "") .. qt_sdkver:major()
             else
-                framework = "Qt" .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
+                framework = "Qt" .. framework:sub(3) .. infix .. (is_mode("debug") and debug_suffix or "")
             end
         end
         if target:is_plat("android") then --> -lQt5Core_armeabi/-lQt5CoreDebug_armeabi for 5.14.x
@@ -183,6 +183,25 @@ function main(target, opt)
         qt_sdkver = semver.new(qt.sdkver)
     else
         raise("Qt SDK version not found, please run `xmake f --qt_sdkver=xxx` to set it.")
+    end
+
+    -- get qt sdk infix
+    local infix = ""
+    if qt.mkspecsdir then
+        if os.isfile(path.join(qt.mkspecsdir, "qconfig.pri")) then
+            local qconfig = io.readfile(path.join(qt.mkspecsdir, "qconfig.pri"))
+            if qconfig then
+                qconfig = qconfig:trim():split("\n")
+                for _, line in ipairs(qconfig) do
+                    if line:startswith("QT_LIBINFIX") then
+                        local kv = line:split("=", {plain = true, limit = 2})
+                        if #kv == 2 then
+                            infix = kv[2]:trim()
+                        end
+                    end
+                end
+            end
+        end
     end
 
     -- add -fPIC
@@ -333,7 +352,7 @@ function main(target, opt)
                         _add_includedirs(target, path.join(frameworkdir, "Headers", qt.sdkver, framework))
                         frameworksset:insert(framework)
                     else
-                        local link = _link(target, qt.libdir, framework, qt_sdkver)
+                        local link = _link(target, qt.libdir, framework, qt_sdkver, infix)
                         target:add("syslinks", link)
                         _add_qmakeprllibs(target, path.join(qt.libdir, link .. ".prl"), qt.libdir)
                         _add_includedirs(target, path.join(qt.includedir, framework))
@@ -342,7 +361,7 @@ function main(target, opt)
                         _add_includedirs(target, path.join(qt.includedir, framework, qt.sdkver, framework))
                     end
                 else
-                    local link = _link(target, qt.libdir, framework, qt_sdkver)
+                    local link = _link(target, qt.libdir, framework, qt_sdkver, infix)
                     target:add("syslinks", link)
                     _add_qmakeprllibs(target, path.join(qt.libdir, link .. ".prl"), qt.libdir)
                     _add_includedirs(target, path.join(qt.includedir, framework))
