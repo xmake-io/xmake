@@ -29,7 +29,7 @@ toolchain("armclang")
     set_toolset("cxx", "armclang")
     set_toolset("ld", "armlink")
     set_toolset("ar", "armar")
-    set_toolset("as", "armasm")
+    -- different assembler choices for different versions of armclang
 
     on_check(function (toolchain)
         import("lib.detect.find_tool")
@@ -56,11 +56,24 @@ toolchain("armclang")
                 arch_cpu_ld = arch_cpu:replace("cortex-a", "Cortex-A", {plain = true})
                 arch_target  = "aarch64-arm-none-eabi"
             end
-            toolchain:add("cxflags", "-target=" .. arch_target)
-            toolchain:add("cxflags", "-mcpu="   .. arch_cpu)
-            toolchain:add("asflags", "-target=" .. arch_target)
-            toolchain:add("asflags", "--cpu="   .. arch_cpu)
-            toolchain:add("ldflags", "--cpu "   .. arch_cpu_ld)
+
+            import("detect.sdks.find_mdk")
+            local mdk = find_mdk()
+            if mdk.sdk_armclang_vernum > 6140000 then
+                toolchain:set("toolset", "as", "armclang")
+                toolchain:add("cxflags", "--target=" .. arch_target)
+                toolchain:add("cxflags", "-mcpu="   .. arch_cpu)
+                toolchain:add("asflags", "--target=" .. arch_target)
+                toolchain:add("asflags", "-mcpu="   .. arch_cpu)
+                toolchain:add("ldflags", "--cpu "   .. arch_cpu_ld)
+            else
+                toolchain:set("toolset", "as", "armasm")
+                toolchain:add("cxflags", "--target=" .. arch_target)
+                toolchain:add("cxflags", "-mcpu="   .. arch_cpu)
+                toolchain:add("asflags", "-target=" .. arch_target)
+                toolchain:add("asflags", "--cpu="   .. arch_cpu)
+                toolchain:add("ldflags", "--cpu "   .. arch_cpu_ld)
+            end
         end
     end)
 
