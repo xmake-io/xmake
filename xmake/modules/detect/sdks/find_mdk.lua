@@ -73,8 +73,6 @@ function _find_mdk(sdkdir)
     -- armclang sdk directory
     local sdkdir_armclang = path.join(sdkdir, "armclang")
     if os.isdir(sdkdir_armclang) and os.isfile(path.join(sdkdir_armclang, "bin", "armclang.exe")) then
-        local sdk_armclang_ver = os.iorun(path.join(sdkdir_armclang, "bin", "armclang.exe").." --version_number")
-        result.sdk_armclang_vernum = tonumber(sdk_armclang_ver)
         result.sdkdir_armclang = sdkdir_armclang
     end
     return result

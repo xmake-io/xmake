@@ -57,9 +57,10 @@ toolchain("armclang")
                 arch_target  = "aarch64-arm-none-eabi"
             end
 
-            import("detect.sdks.find_mdk")
-            local mdk = find_mdk()
-            if mdk.sdk_armclang_vernum > 6140000 then
+            import("lib.detect.find_tool")
+            import("core.base.semver")
+            local armclang = find_tool("armclang", {version = true})
+            if semver.compare(armclang.version, "6.13")>0 then
                 toolchain:set("toolset", "as", "armclang")
                 toolchain:add("cxflags", "--target=" .. arch_target)
                 toolchain:add("cxflags", "-mcpu="   .. arch_cpu)
