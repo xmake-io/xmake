@@ -40,7 +40,6 @@ function main(opt)
 
     -- init options
     opt         = opt or {}
-    opt.command = opt.command or "--version"
     opt.parse   = opt.parse or function (output) return output:match("Arm Compiler for Embedded (%d+%.?%d+%.?%d+)%s") end
 
     -- find program
