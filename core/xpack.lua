@@ -39,7 +39,7 @@ xpack("xmake")
                 package:add("installfiles", path.join(winenv, "**"), {rootdir = path.directory(winenv)})
             else
                 local arch = package:arch()
-                local url_7z = "https://github.com/xmake-mirror/7zip/releases/download/19.00/7z19.00-" .. arch .. ".zip"
+                local url_7z = "https://github.com/xmake-mirror/7zip/releases/download/24.07/7z24.07-" .. arch .. ".zip"
                 local url_curl = "https://curl.se/windows/dl-8.2.1_11/curl-8.2.1_11-win32-mingw.zip"
                 local archive_7z = path.join(package:buildir(), "7z.zip")
                 local archive_curl = path.join(package:buildir(), "curl.zip")
