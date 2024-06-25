@@ -40,7 +40,15 @@ xpack("xmake")
             else
                 local arch = package:arch()
                 local url_7z = "https://github.com/xmake-mirror/7zip/releases/download/24.07/7z24.07-" .. arch .. ".zip"
-                local url_curl = "https://curl.se/windows/dl-8.2.1_11/curl-8.2.1_11-win32-mingw.zip"
+                local curl_version = "8.8.0_2"
+                local url_curl = "https://curl.se/windows/dl-" .. curl_version .. "/curl-" .. curl_version
+                if package:is_arch("x64", "x86_64") then
+                    url_curl = url_curl .. "-win64-mingw.zip"
+                elseif package:is_arch("arm64") then
+                    url_curl = url_curl .. "-win64a-mingw.zip"
+                else
+                    url_curl = url_curl .. "-win32-mingw.zip"
+                end
                 local archive_7z = path.join(package:buildir(), "7z.zip")
                 local archive_curl = path.join(package:buildir(), "curl.zip")
                 local tmpdir_7z = path.join(package:buildir(), "7z")
