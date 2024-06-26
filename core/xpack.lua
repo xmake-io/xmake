@@ -35,7 +35,7 @@ xpack("xmake")
         local format = package:format()
         if package:is_plat("windows") and (format == "nsis" or format == "wix" or format == "zip") then
             local winenv = path.join(os.programdir(), "winenv")
-            if os.isdir(winenv) then
+            if false then-- os.isdir(winenv) then
                 package:add("installfiles", path.join(winenv, "**"), {rootdir = path.directory(winenv)})
             else
                 local arch = package:arch()
