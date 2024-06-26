@@ -23,8 +23,7 @@ rule("platform.wasm")
     add_deps("platform.wasm.installfiles")
 
 rule("platform.windows")
+    add_deps("platform.windows.def")
     if is_host("windows") then
-        add_deps("platform.windows.def")
         add_deps("platform.windows.manifest")
     end
-

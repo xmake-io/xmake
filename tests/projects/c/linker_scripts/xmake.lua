@@ -11,7 +11,7 @@ target("test")
 target("foo")
     set_kind("shared")
     add_files("src/foo.c")
-    if is_plat("windows") then
+    if is_plat("windows", "mingw") then
         add_files("src/foo.def")
     else
         add_files("src/foo.map")
