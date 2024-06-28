@@ -28,7 +28,7 @@ toolchain("cosmocc")
     set_formats("symbol", "$(name).sym")
 
     set_toolset("cc",     "cosmocc")
-    set_toolset("cxx",    "cosmocc++", "cosmocc")
+    set_toolset("cxx",    "cosmoc++", "cosmocc")
     set_toolset("cpp",    "cosmocc -E")
     set_toolset("as",     "cosmocc")
     set_toolset("ld",     "cosmoc++", "cosmocc")
