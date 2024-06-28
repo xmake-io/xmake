@@ -10,7 +10,7 @@
             setlocal EnableDelayedExpansion
             if !errorlevel! neq 0 exit /B !errorlevel!
             endlocal
-            set PROMPT=%XMAKE_PROMPT_BACKUP%
+            set "PROMPT=%XMAKE_PROMPT_BACKUP%"
             set XMAKE_ENV_BACKUP=
             set XMAKE_PROMPT_BACKUP=
         )
@@ -31,7 +31,7 @@
                 exit /B !errorlevel!
             )
             endlocal
-            set PROMPT=%XMAKE_PROMPT_BACKUP%
+            set "PROMPT=%XMAKE_PROMPT_BACKUP%"
             set XMAKE_ENV_BACKUP=
             set XMAKE_PROMPT_BACKUP=
             echo Please rerun `xrepo env shell` to enter the environment.
@@ -55,7 +55,7 @@
             for /f %%i in ('@"%XMAKE_PROGRAM_FILE%" lua --quiet private.xrepo.action.env.info prompt') do @(
                 @set "PROMPT=%%i %PROMPT%"
             )
-            @set XMAKE_PROMPT_BACKUP=%PROMPT%
+            @set "XMAKE_PROMPT_BACKUP=%PROMPT%"
         )
         for /f %%i in ('@"%XMAKE_PROGRAM_FILE%" lua private.xrepo.action.env.info envfile') do @(
             @set "XMAKE_ENV_BACKUP=%%i.bat"
@@ -81,7 +81,7 @@
             setlocal EnableDelayedExpansion
             if !errorlevel! neq 0 exit /B !errorlevel!
             endlocal
-            set PROMPT=%XMAKE_PROMPT_BACKUP%
+            set "PROMPT=%XMAKE_PROMPT_BACKUP%"
             set XMAKE_ENV_BACKUP=
             set XMAKE_PROMPT_BACKUP=
             echo Please rerun `xrepo env %2 %3 shell` to enter the environment.
@@ -104,7 +104,7 @@
             for /f %%i in ('@%XMAKE_PROGRAM_FILE% lua --quiet private.xrepo.action.env.info prompt %3') do @(
                 @set "PROMPT=%%i %PROMPT%"
             )
-            @set XMAKE_PROMPT_BACKUP=%PROMPT%
+            @set "XMAKE_PROMPT_BACKUP=%PROMPT%"
         )
         for /f %%i in ('@%XMAKE_PROGRAM_FILE% lua private.xrepo.action.env.info envfile %3') do @(
             @set "XMAKE_ENV_BACKUP=%%i.bat"
