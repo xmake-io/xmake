@@ -206,7 +206,9 @@ function completer:_complete_option_v(options, current, completing)
         local candidates = {}
         if #values > 0 and type(values[1]) == "string" then
             for _, v in ipairs(values) do
-                table.insert(candidates, { value = v, is_complete = true })
+                if v:startswith(completing) then
+                    table.insert(candidates, { value = v, is_complete = true })
+                end
             end
         else
             for _, v in ipairs(values) do
