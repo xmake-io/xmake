@@ -19,6 +19,11 @@
 --
 
 -- quietly run command with arguments list
+
+-- imports
+import("core.tool.toolchain")
+
+
 function runv(program, argv, opt)
 
     -- init options
@@ -28,10 +33,12 @@ function runv(program, argv, opt)
     local outpath = os.tmpfile()
     local errpath = os.tmpfile()
     local outfile = io.open(outpath, 'w')
+    local msvc = toolchain.load("msvc")
+    local vs_unicode = msvc:config("vs_unicode")
 
     -- enable unicode output for vs toolchains, e.g. cl.exe, link.exe and etc.
     -- @see https://github.com/xmake-io/xmake/issues/528
-    opt.envs = table.join(opt.envs or {}, {VS_UNICODE_OUTPUT = outfile:rawfd()})
+    opt.envs = table.join(opt.envs or {}, vs_unicode and {VS_UNICODE_OUTPUT = outfile:rawfd()} or nil)
 
     -- execute it
     local ok, syserrors = os.execv(program, argv, table.join(opt, {try = true, stdout = outfile, stderr = errpath}))
@@ -43,7 +50,7 @@ function runv(program, argv, opt)
     if ok ~= 0 then
 
         -- read errors
-        local outdata = os.isfile(outpath) and io.readfile(outpath, {encoding = "utf16le"}) or nil
+        local outdata = os.isfile(outpath) and io.readfile(outpath, vs_unicode and {encoding = "utf16le"} or nil) or nil
         local errdata = os.isfile(errpath) and io.readfile(errpath) or nil
         local errors = errdata or ""
         if #errors:trim() == 0 then
@@ -90,17 +97,19 @@ function iorunv(program, argv, opt)
     local outpath = os.tmpfile()
     local errpath = os.tmpfile()
     local outfile = io.open(outpath, 'w')
+    local msvc = toolchain.load("msvc")
+    local vs_unicode = msvc:config("vs_unicode")
 
     -- enable unicode output for vs toolchains, e.g. cl.exe, link.exe and etc.
     -- @see https://github.com/xmake-io/xmake/issues/528
-    opt.envs = table.join(opt.envs or {}, {VS_UNICODE_OUTPUT = outfile:rawfd()})
+    opt.envs = table.join(opt.envs or {}, vs_unicode and {VS_UNICODE_OUTPUT = outfile:rawfd()} or nil)
 
     -- run command
     local ok, syserrors = os.execv(program, argv, table.join(opt, {try = true, stdout = outfile, stderr = errpath}))
 
     -- get output and error data
     outfile:close()
-    local outdata = os.isfile(outpath) and io.readfile(outpath, {encoding = "utf16le"}) or nil
+    local outdata = os.isfile(outpath) and io.readfile(outpath, vs_unicode and {encoding = "utf16le"} or nil) or nil
     local errdata = os.isfile(errpath) and io.readfile(errpath) or nil
 
     -- remove the temporary output and error file

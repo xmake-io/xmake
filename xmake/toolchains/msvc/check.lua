@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.semver")
 import("core.base.option")
 import("core.project.config")
 import("detect.sdks.find_vstudio")
@@ -89,6 +90,15 @@ function _check_vstudio(toolchain)
             config.set("vs", vs, {force = true, readonly = true})
         end
         toolchain:config_set("vs", vs)
+        if vs == "6.0" then
+            toolchain:config_set("vs_toolset", "6.0")
+        end
+        local vs_toolset = toolchain:config("vs_toolset")
+        if semver.is_valid(vs_toolset) and semver.compare(vs_toolset, "8.0") < 0 then
+            toolchain:config_set("vs_unicode", false)
+        else
+            toolchain:config_set("vs_unicode", true)
+        end
         toolchain:configs_save()
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
         if msvc and msvc.version then
