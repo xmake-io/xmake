@@ -1430,8 +1430,12 @@ end
 -- get the autogen files directory
 function _instance:autogendir(opt)
 
-    -- the autogen directory
-    local autogendir = path.join(config.buildir(), ".gens", self:name())
+    -- init the autogen directory
+    local autogendir = self:get("autogendir")
+    if not autogendir then
+        autogendir = path.join(config.buildir(), ".gens")
+    end
+    autogendir = path.join(autogendir, self:name())
 
     -- get root directory of target
     local intermediate_directory = self:policy("build.intermediate_directory")
@@ -2762,6 +2766,7 @@ function target.apis()
             "target.set_targetdir"
         ,   "target.set_objectdir"
         ,   "target.set_dependir"
+        ,   "target.set_autogendir"
         ,   "target.set_configdir"
         ,   "target.set_installdir"
         ,   "target.set_rundir"
