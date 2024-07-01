@@ -1375,7 +1375,7 @@ function _instance:objectdir(opt)
 
     -- get root directory of target
     local intermediate_directory = self:policy("build.intermediate_directory")
-    if (opt and opt.root) or not intermediate_directory then
+    if (opt and opt.root) or intermediate_directory == false then
         return objectdir
     end
 
@@ -1407,7 +1407,7 @@ function _instance:dependir(opt)
 
     -- get root directory of target
     local intermediate_directory = self:policy("build.intermediate_directory")
-    if (opt and opt.root) or not intermediate_directory then
+    if (opt and opt.root) or intermediate_directory == false then
         return dependir
     end
 
@@ -1435,7 +1435,7 @@ function _instance:autogendir(opt)
 
     -- get root directory of target
     local intermediate_directory = self:policy("build.intermediate_directory")
-    if (opt and opt.root) or not intermediate_directory then
+    if (opt and opt.root) or intermediate_directory == false then
         return autogendir
     end
 
@@ -1512,7 +1512,7 @@ function _instance:targetdir(opt)
     end
     -- get root directory of target
     local intermediate_directory = self:policy("build.intermediate_directory")
-    if (opt and opt.root) or not intermediate_directory then
+    if (opt and opt.root) or intermediate_directory == false then
         return targetdir
     end
 
