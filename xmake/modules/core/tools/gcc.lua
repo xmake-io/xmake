@@ -802,7 +802,7 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags, opt)
     local pchflags = {}
     local include = false
     for _, flag in ipairs(flags) do
-        if not flag:find("-include", 1, true) then
+        if not flag:startswith("-include") then
             if not include then
                 table.insert(pchflags, flag)
             end
