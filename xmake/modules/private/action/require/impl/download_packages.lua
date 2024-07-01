@@ -162,7 +162,7 @@ function _download_packages(packages_download)
         end
 
     end, {total = #packages_download,
-          comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4,
+          comax = 4,
           isolate = true,
           on_timer = function (running_jobs_indices)
 
