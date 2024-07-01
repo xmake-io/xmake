@@ -1503,31 +1503,32 @@ function _instance:autogenfile(sourcefile, opt)
 end
 
 -- get the target directory
-function _instance:targetdir(opt)
+function _instance:targetdir()
 
     -- the target directory
     local targetdir = self:get("targetdir")
     if not targetdir then
         targetdir = config.buildir()
-    end
-    -- get root directory of target
-    local intermediate_directory = self:policy("build.intermediate_directory")
-    if (opt and opt.root) or intermediate_directory == false then
-        return targetdir
-    end
 
-    -- generate intermediate directory
-    local plat = self:plat()
-    if plat then
-        targetdir = path.join(targetdir, plat)
-    end
-    local arch = self:arch()
-    if arch then
-        targetdir = path.join(targetdir, arch)
-    end
-    local mode = config.mode()
-    if mode then
-        targetdir = path.join(targetdir, mode)
+        -- get root directory of target
+        local intermediate_directory = self:policy("build.intermediate_directory")
+        if intermediate_directory == false then
+            return targetdir
+        end
+
+        -- generate intermediate directory
+        local plat = self:plat()
+        if plat then
+            targetdir = path.join(targetdir, plat)
+        end
+        local arch = self:arch()
+        if arch then
+            targetdir = path.join(targetdir, arch)
+        end
+        local mode = config.mode()
+        if mode then
+            targetdir = path.join(targetdir, mode)
+        end
     end
     return targetdir
 end
