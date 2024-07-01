@@ -21,6 +21,7 @@
 -- imports
 import("core.project.config")
 import("lib.detect.find_path")
+import("lib.detect.find_tool")
 import("detect.sdks.find_cross_toolchain")
 
 -- check the cross toolchain
@@ -42,6 +43,14 @@ function main(toolchain)
                     break
                 end
             end
+        end
+    end
+    if not cross_toolchain then
+        local cosmocc = find_tool("cosmocc", {force = true})
+        if cosmocc and cosmocc.program then
+            local bindir = path.directory(cosmocc.program)
+            local sdkdir = path.directory(bindir)
+            cross_toolchain = {bindir = bindir, sdkdir = sdkdir}
         end
     end
     if cross_toolchain then
