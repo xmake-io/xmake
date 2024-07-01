@@ -1374,24 +1374,21 @@ function _instance:objectdir(opt)
     objectdir = path.join(objectdir, self:name())
 
     -- get root directory of target
-    if opt and opt.root then
+    local intermediate_directory = self:policy("build.intermediate_directory")
+    if (opt and opt.root) or not intermediate_directory then
         return objectdir
     end
 
-    -- append plat sub-directory
+    -- generate intermediate directory
     local plat = self:plat()
     if plat then
         objectdir = path.join(objectdir, plat)
     end
-
-    -- append arch sub-directory
     local arch = self:arch()
     if arch then
         objectdir = path.join(objectdir, arch)
     end
-
-    -- append mode sub-directory
-    local mode = config.get("mode")
+    local mode = config.mode()
     if mode then
         objectdir = path.join(objectdir, mode)
     end
@@ -1409,24 +1406,21 @@ function _instance:dependir(opt)
     dependir = path.join(dependir, self:name())
 
     -- get root directory of target
-    if opt and opt.root then
+    local intermediate_directory = self:policy("build.intermediate_directory")
+    if (opt and opt.root) or not intermediate_directory then
         return dependir
     end
 
-    -- append plat sub-directory
+    -- generate intermediate directory
     local plat = self:plat()
     if plat then
         dependir = path.join(dependir, plat)
     end
-
-    -- append arch sub-directory
     local arch = self:arch()
     if arch then
         dependir = path.join(dependir, arch)
     end
-
-    -- append mode sub-directory
-    local mode = config.get("mode")
+    local mode = config.mode()
     if mode then
         dependir = path.join(dependir, mode)
     end
@@ -1440,24 +1434,21 @@ function _instance:autogendir(opt)
     local autogendir = path.join(config.buildir(), ".gens", self:name())
 
     -- get root directory of target
-    if opt and opt.root then
+    local intermediate_directory = self:policy("build.intermediate_directory")
+    if (opt and opt.root) or not intermediate_directory then
         return autogendir
     end
 
-    -- append plat sub-directory
+    -- generate intermediate directory
     local plat = self:plat()
     if plat then
         autogendir = path.join(autogendir, plat)
     end
-
-    -- append arch sub-directory
     local arch = self:arch()
     if arch then
         autogendir = path.join(autogendir, arch)
     end
-
-    -- append mode sub-directory
-    local mode = config.get("mode")
+    local mode = config.mode()
     if mode then
         autogendir = path.join(autogendir, mode)
     end
@@ -1512,32 +1503,31 @@ function _instance:autogenfile(sourcefile, opt)
 end
 
 -- get the target directory
-function _instance:targetdir()
+function _instance:targetdir(opt)
 
     -- the target directory
     local targetdir = self:get("targetdir")
     if not targetdir then
-
-        -- get build directory
         targetdir = config.buildir()
+    end
+    -- get root directory of target
+    local intermediate_directory = self:policy("build.intermediate_directory")
+    if (opt and opt.root) or not intermediate_directory then
+        return targetdir
+    end
 
-        -- append plat sub-directory
-        local plat = self:plat()
-        if plat then
-            targetdir = path.join(targetdir, plat)
-        end
-
-        -- append arch sub-directory
-        local arch = self:arch()
-        if arch then
-            targetdir = path.join(targetdir, arch)
-        end
-
-        -- append mode sub-directory
-        local mode = config.get("mode")
-        if mode then
-            targetdir = path.join(targetdir, mode)
-        end
+    -- generate intermediate directory
+    local plat = self:plat()
+    if plat then
+        targetdir = path.join(targetdir, plat)
+    end
+    local arch = self:arch()
+    if arch then
+        targetdir = path.join(targetdir, arch)
+    end
+    local mode = config.mode()
+    if mode then
+        targetdir = path.join(targetdir, mode)
     end
     return targetdir
 end
