@@ -14,8 +14,6 @@ target("lua-cjson")
     add_defines("NDEBUG", "USE_INTERNAL_FPCONV")
     add_defines("XM_CONFIG_API_HAVE_LUA_CJSON", {public = true})
     if is_plat("windows") then
-        -- Windows sprintf()/strtod() handle NaN/inf differently. Not supported.
-        add_defines("DISABLE_INVALID_NUMBERS")
         add_defines("inline=__inline")
     end
 
