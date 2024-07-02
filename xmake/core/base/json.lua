@@ -27,25 +27,25 @@ local os    = require("base/os")
 local utils = require("base/utils")
 
 -- export null
+json.purenull = {}
+setmetatable(json.purenull, {
+    __is_json_null = true,
+    __eq = function (obj)
+        if type(obj) == "table" then
+            local mt = getmetatable(obj)
+            if mt and mt.__is_json_null then
+                return true
+            end
+        end
+        return false
+    end,
+    __tostring = function()
+        return "null"
+    end})
 if cjson then
     json.null = cjson.null
 else
-    json.null = {}
-    setmetatable(json.null, {
-        __is_json_null = true,
-        __eq = function (obj)
-            if type(obj) == "table" then
-                local mt = getmetatable(obj)
-                if mt and mt.__is_json_null then
-                    return true
-                end
-            end
-            return false
-        end,
-        __tostring = function()
-            return "null"
-        end})
-    json.purenull = json.null
+    json.null = json.purenull
 end
 
 function json._pure_kind_of(obj)
@@ -55,7 +55,7 @@ function json._pure_kind_of(obj)
     if json.is_marked_as_array(obj) then
         return "array"
     end
-    if obj == json.null then
+    if obj == json.purenull then
         return "nil"
     end
     local i = 1
@@ -218,7 +218,7 @@ function json._pure_parse(str, pos, end_delim)
         -- end of an object or array.
         return nil, pos + 1
     else
-        local literals = {["true"] = true, ["false"] = false, ["null"] = json.null}
+        local literals = {["true"] = true, ["false"] = false, ["null"] = json.purenull}
         for lit_str, lit_val in pairs(literals) do
             local lit_end = pos + #lit_str - 1
             if str:sub(pos, lit_end) == lit_str then
