@@ -10,6 +10,7 @@
 
 * [#5280](https://github.com/xmake-io/xmake/issues/5280): Add missing C++20 Modules file extension
 * [#5251](https://github.com/xmake-io/xmake/issues/5251): Update 7z/curl for windows installer
+* [#5286](https://github.com/xmake-io/xmake/issues/5286): Improve json to parse hex string
 
 ### Bugs Fixed
 
@@ -1852,6 +1853,7 @@
 
 * [#5280](https://github.com/xmake-io/xmake/issues/5280): 添加缺失的 C++20 Modules 文件扩展
 * [#5251](https://github.com/xmake-io/xmake/issues/5251): 为 windows installer 更新内置的 7z/curl
+* [#5286](https://github.com/xmake-io/xmake/issues/5286): 改进 json 支持16进制解析
 
 ### Bugs 修复
 
