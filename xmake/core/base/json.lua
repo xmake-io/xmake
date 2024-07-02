@@ -256,7 +256,11 @@ end
 -- @return              the lua table
 --
 function json.decode(jsonstr, opt)
-    local ok, luatable_or_errors = utils.trycall(cjson and cjson.decode or json._pure_decode, nil, jsonstr)
+    local decode = cjson and cjson.decode or json._pure_decode
+    if opt and opt.pure then
+        decode = json._pure_decode
+    end
+    local ok, luatable_or_errors = utils.trycall(decode, nil, jsonstr)
     if not ok then
         return nil, string.format("decode json failed, %s", luatable_or_errors)
     end
@@ -271,7 +275,11 @@ end
 -- @return              the json string
 --
 function json.encode(luatable, opt)
-    local ok, jsonstr_or_errors = utils.trycall(cjson and cjson.encode or json._pure_encode, nil, luatable)
+    local encode = cjson and cjson.encode or json._pure_encode
+    if opt and opt.pure then
+        encode = json._pure_encode
+    end
+    local ok, jsonstr_or_errors = utils.trycall(encode, nil, luatable)
     if not ok then
         return nil, string.format("encode json failed, %s", jsonstr_or_errors)
     end
