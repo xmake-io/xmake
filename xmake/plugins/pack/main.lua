@@ -126,9 +126,6 @@ function main()
         _build_targets()
     end
 
-    -- load targets
-    project.load_targets()
-
     -- do pack
     _pack_packages()
 

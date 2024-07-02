@@ -33,6 +33,7 @@ local memcache       = require("cache/memcache")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local global         = require("base/global")
+local scheduler      = require("sandbox/modules/import/core/base/scheduler")
 
 -- new an instance
 function _instance.new(name, arch, info)
@@ -236,8 +237,15 @@ end
 
 -- do check
 function _instance:check()
+    -- @see https://github.com/xmake-io/xmake/issues/4645#issuecomment-2201036943
+    -- @note avoid check it in the same time leading to deadlock if running in the coroutine
+    local lockname = tostring(self)
+    scheduler.co_lock(lockname)
+
+    -- this platform has been check?
     local checked = self:_memcache():get("checked")
     if checked ~= nil then
+        scheduler.co_unlock(lockname)
         return checked
     end
 
@@ -263,12 +271,14 @@ function _instance:check()
     end
     if #toolchains == 0 then
         self:_memcache():set("checked", false)
+        scheduler.co_unlock(lockname)
         return false, "toolchains not found!"
     end
 
     -- save valid toolchains
     config.set("__toolchains_" .. self:name() .. "_" .. self:arch(), toolchains_valid)
     self:_memcache():set("checked", true)
+    scheduler.co_unlock(lockname)
     return true
 end
 
