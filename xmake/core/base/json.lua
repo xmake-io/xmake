@@ -47,6 +47,7 @@ else
         __tostring = function()
             return "null"
         end})
+    json.purenull = json.null
 end
 
 function json._pure_kind_of(obj)
