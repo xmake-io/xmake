@@ -348,9 +348,6 @@ function main()
     -- load config first
     task.run("config", {}, {disable_dump = true})
 
-    -- load targets
-    project.load_targets()
-
     -- get tests
     local tests = {}
     local group_pattern = option.get("group")
