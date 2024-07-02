@@ -2,6 +2,22 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#5278](https://github.com/xmake-io/xmake/issues/5278): Add `build.intermediate_directory` policy to disable and custom intermediate directory
+
+### Changes
+
+* [#5280](https://github.com/xmake-io/xmake/issues/5280): Add missing C++20 Modules file extension
+* [#5251](https://github.com/xmake-io/xmake/issues/5251): Update 7z/curl for windows installer
+
+### Bugs Fixed
+
+* [#5288](https://github.com/xmake-io/xmake/issues/5288): Fix `xmake test` for unity build
+* [#5270](https://github.com/xmake-io/xmake/issues/5270): Fix pch/include for gcc/clang
+* [#5276](https://github.com/xmake-io/xmake/issues/5276): Fix find vc6
+* [#5259](https://github.com/xmake-io/xmake/issues/5259): Fix the failure of the command line completion function
+
 ## v2.9.3
 
 ### New features
@@ -1827,6 +1843,22 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#5278](https://github.com/xmake-io/xmake/issues/5278): 添加 `build.intermediate_directory` 策略去禁用中间目录生成
+
+### 改进
+
+* [#5280](https://github.com/xmake-io/xmake/issues/5280): 添加缺失的 C++20 Modules 文件扩展
+* [#5251](https://github.com/xmake-io/xmake/issues/5251): 为 windows installer 更新内置的 7z/curl
+
+### Bugs 修复
+
+* [#5288](https://github.com/xmake-io/xmake/issues/5288): 修复 `xmake test` 对 Unity Build 的支持
+* [#5270](https://github.com/xmake-io/xmake/issues/5270): 修复 gcc/clang 对 pch 的支持
+* [#5276](https://github.com/xmake-io/xmake/issues/5276): 修复查找 vc6 环境
+* [#5259](https://github.com/xmake-io/xmake/issues/5259): 修复命令补全失效问题
 
 ## v2.9.3
 
