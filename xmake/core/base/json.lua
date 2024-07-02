@@ -26,8 +26,6 @@ local io    = require("base/io")
 local os    = require("base/os")
 local utils = require("base/utils")
 
-cjson = nil
-
 -- export null
 if cjson then
     json.null = cjson.null
