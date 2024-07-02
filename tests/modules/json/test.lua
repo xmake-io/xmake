@@ -63,7 +63,7 @@ function test_pure_json_decode(t)
     t:are_equal(json_pure_decode('{"a":[], "b":[1,2], "c":{"a":1}}'), {a = {}, b = {1,2}, c = {a = 1}})
     t:are_equal(json_pure_decode('[1,"2"]'), {1, "2"})
     t:are_equal(json_pure_decode('[1,"2", {"a":1, "b":true}]'), {1, "2", {a = 1, b = true}})
---    t:are_equal(json_pure_decode('[1,0xa,0xdeadbeef, 0xffffffff,-1]'), {1, 0xa, 0xdeadbeef, 0xffffffff, -1})
+    t:are_equal(json_pure_decode('[1,0xa,0xdeadbeef, 0xffffffff,-1]'), {1, 0xa, 0xdeadbeef, 0xffffffff, -1})
 end
 
 function test_pure_json_encode(t)

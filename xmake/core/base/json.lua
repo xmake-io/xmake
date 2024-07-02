@@ -26,6 +26,8 @@ local io    = require("base/io")
 local os    = require("base/os")
 local utils = require("base/utils")
 
+cjson = nil
+
 -- export null
 if cjson then
     json.null = cjson.null
@@ -116,7 +118,12 @@ function json._pure_parse_str_val(str, pos, val)
 end
 
 function json._pure_parse_num_val(str, pos)
-    local num_str = str:match('^-?%d+%.?%d*[eE]?[+-]?%d*', pos)
+    local num_str
+    if str:sub(pos, pos + 1) == "0x" then
+        num_str = str:match('^-?0[xX][0-9a-fA-F]+', pos)
+    else
+        num_str = str:match('^-?%d+%.?%d*[eE]?[+-]?%d*', pos)
+    end
     local val = tonumber(num_str)
     if not val then
         os.raise("error parsing number at position %d", pos)
