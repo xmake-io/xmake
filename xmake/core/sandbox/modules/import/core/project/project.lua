@@ -200,12 +200,8 @@ end
 
 -- load project targets
 function sandbox_core_project.load_targets(opt)
-    local loaded = sandbox_core_project._LOADED
-    if not loaded then
-        sandbox_core_project._LOADED = true
-        sandbox_core_project._load_package_rules_for_targets()
-        sandbox_core_project._config_targets(opt)
-    end
+    sandbox_core_project._load_package_rules_for_targets()
+    sandbox_core_project._config_targets(opt)
 end
 
 -- get the filelock of the whole project directory
