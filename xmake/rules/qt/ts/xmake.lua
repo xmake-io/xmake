@@ -51,8 +51,9 @@ rule("qt.ts")
         -- get lrelease
         local lrelease = target:data("qt.ts.lrelease")
         local outputdir = target:targetdir()
-        if target:fileconfig(sourcefile_ts) and target:fileconfig(sourcefile_ts).prefixdir then
-            outputdir = path.join(target:targetdir(), target:fileconfig(sourcefile_ts).prefixdir)
+        local fileconfig = target:fileconfig(sourcefile_ts)
+        if fileconfig and fileconfig.prefixdir then
+            outputdir = path.join(target:targetdir(), fileconfig.prefixdir)
         end
         local outfile = path.join(outputdir, path.basename(sourcefile_ts) .. ".qm")
         batchcmds:mkdir(outputdir)
