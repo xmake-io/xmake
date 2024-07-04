@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.semver")
 import("core.project.config")
 import("detect.sdks.find_vstudio")
 
@@ -80,15 +81,8 @@ function main(toolchain)
     end
 
     -- check and add vs_binary_output env
-    local vs_binary = {
-        ["2003"] = true,
-        ["7.0"]  = true,
-        ["6.0"]  = true,
-        ["5.0"]  = true,
-        ["4.2"]  = true
-    }
     local vs = toolchain:config("vs")
-    if vs and vs_binary[vs] then
+    if vs and semver.is_valid(vs) and semver.compare(vs, "2005") < 0 then
         toolchain:add("runenvs", "VS_BINARY_OUTPUT", "1")
     end
 end
