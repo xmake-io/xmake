@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.semver")
 import("core.project.config")
 import("detect.sdks.find_vstudio")
 
@@ -77,6 +78,12 @@ function main(toolchain)
         if not table.contains(expect_vars, name:upper()) then
             _add_vsenv(toolchain, name, curenvs)
         end
+    end
+
+    -- check and add vs_binary_output env
+    local vs = toolchain:config("vs")
+    if vs and semver.is_valid(vs) and semver.compare(vs, "2005") < 0 then
+        toolchain:add("runenvs", "VS_BINARY_OUTPUT", "1")
     end
 end
 
