@@ -20,13 +20,11 @@
 
 rule("vala.build")
     set_extensions(".vala")
+    -- Since vala can directly compile with C files
+    -- we can add C sourcekinds
+    -- And in the end we're going to be compiling C code
+    set_sourcekinds("cc")
     on_load(function (target)
-        -- only vala source files? we need to patch c source kind for linker
-        local sourcekinds = target:sourcekinds()
-        if #sourcekinds == 0 then
-            table.insert(sourcekinds, "cc")
-        end
-
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
         target:set("policy", "build.across_targets_in_parallel", false)
 
@@ -58,81 +56,92 @@ rule("vala.build")
             target:add("sysincludedirs", path.directory(headerfile), {public = true})
         end
     end)
-
     before_buildcmd_files(function (target, batchcmds, sourcefiles_vala, opt)
+        -- Here we compile vala files into C code
+
+        -- We have to compile entire project each time
+        -- because otherwise valac can't resolve symbols
+        -- from other files, however, c files can be
+        -- incrementally built
 
         -- get valac
         import("lib.detect.find_tool")
         local valac = assert(find_tool("valac"), "valac not found!")
 
-        local sourcefiles_c = {}
         local argv = {"-C", "-d", target:autogendir()}
-        -- iterating through vala files, otherwise valac would fail when compiling multiple files
+        -- iterating through source files,
+        -- otherwise valac would fail when compiling multiple files
         for _, sourcefile_vala in ipairs(sourcefiles_vala.sourcefiles) do
-            -- get c source file for vala
-            local sourcefile_c = target:autogenfile((sourcefile_vala:gsub(".vala$", ".c")))
-            local basedir = path.directory(sourcefile_c)
-            table.insert(sourcefiles_c, sourcefile_c)
-
-            -- add objectfile
-            local objectfile = target:objectfile(sourcefile_c)
-            table.insert(target:objectfiles(), objectfile)
-
-            -- add commands
-            batchcmds:mkdir(basedir)
-            local packages = target:values("vala.packages")
-            if packages then
-                for _, package in ipairs(packages) do
-                    table.insert(argv, "--pkg")
-                    table.insert(argv, path(package))
-                end
+            -- if it's only a vala file
+            if string.match(sourcefile_vala, ".vala$") ~= nil then
+                table.insert(argv, path(sourcefile_vala))
             end
-            if target:is_binary() then
-                for _, dep in ipairs(target:orderdeps()) do
-                    if dep:is_shared() or dep:is_static() then
-                        local vapifile = dep:data("vala.vapifile")
-                        if vapifile then
-                            table.join2(argv, path(vapifile))
-                        end
+        end
+
+        -- no vala files, so exit
+        if #argv == 3 then return end
+
+        -- add commands
+        local packages = target:values("vala.packages")
+        if packages then
+            for _, package in ipairs(packages) do
+                table.insert(argv, "--pkg")
+                table.insert(argv, path(package))
+            end
+        end
+
+        if target:is_binary() then
+            for _, dep in ipairs(target:orderdeps()) do
+                if dep:is_shared() or dep:is_static() then
+                    local vapifile = dep:data("vala.vapifile")
+                    if vapifile then
+                        table.join2(argv, path(vapifile))
                     end
                 end
-            else
-                local vapifile = target:data("vala.vapifile")
-                if vapifile then
-                    table.insert(argv, path(vapifile, function (p) return "--vapi=" .. p end))
-                end
-                local headerfile = target:data("vala.headerfile")
-                if headerfile then
-                    table.insert(argv, "-H")
-                    table.insert(argv, path(headerfile))
-                end
             end
-            local vapidir = target:data("vala.vapidir")
-            if vapidir then
-                table.insert(argv, path(vapidir, function (p) return "--vapidir=" .. p end))
+        else
+            local vapifile = target:data("vala.vapifile")
+            if vapifile then
+                table.insert(argv, path(vapifile, function (p) return "--vapi=" .. p end))
             end
-            local valaflags = target:data("vala.flags")
-            if valaflags then
-                table.join2(argv, valaflags)
+            local headerfile = target:data("vala.headerfile")
+            if headerfile then
+                table.insert(argv, "-H")
+                table.insert(argv, path(headerfile))
             end
-            table.insert(argv, path(sourcefile_vala))
+        end
+
+        local vapidir = target:data("vala.vapidir")
+        if vapidir then
+            table.insert(argv, path(vapidir, function (p) return "--vapidir=" .. p end))
+        end
+
+        local valaflags = target:data("vala.flags")
+        if valaflags then
+            table.join2(argv, valaflags)
         end
 
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.vala")
         batchcmds:vrunv(valac.program, argv)
+    end)
 
-        for _, sourcefile_c in ipairs(sourcefiles_c) do
-            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.c %s", sourcefile_c)
-            batchcmds:compile(sourcefile_c, target:objectfile(sourcefile_c))
-        end
+    on_buildcmd_file(function (target, batchcmds, sourcefile_vala, opt)
+        -- Again, only vala files need special treatment
+        if string.match(sourcefile_vala, ".vala$") ~= nil then
+            local sourcefile_c = target:autogenfile((sourcefile_vala:gsub(".vala$", ".c")))
+            local basedir = path.directory(sourcefile_c)
 
-        -- add deps
-        for _, sourcefile_vala in ipairs(sourcefiles_vala.sourcefiles) do
+            batchcmds:mkdir(basedir)
+
+            local objectfile = target:objectfile(sourcefile_c)
+            table.insert(target:objectfiles(), objectfile)
+
             batchcmds:add_depfiles(sourcefile_vala)
-        end
-        for _, objectfile in ipairs(target:objectfiles()) do
             batchcmds:set_depmtime(os.mtime(objectfile))
             batchcmds:set_depcache(target:dependfile(objectfile))
+
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.c %s", sourcefile_c)
+            batchcmds:compile(sourcefile_c, objectfile, { configs = { force = { cflags = "-w" } } })
         end
     end)
 
