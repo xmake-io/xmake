@@ -78,5 +78,18 @@ function main(toolchain)
             _add_vsenv(toolchain, name, curenvs)
         end
     end
+
+    -- check and add vs_binary_output env
+    local vs_binary = {
+        ["2003"] = true,
+        ["7.0"]  = true,
+        ["6.0"]  = true,
+        ["5.0"]  = true,
+        ["4.2"]  = true
+    }
+    local vs = toolchain:config("vs")
+    if vs and vs_binary[vs] then
+        toolchain:add("runenvs", "VS_BINARY_OUTPUT", "1")
+    end
 end
 
