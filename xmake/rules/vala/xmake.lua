@@ -33,9 +33,9 @@ rule("vala.build")
         if not vapifile then
             local vapiname = target:values("vala.vapi")
             if vapiname then
-                vapifile = path.join(target:targetdir(), vapiname)
+                vapifile = path.absolute(path.join(target:targetdir(), vapiname))
             else
-                vapifile = path.join(target:targetdir(), target:name() .. ".vapi")
+                vapifile = path.absolute(path.join(target:targetdir(), target:name() .. ".vapi"))
             end
             target:data_set("vala.vapifile", vapifile)
         end
@@ -45,9 +45,9 @@ rule("vala.build")
         if not headerfile then
             local headername = target:values("vala.header")
             if headername then
-                headerfile = path.join(target:targetdir(), headername)
+                headerfile = path.absolute(path.join(target:targetdir(), headername))
             else
-                headerfile = path.join(target:targetdir(), target:name() .. ".h")
+                headerfile = path.absolute(path.join(target:targetdir(), target:name() .. ".h"))
             end
             target:data_set("vala.headerfile", headerfile)
         end
@@ -56,7 +56,7 @@ rule("vala.build")
             target:add("sysincludedirs", path.directory(headerfile), {public = true})
         end
     end)
-    before_buildcmd_files(function (target, batchcmds, sourcefiles_vala, opt)
+    before_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
         -- Here we compile vala files into C code
 
         -- We have to compile entire project each time
@@ -69,17 +69,6 @@ rule("vala.build")
         local valac = assert(find_tool("valac"), "valac not found!")
 
         local argv = {"-C", "-d", target:autogendir()}
-        -- iterating through source files,
-        -- otherwise valac would fail when compiling multiple files
-        for _, sourcefile_vala in ipairs(sourcefiles_vala.sourcefiles) do
-            -- if it's only a vala file
-            if string.match(sourcefile_vala, ".vala$") ~= nil then
-                table.insert(argv, path(sourcefile_vala))
-            end
-        end
-
-        -- no vala files, so exit
-        if #argv == 3 then return end
 
         -- add commands
         local packages = target:values("vala.packages")
@@ -111,24 +100,33 @@ rule("vala.build")
             end
         end
 
-        local vapidir = target:data("vala.vapidir")
+        local vapidir = target:values("vala.vapidir")
         if vapidir then
             table.insert(argv, path(vapidir, function (p) return "--vapidir=" .. p end))
         end
 
-        local valaflags = target:data("vala.flags")
+        local valaflags = target:values("vala.flags")
         if valaflags then
             table.join2(argv, valaflags)
+        end
+
+        -- iterating through source files,
+        -- otherwise valac would fail when compiling multiple files
+        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            -- if it's only a vala file
+            if path.extension(sourcefile) == ".vala" then
+                table.insert(argv, path(sourcefile))
+            end
         end
 
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.vala")
         batchcmds:vrunv(valac.program, argv)
     end)
 
-    on_buildcmd_file(function (target, batchcmds, sourcefile_vala, opt)
+    on_buildcmd_file(function (target, batchcmds, sourcebatch, opt)
         -- Again, only vala files need special treatment
-        if string.match(sourcefile_vala, ".vala$") ~= nil then
-            local sourcefile_c = target:autogenfile((sourcefile_vala:gsub(".vala$", ".c")))
+        if path.extension(sourcebatch) == ".vala" then
+            local sourcefile_c = target:autogenfile((sourcebatch:gsub(".vala$", ".c")))
             local basedir = path.directory(sourcefile_c)
 
             batchcmds:mkdir(basedir)
@@ -136,7 +134,7 @@ rule("vala.build")
             local objectfile = target:objectfile(sourcefile_c)
             table.insert(target:objectfiles(), objectfile)
 
-            batchcmds:add_depfiles(sourcefile_vala)
+            batchcmds:add_depfiles(sourcebatch)
             batchcmds:set_depmtime(os.mtime(objectfile))
             batchcmds:set_depcache(target:dependfile(objectfile))
 
