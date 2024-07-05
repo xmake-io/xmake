@@ -201,6 +201,10 @@ function _get_specvars(package)
     specvars.PACKAGE_WORKDIR = path.absolute(os.projectdir())
     specvars.PACKAGE_BINDIR = _translate_filepath(package, package:bindir())
     specvars.PACKAGE_OUTPUTFILE = path.absolute(package:outputfile())
+    if specvars.PACKAGE_VERSION_BUILD then
+        -- @see https://github.com/xmake-io/xmake/issues/5306
+        specvars.PACKAGE_VERSION_BUILD = specvars.PACKAGE_VERSION_BUILD:gsub(" ", "_")
+    end
     specvars.PACKAGE_INSTALLCMDS = function ()
         return _get_installcmds(package)
     end
