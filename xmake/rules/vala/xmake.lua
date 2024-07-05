@@ -112,15 +112,27 @@ rule("vala.build")
 
         -- iterating through source files,
         -- otherwise valac would fail when compiling multiple files
+        local lastmtime = 0
+        local sourcefiles = {}
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
             -- if it's only a vala file
             if path.extension(sourcefile) == ".vala" then
-                table.insert(argv, path(sourcefile))
+                local sourcefile_c = target:autogenfile((sourcefile:gsub(".vala$", ".c")))
                 batchcmds:show_progress(opt.progress, "${color.build.object}compiling.vala %s", sourcefile)
+                table.insert(argv, path(sourcefile))
+                table.insert(sourcefiles, sourcefile)
+                local sourcefile_c_mtime = os.mtime(sourcefile_c)
+                if sourcefile_c_mtime > lastmtime then
+                    lastmtime = sourcefile_c_mtime
+                end
             end
         end
 
-        batchcmds:vrunv(valac.program, argv)
+        if #sourcefiles > 0 then
+            batchcmds:vrunv(valac.program, argv)
+            batchcmds:add_depfiles(sourcefiles)
+            batchcmds:set_depmtime(lastmtime)
+        end
     end)
 
     on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
@@ -134,12 +146,12 @@ rule("vala.build")
             local objectfile = target:objectfile(sourcefile_c)
             table.insert(target:objectfiles(), objectfile)
 
+            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.c %s", sourcefile_c)
+            batchcmds:compile(sourcefile_c, objectfile, { configs = { force = { cflags = "-w" } } })
+
             batchcmds:add_depfiles(sourcefile)
             batchcmds:set_depmtime(os.mtime(objectfile))
             batchcmds:set_depcache(target:dependfile(objectfile))
-
-            batchcmds:show_progress(opt.progress, "${color.build.object}compiling.c %s", sourcefile_c)
-            batchcmds:compile(sourcefile_c, objectfile, { configs = { force = { cflags = "-w" } } })
         end
     end)
 
@@ -186,4 +198,3 @@ rule("vala")
     -- we attempt to extract symbols to the independent file and
     -- strip self-target binary if `set_symbols("debug")` and `set_strip("all")` are enabled
     add_deps("utils.symbols.extract")
-
