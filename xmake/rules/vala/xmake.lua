@@ -116,17 +116,17 @@ rule("vala.build")
             -- if it's only a vala file
             if path.extension(sourcefile) == ".vala" then
                 table.insert(argv, path(sourcefile))
+                batchcmds:show_progress(opt.progress, "${color.build.object}compiling.vala %s", sourcefile)
             end
         end
 
-        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.vala")
         batchcmds:vrunv(valac.program, argv)
     end)
 
-    on_buildcmd_file(function (target, batchcmds, sourcebatch, opt)
+    on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
         -- Again, only vala files need special treatment
-        if path.extension(sourcebatch) == ".vala" then
-            local sourcefile_c = target:autogenfile((sourcebatch:gsub(".vala$", ".c")))
+        if path.extension(sourcefile) == ".vala" then
+            local sourcefile_c = target:autogenfile((sourcefile:gsub(".vala$", ".c")))
             local basedir = path.directory(sourcefile_c)
 
             batchcmds:mkdir(basedir)
@@ -134,7 +134,7 @@ rule("vala.build")
             local objectfile = target:objectfile(sourcefile_c)
             table.insert(target:objectfiles(), objectfile)
 
-            batchcmds:add_depfiles(sourcebatch)
+            batchcmds:add_depfiles(sourcefile)
             batchcmds:set_depmtime(os.mtime(objectfile))
             batchcmds:set_depcache(target:dependfile(objectfile))
 
