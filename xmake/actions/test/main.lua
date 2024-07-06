@@ -268,7 +268,7 @@ function _run_tests(tests)
     -- do test
     local spent = os.mclock()
     print("running tests ...")
-    local report = {passed = 0, total = #ordertests}
+    local report = {passed = 0, total = #ordertests, contents = {}}
     local jobs = tonumber(option.get("jobs")) or os.default_njob()
     runjobs("run_tests", function (index, total, opt)
         local testinfo = ordertests[index]
@@ -288,8 +288,10 @@ function _run_tests(tests)
             end
             local progress = opt.progress:percent()
             local padding = maxwidth - #testinfo.name
-            cprint(progress_format .. "%s%s .................................... " .. status_color .. "%s${clear} ${bright}%0.3fs",
+            local result_output = format(progress_format .. "%s%s .................................... " .. status_color .. "%s${clear} ${bright}%0.3fs",
                 progress, testinfo.name, (" "):rep(padding), passed and "passed" or "failed", spent / 1000)
+            table.insert(report.contents, result_output)
+            cprint(result_output)
 
             -- stop it if be failed?
             if not passed then
@@ -310,6 +312,12 @@ function _run_tests(tests)
     spent = os.mclock() - spent
     local passed_rate = math.floor(report.passed * 100 / report.total)
     print("")
+    print("report of tests:")
+    if option.get("verbose") then
+        for _, report_content in ipairs(report.contents) do
+            cprint(report_content)
+        end
+    end
     cprint("${color.success}%d%%${clear} tests passed, ${color.failure}%d${clear} tests failed out of ${bright}%d${clear}, spent ${bright}%0.3fs",
         passed_rate, report.total - report.passed, report.total, spent / 1000)
     local return_zero = project.policy("test.return_zero_on_failure")
@@ -457,4 +465,3 @@ function main()
     -- unlock the whole project
     project.unlock()
 end
-
