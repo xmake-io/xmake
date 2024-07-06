@@ -53,7 +53,11 @@ rule("qt.ts")
         local outputdir = target:targetdir()
         local fileconfig = target:fileconfig(sourcefile_ts)
         if fileconfig and fileconfig.prefixdir then
-            outputdir = path.join(target:targetdir(), fileconfig.prefixdir)
+            if path.is_absolute(fileconfig.prefixdir) then
+                outputdir = fileconfig.prefixdir
+            else
+                outputdir = path.join(target:targetdir(), fileconfig.prefixdir)
+            end
         end
         local outfile = path.join(outputdir, path.basename(sourcefile_ts) .. ".qm")
         batchcmds:mkdir(outputdir)
