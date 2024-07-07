@@ -35,21 +35,14 @@ import("lib.detect.find_programver")
 -- @endcode
 --
 function main(opt)
-
-    -- init options
     opt         = opt or {}
     opt.command = opt.command or "--version"
     opt.parse   = opt.parse or function (output) return output:match("%((%d+%.?%d*%.?%d*.-)%)") end
 
-    -- find program
-    local program = find_program(opt.program or "ldc2", opt)
-
-    -- find program version
     local version = nil
+    local program = find_program(opt.program or "ldc2", opt)
     if program and opt and opt.version then
         version = find_programver(program, opt)
     end
-
-    -- ok?
     return program, version
 end

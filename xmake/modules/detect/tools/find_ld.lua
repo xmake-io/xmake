@@ -36,11 +36,7 @@ import("lib.detect.find_program")
 -- @endcode
 --
 function main(opt)
-
-    -- init options
-    opt       = opt or {}
+    opt = opt or {}
     opt.norun = true
-
-    -- find program
     return find_program(opt.program or "ld", opt)
 end
