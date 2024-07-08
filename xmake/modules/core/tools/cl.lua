@@ -77,15 +77,15 @@ function init(self)
         -- language
     ,   ["-ansi"]                   = ""
     ,   ["-std=c99"]                = "-TP" -- compile as c++ files because msvc doesn't support c99
-    ,   ["-std=c11"]                = "-std:c11" 
-    ,   ["-std=c17"]                = "-std:c17" 
-    ,   ["-std=c2x"]                = "-std:clatest" 
-    ,   ["-std=c23"]                = "-std:clatest" 
+    ,   ["-std=c11"]                = "-std:c11"
+    ,   ["-std=c17"]                = "-std:c17"
+    ,   ["-std=c2x"]                = "-std:clatest"
+    ,   ["-std=c23"]                = "-std:clatest"
     ,   ["-std=gnu99"]              = "-TP" -- compile as c++ files because msvc doesn't support c99
-    ,   ["-std=gnu11"]              = "-std:c11" 
+    ,   ["-std=gnu11"]              = "-std:c11"
     ,   ["-std=gnu17"]              = "-std:c17"
-    ,   ["-std=gnu2x"]              = "-std:clatest" 
-    ,   ["-std=gnu23"]              = "-std:clatest" 
+    ,   ["-std=gnu2x"]              = "-std:clatest"
+    ,   ["-std=gnu23"]              = "-std:clatest"
     ,   ["-std=.*"]                 = ""
 
         -- others

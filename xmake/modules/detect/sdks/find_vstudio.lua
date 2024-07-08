@@ -266,10 +266,11 @@ function _find_vstudio(opt)
         if vcvarsall and os.isfile(vcvarsall) and vsvers[VisualStudioVersion] then
 
             -- load vcvarsall
-            local vcvarsall_x86   = _load_vcvarsall(vcvarsall, VisualStudioVersion, "x86", opt)
-            local vcvarsall_x64   = _load_vcvarsall(vcvarsall, VisualStudioVersion, "x64", opt)
-            local vcvarsall_arm   = _load_vcvarsall(vcvarsall, VisualStudioVersion, "arm", opt)
-            local vcvarsall_arm64 = _load_vcvarsall(vcvarsall, VisualStudioVersion, "arm64", opt)
+            local vcvarsall_x86     = _load_vcvarsall(vcvarsall, VisualStudioVersion, "x86", opt)
+            local vcvarsall_x64     = _load_vcvarsall(vcvarsall, VisualStudioVersion, "x64", opt)
+            local vcvarsall_arm     = _load_vcvarsall(vcvarsall, VisualStudioVersion, "arm", opt)
+            local vcvarsall_arm64   = _load_vcvarsall(vcvarsall, VisualStudioVersion, "arm64", opt)
+            local vcvarsall_arm64ec = vcvarsall_arm64
 
             -- save results
             local results = {}
@@ -280,7 +281,8 @@ function _find_vstudio(opt)
                     x86 = vcvarsall_x86,
                     x64 = vcvarsall_x64,
                     arm = vcvarsall_arm,
-                    arm64 = vcvarsall_arm64
+                    arm64 = vcvarsall_arm64,
+                    arm64ec = vcvarsall_arm64ec
                 }
             }
             return results
@@ -375,10 +377,11 @@ function _find_vstudio(opt)
         if vcvarsall then
 
             -- load vcvarsall
-            local vcvarsall_x86   = _load_vcvarsall(vcvarsall, version, "x86", opt)
-            local vcvarsall_x64   = _load_vcvarsall(vcvarsall, version, "x64", opt)
-            local vcvarsall_arm   = _load_vcvarsall(vcvarsall, version, "arm", opt)
-            local vcvarsall_arm64 = _load_vcvarsall(vcvarsall, version, "arm64", opt)
+            local vcvarsall_x86     = _load_vcvarsall(vcvarsall, version, "x86", opt)
+            local vcvarsall_x64     = _load_vcvarsall(vcvarsall, version, "x64", opt)
+            local vcvarsall_arm     = _load_vcvarsall(vcvarsall, version, "arm", opt)
+            local vcvarsall_arm64   = _load_vcvarsall(vcvarsall, version, "arm64", opt)
+            local vcvarsall_arm64ec = vcvarsall_arm64
 
             -- save results
             results[vsvers[version]] = {
@@ -388,7 +391,8 @@ function _find_vstudio(opt)
                     x86 = vcvarsall_x86,
                     x64 = vcvarsall_x64,
                     arm = vcvarsall_arm,
-                    arm64 = vcvarsall_arm64
+                    arm64 = vcvarsall_arm64,
+                    arm64ec = vcvarsall_arm64ec
                 }
             }
         end
