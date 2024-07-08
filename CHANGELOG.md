@@ -5,6 +5,7 @@
 ### New features
 
 * [#5278](https://github.com/xmake-io/xmake/issues/5278): Add `build.intermediate_directory` policy to disable and custom intermediate directory
+* [#5313](https://github.com/xmake-io/xmake/issues/5313): Add windows arm/arm64ec support
 
 ### Changes
 
@@ -1849,6 +1850,7 @@
 ### 新特性
 
 * [#5278](https://github.com/xmake-io/xmake/issues/5278): 添加 `build.intermediate_directory` 策略去禁用中间目录生成
+* [#5313](https://github.com/xmake-io/xmake/issues/5313): 添加 windows arm/arm64ec 支持
 
 ### 改进
 
