@@ -49,6 +49,17 @@ function _get_buildenv(key)
     return value
 end
 
+-- get vs arch
+function _get_vsarch()
+    local arch = get_config("arch") or os.arch()
+    if arch == "x86" or arch == "i386" then return "Win32" end
+    if arch == "x86_64" then return "x64" end
+    if arch == "arm64ec" then return "ARM64EC" end
+    if arch:startswith("arm64") then return "ARM64" end
+    if arch:startswith("arm") then return "ARM" end
+    return arch
+end
+
 -- get msvc
 function _get_msvc()
     local msvc = toolchain.load("msvc")
@@ -456,7 +467,9 @@ function _build_for_msvc(opt)
     local runenvs = _get_msvc_runenvs()
     local msbuild = find_tool("msbuild", {envs = runenvs})
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    os.vexecv(msbuild.program, {slnfile, "-nologo", "-t:Build", "-m", "-p:Configuration=" .. (is_mode("debug") and "Debug" or "Release"), "-p:Platform=" .. (is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+    os.vexecv(msbuild.program, {slnfile, "-nologo", "-t:Build", "-m",
+        "-p:Configuration=" .. (is_mode("debug") and "Debug" or "Release"),
+        "-p:Platform=" .. _get_vsarch()}, {envs = runenvs})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
         os.vexecv(msbuild.program, {projfile, "/property:configuration=" .. (is_mode("debug") and "Debug" or "Release")}, {envs = runenvs})
