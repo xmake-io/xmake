@@ -110,7 +110,8 @@ function _get_cmake_system_processor()
             x64 = "AMD64",
             x86_64 = "AMD64",
             arm = "ARM",
-            arm64 = "ARM64"
+            arm64 = "ARM64",
+            arm64ec = "ARM64EC"
         }
         return archs[os.subarch()] or os.subarch()
     end
