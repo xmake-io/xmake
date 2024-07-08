@@ -100,10 +100,11 @@ end
 -- get vs arch
 function _get_vsarch(package)
     local arch = package:arch()
-    if arch == 'x86' or arch == 'i386' then return "Win32" end
-    if arch == 'x86_64' then return "x64" end
-    if arch:startswith('arm64') then return "ARM64" end
-    if arch:startswith('arm') then return "ARM" end
+    if arch == "x86" or arch == "i386" then return "Win32" end
+    if arch == "x86_64" then return "x64" end
+    if arch:startswith("arm64") then return "ARM64" end
+    if arch:startswith("arm64ec") then return "ARM64EC" end
+    if arch:startswith("arm") then return "ARM" end
     return arch
 end
 
@@ -297,7 +298,8 @@ function _get_cmake_system_processor(package)
             x64 = "AMD64",
             x86_64 = "AMD64",
             arm = "ARM",
-            arm64 = "ARM64"
+            arm64 = "ARM64",
+            arm64ec = "ARM64EC"
         }
         return archs[package:arch()] or package:arch()
     end
@@ -356,6 +358,8 @@ function _get_configs_for_windows(package, configs, opt)
             table.insert(configs, "Win32")
         elseif package:is_arch("arm64") then
             table.insert(configs, "ARM64")
+        elseif package:is_arch("arm64ec") then
+            table.insert(configs, "ARM64EC")
         elseif package:is_arch("arm.*") then
             table.insert(configs, "ARM")
         else
