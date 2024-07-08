@@ -153,7 +153,7 @@ function _insert_cross_configs(package, file, opt)
     elseif package:is_plat("windows") then
         local cpu
         local cpu_family
-        if package:is_arch("arm64") then
+        if package:is_arch("arm64", "arm64ec") then
             cpu = "aarch64"
             cpu_family = "aarch64"
         elseif package:is_arch("x86") then

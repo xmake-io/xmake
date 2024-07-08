@@ -21,7 +21,7 @@
 platform("windows")
     set_os("windows")
     set_hosts("windows")
-    set_archs("x86", "x64", "arm64")
+    set_archs("x86", "x64", "arm", "arm64", "arm64ec")
 
     set_formats("static", "$(name).lib")
     set_formats("object", "$(name).obj")

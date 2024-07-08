@@ -241,7 +241,7 @@ $ xmake f --menu
 
 ## 支持平台
 
-* Windows (x86, x64, arm64)
+* Windows (x86, x64, arm, arm64, arm64ec)
 * macOS (i386, x86_64, arm64)
 * Linux (i386, x86_64, arm, arm64, riscv, mips, 390x, sh4 ...)
 * *BSD (i386, x86_64)

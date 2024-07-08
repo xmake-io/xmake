@@ -57,7 +57,7 @@ function main(toolchain)
     toolchain:set("toolset", "mrc", "rc.exe")
     if toolchain:is_arch("x86") then
         toolchain:set("toolset", "as",  "ml.exe")
-    elseif toolchain:is_arch("arm64") then
+    elseif toolchain:is_arch("arm64", "arm64ec") then
         toolchain:set("toolset", "as",  "armasm64_msvc@armasm64.exe")
     elseif toolchain:is_arch("arm.*") then
         toolchain:set("toolset", "as",  "armasm_msvc@armasm.exe")
@@ -67,6 +67,11 @@ function main(toolchain)
     toolchain:set("toolset", "ld",  "link.exe")
     toolchain:set("toolset", "sh",  "link.exe")
     toolchain:set("toolset", "ar",  "link.exe")
+
+    -- init flags
+    if toolchain:is_arch("arm64ec") then
+        toolchain:add("cxflags", "/arm64EC")
+    end
 
     -- add vs environments
     local expect_vars = {"PATH", "LIB", "INCLUDE", "LIBPATH"}
