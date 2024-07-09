@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
-import("detect.sdks.find_ifortenv")
+import("detect.sdks.find_ifxenv")
 import("detect.sdks.find_vstudio")
 import("lib.detect.find_tool")
 
@@ -112,16 +112,16 @@ function _check_intel_on_windows(toolchain)
         return true
     end
 
-    -- find intel fortran compiler environment
-    local ifortenv = find_ifortenv()
-    if ifortenv and ifortenv.ifortvars then
-        local ifortvarsall = ifortenv.ifortvars
-        local ifortenv = ifortvarsall[toolchain:arch()]
-        if ifortenv and ifortenv.PATH and ifortenv.INCLUDE and ifortenv.LIB then
-            local tool = find_tool("ifort.exe", {force = true, envs = ifortenv, version = true})
+    -- find intel llvm c/c++ compiler environment
+    local ifxenv = find_ifxenv()
+    if ifxenv and ifxenv.ifxvars then
+        local ifxvarsall = ifxenv.ifxvars
+        local ifxenv = ifxvarsall[toolchain:arch()]
+        if ifxenv and ifxenv.PATH and ifxenv.INCLUDE and ifxenv.LIB then
+            local tool = find_tool("ifx.exe", {force = true, envs = ifxenv, version = true})
             if tool then
-                cprint("checking for Intel Fortran Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
-                toolchain:config_set("varsall", ifortvarsall)
+                cprint("checking for Intel LLVM Fortran Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
+                toolchain:config_set("varsall", ifxvarsall)
                 toolchain:configs_save()
                 return _check_vstudio(toolchain)
             end
@@ -131,18 +131,18 @@ end
 
 -- check intel on linux
 function _check_intel_on_linux(toolchain)
-    local ifortenv = toolchain:config("ifortenv")
-    if ifortenv then
+    local ifxenv = toolchain:config("ifxenv")
+    if ifxenv then
         return true
     end
-    ifortenv = find_ifortenv()
-    if ifortenv then
+    ifxenv = find_ifxenv()
+    if ifxenv then
         local ldname = is_host("macosx") and "DYLD_LIBRARY_PATH" or "LD_LIBRARY_PATH"
-        local tool = find_tool("ifort", {force = true, envs = {[ldname] = ifortenv.libdir}, paths = ifortenv.bindir})
+        local tool = find_tool("ifx", {force = true, envs = {[ldname] = ifxenv.libdir}, paths = ifxenv.bindir})
         if tool then
             cprint("checking for Intel Fortran Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
-            toolchain:config_set("ifortenv", ifortenv)
-            toolchain:config_set("bindir", ifortenv.bindir)
+            toolchain:config_set("ifxenv", ifxenv)
+            toolchain:config_set("bindir", ifxenv.bindir)
             toolchain:configs_save()
             return true
         end
@@ -158,5 +158,4 @@ function main(toolchain)
         return _check_intel_on_linux(toolchain)
     end
 end
-
 

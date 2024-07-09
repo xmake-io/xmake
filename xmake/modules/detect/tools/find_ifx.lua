@@ -15,14 +15,14 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_icx.lua
+-- @file        find_ifx.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find icx
+-- find ifx
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
@@ -30,8 +30,8 @@ import("lib.detect.find_programver")
 --
 -- @code
 --
--- local icx = find_icx()
--- local icx, version, hintname = find_icx({program = "icx", version = true})
+-- local ifx = find_ifx()
+-- local ifx, version, hintname = find_ifx({program = "ifx", version = true})
 --
 -- @endcode
 --
