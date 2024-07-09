@@ -19,5 +19,5 @@
 --
 
 -- imports
-inherit("detect.tools.clang.has_flags")
+inherit("detect.tools.ifort.has_flags")
 
