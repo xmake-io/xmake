@@ -89,7 +89,7 @@ end
 
 -- check the visual studio
 function _check_vstudio(toolchain)
-    local vs, cl = _check_vsenv(toolchain)
+    local vs = _check_vsenv(toolchain)
     if vs then
         if toolchain:is_global() then
             config.set("vs", vs, {force = true, readonly = true})
@@ -97,9 +97,6 @@ function _check_vstudio(toolchain)
         toolchain:config_set("vs", vs)
         toolchain:configs_save()
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
-        if cl and cl.version then
-            cprint("checking for LLVM Clang C/C++ Compiler (%s) version ... ${color.success}%s", toolchain:arch(), cl.version)
-        end
     else
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())
     end

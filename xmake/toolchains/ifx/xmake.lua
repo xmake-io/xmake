@@ -15,32 +15,21 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_icx.lua
+-- @file        xmake.lua
 --
 
--- imports
-import("lib.detect.find_program")
-import("lib.detect.find_programver")
+-- define toolchain
+toolchain("ifx")
 
--- find icx
---
--- @param opt   the argument options, e.g. {version = true}
---
--- @return      program, version
---
--- @code
---
--- local icx = find_icx()
--- local icx, version, hintname = find_icx({program = "icx", version = true})
---
--- @endcode
---
-function main(opt)
-    opt = opt or {}
-    local program = find_program(opt.program or "icx", opt)
-    local version = nil
-    if program and opt.version then
-        version = find_programver(program, opt)
-    end
-    return program, version
-end
+    -- set homepage
+    set_homepage("https://www.intel.com/content/www/us/en/developer/articles/tool/oneapi-standalone-components.html#fortran")
+    set_description("Intel LLVM Fortran Compiler")
+
+    -- mark as standalone toolchain
+    set_kind("standalone")
+
+    -- check toolchain
+    on_check("check")
+
+    -- on load
+    on_load("load")

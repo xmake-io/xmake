@@ -15,32 +15,9 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_icx.lua
+-- @file        has_flags.lua
 --
 
 -- imports
-import("lib.detect.find_program")
-import("lib.detect.find_programver")
+inherit("detect.tools.ifort.has_flags")
 
--- find icx
---
--- @param opt   the argument options, e.g. {version = true}
---
--- @return      program, version
---
--- @code
---
--- local icx = find_icx()
--- local icx, version, hintname = find_icx({program = "icx", version = true})
---
--- @endcode
---
-function main(opt)
-    opt = opt or {}
-    local program = find_program(opt.program or "icx", opt)
-    local version = nil
-    if program and opt.version then
-        version = find_programver(program, opt)
-    end
-    return program, version
-end
