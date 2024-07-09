@@ -37,7 +37,7 @@ import("lib.detect.find_programver")
 --
 function main(opt)
     opt = opt or {}
-    local program = find_program(opt.program or "icx", opt)
+    local program = find_program(opt.program or "ifx", opt)
     local version = nil
     if program and opt.version then
         version = find_programver(program, opt)

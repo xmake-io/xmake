@@ -19,11 +19,11 @@
 --
 
 -- define toolchain
-toolchain("icx")
+toolchain("ifx")
 
     -- set homepage
-    set_homepage("https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler.html")
-    set_description("Intel LLVM C/C++ Compiler")
+    set_homepage("https://www.intel.com/content/www/us/en/developer/articles/tool/oneapi-standalone-components.html#fortran")
+    set_description("Intel LLVM Fortran Compiler")
 
     -- mark as standalone toolchain
     set_kind("standalone")
