@@ -79,27 +79,16 @@ end
 function _load_intel_on_windows(toolchain)
 
     -- set toolset
-    if toolchain:is_plat("windows") then
-        toolchain:set("toolset", "cc", "ifx.exe")
-        toolchain:set("toolset", "cxx", "ifx.exe")
-        toolchain:set("toolset", "mrc", "rc.exe")
-        if toolchain:is_arch("x64") then
-            toolchain:set("toolset", "as",  "ml64.exe")
-        else
-            toolchain:set("toolset", "as",  "ml.exe")
-        end
-        toolchain:set("toolset", "ld",  "link.exe")
-        toolchain:set("toolset", "sh",  "link.exe")
-        toolchain:set("toolset", "ar",  "link.exe")
+    toolchain:set("toolset", "fc", "ifx.exe")
+    toolchain:set("toolset", "mrc", "rc.exe")
+    if toolchain:is_arch("x64") then
+        toolchain:set("toolset", "as",  "ml64.exe")
     else
-        toolchain:set("toolset", "cc", "ifx")
-        toolchain:set("toolset", "cxx", "icpx", "ifx")
-        toolchain:set("toolset", "ld", "icpx", "ifx")
-        toolchain:set("toolset", "sh", "icpx", "ifx")
-        toolchain:set("toolset", "ar", "ar")
-        toolchain:set("toolset", "strip", "strip")
-        toolchain:set("toolset", "as", "ifx")
+        toolchain:set("toolset", "as",  "ml.exe")
     end
+    toolchain:set("toolset", "fcld",  "ifx.exe")
+    toolchain:set("toolset", "fcsh",  "ifx.exe")
+    toolchain:set("toolset", "ar",  "link.exe")
 
     -- add vs/ifx environments
     local expect_vars = {"PATH", "LIB", "INCLUDE", "LIBPATH"}
