@@ -960,6 +960,8 @@ static __tb_inline__ tb_char_t const* xm_engine_xmake_arch()
     arch = "x86_64";
 #elif defined(TB_ARCH_x86)
     arch = "i386";
+#elif defined(TB_ARCH_ARM64)
+    arch = "arm64";
 #else
     arch = TB_ARCH_STRING;
 #endif
