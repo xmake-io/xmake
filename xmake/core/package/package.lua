@@ -2397,6 +2397,14 @@ function _instance:_generate_build_configs(configs, opt)
         configs.ldflags = nil
         configs.shflags = nil
     end
+
+    -- check links for library
+    if self:is_library() and not self:is_headeronly() then
+        local links = table.wrap(configs.links)
+        if #links == 0 then
+            os.raise("package(%s): links not found!", self:name())
+        end
+    end
     return configs
 end
 
