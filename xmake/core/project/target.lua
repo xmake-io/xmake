@@ -1666,11 +1666,13 @@ function _instance:installdir(...)
             installdir = installdir:trim()
         end
     end
-    local prefixdir = self:prefixdir()
-    if prefixdir then
-        installdir = path.join(installdir, prefixdir)
+    if installdir then
+        local prefixdir = self:prefixdir()
+        if prefixdir then
+            installdir = path.join(installdir, prefixdir)
+        end
+        return path.normalize(path.join(installdir, ...))
     end
-    return path.normalize(path.join(installdir, ...))
 end
 
 -- get package directory

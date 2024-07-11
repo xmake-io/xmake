@@ -22,16 +22,14 @@
 import("core.base.option")
 import("lib.detect.find_file")
 
--- get install directory
-function _get_installdir(target)
-    local installdir = assert(target:installdir(), "please use `xmake install -o installdir` or `set_installdir` to set install directory on windows.")
-    return installdir
+-- check install directory
+function _check_installdir(installdir)
+    return assert(installdir, "please use `xmake install -o installdir` or `set_installdir` to set install directory on windows.")
 end
 
 -- install headers
 function _install_headers(target, opt)
-    local installdir = _get_installdir(target)
-    local includedir = path.join(installdir, opt and opt.includedir or "include")
+    local includedir = _check_installdir(target:includedir())
     os.mkdir(includedir)
     local srcheaders, dstheaders = target:headerfiles(includedir, {installonly = true})
     if srcheaders and dstheaders then
@@ -115,8 +113,7 @@ end
 function install_shared(target, opt)
 
     -- install dll library to the binary directory
-    local installdir = _get_installdir(target)
-    local binarydir = path.join(installdir, opt and opt.bindir or "bin")
+    local binarydir = _check_installdir(target:bindir())
     os.mkdir(binarydir)
     os.vcp(target:targetfile(), binarydir)
     os.trycp(target:symbolfile(), binarydir)
@@ -124,7 +121,7 @@ function install_shared(target, opt)
     -- install *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
     local targetfile = target:targetfile()
-    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
+    local librarydir = _check_installdir(target:libdir())
     local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib"))
     if os.isfile(targetfile_lib) then
         os.mkdir(librarydir)
@@ -142,8 +139,7 @@ end
 function install_static(target, opt)
 
     -- install library
-    local installdir = _get_installdir(target)
-    local librarydir = path.join(installdir, opt and opt.libdir or "lib")
+    local librarydir = _check_installdir(target:libdir())
     os.mkdir(librarydir)
     os.vcp(target:targetfile(), librarydir)
     os.trycp(target:symbolfile(), librarydir)

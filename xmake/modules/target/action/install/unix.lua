@@ -23,7 +23,7 @@ import("core.base.option")
 
 -- install headers
 function _install_headers(target, opt)
-    local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
+    local includedir = target:includedir()
     os.mkdir(includedir)
     local srcheaders, dstheaders = target:headerfiles(includedir, {installonly = true})
     if srcheaders and dstheaders then
@@ -81,12 +81,12 @@ end
 function install_binary(target, opt)
 
     -- install binary
-    local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
+    local binarydir = target:bindir()
     os.mkdir(binarydir)
     os.vcp(target:targetfile(), binarydir)
 
     -- install libraries
-    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
+    local librarydir = target:libdir()
     os.mkdir(librarydir)
 
     -- install the dependent shared (*.so) target
@@ -110,7 +110,7 @@ end
 function install_shared(target, opt)
 
     -- install libraries
-    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
+    local librarydir = target:libdir()
     os.mkdir(librarydir)
     local targetfile = target:targetfile()
     if os.islink(targetfile) then
@@ -142,7 +142,7 @@ end
 function install_static(target, opt)
 
     -- install libraries
-    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
+    local librarydir = target:libdir()
     os.mkdir(librarydir)
     os.vcp(target:targetfile(), librarydir)
 
