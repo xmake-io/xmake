@@ -130,9 +130,59 @@ function _get_all_depends_by_objdump(binaryfile, opt)
     return depends
 end
 
+-- $ldd ./build/linux/x86_64/release/test
+--	linux-vdso.so.1 (0x00007ffc51fdd000)
+--	libfoo.so => /mnt/xmake/tests/projects/c/shared_library/./build/linux/x86_64/release/libfoo.so (0x00007fe241233000)
+--	libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00007fe240fca000)
+--	libm.so.6 => /lib64/libm.so.6 (0x00007fe240ee7000)
+--	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007fe240eba000)
+--	libc.so.6 => /lib64/libc.so.6 (0x00007fe240ccd000)
+--	/lib64/ld-linux-x86-64.so.2 (0x00007fe24123a000)
+--
 function _get_all_depends_by_ldd(binaryfile, opt)
+    local plat = opt.plat or os.host()
+    local arch = opt.arch or os.arch()
+    if plat ~= "linux" then
+        return
+    end
+    local depends
+    local cachekey = "utils.symbols.depend"
+    local ldd = find_tool("ldd", {cachekey = cachekey})
+    if ldd then
+        local binarydir = path.directory(binaryfile)
+        local result = try { function () return os.iorunv(ldd.program, {binaryfile}) end }
+        if result then
+            for _, line in ipairs(result:split("\n")) do
+                line = line:split("=>")[2] or line
+                line = line:gsub("%(.+%)", ""):trim()
+                local filename = line:match(".-%.so$") or line:match(".-%.so%.%d+")
+                if filename then
+                    filename = filename:trim()
+                    local dependfile
+                    if os.isfile(filename) then
+                        dependfile = filename
+                    elseif os.isfile(path.join(binarydir, filename)) then
+                        dependfile = path.join(binarydir, filename)
+                    end
+                    if dependfile then
+                        depends = depends or {}
+                        table.insert(depends, path.absolute(dependfile))
+                    end
+                end
+            end
+        end
+    end
+    return depends
 end
 
+-- $ otool -L build/iphoneos/arm64/release/test
+-- build/iphoneos/arm64/release/test:
+--        @rpath/libfoo.dylib (compatibility version 0.0.0, current version 0.0.0)
+--        /System/Library/Frameworks/Foundation.framework/Foundation (compatibility version 300.0.0, current version 2048.1.101)
+--        /usr/lib/libobjc.A.dylib (compatibility version 1.0.0, current version 228.0.0)
+--        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 1600.151.0)
+--        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1336.0.0)
+--
 function _get_all_depends_by_otool(binaryfile, opt)
     local plat = opt.plat or os.host()
     local arch = opt.arch or os.arch()
@@ -147,9 +197,9 @@ function _get_all_depends_by_otool(binaryfile, opt)
         local result = try { function () return os.iorunv(otool.program, {"-L", binaryfile}) end }
         if result then
             for _, line in ipairs(result:split("\n")) do
-                line = line:trim()
                 local filename = line:match(".-%.dylib") or line:match(".-%.framework")
                 if filename then
+                    filename = filename:trim()
                     local dependfile
                     if os.exists(filename) then
                         dependfile = filename
@@ -175,11 +225,11 @@ end
 function main(binaryfile, opt)
     opt = opt or {}
     local dumpers = {
-        _get_all_depends_by_objdump
+--        _get_all_depends_by_objdump
     }
     if is_host("windows") then
         table.insert(dumpers, _get_all_depends_by_dumpbin)
-    elseif is_host("ldd") then
+    elseif is_host("linux") then
         table.insert(dumpers, _get_all_depends_by_ldd)
     elseif is_host("macosx") then
         table.insert(dumpers, _get_all_depends_by_otool)
