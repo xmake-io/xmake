@@ -142,7 +142,7 @@ end
 function _get_all_depends_by_ldd(binaryfile, opt)
     local plat = opt.plat or os.host()
     local arch = opt.arch or os.arch()
-    if plat ~= "linux" then
+    if plat ~= "linux" and plat ~= "bsd" then
         return
     end
     local depends
@@ -229,7 +229,7 @@ function main(binaryfile, opt)
     }
     if is_host("windows") then
         table.insert(dumpers, _get_all_depends_by_dumpbin)
-    elseif is_host("linux") then
+    elseif is_host("linux", "bsd") then
         table.insert(dumpers, _get_all_depends_by_ldd)
     elseif is_host("macosx") then
         table.insert(dumpers, _get_all_depends_by_otool)
