@@ -793,10 +793,10 @@ function _add_target_optimization(cmakelists, target)
     local flags_msvc =
     {
         none        = "$<$<CONFIG:Debug>:-Od>"
-    ,   faster      = "$<$<CONFIG:Release>:-O2>"
-    ,   fastest     = "$<$<CONFIG:Release>:-Ox -fp:fast>"
+    ,   faster      = "$<$<CONFIG:Release>:-Ox>"
+    ,   fastest     = "$<$<CONFIG:Release>:-O2>"
     ,   smallest    = "$<$<CONFIG:Release>:-O1>"
-    ,   aggressive  = "$<$<CONFIG:Release>:-Ox -fp:fast>"
+    ,   aggressive  = "$<$<CONFIG:Release>:-O2>"
     }
     local optimization = target:get("optimize")
     if optimization then
