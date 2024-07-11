@@ -225,7 +225,7 @@ end
 function main(binaryfile, opt)
     opt = opt or {}
     local dumpers = {
---        _get_all_depends_by_objdump
+        _get_all_depends_by_objdump
     }
     if is_host("windows") then
         table.insert(dumpers, _get_all_depends_by_dumpbin)
