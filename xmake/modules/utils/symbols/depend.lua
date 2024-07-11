@@ -20,19 +20,47 @@
 
 -- imports
 import("core.base.option")
+import("core.tool.toolchain")
 import("lib.detect.find_tool")
 
 function _get_all_depends_by_dumpbin(binaryfile, opt)
-    local dumpbin = find_tool("dumpbin")
-    if dumpbin then
-        local depends = try { function () return os.iorunv(dumpbin.program, {"/dependent", "/nologo", objectfile}) end }
+    local depends
+    local plat = opt.plat or os.host()
+    local arch = opt.arch or os.arch()
+    local msvc = toolchain.load("msvc", {plat = plat, arch = arch})
+    if msvc:check() then
+        local dumpbin = find_tool("dumpbin", {cachekey = "utils.symbols.depend", envs = msvc:runenvs()})
+        if dumpbin then
+            local binarydir = path.directory(binaryfile)
+            local result = try { function () return os.iorunv(dumpbin.program, {"/dependents", "/nologo", binaryfile}) end }
+            if result then
+                for _, line in ipairs(result:split("\n")) do
+                    line = line:trim()
+                    if line:endswith(".dll") then
+                        local dependfile
+                        if os.isfile(line) then
+                            dependfile = line
+                        elseif os.isfile(path.join(binarydir, line)) then
+                            dependfile = path.join(binarydir, line)
+                        end
+                        if dependfile then
+                            depends = depends or {}
+                            table.insert(depends, path.absolute(dependfile))
+                        end
+                    end
+                end
+            end
+        end
     end
+    return depends
 end
 
 function main(binaryfile, opt)
+    opt = opt or {}
     local depends
     if is_host("windows") then
         depends = _get_all_depends_by_dumpbin(binaryfile, opt)
     end
     return depends
 end
+
