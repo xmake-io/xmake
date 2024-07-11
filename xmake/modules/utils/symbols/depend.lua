@@ -175,6 +175,52 @@ function _get_all_depends_by_ldd(binaryfile, opt)
     return depends
 end
 
+-- $ readelf -d build/linux/x86_64/release/test
+--
+-- Dynamic section at offset 0x2db8 contains 29 entries:
+--  Tag        Type                         Name/Value
+-- 0x0000000000000001 (NEEDED)             Shared library: [libfoo.so]
+-- 0x0000000000000001 (NEEDED)             Shared library: [libstdc++.so.6]
+-- 0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]
+-- 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]
+-- 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+-- 0x000000000000001d (RUNPATH)            Library runpath: [$ORIGIN]
+function _get_all_depends_by_readelf(binaryfile, opt)
+    local plat = opt.plat or os.host()
+    local arch = opt.arch or os.arch()
+    if plat ~= "linux" and plat ~= "bsd" and plat ~= "android" and plat ~= "cross" then
+        return
+    end
+    local depends
+    local cachekey = "utils.symbols.depend"
+    local readelf = find_tool("readelf", {cachekey = cachekey})
+    if readelf then
+        local binarydir = path.directory(binaryfile)
+        local result = try { function () return os.iorunv(readelf.program, {"-d", binaryfile}) end }
+        if result then
+            for _, line in ipairs(result:split("\n")) do
+                if line:find("NEEDED", 1, true) then
+                    local filename = line:match("Shared library: %[(.-)%]")
+                    if filename then
+                        filename = filename:trim()
+                        local dependfile
+                        if os.isfile(filename) then
+                            dependfile = filename
+                        elseif os.isfile(path.join(binarydir, filename)) then
+                            dependfile = path.join(binarydir, filename)
+                        end
+                        if dependfile then
+                            depends = depends or {}
+                            table.insert(depends, path.absolute(dependfile))
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return depends
+end
+
 -- $ otool -L build/iphoneos/arm64/release/test
 -- build/iphoneos/arm64/release/test:
 --        @rpath/libfoo.dylib (compatibility version 0.0.0, current version 0.0.0)
@@ -225,14 +271,15 @@ end
 function main(binaryfile, opt)
     opt = opt or {}
     local dumpers = {
-        _get_all_depends_by_objdump
+        _get_all_depends_by_objdump,
+        _get_all_depends_by_readelf
     }
     if is_host("windows") then
-        table.insert(dumpers, _get_all_depends_by_dumpbin)
+        table.insert(dumpers, 2, _get_all_depends_by_dumpbin)
     elseif is_host("linux", "bsd") then
-        table.insert(dumpers, _get_all_depends_by_ldd)
+        table.insert(dumpers, 1, _get_all_depends_by_ldd)
     elseif is_host("macosx") then
-        table.insert(dumpers, _get_all_depends_by_otool)
+        table.insert(dumpers, 1, _get_all_depends_by_otool)
     end
     for _, dump in ipairs(dumpers) do
         local depends = dump(binaryfile, opt)
