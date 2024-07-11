@@ -55,12 +55,50 @@ function _get_all_depends_by_dumpbin(binaryfile, opt)
     return depends
 end
 
-function main(binaryfile, opt)
-    opt = opt or {}
+function _get_all_depends_by_objdump(binaryfile, opt)
     local depends
-    if is_host("windows") then
-        depends = _get_all_depends_by_dumpbin(binaryfile, opt)
+    local cachekey = "utils.symbols.depend"
+    local objdump = find_tool("llvm-objdump", {cachekey = cachekey}) or find_tool("objdump", {cachekey = cachekey})
+    if objdump then
+        local binarydir = path.directory(binaryfile)
+        local result = try { function () return os.iorunv(objdump.program, {"-p", binaryfile}) end }
+        if result then
+            for _, line in ipairs(result:split("\n")) do
+                line = line:trim()
+                if line:startswith("DLL Name:") then
+                    local filename = line:split(":")[2]:trim()
+                    if filename:endswith(".dll") then
+                        local dependfile
+                        if os.isfile(filename) then
+                            dependfile = line
+                        elseif os.isfile(path.join(binarydir, filename)) then
+                            dependfile = path.join(binarydir, filename)
+                        end
+                        if dependfile then
+                            depends = depends or {}
+                            table.insert(depends, path.absolute(dependfile))
+                        end
+                    end
+                end
+            end
+        end
     end
     return depends
+end
+
+function main(binaryfile, opt)
+    opt = opt or {}
+    local dumpers = {
+        _get_all_depends_by_objdump
+    }
+    if is_host("windows") then
+        table.insert(dumpers, _get_all_depends_by_dumpbin)
+    end
+    for _, dump in ipairs(dumpers) do
+        local depends = dump(binaryfile, opt)
+        if depends then
+            return depends
+        end
+    end
 end
 
