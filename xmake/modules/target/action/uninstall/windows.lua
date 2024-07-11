@@ -20,7 +20,7 @@
 
 -- uninstall headers
 function _uninstall_headers(target, opt)
-    local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
+    local includedir = target:includedir()
     local _, dstheaders = target:headerfiles(includedir, {installonly = true})
     for _, dstheader in ipairs(dstheaders) do
         os.vrm(dstheader)
@@ -54,7 +54,7 @@ end
 function uninstall_binary(target, opt)
 
     -- remove the target file
-    local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
+    local binarydir = target:bindir()
     os.vrm(path.join(binarydir, path.filename(target:targetfile())))
     os.tryrm(path.join(binarydir, path.filename(target:symbolfile())))
 
@@ -75,14 +75,14 @@ end
 function uninstall_shared(target, opt)
 
     -- remove the target file
-    local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
+    local binarydir = target:bindir()
     os.vrm(path.join(binarydir, path.filename(target:targetfile())))
     os.tryrm(path.join(binarydir, path.filename(target:symbolfile())))
 
     -- remove *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
     local targetfile = target:targetfile()
-    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
+    local librarydir = target:libdir()
     os.vrm(path.join(librarydir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")))
 
     -- remove headers from the include directory
@@ -96,7 +96,7 @@ end
 function uninstall_static(target, opt)
 
     -- remove the target file
-    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
+    local librarydir = target:libdir()
     os.vrm(path.join(librarydir, path.filename(target:targetfile())))
     os.tryrm(path.join(librarydir, path.filename(target:symbolfile())))
 

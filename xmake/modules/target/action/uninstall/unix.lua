@@ -23,7 +23,7 @@ import("private.action.clean.remove_files")
 
 -- uninstall headers
 function _uninstall_headers(target, opt)
-    local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
+    local includedir = target:includedir()
     local _, dstheaders = target:headerfiles(includedir, {installonly = true})
     for _, dstheader in ipairs(dstheaders) do
         remove_files(dstheader, {emptydir = true})
@@ -69,12 +69,12 @@ end
 function uninstall_binary(target, opt)
 
     -- remove the target file
-    local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
+    local binarydir = target:bindir()
     os.vrm(path.join(binarydir, path.filename(target:targetfile())))
 
     -- remove the dependent shared (*.so) target
     -- @see https://github.com/xmake-io/xmake/issues/961
-    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
+    local librarydir = target:libdir()
     for _, dep in ipairs(target:orderdeps()) do
         if dep:kind() == "shared" then
             os.vrm(path.join(librarydir, path.filename(dep:targetfile())))
@@ -90,7 +90,7 @@ end
 function uninstall_shared(target, opt)
 
     -- remove the target file
-    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
+    local librarydir = target:libdir()
     local targetfile = path.join(librarydir, path.filename(target:targetfile()))
     if os.islink(targetfile) then
         local targetfile_with_soname = os.readlink(targetfile)
@@ -119,7 +119,7 @@ end
 function uninstall_static(target, opt)
 
     -- remove the target file
-    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
+    local librarydir = target:libdir()
     os.vrm(path.join(librarydir, path.filename(target:targetfile())))
 
     -- remove headers from the include directory
