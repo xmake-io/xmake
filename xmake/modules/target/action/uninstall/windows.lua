@@ -54,51 +54,51 @@ end
 function uninstall_binary(target, opt)
 
     -- remove the target file
-    local binarydir = target:bindir()
-    os.vrm(path.join(binarydir, path.filename(target:targetfile())))
-    os.tryrm(path.join(binarydir, path.filename(target:symbolfile())))
+    local bindir = target:bindir()
+    os.vrm(path.join(bindir, path.filename(target:targetfile())))
+    os.tryrm(path.join(bindir, path.filename(target:symbolfile())))
 
     -- remove the dependent shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/961
     for _, dep in ipairs(target:orderdeps()) do
         if dep:kind() == "shared" then
-            os.vrm(path.join(binarydir, path.filename(dep:targetfile())))
+            os.vrm(path.join(bindir, path.filename(dep:targetfile())))
         end
-        _uninstall_shared_for_packages(dep, binarydir)
+        _uninstall_shared_for_packages(dep, bindir)
     end
 
     -- uninstall shared libraries for packages
-    _uninstall_shared_for_packages(target, binarydir)
+    _uninstall_shared_for_packages(target, bindir)
 end
 
 -- uninstall shared library
 function uninstall_shared(target, opt)
 
     -- remove the target file
-    local binarydir = target:bindir()
-    os.vrm(path.join(binarydir, path.filename(target:targetfile())))
-    os.tryrm(path.join(binarydir, path.filename(target:symbolfile())))
+    local bindir = target:bindir()
+    os.vrm(path.join(bindir, path.filename(target:targetfile())))
+    os.tryrm(path.join(bindir, path.filename(target:symbolfile())))
 
     -- remove *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
     local targetfile = target:targetfile()
-    local librarydir = target:libdir()
-    os.vrm(path.join(librarydir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")))
+    local libdir = target:libdir()
+    os.vrm(path.join(libdir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")))
 
     -- remove headers from the include directory
     _uninstall_headers(target, opt)
 
     -- uninstall shared libraries for packages
-    _uninstall_shared_for_packages(target, binarydir)
+    _uninstall_shared_for_packages(target, bindir)
 end
 
 -- uninstall static library
 function uninstall_static(target, opt)
 
     -- remove the target file
-    local librarydir = target:libdir()
-    os.vrm(path.join(librarydir, path.filename(target:targetfile())))
-    os.tryrm(path.join(librarydir, path.filename(target:symbolfile())))
+    local libdir = target:libdir()
+    os.vrm(path.join(libdir, path.filename(target:targetfile())))
+    os.tryrm(path.join(libdir, path.filename(target:symbolfile())))
 
     -- remove headers from the include directory
     _uninstall_headers(target, opt)

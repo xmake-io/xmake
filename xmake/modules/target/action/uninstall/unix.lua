@@ -69,38 +69,38 @@ end
 function uninstall_binary(target, opt)
 
     -- remove the target file
-    local binarydir = target:bindir()
-    os.vrm(path.join(binarydir, path.filename(target:targetfile())))
+    local bindir = target:bindir()
+    os.vrm(path.join(bindir, path.filename(target:targetfile())))
 
     -- remove the dependent shared (*.so) target
     -- @see https://github.com/xmake-io/xmake/issues/961
-    local librarydir = target:libdir()
+    local libdir = target:libdir()
     for _, dep in ipairs(target:orderdeps()) do
         if dep:kind() == "shared" then
-            os.vrm(path.join(librarydir, path.filename(dep:targetfile())))
+            os.vrm(path.join(libdir, path.filename(dep:targetfile())))
         end
-        _uninstall_shared_for_packages(dep, librarydir)
+        _uninstall_shared_for_packages(dep, libdir)
     end
 
     -- uninstall shared libraries for packages
-    _uninstall_shared_for_packages(target, librarydir)
+    _uninstall_shared_for_packages(target, libdir)
 end
 
 -- uninstall shared library
 function uninstall_shared(target, opt)
 
     -- remove the target file
-    local librarydir = target:libdir()
-    local targetfile = path.join(librarydir, path.filename(target:targetfile()))
+    local libdir = target:libdir()
+    local targetfile = path.join(libdir, path.filename(target:targetfile()))
     if os.islink(targetfile) then
         local targetfile_with_soname = os.readlink(targetfile)
         if not path.is_absolute(targetfile_with_soname) then
-            targetfile_with_soname = path.join(librarydir, targetfile_with_soname)
+            targetfile_with_soname = path.join(libdir, targetfile_with_soname)
         end
         if os.islink(targetfile_with_soname) then
             local targetfile_with_version = os.readlink(targetfile_with_soname)
             if not path.is_absolute(targetfile_with_version) then
-                targetfile_with_version = path.join(librarydir, targetfile_with_version)
+                targetfile_with_version = path.join(libdir, targetfile_with_version)
             end
             os.vrm(targetfile_with_version)
         end
@@ -112,15 +112,15 @@ function uninstall_shared(target, opt)
     _uninstall_headers(target, opt)
 
     -- uninstall shared libraries for packages
-    _uninstall_shared_for_packages(target, librarydir)
+    _uninstall_shared_for_packages(target, libdir)
 end
 
 -- uninstall static library
 function uninstall_static(target, opt)
 
     -- remove the target file
-    local librarydir = target:libdir()
-    os.vrm(path.join(librarydir, path.filename(target:targetfile())))
+    local libdir = target:libdir()
+    os.vrm(path.join(libdir, path.filename(target:targetfile())))
 
     -- remove headers from the include directory
     _uninstall_headers(target, opt)

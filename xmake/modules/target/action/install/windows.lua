@@ -83,10 +83,10 @@ function install_binary(target, opt)
 
     -- install binary
     local installdir = _get_installdir(target)
-    local binarydir = path.join(installdir, opt and opt.bindir or "bin")
-    os.mkdir(binarydir)
-    os.vcp(target:targetfile(), binarydir)
-    os.trycp(target:symbolfile(), binarydir)
+    local bindir = path.join(installdir, opt and opt.bindir or "bin")
+    os.mkdir(bindir)
+    os.vcp(target:targetfile(), bindir)
+    os.trycp(target:symbolfile(), bindir)
 
     -- install the dependent shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/961
@@ -96,40 +96,40 @@ function install_binary(target, opt)
             local depfile = dep:targetfile()
             if os.isfile(depfile) then
                 if not _g.installed_dllfiles[depfile] then
-                    os.vcp(depfile, binarydir)
+                    os.vcp(depfile, bindir)
                     _g.installed_dllfiles[depfile] = true
                 end
             end
         end
         -- install all shared libraries in packages in all deps
-        _install_shared_for_packages(dep, binarydir)
+        _install_shared_for_packages(dep, bindir)
     end
 
     -- install shared libraries for all packages
-    _install_shared_for_packages(target, binarydir)
+    _install_shared_for_packages(target, bindir)
 end
 
 -- install shared library
 function install_shared(target, opt)
 
     -- install dll library to the binary directory
-    local binarydir = _check_installdir(target:bindir())
-    os.mkdir(binarydir)
-    os.vcp(target:targetfile(), binarydir)
-    os.trycp(target:symbolfile(), binarydir)
+    local bindir = _check_installdir(target:bindir())
+    os.mkdir(bindir)
+    os.vcp(target:targetfile(), bindir)
+    os.trycp(target:symbolfile(), bindir)
 
     -- install *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
     local targetfile = target:targetfile()
-    local librarydir = _check_installdir(target:libdir())
+    local libdir = _check_installdir(target:libdir())
     local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib"))
     if os.isfile(targetfile_lib) then
-        os.mkdir(librarydir)
-        os.vcp(targetfile_lib, librarydir)
+        os.mkdir(libdir)
+        os.vcp(targetfile_lib, libdir)
     end
 
     -- install shared libraries for all packages
-    _install_shared_for_packages(target, binarydir)
+    _install_shared_for_packages(target, bindir)
 
     -- install headers
     _install_headers(target, opt)
@@ -139,10 +139,10 @@ end
 function install_static(target, opt)
 
     -- install library
-    local librarydir = _check_installdir(target:libdir())
-    os.mkdir(librarydir)
-    os.vcp(target:targetfile(), librarydir)
-    os.trycp(target:symbolfile(), librarydir)
+    local libdir = _check_installdir(target:libdir())
+    os.mkdir(libdir)
+    os.vcp(target:targetfile(), libdir)
+    os.trycp(target:symbolfile(), libdir)
 
     -- install headers
     _install_headers(target, opt)

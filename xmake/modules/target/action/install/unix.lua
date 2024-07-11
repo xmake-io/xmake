@@ -81,13 +81,13 @@ end
 function install_binary(target, opt)
 
     -- install binary
-    local binarydir = target:bindir()
-    os.mkdir(binarydir)
-    os.vcp(target:targetfile(), binarydir)
+    local bindir = target:bindir()
+    os.mkdir(bindir)
+    os.vcp(target:targetfile(), bindir)
 
     -- install libraries
-    local librarydir = target:libdir()
-    os.mkdir(librarydir)
+    local libdir = target:libdir()
+    os.mkdir(libdir)
 
     -- install the dependent shared (*.so) target
     -- @see https://github.com/xmake-io/xmake/issues/961
@@ -95,23 +95,23 @@ function install_binary(target, opt)
         if dep:kind() == "shared" then
             local depfile = dep:targetfile()
             if os.isfile(depfile) then
-                os.vcp(depfile, librarydir)
+                os.vcp(depfile, libdir)
             end
         end
         -- install all shared libraries in packages in all deps
-        _install_shared_for_packages(dep, librarydir)
+        _install_shared_for_packages(dep, libdir)
     end
 
     -- install shared libraries for all packages
-    _install_shared_for_packages(target, librarydir)
+    _install_shared_for_packages(target, libdir)
 end
 
 -- install shared library
 function install_shared(target, opt)
 
     -- install libraries
-    local librarydir = target:libdir()
-    os.mkdir(librarydir)
+    local libdir = target:libdir()
+    os.mkdir(libdir)
     local targetfile = target:targetfile()
     if os.islink(targetfile) then
         local targetfile_with_soname = os.readlink(targetfile)
@@ -123,16 +123,16 @@ function install_shared(target, opt)
             if not path.is_absolute(targetfile_with_version) then
                 targetfile_with_version = path.join(target:targetdir(), targetfile_with_version)
             end
-            os.vcp(targetfile_with_version, librarydir, {symlink = true, force = true})
+            os.vcp(targetfile_with_version, libdir, {symlink = true, force = true})
         end
-        os.vcp(targetfile_with_soname, librarydir, {symlink = true, force = true})
-        os.vcp(targetfile, librarydir, {symlink = true, force = true})
+        os.vcp(targetfile_with_soname, libdir, {symlink = true, force = true})
+        os.vcp(targetfile, libdir, {symlink = true, force = true})
     else
-        os.vcp(targetfile, librarydir)
+        os.vcp(targetfile, libdir)
     end
 
     -- install shared libraries for all packages
-    _install_shared_for_packages(target, librarydir)
+    _install_shared_for_packages(target, libdir)
 
     -- install headers
     _install_headers(target, opt)
@@ -142,9 +142,9 @@ end
 function install_static(target, opt)
 
     -- install libraries
-    local librarydir = target:libdir()
-    os.mkdir(librarydir)
-    os.vcp(target:targetfile(), librarydir)
+    local libdir = target:libdir()
+    os.mkdir(libdir)
+    os.vcp(target:targetfile(), libdir)
 
     -- install headers
     _install_headers(target, opt)
