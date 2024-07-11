@@ -57,26 +57,69 @@ end
 
 function _get_all_depends_by_objdump(binaryfile, opt)
     local depends
+    local plat = opt.plat or os.host()
+    local arch = opt.arch or os.arch()
     local cachekey = "utils.symbols.depend"
     local objdump = find_tool("llvm-objdump", {cachekey = cachekey}) or find_tool("objdump", {cachekey = cachekey})
     if objdump then
         local binarydir = path.directory(binaryfile)
-        local result = try { function () return os.iorunv(objdump.program, {"-p", binaryfile}) end }
+        local argv = {"-p", binaryfile}
+        if plat == "macosx" then
+            argv = {"--macho", "--dylibs-used", binaryfile}
+        end
+        local result = try { function () return os.iorunv(objdump.program, argv) end }
         if result then
             for _, line in ipairs(result:split("\n")) do
                 line = line:trim()
-                if line:startswith("DLL Name:") then
-                    local filename = line:split(":")[2]:trim()
-                    if filename:endswith(".dll") then
+                if plat == "windows" or plat == "mingw" then
+                    if line:startswith("DLL Name:") then
+                        local filename = line:split(":")[2]:trim()
+                        if filename:endswith(".dll") then
+                            local dependfile
+                            if os.isfile(filename) then
+                                dependfile = filename
+                            elseif os.isfile(path.join(binarydir, filename)) then
+                                dependfile = path.join(binarydir, filename)
+                            end
+                            if dependfile then
+                                depends = depends or {}
+                                table.insert(depends, path.absolute(dependfile))
+                            end
+                        end
+                    end
+                elseif plat == "macosx" then
+                    local filename = line:match(".-%.dylib")
+                    if filename then
                         local dependfile
                         if os.isfile(filename) then
-                            dependfile = line
+                            dependfile = filename
                         elseif os.isfile(path.join(binarydir, filename)) then
                             dependfile = path.join(binarydir, filename)
+                        elseif filename:startswith("@rpath/") then -- TODO
+                            filename = filename:sub(8)
+                            if os.isfile(path.join(binarydir, filename)) then
+                                dependfile = path.join(binarydir, filename)
+                            end
                         end
                         if dependfile then
                             depends = depends or {}
                             table.insert(depends, path.absolute(dependfile))
+                        end
+                    end
+                else
+                    if line:startswith("NEEDED") then
+                        local filename = line:split("%s+")[2]
+                        if filename and filename:endswith(".so") then
+                            local dependfile
+                            if os.isfile(filename) then
+                                dependfile = filename
+                            elseif os.isfile(path.join(binarydir, filename)) then
+                                dependfile = path.join(binarydir, filename)
+                            end
+                            if dependfile then
+                                depends = depends or {}
+                                table.insert(depends, path.absolute(dependfile))
+                            end
                         end
                     end
                 end
