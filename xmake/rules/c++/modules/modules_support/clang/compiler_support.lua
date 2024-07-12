@@ -300,6 +300,7 @@ function get_stdmodules(target)
             end
         end
     end
+    wprint("std and std.compat modules not found ! disabling them for the build")
 end
 
 function get_bmi_extension()
