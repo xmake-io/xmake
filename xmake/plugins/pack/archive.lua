@@ -55,6 +55,7 @@ function _pack_archive(package)
     local oldir = os.cd(rootdir)
     local archivefiles = os.files("**")
     os.cd(oldir)
+    os.tryrm(package:outputfile())
     archive.archive(path.absolute(package:outputfile()), archivefiles, {curdir = rootdir, compress = "best"})
 end
 
