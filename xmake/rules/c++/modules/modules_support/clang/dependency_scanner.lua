@@ -38,7 +38,8 @@ function generate_dependency_for(target, sourcefile, opt)
 
         local outputdir = compiler_support.get_outputdir(target, sourcefile)
         local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
-        if compiler_support.has_clangscandepssupport(target) and not target:policy("build.c++.clang.fallbackscanner") then
+        local has_clangscandepssupport = compiler_support.has_clangscandepssupport(target)
+        if has_clangscandepssupport and not target:policy("build.c++.clang.fallbackscanner") then
             -- We need absolute path of clang to use clang-scan-deps
             -- See https://clang.llvm.org/docs/StandardCPlusPlusModules.html#possible-issues-failed-to-find-system-headers
             local clang_path = compinst:program()
@@ -57,6 +58,9 @@ function generate_dependency_for(target, sourcefile, opt)
 
             io.writefile(jsonfile, outdata)
         else
+            if not has_clangscandepssupport then
+                wprint("No clang-scan-deps found ! using fallback scanner")
+            end
             fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                 local keepsystemincludesflag = compiler_support.get_keepsystemincludesflag(target)
                 local compflags = compinst:compflags({sourcefile = file, target = target})
