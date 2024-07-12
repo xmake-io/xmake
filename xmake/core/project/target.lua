@@ -2036,7 +2036,7 @@ end
 -- get the header files
 function _instance:headerfiles(outputdir, opt)
     opt = opt or {}
-    local headerfiles = self:get("headerfiles")
+    local headerfiles = self:get("headerfiles", opt) or {}
     -- add_headerfiles("src/*.h", {install = false})
     -- @see https://github.com/xmake-io/xmake/issues/2577
     if opt.installonly then
@@ -2071,8 +2071,9 @@ function _instance:configfiles(outputdir)
 end
 
 -- get the install files
-function _instance:installfiles(outputdir)
-    return match_copyfiles(self, "installfiles", outputdir or self:installdir())
+function _instance:installfiles(outputdir, opt)
+    local installfiles = self:get("installfiles", opt) or {}
+    return match_copyfiles(self, "installfiles", outputdir or self:installdir(), {copyfiles = installfiles})
 end
 
 -- get the extra files

@@ -27,7 +27,7 @@ function _get_target_bindir(package, target)
     local bindir = package:bindir()
     local prefixdir = target:prefixdir()
     if prefixdir then
-        bindir = path.join(package:install_rootdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "bindir"))
+        bindir = path.join(package:installdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "bindir"))
     end
     return path.normalize(bindir)
 end
@@ -36,7 +36,7 @@ function _get_target_libdir(package, target)
     local libdir = package:libdir()
     local prefixdir = target:prefixdir()
     if prefixdir then
-        libdir = path.join(package:install_rootdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "libdir"))
+        libdir = path.join(package:installdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "libdir"))
     end
     return path.normalize(libdir)
 end
@@ -45,14 +45,24 @@ function _get_target_includedir(package, target)
     local includedir = package:includedir()
     local prefixdir = target:prefixdir()
     if prefixdir then
-        includedir = path.join(package:install_rootdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "includedir"))
+        includedir = path.join(package:installdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "includedir"))
     end
     return path.normalize(includedir)
 end
 
+function _get_target_installdir(package, target)
+    local installdir = package:installdir()
+    local prefixdir = target:prefixdir()
+    if prefixdir then
+        installdir = path.join(package:installdir(), prefixdir)
+    end
+    return path.normalize(installdir)
+end
+
 -- install headers
-function _install_headers(target, batchcmds_, includedir)
-    local srcheaders, dstheaders = target:headerfiles(includedir, {installonly = true})
+function _install_headers(target, batchcmds_, opt)
+    local package = opt.package
+    local srcheaders, dstheaders = target:headerfiles(_get_target_includedir(package, target), {installonly = true})
     if srcheaders and dstheaders then
         local i = 1
         for _, srcheader in ipairs(srcheaders) do
@@ -61,6 +71,19 @@ function _install_headers(target, batchcmds_, includedir)
                 batchcmds_:cp(srcheader, dstheader)
             end
             i = i + 1
+        end
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local srcheaders, dstheaders = dep:headerfiles(_get_target_includedir(package, dep), {installonly = true, interface = true})
+        if srcheaders and dstheaders then
+            local i = 1
+            for _, srcheader in ipairs(srcheaders) do
+                local dstheader = dstheaders[i]
+                if dstheader then
+                    batchcmds_:cp(srcheader, dstheader)
+                end
+                i = i + 1
+            end
         end
     end
 end
@@ -94,10 +117,17 @@ function _install_shared_for_packages(target, batchcmds_, outputdir)
 end
 
 -- uninstall headers
-function _uninstall_headers(target, batchcmds_, includedir)
-    local _, dstheaders = target:headerfiles(includedir, {installonly = true})
+function _uninstall_headers(target, batchcmds_, opt)
+    local package = opt.package
+    local _, dstheaders = target:headerfiles(_get_target_includedir(package, target), {installonly = true})
     for _, dstheader in ipairs(dstheaders) do
         batchcmds_:rm(dstheader, {emptydirs = true})
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local _, dstheaders = dep:headerfiles(_get_target_includedir(package, dep), {installonly = true, interface = true})
+        for _, dstheader in ipairs(dstheaders) do
+            batchcmds_:rm(dstheader, {emptydirs = true})
+        end
     end
 end
 
@@ -161,7 +191,6 @@ function _on_target_installcmd_shared(target, batchcmds_, opt)
     local package = opt.package
     local bindir = _get_target_bindir(package, target)
     local libdir = _get_target_libdir(package, target)
-    local includedir = _get_target_includedir(package, target)
 
     -- install target file
     batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
@@ -182,14 +211,13 @@ function _on_target_installcmd_shared(target, batchcmds_, opt)
     _install_shared_for_packages(target, batchcmds_, bindir)
 
     -- install headers
-    _install_headers(target, batchcmds_, includedir)
+    _install_headers(target, batchcmds_, opt)
 end
 
 -- on install static target command
 function _on_target_installcmd_static(target, batchcmds_, opt)
     local package = opt.package
     local libdir = _get_target_libdir(package, target)
-    local includedir = _get_target_includedir(package, target)
 
     -- install target file
     batchcmds_:cp(target:targetfile(), path.join(libdir, target:filename()))
@@ -198,16 +226,12 @@ function _on_target_installcmd_static(target, batchcmds_, opt)
     end
 
     -- install headers
-    _install_headers(target, batchcmds_, includedir)
+    _install_headers(target, batchcmds_, opt)
 end
 
 -- on install headeronly target command
 function _on_target_installcmd_headeronly(target, batchcmds_, opt)
-    local package = opt.package
-    local includedir = _get_target_includedir(package, target)
-
-    -- install headers
-    _install_headers(target, batchcmds_, includedir)
+    _install_headers(target, batchcmds_, opt)
 end
 
 -- on install source target command
@@ -243,9 +267,15 @@ function _on_target_installcmd(target, batchcmds_, opt)
     end
 
     -- install target files
-    local srcfiles, dstfiles = target:installfiles(package:installdir())
+    local srcfiles, dstfiles = target:installfiles(_get_target_installdir(package, target))
     for idx, srcfile in ipairs(srcfiles) do
         batchcmds_:cp(srcfile, dstfiles[idx])
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local srcfiles, dstfiles = dep:installfiles(_get_target_installdir(package, dep), {interface = true})
+        for idx, srcfile in ipairs(srcfiles) do
+            batchcmds_:cp(srcfile, dstfiles[idx])
+        end
     end
 end
 
@@ -276,7 +306,6 @@ function _on_target_uninstallcmd_shared(target, batchcmds_, opt)
     local package = opt.package
     local bindir = _get_target_bindir(package, target)
     local libdir = _get_target_libdir(package, target)
-    local includedir = _get_target_includedir(package, target)
 
     -- uninstall target file
     batchcmds_:rm(path.join(bindir, target:filename()), {emptydirs = true})
@@ -288,7 +317,7 @@ function _on_target_uninstallcmd_shared(target, batchcmds_, opt)
     batchcmds_:rm(path.join(libdir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")), {emptydirs = true})
 
     -- remove headers from the include directory
-    _uninstall_headers(target, batchcmds_, includedir)
+    _uninstall_headers(target, batchcmds_, opt)
 
     -- uninstall shared libraries for packages
     _uninstall_shared_for_packages(target, batchcmds_, bindir)
@@ -298,21 +327,18 @@ end
 function _on_target_uninstallcmd_static(target, batchcmds_, opt)
     local package = opt.package
     local libdir = _get_target_libdir(package, target)
-    local includedir = _get_target_includedir(package, target)
 
     -- uninstall target file
     batchcmds_:rm(path.join(libdir, target:filename()), {emptydirs = true})
     batchcmds_:rm(path.join(libdir, path.filename(target:symbolfile())), {emptydirs = true})
 
     -- remove headers from the include directory
-    _uninstall_headers(target, batchcmds_, includedir)
+    _uninstall_headers(target, batchcmds_, opt)
 end
 
 -- on uninstall headeronly target command
 function _on_target_uninstallcmd_headeronly(target, batchcmds_, opt)
-    local package = opt.package
-    local includedir = _get_target_includedir(package, target)
-    _uninstall_headers(target, batchcmds_, includedir)
+    _uninstall_headers(target, batchcmds_, opt)
 end
 
 -- on uninstall source target command
@@ -341,9 +367,15 @@ function _on_target_uninstallcmd(target, batchcmds_, opt)
     end
 
     -- uninstall target files
-    local _, dstfiles = target:installfiles(package:installdir())
+    local _, dstfiles = target:installfiles(_get_target_installdir(package, target))
     for _, dstfile in ipairs(dstfiles) do
         batchcmds_:rm(dstfile, {emptydirs = true})
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local _, dstfiles = dep:installfiles(_get_target_installdir(package, dep), {interface = true})
+        for _, dstfile in ipairs(dstfiles) do
+            batchcmds_:rm(dstfile, {emptydirs = true})
+        end
     end
 end
 
