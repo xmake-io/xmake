@@ -23,6 +23,33 @@ import("core.base.option")
 import("utils.archive")
 import("private.utils.batchcmds")
 
+function _get_target_bindir(package, target)
+    local bindir = package:bindir()
+    local prefixdir = target:prefixdir()
+    if prefixdir then
+        bindir = path.join(package:install_rootdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "bindir"))
+    end
+    return path.normalize(bindir)
+end
+
+function _get_target_libdir(package, target)
+    local libdir = package:libdir()
+    local prefixdir = target:prefixdir()
+    if prefixdir then
+        libdir = path.join(package:install_rootdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "libdir"))
+    end
+    return path.normalize(libdir)
+end
+
+function _get_target_includedir(package, target)
+    local includedir = package:includedir()
+    local prefixdir = target:prefixdir()
+    if prefixdir then
+        includedir = path.join(package:install_rootdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "includedir"))
+    end
+    return path.normalize(includedir)
+end
+
 -- install headers
 function _install_headers(target, batchcmds_, includedir)
     local srcheaders, dstheaders = target:headerfiles(includedir, {installonly = true})
@@ -100,7 +127,7 @@ end
 -- on install binary target command
 function _on_target_installcmd_binary(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = package:bindir()
+    local bindir = _get_target_bindir(package, target)
 
     -- install target file
     batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
@@ -132,9 +159,9 @@ end
 -- on install shared target command
 function _on_target_installcmd_shared(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = package:bindir()
-    local libdir = package:libdir()
-    local includedir = package:includedir()
+    local bindir = _get_target_bindir(package, target)
+    local libdir = _get_target_libdir(package, target)
+    local includedir = _get_target_includedir(package, target)
 
     -- install target file
     batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
@@ -161,8 +188,8 @@ end
 -- on install static target command
 function _on_target_installcmd_static(target, batchcmds_, opt)
     local package = opt.package
-    local libdir = package:libdir()
-    local includedir = package:includedir()
+    local libdir = _get_target_libdir(package, target)
+    local includedir = _get_target_includedir(package, target)
 
     -- install target file
     batchcmds_:cp(target:targetfile(), path.join(libdir, target:filename()))
@@ -177,7 +204,7 @@ end
 -- on install headeronly target command
 function _on_target_installcmd_headeronly(target, batchcmds_, opt)
     local package = opt.package
-    local includedir = package:includedir()
+    local includedir = _get_target_includedir(package, target)
 
     -- install headers
     _install_headers(target, batchcmds_, includedir)
@@ -225,7 +252,7 @@ end
 -- on uninstall binary target command
 function _on_target_uninstallcmd_binary(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = package:bindir()
+    local bindir = _get_target_bindir(package, target)
 
     -- uninstall target file
     batchcmds_:rm(path.join(bindir, target:filename()), {emptydirs = true})
@@ -247,9 +274,9 @@ end
 -- on uninstall shared target command
 function _on_target_uninstallcmd_shared(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = package:bindir()
-    local libdir = package:libdir()
-    local includedir = package:includedir()
+    local bindir = _get_target_bindir(package, target)
+    local libdir = _get_target_libdir(package, target)
+    local includedir = _get_target_includedir(package, target)
 
     -- uninstall target file
     batchcmds_:rm(path.join(bindir, target:filename()), {emptydirs = true})
@@ -270,8 +297,8 @@ end
 -- on uninstall static target command
 function _on_target_uninstallcmd_static(target, batchcmds_, opt)
     local package = opt.package
-    local libdir = package:libdir()
-    local includedir = package:includedir()
+    local libdir = _get_target_libdir(package, target)
+    local includedir = _get_target_includedir(package, target)
 
     -- uninstall target file
     batchcmds_:rm(path.join(libdir, target:filename()), {emptydirs = true})
@@ -284,7 +311,7 @@ end
 -- on uninstall headeronly target command
 function _on_target_uninstallcmd_headeronly(target, batchcmds_, opt)
     local package = opt.package
-    local includedir = package:includedir()
+    local includedir = _get_target_includedir(package, target)
     _uninstall_headers(target, batchcmds_, includedir)
 end
 
