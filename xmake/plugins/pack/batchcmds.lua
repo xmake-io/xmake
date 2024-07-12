@@ -60,7 +60,7 @@ function _get_target_installdir(package, target)
 end
 
 -- install headers
-function _install_headers(target, batchcmds_, opt)
+function _install_target_headers(target, batchcmds_, opt)
     local package = opt.package
     local srcheaders, dstheaders = target:headerfiles(_get_target_includedir(package, target), {installonly = true})
     if srcheaders and dstheaders then
@@ -117,7 +117,7 @@ function _install_shared_for_packages(target, batchcmds_, outputdir)
 end
 
 -- uninstall headers
-function _uninstall_headers(target, batchcmds_, opt)
+function _uninstall_target_headers(target, batchcmds_, opt)
     local package = opt.package
     local _, dstheaders = target:headerfiles(_get_target_includedir(package, target), {installonly = true})
     for _, dstheader in ipairs(dstheaders) do
@@ -211,7 +211,7 @@ function _on_target_installcmd_shared(target, batchcmds_, opt)
     _install_shared_for_packages(target, batchcmds_, bindir)
 
     -- install headers
-    _install_headers(target, batchcmds_, opt)
+    _install_target_headers(target, batchcmds_, opt)
 end
 
 -- on install static target command
@@ -226,12 +226,12 @@ function _on_target_installcmd_static(target, batchcmds_, opt)
     end
 
     -- install headers
-    _install_headers(target, batchcmds_, opt)
+    _install_target_headers(target, batchcmds_, opt)
 end
 
 -- on install headeronly target command
 function _on_target_installcmd_headeronly(target, batchcmds_, opt)
-    _install_headers(target, batchcmds_, opt)
+    _install_target_headers(target, batchcmds_, opt)
 end
 
 -- on install source target command
@@ -317,7 +317,7 @@ function _on_target_uninstallcmd_shared(target, batchcmds_, opt)
     batchcmds_:rm(path.join(libdir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")), {emptydirs = true})
 
     -- remove headers from the include directory
-    _uninstall_headers(target, batchcmds_, opt)
+    _uninstall_target_headers(target, batchcmds_, opt)
 
     -- uninstall shared libraries for packages
     _uninstall_shared_for_packages(target, batchcmds_, bindir)
@@ -333,12 +333,12 @@ function _on_target_uninstallcmd_static(target, batchcmds_, opt)
     batchcmds_:rm(path.join(libdir, path.filename(target:symbolfile())), {emptydirs = true})
 
     -- remove headers from the include directory
-    _uninstall_headers(target, batchcmds_, opt)
+    _uninstall_target_headers(target, batchcmds_, opt)
 end
 
 -- on uninstall headeronly target command
 function _on_target_uninstallcmd_headeronly(target, batchcmds_, opt)
-    _uninstall_headers(target, batchcmds_, opt)
+    _uninstall_target_headers(target, batchcmds_, opt)
 end
 
 -- on uninstall source target command
