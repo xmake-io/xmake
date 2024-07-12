@@ -2052,13 +2052,12 @@ function _instance:headerfiles(outputdir, opt)
         return
     end
 
-    local headerdir = outputdir
-    if not headerdir then
-        if self:installdir() then
-            headerdir = path.join(self:installdir(), "include")
+    if not outputdir then
+        if self:includedir() then
+            outputdir = self:includedir()
         end
     end
-    return match_copyfiles(self, "headerfiles", headerdir, {copyfiles = headerfiles})
+    return match_copyfiles(self, "headerfiles", outputdir, {copyfiles = headerfiles})
 end
 
 -- get the configuration files
