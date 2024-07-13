@@ -150,6 +150,9 @@ function _conan_get_build_type(mode)
 end
 
 -- get compiler version
+--
+-- https://github.com/conan-io/conan/blob/353c63b16c31c90d370305b5cbb5dc175cf8a443/conan/tools/microsoft/visual.py#L13
+-- https://github.com/xmake-io/xmake/issues/5338
 function _conan_get_compiler_version(name, opt)
     opt = opt or {}
     local version
@@ -174,8 +177,6 @@ function _conan_generate_compiler_profile(profile, configs, opt)
     local arch = opt.arch
     local runtimes = configs.runtimes
     if plat == "windows" then
-        -- https://github.com/conan-io/conan/blob/353c63b16c31c90d370305b5cbb5dc175cf8a443/conan/tools/microsoft/visual.py#L13
-        -- https://github.com/xmake-io/xmake/issues/5338
         local msvc = toolchain.load("msvc", {plat = plat, arch = arch})
         assert(msvc:check(), "vs not found!")
         local vs = assert(msvc:config("vs"), "vs not found!")
@@ -183,7 +184,8 @@ function _conan_generate_compiler_profile(profile, configs, opt)
         local version = _conan_get_compiler_version("cl", {envs = msvc:runenvs()})
         if version then
             profile:print("compiler.version=" .. version)
-        end        -- @see https://github.com/conan-io/conan/issues/12387
+        end
+        -- @see https://github.com/conan-io/conan/issues/12387
         if tonumber(vs) >= 2015 then
             profile:print("compiler.cppstd=14")
         end
