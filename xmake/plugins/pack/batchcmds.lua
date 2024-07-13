@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.hashset")
 import("utils.archive")
 import("utils.symbols.depend", {alias = "get_depend_libraries"})
 import("private.utils.batchcmds")
@@ -89,14 +90,57 @@ function _install_target_headers(target, batchcmds_, opt)
     end
 end
 
+function _get_target_package_libfiles(target, opt)
+    local libfiles = {}
+    for _, pkg in ipairs(target:orderpkgs(opt)) do
+        if pkg:enabled() and pkg:get("libfiles") then
+            for _, libfile in ipairs(table.wrap(pkg:get("libfiles"))) do
+                local filename = path.filename(libfile)
+                if filename:endswith(".dll") or filename:endswith(".so") or filename:find("%.so%.%d+$") or filename:endswith(".dylib") then
+                    table.insert(libfiles, libfile)
+                end
+            end
+        end
+    end
+    -- we can only reserve used libraries
+    if target:is_binary() or target:is_shared() then
+        local depends = hashset.new()
+        local targetfile = target:targetfile()
+        local depend_libraries = get_depend_libraries(targetfile, {plat = target:plat(), arch = target:arch()})
+        for _, libfile in ipairs(depend_libraries) do
+            depends:insert(path.filename(libfile))
+        end
+        table.remove_if(libfiles, function (_, libfile) return not depends:has(path.filename(libfile)) end)
+    end
+    return libfiles
+end
+
 -- install target shared libraries
 function _install_target_shared_libraries(target, batchcmds_, opt)
     local package = opt.package
     local bindir = _get_target_bindir(package, target)
-    local targetfile = target:targetfile()
-    local depend_libraries = get_depend_libraries(targetfile, {plat = target:plat(), arch = target:arch()})
-    print(targetfile)
-    print(depend_libraries)
+
+    -- get all dependent shared libraries
+    local libfiles = {}
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:kind() == "shared" then
+            local depfile = dep:targetfile()
+            if os.isfile(depfile) then
+                table.insert(libfiles, depfile)
+            end
+        end
+        table.join2(libfiles, _get_target_package_libfiles(dep, {interface = true}))
+    end
+    table.join2(libfiles, _get_target_package_libfiles(target))
+
+    -- deduplicate libfiles, prevent packages using the same libfiles from overwriting each other
+    libfiles = table.unique(libfiles)
+
+    -- do install
+    for _, libfile in ipairs(libfiles) do
+        local filename = path.filename(libfile)
+        batchcmds_:cp(libfile, path.join(bindir, filename))
+    end
 end
 
 -- uninstall headers
