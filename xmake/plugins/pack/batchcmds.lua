@@ -160,6 +160,30 @@ end
 
 -- uninstall target shared libraries
 function _uninstall_target_shared_libraries(target, batchcmds_, opt)
+    local package = opt.package
+    local bindir = _get_target_bindir(package, target)
+
+    -- get all dependent shared libraries
+    local libfiles = {}
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:kind() == "shared" then
+            local depfile = dep:targetfile()
+            if os.isfile(depfile) then
+                table.insert(libfiles, depfile)
+            end
+        end
+        table.join2(libfiles, _get_target_package_libfiles(dep, {interface = true}))
+    end
+    table.join2(libfiles, _get_target_package_libfiles(target))
+
+    -- deduplicate libfiles, prevent packages using the same libfiles from overwriting each other
+    libfiles = table.unique(libfiles)
+
+    -- do uninstall
+    for _, libfile in ipairs(libfiles) do
+        local filename = path.filename(libfile)
+        batchcmds_:rm(libfile, path.join(bindir, filename), {emptydirs = true})
+    end
 end
 
 -- on install binary target command
