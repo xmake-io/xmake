@@ -369,6 +369,9 @@ function main(target, opt)
                     _add_includedirs(target, path.join(qt.includedir, framework, qt.sdkver, framework))
                 end
             end
+        elseif target:is_plat("macosx") then
+            --@see https://github.com/xmake-io/xmake/issues/5336
+            frameworksset:insert(framework)
         end
     end
 
