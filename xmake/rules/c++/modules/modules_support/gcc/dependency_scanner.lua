@@ -44,7 +44,8 @@ function generate_dependency_for(target, sourcefile, opt)
 
         local outputdir = compiler_support.get_outputdir(target, sourcefile)
         local jsonfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".json"))
-        if depsformatflag and depsfileflag and depstargetflag and not target:policy("build.c++.gcc.fallbackscanner") then
+        local has_depsflags = depsformatflag and depsfileflag and depstargetflag
+        if has_depsflags and not target:policy("build.c++.gcc.fallbackscanner") then
             local ifile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".i"))
             local dfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".d"))
             local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
@@ -53,6 +54,9 @@ function generate_dependency_for(target, sourcefile, opt)
             os.rm(ifile)
             os.rm(dfile)
         else
+            if not has_depsflags then
+                wprint("GCC doesn't support module scanning ! using fallback scanner")
+            end
             fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                 local compflags = compinst:compflags({sourcefile = file, target = target})
                 -- exclude -fmodule* flags because, when they are set gcc try to find bmi of imported modules but they don't exists a this point of compilation
