@@ -150,13 +150,21 @@ function _conan_get_build_type(mode)
 end
 
 -- get compiler version
-function _conan_get_compiler_version(name, program)
+--
+-- https://github.com/conan-io/conan/blob/353c63b16c31c90d370305b5cbb5dc175cf8a443/conan/tools/microsoft/visual.py#L13
+-- https://github.com/xmake-io/xmake/issues/5338
+function _conan_get_compiler_version(name, opt)
+    opt = opt or {}
     local version
-    local result = find_tool(name, {program = program, version = true})
+    local result = find_tool(name, {program = opt.program, version = true, envs = opt.envs})
     if result and result.version then
         local v = semver.try_parse(result.version)
         if v then
-            version = v:major()
+            if name == "cl" then
+                version = tostring(v:major()) .. tostring(v:minor()):sub(1, 1)
+            else
+                version = tostring(v:major())
+            end
         end
     end
     return version
@@ -169,16 +177,14 @@ function _conan_generate_compiler_profile(profile, configs, opt)
     local arch = opt.arch
     local runtimes = configs.runtimes
     if plat == "windows" then
-        -- https://github.com/conan-io/conan/blob/353c63b16c31c90d370305b5cbb5dc175cf8a443/conan/tools/microsoft/visual.py#L13
-        local vsvers = {["2022"] = "193",
-                        ["2019"] = "192",
-                        ["2017"] = "191",
-                        ["2015"] = "190",
-                        ["2013"] = "180",
-                        ["2012"] = "170"}
-        local vs = assert(config.get("vs"), "vs not found!")
+        local msvc = toolchain.load("msvc", {plat = plat, arch = arch})
+        assert(msvc:check(), "vs not found!")
+        local vs = assert(msvc:config("vs"), "vs not found!")
         profile:print("compiler=msvc")
-        profile:print("compiler.version=" .. assert(vsvers[vs], "unknown msvc version!"))
+        local version = _conan_get_compiler_version("cl", {envs = msvc:runenvs()})
+        if version then
+            profile:print("compiler.version=" .. version)
+        end
         -- @see https://github.com/conan-io/conan/issues/12387
         if tonumber(vs) >= 2015 then
             profile:print("compiler.cppstd=14")
@@ -216,7 +222,7 @@ function _conan_generate_compiler_profile(profile, configs, opt)
             profile:print("compiler.libcxx=" .. runtimes)
         end
         local program, toolname = ndk:tool("cc")
-        local version = _conan_get_compiler_version(toolname, program)
+        local version = _conan_get_compiler_version(toolname, {program = program})
         profile:print("compiler=" .. toolname)
         if version then
             profile:print("compiler.version=" .. version)
@@ -235,7 +241,7 @@ function _conan_generate_compiler_profile(profile, configs, opt)
                 libcxx = "libc++"
             end
             profile:print("compiler.libcxx=" .. libcxx)
-            local version = _conan_get_compiler_version(toolname, program)
+            local version = _conan_get_compiler_version(toolname, {program = program})
             if version then
                 profile:print("compiler.version=" .. version)
             end
@@ -333,3 +339,4 @@ function main(conan, name, opt)
     -- leave build directory
     os.cd(oldir)
 end
+
