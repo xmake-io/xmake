@@ -51,7 +51,7 @@ function load(target)
     local languages = target:get("languages")
     local cxxlang = false
     for _, lang in ipairs(languages) do
-        if lang:find("cxx", 1, true) or lang:find("c++", 1, true) then
+        if lang:find("cxx", 1, true) or lang:find("c++", 1, true) or lang:find("gnuxx", 1, true) or lang:find("gnu++", 1, true) then
             cxxlang = true
             break
         end
