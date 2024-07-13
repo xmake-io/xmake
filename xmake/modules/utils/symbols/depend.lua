@@ -38,16 +38,8 @@ function _get_all_depends_by_dumpbin(binaryfile, opt)
                 for _, line in ipairs(result:split("\n")) do
                     line = line:trim()
                     if line:endswith(".dll") then
-                        local dependfile
-                        if os.isfile(line) then
-                            dependfile = line
-                        elseif os.isfile(path.join(binarydir, line)) then
-                            dependfile = path.join(binarydir, line)
-                        end
-                        if dependfile then
-                            depends = depends or {}
-                            table.insert(depends, path.absolute(dependfile))
-                        end
+                        depends = depends or {}
+                        table.insert(depends, line)
                     end
                 end
             end
@@ -76,51 +68,22 @@ function _get_all_depends_by_objdump(binaryfile, opt)
                     if line:startswith("DLL Name:") then
                         local filename = line:split(":")[2]:trim()
                         if filename:endswith(".dll") then
-                            local dependfile
-                            if os.isfile(filename) then
-                                dependfile = filename
-                            elseif os.isfile(path.join(binarydir, filename)) then
-                                dependfile = path.join(binarydir, filename)
-                            end
-                            if dependfile then
-                                depends = depends or {}
-                                table.insert(depends, path.absolute(dependfile))
-                            end
+                            depends = depends or {}
+                            table.insert(depends, filename)
                         end
                     end
                 elseif plat == "macosx" or plat == "iphoneos" or plat == "appletvos" or plat == "watchos" then
                     local filename = line:match(".-%.dylib") or line:match(".-%.framework")
                     if filename then
-                        local dependfile
-                        if os.exists(filename) then
-                            dependfile = filename
-                        elseif os.exists(path.join(binarydir, filename)) then
-                            dependfile = path.join(binarydir, filename)
-                        elseif filename:startswith("@rpath/") then -- TODO
-                            filename = filename:sub(8)
-                            if os.exists(path.join(binarydir, filename)) then
-                                dependfile = path.join(binarydir, filename)
-                            end
-                        end
-                        if dependfile then
-                            depends = depends or {}
-                            table.insert(depends, path.absolute(dependfile))
-                        end
+                        depends = depends or {}
+                        table.insert(depends, filename)
                     end
                 else
                     if line:startswith("NEEDED") then
                         local filename = line:split("%s+")[2]
                         if filename and filename:endswith(".so") then
-                            local dependfile
-                            if os.isfile(filename) then
-                                dependfile = filename
-                            elseif os.isfile(path.join(binarydir, filename)) then
-                                dependfile = path.join(binarydir, filename)
-                            end
-                            if dependfile then
-                                depends = depends or {}
-                                table.insert(depends, path.absolute(dependfile))
-                            end
+                            depends = depends or {}
+                            table.insert(depends, filename)
                         end
                     end
                 end
@@ -153,21 +116,16 @@ function _get_all_depends_by_ldd(binaryfile, opt)
         local result = try { function () return os.iorunv(ldd.program, {binaryfile}) end }
         if result then
             for _, line in ipairs(result:split("\n")) do
-                line = line:split("=>")[2] or line
+                local splitinfo = line:split("=>")
+                line = splitinfo[2]
+                if not line or line:find("not found", 1, true) then
+                    line = splitinfo[1]
+                end
                 line = line:gsub("%(.+%)", ""):trim()
                 local filename = line:match(".-%.so$") or line:match(".-%.so%.%d+")
                 if filename then
-                    filename = filename:trim()
-                    local dependfile
-                    if os.isfile(filename) then
-                        dependfile = filename
-                    elseif os.isfile(path.join(binarydir, filename)) then
-                        dependfile = path.join(binarydir, filename)
-                    end
-                    if dependfile then
-                        depends = depends or {}
-                        table.insert(depends, path.absolute(dependfile))
-                    end
+                    depends = depends or {}
+                    table.insert(depends, filename:trim())
                 end
             end
         end
@@ -202,17 +160,8 @@ function _get_all_depends_by_readelf(binaryfile, opt)
                 if line:find("NEEDED", 1, true) then
                     local filename = line:match("Shared library: %[(.-)%]")
                     if filename then
-                        filename = filename:trim()
-                        local dependfile
-                        if os.isfile(filename) then
-                            dependfile = filename
-                        elseif os.isfile(path.join(binarydir, filename)) then
-                            dependfile = path.join(binarydir, filename)
-                        end
-                        if dependfile then
-                            depends = depends or {}
-                            table.insert(depends, path.absolute(dependfile))
-                        end
+                        depends = depends or {}
+                        table.insert(depends, filename:trim())
                     end
                 end
             end
@@ -245,22 +194,8 @@ function _get_all_depends_by_otool(binaryfile, opt)
             for _, line in ipairs(result:split("\n")) do
                 local filename = line:match(".-%.dylib") or line:match(".-%.framework")
                 if filename then
-                    filename = filename:trim()
-                    local dependfile
-                    if os.exists(filename) then
-                        dependfile = filename
-                    elseif os.exists(path.join(binarydir, filename)) then
-                        dependfile = path.join(binarydir, filename)
-                    elseif filename:startswith("@rpath/") then -- TODO
-                        filename = filename:sub(8)
-                        if os.exists(path.join(binarydir, filename)) then
-                            dependfile = path.join(binarydir, filename)
-                        end
-                    end
-                    if dependfile then
-                        depends = depends or {}
-                        table.insert(depends, path.absolute(dependfile))
-                    end
+                    depends = depends or {}
+                    table.insert(depends, filename:trim())
                 end
             end
         end
