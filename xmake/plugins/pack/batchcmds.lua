@@ -61,6 +61,31 @@ function _get_target_installdir(package, target)
     return path.normalize(installdir)
 end
 
+function _get_target_package_libfiles(target, opt)
+    local libfiles = {}
+    for _, pkg in ipairs(target:orderpkgs(opt)) do
+        if pkg:enabled() and pkg:get("libfiles") then
+            for _, libfile in ipairs(table.wrap(pkg:get("libfiles"))) do
+                local filename = path.filename(libfile)
+                if filename:endswith(".dll") or filename:endswith(".so") or filename:find("%.so%.%d+$") or filename:endswith(".dylib") then
+                    table.insert(libfiles, libfile)
+                end
+            end
+        end
+    end
+    -- we can only reserve used libraries
+    if target:is_binary() or target:is_shared() then
+        local depends = hashset.new()
+        local targetfile = target:targetfile()
+        local depend_libraries = get_depend_libraries(targetfile, {plat = target:plat(), arch = target:arch()})
+        for _, libfile in ipairs(depend_libraries) do
+            depends:insert(path.filename(libfile))
+        end
+        table.remove_if(libfiles, function (_, libfile) return not depends:has(path.filename(libfile)) end)
+    end
+    return libfiles
+end
+
 -- install headers
 function _install_target_headers(target, batchcmds_, opt)
     local package = opt.package
@@ -90,35 +115,10 @@ function _install_target_headers(target, batchcmds_, opt)
     end
 end
 
-function _get_target_package_libfiles(target, opt)
-    local libfiles = {}
-    for _, pkg in ipairs(target:orderpkgs(opt)) do
-        if pkg:enabled() and pkg:get("libfiles") then
-            for _, libfile in ipairs(table.wrap(pkg:get("libfiles"))) do
-                local filename = path.filename(libfile)
-                if filename:endswith(".dll") or filename:endswith(".so") or filename:find("%.so%.%d+$") or filename:endswith(".dylib") then
-                    table.insert(libfiles, libfile)
-                end
-            end
-        end
-    end
-    -- we can only reserve used libraries
-    if target:is_binary() or target:is_shared() then
-        local depends = hashset.new()
-        local targetfile = target:targetfile()
-        local depend_libraries = get_depend_libraries(targetfile, {plat = target:plat(), arch = target:arch()})
-        for _, libfile in ipairs(depend_libraries) do
-            depends:insert(path.filename(libfile))
-        end
-        table.remove_if(libfiles, function (_, libfile) return not depends:has(path.filename(libfile)) end)
-    end
-    return libfiles
-end
-
 -- install target shared libraries
 function _install_target_shared_libraries(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = _get_target_bindir(package, target)
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(package, target) or _get_target_libdir(package, target)
 
     -- get all dependent shared libraries
     local libfiles = {}
@@ -161,7 +161,7 @@ end
 -- uninstall target shared libraries
 function _uninstall_target_shared_libraries(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = _get_target_bindir(package, target)
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(package, target) or _get_target_libdir(package, target)
 
     -- get all dependent shared libraries
     local libfiles = {}
@@ -190,24 +190,19 @@ end
 function _on_target_installcmd_binary(target, batchcmds_, opt)
     local package = opt.package
     local bindir = _get_target_bindir(package, target)
-
-    -- install target file
     batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
     if os.isfile(target:symbolfile()) then
         batchcmds_:cp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
     end
-
-    -- install target shared libraries
     _install_target_shared_libraries(target, batchcmds_, opt)
 end
 
 -- on install shared target command
 function _on_target_installcmd_shared(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = _get_target_bindir(package, target)
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(package, target) or _get_target_libdir(package, target)
     local libdir = _get_target_libdir(package, target)
 
-    -- install target file
     batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
     if os.isfile(target:symbolfile()) then
         batchcmds_:cp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
@@ -222,10 +217,7 @@ function _on_target_installcmd_shared(target, batchcmds_, opt)
         batchcmds_:cp(targetfile_lib, path.join(libdir, path.filename(targetfile_lib)))
     end
 
-    -- install headers
     _install_target_headers(target, batchcmds_, opt)
-
-    -- install target shared libraries
     _install_target_shared_libraries(target, batchcmds_, opt)
 end
 
@@ -234,13 +226,11 @@ function _on_target_installcmd_static(target, batchcmds_, opt)
     local package = opt.package
     local libdir = _get_target_libdir(package, target)
 
-    -- install target file
     batchcmds_:cp(target:targetfile(), path.join(libdir, target:filename()))
     if os.isfile(target:symbolfile()) then
         batchcmds_:cp(target:symbolfile(), path.join(libdir, path.filename(target:symbolfile())))
     end
 
-    -- install headers
     _install_target_headers(target, batchcmds_, opt)
 end
 
@@ -310,7 +300,7 @@ end
 -- on uninstall shared target command
 function _on_target_uninstallcmd_shared(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = _get_target_bindir(package, target)
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(package, target) or _get_target_libdir(package, target)
     local libdir = _get_target_libdir(package, target)
 
     -- uninstall target file
