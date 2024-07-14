@@ -100,7 +100,7 @@ function _install_shared_libraries(target, opt)
     -- deduplicate libfiles, prevent packages using the same libfiles from overwriting each other
     libfiles = table.unique(libfiles)
 
-    -- do install
+    -- do install, TODO soname and symlinks
     for _, libfile in ipairs(libfiles) do
         local filename = path.filename(libfile)
         local filepath = path.join(bindir, filename)
