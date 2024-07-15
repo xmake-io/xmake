@@ -24,6 +24,9 @@ import("core.base.hashset")
 import("utils.symbols.depend", {alias = "get_depend_libraries"})
 
 function _get_target_package_libfiles(target, opt)
+    if option.get("nopkgs") then
+        return {}
+    end
     local libfiles = {}
     for _, pkg in ipairs(target:orderpkgs(opt)) do
         if pkg:enabled() and pkg:get("libfiles") then
