@@ -134,7 +134,7 @@ function rootdir()
         if not cachedir then
             cachedir = path.join(config.buildir(), ".build_cache")
         end
-        _g.cachedir = cachedir
+        _g.cachedir = path.absolute(cachedir)
     end
     return cachedir
 end
