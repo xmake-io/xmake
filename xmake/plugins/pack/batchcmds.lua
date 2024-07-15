@@ -100,7 +100,22 @@ function _copy_file_with_symlinks(batchcmds_, srcfile, outputdir)
     end
 end
 
--- install headers
+-- install target files
+function _install_target_files(target, batchcmds_, opt)
+    local package = opt.package
+    local srcfiles, dstfiles = target:installfiles(_get_target_installdir(package, target))
+    for idx, srcfile in ipairs(srcfiles) do
+        batchcmds_:cp(srcfile, dstfiles[idx])
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local srcfiles, dstfiles = dep:installfiles(_get_target_installdir(package, dep), {interface = true})
+        for idx, srcfile in ipairs(srcfiles) do
+            batchcmds_:cp(srcfile, dstfiles[idx])
+        end
+    end
+end
+
+-- install target headers
 function _install_target_headers(target, batchcmds_, opt)
     local package = opt.package
     local srcheaders, dstheaders = target:headerfiles(_get_target_includedir(package, target), {installonly = true})
@@ -157,7 +172,22 @@ function _install_target_shared_libraries(target, batchcmds_, opt)
     end
 end
 
--- uninstall headers
+-- uninstall target files
+function _uninstall_target_files(target, batchcmds_, opt)
+    local package = opt.package
+    local _, dstfiles = target:installfiles(_get_target_installdir(package, target))
+    for _, dstfile in ipairs(dstfiles) do
+        batchcmds_:rm(dstfile, {emptydirs = true})
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local _, dstfiles = dep:installfiles(_get_target_installdir(package, dep), {interface = true})
+        for _, dstfile in ipairs(dstfiles) do
+            batchcmds_:rm(dstfile, {emptydirs = true})
+        end
+    end
+end
+
+-- uninstall target headers
 function _uninstall_target_headers(target, batchcmds_, opt)
     local package = opt.package
     local _, dstheaders = target:headerfiles(_get_target_includedir(package, target), {installonly = true})
@@ -286,16 +316,7 @@ function _on_target_installcmd(target, batchcmds_, opt)
     end
 
     -- install target files
-    local srcfiles, dstfiles = target:installfiles(_get_target_installdir(package, target))
-    for idx, srcfile in ipairs(srcfiles) do
-        batchcmds_:cp(srcfile, dstfiles[idx])
-    end
-    for _, dep in ipairs(target:orderdeps()) do
-        local srcfiles, dstfiles = dep:installfiles(_get_target_installdir(package, dep), {interface = true})
-        for idx, srcfile in ipairs(srcfiles) do
-            batchcmds_:cp(srcfile, dstfiles[idx])
-        end
-    end
+    _install_target_files(target, batchcmds_, opt)
 end
 
 -- on uninstall binary target command
@@ -377,16 +398,7 @@ function _on_target_uninstallcmd(target, batchcmds_, opt)
     end
 
     -- uninstall target files
-    local _, dstfiles = target:installfiles(_get_target_installdir(package, target))
-    for _, dstfile in ipairs(dstfiles) do
-        batchcmds_:rm(dstfile, {emptydirs = true})
-    end
-    for _, dep in ipairs(target:orderdeps()) do
-        local _, dstfiles = dep:installfiles(_get_target_installdir(package, dep), {interface = true})
-        for _, dstfile in ipairs(dstfiles) do
-            batchcmds_:rm(dstfile, {emptydirs = true})
-        end
-    end
+    _uninstall_target_files(target, batchcmds_, opt)
 end
 
 -- get build commands from targets

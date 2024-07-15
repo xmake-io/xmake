@@ -68,14 +68,13 @@ end
 -- install files
 function _install_files(target)
     local srcfiles, dstfiles = target:installfiles()
-    if srcfiles and dstfiles then
-        local i = 1
-        for _, srcfile in ipairs(srcfiles) do
-            local dstfile = dstfiles[i]
-            if dstfile then
-                os.vcp(srcfile, dstfile)
-            end
-            i = i + 1
+    for idx, srcfile in ipairs(srcfiles) do
+        os.vcp(srcfile, dstfiles[idx])
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local srcfiles, dstfiles = dep:installfiles(dep:installdir(), {interface = true})
+        for idx, srcfile in ipairs(srcfiles) do
+            os.vcp(srcfile, dstfiles[idx])
         end
     end
 end
