@@ -29,7 +29,7 @@ function _get_target_bindir(package, target)
     local bindir = package:bindir()
     local prefixdir = target:prefixdir()
     if prefixdir then
-        bindir = path.join(package:installdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "bindir"))
+        bindir = path.join(package:installdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "bindir") or "bin")
     end
     return path.normalize(bindir)
 end
@@ -38,7 +38,7 @@ function _get_target_libdir(package, target)
     local libdir = package:libdir()
     local prefixdir = target:prefixdir()
     if prefixdir then
-        libdir = path.join(package:installdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "libdir"))
+        libdir = path.join(package:installdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "libdir") or "lib")
     end
     return path.normalize(libdir)
 end
@@ -47,7 +47,7 @@ function _get_target_includedir(package, target)
     local includedir = package:includedir()
     local prefixdir = target:prefixdir()
     if prefixdir then
-        includedir = path.join(package:installdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "includedir"))
+        includedir = path.join(package:installdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "includedir") or "include")
     end
     return path.normalize(includedir)
 end
