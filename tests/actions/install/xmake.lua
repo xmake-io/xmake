@@ -15,6 +15,7 @@ target("app")
     set_kind("binary")
     add_deps("foo")
     add_files("src/main.cpp")
+    set_prefixdir("app")
 
 includes("@builtin/xpack")
 
