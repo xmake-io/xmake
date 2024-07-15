@@ -25,7 +25,8 @@ import("core.base.option")
 function main(filedirs, opt)
     opt = opt or {}
     for _, filedir in ipairs(filedirs) do
-        if os.exists(filedir) then
+        -- os.exists will return false if symlink -> not found, but we need still remove this symlink
+        if os.exists(filedir) or os.islink(filedir) then
             -- we cannot use os.tryrm, because we need raise exception if remove failed with `uninstall --admin`
             os.rm(filedir, {emptydirs = option.get("all") or opt.emptydir})
         end
