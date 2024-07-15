@@ -49,16 +49,16 @@ function _get_target_package_libfiles(target, opt)
 end
 
 -- copy file with symlinks
-function _copyfile_with_symlinks(srcfile, outputdir)
+function _copy_file_with_symlinks(srcfile, outputdir)
     if os.islink(srcfile) then
         local srcfile_symlink = os.readlink(srcfile)
         if not path.is_absolute(srcfile_symlink) then
             srcfile_symlink = path.join(path.directory(srcfile), srcfile_symlink)
         end
-        _copyfile_with_symlinks(srcfile_symlink, outputdir)
-        os.vcp(srcfile, outputdir, {symlink = true, force = true})
+        _copy_file_with_symlinks(srcfile_symlink, outputdir)
+        os.vcp(srcfile, path.join(outputdir, path.filename(srcfile)), {symlink = true, force = true})
     else
-        os.vcp(srcfile, outputdir)
+        os.vcp(srcfile, path.join(outputdir, path.filename(srcfile)))
     end
 end
 
@@ -121,7 +121,7 @@ function _install_shared_libraries(target, opt)
         if os.isfile(filepath) and hash.sha256(filepath) ~= hash.sha256(libfile) then
             wprint("'%s' already exists in install dir, we are copying '%s' to overwrite it.", filepath, libfile)
         end
-        _copyfile_with_symlinks(libfile, bindir)
+        _copy_file_with_symlinks(libfile, bindir)
     end
 end
 
@@ -152,7 +152,7 @@ function _install_shared(target, opt)
         end
     else
         -- install target with soname and symlink
-        _copyfile_with_symlinks(targetfile, bindir)
+        _copy_file_with_symlinks(targetfile, bindir)
     end
     os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
 

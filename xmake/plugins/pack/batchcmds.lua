@@ -86,6 +86,20 @@ function _get_target_package_libfiles(target, opt)
     return libfiles
 end
 
+-- copy file with symlinks
+function _copy_file_with_symlinks(batchcmds_, srcfile, outputdir)
+    if os.islink(srcfile) then
+        local srcfile_symlink = os.readlink(srcfile)
+        if not path.is_absolute(srcfile_symlink) then
+            srcfile_symlink = path.join(path.directory(srcfile), srcfile_symlink)
+        end
+        _copy_file_with_symlinks(batchcmds_, srcfile_symlink, outputdir)
+        batchcmds_:cp(srcfile, path.join(outputdir, path.filename(srcfile)), {symlink = true, force = true})
+    else
+        batchcmds_:cp(srcfile, path.join(outputdir, path.filename(srcfile)))
+    end
+end
+
 -- install headers
 function _install_target_headers(target, batchcmds_, opt)
     local package = opt.package
@@ -139,7 +153,7 @@ function _install_target_shared_libraries(target, batchcmds_, opt)
     -- do install
     for _, libfile in ipairs(libfiles) do
         local filename = path.filename(libfile)
-        batchcmds_:cp(libfile, path.join(bindir, filename))
+        _copy_file_with_symlinks(batchcmds_, libfile, bindir)
     end
 end
 
@@ -203,7 +217,7 @@ function _on_target_installcmd_shared(target, batchcmds_, opt)
     local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(package, target) or _get_target_libdir(package, target)
     local libdir = _get_target_libdir(package, target)
 
-    batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
+    _copy_file_with_symlinks(batchcmds_, target:targetfile(), bindir)
     if os.isfile(target:symbolfile()) then
         batchcmds_:cp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
     end
