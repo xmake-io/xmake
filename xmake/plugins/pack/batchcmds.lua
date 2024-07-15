@@ -104,13 +104,17 @@ end
 function _install_target_files(target, batchcmds_, opt)
     local package = opt.package
     local srcfiles, dstfiles = target:installfiles(_get_target_installdir(package, target))
-    for idx, srcfile in ipairs(srcfiles) do
-        batchcmds_:cp(srcfile, dstfiles[idx])
+    if srcfiles and dstfiles then
+        for idx, srcfile in ipairs(srcfiles) do
+            batchcmds_:cp(srcfile, dstfiles[idx])
+        end
     end
     for _, dep in ipairs(target:orderdeps()) do
         local srcfiles, dstfiles = dep:installfiles(_get_target_installdir(package, dep), {interface = true})
-        for idx, srcfile in ipairs(srcfiles) do
-            batchcmds_:cp(srcfile, dstfiles[idx])
+        if srcfiles and dstfiles then
+            for idx, srcfile in ipairs(srcfiles) do
+                batchcmds_:cp(srcfile, dstfiles[idx])
+            end
         end
     end
 end
@@ -120,25 +124,15 @@ function _install_target_headers(target, batchcmds_, opt)
     local package = opt.package
     local srcheaders, dstheaders = target:headerfiles(_get_target_includedir(package, target), {installonly = true})
     if srcheaders and dstheaders then
-        local i = 1
-        for _, srcheader in ipairs(srcheaders) do
-            local dstheader = dstheaders[i]
-            if dstheader then
-                batchcmds_:cp(srcheader, dstheader)
-            end
-            i = i + 1
+        for idx, srcheader in ipairs(srcheaders) do
+            batchcmds_:cp(srcheader, dstheaders[idx])
         end
     end
     for _, dep in ipairs(target:orderdeps()) do
         local srcheaders, dstheaders = dep:headerfiles(_get_target_includedir(package, dep), {installonly = true, interface = true})
         if srcheaders and dstheaders then
-            local i = 1
-            for _, srcheader in ipairs(srcheaders) do
-                local dstheader = dstheaders[i]
-                if dstheader then
-                    batchcmds_:cp(srcheader, dstheader)
-                end
-                i = i + 1
+            for idx, srcheader in ipairs(srcheaders) do
+                batchcmds_:cp(srcheader, dstheaders[idx])
             end
         end
     end

@@ -8,6 +8,7 @@ target("foo")
     set_kind("shared")
     add_files("src/foo.cpp")
     add_packages("libplist", {public = true})
+    add_headerfiles("src/foo.h", {public = true})
     add_installfiles("src/foo.txt", {prefixdir = "assets", public = true})
     set_prefixdir("/", {bindir = "foo_bin", libdir = "foo_lib"})
 

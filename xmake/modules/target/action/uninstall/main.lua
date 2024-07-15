@@ -77,10 +77,15 @@ end
 
 -- uninstall headers
 function _uninstall_headers(target, opt)
-    local includedir = target:includedir()
-    local _, dstheaders = target:headerfiles(includedir, {installonly = true})
+    local _, dstheaders = target:headerfiles(target:includedir(), {installonly = true})
     for _, dstheader in ipairs(dstheaders) do
         remove_files(dstheader, {emptydir = true})
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local _, dstfiles = dep:headerfiles(dep:includedir(), {installonly = true, interface = true})
+        for _, dstfile in ipairs(dstfiles) do
+            remove_files(dstfile, {emptydir = true})
+        end
     end
 end
 

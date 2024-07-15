@@ -68,30 +68,35 @@ end
 -- install files
 function _install_files(target)
     local srcfiles, dstfiles = target:installfiles()
-    for idx, srcfile in ipairs(srcfiles) do
-        os.vcp(srcfile, dstfiles[idx])
+    if srcfiles and dstfiles then
+        for idx, srcfile in ipairs(srcfiles) do
+            os.vcp(srcfile, dstfiles[idx])
+        end
     end
     for _, dep in ipairs(target:orderdeps()) do
         local srcfiles, dstfiles = dep:installfiles(dep:installdir(), {interface = true})
-        for idx, srcfile in ipairs(srcfiles) do
-            os.vcp(srcfile, dstfiles[idx])
+        if srcfiles and dstfiles then
+            for idx, srcfile in ipairs(srcfiles) do
+                os.vcp(srcfile, dstfiles[idx])
+            end
         end
     end
 end
 
 -- install headers
 function _install_headers(target, opt)
-    local includedir = target:includedir()
-    os.mkdir(includedir)
-    local srcheaders, dstheaders = target:headerfiles(includedir, {installonly = true})
+    local srcheaders, dstheaders = target:headerfiles(target:includedir(), {installonly = true})
     if srcheaders and dstheaders then
-        local i = 1
-        for _, srcheader in ipairs(srcheaders) do
-            local dstheader = dstheaders[i]
-            if dstheader then
-                os.vcp(srcheader, dstheader)
+        for idx, srcheader in ipairs(srcheaders) do
+            os.vcp(srcheader, dstheaders[idx])
+        end
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local srcfiles, dstfiles = dep:headerfiles(dep:includedir(), {installonly = true, interface = true})
+        if srcfiles and dstfiles then
+            for idx, srcfile in ipairs(srcfiles) do
+                os.vcp(srcfile, dstfiles[idx])
             end
-            i = i + 1
         end
     end
 end
