@@ -91,10 +91,14 @@ function main(target, opt)
         table.insert(argv, "--verbose=0")
     end
 
-    if is_mode("debug") then
-        table.insert(argv, "--debug")
-    else
-        table.insert(argv, "--release")
+    -- make sure user flags have priority over default
+    local user_flags = target:values("qt.deploy.flags")
+    if not user_flags or not (user_flags:find("--debug", 1, true) or user_flags:find("--release", 1, true)) then
+        if is_mode("debug") then
+            table.insert(argv, "--debug")
+        else
+            table.insert(argv, "--release")
+        end
     end
 
     if qmldir then
@@ -102,7 +106,6 @@ function main(target, opt)
     end
 
     -- add user flags
-    local user_flags = target:values("qt.deploy.flags") or {}
     if user_flags then
         argv = table.join(argv, user_flags)
     end
