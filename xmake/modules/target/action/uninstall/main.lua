@@ -49,6 +49,18 @@ function _get_target_package_libfiles(target, opt)
     return libfiles
 end
 
+-- remove file with symbols
+function _remove_file_with_symbols(filepath)
+    if os.islink(filepath) then
+        local filepath_symlink = os.readlink(filepath)
+        if not path.is_absolute(filepath_symlink) then
+            filepath_symlink = path.join(path.directory(filepath), filepath_symlink)
+        end
+        _remove_file_with_symbols(filepath_symlink)
+    end
+    remove_files(filepath, {emptydir = true})
+end
+
 -- uninstall files
 function _uninstall_files(target)
     local _, dstfiles = target:installfiles()
@@ -90,7 +102,7 @@ function _uninstall_shared_libraries(target, opt)
     for _, libfile in ipairs(libfiles) do
         local filename = path.filename(libfile)
         local filepath = path.join(bindir, filename)
-        remove_files(filepath, {emptydir = true})
+        _remove_file_with_symbols(filepath)
     end
 end
 
@@ -115,21 +127,7 @@ function _uninstall_shared(target, opt)
         remove_files(path.join(libdir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")), {emptydir = true})
     else
         local targetfile = path.join(bindir, path.filename(target:targetfile()))
-        if os.islink(targetfile) then
-            local targetfile_with_soname = os.readlink(targetfile)
-            if not path.is_absolute(targetfile_with_soname) then
-                targetfile_with_soname = path.join(bindir, targetfile_with_soname)
-            end
-            if os.islink(targetfile_with_soname) then
-                local targetfile_with_version = os.readlink(targetfile_with_soname)
-                if not path.is_absolute(targetfile_with_version) then
-                    targetfile_with_version = path.join(bindir, targetfile_with_version)
-                end
-                remove_files(targetfile_with_version, {emptydir = true})
-            end
-            remove_files(targetfile_with_soname, {emptydir = true})
-        end
-        remove_files(targetfile, {emptydir = true})
+        _remove_file_with_symbols(targetfile)
     end
     remove_files(path.join(bindir, path.filename(target:symbolfile())), {emptydir = true})
 

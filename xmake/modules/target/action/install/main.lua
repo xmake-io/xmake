@@ -48,6 +48,20 @@ function _get_target_package_libfiles(target, opt)
     return libfiles
 end
 
+-- copy file with symlinks
+function _copyfile_with_symlinks(srcfile, outputdir)
+    if os.islink(srcfile) then
+        local srcfile_symlink = os.readlink(srcfile)
+        if not path.is_absolute(srcfile_symlink) then
+            srcfile_symlink = path.join(path.directory(srcfile), srcfile_symlink)
+        end
+        _copyfile_with_symlinks(srcfile_symlink, outputdir)
+        os.vcp(srcfile, outputdir, {symlink = true, force = true})
+    else
+        os.vcp(srcfile, outputdir)
+    end
+end
+
 -- install files
 function _install_files(target)
     local srcfiles, dstfiles = target:installfiles()
@@ -100,14 +114,14 @@ function _install_shared_libraries(target, opt)
     -- deduplicate libfiles, prevent packages using the same libfiles from overwriting each other
     libfiles = table.unique(libfiles)
 
-    -- do install, TODO soname and symlinks
+    -- do install
     for _, libfile in ipairs(libfiles) do
         local filename = path.filename(libfile)
         local filepath = path.join(bindir, filename)
-        if os.isfile(filepath) then
+        if os.isfile(filepath) and hash.sha256(filepath) ~= hash.sha256(libfile) then
             wprint("'%s' already exists in install dir, we are copying '%s' to overwrite it.", filepath, libfile)
         end
-        os.cp(libfile, filepath)
+        _copyfile_with_symlinks(libfile, bindir)
     end
 end
 
@@ -138,23 +152,7 @@ function _install_shared(target, opt)
         end
     else
         -- install target with soname and symlink
-        if os.islink(targetfile) then
-            local targetfile_with_soname = os.readlink(targetfile)
-            if not path.is_absolute(targetfile_with_soname) then
-                targetfile_with_soname = path.join(target:targetdir(), targetfile_with_soname)
-            end
-            if os.islink(targetfile_with_soname) then
-                local targetfile_with_version = os.readlink(targetfile_with_soname)
-                if not path.is_absolute(targetfile_with_version) then
-                    targetfile_with_version = path.join(target:targetdir(), targetfile_with_version)
-                end
-                os.vcp(targetfile_with_version, bindir, {symlink = true, force = true})
-            end
-            os.vcp(targetfile_with_soname, bindir, {symlink = true, force = true})
-            os.vcp(targetfile, bindir, {symlink = true, force = true})
-        else
-            os.vcp(targetfile, bindir)
-        end
+        _copyfile_with_symlinks(targetfile, bindir)
     end
     os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
 
