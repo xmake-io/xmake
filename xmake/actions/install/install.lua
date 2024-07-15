@@ -110,13 +110,11 @@ function main(targetname, group_pattern)
     local targets = {}
     if targetname and not targetname:startswith("__") then
         local target = project.target(targetname)
-        table.join2(targets, target:orderdeps())
         table.insert(targets, target)
     else
         for _, target in ipairs(project.ordertargets()) do
             local group = target:get("group")
             if (target:is_default() and not group_pattern) or targetname == "__all" or (group_pattern and group and group:match(group_pattern)) then
-                table.join2(targets, target:orderdeps())
                 table.insert(targets, target)
             end
         end
