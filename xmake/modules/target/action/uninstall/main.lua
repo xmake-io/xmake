@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.hashset")
-import("utils.symbols.depend", {alias = "get_depend_libraries"})
+import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 import("private.action.clean.remove_files")
 
 function _get_target_package_libfiles(target, opt)

@@ -22,7 +22,7 @@
 import("core.base.option")
 import("core.base.hashset")
 import("utils.archive")
-import("utils.symbols.depend", {alias = "get_depend_libraries"})
+import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 import("private.utils.batchcmds")
 
 function _get_target_bindir(package, target)

@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        depend.lua
+-- @file        deplibs.lua
 --
 
 -- imports
@@ -27,7 +27,7 @@ function _get_all_depends_by_dumpbin(binaryfile, opt)
     local depends
     local plat = opt.plat or os.host()
     local arch = opt.arch or os.arch()
-    local cachekey = "utils.symbols.depend"
+    local cachekey = "utils.binary.deplibs"
     local msvc = toolchain.load("msvc", {plat = plat, arch = arch})
     if msvc:check() then
         local dumpbin = find_tool("dumpbin", {cachekey = cachekey, envs = msvc:runenvs()})
@@ -52,7 +52,7 @@ function _get_all_depends_by_objdump(binaryfile, opt)
     local depends
     local plat = opt.plat or os.host()
     local arch = opt.arch or os.arch()
-    local cachekey = "utils.symbols.depend"
+    local cachekey = "utils.binary.deplibs"
     local objdump = find_tool("llvm-objdump", {cachekey = cachekey}) or find_tool("objdump", {cachekey = cachekey})
     if objdump then
         local binarydir = path.directory(binaryfile)
@@ -109,7 +109,7 @@ function _get_all_depends_by_ldd(binaryfile, opt)
         return
     end
     local depends
-    local cachekey = "utils.symbols.depend"
+    local cachekey = "utils.binary.deplibs"
     local ldd = find_tool("ldd", {cachekey = cachekey})
     if ldd then
         local binarydir = path.directory(binaryfile)
@@ -150,7 +150,7 @@ function _get_all_depends_by_readelf(binaryfile, opt)
         return
     end
     local depends
-    local cachekey = "utils.symbols.depend"
+    local cachekey = "utils.binary.deplibs"
     local readelf = find_tool("readelf", {cachekey = cachekey})
     if readelf then
         local binarydir = path.directory(binaryfile)
@@ -185,7 +185,7 @@ function _get_all_depends_by_otool(binaryfile, opt)
         return
     end
     local depends
-    local cachekey = "utils.symbols.depend"
+    local cachekey = "utils.binary.deplibs"
     local otool = find_tool("otool", {cachekey = cachekey})
     if otool then
         local binarydir = path.directory(binaryfile)
