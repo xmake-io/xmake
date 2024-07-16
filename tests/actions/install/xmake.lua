@@ -16,6 +16,7 @@ target("app")
     set_kind("binary")
     add_deps("foo")
     add_files("src/main.cpp")
+    add_rpathdirs("@loader_path/../lib", {installonly = true})
 --    set_prefixdir("app")
 
 includes("@builtin/xpack")

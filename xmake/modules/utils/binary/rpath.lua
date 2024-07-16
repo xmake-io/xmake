@@ -22,6 +22,18 @@
 import("core.base.option")
 import("lib.detect.find_tool")
 
+function _replace_rpath_vars(rpath, opt)
+    local plat = opt.plat or os.host()
+    local arch = opt.arch or os.arch()
+    if plat == "macosx" or plat == "iphoneos" or plat == "appletvos" or plat == "watchos" then
+        rpath = rpath:gsub("@loader_path", "$ORIGIN")
+        rpath = rpath:gsub("@executable_path", "$ORIGIN")
+    else
+        rpath = rpath:gsub("%$ORIGIN", "%loader_path")
+    end
+    return rpath
+end
+
 function _get_rpath_list_by_objdump(binaryfile, opt)
     local list
     local plat = opt.plat or os.host()
@@ -218,6 +230,7 @@ function insert(binaryfile, rpath, opt)
     if is_host("macosx") then
         table.insert(ops, 1, _insert_rpath_by_install_name_tool)
     end
+    rpath = _replace_rpath_vars(rpath, opt)
     for _, op in ipairs(ops) do
         if op(binaryfile, rpath, opt) then
             break
@@ -232,6 +245,8 @@ function change(binaryfile, rpath_old, rpath_new, opt)
     if is_host("macosx") then
         table.insert(ops, 1, _change_rpath_by_install_name_tool)
     end
+    rpath_old = _replace_rpath_vars(rpath_old, opt)
+    rpath_new = _replace_rpath_vars(rpath_new, opt)
     for _, op in ipairs(ops) do
         if op(binaryfile, rpath_old, rpath_new, opt) then
             break
@@ -246,6 +261,7 @@ function remove(binaryfile, rpath, opt)
     if is_host("macosx") then
         table.insert(ops, 1, _remove_rpath_by_install_name_tool)
     end
+    rpath = _replace_rpath_vars(rpath, opt)
     for _, op in ipairs(ops) do
         if op(binaryfile, rpath, opt) then
             break

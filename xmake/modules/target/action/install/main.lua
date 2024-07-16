@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.hashset")
 import("utils.binary.deplibs", {alias = "get_depend_libraries"})
+import("utils.binary.rpath", {alias = "rpath_utils"})
 
 function _get_target_package_libfiles(target, opt)
     if option.get("nopkgs") then
@@ -132,6 +133,29 @@ function _install_shared_libraries(target, opt)
     end
 end
 
+-- update install rpath, we can only get and update rpathdirs with `{installonly = true}`
+-- e.g. add_rpathdirs("@loader_path/../lib", {installonly = true})
+function _update_install_rpath(target, opt)
+    local bindir = target:bindir()
+    local targetfile = path.join(bindir, target:filename())
+    rpath_utils.remove_all(targetfile, {plat = target:plat(), arch = target:arch()})
+    if target:policy("install.rpath") then
+        local result, sources = target:get_from("rpathdirs", "*")
+        if result and sources then
+            for idx, rpathdirs in ipairs(result) do
+                local source = sources[idx]
+                local extraconf = target:extraconf_from("rpathdirs", source)
+                for _, rpathdir in ipairs(rpathdirs) do
+                    local extra = extraconf[rpathdir]
+                    if extra and extra.installonly then
+                        rpath_utils.insert(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
+                    end
+                end
+            end
+        end
+    end
+end
+
 -- install binary
 function _install_binary(target, opt)
     local bindir = target:bindir()
@@ -139,6 +163,7 @@ function _install_binary(target, opt)
     os.vcp(target:targetfile(), bindir)
     os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
     _install_shared_libraries(target, opt)
+    _update_install_rpath(target, opt)
 end
 
 -- install shared library
