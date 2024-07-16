@@ -188,6 +188,20 @@ function _runcmd_insert_rpath(cmd, opt)
     end
 end
 
+-- run command: remove rpath
+function _runcmd_remove_rpath(cmd, opt)
+    if not opt.dryrun then
+        rpath_utils.remove(cmd.filepath, cmd.rpath, opt.opt)
+    end
+end
+
+-- run command: change rpath
+function _runcmd_change_rpath(cmd, opt)
+    if not opt.dryrun then
+        rpath_utils.change(cmd.filepath, cmd.rpath_old, cmd.rpath_new, opt.opt)
+    end
+end
+
 -- run command
 function _runcmd(cmd, opt)
     local kind = cmd.kind
@@ -208,7 +222,9 @@ function _runcmd(cmd, opt)
             mv           = _runcmd_mv,
             ln           = _runcmd_ln,
             clean_rpath  = _runcmd_clean_rpath,
-            insert_rpath = _runcmd_insert_rpath
+            insert_rpath = _runcmd_insert_rpath,
+            remove_rpath = _runcmd_remove_rpath,
+            change_rpath = _runcmd_change_rpath
         }
         _g.maps = maps
     end
@@ -414,6 +430,16 @@ end
 -- add command: insert rpath
 function batchcmds:insert_rpath(filepath, rpath, opt)
     table.insert(self:cmds(), {kind = "insert_rpath", filepath = filepath, rpath = rpath, opt = opt})
+end
+
+-- add command: remove rpath
+function batchcmds:remove_rpath(filepath, rpath, opt)
+    table.insert(self:cmds(), {kind = "remove_rpath", filepath = filepath, rpath = rpath, opt = opt})
+end
+
+-- add command: change rpath
+function batchcmds:change_rpath(filepath, rpath_old, rpath_new, opt)
+    table.insert(self:cmds(), {kind = "change_rpath", filepath = filepath, rpath_old = rpath_old, rpath_new = rpath_new, opt = opt})
 end
 
 -- add raw command for the specific generator or xpack format
