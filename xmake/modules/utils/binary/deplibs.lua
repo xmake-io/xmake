@@ -205,19 +205,19 @@ end
 
 function main(binaryfile, opt)
     opt = opt or {}
-    local dumpers = {
+    local ops = {
         _get_all_depends_by_objdump,
         _get_all_depends_by_readelf
     }
     if is_host("windows") then
-        table.insert(dumpers, 2, _get_all_depends_by_dumpbin)
+        table.insert(ops, 2, _get_all_depends_by_dumpbin)
     elseif is_host("linux", "bsd") then
-        table.insert(dumpers, 1, _get_all_depends_by_ldd)
+        table.insert(ops, 1, _get_all_depends_by_ldd)
     elseif is_host("macosx") then
-        table.insert(dumpers, 1, _get_all_depends_by_otool)
+        table.insert(ops, 1, _get_all_depends_by_otool)
     end
-    for _, dump in ipairs(dumpers) do
-        local depends = dump(binaryfile, opt)
+    for _, op in ipairs(ops) do
+        local depends = op(binaryfile, opt)
         if depends then
             return depends
         end

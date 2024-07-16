@@ -151,20 +151,55 @@ function _get_rpath_list_by_otool(binaryfile, opt)
     return list
 end
 
+-- install_name_tool -delete_rpath <rpath> binaryfile
+function _remove_rpath_by_install_name_tool(binaryfile, rpath, opt)
+    local plat = opt.plat or os.host()
+    local arch = opt.arch or os.arch()
+    if plat ~= "macosx" and plat ~= "iphoneos" and plat ~= "appletvos" and plat ~= "watchos" then
+        return false
+    end
+    local ok = try { function ()
+        os.vrunv("install_name_tool", {"-delete_rpath", rpath, binaryfile})
+        return true
+    end }
+    return ok
+end
+
 -- get rpath list
 function list(binaryfile, opt)
     opt = opt or {}
-    local dumpers = {
+    local ops = {
         _get_rpath_list_by_objdump,
         _get_rpath_list_by_readelf
     }
     if is_host("macosx") then
-        table.insert(dumpers, 1, _get_rpath_list_by_otool)
+        table.insert(ops, 1, _get_rpath_list_by_otool)
     end
-    for _, dump in ipairs(dumpers) do
-        local list = dump(binaryfile, opt)
-        if list then
-            return list
+    for _, op in ipairs(ops) do
+        local result = op(binaryfile, opt)
+        if result then
+            return result
         end
+    end
+end
+
+-- remove rpath
+function remove(binaryfile, rpath, opt)
+    opt = opt or {}
+    local ops = {}
+    if is_host("macosx") then
+        table.insert(ops, 1, _remove_rpath_by_install_name_tool)
+    end
+    for _, op in ipairs(ops) do
+        if op(binaryfile, rpath, opt) then
+            break
+        end
+    end
+end
+
+-- remove all rpath
+function remove_all(binaryfile, opt)
+    for _, rpath in ipairs(list(binaryfile, opt)) do
+        remove(binaryfile, rpath, opt)
     end
 end
