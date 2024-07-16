@@ -29,6 +29,7 @@ import("core.tool.linker")
 import("core.tool.compiler")
 import("core.language.language")
 import("utils.progress", {alias = "progress_utils"})
+import("utils.binary.rpath", {alias = "rpath_utils"})
 
 -- define module
 local batchcmds = batchcmds or object { _init = {"_TARGET", "_CMDS", "_DEPINFO", "_tip"}}
@@ -173,6 +174,20 @@ function _runcmd_ln(cmd, opt)
     end
 end
 
+-- run command: clean rpath
+function _runcmd_clean_rpath(cmd, opt)
+    if not opt.dryrun then
+        rpath_utils.clean(cmd.filepath, opt.opt)
+    end
+end
+
+-- run command: insert rpath
+function _runcmd_insert_rpath(cmd, opt)
+    if not opt.dryrun then
+        rpath_utils.insert(cmd.filepath, cmd.rpath, opt.opt)
+    end
+end
+
 -- run command
 function _runcmd(cmd, opt)
     local kind = cmd.kind
@@ -180,18 +195,20 @@ function _runcmd(cmd, opt)
     if not maps then
         maps =
         {
-            show   = _runcmd_show,
-            runv   = _runcmd_runv,
-            vrunv  = _runcmd_vrunv,
-            execv  = _runcmd_execv,
-            vexecv = _runcmd_vexecv,
-            mkdir  = _runcmd_mkdir,
-            rmdir  = _runcmd_rmdir,
-            cd     = _runcmd_cd,
-            rm     = _runcmd_rm,
-            cp     = _runcmd_cp,
-            mv     = _runcmd_mv,
-            ln     = _runcmd_ln
+            show         = _runcmd_show,
+            runv         = _runcmd_runv,
+            vrunv        = _runcmd_vrunv,
+            execv        = _runcmd_execv,
+            vexecv       = _runcmd_vexecv,
+            mkdir        = _runcmd_mkdir,
+            rmdir        = _runcmd_rmdir,
+            cd           = _runcmd_cd,
+            rm           = _runcmd_rm,
+            cp           = _runcmd_cp,
+            mv           = _runcmd_mv,
+            ln           = _runcmd_ln,
+            clean_rpath  = _runcmd_clean_rpath,
+            insert_rpath = _runcmd_insert_rpath
         }
         _g.maps = maps
     end
@@ -387,6 +404,16 @@ end
 function batchcmds:show(format, ...)
     local showtext = string.format(format, ...)
     table.insert(self:cmds(), {kind = "show", showtext = showtext})
+end
+
+-- add command: clean rpath
+function batchcmds:clean_rpath(filepath, opt)
+    table.insert(self:cmds(), {kind = "clean_rpath", filepath = filepath, opt = opt})
+end
+
+-- add command: insert rpath
+function batchcmds:insert_rpath(filepath, rpath, opt)
+    table.insert(self:cmds(), {kind = "insert_rpath", filepath = filepath, rpath = rpath, opt = opt})
 end
 
 -- add raw command for the specific generator or xpack format

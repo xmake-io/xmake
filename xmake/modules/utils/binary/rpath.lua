@@ -269,8 +269,8 @@ function remove(binaryfile, rpath, opt)
     end
 end
 
--- remove all rpath
-function remove_all(binaryfile, opt)
+-- clean rpath
+function clean(binaryfile, opt)
     for _, rpath in ipairs(list(binaryfile, opt)) do
         remove(binaryfile, rpath, opt)
     end

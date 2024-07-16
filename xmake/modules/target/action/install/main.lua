@@ -136,9 +136,12 @@ end
 -- update install rpath, we can only get and update rpathdirs with `{installonly = true}`
 -- e.g. add_rpathdirs("@loader_path/../lib", {installonly = true})
 function _update_install_rpath(target, opt)
+    if target:is_plat("windows", "mingw") then
+        return
+    end
     local bindir = target:bindir()
     local targetfile = path.join(bindir, target:filename())
-    rpath_utils.remove_all(targetfile, {plat = target:plat(), arch = target:arch()})
+    rpath_utils.clean(targetfile, {plat = target:plat(), arch = target:arch()})
     if target:policy("install.rpath") then
         local result, sources = target:get_from("rpathdirs", "*")
         if result and sources then

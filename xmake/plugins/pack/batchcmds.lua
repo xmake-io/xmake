@@ -100,6 +100,33 @@ function _copy_file_with_symlinks(batchcmds_, srcfile, outputdir)
     end
 end
 
+-- update install rpath, we can only get and update rpathdirs with `{installonly = true}`
+-- e.g. add_rpathdirs("@loader_path/../lib", {installonly = true})
+function _update_target_install_rpath(target, batchcmds_, opt)
+    if target:is_plat("windows", "mingw") then
+        return
+    end
+    local package = opt.package
+    local bindir = _get_target_bindir(package, target)
+    local targetfile = path.join(bindir, target:filename())
+    batchcmds_:clean_rpath(targetfile, {plat = target:plat(), arch = target:arch()})
+    if target:policy("install.rpath") then
+        local result, sources = target:get_from("rpathdirs", "*")
+        if result and sources then
+            for idx, rpathdirs in ipairs(result) do
+                local source = sources[idx]
+                local extraconf = target:extraconf_from("rpathdirs", source)
+                for _, rpathdir in ipairs(rpathdirs) do
+                    local extra = extraconf[rpathdir]
+                    if extra and extra.installonly then
+                        batchcmds_:insert_rpath(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
+                    end
+                end
+            end
+        end
+    end
+end
+
 -- install target files
 function _install_target_files(target, batchcmds_, opt)
     local package = opt.package
@@ -233,6 +260,7 @@ function _on_target_installcmd_binary(target, batchcmds_, opt)
         batchcmds_:cp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
     end
     _install_target_shared_libraries(target, batchcmds_, opt)
+    _update_target_install_rpath(target, batchcmds_, opt)
 end
 
 -- on install shared target command
