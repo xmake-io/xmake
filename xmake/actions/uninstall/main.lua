@@ -68,7 +68,10 @@ function main()
                 if sudo.has() and option.get("admin") then
 
                     -- uninstall target with administrator permission
-                    sudo.execl(path.join(os.scriptdir(), "uninstall_admin.lua"), {targetname or "__all", option.get("installdir"), option.get("prefix")})
+                    sudo.execl(path.join(os.scriptdir(), "uninstall_admin.lua"), {
+                        targetname or "__all",
+                        option.get("installdir") or "",
+                        option.get("prefix")})
 
                     -- trace
                     cprint("${color.success}uninstall ok!")
