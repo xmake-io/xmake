@@ -151,6 +151,20 @@ function _get_rpath_list_by_otool(binaryfile, opt)
     return list
 end
 
+-- install_name_tool -add_rpath <rpath> binaryfile
+function _insert_rpath_by_install_name_tool(binaryfile, rpath, opt)
+    local plat = opt.plat or os.host()
+    local arch = opt.arch or os.arch()
+    if plat ~= "macosx" and plat ~= "iphoneos" and plat ~= "appletvos" and plat ~= "watchos" then
+        return false
+    end
+    local ok = try { function ()
+        os.vrunv("install_name_tool", {"-add_rpath", rpath, binaryfile})
+        return true
+    end }
+    return ok
+end
+
 -- install_name_tool -delete_rpath <rpath> binaryfile
 function _remove_rpath_by_install_name_tool(binaryfile, rpath, opt)
     local plat = opt.plat or os.host()
@@ -179,6 +193,20 @@ function list(binaryfile, opt)
         local result = op(binaryfile, opt)
         if result then
             return result
+        end
+    end
+end
+
+-- insert rpath
+function insert(binaryfile, rpath, opt)
+    opt = opt or {}
+    local ops = {}
+    if is_host("macosx") then
+        table.insert(ops, 1, _insert_rpath_by_install_name_tool)
+    end
+    for _, op in ipairs(ops) do
+        if op(binaryfile, rpath, opt) then
+            break
         end
     end
 end
