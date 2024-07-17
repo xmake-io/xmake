@@ -10,7 +10,7 @@ target("foo")
     add_packages("libzip", {public = true})
     add_headerfiles("src/foo.h", {public = true})
     add_installfiles("src/foo.txt", {prefixdir = "assets", public = true})
-    set_prefixdir("/", {bindir = "foo_bin", libdir = "foo_lib"})
+    set_prefixdir("/", {libdir = "foo_lib"})
     add_rpathdirs("@loader_path/../../foo_lib", {installonly = true, public = true})
 
 target("app")
