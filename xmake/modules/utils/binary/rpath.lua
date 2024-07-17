@@ -29,7 +29,7 @@ function _replace_rpath_vars(rpath, opt)
         rpath = rpath:gsub("@loader_path", "$ORIGIN")
         rpath = rpath:gsub("@executable_path", "$ORIGIN")
     else
-        rpath = rpath:gsub("%$ORIGIN", "%loader_path")
+        rpath = rpath:gsub("%$ORIGIN", "@loader_path")
     end
     return rpath
 end
