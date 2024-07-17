@@ -109,8 +109,8 @@ function _update_target_install_rpath(target, batchcmds_, opt)
     local package = opt.package
     local bindir = _get_target_bindir(package, target)
     local targetfile = path.join(bindir, target:filename())
-    batchcmds_:clean_rpath(targetfile, {plat = target:plat(), arch = target:arch()})
     if target:policy("install.rpath") then
+        batchcmds_:clean_rpath(targetfile, {plat = target:plat(), arch = target:arch()})
         local result, sources = target:get_from("rpathdirs", "*")
         if result and sources then
             for idx, rpathdirs in ipairs(result) do

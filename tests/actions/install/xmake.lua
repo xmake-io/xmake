@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
---set_version("1.0.1", {soname = true})
+set_version("1.0.1", {soname = true})
 
 add_requires("libplist", {system = false, configs = {shared = true}})
 

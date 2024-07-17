@@ -141,8 +141,8 @@ function _update_install_rpath(target, opt)
     end
     local bindir = target:bindir()
     local targetfile = path.join(bindir, target:filename())
-    rpath_utils.clean(targetfile, {plat = target:plat(), arch = target:arch()})
     if target:policy("install.rpath") then
+        rpath_utils.clean(targetfile, {plat = target:plat(), arch = target:arch()})
         local result, sources = target:get_from("rpathdirs", "*")
         if result and sources then
             for idx, rpathdirs in ipairs(result) do
