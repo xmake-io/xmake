@@ -98,15 +98,15 @@ end
 
 -- uninstall shared libraries
 function _uninstall_shared_libraries(target, opt)
+    local bindir = target:is_plat("windows", "mingw") and target:bindir() or target:libdir()
 
     -- get all dependent shared libraries
     local libfiles = {}
     for _, dep in ipairs(target:orderdeps()) do
-        local bindir = dep:is_plat("windows", "mingw") and dep:bindir() or dep:libdir()
         if dep:kind() == "shared" then
             local depfile = dep:targetfile()
             if os.isfile(depfile) then
-                table.insert(libfiles, path.joinenv({depfile, bindir}))
+                table.insert(libfiles, depfile)
             end
         end
         table.join2(libfiles, _get_target_package_libfiles(dep, {interface = true}))
@@ -118,10 +118,6 @@ function _uninstall_shared_libraries(target, opt)
 
     -- do uninstall
     for _, libfile in ipairs(libfiles) do
-        local splitinfo = path.splitenv(libfile)
-        libfile = splitinfo[1]
-        local bindir = splitinfo[2]
-        assert(libfile and bindir)
         local filename = path.filename(libfile)
         local filepath = path.join(bindir, filename)
         _remove_file_with_symbols(filepath)

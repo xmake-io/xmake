@@ -11,13 +11,13 @@ target("foo")
     add_headerfiles("src/foo.h", {public = true})
     add_installfiles("src/foo.txt", {prefixdir = "assets", public = true})
     set_prefixdir("/", {libdir = "foo_lib"})
-    add_rpathdirs("@loader_path/../../foo_lib", {installonly = true, public = true})
 
 target("app")
     set_kind("binary")
     add_deps("foo")
     add_files("src/main.cpp")
-    set_prefixdir("app")
+    set_prefixdir("app", {libdir = "app_lib"})
+    add_rpathdirs("@loader_path/../app_lib", {installonly = true})
 
 includes("@builtin/xpack")
 
