@@ -116,10 +116,12 @@ function _update_target_install_rpath(target, batchcmds_, opt)
             for idx, rpathdirs in ipairs(result) do
                 local source = sources[idx]
                 local extraconf = target:extraconf_from("rpathdirs", source)
-                for _, rpathdir in ipairs(rpathdirs) do
-                    local extra = extraconf[rpathdir]
-                    if extra and extra.installonly then
-                        batchcmds_:insert_rpath(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
+                if extraconf then
+                    for _, rpathdir in ipairs(rpathdirs) do
+                        local extra = extraconf[rpathdir]
+                        if extra and extra.installonly then
+                            batchcmds_:insert_rpath(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
+                        end
                     end
                 end
             end

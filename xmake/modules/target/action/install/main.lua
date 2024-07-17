@@ -148,10 +148,12 @@ function _update_install_rpath(target, opt)
             for idx, rpathdirs in ipairs(result) do
                 local source = sources[idx]
                 local extraconf = target:extraconf_from("rpathdirs", source)
-                for _, rpathdir in ipairs(rpathdirs) do
-                    local extra = extraconf[rpathdir]
-                    if extra and extra.installonly then
-                        rpath_utils.insert(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
+                if extraconf then
+                    for _, rpathdir in ipairs(rpathdirs) do
+                        local extra = extraconf[rpathdir]
+                        if extra and extra.installonly then
+                            rpath_utils.insert(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
+                        end
                     end
                 end
             end
