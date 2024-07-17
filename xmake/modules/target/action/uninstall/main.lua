@@ -25,13 +25,17 @@ import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 import("private.action.clean.remove_files")
 
 function _get_target_package_libfiles(target, opt)
+    if option.get("nopkgs") then
+        return {}
+    end
     local libfiles = {}
+    local bindir = target:is_plat("windows", "mingw") and target:bindir() or target:libdir()
     for _, pkg in ipairs(target:orderpkgs(opt)) do
         if pkg:enabled() and pkg:get("libfiles") then
             for _, libfile in ipairs(table.wrap(pkg:get("libfiles"))) do
                 local filename = path.filename(libfile)
                 if filename:endswith(".dll") or filename:endswith(".so") or filename:find("%.so%.%d+$") or filename:endswith(".dylib") then
-                    table.insert(libfiles, libfile)
+                    table.insert(libfiles, path.joinenv({libfile, bindir}))
                 end
             end
         end
@@ -44,7 +48,10 @@ function _get_target_package_libfiles(target, opt)
         for _, libfile in ipairs(depend_libraries) do
             depends:insert(path.filename(libfile))
         end
-        table.remove_if(libfiles, function (_, libfile) return not depends:has(path.filename(libfile)) end)
+        table.remove_if(libfiles, function (_, libfile)
+            libfile = path.splitenv(libfile)[1]
+            return not depends:has(path.filename(libfile))
+        end)
     end
     return libfiles
 end
@@ -91,15 +98,15 @@ end
 
 -- uninstall shared libraries
 function _uninstall_shared_libraries(target, opt)
-    local bindir = target:is_plat("windows", "mingw") and target:bindir() or target:libdir()
 
     -- get all dependent shared libraries
     local libfiles = {}
     for _, dep in ipairs(target:orderdeps()) do
+        local bindir = dep:is_plat("windows", "mingw") and dep:bindir() or dep:libdir()
         if dep:kind() == "shared" then
             local depfile = dep:targetfile()
             if os.isfile(depfile) then
-                table.insert(libfiles, depfile)
+                table.insert(libfiles, path.joinenv({depfile, bindir}))
             end
         end
         table.join2(libfiles, _get_target_package_libfiles(dep, {interface = true}))
@@ -111,6 +118,10 @@ function _uninstall_shared_libraries(target, opt)
 
     -- do uninstall
     for _, libfile in ipairs(libfiles) do
+        local splitinfo = path.splitenv(libfile)
+        libfile = splitinfo[1]
+        local bindir = splitinfo[2]
+        assert(libfile and bindir)
         local filename = path.filename(libfile)
         local filepath = path.join(bindir, filename)
         _remove_file_with_symbols(filepath)
