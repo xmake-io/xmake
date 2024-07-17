@@ -26,10 +26,10 @@ function _replace_rpath_vars(rpath, opt)
     local plat = opt.plat or os.host()
     local arch = opt.arch or os.arch()
     if plat == "macosx" or plat == "iphoneos" or plat == "appletvos" or plat == "watchos" then
+        rpath = rpath:gsub("%$ORIGIN", "@loader_path")
+    else
         rpath = rpath:gsub("@loader_path", "$ORIGIN")
         rpath = rpath:gsub("@executable_path", "$ORIGIN")
-    else
-        rpath = rpath:gsub("%$ORIGIN", "@loader_path")
     end
     return rpath
 end
