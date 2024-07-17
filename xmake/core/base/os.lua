@@ -503,7 +503,7 @@ function os.rm(filepath, opt)
                 return false, errors
             end
             if opt.emptydirs then
-                ok, errors = os._rm_empty_parentdirs(filepath)
+                ok, errors = os._rm_empty_parentdirs(_filepath)
                 if not ok then
                     return false, errors
                 end
