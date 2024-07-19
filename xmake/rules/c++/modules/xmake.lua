@@ -227,6 +227,13 @@ rule("c++.build.modules.install")
             local modules = compiler_support.localcache():get2(target:name(), "c++.modules")
             builder.generate_metadata(target, modules)
 
-            compiler_support.install_module_target(target)
+            compiler_support.add_installfiles_for_modules(target)
+        end
+    end)
+
+    before_uninstall(function (target)
+        import("modules_support.compiler_support")
+        if compiler_support.contains_modules(target) then
+            compiler_support.add_installfiles_for_modules(target)
         end
     end)
