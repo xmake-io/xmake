@@ -133,6 +133,7 @@ function linker.load(targetkind, sourcekinds, target)
     local plat = linkertool:plat() or config.plat() or os.host()
     local arch = linkertool:arch() or config.arch() or os.arch()
     local cachekey = targetkind .. "_" .. linkerinfo.linkerkind .. (linkerinfo.program or "") .. plat .. arch
+    cachekey = cachekey .. table.concat(sourcekinds, "") -- @see https://github.com/xmake-io/xmake/issues/5360
 
     -- get it directly from cache dirst
     builder._INSTANCES = builder._INSTANCES or {}
