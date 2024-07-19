@@ -979,6 +979,15 @@ end
 -- do build for ninja
 function _build_for_ninja(package, configs, opt)
     opt = opt or {}
+    -- Fix pdb issue, if multiple CL.EXE write to the same .PDB file, please use /FS
+    -- @see https://github.com/xmake-io/xmake/issues/5353
+    if package:is_plat("windows") and package:has_tool("cxx", "cl") then
+        local buildir = opt.buildir or package:buildir()
+        local pdbdir = path.join(package:buildir(), "pdb")
+        if not os.isdir(pdbdir) then
+            os.mkdir(pdbdir)
+        end
+    end
     ninja.build(package, {}, {envs = opt.envs or buildenvs(package, opt),
         jobs = opt.jobs,
         target = opt.target})
@@ -1063,6 +1072,15 @@ end
 -- do install for ninja
 function _install_for_ninja(package, configs, opt)
     opt = opt or {}
+    -- Fix pdb issue, if multiple CL.EXE write to the same .PDB file, please use /FS
+    -- @see https://github.com/xmake-io/xmake/issues/5353
+    if package:is_plat("windows") and package:has_tool("cxx", "cl") then
+        local buildir = opt.buildir or package:buildir()
+        local pdbdir = path.join(package:buildir(), "pdb")
+        if not os.isdir(pdbdir) then
+            os.mkdir(pdbdir)
+        end
+    end
     ninja.install(package, {}, {envs = opt.envs or buildenvs(package, opt),
         jobs = opt.jobs,
         target = opt.target})
