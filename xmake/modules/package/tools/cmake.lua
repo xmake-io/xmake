@@ -879,6 +879,17 @@ function _get_configs(package, configs, opt)
     return configs
 end
 
+-- Fix pdb issue, if multiple CL.EXE write to the same .PDB file, please use /FS
+-- @see https://github.com/xmake-io/xmake/issues/5353
+function _fix_pdbdir_for_ninja(package)
+    if package:is_plat("windows") and package:has_tool("cxx", "cl") then
+        local pdbdir = "pdb"
+        if not os.isdir(pdbdir) then
+            os.mkdir(pdbdir)
+        end
+    end
+end
+
 -- get build environments
 function buildenvs(package, opt)
 
@@ -979,14 +990,7 @@ end
 -- do build for ninja
 function _build_for_ninja(package, configs, opt)
     opt = opt or {}
-    -- Fix pdb issue, if multiple CL.EXE write to the same .PDB file, please use /FS
-    -- @see https://github.com/xmake-io/xmake/issues/5353
-    if package:is_plat("windows") and package:has_tool("cxx", "cl") then
-        local pdbdir = "pdb"
-        if not os.isdir(pdbdir) then
-            os.mkdir(pdbdir)
-        end
-    end
+    _fix_pdbdir_for_ninja(package)
     ninja.build(package, {}, {envs = opt.envs or buildenvs(package, opt),
         jobs = opt.jobs,
         target = opt.target})
@@ -1071,14 +1075,7 @@ end
 -- do install for ninja
 function _install_for_ninja(package, configs, opt)
     opt = opt or {}
-    -- Fix pdb issue, if multiple CL.EXE write to the same .PDB file, please use /FS
-    -- @see https://github.com/xmake-io/xmake/issues/5353
-    if package:is_plat("windows") and package:has_tool("cxx", "cl") then
-        local pdbdir = "pdb"
-        if not os.isdir(pdbdir) then
-            os.mkdir(pdbdir)
-        end
-    end
+    _fix_pdbdir_for_ninja(package)
     ninja.install(package, {}, {envs = opt.envs or buildenvs(package, opt),
         jobs = opt.jobs,
         target = opt.target})
