@@ -430,6 +430,8 @@ function sort_modules_by_dependencies(target, objectfiles, modules)
                 local dont_cull = fileconfig and fileconfig.cull ~= nil and not fileconfig.cull
                 if not provide or public or dont_cull then
                     table.insert(result, objectfile)
+                else
+                    wprint("%s has been culled because it's not consumed by its target nor flagged as a public module (add_files(\"xxx.cppm\", {public = true}))", cppfile)
                 end
             else
                 table.insert(result, objectfile)
