@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.semver")
+import("core.project.project")
 import("core.project.config")
 import("detect.sdks.find_vstudio")
 
@@ -89,6 +90,11 @@ function main(toolchain)
     local vs = toolchain:config("vs")
     if vs and semver.is_valid(vs) and semver.compare(vs, "2005") < 0 then
         toolchain:add("runenvs", "VS_BINARY_OUTPUT", "1")
+    end
+
+    -- enable msbuild mtt
+    if project.policy("msbuild.multi_tool_task") then
+        toolchain:add("runenvs", "UseMultiToolTask", "true")
     end
 end
 
