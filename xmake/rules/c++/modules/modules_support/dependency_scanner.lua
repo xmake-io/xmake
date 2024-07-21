@@ -427,7 +427,8 @@ function sort_modules_by_dependencies(target, objectfiles, modules)
                 local _, provide, cppfile = compiler_support.get_provided_module(modules[objectfile])
                 local fileconfig = target:fileconfig(cppfile)
                 local public = fileconfig and fileconfig.public
-                if not provide or public then
+                local dont_cull = fileconfig and fileconfig.cull ~= nil and not fileconfig.cull
+                if not provide or public or dont_cull then
                     table.insert(result, objectfile)
                 end
             else
