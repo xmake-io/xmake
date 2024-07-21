@@ -72,6 +72,8 @@ function policy.policies()
             ["build.c++.modules"]                 = {description = "Enable C++ modules for C++ building.", type = "boolean"},
             -- Enable std module
             ["build.c++.modules.std"]             = {description = "Enable std modules.", default = true, type = "boolean"},
+            -- Enable unreferenced and non-public named module culling
+            ["build.c++.modules.culling"]         = {description = "Enable unrefereced and non-public named module culling.", default = true, type = "boolean"},
             -- Try to reuse compiled module bmi file if targets flags permit it
             ["build.c++.modules.tryreuse"]        = {description = "Try to reuse compiled module if possible.", default = true, type = "boolean"},
             -- Enable module taking defines acbount for bmi reuse discrimination
