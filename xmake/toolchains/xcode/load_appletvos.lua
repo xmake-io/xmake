@@ -30,7 +30,7 @@ function main(toolchain)
 
     -- init target minimal version
     local target_minver = toolchain:config("target_minver")
-    local target_minver_flags = (simulator and "-mappletv-simulator-version-min=" or "-mappletvos-version-min=") .. target_minver
+    local target_minver_flags = (simulator and "-mappletvsimulator-version-min=" or "-mappletvos-version-min=") .. target_minver
 
     -- init flags for c/c++
     toolchain:add("cxflags", "-arch", arch, target_minver_flags, "-isysroot", xcode_sysroot)
