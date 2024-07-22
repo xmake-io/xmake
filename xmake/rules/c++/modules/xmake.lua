@@ -97,7 +97,7 @@ rule("c++.build.modules.builder")
                 -- append to sourcebatch
                 for _, package_module_data in table.orderpairs(package_modules_data) do
                     table.insert(sourcebatch.sourcefiles, package_module_data.file)
-                    target:fileconfig_set(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
+                    target:fileconfig_set(package_module_data.file, {external = package_module_data.external, defines = package_module_data.metadata.defines})
                 end
             end
 
@@ -160,7 +160,7 @@ rule("c++.build.modules.builder")
                 -- append to sourcebatch
                 for _, package_module_data in table.orderpairs(package_modules_data) do
                     table.insert(sourcebatch.sourcefiles, package_module_data.file)
-                    target:fileconfig_set(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
+                    target:fileconfig_set(package_module_data.file, {external = package_module_data.external, defines = package_module_data.metadata.defines})
                 end
             end
 

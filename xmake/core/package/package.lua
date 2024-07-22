@@ -572,6 +572,11 @@ function _instance:is_headeronly()
     return self:is_library() and self:extraconf("kind", "library", "headeronly")
 end
 
+-- is module only?
+function _instance:is_moduleonly()
+    return self:is_library() and self:extraconf("kind", "library", "moduleonly")
+end
+
 -- is top level? user top requires in xmake.lua
 function _instance:is_toplevel()
     local requireinfo = self:requireinfo()
@@ -2399,7 +2404,7 @@ function _instance:_generate_build_configs(configs, opt)
     end
 
     -- check links for library
-    if self:is_library() and not self:is_headeronly() then
+    if self:is_library() and not self:is_headeronly() and not self:is_moduleonly() then
         local links = table.wrap(configs.links)
         local ldflags = table.wrap(configs.ldflags)
         local frameworks = table.wrap(configs.frameworks)
