@@ -442,7 +442,6 @@ function sort_modules_by_dependencies(target, objectfiles, modules)
             end
         end
     end
-    print(target:name(), result)
     return result
 end
 
