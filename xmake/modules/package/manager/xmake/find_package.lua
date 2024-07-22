@@ -167,6 +167,13 @@ function _find_package_from_repo(name, opt)
             result.shared = true
             table.insert(libfiles, file)
         end
+        -- @see https://github.com/xmake-io/xmake/issues/5325#issuecomment-2242513463
+        if not result.shared then
+            for _, file in ipairs(os.files(path.join(installdir, "**.dll"))) do
+                result.shared = true
+                table.insert(libfiles, file)
+            end
+        end
     end
 
     -- add root link directories
