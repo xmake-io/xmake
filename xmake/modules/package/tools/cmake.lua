@@ -98,17 +98,6 @@ function _get_msvc_runenvs(package)
     return os.joinenvs(_get_msvc(package):runenvs())
 end
 
--- get vs arch
-function _get_vsarch(package)
-    local arch = package:arch()
-    if arch == "x86" or arch == "i386" then return "Win32" end
-    if arch == "x86_64" then return "x64" end
-    if arch == "arm64ec" then return "ARM64EC" end
-    if arch:startswith("arm64") then return "ARM64" end
-    if arch:startswith("arm") then return "ARM" end
-    return arch
-end
-
 -- get cflags from package deps
 function _get_cflags_from_packagedeps(package, opt)
     local result = {}
