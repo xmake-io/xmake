@@ -450,7 +450,6 @@ function get_targetdeps_modules(target)
     local sourcefiles
     for _, dep in ipairs(target:orderdeps()) do
         local sourcebatch = dep:sourcebatches()["c++.build.modules.builder"]
-        local private_dep = target:extraconf("deps", dep:name(), "private") or not target:extraconf("deps", dep:name(), "public")
         if sourcebatch and sourcebatch.sourcefiles then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local fileconfig = dep:fileconfig(sourcefile)
@@ -458,7 +457,7 @@ function get_targetdeps_modules(target)
                 if public then
                     sourcefiles = sourcefiles or {}
                     table.insert(sourcefiles, sourcefile)
-                    target:fileconfig_add(sourcefile, {external = {moduleonly = dep:is_moduleonly()}, private_dep = private_dep})
+                    target:fileconfig_add(sourcefile, {external = {moduleonly = dep:is_moduleonly()}})
                 end
             end
         end

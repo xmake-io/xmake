@@ -86,11 +86,6 @@ end
 -- cull sourcebatch objectfiles
 function cull_objectfiles(target, modules, sourcebatch)
 
-    -- don't cull for executables
-    -- if target:is_binary() then
-    --     return
-    -- end
-
     sourcebatch.objectfiles = {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
@@ -101,7 +96,6 @@ function cull_objectfiles(target, modules, sourcebatch)
             local public = fileconfig and fileconfig.public
             local external = fileconfig and fileconfig.external
             local from_moduleonly = external and external.moduleonly
-            local private_dep = fileconfig and fileconfig.private_dep
             if not external or from_moduleonly then
                 table.insert(sourcebatch.objectfiles, objectfile)
             end
