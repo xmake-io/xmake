@@ -207,11 +207,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
         job = batchjobs:newjob(name or opt.cppfile, function(index, total, jobopt)
             local mapped_bmi
             if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
-                if not target:is_binary() then
-                    return
-                else
-                    mapped_bmi = get_from_target_mapper(target, name).bmi
-                end
+                mapped_bmi = get_from_target_mapper(target, name).bmi
             end
 
             local build, dependinfo
@@ -256,13 +252,8 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                             _compile_bmi_step(target, bmifile, opt.cppfile, {std = (name == "std" or name == "std.compat")})
                         end
                     else
-                        if mapped_bmi then
-                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
-                            _compile_objectfile_step(target, bmifile, opt.cppfile, opt.objectfile)
-                        else
-                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                            _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {std = (name == "std" or name == "std.compat")})
-                        end
+                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                        _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {std = (name == "std" or name == "std.compat")})
                     end
                 else
                     os.tryrm(opt.objectfile) -- force rebuild for .cpp files
@@ -280,11 +271,7 @@ function make_module_buildcmds(target, batchcmds, opt)
 
     local mapped_bmi
     if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
-        if not target:is_binary() then
-            return
-        else
-            mapped_bmi = get_from_target_mapper(target, name).bmi
-        end
+        mapped_bmi = get_from_target_mapper(target, name).bmi
     end
 
     -- append requires flags
@@ -306,13 +293,8 @@ function make_module_buildcmds(target, batchcmds, opt)
                 _compile_bmi_step(target, bmifile, opt.cppfile, {std = (name == "std" or name == "std.compat"), batchcmds = batchcmds})
             end
         else
-            if mapped_bmi then
-                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
-                _compile_objectfile_step(target, bmifile, opt.cppfile, opt.objectfile, {std = (name == "std" or name == "std.compat"), batchcmds = batchcmds})
-            else
-                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {std = (name == "std" or name == "std.compat"), batchcmds = batchcmds})
-            end
+            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+            _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, {std = (name == "std" or name == "std.compat"), batchcmds = batchcmds})
         end
     else
         batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files

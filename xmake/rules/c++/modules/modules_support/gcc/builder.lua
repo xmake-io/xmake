@@ -187,11 +187,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
         job = batchjobs:newjob(name or opt.cppfile, function(index, total, jobopt)
             local mapped_bmi
             if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
-                if not target:is_binary() then
-                    return
-                else
-                    mapped_bmi = get_from_target_mapper(target, name).bmi
-                end
+                mapped_bmi = get_from_target_mapper(target, name).bmi
             end
 
             -- generate and append module mapper file
@@ -227,13 +223,8 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                             sourcefile = opt.cppfile
                         end
                     else
-                        if mapped_bmi then
-                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
-                            sourcefile = bmifile
-                        else
-                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                            sourcefile = opt.cppfile
-                        end
+                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                        sourcefile = opt.cppfile
                     end
                     if option.get("diagnosis") then
                         print("mapper file --------\n%s--------", io.readfile(module_mapper))
@@ -259,11 +250,7 @@ function make_module_buildcmds(target, batchcmds, opt)
 
     local mapped_bmi
     if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
-        if not target:is_binary() then
-            return
-        else
-            mapped_bmi = get_from_target_mapper(target, name).bmi
-        end
+        mapped_bmi = get_from_target_mapper(target, name).bmi
     end
 
     -- generate and append module mapper file
@@ -291,13 +278,8 @@ function make_module_buildcmds(target, batchcmds, opt)
                 sourcefile = opt.cppfile
             end
         else
-            if mapped_bmi then
-                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
-                sourcefile = bmifile
-            else
-                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                sourcefile = opt.cppfile
-            end
+            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+            sourcefile = opt.cppfile
         end
         if option.get("diagnosis") then
             batchcmds:print("mapper file: %s", io.readfile(module_mapper))
