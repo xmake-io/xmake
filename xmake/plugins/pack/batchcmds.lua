@@ -61,6 +61,26 @@ function _get_target_installdir(package, target)
     return path.normalize(installdir)
 end
 
+-- we need to get all deplibs, e.g. app -> libfoo.so -> libbar.so ...
+-- @see https://github.com/xmake-io/xmake/issues/5325#issuecomment-2242597732
+function _get_target_package_deplibs(target, depends, libfiles, binaryfile)
+    local deplibs = get_depend_libraries(binaryfile, {plat = target:plat(), arch = target:arch()})
+    local depends_new = hashset.new()
+    for _, deplib in ipairs(deplibs) do
+        local libname = path.filename(deplib)
+        if not depends:has(libname) then
+            depends:insert(libname)
+            depends_new:insert(libname)
+        end
+    end
+    for _, libfile in ipairs(libfiles) do
+        local libname = path.filename(libfile)
+        if depends_new:has(libname) then
+            _get_target_package_deplibs(target, depends, libfiles, libfile)
+        end
+    end
+end
+
 function _get_target_package_libfiles(target, opt)
     local libfiles = {}
     for _, pkg in ipairs(target:orderpkgs(opt)) do
@@ -76,11 +96,7 @@ function _get_target_package_libfiles(target, opt)
     -- we can only reserve used libraries
     if target:is_binary() or target:is_shared() then
         local depends = hashset.new()
-        local targetfile = target:targetfile()
-        local depend_libraries = get_depend_libraries(targetfile, {plat = target:plat(), arch = target:arch()})
-        for _, libfile in ipairs(depend_libraries) do
-            depends:insert(path.filename(libfile))
-        end
+        _get_target_package_deplibs(target, depends, libfiles, target:targetfile())
         table.remove_if(libfiles, function (_, libfile) return not depends:has(path.filename(libfile)) end)
     end
     return libfiles
