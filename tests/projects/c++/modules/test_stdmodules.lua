@@ -51,7 +51,7 @@ function main(t)
             -- _build()
         -- end
         local clang = find_tool("clang", {version = true})
-        if clang and clang.version and semver.compare(clang.version, "18.0") >= 0 then
+        if clang and clang.version and semver.compare(clang.version, "19.0") >= 0 then
             -- clang don't support libstdc++ std modules atm
             -- os.exec("xmake clean -a")
             -- os.exec("xmake f --toolchain=clang -c --yes")
