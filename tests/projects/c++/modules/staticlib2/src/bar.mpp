@@ -1,0 +1,6 @@
+export module bar;
+
+export namespace bar {
+    int hello();
+}
+
