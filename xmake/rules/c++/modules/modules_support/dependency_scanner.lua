@@ -422,11 +422,18 @@ function sort_modules_by_dependencies(target, objectfiles, modules)
     local objectfiles_sorted_set = hashset.from(objectfiles_sorted)
     for _, objectfile in ipairs(objectfiles) do
         if not objectfiles_sorted_set:has(objectfile) then
-            -- cull unreferenced non-public named module but add non-module files and implementation modules
-            local _, provide, cppfile = compiler_support.get_provided_module(modules[objectfile])
-            local fileconfig = target:fileconfig(cppfile)
-            local public = fileconfig and fileconfig.public
-            if not provide or public then
+            if target:policy("build.c++.modules.culling") then
+                -- cull unreferenced non-public named module but add non-module files and implementation modules
+                local _, provide, cppfile = compiler_support.get_provided_module(modules[objectfile])
+                local fileconfig = target:fileconfig(cppfile)
+                local public = fileconfig and fileconfig.public
+                local dont_cull = fileconfig and fileconfig.cull ~= nil and not fileconfig.cull
+                if not provide or public or dont_cull then
+                    table.insert(result, objectfile)
+                else
+                    wprint("%s has been culled because it's not consumed by its target nor flagged as a public module (add_files(\"xxx.cppm\", {public = true}))", cppfile)
+                end
+            else
                 table.insert(result, objectfile)
             end
         end
