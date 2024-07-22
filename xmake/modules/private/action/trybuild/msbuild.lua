@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("core.project.project")
 import("core.tool.toolchain")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
@@ -42,11 +43,12 @@ function clean()
     local projectfile = _find_projectfile()
     local runenvs = toolchain.load("msvc"):runenvs()
     local msbuild = find_tool("msbuild", {envs = runenvs})
+    local platform = is_arch("x64") and "x64" or "Win32"
     local projectdata = io.readfile(projectfile)
     if projectdata and projectdata:find("Any CPU", 1, true) then
         platform = "Any CPU"
     end
-    os.vexecv(msbuild.program, {projectfile, "-nologo", "-t:Clean", "-p:Configuration=Release", "-p:Platform=" .. platform}, {envs = runenvs})
+    os.vexecv(msbuild.program, {projectfile, "-nologo", "-t:Clean", "-p:Configuration=" .. (is_mode("debug") and "Debug" or "Release"), "-p:Platform=" .. platform}, {envs = runenvs})
 end
 
 -- do build
@@ -64,6 +66,14 @@ function build()
     if projectdata and projectdata:find("Any CPU", 1, true) then
         platform = "Any CPU"
     end
-    os.vexecv(msbuild.program, {projectfile, "-nologo", "-t:Build", "-p:Configuration=Release", "-p:Platform=" .. platform}, {envs = runenvs})
+    local configs = {projectfile, "-nologo", "-t:Build", "-p:Configuration=" .. (is_mode("debug") and "Debug" or "Release"), "-p:Platform=" .. platform}
+    local jobs = option.get("jobs") or tostring(os.default_njob())
+    table.insert(configs, (jobs ~= nil and format("-m:%d", jobs) or "-m"))
+    if jobs and project.policy("package.msbuild.multi_tool_task") then
+        table.insert(configs, "/p:UseMultiToolTask=true")
+        table.insert(configs, "/p:EnforceProcessCountAcrossBuilds=true")
+        table.insert(configs, format("/p:MultiProcMaxCount=%d", jobs))
+    end
+    os.vexecv(msbuild.program, configs, {envs = runenvs})
     cprint("${color.success}build ok!")
 end

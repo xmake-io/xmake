@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("core.project.project")
 import("core.tool.toolchain")
 import("core.platform.platform")
 import("lib.detect.find_file")
@@ -467,9 +468,17 @@ function _build_for_msvc(opt)
     local runenvs = _get_msvc_runenvs()
     local msbuild = find_tool("msbuild", {envs = runenvs})
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    os.vexecv(msbuild.program, {slnfile, "-nologo", "-t:Build", "-m",
-        "-p:Configuration=" .. (is_mode("debug") and "Debug" or "Release"),
-        "-p:Platform=" .. _get_vsarch()}, {envs = runenvs})
+    local jobs = option.get("jobs") or tostring(os.default_njob())
+    local configs = {
+        slnfile, "-nologo", "-t:Build", (jobs ~= nil and format("-m:%d", jobs) or "-m"),
+        "-p:Configuration=" .. (is_mode("debug") and "Debug" or "Release"),"-p:Platform=" .. _get_vsarch()
+    }
+    if jobs and project.policy("package.msbuild.multi_tool_task") then
+        table.insert(configs, "/p:UseMultiToolTask=true")
+        table.insert(configs, "/p:EnforceProcessCountAcrossBuilds=true")
+        table.insert(configs, format("/p:MultiProcMaxCount=%d", jobs))
+    end
+    os.vexecv(msbuild.program, configs, {envs = runenvs})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
         os.vexecv(msbuild.program, {projfile, "/property:configuration=" .. (is_mode("debug") and "Debug" or "Release")}, {envs = runenvs})
