@@ -29,6 +29,7 @@ import("core.project.project")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 import("package.tools.ninja")
+import("package.tools.msbuild")
 import("detect.sdks.find_emsdk")
 import("private.utils.toolchain", {alias = "toolchain_utils"})
 
@@ -95,17 +96,6 @@ end
 -- get msvc run environments
 function _get_msvc_runenvs(package)
     return os.joinenvs(_get_msvc(package):runenvs())
-end
-
--- get vs arch
-function _get_vsarch(package)
-    local arch = package:arch()
-    if arch == "x86" or arch == "i386" then return "Win32" end
-    if arch == "x86_64" then return "x64" end
-    if arch == "arm64ec" then return "ARM64EC" end
-    if arch:startswith("arm64") then return "ARM64" end
-    if arch:startswith("arm") then return "ARM" end
-    return arch
 end
 
 -- get cflags from package deps
@@ -945,14 +935,8 @@ end
 
 -- do build for msvc
 function _build_for_msvc(package, configs, opt)
-    local jobs = _get_parallel_njobs(opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    local runenvs = _get_msvc_runenvs(package)
-    local msbuild = find_tool("msbuild", {envs = runenvs})
-    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild",
-            (jobs ~= nil and format("-m:%d", jobs) or "-m"),
-            "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
-            "-p:Platform=" .. _get_vsarch(package)}, {envs = runenvs})
+    msbuild.build(package, {slnfile, "-t:Rebuild"})
 end
 
 -- do build for make
@@ -1013,17 +997,11 @@ end
 
 -- do install for msvc
 function _install_for_msvc(package, configs, opt)
-    local jobs = _get_parallel_njobs(opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    local runenvs = _get_msvc_runenvs(package)
-    local msbuild = assert(find_tool("msbuild", {envs = runenvs}), "msbuild not found!")
-    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "/nr:false",
-        (jobs ~= nil and format("-m:%d", jobs) or "-m"),
-        "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
-        "-p:Platform=" .. _get_vsarch(package)}, {envs = runenvs})
+    msbuild.build(package, {slnfile, "-t:Rebuild", "/nr:false"})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
-        os.vrunv(msbuild.program, {projfile, "/property:configuration=" .. (package:is_debug() and "Debug" or "Release")}, {envs = runenvs})
+        msbuild.build(package, {projfile})
         os.trycp("install/bin", package:installdir())
         os.trycp("install/lib", package:installdir()) -- perhaps only headers library
         os.trycp("install/share", package:installdir())
