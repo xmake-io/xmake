@@ -87,8 +87,7 @@ rule("c++.build.modules.builder")
             local std_modules = compiler_support.get_stdmodules(target)
             if std_modules then
                 table.join2(sourcebatch.sourcefiles, std_modules)
-                target:fileconfig_set(std_modules[1], {external = true})
-                target:fileconfig_set(std_modules[2], {external = true})
+                target:fileconfig_set(std_modules[2], {cullobjectfile = true})
             end
 
             -- extract packages modules dependencies
