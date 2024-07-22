@@ -313,22 +313,20 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                     local public = fileconfig and fileconfig.public
                     local external = fileconfig and fileconfig.external
                     local private_dep = fileconfig and fileconfig.private_dep
+                    local from_moduleonly = external and external.moduleonly
                     local bmifile = mapped_bmi or bmifile
-                    if target:is_binary() then
+                    if external and not from_moduleonly then
+                        if not mapped_bmi then
+                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
+                            _compile_bmi_step(target, bmifile, opt.cppfile, opt.objectfile, provide)
+                        end
+                    else
                         if mapped_bmi then
                             progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
                             _compile_objectfile_step(target, bmifile, opt.cppfile, opt.objectfile, provide)
                         else
                             progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
                             _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, provide)
-                        end
-                    else
-                        if (not public and not external) or (external and private_dep) then
-                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                            _compile_one_step(target, bmifile, opt.cppfile, opt.objectfile, provide)
-                        else
-                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
-                            _compile_bmi_step(target, bmifile, opt.cppfile, opt.objectfile, provide)
                         end
                     end
                 else

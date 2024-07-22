@@ -200,7 +200,9 @@ function _get_package_modules(target, package, opt)
     for _, metafile in ipairs(metafiles) do
         package_modules = package_modules or {}
         local modulefile, name, metadata = _parse_meta_info(target, metafile)
-        package_modules[name] = {file = path.join(modulesdir, modulefile), metadata = metadata}
+        local package_data = package["_INFO"]
+        local moduleonly = not package_data["libfiles"]
+        package_modules[name] = {file = path.join(modulesdir, modulefile), metadata = metadata, external = {moduleonly = moduleonly}}
     end
 
     return package_modules
@@ -427,10 +429,12 @@ function sort_modules_by_dependencies(target, objectfiles, modules)
                 local _, provide, cppfile = compiler_support.get_provided_module(modules[objectfile])
                 local fileconfig = target:fileconfig(cppfile)
                 local public = fileconfig and fileconfig.public
+                local external = fileconfig and fileconfig.external
+                local from_moduleonly = external and external.moduleonly
                 local dont_cull = fileconfig and fileconfig.cull ~= nil and not fileconfig.cull
-                if not provide or public or dont_cull then
+                if not provide or public or from_moduleonly or dont_cull then
                     table.insert(result, objectfile)
-                else
+                elseif not external and not dont_cull then
                     wprint("%s has been culled because it's not consumed by its target nor flagged as a public module (add_files(\"xxx.cppm\", {public = true}))", cppfile)
                 end
             else
@@ -438,6 +442,7 @@ function sort_modules_by_dependencies(target, objectfiles, modules)
             end
         end
     end
+    print(target:name(), result)
     return result
 end
 
@@ -454,7 +459,7 @@ function get_targetdeps_modules(target)
                 if public then
                     sourcefiles = sourcefiles or {}
                     table.insert(sourcefiles, sourcefile)
-                    target:fileconfig_add(sourcefile, {external = true, private_dep = private_dep})
+                    target:fileconfig_add(sourcefile, {external = {moduleonly = dep:is_moduleonly()}, private_dep = private_dep})
                 end
             end
         end
