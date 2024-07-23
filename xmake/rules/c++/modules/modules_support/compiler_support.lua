@@ -83,29 +83,6 @@ function patch_sourcebatch(target, sourcebatch)
     end
 end
 
--- cull sourcebatch objectfiles
-function cull_objectfiles(target, modules, sourcebatch)
-
-    sourcebatch.objectfiles = {}
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local objectfile = target:objectfile(sourcefile)
-        local module = modules[objectfile]
-        local name, provide, _ = get_provided_module(module)
-        if provide then
-            local fileconfig = target:fileconfig(sourcefile)
-            local public = fileconfig and fileconfig.public
-            local external = fileconfig and fileconfig.external
-            local from_moduleonly = external and external.moduleonly
-            local dont_cull = fileconfig and fileconfig.cull ~= nil and not fileconfig.cull
-            if (provide and not external) or public or from_moduleonly or dont_cull then
-                table.insert(sourcebatch.objectfiles, objectfile)
-            end
-        else
-            table.insert(sourcebatch.objectfiles, objectfile)
-        end
-    end
-end
-
 -- get bmi extension
 function get_bmi_extension(target)
     return _compiler_support(target).get_bmi_extension()
