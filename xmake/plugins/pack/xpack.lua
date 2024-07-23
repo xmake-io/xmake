@@ -453,7 +453,7 @@ end
 
 -- get the binary directory
 function xpack:bindir()
-    local bindir = self:get("bindir")
+    local bindir = self:get("bindir") or self:extraconf("prefixdir", self:prefixdir(), "bindir")
     if bindir == nil then
         bindir = "bin"
     end
@@ -462,7 +462,7 @@ end
 
 -- get the library directory
 function xpack:libdir()
-    local libdir = self:get("libdir")
+    local libdir = self:get("libdir") or self:extraconf("prefixdir", self:prefixdir(), "libdir")
     if libdir == nil then
         libdir = "lib"
     end
@@ -471,7 +471,7 @@ end
 
 -- get the include directory
 function xpack:includedir()
-    local includedir = self:get("includedir")
+    local includedir = self:get("includedir") or self:extraconf("prefixdir", self:prefixdir(), "includedir")
     if includedir == nil then
         includedir = "include"
     end

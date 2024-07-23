@@ -293,7 +293,7 @@ function get_provided_module(module)
     return name, provide, cppfile
 end
 
-function install_module_target(target)
+function add_installfiles_for_modules(target)
     local sourcebatch = target:sourcebatches()["c++.build.modules.install"]
     if sourcebatch and sourcebatch.sourcefiles then
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do

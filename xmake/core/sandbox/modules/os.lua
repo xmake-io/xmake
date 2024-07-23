@@ -102,21 +102,21 @@ function sandbox_os.cp(srcpath, dstpath, opt)
 end
 
 -- move file or directory
-function sandbox_os.mv(srcpath, dstpath)
+function sandbox_os.mv(srcpath, dstpath, opt)
     assert(srcpath and dstpath)
     srcpath = tostring(srcpath)
     dstpath = tostring(dstpath)
-    local ok, errors = os.mv(vformat(srcpath), vformat(dstpath))
+    local ok, errors = os.mv(vformat(srcpath), vformat(dstpath), opt)
     if not ok then
         os.raise(errors)
     end
 end
 
 -- remove files or directories
-function sandbox_os.rm(filepath)
+function sandbox_os.rm(filepath, opt)
     assert(filepath)
     filepath = tostring(filepath)
-    local ok, errors = os.rm(vformat(filepath))
+    local ok, errors = os.rm(vformat(filepath), opt)
     if not ok then
         os.raise(errors)
     end
@@ -161,12 +161,12 @@ function sandbox_os.vrm(filepath, opt)
 end
 
 -- link file or directory with the verbose info
-function sandbox_os.vln(srcpath, dstpath)
+function sandbox_os.vln(srcpath, dstpath, opt)
     assert(srcpath and dstpath)
     if option.get("verbose") then
         utils.cprint("${dim}> link %s to %s", srcpath, dstpath)
     end
-    return sandbox_os.ln(srcpath, dstpath)
+    return sandbox_os.ln(srcpath, dstpath, opt)
 end
 
 -- try to copy file or directory
@@ -176,9 +176,9 @@ function sandbox_os.trycp(srcpath, dstpath, opt)
 end
 
 -- try to move file or directory
-function sandbox_os.trymv(srcpath, dstpath)
+function sandbox_os.trymv(srcpath, dstpath, opt)
     assert(srcpath and dstpath)
-    return os.mv(vformat(srcpath), vformat(dstpath))
+    return os.mv(vformat(srcpath), vformat(dstpath), opt)
 end
 
 -- try to remove files or directories

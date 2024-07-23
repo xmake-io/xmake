@@ -104,17 +104,19 @@ end
 
 -- clean target
 function _clean(targetname)
-
-    -- clean the given target
     if targetname then
         local target = project.target(targetname)
         _clean_target(target)
     else
         _clean_targets(project.ordertargets())
     end
+end
 
-    -- remove the configure directory if remove all
+-- clean configuration cache
+function _clean_configs()
     if option.get("all") then
+        -- we need to close it first after removing file lock
+        project.filelock():close()
         remove_files(config.directory())
     end
 end
@@ -142,7 +144,6 @@ function _try_clean()
     end
 end
 
--- main
 function main()
 
     -- try cleaning it using third-party buildsystem if xmake.lua not exists
@@ -175,6 +176,9 @@ function main()
 
     -- unlock the whole project
     project.unlock()
+
+    -- we must call it after unlocking project because it will remove project lockfile
+    _clean_configs()
 
     -- leave project directory
     os.cd(oldir)

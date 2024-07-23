@@ -104,7 +104,7 @@ function main(target)
     end
 
     -- export rpathdirs for all shared library
-    if target:is_binary() then
+    if target:is_binary() and target:policy("build.rpath") then
         local targetdir = target:targetdir()
         for _, dep in ipairs(target:orderdeps({inherit = true})) do
             if dep:kind() == "shared" then

@@ -1623,20 +1623,56 @@ function _instance:rundir()
     return baseoption.get("workdir") or self:get("rundir") or path.directory(self:targetfile())
 end
 
--- get install directory
-function _instance:installdir()
+-- get prefix directory
+function _instance:prefixdir()
+    return self:get("prefixdir")
+end
 
-    -- get it from the cache
+-- get the installed binary directory
+function _instance:bindir()
+    local bindir = self:extraconf("prefixdir", self:prefixdir(), "bindir")
+    if bindir == nil then
+        bindir = "bin"
+    end
+    return self:installdir(bindir)
+end
+
+-- get the installed library directory
+function _instance:libdir()
+    local libdir = self:extraconf("prefixdir", self:prefixdir(), "libdir")
+    if libdir == nil then
+        libdir = "lib"
+    end
+    return self:installdir(libdir)
+end
+
+-- get the installed include directory
+function _instance:includedir()
+    local includedir = self:extraconf("prefixdir", self:prefixdir(), "includedir")
+    if includedir == nil then
+        includedir = "include"
+    end
+    return self:installdir(includedir)
+end
+
+-- get install directory
+function _instance:installdir(...)
+    opt = opt or {}
     local installdir = baseoption.get("installdir")
     if not installdir then
-
         -- DESTDIR: be compatible with https://www.gnu.org/prep/standards/html_node/DESTDIR.html
         installdir = self:get("installdir") or os.getenv("INSTALLDIR") or os.getenv("PREFIX") or os.getenv("DESTDIR") or platform.get("installdir")
         if installdir then
             installdir = installdir:trim()
         end
     end
-    return installdir
+    if installdir then
+        local prefixdir = self:prefixdir()
+        if prefixdir then
+            installdir = path.join(installdir, prefixdir)
+        end
+        return path.normalize(path.join(installdir, ...))
+    end
 end
 
 -- get package directory
@@ -2000,7 +2036,7 @@ end
 -- get the header files
 function _instance:headerfiles(outputdir, opt)
     opt = opt or {}
-    local headerfiles = self:get("headerfiles")
+    local headerfiles = self:get("headerfiles", opt) or {}
     -- add_headerfiles("src/*.h", {install = false})
     -- @see https://github.com/xmake-io/xmake/issues/2577
     if opt.installonly then
@@ -2016,13 +2052,12 @@ function _instance:headerfiles(outputdir, opt)
         return
     end
 
-    local headerdir = outputdir
-    if not headerdir then
-        if self:installdir() then
-            headerdir = path.join(self:installdir(), "include")
+    if not outputdir then
+        if self:includedir() then
+            outputdir = self:includedir()
         end
     end
-    return match_copyfiles(self, "headerfiles", headerdir, {copyfiles = headerfiles})
+    return match_copyfiles(self, "headerfiles", outputdir, {copyfiles = headerfiles})
 end
 
 -- get the configuration files
@@ -2036,8 +2071,9 @@ function _instance:configfiles(outputdir)
 end
 
 -- get the install files
-function _instance:installfiles(outputdir)
-    return match_copyfiles(self, "installfiles", outputdir or self:installdir())
+function _instance:installfiles(outputdir, opt)
+    local installfiles = self:get("installfiles", opt) or {}
+    return match_copyfiles(self, "installfiles", outputdir or self:installdir(), {copyfiles = installfiles})
 end
 
 -- get the extra files
@@ -2737,6 +2773,7 @@ function target.apis()
         ,   "target.set_runargs"
         ,   "target.set_exceptions"
         ,   "target.set_encodings"
+        ,   "target.set_prefixdir"
             -- target.add_xxx
         ,   "target.add_deps"
         ,   "target.add_rules"

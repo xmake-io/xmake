@@ -20,124 +20,274 @@
 
 -- imports
 import("core.base.option")
+import("core.base.hashset")
 import("utils.archive")
+import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 import("private.utils.batchcmds")
 
--- install headers
-function _install_headers(target, batchcmds_, includedir)
-    local srcheaders, dstheaders = target:headerfiles(includedir, {installonly = true})
+function _get_target_bindir(package, target)
+    local bindir = package:bindir()
+    local prefixdir = target:prefixdir()
+    if prefixdir then
+        bindir = path.join(package:installdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "bindir") or "bin")
+    end
+    return path.normalize(bindir)
+end
+
+function _get_target_libdir(package, target)
+    local libdir = package:libdir()
+    local prefixdir = target:prefixdir()
+    if prefixdir then
+        libdir = path.join(package:installdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "libdir") or "lib")
+    end
+    return path.normalize(libdir)
+end
+
+function _get_target_includedir(package, target)
+    local includedir = package:includedir()
+    local prefixdir = target:prefixdir()
+    if prefixdir then
+        includedir = path.join(package:installdir(), prefixdir, target:extraconf("prefixdir", prefixdir, "includedir") or "include")
+    end
+    return path.normalize(includedir)
+end
+
+function _get_target_installdir(package, target)
+    local installdir = package:installdir()
+    local prefixdir = target:prefixdir()
+    if prefixdir then
+        installdir = path.join(package:installdir(), prefixdir)
+    end
+    return path.normalize(installdir)
+end
+
+-- we need to get all deplibs, e.g. app -> libfoo.so -> libbar.so ...
+-- @see https://github.com/xmake-io/xmake/issues/5325#issuecomment-2242597732
+function _get_target_package_deplibs(target, depends, libfiles, binaryfile)
+    local deplibs = get_depend_libraries(binaryfile, {plat = target:plat(), arch = target:arch()})
+    local depends_new = hashset.new()
+    for _, deplib in ipairs(deplibs) do
+        local libname = path.filename(deplib)
+        if not depends:has(libname) then
+            depends:insert(libname)
+            depends_new:insert(libname)
+        end
+    end
+    for _, libfile in ipairs(libfiles) do
+        local libname = path.filename(libfile)
+        if depends_new:has(libname) then
+            _get_target_package_deplibs(target, depends, libfiles, libfile)
+        end
+    end
+end
+
+function _get_target_package_libfiles(target, opt)
+    local libfiles = {}
+    for _, pkg in ipairs(target:orderpkgs(opt)) do
+        if pkg:enabled() and pkg:get("libfiles") then
+            for _, libfile in ipairs(table.wrap(pkg:get("libfiles"))) do
+                local filename = path.filename(libfile)
+                if filename:endswith(".dll") or filename:endswith(".so") or filename:find("%.so%.%d+$") or filename:endswith(".dylib") then
+                    table.insert(libfiles, libfile)
+                end
+            end
+        end
+    end
+    -- we can only reserve used libraries
+    if target:is_binary() or target:is_shared() then
+        local depends = hashset.new()
+        _get_target_package_deplibs(target, depends, libfiles, target:targetfile())
+        table.remove_if(libfiles, function (_, libfile) return not depends:has(path.filename(libfile)) end)
+    end
+    return libfiles
+end
+
+-- copy file with symlinks
+function _copy_file_with_symlinks(batchcmds_, srcfile, outputdir)
+    if os.islink(srcfile) then
+        local srcfile_symlink = os.readlink(srcfile)
+        if not path.is_absolute(srcfile_symlink) then
+            srcfile_symlink = path.join(path.directory(srcfile), srcfile_symlink)
+        end
+        _copy_file_with_symlinks(batchcmds_, srcfile_symlink, outputdir)
+        batchcmds_:cp(srcfile, path.join(outputdir, path.filename(srcfile)), {symlink = true, force = true})
+    else
+        batchcmds_:cp(srcfile, path.join(outputdir, path.filename(srcfile)))
+    end
+end
+
+-- update install rpath, we can only get and update rpathdirs with `{installonly = true}`
+-- e.g. add_rpathdirs("@loader_path/../lib", {installonly = true})
+function _update_target_install_rpath(target, batchcmds_, opt)
+    if target:is_plat("windows", "mingw") then
+        return
+    end
+    local package = opt.package
+    local bindir = _get_target_bindir(package, target)
+    local targetfile = path.join(bindir, target:filename())
+    if target:policy("install.rpath") then
+        batchcmds_:clean_rpath(targetfile, {plat = target:plat(), arch = target:arch()})
+        local result, sources = target:get_from("rpathdirs", "*")
+        if result and sources then
+            for idx, rpathdirs in ipairs(result) do
+                local source = sources[idx]
+                local extraconf = target:extraconf_from("rpathdirs", source)
+                if extraconf then
+                    for _, rpathdir in ipairs(rpathdirs) do
+                        local extra = extraconf[rpathdir]
+                        if extra and extra.installonly then
+                            batchcmds_:insert_rpath(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- install target files
+function _install_target_files(target, batchcmds_, opt)
+    local package = opt.package
+    local srcfiles, dstfiles = target:installfiles(_get_target_installdir(package, target))
+    if srcfiles and dstfiles then
+        for idx, srcfile in ipairs(srcfiles) do
+            batchcmds_:cp(srcfile, dstfiles[idx])
+        end
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local srcfiles, dstfiles = dep:installfiles(_get_target_installdir(package, dep), {interface = true})
+        if srcfiles and dstfiles then
+            for idx, srcfile in ipairs(srcfiles) do
+                batchcmds_:cp(srcfile, dstfiles[idx])
+            end
+        end
+    end
+end
+
+-- install target headers
+function _install_target_headers(target, batchcmds_, opt)
+    local package = opt.package
+    local srcheaders, dstheaders = target:headerfiles(_get_target_includedir(package, target), {installonly = true})
     if srcheaders and dstheaders then
-        local i = 1
-        for _, srcheader in ipairs(srcheaders) do
-            local dstheader = dstheaders[i]
-            if dstheader then
-                batchcmds_:cp(srcheader, dstheader)
-            end
-            i = i + 1
+        for idx, srcheader in ipairs(srcheaders) do
+            batchcmds_:cp(srcheader, dstheaders[idx])
         end
     end
-end
-
--- install shared libraries for package
-function _install_shared_for_package(target, pkg, batchcmds_, outputdir)
-    _g.installed_dllfiles = _g.installed_dllfiles or {}
-    for _, dllpath in ipairs(table.wrap(pkg:get("libfiles"))) do
-        if dllpath:endswith(".dll") then
-            -- prevent packages using the same libfiles from overwriting each other
-            if not _g.installed_dllfiles[dllpath] then
-                local dllname = path.filename(dllpath)
-                batchcmds_:cp(dllpath, path.join(outputdir, dllname))
-                _g.installed_dllfiles[dllpath] = true
+    for _, dep in ipairs(target:orderdeps()) do
+        local srcheaders, dstheaders = dep:headerfiles(_get_target_includedir(package, dep), {installonly = true, interface = true})
+        if srcheaders and dstheaders then
+            for idx, srcheader in ipairs(srcheaders) do
+                batchcmds_:cp(srcheader, dstheaders[idx])
             end
         end
     end
 end
 
--- install shared libraries for packages
-function _install_shared_for_packages(target, batchcmds_, outputdir)
-    _g.installed_packages = _g.installed_packages or {}
-    for _, pkg in ipairs(target:orderpkgs()) do
-        if not _g.installed_packages[pkg:name()] then
-            if pkg:enabled() and pkg:get("libfiles") then
-                _install_shared_for_package(target, pkg, batchcmds_, outputdir)
+-- install target shared libraries
+function _install_target_shared_libraries(target, batchcmds_, opt)
+    local package = opt.package
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(package, target) or _get_target_libdir(package, target)
+
+    -- get all dependent shared libraries
+    local libfiles = {}
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:kind() == "shared" then
+            local depfile = dep:targetfile()
+            if os.isfile(depfile) then
+                table.insert(libfiles, depfile)
             end
-            _g.installed_packages[pkg:name()] = true
+        end
+        table.join2(libfiles, _get_target_package_libfiles(dep, {interface = true}))
+    end
+    table.join2(libfiles, _get_target_package_libfiles(target))
+
+    -- deduplicate libfiles, prevent packages using the same libfiles from overwriting each other
+    libfiles = table.unique(libfiles)
+
+    -- do install
+    for _, libfile in ipairs(libfiles) do
+        local filename = path.filename(libfile)
+        _copy_file_with_symlinks(batchcmds_, libfile, bindir)
+    end
+end
+
+-- uninstall target files
+function _uninstall_target_files(target, batchcmds_, opt)
+    local package = opt.package
+    local _, dstfiles = target:installfiles(_get_target_installdir(package, target))
+    for _, dstfile in ipairs(dstfiles) do
+        batchcmds_:rm(dstfile, {emptydirs = true})
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        local _, dstfiles = dep:installfiles(_get_target_installdir(package, dep), {interface = true})
+        for _, dstfile in ipairs(dstfiles) do
+            batchcmds_:rm(dstfile, {emptydirs = true})
         end
     end
 end
 
--- uninstall headers
-function _uninstall_headers(target, batchcmds_, includedir)
-    local _, dstheaders = target:headerfiles(includedir, {installonly = true})
+-- uninstall target headers
+function _uninstall_target_headers(target, batchcmds_, opt)
+    local package = opt.package
+    local _, dstheaders = target:headerfiles(_get_target_includedir(package, target), {installonly = true})
     for _, dstheader in ipairs(dstheaders) do
         batchcmds_:rm(dstheader, {emptydirs = true})
     end
-end
-
--- uninstall shared libraries for package
-function _uninstall_shared_for_package(target, pkg, batchcmds_, outputdir)
-    for _, dllpath in ipairs(table.wrap(pkg:get("libfiles"))) do
-        if dllpath:endswith(".dll") then
-            local dllname = path.filename(dllpath)
-            batchcmds_:rm(path.join(outputdir, dllname), {emptydirs = true})
+    for _, dep in ipairs(target:orderdeps()) do
+        local _, dstheaders = dep:headerfiles(_get_target_includedir(package, dep), {installonly = true, interface = true})
+        for _, dstheader in ipairs(dstheaders) do
+            batchcmds_:rm(dstheader, {emptydirs = true})
         end
     end
 end
 
--- uninstall shared libraries for packages
-function _uninstall_shared_for_packages(target, batchcmds_, outputdir)
-    _g.uninstalled_packages = _g.uninstalled_packages or {}
-    for _, pkg in ipairs(target:orderpkgs()) do
-        if not _g.uninstalled_packages[pkg:name()] then
-            if pkg:enabled() and pkg:get("libfiles") then
-                _uninstall_shared_for_package(target, pkg, batchcmds_, outputdir)
+-- uninstall target shared libraries
+function _uninstall_target_shared_libraries(target, batchcmds_, opt)
+    local package = opt.package
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(package, target) or _get_target_libdir(package, target)
+
+    -- get all dependent shared libraries
+    local libfiles = {}
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:kind() == "shared" then
+            local depfile = dep:targetfile()
+            if os.isfile(depfile) then
+                table.insert(libfiles, depfile)
             end
-            _g.uninstalled_packages[pkg:name()] = true
         end
+        table.join2(libfiles, _get_target_package_libfiles(dep, {interface = true}))
+    end
+    table.join2(libfiles, _get_target_package_libfiles(target))
+
+    -- deduplicate libfiles, prevent packages using the same libfiles from overwriting each other
+    libfiles = table.unique(libfiles)
+
+    -- do uninstall
+    for _, libfile in ipairs(libfiles) do
+        local filename = path.filename(libfile)
+        batchcmds_:rm(libfile, path.join(bindir, filename), {emptydirs = true})
     end
 end
 
 -- on install binary target command
 function _on_target_installcmd_binary(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = package:bindir()
-
-    -- install target file
+    local bindir = _get_target_bindir(package, target)
     batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
     if os.isfile(target:symbolfile()) then
         batchcmds_:cp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
     end
-
-    -- install the dependent shared/windows (*.dll) target
-    -- @see https://github.com/xmake-io/xmake/issues/961
-    _g.installed_dllfiles = _g.installed_dllfiles or {}
-    for _, dep in ipairs(target:orderdeps()) do
-        if dep:kind() == "shared" then
-            local depfile = dep:targetfile()
-            if os.isfile(depfile) then
-                if not _g.installed_dllfiles[depfile] then
-                    batchcmds_:cp(depfile, path.join(bindir, path.filename(depfile)))
-                    _g.installed_dllfiles[depfile] = true
-                end
-            end
-        end
-        -- install all shared libraries in packages in all deps
-        _install_shared_for_packages(dep, batchcmds_, bindir)
-    end
-
-    -- install shared libraries for all packages
-    _install_shared_for_packages(target, batchcmds_, bindir)
+    _install_target_shared_libraries(target, batchcmds_, opt)
+    _update_target_install_rpath(target, batchcmds_, opt)
 end
 
 -- on install shared target command
 function _on_target_installcmd_shared(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = package:bindir()
-    local libdir = package:libdir()
-    local includedir = package:includedir()
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(package, target) or _get_target_libdir(package, target)
+    local libdir = _get_target_libdir(package, target)
 
-    -- install target file
-    batchcmds_:cp(target:targetfile(), path.join(bindir, target:filename()))
+    _copy_file_with_symlinks(batchcmds_, target:targetfile(), bindir)
     if os.isfile(target:symbolfile()) then
         batchcmds_:cp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
     end
@@ -151,36 +301,26 @@ function _on_target_installcmd_shared(target, batchcmds_, opt)
         batchcmds_:cp(targetfile_lib, path.join(libdir, path.filename(targetfile_lib)))
     end
 
-    -- install shared libraries for all packages
-    _install_shared_for_packages(target, batchcmds_, bindir)
-
-    -- install headers
-    _install_headers(target, batchcmds_, includedir)
+    _install_target_headers(target, batchcmds_, opt)
+    _install_target_shared_libraries(target, batchcmds_, opt)
 end
 
 -- on install static target command
 function _on_target_installcmd_static(target, batchcmds_, opt)
     local package = opt.package
-    local libdir = package:libdir()
-    local includedir = package:includedir()
+    local libdir = _get_target_libdir(package, target)
 
-    -- install target file
     batchcmds_:cp(target:targetfile(), path.join(libdir, target:filename()))
     if os.isfile(target:symbolfile()) then
         batchcmds_:cp(target:symbolfile(), path.join(libdir, path.filename(target:symbolfile())))
     end
 
-    -- install headers
-    _install_headers(target, batchcmds_, includedir)
+    _install_target_headers(target, batchcmds_, opt)
 end
 
 -- on install headeronly target command
 function _on_target_installcmd_headeronly(target, batchcmds_, opt)
-    local package = opt.package
-    local includedir = package:includedir()
-
-    -- install headers
-    _install_headers(target, batchcmds_, includedir)
+    _install_target_headers(target, batchcmds_, opt)
 end
 
 -- on install source target command
@@ -216,76 +356,60 @@ function _on_target_installcmd(target, batchcmds_, opt)
     end
 
     -- install target files
-    local srcfiles, dstfiles = target:installfiles(package:installdir())
-    for idx, srcfile in ipairs(srcfiles) do
-        batchcmds_:cp(srcfile, dstfiles[idx])
-    end
+    _install_target_files(target, batchcmds_, opt)
 end
 
 -- on uninstall binary target command
 function _on_target_uninstallcmd_binary(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = package:bindir()
+    local bindir = _get_target_bindir(package, target)
 
     -- uninstall target file
     batchcmds_:rm(path.join(bindir, target:filename()), {emptydirs = true})
     batchcmds_:rm(path.join(bindir, path.filename(target:symbolfile())), {emptydirs = true})
 
-    -- remove the dependent shared/windows (*.dll) target
-    -- @see https://github.com/xmake-io/xmake/issues/961
-    for _, dep in ipairs(target:orderdeps()) do
-        if dep:is_shared() then
-            batchcmds_:rm(path.join(bindir, path.filename(dep:targetfile())), {emptydirs = true})
-        end
-        _uninstall_shared_for_packages(dep, batchcmds_, bindir)
-    end
-
-    -- uninstall shared libraries for packages
-    _uninstall_shared_for_packages(target, batchcmds_, bindir)
+    -- uninstall target shared libraries
+    _uninstall_target_shared_libraries(target, batchcmds_, opt)
 end
 
 -- on uninstall shared target command
 function _on_target_uninstallcmd_shared(target, batchcmds_, opt)
     local package = opt.package
-    local bindir = package:bindir()
-    local libdir = package:libdir()
-    local includedir = package:includedir()
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(package, target) or _get_target_libdir(package, target)
+    local libdir = _get_target_libdir(package, target)
 
     -- uninstall target file
     batchcmds_:rm(path.join(bindir, target:filename()), {emptydirs = true})
     batchcmds_:rm(path.join(bindir, path.filename(target:symbolfile())), {emptydirs = true})
 
-    -- remove *.lib for shared/windows (*.dll) target
+    -- uninstall *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
     local targetfile = target:targetfile()
     batchcmds_:rm(path.join(libdir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")), {emptydirs = true})
 
-    -- remove headers from the include directory
-    _uninstall_headers(target, batchcmds_, includedir)
+    -- uninstall target headers
+    _uninstall_target_headers(target, batchcmds_, opt)
 
-    -- uninstall shared libraries for packages
-    _uninstall_shared_for_packages(target, batchcmds_, bindir)
+    -- uninstall target shared libraries
+    _uninstall_target_shared_libraries(target, batchcmds_, opt)
 end
 
 -- on uninstall static target command
 function _on_target_uninstallcmd_static(target, batchcmds_, opt)
     local package = opt.package
-    local libdir = package:libdir()
-    local includedir = package:includedir()
+    local libdir = _get_target_libdir(package, target)
 
     -- uninstall target file
     batchcmds_:rm(path.join(libdir, target:filename()), {emptydirs = true})
     batchcmds_:rm(path.join(libdir, path.filename(target:symbolfile())), {emptydirs = true})
 
     -- remove headers from the include directory
-    _uninstall_headers(target, batchcmds_, includedir)
+    _uninstall_target_headers(target, batchcmds_, opt)
 end
 
 -- on uninstall headeronly target command
 function _on_target_uninstallcmd_headeronly(target, batchcmds_, opt)
-    local package = opt.package
-    local includedir = package:includedir()
-    _uninstall_headers(target, batchcmds_, includedir)
+    _uninstall_target_headers(target, batchcmds_, opt)
 end
 
 -- on uninstall source target command
@@ -314,10 +438,7 @@ function _on_target_uninstallcmd(target, batchcmds_, opt)
     end
 
     -- uninstall target files
-    local _, dstfiles = target:installfiles(package:installdir())
-    for _, dstfile in ipairs(dstfiles) do
-        batchcmds_:rm(dstfile, {emptydirs = true})
-    end
+    _uninstall_target_files(target, batchcmds_, opt)
 end
 
 -- get build commands from targets

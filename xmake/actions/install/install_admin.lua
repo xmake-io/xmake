@@ -25,39 +25,30 @@ import("core.project.project")
 import("core.platform.platform")
 import("install")
 
--- install
 function main(targetname, group_pattern, installdir, prefix)
-
     local verbose = option.get("verbose")
+    if group_pattern and #group_pattern == 0 then
+        group_pattern = nil
+    end
+    if installdir and #installdir == 0 then
+        installdir = nil
+    end
 
-    -- enter project directory
     os.cd(project.directory())
-
-    -- load config
     config.load()
-
-    -- load platform
     platform.load(config.plat())
 
     -- save the current option and push a new option context
     option.save()
-
-    -- preserve verbose option
     option.set("verbose", verbose)
-
-    -- pass installdir to option
     if installdir then
         option.set("installdir", installdir)
     end
-
-    -- pass prefix to option
     if prefix then
         option.set("prefix", prefix)
     end
 
     -- install target
     install(targetname, group_pattern)
-
-    -- restore the previous option context
     option.restore()
 end
