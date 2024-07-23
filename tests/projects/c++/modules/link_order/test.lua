@@ -1,1 +1,0 @@
-inherit(".test_base")

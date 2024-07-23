@@ -175,15 +175,21 @@ end
 -- generate edges for DAG
 function _get_edges(nodes, modules)
   local edges = {}
+  local module_names = {}
+  local named_module_names = hashset.new()
   for _, node in ipairs(nodes) do
       local module = modules[node]
+      local module_name, _, _ = compiler_support.get_provided_module(module)
+      if module_name then
+          assert(not named_module_names:has(module_name), "duplicate module name detected \"" .. module_name .. "\"")
+          named_module_names:insert(module_name)
+      end
       if module.requires then
           for required_name, _ in table.orderpairs(module.requires) do
               for _, required_node in ipairs(nodes) do
                   local name, _, _ = compiler_support.get_provided_module(modules[required_node])
                   if name and name == required_name then
                       table.insert(edges, {required_node, node})
-                      break
                   end
               end
           end
@@ -200,8 +206,7 @@ function _get_package_modules(target, package, opt)
     for _, metafile in ipairs(metafiles) do
         package_modules = package_modules or {}
         local modulefile, name, metadata = _parse_meta_info(target, metafile)
-        local package_data = package["_INFO"]
-        local moduleonly = not package_data["libfiles"]
+        local moduleonly = not package:libraryfiles()
         package_modules[name] = {file = path.join(modulesdir, modulefile), metadata = metadata, external = {moduleonly = moduleonly}}
     end
 

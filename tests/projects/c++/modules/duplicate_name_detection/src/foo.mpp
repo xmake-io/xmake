@@ -1,4 +1,4 @@
-export module duplicate;
+export module foo;
 
 export int value() {
     return 0;
