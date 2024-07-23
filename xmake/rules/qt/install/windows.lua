@@ -92,8 +92,8 @@ function main(target, opt)
     end
 
     -- make sure user flags have priority over default
-    local user_flags = target:values("qt.deploy.flags")
-    if not user_flags or not (user_flags:find("--debug", 1, true) or user_flags:find("--release", 1, true)) then
+    local user_flags = table.wrap(target:values("qt.deploy.flags"))
+    if table.contains(user_flags, "--debug", "--release") then
         if is_mode("debug") then
             table.insert(argv, "--debug")
         else
