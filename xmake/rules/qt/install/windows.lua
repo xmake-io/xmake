@@ -31,6 +31,26 @@ function _get_installdir(target)
     return installdir
 end
 
+function _check_flag_is_release_or_debug(flags)
+    return flags:find("--debug", 1, true) or flags:find("--release", 1, true)
+end
+
+function _check_flags_contain_release_or_debug(flags)
+    local type_of_flags = type(flags)
+    if type_of_flags == string then
+        return _check_flag_is_release_or_debug(flags)
+    elseif type_of_flags == table then
+        for _, flag in ipairs(flags) do
+            if _check_flag_is_release_or_debug(flags) then
+                return true
+            end
+        end
+        return false
+    else
+        return false
+    end
+end
+
 -- install application package for windows
 function main(target, opt)
 
@@ -93,7 +113,7 @@ function main(target, opt)
 
     -- make sure user flags have priority over default
     local user_flags = target:values("qt.deploy.flags")
-    if not user_flags or not (user_flags:find("--debug", 1, true) or user_flags:find("--release", 1, true)) then
+    if not _check_flags_contain_release_or_debug(user_flags) then
         if is_mode("debug") then
             table.insert(argv, "--debug")
         else
