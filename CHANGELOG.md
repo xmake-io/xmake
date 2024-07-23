@@ -14,6 +14,7 @@
 * [#5251](https://github.com/xmake-io/xmake/issues/5251): Update 7z/curl for windows installer
 * [#5286](https://github.com/xmake-io/xmake/issues/5286): Improve json to parse hex string
 * [#5302](https://github.com/xmake-io/xmake/pull/5302): Improve Vala support
+* [#5335](https://github.com/xmake-io/xmake/pull/5335): Improve `xmake install` and `xpack`
 
 ### Bugs Fixed
 
@@ -1860,6 +1861,7 @@
 * [#5251](https://github.com/xmake-io/xmake/issues/5251): 为 windows installer 更新内置的 7z/curl
 * [#5286](https://github.com/xmake-io/xmake/issues/5286): 改进 json 支持16进制解析
 * [#5302](https://github.com/xmake-io/xmake/pull/5302): 改进 Vala 支持
+* [#5335](https://github.com/xmake-io/xmake/pull/5335): 改进 `xmake install` 和 `xpack`
 
 ### Bugs 修复
 
