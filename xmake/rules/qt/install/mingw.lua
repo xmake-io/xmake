@@ -65,7 +65,7 @@ function main(target, opt)
     -- add mingw dlls to PATH
     local envs = nil
     local mingw = toolchain.load("mingw", {plat = target:plat(), arch = target:arch()})
-    if msvc then
+    if mingw then
         local bindir = mingw:bindir()
         if bindir then
             envs = {PATH = bindir}
