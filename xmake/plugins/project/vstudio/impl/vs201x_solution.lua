@@ -122,8 +122,8 @@ function _make_global(slnfile, vsinfo)
             -- group -> group -> ...
             local group_names = path.split(group_path)
             for idx, group_name in ipairs(group_names) do
-                local key = group_name .. (group_name_sub or "")
                 local group_name_sub = group_names[idx + 1]
+                local key = group_name .. (group_name_sub or "")
                 if group_name_sub and not subgroups[key] then
                     slnfile:print("{%s} = {%s}", hash.uuid4("group." .. group_name_sub), hash.uuid4("group." .. group_name))
                     subgroups[key] = true
