@@ -60,7 +60,7 @@ function _show(showtext, progress)
                 local split = msg:split(sep, {plain = true, strict = true})
                 cprintf(table.concat(split, "..."))
             end
-            if math.floor(progress) == 100 then
+            if math.floor(progress:percent()) == 100 then
                 print("")
                 _g.showing_without_scroll = false
             else
