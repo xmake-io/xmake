@@ -176,13 +176,17 @@ end
 function _get_edges(nodes, modules)
   local edges = {}
   local module_names = {}
+  local name_filemap = {}
   local named_module_names = hashset.new()
-  for _, node in ipairs(nodes) do
+  for _, node in ipairs(table.unique(nodes)) do
       local module = modules[node]
-      local module_name, _, _ = compiler_support.get_provided_module(module)
+      local module_name, _, cppfile = compiler_support.get_provided_module(module)
       if module_name then
-          assert(not named_module_names:has(module_name), "duplicate module name detected \"" .. module_name .. "\"")
+          if named_module_names:has(module_name) then
+              raise("duplicate module name detected \"" .. module_name .. "\"\n    -> " .. cppfile .. "\n    -> " .. name_filemap[module_name])
+          end
           named_module_names:insert(module_name)
+          name_filemap[module_name] = cppfile
       end
       if module.requires then
           for required_name, _ in table.orderpairs(module.requires) do
@@ -403,8 +407,9 @@ function get_all_packages_modules(target, opt)
 end
 
 -- topological sort
-function sort_modules_by_dependencies(target, objectfiles, modules)
-    local result = {}
+function sort_modules_by_dependencies(target, objectfiles, modules, opt)
+    local build_objectfiles = {}
+    local link_objectfiles = {}
     local edges = _get_edges(objectfiles, modules)
     local dag = graph.new(true)
     for _, e in ipairs(edges) do
@@ -421,33 +426,53 @@ function sort_modules_by_dependencies(target, objectfiles, modules)
         table.insert(names, name or cppfile)
         raise("circular modules dependency detected!\n%s", table.concat(names, "\n   -> import "))
     end
-    local objectfiles_sorted = dag:topological_sort()
-    for _, objectfile in ipairs(objectfiles_sorted) do
-        table.insert(result, objectfile)
-    end
 
+    local objectfiles_sorted = table.reverse(dag:topological_sort())
     local objectfiles_sorted_set = hashset.from(objectfiles_sorted)
     for _, objectfile in ipairs(objectfiles) do
         if not objectfiles_sorted_set:has(objectfile) then
-            if target:policy("build.c++.modules.culling") then
-                -- cull unreferenced non-public named module but add non-module files and implementation modules
-                local _, provide, cppfile = compiler_support.get_provided_module(modules[objectfile])
-                local fileconfig = target:fileconfig(cppfile)
+            table.insert(objectfiles_sorted, objectfile)
+            objectfiles_sorted_set:insert(objectfile)
+        end
+    end
+    for _, objectfile in ipairs(objectfiles_sorted) do
+        local name, provide, cppfile = compiler_support.get_provided_module(modules[objectfile])
+        local fileconfig = target:fileconfig(cppfile)
+        local public = fileconfig and fileconfig.public
+        local external = fileconfig and fileconfig.external
+        local can_cull = (fileconfig and fileconfig.cull ~= nil) and fileconfig.cull or true
+        can_cull = can_cull and target:policy("build.c++.modules.culling")
+        local insert = true
+        if provide then
+            insert = public or (not external or external.moduleonly)
+            if insert and not public and can_cull then
+                insert = false
+                local edges = dag:adjacent_edges(objectfile)
                 local public = fileconfig and fileconfig.public
-                local external = fileconfig and fileconfig.external
-                local moduleonly = external and external.moduleonly
-                local dont_cull = fileconfig and fileconfig.cull ~= nil and not fileconfig.cull
-                if not provide or public or moduleonly or dont_cull then
-                    table.insert(result, objectfile)
-                else
-                    wprint("%s has been culled because it's not consumed by its target (%s) nor flagged as a public module (add_files(\"xxx.cppm\", {public = true}))", cppfile, target:name())
+                if edges then
+                    for _, edge in ipairs(edges) do
+                        if edge:to() ~= objectfile and objectfiles_sorted_set:has(edge:to()) then
+                            insert = true
+                            break
+                        end
+                    end
                 end
-            else
-                table.insert(result, objectfile)
+            end
+        end
+        if insert then 
+            table.insert(build_objectfiles, objectfile)
+            table.insert(link_objectfiles, objectfile)
+        elseif external and not external.from_moduleonly then
+            table.insert(build_objectfiles, objectfile)
+        else
+            objectfiles_sorted_set:remove(objectfile)
+            if name ~= "std" and name ~= "std.compat" then
+                wprint("%s has been culled because it's not consumed by its target (%s) nor flagged as a public module (add_files(\"%s\", {public = true}))", name, target:name(), path.filename(cppfile))
             end
         end
     end
-    return result
+
+    return build_objectfiles, link_objectfiles
 end
 
 -- get source modulefile for external target deps

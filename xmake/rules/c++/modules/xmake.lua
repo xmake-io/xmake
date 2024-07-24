@@ -107,13 +107,16 @@ rule("c++.build.modules.builder")
 
             if not target:is_moduleonly() then
                 -- avoid building non referenced modules
-                sourcebatch.objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
+                local build_objectfiles, link_objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
+                sourcebatch.objectfiles = build_objectfiles
 
                 -- build modules
                 builder.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
 
                 -- build headerunits and we need to do it before building modules
                 builder.build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
+
+                sourcebatch.objectfiles = link_objectfiles
             else
                 sourcebatch.objectfiles = {}
             end
@@ -165,13 +168,16 @@ rule("c++.build.modules.builder")
 
             if not target:is_moduleonly() then
                 -- avoid building non referenced modules
-                sourcebatch.objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
+                local build_objectfiles, link_objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
+                sourcebatch.objectfiles = build_objectfiles
 
                 -- build headerunits
                 builder.build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
 
                 -- build modules
                 builder.build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
+
+                sourcebatch.objectfiles = link_objectfiles
             else
                 -- avoid duplicate linking of object files of non-module programs
                 sourcebatch.objectfiles = {}
