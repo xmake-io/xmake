@@ -3,18 +3,23 @@ import("core.base.semver")
 import("utils.ci.is_running", {alias = "ci_is_running"})
 
 function _build()
-    try {function() 
-        if ci_is_running() then
-            os.iorun("xmake -rvD")
-        else
-            os.iorun("xmake -r")
-        end
-    end, catch {function(errors)
-        errors = errors.errors
-        if not errors or not errors:find("detected") then
-            raise("Modules duplicate name detection does not work\n%s", errors.errors)
-        end
-    end}}
+    try {
+        function() 
+            if ci_is_running() then
+                os.iorun("xmake -rvD")
+            else
+                os.iorun("xmake -r")
+            end
+        end,
+        catch {
+            function (errors)
+                errors = tostring(errors)
+                if not errors:find("duplicate module name detected", 1, true) then
+                    raise("Modules duplicate name detection does not work\n%s", errors)
+                end
+            end
+        }
+    }
 end
 
 function can_build()
