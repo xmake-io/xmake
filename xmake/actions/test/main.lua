@@ -256,7 +256,7 @@ function _show_output(testinfo, kind)
     if output then
         if option.get("diagnosis") then
             local target = testinfo.target
-            local logfile = path.join(target:autogendir(), "tests", testinfo.name .. ".log")
+            local logfile = path.join(target:autogendir(), "tests", testinfo.name .. "." .. kind .. ".log")
             io.writefile(logfile, output)
             print("%s: %s", kind, logfile)
         elseif option.get("verbose") then
