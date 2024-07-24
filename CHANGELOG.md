@@ -15,6 +15,7 @@
 * [#5286](https://github.com/xmake-io/xmake/issues/5286): Improve json to parse hex string
 * [#5302](https://github.com/xmake-io/xmake/pull/5302): Improve Vala support
 * [#5335](https://github.com/xmake-io/xmake/pull/5335): Improve `xmake install` and `xpack`
+* [#5387](https://github.com/xmake-io/xmake/pull/5387): Improve `xmake test`
 
 ### Bugs Fixed
 
@@ -1862,6 +1863,7 @@
 * [#5286](https://github.com/xmake-io/xmake/issues/5286): 改进 json 支持16进制解析
 * [#5302](https://github.com/xmake-io/xmake/pull/5302): 改进 Vala 支持
 * [#5335](https://github.com/xmake-io/xmake/pull/5335): 改进 `xmake install` 和 `xpack`
+* [#5387](https://github.com/xmake-io/xmake/pull/5387): 改进 `xmake test`
 
 ### Bugs 修复
 
