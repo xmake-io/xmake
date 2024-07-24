@@ -7,7 +7,7 @@ function _build()
     if ci_is_running() then
         outdata = os.iorun("xmake -rvD")
     else
-        outdata = os.iorun("xmake -r")
+        outdata = os.iorun("xmake -rv")
     end
     if outdata then
         if outdata:find("culled") then

@@ -10,7 +10,7 @@ function _build()
         outdata = os.iorun("xmake -rv")
     end
     if outdata then
-        if outdata:find("culled") then
+        if not outdata:find("culled") then
             raise("Modules culling does not work\n%s", outdata)
         end
     end
