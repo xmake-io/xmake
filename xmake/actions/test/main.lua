@@ -30,6 +30,7 @@ import("async.runjobs")
 import("private.action.run.runenvs")
 import("private.service.remote_build.action", {alias = "remote_build_action"})
 import("actions.build.main", {rootdir = os.programdir(), alias = "build_action"})
+import("utils.progress")
 
 -- test target
 function _do_test_target(target, opt)
@@ -64,10 +65,10 @@ function _do_test_target(target, opt)
     local outdata = os.isfile(outfile) and io.readfile(outfile) or ""
     local errdata = os.isfile(errfile) and io.readfile(errfile) or ""
     if outdata and #outdata > 0 then
-        vprint(outdata)
+        opt.stdout = outdata
     end
     if errdata and #errdata > 0 then
-        vprint(errdata)
+        opt.stderr = errdata
     end
     if opt.trim_output then
         outdata = outdata:trim()
@@ -158,13 +159,13 @@ function _do_test_target(target, opt)
                 end
             end
         end
-        if errors and #errors > 0 and (option.get("verbose") or option.get("diagnosis")) then
-            cprint(errors)
+        if errors and #errors > 0 then
+            opt.errors = errors
         end
         return passed
     end
-    if errors and #errors > 0 and (option.get("verbose") or option.get("diagnosis")) then
-        cprint(errors)
+    if errors and #errors > 0 then
+        opt.errors = errors
     end
     return false
 end
@@ -250,6 +251,20 @@ function _run_test(target, test)
     return passed
 end
 
+function _show_output(testinfo, kind)
+    local output = testinfo[kind]
+    if output then
+        if option.get("diagnosis") then
+            local target = testinfo.target
+            local logfile = path.join(target:autogendir(), "tests", testinfo.name .. ".log")
+            io.writefile(logfile, output)
+            print("%s: %s", kind, logfile)
+        elseif option.get("verbose") then
+            cprint("%s: %s", kind, output)
+        end
+    end
+end
+
 -- run tests
 function _run_tests(tests)
     local ordertests = {}
@@ -268,11 +283,13 @@ function _run_tests(tests)
     -- do test
     local spent = os.mclock()
     print("running tests ...")
-    local report = {passed = 0, total = #ordertests}
+    local report = {passed = 0, total = #ordertests, tests = {}}
     local jobs = tonumber(option.get("jobs")) or os.default_njob()
     runjobs("run_tests", function (index, total, opt)
         local testinfo = ordertests[index]
         if testinfo then
+            progress.show(opt.progress, "running.test %s", testinfo.name)
+
             local target = testinfo.target
             testinfo.target = nil
             local spent = os.mclock()
@@ -281,15 +298,14 @@ function _run_tests(tests)
             if passed then
                 report.passed = report.passed + 1
             end
-            local status_color = passed and "${color.success}" or "${color.failure}"
-            local progress_format = status_color .. theme.get("text.build.progress_format") .. ":${clear} "
-            if option.get("verbose") then
-                progress_format = progress_format .. "${dim}"
-            end
-            local progress = opt.progress:percent()
-            local padding = maxwidth - #testinfo.name
-            cprint(progress_format .. "%s%s .................................... " .. status_color .. "%s${clear} ${bright}%0.3fs",
-                progress, testinfo.name, (" "):rep(padding), passed and "passed" or "failed", spent / 1000)
+            table.insert(report.tests, {
+                target = target,
+                name = testinfo.name,
+                passed = passed,
+                spent = spent,
+                stdout = testinfo.stdout,
+                stderr = testinfo.stderr,
+                errors = testinfo.errors})
 
             -- stop it if be failed?
             if not passed then
@@ -310,6 +326,21 @@ function _run_tests(tests)
     spent = os.mclock() - spent
     local passed_rate = math.floor(report.passed * 100 / report.total)
     print("")
+    print("report of tests:")
+    for idx, testinfo in ipairs(report.tests) do
+        local status_color = testinfo.passed and "${color.success}" or "${color.failure}"
+        local progress_format = status_color .. theme.get("text.build.progress_format") .. ":${clear} "
+        if option.get("verbose") or option.get("diagnosis") then
+            progress_format = progress_format .. "${dim}"
+        end
+        local padding = maxwidth - #testinfo.name
+        local progress_percent = math.floor(idx * 100 / #report.tests)
+        cprint(progress_format .. "%s%s .................................... " .. status_color .. "%s${clear} ${bright}%0.3fs",
+            progress_percent, testinfo.name, (" "):rep(padding), testinfo.passed and "passed" or "failed", testinfo.spent / 1000)
+        _show_output(testinfo, "stdout")
+        _show_output(testinfo, "stderr")
+        _show_output(testinfo, "errors")
+    end
     cprint("${color.success}%d%%${clear} tests passed, ${color.failure}%d${clear} tests failed out of ${bright}%d${clear}, spent ${bright}%0.3fs",
         passed_rate, report.total - report.passed, report.total, spent / 1000)
     local return_zero = project.policy("test.return_zero_on_failure")
