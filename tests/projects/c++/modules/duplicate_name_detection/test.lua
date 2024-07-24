@@ -6,9 +6,9 @@ function _build()
     try {
         function() 
             if ci_is_running() then
-                os.iorun("xmake -rvD")
+                os.run("xmake -rvD")
             else
-                os.iorun("xmake -r")
+                os.run("xmake -r")
             end
         end,
         catch {
