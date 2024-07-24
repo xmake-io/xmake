@@ -167,14 +167,16 @@ end
 function _make_targetinfo(mode, arch, target, vcxprojdir)
 
     -- init target info
-    local targetinfo = { mode = mode, arch = vsutils.vsarch(arch) }
+    local targetinfo = { mode = mode, arch = vsutils.vsarch(arch), sdkver=config.get("vs_sdkver") }
 
     -- get sdk version
-    local msvc = toolchain.load("msvc")
-    if msvc then
-        local vcvars = msvc:config("vcvars")
-        if vcvars then
-            targetinfo.sdkver = vcvars.WindowsSDKVersion
+    if targetinfo.sdkver == nil then
+        local msvc = toolchain.load("msvc")
+        if msvc then
+            local vcvars = msvc:config("vcvars")
+            if vcvars then
+                targetinfo.sdkver = vcvars.WindowsSDKVersion
+            end
         end
     end
 
