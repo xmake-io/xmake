@@ -438,9 +438,14 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
     for _, objectfile in ipairs(objectfiles_sorted) do
         local name, provide, cppfile = compiler_support.get_provided_module(modules[objectfile])
         local fileconfig = target:fileconfig(cppfile)
-        local public = fileconfig and fileconfig.public
-        local external = fileconfig and fileconfig.external
-        local can_cull = (fileconfig and fileconfig.cull ~= nil) and fileconfig.cull or true
+        local public
+        local external
+        local can_cull = true
+        if fileconfig then
+            public = fileconfig.public
+            external = fileconfig.external
+            can_cull = fileconfig.cull == nil and true or fileconfig.cull
+        end
         can_cull = can_cull and target:policy("build.c++.modules.culling")
         local insert = true
         if provide then
