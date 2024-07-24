@@ -435,6 +435,7 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
             objectfiles_sorted_set:insert(objectfile)
         end
     end
+    local culleds
     for _, objectfile in ipairs(objectfiles_sorted) do
         local name, provide, cppfile = compiler_support.get_provided_module(modules[objectfile])
         local fileconfig = target:fileconfig(cppfile)
@@ -472,8 +473,23 @@ function sort_modules_by_dependencies(target, objectfiles, modules, opt)
         else
             objectfiles_sorted_set:remove(objectfile)
             if name ~= "std" and name ~= "std.compat" then
-                wprint("%s has been culled because it's not consumed by its target (%s) nor flagged as a public module (add_files(\"%s\", {public = true}))", name, target:name(), path.filename(cppfile))
+                culleds = culleds or {}
+                culleds[target:name()] = culleds[target:name()] or {}
+                table.insert(culleds[target:name()], format("%s -> %s", name, cppfile))
             end
+        end
+    end
+
+    if culleds then
+        if option.get("verbose") then
+            local culled_strs = {}
+            for target_name, m in pairs(culleds) do
+                table.insert(culled_strs, format("%s:\n        %s", target_name, table.concat(m, "\n        ")))
+            end
+            wprint("some modules have got culled, because it is not consumed by its target nor flagged as a public module with add_files(\"xxx.mpp\", {public = true})\n    %s",
+                   table.concat(culled_strs, "\n    "))
+        else
+            wprint("some modules have got culled, use verbose (-v) mode to more informations")
         end
     end
 
