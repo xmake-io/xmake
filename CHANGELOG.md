@@ -17,6 +17,7 @@
 * [#5302](https://github.com/xmake-io/xmake/pull/5302): Improve Vala support
 * [#5335](https://github.com/xmake-io/xmake/pull/5335): Improve `xmake install` and `xpack`
 * [#5387](https://github.com/xmake-io/xmake/pull/5387): Improve `xmake test`
+* [#5376](https://github.com/xmake-io/xmake/pull/5376): Improve module objectfiles handling and moduleonly package
 
 ### Bugs Fixed
 
@@ -1866,6 +1867,7 @@
 * [#5302](https://github.com/xmake-io/xmake/pull/5302): 改进 Vala 支持
 * [#5335](https://github.com/xmake-io/xmake/pull/5335): 改进 `xmake install` 和 `xpack`
 * [#5387](https://github.com/xmake-io/xmake/pull/5387): 改进 `xmake test`
+* [#5376](https://github.com/xmake-io/xmake/pull/5376): 改进 C++ module 对象列表处理和 moduleonly 包支持
 
 ### Bugs 修复
 
