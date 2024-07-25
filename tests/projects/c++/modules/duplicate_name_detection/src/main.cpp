@@ -1,4 +1,4 @@
-import duplicate;
+import foo;
 
 int main() {
     return value();

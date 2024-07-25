@@ -87,8 +87,6 @@ rule("c++.build.modules.builder")
             local std_modules = compiler_support.get_stdmodules(target)
             if std_modules then
                 table.join2(sourcebatch.sourcefiles, std_modules)
-                target:fileconfig_set(std_modules[1], {external = true})
-                target:fileconfig_set(std_modules[2], {external = true})
             end
 
             -- extract packages modules dependencies
@@ -97,7 +95,7 @@ rule("c++.build.modules.builder")
                 -- append to sourcebatch
                 for _, package_module_data in table.orderpairs(package_modules_data) do
                     table.insert(sourcebatch.sourcefiles, package_module_data.file)
-                    target:fileconfig_set(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
+                    target:fileconfig_set(package_module_data.file, {external = package_module_data.external, defines = package_module_data.metadata.defines})
                 end
             end
 
@@ -109,7 +107,8 @@ rule("c++.build.modules.builder")
 
             if not target:is_moduleonly() then
                 -- avoid building non referenced modules
-                sourcebatch.objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
+                local build_objectfiles, link_objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
+                sourcebatch.objectfiles = build_objectfiles
 
                 -- build modules
                 builder.build_modules_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
@@ -117,8 +116,7 @@ rule("c++.build.modules.builder")
                 -- build headerunits and we need to do it before building modules
                 builder.build_headerunits_for_batchjobs(target, batchjobs, sourcebatch, modules, opt)
 
-                -- cull external modules objectfile
-                compiler_support.cull_objectfiles(target, modules, sourcebatch)
+                sourcebatch.objectfiles = link_objectfiles
             else
                 sourcebatch.objectfiles = {}
             end
@@ -150,8 +148,6 @@ rule("c++.build.modules.builder")
             local std_modules = compiler_support.get_stdmodules(target)
             if std_modules then
                 table.join2(sourcebatch.sourcefiles, std_modules)
-                target:fileconfig_set(std_modules[1], {external = true})
-                target:fileconfig_set(std_modules[2], {external = true})
             end
 
             -- extract packages modules dependencies
@@ -160,7 +156,7 @@ rule("c++.build.modules.builder")
                 -- append to sourcebatch
                 for _, package_module_data in table.orderpairs(package_modules_data) do
                     table.insert(sourcebatch.sourcefiles, package_module_data.file)
-                    target:fileconfig_set(package_module_data.file, {external = true, defines = package_module_data.metadata.defines})
+                    target:fileconfig_set(package_module_data.file, {external = package_module_data.external, defines = package_module_data.metadata.defines})
                 end
             end
 
@@ -172,7 +168,8 @@ rule("c++.build.modules.builder")
 
             if not target:is_moduleonly() then
                 -- avoid building non referenced modules
-                sourcebatch.objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
+                local build_objectfiles, link_objectfiles = dependency_scanner.sort_modules_by_dependencies(target, sourcebatch.objectfiles, modules)
+                sourcebatch.objectfiles = build_objectfiles
 
                 -- build headerunits
                 builder.build_headerunits_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
@@ -180,8 +177,7 @@ rule("c++.build.modules.builder")
                 -- build modules
                 builder.build_modules_for_batchcmds(target, batchcmds, sourcebatch, modules, opt)
 
-                -- cull external modules objectfile
-                compiler_support.cull_objectfiles(target, modules, sourcebatch)
+                sourcebatch.objectfiles = link_objectfiles
             else
                 -- avoid duplicate linking of object files of non-module programs
                 sourcebatch.objectfiles = {}

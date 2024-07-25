@@ -553,9 +553,9 @@ function _init_requireinfo(requireinfo, package, opt)
             requireinfo.configs.asan = project.policy("build.sanitizer.address")
         end
     end
-    -- but we will ignore some configs for buildhash in the headeronly and host/binary package
+    -- but we will ignore some configs for buildhash in the headeronly, moduleonly and host/binary package
     -- @note on_test still need these configs, @see https://github.com/xmake-io/xmake/issues/4124
-    if package:is_headeronly() or (package:is_binary() and not package:is_cross()) then
+    if package:is_headeronly() or package:is_moduleonly() or (package:is_binary() and not package:is_cross()) then
         requireinfo.ignored_configs_for_buildhash = {"runtimes", "toolchains", "lto", "asan", "pic"}
     end
 end

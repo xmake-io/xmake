@@ -3,17 +3,23 @@ import("core.base.semver")
 import("utils.ci.is_running", {alias = "ci_is_running"})
 
 function _build()
-    local outdata
-    if ci_is_running() then
-        outdata = os.iorun("xmake -rvD")
-    else
-        outdata = os.iorun("xmake -rv")
-    end
-    if outdata then
-        if outdata:find("culled") then
-            raise("Modules culling does not work\n%s", outdata)
-        end
-    end
+    try {
+        function() 
+            if ci_is_running() then
+                os.run("xmake -rvD")
+            else
+                os.run("xmake -r")
+            end
+        end,
+        catch {
+            function (errors)
+                errors = tostring(errors)
+                if not errors:find("duplicate module name detected", 1, true) then
+                    raise("Modules duplicate name detection does not work\n%s", errors)
+                end
+            end
+        }
+    }
 end
 
 function can_build()
@@ -52,7 +58,7 @@ function main(t)
         _build()
     elseif is_host("linux") then
         local gcc = find_tool("gcc", {version = true})
-        if gcc and gcc.version and semver.compare(gcc.version, "11.0") >= 0 then
+if gcc and gcc.version and semver.compare(gcc.version, "11.0") >= 0 then
             os.exec("xmake f -c --yes")
             _build()
         end

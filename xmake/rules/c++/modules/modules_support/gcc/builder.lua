@@ -187,11 +187,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
         job = batchjobs:newjob(name or opt.cppfile, function(index, total, jobopt)
             local mapped_bmi
             if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
-                if not target:is_binary() then
-                    return
-                else
-                    mapped_bmi = get_from_target_mapper(target, name).bmi
-                end
+                mapped_bmi = get_from_target_mapper(target, name).bmi
             end
 
             -- generate and append module mapper file
@@ -215,33 +211,27 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                     local fileconfig = target:fileconfig(opt.cppfile)
                     local public = fileconfig and fileconfig.public
                     local external = fileconfig and fileconfig.external
-                    local private_dep = fileconfig and fileconfig.private_dep
+                    local from_moduleonly = external and external.moduleonly
                     local bmifile = mapped_bmi or bmifile
                     local flags = {"-x", "c++"}
                     local sourcefile
-                    if target:is_binary() then
-                        if mapped_bmi then
-                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
-                            sourcefile = bmifile
-                        else
-                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                            sourcefile = opt.cppfile
-                        end
-                    else
-                        if (not public and not external) or (external and private_dep) then
-                            progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                            sourcefile = opt.cppfile
-                        else
+                    if external and not from_moduleonly then
+                        if not mapped_bmi then
                             progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
                             local module_onlyflag = compiler_support.get_moduleonlyflag(target)
                             table.insert(flags, module_onlyflag)
                             sourcefile = opt.cppfile
                         end
+                    else
+                        progress.show(jobopt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+                        sourcefile = opt.cppfile
                     end
                     if option.get("diagnosis") then
                         print("mapper file --------\n%s--------", io.readfile(module_mapper))
                     end
-                    _compile(target, flags, sourcefile, opt.objectfile)
+                    if sourcefile then
+                        _compile(target, flags, sourcefile, opt.objectfile)
+                    end
                     os.tryrm(module_mapper)
                 else
                     os.tryrm(opt.objectfile) -- force rebuild for .cpp files
@@ -260,11 +250,7 @@ function make_module_buildcmds(target, batchcmds, opt)
 
     local mapped_bmi
     if provide and compiler_support.memcache():get2(target:name() .. name, "reuse") then
-        if not target:is_binary() then
-            return
-        else
-            mapped_bmi = get_from_target_mapper(target, name).bmi
-        end
+        mapped_bmi = get_from_target_mapper(target, name).bmi
     end
 
     -- generate and append module mapper file
@@ -280,33 +266,27 @@ function make_module_buildcmds(target, batchcmds, opt)
         local fileconfig = target:fileconfig(opt.cppfile)
         local public = fileconfig and fileconfig.public
         local external = fileconfig and fileconfig.external
-        local private_dep = fileconfig and fileconfig.private_dep
+        local from_moduleonly = external and external.moduleonly
         local bmifile = mapped_bmi or bmifile
         local flags = {"-x", "c++"}
         local sourcefile
-        if target:is_binary() then
-            if mapped_bmi then
-                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.objectfile.$(mode) %s", target:name(), name or opt.cppfile)
-                sourcefile = bmifile
-            else
-                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                sourcefile = opt.cppfile
-            end
-        else
-            if (not public and not external) or (external and private_dep) then
-                batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
-                sourcefile = opt.cppfile
-            else
+        if external and not from_moduleonly then
+            if not mapped_bmi then
                 batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.bmi.$(mode) %s", target:name(), name or opt.cppfile)
                 local module_onlyflag = compiler_support.get_moduleonlyflag(target)
                 table.insert(flags, module_onlyflag)
                 sourcefile = opt.cppfile
             end
+        else
+            batchcmds:show_progress(opt.progress, "${color.build.target}<%s> ${clear}${color.build.object}compiling.module.$(mode) %s", target:name(), name or opt.cppfile)
+            sourcefile = opt.cppfile
         end
         if option.get("diagnosis") then
             batchcmds:print("mapper file: %s", io.readfile(module_mapper))
         end
-        _batchcmds_compile(batchcmds, target, flags, sourcefile, opt.objectfile)
+        if sourcefile then
+            _batchcmds_compile(batchcmds, target, flags, sourcefile, opt.objectfile)
+        end
         batchcmds:rm(module_mapper)
     else
         batchcmds:rm(opt.objectfile) -- force rebuild for .cpp files

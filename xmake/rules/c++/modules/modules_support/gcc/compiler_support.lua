@@ -77,6 +77,7 @@ function strip_flags(target, flags)
         "-w",
         "-cxx-isystem",
         "-Q",
+        "-fmodule-mapper",
     }
     if not target:policy("build.c++.modules.tryreuse.discriminate_on_defines") then
         table.join2(strippable_flags, {"-D", "-U"})
