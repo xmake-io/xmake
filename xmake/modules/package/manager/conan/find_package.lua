@@ -101,6 +101,14 @@ function _conan_get_buildinfo(name, opt)
         end
     end
 
+    -- remove unused frameworks for linux
+    -- @see https://github.com/xmake-io/xmake/issues/5358
+    local plat = opt.plat
+    if found and buildinfo and plat ~= "macosx" and plat ~= "iphoneos" then
+        buildinfo.frameworks = nil
+        buildinfo.frameworkdirs = nil
+    end
+
     if found then
         return buildinfo, result
     end
