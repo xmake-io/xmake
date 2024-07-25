@@ -65,7 +65,7 @@ function _get_configs(package, configs, opt)
     if not configs_str:find("p:Platform=", 1, true) then
         table.insert(configs, "-p:Platform=" .. _get_vsarch(package))
     end
-    if project.policy("package.msbuild.multi_tool_task") then
+    if project.policy("package.msbuild.multi_tool_task") or package:policy("package.msbuild.multi_tool_task") then
         table.insert(configs, "/p:UseMultiToolTask=true")
         table.insert(configs, "/p:EnforceProcessCountAcrossBuilds=true")
         if jobs then
