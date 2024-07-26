@@ -319,10 +319,15 @@ function insert(binaryfile, rpath, opt)
         table.insert(ops, 1, _insert_rpath_by_install_name_tool)
     end
     rpath = _replace_rpath_vars(rpath, opt)
+    local done = false
     for _, op in ipairs(ops) do
         if op(binaryfile, rpath, opt) then
+            done = true
             break
         end
+    end
+    if not done then
+        wprint("cannot insert rpath to %s, no rpath utility available, maybe we need to install patchelf", binaryfile)
     end
 end
 
@@ -360,10 +365,15 @@ function change(binaryfile, rpath_old, rpath_new, opt)
     end
     rpath_old = _replace_rpath_vars(rpath_old, opt)
     rpath_new = _replace_rpath_vars(rpath_new, opt)
+    local done = false
     for _, op in ipairs(ops) do
         if op(binaryfile, rpath_old, rpath_new, opt) then
+            done = true
             break
         end
+    end
+    if not done then
+        wprint("cannot change rpath to %s, no rpath utility available, maybe we need to install patchelf", binaryfile)
     end
 end
 
@@ -381,9 +391,14 @@ function clean(binaryfile, opt)
         _clean_rpath_by_patchelf,
         _clean_rpath_by_generic
     }
+    local done = false
     for _, op in ipairs(ops) do
         if op(binaryfile, opt) then
+            done = true
             break
         end
+    end
+    if not done then
+        wprint("cannot clean rpath %s, no rpath utility available, maybe we need to install patchelf", binaryfile)
     end
 end
