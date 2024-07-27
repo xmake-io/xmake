@@ -75,7 +75,7 @@ function _patch_pkgconfig(package)
 
     -- cflags
     local cflags = ""
-    for _, includedir in ipairs(fetchinfo.includedirs) do
+    for _, includedir in ipairs(fetchinfo.includedirs or fetchinfo.sysincludedirs) do
         if includedir ~= path.join(installdir, "include") then
             cflags = cflags .. " -I" .. (includedir:gsub("\\", "/"))
         end
