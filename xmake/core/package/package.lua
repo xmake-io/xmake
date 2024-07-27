@@ -1931,7 +1931,8 @@ function _instance:fetch(opt)
 
     -- attempt to get it from cache
     local fetchinfo = self._FETCHINFO
-    if not opt.force and opt.external == nil and opt.system == nil and fetchinfo then
+    local usecache = opt.external == nil and opt.system == nil
+    if not opt.force and usecache and fetchinfo then
         return fetchinfo
     end
 
@@ -2026,7 +2027,9 @@ function _instance:fetch(opt)
     end
 
     -- save to cache
-    self._FETCHINFO = fetchinfo
+    if usecache then
+        self._FETCHINFO = fetchinfo
+    end
 
     -- we need to update the real version if it's system package
     -- @see https://github.com/xmake-io/xmake/issues/3333
