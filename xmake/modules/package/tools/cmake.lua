@@ -104,7 +104,7 @@ function _get_cflags_from_packagedeps(package, opt)
     for _, depname in ipairs(opt.packagedeps) do
         local dep = type(depname) ~= "string" and depname or package:dep(depname)
         if dep then
-            local fetchinfo = dep:fetch({external = false})
+            local fetchinfo = dep:fetch()
             if fetchinfo then
                 table.join2(result, _map_compflags(package, "cxx", "define", fetchinfo.defines))
                 table.join2(result, _translate_paths(_map_compflags(package, "cxx", "includedir", fetchinfo.includedirs)))
@@ -121,7 +121,7 @@ function _get_ldflags_from_packagedeps(package, opt)
     for _, depname in ipairs(opt.packagedeps) do
         local dep = type(depname) ~= "string" and depname or package:dep(depname)
         if dep then
-            local fetchinfo = dep:fetch({external = false})
+            local fetchinfo = dep:fetch()
             if fetchinfo then
                 table.join2(result, _translate_paths(_map_linkflags(package, "binary", {"cxx"}, "linkdir", fetchinfo.linkdirs)))
                 table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "link", fetchinfo.links))
