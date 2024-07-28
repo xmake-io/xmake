@@ -15,7 +15,7 @@
 * [#5251](https://github.com/xmake-io/xmake/issues/5251): Update 7z/curl for windows installer
 * [#5286](https://github.com/xmake-io/xmake/issues/5286): Improve json to parse hex string
 * [#5302](https://github.com/xmake-io/xmake/pull/5302): Improve Vala support
-* [#5335](https://github.com/xmake-io/xmake/pull/5335): Improve `xmake install` and `xpack`
+* [#5335](https://github.com/xmake-io/xmake/pull/5335): Improve `xmake install` and `xpack`, Add `set_prefixdir` api for target
 * [#5387](https://github.com/xmake-io/xmake/pull/5387): Improve `xmake test`
 * [#5376](https://github.com/xmake-io/xmake/pull/5376): Improve module objectfiles handling and moduleonly package
 
@@ -1865,7 +1865,7 @@
 * [#5251](https://github.com/xmake-io/xmake/issues/5251): 为 windows installer 更新内置的 7z/curl
 * [#5286](https://github.com/xmake-io/xmake/issues/5286): 改进 json 支持16进制解析
 * [#5302](https://github.com/xmake-io/xmake/pull/5302): 改进 Vala 支持
-* [#5335](https://github.com/xmake-io/xmake/pull/5335): 改进 `xmake install` 和 `xpack`
+* [#5335](https://github.com/xmake-io/xmake/pull/5335): 改进 `xmake install` 和 `xpack`，添加 `set_prefixdir` 接口
 * [#5387](https://github.com/xmake-io/xmake/pull/5387): 改进 `xmake test`
 * [#5376](https://github.com/xmake-io/xmake/pull/5376): 改进 C++ module 对象列表处理和 moduleonly 包支持
 
