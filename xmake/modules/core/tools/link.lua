@@ -102,7 +102,7 @@ end
 
 -- make the link flag
 function nf_link(self, lib)
-    if not lib:endswith(".lib") then
+    if not lib:endswith(".lib") and not lib:endswith(".obj") then
         lib = lib .. ".lib"
     end
     return lib
