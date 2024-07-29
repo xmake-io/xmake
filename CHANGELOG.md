@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.9.4
+
 ### New features
 
 * [#5278](https://github.com/xmake-io/xmake/issues/5278): Add `build.intermediate_directory` policy to disable and custom intermediate directory
@@ -1851,6 +1853,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.9.4
 
 ### 新特性
 

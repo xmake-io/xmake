@@ -2,7 +2,7 @@
 set_project("xmake")
 
 -- version
-set_version("2.9.3", {build = "%Y%m%d"})
+set_version("2.9.4", {build = "%Y%m%d"})
 
 -- set xmake min version
 set_xmakever("2.8.5")
