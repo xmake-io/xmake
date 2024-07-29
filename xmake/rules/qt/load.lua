@@ -139,7 +139,7 @@ function _get_frameworks_from_target(target)
     return table.unique(values)
 end
 
-function _add_qmakeprllibs(target, prlfile, qtlibdir)
+function _add_qmakeprllibs(target, prlfile, qt)
     if os.isfile(prlfile) then
         local contents = io.readfile(prlfile)
         local envs = {}
@@ -157,11 +157,22 @@ function _add_qmakeprllibs(target, prlfile, qtlibdir)
                     local libdir = lib:sub(3)
                     target:add("linkdirs", libdir)
                 else
-                    local libstr = string.gsub(lib, "%$%$%[QT_INSTALL_LIBS%]", qtlibdir)
-                    if libstr:startswith("-l") then
-                        libstr = libstr:sub(3)
+                    if qt.qmldir then
+                        lib = string.gsub(lib, "%$%$%[QT_INSTALL_QML%]", qt.qmldir)
                     end
-                    target:add("syslinks", libstr)
+                    if qt.sdkdir then
+                        lib = string.gsub(lib, "%$%$%[QT_INSTALL_PREFIX%]", qt.sdkdir)
+                    end
+                    if qt.pluginsdir then
+                        lib = string.gsub(lib, "%$%$%[QT_INSTALL_PLUGINS%]", qt.pluginsdir)
+                    end
+                    if qt.libdir then
+                        lib = string.gsub(lib, "%$%$%[QT_INSTALL_LIBS%]", qt.libdir)
+                    end
+                    if lib:startswith("-l") then
+                        lib = lib:sub(3)
+                    end
+                    target:add("syslinks", lib)
                 end
             end
         end
@@ -295,7 +306,7 @@ function main(target, opt)
     for _, qt_link in ipairs(target:values("qt.links")) do
         for _, qt_libdir in ipairs(qtprldirs) do
             local prl_file = path.join(qt_libdir, qt_link .. ".prl")
-            _add_qmakeprllibs(target, prl_file, qt.libdir)
+            _add_qmakeprllibs(target, prl_file, qt)
         end
     end
 
@@ -354,7 +365,7 @@ function main(target, opt)
                     else
                         local link = _link(target, qt.libdir, framework, qt_sdkver, infix)
                         target:add("syslinks", link)
-                        _add_qmakeprllibs(target, path.join(qt.libdir, link .. ".prl"), qt.libdir)
+                        _add_qmakeprllibs(target, path.join(qt.libdir, link .. ".prl"), qt)
                         _add_includedirs(target, path.join(qt.includedir, framework))
                         -- e.g. QtGui/5.15.0/QtGui/qpa/qplatformopenglcontext.h
                         _add_includedirs(target, path.join(qt.includedir, framework, qt.sdkver))
@@ -363,7 +374,7 @@ function main(target, opt)
                 else
                     local link = _link(target, qt.libdir, framework, qt_sdkver, infix)
                     target:add("syslinks", link)
-                    _add_qmakeprllibs(target, path.join(qt.libdir, link .. ".prl"), qt.libdir)
+                    _add_qmakeprllibs(target, path.join(qt.libdir, link .. ".prl"), qt)
                     _add_includedirs(target, path.join(qt.includedir, framework))
                     _add_includedirs(target, path.join(qt.includedir, framework, qt.sdkver))
                     _add_includedirs(target, path.join(qt.includedir, framework, qt.sdkver, framework))
