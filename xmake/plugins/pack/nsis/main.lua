@@ -268,9 +268,7 @@ function _pack_nsis(makensis, package)
     local specvars_values = {}
     io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
         table.insert(specvars_names, name)
-    end,
-        {encoding="ansi"}
-    )
+    end,{encoding="ansi"})
     for _, name in ipairs(specvars_names) do
         name = name:trim()
         if specvars_values[name] == nil then
@@ -290,9 +288,7 @@ function _pack_nsis(makensis, package)
     io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
         name = name:trim()
         return specvars_values[name]
-    end, 
-        {encoding="ansi"}
-    )
+    end, {encoding="ansi"})
 
     -- make package
     os.vrunv(makensis, {specfile})
