@@ -494,11 +494,30 @@ function _make_source_options_cl(vcxprojfile, flags, condition)
         vcxprojfile:print("<CompileAs%s>CompileAsCpp</CompileAs>", condition)
     end
 
+
+    -- make SDLCheck flag: /sdl
+    if flagstr:find("[%-/]sdl") then
+        if flagstr:find("[%-/]sdl%-") then
+            vcxprojfile:print("<SDLCheck%s>false</SDLCheck>", condition)
+        else
+            vcxprojfile:print("<SDLCheck%s>true</SDLCheck>", condition)
+        end
+    end
+
+    -- make RemoveUnreferencedCodeData flag: Zc:inline
+    if flagstr:find("[%-/]Zc:inline") then
+        if flagstr:find("[%-/]Zc:inline%-") then
+            vcxprojfile:print("<RemoveUnreferencedCodeData%s>false</RemoveUnreferencedCodeData>", condition)
+        else
+            vcxprojfile:print("<RemoveUnreferencedCodeData%s>true</RemoveUnreferencedCodeData>", condition)
+        end
+    end
+
     -- make AdditionalOptions
     local excludes = {
         "Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "W4", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP",
         "Fd", "fp", "I", "D", "Gm%-", "Gm", "GR%-", "GR", "MP", "external:W0", "external:W1", "external:W2", "external:W3", "external:W4", "external:templates%-?", "external:I",
-        "std:c11", "std:c17", "std:c%+%+11", "std:c%+%+14", "std:c%+%+17", "std:c%+%+20", "std:c%+%+latest", "nologo", "wd(%d+)"
+        "std:c11", "std:c17", "std:c%+%+11", "std:c%+%+14", "std:c%+%+17", "std:c%+%+20", "std:c%+%+latest", "nologo", "wd(%d+)", "sdl%-?", "Zc:inline%-?"
     }
     local additional_flags = _exclude_flags(flags, excludes)
     if #additional_flags > 0 then
