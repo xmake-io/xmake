@@ -513,11 +513,31 @@ function _make_source_options_cl(vcxprojfile, flags, condition)
         end
     end
 
+    -- make ExceptionHandling flag:
+    if flagstr:find("[%-/]EH[asc]+%-?") then
+        local args = flagstr:match("[%-/]EH([asc]+%-?)")
+        -- remove the last arg if flag endwith `-`
+        if arg:sub(-1, -1) == "-" then
+            args = args:sub(1, -2)
+        end
+        if args:find("a") then
+            -- a will overwrite s and c
+            vcxprojfile:print("<ExceptionHandling%s>Async</ExceptionHandling>", condition)
+        elseif args == "sc" or args == "cs" then
+            vcxprojfile:print("<ExceptionHandling%s>Sync</ExceptionHandling>", condition)
+        elseif args == "s" then
+            vcxprojfile:print("<ExceptionHandling%s>SyncCThrow</ExceptionHandling>", condition)
+        else
+            -- if args == "c"
+            -- c is ignored without s or a, do nothing here
+        end
+    end
+
     -- make AdditionalOptions
     local excludes = {
         "Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "W4", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP",
         "Fd", "fp", "I", "D", "Gm%-", "Gm", "GR%-", "GR", "MP", "external:W0", "external:W1", "external:W2", "external:W3", "external:W4", "external:templates%-?", "external:I",
-        "std:c11", "std:c17", "std:c%+%+11", "std:c%+%+14", "std:c%+%+17", "std:c%+%+20", "std:c%+%+latest", "nologo", "wd(%d+)", "sdl%-?", "Zc:inline%-?"
+        "std:c11", "std:c17", "std:c%+%+11", "std:c%+%+14", "std:c%+%+17", "std:c%+%+20", "std:c%+%+latest", "nologo", "wd(%d+)", "sdl%-?", "Zc:inline%-?", "EH[asc]+%-?"
     }
     local additional_flags = _exclude_flags(flags, excludes)
     if #additional_flags > 0 then
