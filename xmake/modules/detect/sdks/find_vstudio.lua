@@ -186,7 +186,10 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
         if WindowsSDKVersion ~= "" then
             variables["WindowsSDKVersion"] = WindowsSDKVersion
         end
-    else
+    end
+
+    WindowsSDKVersion = variables["WindowsSDKVersion"]
+    if not WindowsSDKVersion or WindowsSDKVersion == "" then
         -- sometimes the variable `WindowsSDKVersion` is not available
         -- then parse it from `WindowsSdkBinPath`, such as: `C:\\Program Files (x86)\\Windows Kits\\8.1\\bin`
         local WindowsSdkBinPath = variables["WindowsSdkBinPath"]
