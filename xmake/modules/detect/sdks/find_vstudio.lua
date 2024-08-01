@@ -179,27 +179,6 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
         end
     end
 
-    -- fix WindowsSDKVersion
-    local WindowsSDKVersion = variables["WindowsSDKVersion"]
-    if WindowsSDKVersion then
-        WindowsSDKVersion = WindowsSDKVersion:gsub("\\", ""):trim()
-        if WindowsSDKVersion ~= "" then
-            variables["WindowsSDKVersion"] = WindowsSDKVersion
-        end
-    end
-
-    WindowsSDKVersion = variables["WindowsSDKVersion"]
-    if not WindowsSDKVersion or WindowsSDKVersion == "" then
-        -- sometimes the variable `WindowsSDKVersion` is not available
-        -- then parse it from `WindowsSdkBinPath`, such as: `C:\\Program Files (x86)\\Windows Kits\\8.1\\bin`
-        local WindowsSdkBinPath = variables["WindowsSdkBinPath"]
-        if WindowsSdkBinPath then
-            WindowsSDKVersion = string.match(WindowsSdkBinPath, "\\(%d+%.%d+)\\bin$")
-            if WindowsSDKVersion then
-                variables["WindowsSDKVersion"] = WindowsSDKVersion
-            end
-        end
-    end
 
     -- fix UCRTVersion
     --
@@ -219,6 +198,28 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
         end
         UCRTVersion = WindowsSDKVersion
         variables["UCRTVersion"] = UCRTVersion
+    end
+
+    -- fix WindowsSDKVersion
+    local WindowsSDKVersion = variables["WindowsSDKVersion"]
+    if WindowsSDKVersion then
+        WindowsSDKVersion = WindowsSDKVersion:gsub("\\", ""):trim()
+        if WindowsSDKVersion ~= "" then
+            variables["WindowsSDKVersion"] = WindowsSDKVersion
+        end
+    end
+
+    WindowsSDKVersion = variables["WindowsSDKVersion"]
+    if not WindowsSDKVersion or WindowsSDKVersion == "" then
+        -- sometimes the variable `WindowsSDKVersion` is not available
+        -- then parse it from `WindowsSdkDir`, such as: `C:\\Program Files (x86)\\Windows Kits\\8.1\\`
+        local WindowsSdkDir = variables["WindowsSdkDir"]
+        if WindowsSdkDir then
+            WindowsSDKVersion = string.match(WindowsSdkDir, "\\(%d+%.%d+)\\$")
+            if WindowsSDKVersion then
+                variables["WindowsSDKVersion"] = WindowsSDKVersion
+            end
+        end
     end
 
     -- convert path/lib/include to PATH/LIB/INCLUDE
