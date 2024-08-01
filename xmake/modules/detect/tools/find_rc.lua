@@ -58,7 +58,7 @@ function main(opt)
     -- e.g. C:\Program Files (x86)\Windows Kits\10\bin\10.0.17134.0\x64
     --
     local envs = opt.envs
-    if envs and envs.WindowsSdkDir and envs.WindowsSDKVersion then
+    if envs and envs.WindowsSdkDir and envs.WindowsSDKVersion and type(envs.WindowsSDKVersion) == "string" then
         local toolchain = opt.toolchain
         local arch = toolchain and toolchain:arch() or config.arch()
         local bindir = path.join(envs.WindowsSdkDir, "bin", envs.WindowsSDKVersion, arch)
