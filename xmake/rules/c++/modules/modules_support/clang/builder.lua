@@ -212,22 +212,21 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
 
             local build, dependinfo
             local dependfile = target:dependfile(bmifile or opt.objectfile)
-            if provide or compiler_support.has_module_extension(opt.cppfile) then
-                build, dependinfo = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
 
-                -- needed to detect rebuild of dependencies
-                if provide and build then
-                    mark_build(target, name)
-                end
+            build, dependinfo = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
+
+            -- needed to detect rebuild of dependencies
+            if provide and build then
+                mark_build(target, name)
             end
 
             -- append requires flags
             if opt.module.requires then
-                _append_requires_flags(target, opt.module, name, opt.cppfile, bmifile, opt)
+                _append_requires_flags(target, opt.module, name, opt.cppfile, bmifile, table.join(opt, {build = build}))
             end
 
             -- for cpp file we need to check after appendings the flags
-            if build == nil then
+            if not provide and not compiler_support.has_module_extension(opt.cppfile) then
                 build, dependinfo = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
             end
 
@@ -274,9 +273,11 @@ function make_module_buildcmds(target, batchcmds, opt)
         mapped_bmi = get_from_target_mapper(target, name).bmi
     end
 
+    local build = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
+
     -- append requires flags
     if opt.module.requires then
-        _append_requires_flags(target, opt.module, name, opt.cppfile, bmifile, opt)
+        _append_requires_flags(target, opt.module, name, opt.cppfile, bmifile, table.join(opt, {build = build}))
     end
 
     -- compile if it's a named module
