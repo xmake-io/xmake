@@ -32,6 +32,14 @@ function generate_dependency_for(target, sourcefile, opt)
     local changed = false
     local dependfile = target:dependfile(sourcefile)
     local flags = compinst:compflags({sourcefile = file, target = target}) or {}
+    local fileconfig = target:fileconfig(sourcefile)
+    -- fileconfig.defines are not in compflags here so we manually add it
+    if fileconfig and fileconfig.defines then
+        for _, define in ipairs(fileconfig.defines) do
+            table.insert(flags, "-D" .. define)
+        end
+    end
+
     depend.on_changed(function()
         if opt.progress then
             progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:name(), sourcefile)
@@ -51,8 +59,9 @@ function generate_dependency_for(target, sourcefile, opt)
             local dependency_flags = table.join({"--format=p1689", "--",
                                                  clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, flags)
             if sourcefile:match("frozen") then
+                print(target:fileconfig(sourcefile))
                 print(os.args(table.join(clangscandeps, dependency_flags)))
-                assert(false)
+                -- assert(false)
             end
             if option.get("verbose") then
                 print(os.args(table.join(clangscandeps, dependency_flags)))

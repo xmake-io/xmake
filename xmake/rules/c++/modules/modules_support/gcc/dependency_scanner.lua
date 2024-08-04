@@ -37,6 +37,12 @@ function generate_dependency_for(target, sourcefile, opt)
     local dependfile = target:dependfile(sourcefile)
     local flags = compinst:compflags({sourcefile = file, target = target}) or {}
     local changed = false
+    -- fileconfig.defines are not in compflags here so we manually add it
+    if fileconfig and fileconfig.defines then
+        for _, define in ipairs(fileconfig.defines) do
+            table.insert(flags, "-D" .. define)
+        end
+    end
 
     depend.on_changed(function()
         if opt.progress then

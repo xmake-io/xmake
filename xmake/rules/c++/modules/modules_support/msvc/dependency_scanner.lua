@@ -38,6 +38,12 @@ function generate_dependency_for(target, sourcefile, opt)
     local compinst = target:compiler("cxx")
     local flags = compinst:compflags({sourcefile = file, target = target}) or {}
     local changed = false
+    -- fileconfig.defines are not in compflags here so we manually add it
+    if fileconfig and fileconfig.defines then
+        for _, define in ipairs(fileconfig.defines) do
+            table.insert(flags, "-D" .. define)
+        end
+    end
 
     depend.on_changed(function ()
         progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:name(), sourcefile)
