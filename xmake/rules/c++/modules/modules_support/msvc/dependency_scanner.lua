@@ -35,6 +35,7 @@ function generate_dependency_for(target, sourcefile, opt)
     local ifcoutputflag = compiler_support.get_ifcoutputflag(target)
     local common_flags = {"-TP", scandependenciesflag}
     local dependfile = target:dependfile(sourcefile)
+    local flags = compinst:compflags({sourcefile = file, target = target}) or {}
     local changed = false
 
     depend.on_changed(function ()
@@ -43,16 +44,15 @@ function generate_dependency_for(target, sourcefile, opt)
 
         local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".module.json")
         if scandependenciesflag and not target:policy("build.c++.msvc.fallbackscanner") then
-            local flags = {jsonfile, sourcefile, ifcoutputflag, outputdir, "-Fo" .. target:objectfile(sourcefile)}
+            local dependency_flags = {jsonfile, sourcefile, ifcoutputflag, outputdir, "-Fo" .. target:objectfile(sourcefile)}
             local compinst = target:compiler("cxx")
-            local compflags = table.join(compinst:compflags({sourcefile = sourcefile, target = target}) or {}, common_flags, flags)
+            local compflags = table.join(flags, common_flags, dependency_flags)
             os.vrunv(compinst:program(), winos.cmdargv(compflags), {envs = msvc:runenvs()})
         else
             fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                 local compinst = target:compiler("cxx")
-                local compflags = compinst:compflags({sourcefile = file, target = target})
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                os.vrunv(compinst:program(), table.join(compflags,
+                os.vrunv(compinst:program(), table.join(flags,
                     {"/P", "-TP", file,  "/Fi" .. ifile}), {envs = msvc:runenvs()})
                 local content = io.readfile(ifile)
                 os.rm(ifile)
@@ -63,7 +63,7 @@ function generate_dependency_for(target, sourcefile, opt)
 
         local dependinfo = io.readfile(jsonfile)
         return { moduleinfo = dependinfo }
-    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt()})
+    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt(), values = flags})
     return changed
 end
 
