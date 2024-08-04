@@ -35,6 +35,7 @@ function generate_dependency_for(target, sourcefile, opt)
     local ifcoutputflag = compiler_support.get_ifcoutputflag(target)
     local common_flags = {"-TP", scandependenciesflag}
     local dependfile = target:dependfile(sourcefile)
+    local compinst = target:compiler("cxx")
     local flags = compinst:compflags({sourcefile = file, target = target}) or {}
     local changed = false
 
@@ -45,12 +46,10 @@ function generate_dependency_for(target, sourcefile, opt)
         local jsonfile = path.join(outputdir, path.filename(sourcefile) .. ".module.json")
         if scandependenciesflag and not target:policy("build.c++.msvc.fallbackscanner") then
             local dependency_flags = {jsonfile, sourcefile, ifcoutputflag, outputdir, "-Fo" .. target:objectfile(sourcefile)}
-            local compinst = target:compiler("cxx")
             local compflags = table.join(flags, common_flags, dependency_flags)
             os.vrunv(compinst:program(), winos.cmdargv(compflags), {envs = msvc:runenvs()})
         else
             fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
-                local compinst = target:compiler("cxx")
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
                 os.vrunv(compinst:program(), table.join(flags,
                     {"/P", "-TP", file,  "/Fi" .. ifile}), {envs = msvc:runenvs()})
