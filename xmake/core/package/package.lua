@@ -2359,7 +2359,7 @@ function _instance:_generate_build_configs(configs, opt)
         if not linker then
             os.raise(errors)
         end
-        local fake_target = {is_shared = function(_) return false end, 
+        local fake_target = {is_shared = function(_) return false end,
                              sourcekinds = function(_) return sourcekind end}
         local compiler = self:compiler(sourcekind)
         local cxflags = compiler:map_flags("runtime", runtimes, {target = fake_target})
@@ -2412,7 +2412,8 @@ function _instance:_generate_build_configs(configs, opt)
     end
 
     -- check links for library
-    if self:is_library() and not self:is_headeronly() and not self:is_moduleonly() then
+    if self:is_library() and not self:is_headeronly() and not self:is_moduleonly()
+        and self:exists() then -- we need to skip it if it's in on_check, @see https://github.com/xmake-io/xmake-repo/pull/4834
         local links = table.wrap(configs.links)
         local ldflags = table.wrap(configs.ldflags)
         local frameworks = table.wrap(configs.frameworks)
