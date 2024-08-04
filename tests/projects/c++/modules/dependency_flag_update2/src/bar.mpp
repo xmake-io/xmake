@@ -1,0 +1,9 @@
+module;
+
+#include <iostream>
+
+export module bar;
+
+namespace bar {
+export void hello() { std::cout << "Hello world2" << std::endl; }
+} // namespace bar
