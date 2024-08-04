@@ -31,7 +31,7 @@ function generate_dependency_for(target, sourcefile, opt)
     local compinst = target:compiler("cxx")
     local changed = false
     local dependfile = target:dependfile(sourcefile)
-    local compflags = compinst:compflags({sourcefile = file, target = target})
+    local flags = compinst:compflags({sourcefile = file, target = target}) or {}
     depend.on_changed(function()
         if opt.progress then
             progress.show(opt.progress, "${color.build.target}<%s> generating.module.deps %s", target:name(), sourcefile)
@@ -49,7 +49,7 @@ function generate_dependency_for(target, sourcefile, opt)
             end
             local clangscandeps = compiler_support.get_clang_scan_deps(target)
             local flags = table.join({"--format=p1689", "--",
-                                     clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, compflags or {})
+                                     clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, flags or {})
             if option.get("verbose") then
                 print(os.args(table.join(clangscandeps, flags)))
             end
@@ -63,6 +63,7 @@ function generate_dependency_for(target, sourcefile, opt)
             end
             fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                 local keepsystemincludesflag = compiler_support.get_keepsystemincludesflag(target)
+                local compflags = flags
                 -- exclude -fmodule* and -std=c++/gnu++* flags because
                 -- when they are set clang try to find bmi of imported modules but they don't exists in this point of compilation
                 table.remove_if(compflags, function(_, flag)
@@ -80,7 +81,7 @@ function generate_dependency_for(target, sourcefile, opt)
 
         local rawdependinfo = io.readfile(jsonfile)
         return {moduleinfo = rawdependinfo}
-    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt(), values = compflags})
+    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt(), values = flags})
     return changed
 end
 
