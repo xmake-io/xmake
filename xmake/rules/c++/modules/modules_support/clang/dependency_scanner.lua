@@ -48,12 +48,16 @@ function generate_dependency_for(target, sourcefile, opt)
                 clang_path = compiler_support.get_clang_path(target) or compinst:program()
             end
             local clangscandeps = compiler_support.get_clang_scan_deps(target)
-            local flags = table.join({"--format=p1689", "--",
-                                     clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, flags or {})
-            if option.get("verbose") then
-                print(os.args(table.join(clangscandeps, flags)))
+            local dependency_flags = table.join({"--format=p1689", "--",
+                                                 clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, flags)
+            if sourcefile:match("frozen") then
+                print(os.args(table.join(clangscandeps, dependency_flags)))
+                assert(false)
             end
-            local outdata, errdata = os.iorunv(clangscandeps, flags)
+            if option.get("verbose") then
+                print(os.args(table.join(clangscandeps, dependency_flags)))
+            end
+            local outdata, errdata = os.iorunv(clangscandeps, dependency_flags)
             assert(errdata, errdata)
 
             io.writefile(jsonfile, outdata)
