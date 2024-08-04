@@ -237,7 +237,7 @@ end
 function get_module_dependencies(target, sourcebatch, opt)
     local cachekey = target:name() .. "/" .. sourcebatch.rulename
     local modules = compiler_support.memcache():get2("modules", cachekey)
-    if modules == nil or opt.regenerate then
+    if modules == nil then
         modules = compiler_support.localcache():get2("modules", cachekey)
         opt.progress = opt.progress or 0
         local changed = _generate_dependencies(target, sourcebatch, opt)

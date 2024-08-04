@@ -171,7 +171,7 @@ function _get_requiresflags(target, module, opt)
 
     local requiresflags = compiler_support.memcache():get2(cachekey, "requiresflags")
                          or compiler_support.localcache():get2(cachekey, "requiresflags")
-    if not requiresflags or (opt and opt.regenerate) then
+    if not requiresflags then
         local deps_flags = {}
         for required, _ in table.orderpairs(module.requires) do
             local dep_module = get_from_target_mapper(target, required)
@@ -219,7 +219,7 @@ end
 
 function _append_requires_flags(target, module, name, cppfile, bmifile, opt)
     local cxxflags = {}
-    local requiresflags = _get_requiresflags(target, {name = (name or cppfile), bmi = bmifile, requires = module.requires}, {regenerate = opt.build})
+    local requiresflags = _get_requiresflags(target, {name = (name or cppfile), bmi = bmifile, requires = module.requires})
     for _, flag in ipairs(requiresflags) do
         -- we need to wrap flag to support flag with space
         if type(flag) == "string" and flag:find(" ", 1, true) then
