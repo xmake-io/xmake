@@ -386,6 +386,9 @@ end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir, opt)
+    if self:is_plat("windows", "mingw") then
+        return
+    end
     opt = opt or {}
     local extra = opt.extra
     if extra and extra.installonly then
