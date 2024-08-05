@@ -2322,14 +2322,17 @@ function _instance:pcoutputfile(langkind)
     -- get the precompiled header file in the object directory
     local pcheaderfile = self:pcheaderfile(langkind)
     if pcheaderfile then
-
-        -- is gcc?
         local is_gcc = false
+        local is_msvc = false
         local sourcekinds = {c = "cc", cxx = "cxx", m = "mm", mxx = "mxx"}
         local sourcekind = assert(sourcekinds[langkind], "unknown language kind: " .. langkind)
         local _, toolname = self:tool(sourcekind)
-        if toolname and (toolname == "gcc" or toolname == "gxx") then
-            is_gcc = true
+        if toolname then
+            if toolname == "gcc" or toolname == "gxx" then
+                is_gcc = true
+            elseif toolname == "cl" then
+                is_msvc = true
+            end
         end
 
         -- make precompiled output file
@@ -2337,7 +2340,27 @@ function _instance:pcoutputfile(langkind)
         -- @note gcc has not -include-pch option to set the pch file path
         --
         pcoutputfile = self:objectfile(pcheaderfile)
-        pcoutputfile = path.join(path.directory(pcoutputfile), sourcekind, path.basename(pcoutputfile) .. (is_gcc and ".gch" or ".pch"))
+        local pcoutputfilename = path.basename(pcoutputfile)
+        if is_gcc then
+            pcoutputfilename = pcoutputfilename .. ".gch"
+        else
+            -- different vs versions of pch files are not backward compatible,
+            -- so we need to distinguish between them.
+            --
+            -- @see https://github.com/xmake-io/xmake/issues/5413
+            local msvc = self:toolchain("msvc")
+            if is_msvc and msvc then
+                local vs_toolset = msvc:config("vs_toolset")
+                if vs_toolset then
+                    vs_toolset = sandbox_module.import("private.utils.toolchain", {anonymous = true}).get_vs_toolset_ver(vs_toolset)
+                end
+                if vs_toolset then
+                    pcoutputfilename = pcoutputfilename .. "_" .. vs_toolset
+                end
+            end
+            pcoutputfilename = pcoutputfilename .. ".pch"
+        end
+        pcoutputfile = path.join(path.directory(pcoutputfile), sourcekind, pcoutputfilename)
         self._PCOUTPUTFILES[langkind] = pcoutputfile
         return pcoutputfile
     end
