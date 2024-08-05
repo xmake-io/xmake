@@ -113,7 +113,7 @@ function _get_command_strings(package, cmd, opt)
             local dstname = path.filename(dstfile)
             local dstdir = path.normalize(path.directory(dstfile))
             table.insert(result, string.format("SetOutPath \"%s\"", dstdir))
-            table.insert(result, string.format("File /oname=%s \"%s\"", dstname, srcfile))
+            table.insert(result, string.format("File \"/oname=%s\" \"%s\"", dstname, srcfile))
         end
     elseif kind == "rm" then
         local filepath = _translate_filepath(package, cmd.filepath)
@@ -268,7 +268,7 @@ function _pack_nsis(makensis, package)
     local specvars_values = {}
     io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
         table.insert(specvars_names, name)
-    end)
+    end, {encoding = "ansi"})
     for _, name in ipairs(specvars_names) do
         name = name:trim()
         if specvars_values[name] == nil then
@@ -288,7 +288,7 @@ function _pack_nsis(makensis, package)
     io.gsub(specfile, "(" .. pattern .. ")", function(_, name)
         name = name:trim()
         return specvars_values[name]
-    end)
+    end, {encoding = "ansi"})
 
     -- make package
     os.vrunv(makensis, {specfile})
