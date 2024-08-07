@@ -25,7 +25,7 @@ import("lib.detect.find_tool")
 import("private.core.base.is_cross")
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
--- get result from list of file inside pacman package
+-- find package from list of file inside pacman package
 function _find_package_from_list(list, name, pacman, opt)
 
     -- mingw + pacman = cygpath available
@@ -96,6 +96,46 @@ function _find_package_from_list(list, name, pacman, opt)
         result = nil
     end
     return result
+end
+
+-- find libfiles from list of file inside pacman package
+function _find_libfiles_from_list(list, name, pacman, opt)
+
+    -- mingw + pacman = cygpath available
+    local cygpath = nil
+    local pathtomsys = nil
+    if is_subhost("msys") and opt.plat == "mingw" then
+        cygpath = find_tool("cygpath")
+        if not cygpath then
+            return
+        end
+        pathtomsys = os.iorunv(cygpath.program, {"--windows", "/"})
+        pathtomsys = pathtomsys:trim()
+    end
+
+    -- iterate over each file path inside the pacman package
+    local libfiles
+    for _, line in ipairs(list:split('\n', {plain = true})) do -- on msys cygpath should be used to convert local path to windows path
+        line = line:trim():split('%s+')[2]
+        if line:endswith(".dll.a") then -- only for mingw
+            local apath = path.join(pathtomsys, line)
+            apath = apath:trim()
+            libfiles = libfiles or {}
+            table.insert(libfiles, apath)
+        elseif line:endswith(".so") then
+            libfiles = libfiles or {}
+            table.insert(libfiles, line)
+        elseif line:endswith(".a") then
+            local apath = line
+            if is_subhost("msys") and opt.plat == "mingw" then
+                apath = path.join(pathtomsys, line)
+                apath = apath:trim()
+            end
+            libfiles = libfiles or {}
+            table.insert(libfiles, apath)
+        end
+    end
+    return libfiles
 end
 
 -- find package from the system directories
@@ -182,6 +222,24 @@ function main(name, opt)
     else
         -- if there is no .pc, we parse the package content to obtain the data we want
         result = _find_package_from_list(list, name, pacman, opt)
+    end
+    if result then
+        if result.linkdirs and #result.linkdirs == 0 then
+            result.linkdirs = nil
+        end
+        if result.includedirs and #result.includedirs == 0 then
+            result.includedirs = nil
+        end
+        if not result.libfiles then
+            result.libfiles = _find_libfiles_from_list(list, name, pacman, opt)
+        end
+        for _, libfile in ipairs(result.libfiles) do
+            if libfile:endswith(".so") then
+                result.shared = true
+            elseif libfile:endswith(".a") then
+                result.static = true
+            end
+        end
     end
     return result
 end
