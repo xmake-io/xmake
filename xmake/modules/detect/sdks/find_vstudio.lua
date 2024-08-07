@@ -340,10 +340,10 @@ function _find_vstudio(opt)
             table.insert(paths, 1, vswhere_VCAuxiliaryBuildDir)
         end
         if version == "6.0" and os.arch() == "x64" then
-	    table.insert(paths, "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\DevStudio\\6.0\\Products\\Microsoft Visual C++;ProductDir)\\Bin")
-	    table.insert(paths, "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\VisualStudio\\6.0\\Setup\\Microsoft Visual C++;ProductDir)\\Bin")
+            table.insert(paths, "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\DevStudio\\6.0\\Products\\Microsoft Visual C++;ProductDir)\\Bin")
+            table.insert(paths, "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\VisualStudio\\6.0\\Setup\\Microsoft Visual C++;ProductDir)\\Bin")
         end
-		
+
         -- find vcvarsall.bat, vcvars32.bat for vs7.1
         local vcvarsall = find_file("vcvarsall.bat", paths) or find_file("vcvars32.bat", paths)
         if not vcvarsall then
