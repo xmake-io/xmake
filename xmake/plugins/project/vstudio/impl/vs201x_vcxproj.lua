@@ -517,10 +517,10 @@ function _make_source_options_cl(vcxprojfile, flags, condition)
     if flagstr:find("[%-/]EH[asc]+%-?") then
         local args = flagstr:match("[%-/]EH([asc]+%-?)")
         -- remove the last arg if flag endwith `-`
-        if arg:sub(-1, -1) == "-" then
+        if args:endswith("-") then
             args = args:sub(1, -2)
         end
-        if args:find("a") then
+        if args:find("a", 1, true) then
             -- a will overwrite s and c
             vcxprojfile:print("<ExceptionHandling%s>Async</ExceptionHandling>", condition)
         elseif args == "sc" or args == "cs" then
