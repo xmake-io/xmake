@@ -40,14 +40,6 @@ function is_cross(plat, arch)
         elseif plat == "mingw" then
             return false
         end
-    elseif host_os == "macosx" then
-        if plat == "macosx" then
-            local host_arch = os.arch()
-            -- arm64 macOS can execute x86_64 (rosetta)
-            if host_arch == "arm64" and arch == "x86_64" then
-                return false
-            end
-        end
     end
     if plat ~= os.host() and plat ~= os.subhost() then
         return true
