@@ -79,41 +79,47 @@ end
 -- @param opt       the argument options, {configdirs = {"/xxxx/pkgconfig/"}}
 --
 function variables(name, variables, opt)
-
-    -- attempt to add search paths from pkg-config
+    opt = opt or {}
     local pkgconfig = _get_pkgconfig()
     if not pkgconfig then
         return
     end
 
-    -- init options
-    opt = opt or {}
-
-    -- init PKG_CONFIG_PATH
-    local configdirs_old = os.getenv("PKG_CONFIG_PATH")
-    local configdirs = table.wrap(opt.configdirs)
-    if #configdirs > 0 then
-        os.setenv("PKG_CONFIG_PATH", table.unpack(configdirs))
-    end
-
-    -- get variable value
     local result = nil
+    local envs = {PKG_CONFIG_PATH = opt.configdirs}
     if variables then
         for _, variable in ipairs(table.wrap(variables)) do
-            local value = try { function () return os.iorunv(pkgconfig, {"--variable=" .. variable, name}) end }
+            local value = try { function ()
+                return os.iorunv(pkgconfig, {"--variable=" .. variable, name}, {envs = envs})
+            end }
             if value ~= nil then
                 result = result or {}
                 result[variable] = value:trim()
             end
         end
     end
+    return result
+end
 
-    -- restore PKG_CONFIG_PATH
-    if configdirs_old then
-        os.setenv("PKG_CONFIG_PATH", configdirs_old)
+-- get pcfile path
+--
+-- @param name      the package name
+-- @param opt       the argument options, {configdirs = {"/xxxx/pkgconfig/"}}
+--
+function pcfile(name, opt)
+    opt = opt or {}
+    local pkgconfig = _get_pkgconfig()
+    if not pkgconfig then
+        return
     end
 
-    -- ok?
+    local envs = {PKG_CONFIG_PATH = opt.configdirs}
+    local result = try { function ()
+        return os.iorunv(pkgconfig, {"--path", name}, {envs = envs})
+    end }
+    if result then
+        result = result:trim()
+    end
     return result
 end
 
@@ -131,28 +137,21 @@ end
 -- @endcode
 --
 function libinfo(name, opt)
-
-    -- attempt to add search paths from pkg-config
+    opt = opt or {}
     local pkgconfig = _get_pkgconfig()
     if not pkgconfig then
         return
     end
 
-    -- init options
-    opt = opt or {}
-
-    -- init PKG_CONFIG_PATH
-    local envs = {}
-    local configdirs = table.wrap(opt.configdirs)
-    if #configdirs > 0 then
-        envs.PKG_CONFIG_PATH = path.joinenv(configdirs)
-    end
-
     -- get cflags
     local found
     local result = {}
-    local cflags = try {function () return os.iorunv(pkgconfig, {"--cflags", name}, {envs = envs}) end,
-                        catch {function (errs) found = false end}}
+    local envs = {PKG_CONFIG_PATH = opt.configdirs}
+    local cflags = try {function ()
+        return os.iorunv(pkgconfig, {"--cflags", name}, {envs = envs})
+    end, catch {function (errs)
+        found = false
+    end}}
     if cflags then
         for _, flag in ipairs(os.argv(cflags)) do
             if flag:startswith("-I") and #flag > 2 then
