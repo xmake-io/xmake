@@ -53,6 +53,11 @@ function _find_package(dpkg, name, opt)
                 result.links = result.links or {}
                 result.linkdirs = result.linkdirs or {}
                 result.libfiles = result.libfiles or {}
+                if line:endswith(".a") then
+                    result.static = true
+                else
+                    result.shared = true
+                end
                 table.insert(result.linkdirs, path.directory(line))
                 table.insert(result.links, target.linkname(path.filename(line), {plat = opt.plat}))
                 table.insert(result.libfiles, path.join(path.directory(line), path.filename(line)))
@@ -62,7 +67,7 @@ function _find_package(dpkg, name, opt)
 
     -- we iterate over each pkgconfig file to extract the required data
     local foundpc = false
-    local pcresult = {includedirs = {}, linkdirs = {}, links = {}}
+    local pcresult = {includedirs = {}, linkdirs = {}, links = {}, libfiles = {}}
     for _, pkgconfig_file in ipairs(pkgconfig_files) do
         local pkgconfig_dir = path.directory(pkgconfig_file)
         local pkgconfig_name = path.basename(pkgconfig_file)
@@ -79,6 +84,13 @@ function _find_package(dpkg, name, opt)
             for _, link in ipairs(pcinfo.links) do
                 table.insert(pcresult.links, link)
             end
+            if not result or not result.libfiles then
+                for _, libfile in ipairs(pcinfo.libfiles) do
+                    table.insert(pcresult.libfiles, libfile)
+                end
+                pcresult.static = pcinfo.static
+                pcresult.shared = pcinfo.shared
+            end
             -- version should be the same if a pacman package contains multiples .pc
             pcresult.version = pcinfo.version
             foundpc = true
@@ -87,6 +99,7 @@ function _find_package(dpkg, name, opt)
     if foundpc == true then
         pcresult.includedirs = table.unique(pcresult.includedirs)
         pcresult.linkdirs = table.unique(pcresult.linkdirs)
+        pcresult.libfiles = table.unique(pcresult.libfiles)
         pcresult.links = table.reverse_unique(pcresult.links)
         result = pcresult
     end
@@ -109,16 +122,30 @@ function _find_package(dpkg, name, opt)
         end
     end
 
-    -- remove repeat
     if result then
         if result.links then
             result.links = table.unique(result.links)
+            if #result.links == 0 then
+                result.links = nil
+            end
         end
         if result.linkdirs then
             result.linkdirs = table.unique(result.linkdirs)
+            if #result.linkdirs == 0 then
+                result.linkdirs = nil
+            end
         end
         if result.includedirs then
             result.includedirs = table.unique(result.includedirs)
+            if #result.includedirs == 0 then
+                result.includedirs = nil
+            end
+        end
+        if result.libfiles then
+            result.libfiles = table.unique(result.libfiles)
+            if #result.libfiles == 0 then
+                result.libfiles = nil
+            end
         end
     end
     return result
