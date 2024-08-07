@@ -204,15 +204,13 @@ function main(name, opt)
     linkdirs = table.unique(linkdirs)
 
     -- we iterate over each pkgconfig file to extract the required data
-    local foundpc = false
-    local result = {}
+    local result
     for _, pkgconfig_file in ipairs(pkgconfig_files) do
         local pkgconfig_dir = path.directory(pkgconfig_file)
         local pkgconfig_name = path.basename(pkgconfig_file)
         local pcresult = find_package_from_pkgconfig(pkgconfig_name, {configdirs = pkgconfig_dir, linkdirs = linkdirs})
-
-        -- the pkgconfig file has been parse successfully
         if pcresult then
+            result = result or {}
             for _, includedir in ipairs(pcresult.includedirs) do
                 result.includedirs = result.includedirs or {}
                 table.insert(result.includedirs, includedir)
@@ -233,11 +231,10 @@ function main(name, opt)
             result.version = pcresult.version
             result.shared = pcresult.shared
             result.static = pcresult.static
-            foundpc = true
         end
     end
 
-    if foundpc == true then
+    if result then
         if result.includedirs then
             result.includedirs = table.unique(result.includedirs)
         end
@@ -255,9 +252,13 @@ function main(name, opt)
         result = _find_package_from_list(list, name, pacman, opt)
     end
     if result then
-        if not result.libfiles then
-           result.libfiles = _find_libfiles_from_list(list, name, pacman, opt)
-            for _, libfile in ipairs(result.libfiles) do
+        -- we give priority to libfiles in the list
+        local libfiles = _find_libfiles_from_list(list, name, pacman, opt)
+        if libfiles then
+            result.shared = nil
+            result.static = nil
+            result.libfiles = libfiles
+            for _, libfile in ipairs(libfiles) do
                 if libfile:endswith(".so") then
                     result.shared = true
                 elseif libfile:endswith(".a") then
