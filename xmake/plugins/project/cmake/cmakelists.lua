@@ -275,6 +275,36 @@ function _get_flags_from_target(target, flagkind)
     return target_utils.translate_flags_in_tool(target, flagkind, flags)
 end
 
+-- set compiler
+function _set_target_compiler(cmakelists, target)
+    -- use custom toolchain?
+    if config.get("toolchain") or target:get("toolchains") then
+        local cc = target:tool("cc")
+        if cc then
+            cc = path.unix(cc)
+            cmakelists:print("set(CMAKE_C_COMPILER \"%s\")", cc)
+        end
+        local cxx, cxx_name = target:tool("cxx")
+        if cxx then
+            if cxx_name == "clang" or cxx_name == "gcc" then
+                local dir = path.directory(cxx)
+                local name = path.filename(cxx)
+                name = name:gsub("clang$", "clang++")
+                name = name:gsub("clang%-", "clang++-")
+                name = name:gsub("gcc$", "g++")
+                name = name:gsub("gcc%-", "g++-")
+                if dir ~= '.' then
+                    cxx = path.join(dir, name)
+                else
+                    cxx = name
+                end
+            end
+            cxx = path.unix(cxx)
+            cmakelists:print("set(CMAKE_CXX_COMPILER \"%s\")", cxx)
+        end
+    end
+end
+
 -- add project info
 function _add_project(cmakelists, outputdir)
 
@@ -289,6 +319,16 @@ function _add_project(cmakelists, outputdir)
         -- for MSVC_RUNTIME_LIBRARY
         cmakelists:print("cmake_policy(SET CMP0091 NEW)")
     end
+
+    -- set compilers, we need set it before project( LANGUAGES..)
+    -- @see https://github.com/xmake-io/xmake/issues/5448
+    for _, target in table.orderpairs(project.targets()) do
+        if target:is_binary() or target:is_static() or target:is_shared() then
+            _set_target_compiler(cmakelists, target)
+        end
+    end
+
+    -- set project name
     local project_name = project.name()
     if not project_name then
         for _, target in table.orderpairs(project.targets()) do
@@ -333,39 +373,8 @@ function _add_target_phony(cmakelists, target)
     cmakelists:print("")
 end
 
--- set compiler
-function _set_target_compiler(cmakelists, target)
-    -- use custom toolchain?
-    if config.get("toolchain") or target:get("toolchains") then
-        local cc = target:tool("cc")
-        if cc then
-            cc = path.unix(cc)
-            cmakelists:print("set(CMAKE_C_COMPILER \"%s\")", cc)
-        end
-        local cxx, cxx_name = target:tool("cxx")
-        if cxx then
-            if cxx_name == "clang" or cxx_name == "gcc" then
-                local dir = path.directory(cxx)
-                local name = path.filename(cxx)
-                name = name:gsub("clang$", "clang++")
-                name = name:gsub("clang%-", "clang++-")
-                name = name:gsub("gcc$", "g++")
-                name = name:gsub("gcc%-", "g++-")
-                if dir ~= '.' then
-                    cxx = path.join(dir, name)
-                else
-                    cxx = name
-                end
-            end
-            cxx = path.unix(cxx)
-            cmakelists:print("set(CMAKE_CXX_COMPILER \"%s\")", cxx)
-        end
-    end
-end
-
 -- add target: binary
 function _add_target_binary(cmakelists, target, outputdir)
-    _set_target_compiler(cmakelists, target)
     cmakelists:print("add_executable(%s \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
     cmakelists:print("set_target_properties(%s PROPERTIES RUNTIME_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_relative_unix_path_to_cmake(target:targetdir(), outputdir))
@@ -373,7 +382,6 @@ end
 
 -- add target: static
 function _add_target_static(cmakelists, target, outputdir)
-    _set_target_compiler(cmakelists, target)
     cmakelists:print("add_library(%s STATIC \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
     cmakelists:print("set_target_properties(%s PROPERTIES ARCHIVE_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_relative_unix_path_to_cmake(target:targetdir(), outputdir))
@@ -381,7 +389,6 @@ end
 
 -- add target: shared
 function _add_target_shared(cmakelists, target, outputdir)
-    _set_target_compiler(cmakelists, target)
     cmakelists:print("add_library(%s SHARED \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
     if target:is_plat("windows") then
