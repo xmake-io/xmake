@@ -28,6 +28,7 @@ import("private.utils.batchcmds")
 import("private.utils.executable_path")
 import("private.utils.rule_groups")
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
+import("actions.test.main", {rootdir = os.programdir(), alias = "test_action"})
 
 -- escape path
 function _escape_path(p)
@@ -288,7 +289,15 @@ end
 function _add_targets(jsonfile)
     jsonfile:print("[")
     _g.firstline = true
+
     for _, target in pairs(project.targets()) do
+        if not target:is_phony() then
+            _add_target(jsonfile, target)
+        end
+    end
+    -- https://github.com/xmake-io/xmake/issues/4750
+    for _, test in pairs(test_action.get_tests_table()) do
+        local target = test.target
         if not target:is_phony() then
             _add_target(jsonfile, target)
         end
