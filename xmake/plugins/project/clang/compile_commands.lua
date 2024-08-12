@@ -296,7 +296,7 @@ function _add_targets(jsonfile)
         end
     end
     -- https://github.com/xmake-io/xmake/issues/4750
-    for _, test in pairs(test_action.get_tests_table()) do
+    for _, test in pairs(test_action.get_tests()) do
         local target = test.target
         if not target:is_phony() then
             _add_target(jsonfile, target)
