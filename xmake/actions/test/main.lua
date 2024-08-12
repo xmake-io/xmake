@@ -445,7 +445,7 @@ function main()
     task.run("config", {}, {disable_dump = true})
 
     -- get tests
-    local tests = get_tests_table()
+    local tests = get_tests()
     local test_patterns = option.get("tests")
     if test_patterns then
         local tests_new = {}
