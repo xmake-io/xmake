@@ -366,8 +366,8 @@ function _try_build_target(targetname)
     return passed, errors
 end
 
--- get tests table, export this for the `project` plugin
-function get_tests_table()
+-- get tests, export this for the `project` plugin
+function get_tests()
     local tests = {}
     local group_pattern = option.get("group")
     if group_pattern then
