@@ -50,7 +50,7 @@ function _run_command(opt)
             local arbitrary = opt.arbitrary
             if commands then
                 for _, command in ipairs(commands:split(";")) do
-                    os.exec(command)
+                    os.exec(command:trim())
                 end
             elseif arbitrary then
                 local program = arbitrary[1]
