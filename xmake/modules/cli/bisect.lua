@@ -28,14 +28,14 @@ local options = {
     {'b', "bad",      "kv",  nil, "Set the bad commit."},
     {'c', "commands", "kv" , nil, "Run the multiple commands instead of the default build command.",
                                   "e.g.",
-                                  "    $ xmake l cli.bisect -c 'xmake -rv' -b bad -g good",
-                                  "    $ xmake l cli.bisect -c 'xmake -vD; xmake run hello' -b bad -g good"},
+                                  "    $ xmake l cli.bisect -c 'xmake -rv' -g good -b bad",
+                                  "    $ xmake l cli.bisect -c 'xmake -vD; xmake run hello' -g good -b bad"},
     {'s', "script"  , "kv" , nil, "Run the given lua script file.",
                                   "e.g.",
-                                  "    $ xmake l cli.bisect -s /tmp/test.lua -b bad -g good"},
+                                  "    $ xmake l cli.bisect -s /tmp/test.lua -g good -b bad"},
     {'-', "arbitrary", "vs", nil, "Run an arbitrary command.",
                                   "e.g.",
-                                  "    $ xmake l cli.bisect -b ddb86e4 -g 90846dd -- xmake -rv"}
+                                  "    $ xmake l cli.bisect -g 90846dd -b ddb86e4 -- xmake -rv"}
 }
 
 -- run command
