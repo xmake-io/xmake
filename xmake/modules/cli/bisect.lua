@@ -26,6 +26,7 @@ import("lib.detect.find_tool")
 local options = {
     {'g', "good",     "kv",  nil, "Set the good commit."},
     {'b', "bad",      "kv",  nil, "Set the bad commit."},
+    {nil, "gitdir",   "kv",  nil, "Set the git root directory."},
     {'c', "commands", "kv" , nil, "Run the multiple commands instead of the default build command.",
                                   "e.g.",
                                   "    $ xmake l cli.bisect -c 'xmake -rv' -g good -b bad",
@@ -83,15 +84,16 @@ function main(...)
     local git = assert(find_tool("git"), "git not found!")
     local good = assert(args.good, "please set `--good commit`")
     local bad = assert(args.bad, "please set `--bad commit`")
-    os.execv(git.program, {"bisect", "start"})
-    os.execv(git.program, {"bisect", "good", good})
-    os.execv(git.program, {"bisect", "bad", bad})
+    local gitdir = args.gitdir or os.curdir()
+    os.execv(git.program, {"bisect", "start"}, {curdir = gitdir})
+    os.execv(git.program, {"bisect", "good", good}, {curdir = gitdir})
+    os.execv(git.program, {"bisect", "bad", bad}, {curdir = gitdir})
     while true do
         local output
         if _run_command(args) then
-            output = os.iorunv(git.program, {"bisect", "good"})
+            output = os.iorunv(git.program, {"bisect", "good"}, {curdir = gitdir})
         else
-            output = os.iorunv(git.program, {"bisect", "bad"})
+            output = os.iorunv(git.program, {"bisect", "bad"}, {curdir = gitdir})
         end
         if output then
             print(output)
