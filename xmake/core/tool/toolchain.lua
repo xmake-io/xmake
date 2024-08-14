@@ -209,7 +209,7 @@ end
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
     if not self:_is_checked() then
-        os.raise("toolchain(%s) has been not checked yet!", self:name())
+        os.raise("we cannot get tool(%s) in toolchain(%s), because it has been not checked yet!", toolkind, self:name())
     end
     -- ensure to do load for initializing toolset first
     -- @note we cannot call self:check() here, because it can only be called on config
@@ -810,7 +810,7 @@ function toolchain.toolconfig(toolchains, name, opt)
     if toolconfig == nil then
         for _, toolchain_inst in ipairs(toolchains) do
             if not toolchain_inst:_is_checked() then
-                os.raise("toolchain(%s) has been not checked yet!", toolchain_inst:name())
+                os.raise("we cannot get toolconfig(%s) in toolchain(%s), because it has been not checked yet!", name, toolchain_inst:name())
             end
             local values = toolchain_inst:get(name)
             if values then
