@@ -38,7 +38,7 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
             break
         end
     end
-    local reponame = hash.uuid(locked_repo.url):gsub("%-", ""):lower() .. ".lock"
+    local reponame = hash.uuid(locked_repo.url .. (locked_repo.commit or "")):gsub("%-", ""):lower() .. ".lock"
 
     -- get local repodir
     local repodir_local
