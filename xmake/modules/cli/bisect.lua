@@ -102,4 +102,5 @@ function main(...)
             end
         end
     end
+    os.execv(git.program, {"bisect", "reset"}, {curdir = gitdir})
 end
