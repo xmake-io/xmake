@@ -852,6 +852,17 @@ function _select_package_runtimes(package)
     end
 end
 
+-- check platform toolchains, package maybe use host platform, it's toolchain has been not checked yet.
+-- @see https://github.com/xmake-io/xmake/issues/5455
+function _check_package_platform_toolchains(package)
+    if not package:toolchains() then
+        local platform_inst = platform.load(package:plat(), package:arch())
+        if not platform_inst:check() then
+            raise("no any matched platform for this package(%s)!", package:name())
+        end
+    end
+end
+
 -- load required packages
 function _load_package(packagename, requireinfo, opt)
 
@@ -1003,6 +1014,9 @@ function _load_package(packagename, requireinfo, opt)
             _select_artifacts(package, artifacts_manifest)
         end
     end
+
+    -- check package platform toolchains first, package:has_tool will be called in on_load
+    _check_package_platform_toolchains(package)
 
     -- do load
     package:_load()
