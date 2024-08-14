@@ -438,11 +438,11 @@ function main()
         return remote_build_action()
     end
 
-    -- lock the whole project
-    project.lock()
-
     -- load config first
     task.run("config", {}, {disable_dump = true})
+
+    -- lock the whole project
+    project.lock()
 
     -- get tests
     local tests = get_tests()
