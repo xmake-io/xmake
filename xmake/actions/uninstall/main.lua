@@ -28,11 +28,11 @@ import("uninstall")
 
 function main()
 
-    -- config it first
-    local targetname = option.get("target")
-    task.run("config", {require = "n", verbose = false})
+    -- load config first
+    task.run("config", {require = false}, {disable_dump = true})
 
     -- attempt to uninstall directly
+    local targetname = option.get("target")
     try
     {
         function ()
