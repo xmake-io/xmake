@@ -382,7 +382,7 @@ end
 
 -- is checked?
 function _instance:_is_checked()
-    return self:config("__checked") == true
+    return self:config("__checked") == true or self:_on_check() == nil
 end
 
 -- get the tool description from the tool kind
