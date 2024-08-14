@@ -202,8 +202,9 @@ _os_tryrm() {
 }
 
 # get temporary file
+# https://github.com/xmake-io/xmake/issues/5464
 _os_tmpfile() {
-    _ret=$(mktemp)
+    _ret=$(mktemp "${TMPDIR-/tmp}/tmp.XXXXXXXX")
 }
 
 # try run program
