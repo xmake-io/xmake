@@ -57,8 +57,12 @@ function _do_test_target(target, opt)
     local rundir = opt.rundir or target:rundir()
     local targetfile = path.absolute(target:targetfile())
     local runargs = table.wrap(opt.runargs or target:get("runargs"))
-    local outfile = os.tmpfile()
-    local errfile = os.tmpfile()
+    local autogendir = path.join(target:autogendir(), "tests")
+    local outfile = path.join(autogendir, opt.name .. ".out")
+    local errfile = path.join(autogendir, opt.name .. ".err")
+    os.tryrm(outfile)
+    os.tryrm(errfile)
+    os.mkdir(autogendir)
     local run_timeout = opt.run_timeout
     local ok, syserrors = os.execv(targetfile, runargs, {try = true, timeout = run_timeout,
         curdir = rundir, envs = envs, stdout = outfile, stderr = errfile})
@@ -256,7 +260,8 @@ function _show_output(testinfo, kind)
     if output then
         if option.get("diagnosis") then
             local target = testinfo.target
-            local logfile = path.join(target:autogendir(), "tests", testinfo.name .. "." .. kind .. ".log")
+            local autogendir = path.join(target:autogendir(), "tests")
+            local logfile = path.join(autogendir, testinfo.name .. "." .. kind .. ".log")
             io.writefile(logfile, output)
             print("%s: %s", kind, logfile)
         elseif option.get("verbose") then
