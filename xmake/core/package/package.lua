@@ -1026,8 +1026,12 @@ function _instance:_load()
         if on_load then
             on_load(self)
         end
-        self._LOADED = true
     end
+end
+
+-- mark as loaded package
+function _instance:_mark_as_loaded()
+    self._LOADED = true
 end
 
 -- get the raw environments
@@ -1214,6 +1218,14 @@ function _instance:has_runtime(...)
     end
 end
 
+-- check call limits in on_load
+-- @see https://github.com/xmake-io/xmake/issues/5455
+function _instance:_check_limits_on_load(apiname)
+    if not self._LOADED then
+        os.raise("we cannot call package:%s() in on_load(), please call it in on_check/on_install/on_test.", apiname)
+    end
+end
+
 -- get the given toolchain
 function _instance:toolchain(name)
     local toolchains_map = self:_memcache():get("toolchains_map")
@@ -1259,6 +1271,7 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
+    self:_check_limits_on_load("tool")
     if self:toolchains() then
         local cachekey = "package_" .. tostring(self)
         return toolchain.tool(self:toolchains(), toolkind, {cachekey = cachekey, plat = self:plat(), arch = self:arch()})
@@ -1269,6 +1282,7 @@ end
 
 -- get tool configuration from the toolchains
 function _instance:toolconfig(name)
+    self:_check_limits_on_load("toolconfig")
     if self:toolchains() then
         local cachekey = "package_" .. tostring(self)
         return toolchain.toolconfig(self:toolchains(), name, {cachekey = cachekey, plat = self:plat(), arch = self:arch()})
@@ -1302,6 +1316,7 @@ end
 --    ...
 -- end
 function _instance:has_tool(toolkind, ...)
+    self:_check_limits_on_load("has_tool")
     local _, toolname = self:tool(toolkind)
     if toolname then
         for _, v in ipairs(table.join(...)) do
@@ -2432,6 +2447,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_cfuncs(funcs, opt)
+    self:_check_limits_on_load("has_cfuncs")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cc"})
@@ -2446,6 +2462,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_cxxfuncs(funcs, opt)
+    self:_check_limits_on_load("has_cxxfuncs")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cxx"})
@@ -2460,6 +2477,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_ctypes(types, opt)
+    self:_check_limits_on_load("has_ctypes")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cc"})
@@ -2474,6 +2492,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_cxxtypes(types, opt)
+    self:_check_limits_on_load("has_cxxtypes")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cxx"})
@@ -2488,6 +2507,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_cincludes(includes, opt)
+    self:_check_limits_on_load("has_cincludes")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cc"})
@@ -2502,6 +2522,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_cxxincludes(includes, opt)
+    self:_check_limits_on_load("has_cxxincludes")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cxx"})
@@ -2516,6 +2537,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_cflags(flags, opt)
+    self:_check_limits_on_load("has_cflags")
     local compinst = self:compiler("cc")
     return compinst:has_flags(flags, "cflags", opt)
 end
@@ -2528,6 +2550,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_cxxflags(flags, opt)
+    self:_check_limits_on_load("has_cxxflags")
     local compinst = self:compiler("cxx")
     return compinst:has_flags(flags, "cxxflags", opt)
 end
@@ -2540,6 +2563,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_features(features, opt)
+    self:_check_limits_on_load("has_features")
     opt = opt or {}
     opt.target = self
     return sandbox_module.import("core.tool.compiler", {anonymous = true}).has_features(features, opt)
@@ -2553,6 +2577,7 @@ end
 -- @return          the type size
 --
 function _instance:check_sizeof(typename, opt)
+    self:_check_limits_on_load("check_sizeof")
     opt = opt or {}
     opt.target = self
     return sandbox_module.import("lib.detect.check_sizeof", {anonymous = true})(typename, opt)
@@ -2566,6 +2591,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:check_csnippets(snippets, opt)
+    self:_check_limits_on_load("check_csnippets")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cc"})
@@ -2580,6 +2606,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:check_cxxsnippets(snippets, opt)
+    self:_check_limits_on_load("check_cxxsnippets")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cxx"})
@@ -2594,6 +2621,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:check_msnippets(snippets, opt)
+    self:_check_limits_on_load("check_msnippets")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "mm"})
@@ -2608,6 +2636,7 @@ end
 -- @return          true or false, errors
 --
 function _instance:check_mxxsnippets(snippets, opt)
+    self:_check_limits_on_load("check_mxxsnippets")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "mxx"})

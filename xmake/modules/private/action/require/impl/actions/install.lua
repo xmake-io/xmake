@@ -225,9 +225,17 @@ end
 
 -- check package toolchains
 function _check_package_toolchains(package)
-    for _, toolchain_inst in pairs(package:toolchains()) do
-        if not toolchain_inst:check() then
-            raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
+    if package:toolchains() then
+        for _, toolchain_inst in pairs(package:toolchains()) do
+            if not toolchain_inst:check() then
+                raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
+            end
+        end
+    else
+        -- maybe this package is host package, it's platform and toolchain has been not checked yet.
+        local platform_inst = platform.load(package:plat(), package:arch())
+        if not platform_inst:check() then
+            raise("no any matched platform for this package(%s)!", package:name())
         end
     end
 end
