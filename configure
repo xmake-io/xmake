@@ -648,6 +648,8 @@ elif string_contains "${os_arch}" "armv7"; then
     os_arch="armv7"
 elif string_contains "${os_arch}" "arm"; then
     os_arch="arm"
+elif string_contains "${os_arch}" "power macintosh"; then
+    os_arch="ppc"
 fi
 
 # set the default target platform
