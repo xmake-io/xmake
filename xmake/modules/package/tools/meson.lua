@@ -390,7 +390,7 @@ end
 -- fix libname on windows
 function _fix_libname_on_windows(package)
     for _, lib in ipairs(os.files(path.join(package:installdir("lib"), "lib*.a"))) do
-        os.mv(lib, lib:gsub("(.+)\\lib(.-)%.a", "%1\\%2.lib"))
+        os.mv(lib, (lib:gsub("(.+)\\lib(.-)%.a", "%1\\%2.lib")))
     end
 end
 
