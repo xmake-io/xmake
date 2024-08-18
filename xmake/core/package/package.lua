@@ -1218,14 +1218,6 @@ function _instance:has_runtime(...)
     end
 end
 
--- check call limits in on_load
--- @see https://github.com/xmake-io/xmake/issues/5455
-function _instance:_check_limits_on_load(apiname)
-    if not self._LOADED then
-        os.raise("we cannot call package:%s() in on_load(), please call it in on_check/on_install/on_test.", apiname)
-    end
-end
-
 -- get the given toolchain
 function _instance:toolchain(name)
     local toolchains_map = self:_memcache():get("toolchains_map")
@@ -2522,7 +2514,6 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_cxxincludes(includes, opt)
-    self:_check_limits_on_load("has_cxxincludes")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cxx"})
@@ -2537,7 +2528,6 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_cflags(flags, opt)
-    self:_check_limits_on_load("has_cflags")
     local compinst = self:compiler("cc")
     return compinst:has_flags(flags, "cflags", opt)
 end
@@ -2550,7 +2540,6 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_cxxflags(flags, opt)
-    self:_check_limits_on_load("has_cxxflags")
     local compinst = self:compiler("cxx")
     return compinst:has_flags(flags, "cxxflags", opt)
 end
@@ -2563,7 +2552,6 @@ end
 -- @return          true or false, errors
 --
 function _instance:has_features(features, opt)
-    self:_check_limits_on_load("has_features")
     opt = opt or {}
     opt.target = self
     return sandbox_module.import("core.tool.compiler", {anonymous = true}).has_features(features, opt)
@@ -2577,7 +2565,6 @@ end
 -- @return          the type size
 --
 function _instance:check_sizeof(typename, opt)
-    self:_check_limits_on_load("check_sizeof")
     opt = opt or {}
     opt.target = self
     return sandbox_module.import("lib.detect.check_sizeof", {anonymous = true})(typename, opt)
@@ -2591,7 +2578,6 @@ end
 -- @return          true or false, errors
 --
 function _instance:check_csnippets(snippets, opt)
-    self:_check_limits_on_load("check_csnippets")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cc"})
@@ -2606,7 +2592,6 @@ end
 -- @return          true or false, errors
 --
 function _instance:check_cxxsnippets(snippets, opt)
-    self:_check_limits_on_load("check_cxxsnippets")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "cxx"})
@@ -2621,7 +2606,6 @@ end
 -- @return          true or false, errors
 --
 function _instance:check_msnippets(snippets, opt)
-    self:_check_limits_on_load("check_msnippets")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "mm"})
@@ -2636,7 +2620,6 @@ end
 -- @return          true or false, errors
 --
 function _instance:check_mxxsnippets(snippets, opt)
-    self:_check_limits_on_load("check_mxxsnippets")
     opt = opt or {}
     opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "mxx"})
