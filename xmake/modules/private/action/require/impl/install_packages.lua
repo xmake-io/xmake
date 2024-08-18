@@ -167,7 +167,8 @@ function _get_confirm_from_3rd(packages)
 end
 
 -- get user confirm
-function _get_confirm(packages)
+function _get_confirm(packages, opt)
+    opt = opt or {}
 
     -- no confirmed packages?
     if #packages == 0 then
@@ -201,7 +202,11 @@ function _get_confirm(packages)
             end
 
             -- show tips
-            cprint("${bright color.warning}note: ${clear}install or modify (m) these packages (pass -y to skip confirm)?")
+            if opt.toolchain then
+                cprint("${bright color.warning}note: ${clear}install or modify (m) these ${bright}toolchain${clear} packages first (pass -y to skip confirm)?")
+            else
+                cprint("${bright color.warning}note: ${clear}install or modify (m) these packages (pass -y to skip confirm)?")
+            end
             for reponame, packages in pairs(packages_repo) do
                 if reponame ~= "" then
                     print("in %s:", reponame)
@@ -758,7 +763,7 @@ function _install_packages(requires, opt)
     end
 
     -- get user confirm
-    local confirm, packages_modified = _get_confirm(packages_install)
+    local confirm, packages_modified = _get_confirm(packages_install, opt)
     if not confirm then
         local packages_must = {}
         for _, instance in ipairs(packages_install) do
