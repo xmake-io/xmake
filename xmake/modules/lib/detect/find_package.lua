@@ -35,7 +35,7 @@ function _concat_packages(a, b)
         result[k] = v
     end
     for k, v in pairs(result) do
-        if k == "links" then
+        if k == "links" or k == "syslinks" or k == "frameworks" or k == "ldflags" or k == "shflags" then
             if type(v) == "table" and #v > 1 then
                 -- we need to ensure link orders when removing repeat values
                 v = table.reverse_unique(v)
