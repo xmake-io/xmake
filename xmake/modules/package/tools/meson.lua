@@ -50,6 +50,20 @@ end
 
 -- get pkg-config, we need force to find it, because package install environments will be changed
 function _get_pkgconfig(package)
+    -- meson need fullpath pkgconfig
+    -- @see https://github.com/xmake-io/xmake/issues/5474
+    local dep = package:dep("pkgconf") or package:dep("pkg-config")
+    if dep then
+        local suffix = dep:is_plat("windows", "mingw") and ".exe" or ""
+        local pkgconf = path.join(dep:installdir("bin"), "pkgconf" .. suffix)
+        if os.isfile(pkgconf) then
+            return pkgconf
+        end
+        local pkgconfig = path.join(dep:installdir("bin"), "pkg-config" .. suffix)
+        if os.isfile(pkgconfig) then
+            return pkgconfig
+        end
+    end
     if package:is_plat("windows") then
         local pkgconf = find_tool("pkgconf", {force = true})
         if pkgconf then
