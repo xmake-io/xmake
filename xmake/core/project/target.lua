@@ -976,7 +976,7 @@ function _instance:soname()
     if not self:is_shared() then
         return
     end
-    if not self:is_plat("macosx", "linux", "bsd", "cross") then
+    if self:is_plat("windows", "mingw", "cygwin", "msys") then
         return
     end
     local version = self:get("version")
