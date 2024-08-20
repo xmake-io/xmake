@@ -422,11 +422,17 @@ path_toolname() {
         emcc) toolname="emcc";;
         */em++) toolname="emxx";;
         em++) toolname="emxx";;
+        */cosmocc) toolname="cosmocc";;
+        cosmocc) toolname="cosmocc";;
+        */cosmoc++) toolname="cosmocxx";;
+        cosmoc++) toolname="cosmocxx";;
         *-ar) toolname="ar";;
         */ar) toolname="ar";;
         ar) toolname="ar";;
         */emar) toolname="emar";;
         emar) toolname="emar";;
+        */cosmoar) toolname="cosmoar";;
+        cosmoar) toolname="cosmoar";;
         cc) toolname="gcc";;
         */cc) toolname="gcc";;
         c++) toolname="gxx";;
@@ -985,6 +991,8 @@ _get_abstract_flags() {
             clangxx) _get_abstract_flag_for_gcc_clang "${toolkind}" "${toolname}" "${itemname}" "${value}"; flag="${_ret}";;
             emcc) _get_abstract_flag_for_gcc_clang "${toolkind}" "${toolname}" "${itemname}" "${value}"; flag="${_ret}";;
             emxx) _get_abstract_flag_for_gcc_clang "${toolkind}" "${toolname}" "${itemname}" "${value}"; flag="${_ret}";;
+            cosmocc) _get_abstract_flag_for_gcc_clang "${toolkind}" "${toolname}" "${itemname}" "${value}"; flag="${_ret}";;
+            cosmocxx) _get_abstract_flag_for_gcc_clang "${toolkind}" "${toolname}" "${itemname}" "${value}"; flag="${_ret}";;
             *) raise "unknown toolname(${toolname})!" ;;
         esac
         if test_nz "${flag}"; then
@@ -1702,8 +1710,11 @@ _get_target_toolchain_flags() {
         clangxx) _get_target_toolchain_flags_for_clang "${name}" "${toolkind}"; flags="${_ret}";;
         emcc) _get_target_toolchain_flags_for_clang "${name}" "${toolkind}"; flags="${_ret}";;
         emxx) _get_target_toolchain_flags_for_clang "${name}" "${toolkind}"; flags="${_ret}";;
+        cosmocc) _get_target_toolchain_flags_for_gcc "${name}" "${toolkind}"; flags="${_ret}";;
+        cosmocxx) _get_target_toolchain_flags_for_gcc "${name}" "${toolkind}"; flags="${_ret}";;
         ar) _get_target_toolchain_flags_for_ar "${name}" "${toolkind}"; flags="${_ret}";;
         emar) _get_target_toolchain_flags_for_ar "${name}" "${toolkind}"; flags="${_ret}";;
+        cosmoar) _get_target_toolchain_flags_for_ar "${name}" "${toolkind}"; flags="${_ret}";;
         *) raise "unknown toolname(${toolname})!" ;;
     esac
     _ret="${flags}"
@@ -2719,6 +2730,7 @@ Common options:
                             - mingw
                             - macosx
                             - linux
+                            - wasm
   --arch=ARCH             Compile for the given architecture. (default: '"${_target_arch_default}"')
                             - msys: i386 x86_64
                             - cross: i386 x86_64 arm arm64 mips mips64 riscv riscv64 loong64 s390x ppc ppc64 sh4
@@ -2736,6 +2748,8 @@ Common options:
   --toolchain=TOOLCHAIN   Set toolchain name.
                             - clang
                             - gcc
+                            - emcc
+                            - cosmocc
   --buildir=DIR           Set build directory. (default: '"${xmake_sh_buildir}"')
 
 Autoconf options:
@@ -3027,6 +3041,18 @@ toolchain "emcc"
     set_toolset "ar" "emar" "ar"
 toolchain_end
 
+# cosmocc toolchain, e.g. ./configure --plat=linux --toolchain=cosmocc
+toolchain "cosmocc"
+    set_toolset "as" "cosmocc"
+    set_toolset "cc" "cosmocc"
+    set_toolset "cxx" "cosmocc" "cosmoc++"
+    set_toolset "mm" "cosmocc"
+    set_toolset "mxx" "cosmocc" "cosmoc++"
+    set_toolset "ld" "cosmoc++" "cosmocc"
+    set_toolset "sh" "cosmoc++" "cosmocc"
+    set_toolset "ar" "cosmoar"
+toolchain_end
+
 # check platform
 _check_platform() {
     if test "x${_target_plat}" = "x"; then
@@ -3093,6 +3119,8 @@ _toolchain_compcmd() {
         clangxx) _toolchain_compcmd_for_gcc_clang "${program}" "${objectfile}" "${sourcefile}" "${flags}"; compcmd="${_ret}";;
         emcc) _toolchain_compcmd_for_gcc_clang "${program}" "${objectfile}" "${sourcefile}" "${flags}"; compcmd="${_ret}";;
         emxx) _toolchain_compcmd_for_gcc_clang "${program}" "${objectfile}" "${sourcefile}" "${flags}"; compcmd="${_ret}";;
+        cosmocc) _toolchain_compcmd_for_gcc_clang "${program}" "${objectfile}" "${sourcefile}" "${flags}"; compcmd="${_ret}";;
+        cosmocxx) _toolchain_compcmd_for_gcc_clang "${program}" "${objectfile}" "${sourcefile}" "${flags}"; compcmd="${_ret}";;
         *) raise "unknown toolname(${toolname})!" ;;
     esac
     _ret="${compcmd}"
@@ -3113,8 +3141,11 @@ _toolchain_linkcmd() {
         clangxx) _toolchain_linkcmd_for_gcc_clang "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
         emcc) _toolchain_linkcmd_for_gcc_clang "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
         emxx) _toolchain_linkcmd_for_gcc_clang "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
+        cosmocc) _toolchain_linkcmd_for_gcc_clang "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
+        cosmocxx) _toolchain_linkcmd_for_gcc_clang "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
         ar) _toolchain_linkcmd_for_ar "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
         emar) _toolchain_linkcmd_for_ar "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
+        cosmoar) _toolchain_linkcmd_for_ar "${toolkind}" "${program}" "${binaryfile}" "${objectfiles}" "${flags}"; linkcmd="${_ret}";;
         *) raise "unknown toolname(${toolname})!" ;;
     esac
     _ret="${linkcmd}"
@@ -3237,6 +3268,24 @@ _toolchain_try_ar() {
     return 1
 }
 
+# try cosmoar
+_toolchain_try_cosmoar() {
+    if test "x${_toolchain_try_cosmoar_result}" = "xok"; then
+        return 0
+    elif test "x${_toolchain_try_cosmoar_result}" = "xno"; then
+        return 1
+    fi
+
+    local kind="${1}"
+    local program="${2}"
+    if _os_runv "${program}" "--version"; then
+        _toolchain_try_cosmoar_result="ok"
+        return 0
+    fi
+    _toolchain_try_cosmoar_result="no"
+    return 1
+}
+
 # try program
 _toolchain_try_program() {
     local toolchain="${1}"
@@ -3251,8 +3300,11 @@ _toolchain_try_program() {
         clangxx) _toolchain_try_clangxx "${kind}" "${program}" && ok=true;;
         emcc) _toolchain_try_clang "${kind}" "${program}" && ok=true;;
         emxx) _toolchain_try_clangxx "${kind}" "${program}" && ok=true;;
+        cosmocc) _toolchain_try_gcc "${kind}" "${program}" && ok=true;;
+        cosmocxx) _toolchain_try_gxx "${kind}" "${program}" && ok=true;;
         ar) _toolchain_try_ar "${kind}" "${program}" && ok=true;;
         emar) _toolchain_try_ar "${kind}" "${program}" && ok=true;;
+        cosmoar) _toolchain_try_cosmoar "${kind}" "${program}" && ok=true;;
         *) raise "unknown toolname(${toolname})!" ;;
     esac
     if ${ok}; then
@@ -3982,6 +4034,8 @@ _gmake_add_build_object() {
         clangxx) _gmake_add_build_object_for_gcc_clang "${sourcekind}" "${sourcefile}" "${objectfile}" "${flagname}";;
         emcc) _gmake_add_build_object_for_gcc_clang "${sourcekind}" "${sourcefile}" "${objectfile}" "${flagname}";;
         emxx) _gmake_add_build_object_for_gcc_clang "${sourcekind}" "${sourcefile}" "${objectfile}" "${flagname}";;
+        cosmocc) _gmake_add_build_object_for_gcc_clang "${sourcekind}" "${sourcefile}" "${objectfile}" "${flagname}";;
+        cosmocxx) _gmake_add_build_object_for_gcc_clang "${sourcekind}" "${sourcefile}" "${objectfile}" "${flagname}";;
         *) raise "unknown toolname(${toolname})!" ;;
     esac
     echo "" >> "${xmake_sh_makefile}"
@@ -4062,8 +4116,11 @@ _gmake_add_build_target() {
         clangxx) _gmake_add_build_target_for_gcc_clang "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
         emcc) _gmake_add_build_target_for_gcc_clang "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
         emxx) _gmake_add_build_target_for_gcc_clang "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
+        cosmocc) _gmake_add_build_target_for_gcc_clang "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
+        cosmocxx) _gmake_add_build_target_for_gcc_clang "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
         ar) _gmake_add_build_target_for_ar "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
         emar) _gmake_add_build_target_for_ar "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
+        cosmoar) _gmake_add_build_target_for_ar "${toolkind}" "${targetfile}" "${objectfiles}" "${flagname}";;
         *) raise "unknown toolname(${toolname})!" ;;
     esac
 
