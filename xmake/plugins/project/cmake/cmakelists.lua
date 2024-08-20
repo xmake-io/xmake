@@ -1030,8 +1030,8 @@ end
 
 -- add target link options
 function _add_target_link_options(cmakelists, target, outputdir)
-    local ldflags = _get_configs_from_target(target, "ldflags")
-    local shflags = _get_configs_from_target(target, "shflags")
+    local ldflags = _get_flags_from_target(target, "ldflags")
+    local shflags = _get_flags_from_target(target, "shflags")
     local toolnames = hashset.new()
     local function _add_target_link_options_for_linker(toolname)
         if #ldflags > 0 or #shflags > 0 then
