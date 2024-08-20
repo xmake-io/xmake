@@ -77,6 +77,34 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
+-- get pkg-config, we need force to find it, because package install environments will be changed
+function _get_pkgconfig(package)
+    -- meson need fullpath pkgconfig
+    -- @see https://github.com/xmake-io/xmake/issues/5474
+    local dep = package:dep("pkgconf") or package:dep("pkg-config")
+    if dep then
+        local suffix = dep:is_plat("windows", "mingw") and ".exe" or ""
+        local pkgconf = path.join(dep:installdir("bin"), "pkgconf" .. suffix)
+        if os.isfile(pkgconf) then
+            return pkgconf
+        end
+        local pkgconfig = path.join(dep:installdir("bin"), "pkg-config" .. suffix)
+        if os.isfile(pkgconfig) then
+            return pkgconfig
+        end
+    end
+    if package:is_plat("windows") then
+        local pkgconf = find_tool("pkgconf", {force = true})
+        if pkgconf then
+            return pkgconf.program
+        end
+    end
+    local pkgconfig = find_tool("pkg-config", {force = true})
+    if pkgconfig then
+        return pkgconfig.program
+    end
+end
+
 -- is the toolchain compatible with the host?
 function _is_toolchain_compatible_with_host(package)
     for _, name in ipairs(package:config("toolchains")) do
@@ -924,7 +952,7 @@ function buildenvs(package, opt)
 
     -- we need to pass pkgconf for windows/mingw without msys2/cygwin
     if package:is_plat("windows", "mingw") and is_subhost("windows") then
-        local pkgconf = find_tool("pkgconf")
+        local pkgconf = _get_pkgconfig(package)
         if pkgconf then
             envs.PKG_CONFIG = pkgconf.program
         end
