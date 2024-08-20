@@ -148,7 +148,7 @@ end
 -- ensure the fwatcher is opened
 function _instance:_ensure_opened()
     if not self:cdata() then
-        return false, string.format("%s: has been closed!", self)
+        return false, string.format("<fwatcher:%s>: has been closed!", self:cdata())
     end
     return true
 end
