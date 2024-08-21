@@ -78,11 +78,17 @@ option("readline")
     add_cincludes("stdio.h", "readline/readline.h")
     add_cfuncs("readline")
     add_defines("XM_CONFIG_API_HAVE_READLINE")
+    after_check(function (option)
+        if option:dep("cosmocc"):enabled() then
+            option:enable(false)
+        end
+    end)
 option_end()
 
 -- the curses option
 option("curses")
     set_description("Enable or disable curses library")
+    add_defines("XM_CONFIG_API_HAVE_CURSES")
     add_deps("cosmocc")
     before_check(function (option)
         if is_plat("mingw") then
@@ -98,7 +104,6 @@ option("curses")
             option:enable(false)
         end
     end)
-    add_defines("XM_CONFIG_API_HAVE_CURSES")
 option_end()
 
 -- the pdcurses option
