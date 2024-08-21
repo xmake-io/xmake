@@ -45,7 +45,16 @@ jobs:
         run: |
           source scripts/srcenv.profile
           xmake --version
-          xmake l os.programfile
           xmake lua -v -D tests/run.lua
           xrepo --version
 
+      - name: Artifact
+        run: |
+          brew install gnu-tar
+          cd core
+          xmake pack -y --autobuild=n --basename=xmake -f zip -o ../artifacts xmake
+          cd ..
+      - uses: actions/upload-artifact@v2
+        with:
+          name: xmake-latest.zip
+          path: artifacts/xmake.zip
