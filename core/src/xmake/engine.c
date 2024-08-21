@@ -49,9 +49,6 @@
 #ifdef TB_CONFIG_OS_HAIKU
 #   include <image.h>
 #endif
-#ifdef XM_EMBED_ENABLE
-#   include "xmake.xmz.h"
-#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -586,6 +583,13 @@ static luaL_Reg const g_package_functions[] =
 
 // the lua global instance for signal handler
 static lua_State* g_lua = tb_null;
+
+// the xmake script files data
+#ifdef XM_EMBED_ENABLE
+static tb_byte_t g_xmake_xmz_data[] = {
+    #include "xmake.xmz.h"
+};
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
@@ -1333,6 +1337,10 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
         tb_printf("error: %s\n", lua_tostring(engine->lua, -1));
         return -1;
     }
+
+#ifdef XM_EMBED_ENABLE
+    tb_trace_i("g_xmake_xmz_data: %d", sizeof(g_xmake_xmz_data));
+#endif
 
     // get the error code
     return (tb_int_t)lua_tonumber(engine->lua, -1);
