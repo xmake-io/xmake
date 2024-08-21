@@ -26,6 +26,7 @@ import("core.tool.compiler")
 import("core.base.semver")
 import("core.base.hashset")
 import("core.project.rule")
+import("core.platform.platform")
 import("lib.detect.find_tool")
 import("private.utils.batchcmds")
 import("private.utils.rule_groups")
@@ -298,15 +299,14 @@ function _get_flags_from_target(target, flagkind)
 end
 
 -- set compiler
-function _set_target_compiler(cmakelists, target)
-    -- use custom toolchain?
-    if config.get("toolchain") or target:get("toolchains") then
-        local cc = target:tool("cc")
+function _set_compiler(cmakelists)
+    if config.get("toolchain") then
+        local cc = platform.tool("cc")
         if cc then
             cc = path.unix(cc)
             cmakelists:print("set(CMAKE_C_COMPILER \"%s\")", cc)
         end
-        local cxx, cxx_name = target:tool("cxx")
+        local cxx, cxx_name = platform.tool("cxx")
         if cxx then
             if cxx_name == "clang" or cxx_name == "gcc" then
                 local dir = path.directory(cxx)
@@ -344,11 +344,7 @@ function _add_project(cmakelists, outputdir)
 
     -- set compilers, we need set it before project( LANGUAGES..)
     -- @see https://github.com/xmake-io/xmake/issues/5448
-    for _, target in table.orderpairs(project.targets()) do
-        if target:is_binary() or target:is_static() or target:is_shared() then
-            _set_target_compiler(cmakelists, target)
-        end
-    end
+    _set_compiler(cmakelists)
 
     -- set project name
     local project_name = project.name()
@@ -1030,8 +1026,8 @@ end
 
 -- add target link options
 function _add_target_link_options(cmakelists, target, outputdir)
-    local ldflags = _get_configs_from_target(target, "ldflags")
-    local shflags = _get_configs_from_target(target, "shflags")
+    local ldflags = _get_flags_from_target(target, "ldflags")
+    local shflags = _get_flags_from_target(target, "shflags")
     local toolnames = hashset.new()
     local function _add_target_link_options_for_linker(toolname)
         if #ldflags > 0 or #shflags > 0 then
