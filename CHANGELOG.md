@@ -5,6 +5,7 @@
 ### New features
 
 * [#5462](https://github.com/xmake-io/xmake/pull/5462): Add `xmake l cli.bisect`
+* [#5488](https://github.com/xmake-io/xmake/pull/5488): Support for using cosmocc to build xmake binary
 
 ### Bugs fixed
 
@@ -1866,6 +1867,7 @@
 ### 新特性
 
 * [#5462](https://github.com/xmake-io/xmake/pull/5462): 添加 `xmake l cli.bisect`
+* [#5488](https://github.com/xmake-io/xmake/pull/5488): 支持使用 cosmocc 去构建 xmake 自身二进制
 
 ### Bugs 修复
 
