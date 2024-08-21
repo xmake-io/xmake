@@ -15,26 +15,18 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        extension.lua
+-- @file        extract_xmz.lua
 --
 
 -- imports
-import("core.base.hashset")
+import("core.base.option")
 
--- get the archive extension
-function main(archivefile)
-    local extension = ""
-    local filename = path.filename(archivefile)
-    local extensionset = hashset.from({
-        ".xmz", -- xmake compression format
-        ".zip", ".7z", ".gz", ".xz", ".tgz",
-        ".bz2", ".tar", ".tar.gz", ".tar.xz",
-        ".tar.bz2", ".tar.Z"})
-    local i = filename:lastof(".", true)
-    if i then
-        local p = filename:sub(1, i - 1):lastof(".", true)
-        if p and extensionset:has(filename:sub(p)) then i = p end
-        extension = filename:sub(i)
-    end
-    return extensionset:has(extension) and extension or ""
+-- extract file
+--
+-- @param archivefile   the archive file. e.g. *.tar.gz, *.zip, *.7z, *.tar.bz2, ..
+-- @param outputdir     the output directory
+-- @param options       the options, e.g.. {excludes = {"*/dir/*", "dir/*"}}
+--
+function main(archivefile, outputdir, opt)
+    opt = opt or {}
 end
