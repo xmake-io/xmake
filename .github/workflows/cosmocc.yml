@@ -1,0 +1,44 @@
+name: Cosmocc (x86_64)
+
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        os: [macos-12]
+        arch: [x86_64]
+
+    runs-on: ${{ matrix.os }}
+
+    concurrency:
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Cosmocc-${{ matrix.arch }}
+        cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Prepare local xmake
+        run: cp -rf . ../xmake-source
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: local#../xmake-source
+
+      - name: Build
+        run: |
+          cd core
+          xmake f -p linux --cosmocc=y -y -cvD
+          xmake -v
+          cd ..
+
+      - name: Tests
+        run: |
+          source scripts/srcenv.profile
+          xmake lua -v -D tests/run.lua
+          xrepo --version
+
