@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 
--- archive archive file
+-- archive file
 --
 -- @param archivefile   the archive file. e.g. *.tar.gz, *.zip, *.7z, *.tar.bz2, ..
 -- @param inputfiles    the input file or directory or list
@@ -29,4 +29,16 @@ import("core.base.option")
 --
 function main(archivefile, inputfiles, opt)
     opt = opt or {}
+    local files = {}
+    for _, inputfile in ipairs(inputfiles) do
+        if os.isdir(inputfile) then
+            table.join2(files, os.files(path.join(inputfile, opt.recurse and "**" or "*")))
+        elseif os.isfile(inputfile) then
+            table.insert(files, inputfile)
+        end
+    end
+    inputfiles = files
+
+    print("archivefile", archivefile)
+    print("inputfiles", inputfiles)
 end
