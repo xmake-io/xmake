@@ -20,14 +20,18 @@
 
 -- imports
 import("core.base.option")
+import("core.base.bytes")
 import("core.compress.lz4")
 
 -- archive files
 function _archive_files(archivefile, inputfiles, opt)
     local outputfile = io.open(archivefile, "wb")
     for _, inputfile in ipairs(inputfiles) do
+        outputfile:write(bytes(2):u16be_set(1, #inputfile))
         outputfile:write(inputfile)
         local data = io.readfile(inputfile, {encoding = "binary"})
+        vprint("archiving %s, %d bytes", inputfile, data and #data or 0)
+        outputfile:write(bytes(4):u32be_set(1, #data))
         outputfile:write(data)
     end
     outputfile:close()
