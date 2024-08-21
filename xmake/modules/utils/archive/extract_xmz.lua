@@ -20,6 +20,12 @@
 
 -- imports
 import("core.base.option")
+import("core.compress.lz4")
+
+-- decompress file
+function _decompress_file(archivefile, outputfile, opt)
+    lz4.decompress_file(archivefile, outputfile)
+end
 
 -- extract file
 --
@@ -29,4 +35,8 @@ import("core.base.option")
 --
 function main(archivefile, outputdir, opt)
     opt = opt or {}
+
+    local archivefile_tmp = os.tmpfile({ramdisk = false})
+    _decompress_file(archivefile, archivefile_tmp)
+    os.tryrm(archivefile_tmp)
 end
