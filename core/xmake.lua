@@ -48,6 +48,16 @@ if is_mode("coverage") then
     add_ldflags("-coverage", "-fprofile-arcs", "-ftest-coverage")
 end
 
+-- set cosmocc toolchain, e.g. xmake f -p linux --cosmocc=y
+if has_config("cosmocc") then
+    add_requires("cosmocc")
+    set_toolchains("@cosmocc")
+    set_policy("build.ccache", false)
+end
+
+-- the cosmocc option
+option("cosmocc", {default = false, category = "option", description = "Use cosmocc toolchain to build once and run anywhere."})
+
 -- the runtime option
 option("runtime")
     set_default("lua")
