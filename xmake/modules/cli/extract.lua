@@ -24,6 +24,7 @@ import("utils.archive.extract")
 
 -- the options
 local options = {
+    {'w', "workdir",    "kv",  nil, "Set the working directory."},
     {nil, "excludes",   "kv",  nil, "Set the excludes patterns.",
                                     "e.g.",
                                     "    - xmake l cli.extract --excludes=\"*/dir/*|dir/*\" -o outputdir archivefile"},
@@ -41,6 +42,7 @@ function main(...)
 
     local opt = {}
     opt.recurse = args.recurse
+    opt.curdir = args.workdir
     if args.excludes then
         opt.excludes = args.excludes:split("|")
     end

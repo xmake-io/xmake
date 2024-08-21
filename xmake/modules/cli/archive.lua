@@ -26,6 +26,7 @@ import("utils.archive.archive")
 local options = {
     {nil, "compress",   "kv",  nil, "Set the compress algorithm.", values = {"fastest", "faster", "default", "better", "best"}},
     {'r', "recurse",    "k",   nil, "Enable recursive pattern."},
+    {'w', "workdir",    "kv",  nil, "Set the working directory."},
     {nil, "excludes",   "kv",  nil, "Set the excludes patterns.",
                                     "e.g.",
                                     "    - xmake l cli.archive --excludes=\"*/dir/*|dir/*\" -o archivefile inputfiles"},
@@ -44,6 +45,7 @@ function main(...)
     local opt = {}
     opt.recurse = args.recurse
     opt.compress = args.compress
+    opt.curdir = args.workdir
     if args.excludes then
         opt.excludes = args.excludes:split("|")
     end
