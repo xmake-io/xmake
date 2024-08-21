@@ -25,9 +25,14 @@ import("core.compress.lz4")
 
 -- archive files
 function _archive_files(archivefile, inputfiles, opt)
+    local curdir = opt.curdir
     local outputfile = io.open(archivefile, "wb")
     for _, inputfile in ipairs(inputfiles) do
-        outputfile:write(bytes(2):u16be_set(1, #inputfile))
+        local filepath = inputfile
+        if curdir then
+            filepath = path.relative(filepath, curdir)
+        end
+        outputfile:write(bytes(2):u16be_set(1, #filepath))
         outputfile:write(inputfile)
         local data = io.readfile(inputfile, {encoding = "binary"})
         vprint("archiving %s, %d bytes", inputfile, data and #data or 0)

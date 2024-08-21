@@ -55,8 +55,11 @@ if has_config("cosmocc") then
     set_policy("build.ccache", false)
 end
 
--- the cosmocc option
-option("cosmocc", {default = false, category = "option", description = "Use cosmocc toolchain to build once and run anywhere."})
+-- use cosmocc toolchain
+option("cosmocc", {default = false, description = "Use cosmocc toolchain to build once and run anywhere."})
+
+-- embed all script files
+option("embed", {default = false, description = "Embed all script files."})
 
 -- the runtime option
 option("runtime")
