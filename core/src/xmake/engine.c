@@ -1339,7 +1339,7 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     }
 
 #ifdef XM_EMBED_ENABLE
-    tb_trace_i("g_xmake_xmz_data: %d", sizeof(g_xmake_xmz_data));
+    tb_trace_i("g_xmake_xmz_data: %p", g_xmake_xmz_data);
 #endif
 
     // get the error code
