@@ -142,49 +142,25 @@ end
 
 -- print format string with newline
 function utils.print(format, ...)
-
-    -- check
     assert(format)
-
-    -- init message
     local message = string.tryformat(format, ...)
-
-    -- trace
     utils._print(message)
-
-    -- write to the log file
     log:printv(message)
 end
 
 -- print format string without newline
 function utils.printf(format, ...)
-
-    -- check
     assert(format)
-
-    -- init message
     local message = string.tryformat(format, ...)
-
-    -- trace
     utils._iowrite(message)
-
-    -- write to the log file
     log:write(message)
 end
 
 -- print format string and colors with newline
 function utils.cprint(format, ...)
-
-    -- check
     assert(format)
-
-    -- init message
     local message = string.tryformat(format, ...)
-
-    -- trace
     utils._print(colors.translate(message))
-
-    -- write to the log file
     if log:file() then
         log:printv(colors.ignore(message))
     end
@@ -192,17 +168,9 @@ end
 
 -- print format string and colors without newline
 function utils.cprintf(format, ...)
-
-    -- check
     assert(format)
-
-    -- init message
     local message = string.tryformat(format, ...)
-
-    -- trace
     utils._iowrite(colors.translate(message))
-
-    -- write to the log file
     if log:file() then
         log:write(colors.ignore(message))
     end
@@ -237,8 +205,6 @@ end
 
 -- add warning message
 function utils.warning(format, ...)
-
-    -- check
     assert(format)
 
     -- format message

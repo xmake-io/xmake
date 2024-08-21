@@ -64,8 +64,6 @@ end
 
 -- get the top context
 function option._context()
-
-    -- the contexts
     local contexts = option._CONTEXTS
     if contexts then
         return contexts[#contexts]
@@ -74,29 +72,17 @@ end
 
 -- save context
 function option.save(taskname)
-
-    -- init contexts
     option._CONTEXTS = option._CONTEXTS or {}
-
-    -- new a context
     local context = {options = {}, defaults = {}, taskname = taskname}
-
-    -- init defaults
     if taskname then
         context.defaults = option.defaults(taskname) or context.defaults
     end
-
-    -- push this new context to the top stack
     table.insert(option._CONTEXTS, context)
-
-    -- ok
     return context
 end
 
 -- restore context
 function option.restore()
-
-    -- pop it
     if option._CONTEXTS then
         table.remove(option._CONTEXTS)
     end

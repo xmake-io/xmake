@@ -40,6 +40,10 @@ import("private.action.require.impl.utils.get_requires")
 --
 function main(requires_raw)
 
+    -- suppress all logs
+    option.save()
+    option.set("quiet", true, {force = true})
+
     -- get requires and extra config
     local requires_extra = nil
     local requires, requires_extra = get_requires(requires_raw)
@@ -54,6 +58,8 @@ function main(requires_raw)
     end
     table.sort(keys)
     keys = table.concat(keys, ",")
+
+    option.restore()
     print(hash.uuid4(keys):gsub('-', ''):lower())
 end
 
