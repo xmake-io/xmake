@@ -78,6 +78,7 @@ option("readline")
     add_cincludes("stdio.h", "readline/readline.h")
     add_cfuncs("readline")
     add_defines("XM_CONFIG_API_HAVE_READLINE")
+    add_deps("cosmocc")
     after_check(function (option)
         if option:dep("cosmocc"):enabled() then
             option:enable(false)
