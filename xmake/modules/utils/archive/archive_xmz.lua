@@ -20,6 +20,23 @@
 
 -- imports
 import("core.base.option")
+import("core.compress.lz4")
+
+-- archive files
+function _archive_files(archivefile, inputfiles, opt)
+    local outputfile = io.open(archivefile, "wb")
+    for _, inputfile in ipairs(inputfiles) do
+        outputfile:write(inputfile)
+        local data = io.readfile(inputfile, {encoding = "binary"})
+        outputfile:write(data)
+    end
+    outputfile:close()
+end
+
+-- compress file
+function _compress_file(archivefile, outputfile, opt)
+    lz4.compress_file(archivefile, outputfile)
+end
 
 -- archive file
 --
@@ -39,6 +56,8 @@ function main(archivefile, inputfiles, opt)
     end
     inputfiles = files
 
-    print("archivefile", archivefile)
-    print("inputfiles", inputfiles)
+    local archivefile_tmp = os.tmpfile({ramdisk = false})
+    _archive_files(archivefile_tmp, inputfiles, opt)
+    _compress_file(archivefile_tmp, archivefile, opt)
+    os.tryrm(archivefile_tmp)
 end
