@@ -48,6 +48,16 @@ if is_mode("coverage") then
     add_ldflags("-coverage", "-fprofile-arcs", "-ftest-coverage")
 end
 
+-- set cosmocc toolchain, e.g. xmake f -p linux --cosmocc=y
+if has_config("cosmocc") then
+    add_requires("cosmocc")
+    set_toolchains("@cosmocc")
+    set_policy("build.ccache", false)
+end
+
+-- the cosmocc option
+option("cosmocc", {default = false, category = "option", description = "Use cosmocc toolchain to build once and run anywhere."})
+
 -- the runtime option
 option("runtime")
     set_default("lua")
@@ -68,11 +78,19 @@ option("readline")
     add_cincludes("stdio.h", "readline/readline.h")
     add_cfuncs("readline")
     add_defines("XM_CONFIG_API_HAVE_READLINE")
+    add_deps("cosmocc")
+    after_check(function (option)
+        if option:dep("cosmocc"):enabled() then
+            option:enable(false)
+        end
+    end)
 option_end()
 
 -- the curses option
 option("curses")
     set_description("Enable or disable curses library")
+    add_defines("XM_CONFIG_API_HAVE_CURSES")
+    add_deps("cosmocc")
     before_check(function (option)
         if is_plat("mingw") then
             option:add("cincludes", "ncursesw/curses.h")
@@ -82,7 +100,11 @@ option("curses")
             option:add("links", "curses")
         end
     end)
-    add_defines("XM_CONFIG_API_HAVE_CURSES")
+    after_check(function (option)
+        if option:dep("cosmocc"):enabled() then
+            option:enable(false)
+        end
+    end)
 option_end()
 
 -- the pdcurses option
