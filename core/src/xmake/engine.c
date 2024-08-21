@@ -49,6 +49,9 @@
 #ifdef TB_CONFIG_OS_HAIKU
 #   include <image.h>
 #endif
+#ifdef XM_EMBED_ENABLE
+#   include "xmake.xmz.h"
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
