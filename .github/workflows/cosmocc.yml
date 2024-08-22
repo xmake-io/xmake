@@ -46,7 +46,6 @@ jobs:
           core/build/xmake --version
           core/build/xmake lua -v -D tests/run.lua
 
-      - name: Artifact
       - uses: actions/upload-artifact@v2
         with:
           name: xmake
