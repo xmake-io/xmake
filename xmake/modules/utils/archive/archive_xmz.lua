@@ -33,7 +33,7 @@ function _archive_files(archivefile, inputfiles, opt)
             filepath = path.relative(filepath, curdir)
         end
         outputfile:write(bytes(2):u16be_set(1, #filepath))
-        outputfile:write(inputfile)
+        outputfile:write(filepath)
         local data = io.readfile(inputfile, {encoding = "binary"})
         vprint("archiving %s, %d bytes", inputfile, data and #data or 0)
         outputfile:write(bytes(4):u32be_set(1, #data))
