@@ -654,7 +654,7 @@ static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb
     return tb_true;
 }
 
-static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path, tb_size_t maxn)
+static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** argv, tb_char_t* path, tb_size_t maxn)
 {
     // check
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
@@ -744,6 +744,14 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
             }
         }
 #endif
+
+        tb_char_t const* p = argv? argv[0] : tb_null;
+        if (p && tb_file_info(p, tb_null))
+        {
+            tb_strlcpy(path, p, maxn);
+            ok = tb_true;
+            break;
+        }
 
     } while (0);
 
@@ -1452,7 +1460,7 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     if (!xm_engine_get_project_directory(engine, path, sizeof(path))) return -1;
 
     // get the program file
-    if (!xm_engine_get_program_file(engine, path, sizeof(path))) return -1;
+    if (!xm_engine_get_program_file(engine, argv, path, sizeof(path))) return -1;
 
     // get the program directory
     if (!xm_engine_get_program_directory(engine, path, sizeof(path), path)) return -1;

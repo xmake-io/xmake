@@ -43,6 +43,7 @@ jobs:
 
       - name: Tests
         run: |
+          ls -l core/build/
           core/build/xmake --version
           core/build/xmake lua -v -D tests/run.lua
 
