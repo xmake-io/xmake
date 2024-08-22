@@ -49,6 +49,9 @@
 #ifdef TB_CONFIG_OS_HAIKU
 #   include <image.h>
 #endif
+#ifdef __COSMOPOLITAN__
+#   include <sys/utsname.h>
+#endif
 
 // for uid
 #ifndef TB_CONFIG_OS_WINDOWS
@@ -958,7 +961,18 @@ static tb_void_t xm_engine_init_host(xm_engine_t* engine)
 
     // init system host
     tb_char_t const* syshost = tb_null;
-#if defined(TB_CONFIG_OS_WINDOWS)
+#if defined(__COSMOPOLITAN__)
+    struct utsname buffer;
+    if (uname(&buffer) == 0)
+    {
+        if (tb_strstr(buffer.sysname, "Darwin"))
+            syshost = "macosx";
+        else if (tb_strstr(buffer.sysname, "Linux"))
+            syshost = "linux";
+        else if (tb_strstr(buffer.sysname, "Windows"))
+            syshost = "windows";
+    }
+#elif defined(TB_CONFIG_OS_WINDOWS)
     syshost = "windows";
 #elif defined(TB_CONFIG_OS_MACOSX)
     syshost = "macosx";
@@ -1039,7 +1053,22 @@ static tb_void_t xm_engine_init_arch(xm_engine_t* engine)
 
     // init system architecture
     tb_char_t const* sysarch = tb_null;
-#if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
+#if defined(__COSMOPOLITAN__)
+    struct utsname buffer;
+    if (uname(&buffer) == 0)
+    {
+        sysarch = buffer.machine;
+        if (tb_strstr(buffer.sysname, "Windows"))
+        {
+            if (!tb_strcmp(buffer.machine, "x86_64"))
+                sysarch = "x64";
+            else if (!tb_strcmp(buffer.machine, "i686") || !tb_strcmp(buffer.machine, "i386"))
+                sysarch = "x86";
+        }
+        else if (!tb_strcmp(buffer.machine, "aarch64"))
+            sysarch = "arm64";
+    }
+#elif defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
     // the GetNativeSystemInfo function type
     typedef void (WINAPI *GetNativeSystemInfo_t)(LPSYSTEM_INFO);
 
