@@ -745,12 +745,14 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** arg
         }
 #endif
 
-        tb_char_t const* p = argv? argv[0] : tb_null;
-        if (p && tb_file_info(p, tb_null))
+        if (!ok && argv)
         {
-            tb_strlcpy(path, p, maxn);
-            ok = tb_true;
-            break;
+            tb_char_t const* p = argv[0];
+            if (p && tb_file_info(p, tb_null))
+            {
+                tb_strlcpy(path, p, maxn);
+                ok = tb_true;
+            }
         }
 
     } while (0);
