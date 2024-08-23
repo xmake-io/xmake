@@ -158,18 +158,17 @@ function _update_install_rpath(target, opt)
     local bindir = target:bindir()
     local targetfile = path.join(bindir, target:filename())
     if target:policy("install.rpath") then
-        rpath_utils.clean(targetfile, {plat = target:plat(), arch = target:arch()})
         local result, sources = target:get_from("rpathdirs", "*")
         if result and sources then
             for idx, rpathdirs in ipairs(result) do
                 local source = sources[idx]
                 local extraconf = target:extraconf_from("rpathdirs", source)
-                if extraconf then
-                    for _, rpathdir in ipairs(rpathdirs) do
-                        local extra = extraconf[rpathdir]
-                        if extra and extra.installonly then
-                            rpath_utils.insert(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
-                        end
+                for _, rpathdir in ipairs(rpathdirs) do
+                    local extra = extraconf and extraconf[rpathdir] or nil
+                    if extra and extra.installonly then
+                        rpath_utils.insert(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
+                    else
+                        rpath_utils.remove(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
                     end
                 end
             end
