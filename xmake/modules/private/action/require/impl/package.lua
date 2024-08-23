@@ -487,6 +487,23 @@ function _check_package_configurations(package)
     end
 end
 
+-- check package toolchains
+function _check_package_toolchains(package)
+    if package:toolchains() then
+        for _, toolchain_inst in pairs(package:toolchains()) do
+            if not toolchain_inst:check() then
+                raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
+            end
+        end
+    else
+        -- maybe this package is host package, it's platform and toolchain has been not checked yet.
+        local platform_inst = platform.load(package:plat(), package:arch())
+        if not platform_inst:check() then
+            raise("no any matched platform for this package(%s)!", package:name())
+        end
+    end
+end
+
 -- match require path
 function _match_requirepath(requirepath, requireconf)
 
@@ -937,6 +954,13 @@ function _load_package(packagename, requireinfo, opt)
     -- save require info
     package:requireinfo_set(requireinfo)
 
+    -- only load toolchain package and its deps
+    if opt.toolchain then
+        if package:is_toplevel() and not package:is_toolchain()then
+            return
+        end
+    end
+
     -- init urls source
     package:_init_source()
 
@@ -1004,6 +1028,13 @@ function _load_package(packagename, requireinfo, opt)
         end
     end
 
+    -- we need to check package toolchains before on_load,
+    -- because we will call compiler-specific apis in on_load/on_fetch/find_package ..
+    --
+    -- @see https://github.com/xmake-io/xmake/pull/5466
+    -- https://github.com/xmake-io/xmake/issues/4596#issuecomment-2014528801
+    _check_package_toolchains(package)
+
     -- do load
     package:_load()
 
@@ -1017,6 +1048,9 @@ function _load_package(packagename, requireinfo, opt)
 
     -- save this package package to cache
     _memcache():set2("packages", packagekey, package)
+
+    -- load ok
+    package:_mark_as_loaded()
     return package
 end
 

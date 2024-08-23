@@ -208,6 +208,9 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
+    if not self:_is_checked() then
+        os.raise("we cannot get tool(%s) in toolchain(%s) with %s/%s, because it has been not checked yet!", toolkind, self:name(), self:plat(), self:arch())
+    end
     -- ensure to do load for initializing toolset first
     -- @note we cannot call self:check() here, because it can only be called on config
     self:_load()
@@ -270,7 +273,8 @@ end
 -- do check, we only check it once for all architectures
 function _instance:check()
     local checkok = true
-    if not self._CHECKED then
+    local checked = self:_is_checked()
+    if not checked then
         local on_check = self:_on_check()
         if on_check then
             local ok, results_or_errors = sandbox.load(on_check, self)
@@ -280,7 +284,9 @@ function _instance:check()
                 os.raise(results_or_errors)
             end
         end
-        self._CHECKED = true
+        -- we need to persist this state
+        self:config_set("__checked", true)
+        self:configs_save()
     end
     return checkok
 end
@@ -372,6 +378,11 @@ end
 -- is loaded?
 function _instance:_is_loaded()
     return self:info():get("__loaded")
+end
+
+-- is checked?
+function _instance:_is_checked()
+    return self:config("__checked") == true or self:_on_check() == nil
 end
 
 -- get the tool description from the tool kind
@@ -708,8 +719,6 @@ function toolchain.load_fromfile(filepath, opt)
     local scope_opt = {interpreter = toolchain._interpreter(), deduplicate = true, enable_filter = true}
     local info = scopeinfo.new("toolchain", fileinfo.info, scope_opt)
     local instance = toolchain.load_withinfo(fileinfo.name, info, opt)
-    -- we need to skip check
-    instance._CHECKED = true
     return instance
 end
 
@@ -800,6 +809,9 @@ function toolchain.toolconfig(toolchains, name, opt)
     local toolconfig = cache:get2(cachekey, name)
     if toolconfig == nil then
         for _, toolchain_inst in ipairs(toolchains) do
+            if not toolchain_inst:_is_checked() then
+                os.raise("we cannot get toolconfig(%s) in toolchain(%s) with %s/%s, because it has been not checked yet!", name, toolchain_inst:name(), toolchain_inst:plat(), toolchain_inst:arch())
+            end
             local values = toolchain_inst:get(name)
             if values then
                 toolconfig = toolconfig or {}

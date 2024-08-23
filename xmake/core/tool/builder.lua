@@ -309,6 +309,9 @@ function builder:_add_flags_from_argument(flags, target, args)
             return values, extras
         end,
         toolchain = function (name)
+            if target and target.toolconfig then
+                return target:toolconfig(name)
+            end
             local plat, arch
             if target and target.plat then
                 plat = target:plat()

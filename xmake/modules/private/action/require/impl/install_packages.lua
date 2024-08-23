@@ -167,7 +167,8 @@ function _get_confirm_from_3rd(packages)
 end
 
 -- get user confirm
-function _get_confirm(packages)
+function _get_confirm(packages, opt)
+    opt = opt or {}
 
     -- no confirmed packages?
     if #packages == 0 then
@@ -201,7 +202,11 @@ function _get_confirm(packages)
             end
 
             -- show tips
-            cprint("${bright color.warning}note: ${clear}install or modify (m) these packages (pass -y to skip confirm)?")
+            if opt.toolchain then
+                cprint("${bright color.warning}note: ${clear}install or modify (m) these ${bright}toolchain${clear} packages first (pass -y to skip confirm)?")
+            else
+                cprint("${bright color.warning}note: ${clear}install or modify (m) these packages (pass -y to skip confirm)?")
+            end
             for reponame, packages in pairs(packages_repo) do
                 if reponame ~= "" then
                     print("in %s:", reponame)
@@ -379,8 +384,8 @@ function _should_install_package(instance)
     return result
 end
 
--- install packages
-function _install_packages(packages_install, packages_download, installdeps)
+-- do install packages
+function _do_install_packages(packages_install, packages_download, installdeps)
 
     -- we need to hide wait characters if is not a tty
     local show_wait = io.isatty()
@@ -663,9 +668,7 @@ function _get_package_installdeps(packages)
 end
 
 -- install packages
-function main(requires, opt)
-
-    -- init options
+function _install_packages(requires, opt)
     opt = opt or {}
 
     -- load packages
@@ -760,7 +763,7 @@ function main(requires, opt)
     end
 
     -- get user confirm
-    local confirm, packages_modified = _get_confirm(packages_install)
+    local confirm, packages_modified = _get_confirm(packages_install, opt)
     if not confirm then
         local packages_must = {}
         for _, instance in ipairs(packages_install) do
@@ -794,7 +797,7 @@ function main(requires, opt)
     _sort_packages_urls(packages_download)
 
     -- install all required packages from repositories
-    _install_packages(packages_install, packages_download, installdeps)
+    _do_install_packages(packages_install, packages_download, installdeps)
 
     -- disable other packages in same group
     _disable_other_packages_in_group(packages)
@@ -811,5 +814,15 @@ function main(requires, opt)
     -- lock packages
     lock_packages(packages)
     return packages
+end
+
+function main(requires, opt)
+    -- we need to install toolchain packages first,
+    -- because we will call compiler-specific api in package.on_load,
+    -- and we will check package toolchains before calling package.on_load
+    --
+    -- @see https://github.com/xmake-io/xmake/pull/5466
+    _install_packages(requires, table.join(opt or {}, {toolchain = true}))
+    return _install_packages(requires, opt)
 end
 

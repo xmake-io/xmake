@@ -1026,8 +1026,12 @@ function _instance:_load()
         if on_load then
             on_load(self)
         end
-        self._LOADED = true
     end
+end
+
+-- mark as loaded package
+function _instance:_mark_as_loaded()
+    self._LOADED = true
 end
 
 -- get the raw environments

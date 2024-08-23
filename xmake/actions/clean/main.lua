@@ -156,17 +156,14 @@ function main()
         return remote_build_action()
     end
 
+    -- load config first
+    task.run("config", {require = false}, {disable_dump = true})
+
     -- lock the whole project
     project.lock()
 
     -- get the target name
     local targetname = option.get("target")
-
-    -- local config first
-    config.load()
-
-    -- load targets
-    project.load_targets()
 
     -- enter project directory
     local oldir = os.cd(project.directory())

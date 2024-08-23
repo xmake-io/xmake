@@ -223,15 +223,6 @@ function _fix_paths_for_precompiled_package(package)
     end
 end
 
--- check package toolchains
-function _check_package_toolchains(package)
-    for _, toolchain_inst in pairs(package:toolchains()) do
-        if not toolchain_inst:check() then
-            raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
-        end
-    end
-end
-
 -- get failed install directory
 function _get_installdir_failed(package)
     return path.join(package:cachedir(), "installdir.failed")
@@ -395,9 +386,6 @@ function main(package)
 
                     -- enter the environments of all package dependencies
                     _enter_package_installenvs(package)
-
-                    -- check package toolchains
-                    _check_package_toolchains(package)
 
                     -- do install
                     if script ~= nil then

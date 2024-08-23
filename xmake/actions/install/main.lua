@@ -65,10 +65,7 @@ end
 function main()
 
     -- load config first
-    config.load()
-
-    -- load targets
-    project.load_targets()
+    task.run("config", {require = false}, {disable_dump = true})
 
     -- check targets first
     local targetname
