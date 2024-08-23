@@ -954,7 +954,7 @@ function buildenvs(package, opt)
     if package:is_plat("windows", "mingw") and is_subhost("windows") then
         local pkgconf = _get_pkgconfig(package)
         if pkgconf then
-            envs.PKG_CONFIG = pkgconf.program
+            envs.PKG_CONFIG = pkgconf
         end
     end
 
