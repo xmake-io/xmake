@@ -49,6 +49,20 @@
 #ifdef TB_CONFIG_OS_HAIKU
 #   include <image.h>
 #endif
+#ifdef __COSMOPOLITAN__
+#   include <sys/utsname.h>
+#endif
+
+// for uid
+#ifndef TB_CONFIG_OS_WINDOWS
+#   include <unistd.h>
+#   include <errno.h>
+#endif
+
+// for embed files
+#ifdef XM_EMBED_ENABLE
+#   include "lz4/prefix.h"
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -80,6 +94,11 @@ typedef struct __xm_engine_t
 
     // the engine name
     tb_char_t               name[64];
+
+#ifdef XM_EMBED_ENABLE
+    // the temporary directory
+    tb_char_t               tmpdir[TB_PATH_MAXN];
+#endif
 
 }xm_engine_t;
 
@@ -584,6 +603,13 @@ static luaL_Reg const g_package_functions[] =
 // the lua global instance for signal handler
 static lua_State* g_lua = tb_null;
 
+// the xmake script files data
+#ifdef XM_EMBED_ENABLE
+static tb_byte_t g_xmake_xmz_data[] = {
+    #include "xmake.xmz.h"
+};
+#endif
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
@@ -631,7 +657,7 @@ static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb
     return tb_true;
 }
 
-static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path, tb_size_t maxn)
+static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t** argv, tb_char_t* path, tb_size_t maxn)
 {
     // check
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
@@ -722,6 +748,16 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
         }
 #endif
 
+        if (!ok && argv)
+        {
+            tb_char_t const* p = argv[0];
+            if (p && tb_file_info(p, tb_null))
+            {
+                tb_strlcpy(path, p, maxn);
+                ok = tb_true;
+            }
+        }
+
     } while (0);
 
     // ok?
@@ -737,16 +773,42 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
     return ok;
 }
 
+#ifdef XM_EMBED_ENABLE
+static tb_bool_t xm_engine_get_temporary_directory(tb_char_t* path, tb_size_t maxn, tb_char_t const* name, tb_char_t const* version_cstr)
+{
+    tb_char_t data[TB_PATH_MAXN] = {0};
+    if (tb_directory_temporary(data, sizeof(data)))
+    {
+        // get euid
+        tb_int_t euid = 0;
+#ifndef TB_CONFIG_OS_WINDOWS
+        euid = geteuid();
+#endif
+
+        tb_snprintf(path, maxn, "%s/.%s%d/%s", data, name, euid, version_cstr);
+        return tb_true;
+    }
+    return tb_false;
+}
+#endif
+
 static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t* path, tb_size_t maxn, tb_char_t const* programfile)
 {
     // check
     tb_assert_and_check_return_val(engine && path && maxn, tb_false);
 
     tb_bool_t ok = tb_false;
+    tb_char_t data[TB_PATH_MAXN] = {0};
     do
     {
+#ifdef XM_EMBED_ENABLE
+        // get it from the temporary directory
+        tb_strlcpy(path, engine->tmpdir, maxn);
+        ok = tb_true;
+        break;
+#endif
+
         // get it from the environment variable first
-        tb_char_t data[TB_PATH_MAXN] = {0};
         if (tb_environment_first("XMAKE_PROGRAM_DIR", data, sizeof(data)) && tb_path_absolute(data, path, maxn))
         {
             ok = tb_true;
@@ -899,7 +961,18 @@ static tb_void_t xm_engine_init_host(xm_engine_t* engine)
 
     // init system host
     tb_char_t const* syshost = tb_null;
-#if defined(TB_CONFIG_OS_WINDOWS)
+#if defined(__COSMOPOLITAN__)
+    struct utsname buffer;
+    if (uname(&buffer) == 0)
+    {
+        if (tb_strstr(buffer.sysname, "Darwin"))
+            syshost = "macosx";
+        else if (tb_strstr(buffer.sysname, "Linux"))
+            syshost = "linux";
+        else if (tb_strstr(buffer.sysname, "Windows"))
+            syshost = "windows";
+    }
+#elif defined(TB_CONFIG_OS_WINDOWS)
     syshost = "windows";
 #elif defined(TB_CONFIG_OS_MACOSX)
     syshost = "macosx";
@@ -980,7 +1053,22 @@ static tb_void_t xm_engine_init_arch(xm_engine_t* engine)
 
     // init system architecture
     tb_char_t const* sysarch = tb_null;
-#if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
+#if defined(__COSMOPOLITAN__)
+    struct utsname buffer;
+    if (uname(&buffer) == 0)
+    {
+        sysarch = buffer.machine;
+        if (tb_strstr(buffer.sysname, "Windows"))
+        {
+            if (!tb_strcmp(buffer.machine, "x86_64"))
+                sysarch = "x64";
+            else if (!tb_strcmp(buffer.machine, "i686") || !tb_strcmp(buffer.machine, "i386"))
+                sysarch = "x86";
+        }
+        else if (!tb_strcmp(buffer.machine, "aarch64"))
+            sysarch = "arm64";
+    }
+#elif defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
     // the GetNativeSystemInfo function type
     typedef void (WINAPI *GetNativeSystemInfo_t)(LPSYSTEM_INFO);
 
@@ -1087,6 +1175,109 @@ static tb_pointer_t xm_engine_lua_realloc(tb_pointer_t udata, tb_pointer_t data,
     else if (nsize != osize) ptr = tb_ralloc(data, (tb_size_t)nsize);
     else ptr = data;
     return ptr;
+}
+#endif
+
+#ifdef XM_EMBED_ENABLE
+static tb_bool_t xm_engine_extract_programfiles(xm_engine_t* engine, tb_char_t const* programdir)
+{
+    tb_file_info_t info = {0};
+    if (tb_file_info(programdir, &info)) return tb_true;
+
+    tb_byte_t const* data = g_xmake_xmz_data;
+    tb_size_t size = sizeof(g_xmake_xmz_data);
+
+    // do decompress
+    tb_bool_t ok = tb_false;
+    LZ4F_errorCode_t code;
+    LZ4F_decompressionContext_t ctx = tb_null;
+    tb_buffer_t result;
+    do
+    {
+        tb_buffer_init(&result);
+
+        code = LZ4F_createDecompressionContext(&ctx, LZ4F_VERSION);
+        if (LZ4F_isError(code)) break;
+
+        tb_byte_t buffer[8192];
+        tb_bool_t failed = tb_false;
+        while (1)
+        {
+            size_t advance = (size_t)size;
+            size_t buffer_size = sizeof(buffer);
+            code = LZ4F_decompress(ctx, buffer, &buffer_size, data, &advance, tb_null);
+            if (LZ4F_isError(code))
+            {
+                failed = tb_true;
+                break;
+            }
+
+            if (buffer_size == 0) break;
+            data += advance;
+            size -= advance;
+
+            tb_buffer_memncat(&result, buffer, buffer_size);
+        }
+        tb_assert_and_check_break(!failed && tb_buffer_size(&result));
+
+        ok = tb_true;
+    } while (0);
+
+    // extract files to programdir
+    if (ok)
+    {
+        data = tb_buffer_data(&result);
+        size = tb_buffer_size(&result);
+        tb_byte_t const* p = data;
+        tb_byte_t const* e = data + size;
+        tb_size_t n = 0;
+        tb_char_t filepath[TB_PATH_MAXN];
+        tb_int_t pos = tb_snprintf(filepath, sizeof(filepath), "%s/", programdir);
+        while (p < e)
+        {
+            // get filepath
+            n = (tb_size_t)tb_bits_get_u16_be(p);
+            p += 2;
+            tb_assert_and_check_break(pos + n + 1 < sizeof(filepath));
+            tb_strncpy(filepath + pos, (tb_char_t const*)p, n);
+            filepath[pos + n] = '\0';
+            p += n;
+
+            // get filedata
+            n = (tb_size_t)tb_bits_get_u32_be(p);
+            p += 4;
+
+            // write file
+            tb_trace_d("extracting %s, %lu bytes ..", filepath, n);
+            tb_stream_ref_t stream = tb_stream_init_from_file(filepath,  TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC);
+            tb_assert_and_check_break(stream);
+
+            if (tb_stream_open(stream))
+            {
+                tb_stream_bwrit(stream, p, n);
+                tb_stream_exit(stream);
+            }
+
+            p += n;
+        }
+        ok = (p == e);
+        if (!ok)
+        {
+            tb_trace_e("extract program files failed");
+        }
+    }
+    else
+    {
+        tb_trace_e("decompress program files failed, %s", LZ4F_getErrorName(code));
+    }
+
+    if (ctx)
+    {
+        LZ4F_freeDecompressionContext(ctx);
+        ctx = tb_null;
+    }
+    tb_buffer_exit(&result);
+    return ok;
 }
 #endif
 
@@ -1208,6 +1399,12 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         lua_pushstring(engine->lua, version_cstr);
         lua_setglobal(engine->lua, "_VERSION");
 
+#ifdef XM_EMBED_ENABLE
+        // init the temporary directory
+        if (!xm_engine_get_temporary_directory(engine->tmpdir, sizeof(engine->tmpdir), name, version_cstr))
+            break;
+#endif
+
         // init short version string
         tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u", version->major, version->minor, version->alter);
         lua_pushstring(engine->lua, version_cstr);
@@ -1294,10 +1491,14 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, t
     if (!xm_engine_get_project_directory(engine, path, sizeof(path))) return -1;
 
     // get the program file
-    if (!xm_engine_get_program_file(engine, path, sizeof(path))) return -1;
+    if (!xm_engine_get_program_file(engine, argv, path, sizeof(path))) return -1;
 
     // get the program directory
     if (!xm_engine_get_program_directory(engine, path, sizeof(path), path)) return -1;
+
+#ifdef XM_EMBED_ENABLE
+    if (!xm_engine_extract_programfiles(engine, path)) return -1;
+#endif
 
     // append the main script path
     tb_strcat(path, "/core/_xmake_main.lua");

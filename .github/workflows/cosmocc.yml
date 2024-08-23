@@ -37,24 +37,17 @@ jobs:
       - name: Build
         run: |
           cd core
-          xmake f -p linux --cosmocc=y -y -cvD
+          xmake f --embed=y -y -cvD
           xmake -v
           cd ..
 
       - name: Tests
         run: |
-          source scripts/srcenv.profile
-          xmake --version
-          xmake lua -v -D tests/run.lua
-          xrepo --version
+          ls -l core/build/
+          core/build/xmake --version
+          core/build/xmake lua -v -D tests/run.lua
 
-      - name: Artifact
-        run: |
-          brew install gnu-tar
-          cd core
-          xmake pack -y --autobuild=n --basename=xmake -f zip -o ../artifacts xmake
-          cd ..
       - uses: actions/upload-artifact@v2
         with:
-          name: xmake-latest.zip
-          path: artifacts/xmake.zip
+          name: xmake
+          path: core/build/xmake

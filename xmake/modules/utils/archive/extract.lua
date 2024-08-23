@@ -27,7 +27,14 @@ import("detect.tools.find_tar")
 import("detect.tools.find_gzip")
 import("detect.tools.find_unzip")
 import("detect.tools.find_bzip2")
+import("extract_xmz")
 import("extension", {alias = "get_archive_extension"})
+
+-- extract archivefile using xmake decompress module
+function _extract_using_xmz(archivefile, outputdir, extension, opt)
+    extract_xmz(archivefile, outputdir, opt)
+    return true
+end
 
 -- extract archivefile using tar
 function _extract_using_tar(archivefile, outputdir, extension, opt)
@@ -394,7 +401,7 @@ function _extract(archivefile, outputdir, extension, extractors, opt)
     raise("cannot extract %s, %s!", path.filename(archivefile), errors or "extractors not found!")
 end
 
--- extract archive file
+-- extract file
 --
 -- @param archivefile   the archive file. e.g. *.tar.gz, *.zip, *.7z, *.tar.bz2, ..
 -- @param outputdir     the output directory
@@ -423,6 +430,7 @@ function main(archivefile, outputdir, opt)
         ,   [".tar.bz2"]    = {_extract_using_7z, _extract_using_bzip2}
         ,   [".tar.lz"]     = {_extract_using_7z}
         ,   [".tar.Z"]      = {_extract_using_7z}
+        ,   [".xmz"]        = {_extract_using_xmz}
         }
     else
         extractors =
@@ -440,6 +448,7 @@ function main(archivefile, outputdir, opt)
         ,   [".tar.bz2"]    = {_extract_using_tar, _extract_using_7z, _extract_using_bzip2}
         ,   [".tar.lz"]     = {_extract_using_tar, _extract_using_7z}
         ,   [".tar.Z"]      = {_extract_using_tar, _extract_using_7z}
+        ,   [".xmz"]        = {_extract_using_xmz}
         }
     end
 
