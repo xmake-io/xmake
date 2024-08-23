@@ -11,7 +11,7 @@ if option.get("diagnosis") then table.insert(params, "-D") end
 
 function _run_test(script)
     assert(script:endswith("test.lua"))
-    os.execv("xmake", table.join("lua", params, path.join(os.scriptdir(), "runner.lua"), script))
+    os.execv(os.programfile(), table.join("lua", params, path.join(os.scriptdir(), "runner.lua"), script))
 end
 
 -- run test with the given name
