@@ -219,14 +219,18 @@ function nf_vectorext(self, extension)
     local flags = maps[extension]
     if flags then
         -- @see https://github.com/xmake-io/xmake/issues/5499
-        local result = {}
-        for _, flag in ipairs(flags) do
-            if self:has_flags(flag, "cxflags") then
-                table.insert(result, flag)
+        if type(flags) == "string" then
+            return flags
+        else
+            local result = {}
+            for _, flag in ipairs(flags) do
+                if self:has_flags(flag, "cxflags") then
+                    table.insert(result, flag)
+                end
             end
-        end
-        if #result > 0 then
-            return table.unwrap(result)
+            if #result > 0 then
+                return table.unwrap(result)
+            end
         end
     end
 end
@@ -781,3 +785,4 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         end
     end
 end
+
