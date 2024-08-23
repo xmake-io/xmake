@@ -216,9 +216,18 @@ function nf_vectorext(self, extension)
     ,   fma        = "-arch:AVX2"
     ,   all        = {"-arch:SSE", "-arch:SSE2", "/d2archSSE42", "-arch:AVX", "-arch:AVX2", "-arch:AVX512"}
     }
-    local flag = maps[extension]
-    if flag and self:has_flags(flag, "cxflags") then
-        return flag
+    local flags = maps[extension]
+    if flags then
+        -- @see https://github.com/xmake-io/xmake/issues/5499
+        local result = {}
+        for _, flag in ipairs(flags) do
+            if self:has_flags(flag, "cxflags") then
+                table.insert(result, flag)
+            end
+        end
+        if #result > 0 then
+            return table.unwrap(result)
+        end
     end
 end
 
