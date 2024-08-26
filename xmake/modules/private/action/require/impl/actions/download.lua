@@ -96,7 +96,7 @@ function _checkout(package, url, sourcedir, opt)
         end
 
         -- only shallow clone this branch
-        git.clone(url, {depth = 1, recursive = true, shallow_submodules = true, longpaths = longpaths, branch = branch, outputdir = packagedir})
+        git.clone(url, {treeless = true, recursive = true, shallow_submodules = true, longpaths = longpaths, branch = branch, outputdir = packagedir})
 
     -- download package from revision or tag?
     else
@@ -117,7 +117,7 @@ function _checkout(package, url, sourcedir, opt)
         -- only shallow clone this tag
         -- @see https://github.com/xmake-io/xmake/issues/4151
         if tag and git.clone.can_clone_tag() then
-            git.clone(url, {depth = 1, recursive = true, shallow_submodules = true, longpaths = longpaths, branch = tag, outputdir = packagedir})
+            git.clone(url, {treeless = true, recursive = true, shallow_submodules = true, longpaths = longpaths, branch = tag, outputdir = packagedir})
         else
 
             -- clone whole history and tags
