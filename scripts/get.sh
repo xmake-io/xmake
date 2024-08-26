@@ -203,7 +203,7 @@ elif test_eq "$branch" "__run__"; then
 else
     echo "cloning $gitrepo $branch .."
     if test_nz "$2"; then
-        git clone --depth=50 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || raise "clone failed, check your network or branch name"
+        git clone --filter=tree:0 --no-checkout -b "$branch" "$gitrepo" --recurse-submodules $projectdir || raise "clone failed, check your network or branch name"
         cd $projectdir || raise 'chdir failed!'
         git checkout -qf "$2"
         cd - || raise 'chdir failed!'
