@@ -42,15 +42,15 @@ function _get_allsymbols_by_dumpbin(target, dumpbin, opt)
                     local symbol = line:match(".*External%s+| (.*)")
                     if symbol then
                         symbol = symbol:split('%s')[1]
+                        -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
+                        if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("__") and not symbol:startswith("_DllMain@") then
+                            symbol = symbol:sub(2)
+                        end
                         if export_filter then
                             if export_filter(symbol) then
                                 allsymbols:insert(symbol)
                             end
                         elseif not symbol:startswith("__") then
-                            -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
-                            if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("_DllMain@") then
-                                symbol = symbol:sub(2)
-                            end
                             if export_classes or not symbol:startswith("?") then
                                 if export_classes then
                                     if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
@@ -83,15 +83,15 @@ function _get_allsymbols_by_objdump(target, objdump, opt)
                     local splitinfo = line:split("%s")
                     local symbol = splitinfo[#splitinfo]
                     if symbol then
+                        -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
+                        if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("__") and not symbol:startswith("_DllMain@") then
+                            symbol = symbol:sub(2)
+                        end
                         if export_filter then
                             if export_filter(symbol) then
                                 allsymbols:insert(symbol)
                             end
                         elseif not symbol:startswith("__") then
-                            -- we need ignore DllMain, https://github.com/xmake-io/xmake/issues/3992
-                            if target:is_arch("x86") and symbol:startswith("_") and not symbol:startswith("_DllMain@") then
-                                symbol = symbol:sub(2)
-                            end
                             if export_classes or not symbol:startswith("?") then
                                 if export_classes then
                                     if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
