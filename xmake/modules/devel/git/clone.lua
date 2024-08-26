@@ -62,7 +62,7 @@ end
 -- import("devel.git")
 --
 -- git.clone("git@github.com:xmake-io/xmake.git")
--- git.clone("git@github.com:xmake-io/xmake.git", {depth = 1, branch = "master", outputdir = "/tmp/xmake", longpaths = true})
+-- git.clone("git@github.com:xmake-io/xmake.git", {depth = 1, treeless = true, branch = "master", outputdir = "/tmp/xmake", longpaths = true})
 --
 -- @endcode
 --
@@ -85,6 +85,12 @@ function main(url, opt)
     if opt.depth then
         table.insert(argv, "--depth")
         table.insert(argv, type(opt.depth) == "number" and tostring(opt.depth) or opt.depth)
+    end
+
+    -- treeless?
+    -- @see https://github.com/xmake-io/xmake/issues/5507
+    if opt.treeless then
+        table.insert(argv, "--filter=tree:0")
     end
 
     -- recursive?
