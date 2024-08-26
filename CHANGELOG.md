@@ -8,6 +8,10 @@
 * [#5488](https://github.com/xmake-io/xmake/pull/5488): Support for using cosmocc to build xmake binary
 * [#5491](https://github.com/xmake-io/xmake/pull/5491): Provide single xmake binary with embeded lua files
 
+### Changes
+
+* [#5507](https://github.com/xmake-io/xmake/issues/5507): Use treeless to improve git.clone
+
 ### Bugs fixed
 
 * [#4750](https://github.com/xmake-io/xmake/issues/4750): Fix compile_commands generator for `xmake tests`
@@ -1870,6 +1874,10 @@
 * [#5462](https://github.com/xmake-io/xmake/pull/5462): 添加 `xmake l cli.bisect`
 * [#5488](https://github.com/xmake-io/xmake/pull/5488): 支持使用 cosmocc 去构建 xmake 自身二进制
 * [#5491](https://github.com/xmake-io/xmake/pull/5491): 支持提供内嵌 lua 文件的单个 xmake 二进制文件
+
+### 改进
+
+* [#5507](https://github.com/xmake-io/xmake/issues/5507): 改进 git clone 下载速度
 
 ### Bugs 修复
 
