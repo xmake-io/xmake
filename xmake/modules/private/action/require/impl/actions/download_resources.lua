@@ -72,7 +72,7 @@ function _checkout(package, resource_name, resource_url, resource_revision)
     local longpaths = package:policy("platform.longpaths")
 
     -- clone whole history and tags
-    git.clone(resource_url, {longpaths = longpaths, outputdir = resourcedir})
+    git.clone(resource_url, {treeless = true, checkout = false, longpaths = longpaths, outputdir = resourcedir})
 
     -- attempt to checkout the given version
     git.checkout(resource_revision, {repodir = resourcedir})

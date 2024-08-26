@@ -93,6 +93,11 @@ function main(url, opt)
         table.insert(argv, "--filter=tree:0")
     end
 
+    -- no checkout
+    if opt.checkout == false then
+        table.insert(argv, "--no-checkout")
+    end
+
     -- recursive?
     if opt.recursive then
         table.insert(argv, "--recursive")

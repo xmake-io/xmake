@@ -60,7 +60,7 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
     local lastcommit
     if not os.isdir(repodir_local) then
         if repo_global then
-            git.clone(repo_global:directory(), {verbose = option.get("verbose"), outputdir = repodir_local, autocrlf = false})
+            git.clone(repo_global:directory(), {treeless = true, checkout = false, verbose = option.get("verbose"), outputdir = repodir_local, autocrlf = false})
             lastcommit = repo_global:commit()
         elseif network ~= "private" then
             local remoteurl = proxy.mirror(locked_repo.url) or locked_repo.url
