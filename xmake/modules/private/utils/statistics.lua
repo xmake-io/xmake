@@ -121,7 +121,7 @@ function main()
         {
             function ()
                 import("devel.git.clone")
-                clone("https://github.com/xmake-io/xmake-stats.git", {treeless = true, branch = "master", outputdir = outputdir})
+                clone("https://github.com/xmake-io/xmake-stats.git", {depth = 1, branch = "master", outputdir = outputdir})
                 print("post to traffic ok!")
             end
         }

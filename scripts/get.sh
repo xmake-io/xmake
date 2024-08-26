@@ -208,7 +208,7 @@ else
         git checkout -qf "$2"
         cd - || raise 'chdir failed!'
     else
-        git clone --filter=tree:0 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || raise "clone failed, check your network or branch name"
+        git clone --depth=1 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || raise "clone failed, check your network or branch name"
     fi
 fi
 

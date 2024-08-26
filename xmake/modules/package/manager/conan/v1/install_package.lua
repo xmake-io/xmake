@@ -109,7 +109,7 @@ function _conan_install_xmake_generator(conan)
         -- clone xmake generator repository
         local ok = false
         for _, url in ipairs(mainurls) do
-            ok = try { function () git.clone(url, {treeless = true, branch = "0.1.0/testing", outputdir = xmake_generator_localdir}); return true end }
+            ok = try { function () git.clone(url, {depth = 1, branch = "0.1.0/testing", outputdir = xmake_generator_localdir}); return true end }
             if ok then
                 break
             end
