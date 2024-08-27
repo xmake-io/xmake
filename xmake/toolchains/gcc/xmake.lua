@@ -30,8 +30,10 @@ toolchain("gcc" .. suffix)
     set_description("GNU Compiler Collection" .. (version and (" (" .. version .. ")") or ""))
     set_runtimes("stdc++_static", "stdc++_shared")
 
+    -- set g++ first, then package:build_getenv("cxx") is always g++ instead of gcc
+    -- see:https://github.com/xmake-io/xmake/issues/5518
     set_toolset("cc", "gcc" .. suffix)
-    set_toolset("cxx", "gcc" .. suffix, "g++" .. suffix)
+    set_toolset("cxx", "g++" .. suffix, "gcc" .. suffix)
     set_toolset("ld", "g++" .. suffix, "gcc" .. suffix)
     set_toolset("sh", "g++" .. suffix, "gcc" .. suffix)
     set_toolset("ar", "ar")
@@ -39,7 +41,7 @@ toolchain("gcc" .. suffix)
     set_toolset("objcopy", "objcopy")
     set_toolset("ranlib", "ranlib")
     set_toolset("mm", "gcc" .. suffix)
-    set_toolset("mxx", "gcc" .. suffix, "g++" .. suffix)
+    set_toolset("mxx", "g++" .. suffix, "gcc" .. suffix)
     set_toolset("as", "gcc" .. suffix)
 
     on_check(function (toolchain)

@@ -1142,6 +1142,15 @@ function _get_cmake_generator(package, opt)
         if not cmake_generator then
             if package:has_tool("cc", "clang_cl") or package:has_tool("cxx", "clang_cl") then
                 cmake_generator = "Ninja"
+            elseif is_subhost("windows") and package:is_plat("mingw") then
+                -- When we are using a standalone clang/gcc toolchain without mingw, try to detect ninja automatically.
+                -- see:https://github.com/xmake-io/xmake/issues/5518
+                local mingw = package:build_getenv("mingw") or package:build_getenv("sdk") or ""
+                mingw = find_tool(mingw, {paths = mingw})
+                if not mingw then
+                    assert(find_tool("ninja"), "No mingw or ninja found!")
+                    cmake_generator = "Ninja"
+                end
             end
         end
         local cmake_generator_env = os.getenv("CMAKE_GENERATOR")

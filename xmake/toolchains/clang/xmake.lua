@@ -30,8 +30,10 @@ toolchain("clang" .. suffix)
     set_description("A C language family frontend for LLVM" .. (version and (" (" .. version .. ")") or ""))
     set_runtimes("c++_static", "c++_shared", "stdc++_static", "stdc++_shared")
 
+    -- set clang++ first, then package:build_getenv("cxx") is always clang++ instead of clang
+    -- see:https://github.com/xmake-io/xmake/issues/5518
     set_toolset("cc", "clang" .. suffix)
-    set_toolset("cxx", "clang" .. suffix, "clang++" .. suffix)
+    set_toolset("cxx", "clang++" .. suffix, "clang" .. suffix)
     set_toolset("ld", "clang++" .. suffix, "clang" .. suffix)
     set_toolset("sh", "clang++" .. suffix, "clang" .. suffix)
     set_toolset("ar", "ar", "llvm-ar")
@@ -39,7 +41,7 @@ toolchain("clang" .. suffix)
     set_toolset("ranlib", "ranlib", "llvm-ranlib")
     set_toolset("objcopy", "objcopy", "llvm-objcopy")
     set_toolset("mm", "clang" .. suffix)
-    set_toolset("mxx", "clang" .. suffix, "clang++" .. suffix)
+    set_toolset("mxx", "clang++" .. suffix, "clang" .. suffix)
     set_toolset("as", "clang" .. suffix)
     set_toolset("mrc", "llvm-rc")
 
