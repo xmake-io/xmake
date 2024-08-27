@@ -785,7 +785,7 @@ function _instance:cachedir()
             local version_str = self:version_str()
             -- strip invalid characters on windows, e.g. `>= <=`
             if os.is_host("windows") then
-                version_str = version_str:gsub("[>=<]", "")
+                version_str = version_str:gsub("[>=<|%*]", "")
             end
             if self:is_local() then
                 cachedir = path.join(config.buildir({absolute = true}), ".packages", name:sub(1, 1):lower(), name, version_str, "cache")
@@ -814,7 +814,7 @@ function _instance:installdir(...)
             if version_str then
                 -- strip invalid characters on windows, e.g. `>= <=`
                 if os.is_host("windows") then
-                    version_str = version_str:gsub("[>=<]", "")
+                    version_str = version_str:gsub("[>=<|%*]", "")
                 end
                 installdir = path.join(installdir, version_str)
             end
