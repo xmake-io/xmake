@@ -784,7 +784,7 @@ function _instance:cachedir()
             local name = self:displayname():lower():gsub("::", "_"):gsub("#", "_")
             local version_str = self:version_str()
             -- strip invalid characters on windows, e.g. `>= <=`
-            if is_host("windows") then
+            if os.is_host("windows") then
                 version_str = version_str:gsub("[>=<]", "")
             end
             if self:is_local() then
@@ -813,7 +813,7 @@ function _instance:installdir(...)
             local version_str = self:version_str()
             if version_str then
                 -- strip invalid characters on windows, e.g. `>= <=`
-                if is_host("windows") then
+                if os.is_host("windows") then
                     version_str = version_str:gsub("[>=<]", "")
                 end
                 installdir = path.join(installdir, version_str)
