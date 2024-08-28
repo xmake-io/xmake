@@ -357,8 +357,13 @@ end
 
 -- get mingw32 make
 function _get_mingw32_make(package)
-    local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
-    return _translate_bin_path(path.join(mingw, "bin", "mingw32-make.exe"))
+    local mingw = package:build_getenv("mingw") or package:build_getenv("sdk")
+    if mingw then
+        local mingw_make = _translate_bin_path(path.join(mingw, "bin", "mingw32-make.exe"))
+        if os.isfile(mingw_make) then
+            return mingw_make
+        end
+    end
 end
 
 -- https://github.com/xmake-io/xmake-repo/pull/1096
@@ -597,7 +602,10 @@ function _get_configs_for_wasm(package, configs, opt)
     assert(emscripten_cmakefile, "Emscripten.cmake not found!")
     table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. emscripten_cmakefile)
     if is_subhost("windows") and opt.cmake_generator ~= "Ninja" then
-        table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. _get_mingw32_make(package))
+        local mingw_make = _get_mingw32_make(package)
+        if mingw_make then
+            table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. mingw_make)
+        end
     end
     _get_configs_for_generic(package, configs, opt)
 end
@@ -1004,7 +1012,7 @@ function _build_for_make(package, configs, opt)
     if is_host("bsd") then
         os.vrunv("gmake", argv)
     elseif is_subhost("windows") and package:is_plat("mingw") then
-        local mingw_make = _get_mingw32_make(package)
+        local mingw_make = assert(_get_mingw32_make(package), "mingw32-make.exe not found!")
         os.vrunv(mingw_make, argv)
     elseif package:is_plat("android") and is_host("windows") then
         local make
@@ -1079,7 +1087,7 @@ function _install_for_make(package, configs, opt)
         os.vrunv("gmake", argv)
         os.vrunv("gmake", {"install"})
     elseif is_subhost("windows") and package:is_plat("mingw", "wasm") then
-        local mingw_make = _get_mingw32_make(package)
+        local mingw_make = assert(_get_mingw32_make(package), "mingw32-make.exe not found!")
         os.vrunv(mingw_make, argv)
         os.vrunv(mingw_make, {"install"})
     elseif package:is_plat("android") and is_host("windows") then
@@ -1134,7 +1142,7 @@ function _get_cmake_generator(package, opt)
                 cmake_generator = "Ninja"
             elseif is_subhost("windows") and package:is_plat("mingw") then
                 local mingw_make = _get_mingw32_make(package)
-                if not os.isfile(mingw_make) and find_tool("ninja") then
+                if not mingw_make and find_tool("ninja") then
                     cmake_generator = "Ninja"
                 end
             end
