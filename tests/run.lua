@@ -1,17 +1,10 @@
 -- imports
 import("core.base.task")
 import("core.base.option")
-
-local params = {}
-
-if option.get("quiet") then table.insert(params, "-q") end
-if option.get("yes") then table.insert(params, "-y") end
-if option.get("verbose") then table.insert(params, "-v") end
-if option.get("diagnosis") then table.insert(params, "-D") end
+import("runner", {rootdir = os.scriptdir()})
 
 function _run_test(script)
-    assert(script:endswith("test.lua"))
-    os.execv(os.programfile(), table.join("lua", params, path.join(os.scriptdir(), "runner.lua"), script))
+    runner(script)
 end
 
 -- run test with the given name
@@ -45,7 +38,6 @@ function _run_test_filter(name)
                 cprint(">     %s", v)
             end
         end
-
         for _, v in ipairs(tests) do
             _run_test(v)
         end
