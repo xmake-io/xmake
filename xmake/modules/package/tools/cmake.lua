@@ -994,8 +994,9 @@ end
 
 -- do build for msvc
 function _build_for_msvc(package, configs, opt)
-    local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    msbuild.build(package, {slnfile, "-t:Rebuild"})
+    local allbuild = os.isfile("ALL_BUILD.vcxproj") and "ALL_BUILD.vcxproj" or "ALL_BUILD.vcproj"
+    assert(os.isfile(allbuild), "ALL_BUILD project not found!")
+    msbuild.build(package, {allbuild, "-t:Rebuild"})
 end
 
 -- do build for make
@@ -1056,8 +1057,9 @@ end
 
 -- do install for msvc
 function _install_for_msvc(package, configs, opt)
-    local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    msbuild.build(package, {slnfile, "-t:Rebuild", "/nr:false"})
+    local allbuild = os.isfile("ALL_BUILD.vcxproj") and "ALL_BUILD.vcxproj" or "ALL_BUILD.vcproj"
+    assert(os.isfile(allbuild), "ALL_BUILD project not found!")
+    msbuild.build(package, {allbuild, "-t:Rebuild", "/nr:false"})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
         msbuild.build(package, {projfile})
