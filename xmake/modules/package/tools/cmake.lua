@@ -355,6 +355,38 @@ function _get_cmake_system_processor(package)
     return package:arch()
 end
 
+-- get mingw32 make
+function _get_mingw32_make(package)
+    local mingw = package:build_getenv("mingw") or package:build_getenv("sdk")
+    if mingw then
+        local mingw_make = _translate_bin_path(path.join(mingw, "bin", "mingw32-make.exe"))
+        if os.isfile(mingw_make) then
+            return mingw_make
+        end
+    end
+end
+
+-- https://github.com/xmake-io/xmake-repo/pull/1096
+function _fix_cxx_compiler_cmake(package, envs)
+    local cxx = envs.CMAKE_CXX_COMPILER
+    if cxx and package:has_tool("cxx", "clang", "gcc") then
+        local dir = path.directory(cxx)
+        local name = path.filename(cxx)
+        name = name:gsub("clang$", "clang++")
+        name = name:gsub("clang%-", "clang++-")
+        name = name:gsub("clang%.", "clang++.")
+        name = name:gsub("gcc$", "g++")
+        name = name:gsub("gcc%-", "g++-")
+        name = name:gsub("gcc%.", "g++.")
+        if dir and dir ~= "." then
+            cxx = path.join(dir, name)
+        else
+            cxx = name
+        end
+        envs.CMAKE_CXX_COMPILER = _translate_bin_path(cxx)
+    end
+end
+
 -- insert configs from envs
 function _insert_configs_from_envs(configs, envs, opt)
     opt = opt or {}
@@ -552,12 +584,12 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.HAVE_FLAG_SEARCH_PATHS_FIRST = "0"
     -- CMAKE_MAKE_PROGRAM may be required for some CMakeLists.txt (libcurl)
     if is_subhost("windows") and opt.cmake_generator ~= "Ninja" then
-        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
-        envs.CMAKE_MAKE_PROGRAM = _translate_bin_path(path.join(mingw, "bin", "mingw32-make.exe"))
+        envs.CMAKE_MAKE_PROGRAM = _get_mingw32_make(package)
     end
     if opt.cmake_generator == "Ninja" then
         envs.CMAKE_MAKE_PROGRAM = "ninja"
     end
+    _fix_cxx_compiler_cmake(package, envs)
     _insert_configs_from_envs(configs, envs, opt)
 end
 
@@ -570,8 +602,10 @@ function _get_configs_for_wasm(package, configs, opt)
     assert(emscripten_cmakefile, "Emscripten.cmake not found!")
     table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. emscripten_cmakefile)
     if is_subhost("windows") and opt.cmake_generator ~= "Ninja" then
-        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw32-make not found!")
-        table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. _translate_paths(path.join(mingw, "bin", "mingw32-make.exe")))
+        local mingw_make = _get_mingw32_make(package)
+        if mingw_make then
+            table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. mingw_make)
+        end
     end
     _get_configs_for_generic(package, configs, opt)
 end
@@ -586,24 +620,7 @@ function _get_configs_for_cross(package, configs, opt)
     envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
     envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
     envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
-    -- https://github.com/xmake-io/xmake-repo/pull/1096
-    local cxx = envs.CMAKE_CXX_COMPILER
-    if cxx and package:has_tool("cxx", "clang", "gcc") then
-        local dir = path.directory(cxx)
-        local name = path.filename(cxx)
-        name = name:gsub("clang$", "clang++")
-        name = name:gsub("clang%-", "clang++-") -- clang-xx
-        name = name:gsub("clang%.", "clang++.") -- clang.exe
-        name = name:gsub("gcc$", "g++")
-        name = name:gsub("gcc%-", "g++-")
-        name = name:gsub("gcc%.", "g++.")
-        if dir and dir ~= "." then
-            cxx = path.join(dir, name)
-        else
-            cxx = name
-        end
-        envs.CMAKE_CXX_COMPILER = _translate_bin_path(cxx)
-    end
+    _fix_cxx_compiler_cmake(package, envs)
     -- @note The link command line is set in Modules/CMake{C,CXX,Fortran}Information.cmake and defaults to using the compiler, not CMAKE_LINKER,
     -- so we need to set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
     --
@@ -662,24 +679,7 @@ function _get_configs_for_host_toolchain(package, configs, opt)
     envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
     envs.CMAKE_RC_COMPILER         = _translate_bin_path(package:build_getenv("mrc"))
     envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
-    -- https://github.com/xmake-io/xmake-repo/pull/1096
-    local cxx = envs.CMAKE_CXX_COMPILER
-    if cxx and package:has_tool("cxx", "clang", "gcc") then
-        local dir = path.directory(cxx)
-        local name = path.filename(cxx)
-        name = name:gsub("clang$", "clang++")
-        name = name:gsub("clang%-", "clang++-")
-        name = name:gsub("clang%.", "clang++.")
-        name = name:gsub("gcc$", "g++")
-        name = name:gsub("gcc%-", "g++-")
-        name = name:gsub("gcc%.", "g++.")
-        if dir and dir ~= "." then
-            cxx = path.join(dir, name)
-        else
-            cxx = name
-        end
-        envs.CMAKE_CXX_COMPILER = _translate_bin_path(cxx)
-    end
+    _fix_cxx_compiler_cmake(package, envs)
     -- @note The link command line is set in Modules/CMake{C,CXX,Fortran}Information.cmake and defaults to using the compiler, not CMAKE_LINKER,
     -- so we need set CMAKE_CXX_LINK_EXECUTABLE to use CMAKE_LINKER as linker.
     --
@@ -1013,8 +1013,7 @@ function _build_for_make(package, configs, opt)
     if is_host("bsd") then
         os.vrunv("gmake", argv)
     elseif is_subhost("windows") and package:is_plat("mingw") then
-        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
-        local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
+        local mingw_make = assert(_get_mingw32_make(package), "mingw32-make.exe not found!")
         os.vrunv(mingw_make, argv)
     elseif package:is_plat("android") and is_host("windows") then
         local make
@@ -1090,8 +1089,7 @@ function _install_for_make(package, configs, opt)
         os.vrunv("gmake", argv)
         os.vrunv("gmake", {"install"})
     elseif is_subhost("windows") and package:is_plat("mingw", "wasm") then
-        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
-        local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
+        local mingw_make = assert(_get_mingw32_make(package), "mingw32-make.exe not found!")
         os.vrunv(mingw_make, argv)
         os.vrunv(mingw_make, {"install"})
     elseif package:is_plat("android") and is_host("windows") then
@@ -1144,6 +1142,11 @@ function _get_cmake_generator(package, opt)
         if not cmake_generator then
             if package:has_tool("cc", "clang_cl") or package:has_tool("cxx", "clang_cl") then
                 cmake_generator = "Ninja"
+            elseif is_subhost("windows") and package:is_plat("mingw") then
+                local mingw_make = _get_mingw32_make(package)
+                if not mingw_make and find_tool("ninja") then
+                    cmake_generator = "Ninja"
+                end
             end
         end
         local cmake_generator_env = os.getenv("CMAKE_GENERATOR")
