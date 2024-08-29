@@ -1227,8 +1227,8 @@ end
 -- install package
 function install(package, configs, opt)
     opt = opt or {}
-
     local cmake_generator = _get_cmake_generator(package, opt)
+
     -- enter build directory
     local buildir = opt.buildir or package:buildir()
     os.mkdir(path.join(buildir, "install"))
