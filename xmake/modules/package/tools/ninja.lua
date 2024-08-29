@@ -34,7 +34,7 @@ function _default_argv(package, configs, opt)
     end
     table.insert(argv, "-C")
     table.insert(argv, buildir)
-    if option.get("verbose") then
+    if option.get("diagnosis") then
         table.insert(argv, "-v")
     end
     table.insert(argv, "-j")
