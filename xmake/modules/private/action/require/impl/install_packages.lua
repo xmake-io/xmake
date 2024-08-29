@@ -810,9 +810,6 @@ function _install_packages(requires, opt)
     if option.get("upgrade") then
         _show_upgraded_packages(packages)
     end
-
-    -- lock packages
-    lock_packages(packages)
     return packages
 end
 
@@ -822,7 +819,12 @@ function main(requires, opt)
     -- and we will check package toolchains before calling package.on_load
     --
     -- @see https://github.com/xmake-io/xmake/pull/5466
-    _install_packages(requires, table.join(opt or {}, {toolchain = true}))
-    return _install_packages(requires, opt)
+    local packages = {}
+    table.join2(packages, _install_packages(requires, table.join(opt or {}, {toolchain = true})))
+    table.join2(packages, _install_packages(requires, opt))
+
+    -- lock packages
+    lock_packages(packages)
+    return packages
 end
 
