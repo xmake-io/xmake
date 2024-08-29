@@ -41,7 +41,7 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
 
     -- the tar on windows can only extract "*.tar", "*.tar.gz"
     -- the tar on msys2 can extract more, like "*.tar.bz2", ..
-    if os.host() == "windows" and (extension ~= ".tar" or extension == ".tar.gz") then
+    if os.host() == "windows" and (extension ~= ".tar" and extension ~= ".tar.gz") then
         return false
     end
 
@@ -69,8 +69,12 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
             table.insert(argv, "--force-local")
         end
     end
-    table.insert(argv, "-xf")
-    table.insert(argv, archivefile)
+    if option.get("verbose") then
+        table.insert(argv, "-xvf")
+    else
+        table.insert(argv, "-xf")
+    end
+    table.insert(argv, path.absolute(archivefile))
 
     -- ensure output directory
     if not os.isdir(outputdir) then
@@ -97,6 +101,7 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
     else
         os.vrunv(program, argv)
     end
+
     return true
 end
 
@@ -460,3 +465,4 @@ function main(archivefile, outputdir, opt)
     -- extract it
     return _extract(archivefile, outputdir, extension, extractors[extension], opt)
 end
+
