@@ -69,11 +69,7 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
             table.insert(argv, "--force-local")
         end
     end
-    if option.get("verbose") then
-        table.insert(argv, "-xvf")
-    else
-        table.insert(argv, "-xf")
-    end
+    table.insert(argv, "-xf")
     table.insert(argv, path.absolute(archivefile))
 
     -- ensure output directory
