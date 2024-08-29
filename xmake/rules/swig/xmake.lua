@@ -81,7 +81,12 @@ rule("swig.base")
                     elseif moduletype == "lua" then
                         autogenfiles = os.files(path.join(autogendir, "*.lua"))
                     elseif moduletype == "java" then
-                        autogenfiles = os.files(path.join(autogendir, "*.java"))
+                        local buildjar = target:extraconf("rules", "swig.c", "buildjar") or target:extraconf("rules", "swig.cpp", "buildjar")
+                        if buildjar then
+                            autogenfiles = path.join(autogendir , target:name()..".jar")
+                        else
+                            autogenfiles = os.files(path.join(autogendir, "*.java"))
+                        end
                     end
                     if autogenfiles then
                         table.join2(scriptfiles, autogenfiles)
@@ -100,15 +105,15 @@ rule("swig.base")
 rule("swig.c")
     set_extensions(".i")
     add_deps("swig.base", "c.build")
-    on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
-        import("build_module_file")(target, batchcmds, sourcefile, table.join({sourcekind = "cc"}, opt))
+    on_build_file(function (target, sourcefile, opt)
+        import("build_module_file")(target, sourcefile, table.join({sourcekind = "cc"}, opt))
     end)
 
 rule("swig.cpp")
     set_extensions(".i")
     add_deps("swig.base", "c++.build")
-    on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
-        import("build_module_file")(target, batchcmds, sourcefile, table.join({sourcekind = "cxx"}, opt))
+    on_build_file(function (target, sourcefile, opt)
+        import("build_module_file")(target, sourcefile, table.join({sourcekind = "cxx"}, opt))
     end)
 
 
