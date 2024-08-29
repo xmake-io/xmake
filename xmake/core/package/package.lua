@@ -1281,7 +1281,7 @@ function _instance:toolconfig(name)
     end
 end
 
--- get the target compiler
+-- get the package compiler
 function _instance:compiler(sourcekind)
     local compilerinst = self:_memcache():get("compiler")
     if not compilerinst then
@@ -1296,6 +1296,20 @@ function _instance:compiler(sourcekind)
         self:_memcache():set("compiler", compilerinst)
     end
     return compilerinst
+end
+
+-- get the package linker
+function _instance:linker(targetkind, sourcekinds)
+    local linkerinst = self:_memcache():get("linker")
+    if not linkerinst then
+        local instance, errors = linker.load(targetkind, sourcekinds, self)
+        if not instance then
+            os.raise(errors)
+        end
+        linkerinst = instance
+        self:_memcache():set("linker", linkerinst)
+    end
+    return linkerinst
 end
 
 -- has the given tool for the current package?
@@ -2358,11 +2372,7 @@ function _instance:_generate_build_configs(configs, opt)
     end
     if runtimes then
         local sourcekind = opt.sourcekind or "cxx"
-        local tool, name = self:tool("ld")
-        local linker, errors = linker.load("binary", sourcekind, {target = package})
-        if not linker then
-            os.raise(errors)
-        end
+        local linker = self:linker("binary", sourcekind)
         local fake_target = {is_shared = function(_) return false end,
                              sourcekinds = function(_) return sourcekind end}
         local compiler = self:compiler(sourcekind)
