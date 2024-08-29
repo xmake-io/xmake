@@ -771,8 +771,10 @@ function _get_configs_for_generator(package, configs, opt)
         table.insert(configs, "-G")
         table.insert(configs, _get_cmake_generator_for_msvc(package))
     elseif package:is_plat("wasm") and is_subhost("windows") then
-        table.insert(configs, "-G")
-        table.insert(configs, "MinGW Makefiles")
+        if not find_tool("ninja") then
+            table.insert(configs, "-G")
+            table.insert(configs, "MinGW Makefiles")
+        end
     else
         table.insert(configs, "-G")
         table.insert(configs, "Unix Makefiles")
