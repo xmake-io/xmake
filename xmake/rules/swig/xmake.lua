@@ -71,11 +71,27 @@ rule("swig.base")
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     local scriptdir
                     local fileconfig = target:fileconfig(sourcefile)
-                    if fileconfig then
-                        scriptdir = fileconfig.scriptdir
-                    end
+
                     local autogenfiles
                     local autogendir = path.join(target:autogendir(), "rules", "swig")
+
+                    if fileconfig then
+                        scriptdir = fileconfig.scriptdir
+                        if fileconfig.swigflags then
+                            -- find -outdir path
+                            local idx = -1
+                            for i , par in pairs(fileconfig.swigflags) do
+                                if par == "-outdir" then
+                                    idx = i
+                                end
+                            end
+    
+                            if idx > 0 then
+                                autogendir = fileconfig.swigflags[idx + 1]
+                            end
+                        end
+                    end
+
                     if moduletype == "python" then
                         autogenfiles = os.files(path.join(autogendir, "*.py"))
                     elseif moduletype == "lua" then
