@@ -22,38 +22,15 @@
 import("core.base.option")
 import("lib.detect.find_tool")
 
--- build package
-function build(package, configs, opt)
+function _default_argv(package, configs, opt)
     opt = opt or {}
     local buildir = opt.buildir or os.curdir()
     local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
-    local ninja = assert(find_tool("ninja"), "ninja not found!")
-    local argv = {}
-    if opt.target then
-        table.insert(argv, opt.target)
-    end
-    table.insert(argv, "-C")
-    table.insert(argv, buildir)
-    if option.get("diagnosis") then
-        table.insert(argv, "-v")
-    end
-    table.insert(argv, "-j")
-    table.insert(argv, njob)
-    if configs then
-        table.join2(argv, configs)
-    end
-    os.vrunv(ninja.program, argv, {envs = opt.envs})
-end
 
--- install package
-function install(package, configs, opt)
-    opt = opt or {}
-    local buildir = opt.buildir or os.curdir()
-    local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
-    local ninja = assert(find_tool("ninja"), "ninja not found!")
-    local argv = {"install"}
-    if opt.target then
-        table.insert(argv, opt.target)
+    local argv = {}
+    local target = table.wrap(opt.target)
+    if #target ~= 0 then
+        table.join2(argv, target)
     end
     table.insert(argv, "-C")
     table.insert(argv, buildir)
@@ -65,5 +42,24 @@ function install(package, configs, opt)
     if configs then
         table.join2(argv, configs)
     end
+
+    return argv
+end
+
+-- build package
+function build(package, configs, opt)
+    opt = opt or {}
+    local argv = {}
+    local ninja = assert(find_tool("ninja"), "ninja not found!")
+    table.join2(argv, _default_argv(package, configs, opt))
+    os.vrunv(ninja.program, argv, {envs = opt.envs})
+end
+
+-- install package
+function install(package, configs, opt)
+    opt = opt or {}
+    local argv = {"install"}
+    local ninja = assert(find_tool("ninja"), "ninja not found!")
+    table.join2(argv, _default_argv(package, configs, opt))
     os.vrunv(ninja.program, argv, {envs = opt.envs})
 end
