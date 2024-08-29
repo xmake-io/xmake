@@ -1171,13 +1171,8 @@ function _get_cmake_generator(package, opt)
     return cmake_generator
 end
 
-function configure(package, configs, opt)
+function configure(package, configs, opt, sourcedir)
     opt = opt or {}
-
-    -- enter build directory
-    local buildir = opt.buildir or package:buildir()
-    os.mkdir(path.join(buildir, "install"))
-    local oldir = os.cd(buildir)
 
     -- pass configurations
     local argv = {}
@@ -1191,20 +1186,23 @@ function configure(package, configs, opt)
             table.insert(argv, "-D" .. name .. "=" .. value)
         end
     end
-    table.insert(argv, oldir)
+    table.insert(argv, sourcedir)
 
     -- do configure
     local cmake = assert(find_tool("cmake"), "cmake not found!")
     os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package, opt)})
-
-    return oldir
 end
 
 -- build package
 function build(package, configs, opt)
     opt = opt or {}
     local cmake_generator = _get_cmake_generator(package, opt)
-    local oldir = configure(package, configs, opt)
+
+    -- enter build directory
+    local buildir = opt.buildir or package:buildir()
+    os.mkdir(path.join(buildir, "install"))
+    local oldir = os.cd(buildir)
+    configure(package, configs, opt, oldir)
 
     -- do build
     if opt.cmake_build then
@@ -1233,7 +1231,12 @@ end
 function install(package, configs, opt)
     opt = opt or {}
     local cmake_generator = _get_cmake_generator(package, opt)
-    local oldir = configure(package, configs, opt)
+
+    -- enter build directory
+    local buildir = opt.buildir or package:buildir()
+    os.mkdir(path.join(buildir, "install"))
+    local oldir = os.cd(buildir)
+    configure(package, configs, opt, oldir)
 
     -- do build and install
     if opt.cmake_build then
