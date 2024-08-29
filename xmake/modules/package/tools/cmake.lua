@@ -369,8 +369,9 @@ end
 -- get ninja
 function _get_ninja(package)
     local ninja = find_tool("ninja")
-    assert(ninja, "ninja not found!")
-    return ninja.program
+    if ninja then
+        return ninja.program
+    end
 end
 
 -- https://github.com/xmake-io/xmake-repo/pull/1096
@@ -771,10 +772,8 @@ function _get_configs_for_generator(package, configs, opt)
         table.insert(configs, "-G")
         table.insert(configs, _get_cmake_generator_for_msvc(package))
     elseif package:is_plat("wasm") and is_subhost("windows") then
-        if not find_tool("ninja") then
-            table.insert(configs, "-G")
-            table.insert(configs, "MinGW Makefiles")
-        end
+        table.insert(configs, "-G")
+        table.insert(configs, "MinGW Makefiles")
     else
         table.insert(configs, "-G")
         table.insert(configs, "Unix Makefiles")
@@ -1152,8 +1151,8 @@ function _get_cmake_generator(package, opt)
             if package:has_tool("cc", "clang_cl") or package:has_tool("cxx", "clang_cl") then
                 cmake_generator = "Ninja"
             elseif is_subhost("windows") and package:is_plat("mingw", "wasm") then
-                local mingw_make = _get_mingw32_make(package)
-                if not mingw_make and find_tool("ninja") then
+                local ninja = _get_ninja(package)
+                if ninja then
                     cmake_generator = "Ninja"
                 end
             end
