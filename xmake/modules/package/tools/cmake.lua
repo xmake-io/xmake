@@ -1220,7 +1220,7 @@ end
 -- install package
 function install(package, configs, opt)
     opt = opt or {}
-    _get_configs(package, configs, opt)
+    _get_configs_for_generator(package, configs, opt)
 
     local cmake_generator = _get_cmake_generator(package, opt)
     -- enter build directory
