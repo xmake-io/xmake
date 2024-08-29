@@ -151,7 +151,7 @@ end
 -- get the toolchains
 function _instance:toolchains(opt)
     local toolchains = self:_memcache():get("toolchains")
-    if not toolchains then
+    if not toolchains or #toolchains == 0 then
 
         -- get current valid toolchains from configuration cache
         local names = nil

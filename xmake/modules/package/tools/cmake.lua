@@ -601,10 +601,16 @@ function _get_configs_for_wasm(package, configs, opt)
     local emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk.emscripten, "cmake/Modules/Platform"))
     assert(emscripten_cmakefile, "Emscripten.cmake not found!")
     table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. emscripten_cmakefile)
-    if is_subhost("windows") and opt.cmake_generator ~= "Ninja" then
-        local mingw_make = _get_mingw32_make(package)
-        if mingw_make then
-            table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. mingw_make)
+    if is_subhost("windows") then
+        if opt.cmake_generator ~= "Ninja" then
+            local mingw_make = _get_mingw32_make(package)
+            if mingw_make then
+                table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. mingw_make)
+            end
+        else
+            local ninja = find_tool("ninja")
+            assert(ninja, "ninja not found!")
+            table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. ninja.program)
         end
     end
     _get_configs_for_generic(package, configs, opt)
@@ -1214,8 +1220,9 @@ end
 -- install package
 function install(package, configs, opt)
     opt = opt or {}
-    local cmake_generator = _get_cmake_generator(package, opt)
+    _get_configs(package, configs, opt)
 
+    local cmake_generator = _get_cmake_generator(package, opt)
     -- enter build directory
     local buildir = opt.buildir or package:buildir()
     os.mkdir(path.join(buildir, "install"))
