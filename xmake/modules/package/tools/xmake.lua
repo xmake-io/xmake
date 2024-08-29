@@ -526,9 +526,9 @@ function install(package, configs, opt)
     -- do install
     argv = {"install", "-y", "--nopkgs", "-o", package:installdir()}
     _set_builtin_argv(package, argv)
-    local target = table.wrap(opt.target)
-    if #target ~= 0 then
-        table.join2(argv, target)
+    local targets = table.wrap(opt.target)
+    if #targets ~= 0 then
+        table.join2(argv, targets)
     end
     os.vrunv(os.programfile(), argv, {envs = envs})
 end

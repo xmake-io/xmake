@@ -1002,9 +1002,9 @@ end
 -- do build for make
 function _build_for_make(package, configs, opt)
     local argv = {}
-    local target = table.wrap(opt.target)
-    if #target ~= 0 then
-        table.join2(argv, target)
+    local targets = table.wrap(opt.target)
+    if #targets ~= 0 then
+        table.join2(argv, targets)
     end
     local jobs = _get_parallel_njobs(opt)
     table.insert(argv, "-j" .. jobs)
@@ -1048,18 +1048,18 @@ function _build_for_cmakebuild(package, configs, opt)
         table.insert(argv, "--config")
         table.insert(argv, opt.config)
     end
-    local target = table.wrap(opt.target)
-    if #target ~= 0 then
+    local targets = table.wrap(opt.target)
+    if #targets ~= 0 then
         table.insert(argv, "--target")
-        if #target > 1 then
+        if #targets > 1 then
             -- https://stackoverflow.com/questions/47553569/how-can-i-build-multiple-targets-using-cmake-build
             if _get_cmake_version():ge("3.15") then
-                table.join2(argv, target)
+                table.join2(argv, targets)
             else
                 raise("Build multiple targets need cmake >=3.15")
             end
         else
-            table.insert(argv, target[1])
+            table.insert(argv, targets[1])
         end
     end
     os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package)})

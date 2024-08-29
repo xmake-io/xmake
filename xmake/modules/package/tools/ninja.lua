@@ -28,9 +28,9 @@ function _default_argv(package, configs, opt)
     local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
 
     local argv = {}
-    local target = table.wrap(opt.target)
-    if #target ~= 0 then
-        table.join2(argv, target)
+    local targets = table.wrap(opt.target)
+    if #targets ~= 0 then
+        table.join2(argv, targets)
     end
     table.insert(argv, "-C")
     table.insert(argv, buildir)
