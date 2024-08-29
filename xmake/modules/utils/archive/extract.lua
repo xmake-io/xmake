@@ -39,8 +39,9 @@ end
 -- extract archivefile using tar
 function _extract_using_tar(archivefile, outputdir, extension, opt)
 
-    -- the tar of windows can only extract "*.tar"
-    if os.host() == "windows" and extension ~= ".tar" then
+    -- the tar on windows can only extract "*.tar", "*.tar.gz"
+    -- the tar on msys2 can extract more, like "*.tar.bz2", ..
+    if os.host() == "windows" and (extension ~= ".tar" or extension == ".tar.gz") then
         return false
     end
 
@@ -425,7 +426,8 @@ function main(archivefile, outputdir, opt)
         ,   [".tgz"]        = {_extract_using_7z, _extract_using_tar}
         ,   [".bz2"]        = {_extract_using_7z, _extract_using_bzip2}
         ,   [".tar"]        = {_extract_using_7z, _extract_using_tar}
-        ,   [".tar.gz"]     = {_extract_using_7z, _extract_using_gzip}
+        -- @see https://github.com/xmake-io/xmake/issues/5538
+        ,   [".tar.gz"]     = {_extract_using_tar, _extract_using_7z, _extract_using_gzip}
         ,   [".tar.xz"]     = {_extract_using_7z, _extract_using_xz}
         ,   [".tar.bz2"]    = {_extract_using_7z, _extract_using_bzip2}
         ,   [".tar.lz"]     = {_extract_using_7z}
