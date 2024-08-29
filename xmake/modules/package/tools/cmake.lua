@@ -366,6 +366,13 @@ function _get_mingw32_make(package)
     end
 end
 
+-- get ninja
+function _get_ninja(package)
+    local ninja = find_tool("ninja")
+    assert(ninja, "ninja not found!")
+    return ninja.program
+end
+
 -- https://github.com/xmake-io/xmake-repo/pull/1096
 function _fix_cxx_compiler_cmake(package, envs)
     local cxx = envs.CMAKE_CXX_COMPILER
@@ -608,9 +615,10 @@ function _get_configs_for_wasm(package, configs, opt)
                 table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. mingw_make)
             end
         else
-            local ninja = find_tool("ninja")
-            assert(ninja, "ninja not found!")
-            table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. ninja.program)
+            local ninja = _get_ninja(package)
+            if ninja then
+                table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. ninja)
+            end
         end
     end
     _get_configs_for_generic(package, configs, opt)
@@ -768,7 +776,6 @@ function _get_configs_for_generator(package, configs, opt)
         table.insert(configs, "-G")
         if find_tool("ninja") then
             table.insert(configs, "Ninja")
-            opt.cmake_generator = "Ninja"
         else
             table.insert(configs, "MinGW Makefiles")
         end
@@ -1148,7 +1155,7 @@ function _get_cmake_generator(package, opt)
         if not cmake_generator then
             if package:has_tool("cc", "clang_cl") or package:has_tool("cxx", "clang_cl") then
                 cmake_generator = "Ninja"
-            elseif is_subhost("windows") and package:is_plat("mingw") then
+            elseif is_subhost("windows") and (package:is_plat("mingw", "wasm")) then
                 local mingw_make = _get_mingw32_make(package)
                 if not mingw_make and find_tool("ninja") then
                     cmake_generator = "Ninja"
@@ -1220,7 +1227,6 @@ end
 -- install package
 function install(package, configs, opt)
     opt = opt or {}
-    _get_configs_for_generator(package, configs, opt)
 
     local cmake_generator = _get_cmake_generator(package, opt)
     -- enter build directory
