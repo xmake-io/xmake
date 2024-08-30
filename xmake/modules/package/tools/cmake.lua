@@ -947,6 +947,13 @@ function _fix_pdbdir_for_ninja(package)
     end
 end
 
+-- enter build directory
+function _enter_buildir(package, opt)
+    local buildir = opt.buildir or package:buildir()
+    os.mkdir(path.join(buildir, "install"))
+    return os.cd(buildir)
+end
+
 -- get build environments
 function buildenvs(package, opt)
 
@@ -1010,8 +1017,9 @@ end
 -- do build for make
 function _build_for_make(package, configs, opt)
     local argv = {}
-    if opt.target then
-        table.insert(argv, opt.target)
+    local targets = table.wrap(opt.target)
+    if #targets ~= 0 then
+        table.join2(argv, targets)
     end
     local jobs = _get_parallel_njobs(opt)
     table.insert(argv, "-j" .. jobs)
@@ -1055,9 +1063,19 @@ function _build_for_cmakebuild(package, configs, opt)
         table.insert(argv, "--config")
         table.insert(argv, opt.config)
     end
-    if opt.target then
+    local targets = table.wrap(opt.target)
+    if #targets ~= 0 then
         table.insert(argv, "--target")
-        table.insert(argv, opt.target)
+        if #targets > 1 then
+            -- https://stackoverflow.com/questions/47553569/how-can-i-build-multiple-targets-using-cmake-build
+            if _get_cmake_version():ge("3.15") then
+                table.join2(argv, targets)
+            else
+                raise("Build multiple targets need cmake >=3.15")
+            end
+        else
+            table.insert(argv, targets[1])
+        end
     end
     os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package)})
 end
@@ -1168,15 +1186,9 @@ function _get_cmake_generator(package, opt)
     return cmake_generator
 end
 
--- build package
-function build(package, configs, opt)
+function configure(package, configs, opt)
     opt = opt or {}
-    local cmake_generator = _get_cmake_generator(package, opt)
-
-    -- enter build directory
-    local buildir = opt.buildir or package:buildir()
-    os.mkdir(path.join(buildir, "install"))
-    local oldir = os.cd(buildir)
+    local oldir = _enter_buildir(package, opt)
 
     -- pass configurations
     local argv = {}
@@ -1195,8 +1207,19 @@ function build(package, configs, opt)
     -- do configure
     local cmake = assert(find_tool("cmake"), "cmake not found!")
     os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package, opt)})
+    os.cd(oldir)
+end
+
+-- build package
+function build(package, configs, opt)
+    opt = opt or {}
+    local cmake_generator = _get_cmake_generator(package, opt)
+
+    -- do configure
+    configure(package, configs, opt)
 
     -- do build
+    local oldir = _enter_buildir(package, opt)
     if opt.cmake_build then
         _build_for_cmakebuild(package, configs, opt)
     elseif cmake_generator then
@@ -1224,30 +1247,11 @@ function install(package, configs, opt)
     opt = opt or {}
     local cmake_generator = _get_cmake_generator(package, opt)
 
-    -- enter build directory
-    local buildir = opt.buildir or package:buildir()
-    os.mkdir(path.join(buildir, "install"))
-    local oldir = os.cd(buildir)
-
-    -- pass configurations
-    local argv = {}
-    for name, value in pairs(_get_configs(package, configs, opt)) do
-        value = tostring(value):trim()
-        if type(name) == "number" then
-            if value ~= "" then
-                table.insert(argv, value)
-            end
-        else
-            table.insert(argv, "-D" .. name .. "=" .. value)
-        end
-    end
-    table.insert(argv, oldir)
-
-    -- generate build file
-    local cmake = assert(find_tool("cmake"), "cmake not found!")
-    os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package, opt)})
+    -- do configure
+    configure(package, configs, opt)
 
     -- do build and install
+    local oldir = _enter_buildir(package, opt)
     if opt.cmake_build then
         _install_for_cmakebuild(package, configs, opt)
     elseif cmake_generator then

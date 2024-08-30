@@ -517,16 +517,18 @@ function install(package, configs, opt)
     if njob then
         table.insert(argv, "--jobs=" .. njob)
     end
-    if opt.target then
-        table.insert(argv, opt.target)
+    local target = table.wrap(opt.target)
+    if #target ~= 0 then
+        table.join2(argv, target)
     end
     os.vrunv(os.programfile(), argv, {envs = envs})
 
     -- do install
     argv = {"install", "-y", "--nopkgs", "-o", package:installdir()}
     _set_builtin_argv(package, argv)
-    if opt.target then
-        table.insert(argv, opt.target)
+    local targets = table.wrap(opt.target)
+    if #targets ~= 0 then
+        table.join2(argv, targets)
     end
     os.vrunv(os.programfile(), argv, {envs = envs})
 end
