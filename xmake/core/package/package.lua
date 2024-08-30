@@ -1281,9 +1281,9 @@ function _instance:toolconfig(name)
     end
 end
 
--- get the target compiler
+-- get the package compiler
 function _instance:compiler(sourcekind)
-    local compilerinst = self:_memcache():get("compiler")
+    local compilerinst = self:_memcache():get2("compiler", sourcekind)
     if not compilerinst then
         if not sourcekind then
             os.raise("please pass sourcekind to the first argument of package:compiler(), e.g. cc, cxx, as")
@@ -1293,9 +1293,26 @@ function _instance:compiler(sourcekind)
             os.raise(errors)
         end
         compilerinst = instance
-        self:_memcache():set("compiler", compilerinst)
+        self:_memcache():set2("compiler", sourcekind, compilerinst)
     end
     return compilerinst
+end
+
+-- get the package linker
+function _instance:linker(targetkind, sourcekinds)
+    local linkerinst = self:_memcache():get3("linker", targetkind, sourcekinds)
+    if not linkerinst then
+        if not sourcekinds then
+            os.raise("please pass sourcekinds to the second argument of package:linker(), e.g. cc, cxx, as")
+        end
+        local instance, errors = linker.load(targetkind, sourcekinds, self)
+        if not instance then
+            os.raise(errors)
+        end
+        linkerinst = instance
+        self:_memcache():set3("linker", targetkind, sourcekinds, linkerinst)
+    end
+    return linkerinst
 end
 
 -- has the given tool for the current package?
@@ -2357,22 +2374,24 @@ function _instance:_generate_build_configs(configs, opt)
         end
     end
     if runtimes then
+        -- @note we need to patch package:sourcekinds(), because it wiil be called nf_runtime for gcc/clang
         local sourcekind = opt.sourcekind or "cxx"
-        local tool, name = self:tool("ld")
-        local linker, errors = linker.load("binary", sourcekind, {target = package})
-        if not linker then
-            os.raise(errors)
+        self.sourcekinds = function (self)
+            return sourcekind
         end
-        local fake_target = {is_shared = function(_) return false end,
-                             sourcekinds = function(_) return sourcekind end}
         local compiler = self:compiler(sourcekind)
-        local cxflags = compiler:map_flags("runtime", runtimes, {target = fake_target})
+        local cxflags = compiler:map_flags("runtime", runtimes, {target = self})
         configs.cxflags = table.wrap(configs.cxflags)
         table.join2(configs.cxflags, cxflags)
 
-        local ldflags = linker:map_flags("runtime", runtimes, {target = fake_target})
+        local ldflags = self:linker("binary", sourcekind):map_flags("runtime", runtimes, {target = self})
         configs.ldflags = table.wrap(configs.ldflags)
         table.join2(configs.ldflags, ldflags)
+
+        local shflags = self:linker("shared", sourcekind):map_flags("runtime", runtimes, {target = self})
+        configs.shflags = table.wrap(configs.shflags)
+        table.join2(configs.shflags, shflags)
+        self.sourcekinds = nil
     end
     if self:config("lto") then
         local configs_lto = self:_generate_lto_configs(opt.sourcekind or "cxx")
