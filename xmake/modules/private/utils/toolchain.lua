@@ -50,8 +50,8 @@ function get_vs_toolset_ver(vs_toolset)
     return toolset_ver
 end
 
--- map compiler flags
-function map_compflags(package, langkind, name, values)
+-- map compiler flags for package
+function map_compflags_for_package(package, langkind, name, values)
     -- @note we need to patch package:sourcekinds(), because it wiil be called nf_runtime for gcc/clang
     package.sourcekinds = function (self)
         local sourcekind = language.langkinds()[langkind]
@@ -62,8 +62,8 @@ function map_compflags(package, langkind, name, values)
     return flags
 end
 
--- map linker flags
-function map_linkflags(package, targetkind, sourcekinds, name, values)
+-- map linker flags for package
+function map_linkflags_for_package(package, targetkind, sourcekinds, name, values)
     -- @note we need to patch package:sourcekinds(), because it wiil be called nf_runtime for gcc/clang
     package.sourcekinds = function (self)
         return sourcekinds

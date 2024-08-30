@@ -291,9 +291,9 @@ function _get_configs_file(package, opt)
         -- add runtimes flags
         for _, runtime in ipairs(package:runtimes()) do
             if not runtime:startswith("M") then
-                table.join2(cxxflags, toolchain_utils.map_compflags(package, "cxx", "runtime", {runtime}))
-                table.join2(ldflags, toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "runtime", {runtime}))
-                table.join2(shflags, toolchain_utils.map_linkflags(package, "shared", {"cxx"}, "runtime", {runtime}))
+                table.join2(cxxflags, toolchain_utils.map_compflags_for_package(package, "cxx", "runtime", {runtime}))
+                table.join2(ldflags, toolchain_utils.map_linkflags_for_package(package, "binary", {"cxx"}, "runtime", {runtime}))
+                table.join2(shflags, toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", {runtime}))
             end
         end
         if #cflags > 0 then
@@ -412,13 +412,13 @@ function _get_cflags_from_packagedeps(package, opt)
     local result = {}
     if values then
         if values.defines then
-            table.join2(result, toolchain_utils.map_compflags(package, "cxx", "define", values.defines))
+            table.join2(result, toolchain_utils.map_compflags_for_package(package, "cxx", "define", values.defines))
         end
         if values.includedirs then
-            table.join2(result, toolchain_utils.map_compflags(package, "cxx", "includedir", values.includedirs))
+            table.join2(result, toolchain_utils.map_compflags_for_package(package, "cxx", "includedir", values.includedirs))
         end
         if values.sysincludedirs then
-            table.join2(result, toolchain_utils.map_compflags(package, "cxx", "sysincludedir", values.sysincludedirs))
+            table.join2(result, toolchain_utils.map_compflags_for_package(package, "cxx", "sysincludedir", values.sysincludedirs))
         end
     end
     return _translate_flags(package, result)
@@ -443,16 +443,16 @@ function _get_ldflags_from_packagedeps(package, opt)
     local result = {}
     if values then
         if values.linkdirs then
-            table.join2(result, toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "linkdir", values.linkdirs))
+            table.join2(result, toolchain_utils.map_linkflags_for_package(package, "binary", {"cxx"}, "linkdir", values.linkdirs))
         end
         if values.links then
-            table.join2(result, toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "link", values.links))
+            table.join2(result, toolchain_utils.map_linkflags_for_package(package, "binary", {"cxx"}, "link", values.links))
         end
         if values.syslinks then
-            table.join2(result, toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "syslink", values.syslinks))
+            table.join2(result, toolchain_utils.map_linkflags_for_package(package, "binary", {"cxx"}, "syslink", values.syslinks))
         end
         if values.frameworks then
-            table.join2(result, toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "framework", values.frameworks))
+            table.join2(result, toolchain_utils.map_linkflags_for_package(package, "binary", {"cxx"}, "framework", values.frameworks))
         end
     end
     return _translate_flags(package, result)

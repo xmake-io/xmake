@@ -42,9 +42,9 @@ function buildenvs(package)
     local shflags  = table.copy(table.wrap(package:config("shflags")))
     local runtimes = package:runtimes()
     if runtimes then
-        table.join2(cxxflags, toolchain_utils.map_compflags(package, "cxx", "runtime", runtimes))
-        table.join2(ldflags, toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "runtime", runtimes))
-        table.join2(shflags, toolchain_utils.map_linkflags(package, "shared", {"cxx"}, "runtime", runtimes))
+        table.join2(cxxflags, toolchain_utils.map_compflags_for_package(package, "cxx", "runtime", runtimes))
+        table.join2(ldflags, toolchain_utils.map_linkflags_for_package(package, "binary", {"cxx"}, "runtime", runtimes))
+        table.join2(shflags, toolchain_utils.map_linkflags_for_package(package, "shared", {"cxx"}, "runtime", runtimes))
     end
     if package:is_plat(os.host()) then
         if package:is_plat("linux") and package:is_arch("i386") then
