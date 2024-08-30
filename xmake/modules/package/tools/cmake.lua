@@ -881,15 +881,11 @@ function _get_envs_for_runtime_flags(package, configs, opt)
     local envs = {}
     local runtimes = package:runtimes()
     if runtimes then
-        local fake_target = {is_shared = function(_) return false end,
-                             sourcekinds = function(_) return "cc" end}
-        envs[format("CMAKE_C_FLAGS_%s", buildtype)]             = _map_compflags(fake_target, "c", "runtime", runtimes)
-        fake_target.sourcekinds = function(_) return "cxx" end
-        envs[format("CMAKE_CXX_FLAGS_%s", buildtype)]           = _map_compflags(fake_target, "cxx", "runtime", runtimes)
-        envs[format("CMAKE_EXE_LINKER_FLAGS_%s", buildtype)]    = _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes)
-        envs[format("CMAKE_STATIC_LINKER_FLAGS_%s", buildtype)] = _map_linkflags(fake_target, "static", {"cxx"}, "runtime", runtimes)
-        fake_target.is_shared = function(_) return true end
-        envs[format("CMAKE_SHARED_LINKER_FLAGS_%s", buildtype)] = _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes)
+        envs[format("CMAKE_C_FLAGS_%s", buildtype)]             = _map_compflags(package, "c", "runtime", runtimes)
+        envs[format("CMAKE_CXX_FLAGS_%s", buildtype)]           = _map_compflags(package, "cxx", "runtime", runtimes)
+        envs[format("CMAKE_EXE_LINKER_FLAGS_%s", buildtype)]    = _map_linkflags(package, "binary", {"cxx"}, "runtime", runtimes)
+        envs[format("CMAKE_STATIC_LINKER_FLAGS_%s", buildtype)] = _map_linkflags(package, "static", {"cxx"}, "runtime", runtimes)
+        envs[format("CMAKE_SHARED_LINKER_FLAGS_%s", buildtype)] = _map_linkflags(package, "shared", {"cxx"}, "runtime", runtimes)
     end
     return envs
 end

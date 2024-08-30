@@ -2372,17 +2372,18 @@ function _instance:_generate_build_configs(configs, opt)
     end
     if runtimes then
         local sourcekind = opt.sourcekind or "cxx"
-        local linker = self:linker("binary", sourcekind)
-        local fake_target = {is_shared = function(_) return false end,
-                             sourcekinds = function(_) return sourcekind end}
         local compiler = self:compiler(sourcekind)
-        local cxflags = compiler:map_flags("runtime", runtimes, {target = fake_target})
+        local cxflags = compiler:map_flags("runtime", runtimes, {target = self})
         configs.cxflags = table.wrap(configs.cxflags)
         table.join2(configs.cxflags, cxflags)
 
-        local ldflags = linker:map_flags("runtime", runtimes, {target = fake_target})
+        local ldflags = self:linker("binary", sourcekind):map_flags("runtime", runtimes, {target = self})
         configs.ldflags = table.wrap(configs.ldflags)
         table.join2(configs.ldflags, ldflags)
+
+        local shflags = self:linker("shared", sourcekind):map_flags("runtime", runtimes, {target = self})
+        configs.shflags = table.wrap(configs.shflags)
+        table.join2(configs.shflags, shflags)
     end
     if self:config("lto") then
         local configs_lto = self:_generate_lto_configs(opt.sourcekind or "cxx")
