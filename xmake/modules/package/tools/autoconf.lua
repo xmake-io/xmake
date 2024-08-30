@@ -77,17 +77,6 @@ function _get_msvc_runenvs(package)
     return os.joinenvs(_get_msvc(package):runenvs())
 end
 
--- is cross compilation?
-function _is_cross_compilation(package)
-    if not package:is_plat(os.subhost()) then
-        return true
-    end
-    if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
-        return true
-    end
-    return false
-end
-
 -- get memcache
 function _memcache()
     return memcache.cache("package.tools.autoconf")
@@ -115,7 +104,7 @@ function _get_configs(package, configs)
     table.insert(configs, "--prefix=" .. _translate_paths(package:installdir()))
 
     -- add host for cross-complation
-    if not configs.host and _is_cross_compilation(package) then
+    if not configs.host and package:is_cross() then
         if package:is_plat("iphoneos", "macosx") then
             local triples =
             {
@@ -240,7 +229,7 @@ function buildenvs(package, opt)
     local envs = {}
     local cross = false
     local cflags, cxxflags, cppflags, asflags, ldflags, shflags, arflags
-    if not _is_cross_compilation(package) and not package:config("toolchains") then
+    if not package:is_cross() and not package:config("toolchains") then
         cppflags = {}
         cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
         cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
