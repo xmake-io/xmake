@@ -139,6 +139,20 @@ function _get_configs(package, configs)
                 x86_64 = "x86_64-w64-mingw32"
             }
             table.insert(configs, "--host=" .. (triples[package:arch()] or triples.i386))
+        elseif package:is_plat("linux") then
+            local triples =
+            {
+                ["arm64-v8a"] = "aarch64-linux-gnu",
+                i386   = "i686-linux-gnu",
+                x86_64 = "x86_64-linux-gnu",
+                armv7 = "arm-linux-gnueabihf",
+                mips = "mips-linux-gnu",
+                mips64 = "mips64-linux-gnu",
+                mipsel = "mipsel-linux-gnu",
+                mips64el = "mips64el-linux-gnu",
+                loong64 = "loongarch64-linux-gnu"
+            }
+            table.insert(configs, "--host=" .. (triples[package:arch()] or triples.i386))
         elseif package:is_plat("cross") and package:targetos() then
             local host = package:arch()
             if package:is_arch("arm64") then
