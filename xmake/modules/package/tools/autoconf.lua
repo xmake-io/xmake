@@ -21,11 +21,10 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
-import("core.tool.linker")
-import("core.tool.compiler")
 import("core.tool.toolchain")
 import("core.cache.memcache")
 import("lib.detect.find_tool")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- translate paths
 function _translate_paths(paths)
@@ -76,16 +75,6 @@ end
 -- get msvc run environments
 function _get_msvc_runenvs(package)
     return os.joinenvs(_get_msvc(package):runenvs())
-end
-
--- map compiler flags
-function _map_compflags(package, langkind, name, values)
-    return compiler.map_flags(langkind, name, values, {target = package})
-end
-
--- map linker flags
-function _map_linkflags(package, targetkind, sourcekinds, name, values)
-    return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
 -- is cross compilation?
@@ -199,13 +188,13 @@ function _get_cflags_from_packagedeps(package, opt)
     local result = {}
     if values then
         if values.defines then
-            table.join2(result, _map_compflags(package, "cxx", "define", values.defines))
+            table.join2(result, toolchain_utils.map_compflags(package, "cxx", "define", values.defines))
         end
         if values.includedirs then
-            table.join2(result, _translate_paths(_map_compflags(package, "cxx", "includedir", values.includedirs)))
+            table.join2(result, _translate_paths(toolchain_utils.map_compflags(package, "cxx", "includedir", values.includedirs)))
         end
         if values.sysincludedirs then
-            table.join2(result, _translate_paths(_map_compflags(package, "cxx", "sysincludedir", values.sysincludedirs)))
+            table.join2(result, _translate_paths(toolchain_utils.map_compflags(package, "cxx", "sysincludedir", values.sysincludedirs)))
         end
     end
     return result
@@ -230,16 +219,16 @@ function _get_ldflags_from_packagedeps(package, opt)
     local result = {}
     if values then
         if values.linkdirs then
-            table.join2(result, _translate_paths(_map_linkflags(package, "binary", {"cxx"}, "linkdir", values.linkdirs)))
+            table.join2(result, _translate_paths(toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "linkdir", values.linkdirs)))
         end
         if values.links then
-            table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "link", values.links))
+            table.join2(result, toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "link", values.links))
         end
         if values.syslinks then
-            table.join2(result, _translate_paths(_map_linkflags(package, "binary", {"cxx"}, "syslink", values.syslinks)))
+            table.join2(result, _translate_paths(toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "syslink", values.syslinks)))
         end
         if values.frameworks then
-            table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "framework", values.frameworks))
+            table.join2(result, toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "framework", values.frameworks))
         end
     end
     return result
@@ -306,21 +295,21 @@ function buildenvs(package, opt)
         table.join2(cxxflags, _get_cflags_from_packagedeps(package, opt))
         table.join2(cppflags, _get_cflags_from_packagedeps(package, opt))
         table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
-        table.join2(cflags,   _map_compflags(package, "c", "define", defines))
-        table.join2(cflags,   _map_compflags(package, "c", "includedir", includedirs))
-        table.join2(cflags,   _map_compflags(package, "c", "sysincludedir", sysincludedirs))
-        table.join2(asflags,  _map_compflags(package, "as", "define", defines))
-        table.join2(asflags,  _map_compflags(package, "as", "includedir", includedirs))
-        table.join2(asflags,  _map_compflags(package, "as", "sysincludedir", sysincludedirs))
-        table.join2(cxxflags, _map_compflags(package, "cxx", "define", defines))
-        table.join2(cxxflags, _map_compflags(package, "cxx", "includedir", includedirs))
-        table.join2(cxxflags, _map_compflags(package, "cxx", "sysincludedir", sysincludedirs))
-        table.join2(ldflags,  _map_linkflags(package, "binary", {"cxx"}, "link", links))
-        table.join2(ldflags,  _map_linkflags(package, "binary", {"cxx"}, "syslink", syslinks))
-        table.join2(ldflags,  _map_linkflags(package, "binary", {"cxx"}, "linkdir", linkdirs))
-        table.join2(shflags,  _map_linkflags(package, "shared", {"cxx"}, "link", links))
-        table.join2(shflags,  _map_linkflags(package, "shared", {"cxx"}, "syslink", syslinks))
-        table.join2(shflags,  _map_linkflags(package, "shared", {"cxx"}, "linkdir", linkdirs))
+        table.join2(cflags,   toolchain_utils.map_compflags(package, "c", "define", defines))
+        table.join2(cflags,   toolchain_utils.map_compflags(package, "c", "includedir", includedirs))
+        table.join2(cflags,   toolchain_utils.map_compflags(package, "c", "sysincludedir", sysincludedirs))
+        table.join2(asflags,  toolchain_utils.map_compflags(package, "as", "define", defines))
+        table.join2(asflags,  toolchain_utils.map_compflags(package, "as", "includedir", includedirs))
+        table.join2(asflags,  toolchain_utils.map_compflags(package, "as", "sysincludedir", sysincludedirs))
+        table.join2(cxxflags, toolchain_utils.map_compflags(package, "cxx", "define", defines))
+        table.join2(cxxflags, toolchain_utils.map_compflags(package, "cxx", "includedir", includedirs))
+        table.join2(cxxflags, toolchain_utils.map_compflags(package, "cxx", "sysincludedir", sysincludedirs))
+        table.join2(ldflags,  toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "link", links))
+        table.join2(ldflags,  toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "syslink", syslinks))
+        table.join2(ldflags,  toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "linkdir", linkdirs))
+        table.join2(shflags,  toolchain_utils.map_linkflags(package, "shared", {"cxx"}, "link", links))
+        table.join2(shflags,  toolchain_utils.map_linkflags(package, "shared", {"cxx"}, "syslink", syslinks))
+        table.join2(shflags,  toolchain_utils.map_linkflags(package, "shared", {"cxx"}, "linkdir", linkdirs))
         envs.CC        = package:build_getenv("cc")
         envs.AS        = package:build_getenv("as")
         envs.AR        = package:build_getenv("ar")
@@ -341,13 +330,9 @@ function buildenvs(package, opt)
     end
     local runtimes = package:runtimes()
     if runtimes then
-        local fake_target = {is_shared = function(_) return false end,
-                             sourcekinds = function(_) return "cxx" end}
-        table.join2(cxxflags, _map_compflags(fake_target, "cxx", "runtime", runtimes))
-        table.join2(ldflags, _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes))
-        fake_target = {is_shared = function(_) return true end,
-                       sourcekinds = function(_) return "cxx" end}
-        table.join2(shflags, _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes))
+        table.join2(cxxflags, toolchain_utils.map_compflags(package, "cxx", "runtime", runtimes))
+        table.join2(ldflags, toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "runtime", runtimes))
+        table.join2(shflags, toolchain_utils.map_linkflags(package, "shared", {"cxx"}, "runtime", runtimes))
     end
     if package:config("asan") then
         table.join2(cflags, package:_generate_sanitizer_configs("address", "cc").cflags)

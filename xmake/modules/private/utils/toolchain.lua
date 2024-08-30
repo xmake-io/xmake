@@ -18,6 +18,9 @@
 -- @file        toolchain.lua
 --
 import("core.base.semver")
+import("core.tool.linker")
+import("core.tool.compiler")
+import("core.language.language")
 
 -- is the compatible with the host?
 function is_compatible_with_host(name)
@@ -45,5 +48,28 @@ function get_vs_toolset_ver(vs_toolset)
         end
     end
     return toolset_ver
+end
+
+-- map compiler flags
+function map_compflags(package, langkind, name, values)
+    -- @note we need to patch package:sourcekinds(), because it wiil be called nf_runtime for gcc/clang
+    package.sourcekinds = function (self)
+        local sourcekind = language.langkinds()[langkind]
+        return sourcekind
+    end
+    local flags = compiler.map_flags(langkind, name, values, {target = package})
+    package.sourcekinds = nil
+    return flags
+end
+
+-- map linker flags
+function map_linkflags(package, targetkind, sourcekinds, name, values)
+    -- @note we need to patch package:sourcekinds(), because it wiil be called nf_runtime for gcc/clang
+    package.sourcekinds = function (self)
+        return sourcekinds
+    end
+    local flags = linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
+    package.sourcekinds = nil
+    return flags
 end
 

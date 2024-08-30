@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
+import("private.utils.toolchain", {alias = "toolchain_utils"})
 
 -- translate bin path
 function _translate_bin_path(bin_path)
@@ -29,16 +30,6 @@ function _translate_bin_path(bin_path)
         return bin_path:gsub("\\", "/") .. ".exe"
     end
     return bin_path
-end
-
--- map compiler flags
-function _map_compflags(package, langkind, name, values)
-    return compiler.map_flags(langkind, name, values, {target = package})
-end
-
--- map linker flags
-function _map_linkflags(package, targetkind, sourcekinds, name, values)
-    return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
 -- get the build environments
@@ -51,13 +42,9 @@ function buildenvs(package)
     local shflags  = table.copy(table.wrap(package:config("shflags")))
     local runtimes = package:runtimes()
     if runtimes then
-        local fake_target = {is_shared = function(_) return false end, 
-                             sourcekinds = function(_) return "cxx" end}
-        table.join2(cxxflags, _map_compflags(fake_target, "cxx", "runtime", runtimes))
-        table.join2(ldflags, _map_linkflags(fake_target, "binary", {"cxx"}, "runtime", runtimes))
-        fake_target = {is_shared = function(_) return true end, 
-                       sourcekinds = function(_) return "cxx" end}
-        table.join2(shflags, _map_linkflags(fake_target, "shared", {"cxx"}, "runtime", runtimes))
+        table.join2(cxxflags, toolchain_utils.map_compflags(package, "cxx", "runtime", runtimes))
+        table.join2(ldflags, toolchain_utils.map_linkflags(package, "binary", {"cxx"}, "runtime", runtimes))
+        table.join2(shflags, toolchain_utils.map_linkflags(package, "shared", {"cxx"}, "runtime", runtimes))
     end
     if package:is_plat(os.host()) then
         if package:is_plat("linux") and package:is_arch("i386") then
