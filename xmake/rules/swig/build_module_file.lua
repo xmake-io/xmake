@@ -24,7 +24,7 @@ import("utils.progress")
 import("core.project.depend")
 import("core.tool.compiler")
 
-function jar_build(target , fileconfig)
+function jar_build(target , fileconfig , opt)
     local javac = assert(find_tool("javac"), "javac not found!")
     local jar = assert(find_tool("jar"), "jar not found!")
 
@@ -146,7 +146,7 @@ function main(target, sourcefile, opt)
     -- jar build
     local buildjar = target:extraconf("rules", "swig.c", "buildjar") or target:extraconf("rules", "swig.cpp", "buildjar")
     if moduletype == "java" and buildjar then
-        jar_build(target)
+        jar_build(target , fileconfig , opt)
     end
 
 end
