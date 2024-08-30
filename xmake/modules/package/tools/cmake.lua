@@ -939,6 +939,13 @@ function _fix_pdbdir_for_ninja(package)
     end
 end
 
+-- enter build directory
+function _enter_buildir(package, opt)
+    local buildir = opt.buildir or package:buildir()
+    os.mkdir(path.join(buildir, "install"))
+    return os.cd(buildir)
+end
+
 -- get build environments
 function buildenvs(package, opt)
 
@@ -1171,8 +1178,9 @@ function _get_cmake_generator(package, opt)
     return cmake_generator
 end
 
-function configure(package, configs, opt, sourcedir)
+function configure(package, configs, opt)
     opt = opt or {}
+    local oldir = _enter_buildir(package, opt)
 
     -- pass configurations
     local argv = {}
@@ -1186,11 +1194,12 @@ function configure(package, configs, opt, sourcedir)
             table.insert(argv, "-D" .. name .. "=" .. value)
         end
     end
-    table.insert(argv, sourcedir)
+    table.insert(argv, oldir)
 
     -- do configure
     local cmake = assert(find_tool("cmake"), "cmake not found!")
     os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package, opt)})
+    os.cd(oldir)
 end
 
 -- build package
@@ -1198,13 +1207,11 @@ function build(package, configs, opt)
     opt = opt or {}
     local cmake_generator = _get_cmake_generator(package, opt)
 
-    -- enter build directory
-    local buildir = opt.buildir or package:buildir()
-    os.mkdir(path.join(buildir, "install"))
-    local oldir = os.cd(buildir)
-    configure(package, configs, opt, oldir)
+    -- do configure
+    configure(package, configs, opt)
 
     -- do build
+    local oldir = _enter_buildir(package, opt)
     if opt.cmake_build then
         _build_for_cmakebuild(package, configs, opt)
     elseif cmake_generator then
@@ -1232,13 +1239,11 @@ function install(package, configs, opt)
     opt = opt or {}
     local cmake_generator = _get_cmake_generator(package, opt)
 
-    -- enter build directory
-    local buildir = opt.buildir or package:buildir()
-    os.mkdir(path.join(buildir, "install"))
-    local oldir = os.cd(buildir)
-    configure(package, configs, opt, oldir)
+    -- do configure
+    configure(package, configs, opt)
 
     -- do build and install
+    local oldir = _enter_buildir(package, opt)
     if opt.cmake_build then
         _install_for_cmakebuild(package, configs, opt)
     elseif cmake_generator then
