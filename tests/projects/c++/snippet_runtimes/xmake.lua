@@ -4,7 +4,6 @@ add_requires("bar")
 target("foo")
     set_kind("binary")
     add_files("src/*.cpp")
-    
     add_packages("bar")
 
     on_config(function(target)
