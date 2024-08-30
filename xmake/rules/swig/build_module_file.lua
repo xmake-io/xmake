@@ -24,6 +24,54 @@ import("utils.progress")
 import("core.project.depend")
 import("core.tool.compiler")
 
+function jar_build(target , fileconfig)
+    local javac = assert(find_tool("javac"), "javac not found!")
+    local jar = assert(find_tool("jar"), "jar not found!")
+
+    local java_src_dir = path.join(target:autogendir(), "rules", "swig")
+    local jar_dst_dir = path.join(target:autogendir(), "rules", "swig")
+
+    -- user specified output path
+    if fileconfig and fileconfig.swigflags then
+        -- find -outdir path
+        local idx = -1
+        for i , par in pairs(fileconfig.swigflags) do
+            if par == "-outdir" then
+                idx = i
+            end
+        end
+
+        if idx > 0 then
+            java_src_dir = fileconfig.swigflags[idx + 1]
+        end
+    end
+
+    -- get java files
+    local autogenfiles = os.files(path.join(java_src_dir, "*.java"))
+
+    -- write file list
+    local filelistname = os.tmpfile()
+    local file = io.open(filelistname, "w")
+    if file then
+        for _, sourcebatch in pairs(autogenfiles) do
+            file:print(sourcebatch)
+        end
+        file:close()
+    end
+
+    -- compile to class file
+    progress.show(opt.progress, "${color.build.object}compiling.javac %s class file", target:name())
+    os.vrunv(javac.program, {"--release", "17", "-d", jar_dst_dir , "@"..filelistname})
+
+    -- generate jar file
+    progress.show(opt.progress, "${color.build.object}compiling.jar %s", target:name()..".jar")
+    os.vrunv(jar.program, {"-cf" , path.join(java_src_dir , target:name()..".jar") , jar_dst_dir})
+
+    os.tryrm(filelistname)
+end
+
+
+
 function main(target, sourcefile, opt)
     -- get swig
     opt = opt or {}
@@ -66,60 +114,39 @@ function main(target, sourcefile, opt)
     end
 
     table.insert(argv, sourcefile)
-    depend.on_changed(function ()
-        progress.show(opt.progress, "${color.build.object}compiling.swig.%s %s", moduletype, sourcefile)
-        os.mkdir(path.directory(sourcefile_cx))
-        os.vrunv(swig.program, argv)
-        compiler.compile(sourcefile_cx, objectfile, {target = target})
 
-        local buildjar = target:extraconf("rules", "swig.c", "buildjar") or target:extraconf("rules", "swig.cpp", "buildjar")
-        if moduletype == "java" and buildjar then
-            local javac = assert(find_tool("javac"), "javac not found!")
-            local jar = assert(find_tool("jar"), "jar not found!")
+    local dependfile = target:dependfile(objectfile)
+    local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
+    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile),
+                                          values = argv
+                                          }) then
+        return
+    end
 
-            local java_src_dir = path.join(target:autogendir(), "rules", "swig")
-            local jar_dst_dir = path.join(target:autogendir(), "rules", "swig")
+    progress.show(opt.progress, "${color.build.object}compiling.swig.%s %s", moduletype, sourcefile)
+    os.mkdir(path.directory(sourcefile_cx))
 
-            -- user specified output path
-            if fileconfig and fileconfig.swigflags then
-                -- find -outdir path
-                local idx = -1
-                for i , par in pairs(fileconfig.swigflags) do
-                    if par == "-outdir" then
-                        idx = i
-                    end
-                end
+    -- gen swig depend file , same with gcc .d
+    local swigdep = os.tmpfile()
+    local argv2 = {"-MMD" , "-MF" , swigdep}
+    table.join2(argv2, argv)
 
-                if idx > 0 then
-                    java_src_dir = fileconfig.swigflags[idx + 1]
-                end
-            end
+    -- swig generate file and depend file
+    os.vrunv(swig.program, argv2)
+    compiler.compile(sourcefile_cx, objectfile, {target = target})
 
-            -- get java files
-            local autogenfiles = os.files(path.join(java_src_dir, "*.java"))
+    -- update depend file
+    local deps = io.readfile(swigdep , {continuation = "\\"})
+    os.tryrm(swigdep)
+    dependinfo.files = {sourcefile}
+    dependinfo.depfiles_gcc = deps
+    dependinfo.values = argv
+    depend.save(dependinfo, target:dependfile(objectfile))
 
-            -- write file list
-            local filelistname = os.tmpfile()
-            local file = io.open(filelistname, "w")
-            if file then
-                for _, sourcebatch in pairs(autogenfiles) do
-                    file:print(sourcebatch)
-                end
-                file:close()
-            end
+    -- jar build
+    local buildjar = target:extraconf("rules", "swig.c", "buildjar") or target:extraconf("rules", "swig.cpp", "buildjar")
+    if moduletype == "java" and buildjar then
+        jar_build(target)
+    end
 
-            -- compile to class file
-            progress.show(opt.progress, "${color.build.object}compiling.javac %s class file", target:name())
-            os.vrunv(javac.program, {"--release", "17", "-d", jar_dst_dir , "@"..filelistname})
-
-            -- generate jar file
-            progress.show(opt.progress, "${color.build.object}compiling.jar %s", target:name()..".jar")
-            os.vrunv(jar.program, {"-cf" , path.join(java_src_dir , target:name()..".jar") , jar_dst_dir})
-        end
-
-    end, {dependfile = target:dependfile(objectfile),
-          lastmtime = os.mtime(objectfile),
-          files = sourcefile,
-          values = argv,
-          changed = target:is_rebuilt()})
 end
