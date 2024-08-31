@@ -229,6 +229,7 @@ function _get_configs(artifacts_dir)
             local triples =
             {
                 ["arm64-v8a"] = "aarch64-linux-gnu",
+                arm64 = "aarch64-linux-gnu",
                 i386   = "i686-linux-gnu",
                 x86_64 = "x86_64-linux-gnu",
                 armv7 = "arm-linux-gnueabihf",
