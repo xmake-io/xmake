@@ -68,7 +68,7 @@ end
 function _get_buildenvs()
     local envs = {}
     local cross = false
-    if not _is_cross_compilation() then
+    if not is_cross() then
         local cflags   = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cflags"))
         local cxxflags = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cxxflags"))
         local asflags  = table.copy(table.wrap(_get_buildenv("asflags")))
@@ -174,17 +174,6 @@ function _get_buildenvs()
     return envs
 end
 
--- is cross compilation?
-function _is_cross_compilation()
-    if not is_plat(os.subhost()) then
-        return true
-    end
-    if is_plat("macosx") and not is_arch(os.subarch()) then
-        return true
-    end
-    return false
-end
-
 -- get configs
 function _get_configs(artifacts_dir)
 
@@ -201,7 +190,7 @@ function _get_configs(artifacts_dir)
     end
 
     -- add host for cross-complation
-    if _is_cross_compilation() then
+    if is_cross() then
         if is_plat("iphoneos", "macosx") then
             local triples =
             {
@@ -234,6 +223,21 @@ function _get_configs(artifacts_dir)
             {
                 i386   = "i686-w64-mingw32",
                 x86_64 = "x86_64-w64-mingw32"
+            }
+            table.insert(configs, "--host=" .. (triples[config.arch()] or triples.i386))
+        elseif is_plat("linux") then
+            local triples =
+            {
+                ["arm64-v8a"] = "aarch64-linux-gnu",
+                arm64 = "aarch64-linux-gnu",
+                i386   = "i686-linux-gnu",
+                x86_64 = "x86_64-linux-gnu",
+                armv7 = "arm-linux-gnueabihf",
+                mips = "mips-linux-gnu",
+                mips64 = "mips64-linux-gnu",
+                mipsel = "mipsel-linux-gnu",
+                mips64el = "mips64el-linux-gnu",
+                loong64 = "loongarch64-linux-gnu"
             }
             table.insert(configs, "--host=" .. (triples[config.arch()] or triples.i386))
         elseif is_plat("cross") then

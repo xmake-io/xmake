@@ -77,17 +77,6 @@ function _get_msvc_runenvs(package)
     return os.joinenvs(_get_msvc(package):runenvs())
 end
 
--- is cross compilation?
-function _is_cross_compilation(package)
-    if not package:is_plat(os.subhost()) then
-        return true
-    end
-    if package:is_plat("macosx") and not package:is_arch(os.subarch()) then
-        return true
-    end
-    return false
-end
-
 -- get memcache
 function _memcache()
     return memcache.cache("package.tools.autoconf")
@@ -115,7 +104,7 @@ function _get_configs(package, configs)
     table.insert(configs, "--prefix=" .. _translate_paths(package:installdir()))
 
     -- add host for cross-complation
-    if not configs.host and _is_cross_compilation(package) then
+    if not configs.host and package:is_cross() then
         if package:is_plat("iphoneos", "macosx") then
             local triples =
             {
@@ -148,6 +137,21 @@ function _get_configs(package, configs)
             {
                 i386   = "i686-w64-mingw32",
                 x86_64 = "x86_64-w64-mingw32"
+            }
+            table.insert(configs, "--host=" .. (triples[package:arch()] or triples.i386))
+        elseif package:is_plat("linux") then
+            local triples =
+            {
+                ["arm64-v8a"] = "aarch64-linux-gnu",
+                arm64 = "aarch64-linux-gnu",
+                i386   = "i686-linux-gnu",
+                x86_64 = "x86_64-linux-gnu",
+                armv7 = "arm-linux-gnueabihf",
+                mips = "mips-linux-gnu",
+                mips64 = "mips64-linux-gnu",
+                mipsel = "mipsel-linux-gnu",
+                mips64el = "mips64el-linux-gnu",
+                loong64 = "loongarch64-linux-gnu"
             }
             table.insert(configs, "--host=" .. (triples[package:arch()] or triples.i386))
         elseif package:is_plat("cross") and package:targetos() then
@@ -240,7 +244,7 @@ function buildenvs(package, opt)
     local envs = {}
     local cross = false
     local cflags, cxxflags, cppflags, asflags, ldflags, shflags, arflags
-    if not _is_cross_compilation(package) and not package:config("toolchains") then
+    if not package:is_cross() and not package:config("toolchains") then
         cppflags = {}
         cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
         cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
