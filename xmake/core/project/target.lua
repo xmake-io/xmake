@@ -1335,7 +1335,7 @@ function _instance:pkgenvs()
             end
         end
         for _, pkg in pkgs:orderkeys() do
-            local envs = pkg:get("envs")
+            local envs = pkg:envs()
             if envs then
                 for name, values in table.orderpairs(envs) do
                     if type(values) == "table" then

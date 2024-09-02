@@ -271,6 +271,11 @@ function _instance:enable(enabled)
     self:set("__enabled", enabled)
 end
 
+-- get environments
+function _instance:envs()
+    return self:get("envs")
+end
+
 -- get the given rule
 function _instance:rule(name)
     return self:rules()[name]

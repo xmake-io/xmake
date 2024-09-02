@@ -30,7 +30,7 @@ toolchain("zig")
         import("lib.detect.find_tool")
         local paths = {}
         for _, package in ipairs(toolchain:packages()) do
-            local envs = package:get("envs")
+            local envs = package:envs()
             if envs then
                 table.join2(paths, envs.PATH)
             end
