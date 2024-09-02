@@ -119,7 +119,13 @@ function swig_par(target, sourcefile, opt)
     end
 
     table.insert(argv, sourcefile)
-    return { argv = argv , objectfile = objectfile , swig = swig , sourcefile_cx = sourcefile_cx}
+    return { argv = argv 
+            , objectfile = objectfile 
+            , swig = swig 
+            , sourcefile_cx = sourcefile_cx 
+            , moduletype = moduletype
+            , fileconfig = fileconfig
+            }
 end
 
 function swig_build_cmd(target, batchcmds, sourcefile, opt, pars)
@@ -129,6 +135,8 @@ function swig_build_cmd(target, batchcmds, sourcefile, opt, pars)
     local argv = par.argv
     local swig = par.swig
     local sourcefile_cx = par.sourcefile_cx
+    local moduletype = par.moduletype
+    local fileconfig = par.fileconfig
 
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.swig.%s %s", moduletype, sourcefile)
     batchcmds:mkdir(path.directory(sourcefile_cx))
@@ -149,6 +157,8 @@ function swig_build_file(target, sourcefile, opt, par)
     local argv = par.argv
     local swig = par.swig
     local sourcefile_cx = par.sourcefile_cx
+    local moduletype = par.moduletype
+    local fileconfig = par.fileconfig
 
     local dependfile = target:dependfile(objectfile)
     local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})

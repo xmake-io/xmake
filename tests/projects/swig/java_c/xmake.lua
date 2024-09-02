@@ -17,6 +17,7 @@ target("example")
         "build/java/com/example/"
     }})
     add_files("src/example.c")
+    add_includedirs("src")
     before_build(function()
         -- ensure output path exists before running swig
         os.mkdir("build/java/com/example/")

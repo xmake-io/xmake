@@ -1,5 +1,3 @@
-
-
 %inline %{
 #include "test.h"
 %}
