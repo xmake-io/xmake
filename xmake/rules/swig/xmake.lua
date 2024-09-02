@@ -71,7 +71,9 @@ rule("swig.base")
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     local scriptdir
                     local fileconfig = target:fileconfig(sourcefile)
-
+                    if fileconfig then
+                        scriptdir = fileconfig.scriptdir
+                    end
                     local autogenfiles
                     local autogendir = path.join(target:autogendir(), "rules", "swig")
 
