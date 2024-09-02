@@ -288,6 +288,36 @@ function os._run_exit_cbs(ok, errors)
     end
 end
 
+-- get shell path, e.g. sh, bash
+function os._get_shell_path(opt)
+    opt = opt or {}
+    local setenvs = opt.setenvs or opt.envs or {}
+    local addenvs = opt.addenvs or {}
+    local paths = {}
+    local p = setenvs.PATH
+    if type(p) == "string" then
+        p = path.splitenv(p)
+    end
+    if p then
+        table.join2(paths, p)
+    end
+    p = addenvs.PATH
+    if type(p) == "string" then
+        p = path.splitenv(p)
+    end
+    if p then
+        table.join2(paths, p)
+    end
+    for _, p in ipairs(paths) do
+        for _, name in ipairs({"sh", "bash"}) do
+            local filepath = path.join(p, name)
+            if os.isexec(filepath) then
+                return filepath
+            end
+        end
+    end
+end
+
 -- match files or directories
 --
 -- @param pattern   the search pattern
@@ -808,7 +838,7 @@ function os.execv(program, argv, opt)
                 -- because `/bin/sh` is not real file path, maybe we need to convert it.
                 local host = os.host()
                 if host == "windows" then
-                    filename = "sh"
+                    filename = os._get_shell_path(opt) or "sh"
                     argv = table.join(shellfile, argv)
                 else
                     line = line:sub(3)
