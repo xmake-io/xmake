@@ -45,4 +45,12 @@ toolchain("cosmocc")
             toolchain:set("toolset", "ranlib", "aarch64-linux-cosmo-ranlib")
             toolchain:set("toolset", "strip", "aarch64-linux-cosmo-strip")
         end
+        -- @see https://github.com/xmake-io/xmake/issues/5552
+        local envs = toolchain:config("envs")
+        if envs then
+            for k, v in pairs(envs) do
+                toolchain:add("runenvs", k, v)
+            end
+        end
     end)
+

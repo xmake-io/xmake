@@ -58,7 +58,7 @@ toolchain("emcc")
         toolchain:add("ldflags", "")
         toolchain:add("shflags", "")
         for _, package in ipairs(toolchain:packages()) do
-            local envs = package:get("envs")
+            local envs = package:envs()
             if envs then
                 for _, name in ipairs({"EMSDK", "EMSDK_NODE", "EMSDK_PYTHON", "JAVA_HOME"}) do
                     local values = envs[name]

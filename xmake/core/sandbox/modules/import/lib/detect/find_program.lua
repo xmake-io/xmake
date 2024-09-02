@@ -74,9 +74,10 @@ end
 
 -- check program
 function sandbox_lib_detect_find_program._check(program, opt)
+    opt = opt or {}
     local findname = program
     if os.subhost() == "windows" then
-        if not program:endswith(".exe") and not program:endswith(".cmd") and not program:endswith(".bat") then
+        if not opt.shell and not program:endswith(".exe") and not program:endswith(".cmd") and not program:endswith(".bat") then
             findname = program .. ".exe"
         end
     elseif os.subhost() == "msys" and os.isfile(program) and os.filesize(program) < 256 then

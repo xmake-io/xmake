@@ -26,7 +26,7 @@ toolchain("verilator")
         import("lib.detect.find_tool")
         local paths = {}
         for _, package in ipairs(toolchain:packages()) do
-            local envs = package:get("envs")
+            local envs = package:envs()
             if envs then
                 table.join2(paths, envs.PATH)
             end
@@ -46,7 +46,7 @@ toolchain("verilator")
     on_load(function (toolchain)
         if is_host("windows") then
             for _, package in ipairs(toolchain:packages()) do
-                local envs = package:get("envs")
+                local envs = package:envs()
                 if envs then
                     local verilator_root = envs.VERILATOR_ROOT
                     if verilator_root then

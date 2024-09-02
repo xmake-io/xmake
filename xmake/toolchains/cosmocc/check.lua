@@ -32,6 +32,7 @@ function main(toolchain)
     local bindir = toolchain:bindir()
 
     -- find cross toolchain from external envirnoment
+    local envs
     local cross_toolchain = find_cross_toolchain(sdkdir, {bindir = bindir})
     if not cross_toolchain then
         -- find it from packages
@@ -40,6 +41,11 @@ function main(toolchain)
             if installdir and os.isdir(installdir) then
                 cross_toolchain = find_cross_toolchain(installdir)
                 if cross_toolchain then
+                    -- we need to bind msys2 shell envirnoments for calling cosmocc,
+                    -- @see https://github.com/xmake-io/xmake/issues/5552
+                    if is_subhost("windows") then
+                        envs = package:envs()
+                    end
                     break
                 end
             end
@@ -57,9 +63,13 @@ function main(toolchain)
         toolchain:config_set("cross", cross_toolchain.cross)
         toolchain:config_set("bindir", cross_toolchain.bindir)
         toolchain:config_set("sdkdir", cross_toolchain.sdkdir)
+        if envs then
+            toolchain:config_set("envs", envs)
+        end
         toolchain:configs_save()
     else
         raise("cosmocc toolchain not found!")
     end
     return cross_toolchain
 end
+
