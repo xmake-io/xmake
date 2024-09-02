@@ -36,6 +36,7 @@ import("lib.detect.find_program")
 function main(opt)
     opt = opt or {}
     opt.shell = true
+    opt.envs  = opt.envs or {PATH = os.getenv("PATH")}
     local program = find_program(opt.program or "cosmoar", opt)
     if program and is_host("windows") then
         program = program:gsub("\\", "/")

@@ -37,7 +37,7 @@ import("lib.detect.find_programver")
 function main(opt)
     opt = opt or {}
     opt.shell = true
-    opt.envs  = {PATH = os.getenv("PATH")}
+    opt.envs  = opt.envs or {PATH = os.getenv("PATH")}
     local program = find_program(opt.program or "cosmocc", opt)
     if program and is_host("windows") then
         program = program:gsub("\\", "/")
