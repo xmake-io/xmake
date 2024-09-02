@@ -24,6 +24,21 @@ import("utils.progress")
 import("core.project.depend")
 import("core.tool.compiler")
 
+function find_user_outdir(fileconfig)
+    -- user specified output path
+    if fileconfig and fileconfig.swigflags then
+        -- find -outdir path
+        for i , par in pairs(fileconfig.swigflags) do
+            if par == "-outdir" then
+                local dirpath = fileconfig.swigflags[i + 1]
+                if os.isdir(dirpath) then
+                    return dirpath
+                end
+            end
+        end
+    end
+end
+
 function jar_build(target , fileconfig , opt)
     local javac = assert(find_tool("javac"), "javac not found!")
     local jar = assert(find_tool("jar"), "jar not found!")
@@ -31,19 +46,9 @@ function jar_build(target , fileconfig , opt)
     local java_src_dir = path.join(target:autogendir(), "rules", "swig")
     local jar_dst_dir = path.join(target:autogendir(), "rules", "swig")
 
-    -- user specified output path
-    if fileconfig and fileconfig.swigflags then
-        -- find -outdir path
-        local idx = -1
-        for i , par in pairs(fileconfig.swigflags) do
-            if par == "-outdir" then
-                idx = i
-            end
-        end
-
-        if idx > 0 then
-            java_src_dir = fileconfig.swigflags[idx + 1]
-        end
+    local user_outdir = find_user_outdir(fileconfig)
+    if user_outdir then
+        java_src_dir = user_outdir
     end
 
     -- get java files
