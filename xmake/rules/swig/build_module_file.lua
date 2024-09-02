@@ -72,7 +72,7 @@ end
 
 
 
-function main(target, sourcefile, opt)
+function swig_par(target, sourcefile, opt)
     -- get swig
     opt = opt or {}
     local swig = assert(find_tool("swig"), "swig not found!")
@@ -114,6 +114,36 @@ function main(target, sourcefile, opt)
     end
 
     table.insert(argv, sourcefile)
+    return { argv = argv , objectfile = objectfile , swig = swig , sourcefile_cx = sourcefile_cx}
+end
+
+function swig_build_cmd(target, batchcmds, sourcefile, opt, pars)
+    local par = swig_par(target, sourcefile, opt)
+
+    local objectfile = par.objectfile
+    local argv = par.argv
+    local swig = par.swig
+    local sourcefile_cx = par.sourcefile_cx
+
+    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.swig.%s %s", moduletype, sourcefile)
+    batchcmds:mkdir(path.directory(sourcefile_cx))
+    batchcmds:vrunv(swig.program, argv)
+    batchcmds:compile(sourcefile_cx, objectfile)
+
+    -- add deps
+    batchcmds:add_depfiles(sourcefile)
+    batchcmds:set_depmtime(os.mtime(objectfile))
+    batchcmds:set_depcache(target:dependfile(objectfile))
+end
+
+
+function swig_build_file(target, sourcefile, opt, par)
+    local par = swig_par(target, sourcefile, opt)
+
+    local objectfile = par.objectfile
+    local argv = par.argv
+    local swig = par.swig
+    local sourcefile_cx = par.sourcefile_cx
 
     local dependfile = target:dependfile(objectfile)
     local dependinfo = target:is_rebuilt() and {} or (depend.load(dependfile) or {})
