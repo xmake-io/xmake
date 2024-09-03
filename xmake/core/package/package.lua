@@ -401,10 +401,10 @@ function _instance:fallback_build()
                 self:urls_set(artifacts_backup.urls)
             end
             if artifacts_backup.versions then
-                self:set("versions", artifacts_backup.versions)
+                self._INFO:apival_set("versions", artifacts_backup.versions)
             end
             if artifacts_backup.install then
-                self:set("install", artifacts_backup.install)
+                self._INFO:apival_set("install", artifacts_backup.install)
             end
             self._MANIFEST = nil
         end
