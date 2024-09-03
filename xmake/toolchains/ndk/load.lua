@@ -97,8 +97,8 @@ function main(toolchain)
     -- gnustl and stlport have been removed in ndk r18 (deprecated in ndk r17)
     -- https://github.com/android/ndk/wiki/Changelog-r18
     local old_runtimes = {"gnustl_static", "gnustl_shared", "stlport_static", "stlport_shared"}
-    if ndk_sdkver and  semver.new(ndk_sdkver):le("r18") then
-        toolchain:add("runtimes", tabl.unpack(old_runtimes))
+    if ndk_sdkver and semver.new(ndk_sdkver):le("r18") then
+        toolchain:add("runtimes", table.unpack(old_runtimes))
     end
 
     -- init flags
