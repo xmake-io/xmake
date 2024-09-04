@@ -20,7 +20,6 @@
 
 -- imports
 import("core.base.hashset")
-import("core.base.semver")
 import("core.project.config")
 
 -- get triple
@@ -97,7 +96,7 @@ function main(toolchain)
     -- gnustl and stlport have been removed in ndk r18 (deprecated in ndk r17)
     -- https://github.com/android/ndk/wiki/Changelog-r18
     local old_runtimes = {"gnustl_static", "gnustl_shared", "stlport_static", "stlport_shared"}
-    if ndk_sdkver and semver.new(format("%s.0.0", ndk_sdkver)):le("18.0.0") then
+    if ndkver and ndkver < 18 then
         toolchain:add("runtimes", table.unpack(old_runtimes))
     end
 
@@ -221,7 +220,7 @@ function main(toolchain)
         local cxxstl_sdkdir = nil
         local ndk_cxxstl = config.get("runtimes") or config.get("ndk_cxxstl")
         if ndk_cxxstl then
-            if (ndk_sdkver and semver.new(format("%s.0.0", ndk_sdkver)):ge("18.0.0")) and table.contains(old_runtimes, ndk_cxxstl)  then
+            if (ndkver and ndkver >= 18) and table.contains(old_runtimes, ndk_cxxstl)  then
                 utils.warning("%s is was removed in ndk v%s", ndk_cxxstl, ndk_sdkver)
             end
 
