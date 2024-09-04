@@ -93,6 +93,13 @@ function main(toolchain)
     toolchain:set("toolset", "ranlib", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ranlib") or (cross .. "ranlib"))
     toolchain:set("toolset", "strip", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "strip") or (cross .. "strip"), "llvm-strip")
 
+    -- gnustl and stlport have been removed in ndk r18 (deprecated in ndk r17)
+    -- https://github.com/android/ndk/wiki/Changelog-r18
+    local old_runtimes = {"gnustl_static", "gnustl_shared", "stlport_static", "stlport_shared"}
+    if ndkver and ndkver < 18 then
+        toolchain:add("runtimes", table.unpack(old_runtimes))
+    end
+
     -- init flags
     local arm32 = false
     local arch = toolchain:arch()
@@ -213,6 +220,10 @@ function main(toolchain)
         local cxxstl_sdkdir = nil
         local ndk_cxxstl = config.get("runtimes") or config.get("ndk_cxxstl")
         if ndk_cxxstl then
+            if (ndkver and ndkver >= 18) and table.contains(old_runtimes, ndk_cxxstl)  then
+                utils.warning("%s is was removed in ndk v%s", ndk_cxxstl, ndk_sdkver)
+            end
+
             if ndk_cxxstl:find(",", 1, true) then
                 local runtimes_supported = hashset.from(toolchain:get("runtimes"))
                 for _, item in ipairs(ndk_cxxstl:split(",")) do

@@ -33,7 +33,7 @@ toolchain("ndk")
     set_kind("standalone")
     set_homepage("https://developer.android.com/ndk")
     set_description("Android NDK")
-    set_runtimes("c++_static", "c++_shared", "gnustl_static", "gnustl_shared", "stlport_static", "stlport_shared")
+    set_runtimes("c++_static", "c++_shared")
 
     on_check("check")
     on_load("load")
