@@ -111,7 +111,7 @@ function _pack_runself(makeself, package)
     local specfile = path.join(package:buildir(), package:basename() .. ".lsm")
     if not os.isfile(specfile) then
         local specfile_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "runself", "makeself.lsm")
-        os.cp(specfile_template, specfile)
+        os.cp(specfile_template, specfile, {writeable = true})
     end
 
     -- replace variables in specfile
