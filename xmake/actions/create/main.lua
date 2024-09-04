@@ -98,7 +98,7 @@ function _create_project(language, templateid, targetname)
     local sourcedir = path.join(tempinst:scriptdir(), "project")
     if os.isdir(sourcedir) then
         for _, filedir in ipairs(os.filedirs(path.join(sourcedir, "*"))) do
-            os.cp(filedir, projectdir)
+            os.cp(filedir, projectdir, {writeable = true})
             table.insert(filedirs, path.relative(filedir, sourcedir))
         end
         os.cp(path.join(os.programdir(), "scripts", "gitignore"), path.join(projectdir, ".gitignore"))

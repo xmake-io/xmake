@@ -70,6 +70,7 @@ function os._cp(src, dst, rootdir, opt)
 
     -- is file or link?
     local symlink = opt.symlink
+    local writeable = opt.writeable
     if os.isfile(src) or (symlink and os.islink(src)) then
 
         -- the destination is directory? append the filename
@@ -85,7 +86,7 @@ function os._cp(src, dst, rootdir, opt)
         if opt.force and os.isfile(dst) then
             os.rmfile(dst)
         end
-        if not os.cpfile(src, dst, symlink) then
+        if not os.cpfile(src, dst, symlink, writeable) then
             local errors = os.strerror()
             if symlink and os.islink(src) then
                 local reallink = os.readlink(src)

@@ -49,6 +49,10 @@ tb_int_t xm_os_cpfile(lua_State* lua)
     if (is_symlink)
         flags |= TB_FILE_COPY_LINK;
 
+    tb_bool_t is_writeable = lua_toboolean(lua, 4);
+    if (is_writeable)
+        flags |= TB_FILE_COPY_WRITEABLE;
+
     // do copy
     lua_pushboolean(lua, tb_file_copy(src, dst, flags));
     return 1;
