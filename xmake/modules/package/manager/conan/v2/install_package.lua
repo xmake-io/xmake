@@ -321,9 +321,15 @@ function main(conan, name, opt)
         end
     end
 
-    -- set custom settings
-    for _, setting in ipairs(configs.settings) do
+    -- set custom host settings
+    for _, setting in ipairs(configs.settings or configs.settings_host) do
         table.insert(argv, "-s")
+        table.insert(argv, setting)
+    end
+
+    -- set custom build settings
+    for _, setting in ipairs(configs.settings_build) do
+        table.insert(argv, "-s:b")
         table.insert(argv, setting)
     end
 
