@@ -587,20 +587,19 @@ function _finish_requireinfo(requireinfo, package)
         package:arch_set(requireinfo.arch)
     end
     requireinfo.configs = requireinfo.configs or {}
-    if not package:is_headeronly() then
-        if package:is_plat("windows") then
-            -- @see https://github.com/xmake-io/xmake/issues/4477#issuecomment-1913249489
-            local runtimes = requireinfo.configs.runtimes
-            if runtimes then
-                runtimes = runtimes:split(",")
-            else
-                runtimes = {}
-            end
-            if not table.contains(runtimes, "MT", "MD", "MTd", "MDd") then
-                table.insert(runtimes, "MT")
-            end
-            requireinfo.configs.runtimes = table.concat(runtimes, ",")
+    if package:is_plat("windows") then
+        -- @see https://github.com/xmake-io/xmake/issues/4477#issuecomment-1913249489
+        -- @note its buildhash will be ignored for headeronly
+        local runtimes = requireinfo.configs.runtimes
+        if runtimes then
+            runtimes = runtimes:split(",")
+        else
+            runtimes = {}
         end
+        if not table.contains(runtimes, "MT", "MD", "MTd", "MDd") then
+            table.insert(runtimes, "MT")
+        end
+        requireinfo.configs.runtimes = table.concat(runtimes, ",")
     end
     -- we need to ensure readonly configs
     for _, name in ipairs(table.keys(requireinfo.configs)) do
