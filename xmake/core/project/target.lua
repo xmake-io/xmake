@@ -2947,8 +2947,13 @@ function target.linkname(filename, opt)
     if count > 0 and linkname then
         return linkname
     end
-    -- for custom shared libraries name, xxx.so, xxx.dylib
-    if not filename:startswith("lib") and (filename:endswith(".so") or filename:endswith(".dylib")) then
+    -- fallback to the generic unix library name, libxxx.a, libxxx.so, ..
+    if filename:startswith("lib") then
+        if filename:endswith(".a") or filename:endswith(".so") then
+            return path.basename(filename:sub(4))
+        end
+    elseif filename:endswith(".so") or filename:endswith(".dylib") then
+        -- for custom shared libraries name, xxx.so, xxx.dylib
         return filename
     end
     return nil
