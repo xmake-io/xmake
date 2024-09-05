@@ -191,7 +191,7 @@ function _pack_deb(debuild, package)
     local debiandir = path.join(sourcedir, "debian")
     if not os.isdir(debiandir) then
         local debiandir_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "deb", "debian")
-        os.cp(debiandir_template, debiandir)
+        os.cp(debiandir_template, debiandir, {writeable = true})
     end
 
     -- replace variables in specfile

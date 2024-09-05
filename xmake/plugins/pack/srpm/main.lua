@@ -205,7 +205,7 @@ function _pack_srpm(rpmbuild, package)
     local specfile = path.join(package:buildir(), package:basename() .. ".spec")
     if not os.isfile(specfile) then
         local specfile_template = package:get("specfile") or path.join(os.programdir(), "scripts", "xpack", "srpm", "srpm.spec")
-        os.cp(specfile_template, specfile)
+        os.cp(specfile_template, specfile, {writeable = true})
     end
 
     -- replace variables in specfile
