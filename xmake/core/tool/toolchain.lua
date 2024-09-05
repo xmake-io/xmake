@@ -360,6 +360,9 @@ end
 
 -- do load, @note we need to load it repeatly for each architectures
 function _instance:_load()
+    if not self:_is_checked() then
+        utils.warning("we cannot load toolchain(%s), because it has been not checked yet!", self:name(), self:plat(), self:arch())
+    end
     local info = self:info()
     if not info:get("__loaded") and not info:get("__loading") then
         local on_load = self:_on_load()
