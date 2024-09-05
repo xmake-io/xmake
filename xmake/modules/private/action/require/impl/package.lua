@@ -1011,6 +1011,13 @@ function _load_package(packagename, requireinfo, opt)
     -- check package configurations
     _check_package_configurations(package)
 
+    -- we need to check package toolchains before on_load and select runtimes,
+    -- because we will call compiler-specific apis in on_load/on_fetch/find_package ..
+    --
+    -- @see https://github.com/xmake-io/xmake/pull/5466
+    -- https://github.com/xmake-io/xmake/issues/4596#issuecomment-2014528801
+    _check_package_toolchains(package)
+
     -- we need to select package runtimes before computing buildhash
     -- @see https://github.com/xmake-io/xmake/pull/4630#issuecomment-1910216561
     _select_package_runtimes(package)
