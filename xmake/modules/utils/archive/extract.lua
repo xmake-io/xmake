@@ -132,6 +132,11 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
     -- init argv
     local argv = {"x", "-y", archivefile}
 
+    -- disable to store symlinks on windows
+    if is_host("windows") then
+        table.insert(argv, "-snl-")
+    end
+
     -- ensure output directory
     if not os.isdir(outputdir) then
         os.mkdir(outputdir)
