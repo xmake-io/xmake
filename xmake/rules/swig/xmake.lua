@@ -27,6 +27,7 @@
 rule("swig.base")
     on_load(function (target)
         target:set("kind", "shared")
+        local find_user_outdir = import("build_module_file").find_user_outdir
         local moduletype = target:extraconf("rules", "swig.c", "moduletype") or target:extraconf("rules", "swig.cpp", "moduletype")
         if moduletype == "python" then
             target:set("prefixname", "_")
@@ -77,7 +78,7 @@ rule("swig.base")
                     local autogenfiles
                     local autogendir = path.join(target:autogendir(), "rules", "swig")
 
-                    local user_outdir = import("build_module_file").find_user_outdir(fileconfig)
+                    local user_outdir = find_user_outdir(fileconfig)
                     if user_outdir then
                         autogendir = user_outdir
                     end
