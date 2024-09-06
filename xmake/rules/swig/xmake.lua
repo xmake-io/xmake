@@ -90,7 +90,7 @@ rule("swig.base")
                     elseif moduletype == "java" then
                         local buildjar = target:extraconf("rules", "swig.c", "buildjar") or target:extraconf("rules", "swig.cpp", "buildjar")
                         if buildjar then
-                            autogenfiles = path.join(autogendir , target:name() .. ".jar")
+                            autogenfiles = path.join(autogendir, target:name() .. ".jar")
                         else
                             autogenfiles = os.files(path.join(autogendir, "*.java"))
                         end
