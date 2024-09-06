@@ -296,7 +296,7 @@ function nf_runtime(self, runtime, opt)
                     if triple_libdir then
                         maps["c++_shared"] = table.join(maps["c++_shared"], nf_rpathdir(self, triple_libdir))
                     end
-                    if target:is_shared() and target.filename and self:is_plat("macosx", "iphoneos", "watchos") then
+                    if target.is_shared and target:is_shared() and target.filename and self:is_plat("macosx", "iphoneos", "watchos") then
                         maps["c++_shared"] = table.join(maps["c++_shared"], "-install_name")
                         maps["c++_shared"] = table.join(maps["c++_shared"], "@rpath/" .. target:filename())
                     end
