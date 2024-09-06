@@ -27,6 +27,7 @@
 rule("swig.base")
     on_load(function (target)
         target:set("kind", "shared")
+        local find_user_outdir = import("build_module_file").find_user_outdir
         local moduletype = target:extraconf("rules", "swig.c", "moduletype") or target:extraconf("rules", "swig.cpp", "moduletype")
         if moduletype == "python" then
             target:set("prefixname", "_")
@@ -76,12 +77,23 @@ rule("swig.base")
                     end
                     local autogenfiles
                     local autogendir = path.join(target:autogendir(), "rules", "swig")
+
+                    local user_outdir = find_user_outdir(fileconfig)
+                    if user_outdir then
+                        autogendir = user_outdir
+                    end
+
                     if moduletype == "python" then
                         autogenfiles = os.files(path.join(autogendir, "*.py"))
                     elseif moduletype == "lua" then
                         autogenfiles = os.files(path.join(autogendir, "*.lua"))
                     elseif moduletype == "java" then
-                        autogenfiles = os.files(path.join(autogendir, "*.java"))
+                        local buildjar = target:extraconf("rules", "swig.c", "buildjar") or target:extraconf("rules", "swig.cpp", "buildjar")
+                        if buildjar then
+                            autogenfiles = path.join(autogendir, target:name() .. ".jar")
+                        else
+                            autogenfiles = os.files(path.join(autogendir, "*.java"))
+                        end
                     end
                     if autogenfiles then
                         table.join2(scriptfiles, autogenfiles)
@@ -101,14 +113,20 @@ rule("swig.c")
     set_extensions(".i")
     add_deps("swig.base", "c.build")
     on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
-        import("build_module_file")(target, batchcmds, sourcefile, table.join({sourcekind = "cc"}, opt))
+        import("build_module_file").swig_build_cmd(target, batchcmds, sourcefile, table.join({sourcekind = "cc"}, opt))
+    end)
+    on_build_file(function (target, sourcefile, opt)
+        import("build_module_file").swig_build_file(target, sourcefile, table.join({sourcekind = "cc"}, opt))
     end)
 
 rule("swig.cpp")
     set_extensions(".i")
     add_deps("swig.base", "c++.build")
     on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
-        import("build_module_file")(target, batchcmds, sourcefile, table.join({sourcekind = "cxx"}, opt))
+        import("build_module_file").swig_build_cmd(target, batchcmds, sourcefile, table.join({sourcekind = "cxx"}, opt))
+    end)
+    on_build_file(function (target, sourcefile, opt)
+        import("build_module_file").swig_build_file(target, sourcefile, table.join({sourcekind = "cxx"}, opt))
     end)
 
 

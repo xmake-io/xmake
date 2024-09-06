@@ -7,6 +7,8 @@ target("example")
     set_kind('shared')
     -- set moduletype to java
     add_rules("swig.c", {moduletype = "java"})
+    -- test jar build
+    -- add_rules("swig.c", {moduletype = "java" , buildjar = true})
     -- use swigflags to provider package name and output path of java files
     add_files("src/example.i", {swigflags = {
         "-package",
@@ -15,6 +17,7 @@ target("example")
         "build/java/com/example/"
     }})
     add_files("src/example.c")
+    add_includedirs("src")
     before_build(function()
         -- ensure output path exists before running swig
         os.mkdir("build/java/com/example/")
