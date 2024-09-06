@@ -611,7 +611,18 @@ function _get_configs_for_wasm(package, configs, opt)
             end
         end
     end
+
+    local envs = {}
+    local deps_installdir = {}
+    for _, dep in ipairs(package:librarydeps({private = true})) do
+        if not dep:is_system() then
+            table.insert(deps_installdir, dep:installdir())
+        end
+    end
+    -- https://github.com/emscripten-core/emscripten/issues/13310
+    envs.CMAKE_FIND_ROOT_PATH = path.joinenv(deps_installdir)
     _get_configs_for_generic(package, configs, opt)
+    _insert_configs_from_envs(configs, envs, opt)
 end
 
 -- get configs for cross
