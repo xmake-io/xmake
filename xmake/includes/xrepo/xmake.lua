@@ -61,7 +61,7 @@ end
 --
 function xrepo_addenv(name, ...)
     local args = table.pack(...)
-    local packagename = "xrepo_addenv_" .. name .. (table.concat(args):gsub("%s", "_"))
+    local packagename = "__xrepo_addenv_" .. name .. (table.concat(args):gsub("%s", "_"))
     package(packagename)
         on_load(function (package)
             package:addenv(name, table.unpack(args))
