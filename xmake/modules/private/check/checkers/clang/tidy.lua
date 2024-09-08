@@ -69,7 +69,15 @@ end
 
 -- add sourcefiles in target
 function _add_target_files(sourcefiles, target)
-    table.join2(sourcefiles, (target:sourcefiles()))
+    for _, sourcebatch in pairs(sourcebatches) do
+        -- we can only use rulename to filter them because sourcekind may be bound to multiple rules
+        local rulename = sourcebatch.rulename
+        if rulename == "c.build" or rulename == "c++.build"
+            or rulename == "objc.build" or rulename == "objc++.build"
+            or rulename == "cuda.build" or rulename == "c++.build.modules" then
+            table.join2(sourcefiles, sourcebatch.sourcefiles)
+        end
+    end
 end
 
 -- check sourcefile
