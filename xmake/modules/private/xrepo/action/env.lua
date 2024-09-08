@@ -176,7 +176,7 @@ function _package_addenvs(envs, instance)
     end
 
     -- add run envs, e.g. PATH, LD_LIBRARY_PATH, DYLD_LIBRARY_PATH
-    local installdir = instance:installdir()
+    local installdir = instance:installdir({readonly = true})
     for name, values in pairs(instance:envs()) do
         _addenvs(envs, name, table.unpack(table.wrap(values)))
     end
