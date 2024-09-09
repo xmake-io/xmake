@@ -97,9 +97,6 @@ function _make_filter(filepath, target, vcxprojdir)
                                 filter = path.normalize(path.directory(fileitem))
                             end
                         end
-                        if filter and filter == '.' then
-                            filter = nil
-                        end
                         goto found_filter
                     end
                 end
@@ -118,9 +115,9 @@ function _make_filter(filepath, target, vcxprojdir)
         if filter then
             filter = _strip_dotdirs(filter)
         end
-        if filter and filter == '.' then
-            filter = nil
-        end
+    end
+    if filter and filter == '.' then
+        filter = nil
     end
     return filter
 end
