@@ -71,16 +71,25 @@ jobs:
           xmake lua -v -D tests/run.lua
 
         # upload artifacts
-      - uses: actions/upload-artifact@v4
+      - name: Upload artifacts (exe)
+        if: matrix.os == 'windows-2022'
+        uses: actions/upload-artifact@v4
         with:
           name: xmake-latest.${{env.RELEASE_NAME}}.exe
           path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
-      - uses: actions/upload-artifact@v4
+
+      - name: Upload artifacts (zip)
+        if: matrix.os == 'windows-2022'
+        uses: actions/upload-artifact@v4
         with:
           name: xmake-latest.${{ env.RELEASE_NAME }}.zip
           path: artifacts/${{env.RELEASE_NAME}}/xmake.zip
-      - uses: actions/upload-artifact@v4
+
+      - name: Upload artifacts (sha256)
+        if: matrix.os == 'windows-2022'
+        uses: actions/upload-artifact@v4
         with:
           name: xmake-latest.${{ env.RELEASE_NAME }}.sha256
           path: artifacts/${{env.RELEASE_NAME}}/shafile
+
 
