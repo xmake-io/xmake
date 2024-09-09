@@ -120,7 +120,21 @@ function _check(clang_tidy, opt)
     opt = opt or {}
 
     -- generate compile_commands.json first
-    local filepath = option.get("compdb") or "compile_commands.json"
+    local filepath = option.get("compdb")
+    if not filepath then
+        -- @see https://github.com/xmake-io/xmake/issues/5583#issuecomment-2337696628
+        local outputdir
+        local extraconf = project.extraconf("target.rules", "plugin.compile_commands.autoupdate")
+        if extraconf then
+            outputdir = extraconf.outputdir
+        end
+        if outputdir then
+            filepath = path.join(outputdir, "compile_commands.json")
+        end
+    end
+    if not filepath then
+        filepath = "compile_commands.json"
+    end
     if not os.isfile(filepath) then
         local outputdir = os.tmpfile() .. ".dir"
         local filename = path.filename(filepath)
