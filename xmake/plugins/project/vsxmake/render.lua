@@ -18,14 +18,16 @@
 -- @file        render.lua
 --
 
+-- imports
+import("lib.detect.find_file")
+
 function _fill(opt, params)
     return function(match)
         local imp = match:match("^Import%((.+)%)$")
         if imp then
-            local funcs = os.files(path.join(opt.templatedir, imp .. "(*)"))
-            assert(#funcs == 1)
-            local func = funcs[1]
-            local args = path.filename(func):match("%((.+)%)$"):split(",")
+            local func = find_file(imp .. "(*)", opt.templatedir)
+            assert(func)
+            local args = path.filename(func):match("%((.+)%)$"):split(",", {plain = true})
             return _render(func, opt, args)
         end
         return opt.paramsprovider(match, params) or "<Not Provided>"
@@ -34,7 +36,7 @@ end
 
 function _cfill(opt, params)
     return function(match)
-        local tmp = match:split(";", {strict = true})
+        local tmp = match:split(";", {strict = true, plain = true})
         assert(#tmp == 2 or #tmp == 3)
 
         local cond = tmp[1]
@@ -44,17 +46,14 @@ function _cfill(opt, params)
         if #tmp == 3 then
             value2 = tmp[3]
         end
-
-        tmp = cond:split("=")
+        tmp = cond:split("=", {plain = true})
         assert(#tmp == 2)
 
         local k = tmp[1]:trim()
         local v = tmp[2]:trim()
-
         if opt.paramsprovider(k, params) == v then
             return value1
         end
-
         return value2
     end
 end
@@ -69,17 +68,15 @@ function _expand(params)
         else
             local newr = {}
             for _, c in ipairs(v) do
-                local rcopy = {}
-                for i, p in ipairs(r) do
-                    rcopy[i] = p .. "\0" .. c
+                for _, p in ipairs(r) do
+                    table.insert(newr, p .. "\0" .. c)
                 end
-                newr = table.join(newr, rcopy)
             end
             r = newr
         end
     end
     for i, p in ipairs(r) do
-        r[i] = p:split("\0")
+        r[i] = p:split("\0", {plain = true})
     end
     return r
 end
@@ -96,6 +93,12 @@ function _render(templatepath, opt, args)
 end
 
 function main(templatepath, pattern, cpattern, paramsprovider)
-    local opt = { pattern = pattern, cpattern = cpattern, paramsprovider = paramsprovider, templatedir = path.directory(templatepath) }
+    local opt = {
+        pattern = pattern,
+        cpattern = cpattern,
+        paramsprovider = paramsprovider,
+        templatedir = path.directory(templatepath)
+    }
     return _render(templatepath, opt, {})
 end
+
