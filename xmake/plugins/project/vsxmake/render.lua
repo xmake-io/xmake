@@ -42,7 +42,7 @@ function _cfill(opt, params)
         local cond = tmp[1]
         local value1 = tmp[2]
         local value2 = ""
-        
+
         if #tmp == 3 then
             value2 = tmp[3]
         end
@@ -76,7 +76,7 @@ function _expand(params)
         end
     end
     for i, p in ipairs(r) do
-        r[i] = p:split("\0", {plain = true})
+        r[i] = p:split("\0")
     end
     return r
 end
