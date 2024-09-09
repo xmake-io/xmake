@@ -49,15 +49,15 @@ jobs:
           cd core
           xmake pack -y --autobuild=n --basename=xmake -o ../artifacts xmakesrc
           cd ..
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: xmake-latest.gz.run
           path: artifacts/xmake.gz.run
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: xmake-latest.tar.gz
           path: artifacts/xmake.tar.gz
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: xmake-latest.zip
           path: artifacts/xmake.zip
