@@ -70,7 +70,7 @@ end
 
 -- add sourcefiles in target
 function _add_target_files(sourcefiles, target)
-    for _, sourcebatch in pairs(sourcebatches) do
+    for _, sourcebatch in pairs(target:sourcebatches()) do
         -- we can only use rulename to filter them because sourcekind may be bound to multiple rules
         local rulename = sourcebatch.rulename
         if rulename == "c.build" or rulename == "c++.build"
