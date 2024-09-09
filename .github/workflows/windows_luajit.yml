@@ -71,15 +71,15 @@ jobs:
           xmake lua -v -D tests/run.lua
 
         # upload artifacts
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: xmake-latest.${{env.RELEASE_NAME}}.exe
           path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: xmake-latest.${{ env.RELEASE_NAME }}.zip
           path: artifacts/${{env.RELEASE_NAME}}/xmake.zip
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: xmake-latest.${{ env.RELEASE_NAME }}.sha256
           path: artifacts/${{env.RELEASE_NAME}}/shafile
