@@ -39,6 +39,7 @@ local options = {
     {nil, "fix_notes",  "k",  nil,  "Apply suggested notes fixes."},
     {nil, "create",     "k",  nil,  "Create a .clang-tidy file."},
     {nil, "configfile", "kv", nil,  "Specify the path of .clang-tidy or custom config file"},
+    {nil, "compdb",     "kv", nil,  "Specify the path of the compile_commands.json file"},
     {nil, "checks",     "kv", nil,  "Set the given checks.",
                                     "e.g.",
                                     "    - xmake check clang.tidy --checks=\"*\""},
@@ -69,7 +70,15 @@ end
 
 -- add sourcefiles in target
 function _add_target_files(sourcefiles, target)
-    table.join2(sourcefiles, (target:sourcefiles()))
+    for _, sourcebatch in pairs(sourcebatches) do
+        -- we can only use rulename to filter them because sourcekind may be bound to multiple rules
+        local rulename = sourcebatch.rulename
+        if rulename == "c.build" or rulename == "c++.build"
+            or rulename == "objc.build" or rulename == "objc++.build"
+            or rulename == "cuda.build" or rulename == "c++.build.modules" then
+            table.join2(sourcefiles, sourcebatch.sourcefiles)
+        end
+    end
 end
 
 -- check sourcefile
@@ -111,14 +120,14 @@ function _check(clang_tidy, opt)
     opt = opt or {}
 
     -- generate compile_commands.json first
-    local filename = "compile_commands.json"
-    local filepath = filename
+    local filepath = option.get("compdb") or "compile_commands.json"
     if not os.isfile(filepath) then
         local outputdir = os.tmpfile() .. ".dir"
+        local filename = path.filename(filepath)
         filepath = outputdir and path.join(outputdir, filename) or filename
         task.run("project", {quiet = true, kind = "compile_commands", lsp = "clangd", outputdir = outputdir})
     end
-    opt.compdbfile = filepath
+    opt.compdbfile = path.absolute(filepath)
 
     -- get sourcefiles
     local sourcefiles = {}
@@ -188,8 +197,6 @@ function main(argv)
     else
         _check(clang_tidy.program, args)
     end
-
-    -- done
     os.setenvs(oldenvs)
 end
 
