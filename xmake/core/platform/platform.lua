@@ -287,7 +287,8 @@ function _instance:formats()
     local formats = self._FORMATS
     if not formats then
         for _, toolchain_inst in ipairs(self:toolchains()) do
-            formats = toolchain_inst:get("formats")
+            -- @note we can only get formats from set_formats in toolchain description.
+            formats = toolchain_inst:get("formats", {load = false})
             if formats then
                 break
             end

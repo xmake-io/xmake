@@ -1846,6 +1846,8 @@ function _instance:_fetch_library(opt)
                     components_base.sysincludedirs = nil
                 end
             end
+            local package_utils = sandbox_module.import("private.utils.package", {anonymous = true})
+            package_utils.fetchinfo_set_concat(fetchinfo)
         end
         if fetchinfo and option.get("verbose") then
             local reponame = self:repo() and self:repo():name() or ""

@@ -23,30 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.cache.detectcache")
 import("package.manager.find_package")
-
--- concat packages
-function _concat_packages(a, b)
-    local result = table.copy(a)
-    for k, v in pairs(b) do
-        local o = result[k]
-        if o ~= nil then
-            v = table.join(o, v)
-        end
-        result[k] = v
-    end
-    for k, v in pairs(result) do
-        if k == "links" or k == "syslinks" or k == "frameworks" or k == "ldflags" or k == "shflags" then
-            if type(v) == "table" and #v > 1 then
-                -- we need to ensure link orders when removing repeat values
-                v = table.reverse_unique(v)
-            end
-        else
-            v = table.unique(v)
-        end
-        result[k] = v
-    end
-    return result
-end
+import("private.utils.package", {alias = "package_utils"})
 
 -- find package using the package manager
 --
@@ -144,8 +121,8 @@ function main(name, opt)
     end
 
     -- register concat
-    if result and type(result) == "table" then
-        debug.setmetatable(result, {__concat = _concat_packages})
+    if result then
+        package_utils.fetchinfo_set_concat(result)
     end
     return result and result or nil
 end
