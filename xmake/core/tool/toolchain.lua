@@ -136,7 +136,8 @@ function _instance:add(name, ...)
 end
 
 -- get the toolchain configuration
-function _instance:get(name)
+function _instance:get(name, opt)
+    opt = opt or {}
 
     -- attempt to get the static configure value
     local value = self:info():get(name)
@@ -145,10 +146,10 @@ function _instance:get(name)
     end
 
     -- lazy loading toolchain
-    self:_load()
-
-    -- get other platform info
-    return self:info():get(name)
+    if opt.load ~= false then
+        self:_load()
+        return self:info():get(name)
+    end
 end
 
 -- get toolchain kind
