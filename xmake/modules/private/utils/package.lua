@@ -18,7 +18,7 @@
 -- @file        package.lua
 --
 
--- concat packages
+-- concat packages, TODO components
 function _concat_packages(a, b)
     local result = table.copy(a)
     for k, v in pairs(b) do
