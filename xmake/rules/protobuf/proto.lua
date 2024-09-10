@@ -66,45 +66,37 @@ end
 -- @see https://github.com/xmake-io/xmake/issues/2256
 function load(target, sourcekind)
 
-    -- get the first sourcefile
-    local sourcefile_proto
     local sourcebatch = target:sourcebatches()[sourcekind == "cxx" and "protobuf.cpp" or "protobuf.c"]
-    if sourcebatch then
-        sourcefile_proto = sourcebatch.sourcefiles[1]
-    end
-    if not sourcefile_proto then
-        return
-    end
+    for _, sourcefile_proto in ipairs(sourcebatch.sourcefiles) do
+        local prefixdir
+        local autogendir
+        local public
+        local grpc_cpp_plugin
+        local fileconfig = target:fileconfig(sourcefile_proto)
+        if fileconfig then
+            public = fileconfig.proto_public
+            prefixdir = fileconfig.proto_rootdir
+            autogendir = fileconfig.proto_autogendir
+            grpc_cpp_plugin = fileconfig.proto_grpc_cpp_plugin
+        end
+        local rootdir = autogendir and autogendir or path.join(target:autogendir(), "rules", "protobuf")
+        local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
+        local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
+        local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
 
-    -- get c/c++ source file for protobuf
-    local prefixdir
-    local autogendir
-    local public
-    local grpc_cpp_plugin
-    local fileconfig = target:fileconfig(sourcefile_proto)
-    if fileconfig then
-        public = fileconfig.proto_public
-        prefixdir = fileconfig.proto_rootdir
-        autogendir = fileconfig.proto_autogendir
-        grpc_cpp_plugin = fileconfig.proto_grpc_cpp_plugin
-    end
-    local rootdir = autogendir and autogendir or path.join(target:autogendir(), "rules", "protobuf")
-    local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
-    local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
-    local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
+        -- add includedirs
+        target:add("includedirs", sourcefile_dir, {public = public})
 
-    -- add includedirs
-    target:add("includedirs", sourcefile_dir, {public = public})
-
-    -- add objectfile, @see https://github.com/xmake-io/xmake/issues/5426
-    local objectfile_grpc
-    local objectfile = target:objectfile(sourcefile_cx)
-    table.insert(target:objectfiles(), objectfile)
-    if grpc_cpp_plugin then
-        local filename_grpc = path.basename(sourcefile_proto) .. ".grpc.pb.cc"
-        local sourcefile_cx_grpc = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename_grpc})
-        objectfile_grpc = target:objectfile(sourcefile_cx_grpc)
-        table.insert(target:objectfiles(), objectfile_grpc)
+        -- add objectfile, @see https://github.com/xmake-io/xmake/issues/5426
+        local objectfile_grpc
+        local objectfile = target:objectfile(sourcefile_cx)
+        table.insert(target:objectfiles(), objectfile)
+        if grpc_cpp_plugin then
+            local filename_grpc = path.basename(sourcefile_proto) .. ".grpc.pb.cc"
+            local sourcefile_cx_grpc = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename_grpc})
+            objectfile_grpc = target:objectfile(sourcefile_cx_grpc)
+            table.insert(target:objectfiles(), objectfile_grpc)
+        end
     end
 end
 
