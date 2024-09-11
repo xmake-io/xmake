@@ -175,7 +175,7 @@ function distcc_build_client:maxjobs()
     if maxjobs == nil then
         maxjobs = 0
         for _, host in pairs(self:status().hosts) do
-            maxjobs = maxjobs + host.njob
+            maxjobs = maxjobs + (host.njob or 4)
         end
         self._MAXJOBS = maxjobs
     end
@@ -569,13 +569,15 @@ function distcc_build_client:_connect_host(host)
     end
 
     -- update status
-    local status = self:status()
-    status.hosts = status.hosts or {}
-    status.hosts[addr .. ":" .. port] = {
-        addr = addr, port = port, token = token,
-        connected = ok, session_id = session_id,
-        ncpu = ncpu, njob = host.njob or njob}
-    self:status_save()
+    if ok then
+        local status = self:status()
+        status.hosts = status.hosts or {}
+        status.hosts[addr .. ":" .. port] = {
+            addr = addr, port = port, token = token,
+            connected = ok, session_id = session_id,
+            ncpu = ncpu, njob = njob}
+        self:status_save()
+    end
 end
 
 -- disconnect from the host
