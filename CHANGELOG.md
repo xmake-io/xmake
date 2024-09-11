@@ -19,6 +19,7 @@
 
 * [#4750](https://github.com/xmake-io/xmake/issues/4750): Fix compile_commands generator for `xmake tests`
 * [#5465](https://github.com/xmake-io/xmake/pull/5465): Fix lock package requires
+* [#4760](https://github.com/xmake-io/xmake/issues/4760): Fix distcc client issue
 
 ## v2.9.4
 
@@ -1889,6 +1890,7 @@
 
 * [#4750](https://github.com/xmake-io/xmake/issues/4750): 修复 compile_commands 生成器，支持 `xmake tests`
 * [#5465](https://github.com/xmake-io/xmake/pull/5465): 修复 package requires lock
+* [#4760](https://github.com/xmake-io/xmake/issues/4760): 修复 distcc 分布式编译问题
 
 ## v2.9.4
 
