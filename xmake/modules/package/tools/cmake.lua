@@ -612,17 +612,13 @@ function _get_configs_for_wasm(package, configs, opt)
         end
     end
 
-    local envs = {}
-    local deps_installdir = {}
-    for _, dep in ipairs(package:librarydeps({private = true})) do
-        if not dep:is_system() then
-            table.insert(deps_installdir, dep:installdir())
-        end
-    end
-    -- https://github.com/emscripten-core/emscripten/issues/13310
-    envs.CMAKE_FIND_ROOT_PATH = path.joinenv(deps_installdir)
-    _get_configs_for_generic(package, configs, opt)
-    _insert_configs_from_envs(configs, envs, opt)
+    -- avoid find and add system include/library path
+    -- @see https://github.com/xmake-io/xmake/issues/2037
+    -- https://github.com/xmake-io/xmake/issues/5577
+    table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH")
+    table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH")
+    table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH")
+    table.insert(configs, "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER")
 end
 
 -- get configs for cross
