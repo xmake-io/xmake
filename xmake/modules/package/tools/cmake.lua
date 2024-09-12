@@ -593,6 +593,7 @@ end
 -- get configs for wasm
 function _get_configs_for_wasm(package, configs, opt)
     opt = opt or {}
+    local envs = {}
     local emsdk = find_emsdk()
     assert(emsdk and emsdk.emscripten, "emscripten not found!")
     local emscripten_cmakefile = find_file("Emscripten.cmake", path.join(emsdk.emscripten, "cmake/Modules/Platform"))
@@ -612,15 +613,13 @@ function _get_configs_for_wasm(package, configs, opt)
         end
     end
 
-    local envs = {}
-    local deps_installdir = {}
-    for _, dep in ipairs(package:librarydeps({private = true})) do
-        if not dep:is_system() then
-            table.insert(deps_installdir, dep:installdir())
-        end
-    end
+    -- avoid find and add system include/library path
+    -- @see https://github.com/xmake-io/xmake/issues/5577
     -- https://github.com/emscripten-core/emscripten/issues/13310
-    envs.CMAKE_FIND_ROOT_PATH = path.joinenv(deps_installdir)
+    envs.CMAKE_FIND_ROOT_PATH_MODE_PACKAGE = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "BOTH"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
     _get_configs_for_generic(package, configs, opt)
     _insert_configs_from_envs(configs, envs, opt)
 end
