@@ -47,7 +47,7 @@ function _get_allsymbols_by_dumpbin(target, dumpbin, opt)
                             symbol = symbol:sub(2)
                         end
                         if export_filter then
-                            if export_filter(symbol) then
+                            if export_filter(symbol, {objectfile = objectfile}) then
                                 allsymbols:insert(symbol)
                             end
                         elseif not symbol:startswith("__") then
@@ -88,7 +88,7 @@ function _get_allsymbols_by_objdump(target, objdump, opt)
                             symbol = symbol:sub(2)
                         end
                         if export_filter then
-                            if export_filter(symbol) then
+                            if export_filter(symbol, {objectfile = objectfile}) then
                                 allsymbols:insert(symbol)
                             end
                         elseif not symbol:startswith("__") then
