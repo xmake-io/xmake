@@ -9,8 +9,9 @@ target("bar")
     set_kind("shared")
     add_files("src/bar.cpp")
     add_rules("utils.symbols.export_all", {export_filter = function (symbol, opt)
-        local objectfile = opt.objectfile
-        if objectfile:find("bar.cpp", 1, true) and symbol:find("add", 1, true) then
+        local filepath = opt.sourcefile or opt.objectfile
+        if filepath and filepath:find("bar.cpp", 1, true) and symbol:find("add", 1, true) then
+            print("export: %s at %s", symbol, filepath)
             return true
         end
     end})
