@@ -9,7 +9,8 @@ target("bar")
     set_kind("shared")
     add_files("src/bar.cpp")
     add_rules("utils.symbols.export_all", {export_filter = function (symbol, opt)
-        if symbol:find("add", 1, true) then
+        local objectfile = opt.objectfile
+        if objectfile:find("bar.cpp", 1, true) and symbol:find("add", 1, true) then
             return true
         end
     end})
@@ -18,5 +19,6 @@ target("demo")
     set_kind("binary")
     add_deps("foo", "bar")
     add_files("src/main.cpp")
+
 
 
