@@ -26,15 +26,46 @@ import("core.base.hashset")
 import("core.project.depend")
 import("utils.progress")
 
+-- It is not very accurate because some rules automatically
+-- generate objectfiles and do not save the corresponding sourcefiles.
+-- @see https://github.com/xmake-io/xmake/issues/5601
+function _get_sourcefiles_map(target, sourcefiles_map)
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            local objectfiles = sourcebatch.objectfiles
+            if objectfiles then
+                local objectfile = objectfiles[idx]
+                if objectfile then
+                    sourcefiles_map[objectfile] = sourcefile
+                end
+            end
+        end
+    end
+    local plaindeps = target:get("deps")
+    if plaindeps then
+        for _, depname in ipairs(plaindeps) do
+            local dep = target:dep(depname)
+            if dep and dep:is_object() then
+                _get_sourcefiles_map(dep, sourcefiles_map)
+            end
+        end
+    end
+end
+
 -- use dumpbin to get all symbols from object files
 function _get_allsymbols_by_dumpbin(target, dumpbin, opt)
     opt = opt or {}
     local allsymbols = hashset.new()
     local export_classes = opt.export_classes
     local export_filter = opt.export_filter
+    local sourcefiles_map = {}
+    if export_filter then
+        _get_sourcefiles_map(target, sourcefiles_map)
+    end
     for _, objectfile in ipairs(target:objectfiles()) do
         local objectsymbols = try { function () return os.iorunv(dumpbin, {"/symbols", "/nologo", objectfile}) end }
         if objectsymbols then
+            local sourcefile = sourcefiles_map[objectfile]
             for _, line in ipairs(objectsymbols:split('\n', {plain = true})) do
                 -- https://docs.microsoft.com/en-us/cpp/build/reference/symbols
                 -- 008 00000000 SECT3  notype ()    External     | add
@@ -47,7 +78,7 @@ function _get_allsymbols_by_dumpbin(target, dumpbin, opt)
                             symbol = symbol:sub(2)
                         end
                         if export_filter then
-                            if export_filter(symbol) then
+                            if export_filter(symbol, {objectfile = objectfile, sourcefile = sourcefile}) then
                                 allsymbols:insert(symbol)
                             end
                         elseif not symbol:startswith("__") then
@@ -75,9 +106,14 @@ function _get_allsymbols_by_objdump(target, objdump, opt)
     local allsymbols = hashset.new()
     local export_classes = opt.export_classes
     local export_filter = opt.export_filter
+    local sourcefiles_map = {}
+    if export_filter then
+        _get_sourcefiles_map(target, sourcefiles_map)
+    end
     for _, objectfile in ipairs(target:objectfiles()) do
         local objectsymbols = try { function () return os.iorunv(objdump, {"--syms", objectfile}) end }
         if objectsymbols then
+            local sourcefile = sourcefiles_map[objectfile]
             for _, line in ipairs(objectsymbols:split('\n', {plain = true})) do
                 if line:find("(scl   2)", 1, true) then
                     local splitinfo = line:split("%s")
@@ -88,7 +124,7 @@ function _get_allsymbols_by_objdump(target, objdump, opt)
                             symbol = symbol:sub(2)
                         end
                         if export_filter then
-                            if export_filter(symbol) then
+                            if export_filter(symbol, {objectfile = objectfile, sourcefile = sourcefile}) then
                                 allsymbols:insert(symbol)
                             end
                         elseif not symbol:startswith("__") then
