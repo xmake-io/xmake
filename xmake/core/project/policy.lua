@@ -100,6 +100,8 @@ function policy.policies()
             ["run.autobuild"]                     = {description = "Automatically build before running.", type = "boolean"},
             -- Enable install rpath
             ["install.rpath"]                     = {description = "Enable install rpath.", default = true, type = "boolean"},
+            -- Strip package libraries for installation
+            ["install.strip_packagelibs"]         = {description = "Strip package libraries for installation.", default = true, type = "boolean"},
             -- Preprocessor configuration for ccache/distcc, we can disable linemarkers to speed up preprocess
             ["preprocessor.linemarkers"]          = {description = "Enable linemarkers for preprocessor.", default = true, type = "boolean"},
             -- Preprocessor configuration for ccache/distcc, we can disable it to avoid cache object file with __DATE__, __TIME__

@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.hashset")
+import("core.project.project")
 import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 import("utils.binary.rpath", {alias = "rpath_utils"})
 
@@ -60,10 +61,12 @@ function _get_target_package_libfiles(target, opt)
         end
     end
     -- we can only reserve used libraries
-    if target:is_binary() or target:is_shared() then
-        local depends = hashset.new()
-        _get_target_package_deplibs(target, depends, libfiles, target:targetfile())
-        table.remove_if(libfiles, function (_, libfile) return not depends:has(path.filename(libfile)) end)
+    if project.policy("install.strip_packagelibs") then
+        if target:is_binary() or target:is_shared() then
+            local depends = hashset.new()
+            _get_target_package_deplibs(target, depends, libfiles, target:targetfile())
+            table.remove_if(libfiles, function (_, libfile) return not depends:has(path.filename(libfile)) end)
+        end
     end
     return libfiles
 end
