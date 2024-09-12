@@ -14,6 +14,7 @@
 * [#5507](https://github.com/xmake-io/xmake/issues/5507): Use treeless to improve git.clone
 * [#5536](https://github.com/xmake-io/xmake/pull/5536): Add jar generate in swig mode
 * [#5573](https://github.com/xmake-io/xmake/issues/5573): Improve vsxmake generator performance
+* [#5601](https://github.com/xmake-io/xmake/issues/5601): Improve utils.symbols.export_all rule to filter sourcefile path
 
 ### Bugs fixed
 
@@ -1885,6 +1886,7 @@
 * [#5507](https://github.com/xmake-io/xmake/issues/5507): 改进 git clone 下载速度
 * [#5536](https://github.com/xmake-io/xmake/pull/5536): 在 swig 模式中添加 jar 生成支持
 * [#5573](https://github.com/xmake-io/xmake/issues/5573): 改进 vsxmake generator 性能
+* [#5601](https://github.com/xmake-io/xmake/issues/5601): 改进 utils.symbols.export_all 规则去过滤源文件路径
 
 ### Bugs 修复
 
