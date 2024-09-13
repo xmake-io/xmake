@@ -1232,7 +1232,7 @@ static tb_bool_t xm_engine_extract_programfiles(xm_engine_t* engine, tb_char_t c
         tb_byte_t const* e = data + size;
         tb_size_t n = 0;
         tb_char_t filepath[TB_PATH_MAXN];
-        tb_int_t pos = tb_snprintf(filepath, sizeof(filepath), "%s/", programdir);
+        tb_long_t pos = tb_snprintf(filepath, sizeof(filepath), "%s/", programdir);
         while (p < e)
         {
             // get filepath
