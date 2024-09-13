@@ -50,6 +50,7 @@ jobs:
           xmake pack -y --autobuild=n --basename=xmake -o ../artifacts xmakesrc
           xmake f --embed=y -c
           xmake
+          mkdir ../artifacts
           cp build/xmake ../artifacts/xmake-bundle
           cd ..
       - uses: actions/upload-artifact@v4
@@ -67,7 +68,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: xmake-bundle.macos.x86_64
-          path: artifact/xmake-bundle
+          path: artifacts/xmake-bundle
 
         # upload artifacts to latest release
       - name: Get Previous tag

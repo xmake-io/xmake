@@ -43,12 +43,13 @@ jobs:
           cd core
           xmake f --embed=y -c
           xmake
+          mkdir ../artifacts
           cp build/xmake ../artifacts/xmake-bundle
           cd ..
       - uses: actions/upload-artifact@v4
         with:
           name: xmake-bundle.macos.arm64
-          path: artifact/xmake-bundle
+          path: artifacts/xmake-bundle
 
       - name: Publish bundle binary
         if: github.event.action == 'published'

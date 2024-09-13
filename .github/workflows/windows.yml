@@ -59,7 +59,7 @@ jobs:
           cd core
           xmake f -vD -a ${{ matrix.arch }} --embed=y -c
           xmake
-          cp build/xmake.exe ../artifacts/${{env.RELEASE_NAME}}/xmake-bundle.exe
+          xmake l os.cp build/xmake.exe ../artifacts/${{env.RELEASE_NAME}}/xmake-bundle.exe
           xmake f -vD -a ${{ matrix.arch }} -c
           xmake -vD
           cd ..
