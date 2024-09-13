@@ -170,8 +170,6 @@ function _update_install_rpath(target, opt)
                     local extra = extraconf and extraconf[rpathdir] or nil
                     if extra and extra.installonly then
                         rpath_utils.insert(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
-                    else
-                        rpath_utils.remove(targetfile, rpathdir, {plat = target:plat(), arch = target:arch()})
                     end
                 end
             end
