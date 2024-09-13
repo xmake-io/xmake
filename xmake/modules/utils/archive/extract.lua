@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_file")
+import("lib.detect.find_tool")
 import("detect.tools.find_xz")
 import("detect.tools.find_7z")
 import("detect.tools.find_tar")
@@ -331,6 +332,46 @@ function _extract_using_unzip(archivefile, outputdir, extension, opt)
     return true
 end
 
+-- extract archivefile using powershell
+-- powershell -ExecutionPolicy Bypass -File "D:\scripts\unzip.ps1" "archivefile" "outputdir"
+function _extract_using_powershell(archivefile, outputdir, extension, opt)
+
+    -- find powershell
+    local powershell = find_tool("pwsh") or find_tool("powershell")
+    if not powershell then
+        return false
+    end
+
+    -- get the script file
+    local scriptfile = path.join(os.programdir(), "scripts", "unzip.ps1")
+
+    -- extract to *.tar file first
+    local outputdir_old = nil
+    if extension:startswith(".tar.") then
+        outputdir_old = outputdir
+        outputdir = os.tmpfile({ramdisk = false}) .. ".tar"
+    end
+
+    -- ensure output directory
+    if not os.isdir(outputdir) then
+        os.mkdir(outputdir)
+    end
+
+    -- extract it
+    local argv = {"-ExecutionPolicy", "Bypass", "-File", scriptfile, archivefile, outputdir}
+    os.vrunv(powershell.program, argv)
+
+    -- continue to extract *.tar file
+    if outputdir_old then
+        local tarfile = find_file("**.tar", outputdir)
+        if tarfile and os.isfile(tarfile) then
+            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
+        end
+    end
+    return true
+end
+
+
 -- extract archivefile using bzip2
 function _extract_using_bzip2(archivefile, outputdir, extension, opt)
 
@@ -425,7 +466,7 @@ function main(archivefile, outputdir, opt)
         -- tar/windows can not extract .bz2 ...
         extractors =
         {
-            [".zip"]        = {_extract_using_7z, _extract_using_unzip, _extract_using_tar}
+            [".zip"]        = {_extract_using_7z, _extract_using_unzip, _extract_using_tar, _extract_using_powershell}
         ,   [".7z"]         = {_extract_using_7z}
         ,   [".gz"]         = {_extract_using_7z, _extract_using_gzip, _extract_using_tar}
         ,   [".xz"]         = {_extract_using_7z, _extract_using_xz, _extract_using_tar}
