@@ -50,7 +50,6 @@ jobs:
           xmake pack -y --autobuild=n --basename=xmake -o ../artifacts xmakesrc
           xmake f --embed=y -c
           xmake
-          mkdir ../artifacts
           cp build/xmake ../artifacts/xmake-bundle
           cd ..
       - uses: actions/upload-artifact@v4
