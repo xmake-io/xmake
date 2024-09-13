@@ -22,6 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          # WyriHaximus/github-action-get-previous-tag@master need it
           fetch-depth: 0
           submodules: true
       - name: Prepare local xmake
@@ -29,9 +30,34 @@ jobs:
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
           xmake-version: local#../xmake-source
+      - uses: little-core-labs/get-git-tag@v3.0.2
+        id: tagName
 
       - name: Tests
         run: |
           xmake lua -v -D tests/run.lua
           xrepo --version
 
+      - name: Artifact
+        run: |
+          cd core
+          xmake f --embed=y -c
+          xmake
+          mkdir ../artifacts
+          cp build/xmake ../artifacts/xmake-bundle
+          cd ..
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xmake-bundle.macos.arm64
+          path: artifacts/xmake-bundle
+
+      - name: Publish bundle binary
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifacts/xmake-bundle
+          asset_name: xmake-bundle-${{ steps.tagName.outputs.tag }}.macos.arm64
+          asset_content_type: application/zip

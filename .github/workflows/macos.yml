@@ -48,6 +48,9 @@ jobs:
           brew install gnu-tar
           cd core
           xmake pack -y --autobuild=n --basename=xmake -o ../artifacts xmakesrc
+          xmake f --embed=y -c
+          xmake
+          cp build/xmake ../artifacts/xmake-bundle
           cd ..
       - uses: actions/upload-artifact@v4
         with:
@@ -61,6 +64,10 @@ jobs:
         with:
           name: xmake-latest.zip
           path: artifacts/xmake.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xmake-bundle.macos.x86_64
+          path: artifacts/xmake-bundle
 
         # upload artifacts to latest release
       - name: Get Previous tag
@@ -118,4 +125,15 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: artifacts/xmake.zip
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.zip
+          asset_content_type: application/zip
+
+      - name: Publish bundle binary
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifacts/xmake-bundle
+          asset_name: xmake-bundle-${{ steps.tagName.outputs.tag }}.macos.x86_64
           asset_content_type: application/zip
