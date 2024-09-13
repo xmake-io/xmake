@@ -57,7 +57,10 @@ jobs:
       - name: Build
         run: |
           cd core
-          xmake f -vD -a ${{ matrix.arch }}
+          xmake f -vD -a ${{ matrix.arch }} --embed=y -c
+          xmake
+          cp build/xmake.exe ../artifacts/${{env.RELEASE_NAME}}/xmake-bundle.exe
+          xmake f -vD -a ${{ matrix.arch }} -c
           xmake -vD
           cd ..
 
@@ -103,6 +106,13 @@ jobs:
         with:
           name: xmake-latest.${{ env.RELEASE_NAME }}.sha256
           path: artifacts/${{env.RELEASE_NAME}}/shafile
+
+      - name: Upload artifacts (bundle)
+        if: matrix.os == 'windows-2022'
+        uses: actions/upload-artifact@v4
+        with:
+          name: xmake-bundle-latest.${{env.RELEASE_NAME}}.exe
+          path: artifacts/${{env.RELEASE_NAME}}/xmake-bundle.exe
 
         # upload artifacts to latest release
       - name: Inject slug/short variables
@@ -164,5 +174,16 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: artifacts/${{env.RELEASE_NAME}}/shafile
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.sha256
+          asset_content_type: application/zip
+
+      - name: Publish
+        if: github.event.action == 'published' && matrix.os == 'windows-2022'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifacts/${{env.RELEASE_NAME}}/xmake-bundle.exe
+          asset_name: xmake-bundle-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.exe
           asset_content_type: application/zip
 
