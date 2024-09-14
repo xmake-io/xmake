@@ -1,5 +1,7 @@
 # Changelog ([中文](#中文))
 
+## v2.9.5
+
 ## master (unreleased)
 
 ### New features
@@ -1871,6 +1873,8 @@
 <h1 id="中文"></h1>
 
 # 更新日志
+
+## v2.9.5
 
 ## master (开发中)
 
