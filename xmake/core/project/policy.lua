@@ -149,11 +149,23 @@ function policy.policies()
             ["diagnosis.check_build_deps"]        = {description = "Show diagnosis info for checking build dependencies", default = false, type = "boolean"},
             -- Set the network mode, e.g. public/private
             --   private: it will disable fetch remote package repositories
-            ["network.mode"]                      = {description = "Set the network mode", type = "string"}
+            ["network.mode"]                      = {description = "Set the network mode", type = "string"},
+            -- Set the compatibility version, e.g. 2.0, 3.0
+            ["compatibility.version"]             = {description = "Set the compatibility version", type = "string"}
         }
         policy._POLICIES = policies
     end
     return policies
+end
+
+-- set policy default value
+function policy.set_default(name, value)
+    local defined_policy = policy.policies()[name]
+    if defined_policy then
+        defined_policy.default = value
+    else
+        os.raise("unknown policy(%s)!", name)
+    end
 end
 
 -- check policy value

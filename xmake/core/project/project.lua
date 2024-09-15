@@ -32,6 +32,7 @@ local global                = require("base/global")
 local process               = require("base/process")
 local hashset               = require("base/hashset")
 local baseoption            = require("base/option")
+local semver                = require("base/semver")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
 local instance_deps         = require("base/private/instance_deps")
@@ -819,10 +820,31 @@ function project.version()
     return project.get("target.version")
 end
 
+-- init default policies
+-- @see https://github.com/xmake-io/xmake/issues/5527
+function project._init_default_policies()
+    local compatibility_version = project.policy("compatibility.version")
+    if compatibility_version then
+        if semver.compare(compatibility_version, "3.0") >= 0 then
+            policy.set_default("package.cmake_generator.ninja", true)
+        else
+            policy.set_default("package.cmake_generator.ninja", false)
+        end
+    end
+end
+
 -- get the project policy, the root policy of the target scope
 function project.policy(name)
     local policies = project._memcache():get("policies")
     if not policies then
+
+        -- init default policies
+        if name ~= "compatibility.version" then
+            if not project._DEFAULT_POLICIES_INITED then
+                project._init_default_policies()
+                project._DEFAULT_POLICIES_INITED = true
+            end
+        end
 
         -- get policies from project, e.g. set_policy("xxx", true)
         policies = project.get("target.policy")
