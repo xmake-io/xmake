@@ -46,6 +46,7 @@ function menu_options()
         {nil, "includes",      "kv", nil, "Includes extra lua configuration files.",
                                        "e.g.",
                                        "    - xrepo install -p cross --toolchain=mytool --includes='toolchain1.lua" .. path.envsep() .. "toolchain2.lua'"},
+        {nil, "policies",      "kv", nil, "Set the policies."                },
         {category = "Visual Studio SDK Configuration"                        },
         {nil, "vs",            "kv", nil, "The Microsoft Visual Studio"
                                         , "  e.g. --vs=2017"                 },
@@ -177,6 +178,10 @@ function _install_packages(packages)
     if kind then
         table.insert(config_argv, "-k")
         table.insert(config_argv, kind)
+    end
+    local policies = option.get("policies")
+    if policies then
+        table.insert(config_argv, "--policies=" .. policies)
     end
     -- for android
     if option.get("ndk") then
