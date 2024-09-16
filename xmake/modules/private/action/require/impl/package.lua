@@ -597,7 +597,11 @@ function _finish_requireinfo(requireinfo, package)
             runtimes = {}
         end
         if not table.contains(runtimes, "MT", "MD", "MTd", "MDd") then
-            table.insert(runtimes, "MT")
+            local vs_runtime_default = project.policy("build.c++.msvc.runtime")
+            if vs_runtime_default and is_mode("debug") then
+                vs_runtime_default = vs_runtime_default .. "d"
+            end
+            table.insert(runtimes, vs_runtime_default or "MT")
         end
         requireinfo.configs.runtimes = table.concat(runtimes, ",")
     end
