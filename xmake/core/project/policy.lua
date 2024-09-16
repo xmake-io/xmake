@@ -84,6 +84,8 @@ function policy.policies()
             ["build.c++.clang.fallbackscanner"]   = {description = "Force clang fallback module dependency scanner.", default = false, type = "boolean"},
             -- Force C++ modules fallback dependency scanner for msvc
             ["build.c++.msvc.fallbackscanner"]    = {description = "Force msvc fallback module dependency scanner.", default = false, type = "boolean"},
+            -- Set the default vs runtime, e.g. MT, MD
+            ["build.c++.msvc.runtime"]            = {description = "Set the default vs runtime.", default = "MT", type = "string"},
             -- Force C++ modules fallback dependency scanner for gcc
             ["build.c++.gcc.fallbackscanner"]     = {description = "Force gcc fallback module dependency scanner.", default = false, type = "boolean"},
             -- Force to enable new cxx11 abi in C++ modules for gcc
