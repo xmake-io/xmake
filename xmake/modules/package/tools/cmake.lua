@@ -796,7 +796,7 @@ function _get_default_flags(package, configs, buildtype, opt)
     local cachekey = buildtype .. package:plat() .. package:arch()
     local cmake_default_flags = _g.cmake_default_flags and _g.cmake_default_flags[cachekey]
     if not cmake_default_flags then
-        local tmpdir = path.join(os.tmpdir() .. ".dir", package:name(), package:mode())
+        local tmpdir = path.join(os.tmpfile() .. ".dir", package:displayname(), package:mode())
         local dummy_cmakelist = path.join(tmpdir, "CMakeLists.txt")
 
         io.writefile(dummy_cmakelist, format([[
