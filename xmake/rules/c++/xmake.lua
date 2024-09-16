@@ -42,12 +42,11 @@ rule("c++.build")
         -- enable vs runtime as MD by default
         if target:is_plat("windows") and not target:get("runtimes") then
             local vs_runtime_default = target:policy("build.c++.msvc.runtime")
-            if vs_runtime_default and vs_runtime_default == "MD" and target:has_tool("cxx", "cl", "clang_cl") then
+            if vs_runtime_default and target:has_tool("cxx", "cl", "clang_cl") then
                 if is_mode("debug") then
-                    target:set("runtimes", "MDd")
-                else
-                    target:set("runtimes", "MD")
+                    vs_runtime_default = vs_runtime_default .. "d"
                 end
+                target:set("runtimes", vs_runtime_default)
             end
         end
         -- https://github.com/xmake-io/xmake/issues/4621
