@@ -195,7 +195,7 @@ function policy.check(name, value)
                     for _, policy_value in ipairs(defined_policy.values) do
                         table.insert(values, tostring(policy_value))
                     end
-                    utils.warning("policy(%s): invalid value(%s)), please set value from {%s}.",
+                    utils.warning("policy(%s): invalid value(%s), please set value from {%s}.",
                         name, value, table.concat(values, ", "))
                 end
             end
