@@ -42,7 +42,7 @@ function menu_options()
                                        "    - xrepo install -f \"regex=true,thread=true\" boost"},
         {'j', "jobs",          "kv", tostring(os.default_njob()),
                                           "Set the number of parallel compilation jobs."},
-        {nil, "linkjobs",      "kv", nil,    "Set the number of parallel link jobs."},
+        {nil, "linkjobs",      "kv", nil, "Set the number of parallel link jobs."},
         {nil, "includes",      "kv", nil, "Includes extra lua configuration files.",
                                        "e.g.",
                                        "    - xrepo install -p cross --toolchain=mytool --includes='toolchain1.lua" .. path.envsep() .. "toolchain2.lua'"},
