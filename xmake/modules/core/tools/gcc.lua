@@ -358,20 +358,30 @@ function nf_linkgroup(self, linkgroup, opt)
     local flags = {}
     local extra = opt.extra
     if extra and not self:is_plat("macosx", "windows", "mingw") then
-        local group = extra.group
+        local as_needed = extra.as_needed
         local whole = extra.whole
-        if group and whole then
-            -- https://github.com/xmake-io/xmake/issues/4308
-            table.join2(flags, "-Wl,--whole-archive", "-Wl,--start-group", linkflags, "-Wl,--end-group", "-Wl,--no-whole-archive")
-        elseif group then
-            table.join2(flags, "-Wl,--start-group", linkflags, "-Wl,--end-group")
-        elseif whole then
-            table.join2(flags, "-Wl,--whole-archive", linkflags, "-Wl,--no-whole-archive")
-        end
+        local group = extra.group
         local static = extra.static
+        local prefix_flags = {}
+        local suffix_flags = {}
         if static then
-            table.join2(flags, "-Wl,-Bstatic", linkflags, "-Wl,-Bdynamic")
+            table.insert(prefix_flags, "-Wl,-Bstatic")
+            table.insert(suffix_flags, 1, "-Wl,-Bdynamic")
         end
+        if as_needed then
+            -- https://github.com/xmake-io/xmake/issues/5621
+            table.insert(prefix_flags, "-Wl,--as-needed")
+            table.insert(suffix_flags, 1, "-Wl,--no-as-needed")
+        end
+        if whole then
+            table.insert(prefix_flags, "-Wl,--whole-archive")
+            table.insert(suffix_flags, 1, "-Wl,--no-whole-archive")
+        end
+        if group then
+            table.insert(prefix_flags, "-Wl,--start-group")
+            table.insert(suffix_flags, 1, "-Wl,--end-group")
+        end
+        tabel.join2(flags, prefix_flags, linkflags, suffix_flags)
     end
     if #flags == 0 then
         flags = linkflags
