@@ -381,7 +381,7 @@ function nf_linkgroup(self, linkgroup, opt)
             table.insert(prefix_flags, "-Wl,--start-group")
             table.insert(suffix_flags, 1, "-Wl,--end-group")
         end
-        tabel.join2(flags, prefix_flags, linkflags, suffix_flags)
+        table.join2(flags, prefix_flags, linkflags, suffix_flags)
     end
     if #flags == 0 then
         flags = linkflags
