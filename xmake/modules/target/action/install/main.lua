@@ -124,6 +124,11 @@ end
 -- install shared libraries
 function _install_shared_libraries(target, opt)
     local bindir = target:is_plat("windows", "mingw") and target:bindir() or target:libdir()
+    if target:is_plat("windows", "mingw") and opt.bindir then
+        bindir = target:installdir(opt.bindir) 
+    elseif opt.libdir then
+        bindir = target:installdir(opt.libdir)
+    end
 
     -- get all dependent shared libraries
     local libfiles = {}
@@ -158,7 +163,7 @@ function _update_install_rpath(target, opt)
     if target:is_plat("windows", "mingw") then
         return
     end
-    local bindir = target:bindir()
+    local bindir = opt.bindir and target:installdir(opt.bindir) or target:bindir()
     local targetfile = path.join(bindir, target:filename())
     if target:policy("install.rpath") then
         local result, sources = target:get_from("rpathdirs", "*")
@@ -179,7 +184,7 @@ end
 
 -- install binary
 function _install_binary(target, opt)
-    local bindir = target:bindir()
+    local bindir = opt.bindir and target:installdir(opt.bindir) or target:bindir()
     os.mkdir(bindir)
     os.vcp(target:targetfile(), bindir)
     os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
@@ -190,6 +195,11 @@ end
 -- install shared library
 function _install_shared(target, opt)
     local bindir = target:is_plat("windows", "mingw") and target:bindir() or target:libdir()
+    if target:is_plat("windows", "mingw") and opt.bindir then
+        bindir = target:installdir(opt.bindir) 
+    elseif opt.libdir then
+        bindir = target:installdir(opt.libdir)
+    end
     os.mkdir(bindir)
     local targetfile = target:targetfile()
 
@@ -197,7 +207,7 @@ function _install_shared(target, opt)
         -- install *.lib for shared/windows (*.dll) target
         -- @see https://github.com/xmake-io/xmake/issues/714
         os.vcp(target:targetfile(), bindir)
-        local libdir = target:libdir()
+        local libdir = opt.libdir and target:installdir(opt.libdir) or target:libdir()
         local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib"))
         if os.isfile(targetfile_lib) then
             os.mkdir(libdir)
@@ -215,7 +225,7 @@ end
 
 -- install static library
 function _install_static(target, opt)
-    local libdir = target:libdir()
+    local libdir = opt.libdir and target:installdir(opt.libdir) or target:libdir()
     os.mkdir(libdir)
     os.vcp(target:targetfile(), libdir)
     os.trycp(target:symbolfile(), path.join(libdir, path.filename(target:symbolfile())))
@@ -233,7 +243,8 @@ function _install_moduleonly(target, opt)
 end
 
 function main(target, opt)
-    local installdir = target:installdir()
+    opt = opt or {}
+    local installdir = opt.installdir and target:set("installdir", opt.installdir) or target:installdir()
     if not installdir then
         wprint("please use `xmake install -o installdir` or `set_installdir` to set install directory.")
         return

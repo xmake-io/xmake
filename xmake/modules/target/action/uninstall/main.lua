@@ -50,7 +50,6 @@ function _get_target_package_libfiles(target, opt)
         return {}
     end
     local libfiles = {}
-    local bindir = target:is_plat("windows", "mingw") and target:bindir() or target:libdir()
     for _, pkg in ipairs(target:orderpkgs(opt)) do
         if pkg:enabled() and pkg:get("libfiles") then
             for _, libfile in ipairs(table.wrap(pkg:get("libfiles"))) do
@@ -115,6 +114,11 @@ end
 -- uninstall shared libraries
 function _uninstall_shared_libraries(target, opt)
     local bindir = target:is_plat("windows", "mingw") and target:bindir() or target:libdir()
+    if target:is_plat("windows", "mingw") and opt.bindir then
+        bindir = target:installdir(opt.bindir) 
+    elseif opt.libdir then
+        bindir = target:installdir(opt.libdir)
+    end
 
     -- get all dependent shared libraries
     local libfiles = {}
@@ -142,7 +146,7 @@ end
 
 -- uninstall binary
 function _uninstall_binary(target, opt)
-    local bindir = target:bindir()
+    local bindir = opt.bindir and target:installdir(opt.bindir) or target:bindir()
     remove_files(path.join(bindir, path.filename(target:targetfile())), {emptydir = true})
     remove_files(path.join(bindir, path.filename(target:symbolfile())), {emptydir = true})
     _uninstall_shared_libraries(target, opt)
@@ -151,11 +155,16 @@ end
 -- uninstall shared library
 function _uninstall_shared(target, opt)
     local bindir = target:is_plat("windows", "mingw") and target:bindir() or target:libdir()
+    if target:is_plat("windows", "mingw") and opt.bindir then
+        bindir = target:installdir(opt.bindir) 
+    elseif opt.libdir then
+        bindir = target:installdir(opt.libdir)
+    end
 
     if target:is_plat("windows", "mingw") then
         -- uninstall *.lib for shared/windows (*.dll) target
         -- @see https://github.com/xmake-io/xmake/issues/714
-        local libdir = target:libdir()
+        local libdir = opt.libdir and target:installdir(opt.libdir) or target:libdir()
         local targetfile = target:targetfile()
         remove_files(path.join(bindir, path.filename(targetfile)), {emptydir = true})
         remove_files(path.join(libdir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")), {emptydir = true})
@@ -171,7 +180,7 @@ end
 
 -- uninstall static library
 function _uninstall_static(target, opt)
-    local libdir = target:libdir()
+    local libdir = opt.libdir and target:installdir(opt.libdir) or target:libdir()
     remove_files(path.join(libdir, path.filename(target:targetfile())), {emptydir = true})
     remove_files(path.join(libdir, path.filename(target:symbolfile())), {emptydir = true})
     _uninstall_headers(target, opt)
@@ -188,7 +197,8 @@ function _uninstall_moduleonly(target, opt)
 end
 
 function main(target, opt)
-    local installdir = target:installdir()
+    opt = opt or {}
+    local installdir = opt.installdir and target:set("installdir", opt.installdir) or target:installdir()
     if not installdir then
         wprint("please use `xmake install -o installdir` or `set_installdir` to set install directory.")
         return
