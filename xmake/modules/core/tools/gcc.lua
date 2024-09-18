@@ -368,8 +368,11 @@ function nf_linkgroup(self, linkgroup, opt)
             table.insert(prefix_flags, "-Wl,-Bstatic")
             table.insert(suffix_flags, 1, "-Wl,-Bdynamic")
         end
-        if not as_needed then
-            -- https://github.com/xmake-io/xmake/issues/5621
+        -- https://github.com/xmake-io/xmake/issues/5621
+        if as_needed then
+            table.insert(prefix_flags, "-Wl,--as-needed")
+            table.insert(suffix_flags, 1, "-Wl,--no-as-needed")
+        elseif as_needed == false then
             table.insert(prefix_flags, "-Wl,--no-as-needed")
             table.insert(suffix_flags, 1, "-Wl,--as-needed")
         end
