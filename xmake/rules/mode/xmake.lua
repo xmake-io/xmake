@@ -65,6 +65,7 @@ rule("mode.release")
 
             -- enable NDEBUG macros to disables standard-C assertions
             target:add("cxflags", "-DNDEBUG")
+            target:add("cuflags", "-DNDEBUG")
         end
     end)
 
@@ -96,6 +97,7 @@ rule("mode.releasedbg")
 
             -- enable NDEBUG macros to disables standard-C assertions
             target:add("cxflags", "-DNDEBUG")
+            target:add("cuflags", "-DNDEBUG")
         end
     end)
 
@@ -123,6 +125,7 @@ rule("mode.minsizerel")
 
             -- enable NDEBUG macros to disables standard-C assertions
             target:add("cxflags", "-DNDEBUG")
+            target:add("cuflags", "-DNDEBUG")
         end
     end)
 
@@ -154,6 +157,7 @@ rule("mode.profile")
 
             -- enable NDEBUG macros to disables standard-C assertions
             target:add("cxflags", "-DNDEBUG")
+            target:add("cuflags", "-DNDEBUG")
         end
     end)
 
