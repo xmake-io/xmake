@@ -1,4 +1,5 @@
-add_requires("verilator")
+add_requires("verilator 5.016")
+
 target("hello")
     add_rules("verilator.binary")
     set_toolchains("@verilator")
