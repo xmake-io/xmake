@@ -35,14 +35,10 @@ end
 
 function _get_target_bindir(target, opt)
     if not opt.installdir then
-        return (target:is_plat("windows", "mingw") or opt.true_bindir) and target:bindir() or target:libdir()
+        return target:bindir()
     end
-    assert(opt.libdir, "opt.libdir is missing")
     assert(opt.bindir, "opt.bindir is missing")
-
-    local bindir = path.join(opt.installdir, opt.bindir)
-    local libdir = path.join(opt.installdir, opt.libdir)
-    return (target:is_plat("windows", "mingw") or opt.true_bindir) and bindir or libdir
+    return path.join(opt.installdir, opt.bindir)
 end
 
 -- we need to get all deplibs, e.g. app -> libfoo.so -> libbar.so ...
@@ -143,7 +139,7 @@ end
 
 -- install shared libraries
 function _install_shared_libraries(target, opt)
-    local bindir = _get_target_bindir(target, opt)
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(target, opt) or _get_target_libdir(target, opt) 
 
     -- get all dependent shared libraries
     local libfiles = {}
@@ -178,7 +174,7 @@ function _update_install_rpath(target, opt)
     if target:is_plat("windows", "mingw") then
         return
     end
-    local bindir = _get_target_bindir(target, table.join(opt, {true_bindir = true}))
+    local bindir = _get_target_bindir(target, opt)
     local targetfile = path.join(bindir, target:filename())
     if target:policy("install.rpath") then
         local result, sources = target:get_from("rpathdirs", "*")
@@ -199,7 +195,7 @@ end
 
 -- install binary
 function _install_binary(target, opt)
-    local bindir = _get_target_bindir(target, table.join(opt, {true_bindir = true}))
+    local bindir = _get_target_bindir(target, opt)
     os.mkdir(bindir)
     os.vcp(target:targetfile(), bindir)
     os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
@@ -209,7 +205,7 @@ end
 
 -- install shared library
 function _install_shared(target, opt)
-    local bindir = _get_target_bindir(target, opt)
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(target, opt) or _get_target_libdir(target, opt) 
     os.mkdir(bindir)
     local targetfile = target:targetfile()
 
