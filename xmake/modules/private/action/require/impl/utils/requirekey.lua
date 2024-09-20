@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.hashset")
+import("core.package.package", {alias = "core_package"})
 
 -- get require key from requireinfo
 function main(requireinfo, opt)
@@ -42,6 +43,14 @@ function main(requireinfo, opt)
     end
     if requireinfo.label then
         key = key .. "/" .. requireinfo.label
+    end
+    if requireinfo.host then
+        if is_subhost(core_package.targetplat()) and os.subarch() == core_package.targetarch() then
+            -- we need to pass plat/arch to avoid repeat installation
+            -- @see https://github.com/xmake-io/xmake/issues/1579
+        else
+            key = key .. "/host"
+        end
     end
     if requireinfo.system then
         key = key .. "/system"

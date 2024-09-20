@@ -31,28 +31,29 @@ function menu_options()
     -- menu options
     local options =
     {
-        {'k', "kind",       "kv", nil, "Enable static/shared library.",
-                                       values = {"static", "shared"}         },
-        {'p', "plat",       "kv", nil, "Set the given platform."             },
-        {'a', "arch",       "kv", nil, "Set the given architecture."         },
-        {'m', "mode",       "kv", nil, "Set the given mode.",
-                                       values = {"release", "debug"}         },
-        {'f', "configs",    "kv", nil, "Set the given extra package configs.",
+        {'k', "kind",           "kv", nil, "Enable static/shared library.",
+                                       values = {"static", "shared"}                            },
+        {'p', "plat",           "kv", nil, "Set the given platform."                            },
+        {'a', "arch",           "kv", nil, "Set the given architecture."                        },
+        {'m', "mode",           "kv", nil, "Set the given mode.",
+                                       values = {"release", "debug"}                            },
+        {'f', "configs",        "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
                                        "    - xrepo export -f \"runtimes='MD'\" zlib",
-                                       "    - xrepo export -f \"regex=true,thread=true\" boost"},
-        {},
-        {nil, "includes",   "kv", nil, "Includes extra lua configuration files."},
-        {nil, "toolchain",  "kv", nil, "Set the toolchain name."             },
-        {nil, "shallow",    "k",  nil, "Does not export dependent packages."},
-        {'o', "packagedir", "kv", "packages","Set the exported packages directory."},
-        {nil, "packages",   "vs", nil, "The packages list.",
+                                       "    - xrepo export -f \"regex=true,thread=true\" boost" },
+        {                                                                                       },
+        {nil, "includes",       "kv", nil, "Includes extra lua configuration files."            },
+        {nil, "toolchain",      "kv", nil, "Set the toolchain name."                            },
+        {nil, "toolchain_host", "kv", nil, "Set the host toolchain name."                       },
+        {nil, "shallow",        "k",  nil, "Does not export dependent packages."                },
+        {'o', "packagedir",     "kv", "packages","Set the exported packages directory."         },
+        {nil, "packages",       "vs", nil, "The packages list.",
                                        "e.g.",
                                        "    - xrepo export zlib boost",
                                        "    - xrepo export -p iphoneos -a arm64 \"zlib >=1.2.0\"",
                                        "    - xrepo export -p android -m debug \"pcre2 10.x\"",
                                        "    - xrepo export -p mingw -k shared zlib",
-                                       "    - xrepo export conan::zlib/1.2.11 vcpkg::zlib"}
+                                       "    - xrepo export conan::zlib/1.2.11 vcpkg::zlib"      }
     }
 
     -- show menu options
@@ -128,6 +129,9 @@ function _export_packages(packages)
     end
     if option.get("toolchain") then
         table.insert(config_argv, "--toolchain=" .. option.get("toolchain"))
+    end
+    if option.get("toolchain_host") then
+        table.insert(config_argv, "--toolchain_host=" .. option.get("toolchain_host"))
     end
     local mode  = option.get("mode")
     if mode then

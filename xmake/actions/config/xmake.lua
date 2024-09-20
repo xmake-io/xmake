@@ -213,6 +213,12 @@ task("config")
                                                           , "    - xmake f --toolchain=[cross|llvm|sdcc ..] --sdk=/xxx"
                                                           , "    - run `xmake show -l toolchains` to get all toolchains"
                                                           , values = _toolchain_values},
+                    {nil, "toolchain_host", "kv", nil,      "Set host toolchain name, it's only for building packages on host machine."
+                                                          , "e.g. "
+                                                          , "    - xmake f --toolchain_host=clang"
+                                                          , "    - xmake f --toolchain_host=[cross|llvm|sdcc ..] --sdk=/xxx"
+                                                          , "    - run `xmake show -l toolchains` to get all toolchains"
+                                                          , values = _toolchain_values},
                     {nil, "runtimes", "kv", nil,          "Set the compiler runtime library."
                                                           , "e.g. "
                                                           , "    - xmake f --runtimes=MTd"

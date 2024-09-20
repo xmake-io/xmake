@@ -31,24 +31,26 @@ function menu_options()
     local options =
     {
         {'k', "kind",          "kv", nil, "Enable static/shared library.",
-                                       values = {"static", "shared"}         },
-        {'p', "plat",          "kv", nil, "Set the given platform."          },
-        {'a', "arch",          "kv", nil, "Set the given architecture."      },
+                                       values = {"static", "shared"}},
+        {'p', "plat",          "kv", nil, "Set the given platform."                                                                                        },
+        {'a', "arch",          "kv", nil, "Set the given architecture."                                                                                    },
         {'m', "mode",          "kv", nil, "Set the given mode.",
-                                       values = {"release", "debug"}         },
+                                       values = {"release", "debug"}},
         {'f', "configs",       "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
                                        "    - xrepo download -f \"runtimes='MD'\" zlib",
-                                       "    - xrepo download -f \"regex=true,thread=true\" boost"},
+                                       "    - xrepo download -f \"regex=true,thread=true\" boost"                                                          },
         {'j', "jobs",          "kv", tostring(os.default_njob()),
-                                          "Set the number of parallel download jobs."},
+                                          "Set the number of parallel download jobs."                                                                      },
+        {nil, "toolchain",      "kv", nil, "Set the toolchain name."                                                                                       },
+        {nil, "toolchain_host", "kv", nil, "Set the host toolchain name."                                                                                  },
         {nil, "includes",      "kv", nil, "Includes extra lua configuration files.",
                                        "e.g.",
-                                       "    - xrepo download -p cross --toolchain=mytool --includes='toolchain1.lua" .. path.envsep() .. "toolchain2.lua'"},
-        {category = "Other Configuration"                                    },
-        {nil, "force",         "k",  nil, "Force to redownload all packages."},
-        {'o', "outputdir",     "kv", "packages","Set the packages download output directory."},
-        {},
+                                       "    - xrepo download -p cross --toolchain=mytool --includes='toolchain1.lua" .. path.envsep() .. "toolchain2.lua'" },
+        {category = "Other Configuration"                                                                                                                  },
+        {nil, "force",         "k",  nil, "Force to redownload all packages."                                                                              },
+        {'o', "outputdir",     "kv", "packages","Set the packages download output directory."                                                              },
+        {                                                                                                                                                  },
         {nil, "packages",      "vs", nil, "The packages list.",
                                        "e.g.",
                                        "    - xrepo download zlib boost",
@@ -57,7 +59,7 @@ function menu_options()
                                        "    - xrepo download -p android [--ndk=/xxx] -m debug \"pcre2 10.x\"",
                                        "    - xrepo download -p mingw [--mingw=/xxx] -k shared zlib",
                                        "    - xrepo download conan::zlib/1.2.11 vcpkg::zlib",
-                                        values = function (complete, opt) return import("private.xrepo.quick_search.completion")(complete, opt) end}
+                                        values = function (complete, opt) return import("private.xrepo.quick_search.completion")(complete, opt) end        }
     }
 
     -- show menu options
@@ -133,6 +135,12 @@ function _download_packages(packages)
     if option.get("arch") then
         table.insert(config_argv, "-a")
         table.insert(config_argv, option.get("arch"))
+    end
+    if option.get("toolchain") then
+        table.insert(config_argv, "--toolchain=" .. option.get("toolchain"))
+    end
+    if option.get("toolchain_host") then
+        table.insert(config_argv, "--toolchain_host=" .. option.get("toolchain_host"))
     end
     local mode  = option.get("mode")
     if mode then
