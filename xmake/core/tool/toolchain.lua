@@ -167,7 +167,7 @@ end
 function _instance:is_cross()
     if self:kind() == "cross" then
         return true
-    elseif self:kind() == "standalone" and (self:cross() or self:sdkdir()) then
+    elseif self:kind() == "standalone" and (self:cross() or self:config("sdkdir") or self:info():get("sdkdir")) then
         return true
     end
 end

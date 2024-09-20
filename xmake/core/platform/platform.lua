@@ -204,7 +204,10 @@ function _instance:toolchains(opt)
                 if not toolchain_inst then
                     os.raise(errors)
                 end
-                table.insert(toolchains, toolchain_inst)
+                -- ignore cross toolchains for the host platform:w
+                if (self:is_host() and not toolchain_inst:is_cross()) or not self:is_host() then
+                    table.insert(toolchains, toolchain_inst)
+                end
             end
         end
         self:_memcache():set("toolchains", toolchains)
