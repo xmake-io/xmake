@@ -1311,7 +1311,7 @@ function get_configs_str(package)
             table.insert(configs, requireinfo.arch)
         end
         if requireinfo.host then
-            table.insert(configs, requireinfo.host)
+            table.insert(configs, "host")
         end
         if requireinfo.kind then
             table.insert(configs, requireinfo.kind)
