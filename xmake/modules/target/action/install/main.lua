@@ -25,6 +25,22 @@ import("core.project.project")
 import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 import("utils.binary.rpath", {alias = "rpath_utils"})
 
+function _get_target_libdir(target, opt)
+    if not opt.installdir then
+        return target:libdir()
+    end
+    assert(opt.libdir, "opt.libdir is missing")
+    return path.join(opt.installdir, opt.libdir)
+end
+
+function _get_target_bindir(target, opt)
+    if not opt.installdir then
+        return target:bindir()
+    end
+    assert(opt.bindir, "opt.bindir is missing")
+    return path.join(opt.installdir, opt.bindir)
+end
+
 -- we need to get all deplibs, e.g. app -> libfoo.so -> libbar.so ...
 -- @see https://github.com/xmake-io/xmake/issues/5325#issuecomment-2242597732
 function _get_target_package_deplibs(target, depends, libfiles, binaryfile)
@@ -123,7 +139,7 @@ end
 
 -- install shared libraries
 function _install_shared_libraries(target, opt)
-    local bindir = target:is_plat("windows", "mingw") and target:bindir() or target:libdir()
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(target, opt) or _get_target_libdir(target, opt) 
 
     -- get all dependent shared libraries
     local libfiles = {}
@@ -158,7 +174,7 @@ function _update_install_rpath(target, opt)
     if target:is_plat("windows", "mingw") then
         return
     end
-    local bindir = target:bindir()
+    local bindir = _get_target_bindir(target, opt)
     local targetfile = path.join(bindir, target:filename())
     if target:policy("install.rpath") then
         local result, sources = target:get_from("rpathdirs", "*")
@@ -179,7 +195,7 @@ end
 
 -- install binary
 function _install_binary(target, opt)
-    local bindir = target:bindir()
+    local bindir = _get_target_bindir(target, opt)
     os.mkdir(bindir)
     os.vcp(target:targetfile(), bindir)
     os.trycp(target:symbolfile(), path.join(bindir, path.filename(target:symbolfile())))
@@ -189,7 +205,7 @@ end
 
 -- install shared library
 function _install_shared(target, opt)
-    local bindir = target:is_plat("windows", "mingw") and target:bindir() or target:libdir()
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(target, opt) or _get_target_libdir(target, opt) 
     os.mkdir(bindir)
     local targetfile = target:targetfile()
 
@@ -197,7 +213,7 @@ function _install_shared(target, opt)
         -- install *.lib for shared/windows (*.dll) target
         -- @see https://github.com/xmake-io/xmake/issues/714
         os.vcp(target:targetfile(), bindir)
-        local libdir = target:libdir()
+        local libdir = _get_target_libdir(target, opt)
         local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib"))
         if os.isfile(targetfile_lib) then
             os.mkdir(libdir)
@@ -215,7 +231,7 @@ end
 
 -- install static library
 function _install_static(target, opt)
-    local libdir = target:libdir()
+    local libdir = _get_target_libdir(target, opt)
     os.mkdir(libdir)
     os.vcp(target:targetfile(), libdir)
     os.trycp(target:symbolfile(), path.join(libdir, path.filename(target:symbolfile())))
@@ -233,7 +249,8 @@ function _install_moduleonly(target, opt)
 end
 
 function main(target, opt)
-    local installdir = target:installdir()
+    opt = opt or {}
+    local installdir = opt.installdir or target:installdir()
     if not installdir then
         wprint("please use `xmake install -o installdir` or `set_installdir` to set install directory.")
         return
