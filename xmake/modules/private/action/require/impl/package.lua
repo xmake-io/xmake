@@ -1302,6 +1302,9 @@ function get_configs_str(package)
     if package:is_private() then
         table.insert(configs, "private")
     end
+    if package:is_host() then
+        table.insert(configs, "host")
+    end
     local requireinfo = package:requireinfo()
     if requireinfo then
         if requireinfo.plat then
@@ -1309,9 +1312,6 @@ function get_configs_str(package)
         end
         if requireinfo.arch then
             table.insert(configs, requireinfo.arch)
-        end
-        if requireinfo.host then
-            table.insert(configs, "host")
         end
         if requireinfo.kind then
             table.insert(configs, requireinfo.kind)
