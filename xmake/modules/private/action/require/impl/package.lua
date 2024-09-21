@@ -487,7 +487,7 @@ function _check_package_toolchains(package)
         end
     else
         -- maybe this package is host package, it's platform and toolchain has been not checked yet.
-        local platform_inst = platform.load(package:plat(), package:arch())
+        local platform_inst = platform.load(package:plat(), package:arch(), {host = package:is_host()})
         if not platform_inst:check() then
             raise("no any matched platform for this package(%s)!", package:name())
         end
