@@ -63,7 +63,7 @@ function linker:_add_flags_from_linker(flags)
     local toolkind = self:kind()
     for _, flagkind in ipairs(self:_flagkinds()) do
         -- attempt to add special lanugage flags first, e.g. gcldflags, dcarflags
-        table.join2(flags, self:get(toolkind .. 'flags') or self:get(flagkind))
+        table.join2(flags, self:get(toolkind .. "flags") or self:get(flagkind))
     end
 end
 
