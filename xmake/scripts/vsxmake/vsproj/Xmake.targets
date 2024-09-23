@@ -30,7 +30,7 @@
 
     <!-- these paths resolved in Xmake.Default.props, just normalize -->
     <XmakeProgramDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeProgramDir)/'))</XmakeProgramDirResolved>
-    <XmakeProgramFileResolved>$([System.IO.Path]::GetFullPath('$(XmakeProgramFile)/'))</XmakeProgramFileResolved>
+    <XmakeProgramFileResolved>$([System.IO.Path]::GetFullPath('$(XmakeProgramFile)'))</XmakeProgramFileResolved>
     <XmakeProjectDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeProjectDir)/'))</XmakeProjectDirResolved>
     <XmakeScriptDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeScriptDir)/'))</XmakeScriptDirResolved>
   </PropertyGroup>
