@@ -3,16 +3,19 @@
 
   <PropertyGroup Label="XmakePathsResolve">
     <_XmakeProgramDir>$(XmakeProgramDir)</_XmakeProgramDir>
+    <_XmakeProgramFile>$(XmakeProgramFile)</_XmakeProgramFile>
     <_XmakeProjectDir>$(XmakeProjectDir)</_XmakeProjectDir>
     <_XmakeScriptDir>$(XmakeScriptDir)</_XmakeScriptDir>
 
     <!-- resolve if they are relative paths -->
     <_XmakeProgramDir Condition="!$([System.IO.Path]::IsPathRooted('$(_XmakeProgramDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(_XmakeProgramDir)'))</_XmakeProgramDir>
+    <_XmakeProgramFile Condition="!$([System.IO.Path]::IsPathRooted('$(_XmakeProgramFile)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(_XmakeProgramFile)'))</_XmakeProgramFile>
     <_XmakeProjectDir Condition="!$([System.IO.Path]::IsPathRooted('$(_XmakeProjectDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(_XmakeProjectDir)'))</_XmakeProjectDir>
     <_XmakeScriptDir Condition="!$([System.IO.Path]::IsPathRooted('$(_XmakeScriptDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(_XmakeScriptDir)'))</_XmakeScriptDir>
 
     <!-- normalize paths -->
     <XmakeProgramDir>$([System.IO.Path]::GetFullPath('$(_XmakeProgramDir)'))</XmakeProgramDir>
+    <XmakeProgramFile>$([System.IO.Path]::GetFullPath('$(_XmakeProgramFile)'))</XmakeProgramFile>
     <XmakeProjectDir>$([System.IO.Path]::GetFullPath('$(_XmakeProjectDir)'))</XmakeProjectDir>
     <XmakeScriptDir>$([System.IO.Path]::GetFullPath('$(_XmakeScriptDir)'))</XmakeScriptDir>
   </PropertyGroup>

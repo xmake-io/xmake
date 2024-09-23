@@ -30,6 +30,7 @@
 
     <!-- these paths resolved in Xmake.Default.props, just normalize -->
     <XmakeProgramDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeProgramDir)/'))</XmakeProgramDirResolved>
+    <XmakeProgramFileResolved>$([System.IO.Path]::GetFullPath('$(XmakeProgramFile)/'))</XmakeProgramFileResolved>
     <XmakeProjectDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeProjectDir)/'))</XmakeProjectDirResolved>
     <XmakeScriptDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeScriptDir)/'))</XmakeScriptDirResolved>
   </PropertyGroup>
@@ -61,7 +62,7 @@
     <_XmakeCommonFlags>$(_XmakeCommonFlags.Trim())</_XmakeCommonFlags>
     <_XmakeTarget>"$(XmakeTarget.Trim())"</_XmakeTarget>
 
-    <_XmakeExecutable>"$([System.IO.Path]::GetFullPath('$(XmakeProgramDirResolved)xmake.exe'))"</_XmakeExecutable>
+    <_XmakeExecutable>"$([System.IO.Path]::GetFullPath('$(XmakeProgramFileResolved)'))"</_XmakeExecutable>
     <_XmakeEnv>
       pushd $(XmakeProjectDirResolved)
       set XMAKE_CONFIGDIR=$(XmakeConfigDirResolved.TrimEnd('\').TrimEnd('/'))
@@ -82,8 +83,8 @@
       Text="File '$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).targets' not found" />
     <Warning Condition="'$(XmakeCudaVersion)' != '' And !Exists('$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).props')"
       Text="File '$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).props' not found" />
-    <Error Condition="!Exists('$(XmakeProgramDirResolved)\xmake.exe')"
-      Text="xmake.exe not found at '$(XmakeProgramDirResolved)', please set XMAKE_PROGRAM_DIR in environments or XmakeProgramDir in vcxproj file" />
+    <Error Condition="!Exists('$(XmakeProgramFileResolved)')"
+      Text="xmake.exe not found at '$(XmakeProgramFileResolved)'" />
     <Error Condition="'$(XmakeProjectFile)' == '' And !Exists('$(XmakeProjectDirResolved)\xmake.lua')"
       Text="xmake.lua not found at '$(XmakeProjectDirResolved)', please set XmakeProjectDir in vcxproj file" />
     <Error Condition="'$(XmakeProjectFile)' != '' And !Exists('$(XmakeProjectDirResolved)\$(XmakeProjectFile)')"
@@ -150,6 +151,7 @@ MSBuild Properties:
     XmakeRunArgs: $(XmakeRunArgs)
   Xmake Path:
     XmakeProgramDir: $(XmakeProgramDir)
+    XmakeProgramFile: $(XmakeProgramFile)
     XmakeProjectDir: $(XmakeProjectDir)
     XmakeScriptDir: $(XmakeScriptDir)
     XmakeBuilDir: $(XmakeBuilDir)
@@ -159,6 +161,7 @@ MSBuild Properties:
     XmakeRunDir: $(XmakeRunDir)
   Xmake Resolved Path:
     XmakeProgramDir: $(XmakeProgramDirResolved)
+    XmakeProgramFile: $(XmakeProgramFileResolved)
     XmakeProjectDir: $(XmakeProjectDirResolved)
     XmakeScriptDir: $(XmakeScriptDirResolved)
     XmakeBuilDir: $(XmakeBuilDirResolved)

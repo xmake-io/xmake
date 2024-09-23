@@ -26,6 +26,8 @@
   <PropertyGroup Label="XmakeProgram">
     <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">$(XMAKE_PROGRAM_DIR)</XmakeProgramDir>
     <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">#programdir#</XmakeProgramDir>
+    <XmakeProgramFile Condition="'$(XmakeProgramFile)' == ''">$(XMAKE_PROGRAM_FILE)</XmakeProgramDir>
+    <XmakeProgramFile Condition="'$(XmakeProgramFile)' == ''">#programfile#</XmakeProgramFile>
   </PropertyGroup>
   <Import Project="$(XmakeProgramDir)\scripts\vsxmake\vsproj\Xmake.Defaults.props" />
 #Import(XmakeConfig)#
