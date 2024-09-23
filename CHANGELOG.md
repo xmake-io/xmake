@@ -10,6 +10,10 @@
 
 * [#5631](https://github.com/xmake-io/xmake/pull/5631): Add `as_needed` for `add_linkgroups`
 
+### Bugs fixed
+
+* [#5645](https://github.com/xmake-io/xmake/issues/5645): Fix `xmake watch` for linux
+
 ## v2.9.5
 
 ### New features
@@ -1891,6 +1895,10 @@
 ### 改进
 
 * [#5631](https://github.com/xmake-io/xmake/pull/5631): 为 `add_linkgroups` 添加 `as_needed`
+
+### Bugs 修复
+
+* [#5645](https://github.com/xmake-io/xmake/issues/5645): 修复 `xmake watch` 在 linux 无法监听递归文件问题
 
 ## v2.9.5
 
