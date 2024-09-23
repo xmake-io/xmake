@@ -2639,6 +2639,20 @@ function _instance:check_mxxsnippets(snippets, opt)
     return sandbox_module.import("lib.detect.check_mxxsnippets", {anonymous = true})(snippets, opt)
 end
 
+-- check the given fortran snippets?
+--
+-- @param snippets  the snippets
+-- @param opt       the argument options, e.g. {configs = {defines = ""}}
+--
+-- @return          true or false, errors
+--
+function _instance:check_fcsnippets(snippets, opt)
+    opt = opt or {}
+    opt.target = self
+    opt.configs = self:_generate_build_configs(opt.configs, {sourcekind = "fc"})
+    return sandbox_module.import("lib.detect.check_fcsnippets", {anonymous = true})(snippets, opt)
+end
+
 -- the current mode is belong to the given modes?
 function package._api_is_mode(interp, ...)
     return config.is_mode(...)
