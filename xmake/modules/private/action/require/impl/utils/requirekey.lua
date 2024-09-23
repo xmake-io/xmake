@@ -55,11 +55,10 @@ function main(requireinfo, opt)
     if requireinfo.system then
         key = key .. "/system"
     end
-    --[[
     -- @see https://github.com/xmake-io/xmake/issues/4934
     if requireinfo.private then
         key = key .. "/private"
-    end]]
+    end
     if key:startswith("/") then
         key = key:sub(2)
     end
