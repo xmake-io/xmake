@@ -67,6 +67,7 @@
       pushd $(XmakeProjectDirResolved)
       set XMAKE_CONFIGDIR=$(XmakeConfigDirResolved.TrimEnd('\').TrimEnd('/'))
       set XMAKE_PROGRAM_DIR=$(XmakeProgramDirResolved.TrimEnd('\').TrimEnd('/'))
+      set XMAKE_PROGRAM_FILE=$(XmakeProgramFileResolved.TrimEnd('\').TrimEnd('/'))
       set XMAKE_SKIP_HISTORY=1
       set XMAKE_IN_VSTUDIO=1
     </_XmakeEnv>
@@ -74,6 +75,7 @@
       $(_XmakeEnv)
       echo XMAKE_CONFIGDIR=%25XMAKE_CONFIGDIR%25
       echo XMAKE_PROGRAM_DIR=%25XMAKE_PROGRAM_DIR%25
+      echo XMAKE_PROGRAM_FILE=%25XMAKE_PROGRAM_FILE%25
       echo CD=%25CD%25
     </_XmakeEnv>
   </PropertyGroup>
