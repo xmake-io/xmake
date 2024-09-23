@@ -79,6 +79,10 @@ function _add_target_files(sourcefiles, target)
             table.join2(sourcefiles, sourcebatch.sourcefiles)
         end
     end
+    local headerfiles = target:headerfiles()
+    if headerfiles then
+        table.join2(sourcefiles, headerfiles)
+    end
 end
 
 -- check sourcefile
