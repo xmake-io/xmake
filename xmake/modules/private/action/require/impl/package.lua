@@ -619,6 +619,12 @@ function _finish_requireinfo(requireinfo, package)
             requireinfo.configs[k] = nil
         end
     end
+
+    -- all binary packages are host package
+    -- we need to synchronize the setup to requireinfo so that all its dependent packages inherit from it.
+    if package:is_binary() then
+        requireinfo.host = true
+    end
 end
 
 -- merge requireinfo from `add_requireconfs()`
