@@ -243,11 +243,7 @@ _os_find() {
     local name="${2}"
     local depth="${3}"
     if test_nz "${depth}"; then
-        if is_host "macosx"; then
-            _ret=$(find "${dir}" -depth "${depth}" -type f -name "${name}")
-        else
-            _ret=$(find "${dir}" -maxdepth "${depth}" -mindepth "${depth}" -type f -name "${name}")
-        fi
+        _ret=$(find "${dir}" -maxdepth "${depth}" -mindepth "${depth}" -type f -name "${name}")
     else
         _ret=$(find "${dir}" -type f -name "${name}")
     fi
@@ -259,10 +255,9 @@ _os_find() {
 _os_date() {
     if test_z "${SOURCE_DATE_EPOCH}"; then
         _ret=$(date +"${1}")
-    elif is_host "macosx" "freebsd" "bsd"; then
-        _ret=$(date -u -r "$SOURCE_DATE_EPOCH" +"${1}")
     else
-        _ret=$(date -u -d "@$SOURCE_DATE_EPOCH" +"${1}")
+        # Use GNU date options first, then fallback to BSD's, and finally fallback to current time.
+        _ret=$(date -u -d "@$SOURCE_DATE_EPOCH" +"${1}" 2>/dev/null || date -u -r "$SOURCE_DATE_EPOCH" +"${1}" 2>/dev/null || date +"${1}")
     fi
 }
 
