@@ -228,4 +228,4 @@ if ! has_config "external"; then
     includes "src/tbox"
 fi
 includes "src/xmake"
-includes "src/demo"
+includes "src/cli"
