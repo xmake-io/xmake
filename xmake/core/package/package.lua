@@ -166,8 +166,7 @@ function _instance:plat()
     if self._PLAT then
         return self._PLAT
     end
-    -- @note we uses os.host() instead of them for the binary package
-    if self:is_binary() then
+    if self:is_host() then
         return os.subhost()
     end
     local requireinfo = self:requireinfo()
@@ -182,8 +181,7 @@ function _instance:arch()
     if self._ARCH then
         return self._ARCH
     end
-    -- @note we uses os.arch() instead of them for the binary package
-    if self:is_binary() then
+    if self:is_host() then
         return os.subarch()
     end
     return self:targetarch()
@@ -668,6 +666,31 @@ function _instance:is_local()
     return self._IS_LOCAL or self:is_source_embed() or self:is_binary_embed() or self:is_thirdparty()
 end
 
+-- is debug package? (deprecated)
+function _instance:debug()
+    return self:is_debug()
+end
+
+-- is host package?
+--
+-- @note It is different from not is_cross() in that users do not use host packages directly,
+-- they are usually used to build library packages.
+function _instance:is_host()
+    local requireinfo = self:requireinfo()
+    if requireinfo and requireinfo.host then
+        return true
+    end
+    return self:is_binary()
+end
+
+-- is cross-compilation?
+function _instance:is_cross()
+    if self:is_host() then
+        return false
+    end
+    return is_cross(self:plat(), self:arch())
+end
+
 -- mark it as local package
 function _instance:_mark_as_local(is_local)
     if self:is_local() ~= is_local then
@@ -697,16 +720,6 @@ function _instance:use_external_includes()
         external = true
     end
     return external
-end
-
--- is debug package? (deprecated)
-function _instance:debug()
-    return self:is_debug()
-end
-
--- is cross-compilation?
-function _instance:is_cross()
-    return is_cross(self:plat(), self:arch())
 end
 
 -- get the filelock of the whole package directory
@@ -1267,7 +1280,7 @@ function _instance:tool(toolkind)
         local cachekey = "package_" .. tostring(self)
         return toolchain.tool(self:toolchains(), toolkind, {cachekey = cachekey, plat = self:plat(), arch = self:arch()})
     else
-        return platform.tool(toolkind, self:plat(), self:arch())
+        return platform.tool(toolkind, self:plat(), self:arch(), {host = self:is_host()})
     end
 end
 
@@ -1277,7 +1290,7 @@ function _instance:toolconfig(name)
         local cachekey = "package_" .. tostring(self)
         return toolchain.toolconfig(self:toolchains(), name, {cachekey = cachekey, plat = self:plat(), arch = self:arch()})
     else
-        return platform.toolconfig(name, self:plat(), self:arch())
+        return platform.toolconfig(name, self:plat(), self:arch(), {host = self:is_host()})
     end
 end
 

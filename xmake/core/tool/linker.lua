@@ -88,8 +88,18 @@ function linker._load_tool(targetkind, sourcekinds, target)
             program, toolname, toolchain_info = target:tool(_linkerinfo.linkerkind)
         end
 
+        -- is host?
+        local is_host
+        if target and target.is_host then
+            is_host = target:is_host()
+        end
+
         -- load the linker tool from the linker kind (with cache)
-        linkertool, errors = tool.load(_linkerinfo.linkerkind, {program = program, toolname = toolname, toolchain_info = toolchain_info})
+        linkertool, errors = tool.load(_linkerinfo.linkerkind, {
+            host = is_host,
+            program = program,
+            toolname = toolname,
+            toolchain_info = toolchain_info})
         if linkertool then
             linkerinfo = _linkerinfo
             linkerinfo.program = program

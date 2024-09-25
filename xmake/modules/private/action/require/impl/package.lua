@@ -160,17 +160,6 @@ function _load_require(require_str, requires_extra, parentinfo)
         wprint("add_requires(%s): vs_runtime is deprecated, please use runtimes!", require_str)
     end
 
-    -- require packge in the current host platform
-    if require_extra.host then
-        if is_subhost(core_package.targetplat()) and os.subarch() == core_package.targetarch() then
-            -- we need to pass plat/arch to avoid repeat installation
-            -- @see https://github.com/xmake-io/xmake/issues/1579
-        else
-            require_extra.plat = os.subhost()
-            require_extra.arch = os.subarch()
-        end
-    end
-
     -- check require options
     local extra_options = hashset.of("plat", "arch", "kind", "host", "targetos",
     "alias", "group", "system", "option", "default", "optional", "debug",
@@ -197,6 +186,7 @@ function _load_require(require_str, requires_extra, parentinfo)
         originstr        = require_str,
         reponame         = reponame,
         version          = require_extra.version or version,
+        host             = require_extra.host,      -- this package is only for host machine
         plat             = require_extra.plat,      -- require package in the given platform
         arch             = require_extra.arch,      -- require package in the given architecture
         targetos         = require_extra.targetos,  -- require package in the given target os
@@ -497,7 +487,7 @@ function _check_package_toolchains(package)
         end
     else
         -- maybe this package is host package, it's platform and toolchain has been not checked yet.
-        local platform_inst = platform.load(package:plat(), package:arch())
+        local platform_inst = platform.load(package:plat(), package:arch(), {host = package:is_host()})
         if not platform_inst:check() then
             raise("no any matched platform for this package(%s)!", package:name())
         end
@@ -579,13 +569,6 @@ end
 
 -- finish requireinfo
 function _finish_requireinfo(requireinfo, package)
-    -- we need to synchronise the plat/arch inherited from the parent package as early as possible
-    if requireinfo.plat then
-        package:plat_set(requireinfo.plat)
-    end
-    if requireinfo.arch then
-        package:arch_set(requireinfo.arch)
-    end
     requireinfo.configs = requireinfo.configs or {}
     if package:is_plat("windows") then
         -- @see https://github.com/xmake-io/xmake/issues/4477#issuecomment-1913249489
@@ -635,6 +618,12 @@ function _finish_requireinfo(requireinfo, package)
         if v == default then
             requireinfo.configs[k] = nil
         end
+    end
+
+    -- all binary packages are host package
+    -- we need to synchronize the setup to requireinfo so that all its dependent packages inherit from it.
+    if package:is_binary() then
+        requireinfo.host = true
     end
 end
 
@@ -718,6 +707,7 @@ end
 -- get package key
 function _get_packagekey(packagename, requireinfo, version)
     return _get_requirekey(requireinfo, {name = packagename,
+                                         host = requireinfo.host,
                                          plat = requireinfo.plat,
                                          arch = requireinfo.arch,
                                          kind = requireinfo.kind,
@@ -751,6 +741,9 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
         end
         if parentinfo.arch then
             requireinfo.arch = parentinfo.arch
+        end
+        if parentinfo.host then
+            requireinfo.host = parentinfo.host
         end
         requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
         requireinfo_configs.runtimes = requireinfo_configs.runtimes or parentinfo_configs.runtimes
@@ -1314,6 +1307,9 @@ function get_configs_str(package)
     end
     if package:is_private() then
         table.insert(configs, "private")
+    end
+    if package:is_host() then
+        table.insert(configs, "host")
     end
     local requireinfo = package:requireinfo()
     if requireinfo then

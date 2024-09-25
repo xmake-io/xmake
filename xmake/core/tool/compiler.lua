@@ -100,8 +100,18 @@ function compiler._load_tool(sourcekind, target)
         program, toolname, toolchain_info = target:tool(sourcekind)
     end
 
+    -- is host?
+    local is_host
+    if target and target.is_host then
+        is_host = target:is_host()
+    end
+
     -- load the compiler tool from the source kind
-    local result, errors = tool.load(sourcekind, {program = program, toolname = toolname, toolchain_info = toolchain_info})
+    local result, errors = tool.load(sourcekind, {
+        host = is_host,
+        program = program,
+        toolname = toolname,
+        toolchain_info = toolchain_info})
     if not result then
         return nil, errors
     end

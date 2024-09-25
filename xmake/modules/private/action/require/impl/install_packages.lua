@@ -738,9 +738,18 @@ function _install_packages(requires, opt)
 
     -- exists unsupported packages?
     if #packages_unsupported > 0 then
-        cprint("${bright color.warning}note: ${clear}the following packages are unsupported on $(plat)/$(arch):")
+        local packages_unsupported_maps = {}
         for _, instance in ipairs(packages_unsupported) do
-            print("  -> %s %s", instance:displayname(), instance:version_str() or "")
+            local key = instance:plat() .. "/" .. instance:arch()
+            packages_unsupported_maps[key] = packages_unsupported_maps[key] or {}
+            table.insert(packages_unsupported_maps[key], instance)
+        end
+        for key, instances in pairs(packages_unsupported_maps) do
+            cprint("${bright color.warning}note: ${clear}the following packages are unsupported on %s:", key)
+            for _, instance in ipairs(instances) do
+                cprint("  ${yellow}->${clear} %s %s ${dim}%s",
+                    instance:displayname(), instance:version_str() or "", package.get_configs_str(instance))
+            end
         end
         has_errors = true
     end
