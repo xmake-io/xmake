@@ -1,6 +1,6 @@
 #!/bin/sh
 
-target "demo"
+target "cli"
     add_deps "xmake"
     set_kind "binary"
     set_basename "xmake"

@@ -6,9 +6,9 @@ xpack("xmake")
     set_author("ruki <waruqi@gmail.com>")
     set_licensefile("../LICENSE.md")
     set_formats("nsis", "wix", "zip")
-    add_targets("demo")
+    add_targets("cli")
     set_bindir(".")
-    set_iconfile("src/demo/xmake.ico")
+    set_iconfile("src/cli/xmake.ico")
 
     add_components("LongPath")
 

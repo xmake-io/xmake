@@ -24,4 +24,4 @@ index 2ae2e686b..6ea8c1b69 100755
 +    includes "src/tbox"
  fi
  includes "src/xmake"
- includes "src/demo"
+ includes "src/cli"

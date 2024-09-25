@@ -1,4 +1,4 @@
-target("demo")
+target("cli")
 
     -- disable this target if only build libaries
     if has_config("onlylib") then
