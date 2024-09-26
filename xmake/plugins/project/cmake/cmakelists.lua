@@ -1007,16 +1007,27 @@ function _add_target_link_libraries(cmakelists, target, outputdir)
         end
     end
 
-    if #target:objectfiles() > objectfiles_set:size() or #object_deps ~= 0 then
+    local has_links = #target:objectfiles() > objectfiles_set:size()
+    if has_links then
         cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
         for _, objectfile in ipairs(target:objectfiles()) do
             if not objectfiles_set:has(objectfile) then
                 cmakelists:print("    " .. _get_relative_unix_path_to_cmake(objectfile, outputdir))
             end
         end
+    end
+
+    if #object_deps ~= 0 then
+        if not has_links then
+            cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
+            has_links = true
+        end
         for _, dep in ipairs(object_deps) do
             cmakelists:print("    " .. dep)
         end
+    end
+
+    if has_links then
         cmakelists:print(")")
     end
 end
