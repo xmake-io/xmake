@@ -2669,7 +2669,7 @@ end
 -- check the given fortran snippets?
 --
 -- @param snippets  the snippets
--- @param opt       the argument options, e.g. {configs = {defines = ""}}
+-- @param opt       the argument options, e.g. {configs = {defines = ""}, linkerkind = "fc", "cxx" ...}
 --
 -- @return          true or false, errors
 --
