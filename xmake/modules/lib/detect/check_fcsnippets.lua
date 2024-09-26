@@ -38,7 +38,7 @@ end
 -- @param snippets  the snippets
 -- @param opt       the argument options
 --                  e.g.
---                  { verbose = false, target = [target|option]
+--                  { verbose = false, target = [target|option], linkerkind = "fc", "cxx"
 --                  , configs = {defines = "xx", fcflags = ""}
 --                  , tryrun = true, output = true}
 --
@@ -106,11 +106,12 @@ function main(snippets, opt)
             opt = table.clone(opt)
             opt.build_warnings = false
             compiler.compile(sourcefile, objectfile, opt)
+            local linkerkind = opt.linkerkind or "fc"
             if #links > 0 or opt.tryrun or opt.binary_match then
                 if option.get("diagnosis") then
-                    cprint("${dim}> %s", linker.linkcmd("binary", "fc", objectfile, binaryfile, opt))
+                    cprint("${dim}> %s", linker.linkcmd("binary", linkerkind, objectfile, binaryfile, opt))
                 end
-                linker.link("binary", "fc", objectfile, binaryfile, opt)
+                linker.link("binary", linkerkind, objectfile, binaryfile, opt)
             end
             if opt.tryrun then
                 if opt.output then
