@@ -433,6 +433,20 @@ function _instance:plaindeps()
     return self._PLAINDEPS
 end
 
+-- get library dep
+function _instance:librarydep(name, opt)
+    local key = "librarydeps_map_" .. ((opt and opt.private) and "private" or "")
+    local librarydeps_map = self:_memcache():get(key)
+    if not librarydeps_map then
+        librarydeps_map = {}
+        for _, dep in ipairs(self:librarydeps()) do
+            librarydeps_map[dep:name()] = dep
+        end
+        self:_memcache():set(key, librarydeps_map)
+    end
+    return librarydeps_map[name]
+end
+
 -- get library deps with correct link order
 function _instance:librarydeps(opt)
     if opt and opt.private then

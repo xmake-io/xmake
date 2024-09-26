@@ -396,7 +396,7 @@ end
 function _get_cflags_from_packagedeps(package, opt)
     local values
     for _, depname in ipairs(opt.packagedeps) do
-        local dep = type(depname) ~= "string" and depname or package:dep(depname)
+        local dep = type(depname) ~= "string" and depname or package:librarydep(depname)
         if dep then
             local fetchinfo = dep:fetch()
             if fetchinfo then
@@ -428,7 +428,7 @@ end
 function _get_ldflags_from_packagedeps(package, opt)
     local values
     for _, depname in ipairs(opt.packagedeps) do
-        local dep = type(depname) ~= "string" and depname or package:dep(depname)
+        local dep = type(depname) ~= "string" and depname or package:librarydep(depname)
         if dep then
             local fetchinfo = dep:fetch()
             if fetchinfo then
