@@ -1003,7 +1003,9 @@ function _add_target_link_libraries(cmakelists, target, outputdir)
     for _, dep in ipairs(target:orderdeps()) do
         if dep:is_object() then
             table.insert(object_deps, dep:name())
-            objectfiles_set:insert(table.unpack(dep:objectfiles()))
+            for _, obj in ipairs(dep:objectfiles()) do
+                objectfiles_set:insert(obj)
+            end
         end
     end
 
