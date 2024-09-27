@@ -64,7 +64,9 @@ function _find_package_with_builtin_rule(package_name, opt)
         table.insert(managers, "vcpkg")
         table.insert(managers, "conan")
         if find_from_host then
-            table.insert(managers, "pkgconfig")
+            if not is_subhost("windows") then
+                table.insert(managers, "pkgconfig")
+            end
             if is_subhost("linux", "msys") and plat ~= "windows" and find_tool("pacman") then
                 table.insert(managers, "pacman")
             end
