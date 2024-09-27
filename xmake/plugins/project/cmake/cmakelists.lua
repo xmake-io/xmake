@@ -391,6 +391,14 @@ function _add_target_phony(cmakelists, target)
     cmakelists:print("")
 end
 
+-- add target: object
+function _add_target_object(cmakelists, target, outputdir)
+    -- Can't change the output directory of object/intermediate files in CMake
+    -- https://stackoverflow.com/questions/46330056/set-output-directory-for-cmake-object-libraries
+    cmakelists:print("add_library(%s OBJECT \"\")", target:name())
+    cmakelists:print("set_target_properties(%s PROPERTIES LIBRARY_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_relative_unix_path_to_cmake(target:targetdir(), outputdir))
+end
+
 -- add target: binary
 function _add_target_binary(cmakelists, target, outputdir)
     cmakelists:print("add_executable(%s \"\")", target:name())
@@ -430,8 +438,14 @@ end
 
 -- add target dependencies
 function _add_target_dependencies(cmakelists, target)
-    local deps = target:get("deps")
-    if deps then
+    local deps = {}
+    for _, dep in ipairs(target:orderdeps()) do
+        if not dep:is_object() then
+            deps:insert(dep:name())
+        end
+    end
+
+    if #deps ~= 0 then
         cmakelists:printf("add_dependencies(%s", target:name())
         for _, dep in ipairs(deps) do
             cmakelists:write(" " .. dep)
@@ -984,13 +998,38 @@ function _add_target_link_libraries(cmakelists, target, outputdir)
             end
         end
     end
-    if #target:objectfiles() > objectfiles_set:size() then
+
+    local object_deps = {}
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:is_object() then
+            table.insert(object_deps, dep:name())
+            for _, obj in ipairs(dep:objectfiles()) do
+                objectfiles_set:insert(obj)
+            end
+        end
+    end
+
+    local has_links = #target:objectfiles() > objectfiles_set:size()
+    if has_links then
         cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
         for _, objectfile in ipairs(target:objectfiles()) do
             if not objectfiles_set:has(objectfile) then
                 cmakelists:print("    " .. _get_relative_unix_path_to_cmake(objectfile, outputdir))
             end
         end
+    end
+
+    if #object_deps ~= 0 then
+        if not has_links then
+            cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
+            has_links = true
+        end
+        for _, dep in ipairs(object_deps) do
+            cmakelists:print("    " .. dep)
+        end
+    end
+
+    if has_links then
         cmakelists:print(")")
     end
 end
@@ -1196,6 +1235,8 @@ function _add_target(cmakelists, target, outputdir)
     -- is phony target?
     if target:is_phony() then
         return _add_target_phony(cmakelists, target)
+    elseif target:is_object() then
+        _add_target_object(cmakelists, target, outputdir)
     elseif target:is_binary() then
         _add_target_binary(cmakelists, target, outputdir)
     elseif target:is_static() then
