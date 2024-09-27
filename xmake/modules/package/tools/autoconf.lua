@@ -98,14 +98,11 @@ end
 
 -- get configs
 function _get_configs(package, configs)
-
-    -- add prefix
     local configs = configs or {}
     table.insert(configs, "--prefix=" .. _translate_paths(package:installdir()))
 
-    -- add host for cross-complation
-    if not configs.host and package:is_cross() then
-        if package:is_plat("iphoneos", "macosx") then
+    if not configs.host then
+        if package:is_plat("iphoneos", "macosx") and package:is_cross() then
             local triples =
             {
                 arm64  = "aarch64-apple-darwin",
@@ -132,14 +129,14 @@ function _get_configs(package, configs)
                 mips64          = "mips64-linux-android"    -- removed in ndk r17
             }
             table.insert(configs, "--host=" .. (triples[package:arch()] or triples["armeabi-v7a"]))
-        elseif package:is_plat("mingw") then
+        elseif package:is_plat("mingw") then -- we always add host for mingw
             local triples =
             {
                 i386   = "i686-w64-mingw32",
                 x86_64 = "x86_64-w64-mingw32"
             }
             table.insert(configs, "--host=" .. (triples[package:arch()] or triples.i386))
-        elseif package:is_plat("linux") then
+        elseif package:is_plat("linux") and package:is_cross() then
             local triples =
             {
                 ["arm64-v8a"] = "aarch64-linux-gnu",
