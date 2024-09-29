@@ -20,7 +20,8 @@
 
 -- @see https://github.com/xmake-io/xmake/issues/3257
 rule("iverilog.binary")
-    set_extensions(".v", ".vhd")
+    -- support SystemVerilog
+    set_extensions(".v", ".sv", ".vhd")
     on_load(function (target)
         target:set("kind", "binary")
         if not target:get("extension") then
@@ -32,6 +33,7 @@ rule("iverilog.binary")
     end)
 
     on_linkcmd(function (target, batchcmds, opt)
+        import("core.project.project")
         local toolchain = assert(target:toolchain("iverilog"), 'we need set_toolchains("iverilog") in target("%s")', target:name())
         local iverilog = assert(toolchain:config("iverilog"), "iverilog not found!")
 
@@ -80,11 +82,16 @@ rule("iverilog.binary")
         end
 
         -- get defines
-        local defines = target:get("defines")
-        if defines then
-            for _, define in ipairs(defines) do
+        local add_defines = function(defines)
+            for _, define in ipairs(defines or {}) do
                 table.insert(argv, "-D" .. define)
             end
+        end
+        add_defines(target:get("defines"))
+        -- support add_defines in options
+        for _, option_name in ipairs(target:get("options") or {}) do
+            local option = project.option(option_name)
+            add_defines(option:enabled() and option:get("defines"))
         end
 
         -- get includedirs
@@ -115,5 +122,6 @@ rule("iverilog.binary")
         local toolchain = assert(target:toolchain("iverilog"), 'we need set_toolchains("iverilog") in target("%s")', target:name())
         local vvp = assert(toolchain:config("vvp"), "vvp not found!")
 
-        os.execv(vvp, {"-n", target:targetfile(), "-lxt2"})
+        -- some oscilloscopes do not support lxt2
+        os.execv(vvp, {"-n", target:targetfile()})
     end)
