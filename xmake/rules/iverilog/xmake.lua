@@ -20,7 +20,6 @@
 
 -- @see https://github.com/xmake-io/xmake/issues/3257
 rule("iverilog.binary")
-    -- support SystemVerilog
     set_extensions(".v", ".sv", ".vhd")
     on_load(function (target)
         target:set("kind", "binary")
@@ -82,7 +81,7 @@ rule("iverilog.binary")
         end
 
         -- get defines
-        for _, define in ipairs(target:get_from("defines", "*") or {}) do
+        for _, define in ipairs((target:get_from("defines", "*"))) do
             table.insert(argv, "-D" .. define)
         end
 
@@ -113,7 +112,5 @@ rule("iverilog.binary")
     on_run(function (target)
         local toolchain = assert(target:toolchain("iverilog"), 'we need set_toolchains("iverilog") in target("%s")', target:name())
         local vvp = assert(toolchain:config("vvp"), "vvp not found!")
-
-        -- some oscilloscopes do not support lxt2
         os.execv(vvp, {"-n", target:targetfile()})
     end)
