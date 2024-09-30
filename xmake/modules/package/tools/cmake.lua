@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.semver")
+import("core.base.hashset")
 import("core.tool.toolchain")
 import("core.project.config")
 import("core.project.project")
@@ -1196,6 +1197,28 @@ function configure(package, configs, opt)
         else
             table.insert(argv, "-D" .. name .. "=" .. value)
         end
+    end
+    -- shrink cmake arguments, fix too long arguments
+    -- @see https://github.com/xmake-io/xmake-repo/pull/5247#discussion_r1780302212
+    local cmake_argv = {}
+    local long_options = hashset.of(
+        "CMAKE_C_FLAGS",
+        "CMAKE_CXX_FLAGS",
+        "CMAKE_ASM_FLAGS",
+        "CMAKE_EXE_LINKER_FLAGS",
+        "CMAKE_SHARED_LINKER_FLAGS")
+    local shrink = false
+    table.remove_if(argv, function (idx, value)
+        local k, v = value:match("%-D(.*)=(.*)")
+        if k and v and long_options:has(k) and #v > 128 then
+            table.insert(cmake_argv, ("set(%s \"%s\")"):format(k, tostring(v)))
+            shrink = true
+            return true
+        end
+    end)
+    if shrink then
+        local cmakefile = path.join(opt.curdir and opt.curdir or oldir, "CMakeLists.txt")
+        io.insert(cmakefile, 1, table.concat(cmake_argv, "\n"))
     end
     table.insert(argv, oldir)
 
