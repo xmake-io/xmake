@@ -82,16 +82,8 @@ rule("iverilog.binary")
         end
 
         -- get defines
-        local add_defines = function(defines)
-            for _, define in ipairs(defines or {}) do
-                table.insert(argv, "-D" .. define)
-            end
-        end
-        add_defines(target:get("defines"))
-        -- support add_defines in options
-        for _, option_name in ipairs(target:get("options") or {}) do
-            local option = project.option(option_name)
-            add_defines(option:enabled() and option:get("defines"))
+        for _, define in ipairs(target:get_from("defines", "*") or {}) do
+            table.insert(argv, "-D" .. define)
         end
 
         -- get includedirs
