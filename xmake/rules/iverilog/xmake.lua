@@ -20,7 +20,7 @@
 
 -- @see https://github.com/xmake-io/xmake/issues/3257
 rule("iverilog.binary")
-    set_extensions(".v", ".vhd")
+    set_extensions(".v", ".sv", ".vhd")
     on_load(function (target)
         target:set("kind", "binary")
         if not target:get("extension") then
@@ -80,11 +80,8 @@ rule("iverilog.binary")
         end
 
         -- get defines
-        local defines = target:get("defines")
-        if defines then
-            for _, define in ipairs(defines) do
-                table.insert(argv, "-D" .. define)
-            end
+        for _, define in ipairs((target:get_from("defines", "*"))) do
+            table.insert(argv, "-D" .. define)
         end
 
         -- get includedirs
@@ -114,6 +111,5 @@ rule("iverilog.binary")
     on_run(function (target)
         local toolchain = assert(target:toolchain("iverilog"), 'we need set_toolchains("iverilog") in target("%s")', target:name())
         local vvp = assert(toolchain:config("vvp"), "vvp not found!")
-
-        os.execv(vvp, {"-n", target:targetfile(), "-lxt2"})
+        os.execv(vvp, {"-n", target:targetfile()})
     end)
