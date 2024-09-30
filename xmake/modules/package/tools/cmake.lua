@@ -1209,7 +1209,7 @@ function configure(package, configs, opt)
         "CMAKE_SHARED_LINKER_FLAGS")
     local shrink = false
     table.remove_if(argv, function (idx, value)
-        local k, v = value:match("-D(.*)=(.*)")
+        local k, v = value:match("%-D(.*)=(.*)")
         if k and v and long_options:has(k) and #v > 128 then
             table.insert(cmake_argv, ("set(%s \"%s\")"):format(k, tostring(v)))
             shrink = true
