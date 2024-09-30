@@ -273,23 +273,25 @@ end
 
 -- do check, we only check it once for all architectures
 function _instance:check()
-    local checkok = true
-    local checked = self:_is_checked()
-    if not checked then
+    local checked = self:config("__checked")
+    if checked == nil then
         local on_check = self:_on_check()
         if on_check then
             local ok, results_or_errors = sandbox.load(on_check, self)
             if ok then
-                checkok = results_or_errors
+                checked = results_or_errors
             else
                 os.raise(results_or_errors)
             end
+        else
+            checked = true
         end
         -- we need to persist this state
-        self:config_set("__checked", true)
+        checked = checked or false
+        self:config_set("__checked", checked)
         self:configs_save()
     end
-    return checkok
+    return checked
 end
 
 -- do load manually, it will call on_load()
@@ -386,7 +388,7 @@ end
 
 -- is checked?
 function _instance:_is_checked()
-    return self:config("__checked") == true or self:_on_check() == nil
+    return self:config("__checked") ~= nil or self:_on_check() == nil
 end
 
 -- get the tool description from the tool kind
