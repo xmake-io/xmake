@@ -32,7 +32,6 @@ rule("iverilog.binary")
     end)
 
     on_linkcmd(function (target, batchcmds, opt)
-        import("core.project.project")
         local toolchain = assert(target:toolchain("iverilog"), 'we need set_toolchains("iverilog") in target("%s")', target:name())
         local iverilog = assert(toolchain:config("iverilog"), "iverilog not found!")
 
