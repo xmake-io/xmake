@@ -56,8 +56,10 @@ rule("c++.build.modules")
             -- moduleonly modules are implicitly public
             if target:is_moduleonly() then
                 local sourcebatch = target:sourcebatches()["c++.build.modules.builder"]
-                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                    target:fileconfig_add(sourcefile, {public = true})
+                if sourcebatch then
+                    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                        target:fileconfig_add(sourcefile, {public = true})
+                    end
                 end
             end
         end
