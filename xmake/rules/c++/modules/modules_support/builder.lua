@@ -21,6 +21,7 @@
 -- imports
 import("core.base.json")
 import("core.base.option")
+import("core.base.hashset")
 import("async.runjobs")
 import("private.async.buildjobs")
 import("core.tool.compiler")
@@ -460,3 +461,32 @@ function add_headerunit_to_target_mapper(target, headerunit, bmifile)
     return deduplicated and true or false
 end
 
+-- check if dependencies changed
+function is_dependencies_changed(target, module)
+    local cachekey = target:name() .. module.name
+
+    for required, _ in table.orderpairs(module.requires) do
+        requires = requires or hashset.new()
+        requires:insert(required)
+    end
+
+    local oldrequires = compiler_support.memcache():get2(cachekey, "oldrequires")
+                        or compiler_support.localcache():get2(cachekey, "oldrequires")
+
+    local changed = false
+    if oldrequires and requires then
+        oldrequires = hashset.from(oldrequires)
+        if oldrequires:size() ~= requires:size() then
+           requires_changed = true
+        else
+           for required in requires:keys() do
+              if not oldrequires:has(required) then
+                  requires_changed = true
+                  break
+              end
+           end
+        end
+    end
+
+    return requires:to_array(), changed
+end

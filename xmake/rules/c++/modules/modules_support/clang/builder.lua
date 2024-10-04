@@ -122,10 +122,11 @@ function _get_requiresflags(target, module, opt)
     local name = module.name
     local cachekey = target:name() .. name
 
+    local requires, requires_changed = is_dependencies_changed(target, module)
     local requiresflags = compiler_support.memcache():get2(cachekey, "requiresflags")
-                       or compiler_support.localcache():get2(cachekey, "requiresflags")
+                          or compiler_support.localcache():get2(cachekey, "requiresflags")
 
-    if not requiresflags then
+    if not requiresflags or requires_changed then
         requiresflags = {}
         for required, _ in table.orderpairs(module.requires) do
             local dep_module = get_from_target_mapper(target, required)
@@ -146,8 +147,11 @@ function _get_requiresflags(target, module, opt)
                 table.join2(requiresflags, deps)
             end
         end
-        compiler_support.memcache():set2(cachekey, "requiresflags", table.unique(requiresflags))
-        compiler_support.localcache():set2(cachekey, "requiresflags", table.unique(requiresflags))
+        requiresflags = table.unique(requiresflags)
+        compiler_support.memcache():set2(cachekey, "requiresflags", requiresflags)
+        compiler_support.memcache():set2(cachekey, "oldrequires", requires)
+        compiler_support.localcache():set2(cachekey, "requiresflags", requiresflags)
+        compiler_support.localcache():set2(cachekey, "oldrequires", requires)
     end
     return requiresflags
 end
@@ -231,6 +235,7 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                 build, dependinfo = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
             end
 
+            -- if build then
             if build then
                 -- compile if it's a named module
                 if provide or compiler_support.has_module_extension(opt.cppfile) then

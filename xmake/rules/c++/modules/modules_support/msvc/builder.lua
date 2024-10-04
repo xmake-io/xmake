@@ -169,9 +169,10 @@ function _get_requiresflags(target, module, opt)
     local name = module.name
     local cachekey = target:name() .. name
 
+    local requires, requires_changed = is_dependencies_changed(target, module)
     local requiresflags = compiler_support.memcache():get2(cachekey, "requiresflags")
                          or compiler_support.localcache():get2(cachekey, "requiresflags")
-    if not requiresflags then
+    if not requiresflags or requires_changed then
         local deps_flags = {}
         for required, _ in table.orderpairs(module.requires) do
             local dep_module = get_from_target_mapper(target, required)
@@ -212,7 +213,9 @@ function _get_requiresflags(target, module, opt)
             end
         end
         compiler_support.memcache():set2(cachekey, "requiresflags", requiresflags)
+        compiler_support.memcache():set2(cachekey, "oldrequires", requires)
         compiler_support.localcache():set2(cachekey, "requiresflags", requiresflags)
+        compiler_support.localcache():set2(cachekey, "oldrequires", requires)
     end
     return requiresflags
 end
