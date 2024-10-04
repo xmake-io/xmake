@@ -58,11 +58,6 @@ function generate_dependency_for(target, sourcefile, opt)
             local clangscandeps = compiler_support.get_clang_scan_deps(target)
             local dependency_flags = table.join({"--format=p1689", "--",
                                                  clang_path, "-x", "c++", "-c", sourcefile, "-o", target:objectfile(sourcefile)}, flags)
-            if sourcefile:match("frozen") then
-                print(target:fileconfig(sourcefile))
-                print(os.args(table.join(clangscandeps, dependency_flags)))
-                -- assert(false)
-            end
             if option.get("verbose") then
                 print(os.args(table.join(clangscandeps, dependency_flags)))
             end
