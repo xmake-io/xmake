@@ -67,7 +67,7 @@ end
 function load(target, sourcekind)
 
     local sourcebatch = target:sourcebatches()[sourcekind == "cxx" and "protobuf.cpp" or "protobuf.c"]
-    for _, sourcefile_proto in ipairs(sourcebatch.sourcefiles) do
+    for _, sourcefile_proto in ipairs(sourcebatch and sourcebatch.sourcefiles) do
         local prefixdir
         local autogendir
         local public
