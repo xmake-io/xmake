@@ -71,7 +71,7 @@ function generate_dependency_for(target, sourcefile, opt)
             end
             fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
                 local keepsystemincludesflag = compiler_support.get_keepsystemincludesflag(target)
-                local compflags = flags
+                local compflags = table.clone(flags)
                 -- exclude -fmodule* and -std=c++/gnu++* flags because
                 -- when they are set clang try to find bmi of imported modules but they don't exists in this point of compilation
                 table.remove_if(compflags, function(_, flag)

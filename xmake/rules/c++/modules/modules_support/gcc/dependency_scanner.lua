@@ -64,7 +64,7 @@ function generate_dependency_for(target, sourcefile, opt)
                 wprint("GCC doesn't support module scanning ! using fallback scanner")
             end
             fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
-                local compflags = flags
+                local compflags = table.clone(flags)
                 -- exclude -fmodule* flags because, when they are set gcc try to find bmi of imported modules but they don't exists a this point of compilation
                 table.remove_if(compflags, function(_, flag) return flag:startswith("-fmodule") end)
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
