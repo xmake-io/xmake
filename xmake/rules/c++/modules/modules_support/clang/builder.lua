@@ -233,7 +233,6 @@ function make_module_buildjobs(target, batchjobs, job_name, deps, opt)
                 build, dependinfo = should_build(target, opt.cppfile, bmifile, {name = name, objectfile = opt.objectfile, requires = opt.module.requires})
             end
 
-            -- if build then
             if build then
                 -- compile if it's a named module
                 if provide or compiler_support.has_module_extension(opt.cppfile) then
