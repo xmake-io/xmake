@@ -465,13 +465,13 @@ end
 function is_dependencies_changed(target, module)
     local cachekey = target:name() .. module.name
 
+    local requires
     for required, _ in table.orderpairs(module.requires) do
         requires = requires or hashset.new()
         requires:insert(required)
     end
 
     local oldrequires = compiler_support.memcache():get2(cachekey, "oldrequires")
-                        or compiler_support.localcache():get2(cachekey, "oldrequires")
 
     local changed = false
     if oldrequires and requires then
