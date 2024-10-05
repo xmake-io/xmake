@@ -124,8 +124,6 @@ function _get_requiresflags(target, module, opt)
 
     local requires, requires_changed = is_dependencies_changed(target, module)
     local requiresflags = compiler_support.memcache():get2(cachekey, "requiresflags")
-                          or compiler_support.localcache():get2(cachekey, "requiresflags")
-
     if not requiresflags or requires_changed then
         requiresflags = {}
         for required, _ in table.orderpairs(module.requires) do
