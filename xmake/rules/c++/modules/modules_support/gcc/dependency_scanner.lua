@@ -35,14 +35,8 @@ function generate_dependency_for(target, sourcefile, opt)
     local depsfileflag = compiler_support.get_depsfileflag(target)
     local depstargetflag = compiler_support.get_depstargetflag(target)
     local dependfile = target:dependfile(sourcefile)
-    local flags = compinst:compflags({sourcefile = file, target = target}) or {}
+    local flags = compinst:compflags({sourcefile = sourcefile, target = target}) or {}
     local changed = false
-    -- fileconfig.defines are not in compflags here so we manually add it
-    if fileconfig and fileconfig.defines then
-        for _, define in ipairs(fileconfig.defines) do
-            table.insert(flags, "-D" .. define)
-        end
-    end
 
     depend.on_changed(function()
         if opt.progress then
@@ -55,8 +49,8 @@ function generate_dependency_for(target, sourcefile, opt)
         if has_depsflags and not target:policy("build.c++.gcc.fallbackscanner") then
             local ifile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".i"))
             local dfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".d"))
-            local flags = table.join(flags or {}, baselineflags, {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depsformatflag, depsfileflag .. jsonfile, depstargetflag .. target:objectfile(sourcefile), "-o", ifile})
-            os.vrunv(compinst:program(), flags)
+            local compflags = table.join(flags or {}, baselineflags, {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depsformatflag, depsfileflag .. jsonfile, depstargetflag .. target:objectfile(sourcefile), "-o", ifile})
+            os.vrunv(compinst:program(), compflags)
             os.rm(ifile)
             os.rm(dfile)
         else
@@ -68,8 +62,8 @@ function generate_dependency_for(target, sourcefile, opt)
                 -- exclude -fmodule* flags because, when they are set gcc try to find bmi of imported modules but they don't exists a this point of compilation
                 table.remove_if(compflags, function(_, flag) return flag:startswith("-fmodule") end)
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                local flags = table.join(baselineflags, compflags or {}, {file,  "-o", ifile})
-                os.vrunv(compinst:program(), flags)
+                compflags = table.join(baselineflags, compflags or {}, {file,  "-o", ifile})
+                os.vrunv(compinst:program(), compflags)
                 local content = io.readfile(ifile)
                 os.rm(ifile)
                 return content

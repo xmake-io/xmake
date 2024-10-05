@@ -31,14 +31,8 @@ function generate_dependency_for(target, sourcefile, opt)
     local compinst = target:compiler("cxx")
     local changed = false
     local dependfile = target:dependfile(sourcefile)
-    local flags = compinst:compflags({sourcefile = file, target = target}) or {}
+    local flags = compinst:compflags({sourcefile = sourcefile, target = target}) or {}
     local fileconfig = target:fileconfig(sourcefile)
-    -- fileconfig.defines are not in compflags here so we manually add it
-    if fileconfig and fileconfig.defines then
-        for _, define in ipairs(fileconfig.defines) do
-            table.insert(flags, "-D" .. define)
-        end
-    end
 
     depend.on_changed(function()
         if opt.progress then
@@ -78,8 +72,8 @@ function generate_dependency_for(target, sourcefile, opt)
                     return flag:startswith("-fmodule") or flag:startswith("-std=c++") or flag:startswith("-std=gnu++")
                 end)
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                local flags = table.join(compflags or {}, keepsystemincludesflag or {}, {"-E", "-x", "c++", file, "-o", ifile})
-                os.vrunv(compinst:program(), flags)
+                compflags = table.join(compflags or {}, keepsystemincludesflag or {}, {"-E", "-x", "c++", file, "-o", ifile})
+                os.vrunv(compinst:program(), compflags)
                 local content = io.readfile(ifile)
                 os.rm(ifile)
                 return content
