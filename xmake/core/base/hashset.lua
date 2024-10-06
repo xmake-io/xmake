@@ -108,7 +108,62 @@ function hashset_impl:to_array()
     return result
 end
 
--- iterate keys of hashtable
+-- iterate items
+--
+-- @code
+-- for item in instance:items() do
+--   ...
+-- end
+-- @endcode
+--
+function hashset_impl:items()
+    return function (t, item)
+        local k, _ = next(t._DATA, item)
+        if k == hashset._NIL then
+            return nil
+        else
+            return k
+        end
+    end, self, nil
+end
+
+-- iterate order items
+--
+-- @code
+-- for item in instance:orderitems() do
+--   ...
+-- end
+-- @endcode
+--
+function hashset_impl:orderitems()
+    local orderkeys = table.orderkeys(self._DATA, function (a, b)
+        if a == hashset._NIL then
+            a = math.inf
+        end
+        if b == hashset._NIL then
+            b = math.inf
+        end
+        if type(a) == "table" then
+            a = tostring(a)
+        end
+        if type(b) == "table" then
+            b = tostring(b)
+        end
+        return a < b
+    end)
+    local i = 1
+    return function (t, k)
+        k = orderkeys[i]
+        i = i + 1
+        if k == hashset._NIL then
+            return nil
+        else
+            return k
+        end
+    end, self, nil
+end
+
+-- iterate keys (deprecated, please use items())
 --
 -- @code
 -- for _, key in instance:keys() do
@@ -127,7 +182,7 @@ function hashset_impl:keys()
     end, self, nil
 end
 
--- order keys iterator
+-- iterate order keys (deprecated, please use orderitems())
 --
 -- @code
 -- for _, key in instance:orderkeys() do
