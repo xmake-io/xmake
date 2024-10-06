@@ -103,9 +103,9 @@ end
 -- convert hashset to an array, nil in the set will be ignored
 function hashset:to_array()
     local result = {}
-    for k, _ in pairs(self._DATA) do
-        if k ~= hashset._NIL then
-            table.insert(result, k)
+    for item in self:items() do
+        if item ~= nil then
+            table.insert(result, item)
         end
     end
     return result

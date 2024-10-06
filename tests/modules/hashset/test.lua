@@ -21,5 +21,6 @@ function test_hashset(t)
     t:require(h == h2)
     h2:clear()
     t:require(h2:empty())
+    t:require(h == hashset.from(h:to_array()))
 end
 
