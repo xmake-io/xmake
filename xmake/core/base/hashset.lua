@@ -14,21 +14,52 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      OpportunityLiu
+-- @author      OpportunityLiu, ruki
 -- @file        hashset.lua
 --
 
--- define module
-local hashset      = hashset or {}
-local hashset_impl = hashset.__index or {}
-
 -- load modules
-local table      = require("base/table")
-local todisplay  = require("base/todisplay")
+local object    = require("base/object")
+local table     = require("base/table")
+local todisplay = require("base/todisplay")
+
+-- define module
+local hashset = hashset or object { _init = {"_DATA", "_SIZE"} }
 
 -- representaion for nil key
-hashset._NIL = setmetatable({}, { __todisplay = function() return "${reset}${color.dump.keyword}nil${reset}" end, __tostring = function() return "symbol(nil)" end })
+hashset._NIL = setmetatable({}, {
+    __todisplay = function()
+        return "${reset}${color.dump.keyword}nil${reset}"
+    end,
+    __tostring = function()
+        return "symbol(nil)"
+    end
+})
 
+function hashset._to_key(key)
+    if key == nil then
+        key = hashset._NIL
+    end
+    return key
+end
+
+-- h1 == h1?
+function hashset:__eq(h)
+    if self._DATA == h._DATA then
+        return true
+    end
+    if self:size() ~= h:size() then
+        return false
+    end
+    for item in h:items() do
+        if not self:has(item) then
+            return false
+        end
+    end
+    return true
+end
+
+-- to display
 function hashset:__todisplay()
     return string.format("hashset${reset}(%s) {%s}", todisplay(self._SIZE), table.concat(table.imap(table.keys(self._DATA), function (i, k)
         if i > 10 then
@@ -41,42 +72,14 @@ function hashset:__todisplay()
     end), ", "))
 end
 
-function hashset._to_key(key)
-    if key == nil then
-        key = hashset._NIL
-    end
-    return key
-end
-
--- make a new hashset
-function hashset.new()
-    return setmetatable({ _DATA = {}, _SIZE = 0 }, hashset)
-end
-
--- construct from list of items
-function hashset.of(...)
-    local result = hashset.new()
-    local data = table.pack(...)
-    for i = 1, data.n do
-        result:insert(data[i])
-    end
-    return result
-end
-
--- construct from an array
-function hashset.from(array)
-    assert(array)
-    return hashset.of(table.unpack(array))
-end
-
 -- check value is in hashset
-function hashset_impl:has(value)
+function hashset:has(value)
     value = hashset._to_key(value)
     return self._DATA[value] or false
 end
 
 -- insert value to hashset, returns false if value has already in the hashset
-function hashset_impl:insert(value)
+function hashset:insert(value)
     value = hashset._to_key(value)
     local result = not (self._DATA[value] or false)
     if result then
@@ -87,7 +90,7 @@ function hashset_impl:insert(value)
 end
 
 -- remove value from hashset, returns false if value is not in the hashset
-function hashset_impl:remove(value)
+function hashset:remove(value)
     value = hashset._to_key(value)
     local result = self._DATA[value] or false
     if result then
@@ -98,7 +101,7 @@ function hashset_impl:remove(value)
 end
 
 -- convert hashset to an array, nil in the set will be ignored
-function hashset_impl:to_array()
+function hashset:to_array()
     local result = {}
     for k, _ in pairs(self._DATA) do
         if k ~= hashset._NIL then
@@ -116,7 +119,7 @@ end
 -- end
 -- @endcode
 --
-function hashset_impl:items()
+function hashset:items()
     return function (t, item)
         local k, _ = next(t._DATA, item)
         if k == hashset._NIL then
@@ -135,7 +138,7 @@ end
 -- end
 -- @endcode
 --
-function hashset_impl:orderitems()
+function hashset:orderitems()
     local orderkeys = table.orderkeys(self._DATA, function (a, b)
         if a == hashset._NIL then
             a = math.inf
@@ -171,7 +174,7 @@ end
 -- end
 -- @endcode
 --
-function hashset_impl:keys()
+function hashset:keys()
     return function (t, key)
         local k, _ = next(t._DATA, key)
         if k == hashset._NIL then
@@ -190,7 +193,7 @@ end
 -- end
 -- @endcode
 --
-function hashset_impl:orderkeys()
+function hashset:orderkeys()
     local orderkeys = table.keys(self._DATA)
     table.sort(orderkeys, function (a, b)
         if a == hashset._NIL then
@@ -220,26 +223,54 @@ function hashset_impl:orderkeys()
 end
 
 -- get size of hashset
-function hashset_impl:size()
+function hashset:size()
     return self._SIZE
 end
 
 -- is empty?
-function hashset_impl:empty()
+function hashset:empty()
     return self:size() == 0
 end
 
 -- get data of hashset
-function hashset_impl:data()
+function hashset:data()
     return self._DATA
 end
 
 -- clear hashset
-function hashset_impl:clear()
+function hashset:clear()
     self._DATA = {}
     self._SIZE = 0
 end
 
--- return module
-hashset.__index = hashset_impl
+-- clone hashset
+function hashset:clone()
+    local h = hashset.new()
+    h._SIZE = self._SIZE
+    h._DATA = table.clone(self._DATA)
+    return h
+end
+
+-- construct from list of items
+function hashset.of(...)
+    local result = hashset.new()
+    local data = table.pack(...)
+    for i = 1, data.n do
+        result:insert(data[i])
+    end
+    return result
+end
+
+-- construct from an array
+function hashset.from(array)
+    assert(array)
+    return hashset.of(table.unpack(array))
+end
+
+-- new hashset
+function hashset.new()
+    return hashset {{}, 0}
+end
+
+-- return module: hashset
 return hashset

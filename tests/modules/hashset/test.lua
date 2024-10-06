@@ -13,5 +13,13 @@ function test_hashset(t)
         t:require(item > prev)
         prev = item
     end
+    local h2 = h:clone()
+    t:require(h == h2)
+    h2:insert(11)
+    t:require_not(h == h2)
+    h2:remove(11)
+    t:require(h == h2)
+    h2:clear()
+    t:require(h2:empty())
 end
 
