@@ -263,7 +263,11 @@ end
 
 -- construct from an array
 function hashset.from(array)
-    return hashset.of(table.unpack(array))
+    local result = hashset.new()
+    for i = 1, #array do
+        result:insert(array[i])
+    end
+    return result
 end
 
 -- new hashset
