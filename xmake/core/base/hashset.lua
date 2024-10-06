@@ -263,7 +263,6 @@ end
 
 -- construct from an array
 function hashset.from(array)
-    assert(array)
     return hashset.of(table.unpack(array))
 end
 
