@@ -213,8 +213,6 @@ function _get_requiresflags(target, module, opt)
         end
         compiler_support.memcache():set2(cachekey, "requiresflags", requiresflags)
         compiler_support.memcache():set2(cachekey, "oldrequires", requires)
-        compiler_support.localcache():set2(cachekey, "requiresflags", requiresflags)
-        compiler_support.localcache():set2(cachekey, "oldrequires", requires)
     end
     return requiresflags
 end
