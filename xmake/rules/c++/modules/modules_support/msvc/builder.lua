@@ -173,9 +173,8 @@ function _get_requiresflags(target, module, opt)
     local requiresflags = compiler_support.memcache():get2(cachekey, "requiresflags")
     if not requiresflags or requires_changed then
         local deps_flags = {}
-        for required, _ in table.orderpairs(module.requires) do
+        for required, _ in requires:orderkeys() do
             local dep_module = get_from_target_mapper(target, required)
-
             assert(dep_module, "module dependency %s required for %s not found <%s>", required, name, target:name())
 
             local mapflag
