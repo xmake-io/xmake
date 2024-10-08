@@ -173,7 +173,7 @@ function _get_requiresflags(target, module, opt)
     local requiresflags = compiler_support.memcache():get2(cachekey, "requiresflags")
     if not requiresflags or requires_changed then
         local deps_flags = {}
-        for required, _ in requires:orderkeys() do
+        for required in requires:orderitems() do
             local dep_module = get_from_target_mapper(target, required)
             assert(dep_module, "module dependency %s required for %s not found <%s>", required, name, target:name())
 
@@ -204,8 +204,8 @@ function _get_requiresflags(target, module, opt)
         requiresflags = {}
         local contains = {}
         for _, map in ipairs(deps_flags) do
-            local name, _ = map[2]:split("=")[1], map[2]:split("=")[2]
-            if not contains[name] then
+            local name = map[2]:split("=")[1]
+            if name and not contains[name] then
                 table.insert(requiresflags, map)
                 contains[name] = true
             end
@@ -414,4 +414,3 @@ function make_headerunit_buildcmds(target, batchcmds, headerunit, bmifile, outpu
     batchcmds:add_depfiles(headerunit.path)
     return os.mtime(bmifile)
 end
-
