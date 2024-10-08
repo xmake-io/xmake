@@ -280,18 +280,19 @@ end
 
 -- the current config is belong to the given config values?
 function config.is_value(name, ...)
-
-    -- get the current config value
     local value = config.get(name)
-    if not value then return false end
+    if value == nil then
+        return false
+    end
 
-    -- exists this value? and escape '-'
+    value = tostring(value)
     for _, v in ipairs(table.pack(...)) do
-        if v and type(v) == "string" and value:find("^" .. v:gsub("%-", "%%-") .. "$") then
+        -- escape '-'
+        v = tostring(v)
+        if value == v or value:find("^" .. v:gsub("%-", "%%-") .. "$") then
             return true
         end
     end
-
     return false
 end
 
@@ -302,7 +303,6 @@ function config.has(...)
             return true
         end
     end
-
     return false
 end
 
