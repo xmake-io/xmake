@@ -35,6 +35,7 @@ function generate_dependency_for(target, sourcefile, opt)
     local depsfileflag = compiler_support.get_depsfileflag(target)
     local depstargetflag = compiler_support.get_depstargetflag(target)
     local dependfile = target:dependfile(sourcefile)
+    local flags = compinst:compflags({sourcefile = sourcefile, target = target}) or {}
     local changed = false
 
     depend.on_changed(function()
@@ -48,9 +49,8 @@ function generate_dependency_for(target, sourcefile, opt)
         if has_depsflags and not target:policy("build.c++.gcc.fallbackscanner") then
             local ifile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".i"))
             local dfile = path.translate(path.join(outputdir, path.filename(sourcefile) .. ".d"))
-            local compflags = compinst:compflags({sourcefile = sourcefile, target = target})
-            local flags = table.join(compflags or {}, baselineflags, {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depsformatflag, depsfileflag .. jsonfile, depstargetflag .. target:objectfile(sourcefile), "-o", ifile})
-            os.vrunv(compinst:program(), flags)
+            local compflags = table.join(flags or {}, baselineflags, {sourcefile, "-MT", jsonfile, "-MD", "-MF", dfile, depsformatflag, depsfileflag .. jsonfile, depstargetflag .. target:objectfile(sourcefile), "-o", ifile})
+            os.vrunv(compinst:program(), compflags)
             os.rm(ifile)
             os.rm(dfile)
         else
@@ -58,12 +58,12 @@ function generate_dependency_for(target, sourcefile, opt)
                 wprint("GCC doesn't support module scanning ! using fallback scanner")
             end
             fallback_generate_dependencies(target, jsonfile, sourcefile, function(file)
-                local compflags = compinst:compflags({sourcefile = file, target = target})
+                local compflags = table.clone(flags)
                 -- exclude -fmodule* flags because, when they are set gcc try to find bmi of imported modules but they don't exists a this point of compilation
                 table.remove_if(compflags, function(_, flag) return flag:startswith("-fmodule") end)
                 local ifile = path.translate(path.join(outputdir, path.filename(file) .. ".i"))
-                local flags = table.join(baselineflags, compflags or {}, {file,  "-o", ifile})
-                os.vrunv(compinst:program(), flags)
+                compflags = table.join(baselineflags, compflags or {}, {file,  "-o", ifile})
+                os.vrunv(compinst:program(), compflags)
                 local content = io.readfile(ifile)
                 os.rm(ifile)
                 return content
@@ -73,7 +73,7 @@ function generate_dependency_for(target, sourcefile, opt)
 
         local dependinfo = io.readfile(jsonfile)
         return { moduleinfo = dependinfo }
-    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt()})
+    end, {dependfile = dependfile, files = {sourcefile}, changed = target:is_rebuilt(), values = flags})
     return changed
 end
 

@@ -122,12 +122,11 @@ function _get_requiresflags(target, module, opt)
     local name = module.name
     local cachekey = target:name() .. name
 
+    local requires, requires_changed = is_dependencies_changed(target, module)
     local requiresflags = compiler_support.memcache():get2(cachekey, "requiresflags")
-                       or compiler_support.localcache():get2(cachekey, "requiresflags")
-
-    if not requiresflags or (opt and opt.regenerate) then
+    if not requiresflags or requires_changed then
         requiresflags = {}
-        for required, _ in table.orderpairs(module.requires) do
+        for required in requires:orderitems() do
             local dep_module = get_from_target_mapper(target, required)
             assert(dep_module, "module dependency %s required for %s not found", required, name)
 
@@ -146,15 +145,16 @@ function _get_requiresflags(target, module, opt)
                 table.join2(requiresflags, deps)
             end
         end
-        compiler_support.memcache():set2(cachekey, "requiresflags", table.unique(requiresflags))
-        compiler_support.localcache():set2(cachekey, "requiresflags", table.unique(requiresflags))
+        requiresflags = table.unique(requiresflags)
+        compiler_support.memcache():set2(cachekey, "requiresflags", requiresflags)
+        compiler_support.memcache():set2(cachekey, "oldrequires", requires)
     end
     return requiresflags
 end
 
 function _append_requires_flags(target, module, name, cppfile, bmifile, opt)
     local cxxflags = {}
-    local requiresflags = _get_requiresflags(target, {name = (name or cppfile), bmi = bmifile, requires = module.requires}, {regenerate = opt.build})
+    local requiresflags = _get_requiresflags(target, {name = (name or cppfile), bmi = bmifile, requires = module.requires})
     for _, flag in ipairs(requiresflags) do
         -- we need to wrap flag to support flag with space
         if type(flag) == "string" and flag:find(" ", 1, true) then
@@ -358,4 +358,3 @@ function get_requires(target, module)
     end
     return _requires
 end
-

@@ -1,0 +1,11 @@
+export module foobar;
+
+#if defined(FOO)
+import foo;
+namespace impl = foo;
+#else
+import bar;
+namespace impl = bar;
+#endif
+
+export void hello() { impl::hello(); }

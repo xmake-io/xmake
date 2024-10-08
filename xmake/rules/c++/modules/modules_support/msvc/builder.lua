@@ -169,13 +169,12 @@ function _get_requiresflags(target, module, opt)
     local name = module.name
     local cachekey = target:name() .. name
 
+    local requires, requires_changed = is_dependencies_changed(target, module)
     local requiresflags = compiler_support.memcache():get2(cachekey, "requiresflags")
-                         or compiler_support.localcache():get2(cachekey, "requiresflags")
-    if not requiresflags or (opt and opt.regenerate) then
+    if not requiresflags or requires_changed then
         local deps_flags = {}
-        for required, _ in table.orderpairs(module.requires) do
+        for required in requires:orderitems() do
             local dep_module = get_from_target_mapper(target, required)
-
             assert(dep_module, "module dependency %s required for %s not found <%s>", required, name, target:name())
 
             local mapflag
@@ -205,21 +204,21 @@ function _get_requiresflags(target, module, opt)
         requiresflags = {}
         local contains = {}
         for _, map in ipairs(deps_flags) do
-            local name, _ = map[2]:split("=")[1], map[2]:split("=")[2]
-            if not contains[name] then
+            local name = map[2]:split("=")[1]
+            if name and not contains[name] then
                 table.insert(requiresflags, map)
                 contains[name] = true
             end
         end
         compiler_support.memcache():set2(cachekey, "requiresflags", requiresflags)
-        compiler_support.localcache():set2(cachekey, "requiresflags", requiresflags)
+        compiler_support.memcache():set2(cachekey, "oldrequires", requires)
     end
     return requiresflags
 end
 
 function _append_requires_flags(target, module, name, cppfile, bmifile, opt)
     local cxxflags = {}
-    local requiresflags = _get_requiresflags(target, {name = (name or cppfile), bmi = bmifile, requires = module.requires}, {regenerate = opt.build})
+    local requiresflags = _get_requiresflags(target, {name = (name or cppfile), bmi = bmifile, requires = module.requires})
     for _, flag in ipairs(requiresflags) do
         -- we need to wrap flag to support flag with space
         if type(flag) == "string" and flag:find(" ", 1, true) then
@@ -415,4 +414,3 @@ function make_headerunit_buildcmds(target, batchcmds, headerunit, bmifile, outpu
     batchcmds:add_depfiles(headerunit.path)
     return os.mtime(bmifile)
 end
-
