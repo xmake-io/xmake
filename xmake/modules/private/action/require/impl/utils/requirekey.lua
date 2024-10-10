@@ -78,7 +78,7 @@ function main(requireinfo, opt)
         if key == "" then
             key = "_" -- we need to generate a fixed hash value
         end
-        return hash.uuid(key):split("-", {plain = true})[1]:lower()
+        return hash.hash32(key)
     else
         return key
     end

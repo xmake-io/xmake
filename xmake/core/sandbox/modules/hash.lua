@@ -25,67 +25,85 @@ local raise = require("sandbox/modules/raise")
 -- define module
 local sandbox_hash = sandbox_hash or {}
 
--- make a new uuid
+-- generate a new uuid
 function sandbox_hash.uuid(str)
     local uuid = hash.uuid(str)
     if not uuid then
-        raise("cannot make uuid %s", str)
+        raise("cannot generate uuid %s", str)
     end
     return uuid
 end
 
--- make a new uuid v4
+-- generate a new uuid v4
 function sandbox_hash.uuid4(str)
     local uuid = hash.uuid4(str)
     if not uuid then
-        raise("cannot make uuid4 %s", str)
+        raise("cannot generate uuid4 %s", str)
     end
     return uuid
 end
 
--- make sha1 from the given file or data
+-- generate sha1 from the given file or data
 function sandbox_hash.sha1(file_or_data)
     local sha1, errors = hash.sha1(file_or_data)
     if not sha1 then
-        raise("cannot make sha1 for %s, %s", file_or_data, errors or "unknown errors")
+        raise("cannot generate sha1 for %s, %s", file_or_data, errors or "unknown errors")
     end
     return sha1
 end
 
--- make sha256 from the given file or data
+-- generate sha256 from the given file or data
 function sandbox_hash.sha256(file_or_data)
     local sha256, errors = hash.sha256(file_or_data)
     if not sha256 then
-        raise("cannot make sha256 for %s, %s", file_or_data, errors or "unknown errors")
+        raise("cannot generate sha256 for %s, %s", file_or_data, errors or "unknown errors")
     end
     return sha256
 end
 
--- make md5 from the given file or data
+-- generate md5 from the given file or data
 function sandbox_hash.md5(file_or_data)
     local md5, errors = hash.md5(file_or_data)
     if not md5 then
-        raise("cannot make md5 for %s, %s", file_or_data, errors or "unknown errors")
+        raise("cannot generate md5 for %s, %s", file_or_data, errors or "unknown errors")
     end
     return md5
 end
 
--- make xxhash64 from the given file or data
+-- generate xxhash64 from the given file or data
 function sandbox_hash.xxhash64(file_or_data)
     local xxhash64, errors = hash.xxhash64(file_or_data)
     if not xxhash64 then
-        raise("cannot make xxhash64 for %s, %s", file_or_data, errors or "unknown errors")
+        raise("cannot generate xxhash64 for %s, %s", file_or_data, errors or "unknown errors")
     end
     return xxhash64
 end
 
--- make xxhash128 from the given file or data
+-- generate xxhash128 from the given file or data
 function sandbox_hash.xxhash128(file_or_data)
     local xxhash128, errors = hash.xxhash128(file_or_data)
     if not xxhash128 then
-        raise("cannot make xxhash128 for %s, %s", file_or_data, errors or "unknown errors")
+        raise("cannot generate xxhash128 for %s, %s", file_or_data, errors or "unknown errors")
     end
     return xxhash128
+end
+
+-- generate hash32 from string
+function sandbox_hash.hash32(str)
+    local hash32, errors = hash.hash32(str)
+    if not hash32 then
+        raise("cannot generate hash32 for %s, %s", str, errors or "unknown errors")
+    end
+    return hash32
+end
+
+-- generate hash128 from string
+function sandbox_hash.hash128(str)
+    local hash128, errors = hash.hash128(str)
+    if not hash128 then
+        raise("cannot generate hash128 for %s, %s", str, errors or "unknown errors")
+    end
+    return hash128
 end
 
 -- return module
