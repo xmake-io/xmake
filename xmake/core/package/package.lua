@@ -1701,7 +1701,7 @@ function _instance:buildhash()
                 table.sort(toolchains)
                 str = str .. "_" .. table.concat(toolchains, "_")
             end
-            return hash.uuid4(str):gsub('-', ''):lower()
+            return hash.strhash128(str)
         end
         local function _get_installdir(...)
             local name = self:name():lower():gsub("::", "_")

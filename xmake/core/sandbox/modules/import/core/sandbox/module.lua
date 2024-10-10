@@ -203,7 +203,7 @@ function core_sandbox_module._native_moduleinfo(module_fullpath, modulekind)
     local projectdir = path.normalize(path.absolute(module_fullpath))
     local programdir = path.normalize(os.programdir())
     local modulename = path.basename(module_fullpath)
-    local modulehash = hash.uuid4(projectdir):split("-", {plain = true})[1]:lower()
+    local modulehash = hash.strhash32(projectdir)
     local buildir
     local is_global = false
     local modulepath
