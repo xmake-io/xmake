@@ -96,5 +96,10 @@ function hash.xxhash128(file_or_data)
     return hashstr, errors
 end
 
+-- make uuid
+function hash.uuid(str)
+    return hash.uuid4(str)
+end
+
 -- return module: hash
 return hash

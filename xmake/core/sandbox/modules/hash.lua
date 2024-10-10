@@ -26,15 +26,19 @@ local raise = require("sandbox/modules/raise")
 local sandbox_hash = sandbox_hash or {}
 
 -- make a new uuid
-function sandbox_hash.uuid(name)
-    return sandbox_hash.uuid4(name)
+function sandbox_hash.uuid(str)
+    local uuid = hash.uuid(str)
+    if not uuid then
+        raise("cannot make uuid %s", str)
+    end
+    return uuid
 end
 
 -- make a new uuid v4
-function sandbox_hash.uuid4(name)
-    local uuid = hash.uuid4(name)
+function sandbox_hash.uuid4(str)
+    local uuid = hash.uuid4(str)
     if not uuid then
-        raise("cannot make uuid %s", name)
+        raise("cannot make uuid4 %s", str)
     end
     return uuid
 end
