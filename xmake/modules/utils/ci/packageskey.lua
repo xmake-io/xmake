@@ -60,7 +60,7 @@ function main(requires_raw)
     keys = table.concat(keys, ",")
 
     option.restore()
-    print(hash.uuid4(keys):gsub('-', ''):lower())
+    print(hash.strhash128(keys))
 end
 
 

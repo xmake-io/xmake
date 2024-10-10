@@ -44,7 +44,7 @@ rule("qt.qrc")
         local rcc = target:data("qt.rcc")
 
         -- get c++ source file for qrc
-        local sourcefile_cpp = path.join(target:autogendir(), "rules", "qt", "qrc", path.basename(sourcefile_qrc).. "_" .. hash.uuid4(sourcefile_qrc):split('%-')[1] .. ".cpp")
+        local sourcefile_cpp = path.join(target:autogendir(), "rules", "qt", "qrc", path.basename(sourcefile_qrc).. "_" .. hash.strhash32(sourcefile_qrc) .. ".cpp")
         local sourcefile_dir = path.directory(sourcefile_cpp)
 
         -- add objectfile

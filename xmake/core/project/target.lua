@@ -1496,7 +1496,7 @@ function _instance:autogenfile(sourcefile, opt)
         -- @see
         -- https://github.com/xmake-io/xmake/issues/3021
         -- https://github.com/xmake-io/xmake/issues/3715
-        relativedir = hash.uuid4(relativedir):gsub("%-", ""):lower()
+        relativedir = hash.strhash128(relativedir)
     end
     relativedir = relativedir:gsub("%.%.", "__")
     local rootdir = (opt and opt.rootdir) and opt.rootdir or self:autogendir()
@@ -2138,7 +2138,7 @@ function _instance:dependfile(objectfile)
         -- @see
         -- https://github.com/xmake-io/xmake/issues/3021
         -- https://github.com/xmake-io/xmake/issues/3715
-        relativedir = hash.uuid4(relativedir):gsub("%-", ""):lower()
+        relativedir = hash.strhash128(relativedir)
     end
 
     -- originfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
