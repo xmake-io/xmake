@@ -78,7 +78,7 @@ function main(requireinfo, opt)
         if key == "" then
             key = "_" -- we need to generate a fixed hash value
         end
-        return hash.hash32(key)
+        return hash.strhash32(key)
     else
         return key
     end

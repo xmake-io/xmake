@@ -83,7 +83,7 @@ end
 
 -- get unique tag
 function _get_unique_tag(content)
-    return hash.hash32(content)
+    return hash.strhash32(content)
 end
 
 -- translate the file path

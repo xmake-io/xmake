@@ -32,7 +32,7 @@
 -- @endcode
 --
 function xrepo_addenvs(envs)
-    local packagename = "__xrepo_addenvs_" .. hash.hash32(tostring(envs))
+    local packagename = "__xrepo_addenvs_" .. hash.strhash32(tostring(envs))
     package(packagename)
         on_load(function (package)
             if type(envs) == "function" then
@@ -61,7 +61,7 @@ end
 --
 function xrepo_addenv(name, ...)
     local args = table.pack(...)
-    local packagename = "__xrepo_addenv_" .. name .. hash.hash32(table.concat(args))
+    local packagename = "__xrepo_addenv_" .. name .. hash.strhash32(table.concat(args))
     package(packagename)
         on_load(function (package)
             package:addenv(name, table.unpack(args))

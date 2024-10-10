@@ -101,13 +101,13 @@ function hash.uuid(str)
     return hash.uuid4(str)
 end
 
--- generate hash32, e.g. "91e8ecf1"
-function hash.hash32(str)
+-- generate hash32 from string, e.g. "91e8ecf1"
+function hash.strhash32(str)
     return hash.uuid4(str):split("-", {plain = true})[1]:lower()
 end
 
--- generate hash128, e.g. "91e8ecf1417f4edfa574e22d7d8d204a"
-function hash.hash128(str)
+-- generate hash128 from string, e.g. "91e8ecf1417f4edfa574e22d7d8d204a"
+function hash.strhash128(str)
     return hash.uuid4(str):replace("-", "", {plain = true}):lower()
 end
 

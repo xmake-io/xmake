@@ -89,8 +89,8 @@ function sandbox_hash.xxhash128(file_or_data)
 end
 
 -- generate hash32 from string
-function sandbox_hash.hash32(str)
-    local hash32, errors = hash.hash32(str)
+function sandbox_hash.strhash32(str)
+    local hash32, errors = hash.strhash32(str)
     if not hash32 then
         raise("cannot generate hash32 for %s, %s", str, errors or "unknown errors")
     end
@@ -98,8 +98,8 @@ function sandbox_hash.hash32(str)
 end
 
 -- generate hash128 from string
-function sandbox_hash.hash128(str)
-    local hash128, errors = hash.hash128(str)
+function sandbox_hash.strhash128(str)
+    local hash128, errors = hash.strhash128(str)
     if not hash128 then
         raise("cannot generate hash128 for %s, %s", str, errors or "unknown errors")
     end
