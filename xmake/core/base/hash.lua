@@ -31,7 +31,7 @@ hash._md5 = hash._md5 or hash.md5
 hash._sha = hash._sha or hash.sha
 hash._xxhash = hash._xxhash or hash.xxhash
 
--- make md5 from the given file or data
+-- generate md5 from the given file or data
 function hash.md5(file_or_data)
     local hashstr, errors
     if bytes.instance_of(file_or_data) then
@@ -44,7 +44,7 @@ function hash.md5(file_or_data)
     return hashstr, errors
 end
 
--- make sha1 from the given file or data
+-- generate sha1 from the given file or data
 function hash.sha1(file_or_data)
     local hashstr, errors
     if bytes.instance_of(file_or_data) then
@@ -57,7 +57,7 @@ function hash.sha1(file_or_data)
     return hashstr, errors
 end
 
--- make sha256 from the given file or data
+-- generate sha256 from the given file or data
 function hash.sha256(file_or_data)
     local hashstr, errors
     if bytes.instance_of(file_or_data) then
@@ -70,7 +70,7 @@ function hash.sha256(file_or_data)
     return hashstr, errors
 end
 
--- make xxhash64 from the given file or data
+-- generate xxhash64 from the given file or data
 function hash.xxhash64(file_or_data)
     local hashstr, errors
     if bytes.instance_of(file_or_data) then
@@ -83,7 +83,7 @@ function hash.xxhash64(file_or_data)
     return hashstr, errors
 end
 
--- make xxhash128 from the given file or data
+-- generate xxhash128 from the given file or data
 function hash.xxhash128(file_or_data)
     local hashstr, errors
     if bytes.instance_of(file_or_data) then
@@ -94,6 +94,22 @@ function hash.xxhash128(file_or_data)
         hashstr, errors = hash._xxhash(128, file_or_data)
     end
     return hashstr, errors
+end
+
+-- generate uuid, e.g "91E8ECF1-417F-4EDF-A574-E22D7D8D204A"
+function hash.uuid(str)
+    return hash.uuid4(str)
+end
+
+-- TODO, we should optimize it
+-- generate hash32 from string, e.g. "91e8ecf1"
+function hash.strhash32(str)
+    return hash.uuid4(str):split("-", {plain = true})[1]:lower()
+end
+
+-- generate hash128 from string, e.g. "91e8ecf1417f4edfa574e22d7d8d204a"
+function hash.strhash128(str)
+    return hash.uuid4(str):replace("-", "", {plain = true}):lower()
 end
 
 -- return module: hash

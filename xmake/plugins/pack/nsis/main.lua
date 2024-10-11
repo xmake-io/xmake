@@ -83,7 +83,7 @@ end
 
 -- get unique tag
 function _get_unique_tag(content)
-    return hash.uuid(content):split("-", {plain = true})[1]:lower()
+    return hash.strhash32(content)
 end
 
 -- translate the file path
