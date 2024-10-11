@@ -117,6 +117,10 @@ function _get_target_libfiles(target, libfiles, binaryfile, refs)
                 local dep = target:dep(depname)
                 if dep then
                     if dep:is_shared() then
+                        local depfile = dep:targetfile()
+                        if os.isfile(depfile) then
+                            table.insert(libfiles, depfile)
+                        end
                         _get_target_libfiles(dep, libfiles, dep:targetfile(), refs)
                     elseif dep:is_library() then
                         _get_target_libfiles(dep, libfiles, binaryfile, refs)
