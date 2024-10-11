@@ -43,8 +43,8 @@ end
 
 -- we need to get all deplibs, e.g. app -> libfoo.so -> libbar.so ...
 -- @see https://github.com/xmake-io/xmake/issues/5325#issuecomment-2242597732
-function _get_target_package_deplibs(target, depends, libfiles, binaryfile)
-    local deplibs = get_depend_libraries(binaryfile, {plat = target:plat(), arch = target:arch()})
+function _get_target_package_deplibs(binaryfile, depends, libfiles, opt)
+    local deplibs = get_depend_libraries(binaryfile, {plat = opt.plat, arch = opt.arch})
     local depends_new = hashset.new()
     for _, deplib in ipairs(deplibs) do
         local libname = path.filename(deplib)
@@ -56,7 +56,7 @@ function _get_target_package_deplibs(target, depends, libfiles, binaryfile)
     for _, libfile in ipairs(libfiles) do
         local libname = path.filename(libfile)
         if depends_new:has(libname) then
-            _get_target_package_deplibs(target, depends, libfiles, libfile)
+            _get_target_package_deplibs(libfile, depends, libfiles, opt)
         end
     end
 end
@@ -65,6 +65,7 @@ function _get_target_package_libfiles(target, opt)
     if option.get("nopkgs") then
         return {}
     end
+    opt = opt or {}
     local libfiles = {}
     for _, pkg in ipairs(target:orderpkgs(opt)) do
         if pkg:enabled() and pkg:get("libfiles") then
@@ -78,13 +79,34 @@ function _get_target_package_libfiles(target, opt)
     end
     -- we can only reserve used libraries
     if project.policy("install.strip_packagelibs") then
-        if target:is_binary() or target:is_shared() then
+        if target:is_binary() or target:is_shared() or opt.binaryfile then
             local depends = hashset.new()
-            _get_target_package_deplibs(target, depends, libfiles, target:targetfile())
+            _get_target_package_deplibs(opt.binaryfile or target:targetfile(), depends, libfiles, {plat = target:plat(), arch = target:arch()})
             table.remove_if(libfiles, function (_, libfile) return not depends:has(path.filename(libfile)) end)
         end
     end
     return libfiles
+end
+
+-- get target libraries
+function _get_target_libfiles(target, libfiles, binaryfile, refs)
+    if not refs[target] then
+        local plaindeps = target:get("deps")
+        if plaindeps then
+            for _, depname in ipairs(plaindeps) do
+                local dep = target:dep(depname)
+                if dep then
+                    if dep:is_shared() then
+                        _get_target_libfiles(dep, libfiles, dep:targetfile(), refs)
+                    elseif dep:is_library() then
+                        _get_target_libfiles(dep, libfiles, binaryfile, refs)
+                    end
+                end
+            end
+        end
+        table.join2(libfiles, _get_target_package_libfiles(target, {binaryfile = binaryfile}))
+        refs[target] = true
+    end
 end
 
 -- copy file with symlinks
@@ -139,22 +161,11 @@ end
 
 -- install shared libraries
 function _install_shared_libraries(target, opt)
-    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(target, opt) or _get_target_libdir(target, opt) 
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(target, opt) or _get_target_libdir(target, opt)
 
     -- get all dependent shared libraries
     local libfiles = {}
-    for _, dep in ipairs(target:orderdeps()) do
-        if dep:kind() == "shared" then
-            local depfile = dep:targetfile()
-            if os.isfile(depfile) then
-                table.insert(libfiles, depfile)
-            end
-        end
-        table.join2(libfiles, _get_target_package_libfiles(dep, {interface = true}))
-    end
-    table.join2(libfiles, _get_target_package_libfiles(target))
-
-    -- deduplicate libfiles, prevent packages using the same libfiles from overwriting each other
+    _get_target_libfiles(target, libfiles, target:targetfile(), {})
     libfiles = table.unique(libfiles)
 
     -- do install
@@ -205,7 +216,7 @@ end
 
 -- install shared library
 function _install_shared(target, opt)
-    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(target, opt) or _get_target_libdir(target, opt) 
+    local bindir = target:is_plat("windows", "mingw") and _get_target_bindir(target, opt) or _get_target_libdir(target, opt)
     os.mkdir(bindir)
     local targetfile = target:targetfile()
 
