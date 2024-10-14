@@ -18,17 +18,11 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
 toolchain("sdcc")
-
-    -- set homepage
+    set_kind("standalone")
     set_homepage("http://sdcc.sourceforge.net/")
     set_description("Small Device C Compiler")
 
-    -- mark as standalone toolchain
-    set_kind("standalone")
-
-    -- set toolset
     set_toolset("cc",  "sdcc")
     set_toolset("cxx", "sdcc")
     set_toolset("cpp", "sdcpp")
@@ -37,22 +31,18 @@ toolchain("sdcc")
     set_toolset("sh",  "sdcc")
     set_toolset("ar",  "sdar")
 
-    -- set archs
     set_archs("stm8", "mcs51", "z80", "z180", "r2k", "r3ka", "s08", "hc08")
 
-    -- set formats
     set_formats("static", "$(name).lib")
     set_formats("object", "$(name).rel")
     set_formats("binary", "$(name).bin")
     set_formats("symbol", "$(name).sym")
 
-    -- check toolchain
     on_check("check")
 
-    -- on load
     on_load(function (toolchain)
         local arch = toolchain:arch()
-        if arch then
+        if arch and arch ~= "none" then
             toolchain:add("cxflags", "-m" .. arch)
             toolchain:add("ldflags", "-m" .. arch)
         end

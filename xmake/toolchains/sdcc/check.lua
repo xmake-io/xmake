@@ -20,6 +20,7 @@
 
 -- imports
 import("core.project.config")
+import("lib.detect.find_tool")
 import("detect.sdks.find_cross_toolchain")
 
 -- check the cross toolchain
@@ -31,8 +32,7 @@ function main(toolchain)
         toolchain:config_set("cross", cross_toolchain.cross)
         toolchain:config_set("bindir", cross_toolchain.bindir)
         toolchain:configs_save()
-    else
-        raise("sdcc toolchain not found!")
+        return true
     end
-    return cross_toolchain
+    return find_tool("sdcc")
 end
