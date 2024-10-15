@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.hashset")
+import("core.project.project")
 import("utils.archive")
 import("utils.binary.deplibs", {alias = "get_depend_libraries"})
 import("private.utils.batchcmds")
