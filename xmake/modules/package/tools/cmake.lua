@@ -1007,7 +1007,7 @@ end
 function _build_for_msvc(package, configs, opt)
     local allbuild = os.isfile("ALL_BUILD.vcxproj") and "ALL_BUILD.vcxproj" or "ALL_BUILD.vcproj"
     assert(os.isfile(allbuild), "ALL_BUILD project not found!")
-    msbuild.build(package, {allbuild, "-t:Rebuild"})
+    msbuild.build(package, {allbuild, "-t:Rebuild"}, opt)
 end
 
 -- do build for make
@@ -1080,10 +1080,10 @@ end
 function _install_for_msvc(package, configs, opt)
     local allbuild = os.isfile("ALL_BUILD.vcxproj") and "ALL_BUILD.vcxproj" or "ALL_BUILD.vcproj"
     assert(os.isfile(allbuild), "ALL_BUILD project not found!")
-    msbuild.build(package, {allbuild, "-t:Rebuild", "/nr:false"})
+    msbuild.build(package, {allbuild, "-t:Rebuild", "/nr:false"}, opt)
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
-        msbuild.build(package, {projfile})
+        msbuild.build(package, {projfile}, opt)
         os.trycp("install/bin", package:installdir())
         os.trycp("install/lib", package:installdir()) -- perhaps only headers library
         os.trycp("install/share", package:installdir())
