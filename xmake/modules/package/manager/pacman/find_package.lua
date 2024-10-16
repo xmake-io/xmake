@@ -184,7 +184,7 @@ function main(name, opt)
     end
 
     -- get package files list
-    list = name and try { function() return os.iorunv(pacman.program, {"-Q", "-l", name}) end }
+    local list = name and try { function() return os.iorunv(pacman.program, {"-Q", "-l", name}) end }
     if not list then
         return
     end
