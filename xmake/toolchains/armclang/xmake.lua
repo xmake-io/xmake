@@ -39,7 +39,7 @@ toolchain("armclang")
             toolchain:config_set("sdkdir", mdk.sdkdir_armclang)
             -- different assembler choices for different versions of armclang
             local armclang = find_tool("armclang", {version = true, force = true, paths = path.join(mdk.sdkdir_armclang, "bin")})
-            if armclang and semver.compare(armclang.version, "6.13") > 0 then
+            if armclang and armclang.version and semver.compare(armclang.version, "6.13") > 0 then
                 toolchain:config_set("toolset_as", "armclang")
             else
                 toolchain:config_set("toolset_as", "armasm")
