@@ -1158,7 +1158,11 @@ function _get_cmake_generator(package, opt)
     opt = opt or {}
     local cmake_generator = opt.cmake_generator
     if not cmake_generator then
-        if project.policy("package.cmake_generator.ninja") or package:policy("package.cmake_generator.ninja") then
+        local use_ninja = package:policy("package.cmake_generator.ninja")
+        if use_ninja == nil then
+            use_ninja = project.policy("package.cmake_generator.ninja")
+        end
+        if use_ninja then
             cmake_generator = "Ninja"
         end
         if not cmake_generator then
