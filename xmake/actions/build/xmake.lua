@@ -32,7 +32,7 @@ task("build")
                 ,   {'r', "rebuild",    "k",  nil   , "Rebuild the target."                                           }
                 ,   {'a', "all",        "k",  nil   , "Build all targets."                                            }
                 ,   {nil, "shallow",    "k",  nil   , "Only re-build the given targets without dependencies."         }
-                ,   {'g', "group",      "kv",  nil  , "Build all targets of the given group. It support path pattern matching.",
+                ,   {'g', "group",      "kv", nil   , "Build all targets of the given group. It support path pattern matching.",
                                                       "e.g.",
                                                       "    xmake -g test",
                                                       "    xmake -g test_*",
@@ -44,6 +44,7 @@ task("build")
                                                       "Set the number of parallel compilation jobs."                  }
                 ,   {nil, "linkjobs",   "kv", nil,    "Set the number of parallel link jobs."                         }
                 ,   {'w', "warning",    "k",  false , "Enable the warnings output. (deprecated)"                      }
+                ,   {nil, "linkonly",   "k",  false , "Only link targets if object files have been compiled."         }
                 ,   {nil, "files",      "kv", nil   , "Build the given source files.",
                                                       "e.g. ",
                                                       "    - xmake --files=src/main.c",
