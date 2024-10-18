@@ -1699,7 +1699,7 @@ function _instance:filerules(sourcefile)
         if filerules then
             override = filerules.override
             for _, rulename in ipairs(table.wrap(filerules)) do
-                local r = target._project().rule(rulename) or rule.rule(rulename)
+                local r = target._project().rule(rulename) or rule.rule(rulename) or self:rule(rulename)
                 if r then
                     table.insert(rules, r)
                 end
