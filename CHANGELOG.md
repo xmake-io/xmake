@@ -13,6 +13,7 @@
 * [#5702](https://github.com/xmake-io/xmake/issues/5702): Improve hash module
 * [#5688](https://github.com/xmake-io/xmake/pull/5688): Improve hashset module
 * [#5711](https://github.com/xmake-io/xmake/issues/5711): Support to parse include deps for sdcc
+* [#5727](https://github.com/xmake-io/xmake/issues/5727): Improve configs for add_requires
 
 ### Bugs fixed
 
@@ -1904,6 +1905,7 @@
 * [#5702](https://github.com/xmake-io/xmake/issues/5702): 改进 hash 模块
 * [#5688](https://github.com/xmake-io/xmake/pull/5688): 改进 hashset
 * [#5711](https://github.com/xmake-io/xmake/issues/5711): 为 sdcc 支持解析 include 依赖
+* [#5727](https://github.com/xmake-io/xmake/issues/5727): 为 add_requires 改进 configs 配置
 
 ### Bugs 修复
 
