@@ -81,8 +81,8 @@ function _add_target_files(sourcefiles, target)
     end
 end
 
--- check sourcefile
-function _check_sourcefile(clang_tidy, sourcefile, opt)
+-- check sourcefiles
+function _check_sourcefiles(clang_tidy, sourcefiles, opt)
     opt = opt or {}
     local projectdir = project.directory()
     local argv = {}
@@ -108,10 +108,12 @@ function _check_sourcefile(clang_tidy, sourcefile, opt)
     if opt.quiet then
         table.insert(argv, "--quiet")
     end
-    if not path.is_absolute(sourcefile) then
-        sourcefile = path.absolute(sourcefile, projectdir)
+    for _, sourcefile in ipairs(sourcefiles) do
+        if not path.is_absolute(sourcefile) then
+            sourcefile = path.absolute(sourcefile, projectdir)
+        end
+        table.insert(argv, sourcefile)
     end
-    table.insert(argv, sourcefile)
     os.execv(clang_tidy, argv, {curdir = projectdir})
 end
 
@@ -164,15 +166,7 @@ function _check(clang_tidy, opt)
     end
 
     -- check files
-    local jobs = tonumber(opt.jobs or "1")
-    runjobs("check_files", function (index)
-        local sourcefile = sourcefiles[index]
-        if sourcefile then
-            _check_sourcefile(clang_tidy, sourcefile, opt)
-        end
-    end, {total = #sourcefiles,
-          comax = jobs,
-          isolate = true})
+    _check_sourcefiles(clang_tidy, sourcefiles, opt)
 end
 
 function main(argv)
