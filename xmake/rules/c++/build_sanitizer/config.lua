@@ -36,16 +36,15 @@ function _add_build_sanitizer(target, sourcekind, checkmode)
         mxx = "mxflags"
     }
     local flagname = flagnames[sourcekind]
-    if flagname and target:has_tool(sourcekind, "cl", "clang", "clangxx", "gcc", "gxx") then
-        target:add(flagname, "-fsanitize=" .. checkmode)
+    if flagname and target:has_tool(sourcekind, "cl", "clang", "clangxx", "clang_cl", "gcc", "gxx") then
+        target:add(flagname, "-fsanitize=" .. checkmode, {force = true})
     end
 
     -- add ldflags and shflags
     if target:has_tool("ld", "link", "clang", "clangxx", "gcc", "gxx") then
-        target:add("ldflags", "-fsanitize=" .. checkmode)
-        target:add("shflags", "-fsanitize=" .. checkmode)
+        target:add("ldflags", "-fsanitize=" .. checkmode, {force = true})
+        target:add("shflags", "-fsanitize=" .. checkmode, {force = true})
     end
-
 end
 
 function main(target, sourcekind)
@@ -71,15 +70,28 @@ function main(target, sourcekind)
         -- we need to load runenvs for msvc
         -- @see https://github.com/xmake-io/xmake/issues/4176
         if target:is_plat("windows") and target:is_binary() then
-            local msvc = target:toolchain("msvc")
-            if msvc then
-                local envs = msvc:runenvs()
-                local vscmd_ver = envs and envs.VSCMD_VER
-                if vscmd_ver and semver.match(vscmd_ver):ge("17.7") then
-                    local cl = assert(find_tool("cl", {envs = envs}), "cl not found!")
-                    target:add("runenvs", "PATH", path.directory(cl.program))
+            if target:has_tool("cxx", "clang_cl") then
+                local clang_cl = target:toolchain("clang-cl")
+                if clang_cl then
+                    local envs = clang_cl:runenvs()
+                    local vscmd_ver = envs and envs.VSCMD_VER
+                    if vscmd_ver and semver.match(vscmd_ver):ge("17.7") then
+                        local clang_cl_tool = assert(find_tool("clang-cl", {envs = envs}), "clang-cl not found!")
+                        target:add("runenvs", "PATH", path.directory(clang_cl_tool.program))
+                    end
+                end
+            else
+                local msvc = target:toolchain("msvc")
+                if msvc then
+                    local envs = msvc:runenvs()
+                    local vscmd_ver = envs and envs.VSCMD_VER
+                    if vscmd_ver and semver.match(vscmd_ver):ge("17.7") then
+                        local cl = assert(find_tool("cl", {envs = envs}), "cl not found!")
+                        target:add("runenvs", "PATH", path.directory(cl.program))
+                    end
                 end
             end
         end
     end
 end
+
