@@ -136,8 +136,8 @@ function _install_cmake_targetfile(target, installdir, filename, opt)
             -- On DLL platforms, the import library is named differently from the target file
             content = content:gsub("# IMPORTED_IMPLIB_" .. postfix, "IMPORTED_IMPLIB_" .. postfix)
             content = content:gsub(
-                "IMPORTED_LOCATION_" .. postfix .. " \"${_IMPORT_PREFIX}/lib/.-\"",
-                "IMPORTED_LOCATION_" .. postfix .. " \"${_IMPORT_PREFIX}/bin/" .. libfile .. "\""
+                "IMPORTED_LOCATION_" .. postfix .. " \"%%${_IMPORT_PREFIX}/lib/.-\"",
+                "IMPORTED_LOCATION_" .. postfix .. " \"%%${_IMPORT_PREFIX}/bin/" .. libfile .. "\""
             )
         end
         io.writefile(importfile_dst, content)
