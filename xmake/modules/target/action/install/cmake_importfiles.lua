@@ -43,7 +43,7 @@ function _get_builtinvars(target, installdir)
             TARGETFILENAME  = target:targetfile() and _get_libfile(target, installdir),
             TARGETKIND      = target:is_headeronly() and "INTERFACE" or (target:is_shared() and "SHARED" or "STATIC"),
             PACKAGE_VERSION = target:get("version") or "1.0.0",
-            TARGET_PTRBYTES = target:is_arch("x86", "i386") and "4" or "8"}
+            TARGET_PTRBYTES = target:is_arch("armeabi", "armeabi-v7a", "x86", "mips", "i386", "armv7", "armv7s", "mipsel", "wasm32") and "4" or "8"}
 end
 
 -- install cmake config file
@@ -130,6 +130,16 @@ function _install_cmake_targetfile(target, installdir, filename, opt)
             local value = builtinvars[variable]
             return type(value) == "function" and value() or value
         end)
+        local libfile = path.filename(target:targetfile())
+        local postfix = is_mode("debug") and "DEBUG" or "RELEASE"
+        if target:is_shared() and (_get_libfile(target, installdir) ~= libfile) then
+            -- On DLL platforms, the import library is named differently from the target file
+            content = content:gsub("# IMPORTED_IMPLIB_" .. postfix, "IMPORTED_IMPLIB_" .. postfix)
+            content = content:gsub(
+                "IMPORTED_LOCATION_" .. postfix .. " \"%${_IMPORT_PREFIX}/lib/.-\"",
+                "IMPORTED_LOCATION_" .. postfix .. " \"${_IMPORT_PREFIX}/bin/" .. libfile .. "\""
+            )
+        end
         io.writefile(importfile_dst, content)
     end
 end
