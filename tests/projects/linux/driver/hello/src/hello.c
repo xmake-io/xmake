@@ -1,20 +1,19 @@
 #include <linux/init.h>
 #include <linux/module.h>
+#include "add.h"
 
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_AUTHOR("Ruki");
 MODULE_DESCRIPTION("A simple Hello World Module");
 MODULE_ALIAS("a simplest module");
 
-int add(int a, int b);
-
-int hello_init(void)
+static int hello_init(void)
 {
     printk(KERN_INFO "Hello World: %d\n", add(1, 2));
     return 0;
 }
 
-void hello_exit(void)
+static void hello_exit(void)
 {
     printk(KERN_INFO "Goodbye World\n");
 }
