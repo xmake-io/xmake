@@ -20,69 +20,38 @@
 
 -- imports
 import("core.base.semver")
-import("core.package.package", {alias = "core_package"})
-import("private.action.require.impl.repository")
+import("private.xrepo.quick_search.cache")
 
--- search package from name
-function _search_package_from_name(packages, name, opt)
-    for _, packageinfo in ipairs(repository.searchdirs(name)) do
-        local package = core_package.load_from_repository(packageinfo.name, packageinfo.packagedir, {repo = packageinfo.repo})
-        if package then
-            local repo = package:repo()
-            local version
-            local versions = package:versions()
-            if versions then
-                versions = table.copy(versions)
-                table.sort(versions, function (a, b) return semver.compare(a, b) > 0 end)
-                if opt.require_version then
-                    for _, ver in ipairs(versions) do
-                        if semver.satisfies(ver, opt.require_version) then
-                            version = ver
-                        end
+function _search_package(packages, name, opt)
+    for _, packageinfo in ipairs(cache.find(name, {description = opt.description ~= false})) do
+        local packagename = packageinfo.name
+        local packagedata = packageinfo.data
+
+        local version
+        local versions = packageinfo.versions
+        if versions then
+            versions = table.copy(versions)
+            table.sort(versions, function (a, b) return semver.compare(a, b) > 0 end)
+            if opt.require_version then
+                for _, ver in ipairs(versions) do
+                    if semver.satisfies(ver, opt.require_version) then
+                        version = ver
                     end
-                else
-                    version = versions[1]
                 end
-            end
-            if not opt.require_version or version then
-                packages[package:name()] = {name = package:name(), version = version, description = package:get("description"), reponame = repo and repo:name()}
+            else
+                version = versions[1]
             end
         end
-    end
-end
 
--- search package from description
-function _search_package_from_description(packages, name, opt)
-    for _, packageinfo in ipairs(repository.searchdirs("*")) do
-        if not packages[packageinfo.name] then
-            local package = core_package.load_from_repository(packageinfo.name, packageinfo.packagedir, {repo = packageinfo.repo})
-            if package then
-                local description = package:description()
-                if description and description:find(string.ipattern(name)) then
-                    local repo = package:repo()
-                    local version
-                    local versions = package:versions()
-                    if versions then
-                        versions = table.copy(versions)
-                        table.sort(versions, function (a, b) return semver.compare(a, b) > 0 end)
-                        if opt.require_version then
-                            for _, ver in ipairs(versions) do
-                                if semver.satisfies(ver, opt.require_version) then
-                                    version = ver
-                                end
-                            end
-                        else
-                            version = versions[1]
-                        end
-                    end
-                    description = description:gsub(string.ipattern(name), function (w)
-                        return "${bright}" .. w .. "${clear}"
-                    end)
-                    if not opt.require_version or version then
-                        packages[package:name()] = {name = package:name(), version = version, description = description, reponame = repo and repo:name()}
-                    end
-                end
-            end
+        local description = packagedata.description
+        if description then
+            description = description:gsub(string.ipattern(name), function (w)
+                return "${bright}" .. w .. "${clear}"
+            end)
+        end
+
+        if not opt.require_version or version then
+            packages[packagename] = {name = packagename, version = version, description = description, reponame = packagedata.reponame}
         end
     end
 end
@@ -95,10 +64,7 @@ end
 function main(name, opt)
     opt = opt or {}
     local packages = {}
-    _search_package_from_name(packages, name, opt)
-    if opt.description ~= false then
-        _search_package_from_description(packages, name, opt)
-    end
+    _search_package(packages, name, opt)
 
     local results = {}
     for name, info in table.orderpairs(packages) do

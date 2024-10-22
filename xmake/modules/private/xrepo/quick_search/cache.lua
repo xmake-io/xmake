@@ -37,7 +37,7 @@ function _list_package_dirs()
             if #subdirname == 1 then -- ignore l/luajit/port/xmake.lua
                 local packagename = path.filename(dir)
                 if not unique[packagename] then
-                    table.insert(packageinfos, {name = packagename, repo = repo, packagedir = path.directory(file)})
+                    table.insert(packageinfos, {name = packagename, repo = repo, packagedir = dir})
                     unique[packagename] = true
                 end
             end
@@ -58,6 +58,7 @@ function update()
     for _, packageinfo in ipairs(_list_package_dirs()) do
         local package = core_package.load_from_repository(packageinfo.name, packageinfo.packagedir, {repo = packageinfo.repo})
         cache:set(packageinfo.name, {
+            reponame = package:repo() and package:repo():name(),
             description = package:description(),
             versions = package:versions(),
         })
@@ -77,13 +78,25 @@ function get()
     return cache:data()
 end
 
-function find(name)
+-- find package
+function find(name, opt)
     _init()
+    opt = opt or {}
     local list_result = {}
     for packagename, packagedata in pairs(cache:data()) do
-        if packagename:startswith(name) then
+        local found = false
+        if opt.prefix then
+            found = packagename:startswith(name)
+        else
+            found = packagename:find(name)
+        end
+        if not found and opt.description and packagedata.description and packagedata.description:find(name) then
+            found = true
+        end
+        if found then
             table.insert(list_result, {name = packagename, data = packagedata})
         end
     end
     return list_result
 end
+

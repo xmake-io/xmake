@@ -220,25 +220,3 @@ function artifacts_manifest(packagename, version)
     end
 end
 
--- search package directories from repositories
-function searchdirs(name)
-
-    -- find the package directories from all repositories
-    local unique = {}
-    local packageinfos = {}
-    for _, repo in ipairs(repositories()) do
-        for _, file in ipairs(os.files(path.join(repo:directory(), "packages", "*", string.ipattern("*" .. name .. "*"), "xmake.lua"))) do
-            local dir = path.directory(file)
-            local subdirname = path.basename(path.directory(dir))
-            if #subdirname == 1 then -- ignore l/luajit/port/xmake.lua
-                local packagename = path.filename(dir)
-                if not unique[packagename] then
-                    table.insert(packageinfos, {name = packagename, repo = repo, packagedir = path.directory(file)})
-                    unique[packagename] = true
-                end
-            end
-        end
-    end
-    return packageinfos
-end
-
