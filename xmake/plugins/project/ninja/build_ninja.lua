@@ -182,6 +182,14 @@ function _add_rules_for_compiler_windres(ninjafile, sourcekind, program)
     ninjafile:print("")
 end
 
+-- add rules for complier (cuda/nvcc)
+function _add_rules_for_compiler_nvcc(ninjafile, sourcekind, program)
+    ninjafile:print("rule %s", sourcekind)
+    ninjafile:print(" command = %s -c $ARGS $in -o $out", program)
+    ninjafile:print(" description = compiling.%s $in", config.mode())
+    ninjafile:print("")
+end
+
 -- add rules for complier
 function _add_rules_for_compiler(ninjafile)
     ninjafile:print("# rules for compiler")
@@ -203,7 +211,8 @@ function _add_rules_for_compiler(ninjafile)
         ml      = _add_rules_for_compiler_msvc_ml,
         ml64    = _add_rules_for_compiler_msvc_ml,
         rc      = _add_rules_for_compiler_msvc_rc,
-        windres = _add_rules_for_compiler_windres
+        windres = _add_rules_for_compiler_windres,
+        nvcc    = _add_rules_for_compiler_nvcc
     }
     for sourcekind, _ in pairs(language.sourcekinds()) do
         local program, toolname = platform.tool(sourcekind)
