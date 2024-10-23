@@ -48,7 +48,7 @@ function _escape_path(filepath)
     return filepath
 end
 
--- tranlate path
+-- translate path
 function _translate_path(filepath, outputdir)
     filepath = path.translate(filepath)
     if filepath == "" then
