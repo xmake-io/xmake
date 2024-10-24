@@ -62,5 +62,35 @@ tb_int_t xm_utils_bin2c(lua_State* lua)
     tb_trace_i("linewidth: %d", linewidth);
     tb_trace_i("nozeroend: %d", nozeroend);
 
-    return 0;
+    tb_bool_t ok = tb_false;
+    tb_stream_ref_t istream = tb_stream_init_from_file(binaryfile, TB_FILE_MODE_RO);
+    tb_stream_ref_t ostream = tb_stream_init_from_file(outputfile, TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC);
+    do
+    {
+        if (!tb_stream_open(istream))
+        {
+            lua_pushboolean(lua, tb_false);
+            lua_pushfstring(lua, "bin2c: open %s failed", binaryfile);
+            break;
+        }
+
+        if (!tb_stream_open(ostream))
+        {
+            lua_pushboolean(lua, tb_false);
+            lua_pushfstring(lua, "bin2c: open %s failed", outputfile);
+            break;
+        }
+
+        ok = tb_true;
+        lua_pushboolean(lua, ok);
+
+    } while (0);
+
+    if (istream) tb_stream_clos(istream);
+    istream = tb_null;
+
+    if (ostream) tb_stream_clos(ostream);
+    ostream = tb_null;
+
+    return ok? 1 : 2;
 }
