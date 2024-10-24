@@ -149,8 +149,7 @@ function _load_require(require_str, requires_extra, parentinfo)
         require_extra = requires_extra[require_str] or {}
     end
 
-
-    -- parse configs from package name
+    -- parse configs from package name, and we need to ignore 3rd package name, e.g. vcpkg::boost[core], ...
     -- @see https://github.com/xmake-io/xmake/issues/5727#issuecomment-2421040107
     --
     -- e.g.
@@ -158,7 +157,7 @@ function _load_require(require_str, requires_extra, parentinfo)
     --   add_requires("libplist[shared,debug,codecs=[foo,bar,zoo]]")
     --
     local packagename_raw, configs_str = packagename:match("(.-)%[(.*)%]")
-    if packagename_raw and configs_str then
+    if packagename_raw and configs_str and not packagename:find("::", 1, true) then
         configs_str = configs_str:gsub("%[(.*)%]", function (w)
             return w:replace(",", ":")
         end)

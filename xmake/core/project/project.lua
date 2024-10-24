@@ -501,8 +501,12 @@ function project._load_requires()
     requires_extra = requires_extra or {}
     for _, requirestr in ipairs(table.wrap(requires_str)) do
 
-        -- get the package name
+        -- get the package name, e.g. packagename[foo,bar] >1.0
         local packagename = requirestr:split("%s")[1]
+        local packagename_raw, _ = packagename:match("(.-)%[(.*)%]")
+        if packagename_raw and not packagename:find("::", 1, true) then
+            packagename = packagename_raw
+        end
 
         -- get alias and requireconfs
         local alias = nil
