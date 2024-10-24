@@ -51,8 +51,16 @@ tb_int_t xm_utils_bin2c(lua_State* lua)
     tb_char_t const* outputfile = luaL_checkstring(lua, 2);
     tb_check_return_val(outputfile, 0);
 
+    // get line width
+    tb_int_t linewidth = (tb_int_t)lua_tointeger(lua, 3);
+
+    // no zero end?
+    tb_bool_t nozeroend = (tb_bool_t)lua_toboolean(lua, 4);
+
     tb_trace_i("binaryfile: %s", binaryfile);
     tb_trace_i("outputfile: %s", outputfile);
+    tb_trace_i("linewidth: %d", linewidth);
+    tb_trace_i("nozeroend: %d", nozeroend);
 
     return 0;
 }

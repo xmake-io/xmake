@@ -20,7 +20,6 @@
 
 -- imports
 import("core.base.bytes")
-import("core.base.utils")
 import("core.base.option")
 
 local options = {
@@ -84,7 +83,7 @@ function _do_bin2c(binarypath, outputpath, opt)
 
     -- do dump
     if utils.bin2c then
-        utils.bin2c(binarydata, outputpath, opt)
+        utils.bin2c(binarypath, outputpath, opt)
     else
         local binarydata = bytes(io.readfile(binarypath, {encoding = "binary"}))
         local outputfile = io.open(outputpath, 'w')

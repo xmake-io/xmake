@@ -324,7 +324,7 @@ end
 -- generate c/c++ code from the binary file
 function utils.bin2c(binaryfile, outputfile, opt)
     opt = opt or {}
-    return utils._bin2c(binaryfile, outputfile, opt.linewidth, opt.nozeroend)
+    return utils._bin2c(binaryfile, outputfile, opt.linewidth or 0x20, opt.nozeroend or false)
 end
 
 -- return module
