@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.bytes")
+import("core.base.utils")
 import("core.base.option")
 
 local options = {
@@ -82,21 +83,24 @@ function _do_bin2c(binarypath, outputpath, opt)
     print("generating code data file from %s ..", binarypath)
 
     -- do dump
-    local binarydata = bytes(io.readfile(binarypath, {encoding = "binary"}))
-    local outputfile = io.open(outputpath, 'w')
-    if outputfile then
-        if not opt.nozeroend then
-            binarydata = binarydata .. bytes('\0')
+    if utils.bin2c then
+        utils.bin2c(binarydata, outputpath, opt)
+    else
+        local binarydata = bytes(io.readfile(binarypath, {encoding = "binary"}))
+        local outputfile = io.open(outputpath, 'w')
+        if outputfile then
+            if not opt.nozeroend then
+                binarydata = binarydata .. bytes('\0')
+            end
+            _do_dump(binarydata, outputfile, opt)
+            outputfile:close()
         end
-        _do_dump(binarydata, outputfile, opt)
-        outputfile:close()
     end
 
     -- trace
     cprint("${bright}%s generated!", outputpath)
 end
 
--- main entry
 function main(...)
 
     -- parse arguments
