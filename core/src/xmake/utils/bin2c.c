@@ -31,6 +31,14 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * private implementation
+ */
+static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream, tb_stream_ref_t ostream, tb_int_t linewidth, tb_bool_t nozeroend)
+{
+    return tb_true;
+}
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
@@ -78,6 +86,13 @@ tb_int_t xm_utils_bin2c(lua_State* lua)
         {
             lua_pushboolean(lua, tb_false);
             lua_pushfstring(lua, "bin2c: open %s failed", outputfile);
+            break;
+        }
+
+        if (!xm_utils_bin2c_dump(istream, ostream, linewidth, nozeroend))
+        {
+            lua_pushboolean(lua, tb_false);
+            lua_pushfstring(lua, "bin2c: dump data failed");
             break;
         }
 
