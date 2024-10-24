@@ -252,7 +252,22 @@ function add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, sourcebatches
 end
 
 -- add batch jobs for building object files
-function main(batchjobs, rootjob, target)
+function add_batchjobs_for_object(batchjobs, rootjob, target)
     return add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, target:sourcebatches())
 end
 
+-- add batch jobs for building object target
+function main(batchjobs, rootjob, target)
+
+    -- add a fake link job
+    local job_link = batchjobs:addjob(target:name() .. "/fakelink", function (index, total, opt)
+    end, {rootjob = rootjob})
+
+    -- we only need to return and depend the link job for each target,
+    -- so we can compile the source files for each target in parallel
+    --
+    -- unless call set_policy("build.across_targets_in_parallel", false) to disable to build across targets in parallel.
+    --
+    local job_objects = add_batchjobs_for_object(batchjobs, job_link, target)
+    return target:policy("build.across_targets_in_parallel") == false and job_objects or job_link, job_objects
+end
