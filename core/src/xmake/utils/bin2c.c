@@ -35,7 +35,47 @@
  */
 static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream, tb_stream_ref_t ostream, tb_int_t linewidth, tb_bool_t nozeroend)
 {
-    return tb_true;
+    tb_bool_t first = tb_true;
+    tb_hong_t i = 0;
+    tb_char_t line[8192];
+    tb_byte_t data[512];
+    tb_size_t linesize = 0;
+    tb_size_t need = 0;
+    tb_assert_and_check_return_val(linewidth < sizeof(data), tb_false);
+    while (!tb_stream_beof(istream))
+    {
+        linesize = 0;
+        need = (tb_size_t)tb_min(tb_stream_left(istream), linewidth);
+        if (need)
+        {
+            if (!tb_stream_bread(istream, data, need))
+                break;
+
+            for (i = 0; i < need; i++)
+            {
+                tb_assert_and_check_break(linesize < sizeof(line));
+                if (first)
+                {
+                    first = tb_false;
+                    line[linesize++] = ' ';
+                }
+                else
+                {
+                    line[linesize++] = ',';
+                }
+
+                tb_assert_and_check_break(linesize + 5 < sizeof(line));
+
+                linesize += tb_snprintf(line + linesize, sizeof(line) - linesize, " 0x%02X", data[i]);
+            }
+            tb_assert_and_check_break(i == need && linesize && linesize < sizeof(line));
+
+            if (tb_stream_bwrit_line(ostream, line, linesize) < 0)
+                break;
+        }
+    }
+
+    return tb_stream_beof(istream);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
