@@ -33,6 +33,17 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
+static __tb_inline__ tb_size_t xm_utils_bin2c_hex2str(tb_char_t str[5], tb_byte_t value)
+{
+    static tb_char_t const* digits_table = "0123456789ABCDEF";
+    str[0] = ' ';
+    str[1] = '0';
+    str[2] = 'x';
+    str[3] = digits_table[(value >> 4) & 15];
+    str[4] = digits_table[value & 15];
+    return 5;
+}
+
 static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream, tb_stream_ref_t ostream, tb_int_t linewidth, tb_bool_t nozeroend)
 {
     tb_bool_t first = tb_true;
@@ -68,12 +79,12 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream, tb_stream_ref_t os
                 line[linesize++] = ' ';
             }
             else line[linesize++] = ',';
-            linesize += tb_snprintf(line + linesize, sizeof(line) - linesize, " 0x%02X", data[i]);
+            linesize += xm_utils_bin2c_hex2str(line + linesize, data[i]);
 
             for (i = 1; i < need; i++)
             {
                 line[linesize++] = ',';
-                linesize += tb_snprintf(line + linesize, sizeof(line) - linesize, " 0x%02X", data[i]);
+                linesize += xm_utils_bin2c_hex2str(line + linesize, data[i]);
             }
             tb_assert_and_check_break(i == need && linesize && linesize < sizeof(line));
 
