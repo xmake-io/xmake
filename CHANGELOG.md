@@ -14,6 +14,7 @@
 * [#5688](https://github.com/xmake-io/xmake/pull/5688): Improve hashset module
 * [#5711](https://github.com/xmake-io/xmake/issues/5711): Support to parse include deps for sdcc
 * [#5727](https://github.com/xmake-io/xmake/issues/5727): Improve configs for add_requires
+* [#5762](https://github.com/xmake-io/xmake/pull/5762): Improve bin2c speed
 
 ### Bugs fixed
 
@@ -1906,6 +1907,7 @@
 * [#5688](https://github.com/xmake-io/xmake/pull/5688): 改进 hashset
 * [#5711](https://github.com/xmake-io/xmake/issues/5711): 为 sdcc 支持解析 include 依赖
 * [#5727](https://github.com/xmake-io/xmake/issues/5727): 为 add_requires 改进 configs 配置
+* [#5762](https://github.com/xmake-io/xmake/pull/5762): 改进 bin2c 速度
 
 ### Bugs 修复
 
