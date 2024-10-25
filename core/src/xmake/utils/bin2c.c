@@ -49,7 +49,7 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream, tb_stream_ref_t os
     tb_bool_t first = tb_true;
     tb_hong_t i = 0;
     tb_hong_t left = 0;
-    tb_char_t line[8192];
+    tb_char_t line[4096];
     tb_byte_t data[512];
     tb_size_t linesize = 0;
     tb_size_t need = 0;
