@@ -35,7 +35,7 @@ function _do_dump(binarydata, outputfile, opt)
     local p = 0
     local e = binarydata:size()
     local line = nil
-    local linewidth = opt.linewidth or 0x20
+    local linewidth = opt.linewidth or 32
     local first = true
     while p < e do
         line = ""
@@ -80,6 +80,22 @@ function _do_bin2c(binarypath, outputpath, opt)
 
     -- trace
     print("generating code data file from %s ..", binarypath)
+
+    -- optimize the default linewidth for reading large file
+    if not opt.linewidth then
+        local filesize = os.filesize(binarypath)
+        if filesize > 1024 * 1024 * 1024 then
+            opt.linewidth = 512
+        elseif filesize > 100 * 1024 * 1024 then
+            opt.linewidth = 256
+        elseif filesize > 10 * 1024 * 1024 then
+            opt.linewidth = 128
+        elseif filesize > 1024 * 1024 then
+            opt.linewidth = 64
+        else
+            opt.linewidth = 32
+        end
+    end
 
     -- do dump
     if utils.bin2c then
