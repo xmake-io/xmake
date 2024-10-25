@@ -51,6 +51,12 @@ static tb_bool_t xm_utils_bin2c_dump(tb_stream_ref_t istream, tb_stream_ref_t os
             if (!tb_stream_bread(istream, data, need))
                 break;
 
+            if (!nozeroend && tb_stream_beof(istream))
+            {
+                tb_assert_and_check_break(need + 1 < sizeof(data));
+                data[need++] = '\0';
+            }
+
             for (i = 0; i < need; i++)
             {
                 tb_assert_and_check_break(linesize < sizeof(line));
