@@ -148,6 +148,16 @@ function sandbox_utils.assert(value, format, ...)
     return value
 end
 
+-- generate c/c++ code from the binary file
+if utils._bin2c then
+    function sandbox_utils.bin2c(binaryfile, outputfile, opt)
+        local ok, errors = utils.bin2c(binaryfile, outputfile, opt)
+        if not ok then
+            os.raise(errors)
+        end
+    end
+end
+
 -- return module
 return sandbox_utils
 

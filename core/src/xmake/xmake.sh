@@ -71,6 +71,7 @@ target "xmake"
     add_files "semver/*.c"
     add_files "string/*.c"
     add_files "tty/*.c"
+    add_files "utils/*.c"
     if is_plat "mingw"; then
         add_files "winos/*.c"
     fi

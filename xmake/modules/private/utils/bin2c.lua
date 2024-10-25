@@ -35,7 +35,7 @@ function _do_dump(binarydata, outputfile, opt)
     local p = 0
     local e = binarydata:size()
     local line = nil
-    local linewidth = opt.linewidth or 0x20
+    local linewidth = opt.linewidth or 32
     local first = true
     while p < e do
         line = ""
@@ -81,22 +81,41 @@ function _do_bin2c(binarypath, outputpath, opt)
     -- trace
     print("generating code data file from %s ..", binarypath)
 
-    -- do dump
-    local binarydata = bytes(io.readfile(binarypath, {encoding = "binary"}))
-    local outputfile = io.open(outputpath, 'w')
-    if outputfile then
-        if not opt.nozeroend then
-            binarydata = binarydata .. bytes('\0')
+    -- optimize the default linewidth for reading large file
+    if not opt.linewidth then
+        local filesize = os.filesize(binarypath)
+        if filesize > 1024 * 1024 * 1024 then
+            opt.linewidth = 512
+        elseif filesize > 100 * 1024 * 1024 then
+            opt.linewidth = 256
+        elseif filesize > 10 * 1024 * 1024 then
+            opt.linewidth = 128
+        elseif filesize > 1024 * 1024 then
+            opt.linewidth = 64
+        else
+            opt.linewidth = 32
         end
-        _do_dump(binarydata, outputfile, opt)
-        outputfile:close()
+    end
+
+    -- do dump
+    if utils.bin2c then
+        utils.bin2c(binarypath, outputpath, opt)
+    else
+        local binarydata = bytes(io.readfile(binarypath, {encoding = "binary"}))
+        local outputfile = io.open(outputpath, 'w')
+        if outputfile then
+            if not opt.nozeroend then
+                binarydata = binarydata .. bytes('\0')
+            end
+            _do_dump(binarydata, outputfile, opt)
+            outputfile:close()
+        end
     end
 
     -- trace
     cprint("${bright}%s generated!", outputpath)
 end
 
--- main entry
 function main(...)
 
     -- parse arguments
